@@ -1,0 +1,6 @@
+version: "0.1"
+server:
+    port: 3000
+    verbosity: debug
+    timezone: UTC
+    request-limit: 100mb

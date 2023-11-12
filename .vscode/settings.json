@@ -1,0 +1,12 @@
+{
+    "todo-tree.tree.showCountsInTree": true,
+    "docwriter.style": "JSDoc",
+    "docwriter.progress.trackFunctions": true,
+    "docwriter.progress.trackTypes": true,
+    "docwriter.progress.trackClasses": true,
+    "todo-tree.tree.scanMode": "workspace",
+    "prettier.singleQuote": false,
+    "jest.runMode": "on-demand",
+    "jest.testtimeout": 120000,
+    "jest.autoRun": "off"
+}

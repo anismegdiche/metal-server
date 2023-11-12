@@ -1,0 +1,123 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"admin",
+    "password": 123456
+}
+
+###
+@token={{login.response.body.token}}
+
+###
+# @name select
+GET http://localhost:3000/schema/northwind/customers
+Content-Type: application/json
+authorization: Bearer {{token}}
+###
+
+# @name select-filtered
+GET http://localhost:3000/schema/northwind/customers?filter-expression=customer_id ~ '*LLD'&fields=contact_name, company_name&sort=contact_name asc,company_name desc
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name insert-one
+POST http://localhost:3000/schema/northwind/customers
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": {
+                "customer_id": "MLLD",
+                "contact_name":"Mark Moe",
+                "company_name": "Moe LLD"
+            }
+}
+
+#################################################################
+###
+# @name insert-many
+POST http://localhost:3000/schema/insert/northwind/customers
+Content-Type: application/json
+
+{
+    "data": [
+            {
+                "customer_id": "PLLD",
+                "contact_name": "Jane Poe",
+                "company_name": "Poe LLD"
+            },
+            {
+                "customer_id": "LLLD",
+                "contact_name": "Larry Loe",
+                "company_name": "Loe LLD"
+            }
+        ]
+}
+
+
+###
+# U
+POST http://localhost:3000/schema/update/northwind/customers
+Content-Type: application/json
+
+{
+    "filter-expression": "name ~ 'Tw*'",
+    "data": {
+        "color":5
+    }
+}
+
+###
+POST http://localhost:3000/m/northwind/customers/delete
+Content-Type: application/json
+
+{
+    "filter-expression": "name ~ 'Anis*' ",
+    "fields": "name ,,,id",
+    "sort": "name asc"
+}
+###
+
+POST http://localhost:3000/m/northwind/customers
+Content-Type: application/json
+
+{
+      "Name": "Anissssss"
+}
+###
+GET http://localhost:3000/m/northwind/customers
+###
+DELETE http://localhost:3000/m/northwind/customers/name/Anis
+###
+PATCH http://localhost:3000/m/northwind/customers/name/8
+Content-Type: application/json
+
+{
+    "name" : "Anis",
+    "color" : "8"
+}
+###
+###
+### MongoDb
+GET http://localhost:3000/m/mflix/users
+
+### MongoDb
+GET http://localhost:3000/m/mflix/users/_id/61745a912974aa86089d37c4
+
+### MongoDb
+
+###
+
+
+###
+
+PATCH http://localhost:3000/m/db/tbl/id/1
+
+###
+
+
+GET http://localhost:3000/m/mflix/users/_id/61745a912974aa86089d37c4

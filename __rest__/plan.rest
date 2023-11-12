@@ -1,0 +1,35 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"admin",
+    "password": 123456
+}
+
+###
+@token={{login.response.body.token}}
+
+###
+@plan=etl1
+@schema=plan1
+
+###
+# @name reload
+POST http://localhost:3000/plan/{{plan}}/reload
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+
+###
+# @name get-plan-aitest
+GET http://localhost:3000/schema/{{schema}}/aitest
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name get-plan-aitest2
+GET http://localhost:3000/schema/{{schema}}/aitest2
+Content-Type: application/json
+authorization: Bearer {{token}}

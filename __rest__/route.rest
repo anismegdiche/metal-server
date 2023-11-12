@@ -1,0 +1,33 @@
+### MongoDb
+GET http://localhost:3000/m/mflix/users
+
+### MongoDb
+GET http://localhost:3000/m/mflix/users/_id/59b99db9cfa9a34dcd7885c0
+
+### MongoDb
+GET http://localhost:3000/m/mflix/users/name/Petyr Baelish
+
+### Merge
+GET http://localhost:3000/m/merge/users
+
+### MS SQL
+GET http://localhost:3000/m/sql/TestSchema.Employees
+
+### Merge
+GET http://localhost:3000/m/demo/crm_tag/id/2
+
+###
+
+GET http://localhost:3000/m/db/tbl/id/1
+
+###
+
+POST http://localhost:3000/m/db/tbl
+
+###
+
+PATCH http://localhost:3000/m/db/tbl/id/1
+
+###
+
+DELETE http://localhost:3000/m/db/tbl/id/1

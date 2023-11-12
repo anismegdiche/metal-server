@@ -1,0 +1,149 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"admin",
+    "password": 123456
+}
+
+###
+@token={{login.response.body.token}}
+
+###
+# @name select-users
+GET http://localhost:3000/schema/mflix/users?filter={"country":"France","name":"Anis"}&cache=10
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name select-movies
+GET http://localhost:3000/schema/mflix/movies?filter={"year":1980}
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+
+
+
+####
+# select
+#
+
+POST http://localhost:3000/schema/select/mflix/users
+Content-Type: application/json
+
+{
+//    "fields": "name ,email ",
+//    "sort": " name desc"
+   "filter" :{
+     "country":"France",
+     "name": "Anis"
+   },
+   "cache": "10"
+}
+
+###
+
+
+### 
+POST https://cdic-app.cloudcontrol.fr/api/cc/contact/update/svcgaya/ffdd85c1b8949c43e433204479cfc6
+Content-Type: application/json
+
+{
+    "id": 96,
+    "phone": "123456"
+}
+
+### Delete
+POST http://localhost:3000/m/mflix/users/delete
+Content-Type: application/json
+
+{
+    "filter-expression": "name ~ 'anis*'"
+}
+
+###
+
+# filter-expression
+POST http://localhost:3000/schema/update/mflix/users
+Content-Type: application/json
+
+{
+    "filter-expression": "name ~ 'anis*'",
+    "update": {
+        "email": "bye@welcome.com",
+        "country": "France"
+    }
+}
+
+###
+# all
+GET http://localhost:3000/schema/select/mflix/users
+
+###
+
+# filter-expression
+POST http://localhost:3000/schema/select/mflix/users
+Content-Type: application/json
+
+# {
+#     "filter-expression": "name ~ 'anis*'",
+#     "fields": "name, email",
+#     "sort": "name asc,email desc",
+# }
+
+
+    #"cache": "120"
+###
+# filter-expression
+GET http://localhost:3000/m/mflix/users
+Content-Type: application/json
+
+{
+    "filter-expression": "name ~ 'anis*'",
+    "fields": "name, email",
+    "sort": "name asc,email desc"
+}
+
+###
+
+POST http://localhost:3000/m/mflix/users
+Content-Type: application/json
+
+{
+    "name" : "anis",
+    "company": "clc"
+}
+###
+GET http://localhost:3000/m/mflix/users/name/anis
+###
+DELETE http://localhost:3000/m/mflix/users/name/anis
+###
+PATCH http://localhost:3000/m/mflix/users/name/devil
+Content-Type: application/json
+
+{
+    "name" : "anis"
+}
+###
+###
+### MongoDb
+GET http://localhost:3000/m/mflix/users
+
+### MongoDb
+GET http://localhost:3000/m/mflix/users/_id/61745a912974aa86089d37c4
+
+### MongoDb
+
+###
+
+
+###
+
+PATCH http://localhost:3000/m/db/tbl/id/1
+
+###
+
+
+GET http://localhost:3000/m/mflix/users/_id/61745a912974aa86089d37c4
