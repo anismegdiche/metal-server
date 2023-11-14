@@ -18,7 +18,8 @@
   "dependencies": {
     "@azure/msal-node": "^2.5.1",
     "@tensorflow-models/mobilenet": "^2.1.1",
-    "@tensorflow/tfjs": "^4.13.0",
+    "@tensorflow/tfjs": "^4.9.0",
+    "@tensorflow/tfjs-core": "^4.9.0",
     "alasql": "^4.2.1",
     "axios": "^1.6.1",
     "bcrypt": "^5.1.1",

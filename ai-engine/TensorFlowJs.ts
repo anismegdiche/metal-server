@@ -99,6 +99,8 @@ export class TensorFlowJs implements IAiEngine {
 			class: _predictions
 		}
 	}
+
+
 	/* #endregion */
 
 	// #ToxicityLabels = [
