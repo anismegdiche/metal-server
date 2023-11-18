@@ -1,0 +1,234 @@
+version: "0.1"
+server:
+    port: 3000
+    verbosity: debug
+    timezone: UTC # ROADMAP: set TZ for jobs
+    authentication:
+    #     provider: local # ROADMAP select other providers
+    #     enable_multiple_login: true | false  # ROADMAP enable/disable multiple login per user
+    request-limit: 100mb
+    cache:
+        provider: mongodb
+        host: mongodb://mongodb:27017/
+        database: metal_cache
+        options:
+            connectTimeoutMS: 5000
+            serverSelectionTimeoutMS: 5000
+
+users:
+    admin: 123456
+    guest: "654321"
+
+sources:
+    mssql:
+        provider: mssql
+        host: mssql
+        port: 1433
+        user: sa
+        password: Azerty123!
+        database: hr
+    mongo:
+        provider: mongodb
+        host: mongodb://mongodb:27017/
+        database: mflix
+        options:
+            connectTimeoutMS: 5000
+            serverSelectionTimeoutMS: 5000
+    postgres1:
+        provider: postgres
+        host: postgres1
+        port: 5432
+        user: admin
+        password: "123456"
+        database: northwind
+    postgres2:
+        provider: postgres
+        host: postgres2
+        port: 5432
+        user: admin
+        password: "123456"
+        database: clubdata
+
+    # input:  #ROADMAP
+    #     provider: file
+    #     directory: ./input
+    #     map: name
+
+    # metal_cache:
+    #   provider: mongodb
+    #   host: mongodb://localhost:27017/
+    #   database: metal_cache
+    #   options:
+    #     connectTimeoutMS: 5000
+    #     serverSelectionTimeoutMS: 5000
+
+schemas:
+    hr:
+        source: mssql
+        access:
+            - root@*: crud
+            - user@localhost: r
+            - any@*: r
+
+    mflix:
+        source: mongo
+
+    northwind:
+        source: postgres1
+
+    clubdata:
+        source: postgres2
+
+    merge:
+        source: postgres2
+        entities:
+            orders:
+                source: postgres1
+                entity: orders
+            users:
+                source: mongo
+                entity: users
+
+    plan1:
+        plan: etl1
+
+    file1:
+        source: input
+
+    # cache:
+    #   source: metal_cache
+
+# schedules:
+#     - run my plan:
+#           plan: etl1
+#           entity: contact
+#           cron: "*/5 * * * * *"
+#     onsuccess: # ROADMAP
+#     onfailure: # ROADMAP
+
+ai-engines:
+    ocr: # Tested
+        engine: tesseractjs
+        # model: eng
+
+    object: # Tested
+        engine: tensorflowjs
+        model: object
+
+    sentiment: # Tested
+        engine: nlpjs
+        model: sentiment
+        options:
+            lang: en
+
+    guess-lang: # Tested
+        engine: nlpjs
+        model: guess-lang
+        options:
+            accept: en,fr
+
+plans:
+    etl1:
+        aitest2:
+            - debug:
+            - select:
+                  schema: mflix
+                  entity: movies
+                  filter:
+                      year: 2001
+                  fields: title
+            - run: # TESTED
+                  ai: sentiment
+                  input: title
+                  output:
+                    vote: sentiment
+        aitest:
+            - debug:
+            - insert:
+                  data:
+                      - url: https://tesseract.projectnaptha.com/img/eng_bw.png
+                        img: https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg
+                        msg: you suck
+                      - url: https://jeroen.github.io/images/testocr.png
+                        img: https://img.freepik.com/premium-photo/golden-retriever-lying-panting-isolated-white_191971-16974.jpg
+                        msg: i love you honey butt
+                      - url: https://www.srcmake.com/uploads/5/3/9/0/5390645/ocr_orig.png
+                        img: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpDgjJjrakUj3VlDC0K6XtdCRu5TK7CPXr7QHVjiL&s
+                        msg: I am feeling unhappy
+            - run: # TESTED
+                  ai: ocr
+                  input: url
+                  output:
+                      confidence: ocr_confidence
+                      text: ocr_text
+            - run: # TESTED
+                  ai: object
+                  input: img
+                  output:
+                      class: object
+            - run: # TESTED
+                  ai: sentiment
+                  input: ocr_text
+                  output: sentiment
+            - run: # TESTED
+                  ai: guess-lang
+                  input: ocr_text
+                  output:
+
+        contact:
+            - debug:
+            - select:
+                  schema: demo
+                  entity: res_partner
+                  fields: id, name, display_name
+            - add-field:
+                  name: quality
+                  type: integer
+            - sort:
+                  id:
+            - update:
+                  filter-expression: "id < 10"
+                  data:
+                      name: "AAA"
+                      display_name: "BBB"
+            - delete:
+                  filter-expression: "id >= 100"
+            - insert:
+                  data:
+                      name: Anis
+                      display_name: Mr. Anis
+            # - bad-step-test3: "***TEST***"
+
+        login:
+            - debug:
+            - select:
+                  schema: demo
+                  entity: res_users
+                  fields: login, partner_id
+            # - bad-step-test1: "***TEST***"
+            # - break: step by step test
+            - join:
+                  type: left
+                  entity: contact
+                  left-field: partner_id
+                  right-field: id
+            - fields: id, name, login
+            # - debug:
+            - sort:
+                  login: asc
+                  name: desc
+            # - bad-step-test2: "***TEST***"
+            - insert:
+                  schema: demo
+                  entity: res_users
+                #   auto_create: true # ROADMAP: Auto create table
+            - delete:
+                  schema: demo
+                  entity: res_users
+                  filter:
+                      lang: fr_FR
+            - update: # not tested
+                  schema: demo
+                  entity: res_users
+                  filter:
+                      lang: fr_FR
