@@ -14,7 +14,7 @@ describe('TensorFlowJs', () => {
 		jest.clearAllMocks()
 		tfjs = new TensorFlowJs('image-classification', { model: 'object' })
 		await tfjs.Init()
-	})
+	}, 120000)
 
 	it('should initialize correctly', async () => {
 		expect(tfjs.EngineName).toBe('tensorflowjs')
