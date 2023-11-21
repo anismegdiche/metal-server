@@ -13,13 +13,16 @@ Content-Type: application/json
 
 ###
 # @name select-users
-GET http://localhost:3000/schema/mflix/users?filter={"country":"France","name":"Anis"}&cache=10
+GET http://localhost:3000/schema/mflix/users
+    ?filter={"country":"France","name":"Anis"}
+    &cache=10
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 ###
 # @name select-movies
-GET http://localhost:3000/schema/mflix/movies?filter={"year":1980}
+GET http://localhost:3000/schema/mflix/movies
+    ?filter={"year":1980}
 Content-Type: application/json
 authorization: Bearer {{token}}
 
