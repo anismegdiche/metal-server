@@ -3,6 +3,7 @@
 //
 //
 //
+import _ from 'lodash'
 import { Logger } from '../lib/Logger'
 import { Config } from '../server/Config'
 import { TDataRequest } from '../types/TDataRequest'
@@ -11,24 +12,21 @@ import { Sources } from './Sources'
 
 export abstract class Schemas {
     static GetSource(schemaConfig: any, dataRequest: TDataRequest): string | undefined {
-
-        // case entity
-        if (schemaConfig?.entities  &&
-            schemaConfig?.entities?.length > 0 &&
-            Sources.Sources[schemaConfig.entities[dataRequest.entity].source]) {
-            const _source = schemaConfig.entities[dataRequest.entity].source
-            return _source
+        
+        //case entities
+        const entitySource = _.get(schemaConfig, `entities[${dataRequest.entity}].source`);
+        if (!_.isEmpty(entitySource) && Sources.Sources[entitySource]) {
+            return entitySource;
         }
 
         // case source
-        if (schemaConfig?.source  &&
-            Config.Configuration?.sources[schemaConfig.source]) {
-            const _source = schemaConfig.source
-            return _source
+        const schemaSource = schemaConfig?.source;
+        if (schemaSource && Config.Configuration?.sources[schemaSource]) {
+            return schemaSource;
         }
 
-        Logger.Warn(`Nothing todo in section 'schemas'`)
-        return undefined
+        Logger.Warn(`Nothing to do in the 'schemas' section`);
+        return undefined;
     }
 
     //ROADMAP
