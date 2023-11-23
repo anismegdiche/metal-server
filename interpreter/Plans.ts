@@ -165,19 +165,26 @@ export abstract class Plans {
         return dt
     }
 
-    static async #Join(plan: string, dtA: DataTable, transformation: TTransformation) {
+    static async #Join(plan: string, dtLeft: DataTable, transformation: TTransformation) {
         Logger.Debug(`${Logger.In} Plans.Join: ${JSON.stringify(transformation)}`)
 
         const
             _plan = Config.Configuration?.plans[plan],
-            _entity = transformation.entity,
-            _joinType = transformation.type,
+            _schema = transformation?.schema,
+            _entity = transformation?.entity,
+            _joinType = transformation?.type,
             _leftFieldName = transformation["left-field"],
             _rightFieldName = transformation["right-field"]
 
-        const _dtB = await this.#ExecutePlan(plan, _entity, _plan[_entity])
+        let _dtRight = new DataTable(_entity)
+        
+        if (_schema) {
+            _dtRight = await this.#Select(_plan, _dtRight, transformation)
+        } else {
+            _dtRight = await this.#ExecutePlan(plan, _entity, _plan[_entity])
+        }
 
-        return await this.#JoinType[_joinType](dtA, _dtB, _leftFieldName, _rightFieldName)
+        return await this.#JoinType[_joinType](dtLeft, _dtRight, _leftFieldName, _rightFieldName)
     }
 
 
@@ -230,7 +237,7 @@ export abstract class Plans {
                     dt.Rows[_rowIndex][ai] = __result
                     continue
                 }
-                
+
                 // check if output is string
                 if (_.isString(output)) {
                     dt.Rows[_rowIndex] = {
@@ -239,7 +246,7 @@ export abstract class Plans {
                     dt.Rows[_rowIndex][output] = __result
                     continue
                 }
-                
+
                 // else                
                 for (const [___key, ___value] of Object.entries(output)) {
                     const ____outField = <string>___value

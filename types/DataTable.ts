@@ -200,14 +200,14 @@ export class DataTable {
 
     // TODO not tested
     public AddField(fieldName: string, fieldType: string) {
-        this.FreeSql(`ALTER TABLE ${this.Name} ADD COLUMN ${fieldName} ${fieldType}`)
+        this.FreeSql(`ALTER TABLE \`${this.Name}\` ADD COLUMN \`${fieldName}\` ${fieldType}`)
         this.SetField(fieldName, fieldType)
         return this
     }
 
     public FreeSql(sqlQuery: string) {
         alasql.options.errorlog = true
-        alasql(`CREATE TABLE ${this.Name}`)
+        alasql(`CREATE TABLE \`${this.Name}\``)
         alasql.tables[this.Name].data = this.Rows
         alasql(sqlQuery)
         this.Rows = alasql.tables[this.Name].data
@@ -216,9 +216,9 @@ export class DataTable {
 
     public LeftJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string) {
         this.Rows = alasql(`
-            SELECT * FROM ? ${this.Name} 
-            LEFT JOIN ? ${dtB.Name} 
-            ON ${this.Name}.${leftFieldName} = ${dtB.Name}.${rightFieldName}`,
+            SELECT * FROM ? \`${this.Name}\` 
+            LEFT JOIN ? \`${dtB.Name}\` 
+            ON \`${this.Name}\`.\`${leftFieldName}\` = \`${dtB.Name}\`.\`${rightFieldName}\``,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
@@ -226,9 +226,9 @@ export class DataTable {
 
     public InnerJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string) {
         this.Rows = alasql(`
-            SELECT * FROM ? ${this.Name} 
-            INNER JOIN ? ${dtB.Name} 
-            ON ${this.Name}.${leftFieldName} = ${dtB.Name}.${rightFieldName}`,
+            SELECT * FROM ? \`${this.Name}\` 
+            INNER JOIN ? \`${dtB.Name}\` 
+            ON \`${this.Name}\`.\`${leftFieldName}\` = \`${dtB.Name}\`.\`${rightFieldName}\``,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
@@ -236,9 +236,9 @@ export class DataTable {
 
     public RightJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string) {
         this.Rows = alasql(`
-            SELECT * FROM ? ${this.Name} 
-            RIGHT JOIN ? ${dtB.Name} 
-            ON ${this.Name}.${leftFieldName} = ${dtB.Name}.${rightFieldName}`,
+            SELECT * FROM ? \`${this.Name}\` 
+            RIGHT JOIN ? \`${dtB.Name}\` 
+            ON \`${this.Name}\`.\`${leftFieldName}\` = \`${dtB.Name}\`.\`${rightFieldName}\``,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
@@ -246,9 +246,9 @@ export class DataTable {
 
     public FullOuterJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string) {
         this.Rows = alasql(`
-            SELECT * FROM ? ${this.Name} 
-            FULL OUTER JOIN ? ${dtB.Name} 
-            ON ${this.Name}.${leftFieldName} = ${dtB.Name}.${rightFieldName}`,
+            SELECT * FROM ? \`${this.Name}\` 
+            FULL OUTER JOIN ? \`${dtB.Name}\` 
+            ON \`${this.Name}\`.\`${leftFieldName}\` = \`${dtB.Name}\`.\`${rightFieldName}\``,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
@@ -256,8 +256,8 @@ export class DataTable {
 
     public CrossJoin(dtB: DataTable) {
         this.Rows = alasql(`
-            SELECT * FROM ? ${this.Name} 
-            CROSS JOIN ? ${dtB.Name}`,
+            SELECT * FROM ? \`${this.Name}\` 
+            CROSS JOIN ? \`${dtB.Name}\``,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
@@ -268,8 +268,8 @@ export class DataTable {
             return this
 
         this.Rows = alasql(`
-            SELECT ${_.join(fields, ',')} 
-            FROM ? ${this.Name}`,
+            SELECT \`${_.join(fields, '`,`')}\` 
+            FROM ? \`${this.Name}\``,
             [this.Rows]
         )
         return this.SetFields()

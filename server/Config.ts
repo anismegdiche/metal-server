@@ -88,7 +88,7 @@ export abstract class Config {
         }
         // check cache configuration
         if (Config.Configuration?.server?.cache === undefined)
-            Logger.Warn(`section 'server.cache' is not configured, Metal will start without cache function`)
+            Logger.Warn(`section 'server.cache' is not configured, Metal will start without cache feature`)
         else
             Config.Flags.EnableCache = true
     }
