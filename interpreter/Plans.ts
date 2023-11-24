@@ -177,7 +177,7 @@ export abstract class Plans {
             _rightFieldName = transformation["right-field"]
 
         let _dtRight = new DataTable(_entity)
-        
+
         if (_schema) {
             _dtRight = await this.#Select(_plan, _dtRight, transformation)
         } else {
@@ -306,13 +306,13 @@ export abstract class Plans {
                 Logger.Error(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' is ignored because of error ${JSON.stringify(error)}`)
                 if (_workingDataTable.MetaData[Plans.#METADATA.PLAN_DEBUG] == 'error') {
                     /*  
-                        FIXME 
-                        In case of cross entities, only errors in the final entity are returned.
-                        Console log is working fine.
+                    FIXME 
+                    In case of cross entities, only errors in the final entity are returned.
+                    Console log is working fine.
                     */
-                    let _error: TJson = {}
-                    _error[`entity(${entity}), step(${stepId})`] = _transformation
-                    const _tmp = (<TJson[]>_workingDataTable.MetaData[Plans.#METADATA.PLAN_ERRORS]).push(_error)
+                   let _error: TJson = {}
+                   _error[`entity(${entity}), step(${stepId})`] = _transformation
+                   Logger.Debug(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' added error ${JSON.stringify((<TJson[]>_workingDataTable.MetaData[Plans.#METADATA.PLAN_ERRORS]).push(_error))}`)
                 }
             }
         }
