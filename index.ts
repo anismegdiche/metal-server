@@ -4,11 +4,11 @@
 //
 //
 
+// ROADMAP ----- MVP -----
 // ROADMAP PLAN > insert
 // ROADMAP PLAN > update
 // ROADMAP PLAN > delete
 // ROADMAP PLAN > calculate time in state
-// ROADMAP ----- MVP -----
 // ROADMAP Config > Secured Users authentication
 // ROADMAP PLAN > free sql
 // ROADMAP Server > Database/dataset
