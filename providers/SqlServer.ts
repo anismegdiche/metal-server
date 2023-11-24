@@ -149,7 +149,7 @@ export class SqlServer implements IProvider.IProvider {
         }
 
         const _sqlQuery = new SqlQueryHelper()
-            .Insert(dataRequest.entity)
+            .Insert(`[${dataRequest.entity}]`)
             .Fields(_options.Data.GetFieldsNames())
             .Values(_options.Data.Rows)
             .Query
@@ -176,7 +176,7 @@ export class SqlServer implements IProvider.IProvider {
 
         const _sqlQuery = new SqlQueryHelper()
             .Select(<string>_options.Fields)
-            .From(dataRequest.entity)
+            .From(`[${dataRequest.entity}]`)
             .Where(_options.Filter)
             .OrderBy(<string | undefined>_options.Sort)
             .Query
@@ -213,7 +213,7 @@ export class SqlServer implements IProvider.IProvider {
         }
 
         const _sqlQuery = new SqlQueryHelper()
-            .Update(dataRequest.entity)
+            .Update(`[${dataRequest.entity}]`)
             .Set(_options.Data.Rows)
             .Where(_options.Filter)
             .Query
@@ -240,7 +240,7 @@ export class SqlServer implements IProvider.IProvider {
 
         const _sqlQuery = new SqlQueryHelper()
             .Delete()
-            .From(dataRequest.entity)
+            .From(`[${dataRequest.entity}]`)
             .Where(_options.Filter)
             .Query
 
