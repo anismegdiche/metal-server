@@ -37,7 +37,7 @@ export abstract class Schedule {
                         () => {
                             Logger.Debug(`${Logger.In} Schedule.Start: Running job '${__jobName}'`)
                             try {
-                                Plans.RenderTable(__planName, __entityName)
+                                Plans.RenderTable(undefined, __planName, __entityName)
                             } catch (error) {
                                 Logger.Error(`${Logger.In} Schedule.Start: Error has occured with '${__jobName}' : ${JSON.stringify(error)}`)
                             }
@@ -66,7 +66,7 @@ export abstract class Schedule {
             Body: { message: `Job '${jobName}' not found` }
         }
     }
-    
+
     public static Stop(jobName: string) {
         const _jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (_jobKey) {

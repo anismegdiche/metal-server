@@ -30,7 +30,7 @@ export abstract class Schemas {
     public static EntityTypeExecute: Record<string, Function> = {
         'nothing': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => Schemas.NothingTodo(entityTypeExecuteParams),
         'source': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => await entityTypeExecuteParams.CRUDOperation(),
-        'plan': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => await Plans.RenderTable(entityTypeExecuteParams.SourceName, entityTypeExecuteParams.EntityName)
+        'plan': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => await Plans.RenderTable(entityTypeExecuteParams.DataRequest.schema,  entityTypeExecuteParams.SourceName, entityTypeExecuteParams.EntityName)
     }
 
     static NothingTodo(entityTypeExecuteParams: TEntityTypeExecuteParams) {

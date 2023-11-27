@@ -310,19 +310,19 @@ export abstract class Plans {
                     In case of cross entities, only errors in the final entity are returned.
                     Console log is working fine.
                     */
-                   let _error: TJson = {}
-                   _error[`entity(${entity}), step(${stepId})`] = _transformation
-                   Logger.Debug(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' added error ${JSON.stringify((<TJson[]>_workingDataTable.MetaData[Plans.#METADATA.PLAN_ERRORS]).push(_error))}`)
+                    let _error: TJson = {}
+                    _error[`entity(${entity}), step(${stepId})`] = _transformation
+                    Logger.Debug(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' added error ${JSON.stringify((<TJson[]>_workingDataTable.MetaData[Plans.#METADATA.PLAN_ERRORS]).push(_error))}`)
                 }
             }
         }
         return _workingDataTable
     }
 
-    static async RenderTable(planName: string, entityName: string) {
+    static async RenderTable(schemaName: string | undefined, planName: string, entityName: string) {
 
         let _dataResponse = <TDataResponse>{
-            schema: planName,
+            schema: schemaName,
             entity: entityName,
             transaction: "plan"
         }
@@ -334,7 +334,7 @@ export abstract class Plans {
                 _planConfig = Config.Configuration?.plans[planName],
                 _entitySteps = _planConfig[entityName]
 
-            Logger.Debug(`${Logger.In} Plans.Render: ${planName}.${entityName} : ${JSON.stringify(_entitySteps)}`)
+            Logger.Debug(`${Logger.In} Plans.RenderTable: ${planName}.${entityName} : ${JSON.stringify(_entitySteps)}`)
 
             const _workingDataTable = await this.#ExecutePlan(planName, entityName, _entitySteps)
 
