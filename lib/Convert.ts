@@ -14,24 +14,27 @@ import { TDataResponse, TDataResponseData, TDataResponseError } from '../types/T
 export class Convert {
 
     static OptionsFilterExpressionToSql(filterExpression: string) {
-        let __cond = JSON.stringify(filterExpression)
+        let _cond = JSON.stringify(filterExpression)
         // booleans
-        __cond = __cond.replace(/&(?=(?:[^']*'[^']*')*[^']*$)/igm, " AND ")
-        __cond = __cond.replace(/\|(?=(?:[^']*'[^']*')*[^']*$)/igm, " OR ")
-        __cond = __cond.replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/igm, " NOT ")
+        _cond = _cond
+            .replace(/&(?=(?:[^']*'[^']*')*[^']*$)/igm, " AND ")
+            .replace(/\|(?=(?:[^']*'[^']*')*[^']*$)/igm, " OR ")
+            .replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/igm, " NOT ")
 
-        // eq
-        __cond = __cond.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/igm, " LIKE ")
-        const __quotedStringArray = __cond.match(/'(.*?)'/igm) as string[]
-        for (const __quotedString in __quotedStringArray) {
-            if (Object.prototype.hasOwnProperty.call(__quotedStringArray, __quotedString)) {
-                __cond = __cond.replace(__quotedStringArray[__quotedString], __quotedStringArray[__quotedString].replace(/\*/igm, "%"))
+        // like
+        _cond = _cond.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/igm, " LIKE ")
+        const _quotedStringArray = _cond.match(/'(.*?)'/igm) as string[]
+        for (const __quotedString in _quotedStringArray) {
+            if (Object.prototype.hasOwnProperty.call(_quotedStringArray, __quotedString)) {
+                _cond = _cond
+                    .replace(_quotedStringArray[__quotedString], _quotedStringArray[__quotedString]
+                        .replace(/\*/igm, "%"))
             }
         }
 
         // chars
-        __cond = __cond.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/igm, "")
-        return __cond
+        _cond = _cond.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/igm, "")
+        return _cond
     }
 
     static SqlSortToMongoSort(key: any, value: string) {
