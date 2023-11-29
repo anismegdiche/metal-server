@@ -69,22 +69,16 @@ export abstract class Plans {
 
         const { schema, entity } = transformation
 
-        let _dataResponse: TDataResponse = <TDataResponse>{}
-
         if (schema && entity) {
-            _dataResponse = await Data.Insert(<Request><unknown>{
+            await Data.Insert(<Request><unknown>{
                 params: {
                     schema,
                     entity
                 },
                 body: this.#GetOptions(transformation)
             })
-
-            dt.Fields = <TFields>{ ...(<TDataResponseData>_dataResponse).data.Fields }
-            dt.Rows = <TRows>[...(<TDataResponseData>_dataResponse).data.Rows]
-
         } else {
-            const _dtToInsert = new DataTable("data2insert", transformation?.data)
+            const _dtToInsert = new DataTable(entity ?? "data2insert", transformation?.data)
 
             const _sqlQuery = new SqlQueryHelper()
                 .Insert(dt.Name)
@@ -302,8 +296,8 @@ export abstract class Plans {
                 }
                 _workingDataTable = await this.#ExecuteStep[_command](plan, _workingDataTable, _parameters)
 
-            } catch (error) {
-                Logger.Error(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' is ignored because of error ${JSON.stringify(error)}`)
+            } catch (error: any) {
+                Logger.Error(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' is ignored because of error ${JSON.stringify(error?.message)}`)
                 if (_workingDataTable.MetaData[Plans.#METADATA.PLAN_DEBUG] == 'error') {
                     /*  
                     FIXME 
