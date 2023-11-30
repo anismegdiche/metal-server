@@ -69,13 +69,27 @@ export abstract class Plans {
 
         const { schema, entity } = transformation
 
+        let _body: TJson = {}
+
         if (schema && entity) {
+            if (transformation.data || dt.Rows.length > 0) {
+                _body = this.#GetOptions(transformation)
+                if (dt.Rows.length > 0) {
+                    _body = {
+                        ..._body,
+                        data: dt.Rows
+                    }
+                }
+            } else {
+                Logger.Warn(`Plans.Insert: no data to insert`)
+                return  dt
+            }
             await Data.Insert(<Request><unknown>{
                 params: {
                     schema,
                     entity
                 },
-                body: this.#GetOptions(transformation)
+                body: _body
             })
         } else {
             const _dtToInsert = new DataTable(entity ?? "data2insert", transformation?.data)
@@ -94,21 +108,16 @@ export abstract class Plans {
     static async #Update(plan: string, dt: DataTable, transformation: TTransformation) {
         Logger.Debug(`${Logger.In} Plans.Update: ${JSON.stringify(transformation)}`)
 
-        let _dataResponse: TDataResponse = <TDataResponse>{}
-
         const { schema, entity } = transformation
 
         if (schema && entity) {
-            _dataResponse = await Data.Update(<Request><unknown>{
+            await Data.Update(<Request><unknown>{
                 params: {
                     schema,
                     entity
                 },
                 body: this.#GetOptions(transformation)
             })
-
-            dt.Fields = <TFields>{ ...(<TDataResponseData>_dataResponse).data.Fields }
-            dt.Rows = <TRows>[...(<TDataResponseData>_dataResponse).data.Rows]
 
         } else {
             const
@@ -131,20 +140,14 @@ export abstract class Plans {
 
         const { schema, entity } = transformation
 
-        let _dataResponse: TDataResponse = <TDataResponse>{}
-
         if (schema && entity) {
-            _dataResponse = await Data.Delete(<Request><unknown>{
+            await Data.Delete(<Request><unknown>{
                 params: {
                     schema,
                     entity
                 },
                 body: this.#GetOptions(transformation)
             })
-
-            dt.Fields = <TFields>{ ...(<TDataResponseData>_dataResponse).data.Fields }
-            dt.Rows = <TRows>[...(<TDataResponseData>_dataResponse).data.Rows]
-
         } else {
             const _filter = transformation['filter-expression'] || [transformation?.filter] || undefined
             const _sqlQuery = new SqlQueryHelper()
