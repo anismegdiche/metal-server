@@ -9,6 +9,7 @@ import { Request, Response } from 'express'
 import { TDataRequest } from '../types/TDataRequest'
 import { TJson } from '../types/TJson'
 import { TDataResponse, TDataResponseData, TDataResponseError } from '../types/TDataResponse'
+import { Logger } from "../lib/Logger"
 
 
 export class Convert {
@@ -71,9 +72,9 @@ export class Convert {
         let _queryOrBody: TJson = {}
 
         if (_.isNil(query) || _.isEmpty(query)) {
-            _queryOrBody = body;
+            _queryOrBody = body
         } else {
-            _queryOrBody = query;
+            _queryOrBody = query
         }
 
         if (!_.isEmpty(_queryOrBody)) {
@@ -110,5 +111,27 @@ export class Convert {
         return response
             .status(dataResponse.status)
             .json(_responseJson)
+    }
+
+    static ReplacePlaceholders(inputString: string): string {
+        const placeholderRegex = /\$\{\{([^}]+)\}\}/g
+
+        const replacedString = inputString.replace(placeholderRegex, (match, code) => {
+            try {
+                // Use eval with caution, make sure the code is safe
+                // eslint-disable-next-line no-eval
+                const result = eval(code)
+                // eslint-disable-next-line no-negated-condition, no-ternary
+                return result !== undefined
+                    ? result.toString()
+                    : ''
+            } catch (error) {
+                Logger.Error(`Error evaluating code: ${code}, ${JSON.stringify(error)}`)
+                // Return the original placeholder if there's an error
+                return `$\{{${code}}}`
+            }
+        })
+
+        return replacedString
     }
 }

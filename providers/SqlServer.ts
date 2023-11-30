@@ -17,6 +17,7 @@ import { TJson } from "../types/TJson"
 import { TDataRequest } from '../types/TDataRequest'
 import { Logger } from '../lib/Logger'
 import { Cache } from '../server/Cache'
+import { CommonProviderOptionsData } from '../lib/CommonProviderOptionsData'
 
 
 class SqlServerOptions implements IProvider.IProviderOptions {
@@ -73,14 +74,7 @@ class SqlServerOptions implements IProvider.IProviderOptions {
         }
     }
 
-    Data = class {
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-            if (dataRequest?.data) {
-                agg.Data = new DataTable(dataRequest.entity, dataRequest.data)
-            }
-            return agg
-        }
-    }
+    public Data = CommonProviderOptionsData
 }
 
 export class SqlServer implements IProvider.IProvider {

@@ -18,6 +18,7 @@ import { TDataResponse, TDataResponseData, TDataResponseNoData } from '../types/
 import { TDataRequest } from '../types/TDataRequest'
 import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
+import { CommonProviderOptionsData } from '../lib/CommonProviderOptionsData'
 
 
 class PostgresOptions implements IProvider.IProviderOptions {
@@ -74,14 +75,7 @@ class PostgresOptions implements IProvider.IProviderOptions {
         }
     }
 
-    Data = class {
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-            if (dataRequest?.data) {
-                agg.Data = new DataTable(dataRequest.entity, dataRequest.data)
-            }
-            return agg
-        }
-    }
+    public Data = CommonProviderOptionsData
 }
 
 export class Postgres implements IProvider.IProvider {

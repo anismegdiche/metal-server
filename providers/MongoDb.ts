@@ -19,6 +19,7 @@ import { TJson } from "../types/TJson"
 import { DataTable } from "../types/DataTable"
 import { Logger } from "../lib/Logger"
 import { Cache } from '../server/Cache'
+import { CommonProviderOptionsData } from "../lib/CommonProviderOptionsData"
 
 
 class MongoDbOptions implements IProvider.IProviderOptions {
@@ -38,7 +39,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
 
         static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
             let _filter: any = {}
-            if (dataRequest['filter-expression']  || dataRequest?.filter) {
+            if (dataRequest['filter-expression'] || dataRequest?.filter) {
 
                 if (dataRequest['filter-expression'])
                     _filter = this.GetExpression(dataRequest['filter-expression'])
@@ -117,14 +118,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
         }
     }
 
-    Data = class {
-        static Get(__agg: TOptions, dataRequest: TDataRequest): TOptions {
-            if (dataRequest?.data) {
-                __agg.Data = new DataTable(dataRequest.entity, dataRequest.data)
-            }
-            return __agg
-        }
-    }
+    public Data = CommonProviderOptionsData
 }
 
 
@@ -135,7 +129,7 @@ export class MongoDb implements IProvider.IProvider {
     public Primitive = mongodb.MongoClient
     public Connection: mongodb.MongoClient = <mongodb.MongoClient>{}
     public Config: TJson = {}
-    
+
     Options: MongoDbOptions = new MongoDbOptions()
 
     constructor(sourceName: string, oParams: TSourceParams) {
@@ -150,9 +144,9 @@ export class MongoDb implements IProvider.IProvider {
 
     async Init(oParams: TSourceParams) {
         Logger.Debug("MongoDb.Init")
-        this.Params = oParams        
+        this.Params = oParams
     }
-    
+
     async Connect(): Promise<void> {
         Logger.Debug("MongoDb.Connect")
         const { host = '' } = this.Params || {}
