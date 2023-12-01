@@ -7,7 +7,7 @@ server:
   request-limit: 100mb
   cache:
     provider: mongodb
-    host: mongodb://mdb-mflix:27017/
+    host: mongodb://localhost:27017/
     database: metal_cache
     options:
       connectTimeoutMS: 5000
@@ -98,11 +98,11 @@ schemas:
   plan1:
     plan: etl1
 
-schedules:
-  - "run entity contact of my etl1 plan":
-      plan: etl1
-      entity: contact
-      cron: "* */5 * * * *"
+# schedules:
+#   - "run entity contact of my etl1 plan":
+#       plan: etl1
+#       entity: contact
+#       cron: "* */5 * * * *"
 
 ai-engines:
   ocr:

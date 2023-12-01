@@ -82,7 +82,7 @@ export abstract class Plans {
                 }
             } else {
                 Logger.Warn(`Plans.Insert: no data to insert`)
-                return  dt
+                return dt
             }
             await Data.Insert(<Request><unknown>{
                 params: {
@@ -196,7 +196,7 @@ export abstract class Plans {
 
         const
             _fields = Object.keys(transformation),
-            _orders = Object.values(transformation) as TOrder[]
+            _orders: TOrder[] = Object.values(transformation)
 
         return dt.Sort(_fields, _orders)
     }
@@ -223,34 +223,34 @@ export abstract class Plans {
 
         const { ai, input, output } = transformation
 
-        for await (const [_rowIndex, _rowData] of dt.Rows.entries()) {
-            const __result = <Record<string, any>>(await AiEngine.Engine[ai].Run(<string>_rowData[input]))
-            if (__result) {
+        for await (const [__rowIndex, __rowData] of dt.Rows.entries()) {
+            const _result = <Record<string, any>>(await AiEngine.Engine[ai].Run(<string>__rowData[input]))
+            if (_result) {
                 // check if output is empty
                 if (_.isNil(output) || _.isEmpty(output)) {
-                    dt.Rows[_rowIndex] = {
-                        ..._rowData
+                    dt.Rows[__rowIndex] = {
+                        ...__rowData
                     }
-                    dt.Rows[_rowIndex][ai] = __result
+                    dt.Rows[__rowIndex][ai] = _result
                     continue
                 }
 
                 // check if output is string
                 if (_.isString(output)) {
-                    dt.Rows[_rowIndex] = {
-                        ..._rowData
+                    dt.Rows[__rowIndex] = {
+                        ...__rowData
                     }
-                    dt.Rows[_rowIndex][output] = __result
+                    dt.Rows[__rowIndex][output] = _result
                     continue
                 }
 
                 // else                
                 for (const [___key, ___value] of Object.entries(output)) {
+                    const ____inField = ___key
                     const ____outField = <string>___value
-                    const ____inField = <string>___key
-                    _rowData[____outField] = __result[____inField]
+                    __rowData[____outField] = _result[____inField]
                 }
-                dt.Rows[_rowIndex] = _rowData
+                dt.Rows[__rowIndex] = __rowData
             }
         }
         return dt.SetFields()
