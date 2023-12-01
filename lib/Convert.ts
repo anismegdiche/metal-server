@@ -15,27 +15,24 @@ import { Logger } from "../lib/Logger"
 export class Convert {
 
     static OptionsFilterExpressionToSql(filterExpression: string) {
-        let _cond = JSON.stringify(filterExpression)
+        let _condition = JSON.stringify(filterExpression);
+
         // booleans
-        _cond = _cond
-            .replace(/&(?=(?:[^']*'[^']*')*[^']*$)/igm, " AND ")
-            .replace(/\|(?=(?:[^']*'[^']*')*[^']*$)/igm, " OR ")
-            .replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/igm, " NOT ")
+        _condition = _condition.replace(/&(?=(?:[^']*'[^']*')*[^']*$)/g, " AND ")
+            .replace(/\|(?=(?:[^']*'[^']*')*[^']*$)/g, " OR ")
+            .replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/g, " NOT ");
 
         // like
-        _cond = _cond.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/igm, " LIKE ")
-        const _quotedStringArray = _cond.match(/'(.*?)'/igm) as string[]
-        for (const __quotedString in _quotedStringArray) {
-            if (Object.prototype.hasOwnProperty.call(_quotedStringArray, __quotedString)) {
-                _cond = _cond
-                    .replace(_quotedStringArray[__quotedString], _quotedStringArray[__quotedString]
-                        .replace(/\*/igm, "%"))
-            }
+        _condition = _condition.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/g, " LIKE ");
+        const quotedStringArray = _condition.match(/'(.*?)'/g) ?? [];
+        for (const quotedString of quotedStringArray) {
+            _condition = _condition.replace(quotedString, quotedString.replace(/\*/g, "%"));
         }
 
         // chars
-        _cond = _cond.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/igm, "")
-        return _cond
+        _condition = _condition.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/g, "");
+
+        return _condition;
     }
 
     static SqlSortToMongoSort(key: any, value: string) {
@@ -113,25 +110,38 @@ export class Convert {
             .json(_responseJson)
     }
 
-    static ReplacePlaceholders(inputString: string): string {
-        const placeholderRegex = /\$\{\{([^}]+)\}\}/g
 
-        const replacedString = inputString.replace(placeholderRegex, (match, code) => {
-            try {
-                // Use eval with caution, make sure the code is safe
-                // eslint-disable-next-line no-eval
-                const result = eval(code)
-                // eslint-disable-next-line no-negated-condition, no-ternary
-                return result !== undefined
-                    ? result.toString()
-                    : ''
-            } catch (error) {
-                Logger.Error(`Error evaluating code: ${code}, ${JSON.stringify(error)}`)
-                // Return the original placeholder if there's an error
-                return `$\{{${code}}}`
-            }
-        })
-
-        return replacedString
+    // eslint-disable-next-line no-unused-vars
+    static ReplacePlaceholders(text: string): string
+    // eslint-disable-next-line no-unused-vars
+    static ReplacePlaceholders(text: TJson[] | undefined): TJson[] | undefined
+    // eslint-disable-next-line no-unused-vars
+    static ReplacePlaceholders(text: object | TJson): object | TJson
+    static ReplacePlaceholders(text: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
+        if (text === undefined)
+            return undefined
+        
+        if (typeof text === 'string') {
+            const placeholderRegex = /\$\{\{([^}]+)\}\}/g
+            const replacedString = text.replace(placeholderRegex, (match, code) => {
+                try {
+                    // Use eval with caution, make sure the code is safe
+                    // eslint-disable-next-line no-eval
+                    const result = eval(code)
+                    // eslint-disable-next-line no-negated-condition, no-ternary
+                    return result !== undefined
+                        ? result.toString()
+                        : ''
+                } catch (error) {
+                    Logger.Error(`Error evaluating code: ${code}, ${JSON.stringify(error)}`)
+                    // Return the original placeholder if there's an error
+                    return `$\{{${code}}}`
+                }
+            })
+            return replacedString
+        } else {
+            const __objectString = Convert.ReplacePlaceholders(JSON.stringify(text))
+            return JSON.parse(__objectString)
+        }
     }
 }

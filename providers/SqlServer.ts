@@ -11,13 +11,15 @@ import { SqlQueryHelper } from '../lib/Sql'
 import { TSourceParams } from "../types/TSourceParams"
 import { TDataResponse, TDataResponseData, TDataResponseNoData } from "../types/TDataResponse"
 import { TOptions } from "../types/TOptions"
-import { Convert } from "../lib/Convert"
 import { DataTable } from "../types/DataTable"
 import { TJson } from "../types/TJson"
 import { TDataRequest } from '../types/TDataRequest'
 import { Logger } from '../lib/Logger'
 import { Cache } from '../server/Cache'
 import { CommonProviderOptionsData } from '../lib/CommonProviderOptionsData'
+import { CommonProviderOptionsFilter } from '../lib/CommonProviderOptionsFilter'
+import { CommonProviderOptionsFields } from '../lib/CommonProviderOptionsFields'
+import { CommonProviderOptionsSort } from '../lib/CommonProviderOptionsSort'
 
 
 class SqlServerOptions implements IProvider.IProviderOptions {
@@ -33,46 +35,11 @@ class SqlServerOptions implements IProvider.IProviderOptions {
         return _agg
     }
 
-    Filter = class {
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-            let _filter = {}
-            if (dataRequest['filter-expression']  || dataRequest?.filter) {
+    public Filter = CommonProviderOptionsFilter
 
-                if (dataRequest['filter-expression'])
-                    _filter = this.GetExpression(dataRequest['filter-expression'])
+    public Fields = CommonProviderOptionsFields
 
-                if (dataRequest?.filter)
-                    _filter = Convert.JsonToArray(dataRequest.filter)
-
-                agg.Filter = _filter
-            }
-            return agg
-        }
-
-        static GetExpression(filterExpression: string) {
-            return Convert.OptionsFilterExpressionToSql(filterExpression)
-        }
-    }
-
-    Fields = class {
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-            if (dataRequest?.fields === undefined)
-                agg.Fields = '*'
-            else
-                agg.Fields = dataRequest.fields
-
-            return agg
-        }
-    }
-
-    Sort = class {
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-            if (dataRequest?.sort) {
-                agg.Sort = dataRequest.sort
-            }
-            return agg
-        }
-    }
+    public Sort = CommonProviderOptionsSort
 
     public Data = CommonProviderOptionsData
 }
@@ -95,7 +62,7 @@ export class SqlServer implements IProvider.IProvider {
 
     async Init(oParams: TSourceParams) {
         Logger.Debug("SqlServer.Init")
-        this.Params = oParams        
+        this.Params = oParams
     }
 
     async Connect(): Promise<void> {

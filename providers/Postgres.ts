@@ -9,7 +9,6 @@ import { Pool } from 'pg'
 import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
 import * as IProvider from "../types/IProvider"
 import { SqlQueryHelper } from '../lib/Sql'
-import { Convert } from '../lib/Convert'
 import { TSourceParams } from "../types/TSourceParams"
 import { TOptions } from "../types/TOptions"
 import { DataTable } from "../types/DataTable"
@@ -19,6 +18,9 @@ import { TDataRequest } from '../types/TDataRequest'
 import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
 import { CommonProviderOptionsData } from '../lib/CommonProviderOptionsData'
+import { CommonProviderOptionsFilter } from '../lib/CommonProviderOptionsFilter'
+import { CommonProviderOptionsFields } from '../lib/CommonProviderOptionsFields'
+import { CommonProviderOptionsSort } from '../lib/CommonProviderOptionsSort'
 
 
 class PostgresOptions implements IProvider.IProviderOptions {
@@ -34,46 +36,11 @@ class PostgresOptions implements IProvider.IProviderOptions {
         return _agg
     }
 
-    Filter = class {
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-            let _filter = {}
-            if (dataRequest['filter-expression']  || dataRequest?.filter) {
+    public Filter = CommonProviderOptionsFilter
 
-                if (dataRequest['filter-expression'])
-                    _filter = this.GetExpression(dataRequest['filter-expression'])
+    public Fields = CommonProviderOptionsFields
 
-                if (dataRequest?.filter)
-                    _filter = Convert.JsonToArray(dataRequest.filter)
-
-                agg.Filter = _filter
-            }
-            return agg
-        }
-
-        static GetExpression(filterExpression: string): string {
-            return Convert.OptionsFilterExpressionToSql(filterExpression)
-        }
-    }
-
-    Fields = class {
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-            if (dataRequest?.fields === undefined)
-                agg.Fields = '*'
-            else
-                agg.Fields = dataRequest.fields
-
-            return agg
-        }
-    }
-
-    Sort = class {
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-            if (dataRequest?.sort) {
-                agg.Sort = dataRequest.sort
-            }
-            return agg
-        }
-    }
+    public Sort = CommonProviderOptionsSort
 
     public Data = CommonProviderOptionsData
 }

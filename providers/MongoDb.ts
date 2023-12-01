@@ -51,7 +51,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
                     _filter._id = new mongodb.ObjectId(_filter._id)
 
                 agg.Filter = <TJson>{
-                    $match: _filter
+                    $match: Convert.ReplacePlaceholders(_filter)
                 }
             }
             return agg
@@ -150,7 +150,7 @@ export class MongoDb implements IProvider.IProvider {
     async Connect(): Promise<void> {
         Logger.Debug("MongoDb.Connect")
         const { host = '' } = this.Params || {}
-        this.Connection = new this.Primitive(host as string, this.Config)
+        this.Connection = new this.Primitive(host, this.Config)
         try {
             await this.Connection.connect()
             await this.Connection.db(this.Params.database).command({

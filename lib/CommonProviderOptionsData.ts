@@ -10,19 +10,11 @@ import { Convert } from './Convert'
 
 
 export class CommonProviderOptionsData {
-
-    constructor() {
-        //
-    }
-
     static Get(__agg: TOptions, dataRequest: TDataRequest): TOptions {
         if (dataRequest?.data) {
-            const __dataString = Convert.ReplacePlaceholders(
-                JSON.stringify(dataRequest.data)
-            )
             __agg.Data = new DataTable(
                 dataRequest.entity,
-                JSON.parse(__dataString)
+                Convert.ReplacePlaceholders(dataRequest.data)
             )
         }
         return __agg

@@ -19,7 +19,10 @@ authorization: Bearer {{token}}
 ###
 
 # @name select-filtered
-GET http://localhost:3000/schema/northwind/customers?filter-expression=customer_id ~ '*LLD'&fields=contact_name, company_name&sort=contact_name asc,company_name desc
+GET http://localhost:3000/schema/northwind/customers
+    ?filter-expression=customer_id ~ 'AL*'
+    &fields=contact_name, company_name
+    &sort=contact_name asc,company_name desc
 Content-Type: application/json
 authorization: Bearer {{token}}
 
