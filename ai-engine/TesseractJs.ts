@@ -31,7 +31,7 @@ export class TesseractJs implements IAiEngine {
 
     async Run(image: string): Promise<Page | undefined> {
         try {
-            const result = await Tesseract
+            const result = Tesseract
                 .recognize(
                     image,
                     this.Options.Lang
