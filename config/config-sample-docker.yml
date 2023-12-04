@@ -99,10 +99,10 @@ schemas:
     plan: etl1
 
 schedules:
-  - "run entity contact of my etl1 plan":
-      plan: etl1
-      entity: contact
-      cron: "* */5 * * * *"
+  run entity contact of my etl1 plan:
+    plan: etl1
+    entity: contact
+    cron: "* */5 * * * *"
 
 ai-engines:
   ocr:
