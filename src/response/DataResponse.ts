@@ -65,41 +65,26 @@ export abstract class DataResponse {
     }
 
     static async Select(req: Request, res: Response) {
-        try {
-            const dres = await Data.Select(req)
-            return Convert.DataResponseToServerResponse(dres, res)
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
-        }
+        return await Data.Select(req)
+            .then(dres => Convert.DataResponseToServerResponse(dres, res))
+            .catch((error: any) => ServerResponse.Error(res, error))
     }
 
     static async Delete(req: Request, res: Response) {
-        try {
-            const dres = await Data.Delete(req)
-            return Convert.DataResponseToServerResponse(dres, res)
-
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
-        }
+        return await Data.Delete(req)
+            .then(dres => Convert.DataResponseToServerResponse(dres, res))
+            .catch((error: any) => ServerResponse.Error(res, error))
     }
 
     static async Update(req: Request, res: Response) {
-        try {
-            const dres = await Data.Update(req)
-            return Convert.DataResponseToServerResponse(dres, res)
-
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
-        }
+        return await Data.Update(req)
+            .then(dres => Convert.DataResponseToServerResponse(dres, res))
+            .catch((error: any) => ServerResponse.Error(res, error))
     }
 
     static async Insert(req: Request, res: Response) {
-        try {
-
-            const dres = await Data.Insert(req)
-            return Convert.DataResponseToServerResponse(dres, res)
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
-        }
+        return await Data.Insert(req)
+            .then(dres => Convert.DataResponseToServerResponse(dres, res))
+            .catch((error: any) => ServerResponse.Error(res, error))
     }
 }
