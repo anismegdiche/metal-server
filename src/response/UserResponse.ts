@@ -12,7 +12,7 @@ import { Config } from '../server/Config'
 import { ServerResponse } from '../response/ServerResponse'
 
 
-export abstract class UserResponse {
+export class UserResponse {
 
     static #GetRequestToken(req: Request): string | undefined {
         return req.headers.authorization?.replace('Bearer ', '')

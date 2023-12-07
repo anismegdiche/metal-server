@@ -21,11 +21,17 @@ import { User } from './User'
 import { AiEngine } from './AiEngine'
 
 
-export abstract class Config {
+export class Config {
 
     // global configuration
     public static Configuration: any = {}
     public static ConfigFilePath = './config/config.yml'
+
+    public static DEFAULTS: TJson = {
+        "server.port": 3000,
+        "request-limit": '100mb',
+        "server.verbosity": 'warn'
+    }
 
     public static Flags: TJson = {
         EnableCache: false,              // enable/disable cache

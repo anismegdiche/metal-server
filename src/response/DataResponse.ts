@@ -19,7 +19,7 @@ const REQUEST_TRANSACTION: Record<string, string> = {
     DELETE: 'delete'
 }
 
-export abstract class DataResponse {
+export class DataResponse {
     static async IsSchemaExist(req: Request, res: Response, next: NextFunction) {
         return await Data.IsSchemaExist(req)
             .then((result) => {

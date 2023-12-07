@@ -34,7 +34,7 @@ Prefix.apply(LogLevel.getLogger('critical'), {
     }
 })
 
-export abstract class Logger {
+export class Logger {
 
     static In = '-->'
     static Out = '<--'

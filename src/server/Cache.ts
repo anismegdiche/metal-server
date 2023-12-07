@@ -17,7 +17,7 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { HTTP_STATUS_CODE } from '../lib/Const'
 
 
-export abstract class Cache {
+export class Cache {
 
     static Schema = "metal_cache"
     static Table = "cache"

@@ -19,7 +19,7 @@ type TScheduleConfig = {
     cron: string
 }
 
-export abstract class Schedule {
+export class Schedule {
 
     public static Jobs: TSchedule[] = []
 

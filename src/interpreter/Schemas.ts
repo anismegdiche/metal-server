@@ -15,7 +15,7 @@ import { TDataResponseNoData } from '../types/TDataResponse'
 export type TSchemaRoute = {
     Type: "source" | "plan" | "nothing",
     RouteName: string
-    EntityName?: string | undefined
+    EntityName?: string
 }
 
 export type TEntityTypeExecuteParams = {
@@ -25,7 +25,7 @@ export type TEntityTypeExecuteParams = {
     CRUDOperation: Function
 }
 
-export abstract class Schemas {
+export class Schemas {
 
     public static EntityTypeExecute: Record<string, Function> = {
         'nothing': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => Schemas.NothingTodo(entityTypeExecuteParams),

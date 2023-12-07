@@ -17,7 +17,7 @@ import { Logger } from '../lib/Logger'
 import { Config } from '../server/Config'
 
 
-export abstract class CacheResponse {
+export class CacheResponse {
     static async View(req: Request, res: Response) {
         try {
             const _intResp = await Cache.View()

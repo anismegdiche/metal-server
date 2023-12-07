@@ -16,27 +16,26 @@ import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { Sources } from '../interpreter/Sources'
 import { Cache } from '../server/Cache'
+import { Schedule } from '../interpreter/Schedule'
 import { UserRouter } from '../routes/UserRouter'
 import { ServerRouter } from '../routes/ServerRouter'
 import { SchemaRouter } from '../routes/SchemaRouter'
 import { PlanRouter } from '../routes/PlanRouter'
 import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
-import { Schedule } from '../interpreter/Schedule'
-// import { ScheduleRouter } from '../routes/ScheduleRouter'
 
 
-export abstract class Server {
+export class Server {
 
     public static App: Express = express()
-    public static Port = 3000
+    public static Port: number
     public static CurrentPath: string
 
     public static Init() {
         Config.Init()
         Logger.Debug(`${Logger.In} Server.Init`)
 
-        Server.Port = Config.Configuration.server?.port ?? 3000
+        Server.Port = Config.Configuration.server?.port ?? Config.DEFAULTS["server.port"]
 
         const _limiter = rateLimit({
             windowMs: 1 * 60 * 1000,
@@ -72,7 +71,7 @@ export abstract class Server {
         Server.App.use(_limiter)
 
         Server.App.use(express.json({
-            limit: Config.Configuration.server['request-limit'] ?? '100mb'
+            limit: Config.Configuration.server['request-limit'] ?? Config.DEFAULTS['request-limit']
         }))
 
         Server.App.use((req: Request, res: Response, next: NextFunction) => {

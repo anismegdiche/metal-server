@@ -10,7 +10,7 @@ import { ServerResponse } from './ServerResponse'
 import { Plans } from '../interpreter/Plans'
 
 
-export abstract class PlanResponse {
+export class PlanResponse {
 
     public static Reload(req: Request, res: Response) {
         try {

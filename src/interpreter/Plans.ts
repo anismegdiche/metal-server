@@ -23,7 +23,7 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { AiEngine } from '../server/AiEngine'
 
 
-export abstract class Plans {
+export class Plans {
 
     // static async #GetTableSteps(plan: string, entity: string) {
     //     if (Config.Configuration?.plans[plan]?.[entity] ) {

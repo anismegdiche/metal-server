@@ -16,7 +16,7 @@ import { TInternalResponse } from '../types/TInternalResponse'
 type TUser = Record<string, string>
 export type TToken = string | undefined
 
-export abstract class User {
+export class User {
 
     private static readonly SALT_ROUNDS = 10
     public static readonly JWT_EXPIRATION_TIME = 60 * 60 // 1 hour
