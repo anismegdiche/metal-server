@@ -24,7 +24,7 @@ export abstract class ServerResponse {
             .json({ message: HTTP_STATUS_MESSAGE.NOT_IMPLEMENTED })
     }
 
-    static Error(res: Response<any, Record<string, any>>, error: any) {
+    static Error(res: Response<any, Record<string, any>>, error: Error) {
         res
             .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
             .json({
@@ -39,8 +39,8 @@ export abstract class ServerResponse {
             res
                 .status(HTTP_STATUS_CODE.OK)
                 .json(Server.GetInfo())
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
+        } catch (error: unknown) {
+            ServerResponse.Error(res, error as Error)
         }
     }
 
@@ -54,8 +54,8 @@ export abstract class ServerResponse {
                     message: `Server reloaded`
                 })
 
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
+        } catch (error: unknown) {
+            ServerResponse.Error(res, error as Error)
         }
     }
 

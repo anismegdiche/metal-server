@@ -299,17 +299,18 @@ export abstract class Plans {
                 }
                 _workingDataTable = await this.#ExecuteStep[_command](plan, _workingDataTable, _parameters)
 
-            } catch (error: any) {
-                Logger.Error(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' is ignored because of error ${JSON.stringify(error?.message)}`)
+            } catch (error: unknown) {
+                const _error = <Error>error
+                Logger.Error(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' is ignored because of error ${JSON.stringify(_error?.message)}`)
                 if (_workingDataTable.MetaData[Plans.#METADATA.PLAN_DEBUG] == 'error') {
                     /*  
                     FIXME 
                     In case of cross entities, only errors in the final entity are returned.
                     Console log is working fine.
                     */
-                    let _error: TJson = {}
-                    _error[`entity(${entity}), step(${stepId})`] = _transformation
-                    Logger.Debug(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' added error ${JSON.stringify((<TJson[]>_workingDataTable.MetaData[Plans.#METADATA.PLAN_ERRORS]).push(_error))}`)
+                    let _PlanErrors: TJson = {}
+                    _PlanErrors[`entity(${entity}), step(${stepId})`] = _transformation
+                    Logger.Debug(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' added error ${JSON.stringify((<TJson[]>_workingDataTable.MetaData[Plans.#METADATA.PLAN_ERRORS]).push(_PlanErrors))}`)
                 }
             }
         }

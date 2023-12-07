@@ -17,7 +17,7 @@ SchemaRouter.route("/:schema")
     .all(
         (req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
         UserResponse.IsAuthenticated,
-        DataResponse.CheckSchema
+        DataResponse.IsSchemaExist
     )
     .get(ServerResponse.NotImplemented)
     .post(ServerResponse.NotImplemented)
@@ -29,7 +29,7 @@ SchemaRouter.route("/:schema/:entity")
 
         (req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
         UserResponse.IsAuthenticated,
-        DataResponse.CheckSchema
+        DataResponse.IsSchemaExist
     )
     .get(
         CacheResponse.Get,

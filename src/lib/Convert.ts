@@ -85,7 +85,7 @@ export class Convert {
     }
 
 
-    static DataResponseToServerResponse(dataResponse: TDataResponse, response: Response) {
+    static DataResponseToResponse(dataResponse: TDataResponse, response: Response) {
         let _responseJson: TJson = {
             schema: dataResponse.schema,
             entity: dataResponse.entity,

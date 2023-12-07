@@ -21,8 +21,8 @@ export abstract class PlanResponse {
                 intResp: _intResp
             })
 
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
+        } catch (error: unknown) {
+            ServerResponse.Error(res, error as Error)
         }
     }
 }

@@ -13,9 +13,28 @@ import { Convert } from '../lib/Convert'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { Sources } from '../interpreter/Sources'
+import _ from 'lodash'
 
 
 export class Data {
+    static async IsSchemaExist(req: Request): Promise<boolean> {
+        const _dataRequest = Convert.RequestToDataRequest(req)
+        const { schema } = _dataRequest
+
+        Logger.Debug(`Data.IsSchemaExist: ${JSON.stringify(_dataRequest)}`)
+
+        // check if schemas exists in config file
+        if (Config.Configuration?.schemas === undefined) {
+            Logger.Warn(`section 'schemas' not found in configuration`)
+            return false
+        }
+        // check if schema exists
+        if (!_.has(Config.Configuration.schemas, schema)) {
+            Logger.Warn(`schema '${schema}' not found in schemas`)
+            return false
+        }
+        return true
+    }
 
     static async Select(req: Request): Promise<TDataResponse> {
 

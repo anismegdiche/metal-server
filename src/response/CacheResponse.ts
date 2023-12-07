@@ -25,8 +25,8 @@ export abstract class CacheResponse {
                 res,
                 intResp: _intResp
             })
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
+        } catch (error: unknown) {
+            ServerResponse.Error(res, error as Error)
         }
     }
 
@@ -37,8 +37,8 @@ export abstract class CacheResponse {
                 res,
                 intResp: _intResp
             })
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
+        } catch (error: unknown) {
+            ServerResponse.Error(res, error as Error)
         }
     }
 
@@ -49,8 +49,8 @@ export abstract class CacheResponse {
                 res,
                 intResp: _intResp
             })
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
+        } catch (error: unknown) {
+            ServerResponse.Error(res, error as Error)
         }
     }
 
@@ -91,8 +91,8 @@ export abstract class CacheResponse {
             Logger.Debug(`Cache.Get: cache ${_hash} not found`)
             next()
 
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
+        } catch (error: unknown) {
+            ServerResponse.Error(res, error as Error)
         }
     }
 }

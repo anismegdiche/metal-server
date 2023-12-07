@@ -18,8 +18,8 @@ export abstract class ScheduleResponse {
                 res,
                 intResp: _intResp
             })
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
+        } catch (error: unknown) {
+            ServerResponse.Error(res, error as Error)
         }
     }
 
@@ -31,8 +31,8 @@ export abstract class ScheduleResponse {
                 res,
                 intResp: _intResp
             })
-        } catch (error: any) {
-            ServerResponse.Error(res, error)
+        } catch (error: unknown) {
+            ServerResponse.Error(res, error as Error)
         }
     }
 }
