@@ -15,7 +15,7 @@ Content-Type: application/json
 # @name select-users
 GET http://localhost:3000/schema/mflix/users
     ?filter={"name":"Jaime Lannister"}
-    &cache=10
+    &cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}
 

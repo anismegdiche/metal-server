@@ -113,6 +113,7 @@ export class Cache {
         return _isValid
     }
 
+    // BUG: when caching Plan, datatable is rendered with Fields, Rows (in Pascal case) 
     static async Get(hash: string): Promise<TCacheData | undefined> {
         Logger.Debug(`CacheData.Get`)
         if (Config.Flags.EnableCache) {

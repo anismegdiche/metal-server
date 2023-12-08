@@ -25,13 +25,13 @@ authorization: Bearer {{token}}
 ###
 # @name get-plan-aitest
 GET http://localhost:3000/schema/{{schema}}/aitest
-    ?filter-expression=ocr_text ~ '*Hello*'
-    &fields=ocr_text
+    ?cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 ###
 # @name get-plan-aitest2
 GET http://localhost:3000/schema/{{schema}}/aitest2
+    ?cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}

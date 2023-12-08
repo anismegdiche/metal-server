@@ -74,10 +74,11 @@ export class Plan implements IProvider.IProvider {
     // eslint-disable-next-line class-methods-use-this
     async Insert(dataRequest: TDataRequest): Promise<TDataResponse> {
         Logger.Debug(`${Logger.Out} Plan.Insert: ${JSON.stringify(dataRequest)}`)
-        Logger.Error(`Data.Insert: Not allowed for plans '${dataRequest.schema}', entity '${dataRequest.entity}'`)
+        const { schema, entity } = dataRequest
+        Logger.Error(`Data.Insert: Not allowed for plans '${schema}', entity '${entity}'`)
         return <TDataResponseError>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+            schema,
+            entity,
             ...RESPONSE_TRANSACTION.INSERT,
             ...RESPONSE_RESULT.ERROR,
             status: HTTP_STATUS_CODE.BAD_REQUEST,
@@ -88,12 +89,12 @@ export class Plan implements IProvider.IProvider {
     async Select(dataRequest: TDataRequest): Promise<TDataResponse> {
         Logger.Debug(`Plan.Select : ${JSON.stringify(dataRequest)}`)
 
-        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
         const _options: TOptions = this.Options.Parse(dataRequest)
+        const { schema, entity } = dataRequest
 
         let _dataResponse = <TDataResponse>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+            schema,
+            entity,
             ...RESPONSE_TRANSACTION.SELECT
         }
 
@@ -103,21 +104,21 @@ export class Plan implements IProvider.IProvider {
         if (_options.Fields || _options.Filter || _options.Sort) {
             _sqlQuery = new SqlQueryHelper()
                 .Select(<string>_options.Fields)
-                .From(dataRequest.entity)
+                .From(entity)
                 .Where(_options.Filter)
                 .OrderBy(<string | undefined>_options.Sort)
                 .Query
         }
 
         const _planDataResponse = await Plans.RenderTable(
-            dataRequest.schema,
+            schema,
             this.Params.database as string,
-            dataRequest.entity,
+            entity,
             _sqlQuery
         )
 
         if ((<TDataResponseData>_planDataResponse).data.Rows.length > 0) {
-            const _dt = (<TDataResponseData>_planDataResponse).data
+            const _dt = (<TDataResponseData>_planDataResponse).data            
             Cache.Set({
                 ...dataRequest,
                 source: this.SourceName
@@ -141,10 +142,11 @@ export class Plan implements IProvider.IProvider {
     // eslint-disable-next-line class-methods-use-this
     async Update(dataRequest: TDataRequest): Promise<TDataResponse> {
         Logger.Debug(`Plan.Update: ${JSON.stringify(dataRequest)}`)
-        Logger.Error(`Data.Update: Not allowed for plans '${dataRequest.schema}', entity '${dataRequest.entity}'`)
+        const { schema, entity } = dataRequest
+        Logger.Error(`Data.Update: Not allowed for plans '${schema}', entity '${entity}'`)
         return <TDataResponseError>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+            schema,
+            entity,
             ...RESPONSE_TRANSACTION.UPDATE,
             ...RESPONSE_RESULT.ERROR,
             status: HTTP_STATUS_CODE.BAD_REQUEST,
@@ -155,10 +157,11 @@ export class Plan implements IProvider.IProvider {
     // eslint-disable-next-line class-methods-use-this
     async Delete(dataRequest: TDataRequest): Promise<TDataResponse> {
         Logger.Debug(`Plan.Delete : ${JSON.stringify(dataRequest)}`)
-        Logger.Error(`Data.Delete: Not allowed for plans '${dataRequest.schema}', entity '${dataRequest.entity}'`)
+        const { schema, entity } = dataRequest
+        Logger.Error(`Data.Delete: Not allowed for plans '${schema}', entity '${entity}'`)
         return <TDataResponseError>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+            schema,
+            entity,
             ...RESPONSE_TRANSACTION.DELETE,
             ...RESPONSE_RESULT.ERROR,
             status: HTTP_STATUS_CODE.BAD_REQUEST,
