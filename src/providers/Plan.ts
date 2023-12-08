@@ -118,7 +118,10 @@ export class Plan implements IProvider.IProvider {
 
         if ((<TDataResponseData>_planDataResponse).data.Rows.length > 0) {
             const _dt = (<TDataResponseData>_planDataResponse).data
-            Cache.Set(dataRequest, _dt)
+            Cache.Set({
+                ...dataRequest,
+                source: this.SourceName
+            }, _dt)
             _dataResponse = <TDataResponseData>{
                 ..._dataResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
