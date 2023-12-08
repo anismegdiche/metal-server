@@ -160,7 +160,7 @@ export class DataTable {
     public SetField(fieldName: string, type: string) {
         this.Fields[fieldName] = SqlToJsType[type] || 'unknown';
         return this;
-    }    
+    }
 
     public GetFieldsNames(): string[] {
         return Object.keys(this.Fields)
@@ -207,10 +207,14 @@ export class DataTable {
 
     public FreeSql(sqlQuery: string) {
         alasql.options.errorlog = true
-        alasql(`CREATE TABLE \`${this.Name}\``)
+        alasql(`CREATE TABLE IF NOT EXISTS \`${this.Name}\``)
         alasql.tables[this.Name].data = this.Rows
-        alasql(sqlQuery)
-        this.Rows = alasql.tables[this.Name].data
+        const _result = alasql(sqlQuery)
+
+        this.Rows = (typeof _result === 'object')
+            ? this.Rows = _result
+            : alasql.tables[this.Name].data
+
         return this.SetFields()
     }
 
