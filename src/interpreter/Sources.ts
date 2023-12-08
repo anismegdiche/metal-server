@@ -4,15 +4,18 @@
 //
 //
 import { Logger } from '../lib/Logger'
-import { Postgres } from '../providers/Postgres'
-import { MongoDb } from '../providers/MongoDb'
-import { SqlServer } from '../providers/SqlServer'
 import { Cache } from '../server/Cache'
 import { Config } from '../server/Config'
 import { IProvider } from '../types/IProvider'
+// Providers
+import { Postgres } from '../providers/Postgres'
+import { MongoDb } from '../providers/MongoDb'
+import { SqlServer } from '../providers/SqlServer'
+import { Plan } from '../providers/Plan'
 
 
 const ConnectToSource: Record<string, Function> = {
+    'plan': (source: string, sourceConfig: any) => new Plan(source, sourceConfig),
     'postgres': (source: string, sourceConfig: any) => new Postgres(source, sourceConfig),
     'mongodb': (source: string, sourceConfig: any) => new MongoDb(source, sourceConfig),
     'mssql': (source: string, sourceConfig: any) => new SqlServer(source, sourceConfig)

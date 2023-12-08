@@ -317,7 +317,7 @@ export class Plans {
         return _workingDataTable
     }
 
-    static async RenderTable(schemaName: string | undefined, planName: string, entityName: string) {
+    static async RenderTable(schemaName: string | undefined, planName: string, entityName: string, sqlQuery:string | undefined = undefined) {
 
         let _dataResponse = <TDataResponse>{
             schema: schemaName,
@@ -335,6 +335,10 @@ export class Plans {
             Logger.Debug(`${Logger.In} Plans.RenderTable: ${planName}.${entityName} : ${JSON.stringify(_entitySteps)}`)
 
             const _workingDataTable = await this.#ExecutePlan(planName, entityName, _entitySteps)
+
+            if (sqlQuery) {
+                _workingDataTable.FreeSql(sqlQuery)
+            }
 
             _dataResponse = <TDataResponseData>{
                 ..._dataResponse,

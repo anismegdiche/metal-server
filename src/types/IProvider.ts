@@ -30,8 +30,8 @@ export interface IProvider {
     ProviderName: string
     SourceName: string
     Params: TJson
-    Primitive: object
-    Connection: TJson | Pool | MongoClient
+    Primitive?: object
+    Connection?: TJson | Pool | MongoClient
     Config: TJson
     Init: (oParams: TSourceParams) => void
     Connect: () => Promise<void>
