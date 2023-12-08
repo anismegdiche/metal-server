@@ -336,7 +336,7 @@ export class Plans {
 
             const _workingDataTable = await this.#ExecutePlan(planName, entityName, _entitySteps)
 
-            if (sqlQuery) {
+            if (sqlQuery !== undefined) {
                 _workingDataTable.FreeSql(sqlQuery)
             }
 

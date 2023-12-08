@@ -39,6 +39,7 @@ class PlanOptions implements IProvider.IProviderOptions {
 
     public Sort = CommonProviderOptionsSort
 
+    //TODO: unused
     public Data = CommonProviderOptionsData
 }
 
@@ -102,7 +103,7 @@ export class Plan implements IProvider.IProvider {
         if (_options.Fields || _options.Filter || _options.Sort) {
             _sqlQuery = new SqlQueryHelper()
                 .Select(<string>_options.Fields)
-                .From('?')
+                .From(dataRequest.entity)
                 .Where(_options.Filter)
                 .OrderBy(<string | undefined>_options.Sort)
                 .Query
