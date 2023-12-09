@@ -71,7 +71,7 @@ export class Server {
         Server.App.use(_limiter)
 
         Server.App.use(express.json({
-            limit: Config.Configuration.server['request-limit'] ?? Config.DEFAULTS['request-limit']
+            limit: Config.Configuration.server['request-limit'] ?? Config.DEFAULTS['server.request-limit']
         }))
 
         Server.App.use((req: Request, res: Response, next: NextFunction) => {

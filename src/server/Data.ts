@@ -5,15 +5,14 @@
 //
 //
 import { Request } from 'express'
+import _ from 'lodash'
 
-import { HTTP_STATUS_CODE, RESPONSE_RESULT, RESPONSE_TRANSACTION } from '../lib/Const'
-import { TDataResponse, TDataResponseError } from '../types/TDataResponse'
+import { TDataResponse } from '../types/TDataResponse'
 import { Schemas, TEntityTypeExecuteParams } from '../interpreter/Schemas'
 import { Convert } from '../lib/Convert'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { Sources } from '../interpreter/Sources'
-import _ from 'lodash'
 
 
 export class Data {
@@ -67,19 +66,6 @@ export class Data {
 
         const _schemaRoute = Schemas.GetRoute(schema, _schemaConfig, entity)
 
-        // case plan
-        if (_schemaRoute.Type === 'plan') {
-            Logger.Error(`Data.Delete: Not allowed for plans '${_dataRequest.schema}', entity '${_dataRequest.entity}'`)
-            return <TDataResponseError>{
-                schema: _dataRequest.schema,
-                entity: _dataRequest.entity,
-                ...RESPONSE_TRANSACTION.DELETE,
-                ...RESPONSE_RESULT.ERROR,
-                status: HTTP_STATUS_CODE.BAD_REQUEST,
-                error: "Not allowed for plans"
-            }
-        }
-
         return await Schemas.EntityTypeExecute[_schemaRoute.Type](<TEntityTypeExecuteParams>{
             SourceName: _schemaRoute.RouteName,
             EntityName: _schemaRoute.EntityName,
@@ -98,19 +84,6 @@ export class Data {
         const _schemaConfig = Config.Configuration.schemas[schema]
 
         const _schemaRoute = Schemas.GetRoute(schema, _schemaConfig, entity)
-
-        // case plan
-        if (_schemaRoute.Type === 'plan') {
-            Logger.Error(`Data.Update: Not allowed for plans '${_dataRequest.schema}', entity '${_dataRequest.entity}'`)
-            return <TDataResponseError>{
-                schema: _dataRequest.schema,
-                entity: _dataRequest.entity,
-                ...RESPONSE_TRANSACTION.UPDATE,
-                ...RESPONSE_RESULT.ERROR,
-                status: HTTP_STATUS_CODE.BAD_REQUEST,
-                error: "Not allowed for plans"
-            }
-        }
 
         return await Schemas.EntityTypeExecute[_schemaRoute.Type](<TEntityTypeExecuteParams>{
             SourceName: _schemaRoute.RouteName,
@@ -131,19 +104,6 @@ export class Data {
         const _schemaConfig = Config.Configuration.schemas[schema]
 
         const _schemaRoute = Schemas.GetRoute(schema, _schemaConfig, entity)
-
-        // case plan
-        if (_schemaRoute.Type === 'plan') {
-            Logger.Error(`Data.Insert: Not allowed for plans '${_dataRequest.schema}', entity '${_dataRequest.entity}'`)
-            return <TDataResponseError>{
-                schema: _dataRequest.schema,
-                entity: _dataRequest.entity,
-                ...RESPONSE_TRANSACTION.INSERT,
-                ...RESPONSE_RESULT.ERROR,
-                status: HTTP_STATUS_CODE.BAD_REQUEST,
-                error: "Not allowed for plans"
-            }
-        }
 
         return await Schemas.EntityTypeExecute[_schemaRoute.Type](<TEntityTypeExecuteParams>{
             SourceName: _schemaRoute.RouteName,

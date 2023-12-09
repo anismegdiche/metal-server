@@ -22,6 +22,10 @@ import { HTTP_STATUS_CODE, RESPONSE_RESULT, RESPONSE_STATUS } from '../lib/Const
 import { TInternalResponse } from '../types/TInternalResponse'
 import { AiEngine } from '../server/AiEngine'
 
+const METADATA = {
+    PLAN_DEBUG: '__PLAN_DEBUG__',
+    PLAN_ERRORS: '__PLAN_ERRORS__'
+}
 
 export class Plans {
 
@@ -31,10 +35,7 @@ export class Plans {
     //     }
     //     return undefined
     // }
-    static #METADATA = {
-        PLAN_DEBUG: '__PLAN_DEBUG__',
-        PLAN_ERRORS: '__PLAN_ERRORS__'
-    }
+    
 
     static #GetOptions(transformation: TTransformation) {
         return _.omit(
@@ -204,9 +205,9 @@ export class Plans {
     static async #Debug(plan: string, dt: DataTable, transformation: TTransformation) {
         Logger.Debug(`${Logger.In} Plans.Debug: ${JSON.stringify(transformation)}`)
         const _debug: string = transformation || 'error'
-        dt.SetMetaData(Plans.#METADATA.PLAN_DEBUG, _debug)
-        if (dt.MetaData[Plans.#METADATA.PLAN_ERRORS] == undefined)
-            dt.SetMetaData(Plans.#METADATA.PLAN_ERRORS, <TJson[]>[])
+        dt.SetMetaData(METADATA.PLAN_DEBUG, _debug)
+        if (dt.MetaData[METADATA.PLAN_ERRORS] == undefined)
+            dt.SetMetaData(METADATA.PLAN_ERRORS, <TJson[]>[])
         return dt
     }
 
@@ -302,7 +303,7 @@ export class Plans {
             } catch (error: unknown) {
                 const _error = <Error>error
                 Logger.Error(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' is ignored because of error ${JSON.stringify(_error?.message)}`)
-                if (_workingDataTable.MetaData[Plans.#METADATA.PLAN_DEBUG] == 'error') {
+                if (_workingDataTable.MetaData[METADATA.PLAN_DEBUG] == 'error') {
                     /*  
                     FIXME 
                     In case of cross entities, only errors in the final entity are returned.
@@ -310,7 +311,7 @@ export class Plans {
                     */
                     let _PlanErrors: TJson = {}
                     _PlanErrors[`entity(${entity}), step(${stepId})`] = _transformation
-                    Logger.Debug(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' added error ${JSON.stringify((<TJson[]>_workingDataTable.MetaData[Plans.#METADATA.PLAN_ERRORS]).push(_PlanErrors))}`)
+                    Logger.Debug(`Plan '${plan}', Entity '${entity}': step '${_stepId},${JSON.stringify(transformation)}' added error ${JSON.stringify((<TJson[]>_workingDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_PlanErrors))}`)
                 }
             }
         }
@@ -383,3 +384,8 @@ export class Plans {
         }
     }
 }
+
+
+// class Step {
+
+// }

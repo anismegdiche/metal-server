@@ -8,12 +8,11 @@ import { Logger } from '../lib/Logger'
 import { Config } from '../server/Config'
 import { TDataRequest } from '../types/TDataRequest'
 import { Sources } from './Sources'
-import { Plans } from './Plans'
 import { RESPONSE_RESULT, RESPONSE_STATUS } from '../lib/Const'
 import { TDataResponseNoData } from '../types/TDataResponse'
 
 export type TSchemaRoute = {
-    Type: "source" | "plan" | "nothing",
+    Type: "source" | "nothing",
     RouteName: string
     EntityName?: string
 }
@@ -28,16 +27,16 @@ export type TEntityTypeExecuteParams = {
 export class Schemas {
 
     public static EntityTypeExecute: Record<string, Function> = {
-        'nothing': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => Schemas.NothingTodo(entityTypeExecuteParams),
-        'source': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => await entityTypeExecuteParams.CRUDOperation(),
-        'plan': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => await Plans.RenderTable(entityTypeExecuteParams.DataRequest.schema,  entityTypeExecuteParams.SourceName, entityTypeExecuteParams.EntityName)
+        'nothing': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => await Schemas.NothingTodo(entityTypeExecuteParams),
+        'source': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => await entityTypeExecuteParams.CRUDOperation()
     }
 
-    static NothingTodo(entityTypeExecuteParams: TEntityTypeExecuteParams) {
+    static async NothingTodo(entityTypeExecuteParams: TEntityTypeExecuteParams) {
         Logger.Warn(`Nothing to do in schema '${entityTypeExecuteParams.DataRequest.schema}'`)
+        const { schema, entity } = entityTypeExecuteParams.DataRequest
         return <TDataResponseNoData>{
-            schema: entityTypeExecuteParams.DataRequest.schema,
-            entity: entityTypeExecuteParams.DataRequest.entity,
+            schema,
+            entity,
             ...RESPONSE_RESULT.NOT_FOUND,
             ...RESPONSE_STATUS.HTTP_404
         }
@@ -54,19 +53,6 @@ export class Schemas {
         if (_.has(schemaConfig, 'entities')) {
             const __schemaEntityConfig = _.get(schemaConfig.entities, entityName)
 
-            // schema.entities.<entity>.plan
-            if (_.has(__schemaEntityConfig, 'plan')) {
-                if (!Config.Configuration?.plans[__schemaEntityConfig.plan]) {
-                    Logger.Warn(`Plan not found for entity '${entityName}'`)
-                    return _EmptySchemaRoute
-                }
-                return <TSchemaRoute>{
-                    Type: 'plan',
-                    RouteName: __schemaEntityConfig.plan,
-                    EntityName: entityName
-                }
-            }
-
             // schema.entities.<entity>.source
             if (_.has(__schemaEntityConfig, 'source')) {
                 if (!Config.Configuration?.sources[__schemaEntityConfig.source]) {
@@ -78,19 +64,6 @@ export class Schemas {
                     RouteName: __schemaEntityConfig.source,
                     EntityName: entityName
                 }
-            }
-        }
-
-        // schema.plan
-        if (_.has(schemaConfig, 'plan')) {
-            if (!Config.Configuration?.plans[schemaConfig.plan]) {
-                Logger.Warn(`Plan not found for schema '${schemaName}'`)
-                return _EmptySchemaRoute
-            }
-            return <TSchemaRoute>{
-                Type: 'plan',
-                RouteName: schemaConfig.plan,
-                EntityName: entityName
             }
         }
 

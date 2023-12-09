@@ -29,8 +29,9 @@ export class Config {
 
     public static DEFAULTS: TJson = {
         "server.port": 3000,
-        "request-limit": '100mb',
-        "server.verbosity": 'warn'
+        "server.timezone": 'UTC',
+        "server.verbosity": 'warn',
+        "server.request-limit": '100mb'
     }
 
     public static Flags: TJson = {

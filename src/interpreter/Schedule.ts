@@ -45,7 +45,7 @@ export class Schedule {
                         },
                         null,
                         true,
-                        Config.Configuration?.server?.timezone || 'UTC'
+                        Config.Configuration?.server?.timezone || Config.DEFAULTS['server.timezone']
                     )
                 })
             }
