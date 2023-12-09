@@ -9,7 +9,7 @@ import Prefix from 'loglevel-plugin-prefix'
 
 import { SERVER } from './Const'
 
-const Colors: Record<string,Function> = {
+const Colors: Record<string, Function> = {
     'TRACE': chalk.magenta,
     'DEBUG': chalk.green,
     'INFO': chalk.cyan,
