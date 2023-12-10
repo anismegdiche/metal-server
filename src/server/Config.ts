@@ -12,7 +12,7 @@ import * as dotenv from 'dotenv'
 const yamlValidate = require('yaml-schema-validator')
 
 import * as SCHConfig from '../types/SCHConfig'
-import { Sources } from '../interpreter/Sources'
+import { Source } from '../interpreter/Source'
 import { Logger, DefaultLevel } from '../lib/Logger'
 import { Schedule } from '../interpreter/Schedule'
 import { Cache } from '../server/Cache'
@@ -53,7 +53,7 @@ export class Config {
 
         Config.Flags.EnableAuthentication = Config.Has('server.authentication')
         Config.Flags.EnableAuthentication && User.LoadUsers()
-        Config.Has('sources') && await Sources.ConnectAll()
+        Config.Has('sources') && await Source.ConnectAll()
         Config.Has('server.cache') && await Cache.Connect()
         Config.Has('ai-engines') && await AiEngine.Init()
         Config.Has('ai-engines') && await AiEngine.CreateAll()

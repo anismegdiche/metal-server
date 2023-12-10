@@ -125,7 +125,7 @@ export class Postgres implements IProvider.IProvider {
     }
 
     async Select(dataRequest: TDataRequest): Promise<TDataResponse> {
-        Logger.Debug(`Postgres.Select : ${JSON.stringify(dataRequest)}`)
+        Logger.Debug(`Postgres.Select: ${JSON.stringify(dataRequest)}`)
 
         const _options: TOptions = this.Options.Parse(dataRequest)
 

@@ -5,7 +5,7 @@
 //
 import * as sha512 from 'js-sha512'
 
-import { Sources } from '../interpreter/Sources'
+import { Source } from '../interpreter/Source'
 import { DataTable } from '../types/DataTable'
 import { TCacheData } from '../types/TCacheData'
 import { TDataRequest } from '../types/TDataRequest'
@@ -40,7 +40,7 @@ export class Cache {
     static async Connect() {
         Logger.Debug(`CacheData.Connect`)
         if (Config.Flags.EnableCache)
-            Sources.Connect(null, Config.Configuration.server.cache)
+            Source.Connect(null, Config.Configuration.server.cache)
     }
 
     static async Disconnect() {
@@ -136,16 +136,16 @@ export class Cache {
         const _dataResponse: TDataResponse = await Cache.CacheSource.Select(Cache.#GetDataRequest())
         _dataResponse.transaction = TTransaction.cache_data
         Logger.Debug(`${Logger.Out} Cache.ViewData`)
-        let _intResp: TInternalResponse = {
+        let _intRes: TInternalResponse = {
             StatusCode: _dataResponse.status,
             Body: {
                 message: 'Cache data'
             }
         }
-        if ((<TDataResponseData>_dataResponse)?.data  && _intResp.Body) {
-            _intResp.Body.data = (<TDataResponseData>_dataResponse).data.Rows
+        if ((<TDataResponseData>_dataResponse)?.data  && _intRes.Body) {
+            _intRes.Body.data = (<TDataResponseData>_dataResponse).data.Rows
         }
-        return _intResp
+        return _intRes
     }
 
     static async Purge(): Promise<TInternalResponse> {

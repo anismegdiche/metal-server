@@ -21,7 +21,7 @@ const ConnectToSource: Record<string, Function> = {
     'mssql': (source: string, sourceConfig: any) => new SqlServer(source, sourceConfig)
 }
 
-export class Sources {
+export class Source {
 
     // global sources
     public static Sources: Record<string, IProvider> = {}
@@ -31,14 +31,14 @@ export class Sources {
             if (Object.prototype.hasOwnProperty.call(Config.Configuration.sources, _source)) {
                 Logger.Info(`${Logger.Out} found source '${_source}'`)
                 const __sourceConfig = Config.Configuration.sources[_source]
-                Sources.Connect(_source, __sourceConfig)
+                Source.Connect(_source, __sourceConfig)
             }
         }
     }
     static async DisconnectAll() {
-        for (const _source in Sources.Sources) {
+        for (const _source in Source.Sources) {
             if (_source)
-                Sources.Sources[_source].Disconnect()
+                Source.Sources[_source].Disconnect()
         }        
     }
 
@@ -49,7 +49,7 @@ export class Sources {
                 Cache.CacheSource = ConnectToSource[sourceConfig.provider](Cache.Schema, sourceConfig)
             } else {
                 // sources
-                Sources.Sources[source] = ConnectToSource[sourceConfig.provider](source, sourceConfig)
+                Source.Sources[source] = ConnectToSource[sourceConfig.provider](source, sourceConfig)
             }
         } else {
             Logger.Error(`Source '${source}', Provider '${sourceConfig.provider}' not found. The source will not be connected`)

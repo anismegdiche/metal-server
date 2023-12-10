@@ -14,7 +14,7 @@ import { TJson } from '../types/TJson'
 import { ROUTE, SERVER } from '../lib/Const'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
-import { Sources } from '../interpreter/Sources'
+import { Source } from '../interpreter/Source'
 import { Cache } from '../server/Cache'
 import { Schedule } from '../interpreter/Schedule'
 import { UserRouter } from '../routes/UserRouter'
@@ -132,7 +132,7 @@ export class Server {
         Logger.Debug(`${Logger.In} Server.Reload`)
         Schedule.StopAll()
         await Cache.Disconnect()
-        await Sources.DisconnectAll()
+        await Source.DisconnectAll()
         Config.Init()
     }
 

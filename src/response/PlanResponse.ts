@@ -7,7 +7,7 @@
 import { Request, Response } from 'express'
 
 import { ServerResponse } from './ServerResponse'
-import { Plans } from '../interpreter/Plans'
+import { Plans } from '../providers/Plan'
 
 
 export class PlanResponse {
@@ -15,10 +15,10 @@ export class PlanResponse {
     public static Reload(req: Request, res: Response) {
         try {
             const { plan } = req.params
-            const _intResp = Plans.Reload(plan)
+            const _intRes = Plans.Reload(plan)
             ServerResponse.PrepareResponse({
                 res,
-                intResp: _intResp
+                intRes: _intRes
             })
 
         } catch (error: unknown) {

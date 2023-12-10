@@ -11,7 +11,7 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchedule } from '../types/TSchedule'
 import { Logger } from '../lib/Logger'
 import { Config } from '../server/Config'
-import { Plans } from './Plans'
+import { Plans } from '../providers/Plan'
 
 type TScheduleConfig = {
     plan: string
@@ -27,18 +27,18 @@ export class Schedule {
         Logger.Debug(`${Logger.In} Schedule.Start: ${JSON.stringify(Config.Configuration.schedules)}`)
         if (Config.Configuration?.schedules) {
 
-            const _configSchedule: Array<[string, TScheduleConfig]> = Object.entries(Config.Configuration.schedules)
+            const scheduleConfig: Array<[string, TScheduleConfig]> = Object.entries(Config.Configuration.schedules)
 
-            for (const [_scheduleName, _scheduleConfig] of _configSchedule) {
+            for (const [_scheduleName, _scheduleParams] of scheduleConfig) {
                 Logger.Info(`${Logger.In} Schedule.Start: Starting job '${_scheduleName}'`)
                 this.Jobs.push(<TSchedule>{
                     name: _scheduleName,
                     job: new CronJob(
-                        _scheduleConfig.cron,
+                        _scheduleParams.cron,
                         () => {
                             Logger.Debug(`${Logger.In} Schedule.Start: Running job '${_scheduleName}'`)
                             try {
-                                Plans.RenderTable(undefined, _scheduleConfig.plan, _scheduleConfig.entity)
+                                Plans.GetData(undefined, _scheduleParams.plan, _scheduleParams.entity)
                             } catch (error) {
                                 Logger.Error(`${Logger.In} Schedule.Start: Error has occured with '${_scheduleName}' : ${JSON.stringify(error)}`)
                             }

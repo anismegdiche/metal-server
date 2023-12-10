@@ -12,7 +12,7 @@ import { TDataResponseData } from '../types/TDataResponse'
 import { Convert } from '../lib/Convert'
 import { TDataRequest } from '../types/TDataRequest'
 import { RESPONSE_RESULT, RESPONSE_STATUS, RESPONSE_TRANSACTION } from '../lib/Const'
-import { Schemas } from '../interpreter/Schemas'
+import { Schema } from '../interpreter/Schema'
 import { Logger } from '../lib/Logger'
 import { Config } from '../server/Config'
 
@@ -20,10 +20,10 @@ import { Config } from '../server/Config'
 export class CacheResponse {
     static async View(req: Request, res: Response) {
         try {
-            const _intResp = await Cache.View()
+            const _intRes = await Cache.View()
             ServerResponse.PrepareResponse({
                 res,
-                intResp: _intResp
+                intRes: _intRes
             })
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
@@ -32,10 +32,10 @@ export class CacheResponse {
 
     static async Clean(req: Request, res: Response) {
         try {
-            const _intResp = await Cache.Clean()
+            const _intRes = await Cache.Clean()
             ServerResponse.PrepareResponse({
                 res,
-                intResp: _intResp
+                intRes: _intRes
             })
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
@@ -44,10 +44,10 @@ export class CacheResponse {
 
     static async Purge(req: Request, res: Response) {
         try {
-            const _intResp = await Cache.Purge()
+            const _intRes = await Cache.Purge()
             ServerResponse.PrepareResponse({
                 res,
-                intResp: _intResp
+                intRes: _intRes
             })
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
@@ -59,7 +59,7 @@ export class CacheResponse {
         try {
             const _dataRequest: TDataRequest = Convert.RequestToDataRequest(req)
             const _schemaConfig = Config.Configuration.schemas[_dataRequest.schema]
-            _dataRequest.source = Schemas.GetSource(_schemaConfig, _dataRequest)
+            _dataRequest.source = Schema.GetSource(_schemaConfig, _dataRequest)
 
             if (!Config.Flags.EnableCache && _dataRequest?.cache) {
                 Logger.Warn(`Cache.Get: 'server.cache' is not configured, bypassing option 'cache'`)
