@@ -6,7 +6,7 @@ import { TDataRequest } from './TDataRequest'
 import { TOptions } from './TOptions'
 import { TSourceParams } from './TSourceParams'
 import { TJson } from './TJson'
-import { TDataResponse } from './TDataResponse'
+import { TSchemaResponse } from './TSchemaResponse'
 
 
 export interface IProviderOptions {
@@ -37,9 +37,9 @@ export interface IProvider {
     Init: (oParams: TSourceParams) => void
     Connect: () => Promise<void>
     Disconnect: () => Promise<void>
-    Insert: (dataRequest: TDataRequest) => Promise<TDataResponse>
-    Select: (dataRequest: TDataRequest) => Promise<TDataResponse>
-    Update: (dataRequest: TDataRequest) => Promise<TDataResponse>
-    Delete: (dataRequest: TDataRequest) => Promise<TDataResponse>
+    Insert: (dataRequest: TDataRequest) => Promise<TSchemaResponse>
+    Select: (dataRequest: TDataRequest) => Promise<TSchemaResponse>
+    Update: (dataRequest: TDataRequest) => Promise<TSchemaResponse>
+    Delete: (dataRequest: TDataRequest) => Promise<TSchemaResponse>
     Options: IProviderOptions
 }

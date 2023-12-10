@@ -10,7 +10,7 @@ import { HTTP_STATUS_CODE } from '../lib/Const'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchedule } from '../types/TSchedule'
 import { Logger } from '../lib/Logger'
-import { Config } from '../server/Config'
+import { Config } from './Config'
 import { Plans } from '../providers/Plan'
 
 type TScheduleConfig = {

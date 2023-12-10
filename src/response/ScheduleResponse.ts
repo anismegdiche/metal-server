@@ -7,7 +7,7 @@
 import { Request, Response } from 'express'
 
 import { ServerResponse } from './ServerResponse'
-import { Schedule } from '../interpreter/Schedule'
+import { Schedule } from '../server/Schedule'
 
 export class ScheduleResponse {
     public static Start(req: Request, res: Response) {

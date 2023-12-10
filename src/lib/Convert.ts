@@ -8,7 +8,7 @@ import { Request, Response } from 'express'
 
 import { TDataRequest } from '../types/TDataRequest'
 import { TJson } from '../types/TJson'
-import { TDataResponse, TDataResponseData, TDataResponseError } from '../types/TDataResponse'
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from '../types/TSchemaResponse'
 import { Logger } from "../lib/Logger"
 
 
@@ -58,21 +58,16 @@ export class Convert {
 
     static RequestToDataRequest(req: Request) {
         const { schema, entity } = req.params
-        const body = req.body
-        const query = req.query
+        const { body, query } = req
 
         const _dataRequest: TDataRequest = {
             schema,
             entity
         }
 
-        let _queryOrBody: TJson = {}
-
-        if (_.isNil(query) || _.isEmpty(query)) {
-            _queryOrBody = body
-        } else {
-            _queryOrBody = query
-        }
+        const _queryOrBody: TJson = (_.isNil(query) || _.isEmpty(query))
+            ? body
+            : query
 
         if (!_.isEmpty(_queryOrBody)) {
             Object.assign(_dataRequest, _queryOrBody)
@@ -85,26 +80,31 @@ export class Convert {
     }
 
 
-    static DataResponseToResponse(dataResponse: TDataResponse, response: Response) {
+    static SchemaResponseToResponse(dataResponse: TSchemaResponse, response: Response) {
+        const { schema, entity, transaction, result, status } = dataResponse
+
         let _responseJson: TJson = {
-            schema: dataResponse.schema,
-            entity: dataResponse.entity,
-            transaction: dataResponse.transaction,
-            result: dataResponse.result,
-            status: dataResponse.status
+            schema,
+            entity,
+            transaction,
+            result,
+            status
         }
-        if ((<TDataResponseData>dataResponse)?.data)
+
+        if ((<TSchemaResponseData>dataResponse)?.data)
             _responseJson = {
                 ..._responseJson,
-                metadata: (<TDataResponseData>dataResponse).data.MetaData,
-                fields: (<TDataResponseData>dataResponse).data.Fields,
-                rows: (<TDataResponseData>dataResponse).data.Rows
+                metadata: (<TSchemaResponseData>dataResponse).data.MetaData,
+                fields: (<TSchemaResponseData>dataResponse).data.Fields,
+                rows: (<TSchemaResponseData>dataResponse).data.Rows
             }
-        if ((<TDataResponseError>dataResponse)?.error)
+
+        if ((<TSchemaResponseError>dataResponse)?.error)
             _responseJson = {
                 ..._responseJson,
-                error: (<TDataResponseError>dataResponse).error
+                error: (<TSchemaResponseError>dataResponse).error
             }
+
         return response
             .status(dataResponse.status)
             .json(_responseJson)
@@ -120,7 +120,7 @@ export class Convert {
     static ReplacePlaceholders(text: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
         if (text === undefined)
             return undefined
-        
+
         if (typeof text === 'string') {
             const placeholderRegex = /\$\{\{([^}]+)\}\}/g
             const replacedString = text.replace(placeholderRegex, (match, code) => {
@@ -128,10 +128,9 @@ export class Convert {
                     // Use eval with caution, make sure the code is safe
                     // eslint-disable-next-line no-eval
                     const result = eval(code)
-                    // eslint-disable-next-line no-negated-condition, no-ternary
-                    return result !== undefined
-                        ? result.toString()
-                        : ''
+                    return (result === undefined)
+                        ? ''
+                        : result.toString()
                 } catch (error) {
                     Logger.Error(`Error evaluating code: ${code}, ${JSON.stringify(error)}`)
                     // Return the original placeholder if there's an error

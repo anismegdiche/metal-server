@@ -13,7 +13,7 @@ import { Convert } from '../lib/Convert'
 import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
 import { TSourceParams } from "../types/TSourceParams"
 import { TOptions } from '../types/TOptions'
-import { TDataResponse, TDataResponseData, TDataResponseNoData } from "../types/TDataResponse"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
 import { TDataRequest } from "../types/TDataRequest"
 import { TJson } from "../types/TJson"
 import { DataTable } from "../types/DataTable"
@@ -168,11 +168,11 @@ export class MongoDb implements IProvider.IProvider {
         await this.Connection.close()
     }
 
-    async Insert(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Insert(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} MongoDb.Insert: ${JSON.stringify(dataRequest)}`)
         const _options: TOptions = this.Options.Parse(dataRequest)
 
-        let _dataResponse = <TDataResponse>{
+        let _dataResponse = <TSchemaResponse>{
             schema: dataRequest.schema,
             entity: dataRequest.entity,
             ...RESPONSE_TRANSACTION.INSERT
@@ -181,7 +181,7 @@ export class MongoDb implements IProvider.IProvider {
         await this.Connection.connect()
         await this.Connection.db(this.Params.database).collection(dataRequest.entity).insertMany(_options?.Data?.Rows)
         Logger.Debug(`${Logger.In} MongoDb.Insert: ${JSON.stringify(dataRequest)}`)
-        _dataResponse = <TDataResponseData>{
+        _dataResponse = <TSchemaResponseData>{
             ..._dataResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
@@ -189,10 +189,10 @@ export class MongoDb implements IProvider.IProvider {
         return _dataResponse
     }
 
-    async Select(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Select(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`MongoDb.Select: ${JSON.stringify(dataRequest)}`)
         const _agg: mongodb.Document[] = _.values(this.Options.Parse(dataRequest))
-        let _dataResponse = <TDataResponse>{
+        let _dataResponse = <TSchemaResponse>{
             schema: dataRequest.schema,
             entity: dataRequest.entity,
             ...RESPONSE_TRANSACTION.SELECT
@@ -206,14 +206,14 @@ export class MongoDb implements IProvider.IProvider {
         if (_data.length > 0) {
             const _dt = new DataTable(dataRequest.entity, _data)
             Cache.Set(dataRequest, _dt)
-            _dataResponse = <TDataResponseData>{
+            _dataResponse = <TSchemaResponseData>{
                 ..._dataResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data: _dt
             }
         } else {
-            _dataResponse = <TDataResponseNoData>{
+            _dataResponse = <TSchemaResponseNoData>{
                 ..._dataResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
@@ -222,10 +222,10 @@ export class MongoDb implements IProvider.IProvider {
         return _dataResponse
     }
 
-    async Update(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Update(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} MongoDb.Update: ${JSON.stringify(dataRequest)}`)
         const _options: TOptions = this.Options.Parse(dataRequest)
-        let _dataResponse = <TDataResponse>{
+        let _dataResponse = <TSchemaResponse>{
             schema: dataRequest.schema,
             entity: dataRequest.entity,
             ...RESPONSE_TRANSACTION.UPDATE
@@ -238,7 +238,7 @@ export class MongoDb implements IProvider.IProvider {
             }
         )
         Logger.Debug(`${Logger.In} MongoDb.Update: ${JSON.stringify(dataRequest)}`)
-        _dataResponse = <TDataResponseData>{
+        _dataResponse = <TSchemaResponseData>{
             ..._dataResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
@@ -246,10 +246,10 @@ export class MongoDb implements IProvider.IProvider {
         return _dataResponse
     }
 
-    async Delete(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Delete(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} MongoDb.Delete: ${JSON.stringify(dataRequest)}`)
         const _options: any = this.Options.Parse(dataRequest)
-        let _dataResponse = <TDataResponse>{
+        let _dataResponse = <TSchemaResponse>{
             schema: dataRequest.schema,
             entity: dataRequest.entity,
             ...RESPONSE_TRANSACTION.DELETE
@@ -259,7 +259,7 @@ export class MongoDb implements IProvider.IProvider {
             (_options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>
         )
         Logger.Debug(`${Logger.In} MongoDb.Delete: ${JSON.stringify(dataRequest)}`)
-        _dataResponse = <TDataResponseData>{
+        _dataResponse = <TSchemaResponseData>{
             ..._dataResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS

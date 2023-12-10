@@ -5,11 +5,11 @@
 //
 import * as sha512 from 'js-sha512'
 
-import { Source } from '../interpreter/Source'
+import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
 import { TCacheData } from '../types/TCacheData'
 import { TDataRequest } from '../types/TDataRequest'
-import { TDataResponse, TDataResponseData, TTransaction } from '../types/TDataResponse'
+import { TSchemaResponse, TSchemaResponseData, TTransaction } from '../types/TSchemaResponse'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { IProvider } from '../types/IProvider'
@@ -38,13 +38,13 @@ export class Cache {
 
 
     static async Connect() {
-        Logger.Debug(`CacheData.Connect`)
+        Logger.Debug(`Cache.Connect`)
         if (Config.Flags.EnableCache)
             Source.Connect(null, Config.Configuration.server.cache)
     }
 
     static async Disconnect() {
-        Logger.Debug(`CacheData.Disconnect`)
+        Logger.Debug(`Cache.Disconnect`)
         if (Config.Flags.EnableCache)
             await Cache.CacheSource.Disconnect()
     }
@@ -56,7 +56,7 @@ export class Cache {
             return
         }
 
-        Logger.Debug(`CacheData.Set`)
+        Logger.Debug(`Cache.Set`)
         if (dataRequest?.cache) {
             const _ttl = parseInt((dataRequest.cache).replace(/['"]/g, ''), 10) ?? 0
             const _expireDate = new Date()
@@ -84,7 +84,7 @@ export class Cache {
                 })
             } else
                 if (Cache.IsValid(_cacheData.expires))
-                    Logger.Debug("CacheData.Set: cache is valid")
+                    Logger.Debug("Cache.Set: cache is valid")
                 else
                     Cache.CacheSource.Update(<TDataRequest>{
                         ...Cache.#GetDataRequest(),
@@ -109,22 +109,22 @@ export class Cache {
         let _isValid = false
         if (expires)
             _isValid = new Date().getTime() <= expires ?? false
-        Logger.Debug(`CacheData.IsValid = ${_isValid}`)
+        Logger.Debug(`Cache.IsValid = ${_isValid}`)
         return _isValid
     }
 
     // BUG: when caching Plan, datatable is rendered with Fields, Rows (in Pascal case) 
     static async Get(hash: string): Promise<TCacheData | undefined> {
-        Logger.Debug(`CacheData.Get`)
+        Logger.Debug(`Cache.Get`)
         if (Config.Flags.EnableCache) {
-            let _dataResponse: TDataResponse = await Cache.CacheSource.Select(<TDataRequest>{
+            let _dataResponse: TSchemaResponse = await Cache.CacheSource.Select(<TDataRequest>{
                 ...Cache.#GetDataRequest(),
                 filter: {
                     hash
                 }
             })
-            if ((<TDataResponseData>_dataResponse)?.data) {
-                _dataResponse = <TDataResponseData>_dataResponse
+            if ((<TSchemaResponseData>_dataResponse)?.data) {
+                _dataResponse = <TSchemaResponseData>_dataResponse
                 return <TCacheData>(_dataResponse.data.Rows[0])
             }
         }
@@ -133,7 +133,7 @@ export class Cache {
 
     static async View(): Promise<TInternalResponse> {
         Logger.Debug(`${Logger.In} Cache.ViewData`)
-        const _dataResponse: TDataResponse = await Cache.CacheSource.Select(Cache.#GetDataRequest())
+        const _dataResponse: TSchemaResponse = await Cache.CacheSource.Select(Cache.#GetDataRequest())
         _dataResponse.transaction = TTransaction.cache_data
         Logger.Debug(`${Logger.Out} Cache.ViewData`)
         let _intRes: TInternalResponse = {
@@ -142,16 +142,16 @@ export class Cache {
                 message: 'Cache data'
             }
         }
-        if ((<TDataResponseData>_dataResponse)?.data  && _intRes.Body) {
-            _intRes.Body.data = (<TDataResponseData>_dataResponse).data.Rows
+        if ((<TSchemaResponseData>_dataResponse)?.data  && _intRes.Body) {
+            _intRes.Body.data = (<TSchemaResponseData>_dataResponse).data.Rows
         }
         return _intRes
     }
 
     static async Purge(): Promise<TInternalResponse> {
-        Logger.Debug(`${Logger.In} CacheData.Purge`)
+        Logger.Debug(`${Logger.In} Cache.Purge`)
         await Cache.CacheSource.Delete(Cache.#GetDataRequest())
-        Logger.Debug(`${Logger.Out} CacheData.Purge`)
+        Logger.Debug(`${Logger.Out} Cache.Purge`)
         return <TInternalResponse>{
             StatusCode: HTTP_STATUS_CODE.OK,
             Body: { message: 'Cache purged' }
@@ -159,14 +159,14 @@ export class Cache {
     }
 
     static async Clean(): Promise<TInternalResponse> {
-        Logger.Debug(`${Logger.In} CacheData.Clean`)
+        Logger.Debug(`${Logger.In} Cache.Clean`)
         const _expireDate = new Date().getTime()
-        Logger.Debug(`CacheData.Clean  ${_expireDate}`)
+        Logger.Debug(`Cache.Clean  ${_expireDate}`)
         await Cache.CacheSource.Delete(<TDataRequest>{
             ...Cache.#GetDataRequest(),
             "filter-expression": `expires < ${_expireDate}`
         })
-        Logger.Debug(`${Logger.Out} CacheData.Clean`)
+        Logger.Debug(`${Logger.Out} Cache.Clean`)
         return <TInternalResponse>{
             StatusCode: HTTP_STATUS_CODE.OK,
             Body: { message: 'Cache cleaned' }

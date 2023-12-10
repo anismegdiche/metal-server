@@ -14,7 +14,7 @@ import * as IProvider from "../types/IProvider"
 import { TSourceParams } from "../types/TSourceParams"
 import { TOptions } from "../types/TOptions"
 import { TJson } from "../types/TJson"
-import { TDataResponse, TDataResponseData, TDataResponseError, TDataResponseNoData } from '../types/TDataResponse'
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResponseNoData } from '../types/TSchemaResponse'
 import { TDataRequest } from '../types/TDataRequest'
 import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
@@ -26,7 +26,7 @@ import { SqlQueryHelper } from '../lib/Sql'
 import { StringExtend } from "../lib/StringExtend"
 import { AiEngine } from "../server/AiEngine"
 import { Config } from "../server/Config"
-import { Schema } from "../interpreter/Schema"
+import { Schema } from "../server/Schema"
 import { DataTable, TFields, TOrder, TRows } from "../types/DataTable"
 import { TInternalResponse } from "../types/TInternalResponse"
 import { TTransformation } from "../types/TTransformation"
@@ -70,7 +70,7 @@ class Step {
     static async #Select(plan: string, dt: DataTable, transformation: TTransformation): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Select: ${JSON.stringify(transformation)}`)
 
-        let dataResponse: TDataResponse = <TDataResponse>{}
+        let dataResponse: TSchemaResponse = <TSchemaResponse>{}
 
         dataResponse = await Schema.Select(<Request><unknown>{
             params: {
@@ -80,8 +80,8 @@ class Step {
             body: Step.GetPlanOptions(transformation)
         })
 
-        dt.Fields = <TFields>{ ...(<TDataResponseData>dataResponse).data.Fields }
-        dt.Rows = <TRows>[...(<TDataResponseData>dataResponse).data.Rows]
+        dt.Fields = <TFields>{ ...(<TSchemaResponseData>dataResponse).data.Fields }
+        dt.Rows = <TRows>[...(<TSchemaResponseData>dataResponse).data.Rows]
 
         return dt
     }
@@ -322,7 +322,7 @@ export class Plans {
 
     static async GetData(schemaName: string | undefined, planName: string, entityName: string, sqlQuery: string | undefined = undefined) {
 
-        let _dataResponse = <TDataResponse>{
+        let _dataResponse = <TSchemaResponse>{
             schema: schemaName,
             entity: entityName,
             transaction: "plan"
@@ -343,7 +343,7 @@ export class Plans {
                 dtWorking.FreeSql(sqlQuery)
             }
 
-            _dataResponse = <TDataResponseData>{
+            _dataResponse = <TSchemaResponseData>{
                 ..._dataResponse,
                 ...RESPONSE_RESULT.SUCCESS,
                 ...RESPONSE_STATUS.HTTP_200,
@@ -351,7 +351,7 @@ export class Plans {
             }
 
         } else {
-            _dataResponse = <TDataResponseNoData>{
+            _dataResponse = <TSchemaResponseNoData>{
                 ..._dataResponse,
                 ...RESPONSE_RESULT.NOT_FOUND,
                 ...RESPONSE_STATUS.HTTP_404
@@ -440,11 +440,11 @@ export class Plan implements IProvider.IProvider {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    async Insert(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Insert(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} Plan.Insert: ${JSON.stringify(dataRequest)}`)
         const { schema, entity } = dataRequest
         Logger.Error(`Schema.Insert: Not allowed for plans '${schema}', entity '${entity}'`)
-        return <TDataResponseError>{
+        return <TSchemaResponseError>{
             schema,
             entity,
             ...RESPONSE_TRANSACTION.INSERT,
@@ -454,13 +454,13 @@ export class Plan implements IProvider.IProvider {
         }
     }
 
-    async Select(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Select(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`Plan.Select: ${JSON.stringify(dataRequest)}`)
 
         const _options: TOptions = this.Options.Parse(dataRequest)
         const { schema, entity } = dataRequest
 
-        let _dataResponse = <TDataResponse>{
+        let _dataResponse = <TSchemaResponse>{
             schema,
             entity,
             ...RESPONSE_TRANSACTION.SELECT
@@ -478,27 +478,27 @@ export class Plan implements IProvider.IProvider {
                 .Query
         }
 
-        const _planDataResponse = await Plans.GetData(
+        const _planSchemaResponse = await Plans.GetData(
             schema,
             this.Params.database as string,
             entity,
             _sqlQuery
         )
 
-        if ((<TDataResponseData>_planDataResponse).data.Rows.length > 0) {
-            const _dt = (<TDataResponseData>_planDataResponse).data
+        if ((<TSchemaResponseData>_planSchemaResponse).data.Rows.length > 0) {
+            const _dt = (<TSchemaResponseData>_planSchemaResponse).data
             Cache.Set({
                 ...dataRequest,
                 source: this.SourceName
             }, _dt)
-            _dataResponse = <TDataResponseData>{
+            _dataResponse = <TSchemaResponseData>{
                 ..._dataResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data: _dt
             }
         } else {
-            _dataResponse = <TDataResponseNoData>{
+            _dataResponse = <TSchemaResponseNoData>{
                 ..._dataResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
@@ -508,11 +508,11 @@ export class Plan implements IProvider.IProvider {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    async Update(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Update(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`Plan.Update: ${JSON.stringify(dataRequest)}`)
         const { schema, entity } = dataRequest
         Logger.Error(`Schema.Update: Not allowed for plans '${schema}', entity '${entity}'`)
-        return <TDataResponseError>{
+        return <TSchemaResponseError>{
             schema,
             entity,
             ...RESPONSE_TRANSACTION.UPDATE,
@@ -523,11 +523,11 @@ export class Plan implements IProvider.IProvider {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    async Delete(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Delete(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`Plan.Delete : ${JSON.stringify(dataRequest)}`)
         const { schema, entity } = dataRequest
         Logger.Error(`Schema.Delete: Not allowed for plans '${schema}', entity '${entity}'`)
-        return <TDataResponseError>{
+        return <TSchemaResponseError>{
             schema,
             entity,
             ...RESPONSE_TRANSACTION.DELETE,

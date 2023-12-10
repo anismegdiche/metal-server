@@ -9,7 +9,7 @@ import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
 import * as IProvider from "../types/IProvider"
 import { SqlQueryHelper } from '../lib/Sql'
 import { TSourceParams } from "../types/TSourceParams"
-import { TDataResponse, TDataResponseData, TDataResponseNoData } from "../types/TDataResponse"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
 import { TOptions } from "../types/TOptions"
 import { DataTable } from "../types/DataTable"
 import { TJson } from "../types/TJson"
@@ -98,12 +98,12 @@ export class SqlServer implements IProvider.IProvider {
         this.Connection.close()
     }
 
-    async Insert(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Insert(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} SqlServer.Insert: ${JSON.stringify(dataRequest)}`)
 
         const _options: TOptions = this.Options.Parse(dataRequest)
 
-        let _dataResponse = <TDataResponse>{
+        let _dataResponse = <TSchemaResponse>{
             schema: dataRequest.schema,
             entity: dataRequest.entity,
             ...RESPONSE_TRANSACTION.INSERT
@@ -116,7 +116,7 @@ export class SqlServer implements IProvider.IProvider {
             .Query
 
         await this.Connection.query(_sqlQuery)
-        _dataResponse = <TDataResponseData>{
+        _dataResponse = <TSchemaResponseData>{
             ..._dataResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
@@ -124,12 +124,12 @@ export class SqlServer implements IProvider.IProvider {
         return _dataResponse
     }
 
-    async Select(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Select(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} SqlServer.Select: ${JSON.stringify(dataRequest)}`)
 
         const _options: TOptions = this.Options.Parse(dataRequest)
 
-        let _dataResponse = <TDataResponse>{
+        let _dataResponse = <TSchemaResponse>{
             schema: dataRequest.schema,
             entity: dataRequest.entity,
             ...RESPONSE_TRANSACTION.SELECT
@@ -146,14 +146,14 @@ export class SqlServer implements IProvider.IProvider {
         if (data.recordset != null && data.recordset.length > 0) {
             const _dt = new DataTable(dataRequest.entity, data.recordset)
             Cache.Set(dataRequest, _dt)
-            _dataResponse = <TDataResponseData>{
+            _dataResponse = <TSchemaResponseData>{
                 ..._dataResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data: _dt
             }
         } else {
-            _dataResponse = <TDataResponseNoData>{
+            _dataResponse = <TSchemaResponseNoData>{
                 ..._dataResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
@@ -162,12 +162,12 @@ export class SqlServer implements IProvider.IProvider {
         return _dataResponse
     }
 
-    async Update(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Update(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`SqlServer.Update: ${JSON.stringify(dataRequest)}`)
 
         const _options: TOptions = this.Options.Parse(dataRequest)
 
-        let _dataResponse = <TDataResponse>{
+        let _dataResponse = <TSchemaResponse>{
             schema: dataRequest.schema,
             entity: dataRequest.entity,
             ...RESPONSE_TRANSACTION.UPDATE
@@ -180,7 +180,7 @@ export class SqlServer implements IProvider.IProvider {
             .Query
 
         await this.Connection.query(_sqlQuery)
-        _dataResponse = <TDataResponseData>{
+        _dataResponse = <TSchemaResponseData>{
             ..._dataResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
@@ -188,12 +188,12 @@ export class SqlServer implements IProvider.IProvider {
         return _dataResponse
     }
 
-    async Delete(dataRequest: TDataRequest): Promise<TDataResponse> {
+    async Delete(dataRequest: TDataRequest): Promise<TSchemaResponse> {
         Logger.Debug(`SqlServer.Delete: ${JSON.stringify(dataRequest)}`)
 
         const _options: TOptions = this.Options.Parse(dataRequest)
 
-        let _dataResponse = <TDataResponse>{
+        let _dataResponse = <TSchemaResponse>{
             schema: dataRequest.schema,
             entity: dataRequest.entity,
             ...RESPONSE_TRANSACTION.DELETE
@@ -206,7 +206,7 @@ export class SqlServer implements IProvider.IProvider {
             .Query
 
         await this.Connection.query(_sqlQuery)
-        _dataResponse = <TDataResponseData>{
+        _dataResponse = <TSchemaResponseData>{
             ..._dataResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS

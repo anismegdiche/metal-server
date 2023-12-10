@@ -9,7 +9,7 @@ import { Convert } from '../lib/Convert'
 import { RESPONSE_RESULT, RESPONSE_STATUS, HTTP_STATUS_CODE } from '../lib/Const'
 import { Logger } from '../lib/Logger'
 import { ServerResponse } from './ServerResponse'
-import { Schema } from '../interpreter/Schema'
+import { Schema } from '../server/Schema'
 
 
 const REQUEST_TRANSACTION: Record<string, string> = {
@@ -19,12 +19,12 @@ const REQUEST_TRANSACTION: Record<string, string> = {
     DELETE: 'delete'
 }
 
-export class DataResponse {
-    static async IsSchemaExist(req: Request, res: Response, next: NextFunction) {
+export class SchemaResponse {
+    static async IsExist(req: Request, res: Response, next: NextFunction) {
         return await Schema.IsExist(req)
             .then((result) => {
                 if (!result) {
-                    return DataResponse.ReplyNotFound(req, res, `schema '${req.params.schema}' not found in schemas`)
+                    return SchemaResponse.ReplyNotFound(req, res, `schema '${req.params.schema}' not found in schemas`)
                 }
                 next()
             })
@@ -45,25 +45,25 @@ export class DataResponse {
 
     static async Select(req: Request, res: Response) {
         return await Schema.Select(req)
-            .then(dres => Convert.DataResponseToResponse(dres, res))
+            .then(dres => Convert.SchemaResponseToResponse(dres, res))
             .catch((error: Error) => ServerResponse.Error(res, error))
     }
 
     static async Delete(req: Request, res: Response) {
         return await Schema.Delete(req)
-            .then(dres => Convert.DataResponseToResponse(dres, res))
+            .then(dres => Convert.SchemaResponseToResponse(dres, res))
             .catch((error: Error) => ServerResponse.Error(res, error))
     }
 
     static async Update(req: Request, res: Response) {
         return await Schema.Update(req)
-            .then(dres => Convert.DataResponseToResponse(dres, res))
+            .then(dres => Convert.SchemaResponseToResponse(dres, res))
             .catch((error: Error) => ServerResponse.Error(res, error))
     }
 
     static async Insert(req: Request, res: Response) {
         return await Schema.Insert(req)
-            .then(dres => Convert.DataResponseToResponse(dres, res))
+            .then(dres => Convert.SchemaResponseToResponse(dres, res))
             .catch((error: Error) => ServerResponse.Error(res, error))
     }
 }

@@ -4,8 +4,8 @@
 //
 //
 import { Logger } from '../lib/Logger'
-import { Cache } from '../server/Cache'
-import { Config } from '../server/Config'
+import { Cache } from './Cache'
+import { Config } from './Config'
 import { IProvider } from '../types/IProvider'
 // Providers
 import { Postgres } from '../providers/Postgres'

@@ -12,9 +12,9 @@ import * as dotenv from 'dotenv'
 const yamlValidate = require('yaml-schema-validator')
 
 import * as SCHConfig from '../types/SCHConfig'
-import { Source } from '../interpreter/Source'
+import { Source } from './Source'
 import { Logger, DefaultLevel } from '../lib/Logger'
-import { Schedule } from '../interpreter/Schedule'
+import { Schedule } from './Schedule'
 import { Cache } from '../server/Cache'
 import { TJson } from '../types/TJson'
 import { User } from './User'
