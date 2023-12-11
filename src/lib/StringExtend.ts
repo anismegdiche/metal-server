@@ -6,21 +6,19 @@
 
 export class StringExtend {
     static Split(str: string, sep: string) {
-        let _array: string[] = []
+        const arrayString: string[] = str.includes(sep)
+            ? str.split(sep)
+                .filter(_field => !(_field === undefined || _field.trim() === ""))
+                .map(_field => _field.trim())
+            : []
 
-        if (str.includes(sep)) {
-            _array = str.split(sep)
-                .filter(__field => !(__field === undefined || __field.trim() === ""))
-                .map(__field => __field.trim())
-        }
-        return _array
+        return arrayString
     }
 
-    
+
     static FixObjectMissingQuotes(str: string) {
-        const fixedStr = str.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
-        const fixedStrWithQuotes = fixedStr.replace(/:\s*([^"{[,\s][^,\s}]*)/g, ':"$1"')
-        return fixedStrWithQuotes
+        const stringFixed = str.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+        return stringFixed.replace(/:\s*([^"{[,\s][^,\s}]*)/g, ':"$1"')
     }
 }
 

@@ -14,7 +14,7 @@ import { SqlServer } from '../providers/SqlServer'
 import { Plan } from '../providers/Plan'
 
 
-const ConnectToSource: Record<string, Function> = {
+const NewSourceCaseMap: Record<string, Function> = {
     'plan': (source: string, sourceConfig: any) => new Plan(source, sourceConfig),
     'postgres': (source: string, sourceConfig: any) => new Postgres(source, sourceConfig),
     'mongodb': (source: string, sourceConfig: any) => new MongoDb(source, sourceConfig),
@@ -25,6 +25,20 @@ export class Source {
 
     // global sources
     public static Sources: Record<string, IProvider> = {}
+
+    static async Connect(source: string | null, sourceConfig: any) {
+        if (sourceConfig.provider in NewSourceCaseMap) {
+            if (source === null) {
+                // cache
+                Cache.CacheSource = NewSourceCaseMap[sourceConfig.provider](Cache.Schema, sourceConfig)
+            } else {
+                // sources
+                Source.Sources[source] = NewSourceCaseMap[sourceConfig.provider](source, sourceConfig)
+            }
+        } else {
+            Logger.Error(`Source '${source}', Provider '${sourceConfig.provider}' not found. The source will not be connected`)
+        }
+    }
 
     static async ConnectAll() {
         for (const _source in Config.Configuration.sources) {
@@ -39,20 +53,8 @@ export class Source {
         for (const _source in Source.Sources) {
             if (_source)
                 Source.Sources[_source].Disconnect()
-        }        
-    }
-
-    static async Connect(source: string | null, sourceConfig: any) {
-        if (sourceConfig.provider in ConnectToSource) {
-            if (source === null) {
-                // cache
-                Cache.CacheSource = ConnectToSource[sourceConfig.provider](Cache.Schema, sourceConfig)
-            } else {
-                // sources
-                Source.Sources[source] = ConnectToSource[sourceConfig.provider](source, sourceConfig)
-            }
-        } else {
-            Logger.Error(`Source '${source}', Provider '${sourceConfig.provider}' not found. The source will not be connected`)
         }
     }
+
+
 }

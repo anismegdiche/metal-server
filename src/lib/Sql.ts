@@ -3,8 +3,8 @@
 //
 //
 //
-import { TRow, TRows } from "../types/DataTable"
 import _ from 'lodash'
+import { TRow, TRows } from "../types/DataTable"
 
 export class SqlQueryHelper {
     public Query = ''
@@ -35,12 +35,12 @@ export class SqlQueryHelper {
         }
 
         if (typeof condition === 'object') {
-            const _cond = _.chain(condition)
+            const _cond = _
+                .chain(condition)
                 .map((__value, __key) => {
-                    let ___formattedValue: string = __value
-                    if (typeof __value !== 'number') {
-                        ___formattedValue = `'${__value}'`
-                    }
+                    const ___formattedValue: string = typeof __value === 'number'
+                        ? __value
+                        : `'${__value}'`
                     return `${__key}=${___formattedValue}`
                 })
                 .join(' AND ')

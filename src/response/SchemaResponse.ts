@@ -45,25 +45,25 @@ export class SchemaResponse {
 
     static async Select(req: Request, res: Response) {
         return await Schema.Select(req)
-            .then(dres => Convert.SchemaResponseToResponse(dres, res))
+            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
             .catch((error: Error) => ServerResponse.Error(res, error))
     }
 
     static async Delete(req: Request, res: Response) {
         return await Schema.Delete(req)
-            .then(dres => Convert.SchemaResponseToResponse(dres, res))
+            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
             .catch((error: Error) => ServerResponse.Error(res, error))
     }
 
     static async Update(req: Request, res: Response) {
         return await Schema.Update(req)
-            .then(dres => Convert.SchemaResponseToResponse(dres, res))
+            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
             .catch((error: Error) => ServerResponse.Error(res, error))
     }
 
     static async Insert(req: Request, res: Response) {
         return await Schema.Insert(req)
-            .then(dres => Convert.SchemaResponseToResponse(dres, res))
+            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
             .catch((error: Error) => ServerResponse.Error(res, error))
     }
 }
