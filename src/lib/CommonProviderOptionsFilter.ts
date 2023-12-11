@@ -3,21 +3,21 @@
 //
 //
 //
-import { TDataRequest } from '../types/TDataRequest'
+import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TOptions } from '../types/TOptions'
 import { Convert } from './Convert'
 
 
 export class CommonProviderOptionsFilter {
-    static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
+    static Get(agg: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let _filter = {}
-        if (dataRequest['filter-expression'] || dataRequest?.filter) {
+        if (schemaRequest['filter-expression'] || schemaRequest?.filter) {
 
-            if (dataRequest['filter-expression'])
-                _filter = this.GetExpression(dataRequest['filter-expression'])
+            if (schemaRequest['filter-expression'])
+                _filter = this.GetExpression(schemaRequest['filter-expression'])
 
-            if (dataRequest?.filter)
-                _filter = Convert.JsonToArray(dataRequest.filter)
+            if (schemaRequest?.filter)
+                _filter = Convert.JsonToArray(schemaRequest.filter)
 
             agg.Filter = Convert.ReplacePlaceholders(_filter)
         }

@@ -3,14 +3,12 @@
 //
 //
 //
-import { Request } from "express"
 import _ from 'lodash'
 import { Source } from "./Source"
 import { RESPONSE_RESULT, RESPONSE_STATUS } from '../lib/Const'
-import { Convert } from "../lib/Convert"
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
-import { TDataRequest } from '../types/TDataRequest'
+import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
 
 export type TSchemaRoute = {
@@ -22,7 +20,7 @@ export type TSchemaRoute = {
 export type TEntityTypeExecuteParams = {
     SourceName: string,
     EntityName: string,
-    DataRequest: TDataRequest,
+    SchemaRequest: TSchemaRequest,
     CRUDOperation: Function
 }
 
@@ -33,9 +31,94 @@ export class Schema {
         'source': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => await entityTypeExecuteParams.CRUDOperation()
     }
 
+    static async IsExist(schemaRequest: TSchemaRequest): Promise<boolean> {
+        Logger.Debug(`Schema.IsExist: ${JSON.stringify(schemaRequest)}`)
+
+        const { schema } = schemaRequest
+
+        // check if schema exists in config file
+        if (Config.Configuration?.schemas === undefined) {
+            Logger.Warn(`section 'schemas' not found in configuration`)
+            return false
+        }
+        // check if schema exists
+        if (!_.has(Config.Configuration.schemas, schema)) {
+            Logger.Warn(`schema '${schema}' not found in configuration`)
+            return false
+        }
+        return true
+    }
+
+    static async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`Schema.Select: ${JSON.stringify(schemaRequest)}`)
+
+        const { schema, entity } = schemaRequest
+        const schemaConfig = Config.Configuration.schemas[schema]
+        const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
+
+        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
+            SourceName: schemaRoute.RouteName,
+            EntityName: schemaRoute.EntityName,
+            SchemaRequest: schemaRequest,
+            CRUDOperation: async () => {
+                return await Source.Sources[schemaRoute.RouteName].Select(schemaRequest)
+            }
+        })
+    }
+
+    static async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`Schema.Delete: ${JSON.stringify(schemaRequest)}`)
+
+        const { schema, entity } = schemaRequest
+        const schemaConfig = Config.Configuration.schemas[schema]
+        const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
+
+        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
+            SourceName: schemaRoute.RouteName,
+            EntityName: schemaRoute.EntityName,
+            SchemaRequest: schemaRequest,
+            CRUDOperation: async () => {
+                return await Source.Sources[schemaRoute.RouteName].Delete(schemaRequest)
+            }
+        })
+    }
+    static async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`Schema.Update: ${JSON.stringify(schemaRequest)}`)
+
+        const { schema, entity } = schemaRequest
+        const schemaConfig = Config.Configuration.schemas[schema]
+        const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
+
+        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
+            SourceName: schemaRoute.RouteName,
+            EntityName: schemaRoute.EntityName,
+            SchemaRequest: schemaRequest,
+            CRUDOperation: async () => {
+                return await Source.Sources[schemaRoute.RouteName].Update(schemaRequest)
+            }
+        })
+    }
+
+    static async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`Schema.Insert: ${JSON.stringify(schemaRequest)}`)
+
+        const { schema, entity } = schemaRequest
+        const schemaConfig = Config.Configuration.schemas[schema]
+        const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
+
+        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
+            SourceName: schemaRoute.RouteName,
+            EntityName: schemaRoute.EntityName,
+            SchemaRequest: schemaRequest,
+            CRUDOperation: async () => {
+                return await Source.Sources[schemaRoute.RouteName].Insert(schemaRequest)
+            }
+        })
+    }
+
     static async NothingTodo(entityTypeExecuteParams: TEntityTypeExecuteParams) {
-        Logger.Warn(`Nothing to do in schema '${entityTypeExecuteParams.DataRequest.schema}'`)
-        const { schema, entity } = entityTypeExecuteParams.DataRequest
+        Logger.Warn(`Nothing to do in schema '${entityTypeExecuteParams.SchemaRequest.schema}'`)
+        const { schema, entity } = entityTypeExecuteParams.SchemaRequest
         return <TSchemaResponseNoData>{
             schema,
             entity,
@@ -87,10 +170,10 @@ export class Schema {
     }
 
     //TODO: to migrate to GetRoute
-    static GetSource(schemaConfig: any, dataRequest: TDataRequest): string | undefined {
+    static GetSource(schemaConfig: any, schemaRequest: TSchemaRequest): string | undefined {
 
         //case entities
-        const entitySource = _.get(schemaConfig, `entities[${dataRequest.entity}].source`)
+        const entitySource = _.get(schemaConfig, `entities[${schemaRequest.entity}].source`)
         if (!_.isEmpty(entitySource) && Source.Sources[entitySource]) {
             return entitySource
         }
@@ -105,106 +188,5 @@ export class Schema {
         return undefined
     }
 
-    //ROADMAP
-    // static Create(schemaName: string) {
-    //     global.Schemas[schemaName] = new DataBase(schemaName)
-    // }
 
-    //ROADMAP
-    // static CreateAll() {
-    //     for (const _schemaName in Config.Configuration.schemas) {
-    //         if (_schemaName )
-    //             this.Create(_schemaName)
-    //     }
-    // }
-
-    static async IsExist(req: Request): Promise<boolean> {
-        const dataRequest = Convert.RequestToDataRequest(req)
-        const { schema } = dataRequest
-
-        Logger.Debug(`Schema.IsExist: ${JSON.stringify(dataRequest)}`)
-
-        // check if schema exists in config file
-        if (Config.Configuration?.schema === undefined) {
-            Logger.Warn(`section 'schema' not found in configuration`)
-            return false
-        }
-        // check if schema exists
-        if (!_.has(Config.Configuration.schema, schema)) {
-            Logger.Warn(`schema '${schema}' not found in configuration`)
-            return false
-        }
-        return true
-    }
-
-    static async Select(req: Request): Promise<TSchemaResponse> {
-        const dataRequest = Convert.RequestToDataRequest(req)
-        Logger.Debug(`Schema.Select: ${JSON.stringify(dataRequest)}`)
-
-        const { schema, entity } = dataRequest
-        const schemaConfig = Config.Configuration.schema[schema]
-        const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
-
-        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
-            SourceName: schemaRoute.RouteName,
-            EntityName: schemaRoute.EntityName,
-            DataRequest: dataRequest,
-            CRUDOperation: async () => {
-                return await Source.Sources[schemaRoute.RouteName].Select(dataRequest)
-            }
-        })
-    }
-
-    static async Delete(req: Request): Promise<TSchemaResponse> {
-        const dataRequest = Convert.RequestToDataRequest(req)
-        Logger.Debug(`Schema.Delete: ${JSON.stringify(dataRequest)}`)
-        
-        const { schema, entity } = dataRequest
-        const schemaConfig = Config.Configuration.schema[schema]
-        const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
-
-        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
-            SourceName: schemaRoute.RouteName,
-            EntityName: schemaRoute.EntityName,
-            DataRequest: dataRequest,
-            CRUDOperation: async () => {
-                return await Source.Sources[schemaRoute.RouteName].Delete(dataRequest)
-            }
-        })
-    }
-    static async Update(req: Request): Promise<TSchemaResponse> {
-        const dataRequest = Convert.RequestToDataRequest(req)
-        Logger.Debug(`Schema.Update: ${JSON.stringify(dataRequest)}`)
-        
-        const { schema, entity } = dataRequest
-        const schemaConfig = Config.Configuration.schema[schema]
-        const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
-
-        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
-            SourceName: schemaRoute.RouteName,
-            EntityName: schemaRoute.EntityName,
-            DataRequest: dataRequest,
-            CRUDOperation: async () => {
-                return await Source.Sources[schemaRoute.RouteName].Update(dataRequest)
-            }
-        })
-    }
-
-    static async Insert(req: Request): Promise<TSchemaResponse> {
-        const dataRequest = Convert.RequestToDataRequest(req)
-        Logger.Debug(`Schema.Insert: ${JSON.stringify(dataRequest)}`)
-        
-        const { schema, entity } = dataRequest
-        const schemaConfig = Config.Configuration.schema[schema]
-        const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
-
-        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
-            SourceName: schemaRoute.RouteName,
-            EntityName: schemaRoute.EntityName,
-            DataRequest: dataRequest,
-            CRUDOperation: async () => {
-                return await Source.Sources[schemaRoute.RouteName].Insert(dataRequest)
-            }
-        })
-    }
 }

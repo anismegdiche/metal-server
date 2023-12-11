@@ -6,7 +6,7 @@
 import _ from 'lodash'
 import { Request, Response } from 'express'
 
-import { TDataRequest } from '../types/TDataRequest'
+import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TJson } from '../types/TJson'
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from '../types/TSchemaResponse'
 import { Logger } from "../lib/Logger"
@@ -56,11 +56,11 @@ export class Convert {
         return _.map(_.entries(obj), ([k, v]) => ({ [k]: v }))
     }
 
-    static RequestToDataRequest(req: Request) {
+    static RequestToSchemaRequest(req: Request) {
         const { schema, entity } = req.params
         const { body, query } = req
 
-        const _dataRequest: TDataRequest = {
+        const _schemaRequest: TSchemaRequest = {
             schema,
             entity
         }
@@ -70,18 +70,18 @@ export class Convert {
             : query
 
         if (!_.isEmpty(_queryOrBody)) {
-            Object.assign(_dataRequest, _queryOrBody)
-            if (_dataRequest?.filter && typeof _dataRequest.filter === 'string') {
-                _dataRequest.filter = JSON.parse(_dataRequest.filter)
+            Object.assign(_schemaRequest, _queryOrBody)
+            if (_schemaRequest?.filter && typeof _schemaRequest.filter === 'string') {
+                _schemaRequest.filter = JSON.parse(_schemaRequest.filter)
             }
         }
 
-        return _dataRequest
+        return _schemaRequest
     }
 
 
-    static SchemaResponseToResponse(dataResponse: TSchemaResponse, response: Response) {
-        const { schema, entity, transaction, result, status } = dataResponse
+    static SchemaResponseToResponse(schemaResponse: TSchemaResponse, response: Response) {
+        const { schema, entity, transaction, result, status } = schemaResponse
 
         let _responseJson: TJson = {
             schema,
@@ -91,22 +91,22 @@ export class Convert {
             status
         }
 
-        if ((<TSchemaResponseData>dataResponse)?.data)
+        if ((<TSchemaResponseData>schemaResponse)?.data)
             _responseJson = {
                 ..._responseJson,
-                metadata: (<TSchemaResponseData>dataResponse).data.MetaData,
-                fields: (<TSchemaResponseData>dataResponse).data.Fields,
-                rows: (<TSchemaResponseData>dataResponse).data.Rows
+                metadata: (<TSchemaResponseData>schemaResponse).data.MetaData,
+                fields: (<TSchemaResponseData>schemaResponse).data.Fields,
+                rows: (<TSchemaResponseData>schemaResponse).data.Rows
             }
 
-        if ((<TSchemaResponseError>dataResponse)?.error)
+        if ((<TSchemaResponseError>schemaResponse)?.error)
             _responseJson = {
                 ..._responseJson,
-                error: (<TSchemaResponseError>dataResponse).error
+                error: (<TSchemaResponseError>schemaResponse).error
             }
 
         return response
-            .status(dataResponse.status)
+            .status(schemaResponse.status)
             .json(_responseJson)
     }
 

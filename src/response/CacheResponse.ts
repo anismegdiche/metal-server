@@ -10,7 +10,7 @@ import { ServerResponse } from './ServerResponse'
 
 import { TSchemaResponseData } from '../types/TSchemaResponse'
 import { Convert } from '../lib/Convert'
-import { TDataRequest } from '../types/TDataRequest'
+import { TSchemaRequest } from '../types/TSchemaRequest'
 import { RESPONSE_RESULT, RESPONSE_STATUS, RESPONSE_TRANSACTION } from '../lib/Const'
 import { Schema } from '../server/Schema'
 import { Logger } from '../lib/Logger'
@@ -57,11 +57,11 @@ export class CacheResponse {
 
     static async Get(req: Request, res: Response, next: NextFunction) {
         try {
-            const _dataRequest: TDataRequest = Convert.RequestToDataRequest(req)
-            const _schemaConfig = Config.Configuration.schemas[_dataRequest.schema]
-            _dataRequest.source = Schema.GetSource(_schemaConfig, _dataRequest)
+            const _schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)
+            const _schemaConfig = Config.Configuration.schemas[_schemaRequest.schema]
+            _schemaRequest.source = Schema.GetSource(_schemaConfig, _schemaRequest)
 
-            if (!Config.Flags.EnableCache && _dataRequest?.cache) {
+            if (!Config.Flags.EnableCache && _schemaRequest?.cache) {
                 Logger.Warn(`Cache.Get: 'server.cache' is not configured, bypassing option 'cache'`)
                 next()
                 return
@@ -73,7 +73,7 @@ export class CacheResponse {
             }
 
             Logger.Debug(`Cache.Get`)
-            const _hash = Cache.Hash(_dataRequest)
+            const _hash = Cache.Hash(_schemaRequest)
             const _cacheData = await Cache.Get(_hash)
             if (_cacheData  && Cache.IsValid(_cacheData?.expires)) {
                 Logger.Debug(`Cache.Get: cache ${_hash} found`)

@@ -14,7 +14,7 @@ import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
 import { TSourceParams } from "../types/TSourceParams"
 import { TOptions } from '../types/TOptions'
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
-import { TDataRequest } from "../types/TDataRequest"
+import { TSchemaRequest } from "../types/TSchemaRequest"
 import { TJson } from "../types/TJson"
 import { DataTable } from "../types/DataTable"
 import { Logger } from "../lib/Logger"
@@ -23,13 +23,13 @@ import { CommonProviderOptionsData } from "../lib/CommonProviderOptionsData"
 
 
 class MongoDbOptions implements IProvider.IProviderOptions {
-    Parse(dataRequest: TDataRequest): TOptions {
+    Parse(schemaRequest: TSchemaRequest): TOptions {
         let _agg: TOptions = <TOptions>{}
-        if (dataRequest) {
-            _agg = this.Filter.Get(_agg, dataRequest)
-            _agg = this.Fields.Get(_agg, dataRequest)
-            _agg = this.Sort.Get(_agg, dataRequest)
-            _agg = this.Data.Get(_agg, dataRequest)
+        if (schemaRequest) {
+            _agg = this.Filter.Get(_agg, schemaRequest)
+            _agg = this.Fields.Get(_agg, schemaRequest)
+            _agg = this.Sort.Get(_agg, schemaRequest)
+            _agg = this.Data.Get(_agg, schemaRequest)
         }
 
         return _agg
@@ -37,15 +37,15 @@ class MongoDbOptions implements IProvider.IProviderOptions {
 
     Filter = class {
 
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
+        static Get(agg: TOptions, schemaRequest: TSchemaRequest): TOptions {
             let _filter: any = {}
-            if (dataRequest['filter-expression'] || dataRequest?.filter) {
+            if (schemaRequest['filter-expression'] || schemaRequest?.filter) {
 
-                if (dataRequest['filter-expression'])
-                    _filter = this.GetExpression(dataRequest['filter-expression'])
+                if (schemaRequest['filter-expression'])
+                    _filter = this.GetExpression(schemaRequest['filter-expression'])
 
-                if (dataRequest?.filter)
-                    _filter = dataRequest.filter
+                if (schemaRequest?.filter)
+                    _filter = schemaRequest.filter
 
                 if (_filter?._id)
                     _filter._id = new mongodb.ObjectId(_filter._id)
@@ -66,15 +66,15 @@ class MongoDbOptions implements IProvider.IProviderOptions {
     }
 
     Fields = class {
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-            if (dataRequest?.fields) {
+        static Get(agg: TOptions, schemaRequest: TSchemaRequest): TOptions {
+            if (schemaRequest?.fields) {
                 let _fields: string[] | Record<string, unknown> = []
-                if (dataRequest.fields.includes(",")) {
-                    _fields = dataRequest.fields.split(",")
+                if (schemaRequest.fields.includes(",")) {
+                    _fields = schemaRequest.fields.split(",")
                         .filter(__field => !(__field == undefined || __field.trim() == ""))
                         .map(__field => __field.trim())
                 } else {
-                    _fields = [dataRequest.fields.trim()]
+                    _fields = [schemaRequest.fields.trim()]
                 }
                 if (_fields.length > 0) {
                     _fields = _fields.reduce((__key, __value) => ({
@@ -91,9 +91,9 @@ class MongoDbOptions implements IProvider.IProviderOptions {
     }
 
     Sort = class {
-        static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-            if (dataRequest?.sort) {
-                const _sort = dataRequest.sort.trim()
+        static Get(agg: TOptions, schemaRequest: TSchemaRequest): TOptions {
+            if (schemaRequest?.sort) {
+                const _sort = schemaRequest.sort.trim()
                 let _sortArray = []
                 // test if array
                 if (_sort.includes(",")) {
@@ -168,103 +168,103 @@ export class MongoDb implements IProvider.IProvider {
         await this.Connection.close()
     }
 
-    async Insert(dataRequest: TDataRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MongoDb.Insert: ${JSON.stringify(dataRequest)}`)
-        const _options: TOptions = this.Options.Parse(dataRequest)
+    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`${Logger.Out} MongoDb.Insert: ${JSON.stringify(schemaRequest)}`)
+        const _options: TOptions = this.Options.Parse(schemaRequest)
 
-        let _dataResponse = <TSchemaResponse>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+        let _schemaResponse = <TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.INSERT
         }
 
         await this.Connection.connect()
-        await this.Connection.db(this.Params.database).collection(dataRequest.entity).insertMany(_options?.Data?.Rows)
-        Logger.Debug(`${Logger.In} MongoDb.Insert: ${JSON.stringify(dataRequest)}`)
-        _dataResponse = <TSchemaResponseData>{
-            ..._dataResponse,
+        await this.Connection.db(this.Params.database).collection(schemaRequest.entity).insertMany(_options?.Data?.Rows)
+        Logger.Debug(`${Logger.In} MongoDb.Insert: ${JSON.stringify(schemaRequest)}`)
+        _schemaResponse = <TSchemaResponseData>{
+            ..._schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
         }
-        return _dataResponse
+        return _schemaResponse
     }
 
-    async Select(dataRequest: TDataRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MongoDb.Select: ${JSON.stringify(dataRequest)}`)
-        const _agg: mongodb.Document[] = _.values(this.Options.Parse(dataRequest))
-        let _dataResponse = <TSchemaResponse>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`MongoDb.Select: ${JSON.stringify(schemaRequest)}`)
+        const _agg: mongodb.Document[] = _.values(this.Options.Parse(schemaRequest))
+        let _schemaResponse = <TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.SELECT
         }
         await this.Connection.connect()
         const _data = await this.Connection.db(this.Params.database)
-            .collection(dataRequest.entity)
+            .collection(schemaRequest.entity)
             .aggregate(_agg)
             .toArray()
 
         if (_data.length > 0) {
-            const _dt = new DataTable(dataRequest.entity, _data)
-            Cache.Set(dataRequest, _dt)
-            _dataResponse = <TSchemaResponseData>{
-                ..._dataResponse,
+            const _dt = new DataTable(schemaRequest.entity, _data)
+            Cache.Set(schemaRequest, _dt)
+            _schemaResponse = <TSchemaResponseData>{
+                ..._schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data: _dt
             }
         } else {
-            _dataResponse = <TSchemaResponseNoData>{
-                ..._dataResponse,
+            _schemaResponse = <TSchemaResponseNoData>{
+                ..._schemaResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
             }
         }
-        return _dataResponse
+        return _schemaResponse
     }
 
-    async Update(dataRequest: TDataRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MongoDb.Update: ${JSON.stringify(dataRequest)}`)
-        const _options: TOptions = this.Options.Parse(dataRequest)
-        let _dataResponse = <TSchemaResponse>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`${Logger.Out} MongoDb.Update: ${JSON.stringify(schemaRequest)}`)
+        const _options: TOptions = this.Options.Parse(schemaRequest)
+        let _schemaResponse = <TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.UPDATE
         }
         await this.Connection.connect()
-        await this.Connection.db(this.Params.database).collection(dataRequest.entity).updateMany(
+        await this.Connection.db(this.Params.database).collection(schemaRequest.entity).updateMany(
             (_options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>,
             {
                 $set: _.head(_options?.Data?.Rows)
             }
         )
-        Logger.Debug(`${Logger.In} MongoDb.Update: ${JSON.stringify(dataRequest)}`)
-        _dataResponse = <TSchemaResponseData>{
-            ..._dataResponse,
+        Logger.Debug(`${Logger.In} MongoDb.Update: ${JSON.stringify(schemaRequest)}`)
+        _schemaResponse = <TSchemaResponseData>{
+            ..._schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
         }
-        return _dataResponse
+        return _schemaResponse
     }
 
-    async Delete(dataRequest: TDataRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MongoDb.Delete: ${JSON.stringify(dataRequest)}`)
-        const _options: any = this.Options.Parse(dataRequest)
-        let _dataResponse = <TSchemaResponse>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`${Logger.Out} MongoDb.Delete: ${JSON.stringify(schemaRequest)}`)
+        const _options: any = this.Options.Parse(schemaRequest)
+        let _schemaResponse = <TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.DELETE
         }
         await this.Connection.connect()
-        await this.Connection.db(this.Params.database).collection(dataRequest.entity).deleteMany(
+        await this.Connection.db(this.Params.database).collection(schemaRequest.entity).deleteMany(
             (_options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>
         )
-        Logger.Debug(`${Logger.In} MongoDb.Delete: ${JSON.stringify(dataRequest)}`)
-        _dataResponse = <TSchemaResponseData>{
-            ..._dataResponse,
+        Logger.Debug(`${Logger.In} MongoDb.Delete: ${JSON.stringify(schemaRequest)}`)
+        _schemaResponse = <TSchemaResponseData>{
+            ..._schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
         }
-        return _dataResponse
+        return _schemaResponse
     }
 }
 

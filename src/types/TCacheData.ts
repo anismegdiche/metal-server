@@ -1,5 +1,5 @@
 import { DataTable } from "./DataTable"
-import { TDataRequest } from "./TDataRequest"
+import { TSchemaRequest } from "./TSchemaRequest"
 
 
 export type TCacheData = {
@@ -7,6 +7,6 @@ export type TCacheData = {
     entity: string,
     hash: string,
     expires: number,
-    request: TDataRequest,
+    request: TSchemaRequest,
     datatable: DataTable
 }

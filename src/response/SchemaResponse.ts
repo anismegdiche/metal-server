@@ -21,13 +21,42 @@ const REQUEST_TRANSACTION: Record<string, string> = {
 
 export class SchemaResponse {
     static async IsExist(req: Request, res: Response, next: NextFunction) {
-        return await Schema.IsExist(req)
+        const schemaRequest = Convert.RequestToSchemaRequest(req)
+        return await Schema.IsExist(schemaRequest)
             .then((result) => {
                 if (!result) {
                     return SchemaResponse.ReplyNotFound(req, res, `schema '${req.params.schema}' not found in schemas`)
                 }
                 next()
             })
+            .catch((error: Error) => ServerResponse.Error(res, error))
+    }
+
+    static async Select(req: Request, res: Response) {
+        const schemaRequest = Convert.RequestToSchemaRequest(req)
+        return await Schema.Select(schemaRequest)
+            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
+            .catch((error: Error) => ServerResponse.Error(res, error))
+    }
+
+    static async Delete(req: Request, res: Response) {
+        const schemaRequest = Convert.RequestToSchemaRequest(req)
+        return await Schema.Delete(schemaRequest)
+            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
+            .catch((error: Error) => ServerResponse.Error(res, error))
+    }
+
+    static async Update(req: Request, res: Response) {
+        const schemaRequest = Convert.RequestToSchemaRequest(req)
+        return await Schema.Update(schemaRequest)
+            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
+            .catch((error: Error) => ServerResponse.Error(res, error))
+    }
+
+    static async Insert(req: Request, res: Response) {
+        const schemaRequest = Convert.RequestToSchemaRequest(req)
+        return await Schema.Insert(schemaRequest)
+            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
             .catch((error: Error) => ServerResponse.Error(res, error))
     }
 
@@ -41,29 +70,5 @@ export class SchemaResponse {
                 ...RESPONSE_STATUS.HTTP_404,
                 message
             })
-    }
-
-    static async Select(req: Request, res: Response) {
-        return await Schema.Select(req)
-            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
-            .catch((error: Error) => ServerResponse.Error(res, error))
-    }
-
-    static async Delete(req: Request, res: Response) {
-        return await Schema.Delete(req)
-            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
-            .catch((error: Error) => ServerResponse.Error(res, error))
-    }
-
-    static async Update(req: Request, res: Response) {
-        return await Schema.Update(req)
-            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
-            .catch((error: Error) => ServerResponse.Error(res, error))
-    }
-
-    static async Insert(req: Request, res: Response) {
-        return await Schema.Insert(req)
-            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
-            .catch((error: Error) => ServerResponse.Error(res, error))
     }
 }
