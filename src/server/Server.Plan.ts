@@ -17,7 +17,6 @@ import { StringExtend } from "../lib/StringExtend"
 import { AiEngine } from "../server/AiEngine"
 import { Schema } from "../server/Schema"
 import { TTransformation } from "../types/TTransformation"
-import { Server } from "./Server"
 
 
 type TStepArguments = {
@@ -53,6 +52,51 @@ class Step {
         'inner': async (dtLeft: DataTable, dtRight: DataTable, fieldNameLeft: string, fieldNameRight: string) => dtLeft.InnerJoin(dtRight, fieldNameLeft, fieldNameRight),
         'full_outer': async (dtLeft: DataTable, dtRight: DataTable, fieldNameLeft: string, fieldNameRight: string) => dtLeft.FullOuterJoin(dtRight, fieldNameLeft, fieldNameRight),
         'cross': async (dtLeft: DataTable, dtRight: DataTable) => dtLeft.CrossJoin(dtRight)
+    }
+
+    static async Execute(schemaName: string | undefined, plan: string, entity: string, steps: TJson[]) {
+
+        let dtWorking = new DataTable(entity)
+
+        for await (const [stepIndex, step] of Object.entries(steps)) {
+            const _stepIndex = parseInt(stepIndex, 10) + 1
+            Logger.Debug(`Step.Execute '${plan}': Step ${_stepIndex}, ${JSON.stringify(step)}`)
+
+            try {
+
+                const __stepCommand: string = Object.keys(step)[0]
+                const __stepParameters: TJson = <TJson>step[__stepCommand]
+
+                if (__stepCommand == 'break') {
+                    Logger.Info(`Step.Execute '${plan}': user break at step '${_stepIndex}', ${JSON.stringify(step)}`)
+                    return dtWorking
+                }
+
+                const _stepArguments: TStepArguments = {
+                    schemaName: schemaName as string,
+                    planName: plan,
+                    currentDataTable: dtWorking,
+                    transformation: __stepParameters
+                }
+
+                dtWorking = await Step.ExecuteCaseMap[__stepCommand](_stepArguments) || Helper.CaseMapNotFound(__stepCommand)
+
+            } catch (error: unknown) {
+                const _error = <Error>error
+                Logger.Error(`Step.Execute '${plan}', Entity '${entity}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`)
+                if (dtWorking.MetaData[METADATA.PLAN_DEBUG] == 'error') {
+                    /*
+                    FIXME
+                    In case of cross entities, only errors in the final entity are returned.
+                    Console log is working fine.
+                    */
+                    const _planErrors: TJson = {}
+                    _planErrors[`entity(${entity}), step(${stepIndex})`] = step
+                    Logger.Debug(`Step.Execute '${plan}', Entity '${entity}': step '${_stepIndex},${JSON.stringify(step)}' added error ${JSON.stringify((<TJson[]>dtWorking.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
+                }
+            }
+        }
+        return dtWorking
     }
 
     static async #Select(stepArguments: TStepArguments): Promise<DataTable> {
@@ -179,7 +223,7 @@ class Step {
                     currentDataTable: dtRight
                 }
             )
-            : await Server.Plan.Execute(stepArguments.schemaName, stepArguments.planName, entity, plan[entity])
+            : await this.Execute(stepArguments.schemaName, stepArguments.planName, entity, plan[entity])
 
         return await this.JoinCaseMap[type](stepArguments.currentDataTable, dtRight, fieldNameLeft, fieldNameRight) ||
             (Helper.CaseMapNotFound(type) && stepArguments.currentDataTable)
@@ -261,57 +305,12 @@ class Step {
 
 
 export class Server_Plan {
-    static async Execute(schemaName: string | undefined, plan: string, entity: string, steps: TJson[]) {
-
-        let dtWorking = new DataTable(entity)
-
-        for await (const [stepIndex, step] of Object.entries(steps)) {
-            const _stepIndex = parseInt(stepIndex, 10) + 1
-            Logger.Debug(`Plan.Execute '${plan}': Step ${_stepIndex}, ${JSON.stringify(step)}`)
-
-            try {
-
-                const __stepCommand: string = Object.keys(step)[0]
-                const __stepParameters: TJson = <TJson>step[__stepCommand]
-
-                if (__stepCommand == 'break') {
-                    Logger.Info(`Plan.Execute '${plan}': user break at step '${_stepIndex}', ${JSON.stringify(step)}`)
-                    return dtWorking
-                }
-
-                const _stepArguments: TStepArguments = {
-                    schemaName: schemaName as string,
-                    planName: plan,
-                    currentDataTable: dtWorking,
-                    transformation: __stepParameters
-                }
-
-                dtWorking = await Step.ExecuteCaseMap[__stepCommand](_stepArguments) || Helper.CaseMapNotFound(__stepCommand)
-
-            } catch (error: unknown) {
-                const _error = <Error>error
-                Logger.Error(`Plan.Execute '${plan}', Entity '${entity}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`)
-                if (dtWorking.MetaData[METADATA.PLAN_DEBUG] == 'error') {
-                    /*
-                    FIXME
-                    In case of cross entities, only errors in the final entity are returned.
-                    Console log is working fine.
-                    */
-                    const _planErrors: TJson = {}
-                    _planErrors[`entity(${entity}), step(${stepIndex})`] = step
-                    Logger.Debug(`Plan.Execute '${plan}', Entity '${entity}': step '${_stepIndex},${JSON.stringify(step)}' added error ${JSON.stringify((<TJson[]>dtWorking.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
-                }
-            }
-        }
-        return dtWorking
-    }
-
     static async GetData(schemaRequest: TSchemaRequest, sqlQuery: string | undefined = undefined) {
 
         const { schema, source, entity } = schemaRequest
 
         if (source === undefined || Config.Configuration.sources[source]?.database === undefined) {
-            Logger.Error(`${Logger.Out} Plans.GetData: no plan found for ${schema}`)
+            Logger.Error(`${Logger.Out} Plan.GetData: no plan found for ${schema}`)
             return <TSchemaResponseNoData>{
                 schema,
                 entity,
@@ -340,9 +339,9 @@ export class Server_Plan {
         const planConfig = Config.Configuration?.plans[planName]
         const entitySteps = planConfig[entity]
 
-        Logger.Debug(`${Logger.In} Plans.GetData: ${source}.${entity} : ${JSON.stringify(entitySteps)}`)
+        Logger.Debug(`${Logger.In} Plan.GetData: ${source}.${entity} : ${JSON.stringify(entitySteps)}`)
 
-        const dtWorking = await this.Execute(schema, source, entity, entitySteps)
+        const dtWorking = await Step.Execute(schema, source, entity, entitySteps)
 
         if (sqlQuery !== undefined) {
             dtWorking.FreeSql(sqlQuery)

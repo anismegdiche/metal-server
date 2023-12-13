@@ -1,7 +1,7 @@
 /* eslint-disable init-declarations */
 import { TensorFlowJs } from '../TensorFlowJs'
 import { IAiEngine } from '../../types/IAiEngine'
-import * as _ from 'lodash'
+import _ from 'lodash'
 
 const IMG_GUITAR =
 	'https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg'
