@@ -36,11 +36,10 @@ export class Cache {
         }
     }
 
-
     static async Connect() {
         Logger.Debug(`Cache.Connect`)
         if (Config.Flags.EnableCache)
-            Source.Connect(null, Config.Configuration.server.cache)
+            Source.Connect(null, Config.Get("server.cache"))
     }
 
     static async Disconnect() {

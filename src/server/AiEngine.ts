@@ -26,7 +26,7 @@ export class AiEngine {
     }
 
     static async Init() {
-        AiEngine.EngineConfiguration = Config.Configuration["ai-engines"]
+        AiEngine.EngineConfiguration = Config.Get("ai-engines")
     }
 
     static async CreateAll() {

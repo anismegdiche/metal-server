@@ -210,20 +210,26 @@ class Step {
         Logger.Debug(`${Logger.In} Step.Join: ${JSON.stringify(stepArguments.transformation)}`)
 
         const { schema, entity, type } = stepArguments.transformation
-        const plan = Config.Configuration?.plans[stepArguments.planName]
         const fieldNameLeft = stepArguments.transformation["left-field"]
         const fieldNameRight = stepArguments.transformation["right-field"]
 
         let dtRight = new DataTable(entity)
 
+        const selectOuterData: TStepArguments = {
+            ...stepArguments,
+            currentDataTable: dtRight
+        }
+
+        const selectInnerData: TSchemaRequest = {
+            schema: stepArguments.schemaName,
+            source: stepArguments.planName,
+            entity
+        }
+
         dtRight = (schema)
-            ? await this.#Select(
-                <TStepArguments>{
-                    ...stepArguments,
-                    currentDataTable: dtRight
-                }
-            )
-            : await this.Execute(stepArguments.schemaName, stepArguments.planName, entity, plan[entity])
+            ? await this.#Select(selectOuterData)
+            // eslint-disable-next-line no-use-before-define
+            : (await Plan.Execute(selectInnerData) as TSchemaResponseData).data
 
         return await this.JoinCaseMap[type](stepArguments.currentDataTable, dtRight, fieldNameLeft, fieldNameRight) ||
             (Helper.CaseMapNotFound(type) && stepArguments.currentDataTable)

@@ -15,6 +15,7 @@ import { RESPONSE_RESULT, RESPONSE_STATUS, RESPONSE_TRANSACTION } from '../lib/C
 import { Schema } from '../server/Schema'
 import { Logger } from '../lib/Logger'
 import { Config } from '../server/Config'
+import { TJson } from '../types/TJson'
 
 
 export class CacheResponse {
@@ -58,7 +59,7 @@ export class CacheResponse {
     static async Get(req: Request, res: Response, next: NextFunction) {
         try {
             const schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)
-            const schemaConfig = Config.Configuration.schemas[schemaRequest.schema]
+            const schemaConfig: TJson = Config.Get(`schemas.${schemaRequest.schema}`)
             schemaRequest.source = Schema.GetSource(schemaConfig, schemaRequest)
 
             if (!Config.Flags.EnableCache && schemaRequest?.cache) {

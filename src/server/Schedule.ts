@@ -12,7 +12,7 @@ import { TSchedule } from '../types/TSchedule'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { TSchemaRequest } from '../types/TSchemaRequest'
-import { Server } from './Server'
+import { Plan } from './Plan'
 
 type TScheduleConfig = {
     plan: string
@@ -39,7 +39,7 @@ export class Schedule {
                         () => {
                             Logger.Debug(`${Logger.In} Schedule.Start: Running job '${_scheduleName}'`)
                             try {
-                                Server.Plan.Execute(<TSchemaRequest>{
+                                Plan.Execute(<TSchemaRequest>{
                                     source: _scheduleParams.plan,
                                     entity: _scheduleParams.entity
                                 })

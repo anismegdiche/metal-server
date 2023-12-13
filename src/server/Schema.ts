@@ -10,6 +10,7 @@ import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
+import { TJson } from '../types/TJson'
 
 export type TSchemaRoute = {
     Type: "source" | "nothing",
@@ -54,7 +55,7 @@ export class Schema {
         Logger.Debug(`Schema.Select: ${JSON.stringify(schemaRequest)}`)
 
         const { schema, entity } = schemaRequest
-        const schemaConfig = Config.Configuration.schemas[schema]
+        const schemaConfig = Config.Get(`schemas.${schema}`)
         const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
 
         return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
@@ -75,7 +76,7 @@ export class Schema {
         Logger.Debug(`Schema.Delete: ${JSON.stringify(schemaRequest)}`)
 
         const { schema, entity } = schemaRequest
-        const schemaConfig = Config.Configuration.schemas[schema]
+        const schemaConfig = Config.Get(`schemas.${schema}`)
         const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
 
         return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
@@ -95,7 +96,7 @@ export class Schema {
         Logger.Debug(`Schema.Update: ${JSON.stringify(schemaRequest)}`)
 
         const { schema, entity } = schemaRequest
-        const schemaConfig = Config.Configuration.schemas[schema]
+        const schemaConfig = Config.Get(`schemas.${schema}`)
         const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
 
         return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
@@ -116,7 +117,7 @@ export class Schema {
         Logger.Debug(`Schema.Insert: ${JSON.stringify(schemaRequest)}`)
 
         const { schema, entity } = schemaRequest
-        const schemaConfig = Config.Configuration.schemas[schema]
+        const schemaConfig: TJson = Config.Get(`schemas.${schema}`)
         const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
 
         return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{

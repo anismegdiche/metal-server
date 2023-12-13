@@ -18,7 +18,7 @@ import { CommonProviderOptionsFilter } from '../lib/CommonProviderOptionsFilter'
 import { CommonProviderOptionsFields } from '../lib/CommonProviderOptionsFields'
 import { CommonProviderOptionsSort } from '../lib/CommonProviderOptionsSort'
 import { SqlQueryHelper } from '../lib/Sql'
-import { Server } from '../server/Server'
+import { Plan } from '../server/Plan'
 
 class PlanProviderOptions implements IProvider.IProviderOptions {
 
@@ -106,7 +106,7 @@ export class PlanProvider implements IProvider.IProvider {
             .OrderBy(options.Sort)
             .Query
 
-        const _planSchemaResponse = await Server.Plan.Execute(schemaRequest, sqlQuery)
+        const _planSchemaResponse = await Plan.Execute(schemaRequest, sqlQuery)
 
         if ('data' in _planSchemaResponse && _planSchemaResponse.data.Rows.length > 0) {
             Cache.Set({
