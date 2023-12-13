@@ -3,8 +3,10 @@
 //
 //
 //
-import { TRow, TRows } from "../types/DataTable"
 import _ from 'lodash'
+import { TRow, TRows } from "../types/DataTable"
+import { TJson } from '../types/TJson'
+import { Logger } from '../lib/Logger'
 
 export class SqlQueryHelper {
     public Query = ''
@@ -19,8 +21,14 @@ export class SqlQueryHelper {
         return this
     }
 
-    public Select(fields: string) {
-        this.Query = `SELECT ${fields}`
+    public Select(fields: TJson | string | undefined = undefined) {
+        if (typeof fields === 'object') {
+            Logger.Error('SqlQueryHelper.Select: fields must be a string or undefined')
+            return this
+        }
+        this.Query = (fields === undefined)
+            ? "SELECT *"
+            : `SELECT ${fields}`
         return this
     }
 
@@ -29,18 +37,22 @@ export class SqlQueryHelper {
         return this
     }
 
-    public Where(condition: string | object | undefined) {
+    public Where(condition: string | object | undefined = undefined) {
+        if (condition === undefined) {
+            return this
+        }
+
         if (typeof condition === 'string') {
             this.Query = `${this.Query} WHERE ${condition}`
         }
 
         if (typeof condition === 'object') {
-            const _cond = _.chain(condition)
+            const _cond = _
+                .chain(condition)
                 .map((__value, __key) => {
-                    let ___formattedValue: string = __value
-                    if (typeof __value !== 'number') {
-                        ___formattedValue = `'${__value}'`
-                    }
+                    const ___formattedValue: string = typeof __value === 'number'
+                        ? __value
+                        : `'${__value}'`
                     return `${__key}=${___formattedValue}`
                 })
                 .join(' AND ')
@@ -69,11 +81,9 @@ export class SqlQueryHelper {
         }
 
         let _fieldsValues: TRow = <TRow>{}
-        if (_.isArray(fieldsValues)) {
-            _fieldsValues = <TRow>(_.head(fieldsValues))
-        } else {
-            _fieldsValues = fieldsValues
-        }
+        _fieldsValues = (_.isArray(fieldsValues))
+            ? <TRow>(_.head(fieldsValues))
+            : fieldsValues
 
         const _setValues = _.chain(_fieldsValues)
             .mapValues((__value, __field) => {
@@ -119,9 +129,16 @@ export class SqlQueryHelper {
         return this
     }
 
-    public OrderBy(order: string | undefined) {
-        if (order)
+    public OrderBy(order: TJson | string | undefined = undefined) {
+        if (typeof order !== 'string' && order !== undefined) {
+            Logger.Error('SqlQueryHelper.OrderBy: order must be a string or undefined')
+            return this
+        }
+
+        if (typeof order === 'string') {
             this.Query = `${this.Query} ORDER BY ${order}`
+        }
+
         return this
     }
 }

@@ -13,8 +13,8 @@ import { TSourceParams } from "../types/TSourceParams"
 import { TOptions } from "../types/TOptions"
 import { DataTable } from "../types/DataTable"
 import { TJson } from "../types/TJson"
-import { TDataResponse, TDataResponseData, TDataResponseNoData } from '../types/TDataResponse'
-import { TDataRequest } from '../types/TDataRequest'
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../types/TSchemaResponse'
+import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
 import { CommonProviderOptionsData } from '../lib/CommonProviderOptionsData'
@@ -25,15 +25,15 @@ import { CommonProviderOptionsSort } from '../lib/CommonProviderOptionsSort'
 
 class PostgresOptions implements IProvider.IProviderOptions {
 
-    Parse(dataRequest: TDataRequest): TOptions {
-        let _agg: TOptions = <TOptions>{}
-        if (dataRequest) {
-            _agg = this.Filter.Get(_agg, dataRequest)
-            _agg = this.Fields.Get(_agg, dataRequest)
-            _agg = this.Sort.Get(_agg, dataRequest)
-            _agg = this.Data.Get(_agg, dataRequest)
+    Parse(schemaRequest: TSchemaRequest): TOptions {
+        let options: TOptions = <TOptions>{}
+        if (schemaRequest) {
+            options = this.Filter.Get(options, schemaRequest)
+            options = this.Fields.Get(options, schemaRequest)
+            options = this.Sort.Get(options, schemaRequest)
+            options = this.Data.Get(options, schemaRequest)
         }
-        return _agg
+        return options
     }
 
     public Filter = CommonProviderOptionsFilter
@@ -99,118 +99,118 @@ export class Postgres implements IProvider.IProvider {
         this.Connection.end()
     }
 
-    async Insert(dataRequest: TDataRequest): Promise<TDataResponse> {
-        Logger.Debug(`${Logger.Out} Postgres.Insert: ${JSON.stringify(dataRequest)}`)
-        const _options: TOptions = this.Options.Parse(dataRequest)
+    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`${Logger.Out} Postgres.Insert: ${JSON.stringify(schemaRequest)}`)
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
-        let _dataResponse = <TDataResponse>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+        let schemaResponse = <TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.INSERT
         }
 
         const _sqlQuery = new SqlQueryHelper()
-            .Insert(`"${dataRequest.entity}"`)
-            .Fields(_options.Data.GetFieldsNames())
-            .Values(_options.Data.Rows)
+            .Insert(`"${schemaRequest.entity}"`)
+            .Fields(options.Data.GetFieldsNames())
+            .Values(options.Data.Rows)
             .Query
 
         await this.Connection.query(_sqlQuery)
-        _dataResponse = <TDataResponseData>{
-            ..._dataResponse,
+        schemaResponse = <TSchemaResponseData>{
+            ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
         }
-        return _dataResponse
+        return schemaResponse
     }
 
-    async Select(dataRequest: TDataRequest): Promise<TDataResponse> {
-        Logger.Debug(`Postgres.Select : ${JSON.stringify(dataRequest)}`)
+    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`Postgres.Select: ${JSON.stringify(schemaRequest)}`)
 
-        const _options: TOptions = this.Options.Parse(dataRequest)
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
-        let _dataResponse = <TDataResponse>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+        let schemaResponse = <TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.SELECT
         }
 
         const _sqlQuery = new SqlQueryHelper()
-            .Select(<string>_options.Fields)
-            .From(`"${dataRequest.entity}"`)
-            .Where(_options.Filter)
-            .OrderBy(<string>_options.Sort)
+            .Select(options.Fields)
+            .From(`"${schemaRequest.entity}"`)
+            .Where(options.Filter)
+            .OrderBy(options.Sort)
             .Query
 
         const _data = await this.Connection.query(_sqlQuery)
         if (_data.rows.length > 0) {
-            const _dt = new DataTable(dataRequest.entity, _data.rows)
-            Cache.Set(dataRequest, _dt)
-            _dataResponse = <TDataResponseData>{
-                ..._dataResponse,
+            const _dt = new DataTable(schemaRequest.entity, _data.rows)
+            Cache.Set(schemaRequest, _dt)
+            schemaResponse = <TSchemaResponseData>{
+                ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data: _dt
             }
         } else {
-            _dataResponse = <TDataResponseNoData>{
-                ..._dataResponse,
+            schemaResponse = <TSchemaResponseNoData>{
+                ...schemaResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
             }
         }
-        return _dataResponse
+        return schemaResponse
     }
 
-    async Update(dataRequest: TDataRequest): Promise<TDataResponse> {
-        Logger.Debug(`Postgres.Update: ${JSON.stringify(dataRequest)}`)
+    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`Postgres.Update: ${JSON.stringify(schemaRequest)}`)
 
-        const _options: TOptions = this.Options.Parse(dataRequest)
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
-        let _dataResponse = <TDataResponse>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+        let schemaResponse = <TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.UPDATE
         }
 
         const _sqlQuery = new SqlQueryHelper()
-            .Update(`"${dataRequest.entity}"`)
-            .Set(_options.Data.Rows)
-            .Where(_options.Filter)
+            .Update(`"${schemaRequest.entity}"`)
+            .Set(options.Data.Rows)
+            .Where(options.Filter)
             .Query
 
         await this.Connection.query(_sqlQuery)
-        _dataResponse = <TDataResponseData>{
-            ..._dataResponse,
+        schemaResponse = <TSchemaResponseData>{
+            ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
         }
-        return _dataResponse
+        return schemaResponse
     }
 
-    async Delete(dataRequest: TDataRequest): Promise<TDataResponse> {
-        Logger.Debug(`Postgres.Delete : ${JSON.stringify(dataRequest)}`)
+    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        Logger.Debug(`Postgres.Delete : ${JSON.stringify(schemaRequest)}`)
 
-        const _options: TOptions = this.Options.Parse(dataRequest)
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
-        let _dataResponse = <TDataResponse>{
-            schema: dataRequest.schema,
-            entity: dataRequest.entity,
+        let schemaResponse = <TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.DELETE
         }
 
         const _sqlQuery = new SqlQueryHelper()
             .Delete()
-            .From(`"${dataRequest.entity}"`)
-            .Where(_options.Filter)
+            .From(`"${schemaRequest.entity}"`)
+            .Where(options.Filter)
             .Query
 
         await this.Connection.query(_sqlQuery)
-        _dataResponse = <TDataResponseData>{
-            ..._dataResponse,
+        schemaResponse = <TSchemaResponseData>{
+            ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
         }
-        return _dataResponse
+        return schemaResponse
     }
 }

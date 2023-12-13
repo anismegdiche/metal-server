@@ -12,9 +12,9 @@ import * as dotenv from 'dotenv'
 const yamlValidate = require('yaml-schema-validator')
 
 import * as SCHConfig from '../types/SCHConfig'
-import { Sources } from '../interpreter/Sources'
+import { Source } from './Source'
 import { Logger, DefaultLevel } from '../lib/Logger'
-import { Schedule } from '../interpreter/Schedule'
+import { Schedule } from './Schedule'
 import { Cache } from '../server/Cache'
 import { TJson } from '../types/TJson'
 import { User } from './User'
@@ -29,8 +29,9 @@ export class Config {
 
     public static DEFAULTS: TJson = {
         "server.port": 3000,
-        "request-limit": '100mb',
-        "server.verbosity": 'warn'
+        "server.timezone": 'UTC',
+        "server.verbosity": 'warn',
+        "server.request-limit": '100mb'
     }
 
     public static Flags: TJson = {
@@ -46,23 +47,23 @@ export class Config {
         Config.Load()
         Config.Check()
 
-        const _verbosity = (Config.Configuration.server?.verbosity ?? DefaultLevel).toLowerCase()
+        const verbosity = (Config.Configuration.server?.verbosity ?? DefaultLevel).toLowerCase()
 
-        Logger.SetLevel(_verbosity)
+        Logger.SetLevel(verbosity)
 
         Config.Flags.EnableAuthentication = Config.Has('server.authentication')
         Config.Flags.EnableAuthentication && User.LoadUsers()
-        Config.Has('sources') && await Sources.ConnectAll()
+        Config.Has('sources') && await Source.ConnectAll()
         Config.Has('server.cache') && await Cache.Connect()
         Config.Has('ai-engines') && await AiEngine.Init()
         Config.Has('ai-engines') && await AiEngine.CreateAll()
-        Config.Has('schedules') && Schedule.CreateAndStart()
+        Config.Has('schedules') && Schedule.CreateAndStartAll()
     }
 
     static async Load() {
         Logger.Debug('Config.Load')
-        const _configFileRaw = Fs.readFileSync(this.ConfigFilePath, 'utf-8')
-        Config.Configuration = Yaml.load(_configFileRaw)
+        const configFileRaw = Fs.readFileSync(this.ConfigFilePath, 'utf-8')
+        Config.Configuration = Yaml.load(configFileRaw)
     }
 
     static async Check() {
@@ -73,12 +74,17 @@ export class Config {
     }
 
     static GetErrors(schemaErrors: any): string[] {
-        return _.filter(schemaErrors, (e) => e.message.includes('is required') ||
-            e.message.includes('must be')
+        return _.filter(
+            schemaErrors,
+            (e) => e.message.includes('is required') || e.message.includes('must be')
         )
     }
     public static Has(element: string): boolean {
         return _.has(Config.Configuration, element)
+    }
+
+    public static Get<T>(element: string): T {
+        return _.get(Config.Configuration, element)
     }
 
     static async CheckRoot() {
@@ -87,16 +93,16 @@ export class Config {
             schema: SCHConfig.SCHConfigRoot,
             logLevel: 'error'
         })
-        const _errors: string[] = _.filter(schemaErrors, (e) => e.message.includes('is required'))
-        if (_errors.length > 0) {
+        const errors: string[] = _.filter(schemaErrors, (e) => e.message.includes('is required'))
+        if (errors.length > 0) {
             Logger.Error(`Errors have been detected in configuration file: ${this.ConfigFilePath}`)
             process.exit(1)
         }
         // check cache configuration
-        if (Config.Configuration?.server?.cache === undefined)
-            Logger.Warn(`section 'server.cache' is not configured, Metal will start without cache feature`)
-        else
+        if (Config.Has("server.cache"))
             Config.Flags.EnableCache = true
+        else
+            Logger.Warn("section 'server.cache' is not configured, Metal will start without cache feature")
     }
 
     static async CheckSources() {

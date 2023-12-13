@@ -7,16 +7,16 @@
 import { Request, Response } from 'express'
 
 import { ServerResponse } from './ServerResponse'
-import { Schedule } from '../interpreter/Schedule'
+import { Schedule } from '../server/Schedule'
 
 export class ScheduleResponse {
     public static Start(req: Request, res: Response) {
         try {
             const { job } = req.params
-            const _intResp = Schedule.Start(job)
+            const _intRes = Schedule.Start(job)
             ServerResponse.PrepareResponse({
                 res,
-                intResp: _intResp
+                intRes: _intRes
             })
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
@@ -26,10 +26,10 @@ export class ScheduleResponse {
     public static Stop(req: Request, res: Response) {
         try {
             const { job } = req.params
-            const _intResp = Schedule.Stop(job)
+            const _intRes = Schedule.Stop(job)
             ServerResponse.PrepareResponse({
                 res,
-                intResp: _intResp
+                intRes: _intRes
             })
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)

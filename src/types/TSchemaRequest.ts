@@ -5,7 +5,7 @@
 //
 import { TJson } from "./TJson"
 
-export type TDataRequest = {
+export type TSchemaRequest = {
     // from Request
     schema: string
     entity: string

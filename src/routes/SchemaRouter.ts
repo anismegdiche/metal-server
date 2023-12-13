@@ -4,7 +4,7 @@
 //
 //
 import { Router } from "express"
-import { DataResponse } from "../response/DataResponse"
+import { SchemaResponse } from "../response/SchemaResponse"
 import { UserResponse } from "../response/UserResponse"
 import { ServerResponse } from "../response/ServerResponse"
 import { HTTP_METHOD } from "../lib/Const"
@@ -17,7 +17,7 @@ SchemaRouter.route("/:schema")
     .all(
         (req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
         UserResponse.IsAuthenticated,
-        DataResponse.IsSchemaExist
+        SchemaResponse.IsExist
     )
     .get(ServerResponse.NotImplemented)
     .post(ServerResponse.NotImplemented)
@@ -29,18 +29,18 @@ SchemaRouter.route("/:schema/:entity")
 
         (req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
         UserResponse.IsAuthenticated,
-        DataResponse.IsSchemaExist
+        SchemaResponse.IsExist
     )
     .get(
         CacheResponse.Get,
-        DataResponse.Select
+        SchemaResponse.Select
     )
     .post(
-        DataResponse.Insert
+        SchemaResponse.Insert
     )
     .patch(
-        DataResponse.Update
+        SchemaResponse.Update
     )
     .delete(
-        DataResponse.Delete
+        SchemaResponse.Delete
     )

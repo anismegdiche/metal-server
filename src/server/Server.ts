@@ -14,9 +14,9 @@ import { TJson } from '../types/TJson'
 import { ROUTE, SERVER } from '../lib/Const'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
-import { Sources } from '../interpreter/Sources'
+import { Source } from './Source'
 import { Cache } from '../server/Cache'
-import { Schedule } from '../interpreter/Schedule'
+import { Schedule } from './Schedule'
 import { UserRouter } from '../routes/UserRouter'
 import { ServerRouter } from '../routes/ServerRouter'
 import { SchemaRouter } from '../routes/SchemaRouter'
@@ -71,7 +71,7 @@ export class Server {
         Server.App.use(_limiter)
 
         Server.App.use(express.json({
-            limit: Config.Configuration.server['request-limit'] ?? Config.DEFAULTS['request-limit']
+            limit: Config.Configuration.server['request-limit'] ?? Config.DEFAULTS['server.request-limit']
         }))
 
         Server.App.use((req: Request, res: Response, next: NextFunction) => {
@@ -132,7 +132,7 @@ export class Server {
         Logger.Debug(`${Logger.In} Server.Reload`)
         Schedule.StopAll()
         await Cache.Disconnect()
-        await Sources.DisconnectAll()
+        await Source.DisconnectAll()
         Config.Init()
     }
 

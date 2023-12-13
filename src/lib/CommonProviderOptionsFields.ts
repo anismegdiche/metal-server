@@ -3,17 +3,16 @@
 //
 //
 //
-import { TDataRequest } from '../types/TDataRequest'
+import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TOptions } from '../types/TOptions'
 
 
 export class CommonProviderOptionsFields {
-    static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-        if (dataRequest?.fields === undefined)
-            agg.Fields = '*'
-        else
-            agg.Fields = dataRequest.fields
+    static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        options.Fields = (schemaRequest?.fields === undefined)
+            ? '*'
+            : schemaRequest.fields
 
-        return agg
+        return options
     }
 }

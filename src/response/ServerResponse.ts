@@ -13,8 +13,8 @@ import { TInternalResponse } from '../types/TInternalResponse'
 
 export class ServerResponse {
 
-    public static PrepareResponse({ res, intResp }: { res: Response, intResp: TInternalResponse }): void {
-        res.status(intResp.StatusCode).json(intResp.Body)
+    public static PrepareResponse({ res, intRes }: { res: Response, intRes: TInternalResponse }): void {
+        res.status(intRes.StatusCode).json(intRes.Body)
     }
 
     //ROADMAP

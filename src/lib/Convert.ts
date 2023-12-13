@@ -6,49 +6,49 @@
 import _ from 'lodash'
 import { Request, Response } from 'express'
 
-import { TDataRequest } from '../types/TDataRequest'
+import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TJson } from '../types/TJson'
-import { TDataResponse, TDataResponseData, TDataResponseError } from '../types/TDataResponse'
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from '../types/TSchemaResponse'
 import { Logger } from "../lib/Logger"
 
 
 export class Convert {
 
     static OptionsFilterExpressionToSql(filterExpression: string) {
-        let _condition = JSON.stringify(filterExpression);
+        let sqlCondition = JSON.stringify(filterExpression)
 
         // booleans
-        _condition = _condition.replace(/&(?=(?:[^']*'[^']*')*[^']*$)/g, " AND ")
+        sqlCondition = sqlCondition.replace(/&(?=(?:[^']*'[^']*')*[^']*$)/g, " AND ")
             .replace(/\|(?=(?:[^']*'[^']*')*[^']*$)/g, " OR ")
-            .replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/g, " NOT ");
+            .replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/g, " NOT ")
 
         // like
-        _condition = _condition.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/g, " LIKE ");
-        const quotedStringArray = _condition.match(/'(.*?)'/g) ?? [];
+        sqlCondition = sqlCondition.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/g, " LIKE ")
+        const quotedStringArray = sqlCondition.match(/'(.*?)'/g) ?? []
         for (const quotedString of quotedStringArray) {
-            _condition = _condition.replace(quotedString, quotedString.replace(/\*/g, "%"));
+            sqlCondition = sqlCondition.replace(quotedString, quotedString.replace(/\*/g, "%"))
         }
 
         // chars
-        _condition = _condition.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/g, "");
+        sqlCondition = sqlCondition.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/g, "")
 
-        return _condition;
+        return sqlCondition
     }
 
     static SqlSortToMongoSort(key: any, value: string) {
         if (value.split(" ").length > 2) {
             return {}
         }
-        const _field = value.split(" ")[0]
-        const _sqlSortDirection = value.split(" ")[1].toLowerCase()
 
-        let _mongoSortDirection = -1
-        if (_sqlSortDirection == "asc") {
-            _mongoSortDirection = 1
-        }
+        const field = value.split(" ")[0]
+        const sqlSortDirection = value.split(" ")[1].toLowerCase()
+        const mongoSortDirection = (sqlSortDirection == "asc")
+            ? 1
+            : -1
+
         return {
             ...key,
-            [_field]: _mongoSortDirection
+            [field]: mongoSortDirection
         }
     }
 
@@ -56,57 +56,57 @@ export class Convert {
         return _.map(_.entries(obj), ([k, v]) => ({ [k]: v }))
     }
 
-    static RequestToDataRequest(req: Request) {
+    static RequestToSchemaRequest(req: Request) {
         const { schema, entity } = req.params
-        const body = req.body
-        const query = req.query
+        const { body, query } = req
 
-        const _dataRequest: TDataRequest = {
+        const schemaRequest: TSchemaRequest = {
             schema,
             entity
         }
 
-        let _queryOrBody: TJson = {}
-
-        if (_.isNil(query) || _.isEmpty(query)) {
-            _queryOrBody = body
-        } else {
-            _queryOrBody = query
-        }
+        const _queryOrBody: TJson = (_.isNil(query) || _.isEmpty(query))
+            ? body
+            : query
 
         if (!_.isEmpty(_queryOrBody)) {
-            Object.assign(_dataRequest, _queryOrBody)
-            if (_dataRequest?.filter && typeof _dataRequest.filter === 'string') {
-                _dataRequest.filter = JSON.parse(_dataRequest.filter)
+            Object.assign(schemaRequest, _queryOrBody)
+            if (schemaRequest?.filter && typeof schemaRequest.filter === 'string') {
+                schemaRequest.filter = JSON.parse(schemaRequest.filter)
             }
         }
 
-        return _dataRequest
+        return schemaRequest
     }
 
 
-    static DataResponseToResponse(dataResponse: TDataResponse, response: Response) {
+    static SchemaResponseToResponse(schemaResponse: TSchemaResponse, response: Response) {
+        const { schema, entity, transaction, result, status } = schemaResponse
+
         let _responseJson: TJson = {
-            schema: dataResponse.schema,
-            entity: dataResponse.entity,
-            transaction: dataResponse.transaction,
-            result: dataResponse.result,
-            status: dataResponse.status
+            schema,
+            entity,
+            transaction,
+            result,
+            status
         }
-        if ((<TDataResponseData>dataResponse)?.data)
+
+        if ((<TSchemaResponseData>schemaResponse)?.data)
             _responseJson = {
                 ..._responseJson,
-                metadata: (<TDataResponseData>dataResponse).data.MetaData,
-                fields: (<TDataResponseData>dataResponse).data.Fields,
-                rows: (<TDataResponseData>dataResponse).data.Rows
+                metadata: (<TSchemaResponseData>schemaResponse).data.MetaData,
+                fields: (<TSchemaResponseData>schemaResponse).data.Fields,
+                rows: (<TSchemaResponseData>schemaResponse).data.Rows
             }
-        if ((<TDataResponseError>dataResponse)?.error)
+
+        if ((<TSchemaResponseError>schemaResponse)?.error)
             _responseJson = {
                 ..._responseJson,
-                error: (<TDataResponseError>dataResponse).error
+                error: (<TSchemaResponseError>schemaResponse).error
             }
+
         return response
-            .status(dataResponse.status)
+            .status(schemaResponse.status)
             .json(_responseJson)
     }
 
@@ -120,7 +120,7 @@ export class Convert {
     static ReplacePlaceholders(text: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
         if (text === undefined)
             return undefined
-        
+
         if (typeof text === 'string') {
             const placeholderRegex = /\$\{\{([^}]+)\}\}/g
             const replacedString = text.replace(placeholderRegex, (match, code) => {
@@ -128,10 +128,9 @@ export class Convert {
                     // Use eval with caution, make sure the code is safe
                     // eslint-disable-next-line no-eval
                     const result = eval(code)
-                    // eslint-disable-next-line no-negated-condition, no-ternary
-                    return result !== undefined
-                        ? result.toString()
-                        : ''
+                    return (result === undefined)
+                        ? ''
+                        : result.toString()
                 } catch (error) {
                     Logger.Error(`Error evaluating code: ${code}, ${JSON.stringify(error)}`)
                     // Return the original placeholder if there's an error

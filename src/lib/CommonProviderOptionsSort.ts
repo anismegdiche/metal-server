@@ -3,15 +3,15 @@
 //
 //
 //
-import { TDataRequest } from '../types/TDataRequest'
+import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TOptions } from '../types/TOptions'
 
 
 export class CommonProviderOptionsSort {
-    static Get(agg: TOptions, dataRequest: TDataRequest): TOptions {
-        if (dataRequest?.sort) {
-            agg.Sort = dataRequest.sort
+    static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        if (schemaRequest?.sort) {
+            options.Sort = schemaRequest.sort
         }
-        return agg
+        return options
     }
 }

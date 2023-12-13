@@ -13,7 +13,7 @@ Content-Type: application/json
 
 ###
 @plan=etl1
-@schema=plan1
+@schema=sch-etl1
 
 ###
 # @name reload
@@ -25,11 +25,13 @@ authorization: Bearer {{token}}
 ###
 # @name get-plan-aitest
 GET http://localhost:3000/schema/{{schema}}/aitest
+    ?cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 ###
 # @name get-plan-aitest2
 GET http://localhost:3000/schema/{{schema}}/aitest2
+    ?cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}

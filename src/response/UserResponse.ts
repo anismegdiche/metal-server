@@ -21,10 +21,10 @@ export class UserResponse {
     public static LogIn(req: Request, res: Response) {
         try {
             const { username, password } = req.body
-            const _intResp = User.LogIn(username.toString(), password.toString())
+            const _intRes = User.LogIn(username.toString(), password.toString())
             ServerResponse.PrepareResponse({
                 res,
-                intResp: _intResp
+                intRes: _intRes
             })
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
@@ -34,10 +34,10 @@ export class UserResponse {
     public static LogOut(req: Request, res: Response) {
         try {
             const _token = UserResponse.#GetRequestToken(req)
-            const _intResp = User.LogOut(_token)
+            const _intRes = User.LogOut(_token)
             ServerResponse.PrepareResponse({
                 res,
-                intResp: _intResp
+                intRes: _intRes
             })
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
@@ -47,10 +47,10 @@ export class UserResponse {
     public static GetInfo(req: Request, res: Response) {
         try {
             const token = UserResponse.#GetRequestToken(req)
-            const _intResp = User.GetInfo(token)
+            const _intRes = User.GetInfo(token)
             ServerResponse.PrepareResponse({
                 res,
-                intResp: _intResp
+                intRes: _intRes
             })
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)

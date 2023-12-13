@@ -81,15 +81,15 @@ describe("Postgres", () => {
                 rows: [
                     {
                         company_name: "Poe LLD",
-                        contact_name: "Jane Poe",
+                        contact_name: "Jane Poe"
                     },
                     {
                         company_name: "Doe LLD",
-                        contact_name: "John Doe",
+                        contact_name: "John Doe"
                     },
                     {
                         company_name: "Loe LLD",
-                        contact_name: "Larry Loe",
+                        contact_name: "Larry Loe"
                     }
                 ]
             });

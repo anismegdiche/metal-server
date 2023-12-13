@@ -10,8 +10,9 @@ import { HTTP_STATUS_CODE } from '../lib/Const'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchedule } from '../types/TSchedule'
 import { Logger } from '../lib/Logger'
-import { Config } from '../server/Config'
-import { Plans } from './Plans'
+import { Config } from './Config'
+import { TSchemaRequest } from '../types/TSchemaRequest'
+import { Plan } from './Plan'
 
 type TScheduleConfig = {
     plan: string
@@ -23,29 +24,33 @@ export class Schedule {
 
     public static Jobs: TSchedule[] = []
 
-    public static CreateAndStart() {
-        Logger.Debug(`${Logger.In} Schedule.Start: ${JSON.stringify(Config.Configuration.schedules)}`)
+    public static CreateAndStartAll() {
+        Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: ${JSON.stringify(Config.Configuration.schedules)}`)
         if (Config.Configuration?.schedules) {
 
-            const _configSchedule: Array<[string, TScheduleConfig]> = Object.entries(Config.Configuration.schedules)
+            const scheduleConfig: Array<[string, TScheduleConfig]> = Object.entries(Config.Configuration.schedules)
 
-            for (const [_scheduleName, _scheduleConfig] of _configSchedule) {
-                Logger.Info(`${Logger.In} Schedule.Start: Starting job '${_scheduleName}'`)
+            for (const [_scheduleName, _scheduleParams] of scheduleConfig) {
+                Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_scheduleName}'`)
                 this.Jobs.push(<TSchedule>{
                     name: _scheduleName,
                     job: new CronJob(
-                        _scheduleConfig.cron,
+                        _scheduleParams.cron,
                         () => {
                             Logger.Debug(`${Logger.In} Schedule.Start: Running job '${_scheduleName}'`)
                             try {
-                                Plans.RenderTable(undefined, _scheduleConfig.plan, _scheduleConfig.entity)
+                                Plan.Execute(<TSchemaRequest>{
+                                    source: _scheduleParams.plan,
+                                    entity: _scheduleParams.entity
+                                })
                             } catch (error) {
                                 Logger.Error(`${Logger.In} Schedule.Start: Error has occured with '${_scheduleName}' : ${JSON.stringify(error)}`)
                             }
+                            Logger.Debug(`${Logger.Out} Schedule.Start: job '${_scheduleName}' terminated`)
                         },
                         null,
                         true,
-                        Config.Configuration?.server?.timezone || 'UTC'
+                        Config.Configuration?.server?.timezone || Config.DEFAULTS['server.timezone']
                     )
                 })
             }
@@ -96,5 +101,4 @@ export class Schedule {
             _job.job.stop()
         }
     }
-
 }

@@ -28,7 +28,7 @@ type TTransactionNoData = TTransaction.delete | TTransaction.insert | TTransacti
 
 type TTransactionError = TTransactionNoData
 
-export type TDataResponseData = {
+export type TSchemaResponseData = {
     schema: string
     entity: string
     transaction: TTransactionData
@@ -39,7 +39,7 @@ export type TDataResponseData = {
     data: DataTable
 }
 
-export type TDataResponseNoData = {
+export type TSchemaResponseNoData = {
     schema: string
     entity: string
     transaction: TTransactionNoData
@@ -47,7 +47,7 @@ export type TDataResponseNoData = {
     status: HTTP_STATUS_CODE.CREATED | HTTP_STATUS_CODE.NOT_FOUND
 }
 
-export type TDataResponseError = {
+export type TSchemaResponseError = {
     schema: string
     entity: string
     transaction: TTransactionError
@@ -58,4 +58,4 @@ export type TDataResponseError = {
     expires?: number
 }
 
-export type TDataResponse = TDataResponseData | TDataResponseNoData | TDataResponseError
+export type TSchemaResponse = TSchemaResponseData | TSchemaResponseNoData | TSchemaResponseError

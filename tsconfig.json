@@ -8,9 +8,10 @@
         "forceConsistentCasingInFileNames": true,
         "outDir": "./build",
         "allowSyntheticDefaultImports": true, // Typing support for this case
-        "esModuleInterop": true,        
+        "esModuleInterop": true,
         "strict": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "experimentalDecorators": true
     },
     // "include": ["**/*"],
     "exclude": [

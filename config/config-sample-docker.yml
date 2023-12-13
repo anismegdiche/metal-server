@@ -67,6 +67,9 @@ sources:
     user: admin
     password: "123456"
     database: clubdata
+  plan-etl1:
+    provider: plan
+    database: etl1
 
 schemas:
   northwind:
@@ -95,8 +98,8 @@ schemas:
       users:
         source: mdb-mflix
         entity: users
-  plan1:
-    plan: etl1
+  etl1:
+    source: plan-etl1
 
 schedules:
   run entity contact of my etl1 plan:
