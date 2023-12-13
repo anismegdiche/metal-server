@@ -15,40 +15,40 @@ import { Logger } from "../lib/Logger"
 export class Convert {
 
     static OptionsFilterExpressionToSql(filterExpression: string) {
-        let _condition = JSON.stringify(filterExpression)
+        let sqlCondition = JSON.stringify(filterExpression)
 
         // booleans
-        _condition = _condition.replace(/&(?=(?:[^']*'[^']*')*[^']*$)/g, " AND ")
+        sqlCondition = sqlCondition.replace(/&(?=(?:[^']*'[^']*')*[^']*$)/g, " AND ")
             .replace(/\|(?=(?:[^']*'[^']*')*[^']*$)/g, " OR ")
             .replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/g, " NOT ")
 
         // like
-        _condition = _condition.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/g, " LIKE ")
-        const quotedStringArray = _condition.match(/'(.*?)'/g) ?? []
+        sqlCondition = sqlCondition.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/g, " LIKE ")
+        const quotedStringArray = sqlCondition.match(/'(.*?)'/g) ?? []
         for (const quotedString of quotedStringArray) {
-            _condition = _condition.replace(quotedString, quotedString.replace(/\*/g, "%"))
+            sqlCondition = sqlCondition.replace(quotedString, quotedString.replace(/\*/g, "%"))
         }
 
         // chars
-        _condition = _condition.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/g, "")
+        sqlCondition = sqlCondition.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/g, "")
 
-        return _condition
+        return sqlCondition
     }
 
     static SqlSortToMongoSort(key: any, value: string) {
         if (value.split(" ").length > 2) {
             return {}
         }
-        const _field = value.split(" ")[0]
-        const _sqlSortDirection = value.split(" ")[1].toLowerCase()
 
-        let _mongoSortDirection = -1
-        if (_sqlSortDirection == "asc") {
-            _mongoSortDirection = 1
-        }
+        const field = value.split(" ")[0]
+        const sqlSortDirection = value.split(" ")[1].toLowerCase()
+        const mongoSortDirection = (sqlSortDirection == "asc")
+            ? 1
+            : -1
+
         return {
             ...key,
-            [_field]: _mongoSortDirection
+            [field]: mongoSortDirection
         }
     }
 
@@ -60,7 +60,7 @@ export class Convert {
         const { schema, entity } = req.params
         const { body, query } = req
 
-        const _schemaRequest: TSchemaRequest = {
+        const schemaRequest: TSchemaRequest = {
             schema,
             entity
         }
@@ -70,13 +70,13 @@ export class Convert {
             : query
 
         if (!_.isEmpty(_queryOrBody)) {
-            Object.assign(_schemaRequest, _queryOrBody)
-            if (_schemaRequest?.filter && typeof _schemaRequest.filter === 'string') {
-                _schemaRequest.filter = JSON.parse(_schemaRequest.filter)
+            Object.assign(schemaRequest, _queryOrBody)
+            if (schemaRequest?.filter && typeof schemaRequest.filter === 'string') {
+                schemaRequest.filter = JSON.parse(schemaRequest.filter)
             }
         }
 
-        return _schemaRequest
+        return schemaRequest
     }
 
 
