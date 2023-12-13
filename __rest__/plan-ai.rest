@@ -12,7 +12,7 @@ Content-Type: application/json
 @token={{login.response.body.token}}
 
 ###
-@plan=plan1
+@plan=etl1
 
 ###
 # @name get-plan
