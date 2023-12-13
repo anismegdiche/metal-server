@@ -47,7 +47,7 @@ class Step {
         'add-field': async (stepArguments: TStepArguments) => await Step.#AddField(stepArguments)
     }
 
-    static JoinTypeCaseMap: Record<string, Function> = {
+    static JoinCaseMap: Record<string, Function> = {
         'left': async (dtLeft: DataTable, dtRight: DataTable, fieldNameLeft: string, fieldNameRight: string) => dtLeft.LeftJoin(dtRight, fieldNameLeft, fieldNameRight),
         'right': async (dtLeft: DataTable, dtRight: DataTable, fieldNameLeft: string, fieldNameRight: string) => dtLeft.RightJoin(dtRight, fieldNameLeft, fieldNameRight),
         'inner': async (dtLeft: DataTable, dtRight: DataTable, fieldNameLeft: string, fieldNameRight: string) => dtLeft.InnerJoin(dtRight, fieldNameLeft, fieldNameRight),
@@ -181,7 +181,7 @@ class Step {
             )
             : await Server.Plan.Execute(stepArguments.schemaName, stepArguments.planName, entity, plan[entity])
 
-        return await this.JoinTypeCaseMap[type](stepArguments.currentDataTable, dtRight, fieldNameLeft, fieldNameRight) ||
+        return await this.JoinCaseMap[type](stepArguments.currentDataTable, dtRight, fieldNameLeft, fieldNameRight) ||
             (Helper.CaseMapNotFound(type) && stepArguments.currentDataTable)
     }
 
