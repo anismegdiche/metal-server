@@ -98,8 +98,6 @@ schemas:
       users:
         source: mdb-mflix
         entity: users
-  plan1:
-    plan: etl1
   etl1:
     source: plan-etl1
 

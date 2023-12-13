@@ -48,6 +48,9 @@ sources:
     user: admin
     password: "123456"
     database: clubdata
+  plan-etl1:
+    provider: plan
+    plan: etl1
 
   # input:  #ROADMAP
   #   provider: file
@@ -89,8 +92,8 @@ schemas:
         source: mongo
         entity: users
 
-  plan1:
-    plan: etl1
+  etl1:
+    source: plan-etl1
 
   file1:
     source: input
