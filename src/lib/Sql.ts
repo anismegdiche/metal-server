@@ -5,6 +5,8 @@
 //
 import _ from 'lodash'
 import { TRow, TRows } from "../types/DataTable"
+import { TJson } from '../types/TJson'
+import { Logger } from '../lib/Logger'
 
 export class SqlQueryHelper {
     public Query = ''
@@ -19,8 +21,14 @@ export class SqlQueryHelper {
         return this
     }
 
-    public Select(fields: string) {
-        this.Query = `SELECT ${fields}`
+    public Select(fields: TJson | string | undefined = undefined) {
+        if (typeof fields === 'object') {
+            Logger.Error('SqlQueryHelper.Select: fields must be a string or undefined')
+            return this
+        }
+        this.Query = (fields === undefined)
+            ? "SELECT *"
+            : `SELECT ${fields}`
         return this
     }
 
@@ -29,7 +37,11 @@ export class SqlQueryHelper {
         return this
     }
 
-    public Where(condition: string | object | undefined) {
+    public Where(condition: string | object | undefined = undefined) {
+        if (condition === undefined) {
+            return this
+        }
+        
         if (typeof condition === 'string') {
             this.Query = `${this.Query} WHERE ${condition}`
         }
@@ -119,9 +131,16 @@ export class SqlQueryHelper {
         return this
     }
 
-    public OrderBy(order: string | undefined) {
-        if (order)
+    public OrderBy(order: TJson | string | undefined = undefined) {
+        if (typeof order !== 'string' && order !== undefined) {
+            Logger.Error('SqlQueryHelper.OrderBy: order must be a string or undefined')
+            return this
+        }
+
+        if (typeof order === 'string') {
             this.Query = `${this.Query} ORDER BY ${order}`
+        }
+
         return this
     }
 }

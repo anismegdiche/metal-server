@@ -11,7 +11,8 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchedule } from '../types/TSchedule'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
-import { Plans } from '../providers/Plan'
+import { TSchemaRequest } from '../types/TSchemaRequest'
+import { Server } from './Server'
 
 type TScheduleConfig = {
     plan: string
@@ -23,14 +24,14 @@ export class Schedule {
 
     public static Jobs: TSchedule[] = []
 
-    public static CreateAndStart() {
-        Logger.Debug(`${Logger.In} Schedule.Start: ${JSON.stringify(Config.Configuration.schedules)}`)
+    public static CreateAndStartAll() {
+        Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: ${JSON.stringify(Config.Configuration.schedules)}`)
         if (Config.Configuration?.schedules) {
 
             const scheduleConfig: Array<[string, TScheduleConfig]> = Object.entries(Config.Configuration.schedules)
 
             for (const [_scheduleName, _scheduleParams] of scheduleConfig) {
-                Logger.Info(`${Logger.In} Schedule.Start: Starting job '${_scheduleName}'`)
+                Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_scheduleName}'`)
                 this.Jobs.push(<TSchedule>{
                     name: _scheduleName,
                     job: new CronJob(
@@ -38,10 +39,14 @@ export class Schedule {
                         () => {
                             Logger.Debug(`${Logger.In} Schedule.Start: Running job '${_scheduleName}'`)
                             try {
-                                Plans.GetData(undefined, _scheduleParams.plan, _scheduleParams.entity)
+                                Server.Plan.GetData(<TSchemaRequest>{
+                                    source: _scheduleParams.plan,
+                                    entity: _scheduleParams.entity
+                                })
                             } catch (error) {
                                 Logger.Error(`${Logger.In} Schedule.Start: Error has occured with '${_scheduleName}' : ${JSON.stringify(error)}`)
                             }
+                            Logger.Debug(`${Logger.Out} Schedule.Start: job '${_scheduleName}' terminated`)
                         },
                         null,
                         true,
@@ -96,5 +101,4 @@ export class Schedule {
             _job.job.stop()
         }
     }
-
 }

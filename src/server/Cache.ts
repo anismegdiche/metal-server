@@ -106,11 +106,11 @@ export class Cache {
     }
 
     static IsValid(expires?: number): boolean {
-        let _isValid = false
+        let isValid = false
         if (expires)
-            _isValid = new Date().getTime() <= expires ?? false
-        Logger.Debug(`Cache.IsValid = ${_isValid}`)
-        return _isValid
+            isValid = new Date().getTime() <= expires ?? false
+        Logger.Debug(`Cache.IsValid = ${isValid}`)
+        return isValid
     }
 
     // BUG: when caching Plan, datatable is rendered with Fields, Rows (in Pascal case) 
@@ -133,17 +133,17 @@ export class Cache {
 
     static async View(): Promise<TInternalResponse> {
         Logger.Debug(`${Logger.In} Cache.ViewData`)
-        const _schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(Cache.#GetSchemaRequest())
-        _schemaResponse.transaction = TTransaction.cache_data
+        const schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(Cache.#GetSchemaRequest())
+        schemaResponse.transaction = TTransaction.cache_data
         Logger.Debug(`${Logger.Out} Cache.ViewData`)
         let _intRes: TInternalResponse = {
-            StatusCode: _schemaResponse.status,
+            StatusCode: schemaResponse.status,
             Body: {
                 message: 'Cache data'
             }
         }
-        if ((<TSchemaResponseData>_schemaResponse)?.data  && _intRes.Body) {
-            _intRes.Body.data = (<TSchemaResponseData>_schemaResponse).data.Rows
+        if ((<TSchemaResponseData>schemaResponse)?.data  && _intRes.Body) {
+            _intRes.Body.data = (<TSchemaResponseData>schemaResponse).data.Rows
         }
         return _intRes
     }

@@ -10,13 +10,13 @@ import { Convert } from './Convert'
 
 
 export class CommonProviderOptionsData {
-    static Get(__agg: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.data) {
-            __agg.Data = new DataTable(
+            options.Data = new DataTable(
                 schemaRequest.entity,
                 Convert.ReplacePlaceholders(schemaRequest.data)
             )
         }
-        return __agg
+        return options
     }
 }

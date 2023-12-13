@@ -12,17 +12,17 @@ import { TSchemaResponse } from './TSchemaResponse'
 export interface IProviderOptions {
     Parse: (schemaRequest: TSchemaRequest) => TOptions
     Filter: {
-        Get: (agg: TOptions, schemaRequest: TSchemaRequest) => TOptions
+        Get: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
         GetExpression: (filterExpression: string) => string
     }
     Fields: {
-        Get: (agg: TOptions, schemaRequest: TSchemaRequest) => TOptions
+        Get: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
     }
     Sort: {
-        Get: (agg: TOptions, schemaRequest: TSchemaRequest) => TOptions
+        Get: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
     }
     Data: {
-        Get: (agg: TOptions, schemaRequest: TSchemaRequest) => TOptions
+        Get: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
     }
 }
 

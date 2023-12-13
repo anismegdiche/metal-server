@@ -35,14 +35,15 @@ export class Schema {
         Logger.Debug(`Schema.IsExist: ${JSON.stringify(schemaRequest)}`)
 
         const { schema } = schemaRequest
-
+        
         // check if schema exists in config file
-        if (Config.Configuration?.schemas === undefined) {
+        if (!Config.Has("schemas")) {
             Logger.Warn(`section 'schemas' not found in configuration`)
             return false
         }
+
         // check if schema exists
-        if (!_.has(Config.Configuration.schemas, schema)) {
+        if (!Config.Has(`schemas.${schema}`)) {
             Logger.Warn(`schema '${schema}' not found in configuration`)
             return false
         }
@@ -61,7 +62,11 @@ export class Schema {
             EntityName: schemaRoute.EntityName,
             SchemaRequest: schemaRequest,
             CRUDOperation: async () => {
-                return await Source.Sources[schemaRoute.RouteName].Select(schemaRequest)
+                const source = schemaRoute.RouteName
+                return await Source.Sources[source].Select({
+                    ...schemaRequest,
+                    source
+                })
             }
         })
     }
@@ -78,7 +83,11 @@ export class Schema {
             EntityName: schemaRoute.EntityName,
             SchemaRequest: schemaRequest,
             CRUDOperation: async () => {
-                return await Source.Sources[schemaRoute.RouteName].Delete(schemaRequest)
+                const source = schemaRoute.RouteName
+                return await Source.Sources[source].Delete({
+                    ...schemaRequest,
+                    source
+                })
             }
         })
     }
@@ -94,7 +103,11 @@ export class Schema {
             EntityName: schemaRoute.EntityName,
             SchemaRequest: schemaRequest,
             CRUDOperation: async () => {
-                return await Source.Sources[schemaRoute.RouteName].Update(schemaRequest)
+                const source = schemaRoute.RouteName
+                return await Source.Sources[source].Update({
+                    ...schemaRequest,
+                    source
+                })
             }
         })
     }
@@ -111,7 +124,11 @@ export class Schema {
             EntityName: schemaRoute.EntityName,
             SchemaRequest: schemaRequest,
             CRUDOperation: async () => {
-                return await Source.Sources[schemaRoute.RouteName].Insert(schemaRequest)
+                const source = schemaRoute.RouteName
+                return await Source.Sources[source].Insert({
+                    ...schemaRequest,
+                    source
+                })
             }
         })
     }

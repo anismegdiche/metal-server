@@ -8,12 +8,11 @@ import { TOptions } from '../types/TOptions'
 
 
 export class CommonProviderOptionsFields {
-    static Get(agg: TOptions, schemaRequest: TSchemaRequest): TOptions {
-        if (schemaRequest?.fields === undefined)
-            agg.Fields = '*'
-        else
-            agg.Fields = schemaRequest.fields
+    static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        options.Fields = (schemaRequest?.fields === undefined)
+            ? '*'
+            : schemaRequest.fields;
 
-        return agg
+        return options
     }
 }

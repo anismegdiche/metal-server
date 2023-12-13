@@ -57,11 +57,11 @@ export class CacheResponse {
 
     static async Get(req: Request, res: Response, next: NextFunction) {
         try {
-            const _schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)
-            const _schemaConfig = Config.Configuration.schemas[_schemaRequest.schema]
-            _schemaRequest.source = Schema.GetSource(_schemaConfig, _schemaRequest)
+            const schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)
+            const schemaConfig = Config.Configuration.schemas[schemaRequest.schema]
+            schemaRequest.source = Schema.GetSource(schemaConfig, schemaRequest)
 
-            if (!Config.Flags.EnableCache && _schemaRequest?.cache) {
+            if (!Config.Flags.EnableCache && schemaRequest?.cache) {
                 Logger.Warn(`Cache.Get: 'server.cache' is not configured, bypassing option 'cache'`)
                 next()
                 return
@@ -73,7 +73,7 @@ export class CacheResponse {
             }
 
             Logger.Debug(`Cache.Get`)
-            const _hash = Cache.Hash(_schemaRequest)
+            const _hash = Cache.Hash(schemaRequest)
             const _cacheData = await Cache.Get(_hash)
             if (_cacheData  && Cache.IsValid(_cacheData?.expires)) {
                 Logger.Debug(`Cache.Get: cache ${_hash} found`)

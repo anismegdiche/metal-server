@@ -9,19 +9,19 @@ import { Convert } from './Convert'
 
 
 export class CommonProviderOptionsFilter {
-    static Get(agg: TOptions, schemaRequest: TSchemaRequest): TOptions {
-        let _filter = {}
+    static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        let filter = {}
         if (schemaRequest['filter-expression'] || schemaRequest?.filter) {
 
             if (schemaRequest['filter-expression'])
-                _filter = this.GetExpression(schemaRequest['filter-expression'])
+                filter = this.GetExpression(schemaRequest['filter-expression'])
 
             if (schemaRequest?.filter)
-                _filter = Convert.JsonToArray(schemaRequest.filter)
+                filter = Convert.JsonToArray(schemaRequest.filter)
 
-            agg.Filter = Convert.ReplacePlaceholders(_filter)
+            options.Filter = Convert.ReplacePlaceholders(filter)
         }
-        return agg
+        return options
     }
 
     static GetExpression(filterExpression: string): string {

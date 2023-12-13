@@ -25,14 +25,14 @@ import { CommonProviderOptionsSort } from '../lib/CommonProviderOptionsSort'
 class SqlServerOptions implements IProvider.IProviderOptions {
 
     Parse(schemaRequest: TSchemaRequest): TOptions {
-        let _agg: TOptions = <TOptions>{}
+        let options: TOptions = <TOptions>{}
         if (schemaRequest) {
-            _agg = this.Filter.Get(_agg, schemaRequest)
-            _agg = this.Fields.Get(_agg, schemaRequest)
-            _agg = this.Sort.Get(_agg, schemaRequest)
-            _agg = this.Data.Get(_agg, schemaRequest)
+            options = this.Filter.Get(options, schemaRequest)
+            options = this.Fields.Get(options, schemaRequest)
+            options = this.Sort.Get(options, schemaRequest)
+            options = this.Data.Get(options, schemaRequest)
         }
-        return _agg
+        return options
     }
 
     public Filter = CommonProviderOptionsFilter
@@ -101,9 +101,9 @@ export class SqlServer implements IProvider.IProvider {
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} SqlServer.Insert: ${JSON.stringify(schemaRequest)}`)
 
-        const _options: TOptions = this.Options.Parse(schemaRequest)
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
-        let _schemaResponse = <TSchemaResponse>{
+        let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.INSERT
@@ -111,63 +111,63 @@ export class SqlServer implements IProvider.IProvider {
 
         const _sqlQuery = new SqlQueryHelper()
             .Insert(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
-            .Fields(_options.Data.GetFieldsNames())
-            .Values(_options.Data.Rows)
+            .Fields(options.Data.GetFieldsNames())
+            .Values(options.Data.Rows)
             .Query
 
         await this.Connection.query(_sqlQuery)
-        _schemaResponse = <TSchemaResponseData>{
-            ..._schemaResponse,
+        schemaResponse = <TSchemaResponseData>{
+            ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
         }
-        return _schemaResponse
+        return schemaResponse
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} SqlServer.Select: ${JSON.stringify(schemaRequest)}`)
 
-        const _options: TOptions = this.Options.Parse(schemaRequest)
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
-        let _schemaResponse = <TSchemaResponse>{
+        let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.SELECT
         }
 
         const _sqlQuery = new SqlQueryHelper()
-            .Select(<string>_options.Fields)
+            .Select(options.Fields)
             .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
-            .Where(_options.Filter)
-            .OrderBy(<string | undefined>_options.Sort)
+            .Where(options.Filter)
+            .OrderBy(options.Sort)
             .Query
 
         const data = await this.Connection.query(_sqlQuery)
         if (data.recordset != null && data.recordset.length > 0) {
             const _dt = new DataTable(schemaRequest.entity, data.recordset)
             Cache.Set(schemaRequest, _dt)
-            _schemaResponse = <TSchemaResponseData>{
-                ..._schemaResponse,
+            schemaResponse = <TSchemaResponseData>{
+                ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data: _dt
             }
         } else {
-            _schemaResponse = <TSchemaResponseNoData>{
-                ..._schemaResponse,
+            schemaResponse = <TSchemaResponseNoData>{
+                ...schemaResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
             }
         }
-        return _schemaResponse
+        return schemaResponse
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`SqlServer.Update: ${JSON.stringify(schemaRequest)}`)
 
-        const _options: TOptions = this.Options.Parse(schemaRequest)
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
-        let _schemaResponse = <TSchemaResponse>{
+        let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.UPDATE
@@ -175,25 +175,25 @@ export class SqlServer implements IProvider.IProvider {
 
         const _sqlQuery = new SqlQueryHelper()
             .Update(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
-            .Set(_options.Data.Rows)
-            .Where(_options.Filter)
+            .Set(options.Data.Rows)
+            .Where(options.Filter)
             .Query
 
         await this.Connection.query(_sqlQuery)
-        _schemaResponse = <TSchemaResponseData>{
-            ..._schemaResponse,
+        schemaResponse = <TSchemaResponseData>{
+            ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
         }
-        return _schemaResponse
+        return schemaResponse
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`SqlServer.Delete: ${JSON.stringify(schemaRequest)}`)
 
-        const _options: TOptions = this.Options.Parse(schemaRequest)
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
-        let _schemaResponse = <TSchemaResponse>{
+        let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.DELETE
@@ -202,15 +202,15 @@ export class SqlServer implements IProvider.IProvider {
         const _sqlQuery = new SqlQueryHelper()
             .Delete()
             .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
-            .Where(_options.Filter)
+            .Where(options.Filter)
             .Query
 
         await this.Connection.query(_sqlQuery)
-        _schemaResponse = <TSchemaResponseData>{
-            ..._schemaResponse,
+        schemaResponse = <TSchemaResponseData>{
+            ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
         }
-        return _schemaResponse
+        return schemaResponse
     }
 }

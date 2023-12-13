@@ -90,7 +90,7 @@ export class NlpJs implements IAiEngine {
 	}
 
 	static #GuessLanguageSetDefaultOptions(options: Partial<TNlpJsGuessLangOptions>): TNlpJsGuessLangOptions {
-		let _options: TNlpJsGuessLangOptions = {
+		const _options: TNlpJsGuessLangOptions = {
 			accept: ['en'],
 			limit: 1,
 			...options

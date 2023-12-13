@@ -57,7 +57,7 @@ export class Config {
         Config.Has('server.cache') && await Cache.Connect()
         Config.Has('ai-engines') && await AiEngine.Init()
         Config.Has('ai-engines') && await AiEngine.CreateAll()
-        Config.Has('schedules') && Schedule.CreateAndStart()
+        Config.Has('schedules') && Schedule.CreateAndStartAll()
     }
 
     static async Load() {

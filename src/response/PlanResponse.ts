@@ -7,7 +7,7 @@
 import { Request, Response } from 'express'
 
 import { ServerResponse } from './ServerResponse'
-import { Plans } from '../providers/Plan'
+import { Server_Plan } from "../server/Server.Plan"
 
 
 export class PlanResponse {
@@ -15,7 +15,7 @@ export class PlanResponse {
     public static Reload(req: Request, res: Response) {
         try {
             const { plan } = req.params
-            const _intRes = Plans.Reload(plan)
+            const _intRes = Server_Plan.Reload(plan)
             ServerResponse.PrepareResponse({
                 res,
                 intRes: _intRes
