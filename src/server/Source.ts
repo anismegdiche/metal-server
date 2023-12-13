@@ -11,11 +11,11 @@ import { IProvider } from '../types/IProvider'
 import { Postgres } from '../providers/Postgres'
 import { MongoDb } from '../providers/MongoDb'
 import { SqlServer } from '../providers/SqlServer'
-import { Plan } from '../providers/Plan'
+import { PlanProvider } from '../providers/PlanProvider'
 
 
 const NewSourceCaseMap: Record<string, Function> = {
-    'plan': (source: string, sourceConfig: any) => new Plan(source, sourceConfig),
+    'plan': (source: string, sourceConfig: any) => new PlanProvider(source, sourceConfig),
     'postgres': (source: string, sourceConfig: any) => new Postgres(source, sourceConfig),
     'mongodb': (source: string, sourceConfig: any) => new MongoDb(source, sourceConfig),
     'mssql': (source: string, sourceConfig: any) => new SqlServer(source, sourceConfig)

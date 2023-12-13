@@ -39,7 +39,7 @@ export class Schedule {
                         () => {
                             Logger.Debug(`${Logger.In} Schedule.Start: Running job '${_scheduleName}'`)
                             try {
-                                Server.Plan.GetData(<TSchemaRequest>{
+                                Server.Plan.Execute(<TSchemaRequest>{
                                     source: _scheduleParams.plan,
                                     entity: _scheduleParams.entity
                                 })

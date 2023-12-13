@@ -20,7 +20,7 @@ import { CommonProviderOptionsSort } from '../lib/CommonProviderOptionsSort'
 import { SqlQueryHelper } from '../lib/Sql'
 import { Server } from '../server/Server'
 
-class PlanOptions implements IProvider.IProviderOptions {
+class PlanProviderOptions implements IProvider.IProviderOptions {
 
     Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}
@@ -43,13 +43,13 @@ class PlanOptions implements IProvider.IProviderOptions {
     public Data = CommonProviderOptionsData
 }
 
-export class Plan implements IProvider.IProvider {
+export class PlanProvider implements IProvider.IProvider {
     public ProviderName = 'Plan'
     public SourceName: string
     public Params: TSourceParams = <TSourceParams>{}
     public Config: TJson = {}
 
-    Options = new PlanOptions()
+    Options = new PlanProviderOptions()
 
     constructor(sourceName: string, oParams: TJson) {
         this.SourceName = sourceName
@@ -106,7 +106,7 @@ export class Plan implements IProvider.IProvider {
             .OrderBy(options.Sort)
             .Query
 
-        const _planSchemaResponse = await Server.Plan.GetData(schemaRequest, sqlQuery)
+        const _planSchemaResponse = await Server.Plan.Execute(schemaRequest, sqlQuery)
 
         if ('data' in _planSchemaResponse && _planSchemaResponse.data.Rows.length > 0) {
             Cache.Set({

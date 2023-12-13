@@ -6,7 +6,7 @@ import _ from "lodash"
 import { HTTP_STATUS_CODE, RESPONSE_RESULT, RESPONSE_STATUS } from "../lib/Const"
 import { Helper } from "../lib/Helper"
 import { Logger } from "../lib/Logger"
-import { Config } from "../server/Config"
+import { Config } from "./Config"
 import { DataTable, TFields, TOrder, TRows } from "../types/DataTable"
 import { TInternalResponse } from "../types/TInternalResponse"
 import { TJson } from "../types/TJson"
@@ -14,8 +14,8 @@ import { TSchemaRequest } from "../types/TSchemaRequest"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
 import { SqlQueryHelper } from "../lib/Sql"
 import { StringExtend } from "../lib/StringExtend"
-import { AiEngine } from "../server/AiEngine"
-import { Schema } from "../server/Schema"
+import { AiEngine } from "./AiEngine"
+import { Schema } from "./Schema"
 import { TTransformation } from "../types/TTransformation"
 
 
@@ -304,30 +304,28 @@ class Step {
 }
 
 
-export class Server_Plan {
-    static async GetData(schemaRequest: TSchemaRequest, sqlQuery: string | undefined = undefined) {
+export class Plan {
+    static async Execute(schemaRequest: TSchemaRequest, sqlQuery: string | undefined = undefined) {
 
         const { schema, source, entity } = schemaRequest
 
-        if (source === undefined || Config.Configuration.sources[source]?.database === undefined) {
-            Logger.Error(`${Logger.Out} Plan.GetData: no plan found for ${schema}`)
-            return <TSchemaResponseNoData>{
-                schema,
-                entity,
-                ...RESPONSE_RESULT.NOT_FOUND,
-                ...RESPONSE_STATUS.HTTP_404
-            }
+        const schemaResponseNoData = <TSchemaResponseNoData>{
+            schema,
+            entity,
+            ...RESPONSE_RESULT.NOT_FOUND,
+            ...RESPONSE_STATUS.HTTP_404
         }
 
-        const planName = Config.Configuration.sources[source].database
+        if (source === undefined || !Config.Has(`sources.${source}.database`)) {
+            Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schema}`)
+            return schemaResponseNoData
+        }
 
-        if (!Config.Configuration?.plans[planName]?.[entity]) {
-            return <TSchemaResponseNoData>{
-                schema,
-                entity,
-                ...RESPONSE_RESULT.NOT_FOUND,
-                ...RESPONSE_STATUS.HTTP_404
-            }
+        const planName: string = Config.Get(`sources.${source}.database`)
+
+        if (!Config.Has(`plans.${planName}.${entity}`)) {
+            Logger.Error(`${Logger.Out} Plan.Execute: entity '${entity}' not found in plan ${planName}`)
+            return schemaResponseNoData
         }
 
         const schemaResponse = <TSchemaResponse>{
@@ -336,10 +334,9 @@ export class Server_Plan {
             transaction: "plan"
         }
 
-        const planConfig = Config.Configuration?.plans[planName]
-        const entitySteps = planConfig[entity]
+        const entitySteps: TJson[] = Config.Get(`plans.${planName}.${entity}`)
 
-        Logger.Debug(`${Logger.In} Plan.GetData: ${source}.${entity} : ${JSON.stringify(entitySteps)}`)
+        Logger.Debug(`${Logger.In} Plan.Execute: ${source}.${entity} : ${JSON.stringify(entitySteps)}`)
 
         const dtWorking = await Step.Execute(schema, source, entity, entitySteps)
 

@@ -82,6 +82,10 @@ export class Config {
         return _.has(Config.Configuration, element)
     }
 
+    public static Get<T>(element: string): T {
+        return _.get(Config.Configuration, element)
+    }
+
     static async CheckRoot() {
         const schemaErrors = yamlValidate(
             _.cloneDeep(Config.Configuration), {

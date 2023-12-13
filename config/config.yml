@@ -98,7 +98,7 @@ schemas:
       users:
         source: mdb-mflix
         entity: users
-  etl1:
+  sch-etl1:
     source: plan-etl1
 
 # schedules:

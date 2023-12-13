@@ -23,7 +23,7 @@ import { SchemaRouter } from '../routes/SchemaRouter'
 import { PlanRouter } from '../routes/PlanRouter'
 import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
-import { Server_Plan } from './Server.Plan'
+import { Plan } from './Plan'
 
 
 export class Server {
@@ -32,7 +32,7 @@ export class Server {
     public static Port: number
     public static CurrentPath: string
 
-    public static Plan = Server_Plan
+    public static Plan = Plan
 
     public static Init() {
         Config.Init()
