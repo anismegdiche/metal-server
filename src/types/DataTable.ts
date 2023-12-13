@@ -158,8 +158,8 @@ export class DataTable {
 
     // TODO not tested
     public SetField(fieldName: string, type: string) {
-        this.Fields[fieldName] = SqlToJsType[type] || 'unknown';
-        return this;
+        this.Fields[fieldName] = SqlToJsType[type] || 'unknown'
+        return this
     }
 
     public GetFieldsNames(): string[] {

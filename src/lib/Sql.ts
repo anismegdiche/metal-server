@@ -41,7 +41,7 @@ export class SqlQueryHelper {
         if (condition === undefined) {
             return this
         }
-        
+
         if (typeof condition === 'string') {
             this.Query = `${this.Query} WHERE ${condition}`
         }
@@ -81,11 +81,9 @@ export class SqlQueryHelper {
         }
 
         let _fieldsValues: TRow = <TRow>{}
-        if (_.isArray(fieldsValues)) {
-            _fieldsValues = <TRow>(_.head(fieldsValues))
-        } else {
-            _fieldsValues = fieldsValues
-        }
+        _fieldsValues = (_.isArray(fieldsValues))
+            ? <TRow>(_.head(fieldsValues))
+            : fieldsValues
 
         const _setValues = _.chain(_fieldsValues)
             .mapValues((__value, __field) => {

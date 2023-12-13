@@ -120,13 +120,13 @@ export class Plan implements IProvider.IProvider {
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data: _planSchemaResponse.data
-            };
+            }
         } else {
             return <TSchemaResponseNoData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            };
+            }
         }
     }
 

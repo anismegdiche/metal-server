@@ -11,7 +11,7 @@ export class CommonProviderOptionsFields {
     static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         options.Fields = (schemaRequest?.fields === undefined)
             ? '*'
-            : schemaRequest.fields;
+            : schemaRequest.fields
 
         return options
     }

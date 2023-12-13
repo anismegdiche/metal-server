@@ -15,24 +15,24 @@ import { Logger } from "../lib/Logger"
 export class Convert {
 
     static OptionsFilterExpressionToSql(filterExpression: string) {
-        let _condition = JSON.stringify(filterExpression);
+        let _condition = JSON.stringify(filterExpression)
 
         // booleans
         _condition = _condition.replace(/&(?=(?:[^']*'[^']*')*[^']*$)/g, " AND ")
             .replace(/\|(?=(?:[^']*'[^']*')*[^']*$)/g, " OR ")
-            .replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/g, " NOT ");
+            .replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/g, " NOT ")
 
         // like
-        _condition = _condition.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/g, " LIKE ");
-        const quotedStringArray = _condition.match(/'(.*?)'/g) ?? [];
+        _condition = _condition.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/g, " LIKE ")
+        const quotedStringArray = _condition.match(/'(.*?)'/g) ?? []
         for (const quotedString of quotedStringArray) {
-            _condition = _condition.replace(quotedString, quotedString.replace(/\*/g, "%"));
+            _condition = _condition.replace(quotedString, quotedString.replace(/\*/g, "%"))
         }
 
         // chars
-        _condition = _condition.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/g, "");
+        _condition = _condition.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/g, "")
 
-        return _condition;
+        return _condition
     }
 
     static SqlSortToMongoSort(key: any, value: string) {
