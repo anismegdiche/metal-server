@@ -106,28 +106,28 @@ export class Config {
     }
 
     static async CheckSources() {
-        _.forEach(_.cloneDeep(Config.Configuration.sources), (__source: any, __key: any) => {
-            const schemaErrors = yamlValidate(__source, {
+        (_.cloneDeep(Config.Configuration.sources)).forEach((_source: any, _key: any) => {
+            const _schemaErrors = yamlValidate(_source, {
                 schema: SCHConfig.SCHConfigSource,
                 logLevel: 'error'
             })
-            const _errors: string[] = this.GetErrors(schemaErrors)
+            const _errors: string[] = this.GetErrors(_schemaErrors)
             if (_errors.length > 0) {
-                Logger.Error(`Errors have been detected in section 'sources.${__key}', configuration file: ${this.ConfigFilePath}`)
+                Logger.Error(`Errors have been detected in section 'sources.${_key}', configuration file: ${this.ConfigFilePath}`)
                 process.exit(1)
             }
         })
     }
 
     static async CheckSchemas() {
-        _.forEach(_.cloneDeep(Config.Configuration.schemas), (__schema: any, __key: any) => {
-            const schemaErrors = yamlValidate(__schema, {
+        (_.cloneDeep(Config.Configuration.sources)).forEach((_schema: any, _key: any) => {
+            const _schemaErrors = yamlValidate(_schema, {
                 schema: SCHConfig.SCHConfigSchema,
                 logLevel: 'error'
             })
-            const _errors: string[] = this.GetErrors(schemaErrors)
+            const _errors: string[] = this.GetErrors(_schemaErrors)
             if (_errors.length > 0) {
-                Logger.Error(`Errors have been detected in section 'schema.${__key}', configuration file: ${this.ConfigFilePath}`)
+                Logger.Error(`Errors have been detected in section 'schema.${_key}', configuration file: ${this.ConfigFilePath}`)
                 process.exit(1)
             }
         })

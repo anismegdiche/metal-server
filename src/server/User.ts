@@ -51,7 +51,7 @@ export class User {
         // Check if the user exists and the password is correct
         const _isUserExist: boolean = _.has(User.Users, username)
         if (!_isUserExist || !Bcrypt.compareSync(password, User.#HashPassword(User.Users[username]))) {
-            return <TInternalResponse>{
+            return {
                 StatusCode: HTTP_STATUS_CODE.FORBIDDEN,
                 Body: { message: 'Invalid username or password' }
             }
@@ -63,7 +63,7 @@ export class User {
             username,
             password
         }
-        return <TInternalResponse>{
+        return {
             StatusCode: HTTP_STATUS_CODE.OK,
             Body: { token }
         }
@@ -73,12 +73,12 @@ export class User {
     public static LogOut(token: TToken): TInternalResponse {
         if (token  && User.#CheckToken(token)) {
             delete User.LoggedInUsers[token]
-            return <TInternalResponse>{
+            return {
                 StatusCode: HTTP_STATUS_CODE.OK,
                 Body: { message: 'Logged out successfully' }
             }
         }
-        return <TInternalResponse>{
+        return {
             StatusCode: HTTP_STATUS_CODE.BAD_REQUEST,
             Body: { message: 'Invalid username' }
         }
@@ -88,12 +88,12 @@ export class User {
     public static GetInfo(token: TToken): TInternalResponse {
         if (token  && User.#CheckToken(token)) {
             const { username } = User.LoggedInUsers[token]
-            return <TInternalResponse>{
+            return {
                 StatusCode: HTTP_STATUS_CODE.OK,
                 Body: { username }
             }
         }
-        return <TInternalResponse>{
+        return {
             StatusCode: HTTP_STATUS_CODE.FORBIDDEN,
             Body: { message: HTTP_STATUS_MESSAGE.FORBIDDEN }
         }

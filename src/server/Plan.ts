@@ -3,7 +3,7 @@ import * as Fs from "fs"
 import * as Yaml from "js-yaml"
 import _ from "lodash"
 
-import { HTTP_STATUS_CODE, RESPONSE_RESULT, RESPONSE_STATUS } from "../lib/Const"
+import { HTTP_STATUS_CODE, METADATA, RESPONSE_RESULT, RESPONSE_STATUS } from "../lib/Const"
 import { Helper } from "../lib/Helper"
 import { Logger } from "../lib/Logger"
 import { Config } from "./Config"
@@ -24,11 +24,6 @@ type TStepArguments = {
     planName: string
     currentDataTable: DataTable
     transformation: TTransformation
-}
-
-const METADATA = {
-    PLAN_DEBUG: '__PLAN_DEBUG__',
-    PLAN_ERRORS: '__PLAN_ERRORS__'
 }
 
 class Step {
@@ -306,7 +301,6 @@ class Step {
         }
         return stepArguments.currentDataTable.SetFields()
     }
-
 }
 
 
@@ -362,10 +356,11 @@ export class Plan {
         Logger.Debug(`${Logger.In} Plans.Reload`)
         const configFileRaw = Fs.readFileSync(Config.ConfigFilePath, 'utf-8')
         const configFileJson: any = Yaml.load(configFileRaw)
+        
         // check if plan exist
         if (Config.Has(`plans.${plan}`) && _.has(configFileJson.plans, plan)) {
             Config.Configuration.plans[plan] = configFileJson.plans[plan]
-            return <TInternalResponse>{
+            return {
                 StatusCode: HTTP_STATUS_CODE.OK,
                 Body: {
                     plan,
@@ -373,8 +368,9 @@ export class Plan {
                 }
             }
         }
+        
         // plan not found
-        return <TInternalResponse>{
+        return {
             StatusCode: HTTP_STATUS_CODE.NOT_FOUND,
             Body: {
                 plan,

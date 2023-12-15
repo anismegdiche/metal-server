@@ -14,18 +14,13 @@ import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { IProvider } from '../types/IProvider'
 import { TInternalResponse } from '../types/TInternalResponse'
-import { HTTP_STATUS_CODE } from '../lib/Const'
+import { HTTP_STATUS_CODE, METADATA } from '../lib/Const'
 
 
 export class Cache {
 
     static Schema = "metal_cache"
     static Table = "cache"
-
-    static #METADATA = {
-        CACHE: '__CACHE__',
-        CACHE_EXPIRE: '__CACHE_EXPIRE__'
-    }
 
     public static CacheSource: IProvider
 
@@ -56,48 +51,50 @@ export class Cache {
         }
 
         Logger.Debug(`Cache.Set`)
-        if (schemaRequest?.cache) {
-            const _ttl = parseInt((schemaRequest.cache).replace(/['"]/g, ''), 10) ?? 0
-            const _expireDate = new Date()
-            _expireDate.setSeconds(_expireDate.getSeconds() + _ttl)
-            const _timeStamp = _expireDate.getTime()
-
-            const _hash = Cache.Hash(schemaRequest)
-            const _cacheData = await Cache.Get(_hash)
-
-            if (_cacheData?.datatable === undefined) {
-                dt.SetMetaData(Cache.#METADATA.CACHE, true)
-                dt.SetMetaData(Cache.#METADATA.CACHE_EXPIRE, _timeStamp)
-                Cache.CacheSource.Insert(<TSchemaRequest>{
-                    ...Cache.#GetSchemaRequest(),
-                    data: <TCacheData[]>[
-                        {
-                            schema: schemaRequest.schema,
-                            entity: schemaRequest.entity,
-                            hash: _hash,
-                            expires: _timeStamp,
-                            request: schemaRequest,
-                            datatable: dt
-                        }
-                    ]
-                })
-            } else
-                if (Cache.IsValid(_cacheData.expires))
-                    Logger.Debug("Cache.Set: cache is valid")
-                else
-                    Cache.CacheSource.Update(<TSchemaRequest>{
-                        ...Cache.#GetSchemaRequest(),
-                        filter: {
-                            hash: _hash
-                        },
-                        data: <TCacheData[]>[
-                            {
-                                expires: _timeStamp,
-                                datatable: dt
-                            }
-                        ]
-                    })
+        if (!schemaRequest?.cache) {
+            return;
         }
+        const ttl = parseInt((schemaRequest.cache).replace(/['"]/g, ''), 10) ?? 0
+        const now = new Date()
+        now.setSeconds(now.getSeconds() + ttl)
+        const expires = now.getTime()
+
+        const hash = Cache.Hash(schemaRequest)
+        const cacheData = await Cache.Get(hash)
+
+        if (cacheData?.datatable === undefined) {
+            dt.SetMetaData(METADATA.CACHE, true)
+            dt.SetMetaData(METADATA.CACHE_EXPIRE, expires)
+            Cache.CacheSource.Insert(<TSchemaRequest>{
+                ...Cache.#GetSchemaRequest(),
+                data: <TCacheData[]>[
+                    {
+                        schema: schemaRequest.schema,
+                        entity: schemaRequest.entity,
+                        hash,
+                        expires,
+                        request: schemaRequest,
+                        datatable: dt
+                    }
+                ]
+            })
+            return;
+        }
+        if (Cache.IsValid(cacheData.expires))
+            Logger.Debug("Cache.Set: cache is valid")
+        else
+            Cache.CacheSource.Update(<TSchemaRequest>{
+                ...Cache.#GetSchemaRequest(),
+                filter: {
+                    hash
+                },
+                data: <TCacheData[]>[
+                    {
+                        expires,
+                        datatable: dt
+                    }
+                ]
+            })
     }
 
     static Hash(schemaRequest: TSchemaRequest): string {
@@ -105,9 +102,10 @@ export class Cache {
     }
 
     static IsValid(expires?: number): boolean {
-        let isValid = false
-        if (expires)
-            isValid = new Date().getTime() <= expires ?? false
+        const isValid = (expires)
+            ? new Date().getTime() <= expires ?? false
+            : false
+
         Logger.Debug(`Cache.IsValid = ${isValid}`)
         return isValid
     }
@@ -122,8 +120,8 @@ export class Cache {
                     hash
                 }
             })
-            if ((<TSchemaResponseData>_schemaResponse)?.data) {
-                _schemaResponse = <TSchemaResponseData>_schemaResponse
+            _schemaResponse = _schemaResponse as TSchemaResponseData
+            if (_schemaResponse?.data) {
                 return <TCacheData>(_schemaResponse.data.Rows[0])
             }
         }
@@ -131,27 +129,28 @@ export class Cache {
     }
 
     static async View(): Promise<TInternalResponse> {
-        Logger.Debug(`${Logger.In} Cache.ViewData`)
-        const schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(Cache.#GetSchemaRequest())
+        Logger.Debug(`${Logger.In} Cache.View`)
+        let schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(Cache.#GetSchemaRequest())
         schemaResponse.transaction = TTransaction.cache_data
-        Logger.Debug(`${Logger.Out} Cache.ViewData`)
-        let _intRes: TInternalResponse = {
+        const intRes: TInternalResponse = {
             StatusCode: schemaResponse.status,
             Body: {
                 message: 'Cache data'
             }
         }
-        if ((<TSchemaResponseData>schemaResponse)?.data  && _intRes.Body) {
-            _intRes.Body.data = (<TSchemaResponseData>schemaResponse).data.Rows
+        schemaResponse = schemaResponse as TSchemaResponseData
+        if (schemaResponse?.data && intRes.Body) {
+            intRes.Body.data = schemaResponse.data.Rows
         }
-        return _intRes
+        Logger.Debug(`${Logger.Out} Cache.View`)
+        return intRes
     }
 
     static async Purge(): Promise<TInternalResponse> {
         Logger.Debug(`${Logger.In} Cache.Purge`)
         await Cache.CacheSource.Delete(Cache.#GetSchemaRequest())
         Logger.Debug(`${Logger.Out} Cache.Purge`)
-        return <TInternalResponse>{
+        return {
             StatusCode: HTTP_STATUS_CODE.OK,
             Body: { message: 'Cache purged' }
         }
@@ -166,10 +165,9 @@ export class Cache {
             "filter-expression": `expires < ${_expireDate}`
         })
         Logger.Debug(`${Logger.Out} Cache.Clean`)
-        return <TInternalResponse>{
+        return {
             StatusCode: HTTP_STATUS_CODE.OK,
             Body: { message: 'Cache cleaned' }
         }
     }
-
 }

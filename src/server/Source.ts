@@ -7,6 +7,7 @@ import { Logger } from '../lib/Logger'
 import { Cache } from './Cache'
 import { Config } from './Config'
 import { IProvider } from '../types/IProvider'
+import { TSourceParams } from '../types/TSourceParams'
 // Providers
 import { Postgres } from '../providers/Postgres'
 import { MongoDb } from '../providers/MongoDb'
@@ -15,10 +16,10 @@ import { PlanProvider } from '../providers/PlanProvider'
 
 
 const NewSourceCaseMap: Record<string, Function> = {
-    'plan': (source: string, sourceConfig: any) => new PlanProvider(source, sourceConfig),
-    'postgres': (source: string, sourceConfig: any) => new Postgres(source, sourceConfig),
-    'mongodb': (source: string, sourceConfig: any) => new MongoDb(source, sourceConfig),
-    'mssql': (source: string, sourceConfig: any) => new SqlServer(source, sourceConfig)
+    'plan': (source: string, sourceParams: TSourceParams) => new PlanProvider(source, sourceParams),
+    'postgres': (source: string, sourceParams: TSourceParams) => new Postgres(source, sourceParams),
+    'mongodb': (source: string, sourceParams: TSourceParams) => new MongoDb(source, sourceParams),
+    'mssql': (source: string, sourceParams: TSourceParams) => new SqlServer(source, sourceParams)
 }
 
 export class Source {
@@ -26,17 +27,18 @@ export class Source {
     // global sources
     public static Sources: Record<string, IProvider> = {}
 
-    static async Connect(source: string | null, sourceConfig: any) {
-        if (sourceConfig.provider in NewSourceCaseMap) {
-            if (source === null) {
-                // cache
-                Cache.CacheSource = NewSourceCaseMap[sourceConfig.provider](Cache.Schema, sourceConfig)
-            } else {
-                // sources
-                Source.Sources[source] = NewSourceCaseMap[sourceConfig.provider](source, sourceConfig)
-            }
+    static async Connect(source: string | null, sourceParams: TSourceParams) {
+        if (!(sourceParams.provider in NewSourceCaseMap)) {
+            Logger.Error(`Source '${source}', Provider '${sourceParams.provider}' not found. The source will not be connected`)
+            return
+        }
+
+        if (source === null) {
+            // cache
+            Cache.CacheSource = NewSourceCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
         } else {
-            Logger.Error(`Source '${source}', Provider '${sourceConfig.provider}' not found. The source will not be connected`)
+            // sources
+            Source.Sources[source] = NewSourceCaseMap[sourceParams.provider](source, sourceParams)
         }
     }
 
@@ -44,17 +46,19 @@ export class Source {
         for (const _source in Config.Configuration.sources) {
             if (Object.prototype.hasOwnProperty.call(Config.Configuration.sources, _source)) {
                 Logger.Info(`${Logger.Out} found source '${_source}'`)
-                const __sourceConfig = Config.Configuration.sources[_source]
-                Source.Connect(_source, __sourceConfig)
+                const __sourceParams = Config.Configuration.sources[_source]
+                Source.Connect(_source, __sourceParams)
             }
         }
     }
+    static async Disconnect(source: string) {
+        Source.Sources[source].Disconnect()
+    }
+
     static async DisconnectAll() {
         for (const _source in Source.Sources) {
             if (_source)
-                Source.Sources[_source].Disconnect()
+                Source.Disconnect(_source)
         }
     }
-
-
 }

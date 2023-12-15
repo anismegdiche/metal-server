@@ -24,7 +24,7 @@ export class ServerResponse {
             .json({ message: HTTP_STATUS_MESSAGE.NOT_IMPLEMENTED })
     }
 
-    static Error(res: Response<any, Record<string, any>>, error: Error) {
+    static Error(res: Response, error: Error) {
         res
             .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
             .json({

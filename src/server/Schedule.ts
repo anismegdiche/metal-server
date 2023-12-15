@@ -58,32 +58,32 @@ export class Schedule {
         return undefined
     }
 
-    public static Start(jobName: string) {
+    public static Start(jobName: string): TInternalResponse {
         const _jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (_jobKey) {
             this.Jobs[Number(_jobKey)].job.start()
-            return <TInternalResponse>{
+            return {
                 StatusCode: HTTP_STATUS_CODE.OK,
                 Body: { message: `Job '${jobName}' started` }
             }
         }
-        return <TInternalResponse>{
+        return {
             StatusCode: HTTP_STATUS_CODE.NOT_FOUND,
             Body: { message: `Job '${jobName}' not found` }
         }
     }
 
-    public static Stop(jobName: string) {
+    public static Stop(jobName: string):TInternalResponse {
         const _jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (_jobKey) {
             const __jobKey = parseInt(_jobKey, 10)
             this.Jobs[__jobKey].job.stop()
-            return <TInternalResponse>{
+            return {
                 StatusCode: HTTP_STATUS_CODE.OK,
                 Body: { message: `Job '${jobName}' stopped` }
             }
         }
-        return <TInternalResponse>{
+        return {
             StatusCode: HTTP_STATUS_CODE.NOT_FOUND,
             Body: { message: `Job '${jobName}' not found` }
         }

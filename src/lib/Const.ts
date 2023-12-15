@@ -229,4 +229,11 @@ export const RESPONSE = {
             }
         }
     }
-}  
+}
+
+export const METADATA = {
+    CACHE: '__CACHE__',
+    CACHE_EXPIRE: '__CACHE_EXPIRE__',
+    PLAN_DEBUG: '__PLAN_DEBUG__',
+    PLAN_ERRORS: '__PLAN_ERRORS__'
+}

@@ -18,7 +18,7 @@ export type TSchemaRoute = {
     EntityName?: string
 }
 
-export type TEntityTypeExecuteParams = {
+export type TSourceTypeExecuteParams = {
     SourceName: string,
     EntityName: string,
     SchemaRequest: TSchemaRequest,
@@ -27,9 +27,9 @@ export type TEntityTypeExecuteParams = {
 
 export class Schema {
 
-    public static EntityTypeExecute: Record<string, Function> = {
-        'nothing': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => await Schema.NothingTodo(entityTypeExecuteParams),
-        'source': async (entityTypeExecuteParams: TEntityTypeExecuteParams) => await entityTypeExecuteParams.CRUDOperation()
+    public static SourceTypeCaseMap: Record<string, Function> = {
+        'nothing': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await Schema.NothingTodo(sourceTypeExecuteParams),
+        'source': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await sourceTypeExecuteParams.CRUDOperation()
     }
 
     static async IsExist(schemaRequest: TSchemaRequest): Promise<boolean> {
@@ -58,7 +58,7 @@ export class Schema {
         const schemaConfig = Config.Get(`schemas.${schema}`)
         const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
 
-        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
+        return await Schema.SourceTypeCaseMap[schemaRoute.Type](<TSourceTypeExecuteParams>{
             SourceName: schemaRoute.RouteName,
             EntityName: schemaRoute.EntityName,
             SchemaRequest: schemaRequest,
@@ -79,7 +79,7 @@ export class Schema {
         const schemaConfig = Config.Get(`schemas.${schema}`)
         const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
 
-        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
+        return await Schema.SourceTypeCaseMap[schemaRoute.Type](<TSourceTypeExecuteParams>{
             SourceName: schemaRoute.RouteName,
             EntityName: schemaRoute.EntityName,
             SchemaRequest: schemaRequest,
@@ -99,7 +99,7 @@ export class Schema {
         const schemaConfig = Config.Get(`schemas.${schema}`)
         const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
 
-        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
+        return await Schema.SourceTypeCaseMap[schemaRoute.Type](<TSourceTypeExecuteParams>{
             SourceName: schemaRoute.RouteName,
             EntityName: schemaRoute.EntityName,
             SchemaRequest: schemaRequest,
@@ -120,7 +120,7 @@ export class Schema {
         const schemaConfig: TJson = Config.Get(`schemas.${schema}`)
         const schemaRoute = Schema.GetRoute(schema, schemaConfig, entity)
 
-        return await Schema.EntityTypeExecute[schemaRoute.Type](<TEntityTypeExecuteParams>{
+        return await Schema.SourceTypeCaseMap[schemaRoute.Type](<TSourceTypeExecuteParams>{
             SourceName: schemaRoute.RouteName,
             EntityName: schemaRoute.EntityName,
             SchemaRequest: schemaRequest,
@@ -134,9 +134,9 @@ export class Schema {
         })
     }
 
-    static async NothingTodo(entityTypeExecuteParams: TEntityTypeExecuteParams) {
-        Logger.Warn(`Nothing to do in schema '${entityTypeExecuteParams.SchemaRequest.schema}'`)
-        const { schema, entity } = entityTypeExecuteParams.SchemaRequest
+    static async NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<TSchemaResponseNoData> {
+        Logger.Warn(`Nothing to do in schema '${sourceTypeExecuteParams.SchemaRequest.schema}'`)
+        const { schema, entity } = sourceTypeExecuteParams.SchemaRequest
         return <TSchemaResponseNoData>{
             schema,
             entity,
