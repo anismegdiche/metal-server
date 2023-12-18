@@ -14,22 +14,19 @@ import { ServerResponse } from '../response/ServerResponse'
 export const CacheRouter = Router()
 
 CacheRouter.route('/view')
-    .all(
-        (req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET),
+    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET),
         UserResponse.IsAuthenticated
     )
     .get(CacheResponse.View)
 
 CacheRouter.route('/clean')
-    .all(
-        (req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
+    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
         UserResponse.IsAuthenticated
     )
     .post(CacheResponse.Clean)
 
 CacheRouter.route('/purge')
-    .all(
-        (req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
+    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
         UserResponse.IsAuthenticated
     )
     .post(CacheResponse.Purge)
@@ -37,8 +34,7 @@ CacheRouter.route('/purge')
 
 //ROADMAP
 CacheRouter.route('/info')
-    .all(
-        (req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
+    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
         UserResponse.IsAuthenticated
     )
     .get(ServerResponse.NotImplemented)

@@ -10,6 +10,7 @@ import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from '../lib/Const'
 import { User } from '../server/User'
 import { Config } from '../server/Config'
 import { ServerResponse } from '../response/ServerResponse'
+import { Convert } from '../lib/Convert'
 
 
 export class UserResponse {
@@ -18,53 +19,46 @@ export class UserResponse {
         return req.headers.authorization?.replace('Bearer ', '')
     }
 
-    public static LogIn(req: Request, res: Response) {
+    public static LogIn(req: Request, res: Response): void {
         try {
             const { username, password } = req.body
             const intRes = User.LogIn(username.toString(), password.toString())
-            ServerResponse.PrepareResponse({
-                res,
-                intRes
-            })
+            Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
         }
     }
 
-    public static LogOut(req: Request, res: Response) {
+    public static LogOut(req: Request, res: Response): void {
         try {
             const token = UserResponse.#GetRequestToken(req)
             const intRes = User.LogOut(token)
-            ServerResponse.PrepareResponse({
-                res,
-                intRes
-            })
+            Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
         }
     }
 
-    public static GetInfo(req: Request, res: Response) {
+    public static GetInfo(req: Request, res: Response): void {
         try {
             const token = UserResponse.#GetRequestToken(req)
             const intRes = User.GetInfo(token)
-            ServerResponse.PrepareResponse({
-                res,
-                intRes
-            })
+            Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
         }
     }
 
-    public static IsAuthenticated(req: Request, res: Response, next: NextFunction) {
+    public static IsAuthenticated(req: Request, res: Response, next: NextFunction): void {
         if (!Config.Flags.EnableAuthentication) {
-            return next()
+            next()
+            return
         }
 
         const token = UserResponse.#GetRequestToken(req)
         if (User.IsAuthenticated(token)) {
-            return next()
+            next()
+            return
         }
 
         res.status(HTTP_STATUS_CODE.FORBIDDEN).json({
@@ -72,14 +66,18 @@ export class UserResponse {
         })
     }
 
-    public static IsNotAuthenticated(req: Request, res: Response, next: NextFunction) {
+    public static IsNotAuthenticated(req: Request, res: Response, next: NextFunction): void {
         if (!Config.Flags.EnableAuthentication) {
-            return next()
+            next()
+            return
         }
 
         const token = UserResponse.#GetRequestToken(req)
         if (User.IsAuthenticated(token)) {
-            return res.status(HTTP_STATUS_CODE.FORBIDDEN).json({ message: "User already logged" })
+            res
+                .status(HTTP_STATUS_CODE.FORBIDDEN)
+                .json({ message: "User already logged" })
+                .end()
         }
         next()
     }

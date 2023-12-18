@@ -8,16 +8,14 @@ import { Request, Response } from 'express'
 
 import { ServerResponse } from './ServerResponse'
 import { Schedule } from '../server/Schedule'
+import { Convert } from '../lib/Convert'
 
 export class ScheduleResponse {
     public static Start(req: Request, res: Response) {
         try {
             const { job } = req.params
-            const _intRes = Schedule.Start(job)
-            ServerResponse.PrepareResponse({
-                res,
-                intRes: _intRes
-            })
+            const intRes = Schedule.Start(job)
+            Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
         }
@@ -26,11 +24,8 @@ export class ScheduleResponse {
     public static Stop(req: Request, res: Response) {
         try {
             const { job } = req.params
-            const _intRes = Schedule.Stop(job)
-            ServerResponse.PrepareResponse({
-                res,
-                intRes: _intRes
-            })
+            const intRes = Schedule.Stop(job)
+            Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
         }

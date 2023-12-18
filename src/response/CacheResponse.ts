@@ -19,44 +19,27 @@ import { TJson } from '../types/TJson'
 
 
 export class CacheResponse {
-    static async View(req: Request, res: Response) {
-        try {
-            const _intRes = await Cache.View()
-            ServerResponse.PrepareResponse({
-                res,
-                intRes: _intRes
-            })
-        } catch (error: unknown) {
-            ServerResponse.Error(res, error as Error)
-        }
+    static View(req: Request, res: Response): void {
+        Cache.View()
+            .then(intRes => Convert.InternalResponseToResponse(res, intRes))
+            .catch((error: unknown) => ServerResponse.Error(res, error as Error))
+
     }
 
-    static async Clean(req: Request, res: Response) {
-        try {
-            const _intRes = await Cache.Clean()
-            ServerResponse.PrepareResponse({
-                res,
-                intRes: _intRes
-            })
-        } catch (error: unknown) {
-            ServerResponse.Error(res, error as Error)
-        }
+    static Clean(req: Request, res: Response): void {
+        Cache.Clean()
+            .then(intRes => Convert.InternalResponseToResponse(res, intRes))
+            .catch((error: unknown) => ServerResponse.Error(res, error as Error))
     }
 
-    static async Purge(req: Request, res: Response) {
-        try {
-            const _intRes = await Cache.Purge()
-            ServerResponse.PrepareResponse({
-                res,
-                intRes: _intRes
-            })
-        } catch (error: unknown) {
-            ServerResponse.Error(res, error as Error)
-        }
+    static Purge(req: Request, res: Response): void {
+        Cache.Purge()
+            .then(intRes => Convert.InternalResponseToResponse(res, intRes))
+            .catch((error: unknown) => ServerResponse.Error(res, error as Error))
     }
 
 
-    static async Get(req: Request, res: Response, next: NextFunction) {
+    static Get(req: Request, res: Response, next: NextFunction): void {
         try {
             const schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)
             const schemaConfig: TJson = Config.Get(`schemas.${schemaRequest.schema}`)
@@ -75,23 +58,29 @@ export class CacheResponse {
 
             Logger.Debug(`Cache.Get`)
             const _hash = Cache.Hash(schemaRequest)
-            const _cacheData = await Cache.Get(_hash)
-            if (_cacheData  && Cache.IsValid(_cacheData?.expires)) {
-                Logger.Debug(`Cache.Get: cache ${_hash} found`)
-                return res.status(200).json(<TSchemaResponseData>{
-                    schema: _cacheData.schema,
-                    entity: _cacheData.entity,
-                    ...RESPONSE_TRANSACTION.SELECT,
-                    ...RESPONSE_RESULT.SUCCESS,
-                    ...RESPONSE_STATUS.HTTP_200,
-                    cache: "true",
-                    expires: _cacheData.expires,
-                    data: _cacheData.datatable
-                })
-            }
-            Logger.Debug(`Cache.Get: cache ${_hash} not found`)
-            next()
 
+            Cache.Get(_hash)
+                .then(_cacheData => {
+                    if (_cacheData && Cache.IsValid(_cacheData?.expires)) {
+                        Logger.Debug(`Cache.Get: cache ${_hash} found`)
+                        res.status(200).json(<TSchemaResponseData>{
+                            schema: _cacheData.schema,
+                            entity: _cacheData.entity,
+                            ...RESPONSE_TRANSACTION.SELECT,
+                            ...RESPONSE_RESULT.SUCCESS,
+                            ...RESPONSE_STATUS.HTTP_200,
+                            cache: "true",
+                            expires: _cacheData.expires,
+                            data: _cacheData.datatable
+                        })
+                    } else {
+                        Logger.Debug(`Cache.Get: cache ${_hash} not found`)
+                        next()
+                    }
+                })
+                .catch((error: unknown) => {
+                    ServerResponse.Error(res, error as Error)
+                })
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
         }

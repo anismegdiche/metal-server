@@ -106,7 +106,7 @@ export class Config {
     }
 
     static async CheckSources() {
-        (_.cloneDeep(Config.Configuration.sources)).forEach((_source: any, _key: any) => {
+        _.forEach(_.cloneDeep(Config.Configuration.sources), (_source: any, _key: any) => {
             const _schemaErrors = yamlValidate(_source, {
                 schema: SCHConfig.SCHConfigSource,
                 logLevel: 'error'
@@ -120,7 +120,7 @@ export class Config {
     }
 
     static async CheckSchemas() {
-        (_.cloneDeep(Config.Configuration.sources)).forEach((_schema: any, _key: any) => {
+        _.forEach(_.cloneDeep(Config.Configuration.schemas), (_schema: any, _key: any) => {
             const _schemaErrors = yamlValidate(_schema, {
                 schema: SCHConfig.SCHConfigSchema,
                 logLevel: 'error'

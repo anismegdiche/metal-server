@@ -10,6 +10,7 @@ import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TJson } from '../types/TJson'
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from '../types/TSchemaResponse'
 import { Logger } from "../lib/Logger"
+import { TInternalResponse } from '../types/TInternalResponse'
 
 
 export class Convert {
@@ -77,6 +78,10 @@ export class Convert {
         }
 
         return schemaRequest
+    }
+
+    public static InternalResponseToResponse(res: Response, intRes: TInternalResponse): void {
+        res.status(intRes.StatusCode).json(intRes.Body)
     }
 
 

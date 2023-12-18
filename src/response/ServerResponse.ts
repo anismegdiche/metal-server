@@ -8,20 +8,15 @@ import { NextFunction, Request, Response } from 'express'
 
 import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE, SERVER } from '../lib/Const'
 import { Server } from '../server/Server'
-import { TInternalResponse } from '../types/TInternalResponse'
 
 
 export class ServerResponse {
 
-    public static PrepareResponse({ res, intRes }: { res: Response, intRes: TInternalResponse }): void {
-        res.status(intRes.StatusCode).json(intRes.Body)
-    }
-
-    //ROADMAP
     public static NotImplemented(req: Request, res: Response): void {
         res
             .status(HTTP_STATUS_CODE.NOT_IMPLEMENTED)
             .json({ message: HTTP_STATUS_MESSAGE.NOT_IMPLEMENTED })
+            .end()
     }
 
     static Error(res: Response, error: Error) {
@@ -32,6 +27,7 @@ export class ServerResponse {
                 error: error.message,
                 stack: _.split(error.stack, '\n')
             })
+            .end()
     }
 
     public static GetInfo(req: Request, res: Response): void {
@@ -39,6 +35,7 @@ export class ServerResponse {
             res
                 .status(HTTP_STATUS_CODE.OK)
                 .json(Server.GetInfo())
+                .end()
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
         }
@@ -53,6 +50,7 @@ export class ServerResponse {
                     server: SERVER.NAME,
                     message: `Server reloaded`
                 })
+                .end()
 
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
@@ -67,6 +65,7 @@ export class ServerResponse {
             res
                 .status(HTTP_STATUS_CODE.METHOD_NOT_ALLOWED)
                 .json({ error: HTTP_STATUS_MESSAGE.METHOD_NOT_ALLOWED })
+                .end()
         }
     }
 }

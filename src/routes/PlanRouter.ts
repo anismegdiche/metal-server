@@ -13,8 +13,7 @@ export const PlanRouter = Router()
 
 //ROADMAP
 PlanRouter.route("/:plan")
-    .all(
-        (req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
+    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
         UserResponse.IsAuthenticated
     )
     .get(ServerResponse.NotImplemented)
@@ -23,8 +22,7 @@ PlanRouter.route("/:plan")
     .delete(ServerResponse.NotImplemented)
 
 PlanRouter.route('/:plan/reload')
-    .all(
-        (req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
+    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
         UserResponse.IsAuthenticated
     )
     .post(PlanResponse.Reload)

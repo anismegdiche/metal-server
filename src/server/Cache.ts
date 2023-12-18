@@ -52,7 +52,7 @@ export class Cache {
 
         Logger.Debug(`Cache.Set`)
         if (!schemaRequest?.cache) {
-            return;
+            return
         }
         const ttl = parseInt((schemaRequest.cache).replace(/['"]/g, ''), 10) ?? 0
         const now = new Date()
@@ -78,7 +78,7 @@ export class Cache {
                     }
                 ]
             })
-            return;
+            return
         }
         if (Cache.IsValid(cacheData.expires))
             Logger.Debug("Cache.Set: cache is valid")
