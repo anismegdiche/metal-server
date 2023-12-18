@@ -42,7 +42,10 @@ export class Config {
         id: "/",
         type: "object",
         properties: {
-            "version": { type: "string" },
+            "version": {
+                type: "string",
+                enum: ["0.1"]
+            },
             "server": {
                 type: "object",
                 properties: {
@@ -59,8 +62,7 @@ export class Config {
                     "authentication": { type: "null" },
                     "request-limit": { type: "string" },
                     "cache": { type: "object" }
-                },
-                required: ["port"]
+                }
             },
             "users": {
                 type: "object",
@@ -219,7 +221,7 @@ export class Config {
         if (errors.length <= 0) {
             return
         }
-        
+
         Logger.Error(`Errors have been detected in configuration file: ${this.ConfigFilePath}`)
         errors.forEach((i) => {
             Logger.Error(i.stack.replace(/instance\./, ''))
@@ -241,5 +243,5 @@ export class Config {
         return _.get(Config.Configuration, element)
     }
 
-    
+
 }
