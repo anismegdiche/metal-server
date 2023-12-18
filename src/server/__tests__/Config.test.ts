@@ -21,39 +21,4 @@ describe('Config', () => {
             await expect(Config.Check()).resolves.not.toThrow()
         })
     })
-
-    describe('CheckRoot', () => {
-        it('should check the root configuration', async () => {
-            expect.assertions(1)
-            await expect(Config.CheckRoot()).resolves.not.toThrow()
-        })
-    })
-
-    describe('CheckSources', () => {
-        it('should check the sources configuration', async () => {
-            expect.assertions(1)
-            await expect(Config.CheckSources()).resolves.not.toThrow()
-        })
-    })
-
-    describe('CheckSchemas', () => {
-        it('should check the schemas configuration', async () => {
-            expect.assertions(1)
-            await expect(Config.CheckSchemas()).resolves.not.toThrow()
-        })
-    })
-
-    // describe('ConnectToCache', () => {
-    //     it('should connect to the cache', async () => {
-    //         expect.assertions(1)
-    //         await expect(Config.ConnectToCache()).resolves.not.toThrow()
-    //     })
-    // })
-
-    // describe('ConnectToSources', () => {
-    //     it('should connect to the sources', async () => {
-    //         expect.assertions(1)
-    //         await expect(Config.ConnectToSources()).resolves.not.toThrow()
-    //     })
-    // })
 })

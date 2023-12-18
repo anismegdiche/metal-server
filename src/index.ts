@@ -34,4 +34,4 @@
 import { Server } from './server/Server'
 
 Server.Init()
-Server.Start()
+    .then(Server.Start)

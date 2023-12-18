@@ -31,8 +31,8 @@ export class Server {
     public static Port: number
     public static CurrentPath: string
 
-    public static Init() {
-        Config.Init()
+    public static async Init() {
+        await Config.Init()
         Logger.Debug(`${Logger.In} Server.Init`)
 
         Server.Port = Config.Configuration.server?.port ?? Config.DEFAULTS["server.port"]
