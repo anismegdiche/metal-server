@@ -134,7 +134,7 @@ describe("DataTable", () => {
 
     describe("GetFieldsNames", () => {
         it("should return an array of field names", () => {
-            const fields = dt.GetFieldsNames()
+            const fields = dt.GetFieldNames()
             expect(fields).toEqual(["name", "age"])
         })
     })

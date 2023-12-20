@@ -18,7 +18,7 @@ describe('Config', () => {
     describe('Check', () => {
         it('should check the configuration', async () => {
             expect.assertions(1)
-            await expect(Config.Check()).resolves.not.toThrow()
+            await expect(Config.Validate()).resolves.not.toThrow()
         })
     })
 })

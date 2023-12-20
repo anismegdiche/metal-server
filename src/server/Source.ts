@@ -27,7 +27,7 @@ export class Source {
     // global sources
     public static Sources: Record<string, IProvider> = {}
 
-    static async Connect(source: string | null, sourceParams: TSourceParams) {
+    static async Connect(source: string | null, sourceParams: TSourceParams): Promise<void> {
         if (!(sourceParams.provider in NewSourceCaseMap)) {
             Logger.Error(`Source '${source}', Provider '${sourceParams.provider}' not found. The source will not be connected`)
             return
@@ -42,7 +42,7 @@ export class Source {
         }
     }
 
-    static async ConnectAll() {
+    static async ConnectAll(): Promise<void> {
         for (const _source in Config.Configuration.sources) {
             if (Object.prototype.hasOwnProperty.call(Config.Configuration.sources, _source)) {
                 Logger.Info(`${Logger.Out} found source '${_source}'`)
@@ -51,11 +51,11 @@ export class Source {
             }
         }
     }
-    static async Disconnect(source: string) {
+    static async Disconnect(source: string): Promise<void> {
         Source.Sources[source].Disconnect()
     }
 
-    static async DisconnectAll() {
+    static async DisconnectAll(): Promise<void> {
         for (const _source in Source.Sources) {
             if (_source)
                 Source.Disconnect(_source)

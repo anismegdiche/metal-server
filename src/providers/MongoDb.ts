@@ -19,7 +19,7 @@ import { TJson } from "../types/TJson"
 import { DataTable } from "../types/DataTable"
 import { Logger } from "../lib/Logger"
 import { Cache } from '../server/Cache'
-import { CommonProviderOptionsData } from "../lib/CommonProviderOptionsData"
+import { CommonSqlProviderOptionsData } from './CommonSqlProvider'
 
 
 class MongoDbOptions implements IProvider.IProviderOptions {
@@ -118,7 +118,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
         }
     }
 
-    public Data = CommonProviderOptionsData
+    public Data = CommonSqlProviderOptionsData
 }
 
 
@@ -142,7 +142,7 @@ export class MongoDb implements IProvider.IProvider {
     }
 
 
-    async Init(oParams: TSourceParams) {
+    async Init(oParams: TSourceParams): Promise<void> {
         Logger.Debug("MongoDb.Init")
         this.Params = oParams
     }

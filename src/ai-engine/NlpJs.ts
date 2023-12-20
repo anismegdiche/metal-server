@@ -59,7 +59,7 @@ export class NlpJs implements IAiEngine {
 		this.Options = this.#SetDefaultOptions[this.Model](aiEngineParams.options)
 	}
 
-	async Init() {
+	async Init(): Promise<void> {
 		this.#Model = this.#LoadModel[this.Model as string]()
 	}
 
@@ -79,12 +79,12 @@ export class NlpJs implements IAiEngine {
 	}
 
 	static #SentimentSetDefaultOptions(options: Partial<TNlpJsSentimentOptions>): TNlpJsSentimentOptions {
-		return <TNlpJsSentimentOptions>{
+		return {
 			lang: 'en',
 			...options
 		}
 	}
-	
+
 	async #GuessLanguage(text: string) {
 		return await this.#Model.guess(text, this.Options.accept, this.Options.limit)
 	}

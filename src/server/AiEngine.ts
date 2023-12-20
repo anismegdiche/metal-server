@@ -25,25 +25,26 @@ export class AiEngine {
         'nlpjs': (aiEngineName: string, AiEngineParams: TNlpJsEngineParams) => new NlpJs(aiEngineName, AiEngineParams)
     }
 
-    static async Init() {
+    static async Init(): Promise<void> {
         AiEngine.EngineConfiguration = Config.Get("ai-engines")
     }
 
-    static async CreateAll() {
+    static async CreateAll(): Promise<void> {
         for (const _aiEngineName in AiEngine.EngineConfiguration) {
             const _AiEngineParams = AiEngine.EngineConfiguration[_aiEngineName]
             AiEngine.Create(_aiEngineName, _AiEngineParams)
         }
     }
 
-    static async Create(aiEngineName: string, AiEngineParams: TJson) {
+    static async Create(aiEngineName: string, AiEngineParams: TJson): Promise<void> {
         Logger.Debug(`${Logger.In} Starting '${aiEngineName}' with params '${JSON.stringify(AiEngineParams)}'`)
         const engine = AiEngineParams?.engine as string ?? undefined
-        if (engine) {
-            AiEngine.Engine[aiEngineName] = AiEngine.#NewAiEngine[engine](aiEngineName, AiEngineParams)
-            await AiEngine.Engine[aiEngineName].Init()
-            Logger.Debug(`${Logger.Out} AI Engine '${aiEngineName}' created`)
+        if (!engine) {
+            return;
         }
+        AiEngine.Engine[aiEngineName] = AiEngine.#NewAiEngine[engine](aiEngineName, AiEngineParams)
+        await AiEngine.Engine[aiEngineName].Init()
+        Logger.Debug(`${Logger.Out} AI Engine '${aiEngineName}' created`)
     }
 
     static async Run(aiEngineName: string, input: string) {

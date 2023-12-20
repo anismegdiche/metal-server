@@ -17,33 +17,8 @@ import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
-import { CommonProviderOptionsData } from '../lib/CommonProviderOptionsData'
-import { CommonProviderOptionsFilter } from '../lib/CommonProviderOptionsFilter'
-import { CommonProviderOptionsFields } from '../lib/CommonProviderOptionsFields'
-import { CommonProviderOptionsSort } from '../lib/CommonProviderOptionsSort'
+import { CommonSqlProviderOptions } from './CommonSqlProvider'
 
-
-class PostgresOptions implements IProvider.IProviderOptions {
-
-    Parse(schemaRequest: TSchemaRequest): TOptions {
-        let options: TOptions = <TOptions>{}
-        if (schemaRequest) {
-            options = this.Filter.Get(options, schemaRequest)
-            options = this.Fields.Get(options, schemaRequest)
-            options = this.Sort.Get(options, schemaRequest)
-            options = this.Data.Get(options, schemaRequest)
-        }
-        return options
-    }
-
-    public Filter = CommonProviderOptionsFilter
-
-    public Fields = CommonProviderOptionsFields
-
-    public Sort = CommonProviderOptionsSort
-
-    public Data = CommonProviderOptionsData
-}
 
 export class Postgres implements IProvider.IProvider {
     public ProviderName = 'postgres'
@@ -53,7 +28,7 @@ export class Postgres implements IProvider.IProvider {
     public Connection: Pool = <Pool>{}
     public Config: TJson = {}
 
-    Options = new PostgresOptions()
+    Options = new CommonSqlProviderOptions()
 
     constructor(sourceName: string, oParams: TJson) {
         this.SourceName = sourceName
@@ -61,7 +36,7 @@ export class Postgres implements IProvider.IProvider {
         this.Connect()
     }
 
-    async Init(oParams: TSourceParams) {
+    async Init(oParams: TSourceParams): Promise<void> {
         Logger.Debug("Postgres.Init")
         this.Params = oParams
     }
@@ -111,7 +86,7 @@ export class Postgres implements IProvider.IProvider {
 
         const _sqlQuery = new SqlQueryHelper()
             .Insert(`"${schemaRequest.entity}"`)
-            .Fields(options.Data.GetFieldsNames())
+            .Fields(options.Data.GetFieldNames())
             .Values(options.Data.Rows)
             .Query
 

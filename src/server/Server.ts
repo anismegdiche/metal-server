@@ -31,7 +31,7 @@ export class Server {
     public static Port: number
     public static CurrentPath: string
 
-    public static async Init() {
+    public static async Init(): Promise<void> {
         await Config.Init()
         Logger.Debug(`${Logger.In} Server.Init`)
 
@@ -110,7 +110,7 @@ export class Server {
 
         // path: /schedule
         Logger.Info(`Route: Enabling API, URL= ${ROUTE.SCHEDULE_PATH}`)
-        Server.App.use(`${ROUTE.SCHEDULE_PATH}/`, ScheduleRouter)        
+        Server.App.use(`${ROUTE.SCHEDULE_PATH}/`, ScheduleRouter)
     }
 
     public static Start() {
@@ -128,7 +128,7 @@ export class Server {
         Logger.Debug(`${Logger.In} Server.Stop`)
     }
 
-    public static async Reload() {
+    public static async Reload(): Promise<void> {
         Logger.Debug(`${Logger.In} Server.Reload`)
         Schedule.StopAll()
         await Cache.Disconnect()

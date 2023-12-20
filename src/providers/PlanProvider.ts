@@ -13,35 +13,10 @@ import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResp
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
-import { CommonProviderOptionsData } from '../lib/CommonProviderOptionsData'
-import { CommonProviderOptionsFilter } from '../lib/CommonProviderOptionsFilter'
-import { CommonProviderOptionsFields } from '../lib/CommonProviderOptionsFields'
-import { CommonProviderOptionsSort } from '../lib/CommonProviderOptionsSort'
 import { SqlQueryHelper } from '../lib/Sql'
 import { Plan } from '../server/Plan'
+import { CommonSqlProviderOptions } from './CommonSqlProvider'
 
-class PlanProviderOptions implements IProvider.IProviderOptions {
-
-    Parse(schemaRequest: TSchemaRequest): TOptions {
-        let options: TOptions = <TOptions>{}
-        if (schemaRequest) {
-            options = this.Filter.Get(options, schemaRequest)
-            options = this.Fields.Get(options, schemaRequest)
-            options = this.Sort.Get(options, schemaRequest)
-            options = this.Data.Get(options, schemaRequest)
-        }
-        return options
-    }
-
-    public Filter = CommonProviderOptionsFilter
-
-    public Fields = CommonProviderOptionsFields
-
-    public Sort = CommonProviderOptionsSort
-
-    //TODO: unused
-    public Data = CommonProviderOptionsData
-}
 
 export class PlanProvider implements IProvider.IProvider {
     public ProviderName = 'Plan'
@@ -49,7 +24,7 @@ export class PlanProvider implements IProvider.IProvider {
     public Params: TSourceParams = <TSourceParams>{}
     public Config: TJson = {}
 
-    Options = new PlanProviderOptions()
+    Options = new CommonSqlProviderOptions()
 
     constructor(sourceName: string, oParams: TJson) {
         this.SourceName = sourceName
@@ -57,7 +32,7 @@ export class PlanProvider implements IProvider.IProvider {
         this.Connect()
     }
 
-    async Init(oParams: TSourceParams) {
+    async Init(oParams: TSourceParams): Promise<void> {
         Logger.Debug("Plan.Init")
         this.Params = oParams
     }
@@ -106,20 +81,20 @@ export class PlanProvider implements IProvider.IProvider {
             .OrderBy(options.Sort)
             .Query
 
-        const _planSchemaResponse = await Plan.Execute(schemaRequest, sqlQuery)
+        const planSchemaResponse = await Plan.Execute(schemaRequest, sqlQuery)
 
-        if ('data' in _planSchemaResponse && _planSchemaResponse.data.Rows.length > 0) {
+        if ('data' in planSchemaResponse && planSchemaResponse.data.Rows.length > 0) {
             Cache.Set({
                 ...schemaRequest,
                 source: this.SourceName
             },
-                _planSchemaResponse.data
+                planSchemaResponse.data
             )
             return <TSchemaResponseData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: _planSchemaResponse.data
+                data: planSchemaResponse.data
             }
         } else {
             return <TSchemaResponseNoData>{

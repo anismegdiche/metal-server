@@ -24,26 +24,26 @@ export class Cache {
 
     public static CacheSource: IProvider
 
-    static #GetSchemaRequest() {
-        return <TSchemaRequest>{
+    static #GetSchemaRequest(): TSchemaRequest {
+        return {
             schema: Cache.Schema,
             entity: Cache.Table
         }
     }
 
-    static async Connect() {
+    static async Connect(): Promise<void> {
         Logger.Debug(`Cache.Connect`)
         if (Config.Flags.EnableCache)
             Source.Connect(null, Config.Get("server.cache"))
     }
 
-    static async Disconnect() {
+    static async Disconnect(): Promise<void> {
         Logger.Debug(`Cache.Disconnect`)
         if (Config.Flags.EnableCache)
             await Cache.CacheSource.Disconnect()
     }
 
-    static async Set(schemaRequest: TSchemaRequest, dt: DataTable) {
+    static async Set(schemaRequest: TSchemaRequest, dt: DataTable): Promise<void> {
         if (!Config.Flags.EnableCache ||
             schemaRequest?.cache === undefined ||
             (schemaRequest.schema === Cache.Schema && schemaRequest.entity === Cache.Table)) {

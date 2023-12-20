@@ -162,7 +162,7 @@ export class DataTable {
         return this
     }
 
-    public GetFieldsNames(): string[] {
+    public GetFieldNames(): string[] {
         return Object.keys(this.Fields)
     }
 

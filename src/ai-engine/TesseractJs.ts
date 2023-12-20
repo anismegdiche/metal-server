@@ -23,10 +23,8 @@ export class TesseractJs implements IAiEngine {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    async Init() {
+    async Init(): Promise<void> {
         Logger.Debug(`TesseractJs: Init ${JSON.stringify(this.Options)}`)
-        // nothing to init
-        return null
     }
 
     async Run(image: string): Promise<Page | undefined> {

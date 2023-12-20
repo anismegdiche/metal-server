@@ -48,7 +48,7 @@ export class TensorFlowJs implements IAiEngine {
 		Tf.setBackend('cpu')
 	}
 
-	async Init() {
+	async Init(): Promise<void> {
 		this.#Model = await this.#LoadModel[this.Options.Model as string]()
 	}
 

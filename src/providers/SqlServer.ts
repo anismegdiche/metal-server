@@ -16,33 +16,8 @@ import { TJson } from "../types/TJson"
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Logger } from '../lib/Logger'
 import { Cache } from '../server/Cache'
-import { CommonProviderOptionsData } from '../lib/CommonProviderOptionsData'
-import { CommonProviderOptionsFilter } from '../lib/CommonProviderOptionsFilter'
-import { CommonProviderOptionsFields } from '../lib/CommonProviderOptionsFields'
-import { CommonProviderOptionsSort } from '../lib/CommonProviderOptionsSort'
+import { CommonSqlProviderOptions } from './CommonSqlProvider'
 
-
-class SqlServerOptions implements IProvider.IProviderOptions {
-
-    Parse(schemaRequest: TSchemaRequest): TOptions {
-        let options: TOptions = <TOptions>{}
-        if (schemaRequest) {
-            options = this.Filter.Get(options, schemaRequest)
-            options = this.Fields.Get(options, schemaRequest)
-            options = this.Sort.Get(options, schemaRequest)
-            options = this.Data.Get(options, schemaRequest)
-        }
-        return options
-    }
-
-    public Filter = CommonProviderOptionsFilter
-
-    public Fields = CommonProviderOptionsFields
-
-    public Sort = CommonProviderOptionsSort
-
-    public Data = CommonProviderOptionsData
-}
 
 export class SqlServer implements IProvider.IProvider {
     public ProviderName = 'sqlserver'
@@ -52,7 +27,7 @@ export class SqlServer implements IProvider.IProvider {
     public Connection: any = {}
     public Config: TJson = {}
 
-    Options: SqlServerOptions = new SqlServerOptions()
+    Options = new CommonSqlProviderOptions()
 
     constructor(sourceName: string, oParams: TSourceParams) {
         this.SourceName = sourceName
@@ -60,7 +35,7 @@ export class SqlServer implements IProvider.IProvider {
         this.Connect()
     }
 
-    async Init(oParams: TSourceParams) {
+    async Init(oParams: TSourceParams): Promise<void> {
         Logger.Debug("SqlServer.Init")
         this.Params = oParams
     }
@@ -111,7 +86,7 @@ export class SqlServer implements IProvider.IProvider {
 
         const _sqlQuery = new SqlQueryHelper()
             .Insert(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
-            .Fields(options.Data.GetFieldsNames())
+            .Fields(options.Data.GetFieldNames())
             .Values(options.Data.Rows)
             .Query
 

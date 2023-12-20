@@ -185,13 +185,13 @@ export class Config {
         }
     }
 
-    static async Init() {
+    static async Init() : Promise<void> {
         Logger.Info('Config.Init')
         // ENV
         dotenv.config()
 
         await Config.Load()
-        await Config.Check()
+        await Config.Validate()
 
         const verbosity = (Config.Configuration.server?.verbosity ?? DefaultLevel).toLowerCase()
 
@@ -206,17 +206,17 @@ export class Config {
         Config.Has('schedules') && Schedule.CreateAndStartAll()
     }
 
-    static async Load() {
+    static async Load(): Promise<void> {
         Logger.Debug('Config.Load')
         const configFileRaw = Fs.readFileSync(this.ConfigFilePath, 'utf-8')
         Config.Configuration = Yaml.load(configFileRaw)
     }
 
-    static async Check() {
-        Logger.Debug('Config.Check')
-        const v = new Validator()
+    static async Validate(): Promise<void> {
+        Logger.Debug('Config.Validate')
+        const yamlValidator = new Validator()
 
-        const errors = v.validate(this.Configuration, this.#Schemas).errors
+        const errors = yamlValidator.validate(this.Configuration, this.#Schemas).errors
 
         if (errors.length <= 0) {
             return

@@ -36,7 +36,7 @@ export class Schema {
         Logger.Debug(`Schema.IsExist: ${JSON.stringify(schemaRequest)}`)
 
         const { schema } = schemaRequest
-        
+
         // check if schema exists in config file
         if (!Config.Has("schemas")) {
             Logger.Warn(`section 'schemas' not found in configuration`)
@@ -162,7 +162,7 @@ export class Schema {
                     Logger.Warn(`Source not found for entity '${entityName}'`)
                     return _EmptySchemaRoute
                 }
-                return <TSchemaRoute>{
+                return {
                     Type: 'source',
                     RouteName: __schemaEntityConfig.source,
                     EntityName: entityName
@@ -176,7 +176,7 @@ export class Schema {
                 Logger.Warn(`Source not found for schema '${schemaName}'`)
                 return _EmptySchemaRoute
             }
-            return <TSchemaRoute>{
+            return {
                 Type: 'source',
                 RouteName: schemaConfig.source,
                 EntityName: entityName
