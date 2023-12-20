@@ -3,7 +3,6 @@
 //
 //
 //
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 import { Request, Response } from 'express'
 
 import { ServerResponse } from './ServerResponse'

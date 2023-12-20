@@ -1,5 +1,5 @@
 
-import { SqlQueryHelper } from '../Sql'
+import { SqlQueryHelper } from '../SqlQueryHelper'
 import { TRows } from '../../types/DataTable'
 
 describe('SqlQueryHelper_class', () => {

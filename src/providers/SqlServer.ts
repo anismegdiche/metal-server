@@ -7,7 +7,7 @@ import mssql from 'mssql'
 
 import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
 import * as IProvider from "../types/IProvider"
-import { SqlQueryHelper } from '../lib/Sql'
+import { SqlQueryHelper } from '../lib/SqlQueryHelper'
 import { TSourceParams } from "../types/TSourceParams"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
 import { TOptions } from "../types/TOptions"

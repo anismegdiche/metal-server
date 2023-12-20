@@ -6,7 +6,7 @@
 import _ from 'lodash'
 import { TRow, TRows } from "../types/DataTable"
 import { TJson } from '../types/TJson'
-import { Logger } from '../lib/Logger'
+import { Logger } from './Logger'
 
 export class SqlQueryHelper {
     public Query = ''

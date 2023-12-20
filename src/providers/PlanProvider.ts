@@ -13,7 +13,7 @@ import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResp
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
-import { SqlQueryHelper } from '../lib/Sql'
+import { SqlQueryHelper } from '../lib/SqlQueryHelper'
 import { Plan } from '../server/Plan'
 import { CommonSqlProviderOptions } from './CommonSqlProvider'
 
@@ -41,9 +41,8 @@ export class PlanProvider implements IProvider.IProvider {
         Logger.Info(`${Logger.In} connected to '${this.SourceName} (${this.Params.database})'`)
     }
 
-    // eslint-disable-next-line class-methods-use-this
     async Disconnect(): Promise<void> {
-        return undefined
+        Logger.Info(`${Logger.In} '${this.SourceName} (${this.Params.database})' disconnected`)
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -73,7 +72,6 @@ export class PlanProvider implements IProvider.IProvider {
             ...RESPONSE_TRANSACTION.SELECT
         }
 
-        // eslint-disable-next-line init-declarations
         const sqlQuery = new SqlQueryHelper()
             .Select(options.Fields)
             .From(entity)

@@ -3,12 +3,12 @@
 //
 //
 //
-import * as IProvider from "../types/IProvider"
 import * as mongodb from 'mongodb'
 import _ from 'lodash'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const GetMongoQuery = require("sql2mongo").getMongoQuery
-
+//
+import * as IProvider from "../types/IProvider"
 import { Convert } from '../lib/Convert'
 import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
 import { TSourceParams } from "../types/TSourceParams"

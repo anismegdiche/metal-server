@@ -12,14 +12,11 @@ import { TInternalResponse } from "../types/TInternalResponse"
 import { TJson } from "../types/TJson"
 import { TSchemaRequest } from "../types/TSchemaRequest"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
-import { SqlQueryHelper } from "../lib/Sql"
+import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { StringExtend } from "../lib/StringExtend"
 import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
-import { CommonSqlProviderOptionsData } from '../providers/CommonSqlProvider'
-import { CommonSqlProviderOptionsFields } from '../providers/CommonSqlProvider'
-import { CommonSqlProviderOptionsFilter } from '../providers/CommonSqlProvider'
-import { CommonSqlProviderOptionsSort } from '../providers/CommonSqlProvider'
+import { CommonSqlProviderOptions } from '../providers/CommonSqlProvider'
 import { TOptions } from "../types/TOptions"
 
 
@@ -30,31 +27,10 @@ type TStepArguments = {
     stepParams: any
 }
 
-class StepOptions {
-
-    static Parse(schemaRequest: TSchemaRequest): TOptions {
-        let options: TOptions = <TOptions>{}
-        if (schemaRequest) {
-            options = this.Filter.Get(options, schemaRequest)
-            options = this.Fields.Get(options, schemaRequest)
-            options = this.Sort.Get(options, schemaRequest)
-            options = this.Data.Get(options, schemaRequest)
-        }
-        return options
-    }
-
-    public static Filter = CommonSqlProviderOptionsFilter
-
-    public static Fields = CommonSqlProviderOptionsFields
-
-    public static Sort = CommonSqlProviderOptionsSort
-
-    public static Data = CommonSqlProviderOptionsData
-}
 
 class Step {
 
-    static Options = StepOptions
+    static Options = CommonSqlProviderOptions
 
     static ExecuteCaseMap: Record<string, Function> = {
         'debug': async (stepArguments: TStepArguments) => await Step.#Debug(stepArguments),

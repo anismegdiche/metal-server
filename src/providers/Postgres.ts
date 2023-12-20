@@ -8,7 +8,7 @@ import { Pool } from 'pg'
 
 import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
 import * as IProvider from "../types/IProvider"
-import { SqlQueryHelper } from '../lib/Sql'
+import { SqlQueryHelper } from '../lib/SqlQueryHelper'
 import { TSourceParams } from "../types/TSourceParams"
 import { TOptions } from "../types/TOptions"
 import { DataTable } from "../types/DataTable"

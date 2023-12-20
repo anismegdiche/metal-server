@@ -3,9 +3,8 @@
 //
 //
 //
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 import { Request, Response, NextFunction } from 'express'
-
+//
 import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from '../lib/Const'
 import { User } from '../server/User'
 import { Config } from '../server/Config'

@@ -6,7 +6,7 @@
 import _ from 'lodash'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const alasql = require('alasql')
-
+//
 import { TJson } from './TJson'
 
 export type TRow = TJson
