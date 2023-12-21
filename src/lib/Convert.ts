@@ -15,11 +15,12 @@ import { TInternalResponse } from '../types/TInternalResponse'
 
 export class Convert {
 
-    static OptionsFilterExpressionToSql(filterExpression: string) {
+    static OptionsFilterExpressionToSqlWhere(filterExpression: string) {
         let sqlCondition = JSON.stringify(filterExpression)
 
         // booleans
-        sqlCondition = sqlCondition.replace(/&(?=(?:[^']*'[^']*')*[^']*$)/g, " AND ")
+        sqlCondition = sqlCondition
+            .replace(/&(?=(?:[^']*'[^']*')*[^']*$)/g, " AND ")
             .replace(/\|(?=(?:[^']*'[^']*')*[^']*$)/g, " OR ")
             .replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/g, " NOT ")
 
@@ -84,7 +85,6 @@ export class Convert {
         res.status(intRes.StatusCode).json(intRes.Body)
     }
 
-
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, response: Response) {
         const { schema, entity, transaction, result, status } = schemaResponse
 
@@ -115,7 +115,6 @@ export class Convert {
             .json(_responseJson)
     }
 
-
     // eslint-disable-next-line no-unused-vars
     static ReplacePlaceholders(text: string): string
     // eslint-disable-next-line no-unused-vars
@@ -127,25 +126,24 @@ export class Convert {
             return undefined
 
         if (typeof text === 'string') {
-            const placeholderRegex = /\$\{\{([^}]+)\}\}/g
-            const replacedString = text.replace(placeholderRegex, (match, code) => {
+            const _placeholderRegex = /\$\{\{([^}]+)\}\}/g
+            return text.replace(_placeholderRegex, (match, code) => {
                 try {
                     // Use eval with caution, make sure the code is safe
                     // eslint-disable-next-line no-eval
-                    const result = eval(code)
-                    return (result === undefined)
+                    const __result = eval(code)
+                    return (__result === undefined)
                         ? ''
-                        : result.toString()
+                        : __result.toString()
                 } catch (error) {
                     Logger.Error(`Error evaluating code: ${code}, ${JSON.stringify(error)}`)
                     // Return the original placeholder if there's an error
                     return `$\{{${code}}}`
                 }
             })
-            return replacedString
         } else {
-            const __objectString = Convert.ReplacePlaceholders(JSON.stringify(text))
-            return JSON.parse(__objectString)
+            const _objectString = Convert.ReplacePlaceholders(JSON.stringify(text))
+            return JSON.parse(_objectString)
         }
     }
 }

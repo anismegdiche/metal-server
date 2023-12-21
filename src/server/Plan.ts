@@ -30,7 +30,7 @@ type TStepArguments = {
 
 class Step {
 
-    static Options = CommonSqlProviderOptions
+    static Options = new CommonSqlProviderOptions()
 
     static ExecuteCaseMap: Record<string, Function> = {
         'debug': async (stepArguments: TStepArguments) => await Step.#Debug(stepArguments),

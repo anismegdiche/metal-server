@@ -18,6 +18,7 @@ import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
 import { CommonSqlProviderOptions } from './CommonSqlProvider'
+import { Source } from '../server/Source'
 
 
 export class Postgres implements IProvider.IProvider {
@@ -25,7 +26,7 @@ export class Postgres implements IProvider.IProvider {
     public SourceName: string
     public Params: TSourceParams = <TSourceParams>{}
     public Primitive = Pool
-    public Connection: Pool = <Pool>{}
+    public Connection: Pool | undefined = undefined
     public Config: TJson = {}
 
     Options = new CommonSqlProviderOptions()
@@ -71,18 +72,25 @@ export class Postgres implements IProvider.IProvider {
     }
 
     async Disconnect(): Promise<void> {
-        this.Connection.end()
+        if (this.Connection !== undefined) {
+            this.Connection.end()
+        }
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} Postgres.Insert: ${JSON.stringify(schemaRequest)}`)
-        const options: TOptions = this.Options.Parse(schemaRequest)
 
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.INSERT
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
             .Insert(`"${schemaRequest.entity}"`)
@@ -102,13 +110,17 @@ export class Postgres implements IProvider.IProvider {
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`Postgres.Select: ${JSON.stringify(schemaRequest)}`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.SELECT
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
             .Select(options.Fields)
@@ -140,13 +152,17 @@ export class Postgres implements IProvider.IProvider {
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`Postgres.Update: ${JSON.stringify(schemaRequest)}`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.UPDATE
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
             .Update(`"${schemaRequest.entity}"`)
@@ -166,13 +182,17 @@ export class Postgres implements IProvider.IProvider {
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`Postgres.Delete : ${JSON.stringify(schemaRequest)}`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.DELETE
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
             .Delete()

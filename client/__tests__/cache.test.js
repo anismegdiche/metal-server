@@ -5,7 +5,7 @@ test(`nothing`, () => expect(null).toStrictEqual(null));
 // (async () => {
 //   const MetalClient = require("../metal_client");
 //   //
-//   const _metalClient = new MetalClient({
+//   const metalClient = new MetalClient({
 //     RestApiUrl: "http://localhost:3000",
 //   });
 
@@ -15,7 +15,7 @@ test(`nothing`, () => expect(null).toStrictEqual(null));
 //   let response;
 
 //   test(`Cache`, async () => {
-//     response = await _metalClient.DataSelect(schema, entity, {
+//     response = await metalClient.DataSelect(schema, entity, {
 //       fields: "id, login",
 //       cache: "36000",
 //     });
@@ -77,14 +77,14 @@ test(`nothing`, () => expect(null).toStrictEqual(null));
 //   });
 
 //   test(`Cache - Select`, async () => {
-//     response = await _metalClient.DataSelect("cache", "cache", {})
+//     response = await metalClient.DataSelect("cache", "cache", {})
 //     console.log(response)
 //     console.log(response?.rows?.length)
 //     expect(response?.rows?.length).toBeGreaterThan(0)
 // })
 
 //   test(`Cache - Select Hash`, async () => {
-//     response = await _metalClient.DataSelect("cache", "cache", {
+//     response = await metalClient.DataSelect("cache", "cache", {
 //       "filter-expression": "hash = '63e7867a0c24b1e7f222c5bc800e8c0e4a7c55e99382c5d4f573b20d1b620eb3820deb5c7aefe03ff16f882b312e2afa3f74021e58e5e2fb94be13bd883e43fc'"
 //     })
 //     console.log(response)

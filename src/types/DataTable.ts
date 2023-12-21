@@ -140,14 +140,15 @@ export class DataTable {
         }
     }
 
-    public Set(rows: TJson[] | undefined = undefined) {
+    public Set(rows: TJson[] | undefined = undefined): DataTable {
         if (rows) {
             this.Rows = [...rows]
             this.SetFields()
         }
+        return this
     }
 
-    public SetFields() {
+    public SetFields(): DataTable {
         const _cols: TJson = { ..._.head(this.Rows) }
         this.Fields = _.reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
@@ -157,7 +158,7 @@ export class DataTable {
     }
 
     // TODO not tested
-    public SetField(fieldName: string, type: string) {
+    public SetField(fieldName: string, type: string): DataTable {
         this.Fields[fieldName] = SqlToJsType[type] || 'unknown'
         return this
     }
@@ -166,7 +167,7 @@ export class DataTable {
         return Object.keys(this.Fields)
     }
 
-    public PrefixAllFields(prefix: string) {
+    public PrefixAllFields(prefix: string): DataTable {
         if (this.Rows.length === 0)
             return this
 
@@ -179,16 +180,15 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public UnPrefixAllfields() {
+    public UnPrefixAllfields(): DataTable {
         if (this.Rows.length === 0) {
             return this
         }
         for (const _row of this.Rows) {
             for (const [__col, __value] of Object.entries(_row)) {
-                let ___colNew = __col
-                if (__col.includes('.')) {
-                    ___colNew = __col.split('.')[1]
-                }
+                const ___colNew = __col.includes('.')
+                    ? __col.split('.')[1]
+                    : __col
                 if (_row[___colNew] === undefined) {
                     _row[___colNew] = __value
                     delete _row[__col]
@@ -199,13 +199,13 @@ export class DataTable {
     }
 
     // TODO not tested
-    public AddField(fieldName: string, fieldType: string) {
+    public AddField(fieldName: string, fieldType: string): DataTable {
         this.FreeSql(`ALTER TABLE \`${this.Name}\` ADD COLUMN \`${fieldName}\` ${fieldType}`)
         this.SetField(fieldName, fieldType)
         return this
     }
 
-    public FreeSql(sqlQuery: string) {
+    public FreeSql(sqlQuery: string): DataTable {
         alasql.options.errorlog = true
         alasql(`CREATE TABLE IF NOT EXISTS \`${this.Name}\``)
         alasql.tables[this.Name].data = this.Rows
@@ -218,7 +218,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public LeftJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string) {
+    public LeftJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string): DataTable {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             LEFT JOIN ? \`${dtB.Name}\` 
@@ -228,7 +228,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public InnerJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string) {
+    public InnerJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string): DataTable {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             INNER JOIN ? \`${dtB.Name}\` 
@@ -238,7 +238,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public RightJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string) {
+    public RightJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string): DataTable {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             RIGHT JOIN ? \`${dtB.Name}\` 
@@ -248,7 +248,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public FullOuterJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string) {
+    public FullOuterJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string): DataTable {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             FULL OUTER JOIN ? \`${dtB.Name}\` 
@@ -258,7 +258,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public CrossJoin(dtB: DataTable) {
+    public CrossJoin(dtB: DataTable): DataTable {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             CROSS JOIN ? \`${dtB.Name}\``,
@@ -267,7 +267,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public SelectFields(fields: string[]) {
+    public SelectFields(fields: string[]): DataTable {
         if (this.Rows.length === 0 || fields.length === 0)
             return this
 
@@ -279,12 +279,13 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public Sort(fields: string[], orders: TOrder[]) {
+    public Sort(fields: string[], orders: TOrder[]): DataTable {
         this.Rows = _.orderBy(this.Rows, fields, orders)
         return this
     }
 
-    public SetMetaData(metadata: string, value: unknown) {
+    public SetMetaData(metadata: string, value: unknown): DataTable {
         this.MetaData[metadata] = value
+        return this
     }
 }

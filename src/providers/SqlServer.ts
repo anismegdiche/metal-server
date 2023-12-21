@@ -3,7 +3,7 @@
 //
 //
 //
-import mssql from 'mssql'
+import mssql, { ConnectionPool } from 'mssql'
 
 import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
 import * as IProvider from "../types/IProvider"
@@ -17,6 +17,7 @@ import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Logger } from '../lib/Logger'
 import { Cache } from '../server/Cache'
 import { CommonSqlProviderOptions } from './CommonSqlProvider'
+import { Source } from '../server/Source'
 
 
 export class SqlServer implements IProvider.IProvider {
@@ -24,7 +25,7 @@ export class SqlServer implements IProvider.IProvider {
     public SourceName: string
     public Params: TSourceParams = <TSourceParams>{}
     public Primitive = mssql
-    public Connection: any = {}
+    public Connection: ConnectionPool | undefined = undefined
     public Config: TJson = {}
 
     Options = new CommonSqlProviderOptions()
@@ -70,19 +71,25 @@ export class SqlServer implements IProvider.IProvider {
 
     async Disconnect(): Promise<void> {
         Logger.Debug(`${Logger.In} SqlServer.Disconnect`)
-        this.Connection.close()
+        if (this.Connection !== undefined) {
+            this.Connection.close()
+        }
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} SqlServer.Insert: ${JSON.stringify(schemaRequest)}`)
-
-        const options: TOptions = this.Options.Parse(schemaRequest)
 
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.INSERT
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
             .Insert(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
@@ -102,13 +109,17 @@ export class SqlServer implements IProvider.IProvider {
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} SqlServer.Select: ${JSON.stringify(schemaRequest)}`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.SELECT
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
             .Select(options.Fields)
@@ -140,13 +151,17 @@ export class SqlServer implements IProvider.IProvider {
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`SqlServer.Update: ${JSON.stringify(schemaRequest)}`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.UPDATE
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
             .Update(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
@@ -166,13 +181,17 @@ export class SqlServer implements IProvider.IProvider {
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`SqlServer.Delete: ${JSON.stringify(schemaRequest)}`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
-        let schemaResponse = <TSchemaResponse>{
+        const schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.DELETE
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
             .Delete()
@@ -181,11 +200,10 @@ export class SqlServer implements IProvider.IProvider {
             .Query
 
         await this.Connection.query(_sqlQuery)
-        schemaResponse = <TSchemaResponseData>{
+        return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
         }
-        return schemaResponse
     }
 }

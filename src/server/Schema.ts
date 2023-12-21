@@ -205,6 +205,4 @@ export class Schema {
         Logger.Warn(`Nothing to do in the 'schemas' section`)
         return undefined
     }
-
-
 }

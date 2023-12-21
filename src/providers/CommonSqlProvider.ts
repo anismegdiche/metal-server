@@ -48,7 +48,7 @@ export class CommonSqlProviderOptionsFilter {
     }
 
     static GetExpression(filterExpression: string): string {
-        return Convert.OptionsFilterExpressionToSql(filterExpression)
+        return Convert.OptionsFilterExpressionToSqlWhere(filterExpression)
     }
 }
 
@@ -63,13 +63,13 @@ export class CommonSqlProviderOptionsSort {
 
 export class CommonSqlProviderOptions implements IProvider.IProviderOptions {
 
-    Parse(schemaRequest: TSchemaRequest): TOptions {
+    public Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}
         if (schemaRequest) {
             options = this.Filter.Get(options, schemaRequest)
             options = this.Fields.Get(options, schemaRequest)
             options = this.Sort.Get(options, schemaRequest)
-            options = this.Data.Get(options, schemaRequest)
+            return this.Data.Get(options, schemaRequest)
         }
         return options
     }

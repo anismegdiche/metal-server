@@ -20,6 +20,7 @@ import { DataTable } from "../types/DataTable"
 import { Logger } from "../lib/Logger"
 import { Cache } from '../server/Cache'
 import { CommonSqlProviderOptionsData } from './CommonSqlProvider'
+import { Source } from '../server/Source'
 
 
 class MongoDbOptions implements IProvider.IProviderOptions {
@@ -58,7 +59,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
         }
 
         static GetExpression(filterExpression: string) {
-            const sqlQueryWhere = Convert.OptionsFilterExpressionToSql(filterExpression)
+            const sqlQueryWhere = Convert.OptionsFilterExpressionToSqlWhere(filterExpression)
             const mongoQueryWhere = GetMongoQuery(sqlQueryWhere.replace(/%/igm, ".*"))
             Logger.Debug(JSON.stringify(mongoQueryWhere))
             return mongoQueryWhere
@@ -127,7 +128,7 @@ export class MongoDb implements IProvider.IProvider {
     public SourceName: string
     public Params: TSourceParams = <TSourceParams>{}
     public Primitive = mongodb.MongoClient
-    public Connection: mongodb.MongoClient = <mongodb.MongoClient>{}
+    public Connection: mongodb.MongoClient | undefined = undefined
     public Config: TJson = {}
 
     Options: MongoDbOptions = new MongoDbOptions()
@@ -165,18 +166,25 @@ export class MongoDb implements IProvider.IProvider {
 
     async Disconnect(): Promise<void> {
         Logger.Debug("MongoDb.Disconnect")
-        await this.Connection.close()
+        if (this.Connection !== undefined) {
+            await this.Connection.close()
+        }
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} MongoDb.Insert: ${JSON.stringify(schemaRequest)}`)
-        const options: TOptions = this.Options.Parse(schemaRequest)
 
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.INSERT
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         await this.Connection.connect()
         await this.Connection.db(this.Params.database).collection(schemaRequest.entity).insertMany(options?.Data?.Rows)
@@ -191,13 +199,21 @@ export class MongoDb implements IProvider.IProvider {
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`MongoDb.Select: ${JSON.stringify(schemaRequest)}`)
+
         const options: mongodb.Document[] = _.values(this.Options.Parse(schemaRequest))
+
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.SELECT
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
         await this.Connection.connect()
+
         const _data = await this.Connection.db(this.Params.database)
             .collection(schemaRequest.entity)
             .aggregate(options)
@@ -224,13 +240,21 @@ export class MongoDb implements IProvider.IProvider {
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} MongoDb.Update: ${JSON.stringify(schemaRequest)}`)
-        const options: TOptions = this.Options.Parse(schemaRequest)
+
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.UPDATE
         }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
+
         await this.Connection.connect()
+
         await this.Connection.db(this.Params.database).collection(schemaRequest.entity).updateMany(
             (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>,
             {
@@ -248,23 +272,30 @@ export class MongoDb implements IProvider.IProvider {
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} MongoDb.Delete: ${JSON.stringify(schemaRequest)}`)
-        const options: any = this.Options.Parse(schemaRequest)
-        let schemaResponse = <TSchemaResponse>{
+
+        const schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity,
             ...RESPONSE_TRANSACTION.DELETE
         }
-        await this.Connection.connect()
+
+        const options: any = this.Options.Parse(schemaRequest)
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
         await this.Connection.db(this.Params.database).collection(schemaRequest.entity).deleteMany(
             (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>
         )
+
         Logger.Debug(`${Logger.In} MongoDb.Delete: ${JSON.stringify(schemaRequest)}`)
-        schemaResponse = <TSchemaResponseData>{
+
+        return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
         }
-        return schemaResponse
     }
 }
 

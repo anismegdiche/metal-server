@@ -7,6 +7,7 @@ import { TOptions } from './TOptions'
 import { TSourceParams } from './TSourceParams'
 import { TJson } from './TJson'
 import { TSchemaResponse } from './TSchemaResponse'
+import { ConnectionPool } from 'mssql'
 
 
 export interface IProviderOptions {
@@ -32,7 +33,7 @@ export interface IProvider {
     SourceName: string
     Params: TJson
     Primitive?: object
-    Connection?: TJson | Pool | MongoClient
+    Connection?: Pool | MongoClient | ConnectionPool
     Config: TJson
     Init: (oParams: TSourceParams) => void
     Connect: () => Promise<void>

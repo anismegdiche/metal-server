@@ -6,20 +6,20 @@ const { describe, it, expect, beforeAll } = require("@jest/globals");
 const MetalClient = require("../metal_client");
 
 describe("Postgres", () => {
-    let _metalClient;
+    let metalClient = {};
     const schema = "northwind";
     const entity = "customers";
 
     beforeAll(async () => {
-        _metalClient = new MetalClient({
+        metalClient = new MetalClient({
             RestApiUrl: "http://localhost:3000"
         });
-        await _metalClient.UserLogin("admin", "123456");
+        await metalClient.UserLogin("admin", "123456");
     });
 
     describe("DataInsert", () => {
         it("inserts one item into the database", async () => {
-            const response = await _metalClient.DataInsert(schema, entity, {
+            const response = await metalClient.DataInsert(schema, entity, {
                 data: {
                     customer_id: "DLLD",
                     contact_name: "John Doe",
@@ -36,7 +36,7 @@ describe("Postgres", () => {
         });
 
         it("inserts many items into the database", async () => {
-            const response = await _metalClient.DataInsert(schema, entity, {
+            const response = await metalClient.DataInsert(schema, entity, {
                 data: [
                     {
                         customer_id: "PLLD",
@@ -62,7 +62,7 @@ describe("Postgres", () => {
 
     describe("DataSelect", () => {
         it("selects data from the database", async () => {
-            const response = await _metalClient.DataSelect(schema, entity, {
+            const response = await metalClient.DataSelect(schema, entity, {
                 "filter-expression": "customer_id ~ '*LLD'",
                 fields: "contact_name, company_name",
                 sort: "contact_name asc,company_name desc"
@@ -98,7 +98,7 @@ describe("Postgres", () => {
 
     describe("DataUpdate", () => {
         it("updates data in the database", async () => {
-            const response = await _metalClient.DataUpdate(schema, entity, {
+            const response = await metalClient.DataUpdate(schema, entity, {
                 "filter-expression": "customer_id ~ '*LLD'",
                 data: {
                     contact_name: "XXXXX"
@@ -116,7 +116,7 @@ describe("Postgres", () => {
 
     describe("DataDelete", () => {
         it("deletes data from the database", async () => {
-            const response = await _metalClient.DataDelete(schema, entity, {
+            const response = await metalClient.DataDelete(schema, entity, {
                 "filter-expression": "customer_id ~ '*LLD'"
             });
             expect(response.status).toStrictEqual(204);

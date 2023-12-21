@@ -9,7 +9,7 @@ describe('Convert', () => {
         const filterExpression = "field1 = 'value1' & field2 > 10"
         const expected = "field1 = 'value1'  AND  field2 > 10"
 
-        const result = Convert.OptionsFilterExpressionToSql(filterExpression)
+        const result = Convert.OptionsFilterExpressionToSqlWhere(filterExpression)
 
         expect(result).toEqual(expected)
     })

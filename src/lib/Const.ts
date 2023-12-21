@@ -228,6 +228,16 @@ export const RESPONSE = {
                 result: HTTP_STATUS_MESSAGE.NOT_FOUND
             }
         }
+    },
+    SERVER: {
+        INTERNAL_SERVER_ERROR: {
+            STATUS: {
+                status: HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR                
+            },
+            MESSAGE: {
+                result: HTTP_STATUS_MESSAGE.INTERNAL_SERVER_ERROR
+            }
+        }
     }
 }
 

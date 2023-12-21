@@ -40,7 +40,7 @@ export class AiEngine {
         Logger.Debug(`${Logger.In} Starting '${aiEngineName}' with params '${JSON.stringify(AiEngineParams)}'`)
         const engine = AiEngineParams?.engine as string ?? undefined
         if (!engine) {
-            return;
+            return
         }
         AiEngine.Engine[aiEngineName] = AiEngine.#NewAiEngine[engine](aiEngineName, AiEngineParams)
         await AiEngine.Engine[aiEngineName].Init()

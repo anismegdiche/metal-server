@@ -1,6 +1,3 @@
-/* eslint-disable no-plusplus */
-/* eslint-disable object-curly-spacing */
-/* eslint-disable max-lines-per-function */
 
 const { describe, it, expect, beforeAll } = require("@jest/globals");
 
@@ -8,28 +5,28 @@ const MetalClient = require("../metal_client");
 
 function removeId(data) {
     if (data?.rows !== undefined) {
-        for (let i = 0; i < data.rows.length; i++) {
-            delete data.rows[i]._id;
+        for (const row of data.rows) {
+            delete row._id;
         }
     }
     return data;
 }
 
 describe('MongoDb', () => {
-    let _metalClient;
+    let metalClient = {};
     const schema = 'mflix';
     const entity = 'users';
 
     beforeAll(async () => {
-        _metalClient = new MetalClient({
+        metalClient = new MetalClient({
             RestApiUrl: "http://localhost:3000"
         });
-        await _metalClient.UserLogin("admin", "123456");
+        await metalClient.UserLogin("admin", "123456");
     });
 
     describe('DataInsert', () => {
         it(`should insert one item into the database`, async () => {
-            const response = await _metalClient.DataInsert(schema, entity, {
+            const response = await metalClient.DataInsert(schema, entity, {
                 data: {
                     name: 'John Doe',
                     email: 'j.doe@nowhere.com',
@@ -49,7 +46,7 @@ describe('MongoDb', () => {
         });
 
         it(`should insert multiple items into the database`, async () => {
-            const response = await _metalClient.DataInsert(schema, entity, {
+            const response = await metalClient.DataInsert(schema, entity, {
                 data: [
                     {
                         name: 'Mary Major',
@@ -78,7 +75,7 @@ describe('MongoDb', () => {
 
     describe('DataSelect', () => {
         it(`should select items from the database`, async () => {
-            const response = await _metalClient.DataSelect(schema, entity, {
+            const response = await metalClient.DataSelect(schema, entity, {
                 "filter-expression": "name ~ '*o*' & email ~ '*wh*co'",
                 fields: 'name, email',
                 sort: 'name asc,email desc'
@@ -118,7 +115,7 @@ describe('MongoDb', () => {
 
     describe('DataUpdate', () => {
         it(`should update items in the database`, async () => {
-            const response = await _metalClient.DataUpdate(schema, entity, {
+            const response = await metalClient.DataUpdate(schema, entity, {
                 "filter-expression": "email ~ '*wh*co'",
                 data: {
                     email: "nomail"
@@ -136,7 +133,7 @@ describe('MongoDb', () => {
 
     describe('DataDelete', () => {
         it(`should delete items from the database`, async () => {
-            const response = await _metalClient.DataDelete(schema, entity, {
+            const response = await metalClient.DataDelete(schema, entity, {
                 "filter-expression": "email ~ '*wh*co'"
             });
             expect(response.status).toEqual(204);

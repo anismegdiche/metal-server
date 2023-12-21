@@ -13,6 +13,8 @@ import { Postgres } from '../providers/Postgres'
 import { MongoDb } from '../providers/MongoDb'
 import { SqlServer } from '../providers/SqlServer'
 import { PlanProvider } from '../providers/PlanProvider'
+import { RESPONSE } from '../lib/Const'
+import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
 
 
 const NewSourceCaseMap: Record<string, Function> = {
@@ -60,5 +62,13 @@ export class Source {
             if (_source)
                 Source.Disconnect(_source)
         }
+    }
+
+    static ResponseError(schemaResponse: TSchemaResponse): TSchemaResponseNoData {
+        return <TSchemaResponseNoData>{
+            ...schemaResponse,
+            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
+            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
+        }        
     }
 }
