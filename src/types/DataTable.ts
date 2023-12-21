@@ -288,4 +288,15 @@ export class DataTable {
         this.MetaData[metadata] = value
         return this
     }
+
+    public AddRow(row: TJson | undefined = undefined): DataTable {
+        if (row) {
+            this.Rows = [
+                ...this.Rows,
+                row
+            ]
+            this.SetFields()
+        }
+        return this
+    }
 }

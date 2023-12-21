@@ -171,12 +171,12 @@ describe("DataTable", () => {
             // Arrange
             const data = new DataTable("TestTable", [
                 {
-                    "Col1": "Value1",
-                    "Col2": "Value2"
+                    Col1: "Value1",
+                    Col2: "Value2"
                 },
                 {
-                    "Col1": "Value3",
-                    "Col2": "Value4"
+                    Col1: "Value3",
+                    Col2: "Value4"
                 }
             ])
 
@@ -188,17 +188,17 @@ describe("DataTable", () => {
 
             // Assert
             expect(data.Fields).toEqual({
-                "Col1": "string",
-                "Col2": "string"
+                Col1: "string",
+                Col2: "string"
             })
             expect(data.Rows).toEqual([
                 {
-                    "Col1": "Value1",
-                    "Col2": "Value2"
+                    Col1: "Value1",
+                    Col2: "Value2"
                 },
                 {
-                    "Col1": "Value3",
-                    "Col2": "Value4"
+                    Col1: "Value3",
+                    Col2: "Value4"
                 }
             ])
         })
@@ -207,12 +207,12 @@ describe("DataTable", () => {
             // Arrange
             const data = new DataTable("TestTable", [
                 {
-                    "Col1": "Value1",
-                    "Col2": "Value2"
+                    Col1: "Value1",
+                    Col2: "Value2"
                 },
                 {
-                    "Col1": "Value3",
-                    "Col2": "Value4"
+                    Col1: "Value3",
+                    Col2: "Value4"
                 }
             ])
 
@@ -221,17 +221,17 @@ describe("DataTable", () => {
 
             // Assert
             expect(data.Fields).toEqual({
-                "Col1": "string",
-                "Col2": "string"
+                Col1: "string",
+                Col2: "string"
             })
             expect(data.Rows).toEqual([
                 {
-                    "Col1": "Value1",
-                    "Col2": "Value2"
+                    Col1: "Value1",
+                    Col2: "Value2"
                 },
                 {
-                    "Col1": "Value3",
-                    "Col2": "Value4"
+                    Col1: "Value3",
+                    Col2: "Value4"
                 }
             ])
         })

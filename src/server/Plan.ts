@@ -28,7 +28,7 @@ type TStepArguments = {
 }
 
 
-class Step {
+export class Step {
 
     static Options = new CommonSqlProviderOptions()
 
@@ -268,10 +268,12 @@ class Step {
     static async #Sort(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Sort: ${JSON.stringify(stepArguments.stepParams)}`)
 
-        const fields = Object.keys(stepArguments.stepParams)
-        const orders: TOrder[] = Object.values(stepArguments.stepParams)
+        const { stepParams, currentDataTable } = stepArguments
 
-        return stepArguments.currentDataTable.Sort(fields, orders)
+        const fields = Object.keys(stepParams)
+        const orders: TOrder[] = Object.values(stepParams)
+
+        return currentDataTable.Sort(fields, orders)
     }
 
     static async #Debug(stepArguments: TStepArguments): Promise<DataTable> {
