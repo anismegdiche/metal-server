@@ -190,8 +190,8 @@ plans:
           filter-expression: "id >= 100"
       - insert:
           data:
-            name: Anis
-            display_name: Mr. Anis
+            name: John
+            display_name: Mr. John Doe
       # - bad-step-test3: "***TEST***"
 
     login:

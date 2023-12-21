@@ -41,7 +41,7 @@ Content-Type: application/json
 //    "sort": " name desc"
    "filter" :{
      "country":"France",
-     "name": "Anis"
+     "name": "john"
    },
    "cache": "10"
 }
@@ -63,7 +63,7 @@ POST http://localhost:3000/m/mflix/users/delete
 Content-Type: application/json
 
 {
-    "filter-expression": "name ~ 'anis*'"
+    "filter-expression": "name ~ 'john*'"
 }
 
 ###
@@ -73,7 +73,7 @@ POST http://localhost:3000/schema/update/mflix/users
 Content-Type: application/json
 
 {
-    "filter-expression": "name ~ 'anis*'",
+    "filter-expression": "name ~ 'john*'",
     "update": {
         "email": "bye@welcome.com",
         "country": "France"
@@ -91,7 +91,7 @@ POST http://localhost:3000/schema/select/mflix/users
 Content-Type: application/json
 
 # {
-#     "filter-expression": "name ~ 'anis*'",
+#     "filter-expression": "name ~ 'john*'",
 #     "fields": "name, email",
 #     "sort": "name asc,email desc",
 # }
@@ -104,7 +104,7 @@ GET http://localhost:3000/m/mflix/users
 Content-Type: application/json
 
 {
-    "filter-expression": "name ~ 'anis*'",
+    "filter-expression": "name ~ 'john*'",
     "fields": "name, email",
     "sort": "name asc,email desc"
 }
@@ -115,19 +115,19 @@ POST http://localhost:3000/m/mflix/users
 Content-Type: application/json
 
 {
-    "name" : "anis",
+    "name" : "john",
     "company": "clc"
 }
 ###
-GET http://localhost:3000/m/mflix/users/name/anis
+GET http://localhost:3000/m/mflix/users/name/john
 ###
-DELETE http://localhost:3000/m/mflix/users/name/anis
+DELETE http://localhost:3000/m/mflix/users/name/john
 ###
 PATCH http://localhost:3000/m/mflix/users/name/devil
 Content-Type: application/json
 
 {
-    "name" : "anis"
+    "name" : "john"
 }
 ###
 ###

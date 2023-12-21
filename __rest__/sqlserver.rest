@@ -76,7 +76,7 @@ POST http://localhost:3000/m/hr/dbo.countries/delete
 Content-Type: application/json
 
 {
-    "filter-expression": "name ~ 'Anis*' ",
+    "filter-expression": "name ~ 'John*' ",
     "fields": "name ,,,id",
     "sort": "name asc"
 }
@@ -86,18 +86,18 @@ POST http://localhost:3000/m/hr/dbo.countries
 Content-Type: application/json
 
 {
-      "Name": "Anissssss"
+      "Name": "John"
 }
 ###
 GET http://localhost:3000/m/hr/dbo.countries
 ###
-DELETE http://localhost:3000/m/hr/dbo.countries/name/Anis
+DELETE http://localhost:3000/m/hr/dbo.countries/name/John
 ###
 PATCH http://localhost:3000/m/hr/dbo.countries/name/8
 Content-Type: application/json
 
 {
-    "name" : "Anis",
+    "name" : "John",
     "color" : "8"
 }
 ###

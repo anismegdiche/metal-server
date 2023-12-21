@@ -79,7 +79,7 @@ POST http://localhost:3000/m/northwind/customers/delete
 Content-Type: application/json
 
 {
-    "filter-expression": "name ~ 'Anis*' ",
+    "filter-expression": "name ~ 'John*' ",
     "fields": "name ,,,id",
     "sort": "name asc"
 }
@@ -89,18 +89,18 @@ POST http://localhost:3000/m/northwind/customers
 Content-Type: application/json
 
 {
-      "Name": "Anissssss"
+      "Name": "Johnsssss"
 }
 ###
 GET http://localhost:3000/m/northwind/customers
 ###
-DELETE http://localhost:3000/m/northwind/customers/name/Anis
+DELETE http://localhost:3000/m/northwind/customers/name/John
 ###
 PATCH http://localhost:3000/m/northwind/customers/name/8
 Content-Type: application/json
 
 {
-    "name" : "Anis",
+    "name" : "John",
     "color" : "8"
 }
 ###
