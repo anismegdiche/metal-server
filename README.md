@@ -1,5 +1,3 @@
-![](metal-logo.png)
-
 
 # What is Metal ?
 
