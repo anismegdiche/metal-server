@@ -19,6 +19,13 @@ export class ServerResponse {
             .end()
     }
 
+    public static BadRequest(res: Response): void {
+        res
+            .status(HTTP_STATUS_CODE.BAD_REQUEST)
+            .json({ message: HTTP_STATUS_MESSAGE.BAD_REQUEST })
+            .end()
+    }
+
     static Error(res: Response, error: Error) {
         res
             .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)

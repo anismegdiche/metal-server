@@ -21,8 +21,12 @@ export class UserResponse {
     public static LogIn(req: Request, res: Response): void {
         try {
             const { username, password } = req.body
-            const intRes = User.LogIn(username.toString(), password.toString())
-            Convert.InternalResponseToResponse(res, intRes)
+            if (typeof username === 'string' && typeof password === 'string') {
+                const intRes = User.LogIn(username, password)
+                Convert.InternalResponseToResponse(res, intRes)
+            } else {
+                ServerResponse.BadRequest(res)
+            }
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
         }

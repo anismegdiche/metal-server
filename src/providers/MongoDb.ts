@@ -43,6 +43,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
             if (schemaRequest['filter-expression'] || schemaRequest?.filter) {
 
                 if (schemaRequest['filter-expression'])
+                    // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
                     filter = this.GetExpression(schemaRequest['filter-expression'])
 
                 if (schemaRequest?.filter)

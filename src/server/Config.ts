@@ -208,7 +208,7 @@ export class Config {
 
     static async Load(): Promise<void> {
         Logger.Debug('Config.Load')
-        const configFileRaw = Fs.readFileSync(this.ConfigFilePath, 'utf-8')
+        const configFileRaw = Fs.readFileSync(this.ConfigFilePath, 'utf8')
         Config.Configuration = Yaml.load(configFileRaw)
     }
 

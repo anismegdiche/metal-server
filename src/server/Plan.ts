@@ -385,7 +385,7 @@ export class Plan {
 
     static Reload(plan: string): TInternalResponse {
         Logger.Debug(`${Logger.In} Plans.Reload`)
-        const configFileRaw = Fs.readFileSync(Config.ConfigFilePath, 'utf-8')
+        const configFileRaw = Fs.readFileSync(Config.ConfigFilePath, 'utf8')
         const configFileJson: any = Yaml.load(configFileRaw)
 
         // check if plan exist

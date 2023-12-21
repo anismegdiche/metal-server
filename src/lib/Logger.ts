@@ -41,13 +41,13 @@ export class Logger {
     static Level: LogLevel.LogLevelDesc = DefaultLevel
 
     static SetLevel(verbosity: LogLevel.LogLevelDesc = this.Level): void {
-        this.Level = verbosity
+        Logger.Level = verbosity
         try {
-            LogLevel.setLevel(this.Level)
+            LogLevel.setLevel(Logger.Level)
         } catch (error: unknown) {
             LogLevel.setLevel(DefaultLevel)
-            this.Error(`Logger.SetLevel ${this.In} Error while setting verbosity`)
-            this.Error(error)
+            Logger.Error(`Logger.SetLevel ${Logger.In} Error while setting verbosity`)
+            Logger.Error(error)
         }
     }
 
@@ -76,8 +76,8 @@ export class Logger {
     }
 
     static Message(msg: any): void {
-        this.EnableAll()
-        this.Info(msg)
-        this.SetLevel()
+        Logger.EnableAll()
+        Logger.Info(msg)
+        Logger.SetLevel()
     }
 }

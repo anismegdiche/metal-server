@@ -37,7 +37,7 @@ export class CommonSqlProviderOptionsFilter {
         if (schemaRequest['filter-expression'] || schemaRequest?.filter) {
 
             if (schemaRequest['filter-expression'])
-                filter = this.GetExpression(schemaRequest['filter-expression'])
+                filter = CommonSqlProviderOptionsFilter.GetExpression(schemaRequest['filter-expression'])
 
             if (schemaRequest?.filter)
                 filter = Convert.JsonToArray(schemaRequest.filter)

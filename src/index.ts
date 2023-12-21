@@ -31,7 +31,9 @@
 // ROADMAP Options > vendorExpression  vendor free form filter expression
 // ROADMAP WorkSpace : create seperated spaces for each config (sources,schemas,plans,users,...)
 
+import { Logger } from './lib/Logger'
 import { Server } from './server/Server'
 
 Server.Init()
     .then(Server.Start)
+    .catch(error => Logger.Error(error))
