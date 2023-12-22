@@ -27,7 +27,6 @@ type TStepArguments = {
     stepParams: any
 }
 
-
 export class Step {
 
     static Options = new CommonSqlProviderOptions()
@@ -105,7 +104,7 @@ export class Step {
         let { currentDataTable } = stepArguments
 
         if (!entity) {
-            Logger.Warn(`Step.Select: no entity was provided`)
+            Logger.Warn(`${Logger.Out} Step.Select: ${JSON.stringify(stepArguments.stepParams)}: no entity was provided`)
             return currentDataTable
         }
 
@@ -113,7 +112,7 @@ export class Step {
             const schemaResponse: TSchemaResponse = await Schema.Select(<TSchemaRequest>stepArguments.stepParams)
 
             if ('data' in schemaResponse && schemaResponse.data.Rows.length > 0) {
-                currentDataTable = <DataTable>schemaResponse.data
+                currentDataTable = schemaResponse.data
             }
 
             return currentDataTable
@@ -345,16 +344,17 @@ export class Plan {
             ...RESPONSE_RESULT.NOT_FOUND,
             ...RESPONSE_STATUS.HTTP_404
         }
+        
+        const sourcePlanName: string = Config.Get(`sources.${source}.database`)
 
-        if (source === undefined || !Config.Has(`sources.${source}.database`)) {
+        if (source === undefined || sourcePlanName === undefined) {
             Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schema}`)
             return schemaResponseNoData
         }
 
-        const planName: string = Config.Get(`sources.${source}.database`)
 
-        if (!Config.Has(`plans.${planName}.${entity}`)) {
-            Logger.Error(`${Logger.Out} Plan.Execute: entity '${entity}' not found in plan ${planName}`)
+        if (!Config.Has(`plans.${sourcePlanName}.${entity}`)) {
+            Logger.Error(`${Logger.Out} Plan.Execute: entity '${entity}' not found in plan ${sourcePlanName}`)
             return schemaResponseNoData
         }
 
@@ -364,7 +364,7 @@ export class Plan {
             transaction: "plan"
         }
 
-        const entitySteps: TJson[] = Config.Get(`plans.${planName}.${entity}`)
+        const entitySteps: TJson[] = Config.Get(`plans.${sourcePlanName}.${entity}`)
 
         Logger.Debug(`${Logger.In} Plan.Execute: ${source}.${entity}: ${JSON.stringify(entitySteps)}`)
 
