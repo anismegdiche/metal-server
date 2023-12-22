@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 
 const { describe, it, expect, beforeAll } = require("@jest/globals");
-
 const MetalClient = require("../metal_client");
 
 describe("SqlServer", () => {

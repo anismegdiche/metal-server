@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable object-curly-spacing */
 /* eslint-disable max-lines-per-function */
 
 const { describe, it, expect, beforeAll } = require("@jest/globals");
-
 const MetalClient = require("../metal_client");
 
 describe("Postgres", () => {
