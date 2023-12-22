@@ -13,7 +13,7 @@ import { TJson } from "../types/TJson"
 import { TSchemaRequest } from "../types/TSchemaRequest"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
-import { StringExtend } from "../lib/StringExtend"
+import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
 import { CommonSqlProviderOptions } from '../providers/CommonSqlProvider'
@@ -261,7 +261,7 @@ export class Step {
 
     static async #Fields(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Fields: ${JSON.stringify(stepArguments.stepParams)}`)
-        const fields = StringExtend.Split(stepArguments.stepParams, ",")
+        const fields = StringHelper.Split(stepArguments.stepParams, ",")
         return stepArguments.currentDataTable.SelectFields(fields)
     }
 
