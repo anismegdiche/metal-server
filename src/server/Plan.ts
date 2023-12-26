@@ -169,9 +169,7 @@ export class Step {
             const _schemaResponse = await Schema.Insert({
                 ...schemaRequest,
                 schemaName: schemaName ?? currentSchemaName,
-                data: (data)
-                    ? data
-                    : currentDataTable.Rows
+                data: data ?? currentDataTable.Rows
             })
 
             if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {

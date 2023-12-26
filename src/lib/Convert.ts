@@ -15,28 +15,6 @@ import { TInternalResponse } from '../types/TInternalResponse'
 
 export class Convert {
 
-    static OptionsFilterExpressionToSqlWhere(filterExpression: string) {
-        let sqlCondition = JSON.stringify(filterExpression)
-
-        // booleans
-        sqlCondition = sqlCondition
-            .replace(/&(?=(?:[^']*'[^']*')*[^']*$)/g, " AND ")
-            .replace(/\|(?=(?:[^']*'[^']*')*[^']*$)/g, " OR ")
-            .replace(/![^=](?=(?:[^']*'[^']*')*[^']*$)/g, " NOT ")
-
-        // like
-        sqlCondition = sqlCondition.replace(/~(?=(?:[^']*'[^']*')*[^']*$)/g, " LIKE ")
-        const quotedStringArray = sqlCondition.match(/'(.*?)'/g) ?? []
-        for (const quotedString of quotedStringArray) {
-            sqlCondition = sqlCondition.replace(quotedString, quotedString.replace(/\*/g, "%"))
-        }
-
-        // chars
-        sqlCondition = sqlCondition.replace(/"(?=(?:[^']*'[^']*')*[^']*$)/g, "")
-
-        return sqlCondition
-    }
-
     static SqlSortToMongoSort(key: any, value: string) {
         if (value.split(" ").length > 2) {
             return {}

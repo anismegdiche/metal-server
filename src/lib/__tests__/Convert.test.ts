@@ -4,16 +4,6 @@ import { Convert } from '../Convert'
 
 describe('Convert', () => {
 
-    // OptionsFilterExpressionToSql method returns a string with SQL-like syntax from a filter expression string
-    it('should return a string with SQL-like syntax when given a valid filter expression string', () => {
-        const filterExpression = "field1 = 'value1' & field2 > 10"
-        const expected = "field1 = 'value1'  AND  field2 > 10"
-
-        const result = Convert.OptionsFilterExpressionToSqlWhere(filterExpression)
-
-        expect(result).toEqual(expected)
-    })
-
     // SqlSortToMongoSort method returns a MongoDB sort object from a SQL-like sort string
     it('should return a MongoDB sort object when given a valid SQL-like sort string', () => {
         const key = {}

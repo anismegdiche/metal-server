@@ -61,7 +61,7 @@ describe("SqlServer", () => {
     describe("DataSelect", () => {
         it("should select items from the database", async () => {
             const response = await metalClient.DataSelect(schemaName, entityName, {
-                "filterExpression": "country_id ~ 'X*'",
+                "filterExpression": "country_id LIKE 'X%'",
                 fields: "country_id, country_name",
                 sort: "country_id asc,country_name desc"
             });
@@ -97,7 +97,7 @@ describe("SqlServer", () => {
     describe("DataUpdate", () => {
         it("should update items in the database", async () => {
             const response = await metalClient.DataUpdate(schemaName, entityName, {
-                "filterExpression": "country_id ~ 'X*'",
+                "filterExpression": "country_id LIKE 'X%'",
                 data: {
                     country_name: "XXXXX"
                 }
@@ -115,7 +115,7 @@ describe("SqlServer", () => {
     describe("DataDelete", () => {
         it("should delete items from the database", async () => {
             const response = await metalClient.DataDelete(schemaName, entityName, {
-                "filterExpression": "country_id ~ 'X*'"
+                "filterExpression": "country_id LIKE 'X%'"
             });
             expect(response.status).toStrictEqual(204);
         });

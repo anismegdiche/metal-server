@@ -19,7 +19,6 @@ import { TJson } from "../types/TJson"
 import { DataTable } from "../types/DataTable"
 import { Logger } from "../lib/Logger"
 import { Cache } from '../server/Cache'
-import { CommonSqlProviderOptionsData } from './CommonSqlProvider'
 import { Source } from '../server/Source'
 
 
@@ -27,100 +26,94 @@ class MongoDbOptions implements IProvider.IProviderOptions {
     Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}
         if (schemaRequest) {
-            options = this.Filter.Get(options, schemaRequest)
-            options = this.Fields.Get(options, schemaRequest)
-            options = this.Sort.Get(options, schemaRequest)
-            options = this.Data.Get(options, schemaRequest)
+            options = this.GetFilter(options, schemaRequest)
+            options = this.GetFields(options, schemaRequest)
+            options = this.GetSort(options, schemaRequest)
+            options = this.GetData(options, schemaRequest)
         }
 
         return options
     }
 
-    Filter = class {
+    public GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        let filter: any = {}
+        if (schemaRequest?.filterExpression || schemaRequest?.filter) {
 
-        static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
-            let filter: any = {}
-            if (schemaRequest?.filterExpression || schemaRequest?.filter) {
-
-                if (schemaRequest?.filterExpression)
-                    // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
-                    filter = this.GetExpression(schemaRequest.filterExpression)
-
-                if (schemaRequest?.filter)
-                    filter = schemaRequest.filter
-
-                if (filter?._id)
-                    filter._id = new mongodb.ObjectId(filter._id)
-
-                options.Filter = <TJson>{
-                    $match: Convert.ReplacePlaceholders(filter)
-                }
+            if (schemaRequest?.filterExpression) {
+                // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
+                filter = GetMongoQuery(schemaRequest.filterExpression.replace(/%/igm, ".*"))
             }
-            return options
-        }
+            if (schemaRequest?.filter)
+                filter = schemaRequest.filter
 
-        static GetExpression(filterExpression: string) {
-            const sqlQueryWhere = Convert.OptionsFilterExpressionToSqlWhere(filterExpression)
-            const mongoQueryWhere = GetMongoQuery(sqlQueryWhere.replace(/%/igm, ".*"))
-            Logger.Debug(JSON.stringify(mongoQueryWhere))
-            return mongoQueryWhere
+            if (filter?._id)
+                filter._id = new mongodb.ObjectId(filter._id)
+
+            options.Filter = <TJson>{
+                $match: Convert.ReplacePlaceholders(filter)
+            }
         }
+        return options
     }
 
-    Fields = class {
-        static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
-            if (schemaRequest?.fields) {
-                let _fields: string[] | Record<string, unknown> = []
-                if (schemaRequest.fields.includes(",")) {
-                    _fields = schemaRequest.fields.split(",")
-                        .filter(__field => !(__field == undefined || __field.trim() == ""))
-                        .map(__field => __field.trim())
-                } else {
-                    _fields = [schemaRequest.fields.trim()]
-                }
-                if (_fields.length > 0) {
-                    _fields = _fields.reduce((__key, __value) => ({
-                        ...__key,
-                        [__value]: 1
-                    }), {})
-                }
-                options.Fields = {
-                    $project: _fields
-                }
+    public GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        if (schemaRequest?.fields) {
+            let _fields: string[] | Record<string, unknown> = []
+            if (schemaRequest.fields.includes(",")) {
+                _fields = schemaRequest.fields.split(",")
+                    .filter(__field => !(__field == undefined || __field.trim() == ""))
+                    .map(__field => __field.trim())
+            } else {
+                _fields = [schemaRequest.fields.trim()]
             }
-            return options
+            if (_fields.length > 0) {
+                _fields = _fields.reduce((__key, __value) => ({
+                    ...__key,
+                    [__value]: 1
+                }), {})
+            }
+            options.Fields = {
+                $project: _fields
+            }
         }
+        return options
     }
 
-    Sort = class {
-        static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
-            if (schemaRequest?.sort) {
-                const _sort = schemaRequest.sort.trim()
-                let _sortArray = []
-                // test if array
-                if (_sort.includes(",")) {
-                    _sortArray = _sort
-                        .split(",")
-                        .filter(__field => !(__field == undefined || __field.trim() == ""))
-                        .map(__field => __field.trim().replace(/\W+/igm, " "))
-                } else {
-                    // single field
-                    _sortArray = [_sort.replace(/\W+/igm, " ")]
-                }
-                Logger.Debug(_sortArray)
-                if (_sortArray.length > 0) {
-                    _sortArray = _sortArray.reduce(Convert.SqlSortToMongoSort, {})
-                }
-                Logger.Debug(_sortArray)
-                options.Sort = {
-                    $sort: _sortArray
-                }
+    public GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        if (schemaRequest?.sort) {
+            const _sort = schemaRequest.sort.trim()
+            let _sortArray = []
+            // test if array
+            if (_sort.includes(",")) {
+                _sortArray = _sort
+                    .split(",")
+                    .filter(__field => !(__field == undefined || __field.trim() == ""))
+                    .map(__field => __field.trim().replace(/\W+/igm, " "))
+            } else {
+                // single field
+                _sortArray = [_sort.replace(/\W+/igm, " ")]
             }
-            return options
+            Logger.Debug(_sortArray)
+            if (_sortArray.length > 0) {
+                _sortArray = _sortArray.reduce(Convert.SqlSortToMongoSort, {})
+            }
+            Logger.Debug(_sortArray)
+            options.Sort = {
+                $sort: _sortArray
+            }
         }
+        return options
     }
 
-    public Data = CommonSqlProviderOptionsData
+    public GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        if (schemaRequest?.data) {
+            options.Data = new DataTable(
+                schemaRequest.entityName,
+                Convert.ReplacePlaceholders(schemaRequest.data)
+            )
+        }
+        return options
+    }
 }
 
 

@@ -12,19 +12,10 @@ import { ConnectionPool } from 'mssql'
 
 export interface IProviderOptions {
     Parse: (schemaRequest: TSchemaRequest) => TOptions
-    Filter: {
-        Get: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
-        GetExpression: (filterExpression: string) => string
-    }
-    Fields: {
-        Get: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
-    }
-    Sort: {
-        Get: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
-    }
-    Data: {
-        Get: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
-    }
+    GetFilter: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
+    GetFields: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
+    GetSort: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
+    GetData: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
 }
 
 

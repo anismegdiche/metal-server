@@ -13,7 +13,9 @@ Content-Type: application/json
 
 ###
 # @name add-some-data
-GET http://localhost:3000/schema/mflix/users?filter={"country":"France","name":"John"}&cache="100"
+GET http://localhost:3000/schema/mflix/users
+    ?filter={"country":"France","name":"John"}
+    &cache="100"
 Content-Type: application/json
 authorization: Bearer {{token}}
 

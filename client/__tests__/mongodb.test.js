@@ -77,7 +77,7 @@ describe('MongoDb', () => {
     describe('DataSelect', () => {
         it(`should select items from the database`, async () => {
             const response = await metalClient.DataSelect(schema, entity, {
-                "filterExpression": "name ~ '*o*' & email ~ '*wh*co'",
+                "filterExpression": "name LIKE '%o%' AND email LIKE '%wh%co'",
                 fields: 'name, email',
                 sort: 'name asc,email desc'
             });
@@ -117,7 +117,7 @@ describe('MongoDb', () => {
     describe('DataUpdate', () => {
         it(`should update items in the database`, async () => {
             const response = await metalClient.DataUpdate(schema, entity, {
-                "filterExpression": "email ~ '*wh*co'",
+                "filterExpression": "email LIKE '%wh%co'",
                 data: {
                     email: "nomail"
                 }
@@ -135,7 +135,7 @@ describe('MongoDb', () => {
     describe('DataDelete', () => {
         it(`should delete items from the database`, async () => {
             const response = await metalClient.DataDelete(schema, entity, {
-                "filterExpression": "email ~ '*wh*co'"
+                "filterExpression": "email LIKE '%wh%co'"
             });
             expect(response.status).toEqual(204);
         });

@@ -63,7 +63,7 @@ POST http://localhost:3000/m/mflix/users/delete
 Content-Type: application/json
 
 {
-    "filterExpression": "name ~ 'john*'"
+    "filterExpression": "name LIKE 'john%'"
 }
 
 ###
@@ -73,7 +73,7 @@ POST http://localhost:3000/schema/update/mflix/users
 Content-Type: application/json
 
 {
-    "filterExpression": "name ~ 'john*'",
+    "filterExpression": "name LIKE 'john%'",
     "update": {
         "email": "bye@welcome.com",
         "country": "France"
@@ -91,7 +91,7 @@ POST http://localhost:3000/schema/select/mflix/users
 Content-Type: application/json
 
 # {
-#     "filterExpression": "name ~ 'john*'",
+#     "filterExpression": "name LIKE 'john%'",
 #     "fields": "name, email",
 #     "sort": "name asc,email desc",
 # }
@@ -104,7 +104,7 @@ GET http://localhost:3000/m/mflix/users
 Content-Type: application/json
 
 {
-    "filterExpression": "name ~ 'john*'",
+    "filterExpression": "name LIKE 'john%'",
     "fields": "name, email",
     "sort": "name asc,email desc"
 }

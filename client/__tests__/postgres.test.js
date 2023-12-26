@@ -63,7 +63,7 @@ describe("Postgres", () => {
     describe("DataSelect", () => {
         it("selects data from the database", async () => {
             const response = await metalClient.DataSelect(schemaName, entityName, {
-                "filterExpression": "customer_id ~ '*LLD'",
+                "filterExpression": "customer_id LIKE '%LLD'",
                 fields: "contact_name, company_name",
                 sort: "contact_name asc,company_name desc"
             });
@@ -99,7 +99,7 @@ describe("Postgres", () => {
     describe("DataUpdate", () => {
         it("updates data in the database", async () => {
             const response = await metalClient.DataUpdate(schemaName, entityName, {
-                "filterExpression": "customer_id ~ '*LLD'",
+                "filterExpression": "customer_id LIKE '%LLD'",
                 data: {
                     contact_name: "XXXXX"
                 }
@@ -117,7 +117,7 @@ describe("Postgres", () => {
     describe("DataDelete", () => {
         it("deletes data from the database", async () => {
             const response = await metalClient.DataDelete(schemaName, entityName, {
-                "filterExpression": "customer_id ~ '*LLD'"
+                "filterExpression": "customer_id LIKE '%LLD'"
             });
             expect(response.status).toStrictEqual(204);
         });
