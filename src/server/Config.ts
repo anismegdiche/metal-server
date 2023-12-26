@@ -242,6 +242,4 @@ export class Config {
     public static Get<T>(element: string): T {
         return _.get(Config.Configuration, element)
     }
-
-
 }

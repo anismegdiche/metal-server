@@ -18,13 +18,14 @@ import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
 import { CommonSqlProviderOptions } from '../providers/CommonSqlProvider'
 import { TOptions } from "../types/TOptions"
+import { TypeHelper } from "../lib/TypeHelper"
 
 
 type TStepArguments = {
-    schemaName: string
-    planName: string
+    currentSchemaName: string
+    currentPlanName: string
     currentDataTable: DataTable
-    stepParams: any
+    stepParams?: TSchemaRequest | TJson | string
 }
 
 export class Step {
@@ -46,120 +47,150 @@ export class Step {
     }
 
     static JoinCaseMap: Record<string, Function> = {
-        'left': async (dtLeft: DataTable, dtRight: DataTable, fieldNameLeft: string, fieldNameRight: string) => dtLeft.LeftJoin(dtRight, fieldNameLeft, fieldNameRight),
-        'right': async (dtLeft: DataTable, dtRight: DataTable, fieldNameLeft: string, fieldNameRight: string) => dtLeft.RightJoin(dtRight, fieldNameLeft, fieldNameRight),
-        'inner': async (dtLeft: DataTable, dtRight: DataTable, fieldNameLeft: string, fieldNameRight: string) => dtLeft.InnerJoin(dtRight, fieldNameLeft, fieldNameRight),
-        'full_outer': async (dtLeft: DataTable, dtRight: DataTable, fieldNameLeft: string, fieldNameRight: string) => dtLeft.FullOuterJoin(dtRight, fieldNameLeft, fieldNameRight),
+        'left': async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.LeftJoin(dtRight, leftFieldName, rightFieldName),
+        'right': async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.RightJoin(dtRight, leftFieldName, rightFieldName),
+        'inner': async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.InnerJoin(dtRight, leftFieldName, rightFieldName),
+        'full_outer': async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.FullOuterJoin(dtRight, leftFieldName, rightFieldName),
         'cross': async (dtLeft: DataTable, dtRight: DataTable) => dtLeft.CrossJoin(dtRight)
     }
 
-    static async Execute(schemaName: string | undefined, plan: string, entity: string, steps: TJson[]): Promise<DataTable> {
+    static async Execute(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: TJson[]): Promise<DataTable> {
 
-        let dtWorking = new DataTable(entity)
+        let currentDataTable = new DataTable(currentEntityName)
 
         for await (const [stepIndex, step] of Object.entries(steps)) {
             const _stepIndex = parseInt(stepIndex, 10) + 1
-            Logger.Debug(`Step.Execute '${plan}': Step ${_stepIndex}, ${JSON.stringify(step)}`)
+            Logger.Debug(`Step.Execute '${currentPlanName}': Step ${_stepIndex}, ${JSON.stringify(step)}`)
+
+            if (step === null) {
+                Logger.Error(`Step.Execute '${currentPlanName}': error have been encountered in step ${_stepIndex}, ${JSON.stringify(step)}`)
+                break
+            }
 
             try {
-                const __stepCommand: string = Object.keys(step)[0]
-                const __stepParameters: TJson = <TJson>step[__stepCommand]
+                const __stepCommand: string = Object.keys(<object>step)[0]
+                const __stepParams: TJson = Object.values(<object>step)[0]
 
                 if (__stepCommand === 'break') {
-                    Logger.Info(`Step.Execute '${plan}': user break at step '${_stepIndex}', ${JSON.stringify(step)}`)
-                    return dtWorking
+                    Logger.Info(`Step.Execute '${currentPlanName}': user break at step '${_stepIndex}', ${JSON.stringify(step)}`)
+                    return currentDataTable
                 }
 
                 const _stepArguments: TStepArguments = {
-                    schemaName: schemaName as string,
-                    planName: plan,
-                    currentDataTable: dtWorking,
-                    stepParams: __stepParameters
+                    currentSchemaName: currentSchemaName as string,
+                    currentPlanName,
+                    currentDataTable,
+                    stepParams: __stepParams
                 }
 
-                dtWorking = await Step.ExecuteCaseMap[__stepCommand](_stepArguments) || Helper.CaseMapNotFound(__stepCommand)
+                currentDataTable = await Step.ExecuteCaseMap[__stepCommand](_stepArguments) || Helper.CaseMapNotFound(__stepCommand)
 
             } catch (error: unknown) {
                 const _error = <Error>error
-                Logger.Error(`Step.Execute '${plan}', Entity '${entity}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`)
-                if (dtWorking.MetaData[METADATA.PLAN_DEBUG] == 'error') {
+                Logger.Error(`Step.Execute '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`)
+                if (currentDataTable.MetaData[METADATA.PLAN_DEBUG] == 'error') {
                     /*
                     FIXME
                     In case of cross entities, only errors in the final entity are returned.
                     Console log is working fine.
                     */
                     const _planErrors: TJson = {}
-                    _planErrors[`entity(${entity}), step(${stepIndex})`] = step
-                    Logger.Debug(`Step.Execute '${plan}', Entity '${entity}': step '${_stepIndex},${JSON.stringify(step)}' added error ${JSON.stringify((<TJson[]>dtWorking.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
+                    _planErrors[`entity(${currentEntityName}), step(${stepIndex})`] = step
+                    Logger.Debug(`Step.Execute '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' added error ${JSON.stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
                 }
             }
         }
-        return dtWorking
+        return currentDataTable
     }
 
     static async #Select(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Select: ${JSON.stringify(stepArguments.stepParams)}`)
-        // //
-        const { schema, entity } = stepArguments.stepParams
+
+        if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
+            Logger.Error(`${Logger.Out} Step.Select: Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new Error(`Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
+        }
+
+        const { currentSchemaName } = stepArguments
+        const schemaRequest = stepArguments.stepParams
+        const { schemaName, entityName } = schemaRequest
         let { currentDataTable } = stepArguments
 
-        if (!entity) {
-            Logger.Warn(`${Logger.Out} Step.Select: ${JSON.stringify(stepArguments.stepParams)}: no entity was provided`)
-            return currentDataTable
-        }
+        if (entityName) {
+            const _schemaResponse = await Schema.Select({
+                ...schemaRequest,
+                schemaName: schemaName ?? currentSchemaName
+            })
 
-        if (schema) {
-            const schemaResponse: TSchemaResponse = await Schema.Select(<TSchemaRequest>stepArguments.stepParams)
-
-            if ('data' in schemaResponse && schemaResponse.data.Rows.length > 0) {
-                currentDataTable = schemaResponse.data
+            if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
+                throw new Error(_schemaResponse.error)
             }
 
+            if (TypeHelper.IsSchemaResponseData(_schemaResponse)) {
+                currentDataTable = _schemaResponse.data
+            }
             return currentDataTable
         }
 
-        const options: TOptions = Step.Options.Parse(stepArguments.stepParams)
-        const sqlQuery = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(currentDataTable.Name)
-            .Where(options.Filter)
-            .Query
+        // case no schema and no entity --> use current datatable
+        if (!schemaName && !entityName) {
+            const options: TOptions = Step.Options.Parse(schemaRequest)
+            const sqlQuery = new SqlQueryHelper()
+                .Select(options.Fields)
+                .From(currentDataTable.Name)
+                .Where(options.Filter)
+                .Query
 
-        return currentDataTable.FreeSql(sqlQuery)
+            return currentDataTable.FreeSql(sqlQuery)
+        }
+
+        return currentDataTable
     }
 
     static async #Insert(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Insert: ${JSON.stringify(stepArguments.stepParams)}`)
 
-        const { schema, entity, data } = stepArguments.stepParams
-        const { currentDataTable } = stepArguments
-
-        if (schema && !entity) {
-            Logger.Warn(`Step.Insert: no entity was provided for schema ${schema}`)
-            return currentDataTable
+        if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
+            Logger.Error(`${Logger.Out} Step.Insert: Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new Error(`Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
         }
+
+        const { currentSchemaName } = stepArguments
+        const schemaRequest = stepArguments.stepParams
+        const { schemaName, entityName, data } = schemaRequest
+        let { currentDataTable } = stepArguments
 
         if (!data && !currentDataTable.Rows.length) {
-            Logger.Warn(`Step.Insert: no data to insert`)
-            return currentDataTable
+            Logger.Error(`Step.Insert: no data to insert ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new Error(`No data to insert ${JSON.stringify(stepArguments.stepParams)}`)
         }
 
-        if (schema) {
-            let schemaRequest: TSchemaRequest = stepArguments.stepParams
-            schemaRequest = {
+        if (entityName) {
+            const _schemaResponse = await Schema.Insert({
                 ...schemaRequest,
-                schema: schema ?? stepArguments.schemaName,
+                schemaName: schemaName ?? currentSchemaName,
                 data: (data)
                     ? data
                     : currentDataTable.Rows
+            })
+
+            if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
+                throw new Error(_schemaResponse.error)
             }
-            await Schema.Insert(schemaRequest)
-        } else {
-            const dtToInsert = new DataTable(entity ?? currentDataTable.Name, data)
+            return currentDataTable
+        }
+
+        if (!data) {
+            Logger.Error(`Step.Insert: no data to insert ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new Error(`No data to insert ${JSON.stringify(stepArguments.stepParams)}`)
+        }
+
+        // case no schema and no entity --> use current datatable
+        if (!schemaName && !entityName) {
             const sqlQuery = new SqlQueryHelper()
-                .Insert(dtToInsert.Name)
-                .Fields(dtToInsert.GetFieldNames())
-                .Values(dtToInsert.Rows)
+                .Insert(currentDataTable.Name)
+                .Fields(currentDataTable.GetFieldNames())
+                .Values(data)
                 .Query
 
             currentDataTable.FreeSql(sqlQuery)
@@ -171,24 +202,36 @@ export class Step {
     static async #Update(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Update: ${JSON.stringify(stepArguments.stepParams)}`)
 
-        const { schema, entity, data } = stepArguments.stepParams
-        const { currentDataTable } = stepArguments
-
-        if (!entity) {
-            Logger.Warn(`Step.Update: no entity was provided`)
-            return currentDataTable
+        if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
+            Logger.Error(`${Logger.Out} Step.Update: Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new Error(`Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
         }
+
+        const { currentSchemaName } = stepArguments
+        const schemaRequest = stepArguments.stepParams
+        const { schemaName, entityName, data } = schemaRequest
+        let { currentDataTable } = stepArguments
 
         if (!data) {
-            Logger.Warn(`Step.Update: no data to update`)
+            Logger.Error(`Step.Update: no data to update ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new Error(`No data to update ${JSON.stringify(stepArguments.stepParams)}`)
+        }
+
+        if (entityName) {
+            const _schemaResponse = await Schema.Update({
+                ...schemaRequest,
+                schemaName: schemaName ?? currentSchemaName
+            })
+
+            if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
+                throw new Error(_schemaResponse.error)
+            }
             return currentDataTable
         }
 
-        if (schema) {
-            await Schema.Update(stepArguments.stepParams)
-
-        } else {
-            const _options: TOptions = Step.Options.Parse(stepArguments.stepParams)
+        // case no schema and no entity --> use current datatable
+        if (!schemaName && !entityName) {
+            const _options: TOptions = Step.Options.Parse(schemaRequest)
             const _sqlQuery = new SqlQueryHelper()
                 .Update(currentDataTable.Name)
                 .Set(_options.Data)
@@ -197,24 +240,38 @@ export class Step {
 
             currentDataTable.FreeSql(_sqlQuery)
         }
+
         return currentDataTable
     }
 
     static async #Delete(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Delete: ${JSON.stringify(stepArguments.stepParams)}`)
 
-        const { schema, entity } = stepArguments.stepParams
-        const { currentDataTable } = stepArguments
+        if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
+            Logger.Error(`${Logger.Out} Step.Delete: Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new Error(`Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
+        }
 
-        if (!entity) {
-            Logger.Warn(`Step.Delete: no entity was provided`)
+        const { currentSchemaName } = stepArguments
+        const schemaRequest = stepArguments.stepParams
+        const { schemaName, entityName } = schemaRequest
+        let { currentDataTable } = stepArguments
+
+        if (entityName) {
+            const _schemaResponse = await Schema.Delete({
+                ...schemaRequest,
+                schemaName: schemaName ?? currentSchemaName
+            })
+
+            if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
+                throw new Error(_schemaResponse.error)
+            }
             return currentDataTable
         }
 
-        if (schema) {
-            await Schema.Delete(stepArguments.stepParams)
-        } else {
-            const _options: TOptions = Step.Options.Parse(stepArguments.stepParams)
+        // case no schema and no entity --> use current datatable
+        if (!schemaName && !entityName) {
+            const _options: TOptions = Step.Options.Parse(schemaRequest)
             const _sqlQuery = new SqlQueryHelper()
                 .Delete()
                 .From(currentDataTable.Name)
@@ -230,12 +287,20 @@ export class Step {
     static async #Join(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Join: ${JSON.stringify(stepArguments.stepParams)}`)
 
-        const { schema, entity, type } = stepArguments.stepParams
-        const fieldNameLeft = stepArguments.stepParams["left-field"]
-        const fieldNameRight = stepArguments.stepParams["right-field"]
+        const stepParams: Record<string, string> = stepArguments.stepParams as Record<string, string>
+        const currentDataTable = stepArguments.currentDataTable
+        if (stepParams === null) {
+            return currentDataTable
+        }
+        const schemaName: string = stepParams.schemaName
+        const entityName: string = stepParams.entityName
+        const planName: string = stepParams.planName
+        const type: string = stepParams.type
+        const leftField: string = stepParams.leftField
+        const rightField: string = stepParams.rightField
 
 
-        let dtRight = new DataTable(entity)
+        let dtRight = new DataTable(entityName)
 
         const requestToSchema: TStepArguments = {
             ...stepArguments,
@@ -243,31 +308,33 @@ export class Step {
         }
 
         const requestToCurrentPlan: TSchemaRequest = {
-            schema: stepArguments.schemaName,
-            source: stepArguments.planName,
-            entity
+            schemaName,
+            sourceName: planName,
+            entityName
         }
 
-        dtRight = (schema)
+        dtRight = (schemaName)
             ? await this.#Select(requestToSchema)
             // eslint-disable-next-line no-use-before-define
             : (await Plan.Execute(requestToCurrentPlan) as TSchemaResponseData).data
 
-        return await this.JoinCaseMap[type](stepArguments.currentDataTable, dtRight, fieldNameLeft, fieldNameRight) ||
+        return await this.JoinCaseMap[type](stepArguments.currentDataTable, dtRight, leftField, rightField) ||
             (Helper.CaseMapNotFound(type) && stepArguments.currentDataTable)
     }
 
 
     static async #Fields(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Fields: ${JSON.stringify(stepArguments.stepParams)}`)
-        const fields = StringHelper.Split(stepArguments.stepParams, ",")
+        const stepParams: string = stepArguments.stepParams as string
+        const fields = StringHelper.Split(stepParams, ",")
         return stepArguments.currentDataTable.SelectFields(fields)
     }
 
     static async #Sort(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Sort: ${JSON.stringify(stepArguments.stepParams)}`)
 
-        const { stepParams, currentDataTable } = stepArguments
+        const stepParams = stepArguments.stepParams as Record<string, TOrder>
+        const currentDataTable = stepArguments.currentDataTable
 
         const fields = Object.keys(stepParams)
         const orders: TOrder[] = Object.values(stepParams)
@@ -277,7 +344,7 @@ export class Step {
 
     static async #Debug(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Debug: ${JSON.stringify(stepArguments.stepParams)}`)
-        const debug: string = stepArguments.stepParams || 'error'
+        const debug = stepArguments.stepParams as string || 'error'
         stepArguments.currentDataTable.SetMetaData(METADATA.PLAN_DEBUG, debug)
 
         if (stepArguments.currentDataTable.MetaData[METADATA.PLAN_ERRORS] == undefined) {
@@ -290,7 +357,10 @@ export class Step {
     // TODO not tested
     static async #AddField(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.AddField: ${JSON.stringify(stepArguments.stepParams)}`)
-        const { name, type } = stepArguments.stepParams
+        const { name, type } = stepArguments.stepParams as {
+            name: string
+            type: string
+        }
         stepArguments.currentDataTable.AddField(name, type)
         return stepArguments.currentDataTable
     }
@@ -298,7 +368,11 @@ export class Step {
     static async #Run(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Run: ${JSON.stringify(stepArguments.stepParams)}`)
 
-        const { ai, input, output } = stepArguments.stepParams
+        const { ai, input, output } = stepArguments.stepParams as {
+            ai: string
+            input: string
+            output: TJson
+        }
 
         for await (const [_rowIndex, _rowData] of stepArguments.currentDataTable.Rows.entries()) {
             const __result = <Record<string, any>>(await AiEngine.Engine[ai].Run(<string>_rowData[input]))
@@ -336,45 +410,45 @@ export class Step {
 export class Plan {
     static async Execute(schemaRequest: TSchemaRequest, sqlQuery: string | undefined = undefined) {
 
-        const { schema, source, entity } = schemaRequest
+        const { schemaName, sourceName, entityName } = schemaRequest
 
         const schemaResponseNoData = <TSchemaResponseNoData>{
-            schema,
-            entity,
+            schemaName,
+            entityName,
             ...RESPONSE_RESULT.NOT_FOUND,
             ...RESPONSE_STATUS.HTTP_404
         }
-        
-        const sourcePlanName: string = Config.Get(`sources.${source}.database`)
 
-        if (source === undefined || sourcePlanName === undefined) {
-            Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schema}`)
+        const sourcePlanName: string = Config.Get(`sources.${sourceName}.database`)
+
+        if (sourceName === undefined || sourcePlanName === undefined) {
+            Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schemaName}`)
             return schemaResponseNoData
         }
 
 
-        if (!Config.Has(`plans.${sourcePlanName}.${entity}`)) {
-            Logger.Error(`${Logger.Out} Plan.Execute: entity '${entity}' not found in plan ${sourcePlanName}`)
+        if (!Config.Has(`plans.${sourcePlanName}.${entityName}`)) {
+            Logger.Error(`${Logger.Out} Plan.Execute: entityName '${entityName}' not found in plan ${sourcePlanName}`)
             return schemaResponseNoData
         }
 
         const schemaResponse = <TSchemaResponse>{
-            schema,
-            entity,
+            schemaName,
+            entityName,
             transaction: "plan"
         }
 
-        const entitySteps: TJson[] = Config.Get(`plans.${sourcePlanName}.${entity}`)
+        const entitySteps: TJson[] = Config.Get(`plans.${sourcePlanName}.${entityName}`)
 
-        Logger.Debug(`${Logger.In} Plan.Execute: ${source}.${entity}: ${JSON.stringify(entitySteps)}`)
+        Logger.Debug(`${Logger.In} Plan.Execute: ${sourceName}.${entityName}: ${JSON.stringify(entitySteps)}`)
 
-        const dtWorking = await Step.Execute(schema, source, entity, entitySteps)
+        const dtWorking = await Step.Execute(schemaName, sourceName, entityName, entitySteps)
 
         if (sqlQuery !== undefined) {
             dtWorking.FreeSql(sqlQuery)
         }
 
-        Logger.Debug(`${Logger.Out} Plan.Execute: ${source}.${entity}`)
+        Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entityName}`)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE_RESULT.SUCCESS,

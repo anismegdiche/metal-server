@@ -20,7 +20,7 @@ authorization: Bearer {{token}}
 
 # @name select-filtered
 GET http://localhost:3000/schema/northwind/customers
-    ?filter-expression=customer_id ~ 'AL*'
+    ?filterExpression=customer_id ~ 'AL*'
     &fields=contact_name, company_name
     &sort=contact_name asc,company_name desc
 Content-Type: application/json
@@ -68,7 +68,7 @@ POST http://localhost:3000/schema/update/northwind/customers
 Content-Type: application/json
 
 {
-    "filter-expression": "name ~ 'Tw*'",
+    "filterExpression": "name ~ 'Tw*'",
     "data": {
         "color":5
     }
@@ -79,7 +79,7 @@ POST http://localhost:3000/m/northwind/customers/delete
 Content-Type: application/json
 
 {
-    "filter-expression": "name ~ 'John*' ",
+    "filterExpression": "name ~ 'John*' ",
     "fields": "name ,,,id",
     "sort": "name asc"
 }

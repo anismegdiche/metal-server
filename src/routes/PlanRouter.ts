@@ -12,7 +12,7 @@ import { PlanResponse } from "../response/PlanResponse"
 export const PlanRouter = Router()
 
 //ROADMAP
-PlanRouter.route("/:plan")
+PlanRouter.route("/:planName")
     .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
         UserResponse.IsAuthenticated
     )
@@ -21,7 +21,7 @@ PlanRouter.route("/:plan")
     .patch(ServerResponse.NotImplemented)
     .delete(ServerResponse.NotImplemented)
 
-PlanRouter.route('/:plan/reload')
+PlanRouter.route('/:planName/reload')
     .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
         UserResponse.IsAuthenticated
     )

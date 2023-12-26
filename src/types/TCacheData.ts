@@ -3,10 +3,10 @@ import { TSchemaRequest } from "./TSchemaRequest"
 
 
 export type TCacheData = {
-    schema: string,
-    entity: string,
+    schemaName: string,
+    entityName: string,
     hash: string,
     expires: number,
-    request: TSchemaRequest,
+    schemaRequest: TSchemaRequest,
     datatable: DataTable
 }

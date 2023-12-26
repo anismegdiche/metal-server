@@ -40,8 +40,8 @@ export class Schedule {
                             Logger.Debug(`${Logger.In} Schedule.Start: Running job '${_scheduleName}'`)
                             try {
                                 Plan.Execute(<TSchemaRequest>{
-                                    source: _scheduleParams.plan,
-                                    entity: _scheduleParams.entity
+                                    sourceName: _scheduleParams.plan,
+                                    entityName: _scheduleParams.entity
                                 })
                             } catch (error) {
                                 Logger.Error(`${Logger.In} Schedule.Start: Error has occured with '${_scheduleName}' : ${JSON.stringify(error)}`)

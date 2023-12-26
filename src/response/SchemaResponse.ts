@@ -25,7 +25,7 @@ export class SchemaResponse {
         Schema.IsExist(schemaRequest)
             .then((isExist) => {
                 if (!isExist) {
-                    SchemaResponse.ReplyNotFound(req, res, `schema '${req.params.schema}' not found in schemas`)
+                    SchemaResponse.ReplyNotFound(req, res, `schema '${req.params.schemaName}' not found in schemas`)
                 }
                 next()
             })
@@ -61,7 +61,7 @@ export class SchemaResponse {
     }
 
     static ReplyNotFound(req: Request, res: Response, message: string): void {
-        Logger.Debug(`${Logger.In} not found in '${req.params.entity}'`)
+        Logger.Debug(`${Logger.Out} ${message}`)
         res
             .status(HTTP_STATUS_CODE.NOT_FOUND)
             .json({

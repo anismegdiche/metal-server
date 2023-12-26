@@ -30,8 +30,8 @@ type TTransactionNoData = TTransaction.delete | TTransaction.insert | TTransacti
 type TTransactionError = TTransactionNoData
 
 export type TSchemaResponseData = {
-    schema: string
-    entity: string
+    schemaName: string
+    entityName: string
     transaction: TTransactionData
     result: string
     status: HTTP_STATUS_CODE.OK
@@ -41,16 +41,16 @@ export type TSchemaResponseData = {
 }
 
 export type TSchemaResponseNoData = {
-    schema: string
-    entity: string
+    schemaName: string
+    entityName: string
     transaction: TTransactionNoData
     result: string
     status: HTTP_STATUS_CODE.CREATED | HTTP_STATUS_CODE.NOT_FOUND
 }
 
 export type TSchemaResponseError = {
-    schema: string
-    entity: string
+    schemaName: string
+    entityName: string
     transaction: TTransactionError
     result: string
     status: HTTP_STATUS_CODE.BAD_REQUEST | HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR

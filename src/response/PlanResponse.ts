@@ -14,8 +14,8 @@ export class PlanResponse {
 
     public static Reload(req: Request, res: Response) {
         try {
-            const { plan } = req.params
-            const intRes = Plan.Reload(plan)
+            const { planName } = req.params
+            const intRes = Plan.Reload(planName)
             Convert.InternalResponseToResponse(res, intRes)
 
         } catch (error: unknown) {

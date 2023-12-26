@@ -13,7 +13,7 @@ import { CacheResponse } from "../response/CacheResponse"
 export const SchemaRouter = Router()
 
 //ROADMAP
-SchemaRouter.route("/:schema")
+SchemaRouter.route("/:schemaName")
     .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
         UserResponse.IsAuthenticated,
         SchemaResponse.IsExist
@@ -23,7 +23,7 @@ SchemaRouter.route("/:schema")
     .patch(ServerResponse.NotImplemented)
     .delete(ServerResponse.NotImplemented)
 
-SchemaRouter.route("/:schema/:entity")
+SchemaRouter.route("/:schemaName/:entityName")
     .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
         UserResponse.IsAuthenticated,
         SchemaResponse.IsExist

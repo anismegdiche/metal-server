@@ -80,8 +80,8 @@ export class SqlServer implements IProvider.IProvider {
         Logger.Debug(`${Logger.Out} SqlServer.Insert: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.INSERT
         }
 
@@ -92,7 +92,7 @@ export class SqlServer implements IProvider.IProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
-            .Insert(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
+            .Insert(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Fields(options.Data.GetFieldNames())
             .Values(options.Data.Rows)
             .Query
@@ -110,8 +110,8 @@ export class SqlServer implements IProvider.IProvider {
         Logger.Debug(`${Logger.Out} SqlServer.Select: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.SELECT
         }
 
@@ -123,14 +123,14 @@ export class SqlServer implements IProvider.IProvider {
 
         const _sqlQuery = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
+            .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Where(options.Filter)
             .OrderBy(options.Sort)
             .Query
 
         const data = await this.Connection.query(_sqlQuery)
         if (data.recordset != null && data.recordset.length > 0) {
-            const _dt = new DataTable(schemaRequest.entity, data.recordset)
+            const _dt = new DataTable(schemaRequest.entityName, data.recordset)
             Cache.Set(schemaRequest, _dt)
             schemaResponse = <TSchemaResponseData>{
                 ...schemaResponse,
@@ -152,8 +152,8 @@ export class SqlServer implements IProvider.IProvider {
         Logger.Debug(`SqlServer.Update: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.UPDATE
         }
 
@@ -164,7 +164,7 @@ export class SqlServer implements IProvider.IProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
-            .Update(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
+            .Update(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Set(options.Data.Rows)
             .Where(options.Filter)
             .Query
@@ -182,8 +182,8 @@ export class SqlServer implements IProvider.IProvider {
         Logger.Debug(`SqlServer.Delete: ${JSON.stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.DELETE
         }
 
@@ -195,7 +195,7 @@ export class SqlServer implements IProvider.IProvider {
 
         const _sqlQuery = new SqlQueryHelper()
             .Delete()
-            .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
+            .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Where(options.Filter)
             .Query
 

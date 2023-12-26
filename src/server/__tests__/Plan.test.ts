@@ -405,8 +405,8 @@ describe('Step', () => {
                 join: {
                     entity: "orders",
                     type: "left",
-                    "left-field": "user_id",
-                    "right-field": "id"
+                    "leftField": "user_id",
+                    "rightField": "id"
                 }
             }
         ]

@@ -40,11 +40,11 @@ class MongoDbOptions implements IProvider.IProviderOptions {
 
         static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
             let filter: any = {}
-            if (schemaRequest['filter-expression'] || schemaRequest?.filter) {
+            if (schemaRequest?.filterExpression || schemaRequest?.filter) {
 
-                if (schemaRequest['filter-expression'])
+                if (schemaRequest?.filterExpression)
                     // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
-                    filter = this.GetExpression(schemaRequest['filter-expression'])
+                    filter = this.GetExpression(schemaRequest.filterExpression)
 
                 if (schemaRequest?.filter)
                     filter = schemaRequest.filter
@@ -176,8 +176,8 @@ export class MongoDb implements IProvider.IProvider {
         Logger.Debug(`${Logger.Out} MongoDb.Insert: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.INSERT
         }
 
@@ -188,7 +188,7 @@ export class MongoDb implements IProvider.IProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         await this.Connection.connect()
-        await this.Connection.db(this.Params.database).collection(schemaRequest.entity).insertMany(options?.Data?.Rows)
+        await this.Connection.db(this.Params.database).collection(schemaRequest.entityName).insertMany(options?.Data?.Rows)
         Logger.Debug(`${Logger.In} MongoDb.Insert: ${JSON.stringify(schemaRequest)}`)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
@@ -204,8 +204,8 @@ export class MongoDb implements IProvider.IProvider {
         const options: mongodb.Document[] = _.values(this.Options.Parse(schemaRequest))
 
         let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.SELECT
         }
 
@@ -216,12 +216,12 @@ export class MongoDb implements IProvider.IProvider {
         await this.Connection.connect()
 
         const _data = await this.Connection.db(this.Params.database)
-            .collection(schemaRequest.entity)
+            .collection(schemaRequest.entityName)
             .aggregate(options)
             .toArray()
 
         if (_data.length > 0) {
-            const _dt = new DataTable(schemaRequest.entity, _data)
+            const _dt = new DataTable(schemaRequest.entityName, _data)
             Cache.Set(schemaRequest, _dt)
             schemaResponse = <TSchemaResponseData>{
                 ...schemaResponse,
@@ -243,8 +243,8 @@ export class MongoDb implements IProvider.IProvider {
         Logger.Debug(`${Logger.Out} MongoDb.Update: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.UPDATE
         }
 
@@ -256,7 +256,7 @@ export class MongoDb implements IProvider.IProvider {
 
         await this.Connection.connect()
 
-        await this.Connection.db(this.Params.database).collection(schemaRequest.entity).updateMany(
+        await this.Connection.db(this.Params.database).collection(schemaRequest.entityName).updateMany(
             (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>,
             {
                 $set: _.head(options?.Data?.Rows)
@@ -275,8 +275,8 @@ export class MongoDb implements IProvider.IProvider {
         Logger.Debug(`${Logger.Out} MongoDb.Delete: ${JSON.stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.DELETE
         }
 
@@ -286,7 +286,7 @@ export class MongoDb implements IProvider.IProvider {
             return Source.ResponseError(schemaResponse)
         }
 
-        await this.Connection.db(this.Params.database).collection(schemaRequest.entity).deleteMany(
+        await this.Connection.db(this.Params.database).collection(schemaRequest.entityName).deleteMany(
             (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>
         )
 

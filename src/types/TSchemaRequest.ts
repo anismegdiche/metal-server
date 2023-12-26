@@ -7,14 +7,14 @@ import { TJson } from "./TJson"
 
 export type TSchemaRequest = {
     // from Request
-    schema: string
-    entity: string
+    schemaName: string
+    entityName: string
     data?: TJson[]
     fields?: string
     filter?: TJson
-    "filter-expression"?: string
+    filterExpression?: string
     sort?: string
     cache?: string
     //
-    source?: string
+    sourceName?: string
 }

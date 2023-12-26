@@ -36,8 +36,8 @@ describe('MongoDb', () => {
             });
 
             const expectedResponse = {
-                entity: 'users',
-                schema: 'mflix',
+                entityName: 'users',
+                schemaName: 'mflix',
                 transaction: 'insert',
                 result: 'Created',
                 status: 201
@@ -63,8 +63,8 @@ describe('MongoDb', () => {
             });
 
             const expectedResponse = {
-                entity: 'users',
-                schema: 'mflix',
+                entityName: 'users',
+                schemaName: 'mflix',
                 transaction: 'insert',
                 result: 'Created',
                 status: 201
@@ -77,14 +77,14 @@ describe('MongoDb', () => {
     describe('DataSelect', () => {
         it(`should select items from the database`, async () => {
             const response = await metalClient.DataSelect(schema, entity, {
-                "filter-expression": "name ~ '*o*' & email ~ '*wh*co'",
+                "filterExpression": "name ~ '*o*' & email ~ '*wh*co'",
                 fields: 'name, email',
                 sort: 'name asc,email desc'
             });
 
             const expectedResponse = {
-                entity: 'users',
-                schema: 'mflix',
+                entityName: 'users',
+                schemaName: 'mflix',
                 transaction: 'select',
                 metadata: {},
                 result: 'OK',
@@ -117,14 +117,14 @@ describe('MongoDb', () => {
     describe('DataUpdate', () => {
         it(`should update items in the database`, async () => {
             const response = await metalClient.DataUpdate(schema, entity, {
-                "filter-expression": "email ~ '*wh*co'",
+                "filterExpression": "email ~ '*wh*co'",
                 data: {
                     email: "nomail"
                 }
             });
             expect(response.data).toStrictEqual({
-                entity: "users",
-                schema: "mflix",
+                entityName: "users",
+                schemaName: "mflix",
                 transaction: "update",
                 result: "OK",
                 status: 200
@@ -135,17 +135,9 @@ describe('MongoDb', () => {
     describe('DataDelete', () => {
         it(`should delete items from the database`, async () => {
             const response = await metalClient.DataDelete(schema, entity, {
-                "filter-expression": "email ~ '*wh*co'"
+                "filterExpression": "email ~ '*wh*co'"
             });
             expect(response.status).toEqual(204);
-            // expect(response.data).toStrictEqual({
-            //     entity: "users",
-            //     schema: "mflix",
-            //     transaction: "delete",
-            //     result: "success",
-            //     status: 200
-            // });
         });
-
     });
 });

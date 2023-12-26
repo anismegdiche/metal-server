@@ -14,7 +14,7 @@ export class CommonSqlProviderOptionsData {
     static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.data) {
             options.Data = new DataTable(
-                schemaRequest.entity,
+                schemaRequest.entityName,
                 Convert.ReplacePlaceholders(schemaRequest.data)
             )
         }
@@ -34,10 +34,10 @@ export class CommonSqlProviderOptionsFields {
 export class CommonSqlProviderOptionsFilter {
     static Get(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let filter = {}
-        if (schemaRequest['filter-expression'] || schemaRequest?.filter) {
+        if (schemaRequest?.filterExpression || schemaRequest?.filter) {
 
-            if (schemaRequest['filter-expression'])
-                filter = CommonSqlProviderOptionsFilter.GetExpression(schemaRequest['filter-expression'])
+            if (schemaRequest?.filterExpression)
+                filter = CommonSqlProviderOptionsFilter.GetExpression(schemaRequest.filterExpression)
 
             if (schemaRequest?.filter)
                 filter = Convert.JsonToArray(schemaRequest.filter)

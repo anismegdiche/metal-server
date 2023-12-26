@@ -59,12 +59,12 @@ export class Convert {
     }
 
     static RequestToSchemaRequest(req: Request) {
-        const { schema, entity } = req.params
+        const { schemaName, entityName } = req.params
         const { body, query } = req
 
         const schemaRequest: TSchemaRequest = {
-            schema,
-            entity
+            schemaName,
+            entityName
         }
 
         const _queryOrBody: TJson = (_.isNil(query) || _.isEmpty(query))
@@ -86,11 +86,11 @@ export class Convert {
     }
 
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, response: Response) {
-        const { schema, entity, transaction, result, status } = schemaResponse
+        const { schemaName , entityName, transaction, result, status } = schemaResponse
 
         let _responseJson: TJson = {
-            schema,
-            entity,
+            schemaName,
+            entityName,
             transaction,
             result,
             status

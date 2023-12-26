@@ -81,8 +81,8 @@ export class Postgres implements IProvider.IProvider {
         Logger.Debug(`${Logger.Out} Postgres.Insert: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.INSERT
         }
 
@@ -93,7 +93,7 @@ export class Postgres implements IProvider.IProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
-            .Insert(`"${schemaRequest.entity}"`)
+            .Insert(`"${schemaRequest.entityName}"`)
             .Fields(options.Data.GetFieldNames())
             .Values(options.Data.Rows)
             .Query
@@ -111,8 +111,8 @@ export class Postgres implements IProvider.IProvider {
         Logger.Debug(`Postgres.Select: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.SELECT
         }
 
@@ -124,14 +124,14 @@ export class Postgres implements IProvider.IProvider {
 
         const _sqlQuery = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`"${schemaRequest.entity}"`)
+            .From(`"${schemaRequest.entityName}"`)
             .Where(options.Filter)
             .OrderBy(options.Sort)
             .Query
 
         const _data = await this.Connection.query(_sqlQuery)
         if (_data.rows.length > 0) {
-            const _dt = new DataTable(schemaRequest.entity, _data.rows)
+            const _dt = new DataTable(schemaRequest.entityName, _data.rows)
             Cache.Set(schemaRequest, _dt)
             schemaResponse = <TSchemaResponseData>{
                 ...schemaResponse,
@@ -153,8 +153,8 @@ export class Postgres implements IProvider.IProvider {
         Logger.Debug(`Postgres.Update: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.UPDATE
         }
 
@@ -165,7 +165,7 @@ export class Postgres implements IProvider.IProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const _sqlQuery = new SqlQueryHelper()
-            .Update(`"${schemaRequest.entity}"`)
+            .Update(`"${schemaRequest.entityName}"`)
             .Set(options.Data.Rows)
             .Where(options.Filter)
             .Query
@@ -183,8 +183,8 @@ export class Postgres implements IProvider.IProvider {
         Logger.Debug(`Postgres.Delete : ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity,
+            schemaName: schemaRequest.schemaName,
+            entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.DELETE
         }
 
@@ -196,7 +196,7 @@ export class Postgres implements IProvider.IProvider {
 
         const _sqlQuery = new SqlQueryHelper()
             .Delete()
-            .From(`"${schemaRequest.entity}"`)
+            .From(`"${schemaRequest.entityName}"`)
             .Where(options.Filter)
             .Query
 

@@ -7,8 +7,8 @@ const MetalClient = require("../metal_client");
 
 describe("Postgres", () => {
     let metalClient = {};
-    const schema = "northwind";
-    const entity = "customers";
+    const schemaName = "northwind";
+    const entityName = "customers";
 
     beforeAll(async () => {
         metalClient = new MetalClient({
@@ -19,7 +19,7 @@ describe("Postgres", () => {
 
     describe("DataInsert", () => {
         it("inserts one item into the database", async () => {
-            const response = await metalClient.DataInsert(schema, entity, {
+            const response = await metalClient.DataInsert(schemaName, entityName, {
                 data: {
                     customer_id: "DLLD",
                     contact_name: "John Doe",
@@ -27,8 +27,8 @@ describe("Postgres", () => {
                 }
             });
             expect(response.data).toStrictEqual({
-                schema,
-                entity,
+                schemaName,
+                entityName,
                 transaction: "insert",
                 result: "Created",
                 status: 201
@@ -36,7 +36,7 @@ describe("Postgres", () => {
         });
 
         it("inserts many items into the database", async () => {
-            const response = await metalClient.DataInsert(schema, entity, {
+            const response = await metalClient.DataInsert(schemaName, entityName, {
                 data: [
                     {
                         customer_id: "PLLD",
@@ -51,8 +51,8 @@ describe("Postgres", () => {
                 ]
             });
             expect(response.data).toStrictEqual({
-                schema,
-                entity,
+                schemaName,
+                entityName,
                 transaction: "insert",
                 result: "Created",
                 status: 201
@@ -62,14 +62,14 @@ describe("Postgres", () => {
 
     describe("DataSelect", () => {
         it("selects data from the database", async () => {
-            const response = await metalClient.DataSelect(schema, entity, {
-                "filter-expression": "customer_id ~ '*LLD'",
+            const response = await metalClient.DataSelect(schemaName, entityName, {
+                "filterExpression": "customer_id ~ '*LLD'",
                 fields: "contact_name, company_name",
                 sort: "contact_name asc,company_name desc"
             });
             expect(response.data).toStrictEqual({
-                schema,
-                entity,
+                schemaName,
+                entityName,
                 status: 200,
                 transaction: "select",
                 metadata: {},
@@ -98,15 +98,15 @@ describe("Postgres", () => {
 
     describe("DataUpdate", () => {
         it("updates data in the database", async () => {
-            const response = await metalClient.DataUpdate(schema, entity, {
-                "filter-expression": "customer_id ~ '*LLD'",
+            const response = await metalClient.DataUpdate(schemaName, entityName, {
+                "filterExpression": "customer_id ~ '*LLD'",
                 data: {
                     contact_name: "XXXXX"
                 }
             });
             expect(response.data).toStrictEqual({
-                schema,
-                entity,
+                schemaName,
+                entityName,
                 result: "OK",
                 status: 200,
                 transaction: "update"
@@ -116,8 +116,8 @@ describe("Postgres", () => {
 
     describe("DataDelete", () => {
         it("deletes data from the database", async () => {
-            const response = await metalClient.DataDelete(schema, entity, {
-                "filter-expression": "customer_id ~ '*LLD'"
+            const response = await metalClient.DataDelete(schemaName, entityName, {
+                "filterExpression": "customer_id ~ '*LLD'"
             });
             expect(response.status).toStrictEqual(204);
         });

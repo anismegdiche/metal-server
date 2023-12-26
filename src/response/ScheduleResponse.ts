@@ -12,8 +12,8 @@ import { Convert } from '../lib/Convert'
 export class ScheduleResponse {
     public static Start(req: Request, res: Response) {
         try {
-            const { job } = req.params
-            const intRes = Schedule.Start(job)
+            const { jobName } = req.params
+            const intRes = Schedule.Start(jobName)
             Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)
@@ -22,8 +22,8 @@ export class ScheduleResponse {
 
     public static Stop(req: Request, res: Response) {
         try {
-            const { job } = req.params
-            const intRes = Schedule.Stop(job)
+            const { jobName } = req.params
+            const intRes = Schedule.Stop(jobName)
             Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)

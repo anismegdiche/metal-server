@@ -82,29 +82,29 @@ schemas:
     entities:
       members:
         source: pg-clubdata-members
-        entity: members
+        entityName: members
       facilities:
         source: pg-clubdata-facilities
-        entity: facilities
+        entityName: facilities
       bookings:
         source: pg-clubdata-bookings
-        entity: bookings
+        entityName: bookings
   merge:
     source: pg-clubdata
     entities:
       orders:
         source: pg-northwind
-        entity: orders
+        entityName: orders
       users:
         source: mdb-mflix
-        entity: users
+        entityName: users
   etl1:
     plan: plan-etl1
 
 # schedules:
 #   run entity contact of my etl1 plan:
 #     plan: etl1
-#     entity: contact
+#     entityName: contact
 #     cron: "* */5 * * * *"
 
 ai-engines:
@@ -130,8 +130,8 @@ plans:
     aitest2:
       - debug:
       - select:
-          schema: mflix
-          entity: movies
+          schemaName: mflix
+          entityName: movies
           filter:
             year: 2001
           fields: title
@@ -173,8 +173,8 @@ plans:
     contact:
       - debug:
       - select:
-          schema: demo
-          entity: res_partner
+          schemaName: demo
+          entityName: res_partner
           fields: id, name, display_name
       - add-field:
           name: quality
@@ -182,12 +182,12 @@ plans:
       - sort:
           id:
       - update:
-          filter-expression: "id < 10"
+          filterExpression: "id < 10"
           data:
             name: "AAA"
             display_name: "BBB"
       - delete:
-          filter-expression: "id >= 100"
+          filterExpression: "id >= 100"
       - insert:
           data:
             name: John
@@ -197,16 +197,16 @@ plans:
     login:
       - debug:
       - select:
-          schema: demo
-          entity: res_users
+          schemaName: demo
+          entityName: res_users
           fields: login, partner_id
       # - bad-step-test1: "***TEST***"
       # - break: step by step test
       - join:
           type: left
-          entity: contact
-          left-field: partner_id
-          right-field: id
+          entityName: contact
+          leftField: partner_id
+          rightField: id
       - fields: id, name, login
       # - debug:
       - sort:
@@ -214,10 +214,10 @@ plans:
           name: desc
       # - bad-step-test2: "***TEST***"
       - insert:
-          schema: demo
-          entity: res_users
+          schemaName: demo
+          entityName: res_users
       - delete:
-          schema: demo
-          entity: res_users
+          schemaName: demo
+          entityName: res_users
           filter:
             lang: fr_FR

@@ -26,8 +26,8 @@ export class Cache {
 
     static #GetSchemaRequest(): TSchemaRequest {
         return {
-            schema: Cache.Schema,
-            entity: Cache.Table
+            schemaName: Cache.Schema,
+            entityName: Cache.Table
         }
     }
 
@@ -46,7 +46,7 @@ export class Cache {
     static async Set(schemaRequest: TSchemaRequest, dt: DataTable): Promise<void> {
         if (!Config.Flags.EnableCache ||
             schemaRequest?.cache === undefined ||
-            (schemaRequest.schema === Cache.Schema && schemaRequest.entity === Cache.Table)) {
+            (schemaRequest.schemaName === Cache.Schema && schemaRequest.entityName === Cache.Table)) {
             return
         }
 
@@ -69,11 +69,11 @@ export class Cache {
                 ...Cache.#GetSchemaRequest(),
                 data: <TCacheData[]>[
                     {
-                        schema: schemaRequest.schema,
-                        entity: schemaRequest.entity,
+                        schemaName: schemaRequest.schemaName,
+                        entityName: schemaRequest.entityName,
                         hash,
                         expires,
-                        request: schemaRequest,
+                        schemaRequest: schemaRequest,
                         datatable: dt
                     }
                 ]
@@ -162,7 +162,7 @@ export class Cache {
         Logger.Debug(`Cache.Clean  ${_expireDate}`)
         await Cache.CacheSource.Delete(<TSchemaRequest>{
             ...Cache.#GetSchemaRequest(),
-            "filter-expression": `expires < ${_expireDate}`
+            filterExpression: `expires < ${_expireDate}`
         })
         Logger.Debug(`${Logger.Out} Cache.Clean`)
         return {

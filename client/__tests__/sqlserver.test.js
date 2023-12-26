@@ -5,8 +5,8 @@ const MetalClient = require("../metal_client");
 
 describe("SqlServer", () => {
     let metalClient = {};
-    const schema = "hr";
-    const entity = "dbo.countries";
+    const schemaName = "hr";
+    const entityName = "dbo.countries";
 
     beforeAll(async () => {
         metalClient = new MetalClient({
@@ -17,7 +17,7 @@ describe("SqlServer", () => {
 
     describe("DataInsert", () => {
         it("should insert one item into the database", async () => {
-            const response = await metalClient.DataInsert(schema, entity, {
+            const response = await metalClient.DataInsert(schemaName, entityName, {
                 data: {
                     country_id: "XX",
                     country_name: "Nowhere Land",
@@ -25,8 +25,8 @@ describe("SqlServer", () => {
                 }
             });
             expect(response.data).toStrictEqual({
-                entity,
-                schema,
+                entityName,
+                schemaName,
                 transaction: "insert",
                 result: "Created",
                 status: 201
@@ -34,7 +34,7 @@ describe("SqlServer", () => {
         });
 
         it("should insert multiple items into the database", async () => {
-            const response = await metalClient.DataInsert(schema, entity, {
+            const response = await metalClient.DataInsert(schemaName, entityName, {
                 data: [
                     {
                         country_id: "XY",
@@ -49,8 +49,8 @@ describe("SqlServer", () => {
                 ]
             });
             expect(response.data).toStrictEqual({
-                entity,
-                schema,
+                entityName,
+                schemaName,
                 transaction: "insert",
                 result: "Created",
                 status: 201
@@ -60,14 +60,14 @@ describe("SqlServer", () => {
 
     describe("DataSelect", () => {
         it("should select items from the database", async () => {
-            const response = await metalClient.DataSelect(schema, entity, {
-                "filter-expression": "country_id ~ 'X*'",
+            const response = await metalClient.DataSelect(schemaName, entityName, {
+                "filterExpression": "country_id ~ 'X*'",
                 fields: "country_id, country_name",
                 sort: "country_id asc,country_name desc"
             });
             expect(response.data).toStrictEqual({
-                entity,
-                schema,
+                entityName,
+                schemaName,
                 transaction: "select",
                 result: "OK",
                 metadata: {},
@@ -96,15 +96,15 @@ describe("SqlServer", () => {
 
     describe("DataUpdate", () => {
         it("should update items in the database", async () => {
-            const response = await metalClient.DataUpdate(schema, entity, {
-                "filter-expression": "country_id ~ 'X*'",
+            const response = await metalClient.DataUpdate(schemaName, entityName, {
+                "filterExpression": "country_id ~ 'X*'",
                 data: {
                     country_name: "XXXXX"
                 }
             });
             expect(response.data).toStrictEqual({
-                entity,
-                schema,
+                entityName,
+                schemaName,
                 result: "OK",
                 status: 200,
                 transaction: "update"
@@ -114,8 +114,8 @@ describe("SqlServer", () => {
 
     describe("DataDelete", () => {
         it("should delete items from the database", async () => {
-            const response = await metalClient.DataDelete(schema, entity, {
-                "filter-expression": "country_id ~ 'X*'"
+            const response = await metalClient.DataDelete(schemaName, entityName, {
+                "filterExpression": "country_id ~ 'X*'"
             });
             expect(response.status).toStrictEqual(204);
         });
