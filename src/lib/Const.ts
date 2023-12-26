@@ -23,38 +23,38 @@ export enum SERVER {
 }
 
 export enum ROUTE {
-    USER_PATH = "/user",
-    SERVER_PATH = "/server",
-    SCHEMA_PATH = "/schema",
-    PLAN_PATH = "/plan",
-    CACHE_PATH = "/cache",
-    SCHEDULE_PATH = "/schedule"
+    USER_PATH = '/user',
+    SERVER_PATH = '/server',
+    SCHEMA_PATH = '/schema',
+    PLAN_PATH = '/plan',
+    CACHE_PATH = '/cache',
+    SCHEDULE_PATH = '/schedule'
 }
 
 export const RESPONSE_TRANSACTION = {
     SELECT: {
-        "transaction": "select"
+        transaction: 'select'
     },
     DELETE: {
-        "transaction": "delete"
+        transaction: 'delete'
     },
     UPDATE: {
-        "transaction": "update"
+        transaction: 'update'
     },
     INSERT: {
-        "transaction": "insert"
+        transaction: 'insert'
     }
 }
 
 export const RESPONSE_RESULT = {
     SUCCESS: {
-        result: "success"
+        result: 'success'
     },
     ERROR: {
-        result: "error"
+        result: 'error'
     },
     NOT_FOUND: {
-        result: "not found"
+        result: 'not found'
     }
 }
 
@@ -85,18 +85,18 @@ export enum HTTP_STATUS_CODE {
 }
 
 export enum HTTP_STATUS_MESSAGE {
-    OK = "OK",
-    CREATED = "Created",
-    NO_CONTENT = "No Content",
-    BAD_REQUEST = "Bad Request",
-    UNAUTHORIZED = "Unauthorized",
-    FORBIDDEN = "Forbidden",
-    NOT_FOUND = "Not Found",
-    CONFLICT = "Conflict",
-    METHOD_NOT_ALLOWED = "Method Not Allowed",
-    TOO_MANY_REQUESTS = "Too Many Requests",
-    INTERNAL_SERVER_ERROR = "Internal Server Error",
-    NOT_IMPLEMENTED = "Not Implemented"
+    OK = 'OK',
+    CREATED = 'Created',
+    NO_CONTENT = 'No Content',
+    BAD_REQUEST = 'Bad Request',
+    UNAUTHORIZED = 'Unauthorized',
+    FORBIDDEN = 'Forbidden',
+    NOT_FOUND = 'Not Found',
+    CONFLICT = 'Conflict',
+    METHOD_NOT_ALLOWED = 'Method Not Allowed',
+    TOO_MANY_REQUESTS = 'Too Many Requests',
+    INTERNAL_SERVER_ERROR = 'Internal Server Error',
+    NOT_IMPLEMENTED = 'Not Implemented'
 }
 
 export const RESPONSE_STATUS = {
