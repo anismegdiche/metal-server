@@ -71,6 +71,12 @@ sources:
     database: etl1
 
 schemas:
+  northwind:
+    sourceName: pg-northwind
+  hr:
+    sourceName: ms-hr
+  mflix:
+    sourceName: mdb-mflix
   clubdata:
     entities:
       members:
@@ -82,6 +88,17 @@ schemas:
       bookings:
         sourceName: pg-clubdata-bookings
         entityName: bookings
+  merge:
+    sourceName: pg-clubdata
+    entities:
+      orders:
+        sourceName: pg-northwind
+        entityName: orders
+      users:
+        sourceName: mdb-mflix
+        entityName: users
+  sch-etl1:
+    sourceName: plan-etl1
 
 # schedules:
 #   run entity contact of my etl1 plan:

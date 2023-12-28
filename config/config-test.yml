@@ -66,39 +66,39 @@ sources:
 
 schemas:
   hr:
-    source: mssql
+    sourceName: mssql
     access:
       - root@*: crud
       - user@localhost: r
       - any@*: r
 
   mflix:
-    source: mongo
+    sourceName: mongo
 
   northwind:
-    source: postgres1
+    sourceName: postgres1
 
   clubdata:
-    source: postgres2
+    sourceName: postgres2
 
   merge:
-    source: postgres2
+    sourceName: postgres2
     entities:
       orders:
-        source: postgres1
+        sourceName: postgres1
         entityName: orders
       users:
-        source: mongo
+        sourceName: mongo
         entityName: users
 
   etl1:
-    source: plan-etl1
+    sourceName: plan-etl1
 
   file1:
-    source: input
+    sourceName: input
 
   # cache:
-  #   source: metal_cache
+  #   sourceName: metal_cache
 
 # schedules:
 #   run my plan:
