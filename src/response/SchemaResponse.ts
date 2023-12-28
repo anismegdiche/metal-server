@@ -26,6 +26,7 @@ export class SchemaResponse {
             .then((isExist) => {
                 if (!isExist) {
                     SchemaResponse.ReplyNotFound(req, res, `schema '${req.params.schemaName}' not found in schemas`)
+                    return
                 }
                 next()
             })

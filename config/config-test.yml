@@ -16,8 +16,7 @@ server:
       serverSelectionTimeoutMS: 5000
 
 users:
-  admin: 123456
-  guest: "654321"
+  myapiuser: myStr@ngpa$$w0rd
 
 sources:
   mssql:

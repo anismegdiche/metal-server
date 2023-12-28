@@ -102,16 +102,17 @@ export class Config {
                     ".*": {
                         type: "object",
                         properties: {
-                            "source": { type: "string" },
+                            "sourceName": { type: "string" },
                             "entities": {
                                 type: "object",
                                 patternProperties: {
                                     ".*": {
                                         type: "object",
                                         properties: {
-                                            "source": { type: "string" },
-                                            "entity": { type: "string" }
-                                        }
+                                            "sourceName": { type: "string" },
+                                            "entityName": { type: "string" }
+                                        },
+                                        required: ["sourceName", "entityName"]
                                     }
                                 }
                             }
@@ -139,9 +140,7 @@ export class Config {
                                 }
                             }
                         },
-                        dependencies: {
-                            "engine": ["model"]
-                        }
+                        required: ["engine", "model"]
                     }
                 }
             },
@@ -174,18 +173,18 @@ export class Config {
                     ".*": {
                         type: "object",
                         properties: {
-                            "plan": { type: "string" },
-                            "entity": { type: "string" },
+                            "planName": { type: "string" },
+                            "entityName": { type: "string" },
                             "cron": { type: "string" }
                         },
-                        required: ["plan", "entity", "cron"]
+                        required: ["planName", "entityName", "cron"]
                     }
                 }
             }
         }
     }
 
-    static async Init() : Promise<void> {
+    static async Init(): Promise<void> {
         Logger.Info('Config.Init')
         // ENV
         dotenv.config()

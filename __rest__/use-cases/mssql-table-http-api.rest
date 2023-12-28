@@ -1,0 +1,30 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+
+###
+@token={{login.response.body.token}}
+
+###
+# @name countries
+GET http://localhost:3000/schema/hr/countries
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name locations
+GET http://localhost:3000/schema/hr/locations
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name jobs
+GET http://localhost:3000/schema/hr/jobs
+Content-Type: application/json
+authorization: Bearer {{token}}

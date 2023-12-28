@@ -1,0 +1,30 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+
+###
+@token={{login.response.body.token}}
+
+###
+# @name members
+GET http://localhost:3000/schema/clubdata/members
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name bookings
+GET http://localhost:3000/schema/clubdata/bookings
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name facilities
+GET http://localhost:3000/schema/clubdata/facilities
+Content-Type: application/json
+authorization: Bearer {{token}}

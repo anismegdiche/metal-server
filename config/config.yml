@@ -14,8 +14,7 @@ server:
       serverSelectionTimeoutMS: 5000
 
 users:
-  admin: 123456
-  guest: "654321"
+  myapiuser: myStr@ngpa$$w0rd
 
 sources:
   ms-hr:
@@ -72,34 +71,17 @@ sources:
     database: etl1
 
 schemas:
-  northwind:
-    source: pg-northwind
-  hr:
-    source: ms-hr
-  mflix:
-    source: mdb-mflix
   clubdata:
     entities:
       members:
-        source: pg-clubdata-members
+        sourceName: pg-clubdata-members
         entityName: members
       facilities:
-        source: pg-clubdata-facilities
+        sourceName: pg-clubdata-facilities
         entityName: facilities
       bookings:
-        source: pg-clubdata-bookings
+        sourceName: pg-clubdata-bookings
         entityName: bookings
-  merge:
-    source: pg-clubdata
-    entities:
-      orders:
-        source: pg-northwind
-        entityName: orders
-      users:
-        source: mdb-mflix
-        entityName: users
-  sch-etl1:
-    source: plan-etl1
 
 # schedules:
 #   run entity contact of my etl1 plan:

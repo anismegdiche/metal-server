@@ -14,8 +14,7 @@ server:
       serverSelectionTimeoutMS: 5000
 
 users:
-  admin: 123456
-  guest: "654321"
+  myapiuser: myStr@ngpa$$w0rd
 
 sources:
   ms-hr:
@@ -98,14 +97,14 @@ schemas:
       users:
         source: mdb-mflix
         entityName: users
-  etl1:
-    plan: plan-etl1
+  sch-etl1:
+    source: plan-etl1
 
 # schedules:
 #   run entity contact of my etl1 plan:
 #     plan: etl1
-#     entityName: contact
-#     cron: "* */5 * * * *"
+#     entityName: aitest
+#     cron: "*/5 * * * * *"
 
 ai-engines:
   ocr:
@@ -127,6 +126,16 @@ ai-engines:
 
 plans:
   etl1:
+    src:
+      - insert:
+          data:
+            - img_to_text: https://tesseract.projectnaptha.com/img/eng_bw.png
+              img_to_object: https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg
+            - img_to_text: https://jeroen.github.io/images/testocr.png
+              img_to_object: https://img.freepik.com/premium-photo/golden-retriever-lying-panting-isolated-white_191971-16974.jpg
+            - img_to_text: https://www.srcmake.com/uploads/5/3/9/0/5390645/ocr_orig.png
+              img_to_object: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpDgjJjrakUj3VlDC0K6XtdCRu5TK7CPXr7QHVjiL&s
+
     aitest2:
       - debug:
       - select:

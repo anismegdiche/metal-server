@@ -1,0 +1,30 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+
+###
+@token={{login.response.body.token}}
+
+###
+# @name mflix/log
+GET http://localhost:3000/schema/mflix/log
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name delete_mflix_log
+DELETE http://localhost:3000/schema/mflix/log
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name clubdata/mflix_log
+GET http://localhost:3000/schema/clubdata/mflix_log
+Content-Type: application/json
+authorization: Bearer {{token}}

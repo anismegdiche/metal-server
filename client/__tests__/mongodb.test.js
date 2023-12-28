@@ -22,7 +22,7 @@ describe('MongoDb', () => {
         metalClient = new MetalClient({
             RestApiUrl: "http://localhost:3000"
         });
-        await metalClient.UserLogin("admin", "123456");
+        await metalClient.UserLogin("myapiuser", "myStr@ngpa$$w0rd");
     });
 
     describe('DataInsert', () => {

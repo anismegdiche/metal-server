@@ -3,7 +3,7 @@
 //
 //
 //
-import * as sha512 from 'js-sha512'
+import * as Sha512 from 'js-sha512'
 
 import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
@@ -98,19 +98,17 @@ export class Cache {
     }
 
     static Hash(schemaRequest: TSchemaRequest): string {
-        return sha512.sha512(JSON.stringify(schemaRequest))
+        return Sha512.sha512(JSON.stringify(schemaRequest))
     }
 
     static IsValid(expires?: number): boolean {
-        const isValid = (expires)
-            ? new Date().getTime() <= expires ?? false
-            : false
+        const isValid = expires !== undefined && Date.now() <= expires
 
-        Logger.Debug(`Cache.IsValid = ${isValid}`)
+        Logger.Info(`Cache.IsValid = ${isValid}`)
         return isValid
     }
 
-    // BUG: when caching Plan, datatable is rendered with Fields, Rows (in Pascal case) 
+    // BUG: when caching Plan, datatable is rendered with Fields, Rows in Upper case 
     static async Get(hash: string): Promise<TCacheData | undefined> {
         Logger.Debug(`Cache.Get`)
         if (Config.Flags.EnableCache) {

@@ -19,6 +19,7 @@ import { Schema } from "./Schema"
 import { CommonSqlProviderOptions } from '../providers/CommonSqlProvider'
 import { TOptions } from "../types/TOptions"
 import { TypeHelper } from "../lib/TypeHelper"
+import { TScheduleConfig } from "./Schedule"
 
 
 type TStepArguments = {
@@ -286,28 +287,28 @@ export class Step {
         Logger.Debug(`${Logger.In} Step.Join: ${JSON.stringify(stepArguments.stepParams)}`)
 
         const stepParams: Record<string, string> = stepArguments.stepParams as Record<string, string>
-        const currentDataTable = stepArguments.currentDataTable
+        const { currentPlanName, currentDataTable } = stepArguments
+
         if (stepParams === null) {
             return currentDataTable
         }
-        const schemaName: string = stepParams.schemaName
-        const entityName: string = stepParams.entityName
-        const planName: string = stepParams.planName
-        const type: string = stepParams.type
-        const leftField: string = stepParams.leftField
-        const rightField: string = stepParams.rightField
 
+        const { schemaName, entityName, type, leftField, rightField } = stepParams
 
         let dtRight = new DataTable(entityName)
 
         const requestToSchema: TStepArguments = {
             ...stepArguments,
-            currentDataTable: dtRight
+            currentDataTable: dtRight,
+            stepParams: {
+                schemaName,
+                entityName
+            }
         }
 
         const requestToCurrentPlan: TSchemaRequest = {
             schemaName,
-            sourceName: planName,
+            sourceName: currentPlanName,
             entityName
         }
 
@@ -406,67 +407,114 @@ export class Step {
 
 
 export class Plan {
-    static async Execute(schemaRequest: TSchemaRequest, sqlQuery: string | undefined = undefined) {
+    static async Execute(schemaRequest: TSchemaRequest | TScheduleConfig, sqlQuery: string | undefined = undefined): Promise<TSchemaResponse> {
+        Logger.Debug(`${Logger.In} Plan.Execute: ${JSON.stringify(schemaRequest)}`)
 
-        const { schemaName, sourceName, entityName } = schemaRequest
+        // TSchemaRequest
+        if (TypeHelper.IsSchemaRequest(schemaRequest)) {
+
+            const { schemaName, sourceName, entityName } = schemaRequest
+
+            const schemaResponseNoData = <TSchemaResponseNoData>{
+                schemaName,
+                entityName,
+                ...RESPONSE_RESULT.NOT_FOUND,
+                ...RESPONSE_STATUS.HTTP_404
+            }
+
+            const sourcePlanName: string = Config.Get(`sources.${sourceName}.database`)
+
+            if (sourceName === undefined || sourcePlanName === undefined) {
+                Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schemaName}`)
+                return schemaResponseNoData
+            }
+
+            if (!Config.Has(`plans.${sourcePlanName}.${entityName}`)) {
+                Logger.Error(`${Logger.Out} Plan.Execute: entityName '${entityName}' not found in plan ${sourcePlanName}`)
+                return schemaResponseNoData
+            }
+
+            const schemaResponse = <TSchemaResponse>{
+                schemaName,
+                entityName,
+                transaction: "plan"
+            }
+
+            const entitySteps: TJson[] = Config.Get(`plans.${sourcePlanName}.${entityName}`)
+
+            Logger.Debug(`${Logger.In} Plan.Execute: ${sourceName}.${entityName}: ${JSON.stringify(entitySteps)}`)
+
+            const currentDatatable = await Step.Execute(schemaName, sourceName, entityName, entitySteps)
+
+            if (sqlQuery !== undefined) {
+                currentDatatable.FreeSql(sqlQuery)
+            }
+
+            Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entityName}`)
+            return <TSchemaResponseData>{
+                ...schemaResponse,
+                ...RESPONSE_RESULT.SUCCESS,
+                ...RESPONSE_STATUS.HTTP_200,
+                data: currentDatatable
+            }
+        }
+        // TScheduleConfig
+        const { planName, entityName } = schemaRequest
 
         const schemaResponseNoData = <TSchemaResponseNoData>{
-            schemaName,
+            schemaName: planName,
             entityName,
             ...RESPONSE_RESULT.NOT_FOUND,
             ...RESPONSE_STATUS.HTTP_404
         }
 
-        const sourcePlanName: string = Config.Get(`sources.${sourceName}.database`)
-
-        if (sourceName === undefined || sourcePlanName === undefined) {
-            Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schemaName}`)
+        if (planName === undefined) {
+            Logger.Error(`${Logger.Out} Plan.Execute: plan '${planName}' not found`)
             return schemaResponseNoData
         }
 
-
-        if (!Config.Has(`plans.${sourcePlanName}.${entityName}`)) {
-            Logger.Error(`${Logger.Out} Plan.Execute: entityName '${entityName}' not found in plan ${sourcePlanName}`)
+        if (!Config.Has(`plans.${planName}.${entityName}`)) {
+            Logger.Error(`${Logger.Out} Plan.Execute: entityName '${entityName}' not found in plan ${planName}`)
             return schemaResponseNoData
         }
 
         const schemaResponse = <TSchemaResponse>{
-            schemaName,
+            schemaName: planName,
             entityName,
             transaction: "plan"
         }
 
-        const entitySteps: TJson[] = Config.Get(`plans.${sourcePlanName}.${entityName}`)
+        const entitySteps: TJson[] = Config.Get(`plans.${planName}.${entityName}`)
 
-        Logger.Debug(`${Logger.In} Plan.Execute: ${sourceName}.${entityName}: ${JSON.stringify(entitySteps)}`)
+        Logger.Debug(`${Logger.In} Plan.Execute: ${planName}.${entityName}: ${JSON.stringify(entitySteps)}`)
 
-        const dtWorking = await Step.Execute(schemaName, sourceName, entityName, entitySteps)
+        const currentDatatable = await Step.Execute(undefined, planName, entityName, entitySteps)
 
         if (sqlQuery !== undefined) {
-            dtWorking.FreeSql(sqlQuery)
+            currentDatatable.FreeSql(sqlQuery)
         }
 
-        Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entityName}`)
+        Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entityName}`)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE_RESULT.SUCCESS,
             ...RESPONSE_STATUS.HTTP_200,
-            data: dtWorking
+            data: currentDatatable
         }
     }
 
-    static Reload(plan: string): TInternalResponse {
+    static Reload(planName: string): TInternalResponse {
         Logger.Debug(`${Logger.In} Plans.Reload`)
         const configFileRaw = Fs.readFileSync(Config.ConfigFilePath, 'utf8')
         const configFileJson: any = Yaml.load(configFileRaw)
 
         // check if plan exist
-        if (Config.Has(`plans.${plan}`) && _.has(configFileJson.plans, plan)) {
-            Config.Configuration.plans[plan] = configFileJson.plans[plan]
+        if (Config.Has(`plans.${planName}`) && _.has(configFileJson.plans, planName)) {
+            Config.Configuration.plans[planName] = configFileJson.plans[planName]
             return {
                 StatusCode: HTTP_STATUS_CODE.OK,
                 Body: {
-                    plan,
+                    plan: planName,
                     message: `Plan reloaded`
                 }
             }
@@ -476,7 +524,7 @@ export class Plan {
         return {
             StatusCode: HTTP_STATUS_CODE.NOT_FOUND,
             Body: {
-                plan,
+                plan: planName,
                 message: `Plan not found`
             }
         }

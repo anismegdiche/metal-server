@@ -3,8 +3,6 @@
 //
 //
 //
-import _ from 'lodash'
-//
 import { Logger } from "./Logger"
 
 
@@ -15,7 +13,11 @@ export class Helper {
     }
 
     static HasExpectedProperties(myObject: any, expectedProperties: string[]): boolean {
-        const commonProperties = _.intersection(Object.keys(myObject), expectedProperties)
-        return _.isEqual(commonProperties, expectedProperties)
+        for (const [key] of Object.entries(myObject)) {
+            if (!expectedProperties.includes(key)) {
+                return false
+            }
+        }
+        return true
     }
 }

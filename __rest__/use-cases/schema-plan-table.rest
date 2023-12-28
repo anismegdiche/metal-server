@@ -1,0 +1,37 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+
+###
+@token={{login.response.body.token}}
+
+###
+# @name northwind_order-countries
+GET http://localhost:3000/schema/northwind/order-countries
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name northwind_orders
+GET http://localhost:3000/schema/northwind/orders
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+
+###
+# @name northwind_customers
+GET http://localhost:3000/schema/northwind/customers
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name plan-order-countries_order-countries
+GET http://localhost:3000/schema/db-order-countries/order-countries
+Content-Type: application/json
+authorization: Bearer {{token}}

@@ -10,7 +10,7 @@ import { Helper } from "./Helper"
 
 export class TypeHelper {
     static IsSchemaRequest(schemaRequest: any): schemaRequest is TSchemaRequest {
-        if (schemaRequest?.schemaName && !schemaRequest?.entityName) {
+        if (schemaRequest?.schemaName !== undefined && !schemaRequest?.entityName) {
             return false
         }
         return Helper.HasExpectedProperties(schemaRequest, [

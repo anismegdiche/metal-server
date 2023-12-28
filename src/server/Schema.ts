@@ -63,10 +63,10 @@ export class Schema {
             entityName: schemaRoute.entityName,
             schemaRequest,
             CRUDFunction: async () => {
-                const source = schemaRoute.routeName
-                return await Source.Sources[source].Select({
+                const sourceName = schemaRoute.routeName
+                return await Source.Sources[sourceName].Select({
                     ...schemaRequest,
-                    sourceName: source
+                    sourceName
                 })
             }
         })
@@ -147,58 +147,65 @@ export class Schema {
 
     static GetRoute(schemaName: string, schemaConfig: any, entityName: string): TSchemaRoute {
 
-        const _emptySchemaRoute: TSchemaRoute = {
+        const nothingToDoSchemaRoute: TSchemaRoute = {
             type: 'nothing',
             routeName: ''
         }
 
-        // schema.entities
-        if (_.has(schemaConfig, 'entities')) {
-            const __schemaEntityConfig = _.get(schemaConfig.entities, entityName)
+        // schema.entities.<entity>
+        if (_.has(schemaConfig, `entities.${entityName}`)) {
+            const _schemaEntityConfig = _.get(schemaConfig.entities, entityName)
 
-            // schema.entities.<entity>.source
-            if (_.has(__schemaEntityConfig, 'source')) {
-                if (!Config.Configuration?.sources[__schemaEntityConfig.source]) {
+            if (_schemaEntityConfig === undefined) {
+                Logger.Warn(`Entity '${entityName}' not found in schema '${schemaName}'`)
+                return nothingToDoSchemaRoute
+            }
+
+            const { sourceName: _sourceName } = _schemaEntityConfig
+
+            // schema.entities.<entity>.sourceName
+            if (_sourceName) {
+                if (!Config.Has(`sources.${_sourceName}`)) {
                     Logger.Warn(`Source not found for entity '${entityName}'`)
-                    return _emptySchemaRoute
+                    return nothingToDoSchemaRoute
                 }
                 return {
                     type: 'source',
-                    routeName: __schemaEntityConfig.source,
+                    routeName: _sourceName,
                     entityName
                 }
             }
         }
 
-        // schema.source
-        if (_.has(schemaConfig, 'source')) {
-            if (!Config.Configuration?.sources[schemaConfig.source]) {
+        // schema.sourceName
+        if (schemaConfig?.sourceName) {
+            if (!Config.Has(`sources.${schemaConfig.sourceName}`)) {
                 Logger.Warn(`Source not found for schema '${schemaName}'`)
-                return _emptySchemaRoute
+                return nothingToDoSchemaRoute
             }
             return {
                 type: 'source',
-                routeName: schemaConfig.source,
+                routeName: schemaConfig.sourceName,
                 entityName
             }
         }
 
         Logger.Warn(`Nothing to do in the 'schemas' section`)
-        return _emptySchemaRoute
+        return nothingToDoSchemaRoute
     }
 
     //TODO: to migrate to GetRoute
     static GetSource(schemaConfig: any, schemaRequest: TSchemaRequest): string | undefined {
 
         //case entities
-        const entitySource = _.get(schemaConfig, `entities[${schemaRequest.entityName}].source`)
+        const entitySource = _.get(schemaConfig, `entities.${schemaRequest.entityName}.sourceName`)
         if (!_.isEmpty(entitySource) && Source.Sources[entitySource]) {
             return entitySource
         }
 
         // case source
-        const schemaSource = schemaConfig?.source
-        if (schemaSource && Config.Configuration?.sources[schemaSource]) {
+        const schemaSource = schemaConfig?.sourceName
+        if (schemaSource && Config.Has(`sources.${schemaSource}`)) {
             return schemaSource
         }
 
