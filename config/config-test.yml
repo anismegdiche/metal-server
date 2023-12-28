@@ -183,7 +183,7 @@ plans:
           schemaName: demo
           entityName: res_partner
           fields: id, name, display_name
-      - add-field:
+      - addField:
           name: quality
           type: integer
       - sort:

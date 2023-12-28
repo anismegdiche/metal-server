@@ -34,25 +34,25 @@ export class Step {
     static Options = new CommonSqlProviderOptions()
 
     static ExecuteCaseMap: Record<string, Function> = {
-        'debug': async (stepArguments: TStepArguments) => await Step.#Debug(stepArguments),
-        'select': async (stepArguments: TStepArguments) => await Step.#Select(stepArguments),
-        'update': async (stepArguments: TStepArguments) => await Step.#Update(stepArguments),
-        'delete': async (stepArguments: TStepArguments) => await Step.#Delete(stepArguments),
-        'insert': async (stepArguments: TStepArguments) => await Step.#Insert(stepArguments),
-        'join': async (stepArguments: TStepArguments) => await Step.#Join(stepArguments),
-        'fields': async (stepArguments: TStepArguments) => await Step.#Fields(stepArguments),
-        'sort': async (stepArguments: TStepArguments) => await Step.#Sort(stepArguments),
-        'run': async (stepArguments: TStepArguments) => await Step.#Run(stepArguments),
+        debug: async (stepArguments: TStepArguments) => await Step.#Debug(stepArguments),
+        select: async (stepArguments: TStepArguments) => await Step.#Select(stepArguments),
+        update: async (stepArguments: TStepArguments) => await Step.#Update(stepArguments),
+        delete: async (stepArguments: TStepArguments) => await Step.#Delete(stepArguments),
+        insert: async (stepArguments: TStepArguments) => await Step.#Insert(stepArguments),
+        join: async (stepArguments: TStepArguments) => await Step.#Join(stepArguments),
+        fields: async (stepArguments: TStepArguments) => await Step.#Fields(stepArguments),
+        sort: async (stepArguments: TStepArguments) => await Step.#Sort(stepArguments),
+        run: async (stepArguments: TStepArguments) => await Step.#Run(stepArguments),
         // TODO not tested
-        'add-field': async (stepArguments: TStepArguments) => await Step.#AddField(stepArguments)
+        addField: async (stepArguments: TStepArguments) => await Step.#AddField(stepArguments)
     }
 
     static JoinCaseMap: Record<string, Function> = {
-        'left': async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.LeftJoin(dtRight, leftFieldName, rightFieldName),
-        'right': async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.RightJoin(dtRight, leftFieldName, rightFieldName),
-        'inner': async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.InnerJoin(dtRight, leftFieldName, rightFieldName),
-        'full_outer': async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.FullOuterJoin(dtRight, leftFieldName, rightFieldName),
-        'cross': async (dtLeft: DataTable, dtRight: DataTable) => dtLeft.CrossJoin(dtRight)
+        left: async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.LeftJoin(dtRight, leftFieldName, rightFieldName),
+        right: async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.RightJoin(dtRight, leftFieldName, rightFieldName),
+        inner: async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.InnerJoin(dtRight, leftFieldName, rightFieldName),
+        fullOuter: async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.FullOuterJoin(dtRight, leftFieldName, rightFieldName),
+        cross: async (dtLeft: DataTable, dtRight: DataTable) => dtLeft.CrossJoin(dtRight)
     }
 
     static async Execute(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: TJson[]): Promise<DataTable> {
