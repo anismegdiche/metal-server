@@ -52,7 +52,7 @@ export class Config {
                     "port": {
                         type: "integer",
                         minimum: 1,
-                        maximum: 65535
+                        maximum: 65_535
                     },
                     "verbosity": {
                         type: "string",
@@ -86,7 +86,7 @@ export class Config {
                             "port": {
                                 type: "integer",
                                 minimum: 1,
-                                maximum: 65535
+                                maximum: 65_535
                             },
                             "user": { type: "string" },
                             "password": { type: "string" },
