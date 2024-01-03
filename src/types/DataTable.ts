@@ -205,7 +205,10 @@ export class DataTable {
         return this
     }
 
-    public FreeSql(sqlQuery: string): DataTable {
+    public FreeSql(sqlQuery: string | undefined): DataTable {
+        if (sqlQuery === undefined) {
+            return this
+        }
         alasql.options.errorlog = true
         alasql(`CREATE TABLE IF NOT EXISTS \`${this.Name}\``)
         alasql.tables[this.Name].data = this.Rows

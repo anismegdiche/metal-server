@@ -446,9 +446,7 @@ export class Plan {
 
             const currentDatatable = await Step.Execute(schemaName, sourceName, entityName, entitySteps)
 
-            if (sqlQuery !== undefined) {
-                currentDatatable.FreeSql(sqlQuery)
-            }
+            currentDatatable.FreeSql(sqlQuery)
 
             Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entityName}`)
             return <TSchemaResponseData>{
@@ -490,9 +488,7 @@ export class Plan {
 
         const currentDatatable = await Step.Execute(undefined, planName, entityName, entitySteps)
 
-        if (sqlQuery !== undefined) {
-            currentDatatable.FreeSql(sqlQuery)
-        }
+        currentDatatable.FreeSql(sqlQuery)
 
         Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entityName}`)
         return <TSchemaResponseData>{
