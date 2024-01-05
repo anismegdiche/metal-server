@@ -3,12 +3,12 @@
 //
 //
 //
-import _ from 'lodash'
 import { Logger } from '../lib/Logger'
 import { IAiEngine } from '../types/IAiEngine'
 import { TJson } from '../types/TJson'
+import { Helper } from '../lib/Helper'
+import { TAiEngineParams } from '../types/TAiEngineParams'
 //
-// import { SentimentAnalyzer } from 'node-nlp-typescript'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { SentimentAnalyzer, Language } = require('node-nlp')
 
@@ -17,22 +17,19 @@ export type TNlpJsSentimentOptions = {
 }
 
 export type TNlpJsGuessLangOptions = {
-	accept: string[]
+	accept: string[] | string
 	limit: number | undefined
 }
 
-export type TNlpJsOptions = TNlpJsSentimentOptions | TNlpJsGuessLangOptions
-
-
-export type TNlpJsEngineParams = {
+export type TNlpJsEngineParams = TAiEngineParams & {
 	model: "sentiment" | "guess-lang"
-	options: TNlpJsOptions
+	options: TNlpJsSentimentOptions | TNlpJsGuessLangOptions
 }
 
-
 export class NlpJs implements IAiEngine {
-	public EngineName = 'nlpjs'
-	public Name: string
+
+	public AiEngineName = 'nlpjs'
+	public InstanceName: string
 	public Model: string
 	public Options: TJson
 
@@ -49,39 +46,37 @@ export class NlpJs implements IAiEngine {
 	}
 
 	#SetDefaultOptions: Record<string, Function> = {
-		sentiment: (options: Partial<TNlpJsSentimentOptions> = {}) => NlpJs.#SentimentSetDefaultOptions(options),
+		sentiment: (options: Partial<TNlpJsSentimentOptions> = {}) => NlpJs.#SentimentAnalyzeSetDefaultOptions(options),
 		"guess-lang": (options: Partial<TNlpJsGuessLangOptions> = {}) => NlpJs.#GuessLanguageSetDefaultOptions(options)
 	}
 
-	constructor(aiEngineName: string, aiEngineParams: TNlpJsEngineParams) {
-		this.Name = aiEngineName
+	constructor(aiEngineInstanceName: string, aiEngineParams: TNlpJsEngineParams) {
+		this.InstanceName = aiEngineInstanceName
 		this.Model = aiEngineParams.model
-		this.Options = this.#SetDefaultOptions[this.Model](aiEngineParams.options)
+		this.Options = this.#SetDefaultOptions[this.Model](aiEngineParams.options) || Helper.CaseMapNotFound(this.Model)
 	}
 
 	async Init(): Promise<void> {
-		this.#Model = this.#LoadModel[this.Model as string]()
+		this.#Model = await this.#LoadModel[this.Model]()
 	}
 
 	async Run(text: string): Promise<any> {
-		try {
-			const _model = this.Model as string
-			return await this.#RunModel[_model](text)
-		} catch (error) {
-			Logger.Error(`NlpJs.Run '${this.Name}': '${JSON.stringify(this.Options)}',Text= '${text}'`)
-			Logger.Error(error)
-			return undefined
-		}
+		return await this.#RunModel[this.Model](text)
+			.catch((error: any) => {
+				Logger.Error(`NlpJs.Run '${this.InstanceName}': '${JSON.stringify(this.Options)}',Text= '${text}'`)
+				Logger.Error(error)
+				return undefined
+			})
 	}
 
 	async #SentimentAnalyze(text: string) {
 		return await this.#Model.getSentiment(text)
 	}
 
-	static #SentimentSetDefaultOptions(options: Partial<TNlpJsSentimentOptions>): TNlpJsSentimentOptions {
+	static #SentimentAnalyzeSetDefaultOptions(aiEngineOptions: Partial<TNlpJsSentimentOptions>): TNlpJsSentimentOptions {
 		return {
 			lang: 'en',
-			...options
+			...aiEngineOptions
 		}
 	}
 
@@ -89,15 +84,15 @@ export class NlpJs implements IAiEngine {
 		return await this.#Model.guess(text, this.Options.accept, this.Options.limit)
 	}
 
-	static #GuessLanguageSetDefaultOptions(options: Partial<TNlpJsGuessLangOptions>): TNlpJsGuessLangOptions {
-		const _options: TNlpJsGuessLangOptions = {
+	static #GuessLanguageSetDefaultOptions(aiEngineOptions: Partial<TNlpJsGuessLangOptions>): TNlpJsGuessLangOptions {
+		const options: TNlpJsGuessLangOptions = {
 			accept: ['en'],
 			limit: 1,
-			...options
+			...aiEngineOptions
 		}
-		if (_.isString(_options.accept)) {
-			_options.accept = _.split(_options.accept, ',')
+		if (typeof options.accept === "string") {
+			options.accept = options.accept.split(',')
 		}
-		return _options
+		return options
 	}
 }

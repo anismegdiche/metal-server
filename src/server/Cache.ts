@@ -9,7 +9,7 @@ import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
 import { TCacheData } from '../types/TCacheData'
 import { TSchemaRequest } from '../types/TSchemaRequest'
-import { TSchemaResponse, TSchemaResponseData, TTransaction } from '../types/TSchemaResponse'
+import { TSchemaResponse, TSchemaResponseData, TRANSACTION } from '../types/TSchemaResponse'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { IProvider } from '../types/IProvider'
@@ -73,7 +73,7 @@ export class Cache {
                         entityName: schemaRequest.entityName,
                         hash,
                         expires,
-                        schemaRequest: schemaRequest,
+                        schemaRequest,
                         datatable: dt
                     }
                 ]
@@ -129,7 +129,7 @@ export class Cache {
     static async View(): Promise<TInternalResponse> {
         Logger.Debug(`${Logger.In} Cache.View`)
         let schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(Cache.#GetSchemaRequest())
-        schemaResponse.transaction = TTransaction.cache_data
+        schemaResponse.transaction = TRANSACTION.CACHE_DATA
         const intRes: TInternalResponse = {
             StatusCode: schemaResponse.status,
             Body: {

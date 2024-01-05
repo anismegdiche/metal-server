@@ -38,7 +38,7 @@ export class Config {
         EnableAuthentication: false      // enable/disable authentication
     }
 
-    static #Schemas: any = {
+    static #ConfigSchema: any = {
         id: "/",
         type: "object",
         properties: {
@@ -215,7 +215,7 @@ export class Config {
         Logger.Debug('Config.Validate')
         const yamlValidator = new Validator()
 
-        const errors = yamlValidator.validate(this.Configuration, this.#Schemas).errors
+        const errors = yamlValidator.validate(this.Configuration, this.#ConfigSchema).errors
 
         if (errors.length <= 0) {
             return

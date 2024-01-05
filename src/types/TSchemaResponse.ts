@@ -8,24 +8,24 @@ import { HTTP_STATUS_CODE } from "../lib/Const"
 import { DataTable } from "./DataTable"
 
 
-export enum TTransaction {
-    select = "select",
-    update = "update",
-    insert = "insert",
-    delete = "delete",
-    plan = "plan",
-    cache_data = "cache data",
-    cache_purge = "cache purge",
-    cache_clean = "cache clean"
+export enum TRANSACTION {
+    SELECT = "select",
+    UPDATE = "update",
+    INSERT = "insert",
+    DELETE = "delete",
+    PLAN = "plan",
+    CACHE_DATA = "cache data",
+    CACHE_PURGE = "cache purge",
+    CACHE_CLEAN = "cache clean"
 }
 
-type TTransactionData = TTransaction.select
-    | TTransaction.plan
-    | TTransaction.cache_data
+type TTransactionData = TRANSACTION.SELECT
+    | TRANSACTION.PLAN
+    | TRANSACTION.CACHE_DATA
 
-type TTransactionNoData = TTransaction.delete | TTransaction.insert | TTransaction.select | TTransaction.update
-    | TTransaction.plan
-    | TTransaction.cache_clean | TTransaction.cache_data | TTransaction.cache_purge
+type TTransactionNoData = TRANSACTION.DELETE | TRANSACTION.INSERT | TRANSACTION.SELECT | TRANSACTION.UPDATE
+    | TRANSACTION.PLAN
+    | TRANSACTION.CACHE_CLEAN | TRANSACTION.CACHE_DATA | TRANSACTION.CACHE_PURGE
 
 type TTransactionError = TTransactionNoData
 

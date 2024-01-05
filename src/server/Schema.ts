@@ -55,7 +55,7 @@ export class Schema {
         Logger.Debug(`Schema.Select: ${JSON.stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
-        const schemaConfig = Config.Get(`schemas.${schemaName}`)
+        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
         const schemaRoute = Schema.GetRoute(schemaName, schemaConfig, entityName)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
@@ -76,7 +76,7 @@ export class Schema {
         Logger.Debug(`Schema.Delete: ${JSON.stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
-        const schemaConfig = Config.Get(`schemas.${schemaName}`)
+        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
         const schemaRoute = Schema.GetRoute(schemaName, schemaConfig, entityName)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
@@ -96,7 +96,7 @@ export class Schema {
         Logger.Debug(`Schema.Update: ${JSON.stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
-        const schemaConfig = Config.Get(`schemas.${schemaName}`)
+        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
         const schemaRoute = Schema.GetRoute(schemaName, schemaConfig, entityName)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{

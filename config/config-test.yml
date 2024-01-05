@@ -113,9 +113,9 @@ ai-engines:
     engine: tesseractjs
     # model: eng
 
-  object: # Tested
+  image-classify: # Tested
     engine: tensorflowjs
-    model: object
+    model: image-classify
 
   sentiment: # Tested
     engine: nlpjs
@@ -164,7 +164,7 @@ plans:
             confidence: ocr_confidence
             text: ocr_text
       - run: # TESTED
-          ai: object
+          ai: image-classify
           input: img
           output:
             class: object

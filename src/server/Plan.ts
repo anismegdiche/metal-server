@@ -374,7 +374,7 @@ export class Step {
         }
 
         for await (const [_rowIndex, _rowData] of stepArguments.currentDataTable.Rows.entries()) {
-            const __result = <Record<string, any>>(await AiEngine.Engine[ai].Run(<string>_rowData[input]))
+            const __result = <Record<string, any>>(await AiEngine.AiEngine[ai].Run(<string>_rowData[input]))
             if (__result) {
                 // check if output is empty
                 if (_.isNil(output) || _.isEmpty(output)) {

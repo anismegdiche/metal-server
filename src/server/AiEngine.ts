@@ -6,48 +6,46 @@
 //
 import { Logger } from '../lib/Logger'
 import { Config } from '../server/Config'
-import { TJson } from '../types/TJson'
+import { Helper } from '../lib/Helper'
 import { IAiEngine } from '../types/IAiEngine'
+import { TAiEngineParams } from '../types/TAiEngineParams'
 // AI Engines
-import { TesseractJs } from '../ai-engine/TesseractJs'
-import { TensorFlowJs } from '../ai-engine/TensorFlowJs'
+import { TTesseractJsEngineParams, TesseractJs } from '../ai-engine/TesseractJs'
+import { TTensorFlowJsEngineParams, TensorFlowJs } from '../ai-engine/TensorFlowJs'
 import { NlpJs, TNlpJsEngineParams } from '../ai-engine/NlpJs'
 
 
 export class AiEngine {
 
-    public static EngineConfiguration: Record<string, TJson> = {}
-    public static Engine: Record<string, IAiEngine> = {}
+    public static AiEngineConfigurations: Record<string, TAiEngineParams> = {}
+    public static AiEngine: Record<string, IAiEngine> = {}
 
-    static #NewAiEngine: Record<string, Function> = {
-        'tesseractjs': (aiEngineName: string, AiEngineParams: TJson) => new TesseractJs(aiEngineName, AiEngineParams),
-        'tensorflowjs': (aiEngineName: string, AiEngineParams: TJson) => new TensorFlowJs(aiEngineName, AiEngineParams),
-        'nlpjs': (aiEngineName: string, AiEngineParams: TNlpJsEngineParams) => new NlpJs(aiEngineName, AiEngineParams)
+    static #NewAiEngineTypeCaseMap: Record<string, Function> = {
+        'tesseractjs': (aiEngineInstanceName: string, AiEngineParams: TTesseractJsEngineParams) => new TesseractJs(aiEngineInstanceName, AiEngineParams),
+        'tensorflowjs': (aiEngineInstanceName: string, AiEngineParams: TTensorFlowJsEngineParams) => new TensorFlowJs(aiEngineInstanceName, AiEngineParams),
+        'nlpjs': (aiEngineInstanceName: string, AiEngineParams: TNlpJsEngineParams) => new NlpJs(aiEngineInstanceName, AiEngineParams)
     }
 
     static async Init(): Promise<void> {
-        AiEngine.EngineConfiguration = Config.Get("ai-engines")
+        AiEngine.AiEngineConfigurations = Config.Get("ai-engines")
     }
 
     static async CreateAll(): Promise<void> {
-        for (const _aiEngineName in AiEngine.EngineConfiguration) {
-            const _AiEngineParams = AiEngine.EngineConfiguration[_aiEngineName]
-            AiEngine.Create(_aiEngineName, _AiEngineParams)
-        }
+        await Promise.all(
+            Object.entries(AiEngine.AiEngineConfigurations).map(async ([aiEngineInstanceName, aiEngineParams]) => {
+                await AiEngine.Create(aiEngineInstanceName, aiEngineParams)
+            })
+        )
     }
 
-    static async Create(aiEngineName: string, AiEngineParams: TJson): Promise<void> {
-        Logger.Debug(`${Logger.In} Starting '${aiEngineName}' with params '${JSON.stringify(AiEngineParams)}'`)
-        const engine = AiEngineParams?.engine as string ?? undefined
-        if (!engine) {
-            return
-        }
-        AiEngine.Engine[aiEngineName] = AiEngine.#NewAiEngine[engine](aiEngineName, AiEngineParams)
-        await AiEngine.Engine[aiEngineName].Init()
-        Logger.Debug(`${Logger.Out} AI Engine '${aiEngineName}' created`)
+    static async Create(aiEngineInstanceName: string, AiEngineParams: TAiEngineParams): Promise<void> {
+        Logger.Debug(`${Logger.In} Starting '${aiEngineInstanceName}' with params '${JSON.stringify(AiEngineParams)}'`)
+        AiEngine.AiEngine[aiEngineInstanceName] = AiEngine.#NewAiEngineTypeCaseMap[AiEngineParams.engine](aiEngineInstanceName, AiEngineParams) || Helper.CaseMapNotFound(AiEngineParams.engine)
+        await AiEngine.AiEngine[aiEngineInstanceName].Init()
+        Logger.Debug(`${Logger.Out} AI Engine '${aiEngineInstanceName}' created`)
     }
 
-    static async Run(aiEngineName: string, input: string) {
-        return await AiEngine.Engine[aiEngineName].Run(input)
+    static async Run(aiEngineInstanceName: string, input: string) {
+        return await AiEngine.AiEngine[aiEngineInstanceName].Run(input)
     }
 }

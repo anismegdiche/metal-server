@@ -12,18 +12,20 @@ describe('TensorFlowJs', () => {
 
 	beforeAll(async () => {
 		jest.clearAllMocks()
-		tfjs = new TensorFlowJs('image-classification', { model: 'object' })
+		tfjs = new TensorFlowJs('image-classification', {
+			model: 'image-classify'
+		})
 		await tfjs.Init()
 	}, 120000)
 
 	it('should initialize correctly', async () => {
-		expect(tfjs.EngineName).toBe('tensorflowjs')
-		expect(tfjs.Name).toBe('image-classification')
-		expect(tfjs.Options.Model).toBe('object')
-		expect(tfjs.Options.Threshold).toBe(0.9)
+		expect(tfjs.AiEngineName).toBe('tensorflowjs')
+		expect(tfjs.InstanceName).toBe('image-classification')
+		expect(tfjs.Model).toBe('image-classify')
+		expect(tfjs.Options?.threshold).toBe(0.9)
 	})
 
-	it('should run object detection successfully', async () => {
+	it('should run image classification successfully', async () => {
 		const result: any = await tfjs.Run(IMG_GUITAR)
 		const resultWOProbability = {
 			class: _.map(result.class, obj => _.omit(obj, 'probability'))
