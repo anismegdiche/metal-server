@@ -12,23 +12,14 @@ import { Logger } from '../lib/Logger'
 import { IAiEngine } from '../types/IAiEngine'
 import { TJson } from '../types/TJson'
 import { Helper } from '../lib/Helper'
-import { TAiEngineParams } from '../types/TAiEngineParams'
 // TensorFlow
 import * as Tf from '@tensorflow/tfjs'
 import * as MobileNet from '@tensorflow-models/mobilenet'
+import { AI_ENGINE, TConfigAiEngineTensorFlowJsImageClassifyOptions, TENSORFLOW_JS_MODEL } from '../server/Config'
 
-
-export type TTensorFlowJsImageClassifyOptions = {
-	threshold?: number
-}
-
-export type TTensorFlowJsEngineParams = TAiEngineParams & {
-	model: "image-classify"
-	options: TTensorFlowJsImageClassifyOptions
-}
 
 export class TensorFlowJs implements IAiEngine {
-	public AiEngineName = 'tensorflowjs'
+	public AiEngineName = AI_ENGINE.TENSORFLOW_JS
 	public InstanceName: string
 	public Model: string
 	public Options: TJson
@@ -36,28 +27,28 @@ export class TensorFlowJs implements IAiEngine {
 	#Model?: MobileNet.MobileNet = undefined
 
 	#LoadModel: Record<string, Function> = {
-		"image-classify": async () => await MobileNet.load()
+		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: async () => await MobileNet.load()
 	}
 
 	#RunModel: Record<string, Function> = {
-		"image-classify": async (imagePath: string) => await this.#ImageClassify(imagePath)
+		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: async (imagePath: string) => await this.#ImageClassify(imagePath)
 	}
 
 	#SetDefaultOptions: Record<string, Function> = {
-		"image-classify": (options: Partial<TTensorFlowJsImageClassifyOptions> = {}) => TensorFlowJs.#ImageClassifySetDefaultOptions(options)
+		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: (options: Partial<TConfigAiEngineTensorFlowJsImageClassifyOptions> = {}) => TensorFlowJs.#ImageClassifySetDefaultOptions(options)
 	}
 
-	static #ImageClassifySetDefaultOptions(aiEngineOptions: Partial<TTensorFlowJsImageClassifyOptions>): TTensorFlowJsImageClassifyOptions {
+	static #ImageClassifySetDefaultOptions(aiEngineConfigOptions: Partial<TConfigAiEngineTensorFlowJsImageClassifyOptions>): TConfigAiEngineTensorFlowJsImageClassifyOptions {
 		return {
 			threshold: 0.9,
-			...aiEngineOptions
+			...aiEngineConfigOptions
 		}
 	}
 
-	constructor(aiEngineInstanceName: string, aiEngineParams: any) {
+	constructor(aiEngineInstanceName: string, aiEngineConfig: any) {
 		this.InstanceName = aiEngineInstanceName
-		this.Model = aiEngineParams.model
-		this.Options = this.#SetDefaultOptions[this.Model](aiEngineParams.options) || Helper.CaseMapNotFound(this.Model)
+		this.Model = aiEngineConfig.model
+		this.Options = this.#SetDefaultOptions[this.Model](aiEngineConfig.options) || Helper.CaseMapNotFound(this.Model)
 		Tf.setBackend('cpu')
 	}
 

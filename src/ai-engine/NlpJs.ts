@@ -7,28 +7,14 @@ import { Logger } from '../lib/Logger'
 import { IAiEngine } from '../types/IAiEngine'
 import { TJson } from '../types/TJson'
 import { Helper } from '../lib/Helper'
-import { TAiEngineParams } from '../types/TAiEngineParams'
+import { TConfigAiEngineNlpJsSentimentOptions, TConfigAiEngineNlpJsGuessLangOptions, TConfigAiEngineNlpJs, NLP_JS_MODEL, AI_ENGINE } from '../server/Config'
 //
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { SentimentAnalyzer, Language } = require('node-nlp')
 
-export type TNlpJsSentimentOptions = {
-	lang: string
-}
-
-export type TNlpJsGuessLangOptions = {
-	accept: string[] | string
-	limit: number | undefined
-}
-
-export type TNlpJsEngineParams = TAiEngineParams & {
-	model: "sentiment" | "guess-lang"
-	options: TNlpJsSentimentOptions | TNlpJsGuessLangOptions
-}
-
 export class NlpJs implements IAiEngine {
 
-	public AiEngineName = 'nlpjs'
+	public AiEngineName = AI_ENGINE.NLP_JS
 	public InstanceName: string
 	public Model: string
 	public Options: TJson
@@ -36,24 +22,24 @@ export class NlpJs implements IAiEngine {
 	#Model?: typeof SentimentAnalyzer | typeof Language = undefined
 
 	#LoadModel: Record<string, Function> = {
-		sentiment: () => new SentimentAnalyzer({ language: this.Options.Lang }),
-		"guess-lang": () => new Language()
+		[NLP_JS_MODEL.SENTIMENT]: () => new SentimentAnalyzer({ language: this.Options.Lang }),
+		[NLP_JS_MODEL.GUESS_LANG]: () => new Language()
 	}
 
 	#RunModel: Record<string, Function> = {
-		sentiment: async (text: string) => await this.#SentimentAnalyze(text),
-		"guess-lang": async (text: string) => await this.#GuessLanguage(text)
+		[NLP_JS_MODEL.SENTIMENT]: async (text: string) => await this.#SentimentAnalyze(text),
+		[NLP_JS_MODEL.GUESS_LANG]: async (text: string) => await this.#GuessLanguage(text)
 	}
 
 	#SetDefaultOptions: Record<string, Function> = {
-		sentiment: (options: Partial<TNlpJsSentimentOptions> = {}) => NlpJs.#SentimentAnalyzeSetDefaultOptions(options),
-		"guess-lang": (options: Partial<TNlpJsGuessLangOptions> = {}) => NlpJs.#GuessLanguageSetDefaultOptions(options)
+		[NLP_JS_MODEL.SENTIMENT]: (options: Partial<TConfigAiEngineNlpJsSentimentOptions> = {}) => NlpJs.#SentimentAnalyzeSetDefaultOptions(options),
+		[NLP_JS_MODEL.GUESS_LANG]: (options: Partial<TConfigAiEngineNlpJsGuessLangOptions> = {}) => NlpJs.#GuessLanguageSetDefaultOptions(options)
 	}
 
-	constructor(aiEngineInstanceName: string, aiEngineParams: TNlpJsEngineParams) {
+	constructor(aiEngineInstanceName: string, aiEngineConfig: TConfigAiEngineNlpJs) {
 		this.InstanceName = aiEngineInstanceName
-		this.Model = aiEngineParams.model
-		this.Options = this.#SetDefaultOptions[this.Model](aiEngineParams.options) || Helper.CaseMapNotFound(this.Model)
+		this.Model = aiEngineConfig.model
+		this.Options = this.#SetDefaultOptions[this.Model](aiEngineConfig.options) || Helper.CaseMapNotFound(this.Model)
 	}
 
 	async Init(): Promise<void> {
@@ -73,10 +59,10 @@ export class NlpJs implements IAiEngine {
 		return await this.#Model.getSentiment(text)
 	}
 
-	static #SentimentAnalyzeSetDefaultOptions(aiEngineOptions: Partial<TNlpJsSentimentOptions>): TNlpJsSentimentOptions {
+	static #SentimentAnalyzeSetDefaultOptions(aiEngineConfigOptions: Partial<TConfigAiEngineNlpJsSentimentOptions>): TConfigAiEngineNlpJsSentimentOptions {
 		return {
 			lang: 'en',
-			...aiEngineOptions
+			...aiEngineConfigOptions
 		}
 	}
 
@@ -84,11 +70,11 @@ export class NlpJs implements IAiEngine {
 		return await this.#Model.guess(text, this.Options.accept, this.Options.limit)
 	}
 
-	static #GuessLanguageSetDefaultOptions(aiEngineOptions: Partial<TNlpJsGuessLangOptions>): TNlpJsGuessLangOptions {
-		const options: TNlpJsGuessLangOptions = {
+	static #GuessLanguageSetDefaultOptions(aiEngineConfigOptions: Partial<TConfigAiEngineNlpJsGuessLangOptions>): TConfigAiEngineNlpJsGuessLangOptions {
+		const options: TConfigAiEngineNlpJsGuessLangOptions = {
 			accept: ['en'],
 			limit: 1,
-			...aiEngineOptions
+			...aiEngineConfigOptions
 		}
 		if (typeof options.accept === "string") {
 			options.accept = options.accept.split(',')

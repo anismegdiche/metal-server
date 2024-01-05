@@ -1,3 +1,4 @@
+import { AI_ENGINE } from '../../server/Config'
 import { TesseractJs } from '../TesseractJs'
 
 const TEST_TIMEOUT = 120000
@@ -15,7 +16,7 @@ describe('TesseractJs', () => {
             const image = 'https://tesseract.projectnaptha.com/img/eng_bw.png'
 
             const _tesseractJs = new TesseractJs(name, {
-                engine: "tesseractjs",
+                engine: AI_ENGINE.TESSERACT_JS,
                 model: "eng"
             })
             await _tesseractJs.Init()

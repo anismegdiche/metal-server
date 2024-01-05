@@ -1,7 +1,8 @@
 //
 //
 //
-import { NlpJs, TNlpJsEngineParams } from '../NlpJs'
+import { NlpJs } from '../NlpJs'
+import { TConfigAiEngineNlpJs } from '../../server/Config'
 
 describe('NlpJs', () => {
 	beforeAll(async () => {
@@ -10,7 +11,7 @@ describe('NlpJs', () => {
 
 	it('should run sentiment analysis', async () => {
 		const name = 'sentiment-analyzer'
-		const params = <TNlpJsEngineParams>{
+		const params = <TConfigAiEngineNlpJs>{
 			model: 'sentiment',
 			options: {
 				lang: 'en'
@@ -37,7 +38,7 @@ describe('NlpJs', () => {
 
 	it('should return the language code when given a text', async () => {
 		const name = 'lang-guesser'
-		const params = <TNlpJsEngineParams>{
+		const params = <TConfigAiEngineNlpJs>{
 			model: 'guess-lang',
 			options: {
 				accept: ['fr', 'en'],

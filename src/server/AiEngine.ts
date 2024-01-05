@@ -5,25 +5,25 @@
 //
 //
 import { Logger } from '../lib/Logger'
-import { Config } from '../server/Config'
+import { AI_ENGINE, Config, TConfigAiEngineNlpJs, TConfigAiEngineTensorFlowJs, TConfigAiEngineTesseractJs } from '../server/Config'
 import { Helper } from '../lib/Helper'
 import { IAiEngine } from '../types/IAiEngine'
-import { TAiEngineParams } from '../types/TAiEngineParams'
+import { TConfigAiEngineDefault } from './Config'
 // AI Engines
-import { TTesseractJsEngineParams, TesseractJs } from '../ai-engine/TesseractJs'
-import { TTensorFlowJsEngineParams, TensorFlowJs } from '../ai-engine/TensorFlowJs'
-import { NlpJs, TNlpJsEngineParams } from '../ai-engine/NlpJs'
+import { TesseractJs } from '../ai-engine/TesseractJs'
+import { TensorFlowJs } from '../ai-engine/TensorFlowJs'
+import { NlpJs } from '../ai-engine/NlpJs'
 
 
 export class AiEngine {
 
-    public static AiEngineConfigurations: Record<string, TAiEngineParams> = {}
+    public static AiEngineConfigurations: Record<string, TConfigAiEngineDefault> = {}
     public static AiEngine: Record<string, IAiEngine> = {}
 
     static #NewAiEngineTypeCaseMap: Record<string, Function> = {
-        'tesseractjs': (aiEngineInstanceName: string, AiEngineParams: TTesseractJsEngineParams) => new TesseractJs(aiEngineInstanceName, AiEngineParams),
-        'tensorflowjs': (aiEngineInstanceName: string, AiEngineParams: TTensorFlowJsEngineParams) => new TensorFlowJs(aiEngineInstanceName, AiEngineParams),
-        'nlpjs': (aiEngineInstanceName: string, AiEngineParams: TNlpJsEngineParams) => new NlpJs(aiEngineInstanceName, AiEngineParams)
+        [AI_ENGINE.TESSERACT_JS]: (aiEngineInstanceName: string, AiEngineParams: TConfigAiEngineTesseractJs) => new TesseractJs(aiEngineInstanceName, AiEngineParams),
+        [AI_ENGINE.TENSORFLOW_JS]: (aiEngineInstanceName: string, AiEngineParams: TConfigAiEngineTensorFlowJs) => new TensorFlowJs(aiEngineInstanceName, AiEngineParams),
+        [AI_ENGINE.NLP_JS]: (aiEngineInstanceName: string, AiEngineParams: TConfigAiEngineNlpJs) => new NlpJs(aiEngineInstanceName, AiEngineParams)
     }
 
     static async Init(): Promise<void> {
@@ -38,7 +38,7 @@ export class AiEngine {
         )
     }
 
-    static async Create(aiEngineInstanceName: string, AiEngineParams: TAiEngineParams): Promise<void> {
+    static async Create(aiEngineInstanceName: string, AiEngineParams: TConfigAiEngineDefault): Promise<void> {
         Logger.Debug(`${Logger.In} Starting '${aiEngineInstanceName}' with params '${JSON.stringify(AiEngineParams)}'`)
         AiEngine.AiEngine[aiEngineInstanceName] = AiEngine.#NewAiEngineTypeCaseMap[AiEngineParams.engine](aiEngineInstanceName, AiEngineParams) || Helper.CaseMapNotFound(AiEngineParams.engine)
         await AiEngine.AiEngine[aiEngineInstanceName].Init()

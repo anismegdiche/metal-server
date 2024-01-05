@@ -8,22 +8,18 @@ import { IAiEngine } from "../types/IAiEngine"
 //
 import { Tesseract } from "tesseract.ts"
 import { Page } from 'tesseract.js'
-
-export type TTesseractJsEngineParams = {
-    engine: string
-    model: string
-}
+import { AI_ENGINE, TConfigAiEngineTesseractJs } from '../server/Config'
 
 export class TesseractJs implements IAiEngine {
 
-    public AiEngineName = "tesseractjs"
+    public AiEngineName = AI_ENGINE.TESSERACT_JS
     public InstanceName: string
     // OCR lang
     public Model: string
 
-    constructor(aiEngineInstanceName: string, aiEngineParams: TTesseractJsEngineParams) {
+    constructor(aiEngineInstanceName: string, aiEngineConfig: TConfigAiEngineTesseractJs) {
         this.InstanceName = aiEngineInstanceName
-        this.Model = aiEngineParams.model ?? "eng"
+        this.Model = aiEngineConfig?.model ?? "eng"
     }
 
     // eslint-disable-next-line class-methods-use-this

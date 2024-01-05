@@ -19,6 +19,66 @@ import { Cache } from '../server/Cache'
 import { User } from './User'
 import { AiEngine } from './AiEngine'
 
+//
+//  config types
+//
+
+// // ai-engine
+export enum AI_ENGINE {
+    NLP_JS = "nlpjs",
+    TENSORFLOW_JS = "tensorflowjs",
+    TESSERACT_JS = "tesseractjs"
+}
+
+export type TConfigAiEngineDefault = {
+    engine: AI_ENGINE.NLP_JS | AI_ENGINE.TENSORFLOW_JS | AI_ENGINE.TESSERACT_JS
+    model: string
+    options: TJson
+}
+
+// // // nlpjs
+export enum NLP_JS_MODEL {
+    SENTIMENT = "sentiment",
+    GUESS_LANG = "guess-lang"
+}
+
+export type TConfigAiEngineNlpJsSentimentOptions = {
+    lang: string
+}
+
+export type TConfigAiEngineNlpJsGuessLangOptions = {
+    accept: string[] | string
+    limit: number | undefined
+}
+
+export type TConfigAiEngineNlpJs = TConfigAiEngineDefault & {
+    model: NLP_JS_MODEL.SENTIMENT | NLP_JS_MODEL.GUESS_LANG
+    options: TConfigAiEngineNlpJsSentimentOptions | TConfigAiEngineNlpJsGuessLangOptions
+}
+
+
+// // // tesseractjs
+export type TConfigAiEngineTesseractJs = Partial<TConfigAiEngineDefault> & {
+    model: string
+}
+
+// // // tensorflowjs
+export enum TENSORFLOW_JS_MODEL {
+    IMAGE_CLASSIFY = "image-classify"
+}
+
+export type TConfigAiEngineTensorFlowJsImageClassifyOptions = {
+    threshold?: number
+}
+
+export type TConfigAiEngineTensorFlowJs = TConfigAiEngineDefault & {
+    model: "image-classify"
+    options: TConfigAiEngineTensorFlowJsImageClassifyOptions
+}
+
+//
+//
+//
 
 export class Config {
 
@@ -128,7 +188,7 @@ export class Config {
                         properties: {
                             "engine": {
                                 type: "string",
-                                enum: ["tesseractjs", "tensorflowjs", "nlpjs"]
+                                enum: [AI_ENGINE.NLP_JS, AI_ENGINE.TENSORFLOW_JS, AI_ENGINE.TESSERACT_JS]
                             },
                             "model": { type: "string" },
                             "options": {
@@ -242,3 +302,4 @@ export class Config {
         return _.get(Config.Configuration, element)
     }
 }
+
