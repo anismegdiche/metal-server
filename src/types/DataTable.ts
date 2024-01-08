@@ -164,7 +164,8 @@ export class DataTable {
     }
 
     public GetFieldNames(): string[] {
-        return Object.keys(this.Fields)
+        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+        return _.keys(this.Fields)
     }
 
     public PrefixAllFields(prefix: string): DataTable {

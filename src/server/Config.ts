@@ -11,74 +11,13 @@ import _ from 'lodash'
 import * as dotenv from 'dotenv'
 import { Validator } from 'jsonschema'
 //
-import { Logger, DefaultLevel } from '../lib/Logger'
 import { TJson } from '../types/TJson'
-import { Source } from './Source'
+import { Logger, DefaultLevel } from '../lib/Logger'
 import { Schedule } from './Schedule'
 import { Cache } from '../server/Cache'
 import { User } from './User'
-import { AiEngine } from './AiEngine'
-
-//
-//  config types
-//
-
-// // ai-engine
-export enum AI_ENGINE {
-    NLP_JS = "nlpjs",
-    TENSORFLOW_JS = "tensorflowjs",
-    TESSERACT_JS = "tesseractjs"
-}
-
-export type TConfigAiEngineDefault = {
-    engine: AI_ENGINE.NLP_JS | AI_ENGINE.TENSORFLOW_JS | AI_ENGINE.TESSERACT_JS
-    model: string
-    options: TJson
-}
-
-// // // nlpjs
-export enum NLP_JS_MODEL {
-    SENTIMENT = "sentiment",
-    GUESS_LANG = "guess-lang"
-}
-
-export type TConfigAiEngineNlpJsSentimentOptions = {
-    lang: string
-}
-
-export type TConfigAiEngineNlpJsGuessLangOptions = {
-    accept: string[] | string
-    limit: number | undefined
-}
-
-export type TConfigAiEngineNlpJs = TConfigAiEngineDefault & {
-    model: NLP_JS_MODEL.SENTIMENT | NLP_JS_MODEL.GUESS_LANG
-    options: TConfigAiEngineNlpJsSentimentOptions | TConfigAiEngineNlpJsGuessLangOptions
-}
-
-
-// // // tesseractjs
-export type TConfigAiEngineTesseractJs = Partial<TConfigAiEngineDefault> & {
-    model: string
-}
-
-// // // tensorflowjs
-export enum TENSORFLOW_JS_MODEL {
-    IMAGE_CLASSIFY = "image-classify"
-}
-
-export type TConfigAiEngineTensorFlowJsImageClassifyOptions = {
-    threshold?: number
-}
-
-export type TConfigAiEngineTensorFlowJs = TConfigAiEngineDefault & {
-    model: "image-classify"
-    options: TConfigAiEngineTensorFlowJsImageClassifyOptions
-}
-
-//
-//
-//
+import PROVIDER, { Source } from './Source'
+import { AI_ENGINE, AiEngine } from './AiEngine'
 
 export class Config {
 
@@ -140,7 +79,8 @@ export class Config {
                         properties: {
                             "provider": {
                                 type: "string",
-                                enum: ["plan", "postgres", "mongodb", "mssql"]
+                                // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                                enum: _.values(PROVIDER)
                             },
                             "host": { type: "string" },
                             "port": {
@@ -188,7 +128,8 @@ export class Config {
                         properties: {
                             "engine": {
                                 type: "string",
-                                enum: [AI_ENGINE.NLP_JS, AI_ENGINE.TENSORFLOW_JS, AI_ENGINE.TESSERACT_JS]
+                                // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                                enum: _.values(AI_ENGINE)
                             },
                             "model": { type: "string" },
                             "options": {

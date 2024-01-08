@@ -118,13 +118,15 @@ export class SqlQueryHelper {
         if (Array.isArray(data) && data.length > 0) {
             this.Query = `${this.Query} VALUES`
             data.forEach((_values, _index) => {
-                this.Query = `${this.Query} ('${Object.values(_values).join('\',\'')}')`
+                // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                this.Query = `${this.Query} ('${_.values(_values).join('\',\'')}')`
                 if (_index < data.length - 1) {
                     this.Query = `${this.Query}, `
                 }
             })
         } else {
-            this.Query = `${this.Query} VALUES ('${Object.values(data).join('\',\'')}')`
+            // eslint-disable-next-line you-dont-need-lodash-underscore/values
+            this.Query = `${this.Query} VALUES ('${_.values(data).join('\',\'')}')`
         }
         return this
     }

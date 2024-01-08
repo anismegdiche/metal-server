@@ -18,11 +18,11 @@ import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
 import { CommonSqlProviderOptions } from './CommonSqlProvider'
-import { Source } from '../server/Source'
+import PROVIDER, { Source } from '../server/Source'
 
 
 export class Postgres implements IProvider.IProvider {
-    public ProviderName = 'postgres'
+    public ProviderName = PROVIDER.POSTGRES
     public SourceName: string
     public Params: TSourceParams = <TSourceParams>{}
     public Primitive = Pool

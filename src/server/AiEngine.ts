@@ -5,25 +5,82 @@
 //
 //
 import { Logger } from '../lib/Logger'
-import { AI_ENGINE, Config, TConfigAiEngineNlpJs, TConfigAiEngineTensorFlowJs, TConfigAiEngineTesseractJs } from '../server/Config'
+import { Config } from '../server/Config'
 import { Helper } from '../lib/Helper'
+import { TJson } from '../types/TJson'
 import { IAiEngine } from '../types/IAiEngine'
-import { TConfigAiEngineDefault } from './Config'
 // AI Engines
 import { TesseractJs } from '../ai-engine/TesseractJs'
 import { TensorFlowJs } from '../ai-engine/TensorFlowJs'
 import { NlpJs } from '../ai-engine/NlpJs'
 
+//
+//  config types
+//
+export enum AI_ENGINE {
+    NLP_JS = "nlpjs",
+    TENSORFLOW_JS = "tensorflowjs",
+    TESSERACT_JS = "tesseractjs"
+}
 
+// export default AI_ENGINE
+
+export type TConfigAiEngineDefault = {
+    engine: AI_ENGINE
+    model: string
+    options: TJson
+}
+
+// nlpjs
+export enum NLP_JS_MODEL {
+    SENTIMENT = "sentiment",
+    GUESS_LANG = "guess-lang"
+}
+
+export type TConfigAiEngineNlpJsSentimentOptions = {
+    lang: string
+}
+
+export type TConfigAiEngineNlpJsGuessLangOptions = {
+    accept: string[] | string
+    limit: number | undefined
+}
+
+export type TConfigAiEngineNlpJs = TConfigAiEngineDefault & {
+    model: NLP_JS_MODEL
+    options: TConfigAiEngineNlpJsSentimentOptions | TConfigAiEngineNlpJsGuessLangOptions
+}
+
+// tesseractjs
+export type TConfigAiEngineTesseractJs = Partial<TConfigAiEngineDefault> & {
+    model: string
+}
+
+// tensorflowjs
+export enum TENSORFLOW_JS_MODEL {
+    IMAGE_CLASSIFY = "image-classify"
+}
+
+export type TConfigAiEngineTensorFlowJsImageClassifyOptions = {
+    threshold?: number
+}
+
+export type TConfigAiEngineTensorFlowJs = TConfigAiEngineDefault & {
+    model: TENSORFLOW_JS_MODEL
+    options: TConfigAiEngineTensorFlowJsImageClassifyOptions
+}
+//
+//
+//
 export class AiEngine {
 
-    public static AiEngineConfigurations: Record<string, TConfigAiEngineDefault> = {}
-    public static AiEngine: Record<string, IAiEngine> = {}
+    static AiEngineConfigurations: Record<string, TConfigAiEngineDefault> = {}
+    static AiEngine: Record<string, IAiEngine> = {}
 
-    static #NewAiEngineTypeCaseMap: Record<string, Function> = {
-        [AI_ENGINE.TESSERACT_JS]: (aiEngineInstanceName: string, AiEngineParams: TConfigAiEngineTesseractJs) => new TesseractJs(aiEngineInstanceName, AiEngineParams),
-        [AI_ENGINE.TENSORFLOW_JS]: (aiEngineInstanceName: string, AiEngineParams: TConfigAiEngineTensorFlowJs) => new TensorFlowJs(aiEngineInstanceName, AiEngineParams),
-        [AI_ENGINE.NLP_JS]: (aiEngineInstanceName: string, AiEngineParams: TConfigAiEngineNlpJs) => new NlpJs(aiEngineInstanceName, AiEngineParams)
+    static #NewAiEngineTypeCaseMap: Record<AI_ENGINE, Function> = {
+        [AI_ENGINE.TESSERACT_JS]: (aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineTesseractJs) => new TesseractJs(aiEngineInstanceName, AiEngineConfig),
+        [AI_ENGINE.TENSORFLOW_JS]: (aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineTensorFlowJs) => new TensorFlowJs(aiEngineInstanceName, AiEngineConfig),
+        [AI_ENGINE.NLP_JS]: (aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineNlpJs) => new NlpJs(aiEngineInstanceName, AiEngineConfig)
     }
 
     static async Init(): Promise<void> {
@@ -38,9 +95,13 @@ export class AiEngine {
         )
     }
 
-    static async Create(aiEngineInstanceName: string, AiEngineParams: TConfigAiEngineDefault): Promise<void> {
-        Logger.Debug(`${Logger.In} Starting '${aiEngineInstanceName}' with params '${JSON.stringify(AiEngineParams)}'`)
-        AiEngine.AiEngine[aiEngineInstanceName] = AiEngine.#NewAiEngineTypeCaseMap[AiEngineParams.engine](aiEngineInstanceName, AiEngineParams) || Helper.CaseMapNotFound(AiEngineParams.engine)
+    static async Create(aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineDefault): Promise<void> {
+        Logger.Debug(`${Logger.In} Starting '${aiEngineInstanceName}' with params '${JSON.stringify(AiEngineConfig)}'`)
+        if (!(AiEngineConfig.engine in AiEngine.#NewAiEngineTypeCaseMap)) {
+            Logger.Error(`Unknown engine type: ${AiEngineConfig.engine}`)
+            return
+        }
+        AiEngine.AiEngine[aiEngineInstanceName] = AiEngine.#NewAiEngineTypeCaseMap[AiEngineConfig.engine](aiEngineInstanceName, AiEngineConfig) || Helper.CaseMapNotFound(AiEngineConfig.engine)
         await AiEngine.AiEngine[aiEngineInstanceName].Init()
         Logger.Debug(`${Logger.Out} AI Engine '${aiEngineInstanceName}' created`)
     }

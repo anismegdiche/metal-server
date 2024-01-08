@@ -7,7 +7,7 @@ import { Logger } from '../lib/Logger'
 import { IAiEngine } from '../types/IAiEngine'
 import { TJson } from '../types/TJson'
 import { Helper } from '../lib/Helper'
-import { TConfigAiEngineNlpJsSentimentOptions, TConfigAiEngineNlpJsGuessLangOptions, TConfigAiEngineNlpJs, NLP_JS_MODEL, AI_ENGINE } from '../server/Config'
+import { AI_ENGINE, TConfigAiEngineNlpJsSentimentOptions, TConfigAiEngineNlpJsGuessLangOptions, TConfigAiEngineNlpJs, NLP_JS_MODEL } from '../server/AiEngine'
 //
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { SentimentAnalyzer, Language } = require('node-nlp')

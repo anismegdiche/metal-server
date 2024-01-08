@@ -69,8 +69,10 @@ export class Step {
             }
 
             try {
-                const __stepCommand: string = Object.keys(<object>step)[0]
-                const __stepParams: TJson = Object.values(<object>step)[0]
+                // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+                const __stepCommand: string = _.keys(<object>step)[0]
+                // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                const __stepParams: TJson = _.values(<object>step)[0]
 
                 if (__stepCommand === 'break') {
                     Logger.Info(`Step.Execute '${currentPlanName}': user break at step '${_stepIndex}', ${JSON.stringify(step)}`)
@@ -335,8 +337,10 @@ export class Step {
         const stepParams = stepArguments.stepParams as Record<string, TOrder>
         const currentDataTable = stepArguments.currentDataTable
 
-        const fields = Object.keys(stepParams)
-        const orders: TOrder[] = Object.values(stepParams)
+        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+        const fields = _.keys(stepParams)
+        // eslint-disable-next-line you-dont-need-lodash-underscore/values
+        const orders: TOrder[] = _.values(stepParams)
 
         return currentDataTable.Sort(fields, orders)
     }

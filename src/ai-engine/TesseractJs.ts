@@ -8,7 +8,7 @@ import { IAiEngine } from "../types/IAiEngine"
 //
 import { Tesseract } from "tesseract.ts"
 import { Page } from 'tesseract.js'
-import { AI_ENGINE, TConfigAiEngineTesseractJs } from '../server/Config'
+import { AI_ENGINE, TConfigAiEngineTesseractJs } from '../server/AiEngine'
 
 export class TesseractJs implements IAiEngine {
 

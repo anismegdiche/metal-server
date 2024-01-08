@@ -15,7 +15,7 @@ import { Helper } from '../lib/Helper'
 // TensorFlow
 import * as Tf from '@tensorflow/tfjs'
 import * as MobileNet from '@tensorflow-models/mobilenet'
-import { AI_ENGINE, TConfigAiEngineTensorFlowJsImageClassifyOptions, TENSORFLOW_JS_MODEL } from '../server/Config'
+import { AI_ENGINE, TConfigAiEngineTensorFlowJsImageClassifyOptions, TENSORFLOW_JS_MODEL } from '../server/AiEngine'
 
 
 export class TensorFlowJs implements IAiEngine {

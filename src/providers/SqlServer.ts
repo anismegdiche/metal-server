@@ -17,11 +17,11 @@ import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Logger } from '../lib/Logger'
 import { Cache } from '../server/Cache'
 import { CommonSqlProviderOptions } from './CommonSqlProvider'
-import { Source } from '../server/Source'
+import PROVIDER, { Source } from '../server/Source'
 
 
 export class SqlServer implements IProvider.IProvider {
-    public ProviderName = 'sqlserver'
+    public ProviderName = PROVIDER.MSSQL
     public SourceName: string
     public Params: TSourceParams = <TSourceParams>{}
     public Primitive = mssql

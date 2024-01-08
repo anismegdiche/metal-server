@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 //
 //
 //
@@ -19,7 +20,7 @@ import { TJson } from "../types/TJson"
 import { DataTable } from "../types/DataTable"
 import { Logger } from "../lib/Logger"
 import { Cache } from '../server/Cache'
-import { Source } from '../server/Source'
+import PROVIDER, { Source } from '../server/Source'
 
 
 class MongoDbOptions implements IProvider.IProviderOptions {
@@ -118,7 +119,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
 
 
 export class MongoDb implements IProvider.IProvider {
-    public ProviderName = 'mongodb'
+    public ProviderName = PROVIDER.MONGODB
     public SourceName: string
     public Params: TSourceParams = <TSourceParams>{}
     public Primitive = mongodb.MongoClient

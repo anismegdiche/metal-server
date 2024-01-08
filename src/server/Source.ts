@@ -8,39 +8,50 @@ import { Cache } from './Cache'
 import { Config } from './Config'
 import { IProvider } from '../types/IProvider'
 import { TSourceParams } from '../types/TSourceParams'
+import { RESPONSE } from '../lib/Const'
+import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
 // Providers
 import { Postgres } from '../providers/Postgres'
 import { MongoDb } from '../providers/MongoDb'
 import { SqlServer } from '../providers/SqlServer'
 import { PlanProvider } from '../providers/PlanProvider'
-import { RESPONSE } from '../lib/Const'
-import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
-
-
-const NewSourceCaseMap: Record<string, Function> = {
-    'plan': (source: string, sourceParams: TSourceParams) => new PlanProvider(source, sourceParams),
-    'postgres': (source: string, sourceParams: TSourceParams) => new Postgres(source, sourceParams),
-    'mongodb': (source: string, sourceParams: TSourceParams) => new MongoDb(source, sourceParams),
-    'mssql': (source: string, sourceParams: TSourceParams) => new SqlServer(source, sourceParams)
+//
+//  config types
+//
+enum PROVIDER {
+    PLAN = "plan",
+    POSTGRES = "postgres",
+    MONGODB = "mongodb",
+    MSSQL = "mssql"
 }
-
+export default PROVIDER
+//
+//
+//
 export class Source {
 
     // global sources
     public static Sources: Record<string, IProvider> = {}
 
+    static #NewSourceCaseMap: Record<PROVIDER, Function> = {
+        [PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanProvider(source, sourceParams),
+        [PROVIDER.POSTGRES]: (source: string, sourceParams: TSourceParams) => new Postgres(source, sourceParams),
+        [PROVIDER.MONGODB]: (source: string, sourceParams: TSourceParams) => new MongoDb(source, sourceParams),
+        [PROVIDER.MSSQL]: (source: string, sourceParams: TSourceParams) => new SqlServer(source, sourceParams)
+    }
+
     static async Connect(source: string | null, sourceParams: TSourceParams): Promise<void> {
-        if (!(sourceParams.provider in NewSourceCaseMap)) {
+        if (!(sourceParams.provider in Source.#NewSourceCaseMap)) {
             Logger.Error(`Source '${source}', Provider '${sourceParams.provider}' not found. The source will not be connected`)
             return
         }
 
         if (source === null) {
             // cache
-            Cache.CacheSource = NewSourceCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
+            Cache.CacheSource = Source.#NewSourceCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
         } else {
             // sources
-            Source.Sources[source] = NewSourceCaseMap[sourceParams.provider](source, sourceParams)
+            Source.Sources[source] = Source.#NewSourceCaseMap[sourceParams.provider](source, sourceParams)
         }
     }
 
@@ -69,6 +80,6 @@ export class Source {
             ...schemaResponse,
             ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
             ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
-        }        
+        }
     }
 }
