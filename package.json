@@ -22,7 +22,7 @@
     "@tensorflow/tfjs": "^4.9.0",
     "@tensorflow/tfjs-core": "^4.9.0",
     "alasql": "^4.2.3",
-    "axios": "^1.6.3",
+    "axios": "^1.6.5",
     "bcrypt": "^5.1.1",
     "chalk": "^4.1.2",
     "cron": "^3.1.6",
