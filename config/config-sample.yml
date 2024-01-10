@@ -100,11 +100,11 @@ schemas:
   sch-etl1:
     sourceName: plan-etl1
 
-# schedules:
-#   run entity contact of my etl1 plan:
-#     plan: etl1
-#     entityName: aitest
-#     cron: "*/5 * * * * *"
+schedules:
+  run entity contact of my etl1 plan:
+    planName: etl1
+    entityName: contact
+    cron: "* */5 * * * *"
 
 ai-engines:
   ocr:

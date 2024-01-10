@@ -102,7 +102,7 @@ schemas:
 
 # schedules:
 #   run my plan:
-#     plan: etl1
+#     planName: etl1
 #     entityName: contact
 #     cron: "*/5 * * * * *"
 #     onsuccess: # ROADMAP
