@@ -100,12 +100,6 @@ schemas:
   sch-etl1:
     sourceName: plan-etl1
 
-schedules:
-  run entity contact of my etl1 plan:
-    planName: etl1
-    entityName: contact
-    cron: "* */5 * * * *"
-
 ai-engines:
   ocr:
     engine: tesseractjs
@@ -178,55 +172,3 @@ plans:
           ai: guess-lang
           input: ocr_text
           output:
-
-    contact:
-      - debug:
-      - select:
-          schemaName: demo
-          entityName: res_partner
-          fields: id, name, display_name
-      - addField:
-          name: quality
-          type: integer
-      - sort:
-          id:
-      - update:
-          filterExpression: "id < 10"
-          data:
-            name: "AAA"
-            display_name: "BBB"
-      - delete:
-          filterExpression: "id >= 100"
-      - insert:
-          data:
-            name: John
-            display_name: Mr. John Doe
-      # - bad-step-test3: "***TEST***"
-
-    login:
-      - debug:
-      - select:
-          schemaName: demo
-          entityName: res_users
-          fields: login, partner_id
-      # - bad-step-test1: "***TEST***"
-      # - break: step by step test
-      - join:
-          type: left
-          entityName: contact
-          leftField: partner_id
-          rightField: id
-      - fields: id, name, login
-      # - debug:
-      - sort:
-          login: asc
-          name: desc
-      # - bad-step-test2: "***TEST***"
-      - insert:
-          schemaName: demo
-          entityName: res_users
-      - delete:
-          schemaName: demo
-          entityName: res_users
-          filter:
-            lang: fr_FR
