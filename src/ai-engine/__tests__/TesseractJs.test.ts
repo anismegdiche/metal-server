@@ -1,4 +1,4 @@
-import { AI_ENGINE } from '../../server/AiEngine'
+import { AI_ENGINE, TESSERACT_JS_MODEL } from '../../server/AiEngine'
 import { TesseractJs } from '../TesseractJs'
 
 const TEST_TIMEOUT = 120000
@@ -17,7 +17,7 @@ describe('TesseractJs', () => {
 
             const _tesseractJs = new TesseractJs(name, {
                 engine: AI_ENGINE.TESSERACT_JS,
-                model: "eng"
+                model: TESSERACT_JS_MODEL.ENG
             })
             await _tesseractJs.Init()
 
