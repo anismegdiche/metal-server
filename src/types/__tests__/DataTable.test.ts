@@ -473,5 +473,158 @@ describe("DataTable", () => {
         })
     })
 
-    //
+    describe('FreeSql', () => {
+
+        // Executes a valid SQL query and returns a DataTable object with updated Rows and Fields properties
+        it('should execute valid SQL query and update Rows and Fields properties', async () => {
+            // Arrange
+            const myDataTable = new DataTable("myTable")
+            myDataTable.Set([
+                {
+                    id: 1,
+                    name: "John"
+                },
+                {
+                    id: 2,
+                    name: "Jane"
+                }
+            ])
+            const sqlQuery = "SELECT * FROM myTable WHERE id = 1"
+
+            // Act
+            const result = await myDataTable.FreeSql(sqlQuery)
+
+            // Assert
+            expect(result).toBeInstanceOf(DataTable)
+            expect(result.Rows).toEqual([
+                {
+                    id: 1,
+                    name: "John"
+                }
+            ])
+            expect(result.Fields).toEqual({
+                id: "number",
+                name: "string"
+            })
+        })
+
+        it('should execute valid SQL query with no results and return DataTable object with empty Rows and Fields', async () => {
+            // Arrange
+            const myDataTable = new DataTable("myTable")
+            myDataTable.Set([
+                {
+                    id: 1,
+                    name: "John"
+                },
+                {
+                    id: 2,
+                    name: "Jane"
+                }
+            ])
+            const sqlQuery = "SELECT * FROM myTable WHERE id = 3"
+
+            // Act
+            const result = await myDataTable.FreeSql(sqlQuery)
+
+            // Assert
+            expect(result).toBeInstanceOf(DataTable)
+            expect(result.Rows).toEqual([])
+            expect(result.Fields).toEqual({})
+        })
+
+        // Executes a valid SQL query with no input Rows and returns a DataTable object with empty Rows and updated Fields properties
+        it('should execute valid SQL query with no input Rows and return DataTable object with empty Rows and updated Fields properties', async () => {
+            // Arrange
+            const myDataTable = new DataTable("myTable")
+            const sqlQuery = "SELECT * FROM myTable"
+
+            // Act
+            const result = await myDataTable.FreeSql(sqlQuery)
+
+            // Assert
+            expect(result).toBeInstanceOf(DataTable)
+            expect(result.Rows).toEqual([])
+            expect(result.Fields).toEqual({})
+        })
+
+        // Executes an invalid SQL query and throws an error
+        it('should execute invalid SQL query and return same Datatable', async () => {
+            // Arrange
+            const myDataTable = new DataTable("myTable")
+            const sqlQuery = "INVALID QUERY"
+
+            // Act
+            const result = await myDataTable.FreeSql(sqlQuery)
+
+            // Assert
+            expect(result).toBeInstanceOf(DataTable)
+            expect(result.Rows).toEqual([])
+            expect(result.Fields).toEqual({})
+        })
+
+        // Executes a SQL query with a syntax error and throws an error
+        it('should execute SQL query with syntax error and throw an error', async () => {
+            // Arrange
+            const myDataTable = new DataTable("myTable")
+            const sqlQuery = "SELECT * FROM myTable WHERE id = 1"
+
+            // Act
+            const result = await myDataTable.FreeSql(sqlQuery)
+
+            // Assert
+            expect(result).toBeInstanceOf(DataTable)
+            expect(result.Rows).toEqual([])
+            expect(result.Fields).toEqual({})
+        })
+
+        // Executes a SQL query with a semantic error and throws an error
+        it('should execute SQL query with semantic error and throw an error', async () => {
+            // Arrange
+            const myDataTable = new DataTable("myTable")
+            const sqlQuery = "SELECT * FROM nonExistentTable"
+
+            // Act
+            const result = await myDataTable.FreeSql(sqlQuery)
+
+            // Assert
+            expect(result).toBeInstanceOf(DataTable)
+            expect(result.Rows).toEqual([])
+            expect(result.Fields).toEqual({})
+        })
+
+        it('should execute insert data', async () => {
+            // Arrange
+            const myDataTable = new DataTable("myTable")
+            myDataTable.Set([
+                {
+                    id: 1,
+                    name: "John"
+                },
+                {
+                    id: 2,
+                    name: "Jane"
+                }
+            ])
+            const sqlQuery = "INSERT INTO img2class() VALUES ('John'),  ('June'),  ('Jane')"
+
+            // Act
+            const result = await myDataTable.FreeSql(sqlQuery)
+
+            // Assert
+            expect(result).toBeInstanceOf(DataTable)
+            expect(result.Rows).toEqual([
+                {
+                    id: 1,
+                    name: "John"
+                }, {
+                    id: 2,
+                    name: "Jane"
+                }
+            ])
+            expect(result.Fields).toEqual({
+                id: "number",
+                name: "string"
+            })
+        })
+    })
 })

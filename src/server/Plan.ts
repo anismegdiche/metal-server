@@ -87,7 +87,7 @@ export class Step {
                 }
 
                 currentDataTable = await Step.ExecuteCaseMap[__stepCommand](_stepArguments) || Helper.CaseMapNotFound(__stepCommand)
-
+                Logger.Debug(`***** ${JSON.stringify(currentDataTable)}`)
             } catch (error: unknown) {
                 const _error = <Error>error
                 Logger.Error(`Step.Execute '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`)
@@ -144,7 +144,7 @@ export class Step {
                 .Where(options.Filter)
                 .Query
 
-            return currentDataTable.FreeSql(sqlQuery)
+            return await currentDataTable.FreeSql(sqlQuery)
         }
 
         return currentDataTable
@@ -163,7 +163,7 @@ export class Step {
         const { schemaName, entityName, data } = schemaRequest
         let { currentDataTable } = stepArguments
 
-        if (!data && !currentDataTable.Rows.length) {
+        if (!data && currentDataTable.Rows.length == 0) {
             Logger.Error(`Step.Insert: no data to insert ${JSON.stringify(stepArguments.stepParams)}`)
             throw new Error(`No data to insert ${JSON.stringify(stepArguments.stepParams)}`)
         }
@@ -188,13 +188,7 @@ export class Step {
 
         // case no schema and no entity --> use current datatable
         if (!schemaName && !entityName) {
-            const sqlQuery = new SqlQueryHelper()
-                .Insert(currentDataTable.Name)
-                .Fields(currentDataTable.GetFieldNames())
-                .Values(data)
-                .Query
-
-            currentDataTable.FreeSql(sqlQuery)
+            currentDataTable.AddRows(data)
         }
 
         return currentDataTable
@@ -239,7 +233,7 @@ export class Step {
                 .Where(_options.Filter)
                 .Query
 
-            currentDataTable.FreeSql(_sqlQuery)
+            await currentDataTable.FreeSql(_sqlQuery)
         }
 
         return currentDataTable
@@ -279,7 +273,7 @@ export class Step {
                 .Where(_options.Filter)
                 .Query
 
-            currentDataTable.FreeSql(_sqlQuery)
+            await currentDataTable.FreeSql(_sqlQuery)
         }
 
         return currentDataTable
@@ -364,7 +358,7 @@ export class Step {
             name: string
             type: string
         }
-        stepArguments.currentDataTable.AddField(name, type)
+        await stepArguments.currentDataTable.AddField(name, type)
         return stepArguments.currentDataTable
     }
 
@@ -450,7 +444,7 @@ export class Plan {
 
             const currentDatatable = await Step.Execute(schemaName, sourceName, entityName, entitySteps)
 
-            currentDatatable.FreeSql(sqlQuery)
+            await currentDatatable.FreeSql(sqlQuery)
 
             Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entityName}`)
             return <TSchemaResponseData>{
@@ -492,7 +486,7 @@ export class Plan {
 
         const currentDatatable = await Step.Execute(undefined, planName, entityName, entitySteps)
 
-        currentDatatable.FreeSql(sqlQuery)
+        await currentDatatable.FreeSql(sqlQuery)
 
         Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entityName}`)
         return <TSchemaResponseData>{

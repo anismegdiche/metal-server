@@ -8,6 +8,7 @@ import _ from 'lodash'
 const alasql = require('alasql')
 //
 import { TJson } from './TJson'
+import { Logger } from '../lib/Logger'
 
 export type TRow = TJson
 export type TRows = TRow[]
@@ -200,27 +201,42 @@ export class DataTable {
     }
 
     // TODO not tested
-    public AddField(fieldName: string, fieldType: string): DataTable {
-        this.FreeSql(`ALTER TABLE \`${this.Name}\` ADD COLUMN \`${fieldName}\` ${fieldType}`)
+    public async AddField(fieldName: string, fieldType: string): Promise<DataTable> {
+        await this.FreeSql(`ALTER TABLE \`${this.Name}\` ADD COLUMN \`${fieldName}\` ${fieldType}`)
         this.SetField(fieldName, fieldType)
         return this
     }
 
-    public FreeSql(sqlQuery: string | undefined): DataTable {
+    public async FreeSql(sqlQuery: string | undefined): Promise<DataTable> {
         if (sqlQuery === undefined) {
             return this
         }
+
         alasql.options.errorlog = true
+
         alasql(`CREATE TABLE IF NOT EXISTS \`${this.Name}\``)
+
         alasql.tables[this.Name].data = this.Rows
-        const _result = alasql(sqlQuery)
 
-        this.Rows = (typeof _result === 'object')
-            ? this.Rows = _result
-            : alasql.tables[this.Name].data
+        try {
+            const _result = await alasql.promise(sqlQuery)
+                .then((r: any) => {
+                    return r
+                })
+                .catch((error: any) => {
+                    throw error
+                })
 
+            this.Rows = (typeof _result === 'object')
+                ? _result
+                : alasql.tables[this.Name].data
+
+        } catch (error: any) {
+            Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
+        }
         return this.SetFields()
     }
+
 
     public LeftJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string): DataTable {
         this.Rows = alasql(`
@@ -293,14 +309,22 @@ export class DataTable {
         return this
     }
 
-    public AddRow(row: TJson | undefined = undefined): DataTable {
-        if (row) {
-            this.Rows = [
+    public AddRows(row: TJson | TJson[] | undefined = undefined): DataTable {
+        if (!row) {
+            return this
+        }
+
+        // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
+        this.Rows = _.isArray(row)
+            ? [
+                ...this.Rows,
+                ...row
+            ]
+            : [
                 ...this.Rows,
                 row
             ]
-            this.SetFields()
-        }
-        return this
+
+        return this.SetFields()
     }
 }

@@ -26,13 +26,13 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        dtWorking.AddField("name", "string")
-        dtWorking.AddField("age", "number")
-        dtWorking.AddRow({
+        await dtWorking.AddField("name", "string")
+        await dtWorking.AddField("age", "number")
+        dtWorking.AddRows({
             name: "John",
             age: 25
         })
-        dtWorking.AddRow({
+        dtWorking.AddRows({
             name: "Jane",
             age: 30
         })
@@ -88,13 +88,13 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        dtWorking.AddField("name", "string")
-        dtWorking.AddField("age", "number")
-        dtWorking.AddRow({
+        await dtWorking.AddField("name", "string")
+        await dtWorking.AddField("age", "number")
+        dtWorking.AddRows({
             name: "John",
             age: 25
         })
-        dtWorking.AddRow({
+        dtWorking.AddRows({
             name: "Jane",
             age: 30
         })
@@ -144,13 +144,13 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        dtWorking.AddField("name", "string")
-        dtWorking.AddField("age", "number")
-        dtWorking.AddRow({
+        await dtWorking.AddField("name", "string")
+        await dtWorking.AddField("age", "number")
+        dtWorking.AddRows({
             name: "John",
             age: 25
         })
-        dtWorking.AddRow({
+        dtWorking.AddRows({
             name: "Jane",
             age: 30
         })
@@ -199,13 +199,13 @@ describe('Step', () => {
 
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
-        dtWorking.AddField("name", "string")
-        dtWorking.AddField("age", "number")
-        dtWorking.AddRow({
+        await dtWorking.AddField("name", "string")
+        await dtWorking.AddField("age", "number")
+        dtWorking.AddRows({
             name: "John",
             age: 25
         })
-        dtWorking.AddRow({
+        dtWorking.AddRows({
             name: "Jane",
             age: 30
         })
@@ -250,13 +250,13 @@ describe('Step', () => {
 
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
-        dtWorking.AddField("name", "string")
-        dtWorking.AddField("age", "number")
-        dtWorking.AddRow({
+        await dtWorking.AddField("name", "string")
+        await dtWorking.AddField("age", "number")
+        dtWorking.AddRows({
             name: "John",
             age: 25
         })
-        dtWorking.AddRow({
+        dtWorking.AddRows({
             name: "Jane",
             age: 30
         })
@@ -304,13 +304,13 @@ describe('Step', () => {
 
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
-        dtWorking.AddField("name", "string")
-        dtWorking.AddField("age", "number")
-        dtWorking.AddRow({
+        await dtWorking.AddField("name", "string")
+        await dtWorking.AddField("age", "number")
+        dtWorking.AddRows({
             name: "John",
             age: 25
         })
-        dtWorking.AddRow({
+        dtWorking.AddRows({
             name: "Jane",
             age: 30
         })
@@ -359,13 +359,13 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        dtWorking.AddField("name", "string")
-        dtWorking.AddField("age", "number")
-        dtWorking.AddRow({
+        await dtWorking.AddField("name", "string")
+        await dtWorking.AddField("age", "number")
+        dtWorking.AddRows({
             name: "John",
             age: 25
         })
-        dtWorking.AddRow({
+        dtWorking.AddRows({
             name: "Jane",
             age: 30
         })
@@ -414,26 +414,26 @@ describe('Step', () => {
         // Mock the DataTable objects
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        dtWorking.AddField("user_id", "number")
-        dtWorking.AddField("name", "string")
-        dtWorking.AddRow({
+        await dtWorking.AddField("user_id", "number")
+        await dtWorking.AddField("name", "string")
+        dtWorking.AddRows({
             user_id: 1,
             name: "John"
         })
-        dtWorking.AddRow({
+        dtWorking.AddRows({
             user_id: 2,
             name: "Jane"
         })
 
         const dtRight = new DataTable("orders")
         dtRight.Name = "orders"
-        dtRight.AddField("id", "number")
-        dtRight.AddField("order_number", "string")
-        dtRight.AddRow({
+        await dtRight.AddField("id", "number")
+        await dtRight.AddField("order_number", "string")
+        dtRight.AddRows({
             id: 1,
             order_number: "123"
         })
-        dtRight.AddRow({
+        dtRight.AddRows({
             id: 2,
             order_number: "456"
         })
@@ -480,13 +480,13 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        dtWorking.AddField("name", "string")
-        dtWorking.AddField("age", "number")
-        dtWorking.AddRow({
+        await dtWorking.AddField("name", "string")
+        await dtWorking.AddField("age", "number")
+        dtWorking.AddRows({
             name: "John",
             age: 25
         })
-        dtWorking.AddRow({
+        dtWorking.AddRows({
             name: "Jane",
             age: 30
         })
@@ -530,13 +530,13 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "myEntity"
-        dtWorking.AddField("field1", "string")
-        dtWorking.AddField("field2", "number")
-        dtWorking.AddRow({
+        await dtWorking.AddField("field1", "string")
+        await dtWorking.AddField("field2", "number")
+        dtWorking.AddRows({
             field1: "value1",
             field2: 10
         })
-        dtWorking.AddRow({
+        dtWorking.AddRows({
             field1: "value2",
             field2: 20
         })
