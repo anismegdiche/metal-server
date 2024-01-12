@@ -2,10 +2,8 @@ version: "0.1"
 server:
   port: 3000
   verbosity: debug
-  timezone: UTC # ROADMAP: set TZ for jobs
+  timezone: UTC
   authentication:
-    # provider: local # ROADMAP select other providers
-    # enable_multiple_login: true | false  # ROADMAP enable/disable multiple login per user
   request-limit: 100mb
   cache:
     provider: mongodb
@@ -51,19 +49,6 @@ sources:
     provider: plan
     plan: etl1
 
-  # input:  #ROADMAP
-  #   provider: file
-  #   directory: ./input
-  #   map: name
-
-  # metal_cache:
-  #   provider: mongodb
-  #   host: mongodb://localhost:27017/
-  #   database: metal_cache
-  #   options:
-  #     connectTimeoutMS: 5000
-  #     serverSelectionTimeoutMS: 5000
-
 schemas:
   hr:
     sourceName: mssql
@@ -93,20 +78,6 @@ schemas:
 
   etl1:
     sourceName: plan-etl1
-
-  file1:
-    sourceName: input
-
-  # cache:
-  #   sourceName: metal_cache
-
-# schedules:
-#   run my plan:
-#     planName: etl1
-#     entityName: contact
-#     cron: "*/5 * * * * *"
-#     onsuccess: # ROADMAP
-#     onfailure: # ROADMAP
 
 ai-engines:
   ocr: # Tested
@@ -223,7 +194,6 @@ plans:
       - insert:
           schemaName: demo
           entityName: res_users
-        #   auto_create: true # ROADMAP: Auto create table
       - delete:
           schemaName: demo
           entityName: res_users
