@@ -12,10 +12,7 @@ Content-Type: application/json
 @token={{login.response.body.token}}
 
 ###
-@plan=aiplan
-
-###
 # @name get-plan
-GET http://localhost:3000/schema/{{plan}}/img2class
+GET http://localhost:3000/schema/aiplan/img2class
 Content-Type: application/json
 authorization: Bearer {{token}}
