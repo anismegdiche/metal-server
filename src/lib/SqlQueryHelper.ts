@@ -81,7 +81,7 @@ export class SqlQueryHelper {
         }
 
         let _fieldsValues: TRow = <TRow>{}
-        _fieldsValues = (_.isArray(fieldsValues))
+        _fieldsValues = (Array.isArray(fieldsValues))
             ? <TRow>(_.head(fieldsValues))
             : fieldsValues
 

@@ -133,7 +133,7 @@ export class DataTable {
         this.Name = name
 
         if (rows) {
-            if (_.isArray(rows)) {
+            if (Array.isArray(rows)) {
                 this.Set(rows)
             } else {
                 this.Set(_.castArray(rows))
@@ -296,15 +296,14 @@ export class DataTable {
         return this
     }
 
-    public AddRows(newRow: TJson | TJson[] | undefined = undefined): this {
-        if (!newRow) {
+    public AddRows(newRows: TJson | TJson[] | undefined = undefined): this {
+        if (!newRows) {
             return this
         }
 
-        // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
-        this.Rows = _.isArray(newRow)
-            ? [...this.Rows, ...newRow]
-            : [...this.Rows, newRow]
+        this.Rows = Array.isArray(newRows)
+            ? [...this.Rows, ...newRows]
+            : [...this.Rows, newRows]
 
         return this.SetFields()
     }
