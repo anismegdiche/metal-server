@@ -158,12 +158,6 @@ export class DataTable {
         return this
     }
 
-    // TODO not tested
-    public SetField(fieldName: string, type: string): this {
-        this.Fields[fieldName] = SqlToJsType[type] || 'unknown'
-        return this
-    }
-
     public GetFieldNames(): string[] {
         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         return _.keys(this.Fields)
@@ -198,13 +192,6 @@ export class DataTable {
             }
         }
         return this.SetFields()
-    }
-
-    // TODO not tested
-    public async AddField(fieldName: string, fieldType: string): Promise<this> {
-        await this.FreeSql(`ALTER TABLE \`${this.Name}\` ADD COLUMN \`${fieldName}\` ${fieldType}`)
-        this.SetField(fieldName, fieldType)
-        return this
     }
 
     public async FreeSql(sqlQuery: string | undefined): Promise<this> {

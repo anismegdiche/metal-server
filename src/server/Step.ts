@@ -37,9 +37,7 @@ export class Step {
         join: async (stepArguments: TStepArguments) => await Step._Join(stepArguments),
         fields: async (stepArguments: TStepArguments) => await Step._Fields(stepArguments),
         sort: async (stepArguments: TStepArguments) => await Step._Sort(stepArguments),
-        run: async (stepArguments: TStepArguments) => await Step._Run(stepArguments),
-        // TODO not tested
-        addField: async (stepArguments: TStepArguments) => await Step._AddField(stepArguments)
+        run: async (stepArguments: TStepArguments) => await Step._Run(stepArguments)
     }
 
     static JoinCaseMap: Record<string, Function> = {
@@ -343,17 +341,6 @@ export class Step {
             stepArguments.currentDataTable.SetMetaData(METADATA.PLAN_ERRORS, <TJson[]>[])
         }
 
-        return stepArguments.currentDataTable
-    }
-
-    // TODO not tested
-    static async _AddField(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.AddField: ${JSON.stringify(stepArguments.stepParams)}`)
-        const { name, type } = stepArguments.stepParams as {
-            name: string
-            type: string
-        }
-        await stepArguments.currentDataTable.AddField(name, type)
         return stepArguments.currentDataTable
     }
 
