@@ -3,7 +3,7 @@
     "node": "21"
   },
   "name": "metal",
-  "version": "0.1",
+  "version": "0.2a",
   "description": "Metal Server",
   "main": "./build/index.js",
   "scripts": {

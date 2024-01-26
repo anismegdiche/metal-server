@@ -3,7 +3,7 @@
 
 export enum SERVER {
     NAME = 'Metal',
-    VERSION = '0.1',
+    VERSION = '0.2a',
     BANNER = '<h1>\\m/ Metal Server</h1>',
     CONSOLE_BANNER = `\x1b[31m
                ,,,,,
