@@ -21,10 +21,12 @@ import { SchemaRouter } from '../routes/SchemaRouter'
 import { PlanRouter } from '../routes/PlanRouter'
 import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
+import { Sandbox} from './Sandbox'
 
 export class Server {
 
     public static App: Express = express()
+    public static Sandbox: Sandbox = new Sandbox()
     public static Port: number
     public static CurrentPath: string
 

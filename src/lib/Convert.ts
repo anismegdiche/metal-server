@@ -11,6 +11,7 @@ import { TJson } from '../types/TJson'
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from '../types/TSchemaResponse'
 import { Logger } from "../lib/Logger"
 import { TInternalResponse } from '../types/TInternalResponse'
+import { Server } from '../server/Server'
 
 
 export class Convert {
@@ -107,9 +108,7 @@ export class Convert {
             const _placeholderRegex = /\$\{\{([^}]+)\}\}/g
             return text.replace(_placeholderRegex, (match, code) => {
                 try {
-                    // Use eval with caution, make sure the code is safe
-                    // eslint-disable-next-line no-eval
-                    const __result = eval(code)
+                    const __result = Server.Sandbox.Evaluate(code)
                     return (__result === undefined)
                         ? ''
                         : __result.toString()
