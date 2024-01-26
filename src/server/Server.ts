@@ -116,11 +116,20 @@ export class Server {
     public static Start() {
         Logger.Debug(`${Logger.In} Server.Start`)
         // Start Server
-        Server.App.listen(
-            Server.Port,
-            () => {
-                Logger.Message(SERVER.CONSOLE_BANNER)
-                Logger.Message(`Metal server started on port ${Server.Port}`)
+        Server.App
+            .listen(
+                Server.Port,
+                () => {
+                    Logger.Message(SERVER.CONSOLE_BANNER)
+                    Logger.Message(`Metal server started on port ${Server.Port}`)
+                })
+            .on('error', (error: Error & { code?: string }) => {
+                if (error.code === 'EADDRINUSE') {
+                    Logger.Error(`Port ${Server.Port} is already in use. Exiting the process.`)
+                    process.exit(1)
+                } else {
+                    Logger.Error(`An error occurred: ${JSON.stringify(error)}`)
+                }
             })
     }
 
