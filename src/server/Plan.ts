@@ -2,109 +2,117 @@ import * as Fs from "fs"
 import * as Yaml from "js-yaml"
 import _ from "lodash"
 //
-import { HTTP_STATUS_CODE, RESPONSE_RESULT, RESPONSE_STATUS } from "../lib/Const"
+import { HTTP_STATUS_CODE, METADATA } from "../lib/Const"
 import { Logger } from "../lib/Logger"
 import { Config } from "./Config"
 import { TInternalResponse } from "../types/TInternalResponse"
 import { TJson } from "../types/TJson"
 import { TSchemaRequest } from "../types/TSchemaRequest"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
 import { TypeHelper } from "../lib/TypeHelper"
 import { TScheduleConfig } from "./Schedule"
-import { Step } from "./Step"
+import { Step, TStepArguments } from "./Step"
+import { DataTable } from "../types/DataTable"
+import { Helper } from "../lib/Helper"
 
 
 export class Plan {
-    static async Execute(schemaRequest: TSchemaRequest | TScheduleConfig, sqlQuery: string | undefined = undefined): Promise<TSchemaResponse> {
+    static async Process(schemaRequest: TSchemaRequest | TScheduleConfig, sqlQuery: string | undefined = undefined): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Plan.Execute: ${JSON.stringify(schemaRequest)}`)
 
         // TSchemaRequest
         if (TypeHelper.IsSchemaRequest(schemaRequest)) {
-
             const { schemaName, sourceName, entityName } = schemaRequest
-
-            const schemaResponseNoData = <TSchemaResponseNoData>{
-                schemaName,
-                entityName,
-                ...RESPONSE_RESULT.NOT_FOUND,
-                ...RESPONSE_STATUS.HTTP_404
-            }
-
             const sourcePlanName: string = Config.Get(`sources.${sourceName}.database`)
-
+            
             if (sourceName === undefined || sourcePlanName === undefined) {
                 Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schemaName}`)
-                return schemaResponseNoData
+                return new DataTable(entityName)
             }
 
             if (!Config.Has(`plans.${sourcePlanName}.${entityName}`)) {
                 Logger.Error(`${Logger.Out} Plan.Execute: entityName '${entityName}' not found in plan ${sourcePlanName}`)
-                return schemaResponseNoData
-            }
-
-            const schemaResponse = <TSchemaResponse>{
-                schemaName,
-                entityName,
-                transaction: "plan"
+                return new DataTable(entityName)
             }
 
             const entitySteps: TJson[] = Config.Get(`plans.${sourcePlanName}.${entityName}`)
-
             Logger.Debug(`${Logger.In} Plan.Execute: ${sourceName}.${entityName}: ${JSON.stringify(entitySteps)}`)
-
-            const currentDatatable = await Step.Execute(schemaName, sourceName, entityName, entitySteps)
-
+            const currentDatatable = await Plan.ExecuteSteps(schemaName, sourceName, entityName, entitySteps)
             await currentDatatable.FreeSql(sqlQuery)
 
             Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entityName}`)
-            return <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE_RESULT.SUCCESS,
-                ...RESPONSE_STATUS.HTTP_200,
-                data: currentDatatable
-            }
+            return currentDatatable
         }
         // TScheduleConfig
         const { planName, entityName } = schemaRequest
 
-        const schemaResponseNoData = <TSchemaResponseNoData>{
-            schemaName: planName,
-            entityName,
-            ...RESPONSE_RESULT.NOT_FOUND,
-            ...RESPONSE_STATUS.HTTP_404
-        }
-
         if (planName === undefined) {
             Logger.Error(`${Logger.Out} Plan.Execute: plan '${planName}' not found`)
-            return schemaResponseNoData
+            return new DataTable(entityName)
         }
 
         if (!Config.Has(`plans.${planName}.${entityName}`)) {
             Logger.Error(`${Logger.Out} Plan.Execute: entityName '${entityName}' not found in plan ${planName}`)
-            return schemaResponseNoData
-        }
-
-        const schemaResponse = <TSchemaResponse>{
-            schemaName: planName,
-            entityName,
-            transaction: "plan"
+            return new DataTable(entityName)
         }
 
         const entitySteps: TJson[] = Config.Get(`plans.${planName}.${entityName}`)
-
         Logger.Debug(`${Logger.In} Plan.Execute: ${planName}.${entityName}: ${JSON.stringify(entitySteps)}`)
-
-        const currentDatatable = await Step.Execute(undefined, planName, entityName, entitySteps)
-
+        const currentDatatable = await Plan.ExecuteSteps(undefined, planName, entityName, entitySteps)
         await currentDatatable.FreeSql(sqlQuery)
 
         Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entityName}`)
-        return <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE_RESULT.SUCCESS,
-            ...RESPONSE_STATUS.HTTP_200,
-            data: currentDatatable
+        return currentDatatable
+    }
+
+    static async ExecuteSteps(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: TJson[]): Promise<DataTable> {
+
+        let currentDataTable = new DataTable(currentEntityName)
+
+        for await (const [stepIndex, step] of Object.entries(steps)) {
+            const _stepIndex = parseInt(stepIndex, 10) + 1
+            Logger.Debug(`Step.Execute '${currentPlanName}': Step ${_stepIndex}, ${JSON.stringify(step)}`)
+
+            if (step === null) {
+                Logger.Error(`Step.Execute '${currentPlanName}': error have been encountered in step ${_stepIndex}, ${JSON.stringify(step)}`)
+                break
+            }
+
+            try {
+                // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+                const __stepCommand: string = _.keys(<object>step)[0]
+                // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                const __stepParams: TJson = _.values(<object>step)[0]
+
+                if (__stepCommand === 'break') {
+                    Logger.Info(`Step.Execute '${currentPlanName}': user break at step '${_stepIndex}', ${JSON.stringify(step)}`)
+                    return currentDataTable
+                }
+
+                const _stepArguments: TStepArguments = {
+                    currentSchemaName: currentSchemaName as string,
+                    currentPlanName,
+                    currentDataTable,
+                    stepParams: __stepParams
+                }
+
+                currentDataTable = await Step.ExecuteCaseMap[__stepCommand](_stepArguments) || Helper.CaseMapNotFound(__stepCommand)
+                Logger.Debug(`***** ${JSON.stringify(currentDataTable)}`)
+            } catch (error: unknown) {
+                const _error = <Error>error
+                Logger.Error(`Step.Execute '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`)
+                if (currentDataTable.MetaData[METADATA.PLAN_DEBUG] == 'error') {
+                    /*
+                    FIXME
+                    In case of cross entities, only errors in the final entity are returned.
+                    Console log is working fine.
+                    */
+                    const _planErrors: TJson = {}
+                    _planErrors[`entity(${currentEntityName}), step(${stepIndex})`] = step
+                    Logger.Debug(`Step.Execute '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' added error ${JSON.stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
+                }
+            }
         }
+        return currentDataTable
     }
 
     static Reload(planName: string): TInternalResponse {

@@ -1,12 +1,12 @@
 /* eslint-disable no-continue */
 import _ from "lodash"
+//
 import { METADATA } from "../lib/Const"
 import { Helper } from "../lib/Helper"
 import { Logger } from "../lib/Logger"
 import { DataTable, TOrder } from "../types/DataTable"
 import { TJson } from "../types/TJson"
 import { TSchemaRequest } from "../types/TSchemaRequest"
-import { TSchemaResponseData } from "../types/TSchemaResponse"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
@@ -29,15 +29,15 @@ export class Step {
     static Options = new CommonSqlProviderOptions()
 
     static ExecuteCaseMap: Record<string, Function> = {
-        debug: async (stepArguments: TStepArguments) => await Step._Debug(stepArguments),
-        select: async (stepArguments: TStepArguments) => await Step._Select(stepArguments),
-        update: async (stepArguments: TStepArguments) => await Step._Update(stepArguments),
-        delete: async (stepArguments: TStepArguments) => await Step._Delete(stepArguments),
-        insert: async (stepArguments: TStepArguments) => await Step._Insert(stepArguments),
-        join: async (stepArguments: TStepArguments) => await Step._Join(stepArguments),
-        fields: async (stepArguments: TStepArguments) => await Step._Fields(stepArguments),
-        sort: async (stepArguments: TStepArguments) => await Step._Sort(stepArguments),
-        run: async (stepArguments: TStepArguments) => await Step._Run(stepArguments)
+        debug: async (stepArguments: TStepArguments) => await Step.Debug(stepArguments),
+        select: async (stepArguments: TStepArguments) => await Step.Select(stepArguments),
+        update: async (stepArguments: TStepArguments) => await Step.Update(stepArguments),
+        delete: async (stepArguments: TStepArguments) => await Step.Delete(stepArguments),
+        insert: async (stepArguments: TStepArguments) => await Step.Insert(stepArguments),
+        join: async (stepArguments: TStepArguments) => await Step.Join(stepArguments),
+        fields: async (stepArguments: TStepArguments) => await Step.Fields(stepArguments),
+        sort: async (stepArguments: TStepArguments) => await Step.Sort(stepArguments),
+        run: async (stepArguments: TStepArguments) => await Step.Run(stepArguments)
     }
 
     static JoinCaseMap: Record<string, Function> = {
@@ -48,58 +48,8 @@ export class Step {
         cross: async (dtLeft: DataTable, dtRight: DataTable) => dtLeft.CrossJoin(dtRight)
     }
 
-    static async Execute(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: TJson[]): Promise<DataTable> {
 
-        let currentDataTable = new DataTable(currentEntityName)
-
-        for await (const [stepIndex, step] of Object.entries(steps)) {
-            const _stepIndex = parseInt(stepIndex, 10) + 1
-            Logger.Debug(`Step.Execute '${currentPlanName}': Step ${_stepIndex}, ${JSON.stringify(step)}`)
-
-            if (step === null) {
-                Logger.Error(`Step.Execute '${currentPlanName}': error have been encountered in step ${_stepIndex}, ${JSON.stringify(step)}`)
-                break
-            }
-
-            try {
-                // eslint-disable-next-line you-dont-need-lodash-underscore/keys
-                const __stepCommand: string = _.keys(<object>step)[0]
-                // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                const __stepParams: TJson = _.values(<object>step)[0]
-
-                if (__stepCommand === 'break') {
-                    Logger.Info(`Step.Execute '${currentPlanName}': user break at step '${_stepIndex}', ${JSON.stringify(step)}`)
-                    return currentDataTable
-                }
-
-                const _stepArguments: TStepArguments = {
-                    currentSchemaName: currentSchemaName as string,
-                    currentPlanName,
-                    currentDataTable,
-                    stepParams: __stepParams
-                }
-
-                currentDataTable = await Step.ExecuteCaseMap[__stepCommand](_stepArguments) || Helper.CaseMapNotFound(__stepCommand)
-                Logger.Debug(`***** ${JSON.stringify(currentDataTable)}`)
-            } catch (error: unknown) {
-                const _error = <Error>error
-                Logger.Error(`Step.Execute '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`)
-                if (currentDataTable.MetaData[METADATA.PLAN_DEBUG] == 'error') {
-                    /*
-                    FIXME
-                    In case of cross entities, only errors in the final entity are returned.
-                    Console log is working fine.
-                    */
-                    const _planErrors: TJson = {}
-                    _planErrors[`entity(${currentEntityName}), step(${stepIndex})`] = step
-                    Logger.Debug(`Step.Execute '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' added error ${JSON.stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
-                }
-            }
-        }
-        return currentDataTable
-    }
-
-    static async _Select(stepArguments: TStepArguments): Promise<DataTable> {
+    static async Select(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Select: ${JSON.stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
@@ -143,7 +93,7 @@ export class Step {
         return currentDataTable
     }
 
-    static async _Insert(stepArguments: TStepArguments): Promise<DataTable> {
+    static async Insert(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Insert: ${JSON.stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
@@ -187,7 +137,7 @@ export class Step {
         return currentDataTable
     }
 
-    static async _Update(stepArguments: TStepArguments): Promise<DataTable> {
+    static async Update(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Update: ${JSON.stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
@@ -232,7 +182,7 @@ export class Step {
         return currentDataTable
     }
 
-    static async _Delete(stepArguments: TStepArguments): Promise<DataTable> {
+    static async Delete(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Delete: ${JSON.stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
@@ -272,7 +222,7 @@ export class Step {
         return currentDataTable
     }
 
-    static async _Join(stepArguments: TStepArguments): Promise<DataTable> {
+    static async Join(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Join: ${JSON.stringify(stepArguments.stepParams)}`)
 
         const stepParams: Record<string, string> = stepArguments.stepParams as Record<string, string>
@@ -302,23 +252,22 @@ export class Step {
         }
 
         dtRight = (schemaName)
-            ? await Step._Select(requestToSchema)
-            // eslint-disable-next-line no-use-before-define
-            : (await Plan.Execute(requestToCurrentPlan) as TSchemaResponseData).data
+            ? await Step.Select(requestToSchema)
+            : await Plan.Process(requestToCurrentPlan)
 
         return await this.JoinCaseMap[type](stepArguments.currentDataTable, dtRight, leftField, rightField) ||
             (Helper.CaseMapNotFound(type) && stepArguments.currentDataTable)
     }
 
 
-    static async _Fields(stepArguments: TStepArguments): Promise<DataTable> {
+    static async Fields(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Fields: ${JSON.stringify(stepArguments.stepParams)}`)
         const stepParams: string = stepArguments.stepParams as string
         const fields = StringHelper.Split(stepParams, ",")
         return stepArguments.currentDataTable.SelectFields(fields)
     }
 
-    static async _Sort(stepArguments: TStepArguments): Promise<DataTable> {
+    static async Sort(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Sort: ${JSON.stringify(stepArguments.stepParams)}`)
 
         const stepParams = stepArguments.stepParams as Record<string, TOrder>
@@ -332,7 +281,7 @@ export class Step {
         return currentDataTable.Sort(fields, orders)
     }
 
-    static async _Debug(stepArguments: TStepArguments): Promise<DataTable> {
+    static async Debug(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Debug: ${JSON.stringify(stepArguments.stepParams)}`)
         const debug = stepArguments.stepParams as string || 'error'
         stepArguments.currentDataTable.SetMetaData(METADATA.PLAN_DEBUG, debug)
@@ -344,7 +293,7 @@ export class Step {
         return stepArguments.currentDataTable
     }
 
-    static async _Run(stepArguments: TStepArguments): Promise<DataTable> {
+    static async Run(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Run: ${JSON.stringify(stepArguments.stepParams)}`)
 
         const { ai, input, output } = stepArguments.stepParams as {

@@ -79,20 +79,20 @@ export class PlanProvider implements IProvider.IProvider {
             .OrderBy(options.Sort)
             .Query
 
-        const planSchemaResponse = await Plan.Execute(schemaRequest, sqlQuery)
+        const planDataTable = await Plan.Process(schemaRequest, sqlQuery)
 
-        if ('data' in planSchemaResponse && planSchemaResponse.data.Rows.length > 0) {
+        if (planDataTable && planDataTable.Rows.length > 0) {
             Cache.Set({
                 ...schemaRequest,
                 sourceName: this.SourceName
             },
-                planSchemaResponse.data
+                planDataTable
             )
             return <TSchemaResponseData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: planSchemaResponse.data
+                data: planDataTable
             }
         } else {
             return <TSchemaResponseNoData>{

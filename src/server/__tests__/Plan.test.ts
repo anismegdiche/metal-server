@@ -1,7 +1,8 @@
 /* eslint-disable max-lines-per-function */
 
-import { Step, TStepArguments } from "../Step"
 import { DataTable } from "../../types/DataTable"
+import { Step } from "../Step"
+import { Plan } from "../Plan"
 
 describe('Step', () => {
 
@@ -41,7 +42,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -101,7 +102,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -155,7 +156,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -208,7 +209,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -257,7 +258,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -309,7 +310,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -362,7 +363,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -429,7 +430,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -477,7 +478,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -525,7 +526,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
