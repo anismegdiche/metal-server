@@ -6,7 +6,8 @@
 import chalk from 'chalk'
 import LogLevel from 'loglevel'
 import Prefix from 'loglevel-plugin-prefix'
-
+import morgan from "morgan"
+//
 import { SERVER } from './Const'
 
 const Colors: Record<string, Function> = {
@@ -39,6 +40,15 @@ export class Logger {
     static In = '-->'
     static Out = '<--'
     static Level: LogLevel.LogLevelDesc = DefaultLevel
+
+    static RequestMiddleware = morgan(
+        ':remote-addr, :method :url, :status, :res[content-length], :response-time ms',
+        {
+            stream: {
+                write: (message: string) => Logger.Info(message.trim())
+            }
+        }
+    )
 
     static SetLevel(verbosity: LogLevel.LogLevelDesc = this.Level): void {
         Logger.Level = verbosity

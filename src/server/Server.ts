@@ -6,10 +6,8 @@
 //
 import express, { Express, NextFunction, Request, Response } from 'express'
 import { rateLimit } from 'express-rate-limit'
-import winston from 'winston'
-import expressWinston from 'express-winston'
 import responseTime from 'response-time'
-
+//
 import { TJson } from '../types/TJson'
 import { ROUTE, SERVER } from '../lib/Const'
 import { Logger } from '../lib/Logger'
@@ -23,7 +21,6 @@ import { SchemaRouter } from '../routes/SchemaRouter'
 import { PlanRouter } from '../routes/PlanRouter'
 import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
-
 
 export class Server {
 
@@ -44,32 +41,8 @@ export class Server {
         })
 
         Server.App.use(responseTime())
-
-        // TODO: fusion loggers
-        Server.App.use(
-            expressWinston.logger({
-                transports: [new winston.transports.Console()],
-                format: winston.format.json(),
-                statusLevels: true,
-                meta: false,
-                msg: "HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{req.query}} {{req.body}} {{res.responseTime}}ms",
-                expressFormat: true,
-                ignoreRoute() {
-                    return false
-                },
-                dynamicMeta(req) {
-                    const body = JSON.stringify(req.body)
-                    const query = JSON.stringify(req.query)
-                    return {
-                        body,
-                        query
-                    }
-                }
-            })
-        )
-
+        Server.App.use(Logger.RequestMiddleware)
         Server.App.use(_limiter)
-
         Server.App.use(express.json({
             limit: Config.Configuration.server['request-limit'] ?? Config.DEFAULTS['server.request-limit']
         }))
