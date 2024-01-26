@@ -34,7 +34,7 @@ export class Server {
 
         Server.Port = Config.Configuration.server?.port ?? Config.DEFAULTS["server.port"]
 
-        const _limiter = rateLimit({
+        const limiter = rateLimit({
             windowMs: 1 * 60 * 1000,
             max: 600,
             message: 'Too many requests from this IP, please try again later.'
@@ -42,7 +42,7 @@ export class Server {
 
         Server.App.use(responseTime())
         Server.App.use(Logger.RequestMiddleware)
-        Server.App.use(_limiter)
+        Server.App.use(limiter)
         Server.App.use(express.json({
             limit: Config.Configuration.server['request-limit'] ?? Config.DEFAULTS['server.request-limit']
         }))
@@ -120,10 +120,9 @@ export class Server {
 
     public static GetInfo(): TJson {
         Logger.Debug(`${Logger.In} Server.GetInfo`)
-        const { NAME: _serverName, VERSION: _serverVersion } = SERVER
         return {
-            server: _serverName,
-            version: _serverVersion
+            server: SERVER.NAME,
+            version: SERVER.VERSION
         }
     }
 }
