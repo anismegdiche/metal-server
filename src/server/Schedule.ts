@@ -38,7 +38,7 @@ export class Schedule {
                         () => {
                             Logger.Debug(`${Logger.In} Schedule.Start: Running job '${_scheduleName}'`)
                             try {
-                                Plan.Execute(_scheduleParams)
+                                Plan.Process(_scheduleParams)
                             } catch (error) {
                                 Logger.Error(`${Logger.In} Schedule.Start: Error has occured with '${_scheduleName}' : ${JSON.stringify(error)}`)
                             }

@@ -5,7 +5,7 @@
 //
 import _ from 'lodash'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const alasql = require('alasql')
+import alasql from 'alasql'
 //
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
@@ -133,7 +133,7 @@ export class DataTable {
         this.Name = name
 
         if (rows) {
-            if (_.isArray(rows)) {
+            if (Array.isArray(rows)) {
                 this.Set(rows)
             } else {
                 this.Set(_.castArray(rows))
@@ -141,7 +141,7 @@ export class DataTable {
         }
     }
 
-    public Set(rows: TJson[] | undefined = undefined): DataTable {
+    public Set(rows: TJson[] | undefined = undefined): this {
         if (rows) {
             this.Rows = [...rows]
             this.SetFields()
@@ -149,7 +149,7 @@ export class DataTable {
         return this
     }
 
-    public SetFields(): DataTable {
+    public SetFields(): this {
         const _cols: TJson = { ..._.head(this.Rows) }
         this.Fields = _.reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
@@ -158,18 +158,12 @@ export class DataTable {
         return this
     }
 
-    // TODO not tested
-    public SetField(fieldName: string, type: string): DataTable {
-        this.Fields[fieldName] = SqlToJsType[type] || 'unknown'
-        return this
-    }
-
     public GetFieldNames(): string[] {
         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         return _.keys(this.Fields)
     }
 
-    public PrefixAllFields(prefix: string): DataTable {
+    public PrefixAllFields(prefix: string): this {
         if (this.Rows.length === 0)
             return this
 
@@ -182,7 +176,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public UnPrefixAllfields(): DataTable {
+    public UnPrefixAllfields(): this {
         if (this.Rows.length === 0) {
             return this
         }
@@ -200,14 +194,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    // TODO not tested
-    public async AddField(fieldName: string, fieldType: string): Promise<DataTable> {
-        await this.FreeSql(`ALTER TABLE \`${this.Name}\` ADD COLUMN \`${fieldName}\` ${fieldType}`)
-        this.SetField(fieldName, fieldType)
-        return this
-    }
-
-    public async FreeSql(sqlQuery: string | undefined): Promise<DataTable> {
+    public async FreeSql(sqlQuery: string | undefined): Promise<this> {
         if (sqlQuery === undefined) {
             return this
         }
@@ -238,7 +225,7 @@ export class DataTable {
     }
 
 
-    public LeftJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string): DataTable {
+    public LeftJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             LEFT JOIN ? \`${dtB.Name}\` 
@@ -248,7 +235,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public InnerJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string): DataTable {
+    public InnerJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             INNER JOIN ? \`${dtB.Name}\` 
@@ -258,7 +245,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public RightJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string): DataTable {
+    public RightJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             RIGHT JOIN ? \`${dtB.Name}\` 
@@ -268,7 +255,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public FullOuterJoin(dtB: DataTable, leftFieldName: string, rightFieldName: string): DataTable {
+    public FullOuterJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             FULL OUTER JOIN ? \`${dtB.Name}\` 
@@ -278,7 +265,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public CrossJoin(dtB: DataTable): DataTable {
+    public CrossJoin(dtB: this): this {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             CROSS JOIN ? \`${dtB.Name}\``,
@@ -287,7 +274,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public SelectFields(fields: string[]): DataTable {
+    public SelectFields(fields: string[]): this {
         if (this.Rows.length === 0 || fields.length === 0)
             return this
 
@@ -299,31 +286,24 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public Sort(fields: string[], orders: TOrder[]): DataTable {
+    public Sort(fields: string[], orders: TOrder[]): this {
         this.Rows = _.orderBy(this.Rows, fields, orders)
         return this
     }
 
-    public SetMetaData(metadata: string, value: unknown): DataTable {
+    public SetMetaData(metadata: string, value: unknown): this {
         this.MetaData[metadata] = value
         return this
     }
 
-    public AddRows(row: TJson | TJson[] | undefined = undefined): DataTable {
-        if (!row) {
+    public AddRows(newRows: TJson | TJson[] | undefined = undefined): this {
+        if (!newRows) {
             return this
         }
 
-        // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
-        this.Rows = _.isArray(row)
-            ? [
-                ...this.Rows,
-                ...row
-            ]
-            : [
-                ...this.Rows,
-                row
-            ]
+        this.Rows = Array.isArray(newRows)
+            ? [...this.Rows, ...newRows]
+            : [...this.Rows, newRows]
 
         return this.SetFields()
     }

@@ -156,6 +156,7 @@ export class Config {
                             ".*": {
                                 type: "array",
                                 items: {
+                                    // step
                                     type: "object",
                                     patternProperties: {
                                         ".*": {

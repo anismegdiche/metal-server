@@ -1,7 +1,8 @@
 /* eslint-disable max-lines-per-function */
 
-import { Step } from "../Plan"
 import { DataTable } from "../../types/DataTable"
+import { Step } from "../Step"
+import { Plan } from "../Plan"
 
 describe('Step', () => {
 
@@ -26,8 +27,6 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        await dtWorking.AddField("name", "string")
-        await dtWorking.AddField("age", "number")
         dtWorking.AddRows({
             name: "John",
             age: 25
@@ -43,7 +42,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -88,8 +87,6 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        await dtWorking.AddField("name", "string")
-        await dtWorking.AddField("age", "number")
         dtWorking.AddRows({
             name: "John",
             age: 25
@@ -105,7 +102,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -144,8 +141,6 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        await dtWorking.AddField("name", "string")
-        await dtWorking.AddField("age", "number")
         dtWorking.AddRows({
             name: "John",
             age: 25
@@ -161,7 +156,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -199,8 +194,6 @@ describe('Step', () => {
 
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
-        await dtWorking.AddField("name", "string")
-        await dtWorking.AddField("age", "number")
         dtWorking.AddRows({
             name: "John",
             age: 25
@@ -216,7 +209,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -250,8 +243,6 @@ describe('Step', () => {
 
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
-        await dtWorking.AddField("name", "string")
-        await dtWorking.AddField("age", "number")
         dtWorking.AddRows({
             name: "John",
             age: 25
@@ -267,7 +258,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -304,8 +295,6 @@ describe('Step', () => {
 
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
-        await dtWorking.AddField("name", "string")
-        await dtWorking.AddField("age", "number")
         dtWorking.AddRows({
             name: "John",
             age: 25
@@ -321,7 +310,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -359,8 +348,6 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        await dtWorking.AddField("name", "string")
-        await dtWorking.AddField("age", "number")
         dtWorking.AddRows({
             name: "John",
             age: 25
@@ -376,7 +363,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -414,8 +401,6 @@ describe('Step', () => {
         // Mock the DataTable objects
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        await dtWorking.AddField("user_id", "number")
-        await dtWorking.AddField("name", "string")
         dtWorking.AddRows({
             user_id: 1,
             name: "John"
@@ -427,8 +412,6 @@ describe('Step', () => {
 
         const dtRight = new DataTable("orders")
         dtRight.Name = "orders"
-        await dtRight.AddField("id", "number")
-        await dtRight.AddField("order_number", "string")
         dtRight.AddRows({
             id: 1,
             order_number: "123"
@@ -447,7 +430,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -480,8 +463,6 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "users"
-        await dtWorking.AddField("name", "string")
-        await dtWorking.AddField("age", "number")
         dtWorking.AddRows({
             name: "John",
             age: 25
@@ -497,7 +478,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
@@ -530,8 +511,6 @@ describe('Step', () => {
         // Mock the DataTable object
         const dtWorking = new DataTable(entity)
         dtWorking.Name = "myEntity"
-        await dtWorking.AddField("field1", "string")
-        await dtWorking.AddField("field2", "number")
         dtWorking.AddRows({
             field1: "value1",
             field2: 10
@@ -547,7 +526,7 @@ describe('Step', () => {
         }
 
         // Invoke the Step.Execute function
-        const result = await Step.Execute(schemaName, plan, entity, steps)
+        const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
 
         // Assertions
         expect(result).toBeInstanceOf(DataTable)
