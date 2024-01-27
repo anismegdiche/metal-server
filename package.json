@@ -8,7 +8,7 @@
   "main": "./build/index.js",
   "scripts": {
     "build": "tsc --watch",
-    "lint": "npx eslint --fix .",
+    "lint": "eslint --fix .",
     "dev": "nodemon ./build/index.js",
     "test": "jest",
     "test-client": "jest --testMatch \"**/client/__tests__/**/*.js\"",

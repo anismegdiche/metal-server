@@ -1,0 +1,7 @@
+{
+  "entryFilePath": "src\\index.ts",
+  "alias": false,
+  "resolveExtensions": [
+    ".ts"
+  ]
+}
