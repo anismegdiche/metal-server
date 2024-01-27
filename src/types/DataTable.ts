@@ -4,14 +4,12 @@
 //
 //
 import _ from 'lodash'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 import alasql from 'alasql'
 //
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
 
 export type TRow = TJson
-export type TRows = TRow[]
 export type TFields = TJson
 export type TOrder = boolean | "asc" | "desc"
 
@@ -122,7 +120,7 @@ export class DataTable {
 
     public Name: string
     public Fields: TFields = <TFields>{}
-    public Rows: TRows = <TRows>[]
+    public Rows: TRow[] = <TRow[]>[]
     public MetaData: Record<string, unknown> = {}
 
 

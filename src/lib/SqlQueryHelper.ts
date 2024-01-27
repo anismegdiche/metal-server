@@ -4,7 +4,8 @@
 //
 //
 import _ from 'lodash'
-import { TRow, TRows } from "../types/DataTable"
+//
+import { TRow } from "../types/DataTable"
 import { TJson } from '../types/TJson'
 import { Logger } from './Logger'
 
@@ -75,7 +76,7 @@ export class SqlQueryHelper {
     }
 
     // TODO: review datatype
-    Set(fieldsValues: TRows | TRow | undefined) {
+    Set(fieldsValues: TRow[] | TRow | undefined) {
         if (fieldsValues === undefined) {
             return this
         }
@@ -87,10 +88,9 @@ export class SqlQueryHelper {
 
         const _setValues = _.chain(_fieldsValues)
             .mapValues((__value, __field) => {
-                let ___formattedValue = __value
-                if (typeof __value !== 'number') {
-                    ___formattedValue = `'${__value}'`
-                }
+                const ___formattedValue = typeof __value === 'number'
+                    ? __value
+                    : `'${__value}'`
                 return `${__field}=${___formattedValue}`
             })
             .values()
@@ -114,7 +114,7 @@ export class SqlQueryHelper {
         return this
     }
 
-    Values(data: TRows): SqlQueryHelper {
+    Values(data: TRow[]): SqlQueryHelper {
         if (Array.isArray(data) && data.length > 0) {
             this.Query = `${this.Query} VALUES`
             data.forEach((_values, _index) => {

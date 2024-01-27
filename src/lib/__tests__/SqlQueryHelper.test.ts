@@ -1,13 +1,18 @@
-
+//
+//
+//
+//
+//
 import { SqlQueryHelper } from '../SqlQueryHelper'
-import { TRows } from '../../types/DataTable'
+import { TRow } from '../../types/DataTable'
+
 
 describe('SqlQueryHelper_class', () => {
 
-    // Tests that Values method sets the Query property correctly with the given TRows data. 
+    // Tests that Values method sets the Query property correctly with the given TRow[] data. 
     it("test_values", () => {
         const queryHelper = new SqlQueryHelper()
-        const data: TRows = [
+        const data: TRow[] = [
             {
                 id: 1,
                 name: 'John'
@@ -79,7 +84,7 @@ describe('SqlQueryHelper_class', () => {
     // Tests that Insert method sets the Query property correctly with the given entity. 
     it("test_insert", () => {
         const queryHelper = new SqlQueryHelper()
-        queryHelper.Insert('users').Fields('id, name').Values(<TRows>[
+        queryHelper.Insert('users').Fields('id, name').Values(<TRow[]>[
             {
                 id: 1,
                 name: 'John'
@@ -91,7 +96,7 @@ describe('SqlQueryHelper_class', () => {
     // Tests that Fields method sets the Query property correctly with the given string data. 
     it("test_fields_string", () => {
         const queryHelper = new SqlQueryHelper()
-        queryHelper.Insert('users').Fields('id, name').Values(<TRows>[
+        queryHelper.Insert('users').Fields('id, name').Values(<TRow[]>[
             {
                 id: 1,
                 name: 'John'
@@ -103,7 +108,7 @@ describe('SqlQueryHelper_class', () => {
     // Tests that Fields method sets the Query property correctly with the given array data. 
     it("test_fields_array", () => {
         const queryHelper = new SqlQueryHelper()
-        queryHelper.Insert('users').Fields(['id', 'name']).Values(<TRows>[
+        queryHelper.Insert('users').Fields(['id', 'name']).Values(<TRow[]>[
             {
                 id: 1,
                 name: 'John'

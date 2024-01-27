@@ -5,8 +5,8 @@
 //
 import _ from 'lodash'
 import alasql from 'alasql'
-
-import { DataTable, TRows } from './DataTable'
+//
+import { DataTable, TRow } from './DataTable'
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
 
@@ -39,7 +39,7 @@ export class DataBase {
     FreeSql(name: string, sqlQuery: string): DataTable | undefined {
 
         let _sqlQueryModified = sqlQuery
-        let _dtRows: TRows[] = []
+        let _dtRows: TRow[][] = []
 
         const _rxDataTableNames = /\{([^}]+)\}/igm
         const _dataTables = sqlQuery.match(_rxDataTableNames)
