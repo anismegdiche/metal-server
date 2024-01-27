@@ -1,0 +1,71 @@
+# Metal Changelog
+
+## v0.2a
+
+- Conformed to ES10 standards.
+- Removed TRows type.
+- Implemented Sandbox for safe code evaluation.
+- Refactored Server class for readability and maintainability.
+- Improved structure of Plan and Step classes.
+- Updated Request Logger.
+- Updated package to the latest version.
+- Replaced _.isArray with Array.isArray in SqlQueryHelper and DataTable classes.
+- Added error handling for port conflicts.
+- Enhanced DataTable class and refactored field addition code.
+- Further refactored Plan and Step classes.
+- Updated packages.
+
+## v0.1
+
+- Updated config-test.yml and index.ts.
+- Changed hardcoded plan name to a variable.
+- Made various updates to .eslintrc.json, Plan.ts, Plan.test.ts, DataTable.ts, and DataTable.test.ts.
+- Updated ASCII art in Const.ts.
+- Removed plans, schedules, and unnecessary configurations.
+- Removed all REST API endpoints except for MongoDB.
+- Kept only the server configuration.
+- Added TesseractJs model enum and updated config types.
+- Updated package-lock.json.
+- Cleaned up config types.
+- Updated AI engines.
+- Added and updated config validators.
+- Updated eslint rules.
+- Implemented security checks.
+- Updated README file.
+- Added tests for Plans.
+- Fused common SQL providers.
+- Implemented version 2 of config validator.
+- Fused data and schema.
+- Updated logger.
+- Enhanced code.
+- Fixed plan cache.
+- Updated eslint rules.
+- Fixed FreeSql.
+- Converted source to plan.
+- Refactored DataResponse.
+- Updated logo.
+- Added JS client and associated tests.
+- Updated code.
+- Updated schedule feature.
+- Reorganized the project.
+- Fixed eslint warnings.
+- Added JS placeholders.
+- Implemented Sonarlint.
+- Updated config files.
+- Fixed Plans.
+- Added ReplacePlaceholders.
+- Fixed Plan.#Insert.
+- Updated eslint rules.
+- Refactored OptionsFilterExpressionToSql.
+- Fixed plan schema name.
+- Fixed SqlServer queries.
+- Updated eslint.
+- Updated Data, Plan, and Schemas.
+- Fixed vendor SQL.
+- Fixed Datatable.
+- Updated rest tests.
+- Fixed schemas.
+- Added Docker config file.
+- Updated tests.
+- Fixed tensorflox tests.
+- Initialized the project.

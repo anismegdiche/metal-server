@@ -102,6 +102,29 @@ ai-engines:
 
 plans:
   etl1:
+    sandbox:
+      - newContext: false
+      - set:
+          var: startTimer
+          value: {{Date.now()}}
+      - select:
+          schemaName: mflix
+          entityName: movies
+          filter:
+            year: 2001
+      - set:
+          var: time
+          value: {{Date.now() - startTimer}}
+      - set:
+          var: count
+          value: $ROWS.length
+      - update:
+          filter:
+            year: 2001
+          data:
+            time: {{time}}
+            count: {{count}}
+
     aitest2:
       - debug:
       - select:
