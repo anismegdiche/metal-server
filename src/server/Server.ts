@@ -25,12 +25,12 @@ import { Sandbox} from './Sandbox'
 
 export class Server {
 
-    public static App: Express = express()
-    public static Sandbox: Sandbox = new Sandbox()
-    public static Port: number
-    public static CurrentPath: string
+    static App: Express = express()
+    static Sandbox: Sandbox = new Sandbox()
+    static Port: number
+    static CurrentPath: string
 
-    public static async Init(): Promise<void> {
+    static async Init(): Promise<void> {
         await Config.Init()
         Logger.Debug(`${Logger.In} Server.Init`)
 
@@ -88,7 +88,7 @@ export class Server {
         Server.App.use(`${ROUTE.SCHEDULE_PATH}/`, ScheduleRouter)
     }
 
-    public static Start() {
+    static Start() {
         Logger.Debug(`${Logger.In} Server.Start`)
         // Start Server
         Server.App
@@ -108,11 +108,11 @@ export class Server {
             })
     }
 
-    public static Stop() {
+    static Stop() {
         Logger.Debug(`${Logger.In} Server.Stop`)
     }
 
-    public static async Reload(): Promise<void> {
+    static async Reload(): Promise<void> {
         Logger.Debug(`${Logger.In} Server.Reload`)
         Schedule.StopAll()
         await Cache.Disconnect()
@@ -120,7 +120,7 @@ export class Server {
         Config.Init()
     }
 
-    public static GetInfo(): TJson {
+    static GetInfo(): TJson {
         Logger.Debug(`${Logger.In} Server.GetInfo`)
         return {
             server: SERVER.NAME,

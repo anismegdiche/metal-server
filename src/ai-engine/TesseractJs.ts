@@ -12,10 +12,10 @@ import { AI_ENGINE, TConfigAiEngineTesseractJs } from '../server/AiEngine'
 
 export class TesseractJs implements IAiEngine {
 
-    public AiEngineName = AI_ENGINE.TESSERACT_JS
-    public InstanceName: string
+    AiEngineName = AI_ENGINE.TESSERACT_JS
+    InstanceName: string
     // OCR lang
-    public Model: string
+    Model: string
 
     constructor(aiEngineInstanceName: string, aiEngineConfig: TConfigAiEngineTesseractJs) {
         this.InstanceName = aiEngineInstanceName

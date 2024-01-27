@@ -12,14 +12,14 @@ import { Server } from '../server/Server'
 
 export class ServerResponse {
 
-    public static NotImplemented(req: Request, res: Response): void {
+    static NotImplemented(req: Request, res: Response): void {
         res
             .status(HTTP_STATUS_CODE.NOT_IMPLEMENTED)
             .json({ message: HTTP_STATUS_MESSAGE.NOT_IMPLEMENTED })
             .end()
     }
 
-    public static BadRequest(res: Response): void {
+    static BadRequest(res: Response): void {
         res
             .status(HTTP_STATUS_CODE.BAD_REQUEST)
             .json({ message: HTTP_STATUS_MESSAGE.BAD_REQUEST })
@@ -37,7 +37,7 @@ export class ServerResponse {
             .end()
     }
 
-    public static GetInfo(req: Request, res: Response): void {
+    static GetInfo(req: Request, res: Response): void {
         try {
             res
                 .status(HTTP_STATUS_CODE.OK)
@@ -48,7 +48,7 @@ export class ServerResponse {
         }
     }
 
-    public static Reload(req: Request, res: Response): void {
+    static Reload(req: Request, res: Response): void {
         try {
             Server.Reload()
             res
@@ -64,7 +64,7 @@ export class ServerResponse {
         }
     }
 
-    public static AllowMethods(req: Request, res: Response, next: NextFunction, ...methods: string[]) {
+    static AllowMethods(req: Request, res: Response, next: NextFunction, ...methods: string[]) {
 
         if (methods.includes(req.method)) {
             next()

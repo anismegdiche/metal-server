@@ -22,12 +22,12 @@ import PROVIDER, { Source } from '../server/Source'
 
 
 export class Postgres implements IProvider.IProvider {
-    public ProviderName = PROVIDER.POSTGRES
-    public SourceName: string
-    public Params: TSourceParams = <TSourceParams>{}
-    public Primitive = Pool
-    public Connection: Pool | undefined = undefined
-    public Config: TJson = {}
+    ProviderName = PROVIDER.POSTGRES
+    SourceName: string
+    Params: TSourceParams = <TSourceParams>{}
+    Primitive = Pool
+    Connection: Pool | undefined = undefined
+    Config: TJson = {}
 
     Options = new CommonSqlProviderOptions()
 

@@ -27,7 +27,7 @@ export type TSourceTypeExecuteParams = {
 
 export class Schema {
 
-    public static SourceTypeCaseMap: Record<string, Function> = {
+    static SourceTypeCaseMap: Record<string, Function> = {
         'nothing': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await Schema.NothingTodo(sourceTypeExecuteParams),
         'source': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await sourceTypeExecuteParams.CrudFunction()
     }

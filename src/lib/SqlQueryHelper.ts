@@ -10,19 +10,19 @@ import { TJson } from '../types/TJson'
 import { Logger } from './Logger'
 
 export class SqlQueryHelper {
-    public Query = ''
+    Query = ''
 
     constructor(query?: string) {
         if (query)
             this.SetQuery(query)
     }
 
-    public SetQuery(query: string) {
+    SetQuery(query: string) {
         this.Query = query
         return this
     }
 
-    public Select(fields: TJson | string | undefined = undefined) {
+    Select(fields: TJson | string | undefined = undefined) {
         if (typeof fields === 'object') {
             Logger.Error('SqlQueryHelper.Select: fields must be a string or undefined')
             return this
@@ -33,12 +33,12 @@ export class SqlQueryHelper {
         return this
     }
 
-    public From(entity: string) {
+    From(entity: string) {
         this.Query = `${this.Query} FROM ${entity}`
         return this
     }
 
-    public Where(condition: string | object | undefined = undefined) {
+    Where(condition: string | object | undefined = undefined) {
         if (condition === undefined) {
             return this
         }
@@ -65,12 +65,12 @@ export class SqlQueryHelper {
     }
 
 
-    public Delete() {
+    Delete() {
         this.Query = 'DELETE'
         return this
     }
 
-    public Update(entity: string) {
+    Update(entity: string) {
         this.Query = `UPDATE ${entity}`
         return this
     }
@@ -101,12 +101,12 @@ export class SqlQueryHelper {
         return this
     }
 
-    public Insert(entity: string) {
+    Insert(entity: string) {
         this.Query = `INSERT INTO ${entity}`
         return this
     }
 
-    public Fields(data: string[] | string) {
+    Fields(data: string[] | string) {
         if (typeof data === 'string')
             this.Query = `${this.Query}(${data})`
         else
@@ -131,7 +131,7 @@ export class SqlQueryHelper {
         return this
     }
 
-    public OrderBy(order: TJson | string | undefined = undefined) {
+    OrderBy(order: TJson | string | undefined = undefined) {
         if (typeof order !== 'string' && order !== undefined) {
             Logger.Error('SqlQueryHelper.OrderBy: order must be a string or undefined')
             return this

@@ -14,10 +14,10 @@ const { SentimentAnalyzer, Language } = require('node-nlp')
 
 export class NlpJs implements IAiEngine {
 
-	public AiEngineName = AI_ENGINE.NLP_JS
-	public InstanceName: string
-	public Model: string
-	public Options: TJson
+	AiEngineName = AI_ENGINE.NLP_JS
+	InstanceName: string
+	Model: string
+	Options: TJson
 
 	#Model?: typeof SentimentAnalyzer | typeof Language = undefined
 

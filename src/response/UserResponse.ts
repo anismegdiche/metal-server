@@ -18,7 +18,7 @@ export class UserResponse {
         return req.headers.authorization?.replace('Bearer ', '')
     }
 
-    public static LogIn(req: Request, res: Response): void {
+    static LogIn(req: Request, res: Response): void {
         try {
             const { username, password } = req.body
             if (typeof username === 'string' && typeof password === 'string') {
@@ -32,7 +32,7 @@ export class UserResponse {
         }
     }
 
-    public static LogOut(req: Request, res: Response): void {
+    static LogOut(req: Request, res: Response): void {
         try {
             const token = UserResponse.#GetRequestToken(req)
             const intRes = User.LogOut(token)
@@ -42,7 +42,7 @@ export class UserResponse {
         }
     }
 
-    public static GetInfo(req: Request, res: Response): void {
+    static GetInfo(req: Request, res: Response): void {
         try {
             const token = UserResponse.#GetRequestToken(req)
             const intRes = User.GetInfo(token)
@@ -52,7 +52,7 @@ export class UserResponse {
         }
     }
 
-    public static IsAuthenticated(req: Request, res: Response, next: NextFunction): void {
+    static IsAuthenticated(req: Request, res: Response, next: NextFunction): void {
         if (!Config.Flags.EnableAuthentication) {
             next()
             return
@@ -69,7 +69,7 @@ export class UserResponse {
         })
     }
 
-    public static IsNotAuthenticated(req: Request, res: Response, next: NextFunction): void {
+    static IsNotAuthenticated(req: Request, res: Response, next: NextFunction): void {
         if (!Config.Flags.EnableAuthentication) {
             next()
             return

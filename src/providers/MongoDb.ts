@@ -36,7 +36,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
         return options
     }
 
-    public GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let filter: any = {}
         if (schemaRequest?.filterExpression || schemaRequest?.filter) {
 
@@ -57,7 +57,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
         return options
     }
 
-    public GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.fields) {
             let _fields: string[] | Record<string, unknown> = []
             if (schemaRequest.fields.includes(",")) {
@@ -80,7 +80,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
         return options
     }
 
-    public GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.sort) {
             const _sort = schemaRequest.sort.trim()
             let _sortArray = []
@@ -106,7 +106,7 @@ class MongoDbOptions implements IProvider.IProviderOptions {
         return options
     }
 
-    public GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.data) {
             options.Data = new DataTable(
                 schemaRequest.entityName,
@@ -119,12 +119,12 @@ class MongoDbOptions implements IProvider.IProviderOptions {
 
 
 export class MongoDb implements IProvider.IProvider {
-    public ProviderName = PROVIDER.MONGODB
-    public SourceName: string
-    public Params: TSourceParams = <TSourceParams>{}
-    public Primitive = mongodb.MongoClient
-    public Connection: mongodb.MongoClient | undefined = undefined
-    public Config: TJson = {}
+    ProviderName = PROVIDER.MONGODB
+    SourceName: string
+    Params: TSourceParams = <TSourceParams>{}
+    Primitive = mongodb.MongoClient
+    Connection: mongodb.MongoClient | undefined = undefined
+    Config: TJson = {}
 
     Options: MongoDbOptions = new MongoDbOptions()
 

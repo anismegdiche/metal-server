@@ -21,9 +21,9 @@ export type TScheduleConfig = {
 
 export class Schedule {
 
-    public static Jobs: TSchedule[] = []
+    static Jobs: TSchedule[] = []
 
-    public static CreateAndStartAll() {
+    static CreateAndStartAll() {
         Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: ${JSON.stringify(Config.Configuration.schedules)}`)
         if (Config.Configuration?.schedules) {
 
@@ -54,7 +54,7 @@ export class Schedule {
         return undefined
     }
 
-    public static Start(jobName: string): TInternalResponse {
+    static Start(jobName: string): TInternalResponse {
         const _jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (_jobKey) {
             this.Jobs[Number(_jobKey)].cronJob.start()
@@ -69,7 +69,7 @@ export class Schedule {
         }
     }
 
-    public static Stop(jobName: string):TInternalResponse {
+    static Stop(jobName: string):TInternalResponse {
         const _jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (_jobKey) {
             const __jobKey = parseInt(_jobKey, 10)
@@ -85,14 +85,14 @@ export class Schedule {
         }
     }
 
-    public static StartAll() {
+    static StartAll() {
         for (const _job of this.Jobs) {
             _job.cronJob.start()
         }
     }
 
 
-    public static StopAll() {
+    static StopAll() {
         for (const _job of this.Jobs) {
             _job.cronJob.stop()
         }

@@ -8,23 +8,23 @@ import { createContext, Script } from 'vm'
 import { Logger } from '../lib/Logger'
 
 export class Sandbox {
-    private Context: any
-    private KeepState: boolean = false
+    #Context: any
+    #KeepState: boolean = false
 
     constructor(resetState: boolean = false) {
-        this.KeepState = resetState
+        this.#KeepState = resetState
         this.Reset()
     }
 
     Reset() {
         // Create a context
-        this.Context = createContext()
+        this.#Context = createContext()
 
         // Add additional variables or functions to the context if needed
-        this.Context.global = this.Context
+        this.#Context.global = this.#Context
 
         // Add console to the context if you want to allow console.log, etc.
-        this.Context.console = console
+        this.#Context.console = console
     }
 
     // Evaluate dynamic code
@@ -35,13 +35,13 @@ export class Sandbox {
                 throw new Error('Invalid code')
             }
 
-            if (!this.KeepState) {
+            if (!this.#KeepState) {
                 this.Reset()
             }
 
             // Execute the code within the context
             const script = new Script(code)
-            return script.runInContext(this.Context)
+            return script.runInContext(this.#Context)
         } catch (error: any) {
             // Handle errors or log them
             Logger.Error(`Error evaluating code: ${code}, ${error?.message}`)

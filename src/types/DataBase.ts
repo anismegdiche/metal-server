@@ -13,8 +13,8 @@ import { Logger } from '../lib/Logger'
 
 export class DataBase {
 
-    public Name: string
-    public Tables: Record<string, DataTable> = {}
+    Name: string
+    Tables: Record<string, DataTable> = {}
 
     constructor(name: string) {
         if (name === undefined)

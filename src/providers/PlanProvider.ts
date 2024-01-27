@@ -19,10 +19,10 @@ import { CommonSqlProviderOptions } from './CommonSqlProvider'
 
 
 export class PlanProvider implements IProvider.IProvider {
-    public ProviderName = 'Plan'
-    public SourceName: string
-    public Params: TSourceParams = <TSourceParams>{}
-    public Config: TJson = {}
+    ProviderName = 'Plan'
+    SourceName: string
+    Params: TSourceParams = <TSourceParams>{}
+    Config: TJson = {}
 
     Options = new CommonSqlProviderOptions()
 

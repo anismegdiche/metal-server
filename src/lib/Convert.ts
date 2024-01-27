@@ -60,7 +60,7 @@ export class Convert {
         return schemaRequest
     }
 
-    public static InternalResponseToResponse(res: Response, intRes: TInternalResponse): void {
+    static InternalResponseToResponse(res: Response, intRes: TInternalResponse): void {
         res.status(intRes.StatusCode).json(intRes.Body)
     }
 

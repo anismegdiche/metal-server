@@ -10,7 +10,7 @@ import { Schedule } from '../server/Schedule'
 import { Convert } from '../lib/Convert'
 
 export class ScheduleResponse {
-    public static Start(req: Request, res: Response) {
+    static Start(req: Request, res: Response) {
         try {
             const { jobName } = req.params
             const intRes = Schedule.Start(jobName)
@@ -20,7 +20,7 @@ export class ScheduleResponse {
         }
     }
 
-    public static Stop(req: Request, res: Response) {
+    static Stop(req: Request, res: Response) {
         try {
             const { jobName } = req.params
             const intRes = Schedule.Stop(jobName)

@@ -31,7 +31,7 @@ export default PROVIDER
 export class Source {
 
     // global sources
-    public static Sources: Record<string, IProvider> = {}
+    static Sources: Record<string, IProvider> = {}
 
     static #NewSourceCaseMap: Record<PROVIDER, Function> = {
         [PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanProvider(source, sourceParams),

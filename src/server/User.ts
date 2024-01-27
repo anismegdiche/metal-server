@@ -18,10 +18,10 @@ export type TToken = string | undefined
 
 export class User {
 
-    private static readonly SALT_ROUNDS = 10
-    public static readonly JWT_EXPIRATION_TIME = 60 * 60 // 1 hour
-    public static Users: TUser = {}
-    public static LoggedInUsers: { [token: string]: TUser } = {}
+    static readonly #SALT_ROUNDS = 10
+    static readonly JWT_EXPIRATION_TIME = 60 * 60 // 1 hour
+    static Users: TUser = {}
+    static LoggedInUsers: { [token: string]: TUser } = {}
 
     static #GenerateJwtSecret(): string {
         const secretLength = 64 // Length of the JWT secret
@@ -30,7 +30,7 @@ export class User {
     }
 
     static #HashPassword(password: string): string {
-        return Bcrypt.hashSync(password, User.SALT_ROUNDS)
+        return Bcrypt.hashSync(password, User.#SALT_ROUNDS)
     }
 
     
@@ -41,12 +41,12 @@ export class User {
         return _.has(User.LoggedInUsers, token)
     }
 
-    public static LoadUsers(): void {
+    static LoadUsers(): void {
         if (Config.Flags.EnableAuthentication)
             User.Users = _.mapValues(Config.Configuration.users, user => user.toString())
     }
 
-    public static LogIn(username: string, password: string): TInternalResponse {
+    static LogIn(username: string, password: string): TInternalResponse {
 
         // Check if the user exists and the password is correct
         const _isUserExist: boolean = _.has(User.Users, username)
@@ -70,7 +70,7 @@ export class User {
     }
 
 
-    public static LogOut(token: TToken): TInternalResponse {
+    static LogOut(token: TToken): TInternalResponse {
         if (token  && User.#CheckToken(token)) {
             delete User.LoggedInUsers[token]
             return {
@@ -85,7 +85,7 @@ export class User {
     }
 
 
-    public static GetInfo(token: TToken): TInternalResponse {
+    static GetInfo(token: TToken): TInternalResponse {
         if (token  && User.#CheckToken(token)) {
             const { username } = User.LoggedInUsers[token]
             return {
@@ -99,7 +99,7 @@ export class User {
         }
     }
 
-    public static IsAuthenticated(token: TToken) {
+    static IsAuthenticated(token: TToken) {
         if (!Config.Flags.EnableAuthentication) {
             return true
         }
@@ -109,7 +109,7 @@ export class User {
         return false
     }
 
-    public static IsNotAuthenticated(token: TToken) {
+    static IsNotAuthenticated(token: TToken) {
         return !User.IsAuthenticated(token)
     }
 }

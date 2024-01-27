@@ -118,10 +118,10 @@ const SqlToJsType: TJson = {
 
 export class DataTable {
 
-    public Name: string
-    public Fields: TFields = <TFields>{}
-    public Rows: TRow[] = <TRow[]>[]
-    public MetaData: Record<string, unknown> = {}
+    Name: string
+    Fields: TFields = <TFields>{}
+    Rows: TRow[] = <TRow[]>[]
+    MetaData: Record<string, unknown> = {}
 
 
     constructor(name: string | undefined, rows: TJson[] | undefined = undefined) {
@@ -139,7 +139,7 @@ export class DataTable {
         }
     }
 
-    public Set(rows: TJson[] | undefined = undefined): this {
+    Set(rows: TJson[] | undefined = undefined): this {
         if (rows) {
             this.Rows = [...rows]
             this.SetFields()
@@ -147,7 +147,7 @@ export class DataTable {
         return this
     }
 
-    public SetFields(): this {
+    SetFields(): this {
         const _cols: TJson = { ..._.head(this.Rows) }
         this.Fields = _.reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
@@ -156,12 +156,12 @@ export class DataTable {
         return this
     }
 
-    public GetFieldNames(): string[] {
+    GetFieldNames(): string[] {
         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         return _.keys(this.Fields)
     }
 
-    public PrefixAllFields(prefix: string): this {
+    PrefixAllFields(prefix: string): this {
         if (this.Rows.length === 0)
             return this
 
@@ -174,7 +174,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public UnPrefixAllfields(): this {
+    UnPrefixAllfields(): this {
         if (this.Rows.length === 0) {
             return this
         }
@@ -192,7 +192,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public async FreeSql(sqlQuery: string | undefined): Promise<this> {
+    async FreeSql(sqlQuery: string | undefined): Promise<this> {
         if (sqlQuery === undefined) {
             return this
         }
@@ -223,7 +223,7 @@ export class DataTable {
     }
 
 
-    public LeftJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
+    LeftJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             LEFT JOIN ? \`${dtB.Name}\` 
@@ -233,7 +233,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public InnerJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
+    InnerJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             INNER JOIN ? \`${dtB.Name}\` 
@@ -243,7 +243,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public RightJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
+    RightJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             RIGHT JOIN ? \`${dtB.Name}\` 
@@ -253,7 +253,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public FullOuterJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
+    FullOuterJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             FULL OUTER JOIN ? \`${dtB.Name}\` 
@@ -263,7 +263,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public CrossJoin(dtB: this): this {
+    CrossJoin(dtB: this): this {
         this.Rows = alasql(`
             SELECT * FROM ? \`${this.Name}\` 
             CROSS JOIN ? \`${dtB.Name}\``,
@@ -272,7 +272,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public SelectFields(fields: string[]): this {
+    SelectFields(fields: string[]): this {
         if (this.Rows.length === 0 || fields.length === 0)
             return this
 
@@ -284,17 +284,17 @@ export class DataTable {
         return this.SetFields()
     }
 
-    public Sort(fields: string[], orders: TOrder[]): this {
+    Sort(fields: string[], orders: TOrder[]): this {
         this.Rows = _.orderBy(this.Rows, fields, orders)
         return this
     }
 
-    public SetMetaData(metadata: string, value: unknown): this {
+    SetMetaData(metadata: string, value: unknown): this {
         this.MetaData[metadata] = value
         return this
     }
 
-    public AddRows(newRows: TJson | TJson[] | undefined = undefined): this {
+    AddRows(newRows: TJson | TJson[] | undefined = undefined): this {
         if (!newRows) {
             return this
         }

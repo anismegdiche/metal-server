@@ -22,7 +22,7 @@ export class Cache {
     static Schema = "metal_cache"
     static Table = "cache"
 
-    public static CacheSource: IProvider
+    static CacheSource: IProvider
 
     static #GetSchemaRequest(): TSchemaRequest {
         return {

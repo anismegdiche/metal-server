@@ -19,10 +19,10 @@ import { AI_ENGINE, TConfigAiEngineTensorFlowJsImageClassifyOptions, TENSORFLOW_
 
 
 export class TensorFlowJs implements IAiEngine {
-	public AiEngineName = AI_ENGINE.TENSORFLOW_JS
-	public InstanceName: string
-	public Model: string
-	public Options: TJson
+	AiEngineName = AI_ENGINE.TENSORFLOW_JS
+	InstanceName: string
+	Model: string
+	Options: TJson
 
 	#Model?: MobileNet.MobileNet = undefined
 

@@ -12,7 +12,7 @@ import { Convert } from '../lib/Convert'
 
 export class PlanResponse {
 
-    public static Reload(req: Request, res: Response) {
+    static Reload(req: Request, res: Response) {
         try {
             const { planName } = req.params
             const intRes = Plan.Reload(planName)

@@ -12,7 +12,7 @@ import { Convert } from '../lib/Convert'
 
 export class CommonSqlProviderOptions implements IProvider.IProviderOptions {
 
-    public Parse(schemaRequest: TSchemaRequest): TOptions {
+    Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}
         if (schemaRequest) {
             options = this.GetFilter(options, schemaRequest)
@@ -23,7 +23,7 @@ export class CommonSqlProviderOptions implements IProvider.IProviderOptions {
         return options
     }
 
-    public GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let filter = {}
         if (schemaRequest?.filterExpression || schemaRequest?.filter) {
 
@@ -38,7 +38,7 @@ export class CommonSqlProviderOptions implements IProvider.IProviderOptions {
         return options
     }
 
-    public GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         options.Fields = (schemaRequest?.fields === undefined)
             ? '*'
             : schemaRequest.fields
@@ -46,14 +46,14 @@ export class CommonSqlProviderOptions implements IProvider.IProviderOptions {
         return options
     }
 
-    public GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.sort) {
             options.Sort = schemaRequest.sort
         }
         return options
     }
 
-    public GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.data) {
             options.Data = new DataTable(
                 schemaRequest.entityName,

@@ -21,12 +21,12 @@ import PROVIDER, { Source } from '../server/Source'
 
 
 export class SqlServer implements IProvider.IProvider {
-    public ProviderName = PROVIDER.MSSQL
-    public SourceName: string
-    public Params: TSourceParams = <TSourceParams>{}
-    public Primitive = mssql
-    public Connection: ConnectionPool | undefined = undefined
-    public Config: TJson = {}
+    ProviderName = PROVIDER.MSSQL
+    SourceName: string
+    Params: TSourceParams = <TSourceParams>{}
+    Primitive = mssql
+    Connection: ConnectionPool | undefined = undefined
+    Config: TJson = {}
 
     Options = new CommonSqlProviderOptions()
 

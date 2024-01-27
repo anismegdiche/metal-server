@@ -22,17 +22,17 @@ import { AI_ENGINE, AiEngine } from './AiEngine'
 export class Config {
 
     // global configuration
-    public static Configuration: any = {}
-    public static ConfigFilePath = './config/config.yml'
+    static Configuration: any = {}
+    static ConfigFilePath = './config/config.yml'
 
-    public static DEFAULTS: TJson = {
+    static DEFAULTS: TJson = {
         "server.port": 3000,
         "server.timezone": 'UTC',
         "server.verbosity": 'warn',
         "server.request-limit": '100mb'
     }
 
-    public static Flags: TJson = {
+    static Flags: TJson = {
         EnableCache: false,              // enable/disable cache
         EnableAuthentication: false      // enable/disable authentication
     }
@@ -236,11 +236,11 @@ export class Config {
             (e) => e.message.includes('is required') || e.message.includes('must be')
         )
     }
-    public static Has(element: string): boolean {
+    static Has(element: string): boolean {
         return _.has(Config.Configuration, element)
     }
 
-    public static Get<T>(element: string): T {
+    static Get<T>(element: string): T {
         return _.get(Config.Configuration, element)
     }
 }
