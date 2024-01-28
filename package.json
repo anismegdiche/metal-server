@@ -5,17 +5,17 @@
   "name": "metal",
   "version": "0.2-dev",
   "description": "Metal Server",
+  "author": "Anis Megdiche",
+  "license": "GPL-3.0-or-later",
   "main": "./build/index.js",
   "scripts": {
     "build": "tsc --watch",
     "lint": "eslint --fix .",
-    "dev": "nodemon ./build/index.js",
+    "dev": "nodemon ./build/index.js -i data/",
     "test": "jest",
     "test-client": "jest --testMatch \"**/client/__tests__/**/*.js\"",
     "prod": "node ./build/index.js"
   },
-  "author": "Anis Megdiche",
-  "license": "GPL-3.0-or-later",
   "dependencies": {
     "@azure/msal-node": "^2.6.2",
     "@tensorflow-models/mobilenet": "^2.1.1",
