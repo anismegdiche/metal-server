@@ -43,12 +43,12 @@ export class SqlQueryHelper {
             return this
         }
 
-        if (typeof condition === 'string') {
+        if (typeof condition === 'string' && condition.length > 0) {
             this.Query = `${this.Query} WHERE ${condition}`
             return this
         }
 
-        if (Array.isArray(condition)) {
+        if (Array.isArray(condition)  && condition.length > 0) {
             const _cond = _
                 .chain(condition)
                 .map((__filter) => {
@@ -64,7 +64,7 @@ export class SqlQueryHelper {
             return this
         }
 
-        if (typeof condition === 'object') {
+        if (typeof condition === 'object' && Object.keys(condition).length > 0) {
             const _cond = _
                 .chain(condition)
                 .map((__value, __key) => {
