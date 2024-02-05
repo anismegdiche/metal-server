@@ -11,20 +11,24 @@ import { TSourceParams } from '../types/TSourceParams'
 import { RESPONSE } from '../lib/Const'
 import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
 // Providers
-import { Postgres } from '../providers/Postgres'
-import { MongoDb } from '../providers/MongoDb'
-import { SqlServer } from '../providers/SqlServer'
+import { PostgresProvider } from '../providers/PostgresProvider'
+import { MongoDbProvider } from '../providers/MongoDbProvider'
+import { SqlServerProvider } from '../providers/SqlServerProvider'
 import { PlanProvider } from '../providers/PlanProvider'
+import { FilesProvider } from '../providers/FilesProvider'
 //
 //  config types
 //
+/* eslint-disable no-unused-vars */
 enum PROVIDER {
     PLAN = "plan",
     POSTGRES = "postgres",
     MONGODB = "mongodb",
-    MSSQL = "mssql"
+    MSSQL = "mssql",
+    FILES = "files"
 }
 export default PROVIDER
+/* eslint-enable no-unused-vars */
 //
 //
 //
@@ -35,9 +39,10 @@ export class Source {
 
     static #NewSourceCaseMap: Record<PROVIDER, Function> = {
         [PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanProvider(source, sourceParams),
-        [PROVIDER.POSTGRES]: (source: string, sourceParams: TSourceParams) => new Postgres(source, sourceParams),
-        [PROVIDER.MONGODB]: (source: string, sourceParams: TSourceParams) => new MongoDb(source, sourceParams),
-        [PROVIDER.MSSQL]: (source: string, sourceParams: TSourceParams) => new SqlServer(source, sourceParams)
+        [PROVIDER.POSTGRES]: (source: string, sourceParams: TSourceParams) => new PostgresProvider(source, sourceParams),
+        [PROVIDER.MONGODB]: (source: string, sourceParams: TSourceParams) => new MongoDbProvider(source, sourceParams),
+        [PROVIDER.MSSQL]: (source: string, sourceParams: TSourceParams) => new SqlServerProvider(source, sourceParams),
+        [PROVIDER.FILES]: (source: string, sourceParams: TSourceParams) => new FilesProvider(source, sourceParams)
     }
 
     static async Connect(source: string | null, sourceParams: TSourceParams): Promise<void> {

@@ -25,8 +25,7 @@ export interface IProvider {
     Params: TJson
     Primitive?: object
     Connection?: Pool | MongoClient | ConnectionPool
-    Config: TJson
-    Init: (oParams: TSourceParams) => void
+    Init: (sourceParams: TSourceParams) => void
     Connect: () => Promise<void>
     Disconnect: () => Promise<void>
     Insert: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>

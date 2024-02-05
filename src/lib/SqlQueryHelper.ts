@@ -45,6 +45,23 @@ export class SqlQueryHelper {
 
         if (typeof condition === 'string') {
             this.Query = `${this.Query} WHERE ${condition}`
+            return this
+        }
+
+        if (Array.isArray(condition)) {
+            const _cond = _
+                .chain(condition)
+                .map((__filter) => {
+                    const ___formattedValue: string = typeof __filter === 'number'
+                        ? Object.values(__filter)[0]
+                        : `'${Object.values(__filter)[0]}'`
+                    return `${Object.keys(__filter)[0]}=${___formattedValue}`
+                })
+                .join(' AND ')
+                .value()
+
+            this.Query = `${this.Query} WHERE ${_cond}`
+            return this
         }
 
         if (typeof condition === 'object') {
@@ -60,6 +77,7 @@ export class SqlQueryHelper {
                 .value()
 
             this.Query = `${this.Query} WHERE ${_cond}`
+            return this
         }
         return this
     }

@@ -3,82 +3,91 @@
 //
 //
 //
-
-import { Pool } from 'pg'
+import mssql, { ConnectionPool } from 'mssql'
 
 import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
 import * as IProvider from "../types/IProvider"
 import { SqlQueryHelper } from '../lib/SqlQueryHelper'
 import { TSourceParams } from "../types/TSourceParams"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
 import { TOptions } from "../types/TOptions"
 import { DataTable } from "../types/DataTable"
 import { TJson } from "../types/TJson"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../types/TSchemaResponse'
 import { TSchemaRequest } from '../types/TSchemaRequest'
-import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
+import { Cache } from '../server/Cache'
 import { CommonSqlProviderOptions } from './CommonSqlProvider'
 import PROVIDER, { Source } from '../server/Source'
 
 
-export class Postgres implements IProvider.IProvider {
-    ProviderName = PROVIDER.POSTGRES
+export class SqlServerProvider implements IProvider.IProvider {
+    ProviderName = PROVIDER.MSSQL
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
-    Primitive = Pool
-    Connection: Pool | undefined = undefined
+    Primitive = mssql
+    Connection: ConnectionPool | undefined = undefined
     Config: TJson = {}
 
     Options = new CommonSqlProviderOptions()
 
-    constructor(sourceName: string, oParams: TJson) {
+    constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
-        this.Init(<TSourceParams>oParams)
+        this.Init(sourceParams)
         this.Connect()
     }
 
-    async Init(oParams: TSourceParams): Promise<void> {
-        Logger.Debug("Postgres.Init")
-        this.Params = oParams
+    async Init(sourceParams: TSourceParams): Promise<void> {
+        Logger.Debug("SqlServer.Init")
+        this.Params = sourceParams
     }
 
     async Connect(): Promise<void> {
-        const _sourceName = this.SourceName
-        const { user = '', password = '', database = 'postgres', host = '', port = 5432 } = this.Params || {}
-        try {
-            this.Connection = new this.Primitive({
-                user,
-                password,
-                database,
-                host,
-                port
-            })
-            this.Connection.query('SELECT NOW()', async function (err) {
-                try {
-                    if (err)
-                        throw err
-                    else
-                        Logger.Info(`${Logger.In} connected to '${_sourceName} (${database})'`)
-
-                } catch (error: unknown) {
-                    Logger.Error(`${Logger.In} Failed to connect to '${_sourceName} (${database})'`)
-                    Logger.Error(error)
+        Logger.Debug("SqlServer.Connect")
+        const {
+            user = 'sa',
+            password = '',
+            database = 'master',
+            host = 'localhost',
+            port = 1433,
+            options = {
+                pool: {
+                    max: 10,
+                    min: 0,
+                    idleTimeoutMillis: 30_000
+                },
+                options: {
+                    encrypt: false, // true for azure
+                    trustServerCertificate: true // change to true for local dev / self-signed certs
                 }
-            })
+            }
+        } = this.Params || {}
+        
+        const connectionConfig = {
+            user,
+            password,
+            database,
+            server: host,
+            port,
+            ...options
+        }
+        try {
+            this.Connection = await this.Primitive.connect(connectionConfig)
+            Logger.Info(`${Logger.In} connected to '${this.SourceName} (${database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.In} Failed to connect to '${_sourceName} (${database})'`)
-            Logger.Error(error)
+            Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName} (${database})': ${host}: ${port}[${database}]`)
+            Logger.Error(JSON.stringify(error))
         }
     }
 
     async Disconnect(): Promise<void> {
+        Logger.Debug(`${Logger.In} SqlServer.Disconnect`)
         if (this.Connection !== undefined) {
-            this.Connection.end()
+            this.Connection.close()
         }
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} Postgres.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} SqlServer.Insert: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -92,13 +101,13 @@ export class Postgres implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const _sqlQuery = new SqlQueryHelper()
-            .Insert(`"${schemaRequest.entityName}"`)
+        const sqlQuery = new SqlQueryHelper()
+            .Insert(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Fields(options.Data.GetFieldNames())
             .Values(options.Data.Rows)
             .Query
 
-        await this.Connection.query(_sqlQuery)
+        await this.Connection.query(sqlQuery)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
@@ -108,7 +117,7 @@ export class Postgres implements IProvider.IProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Postgres.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} SqlServer.Select: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -122,16 +131,16 @@ export class Postgres implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const _sqlQuery = new SqlQueryHelper()
+        const sqlQuery = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`"${schemaRequest.entityName}"`)
+            .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Where(options.Filter)
             .OrderBy(options.Sort)
             .Query
 
-        const _data = await this.Connection.query(_sqlQuery)
-        if (_data.rows.length > 0) {
-            const _dt = new DataTable(schemaRequest.entityName, _data.rows)
+        const data = await this.Connection.query(sqlQuery)
+        if (data.recordset != null && data.recordset.length > 0) {
+            const _dt = new DataTable(schemaRequest.entityName, data.recordset)
             Cache.Set(schemaRequest, _dt)
             schemaResponse = <TSchemaResponseData>{
                 ...schemaResponse,
@@ -150,7 +159,7 @@ export class Postgres implements IProvider.IProvider {
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Postgres.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`SqlServer.Update: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -164,13 +173,13 @@ export class Postgres implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const _sqlQuery = new SqlQueryHelper()
-            .Update(`"${schemaRequest.entityName}"`)
+        const sqlQuery = new SqlQueryHelper()
+            .Update(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Set(options.Data.Rows)
             .Where(options.Filter)
             .Query
 
-        await this.Connection.query(_sqlQuery)
+        await this.Connection.query(sqlQuery)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
@@ -180,9 +189,9 @@ export class Postgres implements IProvider.IProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Postgres.Delete : ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`SqlServer.Delete: ${JSON.stringify(schemaRequest)}`)
 
-        let schemaResponse = <TSchemaResponse>{
+        const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.DELETE
@@ -194,18 +203,17 @@ export class Postgres implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const _sqlQuery = new SqlQueryHelper()
+        const sqlQuery = new SqlQueryHelper()
             .Delete()
-            .From(`"${schemaRequest.entityName}"`)
+            .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Where(options.Filter)
             .Query
 
-        await this.Connection.query(_sqlQuery)
-        schemaResponse = <TSchemaResponseData>{
+        await this.Connection.query(sqlQuery)
+        return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
         }
-        return schemaResponse
     }
 }

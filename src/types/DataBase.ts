@@ -38,26 +38,26 @@ export class DataBase {
 
     FreeSql(name: string, sqlQuery: string): DataTable | undefined {
 
-        let _sqlQueryModified = sqlQuery
-        let _dtRows: TRow[][] = []
+        let sqlQueryModified = sqlQuery
+        let rows: TRow[][] = []
 
-        const _rxDataTableNames = /\{([^}]+)\}/igm
-        const _dataTables = sqlQuery.match(_rxDataTableNames)
+        const rxDataTableNames = /\{([^}]+)\}/igm
+        const dataTables = sqlQuery.match(rxDataTableNames)
 
-        if (_dataTables === null)
+        if (dataTables === null)
             return undefined
 
-        _.uniq(_dataTables).forEach((__dt: string) => {
-            _sqlQueryModified = _sqlQueryModified.replace(`{${__dt}}`, ` ? ${__dt}`)
-            _dtRows = [
-                ..._dtRows,
-                this.Tables[__dt].Rows
+        _.uniq(dataTables).forEach((_dt: string) => {
+            sqlQueryModified = sqlQueryModified.replace(`{${_dt}}`, ` ? ${_dt}`)
+            rows = [
+                ...rows,
+                this.Tables[_dt].Rows
             ]
         })
 
         return new DataTable(name, alasql(
-            _sqlQueryModified,
-            _dtRows
+            sqlQueryModified,
+            rows
         ))
     }
 }

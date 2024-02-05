@@ -16,25 +16,26 @@ import { Logger } from '../lib/Logger'
 import { SqlQueryHelper } from '../lib/SqlQueryHelper'
 import { Plan } from '../server/Plan'
 import { CommonSqlProviderOptions } from './CommonSqlProvider'
+import PROVIDER from '../server/Source'
 
 
 export class PlanProvider implements IProvider.IProvider {
-    ProviderName = 'Plan'
+    ProviderName = PROVIDER.PLAN
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Config: TJson = {}
-
+    
     Options = new CommonSqlProviderOptions()
 
-    constructor(sourceName: string, oParams: TJson) {
+    constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
-        this.Init(<TSourceParams>oParams)
+        this.Init(sourceParams)
         this.Connect()
     }
 
-    async Init(oParams: TSourceParams): Promise<void> {
+    async Init(sourceParams: TSourceParams): Promise<void> {
         Logger.Debug("Plan.Init")
-        this.Params = oParams
+        this.Params = sourceParams
     }
 
     async Connect(): Promise<void> {

@@ -1,0 +1,60 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+
+###
+@token={{login.response.body.token}}
+
+
+###
+# @name get_customer_json
+GET http://localhost:3000/schema/json/customer.json
+    # ?fields=city,country
+    # &filter={"country":"France"}
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name patch_customer_json
+PATCH  http://localhost:3000/schema/json/customer.json
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "filter": {
+        "country" : "France"
+    },
+    "data": {
+        "city": "XXXXXXXXXX"
+    }
+}
+
+
+###
+# @name get_covid_csv
+GET http://localhost:3000/schema/csv/covid.csv
+    ?fields=iso_code,continent,location
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+
+###
+# @name patch_covid_csv
+PATCH  http://localhost:3000/schema/csv/covid.csv
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "filter": {
+        "iso_code": "AFG"
+    },
+    "data": {
+        "continent": "XXXXXXXXXX"
+    }
+}

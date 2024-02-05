@@ -23,7 +23,7 @@ import { Cache } from '../server/Cache'
 import PROVIDER, { Source } from '../server/Source'
 
 
-class MongoDbOptions implements IProvider.IProviderOptions {
+class MongoDbProviderOptions implements IProvider.IProviderOptions {
     Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}
         if (schemaRequest) {
@@ -118,40 +118,41 @@ class MongoDbOptions implements IProvider.IProviderOptions {
 }
 
 
-export class MongoDb implements IProvider.IProvider {
+export class MongoDbProvider implements IProvider.IProvider {
     ProviderName = PROVIDER.MONGODB
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Primitive = mongodb.MongoClient
     Connection: mongodb.MongoClient | undefined = undefined
-    Config: TJson = {}
 
-    Options: MongoDbOptions = new MongoDbOptions()
+    Options: MongoDbProviderOptions = new MongoDbProviderOptions()
 
-    constructor(sourceName: string, oParams: TSourceParams) {
+    constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
-        if (oParams.options != null) {
-            this.Config = oParams.options
-        }
-        this.Init(oParams)
+        this.Init(sourceParams)
         this.Connect()
     }
 
 
-    async Init(oParams: TSourceParams): Promise<void> {
+    async Init(sourceParams: TSourceParams): Promise<void> {
         Logger.Debug("MongoDb.Init")
-        this.Params = oParams
+        this.Params = sourceParams
     }
 
     async Connect(): Promise<void> {
         Logger.Debug("MongoDb.Connect")
-        const { host = '' } = this.Params || {}
-        this.Connection = new this.Primitive(host, this.Config)
+        const {
+            host = 'localhost'
+        } = this.Params || {}
+
+        this.Connection = new this.Primitive(host, this.Params.options || {})
         try {
             await this.Connection.connect()
-            await this.Connection.db(this.Params.database).command({
-                ping: 1
-            })
+            await this.Connection
+                .db(this.Params.database)
+                .command({
+                    ping: 1
+                })
             Logger.Info(`${Logger.In} connected to '${this.SourceName} (${this.Params.database})'`)
         } catch (error: unknown) {
             Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName}/${this.Params.database}'`)
@@ -182,7 +183,11 @@ export class MongoDb implements IProvider.IProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         await this.Connection.connect()
-        await this.Connection.db(this.Params.database).collection(schemaRequest.entityName).insertMany(options?.Data?.Rows)
+        await this.Connection
+            .db(this.Params.database)
+            .collection(schemaRequest.entityName)
+            .insertMany(options?.Data?.Rows)
+
         Logger.Debug(`${Logger.In} MongoDb.Insert: ${JSON.stringify(schemaRequest)}`)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
@@ -250,12 +255,16 @@ export class MongoDb implements IProvider.IProvider {
 
         await this.Connection.connect()
 
-        await this.Connection.db(this.Params.database).collection(schemaRequest.entityName).updateMany(
-            (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>,
-            {
-                $set: _.head(options?.Data?.Rows)
-            }
-        )
+        await this.Connection
+            .db(this.Params.database)
+            .collection(schemaRequest.entityName)
+            .updateMany(
+                (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>,
+                {
+                    $set: _.head(options?.Data?.Rows)
+                }
+            )
+
         Logger.Debug(`${Logger.In} MongoDb.Update: ${JSON.stringify(schemaRequest)}`)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
@@ -280,9 +289,12 @@ export class MongoDb implements IProvider.IProvider {
             return Source.ResponseError(schemaResponse)
         }
 
-        await this.Connection.db(this.Params.database).collection(schemaRequest.entityName).deleteMany(
-            (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>
-        )
+        await this.Connection
+            .db(this.Params.database)
+            .collection(schemaRequest.entityName)
+            .deleteMany(
+                (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>
+            )
 
         Logger.Debug(`${Logger.In} MongoDb.Delete: ${JSON.stringify(schemaRequest)}`)
 
@@ -293,26 +305,3 @@ export class MongoDb implements IProvider.IProvider {
         }
     }
 }
-
-
-/***
- * db['!all'].aggregate([
-  {$match:
-    {'GENDER': 'F',
-     'DOB':
-      { $gte: 19400801,
-        $lte: 20131231 } } },
-  {$group:
-     {_id: "$GENDER",
-     totalscore:{ $sum: "$BRAINSCORE"}}}
-])  
- */
-
-/*
-[
-{ '$match': { '$and': [Array] } },
-{ '$project': { name: 1, email: 1 } },
-{ '$sort': { name: 1, email: -1 } },
-{ '$set': ... }
-]
-*/

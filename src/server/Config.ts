@@ -92,7 +92,7 @@ export class Config {
                             "password": { type: "string" },
                             "database": { type: "string" }
                         },
-                        required: ["provider", "database"]
+                        required: ["provider"]
                     }
                 }
             },
@@ -236,12 +236,12 @@ export class Config {
             (e) => e.message.includes('is required') || e.message.includes('must be')
         )
     }
-    static Has(element: string): boolean {
-        return _.has(Config.Configuration, element)
+    static Has(path: string): boolean {
+        return _.has(Config.Configuration, path)
     }
 
-    static Get<T>(element: string): T {
-        return _.get(Config.Configuration, element)
+    static Get<T>(path: string): T {
+        return _.get(Config.Configuration, path, undefined)
     }
 }
 

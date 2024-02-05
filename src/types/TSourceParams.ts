@@ -1,5 +1,5 @@
 import PROVIDER from '../server/Source'
-import { TRequestOptions } from "./TRequestOptions"
+import { TJson } from './TJson'
 
 export type TSourceParams = {
     provider: PROVIDER
@@ -8,5 +8,5 @@ export type TSourceParams = {
     user?: string
     password?: string
     database?: string
-    options?: TRequestOptions
+    options?: TJson
 }

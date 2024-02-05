@@ -7,6 +7,7 @@
 	},
 	"extends": [
 		"eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
 		"plugin:@typescript-eslint/recommended",
 		"plugin:you-dont-need-lodash-underscore/compatible"
 	],
@@ -49,7 +50,7 @@
 		],
 		"camelcase": "off",
 		"capitalized-comments": "off",
-		"class-methods-use-this": "error",
+		"class-methods-use-this": "warn",
 		"comma-dangle": "error",
 		"comma-spacing": "off",
 		"comma-style": [
@@ -303,6 +304,6 @@
 		],
 		"@typescript-eslint/no-explicit-any": "warn",
 		"no-unused-vars": "warn",
-		"@typescript-eslint/no-unused-vars": "warn"
+		"@typescript-eslint/no-unused-vars": "off"
 	}
 }

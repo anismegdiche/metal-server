@@ -52,9 +52,9 @@ export class Convert {
 
         if (!_.isEmpty(_queryOrBody)) {
             Object.assign(schemaRequest, _queryOrBody)
-            if (schemaRequest?.filter && typeof schemaRequest.filter === 'string') {
-                schemaRequest.filter = JSON.parse(schemaRequest.filter)
-            }
+            schemaRequest.filter = schemaRequest?.filter && typeof schemaRequest.filter === 'string'
+                ? JSON.parse(schemaRequest.filter)
+                : {}
         }
 
         return schemaRequest
@@ -65,7 +65,7 @@ export class Convert {
     }
 
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, response: Response) {
-        const { schemaName , entityName, transaction, result, status } = schemaResponse
+        const { schemaName, entityName, transaction, result, status } = schemaResponse
 
         let _responseJson: TJson = {
             schemaName,
@@ -120,7 +120,9 @@ export class Convert {
             })
         } else {
             const _objectString = Convert.ReplacePlaceholders(JSON.stringify(text))
-            return JSON.parse(_objectString)
+            return _objectString && typeof _objectString === 'string'
+                ? JSON.parse(_objectString)
+                : {}
         }
     }
 }
