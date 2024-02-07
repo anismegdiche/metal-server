@@ -80,14 +80,14 @@ export class PostgresProvider implements IProvider.IProvider {
 
     async Disconnect(): Promise<void> {
         if (this.Connection !== undefined) {
-            this.Connection.end()
+            await this.Connection.end()
         }
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} Postgres.Insert: ${JSON.stringify(schemaRequest)}`)
 
-        let schemaResponse = <TSchemaResponse>{
+        const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
             ...RESPONSE_TRANSACTION.INSERT
@@ -106,12 +106,11 @@ export class PostgresProvider implements IProvider.IProvider {
             .Query
 
         await this.Connection.query(sqlQuery)
-        schemaResponse = <TSchemaResponseData>{
+        return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
         }
-        return schemaResponse
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
