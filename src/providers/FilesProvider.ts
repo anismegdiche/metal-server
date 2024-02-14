@@ -38,14 +38,18 @@ export type TFileProviderOptions = {
     // Common
     storageType?: STORAGE
     contentType?: CONTENT
-    filesPath?: string
+    autoCreate?: boolean
 } &
-{    // JSON
-    jsonArrayPath?: string
+{    // Filesystem
+    fsFolder?: string
 } &
 {    // Azure Blob
     azureBlobConnectionString?: string
     azureBlobContainerName?: string
+    azureBlobCreateContainerIfNotExists?: boolean
+} &
+{    // JSON
+    jsonArrayPath?: string
 } &
 {    // CSV
     csvDelimiter?: string

@@ -142,20 +142,22 @@ export class MongoDbProvider implements IProvider.IProvider {
     async Connect(): Promise<void> {
         Logger.Debug("MongoDb.Connect")
         const {
-            host = 'localhost'
+            host: uri = 'mongodb://localhost:27017/',
+            database,
+            options = {}
         } = this.Params || {}
 
-        this.Connection = new this.Primitive(host, this.Params.options || {})
+        this.Connection = new this.Primitive(uri, options)
         try {
             await this.Connection.connect()
             await this.Connection
-                .db(this.Params.database)
+                .db(database)
                 .command({
                     ping: 1
                 })
-            Logger.Info(`${Logger.In} connected to '${this.SourceName} (${this.Params.database})'`)
+            Logger.Info(`${Logger.In} connected to '${this.SourceName} (${database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName}/${this.Params.database}'`)
+            Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName}/${database}'`)
             Logger.Error(error)
         }
     }
