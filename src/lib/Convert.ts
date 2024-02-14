@@ -12,6 +12,7 @@ import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from '../t
 import { Logger } from "../lib/Logger"
 import { TInternalResponse } from '../types/TInternalResponse'
 import { Server } from '../server/Server'
+import { Helper } from './Helper'
 
 
 export class Convert {
@@ -41,23 +42,12 @@ export class Convert {
         const { schemaName, entityName } = req.params
         const { body, query } = req
 
-        const schemaRequest: TSchemaRequest = {
+        return <TSchemaRequest>{
             schemaName,
-            entityName
+            entityName,
+            ...query,
+            ...body
         }
-
-        const _queryOrBody: TJson = (_.isNil(query) || _.isEmpty(query))
-            ? body
-            : query
-
-        if (!_.isEmpty(_queryOrBody)) {
-            Object.assign(schemaRequest, _queryOrBody)
-            schemaRequest.filter = schemaRequest?.filter && typeof schemaRequest.filter === 'string'
-                ? JSON.parse(schemaRequest.filter)
-                : {}
-        }
-
-        return schemaRequest
     }
 
     static InternalResponseToResponse(res: Response, intRes: TInternalResponse): void {
