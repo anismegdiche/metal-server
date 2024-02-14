@@ -1,23 +1,31 @@
 /* eslint-disable you-dont-need-lodash-underscore/get */
-import { DataTable } from "../../types/DataTable"
+//
+//
+//
+//
+//
 import _ from 'lodash'
-import { CommonContent, IContent } from './CommonContent'
+//
+import { DataTable } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
+import { CommonContent, IContent } from './CommonContent'
+import { Helper } from '../../lib/Helper'
 
 type TJsonContentConfig = {
-    arrayPath: string
+    arrayPath?: string
 }
 
 export class JsonContent extends CommonContent implements IContent {
 
     Content: TJson = {}
     Config = <TJsonContentConfig>{}
+    IsArray = false
 
-    async Init(name: string, content: string): Promise<void> {
-        this.Name = name
+    async Init(entityName: string, content: string): Promise<void> {
+        this.EntityName = entityName
         if (this.Options) {
             const {
-                jsonArrayPath: arrayPath = ''
+                jsonArrayPath: arrayPath = undefined
             } = this.Options
 
             this.Config = {
@@ -27,21 +35,22 @@ export class JsonContent extends CommonContent implements IContent {
         }
 
         this.RawContent = content
-        this.Content = content && typeof content === 'string'
-            ? JSON.parse(content)
-            : {}
+        this.Content = Helper.JsonTryParse(content, {})
+        // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
+        this.IsArray = _.isArray(this.Content)
     }
 
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
-        const data: TJson[] = _.get(
-            this.Content,
-            this.Config.arrayPath
-        ) as TJson[]
-        return new DataTable(this.Name, data).FreeSql(sqlQuery)
+        let data: TJson[] = []
+
+        data = Helper.JsonGet<TJson[]>(this.Content, this.Config.arrayPath)
+
+        return new DataTable(this.EntityName, data).FreeSql(sqlQuery)
     }
 
     async Set(contentDataTable: DataTable): Promise<string> {
-        _.set(
+
+        this.Content = Helper.JsonSet(
             this.Content,
             this.Config.arrayPath,
             contentDataTable.Rows

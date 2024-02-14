@@ -22,7 +22,7 @@ export class CsvContent extends CommonContent implements IContent {
     Config = <TCsvContentConfig>{}
 
     async Init(name: string, content: string): Promise<void> {
-        this.Name = name
+        this.EntityName = name
         if (this.Options) {
             const {
                 csvDelimiter: delimiter = ',',
@@ -47,7 +47,7 @@ export class CsvContent extends CommonContent implements IContent {
 
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
         const result = Csv.parse<string>(this.Content, this.Config as Csv.ParseWorkerConfig) as any
-        return new DataTable(this.Name, result?.data).FreeSql(sqlQuery)
+        return new DataTable(this.EntityName, result?.data).FreeSql(sqlQuery)
     }
 
     async Set(contentDataTable: DataTable): Promise<string> {

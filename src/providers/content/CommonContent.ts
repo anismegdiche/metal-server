@@ -1,5 +1,4 @@
 /* eslint-disable class-methods-use-this */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable you-dont-need-lodash-underscore/get */
 //
 //
@@ -13,10 +12,10 @@ import { TFileProviderOptions } from "../FilesProvider"
 
 /* eslint-disable no-unused-vars */
 export interface IContent {
-    Name: string
+    EntityName: string
     Options: TFileProviderOptions
-    Content: any
-    Init(name: string, content: string): Promise<void>
+    Content: unknown
+    Init(name: string, content: string): void
     Get(sqlQuery?: string): Promise<DataTable>
     Set(contentDataTable: DataTable): Promise<string>
 }
@@ -24,7 +23,7 @@ export interface IContent {
 
 export class CommonContent {
 
-    Name: string = "DEFAULT"
+    EntityName: string = "DEFAULT"
     Options: TFileProviderOptions
     RawContent?: string = undefined
 
