@@ -27,7 +27,7 @@ describe('JsonContent', () => {
             })
 
             await jsonContentEmptyOptions.Init(name, content)
-            expect(jsonContentEmptyOptions.Config).toEqual({ arrayPath: '' })
+            expect(jsonContentEmptyOptions.Config).toEqual({ arrayPath: undefined })
         })
 
         it('should initialize the content and config correctly', async () => {
@@ -36,7 +36,7 @@ describe('JsonContent', () => {
 
             await jsonContent.Init(name, content)
 
-            expect(jsonContent.Name).toBe(name)
+            expect(jsonContent.EntityName).toBe(name)
             expect(jsonContent.RawContent).toBe(content)
             expect(jsonContent.Content).toEqual({ "key": "value" })
         })
@@ -47,7 +47,7 @@ describe('JsonContent', () => {
 
             await jsonContent.Init(name, content)
 
-            expect(jsonContent.Name).toBe(name)
+            expect(jsonContent.EntityName).toBe(name)
             expect(jsonContent.RawContent).toBe(content)
             expect(jsonContent.Content).toEqual({})
         })
@@ -65,7 +65,7 @@ describe('JsonContent', () => {
             const dataTable = await jsonContent.Get()
 
             expect(dataTable).toBeInstanceOf(DataTable)
-            expect(dataTable.Name).toBe(jsonContent.Name)
+            expect(dataTable.Name).toBe(jsonContent.EntityName)
             expect(dataTable.Rows).toEqual([
                 {
                     id: 1,
@@ -84,7 +84,7 @@ describe('JsonContent', () => {
             const dataTable = await jsonContent.Get()
 
             expect(dataTable).toBeInstanceOf(DataTable)
-            expect(dataTable.Name).toBe(jsonContent.Name)
+            expect(dataTable.Name).toBe(jsonContent.EntityName)
             expect(dataTable.Rows).toEqual([])
         })
     })

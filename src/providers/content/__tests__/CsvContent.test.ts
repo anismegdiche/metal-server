@@ -1,6 +1,6 @@
 import { TSourceParams } from '../../../types/TSourceParams'
 import { CsvContent } from '../CsvContent'
-import { DataTable } from '../../../types/DataTable';
+import { DataTable } from '../../../types/DataTable'
 
 describe('CsvContent', () => {
     const sourceParams: TSourceParams = <TSourceParams>{
@@ -22,7 +22,7 @@ describe('CsvContent', () => {
 
             await csvContent.Init(name, content)
 
-            expect(csvContent.Name).toBe(name)
+            expect(csvContent.EntityName).toBe(name)
             expect(csvContent.Content).toBe(content)
         })
 
