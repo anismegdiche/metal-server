@@ -45,11 +45,28 @@ sources:
     user: admin
     password: "123456"
     database: clubdata
-  plan-etl1:
-    provider: plan
-    plan: etl1
-
+  fs-json-data:
+    provider: files
+    options:
+      storageType: filesystem
+      contentType: json
+      filesPath: ./data/
+      jsonArrayPath: rows
+  fs-csv-data:
+    provider: files
+    options:
+      storageType: filesystem
+      contentType: csv
+      filesPath: ./data/
+      csvDelimiter: ','
+      csvNewline: "\n"
+      csvHeader: true
+      csvQuoteChar: '"'
 schemas:
+  json:
+    sourceName: fs-json-data
+  csv:
+    sourceName: fs-csv-data
   hr:
     sourceName: mssql
     access:

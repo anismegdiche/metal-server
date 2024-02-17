@@ -14,7 +14,7 @@ export type TSchemaRequest = {
     filter?: TJson
     filterExpression?: string
     sort?: string
-    cache?: string
+    cache?: number
     //
     sourceName?: string
 }

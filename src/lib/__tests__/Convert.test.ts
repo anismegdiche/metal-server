@@ -44,3 +44,239 @@ describe('Convert', () => {
         expect(result).toEqual(expected)
     })
 })
+
+
+describe('RequestToSchemaRequest', () => {
+
+    // Returns a TSchemaRequest object with schemaName and entityName properties populated from the request params, and any additional properties from the request body and query.
+    it('should populate schemaName and entityName properties from request params, and include additional properties from request body and query', () => {
+        // Arrange
+        const req: any = {
+            params: {
+                schemaName: 'testSchema',
+                entityName: 'testEntity'
+            },
+            body: {
+                data: [
+                    {
+                        id: 1,
+                        name: 'John'
+                    }
+                ],
+                fields: 'id,name',
+                filter: { id: 1 },
+                filterExpression: 'id = 1',
+                sort: 'name asc',
+                cache: '300'
+            }
+        }
+
+        // Act
+        const result = Convert.RequestToSchemaRequest(req)
+
+        // Assert
+        expect(result).toEqual({
+            schemaName: 'testSchema',
+            entityName: 'testEntity',
+            data: [
+                {
+                    id: 1,
+                    name: 'John'
+                }
+            ],
+            fields: 'id,name',
+            filter: { id: 1 },
+            filterExpression: 'id = 1',
+            sort: 'name asc',
+            cache: '300'
+        })
+    })
+
+    // Returns a TSchemaRequest object with only schemaName and entityName properties if the request body and query are empty.
+    it('should only include schemaName and entityName properties if request body and query are empty', () => {
+        // Arrange
+        const req: any = {
+            params: {
+                schemaName: 'testSchema',
+                entityName: 'testEntity'
+            }
+        }
+
+        // Act
+        const result = Convert.RequestToSchemaRequest(req)
+
+        // Assert
+        expect(result).toEqual({
+            schemaName: 'testSchema',
+            entityName: 'testEntity'
+        })
+    })
+
+    // Returns a TSchemaRequest object with only schemaName and entityName properties if the request params are empty.
+    it('should only include schemaName and entityName properties if request params are empty', () => {
+        // Arrange
+        const req: any = {
+            params: {
+                schemaName: 'testSchema',
+                entityName: 'testEntity'
+            },
+            body: {
+                data: [
+                    {
+                        id: 1,
+                        name: 'John'
+                    }
+                ],
+                fields: 'id,name',
+                filter: { id: 1 },
+                filterExpression: 'id = 1',
+                sort: 'name asc',
+                cache: 300
+            }
+        }
+
+        // Act
+        const result = Convert.RequestToSchemaRequest(req)
+
+        // Assert
+        expect(result).toEqual({
+            schemaName: 'testSchema',
+            entityName: 'testEntity',
+            data: [
+                {
+                    id: 1,
+                    name: "John"
+                }
+            ],
+            fields: "id,name",
+            filter: {
+                id: 1
+            },
+            filterExpression: "id = 1",
+            sort: "name asc",
+            cache: 300
+        })
+    })
+
+    // Returns a TSchemaRequest object with only schemaName and entityName properties if the request params are missing schemaName or entityName.
+    it('should only include schemaName and entityName properties if request params are missing schemaName or entityName', () => {
+        // Arrange
+        const req: any = {
+            params: {
+                schemaName: 'testSchema',
+                entityName: 'testEntity'
+            },
+            body: {
+                data: [
+                    {
+                        id: 1,
+                        name: 'John'
+                    }
+                ],
+                fields: 'id,name',
+                filter: { id: 1 },
+                filterExpression: 'id = 1',
+                sort: 'name asc',
+                cache: 300
+            }
+        }
+
+        // Act
+        const result = Convert.RequestToSchemaRequest(req)
+
+        // Assert
+        expect(result).toEqual({
+            schemaName: "testSchema",
+            entityName: "testEntity",
+            data: [
+                {
+                    id: 1,
+                    name: "John"
+                }
+            ],
+            fields: "id,name",
+            filter: {
+                id: 1
+            },
+            filterExpression: "id = 1",
+            sort: "name asc",
+            cache: 300
+        })
+    })
+
+    // Returns a TSchemaRequest object with additional properties from the request body and query, even if they have the same name.
+    it('should include additional properties from request body and query, even if they have the same name', () => {
+        // Arrange
+        const req: any = {
+            params: {
+                schemaName: 'testSchema',
+                entityName: 'testEntity'
+            },
+            body: {
+                data: [
+                    {
+                        id: 1,
+                        name: 'John'
+                    }
+                ],
+                fields: 'id,name',
+                filter: { id: 1 },
+                filterExpression: 'id = 1',
+                sort: 'name asc',
+                cache: 300
+            }
+        }
+
+        // Act
+        const result = Convert.RequestToSchemaRequest(req)
+
+        // Assert
+        expect(result).toEqual({
+            schemaName: 'testSchema',
+            entityName: 'testEntity',
+            data: [
+                {
+                    id: 1,
+                    name: 'John'
+                }
+            ],
+            fields: 'id,name',
+            filter: { id: 1 },
+            filterExpression: 'id = 1',
+            sort: 'name asc',
+            cache: 300
+        })
+    })
+
+    // Returns a TSchemaRequest object with additional properties from the request body and query, with query properties taking precedence over body properties.
+    it('should include additional properties from request body and query, with query properties taking precedence over body properties', () => {
+        // Arrange
+        const req: any = {
+            params: {
+                schemaName: 'testSchema',
+                entityName: 'testEntity'
+            },
+            query: {
+                fields: 'id',
+                filter: '{ "id": 2 }',
+                filterExpression: 'id = 2',
+                sort: 'id desc',
+                cache: '300'
+            }
+        }
+
+        // Act
+        const result = Convert.RequestToSchemaRequest(req)
+
+        // Assert
+        expect(result).toEqual({
+            schemaName: 'testSchema',
+            entityName: 'testEntity',
+            fields: 'id',
+            filter: { id: 2 },
+            filterExpression: 'id = 2',
+            sort: 'id desc',
+            cache: 300
+        })
+    })
+})

@@ -54,7 +54,7 @@ export class Cache {
         if (!schemaRequest?.cache) {
             return
         }
-        const ttl = parseInt((schemaRequest.cache).replace(/['"]/g, ''), 10) ?? 0
+        const ttl = schemaRequest.cache
         const now = new Date()
         now.setSeconds(now.getSeconds() + ttl)
         const expires = now.getTime()

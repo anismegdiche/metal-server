@@ -11,6 +11,7 @@ import { Config } from './Config'
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
 import { TJson } from '../types/TJson'
+import { NotFoundError } from './Errors'
 
 export type TSchemaRoute = {
     type: "source" | "nothing",
@@ -27,28 +28,32 @@ export type TSourceTypeExecuteParams = {
 
 export class Schema {
 
+    sort?: string
+    cache?: string
+    //
+    sourceName?: string
+
     static SourceTypeCaseMap: Record<string, Function> = {
         'nothing': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await Schema.NothingTodo(sourceTypeExecuteParams),
         'source': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await sourceTypeExecuteParams.CrudFunction()
     }
 
-    static async IsExist(schemaRequest: TSchemaRequest): Promise<boolean> {
-        Logger.Debug(`Schema.IsExist: ${JSON.stringify(schemaRequest)}`)
+    static async IsExists(schemaRequest: TSchemaRequest): Promise<void> {
+        Logger.Debug(`Schema.IsExists: ${JSON.stringify(schemaRequest)}`)
 
         const { schemaName } = schemaRequest
 
         // check if schema exists in config file
         if (!Config.Has("schemas")) {
             Logger.Warn(`section 'schemas' not found in configuration`)
-            return false
+            throw new NotFoundError(`section 'schemas' not found in configuration`)
         }
 
         // check if schema exists
         if (!Config.Has(`schemas.${schemaName}`)) {
             Logger.Warn(`schema '${schemaName}' not found in configuration`)
-            return false
+            throw new NotFoundError(`schema '${schemaName}' not found in configuration`)
         }
-        return true
     }
 
     static async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {

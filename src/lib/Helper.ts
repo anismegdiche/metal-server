@@ -7,9 +7,13 @@ import _ from "lodash"
 //
 import { TJson } from "../types/TJson"
 import { Logger } from "./Logger"
+import { Validator } from "jsonschema"
 
 
 export class Helper {
+
+    static JsonValidator = new Validator()
+
     static CaseMapNotFound(key: string): undefined {
         Logger.Error(`Key '${key}' not found`)
         return undefined

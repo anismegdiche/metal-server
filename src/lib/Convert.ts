@@ -5,14 +5,13 @@
 //
 import _ from 'lodash'
 import { Request, Response } from 'express'
-
+//
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TJson } from '../types/TJson'
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from '../types/TSchemaResponse'
 import { Logger } from "../lib/Logger"
 import { TInternalResponse } from '../types/TInternalResponse'
 import { Server } from '../server/Server'
-import { Helper } from './Helper'
 
 
 export class Convert {
@@ -38,16 +37,48 @@ export class Convert {
         return _.map(_.entries(obj), ([k, v]) => ({ [k]: v }))
     }
 
-    static RequestToSchemaRequest(req: Request) {
+    static RequestToSchemaRequest(req: Request): TSchemaRequest {
         const { schemaName, entityName } = req.params
-        const { body, query } = req
 
+        // //XXX: Initialize schemaRequest with schemaName and entityName
+        // //XXX: let schemaRequest: TSchemaRequest = {
+        // //XXX:     schemaName,
+        // //XXX:     entityName
+        // //XXX: }
+        
+
+        // Merge body and query parameters into schemaRequest
         return <TSchemaRequest>{
             schemaName,
             entityName,
-            ...query,
-            ...body
+            ...req.body,
+            ...req.query
         }
+
+        // //XXX: // Convert filter string to JSON object if present
+        // //XXX: if (typeof schemaRequest.filter === 'string') {
+        // //XXX:     try {
+        // //XXX:         schemaRequest.filter = JSON.parse(schemaRequest.filter)
+        // //XXX:     } catch (error) {
+        // //XXX:         // Handle JSON parsing error
+        // //XXX:         throw new Error('Invalid JSON in filter parameter')
+        // //XXX:     }
+        // //XXX: }
+
+        // //XXX: // Convert cache string to number if present
+        // //XXX: if (typeof schemaRequest.cache === 'string') {
+        // //XXX:     const cacheNumber = parseInt(schemaRequest.cache, 10)
+        // //XXX:     // eslint-disable-next-line no-negated-condition
+        // //XXX:     if (!isNaN(cacheNumber)) {
+        // //XXX:         schemaRequest.cache = cacheNumber
+        // //XXX:     } else {
+        // //XXX:         // Handle invalid cache string
+        // //XXX:         throw new Error('Invalid cache parameter')
+        // //XXX:     }
+        // //XXX: }
+
+        // //XXX: // Return the validated schemaRequest
+        // //XXX: return schemaRequest
     }
 
     static InternalResponseToResponse(res: Response, intRes: TInternalResponse): void {

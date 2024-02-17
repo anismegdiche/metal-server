@@ -8,6 +8,7 @@ import { NextFunction, Request, Response } from 'express'
 
 import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE, SERVER } from '../lib/Const'
 import { Server } from '../server/Server'
+import { HttpError } from '../server/Errors'
 
 
 export class ServerResponse {
@@ -26,13 +27,19 @@ export class ServerResponse {
             .end()
     }
 
-    static Error(res: Response, error: Error) {
+    static Error(res: Response, error: HttpError | Error) {
+        const status = (error instanceof HttpError)
+            ? error.status
+            : HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR
+
         res
-            .status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+            .status(status)
             .json({
                 message: 'Something Went Wrong',
                 error: error.message,
-                stack: _.split(error.stack, '\n')
+                stack: (status == 500)
+                    ? _.split(error.stack, '\n')
+                    : undefined
             })
             .end()
     }

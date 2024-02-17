@@ -9,7 +9,6 @@ import * as Fs from 'fs'
 import * as Yaml from 'js-yaml'
 import _ from 'lodash'
 import * as dotenv from 'dotenv'
-import { Validator } from 'jsonschema'
 //
 import { TJson } from '../types/TJson'
 import { Logger, DefaultLevel } from '../lib/Logger'
@@ -18,6 +17,7 @@ import { Cache } from '../server/Cache'
 import { User } from './User'
 import PROVIDER, { Source } from './Source'
 import { AI_ENGINE, AiEngine } from './AiEngine'
+import { Helper } from '../lib/Helper'
 
 export class Config {
 
@@ -215,9 +215,7 @@ export class Config {
 
     static async Validate(): Promise<void> {
         Logger.Debug('Config.Validate')
-        const yamlValidator = new Validator()
-
-        const errors = yamlValidator.validate(this.Configuration, this.#ConfigSchema).errors
+        const { errors } = Helper.JsonValidator.validate(this.Configuration, this.#ConfigSchema)
 
         if (errors.length <= 0) {
             return
