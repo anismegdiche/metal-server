@@ -37,7 +37,7 @@ export class Source {
     // global sources
     static Sources: Record<string, IProvider> = {}
 
-    static #NewSourceCaseMap: Record<PROVIDER, Function> = {
+    static #ProviderCaseMap: Record<PROVIDER, Function> = {
         [PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanProvider(source, sourceParams),
         [PROVIDER.POSTGRES]: (source: string, sourceParams: TSourceParams) => new PostgresProvider(source, sourceParams),
         [PROVIDER.MONGODB]: (source: string, sourceParams: TSourceParams) => new MongoDbProvider(source, sourceParams),
@@ -46,17 +46,17 @@ export class Source {
     }
 
     static async Connect(source: string | null, sourceParams: TSourceParams): Promise<void> {
-        if (!(sourceParams.provider in Source.#NewSourceCaseMap)) {
+        if (!(sourceParams.provider in Source.#ProviderCaseMap)) {
             Logger.Error(`Source '${source}', Provider '${sourceParams.provider}' not found. The source will not be connected`)
             return
         }
 
         if (source === null) {
             // cache
-            Cache.CacheSource = Source.#NewSourceCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
+            Cache.CacheSource = Source.#ProviderCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
         } else {
             // sources
-            Source.Sources[source] = Source.#NewSourceCaseMap[sourceParams.provider](source, sourceParams)
+            Source.Sources[source] = Source.#ProviderCaseMap[sourceParams.provider](source, sourceParams)
         }
     }
 
