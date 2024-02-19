@@ -10,12 +10,45 @@ import { User } from '../server/User'
 import { Config } from '../server/Config'
 import { ServerResponse } from '../response/ServerResponse'
 import { Convert } from '../lib/Convert'
+import { checkSchema, validationResult } from 'express-validator'
+import { BadRequestError } from '../server/Errors'
+import _ from 'lodash'
 
 
 export class UserResponse {
 
     static #GetRequestToken(req: Request): string | undefined {
         return req.headers.authorization?.replace('Bearer ', '')
+    }
+
+    static readonly ParameterValidation = checkSchema({
+        username: {
+            in: ['body'],
+            trim: true,
+            isString: true,
+            errorMessage: 'must be a string'
+        },
+        password: {
+            in: ['body'],
+            trim: true,
+            isString: true,
+            errorMessage: 'must be a string'
+        }
+    })
+
+    static CheckParameters(req: Request, res: Response, next: NextFunction): void {
+        // Check for validation errors
+        const errors = validationResult(req)
+        if (errors.isEmpty()) {
+            next()
+        } else {
+            const errorMessages = _.map(
+                errors.array(),
+                (item: any) => `${item.path}: ${item.msg} in ${item.location}`
+            )
+            ServerResponse.Error(res, new BadRequestError(errorMessages.join(', ')))
+        }
+
     }
 
     static LogIn(req: Request, res: Response): void {
