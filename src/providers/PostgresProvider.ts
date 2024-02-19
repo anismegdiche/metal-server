@@ -49,7 +49,8 @@ export class PostgresProvider implements IProvider.IProvider {
             password = '',
             database = 'postgres',
             host = 'localhost',
-            port = 5432
+            port = 5432,
+            options
         } = this.Params || {}
         
         try {
@@ -58,7 +59,8 @@ export class PostgresProvider implements IProvider.IProvider {
                 password,
                 database,
                 host,
-                port
+                port,
+                ...options
             })
             this.Connection.query('SELECT NOW()', async function (err) {
                 try {
