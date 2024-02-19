@@ -258,10 +258,10 @@ describe('RequestToSchemaRequest', () => {
             },
             query: {
                 fields: 'id',
-                filter: '{ "id": 2 }',
+                filter: { id: 2 },
                 filterExpression: 'id = 2',
                 sort: 'id desc',
-                cache: '300'
+                cache: 300
             }
         }
 

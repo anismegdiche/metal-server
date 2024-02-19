@@ -112,18 +112,10 @@ export class SchemaResponse {
             optional: true,
             custom: {
                 options: (value) => {
-                    if (!Array.isArray(value)) {
-                        try {
-                            JSON.parse(value)
-                            return true
-                        } catch (error) {
-                            return false
-                        }
-                    }
-                    return true
-                },
-                errorMessage: 'must be a JSON array or a JSON object'
-            }
+                    return (_.isObject(value) || Array.isArray(value))
+                }
+            },
+            errorMessage: 'must be a JSON array or a JSON object'
         }
     })
 

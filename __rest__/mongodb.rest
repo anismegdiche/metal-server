@@ -45,3 +45,17 @@ Content-Type: application/json
    },
    "cache": "10"
 }
+####
+# insert
+#
+
+POST http://localhost:3000/schema/mflix/users
+Content-Type: application/json
+
+{
+    "data": {
+                "name": "John Doe",
+                "email": "j.doe@nowhere.com",
+                "country": "France"
+            }
+}
