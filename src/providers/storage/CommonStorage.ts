@@ -10,6 +10,7 @@ import { TFileProviderOptions } from "../FilesProvider"
 export interface IStorage {
     Params: TSourceParams
     Options: TFileProviderOptions
+    Init(): void
     Connect(): Promise<void>
     Disconnect(): Promise<void>
     IsExist(file: string): Promise<boolean>
@@ -26,6 +27,12 @@ export class CommonStorage {
     constructor(storageParams: TSourceParams) {
         this.Params = storageParams
         this.Options = storageParams.options as TFileProviderOptions
+        this.Init()
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    Init(): void {
+        //
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -38,17 +45,17 @@ export class CommonStorage {
         //
     }
 
-    // eslint-disable-next-line class-methods-use-this
+    // eslint-disable-next-line class-methods-use-this, no-unused-vars
     async IsExist(file: string): Promise<boolean> {
         return true
     }
 
-    // eslint-disable-next-line class-methods-use-this
+    // eslint-disable-next-line class-methods-use-this, no-unused-vars
     async Read(file: string): Promise<string | undefined> {
         return undefined
     }
 
-    // eslint-disable-next-line class-methods-use-this
+    // eslint-disable-next-line class-methods-use-this, no-unused-vars
     async Write(file: string, content: string): Promise<void> {
         //
     }
@@ -56,9 +63,9 @@ export class CommonStorage {
     // eslint-disable-next-line class-methods-use-this
     async StreamToBuffer(stream: NodeJS.ReadableStream): Promise<string> {
         return new Promise((resolve, reject) => {
-            const chunks: any[] = []
-            stream.on('data', (chunk) => chunks.push(chunk))
-            stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')))
+            const chunks: Buffer[] = []
+            stream.on('data', (chunk: Buffer) => chunks.push(chunk))
+            stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
             stream.on('error', (error) => reject(error))
         })
     }
