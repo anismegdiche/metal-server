@@ -24,7 +24,7 @@ const REQUEST_TRANSACTION: Record<string, string> = {
 
 export class SchemaResponse {
 
-    static ParameterValidation = checkSchema({
+    static readonly ParameterValidation = checkSchema({
         schemaName: {
             in: ['params'],
             trim: true,
