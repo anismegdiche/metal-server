@@ -1,3 +1,4 @@
+/* eslint-disable init-declarations */
 //
 //
 //
@@ -93,8 +94,14 @@ export class FilesProvider implements IProvider.IProvider {
             contentType = CONTENT.JSON
         } = this.Params.options as TFileProviderOptions
 
-        this.Primitive = FilesProvider.#NewStorageCaseMap[storageType](sourceParams) || Helper.CaseMapNotFound(storageType)
-        this.Content = FilesProvider.#NewContentCaseMap[contentType](sourceParams) || Helper.CaseMapNotFound(contentType)
+        this.Primitive = FilesProvider.#NewStorageCaseMap[storageType](this.Params) || Helper.CaseMapNotFound(storageType)
+
+        if (this.Primitive)
+            this.Primitive.Init()
+        else
+            throw new Error(`${this.SourceName}: Failed to initialize storage provider`)
+
+        this.Content = FilesProvider.#NewContentCaseMap[contentType](this.Params) || Helper.CaseMapNotFound(contentType)
     }
 
     async Connect(): Promise<void> {
@@ -121,7 +128,11 @@ export class FilesProvider implements IProvider.IProvider {
             ...RESPONSE_TRANSACTION.INSERT
         }
 
-        let fileString = await this.Primitive.Read(entityName)
+        let fileString
+        if (this.Primitive)
+            fileString = await this.Primitive.Read(entityName)
+        else
+            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
         if (!fileString) {
             return <TSchemaResponseNoData>{
@@ -130,7 +141,7 @@ export class FilesProvider implements IProvider.IProvider {
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
             }
         }
-        await this.Content.Init(entityName, fileString)
+        this.Content.Init(entityName, fileString)
         const fileDataTable = await this.Content.Get() || undefined
 
         const sqlQuery = new SqlQueryHelper()
@@ -161,7 +172,11 @@ export class FilesProvider implements IProvider.IProvider {
             ...RESPONSE_TRANSACTION.SELECT
         }
 
-        const fileString = await this.Primitive.Read(entityName)
+        let fileString
+        if (this.Primitive)
+            fileString = await this.Primitive.Read(entityName)
+        else
+            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
         if (!fileString) {
             return <TSchemaResponseNoData>{
@@ -170,7 +185,7 @@ export class FilesProvider implements IProvider.IProvider {
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
             }
         }
-        await this.Content.Init(entityName, fileString)
+        this.Content.Init(entityName, fileString)
 
         const sqlQuery = new SqlQueryHelper()
             .Select(options.Fields)
@@ -214,7 +229,11 @@ export class FilesProvider implements IProvider.IProvider {
             ...RESPONSE_TRANSACTION.UPDATE
         }
 
-        let fileString = await this.Primitive.Read(entityName)
+        let fileString
+        if (this.Primitive)
+            fileString = await this.Primitive.Read(entityName)
+        else
+            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
         if (!fileString) {
             return <TSchemaResponseNoData>{
@@ -223,7 +242,7 @@ export class FilesProvider implements IProvider.IProvider {
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
             }
         }
-        await this.Content.Init(entityName, fileString)
+        this.Content.Init(entityName, fileString)
         const fileDataTable = await this.Content.Get() || undefined
 
         const sqlQuery = new SqlQueryHelper()
@@ -250,12 +269,16 @@ export class FilesProvider implements IProvider.IProvider {
         const { schemaName, entityName } = schemaRequest
 
         const schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
+            schemaName,
+            entityName,
             ...RESPONSE_TRANSACTION.DELETE
         }
 
-        let fileString = await this.Primitive.Read(entityName)
+        let fileString
+        if (this.Primitive)
+            fileString = await this.Primitive.Read(entityName)
+        else
+            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
         if (!fileString) {
             return <TSchemaResponseNoData>{
@@ -264,7 +287,7 @@ export class FilesProvider implements IProvider.IProvider {
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
             }
         }
-        await this.Content.Init(entityName, fileString)
+        this.Content.Init(entityName, fileString)
         const fileDataTable = await this.Content.Get() || undefined
 
         const sqlQuery = new SqlQueryHelper()
@@ -275,7 +298,11 @@ export class FilesProvider implements IProvider.IProvider {
 
         await fileDataTable.FreeSql(sqlQuery)
         fileString = await this.Content.Set(fileDataTable)
-        await this.Primitive.Write(entityName, fileString)
+
+        if (this.Primitive)
+            await this.Primitive.Write(entityName, fileString)
+        else
+            throw new Error(`${this.SourceName}: Failed to write in storage provider`)
 
         return <TSchemaResponseData>{
             ...schemaResponse,
