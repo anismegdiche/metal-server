@@ -1,0 +1,60 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+
+###
+@token={{login.response.body.token}}
+
+###
+GET http://localhost:3000/schema/mem/users
+    # ?filter={"name":"Jaime Lannister"}
+    # &cache=300
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+POST http://localhost:3000/schema/mem/users
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": [
+        {
+                "name": "John Doe",
+                "email": "j.doe@nowhere.com",
+                "country": "France"
+        },
+        {
+                "name": "Mary Jane",
+                "email": "mary@somewhere.com",
+                "country": "USA"
+        }
+    ]
+}
+
+###
+PATCH http://localhost:3000/schema/mem/users
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "filterExpression":"name like 'John%'",
+    "data": {
+                "city":"Paris"
+    }
+}
+
+###
+DELETE http://localhost:3000/schema/mem/users
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "filterExpression":"name like 'John%'"
+}

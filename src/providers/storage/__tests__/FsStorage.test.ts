@@ -40,13 +40,13 @@ describe('FsStorage', () => {
 
     describe('Read', () => {
         it('should return the content of the file if it exists', async () => {
-            jest.spyOn(Fs.promises, 'readFile').mockResolvedValue('File content');
-            jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(true);
+            jest.spyOn(Fs.promises, 'readFile').mockResolvedValue('File content')
+            jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(true)
 
-            const result = await fsStorage.Read('test.txt');
+            const result = await fsStorage.Read('test.txt')
 
-            expect(result).toBe('File content');
-        });
+            expect(result).toBe('File content')
+        })
 
         it('should return undefined if the file does not exist', async () => {
             jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(false)
@@ -59,16 +59,16 @@ describe('FsStorage', () => {
 
     describe('Write', () => {
         it('should write the content to the file', async () => {
-            jest.spyOn(Fs.promises, 'writeFile').mockResolvedValue(undefined);
+            jest.spyOn(Fs.promises, 'writeFile').mockResolvedValue(undefined)
 
-            await fsStorage.Write('test.txt', 'File content');
+            await fsStorage.Write('test.txt', 'File content')
 
             expect(Fs.promises.writeFile).toHaveBeenCalledWith(
                 `${fsStorage.Params.database}test.txt`,
                 'File content',
                 'utf8'
-            );
-        });
+            )
+        })
 
     })
 })

@@ -16,12 +16,14 @@ import { MongoDbProvider } from '../providers/MongoDbProvider'
 import { SqlServerProvider } from '../providers/SqlServerProvider'
 import { PlanProvider } from '../providers/PlanProvider'
 import { FilesProvider } from '../providers/FilesProvider'
+import { MemoryProvider } from '../providers/MemoryProvider'
 //
 //  config types
 //
 /* eslint-disable no-unused-vars */
 enum PROVIDER {
     PLAN = "plan",
+    MEMORY = "memory",
     POSTGRES = "postgres",
     MONGODB = "mongodb",
     MSSQL = "mssql",
@@ -39,6 +41,7 @@ export class Source {
 
     static #ProviderCaseMap: Record<PROVIDER, Function> = {
         [PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanProvider(source, sourceParams),
+        [PROVIDER.MEMORY]: (source: string, sourceParams: TSourceParams) => new MemoryProvider(source, sourceParams),
         [PROVIDER.POSTGRES]: (source: string, sourceParams: TSourceParams) => new PostgresProvider(source, sourceParams),
         [PROVIDER.MONGODB]: (source: string, sourceParams: TSourceParams) => new MongoDbProvider(source, sourceParams),
         [PROVIDER.MSSQL]: (source: string, sourceParams: TSourceParams) => new SqlServerProvider(source, sourceParams),
