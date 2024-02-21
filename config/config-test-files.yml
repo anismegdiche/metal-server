@@ -1,4 +1,4 @@
-version: "0.1"
+version: "0.2"
 server:
   port: 3000
   verbosity: debug
@@ -19,28 +19,40 @@ users:
 sources:
   fs-json-data:
     provider: files
-    database: ./data/
     options:
       storageType: filesystem
       contentType: json
+      fsFolder: ./data/
       jsonArrayPath: rows
   fs-csv-data:
     provider: files
-    database: ./data/
     options:
       storageType: filesystem
       contentType: csv
+      fsFolder: ./data/
       csvDelimiter: ','
       csvNewline: "\n"
       csvHeader: true
       csvQuoteChar: '"'
   az-json-data:
     provider: files
-    host: UseDevelopmentStorage=true
-    database: datacontainer1
     options:
       storageType: azureblob
       contentType: json
+      azureBlobConnectionString: UseDevelopmentStorage=true
+      azureBlobContainerName: datacontainer1
+  az-csv-data:
+    provider: files
+    options:
+      storageType: azureblob
+      contentType: csv
+      azureBlobConnectionString: UseDevelopmentStorage=true
+      azureBlobContainerName: datacontainer1
+      csvDelimiter: ','
+      csvNewline: "\n"
+      csvHeader: true
+      csvQuoteChar: '"'
+
 
 schemas:
   fsjson:
@@ -49,5 +61,5 @@ schemas:
     sourceName: fs-csv-data
   azjson:
     sourceName: az-json-data
-  # azcsv:
-  #   sourceName: fs-csv-data
+  azcsv:
+    sourceName: az-csv-data

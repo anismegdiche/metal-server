@@ -17,6 +17,7 @@ Content-Type: application/json
 GET http://localhost:3000/schema/fsjson/customer.json
     ?fields=city,country
     &filter={"country":"France"}
+    # &cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -43,24 +44,26 @@ authorization: Bearer {{token}}
 
 
 ###### AZURE BLOB   ######
-
 ###
 GET http://localhost:3000/schema/azjson/colors.json
-    ?filterExpression=`value` LIKE '%%00'
+    ?filterExpression=hexcode LIKE '%%00'
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+
+###
+GET http://localhost:3000/schema/azcsv/addresses.csv
+    # ?filterExpression=hexcode LIKE '%%00'
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 ###
-# @name patch_covid_csv
-PATCH  http://localhost:3000/schema/csv/covid.csv
+PATCH  http://localhost:3000/schema/azcsv/addresses.csv
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 {
-    "filter": {
-        "iso_code": "AFG"
-    },
     "data": {
-        "continent": "XXXXXXXXXX"
+        "Country": "USA"
     }
 }
