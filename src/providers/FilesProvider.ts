@@ -39,6 +39,7 @@ export type TFileProviderOptions = {
     // Common
     storageType?: STORAGE
     contentType?: CONTENT
+    //TODO: to test
     autoCreate?: boolean
 } &
 {    // Filesystem

@@ -93,7 +93,7 @@ export class SqlQueryHelper {
         return this
     }
 
-    // TODO: review datatype
+    // TODO: to review datatype
     Set(fieldsValues: TRow[] | TRow | undefined) {
         if (fieldsValues === undefined) {
             return this

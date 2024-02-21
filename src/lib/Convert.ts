@@ -38,14 +38,7 @@ export class Convert {
     }
 
     static RequestToSchemaRequest(req: Request): TSchemaRequest {
-        const { schemaName, entityName } = req.params
-
-        // //XXX: Initialize schemaRequest with schemaName and entityName
-        // //XXX: let schemaRequest: TSchemaRequest = {
-        // //XXX:     schemaName,
-        // //XXX:     entityName
-        // //XXX: }
-        
+        const { schemaName, entityName } = req.params        
 
         // Merge body and query parameters into schemaRequest
         return <TSchemaRequest>{
@@ -54,31 +47,6 @@ export class Convert {
             ...req.body,
             ...req.query
         }
-
-        // //XXX: // Convert filter string to JSON object if present
-        // //XXX: if (typeof schemaRequest.filter === 'string') {
-        // //XXX:     try {
-        // //XXX:         schemaRequest.filter = JSON.parse(schemaRequest.filter)
-        // //XXX:     } catch (error) {
-        // //XXX:         // Handle JSON parsing error
-        // //XXX:         throw new Error('Invalid JSON in filter parameter')
-        // //XXX:     }
-        // //XXX: }
-
-        // //XXX: // Convert cache string to number if present
-        // //XXX: if (typeof schemaRequest.cache === 'string') {
-        // //XXX:     const cacheNumber = parseInt(schemaRequest.cache, 10)
-        // //XXX:     // eslint-disable-next-line no-negated-condition
-        // //XXX:     if (!isNaN(cacheNumber)) {
-        // //XXX:         schemaRequest.cache = cacheNumber
-        // //XXX:     } else {
-        // //XXX:         // Handle invalid cache string
-        // //XXX:         throw new Error('Invalid cache parameter')
-        // //XXX:     }
-        // //XXX: }
-
-        // //XXX: // Return the validated schemaRequest
-        // //XXX: return schemaRequest
     }
 
     static InternalResponseToResponse(res: Response, intRes: TInternalResponse): void {

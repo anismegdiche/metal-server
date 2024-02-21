@@ -43,7 +43,7 @@ export class Config {
         properties: {
             "version": {
                 type: "string",
-                enum: ["0.1"]
+                enum: ["0.1","0.2"]
             },
             "server": {
                 type: "object",
@@ -200,8 +200,9 @@ export class Config {
 
         Config.Flags.EnableAuthentication = Config.Has('server.authentication')
         Config.Flags.EnableAuthentication && User.LoadUsers()
+        Config.Flags.EnableCache = Config.Has('server.cache')
+        Config.Flags.EnableCache && await Cache.Connect()
         Config.Has('sources') && await Source.ConnectAll()
-        Config.Has('server.cache') && await Cache.Connect()
         Config.Has('ai-engines') && await AiEngine.Init()
         Config.Has('ai-engines') && await AiEngine.CreateAll()
         Config.Has('schedules') && Schedule.CreateAndStartAll()

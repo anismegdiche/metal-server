@@ -17,6 +17,7 @@ export class FsStorage extends CommonStorage implements IStorage {
 
     Init(): void {
         this.Config = {
+            // CURRENT: to refactor using fsFolder
             folder: this.Params.database || '.'
         }
     }
@@ -26,6 +27,11 @@ export class FsStorage extends CommonStorage implements IStorage {
     }
 
     async Read(file: string): Promise<string | undefined> {
+        if (this.Options.autoCreate && !(await this.IsExist(file))) {
+            const _fd = Fs.openSync(`${this.Config.folder}${file}`, 'wx')
+            await Fs.promises.writeFile(`${this.Config.folder}${file}`, '', 'utf8')
+            Fs.closeSync(_fd)
+        }
         if (await this.IsExist(file)) {
             return Fs.promises.readFile(`${this.Config.folder}${file}`, 'utf8')
         }
@@ -34,7 +40,9 @@ export class FsStorage extends CommonStorage implements IStorage {
 
     async Write(file: string, content: string): Promise<void> {
         if (this.Options.autoCreate && !(await this.IsExist(file))) {
-            Fs.openSync(`${this.Config.folder}${file}`, 'wx')
+            const _fd = Fs.openSync(`${this.Config.folder}${file}`, 'wx')
+            await Fs.promises.writeFile(`${this.Config.folder}${file}`, '', 'utf8')
+            Fs.closeSync(_fd)
         }
         await Fs.promises.writeFile(`${this.Config.folder}${file}`, content, 'utf8')
     }

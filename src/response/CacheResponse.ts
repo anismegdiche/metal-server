@@ -45,7 +45,7 @@ export class CacheResponse {
             const schemaConfig: TJson = Config.Get(`schemas.${schemaRequest.schemaName}`)
             schemaRequest.sourceName = Schema.GetRoute(schemaName, entityName, schemaConfig).routeName
 
-            if (!Config.Flags.EnableCache && schemaRequest?.cache) {
+            if (!Config.Flags.EnableCache && schemaRequest?.cache === undefined) {
                 Logger.Warn(`Cache.Get: 'server.cache' is not configured, bypassing option 'cache'`)
                 next()
                 return
