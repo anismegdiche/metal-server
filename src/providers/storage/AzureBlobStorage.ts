@@ -24,10 +24,8 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
     Init(): void {
         Logger.Debug("AzureBlobStorage.Init")
         this.Config = <TAzureBlobStorageConfig>{
-            // CURRENT: to refactor to azureBlobConnectionString
-            connectionString: this.Params.host,
-            // CURRENT: to refactor to azureBlobContainerName
-            containerName: this.Params.database,
+            connectionString: this.Options.azureBlobConnectionString,
+            containerName: this.Options.azureBlobContainerName,
             createContainerIfNotExists: this.Options.azureBlobCreateContainerIfNotExists || false
         }
     }
