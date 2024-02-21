@@ -38,7 +38,7 @@ export class PostgresProvider implements IProvider.IProvider {
     }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("Postgres.Init")
+        Logger.Debug("PostgresProvider.Init")
         this.Params = sourceParams
     }
 
@@ -87,7 +87,7 @@ export class PostgresProvider implements IProvider.IProvider {
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} Postgres.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} PostgresProvider.Insert: ${JSON.stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -116,7 +116,7 @@ export class PostgresProvider implements IProvider.IProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Postgres.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PostgresProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -158,7 +158,7 @@ export class PostgresProvider implements IProvider.IProvider {
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Postgres.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PostgresProvider.Update: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -188,7 +188,7 @@ export class PostgresProvider implements IProvider.IProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Postgres.Delete : ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PostgresProvider.Delete : ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,

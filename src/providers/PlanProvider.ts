@@ -34,7 +34,7 @@ export class PlanProvider implements IProvider.IProvider {
     }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("Plan.Init")
+        Logger.Debug("PlanProvider.Init")
         this.Params = sourceParams
     }
 
@@ -48,7 +48,7 @@ export class PlanProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} Plan.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} PlanProvider.Insert: ${JSON.stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Schema.Insert: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{
@@ -62,7 +62,7 @@ export class PlanProvider implements IProvider.IProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Plan.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PlanProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -106,7 +106,7 @@ export class PlanProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Plan.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PlanProvider.Update: ${JSON.stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Schema.Update: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{
@@ -121,7 +121,7 @@ export class PlanProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Plan.Delete : ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PlanProvider.Delete : ${JSON.stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Schema.Delete: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{

@@ -37,12 +37,12 @@ export class SqlServerProvider implements IProvider.IProvider {
     }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("SqlServer.Init")
+        Logger.Debug("SqlServerProvider.Init")
         this.Params = sourceParams
     }
 
     async Connect(): Promise<void> {
-        Logger.Debug("SqlServer.Connect")
+        Logger.Debug("SqlServerProvider.Connect")
         const {
             user = 'sa',
             password = '',
@@ -80,14 +80,14 @@ export class SqlServerProvider implements IProvider.IProvider {
     }
 
     async Disconnect(): Promise<void> {
-        Logger.Debug(`${Logger.In} SqlServer.Disconnect`)
+        Logger.Debug(`${Logger.In} SqlServerProvider.Disconnect`)
         if (this.Connection !== undefined) {
             this.Connection.close()
         }
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} SqlServer.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} SqlServerProvider.Insert: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -117,7 +117,7 @@ export class SqlServerProvider implements IProvider.IProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} SqlServer.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} SqlServerProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -159,7 +159,7 @@ export class SqlServerProvider implements IProvider.IProvider {
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`SqlServer.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`SqlServerProvider.Update: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -189,7 +189,7 @@ export class SqlServerProvider implements IProvider.IProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`SqlServer.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`SqlServerProvider.Delete: ${JSON.stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
