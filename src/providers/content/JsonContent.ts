@@ -35,6 +35,7 @@ export class JsonContent extends CommonContent implements IContent {
         }
 
         this.RawContent = content
+        //TODO: when content = "", data has empty json object {}
         this.Content = Helper.JsonTryParse(content, {})
         // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
         this.IsArray = _.isArray(this.Content)
