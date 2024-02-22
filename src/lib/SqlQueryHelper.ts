@@ -138,11 +138,13 @@ export class SqlQueryHelper {
         return this
     }
 
-    Fields(data: string[] | string) {
-        if (typeof data === 'string')
-            this.Query = `${this.Query}(${data})`
-        else
-            this.Query = `${this.Query}(${_.join(data, ",")})`
+    Fields(data: string[] | string, sep: string = '') {
+        const joinString = `${sep},${sep}`
+
+        this.Query = Array.isArray(data)
+            ? `${this.Query}(${sep}${data.join(joinString)}${sep})`
+            : `${this.Query}(${data})`
+
         return this
     }
 
@@ -152,23 +154,23 @@ export class SqlQueryHelper {
             data.forEach((_values, _index) => {
                 const newValues = _.chain(_values)
                     .mapValues((_value, _field) => {
+                        if (_value == null || _value == undefined)
+                            return
                         if (typeof _value === 'object') {
-                            if (_value != null)
-                                this.Data.push(_value)
+                            this.Data.push(_value)
                             return '?'
                         }
-                        return _value
+                        return `'${_value}'`
                     })
                     .values()
-                    .join('\',\'')
+                    .join(',')
                     .value()
 
-                // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                this.Query = `${this.Query} ('${newValues}')`
+                this.Query = `${this.Query} (${newValues})`
 
-                if (_index < data.length - 1) {
-                    this.Query = `${this.Query}, `
-                }
+                //XXX: if (_index < data.length - 1) {
+                //XXX:     this.Query = `${this.Query}, `
+                //XXX: }
             })
         } else {
             // eslint-disable-next-line you-dont-need-lodash-underscore/values

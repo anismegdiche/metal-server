@@ -135,19 +135,20 @@ export class FilesProvider implements IProvider.IProvider {
         else
             throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (!fileString) {
+        if (fileString == undefined) {
             return <TSchemaResponseNoData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
             }
         }
+
         this.Content.Init(entityName, fileString)
         const fileDataTable = await this.Content.Get() || undefined
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Insert(`\`${entityName}\``)
-            .Fields(options.Data.GetFieldNames())
+            .Fields(options.Data.GetFieldNames(),'`')
             .Values(options.Data.Rows)
 
         await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
@@ -178,7 +179,7 @@ export class FilesProvider implements IProvider.IProvider {
         else
             throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (!fileString) {
+        if (fileString == undefined) {
             return <TSchemaResponseNoData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
@@ -235,7 +236,7 @@ export class FilesProvider implements IProvider.IProvider {
         else
             throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (!fileString) {
+        if (fileString == undefined) {
             return <TSchemaResponseNoData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
@@ -279,7 +280,7 @@ export class FilesProvider implements IProvider.IProvider {
         else
             throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (!fileString) {
+        if (fileString == undefined) {
             return <TSchemaResponseNoData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
