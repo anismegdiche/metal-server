@@ -17,7 +17,7 @@ Content-Type: application/json
 GET http://localhost:3000/schema/fsjson/customer.json
     ?fields=city,country
     &filter={"country":"France"}
-    # &cache=300
+    &cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}
 

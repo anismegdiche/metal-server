@@ -10,7 +10,8 @@ import { TJson } from '../types/TJson'
 import { Logger } from './Logger'
 
 export class SqlQueryHelper {
-    Query = ''
+    Query: string = ''
+    Data: object[] = []
 
     constructor(query?: string) {
         if (query)
@@ -48,7 +49,7 @@ export class SqlQueryHelper {
             return this
         }
 
-        if (Array.isArray(condition)  && condition.length > 0) {
+        if (Array.isArray(condition) && condition.length > 0) {
             const _cond = _
                 .chain(condition)
                 .map((__filter) => {
@@ -93,29 +94,42 @@ export class SqlQueryHelper {
         return this
     }
 
-    // TODO: to review datatype
-    Set(fieldsValues: TRow[] | TRow | undefined) {
-        if (fieldsValues === undefined) {
+    Set(rows: TRow[] | TRow | undefined) {
+        if (rows === undefined) {
             return this
         }
 
-        let _fieldsValues: TRow = <TRow>{}
-        _fieldsValues = (Array.isArray(fieldsValues))
-            ? <TRow>(_.head(fieldsValues))
-            : fieldsValues
+        let fieldsValues: TRow = <TRow>{}
+        fieldsValues = (Array.isArray(rows))
+            ? <TRow>(rows.at(0))
+            : rows
 
-        const _setValues = _.chain(_fieldsValues)
-            .mapValues((__value, __field) => {
-                const ___formattedValue = typeof __value === 'number'
-                    ? __value
-                    : `'${__value}'`
-                return `${__field}=${___formattedValue}`
+        const setValues = _.chain(fieldsValues)
+            .mapValues((_value, _field) => {
+                let __formattedValue = ''
+                switch (typeof _value) {
+                    case 'string':
+                        __formattedValue = `'${_value}'`
+                        break
+                    case 'number':
+                        __formattedValue = _value.toString()
+                        break
+                    case 'object':
+                        __formattedValue = '?'
+                        if (_value != null)
+                            this.Data.push(_value)
+                        break
+                    default:
+                        __formattedValue = `'${JSON.stringify(_value)}'`
+                        break
+                }
+                return `${_field}=${__formattedValue}`
             })
             .values()
             .join(',')
             .value()
 
-        this.Query = `${this.Query} SET ${_setValues}`
+        this.Query = `${this.Query} SET ${setValues}`
         return this
     }
 
@@ -136,8 +150,22 @@ export class SqlQueryHelper {
         if (Array.isArray(data) && data.length > 0) {
             this.Query = `${this.Query} VALUES`
             data.forEach((_values, _index) => {
+                const newValues = _.chain(_values)
+                    .mapValues((_value, _field) => {
+                        if (typeof _value === 'object') {
+                            if (_value != null)
+                                this.Data.push(_value)
+                            return '?'
+                        }
+                        return _value
+                    })
+                    .values()
+                    .join('\',\'')
+                    .value()
+
                 // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                this.Query = `${this.Query} ('${_.values(_values).join('\',\'')}')`
+                this.Query = `${this.Query} ('${newValues}')`
+
                 if (_index < data.length - 1) {
                     this.Query = `${this.Query}, `
                 }

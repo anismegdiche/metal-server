@@ -12,6 +12,7 @@ import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from '../t
 import { Logger } from "../lib/Logger"
 import { TInternalResponse } from '../types/TInternalResponse'
 import { Server } from '../server/Server'
+import { TypeHelper } from './TypeHelper'
 
 
 export class Convert {
@@ -55,7 +56,7 @@ export class Convert {
 
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, response: Response) {
         const { schemaName, entityName, transaction, result, status } = schemaResponse
-
+        
         let _responseJson: TJson = {
             schemaName,
             entityName,
@@ -64,18 +65,19 @@ export class Convert {
             status
         }
 
-        if ((<TSchemaResponseData>schemaResponse)?.data)
+        if (TypeHelper.IsSchemaResponseData(schemaResponse))
             _responseJson = {
                 ..._responseJson,
-                metadata: (<TSchemaResponseData>schemaResponse).data.MetaData,
-                fields: (<TSchemaResponseData>schemaResponse).data.Fields,
-                rows: (<TSchemaResponseData>schemaResponse).data.Rows
+                cache: schemaResponse.cache,
+                metadata: schemaResponse.data.MetaData,
+                fields: schemaResponse.data.Fields,
+                rows: schemaResponse.data.Rows
             }
 
-        if ((<TSchemaResponseError>schemaResponse)?.error)
+        if (TypeHelper.IsSchemaResponseError(schemaResponse))
             _responseJson = {
                 ..._responseJson,
-                error: (<TSchemaResponseError>schemaResponse).error
+                error: schemaResponse.error
             }
 
         return response

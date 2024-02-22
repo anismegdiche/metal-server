@@ -31,6 +31,6 @@ export class TypeHelper {
     }
 
     static IsSchemaResponseData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponseData {
-        return 'data' in schemaResponse && schemaResponse.data.Rows.length > 0
+        return 'data' in schemaResponse && schemaResponse?.data?.Rows?.length > 0
     }
 }

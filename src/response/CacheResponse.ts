@@ -11,11 +11,12 @@ import { ServerResponse } from './ServerResponse'
 import { TSchemaResponseData } from '../types/TSchemaResponse'
 import { Convert } from '../lib/Convert'
 import { TSchemaRequest } from '../types/TSchemaRequest'
-import { RESPONSE_RESULT, RESPONSE_STATUS, RESPONSE_TRANSACTION } from '../lib/Const'
+import { RESPONSE, RESPONSE_TRANSACTION } from '../lib/Const'
 import { Schema } from '../server/Schema'
 import { Logger } from '../lib/Logger'
 import { Config } from '../server/Config'
 import { TJson } from '../types/TJson'
+import { TCacheData } from '../types/TCacheData'
 
 
 export class CacheResponse {
@@ -45,8 +46,7 @@ export class CacheResponse {
             const schemaConfig: TJson = Config.Get(`schemas.${schemaRequest.schemaName}`)
             schemaRequest.sourceName = Schema.GetRoute(schemaName, entityName, schemaConfig).routeName
 
-            //BUG: message is displayed if no cache is used
-            if (!Config.Flags.EnableCache && schemaRequest?.cache === undefined) {
+            if (!Config.Flags.EnableCache && schemaRequest?.cache) {
                 Logger.Warn(`Cache.Get: 'server.cache' is not configured, bypassing option 'cache'`)
                 next()
                 return
@@ -57,25 +57,25 @@ export class CacheResponse {
                 return
             }
 
-            Logger.Debug(`Cache.Get`)
-            const _hash = Cache.Hash(schemaRequest)
+            const cacheHash = Cache.Hash(schemaRequest)
 
-            Cache.Get(_hash)
-                .then(_cacheData => {
+            Cache.Get(cacheHash)
+                .then((_cacheData: TCacheData | undefined) => {
                     if (_cacheData && Cache.IsValid(_cacheData?.expires)) {
-                        Logger.Debug(`Cache.Get: cache ${_hash} found`)
-                        res.status(200).json(<TSchemaResponseData>{
-                            schemaName: _cacheData.schemaName,
-                            entityName: _cacheData.entityName,
-                            ...RESPONSE_TRANSACTION.SELECT,
-                            ...RESPONSE_RESULT.SUCCESS,
-                            ...RESPONSE_STATUS.HTTP_200,
-                            cache: "true",
-                            expires: _cacheData.expires,
-                            data: _cacheData.datatable
-                        })
+                        Convert.SchemaResponseToResponse(
+                            <TSchemaResponseData>{
+                                schemaName: _cacheData.schemaRequest.schemaName,
+                                entityName: _cacheData.schemaRequest.entityName,
+                                ...RESPONSE_TRANSACTION.SELECT,
+                                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+                                ...RESPONSE.SELECT.SUCCESS.STATUS,
+                                cache: "true",
+                                expires: _cacheData.expires,
+                                data: _cacheData.datatable
+                            },
+                            res
+                        )
                     } else {
-                        Logger.Debug(`Cache.Get: cache ${_hash} not found`)
                         next()
                     }
                 })

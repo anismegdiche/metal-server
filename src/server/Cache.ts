@@ -15,16 +15,17 @@ import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { IProvider } from '../types/IProvider'
 import { TInternalResponse } from '../types/TInternalResponse'
+import { TypeHelper } from '../lib/TypeHelper'
 
-//TODO: to review
+
 export class Cache {
 
-    static Schema = "metal_cache"
-    static Table = "cache"
+    static readonly Schema = "metal_cache"
+    static readonly Table = "cache"
 
     static CacheSource: IProvider
 
-    static #SchemaRequest: TSchemaRequest = <TSchemaRequest>{
+    static readonly #SchemaRequest: TSchemaRequest = <TSchemaRequest>{
         schemaName: Cache.Schema,
         entityName: Cache.Table
     }
@@ -41,83 +42,118 @@ export class Cache {
             await Cache.CacheSource.Disconnect()
     }
 
-    static async Set(schemaRequest: TSchemaRequest, dt: DataTable): Promise<void> {
-        Logger.Debug(`Cache.Set`)
-        if (!Config.Flags.EnableCache ||
-            schemaRequest?.cache === undefined ||
-            (schemaRequest.schemaName === Cache.Schema && schemaRequest.entityName === Cache.Table)) {
+    static async Set(schemaRequest: TSchemaRequest, datatable: DataTable): Promise<void> {
+        Logger.Debug(`${Logger.In} Cache.Set: ${JSON.stringify(schemaRequest)}`)
+
+        if (schemaRequest.schemaName === Cache.Schema && schemaRequest.entityName === Cache.Table) {
+            Logger.Debug(`${Logger.Out} Cache.Set: bypassing for schema cache`)
             return
         }
 
-        const ttl = schemaRequest.cache
+        if (!Config.Flags.EnableCache && schemaRequest?.cache) {
+            Logger.Debug(`${Logger.Out} Cache.Set: 'server.cache' is not configured, bypassing option 'cache'`)
+            return
+        }
+
+        const { cache: ttl = 0 } = schemaRequest
+
+        // calculate cache expiration time
         const now = new Date()
         now.setSeconds(now.getSeconds() + ttl)
         const expires = now.getTime()
 
+        // get cached data
         const hash = Cache.Hash(schemaRequest)
-        const cacheData = await Cache.Get(hash)
+        const _expires = await Cache.IsExists(hash)
+        // const cacheData = await Cache.Get(hash)
 
-        if (cacheData?.datatable === undefined) {
-            dt.SetMetaData(METADATA.CACHE, true)
-            dt.SetMetaData(METADATA.CACHE_EXPIRE, expires)
-            Cache.CacheSource.Insert(<TSchemaRequest>{
+        if (_expires == 0) {
+            Logger.Debug(`Cache.Set: no cache found, creating Hash=${hash}`)
+            datatable.SetMetaData(METADATA.CACHE, true)
+            datatable.SetMetaData(METADATA.CACHE_EXPIRE, expires)
+            await Cache.CacheSource.Insert(<TSchemaRequest>{
                 ...Cache.#SchemaRequest,
                 data: <TCacheData[]>[
                     {
-                        schemaName: schemaRequest.schemaName,
-                        entityName: schemaRequest.entityName,
                         hash,
                         expires,
                         schemaRequest,
-                        datatable: dt
+                        datatable
                     }
                 ]
             })
             return
         }
-        if (Cache.IsValid(cacheData.expires))
-            Logger.Debug("Cache.Set: cache is valid")
-        else
-            Cache.CacheSource.Update(<TSchemaRequest>{
-                ...Cache.#SchemaRequest,
-                filter: {
-                    hash
-                },
-                data: <TCacheData[]>[
-                    {
-                        expires,
-                        datatable: dt
-                    }
-                ]
-            })
+
+        if (Cache.IsValid(_expires)) {
+            Logger.Debug(`Cache.Set: cache is valid, bypassing Hash=${hash}`)
+            return
+        }
+
+        Logger.Debug(`Cache.Set: cache expired, updating Hash=${hash}`)
+        await Cache.CacheSource.Update(<TSchemaRequest>{
+            ...Cache.#SchemaRequest,
+            filter: {
+                hash
+            },
+            data: <TCacheData[]>[
+                {
+                    expires,
+                    datatable
+                }
+            ]
+        })
     }
 
     static Hash(schemaRequest: TSchemaRequest): string {
         return Sha512.sha512(JSON.stringify(schemaRequest))
     }
 
-    static IsValid(expires?: number): boolean {
+    static IsValid(expires: number): boolean {
         const isValid = expires !== undefined && Date.now() <= expires
         Logger.Info(`Cache.IsValid = ${isValid}`)
         return isValid
     }
 
-    // BUG: when caching Plan, datatable is rendered with Fields, Rows in Upper case 
-    static async Get(hash: string): Promise<TCacheData | undefined> {
-        Logger.Debug(`Cache.Get`)
-        if (Config.Flags.EnableCache) {
-            let _schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
-                ...Cache.#SchemaRequest,
-                filter: {
-                    hash
-                }
-            })
-            _schemaResponse = _schemaResponse as TSchemaResponseData
-            if (_schemaResponse?.data) {
-                return <TCacheData>(_schemaResponse.data.Rows[0])
-            }
+    static async Get(cacheHash: string): Promise<TCacheData | undefined> {
+        Logger.Debug(`Cache.Get: Hash=${cacheHash}`)
+        if (!Config.Flags.EnableCache) {
+            return undefined
         }
+
+        const schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
+            ...Cache.#SchemaRequest,
+            filter: {
+                hash: cacheHash
+            }
+        })
+
+        if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
+            Logger.Debug(`Cache.Get: Cache found, Hash=${cacheHash}`)
+            return schemaResponse.data.Rows[0] as TCacheData
+        }
+
+        Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
         return undefined
+    }
+
+    static async IsExists(hash: string): Promise<number> {
+        Logger.Debug(`Cache.IsExists`)
+        if (!Config.Flags.EnableCache) {
+            return 0
+        }
+
+        const schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
+            ...Cache.#SchemaRequest,
+            filter: {
+                hash
+            }
+        })
+
+        if (TypeHelper.IsSchemaResponseData(schemaResponse) && schemaResponse.data.Rows.length > 0) {
+            return (schemaResponse.data.Rows[0] as TCacheData).expires
+        }
+        return 0
     }
 
     static async View(): Promise<TInternalResponse> {
@@ -131,7 +167,7 @@ export class Cache {
             }
         }
         schemaResponse = schemaResponse as TSchemaResponseData
-        if (schemaResponse?.data && intRes.Body) {
+        if (TypeHelper.IsSchemaResponseData(schemaResponse) && intRes.Body) {
             intRes.Body.data = schemaResponse.data.Rows
         }
         Logger.Debug(`${Logger.Out} Cache.View`)

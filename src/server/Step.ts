@@ -81,13 +81,12 @@ export class Step {
         // case no schema and no entity --> use current datatable
         if (!schemaName && !entityName) {
             const options: TOptions = Step.Options.Parse(schemaRequest)
-            const sqlQuery = new SqlQueryHelper()
+            const sqlQueryHelper = new SqlQueryHelper()
                 .Select(options.Fields)
                 .From(currentDataTable.Name)
                 .Where(options.Filter)
-                .Query
 
-            return await currentDataTable.FreeSql(sqlQuery)
+            return await currentDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
         }
 
         return currentDataTable
@@ -170,13 +169,12 @@ export class Step {
         // case no schema and no entity --> use current datatable
         if (!schemaName && !entityName) {
             const _options: TOptions = Step.Options.Parse(schemaRequest)
-            const _sqlQuery = new SqlQueryHelper()
+            const _sqlQueryHelper = new SqlQueryHelper()
                 .Update(currentDataTable.Name)
                 .Set(_options.Data)
                 .Where(_options.Filter)
-                .Query
 
-            await currentDataTable.FreeSql(_sqlQuery)
+            await currentDataTable.FreeSql(_sqlQueryHelper.Query, _sqlQueryHelper.Data)
         }
 
         return currentDataTable
@@ -210,13 +208,12 @@ export class Step {
         // case no schema and no entity --> use current datatable
         if (!schemaName && !entityName) {
             const _options: TOptions = Step.Options.Parse(schemaRequest)
-            const _sqlQuery = new SqlQueryHelper()
+            const _sqlQueryHelper = new SqlQueryHelper()
                 .Delete()
                 .From(currentDataTable.Name)
                 .Where(_options.Filter)
-                .Query
 
-            await currentDataTable.FreeSql(_sqlQuery)
+            await currentDataTable.FreeSql(_sqlQueryHelper.Query, _sqlQueryHelper.Data)
         }
 
         return currentDataTable

@@ -263,7 +263,7 @@ export class MongoDbProvider implements IProvider.IProvider {
             .updateMany(
                 (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>,
                 {
-                    $set: _.head(options?.Data?.Rows)
+                    $set: (options?.Data?.Rows).at(0)
                 }
             )
 

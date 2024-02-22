@@ -43,7 +43,7 @@ export class Config {
         properties: {
             "version": {
                 type: "string",
-                enum: ["0.1","0.2"]
+                enum: ["0.1", "0.2"]
             },
             "server": {
                 type: "object",
@@ -177,7 +177,10 @@ export class Config {
                         properties: {
                             "planName": { type: "string" },
                             "entityName": { type: "string" },
-                            "cron": { type: "string" }
+                            "cron": {
+                                type: "string",
+                                pattern: "^(?:@start|([*]|[0-9,-]+) ([*]|[0-9,-]+) ([*]|[0-9,-]+) ([*]|[0-9,-]+) ([*]|[0-9,-]+))$"
+                            }
                         },
                         required: ["planName", "entityName", "cron"]
                     }

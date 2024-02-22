@@ -12,13 +12,6 @@ Content-Type: application/json
 @token={{login.response.body.token}}
 
 ###
-GET http://localhost:3000/schema/mem/users
-    # ?filter={"name":"Jaime Lannister"}
-    # &cache=300
-Content-Type: application/json
-authorization: Bearer {{token}}
-
-###
 POST http://localhost:3000/schema/mem/users
 Content-Type: application/json
 authorization: Bearer {{token}}
@@ -39,6 +32,24 @@ authorization: Bearer {{token}}
 }
 
 ###
+GET http://localhost:3000/schema/mem/users
+    ?cache=1
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name view
+GET http://localhost:3000/cache/view
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name purge
+POST http://localhost:3000/cache/purge
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
 PATCH http://localhost:3000/schema/mem/users
 Content-Type: application/json
 authorization: Bearer {{token}}
@@ -55,6 +66,6 @@ DELETE http://localhost:3000/schema/mem/users
 Content-Type: application/json
 authorization: Bearer {{token}}
 
-{
-    "filterExpression":"name like 'John%'"
-}
+# {
+#     "filterExpression":"name like 'John%'"
+# }

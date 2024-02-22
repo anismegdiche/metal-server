@@ -145,13 +145,12 @@ export class FilesProvider implements IProvider.IProvider {
         this.Content.Init(entityName, fileString)
         const fileDataTable = await this.Content.Get() || undefined
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Insert(`\`${entityName}\``)
             .Fields(options.Data.GetFieldNames())
             .Values(options.Data.Rows)
-            .Query
 
-        await fileDataTable.FreeSql(sqlQuery)
+        await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
         fileString = await this.Content.Set(fileDataTable)
         await this.Primitive.Write(entityName, fileString)
 
@@ -246,13 +245,12 @@ export class FilesProvider implements IProvider.IProvider {
         this.Content.Init(entityName, fileString)
         const fileDataTable = await this.Content.Get() || undefined
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Update(`\`${entityName}\``)
             .Set(options.Data.Rows)
             .Where(options.Filter)
-            .Query
 
-        await fileDataTable.FreeSql(sqlQuery)
+        await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
         fileString = await this.Content.Set(fileDataTable)
         await this.Primitive.Write(entityName, fileString)
 
@@ -291,13 +289,12 @@ export class FilesProvider implements IProvider.IProvider {
         this.Content.Init(entityName, fileString)
         const fileDataTable = await this.Content.Get() || undefined
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
             .From(`\`${entityName}\``)
             .Where(options.Filter)
-            .Query
 
-        await fileDataTable.FreeSql(sqlQuery)
+        await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
         fileString = await this.Content.Set(fileDataTable)
 
         if (this.Primitive)

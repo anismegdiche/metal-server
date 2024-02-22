@@ -1,0 +1,20 @@
+version: "0.2"
+server:
+  port: 3000
+  verbosity: debug
+  timezone: UTC
+  authentication:
+  request-limit: 100mb
+  cache:
+    provider: memory
+
+users:
+  myapiuser: myStr@ngpa$$w0rd
+
+sources:
+  mem-data:
+    provider: memory
+
+schemas:
+  mem:
+    sourceName: mem-data

@@ -1,65 +1,174 @@
-version: "0.2"
+version: "0.1"
 server:
   port: 3000
   verbosity: debug
   timezone: UTC
   authentication:
   request-limit: 100mb
-  # cache:
-  #   provider: files
-  #   database: ./data/
-  #   options:
-  #     storageType: filesystem
-  #     contentType: json
-  #     autoCreate: true
+  cache:
+    provider: mongodb
+    host: mongodb://localhost:27017/
+    database: metal_cache
+    options:
+      connectTimeoutMS: 5000
+      serverSelectionTimeoutMS: 5000
 
 users:
   myapiuser: myStr@ngpa$$w0rd
 
 sources:
-  # fs-json-data:
-  #   provider: files
-  #   options:
-  #     storageType: filesystem
-  #     contentType: json
-  #     fsFolder: ./data/
-  #     jsonArrayPath: rows
-  # fs-csv-data:
-  #   provider: files
-  #   options:
-  #     storageType: filesystem
-  #     contentType: csv
-  #     fsFolder: ./data/
-  #     csvDelimiter: ','
-  #     csvNewline: "\n"
-  #     csvHeader: true
-  #     csvQuoteChar: '"'
-  az-json-data:
-    provider: files
+  ms-hr:
+    provider: mssql
+    host: localhost
+    port: 1433
+    user: sa
+    password: Azerty123!
+    database: hr
+  mdb-mflix:
+    provider: mongodb
+    host: mongodb://localhost:27017/
+    database: mflix
     options:
-      storageType: azureblob
-      contentType: json
-      azureBlobConnectionString: UseDevelopmentStorage=true
-      azureBlobContainerName: datacontainer1
-  az-csv-data:
-    provider: files
-    options:
-      storageType: azureblob
-      contentType: csv
-      azureBlobConnectionString: UseDevelopmentStorage=true
-      azureBlobContainerName: datacontainer1
-      csvDelimiter: ','
-      csvNewline: "\n"
-      csvHeader: true
-      csvQuoteChar: '"'
-
+      connectTimeoutMS: 5000
+      serverSelectionTimeoutMS: 5000
+  pg-northwind:
+    provider: postgres
+    host: localhost
+    port: 5432
+    user: admin
+    password: "123456"
+    database: northwind
+  pg-clubdata:
+    provider: postgres
+    host: localhost
+    port: 5433
+    user: admin
+    password: "123456"
+    database: clubdata
+  pg-clubdata-bookings:
+    provider: postgres
+    host: localhost
+    port: 5434
+    user: admin
+    password: "123456"
+    database: clubdata
+  pg-clubdata-facilities:
+    provider: postgres
+    host: localhost
+    port: 5435
+    user: admin
+    password: "123456"
+    database: clubdata
+  pg-clubdata-members:
+    provider: postgres
+    host: localhost
+    port: 5436
+    user: admin
+    password: "123456"
+    database: clubdata
+  plan-etl1:
+    provider: plan
+    database: etl1
 
 schemas:
-  # fsjson:
-  #   sourceName: fs-json-data
-  # fscsv:
-  #   sourceName: fs-csv-data
-  azjson:
-    sourceName: az-json-data
-  azcsv:
-    sourceName: az-csv-data
+  northwind:
+    sourceName: pg-northwind
+  hr:
+    sourceName: ms-hr
+  mflix:
+    sourceName: mdb-mflix
+  clubdata:
+    entities:
+      members:
+        sourceName: pg-clubdata-members
+        entityName: members
+      facilities:
+        sourceName: pg-clubdata-facilities
+        entityName: facilities
+      bookings:
+        sourceName: pg-clubdata-bookings
+        entityName: bookings
+  merge:
+    sourceName: pg-clubdata
+    entities:
+      orders:
+        sourceName: pg-northwind
+        entityName: orders
+      users:
+        sourceName: mdb-mflix
+        entityName: users
+  sch-etl1:
+    sourceName: plan-etl1
+
+ai-engines:
+  ocr:
+    engine: tesseractjs
+    model: eng
+  image-classify:
+    engine: tensorflowjs
+    model: image-classify
+  sentiment:
+    engine: nlpjs
+    model: sentiment
+    options:
+      lang: en
+  guess-lang:
+    engine: nlpjs
+    model: guess-lang
+    options:
+      accept: en,fr
+
+plans:
+  etl1:
+    src:
+      - insert:
+          data:
+            - img_to_text: https://tesseract.projectnaptha.com/img/eng_bw.png
+              img_to_classify: https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg
+            - img_to_text: https://jeroen.github.io/images/testocr.png
+              img_to_classify: https://img.freepik.com/premium-photo/golden-retriever-lying-panting-isolated-white_191971-16974.jpg
+            - img_to_text: https://www.srcmake.com/uploads/5/3/9/0/5390645/ocr_orig.png
+              img_to_classify: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpDgjJjrakUj3VlDC0K6XtdCRu5TK7CPXr7QHVjiL&s
+
+    aitest2:
+      - debug:
+      - select:
+          schemaName: mflix
+          entityName: movies
+          filter:
+            year: 2001
+          fields: title
+      - run:
+          ai: sentiment
+          input: title
+          output:
+            vote: sentiment
+    aitest:
+      - debug:
+      - insert:
+          data:
+            - img_to_text: https://tesseract.projectnaptha.com/img/eng_bw.png
+              img_to_classify: https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg
+            - img_to_text: https://jeroen.github.io/images/testocr.png
+              img_to_classify: https://img.freepik.com/premium-photo/golden-retriever-lying-panting-isolated-white_191971-16974.jpg
+            - img_to_text: https://www.srcmake.com/uploads/5/3/9/0/5390645/ocr_orig.png
+              img_to_classify: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpDgjJjrakUj3VlDC0K6XtdCRu5TK7CPXr7QHVjiL&s
+      - run:
+          ai: ocr
+          input: img_to_text
+          output:
+            confidence: ocr_confidence
+            text: ocr_text
+      - run:
+          ai: image-classify
+          input: img_to_classify
+          output:
+            class: object
+      - run:
+          ai: sentiment
+          input: ocr_text
+          output: sentiment
+      - run:
+          ai: guess-lang
+          input: ocr_text
+          output:

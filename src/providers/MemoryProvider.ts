@@ -105,14 +105,13 @@ export class MemoryProvider implements IProvider.IProvider {
             }
         }
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
             .From(entityName)
             .Where(options.Filter)
             .OrderBy(options.Sort)
-            .Query
 
-        const memoryDataTable = await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQuery)
+        const memoryDataTable = await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
         if (memoryDataTable && memoryDataTable.Rows.length > 0) {
             Cache.Set({
@@ -161,13 +160,12 @@ export class MemoryProvider implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Update(entityName)
             .Set(options.Data.Rows)
             .Where(options.Filter)
-            .Query
 
-        await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQuery)
+        await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query,sqlQueryHelper.Data)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
@@ -200,13 +198,12 @@ export class MemoryProvider implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
             .From(entityName)
             .Where(options.Filter)
-            .Query
 
-        await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQuery)
+        await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,

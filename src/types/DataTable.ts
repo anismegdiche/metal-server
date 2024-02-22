@@ -148,7 +148,7 @@ export class DataTable {
     }
 
     SetFields(): this {
-        const _cols: TJson = { ..._.head(this.Rows) }
+        const _cols: TJson = { ...this.Rows.at(0) }
         this.Fields = _.reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
             return _cols
@@ -192,7 +192,7 @@ export class DataTable {
         return this.SetFields()
     }
 
-    async FreeSql(sqlQuery: string | undefined): Promise<this> {
+    async FreeSql(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): Promise<this> {
         if (sqlQuery === undefined) {
             return this
         }
@@ -204,11 +204,12 @@ export class DataTable {
         alasql.tables[this.Name].data = this.Rows
 
         try {
-            const _result = await alasql.promise(sqlQuery)
+            const _result = await alasql.promise(sqlQuery, jsonData)
                 .then((r: any) => {
                     return r
                 })
                 .catch((error: any) => {
+                    Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}', Error: ${error}`)
                     throw error
                 })
 
