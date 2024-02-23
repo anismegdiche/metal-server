@@ -44,13 +44,18 @@ export class Cache {
 
     static async Set(schemaRequest: TSchemaRequest, datatable: DataTable): Promise<void> {
         Logger.Debug(`${Logger.In} Cache.Set: ${JSON.stringify(schemaRequest)}`)
+        
+        // bypassing 
+        if (this.CacheSource == undefined || schemaRequest?.cache !== undefined) {
+            return
+        }
 
         if (schemaRequest.schemaName === Cache.Schema && schemaRequest.entityName === Cache.Table) {
             Logger.Debug(`${Logger.Out} Cache.Set: bypassing for schema cache`)
             return
         }
 
-        if (!Config.Flags.EnableCache && schemaRequest?.cache) {
+        if (!Config.Flags.EnableCache && schemaRequest?.cache !== undefined) {
             Logger.Debug(`${Logger.Out} Cache.Set: 'server.cache' is not configured, bypassing option 'cache'`)
             return
         }
@@ -117,7 +122,7 @@ export class Cache {
 
     static async Get(cacheHash: string): Promise<TCacheData | undefined> {
         Logger.Debug(`Cache.Get: Hash=${cacheHash}`)
-        if (!Config.Flags.EnableCache) {
+        if (!Config.Flags.EnableCache || this.CacheSource === undefined) {
             return undefined
         }
 
