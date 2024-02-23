@@ -23,7 +23,7 @@ export class Schedule {
 
     static Jobs: TSchedule[] = []
 
-    static CreateAndStartAll() {
+    static async CreateAndStartAll() {
         Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: ${JSON.stringify(Config.Configuration.schedules)}`)
         if (!Config.Configuration?.schedules) {
             return undefined
@@ -33,11 +33,13 @@ export class Schedule {
 
         for (const [_scheduleName, _scheduleParams] of scheduleConfig) {
             Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_scheduleName}'`)
+            const currentDate = new Date()
+            currentDate.setSeconds(currentDate.getSeconds() + 5)
             this.Jobs.push(<TSchedule>{
                 scheduleName: _scheduleName,
                 cronJob: new CronJob(
                     (_scheduleParams.cron === '@start')
-                        ? new Date()
+                        ? currentDate
                         : _scheduleParams.cron,
                     () => {
                         Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: Running job '${_scheduleName}'`)
