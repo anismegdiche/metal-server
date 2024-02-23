@@ -10,6 +10,14 @@ import morgan from "morgan"
 //
 import { SERVER } from './Const'
 
+export enum VERBOSITY {
+    TRACE = "trace",
+    DEBUG = "debug",
+    INFO = "info",
+    WARN = "warn",
+    ERROR = "error"
+}
+
 const Colors: Record<string, Function> = {
     'TRACE': chalk.magenta,
     'DEBUG': chalk.green,

@@ -8,7 +8,7 @@ import { NextFunction, Request, Response } from 'express'
 
 import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE, SERVER } from '../lib/Const'
 import { Server } from '../server/Server'
-import { HttpError } from '../server/Errors'
+import { HttpError } from '../server/HttpErrors'
 
 
 export class ServerResponse {

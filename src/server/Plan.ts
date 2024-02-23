@@ -13,6 +13,7 @@ import { TScheduleConfig } from "./Schedule"
 import { Step, TStepArguments } from "./Step"
 import { DataTable } from "../types/DataTable"
 import { Helper } from "../lib/Helper"
+import { WarnError } from "./InternalError"
 
 
 export class Plan {
@@ -70,10 +71,10 @@ export class Plan {
 
         for await (const [stepIndex, step] of Object.entries(steps)) {
             const _stepIndex = parseInt(stepIndex, 10) + 1
-            Logger.Debug(`Step.Execute '${currentPlanName}': Step ${_stepIndex}, ${JSON.stringify(step)}`)
+            Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}': Step ${_stepIndex}, ${JSON.stringify(step)}`)
 
             if (step === null) {
-                Logger.Error(`Step.Execute '${currentPlanName}': error have been encountered in step ${_stepIndex}, ${JSON.stringify(step)}`)
+                Logger.Error(`Plan.ExecuteSteps '${currentPlanName}': error have been encountered in step ${_stepIndex}, ${JSON.stringify(step)}`)
                 break
             }
 
@@ -84,7 +85,7 @@ export class Plan {
                 const __stepParams: TJson = _.values(<object>step)[0]
 
                 if (__stepCommand === 'break') {
-                    Logger.Info(`Step.Execute '${currentPlanName}': user break at step '${_stepIndex}', ${JSON.stringify(step)}`)
+                    Logger.Info(`Plan.ExecuteSteps '${currentPlanName}': user break at step '${_stepIndex}', ${JSON.stringify(step)}`)
                     return currentDataTable
                 }
 
@@ -98,8 +99,15 @@ export class Plan {
                 currentDataTable = await Step.ExecuteCaseMap[__stepCommand](_stepArguments) || Helper.CaseMapNotFound(__stepCommand)
                 Logger.Debug(`***** ${JSON.stringify(currentDataTable)}`)
             } catch (error: unknown) {
-                const _error = <Error>error
-                Logger.Error(`Step.Execute '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`)
+                const _error = error as Error
+                const _errorMessage = `Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`
+
+                if (error instanceof WarnError) {
+                    Logger.Warn(_errorMessage)
+                } else {
+                    Logger.Error(_errorMessage)                    
+                }
+
                 if (currentDataTable.MetaData[METADATA.PLAN_DEBUG] == 'error') {
                     /*
                     FIXME
@@ -108,7 +116,7 @@ export class Plan {
                     */
                     const _planErrors: TJson = {}
                     _planErrors[`entity(${currentEntityName}), step(${stepIndex})`] = step
-                    Logger.Debug(`Step.Execute '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' added error ${JSON.stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
+                    Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' added error ${JSON.stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
                 }
             }
         }

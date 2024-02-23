@@ -15,6 +15,7 @@ import { CommonProviderOptions } from '../providers/CommonProvider'
 import { TOptions } from "../types/TOptions"
 import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
+import { WarnError } from "./InternalError"
 
 export type TStepArguments = {
     currentSchemaName: string
@@ -106,8 +107,7 @@ export class Step {
         let { currentDataTable } = stepArguments
 
         if (!data && currentDataTable.Rows.length == 0) {
-            Logger.Error(`Step.Insert: no data to insert ${JSON.stringify(stepArguments.stepParams)}`)
-            throw new Error(`No data to insert ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new WarnError(`Step.Insert: No data to insert ${JSON.stringify(stepArguments.stepParams)}`)
         }
 
         if (entityName) {
@@ -124,8 +124,7 @@ export class Step {
         }
 
         if (!data) {
-            Logger.Error(`Step.Insert: no data to insert ${JSON.stringify(stepArguments.stepParams)}`)
-            throw new Error(`No data to insert ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new WarnError(`Step.Insert: No data to insert ${JSON.stringify(stepArguments.stepParams)}`)
         }
 
         // case no schema and no entity --> use current datatable

@@ -11,7 +11,7 @@ import { Config } from './Config'
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
 import { TJson } from '../types/TJson'
-import { NotFoundError } from './Errors'
+import { NotFoundError } from './HttpErrors'
 
 export type TSchemaRoute = {
     type: "source" | "nothing",

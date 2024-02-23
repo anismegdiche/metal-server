@@ -11,7 +11,7 @@ import { Config } from '../server/Config'
 import { ServerResponse } from '../response/ServerResponse'
 import { Convert } from '../lib/Convert'
 import { checkSchema, validationResult } from 'express-validator'
-import { BadRequestError } from '../server/Errors'
+import { BadRequestError } from '../server/HttpErrors'
 import _ from 'lodash'
 
 

@@ -12,7 +12,7 @@ import { RESPONSE_RESULT, RESPONSE_STATUS, HTTP_STATUS_CODE } from '../lib/Const
 import { Logger } from '../lib/Logger'
 import { ServerResponse } from './ServerResponse'
 import { Schema } from '../server/Schema'
-import { BadRequestError, HttpError } from '../server/Errors'
+import { BadRequestError, HttpError } from '../server/HttpErrors'
 
 
 const REQUEST_TRANSACTION: Record<string, string> = {
