@@ -103,7 +103,7 @@ export class PostgresProvider implements IProvider.IProvider {
 
         const sqlQuery = new SqlQueryHelper()
             .Insert(`"${schemaRequest.entityName}"`)
-            .Fields(options.Data.GetFieldNames(),'`')
+            .Fields(options.Data.GetFieldNames(),'"')
             .Values(options.Data.Rows)
             .Query
 
