@@ -9,6 +9,7 @@ import { TJson } from './TJson'
 import { TSchemaResponse } from './TSchemaResponse'
 import { ConnectionPool } from 'mssql'
 import { DataBase } from './DataBase'
+import { MetalClient } from '../providers/MetalProvider'
 
 
 export interface IProviderOptions {
@@ -25,7 +26,7 @@ export interface IProvider {
     SourceName: string
     Params: TJson
     Primitive?: object
-    Connection?: Pool | MongoClient | ConnectionPool | DataBase
+    Connection?: Pool | MongoClient | ConnectionPool | DataBase | MetalClient
     Init: (sourceParams: TSourceParams) => void
     Connect: () => Promise<void>
     Disconnect: () => Promise<void>

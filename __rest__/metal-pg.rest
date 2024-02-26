@@ -1,0 +1,63 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+
+###
+@token={{login.response.body.token}}
+
+###
+# @name select
+GET http://localhost:3000/schema/metalws/members
+Content-Type: application/json
+authorization: Bearer {{token}}
+###
+
+# @name select-filtered
+GET http://localhost:3000/schema/metalws/members
+    ?fields=firstname,surname,address
+    &filterExpression=address LIKE '%oo%'
+    # &filter={"firstname": "Darren"}
+    # &sort=contact_name asc,company_name desc
+    # &cache=300
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+###
+# @name insert-one
+POST http://localhost:3000/schema/northwind/customers
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": {
+                "customer_id": "MLLD",
+                "contact_name":"Mark Moe",
+                "company_name": "Moe LLD"
+            }
+}
+
+###
+# @name insert-many
+POST http://localhost:3000/schema/insert/northwind/customers
+Content-Type: application/json
+
+{
+    "data": [
+            {
+                "customer_id": "PLLD",
+                "contact_name": "Jane Poe",
+                "company_name": "Poe LLD"
+            },
+            {
+                "customer_id": "LLLD",
+                "contact_name": "Larry Loe",
+                "company_name": "Loe LLD"
+            }
+        ]
+}

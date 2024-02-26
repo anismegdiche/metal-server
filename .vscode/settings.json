@@ -8,5 +8,10 @@
     "prettier.singleQuote": false,
     "jest.runMode": "on-demand",
     "jest.testtimeout": 120000,
-    "jest.autoRun": "off"
+    "jest.autoRun": "off",
+    "jest.outputConfig": {
+        "revealOn": "run",
+        "revealWithFocus": "test-results",
+        "clearOnRun": "none"
+    }
 }

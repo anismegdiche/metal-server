@@ -11,6 +11,7 @@ import { Logger } from '../lib/Logger'
 
 export type TRow = TJson
 export type TFields = TJson
+export type TMetaData = Record<string, unknown>
 export type TOrder = boolean | "asc" | "desc"
 
 const SqlToJsType: TJson = {
@@ -119,12 +120,12 @@ const SqlToJsType: TJson = {
 export class DataTable {
 
     Name: string
-    Fields: TFields = <TFields>{}
-    Rows: TRow[] = <TRow[]>[]
-    MetaData: Record<string, unknown> = {}
+    Fields: TFields = {}
+    Rows: TRow[] = []
+    MetaData: TMetaData = {}
 
 
-    constructor(name: string | undefined, rows: TJson[] | undefined = undefined) {
+    constructor(name: string | undefined, rows: TJson[] | undefined = undefined, fields: TJson | undefined = undefined, metaData: TJson | undefined = undefined) {
         if (name === undefined) {
             throw new Error("undefined DataTable name")
         }
@@ -136,6 +137,12 @@ export class DataTable {
             } else {
                 this.Set(_.castArray(rows))
             }
+        }
+        if (fields) {
+            this.Fields = fields as TFields
+        }
+        if (metaData) {
+            this.MetaData = metaData as TMetaData
         }
     }
 
@@ -193,7 +200,7 @@ export class DataTable {
     }
 
     async FreeSql(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): Promise<this> {
-        if (sqlQuery === undefined) {
+        if (sqlQuery == undefined) {
             return this
         }
 

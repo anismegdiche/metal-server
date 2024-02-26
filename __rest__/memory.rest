@@ -33,7 +33,7 @@ authorization: Bearer {{token}}
 
 ###
 GET http://localhost:3000/schema/mem/users
-    ?cache=1
+    ?cache=100
 Content-Type: application/json
 authorization: Bearer {{token}}
 

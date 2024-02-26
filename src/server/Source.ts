@@ -17,11 +17,13 @@ import { SqlServerProvider } from '../providers/SqlServerProvider'
 import { PlanProvider } from '../providers/PlanProvider'
 import { FilesProvider } from '../providers/FilesProvider'
 import { MemoryProvider } from '../providers/MemoryProvider'
+import { MetalProvider } from '../providers/MetalProvider'
 //
 //  config types
 //
 /* eslint-disable no-unused-vars */
 enum PROVIDER {
+    METAL = "metal",
     PLAN = "plan",
     MEMORY = "memory",
     POSTGRES = "postgres",
@@ -40,6 +42,7 @@ export class Source {
     static Sources: Record<string, IProvider> = {}
 
     static #ProviderCaseMap: Record<PROVIDER, Function> = {
+        [PROVIDER.METAL]: (source: string, sourceParams: TSourceParams) => new MetalProvider(source, sourceParams),
         [PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanProvider(source, sourceParams),
         [PROVIDER.MEMORY]: (source: string, sourceParams: TSourceParams) => new MemoryProvider(source, sourceParams),
         [PROVIDER.POSTGRES]: (source: string, sourceParams: TSourceParams) => new PostgresProvider(source, sourceParams),
