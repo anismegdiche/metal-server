@@ -24,7 +24,7 @@ export class Plan {
         if (TypeHelper.IsSchemaRequest(schemaRequest)) {
             const { schemaName, sourceName, entityName } = schemaRequest
             const sourcePlanName: string = Config.Get(`sources.${sourceName}.database`)
-            
+
             if (sourceName === undefined || sourcePlanName === undefined) {
                 Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schemaName}`)
                 return new DataTable(entityName)
@@ -59,10 +59,8 @@ export class Plan {
         const entitySteps: TJson[] = Config.Get(`plans.${planName}.${entityName}`)
         Logger.Debug(`${Logger.In} Plan.Execute: ${planName}.${entityName}: ${JSON.stringify(entitySteps)}`)
         const currentDatatable = await Plan.ExecuteSteps(undefined, planName, entityName, entitySteps)
-        await currentDatatable.FreeSql(sqlQuery)
-
         Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entityName}`)
-        return currentDatatable
+        return await currentDatatable.FreeSql(sqlQuery)
     }
 
     static async ExecuteSteps(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: TJson[]): Promise<DataTable> {
@@ -95,9 +93,7 @@ export class Plan {
                     currentDataTable,
                     stepParams: __stepParams
                 }
-
                 currentDataTable = await Step.ExecuteCaseMap[__stepCommand](_stepArguments) || Helper.CaseMapNotFound(__stepCommand)
-                Logger.Debug(`***** ${JSON.stringify(currentDataTable)}`)
             } catch (error: unknown) {
                 const _error = error as Error
                 const _errorMessage = `Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`
@@ -105,7 +101,7 @@ export class Plan {
                 if (error instanceof WarnError) {
                     Logger.Warn(_errorMessage)
                 } else {
-                    Logger.Error(_errorMessage)                    
+                    Logger.Error(_errorMessage)
                 }
 
                 if (currentDataTable.MetaData[METADATA.PLAN_DEBUG] == 'error') {
