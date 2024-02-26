@@ -34,7 +34,7 @@ export class Schedule {
         for (const [_scheduleName, _scheduleParams] of scheduleConfig) {
             Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_scheduleName}'`)
             const currentDate = new Date()
-            currentDate.setSeconds(currentDate.getSeconds() + 5)
+            currentDate.setSeconds(currentDate.getSeconds() + 1)
             this.Jobs.push(<TSchedule>{
                 scheduleName: _scheduleName,
                 cronJob: new CronJob(
@@ -48,7 +48,7 @@ export class Schedule {
                                 Logger.Debug(`${Logger.Out} Schedule.CreateAndStartAll: job '${_scheduleName}' terminated`)
                             })
                             .catch((error) => {
-                                Logger.Error(`${Logger.In} Schedule.CreateAndStartAll: Error has occured with '${_scheduleName}' : ${JSON.stringify(error)}`)
+                                Logger.Error(`${Logger.Out} Schedule.CreateAndStartAll: Error has occured with '${_scheduleName}' : ${JSON.stringify(error)}`)
                             })
                     },
                     null,
