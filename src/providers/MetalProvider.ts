@@ -151,7 +151,6 @@ export class MetalProvider implements IProvider.IProvider {
     ProviderName = PROVIDER.METAL
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
-    Primitive = MetalClient
     Connection?: MetalClient = undefined
     Config: TJson = {}
 
@@ -226,7 +225,7 @@ export class MetalProvider implements IProvider.IProvider {
             database = ''
         } = this.Params
 
-        this.Connection = new this.Primitive({
+        this.Connection = new MetalClient({
             host,
             user,
             password,

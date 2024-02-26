@@ -25,7 +25,6 @@ export class PostgresProvider implements IProvider.IProvider {
     ProviderName = PROVIDER.POSTGRES
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
-    Primitive = Pool
     Connection?: Pool = undefined
     Config: TJson = {}
 
@@ -54,7 +53,7 @@ export class PostgresProvider implements IProvider.IProvider {
         } = this.Params || {}
 
         try {
-            this.Connection = new this.Primitive({
+            this.Connection = new Pool({
                 user,
                 password,
                 database,

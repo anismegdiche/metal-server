@@ -25,8 +25,7 @@ export interface IProvider {
     ProviderName: string
     SourceName: string
     Params: TJson
-    Primitive?: object
-    Connection?: Pool | MongoClient | ConnectionPool | DataBase | MetalClient
+    Connection?: unknown
     Init: (sourceParams: TSourceParams) => void
     Connect: () => Promise<void>
     Disconnect: () => Promise<void>

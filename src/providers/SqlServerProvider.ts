@@ -24,8 +24,7 @@ export class SqlServerProvider implements IProvider.IProvider {
     ProviderName = PROVIDER.MSSQL
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
-    Primitive = mssql
-    Connection: ConnectionPool | undefined = undefined
+    Connection?: ConnectionPool = undefined
     Config: TJson = {}
 
     Options = new CommonSqlProviderOptions()
@@ -71,7 +70,7 @@ export class SqlServerProvider implements IProvider.IProvider {
             ...options
         }
         try {
-            this.Connection = await this.Primitive.connect(connectionConfig)
+            this.Connection = await mssql.connect(connectionConfig)
             Logger.Info(`${Logger.In} connected to '${this.SourceName} (${database})'`)
         } catch (error: unknown) {
             Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName} (${database})': ${host}: ${port}[${database}]`)

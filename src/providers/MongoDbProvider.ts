@@ -4,7 +4,7 @@
 //
 //
 //
-import * as mongodb from 'mongodb'
+import * as MongoDb from 'mongodb'
 import _ from 'lodash'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const GetMongoQuery = require("sql2mongo").getMongoQuery
@@ -48,7 +48,7 @@ class MongoDbProviderOptions implements IProvider.IProviderOptions {
                 filter = schemaRequest.filter
 
             if (filter?._id)
-                filter._id = new mongodb.ObjectId(filter._id)
+                filter._id = new MongoDb.ObjectId(filter._id)
 
             options.Filter = <TJson>{
                 $match: Convert.ReplacePlaceholders(filter)
@@ -122,8 +122,7 @@ export class MongoDbProvider implements IProvider.IProvider {
     ProviderName = PROVIDER.MONGODB
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
-    Primitive = mongodb.MongoClient
-    Connection: mongodb.MongoClient | undefined = undefined
+    Connection?: MongoDb.MongoClient = undefined
 
     Options: MongoDbProviderOptions = new MongoDbProviderOptions()
 
@@ -147,7 +146,7 @@ export class MongoDbProvider implements IProvider.IProvider {
             options = {}
         } = this.Params || {}
 
-        this.Connection = new this.Primitive(uri, options)
+        this.Connection = new MongoDb.MongoClient(uri, options)
         try {
             await this.Connection.connect()
             await this.Connection
@@ -202,7 +201,7 @@ export class MongoDbProvider implements IProvider.IProvider {
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`MongoDbProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
-        const options: mongodb.Document[] = _.values(this.Options.Parse(schemaRequest))
+        const options: MongoDb.Document[] = _.values(this.Options.Parse(schemaRequest))
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -261,7 +260,7 @@ export class MongoDbProvider implements IProvider.IProvider {
             .db(this.Params.database)
             .collection(schemaRequest.entityName)
             .updateMany(
-                (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>,
+                (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>,
                 {
                     $set: (options?.Data?.Rows).at(0)
                 }
@@ -295,7 +294,7 @@ export class MongoDbProvider implements IProvider.IProvider {
             .db(this.Params.database)
             .collection(schemaRequest.entityName)
             .deleteMany(
-                (options?.Filter?.$match ?? {}) as mongodb.Filter<mongodb.Document>
+                (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>
             )
 
         Logger.Debug(`${Logger.In} MongoDbProvider.Delete: ${JSON.stringify(schemaRequest)}`)

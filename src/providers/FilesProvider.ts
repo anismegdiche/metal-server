@@ -65,7 +65,7 @@ export class FilesProvider implements IProvider.IProvider {
     ProviderName = PROVIDER.FILES
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
-    Primitive: IStorage = <IStorage>{}
+    Connection?: IStorage = undefined
     Content: IContent = <IContent>{}
     ContentType: CONTENT = CONTENT.JSON
 
@@ -95,10 +95,10 @@ export class FilesProvider implements IProvider.IProvider {
             contentType = CONTENT.JSON
         } = this.Params.options as TFileProviderOptions
 
-        this.Primitive = FilesProvider.#NewStorageCaseMap[storageType](this.Params) || Helper.CaseMapNotFound(storageType)
+        this.Connection = FilesProvider.#NewStorageCaseMap[storageType](this.Params) || Helper.CaseMapNotFound(storageType)
 
-        if (this.Primitive)
-            this.Primitive.Init()
+        if (this.Connection)
+            this.Connection?.Init()
         else
             throw new Error(`${this.SourceName}: Failed to initialize storage provider`)
 
@@ -106,14 +106,14 @@ export class FilesProvider implements IProvider.IProvider {
     }
 
     async Connect(): Promise<void> {
-        if (this.Primitive && this.Content) {
-            this.Primitive.Connect()
+        if (this.Connection && this.Content) {
+            this.Connection.Connect()
         }
     }
 
     async Disconnect(): Promise<void> {
-        if (this.Primitive && this.Content) {
-            this.Primitive.Disconnect()
+        if (this.Connection && this.Content) {
+            this.Connection.Disconnect()
         }
     }
 
@@ -130,8 +130,8 @@ export class FilesProvider implements IProvider.IProvider {
         }
 
         let fileString
-        if (this.Primitive)
-            fileString = await this.Primitive.Read(entityName)
+        if (this.Connection)
+            fileString = await this.Connection?.Read(entityName)
         else
             throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
@@ -153,7 +153,7 @@ export class FilesProvider implements IProvider.IProvider {
 
         await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
         fileString = await this.Content.Set(fileDataTable)
-        await this.Primitive.Write(entityName, fileString)
+        await this.Connection?.Write(entityName, fileString)
 
         return <TSchemaResponseData>{
             ...schemaResponse,
@@ -174,8 +174,8 @@ export class FilesProvider implements IProvider.IProvider {
         }
 
         let fileString
-        if (this.Primitive)
-            fileString = await this.Primitive.Read(entityName)
+        if (this.Connection)
+            fileString = await this.Connection?.Read(entityName)
         else
             throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
@@ -231,8 +231,8 @@ export class FilesProvider implements IProvider.IProvider {
         }
 
         let fileString
-        if (this.Primitive)
-            fileString = await this.Primitive.Read(entityName)
+        if (this.Connection)
+            fileString = await this.Connection?.Read(entityName)
         else
             throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
@@ -253,7 +253,7 @@ export class FilesProvider implements IProvider.IProvider {
 
         await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
         fileString = await this.Content.Set(fileDataTable)
-        await this.Primitive.Write(entityName, fileString)
+        await this.Connection?.Write(entityName, fileString)
 
         return <TSchemaResponseData>{
             ...schemaResponse,
@@ -275,8 +275,8 @@ export class FilesProvider implements IProvider.IProvider {
         }
 
         let fileString
-        if (this.Primitive)
-            fileString = await this.Primitive.Read(entityName)
+        if (this.Connection)
+            fileString = await this.Connection?.Read(entityName)
         else
             throw new Error(`${this.SourceName}: Failed to read in storage provider`)
 
@@ -298,8 +298,8 @@ export class FilesProvider implements IProvider.IProvider {
         await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
         fileString = await this.Content.Set(fileDataTable)
 
-        if (this.Primitive)
-            await this.Primitive.Write(entityName, fileString)
+        if (this.Connection)
+            await this.Connection?.Write(entityName, fileString)
         else
             throw new Error(`${this.SourceName}: Failed to write in storage provider`)
 
