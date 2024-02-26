@@ -8,7 +8,7 @@ import { Request, Response } from 'express'
 //
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TJson } from '../types/TJson'
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from '../types/TSchemaResponse'
+import { TSchemaResponse } from '../types/TSchemaResponse'
 import { Logger } from "../lib/Logger"
 import { TInternalResponse } from '../types/TInternalResponse'
 import { Server } from '../server/Server'
