@@ -1,0 +1,34 @@
+version: "0.2"
+server:
+  verbosity: debug
+  port: 3000
+  authentication:
+  request-limit: 100mb
+
+users:
+  myapiuser: myStr@ngpa$$w0rd
+
+sources:
+  metal-clubdata:
+    provider: metal
+    host: http://localhost:3001
+    user: myapiuser
+    password: myStr@ngpa$$w0rd
+    database: clubdata
+
+schemas:
+  metalws:
+    sourceName: metal-clubdata
+
+# schedules:
+#   start:
+#     cron: "@start"
+#     planName: plan1
+#     entityName: start
+    
+plans:
+  plan1:
+    start:
+      - select:
+          schemaName: metalws
+          entityName: members
