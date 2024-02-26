@@ -26,7 +26,7 @@ export class PostgresProvider implements IProvider.IProvider {
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Primitive = Pool
-    Connection: Pool | undefined = undefined
+    Connection?: Pool = undefined
     Config: TJson = {}
 
     Options = new CommonSqlProviderOptions()
@@ -52,7 +52,7 @@ export class PostgresProvider implements IProvider.IProvider {
             port = 5432,
             options
         } = this.Params || {}
-        
+
         try {
             this.Connection = new this.Primitive({
                 user,
@@ -103,7 +103,7 @@ export class PostgresProvider implements IProvider.IProvider {
 
         const sqlQuery = new SqlQueryHelper()
             .Insert(`"${schemaRequest.entityName}"`)
-            .Fields(options.Data.GetFieldNames(),'"')
+            .Fields(options.Data.GetFieldNames(), '"')
             .Values(options.Data.Rows)
             .Query
 
