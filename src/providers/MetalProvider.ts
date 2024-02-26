@@ -243,6 +243,9 @@ export class MetalProvider implements IProvider.IProvider {
                             Logger.Warn(`⚠️  WARNING ⚠️  The server version for '${sourceName}' (version: ${data?.version}) do not match with current Metal Server (version: ${SERVER.VERSION}). Please proceed with caution.`)
                         }
                     })
+                    .catch((error: unknown) => {
+                        throw error
+                    })
             })
             .catch((error: unknown) => {
                 Logger.Error(`${Logger.In} Failed to connect to '${sourceName} (${database})'`)
