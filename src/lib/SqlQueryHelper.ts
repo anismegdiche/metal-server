@@ -167,10 +167,10 @@ export class SqlQueryHelper {
                     .value()
 
                 this.Query = `${this.Query} (${newValues})`
-
-                //XXX: if (_index < data.length - 1) {
-                //XXX:     this.Query = `${this.Query}, `
-                //XXX: }
+                // multiple value join
+                if (_index < data.length - 1) {
+                    this.Query = `${this.Query}, `
+                }
             })
         } else {
             // eslint-disable-next-line you-dont-need-lodash-underscore/values
