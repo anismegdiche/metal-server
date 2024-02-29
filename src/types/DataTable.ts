@@ -1,3 +1,5 @@
+/* eslint-disable you-dont-need-lodash-underscore/join */
+/* eslint-disable you-dont-need-lodash-underscore/cast-array */
 //
 //
 //
@@ -118,12 +120,10 @@ const SqlToJsType: TJson = {
 
 
 export class DataTable {
-
     Name: string
     Fields: TFields = {}
     Rows: TRow[] = []
     MetaData: TMetaData = {}
-
 
     constructor(name: string | undefined, rows: TJson[] | undefined = undefined, fields: TJson | undefined = undefined, metaData: TJson | undefined = undefined) {
         if (name === undefined) {
@@ -226,6 +226,7 @@ export class DataTable {
 
         } catch (error: any) {
             Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
+            throw error
         }
         return this.SetFields()
     }

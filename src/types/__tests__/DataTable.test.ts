@@ -553,13 +553,17 @@ describe("DataTable", () => {
             const myDataTable = new DataTable("myTable")
             const sqlQuery = "INVALID QUERY"
 
-            // Act
-            const result = await myDataTable.FreeSql(sqlQuery)
+            // eslint-disable-next-line no-undef-init
+            let result: DataTable | undefined = undefined
 
+            // Act
+            try {
+                result = await myDataTable.FreeSql(sqlQuery)
+            } catch (error) {
+                //
+            }
             // Assert
-            expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([])
-            expect(result.Fields).toEqual({})
+            expect(result).toEqual(undefined)
         })
 
         // Executes a SQL query with a syntax error and throws an error
@@ -583,13 +587,17 @@ describe("DataTable", () => {
             const myDataTable = new DataTable("myTable")
             const sqlQuery = "SELECT * FROM nonExistentTable"
 
-            // Act
-            const result = await myDataTable.FreeSql(sqlQuery)
+            // eslint-disable-next-line no-undef-init
+            let result: DataTable | undefined = undefined
 
+            // Act
+            try {
+                result = await myDataTable.FreeSql(sqlQuery)
+            } catch (error) {
+                //
+            }
             // Assert
-            expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([])
-            expect(result.Fields).toEqual({})
+            expect(result).toEqual(undefined)
         })
 
         it('should execute insert data', async () => {
@@ -605,7 +613,7 @@ describe("DataTable", () => {
                     name: "Jane"
                 }
             ])
-            const sqlQuery = "INSERT INTO img2class() VALUES ('John'),  ('June'),  ('Jane')"
+            const sqlQuery = "INSERT INTO myTable(name) VALUES ('John'),  ('June'),  ('Jane')"
 
             // Act
             const result = await myDataTable.FreeSql(sqlQuery)
@@ -616,8 +624,18 @@ describe("DataTable", () => {
                 {
                     id: 1,
                     name: "John"
-                }, {
+                },
+                {
                     id: 2,
+                    name: "Jane"
+                },
+                {
+                    name: "John"
+                },
+                {
+                    name: "June"
+                },
+                {
                     name: "Jane"
                 }
             ])
