@@ -48,7 +48,7 @@ export class TensorFlowJs implements IAiEngine {
 	constructor(aiEngineInstanceName: string, aiEngineConfig: any) {
 		this.InstanceName = aiEngineInstanceName
 		this.Model = aiEngineConfig.model
-		this.Options = this.#SetDefaultOptions[this.Model](aiEngineConfig.options) || Helper.CaseMapNotFound(this.Model)
+		this.Options = this.#SetDefaultOptions[this.Model](aiEngineConfig.options) ?? Helper.CaseMapNotFound(this.Model)
 		Tf.setBackend('cpu')
 	}
 

@@ -39,7 +39,7 @@ export class NlpJs implements IAiEngine {
 	constructor(aiEngineInstanceName: string, aiEngineConfig: TConfigAiEngineNlpJs) {
 		this.InstanceName = aiEngineInstanceName
 		this.Model = aiEngineConfig.model
-		this.Options = this.#SetDefaultOptions[this.Model](aiEngineConfig.options) || Helper.CaseMapNotFound(this.Model)
+		this.Options = this.#SetDefaultOptions[this.Model](aiEngineConfig.options) ?? Helper.CaseMapNotFound(this.Model)
 	}
 
 	async Init(): Promise<void> {
