@@ -1,3 +1,7 @@
+/* eslint-disable you-dont-need-lodash-underscore/find */
+/* eslint-disable you-dont-need-lodash-underscore/for-each */
+/* eslint-disable no-continue */
+/* eslint-disable you-dont-need-lodash-underscore/omit */
 /* eslint-disable you-dont-need-lodash-underscore/join */
 /* eslint-disable you-dont-need-lodash-underscore/cast-array */
 //
@@ -10,11 +14,6 @@ import alasql from 'alasql'
 //
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
-
-export type TRow = TJson
-export type TFields = TJson
-export type TMetaData = Record<string, unknown>
-export type TOrder = boolean | "asc" | "desc"
 
 const SqlToJsType: TJson = {
     // Integer (number with truncation)
@@ -118,6 +117,15 @@ const SqlToJsType: TJson = {
     // Not yet realized
 }
 
+export type TRow = TJson
+export type TFields = TJson
+export type TMetaData = Record<string, unknown>
+export type TOrder = boolean | "asc" | "desc"
+export type TSyncReport = {
+    AddedRows: TRow[]
+    DeletedRows: TRow[]
+    UpdatedRows: TRow[]
+}
 
 export class DataTable {
     Name: string
@@ -313,5 +321,57 @@ export class DataTable {
             : [...this.Rows, newRows]
 
         return this.SetFields()
+    }
+
+    SyncReport(dtDestination: DataTable, on: string, flags: { keepOnlyUpdatedValues: boolean } | undefined = undefined): TSyncReport {
+        const sourceHasProperty = this.Rows.some(row => on in row)
+
+        if (!sourceHasProperty) {
+            throw Error(`DataTable.SyncReport: '${this.Name}' has no property '${on}'`)
+        }
+
+        const emptySyncReport = <TSyncReport>{
+            AddedRows: <TRow[]>[],
+            UpdatedRows: <TRow[]>[],
+            DeletedRows: <TRow[]>[]
+        }
+
+        // Remove rows from source and destination that are equal
+        const filteredSource: TRow[] = _.differenceWith(this.Rows, dtDestination.Rows, _.isEqual)
+        const filteredDestination: TRow[] = _.differenceWith(dtDestination.Rows, this.Rows, _.isEqual)
+
+        // Remove rows from destination that are not in source
+        let DeletedRows: TRow[] = filteredDestination.filter(row => !filteredSource.some((srcRow: TRow) => _.isEqual(srcRow[on], row[on])))
+
+        // Keep rows from source that are not in destination
+        const AddedRows: TRow[] = filteredSource.filter(row => !filteredDestination.some((destRow: TRow) => _.isEqual(destRow[on], row[on])))
+
+        // Keep rows from source that are in destination but have changed
+        let UpdatedRows: TRow[] = _.differenceBy(filteredSource, AddedRows, on)
+
+        if (DeletedRows.length == 0 && UpdatedRows.length == 0 && AddedRows.length == 0) {
+            return emptySyncReport
+        }
+
+        if (flags?.keepOnlyUpdatedValues) {
+            // DeletedRows = DeletedRows.map((row: TRow) => row[on]) as any []
+            UpdatedRows = UpdatedRows.map(updatedRow => {
+                const correspondingDestRow = filteredDestination.find(destRow => destRow[on] === updatedRow[on])
+                if (correspondingDestRow) {
+                    Object.keys(updatedRow).forEach(prop => {
+                        if (prop !== on && _.isEqual(updatedRow[prop], correspondingDestRow[prop])) {
+                            delete updatedRow[prop]
+                        }
+                    })
+                }
+                return updatedRow
+            })
+        }
+
+        return <TSyncReport>{
+            AddedRows,
+            DeletedRows,
+            UpdatedRows
+        }
     }
 }
