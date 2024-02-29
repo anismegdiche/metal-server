@@ -97,6 +97,7 @@ export class Server {
                 () => {
                     Logger.Message(SERVER.CONSOLE_BANNER)
                     Logger.Message(`Metal server started on port ${Server.Port}`)
+                    Logger.Message(`version: ${SERVER.VERSION}`)
                 })
             .on('error', (error: Error & { code?: string }) => {
                 if (error.code === 'EADDRINUSE') {

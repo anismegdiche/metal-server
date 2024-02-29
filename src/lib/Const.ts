@@ -1,9 +1,20 @@
 /* eslint-disable no-unused-vars */
+//
+//
+//
+//
+//
+import * as Fs from 'fs'
+
+const packageJsonString = Fs.readFileSync('./package.json', 'utf8')
+
+// Parse the JSON content
+const packageJson = JSON.parse(packageJsonString)
 
 
 export enum SERVER {
     NAME = 'Metal',
-    VERSION = '0.2-dev',
+    VERSION = packageJson.version,
     BANNER = '<h1>\\m/ Metal Server</h1>',
     CONSOLE_BANNER = `\x1b[31m
                ,,,,,
