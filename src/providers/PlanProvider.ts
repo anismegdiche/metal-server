@@ -24,7 +24,7 @@ export class PlanProvider implements IProvider.IProvider {
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Config: TJson = {}
-    
+
     Options = new CommonSqlProviderOptions()
 
     constructor(sourceName: string, sourceParams: TSourceParams) {
@@ -73,12 +73,15 @@ export class PlanProvider implements IProvider.IProvider {
             ...RESPONSE_TRANSACTION.SELECT
         }
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(entityName)
+            .From(`\`${entityName}\``)
             .Where(options.Filter)
             .OrderBy(options.Sort)
-            .Query
+
+        const sqlQuery = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
+            ? sqlQueryHelper.Query
+            : undefined
 
         const planDataTable = await Plan.Process(schemaRequest, sqlQuery)
 

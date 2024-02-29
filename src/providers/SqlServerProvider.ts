@@ -59,7 +59,7 @@ export class SqlServerProvider implements IProvider.IProvider {
                     trustServerCertificate: true // change to true for local dev / self-signed certs
                 }
             }
-        } = this.Params || {}
+        } = this.Params ?? {}
         
         const connectionConfig = {
             user,
@@ -100,13 +100,12 @@ export class SqlServerProvider implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Insert(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Fields(options.Data.GetFieldNames())
-            .Values(options.Data.Rows)
-            .Query
+            .Values(options.Data.Rows)            
 
-        await this.Connection.query(sqlQuery)
+        await this.Connection.query(sqlQueryHelper.Query)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
@@ -130,14 +129,13 @@ export class SqlServerProvider implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
             .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Where(options.Filter)
             .OrderBy(options.Sort)
-            .Query
 
-        const data = await this.Connection.query(sqlQuery)
+        const data = await this.Connection.query(sqlQueryHelper.Query)
         if (data.recordset != null && data.recordset.length > 0) {
             const _dt = new DataTable(schemaRequest.entityName, data.recordset)
             Cache.Set(schemaRequest, _dt)
@@ -172,13 +170,12 @@ export class SqlServerProvider implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Update(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Set(options.Data.Rows)
-            .Where(options.Filter)
-            .Query
+            .Where(options.Filter)            
 
-        await this.Connection.query(sqlQuery)
+        await this.Connection.query(sqlQueryHelper.Query)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
@@ -202,13 +199,12 @@ export class SqlServerProvider implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
             .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
-            .Where(options.Filter)
-            .Query
+            .Where(options.Filter)            
 
-        await this.Connection.query(sqlQuery)
+        await this.Connection.query(sqlQueryHelper.Query)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,

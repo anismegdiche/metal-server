@@ -144,7 +144,7 @@ export class MongoDbProvider implements IProvider.IProvider {
             host: uri = 'mongodb://localhost:27017/',
             database,
             options = {}
-        } = this.Params || {}
+        } = this.Params ?? {}
 
         this.Connection = new MongoDb.MongoClient(uri, options)
         try {

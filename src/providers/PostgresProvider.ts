@@ -50,7 +50,7 @@ export class PostgresProvider implements IProvider.IProvider {
             host = 'localhost',
             port = 5432,
             options
-        } = this.Params || {}
+        } = this.Params ?? {}
 
         try {
             this.Connection = new Pool({
@@ -100,13 +100,13 @@ export class PostgresProvider implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Insert(`"${schemaRequest.entityName}"`)
             .Fields(options.Data.GetFieldNames(), '"')
             .Values(options.Data.Rows)
-            .Query
 
-        await this.Connection.query(sqlQuery)
+
+        await this.Connection.query(sqlQueryHelper.Query)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
@@ -129,14 +129,13 @@ export class PostgresProvider implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
             .From(`"${schemaRequest.entityName}"`)
             .Where(options.Filter)
             .OrderBy(options.Sort)
-            .Query
 
-        const _data = await this.Connection.query(sqlQuery)
+        const _data = await this.Connection.query(sqlQueryHelper.Query)
         if (_data.rows.length > 0) {
             const _dt = new DataTable(schemaRequest.entityName, _data.rows)
             Cache.Set(schemaRequest, _dt)
@@ -171,13 +170,13 @@ export class PostgresProvider implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Update(`"${schemaRequest.entityName}"`)
             .Set(options.Data.Rows)
             .Where(options.Filter)
-            .Query
 
-        await this.Connection.query(sqlQuery)
+
+        await this.Connection.query(sqlQueryHelper.Query)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
@@ -201,13 +200,12 @@ export class PostgresProvider implements IProvider.IProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        const sqlQuery = new SqlQueryHelper()
+        const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
             .From(`"${schemaRequest.entityName}"`)
             .Where(options.Filter)
-            .Query
 
-        await this.Connection.query(sqlQuery)
+        await this.Connection.query(sqlQueryHelper.Query)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,

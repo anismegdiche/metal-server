@@ -25,8 +25,8 @@ import { CsvContent } from './content/CsvContent'
 
 /* eslint-disable no-unused-vars */
 export enum STORAGE {
-    FILESYSTEM = "filesystem",
-    AZURE_BLOB = "azureblob"
+    FILESYSTEM = "fileSystem",
+    AZURE_BLOB = "azureBlob"
 }
 
 export enum CONTENT {
@@ -95,14 +95,14 @@ export class FilesProvider implements IProvider.IProvider {
             contentType = CONTENT.JSON
         } = this.Params.options as TFileProviderOptions
 
-        this.Connection = FilesProvider.#NewStorageCaseMap[storageType](this.Params) || Helper.CaseMapNotFound(storageType)
+        this.Connection = FilesProvider.#NewStorageCaseMap[storageType](this.Params) ?? Helper.CaseMapNotFound(storageType)
 
         if (this.Connection)
             this.Connection?.Init()
         else
             throw new Error(`${this.SourceName}: Failed to initialize storage provider`)
 
-        this.Content = FilesProvider.#NewContentCaseMap[contentType](this.Params) || Helper.CaseMapNotFound(contentType)
+        this.Content = FilesProvider.#NewContentCaseMap[contentType](this.Params) ?? Helper.CaseMapNotFound(contentType)
     }
 
     async Connect(): Promise<void> {
@@ -144,11 +144,11 @@ export class FilesProvider implements IProvider.IProvider {
         }
 
         this.Content.Init(entityName, fileString)
-        const fileDataTable = await this.Content.Get() || undefined
+        const fileDataTable = await this.Content.Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Insert(`\`${entityName}\``)
-            .Fields(options.Data.GetFieldNames(),'`')
+            .Fields(options.Data.GetFieldNames(), '`')
             .Values(options.Data.Rows)
 
         await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
@@ -187,15 +187,18 @@ export class FilesProvider implements IProvider.IProvider {
             }
         }
         this.Content.Init(entityName, fileString)
-
-        const sqlQuery = new SqlQueryHelper()
+        
+        const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
             .From(`\`${entityName}\``)
             .Where(options.Filter)
             .OrderBy(options.Sort)
-            .Query
 
-        const fileDataTable = await this.Content.Get(sqlQuery) || undefined
+        const sqlQuery = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
+            ? sqlQueryHelper.Query
+            : undefined
+
+        const fileDataTable = await this.Content.Get(sqlQuery)
 
         if (fileDataTable && fileDataTable.Rows.length > 0) {
             Cache.Set({
@@ -244,7 +247,7 @@ export class FilesProvider implements IProvider.IProvider {
             }
         }
         this.Content.Init(entityName, fileString)
-        const fileDataTable = await this.Content.Get() || undefined
+        const fileDataTable = await this.Content.Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Update(`\`${entityName}\``)
@@ -288,7 +291,7 @@ export class FilesProvider implements IProvider.IProvider {
             }
         }
         this.Content.Init(entityName, fileString)
-        const fileDataTable = await this.Content.Get() || undefined
+        const fileDataTable = await this.Content.Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()

@@ -14,9 +14,9 @@ import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Cache } from '../server/Cache'
 import { Logger } from '../lib/Logger'
 import { SqlQueryHelper } from '../lib/SqlQueryHelper'
-import { CommonSqlProviderOptions } from './CommonSqlProvider'
 import PROVIDER, { Source } from '../server/Source'
 import { DataBase } from '../types/DataBase'
+import { CommonSqlProviderOptions } from './CommonSqlProvider'
 
 
 export class MemoryProvider implements IProvider.IProvider {
@@ -107,11 +107,15 @@ export class MemoryProvider implements IProvider.IProvider {
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(entityName)
+            .From(`\`${entityName}\``)
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
-        const memoryDataTable = await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        const sqlQuery = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
+            ? sqlQueryHelper.Query
+            : undefined
+
+        const memoryDataTable = await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQuery, sqlQueryHelper.Data)
 
         if (memoryDataTable && memoryDataTable.Rows.length > 0) {
             Cache.Set({
@@ -161,11 +165,11 @@ export class MemoryProvider implements IProvider.IProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Update(entityName)
+            .Update(`\`${entityName}\``)
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
-        await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query,sqlQueryHelper.Data)
+        await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
@@ -200,7 +204,7 @@ export class MemoryProvider implements IProvider.IProvider {
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
-            .From(entityName)
+            .From(`\`${entityName}\``)
             .Where(options.Filter)
 
         await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
