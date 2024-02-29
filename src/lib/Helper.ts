@@ -28,9 +28,17 @@ export class Helper {
         return true
     }
 
-    static JsonTryParse<T>(text: string, defaultValue: T): T {
+    static JsonTryParse<T>(jsonString: string, defaultValue: T): T {
         try {
-            return JSON.parse(text)
+            return JSON.parse(jsonString, (key, value) => {
+                if (typeof value === 'string') {
+                    const date = new Date(value)
+                    if (!isNaN(date.getTime())) {
+                        return date
+                    }
+                }
+                return value
+            })
         } catch (error) {
             Logger.Error(`JsonTryParse Error: ${JSON.stringify(error)}`)
             return defaultValue
