@@ -13,6 +13,7 @@ import { Logger } from "../lib/Logger"
 import { TInternalResponse } from '../types/TInternalResponse'
 import { Server } from '../server/Server'
 import { TypeHelper } from './TypeHelper'
+import { Helper } from './Helper'
 
 
 export class Convert {
@@ -86,18 +87,18 @@ export class Convert {
     }
 
     // eslint-disable-next-line no-unused-vars
-    static ReplacePlaceholders(text: string): string
+    static ReplacePlaceholders(value: string): string
     // eslint-disable-next-line no-unused-vars
-    static ReplacePlaceholders(text: TJson[] | undefined): TJson[] | undefined
+    static ReplacePlaceholders(value: TJson[] | undefined): TJson[] | undefined
     // eslint-disable-next-line no-unused-vars
-    static ReplacePlaceholders(text: object | TJson): object | TJson
-    static ReplacePlaceholders(text: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
-        if (text === undefined)
+    static ReplacePlaceholders(value: object | TJson): object | TJson
+    static ReplacePlaceholders(value: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
+        if (value == undefined)
             return undefined
 
-        if (typeof text === 'string') {
+        if (typeof value === 'string') {
             const _placeholderRegex = /\$\{\{([^}]+)\}\}/g
-            return text.replace(_placeholderRegex, (match, code) => {
+            return value.replace(_placeholderRegex, (match, code) => {
                 try {
                     const __result = Server.Sandbox.Evaluate(code)
                     return (__result === undefined)
@@ -110,10 +111,8 @@ export class Convert {
                 }
             })
         } else {
-            const _objectString = Convert.ReplacePlaceholders(JSON.stringify(text))
-            return _objectString && typeof _objectString === 'string'
-                ? JSON.parse(_objectString)
-                : {}
+            const _objectString = Convert.ReplacePlaceholders(JSON.stringify(value))
+            return Helper.JsonTryParse(_objectString, {})
         }
     }
 }
