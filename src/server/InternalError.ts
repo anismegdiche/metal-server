@@ -9,7 +9,7 @@ export class InternalError extends Error {
     verbosity: VERBOSITY
 
     constructor(verbosity: VERBOSITY, message?: string) {
-        super(message || "")
+        super(message ?? "")
         this.name = "InternalError"
         this.verbosity = verbosity
     }
@@ -17,14 +17,14 @@ export class InternalError extends Error {
 
 export class WarnError extends InternalError {
     constructor(message?: string) {
-        super(VERBOSITY.WARN, message || "Warning")
+        super(VERBOSITY.WARN, message ?? "Warning")
         this.name = "WarnError"
     }
 }
 
 export class ErrorError extends InternalError {
     constructor(message?: string) {
-        super(VERBOSITY.ERROR, message || "Warning")
+        super(VERBOSITY.ERROR, message ?? "Warning")
         this.name = "WarnError"
     }
 }

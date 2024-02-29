@@ -206,7 +206,7 @@ export class AiEngine {
             Logger.Error(`Unknown engine type: ${AiEngineConfig.engine}`)
             return
         }
-        AiEngine.AiEngine[aiEngineInstanceName] = AiEngine.#NewAiEngineTypeCaseMap[AiEngineConfig.engine](aiEngineInstanceName, AiEngineConfig) || Helper.CaseMapNotFound(AiEngineConfig.engine)
+        AiEngine.AiEngine[aiEngineInstanceName] = AiEngine.#NewAiEngineTypeCaseMap[AiEngineConfig.engine](aiEngineInstanceName, AiEngineConfig) ?? Helper.CaseMapNotFound(AiEngineConfig.engine)
         await AiEngine.AiEngine[aiEngineInstanceName].Init()
         Logger.Debug(`${Logger.Out} AI Engine '${aiEngineInstanceName}' created`)
     }

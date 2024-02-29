@@ -53,7 +53,7 @@ export class Schedule {
                     },
                     null,
                     true,
-                    Config.Configuration?.server?.timezone || Config.DEFAULTS['server.timezone']
+                    Config.Configuration?.server?.timezone ?? Config.DEFAULTS['server.timezone']
                 )
             })
         }

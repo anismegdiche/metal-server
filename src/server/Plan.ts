@@ -93,7 +93,11 @@ export class Plan {
                     currentDataTable,
                     stepParams: __stepParams
                 }
-                currentDataTable = await Step.ExecuteCaseMap[__stepCommand](_stepArguments) || Helper.CaseMapNotFound(__stepCommand)
+
+                const executeStep = Step.ExecuteCaseMap[__stepCommand] ?? Helper.CaseMapNotFound(__stepCommand)
+                if (executeStep !== undefined) {
+                    currentDataTable = await executeStep(_stepArguments)
+                }
             } catch (error: unknown) {
                 const _error = error as Error
                 const _errorMessage = `Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`

@@ -1,17 +1,20 @@
+/* eslint-disable you-dont-need-lodash-underscore/omit */
+/* eslint-disable you-dont-need-lodash-underscore/map */
+/* eslint-disable you-dont-need-lodash-underscore/filter */
 /* eslint-disable no-continue */
 import _ from "lodash"
 //
 import { METADATA } from "../lib/Const"
 import { Helper } from "../lib/Helper"
 import { Logger } from "../lib/Logger"
-import { DataTable, TOrder } from "../types/DataTable"
+import { DataTable, TOrder, TRow } from "../types/DataTable"
 import { TJson } from "../types/TJson"
 import { TSchemaRequest } from "../types/TSchemaRequest"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
-import { CommonProviderOptions } from '../providers/CommonProvider'
+import { CommonSqlProviderOptions } from '../providers/CommonSqlProvider'
 import { TOptions } from "../types/TOptions"
 import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
@@ -27,7 +30,7 @@ export type TStepArguments = {
 
 export class Step {
 
-    static Options = new CommonProviderOptions()
+    static Options = new CommonSqlProviderOptions()
 
     static ExecuteCaseMap: Record<string, Function> = {
         debug: async (stepArguments: TStepArguments) => await Step.Debug(stepArguments),
@@ -38,7 +41,8 @@ export class Step {
         join: async (stepArguments: TStepArguments) => await Step.Join(stepArguments),
         fields: async (stepArguments: TStepArguments) => await Step.Fields(stepArguments),
         sort: async (stepArguments: TStepArguments) => await Step.Sort(stepArguments),
-        run: async (stepArguments: TStepArguments) => await Step.Run(stepArguments)
+        run: async (stepArguments: TStepArguments) => await Step.Run(stepArguments),
+        sync: async (stepArguments: TStepArguments) => await Step.Sync(stepArguments)
     }
 
     static JoinCaseMap: Record<string, Function> = {
@@ -74,9 +78,8 @@ export class Step {
             }
 
             if (TypeHelper.IsSchemaResponseData(_schemaResponse)) {
-                currentDataTable = _schemaResponse.data
+                return _schemaResponse.data
             }
-            return currentDataTable
         }
 
         // case no schema and no entity --> use current datatable
@@ -84,10 +87,18 @@ export class Step {
             const options: TOptions = Step.Options.Parse(schemaRequest)
             const sqlQueryHelper = new SqlQueryHelper()
                 .Select(options.Fields)
-                .From(currentDataTable.Name)
+                .From(`\`${currentDataTable.Name}\``)
                 .Where(options.Filter)
 
-            return await currentDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            const sqlQuery = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined || options.Data != undefined)
+                ? sqlQueryHelper.Query
+                : undefined
+
+            const sqlData = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined || options.Data != undefined)
+                ? sqlQueryHelper.Data
+                : undefined
+
+            return await currentDataTable.FreeSql(sqlQuery, sqlData)
         }
 
         return currentDataTable
@@ -169,7 +180,7 @@ export class Step {
         if (!schemaName && !entityName) {
             const _options: TOptions = Step.Options.Parse(schemaRequest)
             const _sqlQueryHelper = new SqlQueryHelper()
-                .Update(currentDataTable.Name)
+                .Update(`\`${currentDataTable.Name}\``)
                 .Set(_options.Data)
                 .Where(_options.Filter)
 
@@ -209,7 +220,7 @@ export class Step {
             const _options: TOptions = Step.Options.Parse(schemaRequest)
             const _sqlQueryHelper = new SqlQueryHelper()
                 .Delete()
-                .From(currentDataTable.Name)
+                .From(`\`${currentDataTable.Name}\``)
                 .Where(_options.Filter)
 
             await currentDataTable.FreeSql(_sqlQueryHelper.Query, _sqlQueryHelper.Data)
@@ -251,7 +262,7 @@ export class Step {
             ? await Step.Select(requestToSchema)
             : await Plan.Process(requestToCurrentPlan)
 
-        return await this.JoinCaseMap[type](stepArguments.currentDataTable, dtRight, leftField, rightField) ||
+        return await this.JoinCaseMap[type](stepArguments.currentDataTable, dtRight, leftField, rightField) ??
             (Helper.CaseMapNotFound(type) && stepArguments.currentDataTable)
     }
 
@@ -267,7 +278,7 @@ export class Step {
         Logger.Debug(`${Logger.In} Step.Sort: ${JSON.stringify(stepArguments.stepParams)}`)
 
         const stepParams = stepArguments.stepParams as Record<string, TOrder>
-        const currentDataTable = stepArguments.currentDataTable
+        const { currentDataTable } = stepArguments
 
         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         const fields = _.keys(stepParams)
@@ -279,7 +290,7 @@ export class Step {
 
     static async Debug(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Debug: ${JSON.stringify(stepArguments.stepParams)}`)
-        const debug = stepArguments.stepParams as string || 'error'
+        const debug = stepArguments.stepParams as string ?? 'error'
         stepArguments.currentDataTable.SetMetaData(METADATA.PLAN_DEBUG, debug)
 
         if (stepArguments.currentDataTable.MetaData[METADATA.PLAN_ERRORS] == undefined) {
@@ -302,6 +313,7 @@ export class Step {
             const __result = <Record<string, any>>(await AiEngine.AiEngine[ai].Run(<string>_rowData[input]))
             if (__result) {
                 // check if output is empty
+                // eslint-disable-next-line you-dont-need-lodash-underscore/is-nil
                 if (_.isNil(output) || _.isEmpty(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
@@ -311,6 +323,7 @@ export class Step {
                 }
 
                 // check if output is string
+                // eslint-disable-next-line you-dont-need-lodash-underscore/is-string
                 if (_.isString(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
@@ -327,5 +340,98 @@ export class Step {
             }
         }
         return stepArguments.currentDataTable.SetFields()
+    }
+    static async Sync(stepArguments: TStepArguments): Promise<DataTable> {
+        Logger.Debug(`${Logger.In} Step.Run: ${JSON.stringify(stepArguments.stepParams)}`)
+
+        const { source, destination, on } = stepArguments.stepParams as {
+            source: {
+                schemaName: string
+                entityName: string
+            }
+            destination: {
+                schemaName: string
+                entityName: string
+            }
+            on: string
+        }
+
+        if (!on) {
+            throw new Error('on is required')
+        }
+
+        if (!source && !destination) {
+            throw new Error('source or/and destination is required')
+        }
+
+        const dtSource: DataTable = (source)
+            ? (await Step.#_Select(source.schemaName, source.entityName)) ?? new DataTable(source.entityName)
+            : stepArguments.currentDataTable
+
+        const dtDestination: DataTable = (destination)
+            ? (await Step.#_Select(destination.schemaName, destination.entityName)) ?? new DataTable(destination.entityName)
+            : stepArguments.currentDataTable
+
+
+        const syncReport = dtSource.SyncReport(dtDestination, on, {
+            keepOnlyUpdatedValues: true
+        })
+
+        // Apply transformations
+        // Delete
+        _.map(syncReport.DeletedRows, on)
+            .forEach((value: unknown) => Schema.Delete({
+                schemaName: destination.schemaName,
+                entityName: destination.entityName,
+                filter: {
+                    [on]: value
+                }
+            }))
+
+        // Update
+        syncReport.UpdatedRows.forEach((row: TRow) => Schema.Update({
+            schemaName: destination.schemaName,
+            entityName: destination.entityName,
+            filter: {
+                [on]: row[on]
+            },
+            data: [_.omit(row, on)]
+        }))
+
+        // Insert
+        if (syncReport.AddedRows.length > 0) {
+            Schema.Insert({
+                schemaName: destination.schemaName,
+                entityName: destination.entityName,
+                data: syncReport.AddedRows
+            })
+        }
+        
+        // Fallback return
+        if (!destination) {
+            stepArguments.currentDataTable.Rows = [
+                ...syncReport.DeletedRows,
+                ...syncReport.UpdatedRows,
+                ...syncReport.AddedRows
+            ]
+        }
+
+        return stepArguments.currentDataTable.SetFields()
+    }
+
+    static async #_Select(schemaName: string, entityName: string): Promise<DataTable | undefined> {
+        const _schemaResponse = await Schema.Select({
+            schemaName,
+            entityName
+        })
+
+        if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
+            throw new Error(_schemaResponse.error)
+        }
+
+        if (TypeHelper.IsSchemaResponseData(_schemaResponse)) {
+            return _schemaResponse.data
+        }
+        return undefined
     }
 }
