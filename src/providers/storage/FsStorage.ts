@@ -17,7 +17,7 @@ export class FsStorage extends CommonStorage implements IStorage {
 
     Init(): void {
         this.Config = {
-            folder: this.Options.fsFolder || '.'
+            folder: this.Options.fsFolder ?? '.'
         }
     }
 

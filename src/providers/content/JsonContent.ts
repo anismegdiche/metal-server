@@ -43,9 +43,7 @@ export class JsonContent extends CommonContent implements IContent {
 
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
         let data: TJson[] = []
-
         data = Helper.JsonGet<TJson[]>(this.Content, this.Config.arrayPath)
-
         return new DataTable(this.EntityName, data).FreeSql(sqlQuery)
     }
 
