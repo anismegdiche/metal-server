@@ -6,23 +6,23 @@
 import { Logger } from '../lib/Logger'
 import { Cache } from './Cache'
 import { Config } from './Config'
-import { IProvider } from '../types/IProvider'
+import { IDataProvider } from '../types/IDataProvider'
 import { TSourceParams } from '../types/TSourceParams'
 import { RESPONSE } from '../lib/Const'
 import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
 // Providers
-import { PostgresProvider } from '../providers/PostgresProvider'
-import { MongoDbProvider } from '../providers/MongoDbProvider'
-import { SqlServerProvider } from '../providers/SqlServerProvider'
-import { PlanProvider } from '../providers/PlanProvider'
-import { FilesProvider } from '../providers/FilesProvider'
-import { MemoryProvider } from '../providers/MemoryProvider'
-import { MetalProvider } from '../providers/MetalProvider'
+import { PostgresDataProvider } from '../providers/data/PostgresDataProvider'
+import { MongoDbDataProvider } from '../providers/data/MongoDbDataProvider'
+import { SqlServerDataProvider } from '../providers/data/SqlServerDataProvider'
+import { PlanDataProvider } from '../providers/data/PlanDataProvider'
+import { FilesDataProvider } from '../providers/data/FilesDataProvider'
+import { MemoryDataProvider } from '../providers/data/MemoryDataProvider'
+import { MetalDataProvider } from '../providers/data/MetalDataProvider'
 //
 //  config types
 //
 /* eslint-disable no-unused-vars */
-enum PROVIDER {
+enum DATA_PROVIDER {
     METAL = "metal",
     PLAN = "plan",
     MEMORY = "memory",
@@ -31,7 +31,7 @@ enum PROVIDER {
     MSSQL = "mssql",
     FILES = "files"
 }
-export default PROVIDER
+export default DATA_PROVIDER
 /* eslint-enable no-unused-vars */
 //
 //
@@ -39,16 +39,16 @@ export default PROVIDER
 export class Source {
 
     // global sources
-    static Sources: Record<string, IProvider> = {}
+    static Sources: Record<string, IDataProvider> = {}
 
-    static #ProviderCaseMap: Record<PROVIDER, Function> = {
-        [PROVIDER.METAL]: (source: string, sourceParams: TSourceParams) => new MetalProvider(source, sourceParams),
-        [PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanProvider(source, sourceParams),
-        [PROVIDER.MEMORY]: (source: string, sourceParams: TSourceParams) => new MemoryProvider(source, sourceParams),
-        [PROVIDER.POSTGRES]: (source: string, sourceParams: TSourceParams) => new PostgresProvider(source, sourceParams),
-        [PROVIDER.MONGODB]: (source: string, sourceParams: TSourceParams) => new MongoDbProvider(source, sourceParams),
-        [PROVIDER.MSSQL]: (source: string, sourceParams: TSourceParams) => new SqlServerProvider(source, sourceParams),
-        [PROVIDER.FILES]: (source: string, sourceParams: TSourceParams) => new FilesProvider(source, sourceParams)
+    static #ProviderCaseMap: Record<DATA_PROVIDER, Function> = {
+        [DATA_PROVIDER.METAL]: (source: string, sourceParams: TSourceParams) => new MetalDataProvider(source, sourceParams),
+        [DATA_PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanDataProvider(source, sourceParams),
+        [DATA_PROVIDER.MEMORY]: (source: string, sourceParams: TSourceParams) => new MemoryDataProvider(source, sourceParams),
+        [DATA_PROVIDER.POSTGRES]: (source: string, sourceParams: TSourceParams) => new PostgresDataProvider(source, sourceParams),
+        [DATA_PROVIDER.MONGODB]: (source: string, sourceParams: TSourceParams) => new MongoDbDataProvider(source, sourceParams),
+        [DATA_PROVIDER.MSSQL]: (source: string, sourceParams: TSourceParams) => new SqlServerDataProvider(source, sourceParams),
+        [DATA_PROVIDER.FILES]: (source: string, sourceParams: TSourceParams) => new FilesDataProvider(source, sourceParams)
     }
 
     static async Connect(source: string | null, sourceParams: TSourceParams): Promise<void> {

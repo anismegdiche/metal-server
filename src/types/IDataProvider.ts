@@ -1,18 +1,13 @@
 /* eslint-disable no-unused-vars */
-import { MongoClient } from 'mongodb'
-import { Pool } from 'pg'
 
 import { TSchemaRequest } from './TSchemaRequest'
 import { TOptions } from './TOptions'
 import { TSourceParams } from './TSourceParams'
 import { TJson } from './TJson'
 import { TSchemaResponse } from './TSchemaResponse'
-import { ConnectionPool } from 'mssql'
-import { DataBase } from './DataBase'
-import { MetalClient } from '../providers/MetalProvider'
 
 
-export interface IProviderOptions {
+export interface IDataProviderOptions {
     Parse: (schemaRequest: TSchemaRequest) => TOptions
     GetFilter: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
     GetFields: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
@@ -20,8 +15,7 @@ export interface IProviderOptions {
     GetData: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
 }
 
-
-export interface IProvider {
+export interface IDataProvider {
     ProviderName: string
     SourceName: string
     Params: TJson
@@ -33,5 +27,5 @@ export interface IProvider {
     Select: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
     Update: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
     Delete: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    Options: IProviderOptions
+    Options: IDataProviderOptions
 }

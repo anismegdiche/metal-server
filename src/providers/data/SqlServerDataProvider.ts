@@ -5,29 +5,29 @@
 //
 import mssql, { ConnectionPool } from 'mssql'
 
-import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
-import * as IProvider from "../types/IProvider"
-import { SqlQueryHelper } from '../lib/SqlQueryHelper'
-import { TSourceParams } from "../types/TSourceParams"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
-import { TOptions } from "../types/TOptions"
-import { DataTable } from "../types/DataTable"
-import { TJson } from "../types/TJson"
-import { TSchemaRequest } from '../types/TSchemaRequest'
-import { Logger } from '../lib/Logger'
-import { Cache } from '../server/Cache'
-import { CommonSqlProviderOptions } from './CommonSqlProvider'
-import PROVIDER, { Source } from '../server/Source'
+import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+import * as IDataProvider from "../../types/IDataProvider"
+import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
+import { TSourceParams } from "../../types/TSourceParams"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
+import { TOptions } from "../../types/TOptions"
+import { DataTable } from "../../types/DataTable"
+import { TJson } from "../../types/TJson"
+import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { Logger } from '../../lib/Logger'
+import { Cache } from '../../server/Cache'
+import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
+import DATA_PROVIDER, { Source } from '../../server/Source'
 
 
-export class SqlServerProvider implements IProvider.IProvider {
-    ProviderName = PROVIDER.MSSQL
+export class SqlServerDataProvider implements IDataProvider.IDataProvider {
+    ProviderName = DATA_PROVIDER.MSSQL
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Connection?: ConnectionPool = undefined
     Config: TJson = {}
 
-    Options = new CommonSqlProviderOptions()
+    Options = new CommonSqlDataProviderOptions()
 
     constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
@@ -36,12 +36,12 @@ export class SqlServerProvider implements IProvider.IProvider {
     }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("SqlServerProvider.Init")
+        Logger.Debug("SqlServerDataProvider.Init")
         this.Params = sourceParams
     }
 
     async Connect(): Promise<void> {
-        Logger.Debug("SqlServerProvider.Connect")
+        Logger.Debug("SqlServerDataProvider.Connect")
         const {
             user = 'sa',
             password = '',
@@ -79,14 +79,14 @@ export class SqlServerProvider implements IProvider.IProvider {
     }
 
     async Disconnect(): Promise<void> {
-        Logger.Debug(`${Logger.In} SqlServerProvider.Disconnect`)
+        Logger.Debug(`${Logger.In} SqlServerDataProvider.Disconnect`)
         if (this.Connection !== undefined) {
             this.Connection.close()
         }
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} SqlServerProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} SqlServerDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -115,7 +115,7 @@ export class SqlServerProvider implements IProvider.IProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} SqlServerProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} SqlServerDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -156,7 +156,7 @@ export class SqlServerProvider implements IProvider.IProvider {
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`SqlServerProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`SqlServerDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -185,7 +185,7 @@ export class SqlServerProvider implements IProvider.IProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`SqlServerProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`SqlServerDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,

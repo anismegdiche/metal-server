@@ -4,27 +4,27 @@
 //
 //
 //
-import { RESPONSE_TRANSACTION, RESPONSE } from "../lib/Const"
-import { Helper } from "../lib/Helper"
-import { Logger } from "../lib/Logger"
-import { SqlQueryHelper } from "../lib/SqlQueryHelper"
-import { Cache } from "../server/Cache"
-import PROVIDER from "../server/Source"
-import * as IProvider from "../types/IProvider"
-import { TOptions } from "../types/TOptions"
-import { TSchemaRequest } from "../types/TSchemaRequest"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
-import { TSourceParams } from "../types/TSourceParams"
-import { CommonSqlProviderOptions } from "./CommonSqlProvider"
-import { IStorage } from "./storage/CommonStorage"
-import { IContent } from "./content/CommonContent"
-import { JsonContent } from "./content/JsonContent"
-import { AzureBlobStorage } from './storage/AzureBlobStorage'
-import { FsStorage } from './storage/FsStorage'
-import { CsvContent } from './content/CsvContent'
+import { RESPONSE_TRANSACTION, RESPONSE } from "../../lib/Const"
+import { Helper } from "../../lib/Helper"
+import { Logger } from "../../lib/Logger"
+import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
+import { Cache } from "../../server/Cache"
+import DATA_PROVIDER from "../../server/Source"
+import * as IDataProvider from "../../types/IDataProvider"
+import { TOptions } from "../../types/TOptions"
+import { TSchemaRequest } from "../../types/TSchemaRequest"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
+import { TSourceParams } from "../../types/TSourceParams"
+import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { IStorage } from "../storage/CommonStorage"
+import { IContent } from "../content/CommonContent"
+import { JsonContent } from "../content/JsonContent"
+import { AzureBlobStorage } from '../storage/AzureBlobStorage'
+import { FsStorage } from '../storage/FsStorage'
+import { CsvContent } from '../content/CsvContent'
 
 /* eslint-disable no-unused-vars */
-export enum STORAGE {
+export enum STORAGE_PROVIDER {
     FILESYSTEM = "fileSystem",
     AZURE_BLOB = "azureBlob"
 }
@@ -35,9 +35,9 @@ export enum CONTENT {
 }
 /* eslint-enable no-unused-vars */
 
-export type TFileProviderOptions = {
+export type TFilesDataProviderOptions = {
     // Common
-    storageType?: STORAGE
+    storageType?: STORAGE_PROVIDER
     contentType?: CONTENT
     //TODO: to test
     autoCreate?: boolean
@@ -61,19 +61,19 @@ export type TFileProviderOptions = {
     csvSkipEmptyLines?: string | boolean
 }
 
-export class FilesProvider implements IProvider.IProvider {
-    ProviderName = PROVIDER.FILES
+export class FilesDataProvider implements IDataProvider.IDataProvider {
+    ProviderName = DATA_PROVIDER.FILES
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Connection?: IStorage = undefined
     Content: IContent = <IContent>{}
     ContentType: CONTENT = CONTENT.JSON
 
-    Options = new CommonSqlProviderOptions()
+    Options = new CommonSqlDataProviderOptions()
 
-    static #NewStorageCaseMap: Record<STORAGE, Function> = {
-        [STORAGE.FILESYSTEM]: (storageParams: TSourceParams) => new FsStorage(storageParams),
-        [STORAGE.AZURE_BLOB]: (storageParams: TSourceParams) => new AzureBlobStorage(storageParams)
+    static #NewStorageCaseMap: Record<STORAGE_PROVIDER, Function> = {
+        [STORAGE_PROVIDER.FILESYSTEM]: (storageParams: TSourceParams) => new FsStorage(storageParams),
+        [STORAGE_PROVIDER.AZURE_BLOB]: (storageParams: TSourceParams) => new AzureBlobStorage(storageParams)
     }
 
     static #NewContentCaseMap: Record<CONTENT, Function> = {
@@ -88,21 +88,21 @@ export class FilesProvider implements IProvider.IProvider {
     }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("FilesProvider.Init")
+        Logger.Debug("FilesDataProvider.Init")
         this.Params = sourceParams
         const {
-            storageType = STORAGE.FILESYSTEM,
+            storageType = STORAGE_PROVIDER.FILESYSTEM,
             contentType = CONTENT.JSON
-        } = this.Params.options as TFileProviderOptions
+        } = this.Params.options as TFilesDataProviderOptions
 
-        this.Connection = FilesProvider.#NewStorageCaseMap[storageType](this.Params) ?? Helper.CaseMapNotFound(storageType)
+        this.Connection = FilesDataProvider.#NewStorageCaseMap[storageType](this.Params) ?? Helper.CaseMapNotFound(storageType)
 
         if (this.Connection)
             this.Connection?.Init()
         else
             throw new Error(`${this.SourceName}: Failed to initialize storage provider`)
 
-        this.Content = FilesProvider.#NewContentCaseMap[contentType](this.Params) ?? Helper.CaseMapNotFound(contentType)
+        this.Content = FilesDataProvider.#NewContentCaseMap[contentType](this.Params) ?? Helper.CaseMapNotFound(contentType)
     }
 
     async Connect(): Promise<void> {
@@ -118,7 +118,7 @@ export class FilesProvider implements IProvider.IProvider {
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} FilesDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -163,7 +163,7 @@ export class FilesProvider implements IProvider.IProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} FilesDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
 
@@ -223,7 +223,7 @@ export class FilesProvider implements IProvider.IProvider {
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} FilesDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
 
@@ -266,7 +266,7 @@ export class FilesProvider implements IProvider.IProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} FilesDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest

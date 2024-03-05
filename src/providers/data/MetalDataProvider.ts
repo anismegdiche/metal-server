@@ -7,19 +7,16 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import _ from 'lodash'
 //
-import { Logger } from "../lib/Logger"
-import PROVIDER from "../server/Source"
-import * as IProvider from "../types/IProvider"
-import { TSchemaRequest } from "../types/TSchemaRequest"
-import { TRANSACTION, TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from "../types/TSchemaResponse"
-import { TSourceParams } from "../types/TSourceParams"
-import { CommonSqlProviderOptions } from "./CommonSqlProvider"
-import { TJson } from '../types/TJson'
-import { DataTable } from '../types/DataTable'
-import { SERVER } from '../lib/Const'
-
-
-/////////////////////
+import { Logger } from "../../lib/Logger"
+import DATA_PROVIDER from "../../server/Source"
+import * as IDataProvider from "../../types/IDataProvider"
+import { TSchemaRequest } from "../../types/TSchemaRequest"
+import { TRANSACTION, TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from "../../types/TSchemaResponse"
+import { TSourceParams } from "../../types/TSourceParams"
+import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { TJson } from '../../types/TJson'
+import { DataTable } from '../../types/DataTable'
+import { SERVER } from '../../lib/Const'
 
 
 type TMetalClientParams = {
@@ -28,11 +25,6 @@ type TMetalClientParams = {
     password?: string
     database?: string
 }
-
-//XXX: interface MetalClientResponse {
-//XXX:     status: number
-//XXX:     data: any
-//XXX: }
 
 export class MetalClient {
     Params: TMetalClientParams = {
@@ -64,22 +56,15 @@ export class MetalClient {
     }
 
     #SetHeaders(): { headers: any } {
-        let _headers: { [key: string]: string } = { 'Content-Type': 'application/json' }
+        let headers: { [key: string]: string } = { 'Content-Type': 'application/json' }
         if (this.#Token !== undefined) {
-            _headers = {
-                ..._headers,
+            headers = {
+                ...headers,
                 'Authorization': `Bearer ${this.#Token}`
             }
         }
-        return { headers: _headers }
+        return { headers }
     }
-
-    //XXX: #CallbackFailed(error: any): any {
-    //XXX:     if (error?.response?.data?.result === "error") {
-    //XXX:         Logger.Error(JSON.stringify(error?.response?.data))
-    //XXX:     }
-    //XXX:     return error?.response?.data
-    //XXX: }
 
     static ConvertToURLParams(jsonObj: object): string {
         const params: string[] = []
@@ -141,20 +126,14 @@ export class MetalClient {
     }
 }
 
-/////////////////////
-
-//XXX: export type TMetalProviderOptions = {
-//XXX:     autoCreate?: boolean
-//XXX: }
-
-export class MetalProvider implements IProvider.IProvider {
-    ProviderName = PROVIDER.METAL
+export class MetalDataProvider implements IDataProvider.IDataProvider {
+    ProviderName = DATA_PROVIDER.METAL
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Connection?: MetalClient = undefined
     Config: TJson = {}
 
-    Options = new CommonSqlProviderOptions()
+    Options = new CommonSqlDataProviderOptions()
 
     constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
@@ -198,22 +177,8 @@ export class MetalProvider implements IProvider.IProvider {
     }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("MetalProvider.Init")
+        Logger.Debug("MetalDataProvider.Init")
         this.Params = sourceParams
-        //XXX: this.SourceName = sourceName
-        //XXX: this.Init(sourceParams)
-        //XXX: this.Connect()      
-        //XXX: this.Params = sourceParams
-        //XXX: const {
-        //XXX:     storageType = STORAGE.FILESYSTEM,
-        //XXX:     contentType = CONTENT.JSON
-        //XXX: } = this.Params.options as TMetalProviderOptions
-        //XXX: this.Primitive = new MetalClient(this.Params)        
-        //XXX: if (this.Primitive)
-        //XXX:     this.Primitive.Init()
-        //XXX: else
-        //XXX:     throw new Error(`${this.SourceName}: Failed to initialize storage provider`)
-
     }
 
     async Connect(): Promise<void> {
@@ -259,29 +224,29 @@ export class MetalProvider implements IProvider.IProvider {
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MetalDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)
         }
 
-        const options = MetalProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
+        const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
 
         const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
 
         return this.Connection.Post(url, options)
-            .then(MetalProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalProvider.#HandleError)
+            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
+            .catch(MetalDataProvider.#HandleError)
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MetalDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)
         }
 
-        const options = MetalProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
+        const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
         const urlParams = MetalClient.ConvertToURLParams(options)
 
         let url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
@@ -291,40 +256,40 @@ export class MetalProvider implements IProvider.IProvider {
         }
 
         return this.Connection.Get(url)
-            .then(MetalProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalProvider.#HandleError)
+            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
+            .catch(MetalDataProvider.#HandleError)
     }
 
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MetalDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)
         }
 
-        const options = MetalProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
+        const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
 
         const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
 
         return await this.Connection.Patch(url, options)
-            .then(MetalProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalProvider.#HandleError)
+            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
+            .catch(MetalDataProvider.#HandleError)
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MetalDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)
         }
 
-        const options = MetalProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
+        const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
 
         const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
 
         return await this.Connection.Delete(url, options)
-            .then(MetalProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalProvider.#HandleError)
+            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
+            .catch(MetalDataProvider.#HandleError)
     }
 }

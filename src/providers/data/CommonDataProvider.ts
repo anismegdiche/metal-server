@@ -3,19 +3,19 @@
 //
 //
 //
-import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
-import * as IProvider from "../types/IProvider"
-import { TSourceParams } from "../types/TSourceParams"
-import { TSchemaResponse, TSchemaResponseError } from "../types/TSchemaResponse"
-import { TJson } from "../types/TJson"
-import { TSchemaRequest } from '../types/TSchemaRequest'
-import { Logger } from '../lib/Logger'
-import { Convert } from "../lib/Convert"
-import { DataTable } from "../types/DataTable"
-import { TOptions } from "../types/TOptions"
+import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+import * as IDataProvider from "../../types/IDataProvider"
+import { TSourceParams } from "../../types/TSourceParams"
+import { TSchemaResponse, TSchemaResponseError } from "../../types/TSchemaResponse"
+import { TJson } from "../../types/TJson"
+import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { Logger } from '../../lib/Logger'
+import { Convert } from "../../lib/Convert"
+import { DataTable } from "../../types/DataTable"
+import { TOptions } from "../../types/TOptions"
 
 
-export class CommonProviderOptions implements IProvider.IProviderOptions {
+export class CommonDataProviderOptions implements IDataProvider.IDataProviderOptions {
 
     Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}
@@ -74,13 +74,13 @@ export class CommonProviderOptions implements IProvider.IProviderOptions {
 }
 
 
-export class CommonProvider implements IProvider.IProvider {
-    ProviderName = "CommonProvider"
+export class CommonDataProvider implements IDataProvider.IDataProvider {
+    ProviderName = "CommonDataProvider"
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Config: TJson = {}
 
-    Options = new CommonProviderOptions()
+    Options = new CommonDataProviderOptions()
 
     constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
@@ -89,23 +89,23 @@ export class CommonProvider implements IProvider.IProvider {
     }
 
     Init(sourceParams: TSourceParams): void {
-        Logger.Debug("CommonProvider.Init")
+        Logger.Debug("CommonDataProvider.Init")
         this.Params = sourceParams
     }
 
     // eslint-disable-next-line class-methods-use-this
     async Connect(): Promise<void> {
-        Logger.Debug("CommonProvider.Connect")
+        Logger.Debug("CommonDataProvider.Connect")
     }
 
     // eslint-disable-next-line class-methods-use-this
     async Disconnect(): Promise<void> {
-        Logger.Debug(`${Logger.In} CommonProvider.Disconnect`)
+        Logger.Debug(`${Logger.In} CommonDataProvider.Disconnect`)
     }
 
     // eslint-disable-next-line class-methods-use-this
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} CommonProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} CommonDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
@@ -117,7 +117,7 @@ export class CommonProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} CommonProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} CommonDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
@@ -129,7 +129,7 @@ export class CommonProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} CommonProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} CommonDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
@@ -141,7 +141,7 @@ export class CommonProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} CommonProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} CommonDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,

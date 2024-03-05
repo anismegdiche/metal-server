@@ -3,14 +3,14 @@
 //
 //
 //
-import { TSchemaRequest } from '../types/TSchemaRequest'
-import { TOptions } from '../types/TOptions'
-import * as IProvider from "../types/IProvider"
-import { DataTable } from '../types/DataTable'
-import { Convert } from '../lib/Convert'
+import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { TOptions } from '../../types/TOptions'
+import * as IDataProvider from "../../types/IDataProvider"
+import { DataTable } from '../../types/DataTable'
+import { Convert } from '../../lib/Convert'
 
 
-export class CommonSqlProviderOptions implements IProvider.IProviderOptions {
+export class CommonSqlDataProviderOptions implements IDataProvider.IDataProviderOptions {
 
     Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}

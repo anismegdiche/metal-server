@@ -13,7 +13,7 @@ import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TSchemaResponse, TSchemaResponseData, TRANSACTION } from '../types/TSchemaResponse'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
-import { IProvider } from '../types/IProvider'
+import { IDataProvider } from '../types/IDataProvider'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
 
@@ -23,7 +23,7 @@ export class Cache {
     static readonly Schema = "metal_cache"
     static readonly Table = "cache"
 
-    static CacheSource: IProvider
+    static CacheSource: IDataProvider
 
     static readonly #SchemaRequest: TSchemaRequest = <TSchemaRequest>{
         schemaName: Cache.Schema,

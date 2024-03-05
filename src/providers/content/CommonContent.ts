@@ -8,12 +8,12 @@
 //
 import { TSourceParams } from "../../types/TSourceParams"
 import { DataTable } from "../../types/DataTable"
-import { TFileProviderOptions } from "../FilesProvider"
+import { TFilesDataProviderOptions } from "../data/FilesDataProvider"
 
 /* eslint-disable no-unused-vars */
 export interface IContent {
     EntityName: string
-    Options: TFileProviderOptions
+    Options: TFilesDataProviderOptions
     Content: unknown
     Init(name: string, content: string): void
     Get(sqlQuery?: string): Promise<DataTable>
@@ -24,11 +24,11 @@ export interface IContent {
 export class CommonContent {
 
     EntityName: string = "DEFAULT"
-    Options: TFileProviderOptions
+    Options: TFilesDataProviderOptions
     RawContent?: string = undefined
 
     constructor(sourceParams: TSourceParams) {
-        this.Options = sourceParams.options as TFileProviderOptions
+        this.Options = sourceParams.options as TFilesDataProviderOptions
     }
 }
 

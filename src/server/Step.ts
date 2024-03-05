@@ -14,7 +14,7 @@ import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
-import { CommonSqlProviderOptions } from '../providers/CommonSqlProvider'
+import { CommonSqlDataProviderOptions } from '../providers/data/CommonSqlDataProvider'
 import { TOptions } from "../types/TOptions"
 import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
@@ -30,7 +30,7 @@ export type TStepArguments = {
 
 export class Step {
 
-    static Options = new CommonSqlProviderOptions()
+    static Options = new CommonSqlDataProviderOptions()
 
     static ExecuteCaseMap: Record<string, Function> = {
         debug: async (stepArguments: TStepArguments) => await Step.Debug(stepArguments),

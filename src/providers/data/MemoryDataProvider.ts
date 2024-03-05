@@ -4,29 +4,29 @@
 //
 //
 
-import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
-import * as IProvider from "../types/IProvider"
-import { TSourceParams } from "../types/TSourceParams"
-import { TOptions } from "../types/TOptions"
-import { TJson } from "../types/TJson"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../types/TSchemaResponse'
-import { TSchemaRequest } from '../types/TSchemaRequest'
-import { Cache } from '../server/Cache'
-import { Logger } from '../lib/Logger'
-import { SqlQueryHelper } from '../lib/SqlQueryHelper'
-import PROVIDER, { Source } from '../server/Source'
-import { DataBase } from '../types/DataBase'
-import { CommonSqlProviderOptions } from './CommonSqlProvider'
+import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+import * as IDataProvider from "../../types/IDataProvider"
+import { TSourceParams } from "../../types/TSourceParams"
+import { TOptions } from "../../types/TOptions"
+import { TJson } from "../../types/TJson"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
+import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { Cache } from '../../server/Cache'
+import { Logger } from '../../lib/Logger'
+import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
+import DATA_PROVIDER, { Source } from '../../server/Source'
+import { DataBase } from '../../types/DataBase'
+import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 
 
-export class MemoryProvider implements IProvider.IProvider {
-    ProviderName = PROVIDER.MEMORY
+export class MemoryDataProvider implements IDataProvider.IDataProvider {
+    ProviderName = DATA_PROVIDER.MEMORY
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Config: TJson = {}
     Connection?: DataBase = undefined
 
-    Options = new CommonSqlProviderOptions()
+    Options = new CommonSqlDataProviderOptions()
 
     constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
@@ -35,7 +35,7 @@ export class MemoryProvider implements IProvider.IProvider {
     }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("MemoryProvider.Init")
+        Logger.Debug("MemoryDataProvider.Init")
         this.Params = sourceParams
     }
 
@@ -56,7 +56,7 @@ export class MemoryProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MemoryProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} MemoryDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
@@ -82,7 +82,7 @@ export class MemoryProvider implements IProvider.IProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`MemoryDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -141,7 +141,7 @@ export class MemoryProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`MemoryDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         const schemaResponse = <TSchemaResponse>{
             schemaName,
@@ -179,7 +179,7 @@ export class MemoryProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryProvider.Delete : ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`MemoryDataProvider.Delete : ${JSON.stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         const schemaResponse = <TSchemaResponse>{
             schemaName,

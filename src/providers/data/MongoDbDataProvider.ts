@@ -9,21 +9,21 @@ import _ from 'lodash'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const GetMongoQuery = require("sql2mongo").getMongoQuery
 //
-import * as IProvider from "../types/IProvider"
-import { Convert } from '../lib/Convert'
-import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
-import { TSourceParams } from "../types/TSourceParams"
-import { TOptions } from '../types/TOptions'
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../types/TSchemaResponse"
-import { TSchemaRequest } from "../types/TSchemaRequest"
-import { TJson } from "../types/TJson"
-import { DataTable } from "../types/DataTable"
-import { Logger } from "../lib/Logger"
-import { Cache } from '../server/Cache'
-import PROVIDER, { Source } from '../server/Source'
+import * as IDataProvider from "../../types/IDataProvider"
+import { Convert } from '../../lib/Convert'
+import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+import { TSourceParams } from "../../types/TSourceParams"
+import { TOptions } from '../../types/TOptions'
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
+import { TSchemaRequest } from "../../types/TSchemaRequest"
+import { TJson } from "../../types/TJson"
+import { DataTable } from "../../types/DataTable"
+import { Logger } from "../../lib/Logger"
+import { Cache } from '../../server/Cache'
+import DATA_PROVIDER, { Source } from '../../server/Source'
 
 
-class MongoDbProviderOptions implements IProvider.IProviderOptions {
+class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
     Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}
         if (schemaRequest) {
@@ -118,13 +118,13 @@ class MongoDbProviderOptions implements IProvider.IProviderOptions {
 }
 
 
-export class MongoDbProvider implements IProvider.IProvider {
-    ProviderName = PROVIDER.MONGODB
+export class MongoDbDataProvider implements IDataProvider.IDataProvider {
+    ProviderName = DATA_PROVIDER.MONGODB
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Connection?: MongoDb.MongoClient = undefined
 
-    Options: MongoDbProviderOptions = new MongoDbProviderOptions()
+    Options: MongoDbDataProviderOptions = new MongoDbDataProviderOptions()
 
     constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
@@ -134,12 +134,12 @@ export class MongoDbProvider implements IProvider.IProvider {
 
 
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("MongoDbProvider.Init")
+        Logger.Debug("MongoDbDataProvider.Init")
         this.Params = sourceParams
     }
 
     async Connect(): Promise<void> {
-        Logger.Debug("MongoDbProvider.Connect")
+        Logger.Debug("MongoDbDataProvider.Connect")
         const {
             host: uri = 'mongodb://localhost:27017/',
             database,
@@ -162,14 +162,14 @@ export class MongoDbProvider implements IProvider.IProvider {
     }
 
     async Disconnect(): Promise<void> {
-        Logger.Debug("MongoDbProvider.Disconnect")
+        Logger.Debug("MongoDbDataProvider.Disconnect")
         if (this.Connection !== undefined) {
             await this.Connection.close()
         }
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MongoDbProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} MongoDbDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -189,7 +189,7 @@ export class MongoDbProvider implements IProvider.IProvider {
             .collection(schemaRequest.entityName)
             .insertMany(options?.Data?.Rows)
 
-        Logger.Debug(`${Logger.In} MongoDbProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MongoDbDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
@@ -199,7 +199,7 @@ export class MongoDbProvider implements IProvider.IProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MongoDbProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`MongoDbDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
         const options: MongoDb.Document[] = _.values(this.Options.Parse(schemaRequest))
 
@@ -240,7 +240,7 @@ export class MongoDbProvider implements IProvider.IProvider {
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MongoDbProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} MongoDbDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -266,7 +266,7 @@ export class MongoDbProvider implements IProvider.IProvider {
                 }
             )
 
-        Logger.Debug(`${Logger.In} MongoDbProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MongoDbDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
@@ -276,7 +276,7 @@ export class MongoDbProvider implements IProvider.IProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MongoDbProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} MongoDbDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -297,7 +297,7 @@ export class MongoDbProvider implements IProvider.IProvider {
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>
             )
 
-        Logger.Debug(`${Logger.In} MongoDbProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MongoDbDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
 
         return <TSchemaResponseData>{
             ...schemaResponse,

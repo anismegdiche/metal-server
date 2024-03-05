@@ -4,12 +4,12 @@
 //
 //
 import { TSourceParams } from "../../types/TSourceParams"
-import { TFileProviderOptions } from "../FilesProvider"
+import { TFilesDataProviderOptions } from "../data/FilesDataProvider"
 
 /* eslint-disable no-unused-vars */
 export interface IStorage {
     Params: TSourceParams
-    Options: TFileProviderOptions
+    Options: TFilesDataProviderOptions
     Init(): void
     Connect(): Promise<void>
     Disconnect(): Promise<void>
@@ -22,11 +22,11 @@ export interface IStorage {
 export class CommonStorage {
 
     Params: TSourceParams
-    Options: TFileProviderOptions
+    Options: TFilesDataProviderOptions
 
     constructor(storageParams: TSourceParams) {
         this.Params = storageParams
-        this.Options = storageParams.options as TFileProviderOptions
+        this.Options = storageParams.options as TFilesDataProviderOptions
         this.Init()
     }
 

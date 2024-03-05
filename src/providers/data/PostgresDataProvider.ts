@@ -6,29 +6,29 @@
 
 import { Pool } from 'pg'
 
-import { RESPONSE_TRANSACTION, RESPONSE } from '../lib/Const'
-import * as IProvider from "../types/IProvider"
-import { SqlQueryHelper } from '../lib/SqlQueryHelper'
-import { TSourceParams } from "../types/TSourceParams"
-import { TOptions } from "../types/TOptions"
-import { DataTable } from "../types/DataTable"
-import { TJson } from "../types/TJson"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../types/TSchemaResponse'
-import { TSchemaRequest } from '../types/TSchemaRequest'
-import { Cache } from '../server/Cache'
-import { Logger } from '../lib/Logger'
-import { CommonSqlProviderOptions } from './CommonSqlProvider'
-import PROVIDER, { Source } from '../server/Source'
+import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+import * as IDataProvider from "../../types/IDataProvider"
+import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
+import { TSourceParams } from "../../types/TSourceParams"
+import { TOptions } from "../../types/TOptions"
+import { DataTable } from "../../types/DataTable"
+import { TJson } from "../../types/TJson"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
+import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { Cache } from '../../server/Cache'
+import { Logger } from '../../lib/Logger'
+import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
+import DATA_PROVIDER, { Source } from '../../server/Source'
 
 
-export class PostgresProvider implements IProvider.IProvider {
-    ProviderName = PROVIDER.POSTGRES
+export class PostgresDataProvider implements IDataProvider.IDataProvider {
+    ProviderName = DATA_PROVIDER.POSTGRES
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Connection?: Pool = undefined
     Config: TJson = {}
 
-    Options = new CommonSqlProviderOptions()
+    Options = new CommonSqlDataProviderOptions()
 
     constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
@@ -37,7 +37,7 @@ export class PostgresProvider implements IProvider.IProvider {
     }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("PostgresProvider.Init")
+        Logger.Debug("PostgresDataProvider.Init")
         this.Params = sourceParams
     }
 
@@ -86,7 +86,7 @@ export class PostgresProvider implements IProvider.IProvider {
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} PostgresProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} PostgresDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -115,7 +115,7 @@ export class PostgresProvider implements IProvider.IProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PostgresProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PostgresDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -156,7 +156,7 @@ export class PostgresProvider implements IProvider.IProvider {
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PostgresProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PostgresDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -186,7 +186,7 @@ export class PostgresProvider implements IProvider.IProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PostgresProvider.Delete : ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PostgresDataProvider.Delete : ${JSON.stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,

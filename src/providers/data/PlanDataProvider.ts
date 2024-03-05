@@ -4,28 +4,28 @@
 //
 //
 
-import { RESPONSE_TRANSACTION, RESPONSE, HTTP_STATUS_CODE, RESPONSE_RESULT } from '../lib/Const'
-import * as IProvider from "../types/IProvider"
-import { TSourceParams } from "../types/TSourceParams"
-import { TOptions } from "../types/TOptions"
-import { TJson } from "../types/TJson"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResponseNoData } from '../types/TSchemaResponse'
-import { TSchemaRequest } from '../types/TSchemaRequest'
-import { Cache } from '../server/Cache'
-import { Logger } from '../lib/Logger'
-import { SqlQueryHelper } from '../lib/SqlQueryHelper'
-import { Plan } from '../server/Plan'
-import { CommonSqlProviderOptions } from './CommonSqlProvider'
-import PROVIDER from '../server/Source'
+import { RESPONSE_TRANSACTION, RESPONSE, HTTP_STATUS_CODE, RESPONSE_RESULT } from '../../lib/Const'
+import * as IDataProvider from "../../types/IDataProvider"
+import { TSourceParams } from "../../types/TSourceParams"
+import { TOptions } from "../../types/TOptions"
+import { TJson } from "../../types/TJson"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResponseNoData } from '../../types/TSchemaResponse'
+import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { Cache } from '../../server/Cache'
+import { Logger } from '../../lib/Logger'
+import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
+import { Plan } from '../../server/Plan'
+import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
+import DATA_PROVIDER from '../../server/Source'
 
 
-export class PlanProvider implements IProvider.IProvider {
-    ProviderName = PROVIDER.PLAN
+export class PlanDataProvider implements IDataProvider.IDataProvider {
+    ProviderName = DATA_PROVIDER.PLAN
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
     Config: TJson = {}
 
-    Options = new CommonSqlProviderOptions()
+    Options = new CommonSqlDataProviderOptions()
 
     constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
@@ -34,7 +34,7 @@ export class PlanProvider implements IProvider.IProvider {
     }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("PlanProvider.Init")
+        Logger.Debug("PlanDataProvider.Init")
         this.Params = sourceParams
     }
 
@@ -48,9 +48,9 @@ export class PlanProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} PlanProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} PlanDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
-        Logger.Error(`Schema.Insert: Not allowed for plans '${schemaName}', entity '${entityName}'`)
+        Logger.Error(`Insert: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{
             schemaName,
             entityName,
@@ -62,7 +62,7 @@ export class PlanProvider implements IProvider.IProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PlanDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -109,9 +109,9 @@ export class PlanProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PlanDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
-        Logger.Error(`Schema.Update: Not allowed for plans '${schemaName}', entity '${entityName}'`)
+        Logger.Error(`Update: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{
             schemaName,
             entityName,
@@ -124,9 +124,9 @@ export class PlanProvider implements IProvider.IProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanProvider.Delete : ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PlanDataProvider.Delete : ${JSON.stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
-        Logger.Error(`Schema.Delete: Not allowed for plans '${schemaName}', entity '${entityName}'`)
+        Logger.Error(`Delete: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{
             schemaName,
             entityName,

@@ -1,8 +1,8 @@
-import PROVIDER from '../server/Source'
+import DATA_PROVIDER from '../server/Source'
 import { TJson } from './TJson'
 
 export type TSourceParams = {
-    provider: PROVIDER
+    provider: DATA_PROVIDER
     host?: string
     port?: number
     user?: string

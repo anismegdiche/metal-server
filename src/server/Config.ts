@@ -15,7 +15,7 @@ import { Logger, DefaultLevel } from '../lib/Logger'
 import { Schedule } from './Schedule'
 import { Cache } from '../server/Cache'
 import { User } from './User'
-import PROVIDER, { Source } from './Source'
+import DATA_PROVIDER, { Source } from './Source'
 import { AI_ENGINE, AiEngine } from './AiEngine'
 import { Helper } from '../lib/Helper'
 
@@ -80,7 +80,7 @@ export class Config {
                             "provider": {
                                 type: "string",
                                 // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                                enum: _.values(PROVIDER)
+                                enum: _.values(DATA_PROVIDER)
                             },
                             "host": { type: "string" },
                             "port": {
