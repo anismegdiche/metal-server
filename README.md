@@ -52,4 +52,4 @@ These features collectively enhance the flexibility, security, and efficiency of
 
 These features empower developers and simplify CRUD operations, data transformations, and integration with various database systems.
 
-For additional details and comprehensive information, please consult the [Documentation]([../documentation/rest-api.md](https://metal-docs-sh3b0.kinsta.page/)).
+For additional details and comprehensive information, please consult the [Documentation](https://metal-docs-sh3b0.kinsta.page/).
