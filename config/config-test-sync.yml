@@ -1,0 +1,76 @@
+version: "0.2"
+server:
+  port: 3000
+  verbosity: debug
+  timezone: UTC
+  authentication:
+  request-limit: 100mb
+
+users:
+  myapiuser: myStr@ngpa$$w0rd
+
+sources:
+  pg-clubdata-members:
+    provider: postgres
+    host: localhost
+    port: 5436
+    user: admin
+    password: "123456"
+    database: clubdata    
+  mem-data:
+    provider: memory
+  plan-sync:
+    provider: plan
+    database: sync
+
+schemas:
+  mem:
+    sourceName: mem-data
+    entities:
+      syncdown:
+        sourceName: plan-sync
+        entityName: members-down
+  pg:
+    sourceName: pg-clubdata-members
+
+schedules:
+  start:
+    cron: "@start"
+    planName: sync
+    entityName: members-up
+
+plans:
+  sync:
+    members-up:
+      - sync:
+          source:
+            schemaName: pg
+            entityName: members
+          destination:
+            schemaName: mem
+            entityName: members
+          on: memid
+
+      - update:
+          schemaName: mem
+          entityName: members
+          data:
+            address: XXXXXXXXXX
+    
+      - sync:
+          source:
+            schemaName: mem
+            entityName: members
+          destination:
+            schemaName: pg
+            entityName: members
+          on: memid
+    members-down:
+      - sync:
+          source:
+            schemaName: mem
+            entityName: members
+          destination:
+            schemaName: pg
+            entityName: members
+          on: memid

@@ -1,71 +1,32 @@
 # Metal Changelog
 
-## v0.2a
+## Version 0.2 - March 01, 2024
 
-- Conformed to ES10 standards.
-- Removed TRows type.
-- Implemented Sandbox for safe code evaluation.
-- Refactored Server class for readability and maintainability.
-- Improved structure of Plan and Step classes.
-- Updated Request Logger.
-- Updated package to the latest version.
-- Replaced _.isArray with Array.isArray in SqlQueryHelper and DataTable classes.
-- Added error handling for port conflicts.
-- Enhanced DataTable class and refactored field addition code.
-- Further refactored Plan and Step classes.
+### Features
+- DataProvider: Azure SQL Database, File, Memory and Metal cross.
+- File storage: Local filesystem, Azure Blob
+- File Content: JSON, CSV.
+- Plan commands: sync.
+- JS code in DataProvider options.
+
+### Enhancements
+- Improved MS SQL Server DataProvider.
+- Updated Logging Feature.
 - Updated packages.
 
-## v0.1
+### Bug Fixes
+- Fixed bugs related to Plan commands.
 
-- Updated config-test.yml and index.ts.
-- Changed hardcoded plan name to a variable.
-- Made various updates to .eslintrc.json, Plan.ts, Plan.test.ts, DataTable.ts, and DataTable.test.ts.
-- Updated ASCII art in Const.ts.
-- Removed plans, schedules, and unnecessary configurations.
-- Removed all REST API endpoints except for MongoDB.
-- Kept only the server configuration.
-- Added TesseractJs model enum and updated config types.
-- Updated package-lock.json.
-- Cleaned up config types.
-- Updated AI engines.
-- Added and updated config validators.
-- Updated eslint rules.
-- Implemented security checks.
-- Updated README file.
-- Added tests for Plans.
-- Fused common SQL providers.
-- Implemented version 2 of config validator.
-- Fused data and schema.
-- Updated logger.
-- Enhanced code.
-- Fixed plan cache.
-- Updated eslint rules.
-- Fixed FreeSql.
-- Converted source to plan.
-- Refactored DataResponse.
-- Updated logo.
-- Added JS client and associated tests.
-- Updated code.
-- Updated schedule feature.
-- Reorganized the project.
-- Fixed eslint warnings.
-- Added JS placeholders.
-- Implemented Sonarlint.
-- Updated config files.
-- Fixed Plans.
-- Added ReplacePlaceholders.
-- Fixed Plan.#Insert.
-- Updated eslint rules.
-- Refactored OptionsFilterExpressionToSql.
-- Fixed plan schema name.
-- Fixed SqlServer queries.
-- Updated eslint.
-- Updated Data, Plan, and Schemas.
-- Fixed vendor SQL.
-- Fixed Datatable.
-- Updated rest tests.
-- Fixed schemas.
-- Added Docker config file.
-- Updated tests.
-- Fixed tensorflox tests.
-- Initialized the project.
+---
+## Version 0.1 - January 12, 2024
+
+### Features
+- User authentication
+- REST API: user (authentication), schema (CRUD operations), cache (view/purge/clean), plan (start/stop)
+- DataProvider: PostgreSQL, MS SQL Server, MongoDB and Plan.
+- DataProvider Options: filter, filterExpression, fields, data, sort, cache.
+- Plan Feature and commands: select, update, delete, insert, join (left, right, inner, fullOuter, cross), break, fields, sort, run, debug.
+- Scheduling Feature with cron syntax
+- AI Engine Feature: Tesseract.JS, TensorFlow.JS and NLP.JS
+- Configuration Validator
+- Console logging
