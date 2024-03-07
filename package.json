@@ -43,7 +43,7 @@
         "mongodb": "^6.4.0",
         "morgan": "^1.10.0",
         "mssql": "^10.0.2",
-        "node-nlp": "^3.10.2",
+        "node-nlp": "^4.27.0",
         "papaparse": "^5.4.1",
         "pg": "^8.11.3",
         "response-time": "^2.3.2",

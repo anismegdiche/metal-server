@@ -1,5 +1,18 @@
 # Metal Changelog
 
+## Version 0.3 - UNRELEASED
+
+### Features
+
+### Enhancements
+- Updated packages.
+- Updated Config file validation.
+
+### Bug Fixes
+
+---
+# Metal Changelog
+
 ## Version 0.2 - March 01, 2024
 
 ### Features
