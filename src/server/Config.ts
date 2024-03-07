@@ -214,7 +214,24 @@ export class Config {
     static async Load(): Promise<void> {
         Logger.Debug('Config.Load')
         const configFileRaw = Fs.readFileSync(this.ConfigFilePath, 'utf8')
-        Config.Configuration = Yaml.load(configFileRaw)
+        Config.Configuration = await Yaml.load(configFileRaw)
+
+        const sourceNameConfig = {
+            type: "string",
+            enum: Object.keys(Config.Configuration?.sources ?? [])
+        }
+
+
+        Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.sourceName = sourceNameConfig
+
+        Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.entities.patternProperties[".*"].properties.sourceName = sourceNameConfig
+
+        const planNameConfig = {
+            type: "string",
+            enum: Object.keys(Config.Configuration?.plans ?? [])
+        }
+
+        Config.#ConfigSchema.properties.schedules.patternProperties[".*"].properties.planName = planNameConfig
     }
 
     static async Validate(): Promise<void> {
@@ -225,10 +242,7 @@ export class Config {
             return
         }
 
-        Logger.Error(`Errors have been detected in configuration file: ${this.ConfigFilePath}`)
-        errors.forEach((i) => {
-            Logger.Error(i.stack.replace(/instance\./, ''))
-        })
+        Logger.Error(`Errors have been detected in configuration file ${this.ConfigFilePath}:\n\n - ${errors.join('\n - ').replace(/instance\./mg, '')}\n`)
         process.exit(1)
     }
 
