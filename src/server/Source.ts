@@ -68,7 +68,7 @@ export class Source {
 
     static async ConnectAll(): Promise<void> {
         for (const _source in Config.Configuration.sources) {
-            if (Object.prototype.hasOwnProperty.call(Config.Configuration.sources, _source)) {
+            if (Object.hasOwn(Config.Configuration.sources, _source)) {
                 Logger.Info(`${Logger.Out} found source '${_source}'`)
                 const __sourceParams = Config.Configuration.sources[_source]
                 Source.Connect(_source, __sourceParams)
@@ -76,14 +76,13 @@ export class Source {
         }
     }
     static async Disconnect(source: string): Promise<void> {
-        Source.Sources[source].Disconnect()
+        if (source) {
+            Source.Sources[source].Disconnect()
+        }
     }
 
     static async DisconnectAll(): Promise<void> {
-        for (const _source in Source.Sources) {
-            if (_source)
-                Source.Disconnect(_source)
-        }
+        Object.keys(Source.Sources).forEach(Source.Disconnect)
     }
 
     static ResponseError(schemaResponse: TSchemaResponse): TSchemaResponseNoData {
