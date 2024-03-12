@@ -1,0 +1,124 @@
+Date : 2024-03-09 21:53:38
+Directory : c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src
+Total : 77 files,  7952 codes, 720 comments, 1315 blanks, all 9987 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| TypeScript |         77 |      7,952 |        720 |      1,315 |      9,987 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++---------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                          | files      | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                             |         77 |      7,952 |        720 |      1,315 |      9,987 |
+| . (Files)                                                                                                     |          1 |          5 |          5 |          1 |         11 |
+| ai-engine                                                                                                     |          6 |        313 |         31 |         71 |        415 |
+| ai-engine (Files)                                                                                             |          3 |        170 |         23 |         36 |        229 |
+| ai-engine\__tests__                                                                                           |          3 |        143 |          8 |         35 |        186 |
+| lib                                                                                                           |          9 |        970 |         93 |        136 |      1,199 |
+| lib (Files)                                                                                                   |          7 |        657 |         49 |         91 |        797 |
+| lib\__tests__                                                                                                 |          2 |        313 |         44 |         45 |        402 |
+| providers                                                                                                     |         18 |      2,070 |        130 |        432 |      2,632 |
+| providers\content                                                                                             |          5 |        325 |         25 |         71 |        421 |
+| providers\content (Files)                                                                                     |          3 |        104 |         25 |         24 |        153 |
+| providers\content\__tests__                                                                                   |          2 |        221 |          0 |         47 |        268 |
+| providers\data                                                                                                |          9 |      1,549 |         74 |        301 |      1,924 |
+| providers\storage                                                                                             |          4 |        196 |         31 |         60 |        287 |
+| providers\storage (Files)                                                                                     |          3 |        143 |         30 |         40 |        213 |
+| providers\storage\__tests__                                                                                   |          1 |         53 |          1 |         20 |         74 |
+| response                                                                                                      |          6 |        440 |         35 |         57 |        532 |
+| routes                                                                                                        |          6 |        145 |         35 |         25 |        205 |
+| server                                                                                                        |         17 |      2,287 |        243 |        380 |      2,910 |
+| server (Files)                                                                                                |         13 |      1,629 |        156 |        288 |      2,073 |
+| server\__tests__                                                                                              |          4 |        658 |         87 |         92 |        837 |
+| types                                                                                                         |         14 |      1,722 |        148 |        213 |      2,083 |
+| types (Files)                                                                                                 |         12 |        430 |         89 |        104 |        623 |
+| types\__tests__                                                                                               |          2 |      1,292 |         59 |        109 |      1,460 |
++---------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++---------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                                                      | language   | code       | comment    | blank      | total      |
++---------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\ai-engine\NlpJs.ts                              | TypeScript |         64 |          7 |         13 |         84 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\ai-engine\TensorFlowJs.ts                       | TypeScript |         76 |          8 |         18 |        102 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\ai-engine\TesseractJs.ts                        | TypeScript |         30 |          8 |          5 |         43 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\ai-engine\__tests__\NlpJs.test.ts               | TypeScript |         81 |          7 |         18 |        106 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\ai-engine\__tests__\TensorFlowJs.test.ts        | TypeScript |         40 |          1 |          8 |         49 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\ai-engine\__tests__\TesseractJs.test.ts         | TypeScript |         22 |          0 |          9 |         31 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\index.ts                                        | TypeScript |          5 |          5 |          1 |         11 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\lib\Const.ts                                    | TypeScript |        236 |          7 |         15 |        258 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\lib\Convert.ts                                  | TypeScript |         91 |         11 |         16 |        118 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\lib\Helper.ts                                   | TypeScript |         47 |          7 |          9 |         63 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\lib\Logger.ts                                   | TypeScript |         78 |          6 |         17 |        101 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\lib\SqlQueryHelper.ts                           | TypeScript |        159 |          8 |         27 |        194 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\lib\StringHelper.ts                             | TypeScript |         13 |          5 |          2 |         20 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\lib\TypeHelper.ts                               | TypeScript |         33 |          5 |          5 |         43 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\lib\__tests__\Convert.test.ts                   | TypeScript |        223 |         28 |         32 |        283 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\lib\__tests__\SqlQueryHelper.test.ts            | TypeScript |         90 |         16 |         13 |        119 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\content\CommonContent.ts              | TypeScript |         19 |         10 |          6 |         35 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\content\CsvContent.ts                 | TypeScript |         43 |          6 |          9 |         58 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\content\JsonContent.ts                | TypeScript |         42 |          9 |          9 |         60 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\content\__tests__\CsvContent.test.ts  | TypeScript |        115 |          0 |         23 |        138 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\content\__tests__\JsonContent.test.ts | TypeScript |        106 |          0 |         24 |        130 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\data\CommonDataProvider.ts            | TypeScript |        116 |         15 |         23 |        154 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\data\CommonSqlDataProvider.ts         | TypeScript |         49 |          5 |         11 |         65 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\data\FilesDataProvider.ts             | TypeScript |        258 |         10 |         48 |        316 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\data\MemoryDataProvider.ts            | TypeScript |        171 |          8 |         38 |        217 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\data\MetalDataProvider.ts             | TypeScript |        241 |          7 |         47 |        295 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\data\MongoDbDataProvider.ts           | TypeScript |        251 |         11 |         46 |        308 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\data\PlanDataProvider.ts              | TypeScript |        113 |          8 |         18 |        139 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\data\PostgresDataProvider.ts          | TypeScript |        174 |          5 |         37 |        216 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\data\SqlServerDataProvider.ts         | TypeScript |        176 |          5 |         33 |        214 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\storage\AzureBlobStorage.ts           | TypeScript |         65 |          6 |         18 |         89 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\storage\CommonStorage.ts              | TypeScript |         43 |         18 |         14 |         75 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\storage\FsStorage.ts                  | TypeScript |         35 |          6 |          8 |         49 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\providers\storage\__tests__\FsStorage.test.ts   | TypeScript |         53 |          1 |         20 |         74 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\response\CacheResponse.ts                       | TypeScript |         72 |          5 |         12 |         89 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\response\PlanResponse.ts                        | TypeScript |         15 |          5 |          5 |         25 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\response\ScheduleResponse.ts                    | TypeScript |         24 |          6 |          2 |         32 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\response\SchemaResponse.ts                      | TypeScript |        162 |          7 |         12 |        181 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\response\ServerResponse.ts                      | TypeScript |         68 |          5 |         12 |         85 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\response\UserResponse.ts                        | TypeScript |         99 |          7 |         14 |        120 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\routes\CacheRouter.ts                           | TypeScript |         26 |          6 |          8 |         40 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\routes\PlanRouter.ts                            | TypeScript |         19 |          6 |          3 |         28 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\routes\ScheduleRouter.ts                        | TypeScript |         24 |          6 |          4 |         34 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\routes\SchemaRouter.ts                          | TypeScript |         37 |          7 |          3 |         47 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\routes\ServerRouter.ts                          | TypeScript |         15 |          5 |          3 |         23 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\routes\UserRouter.ts                            | TypeScript |         24 |          5 |          4 |         33 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\AiEngine.ts                              | TypeScript |        182 |         17 |         19 |        218 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\Cache.ts                                 | TypeScript |        167 |         10 |         29 |        206 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\Config.ts                                | TypeScript |        225 |         15 |         24 |        264 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\HttpErrors.ts                            | TypeScript |         27 |          5 |          6 |         38 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\InternalError.ts                         | TypeScript |         21 |          5 |          4 |         30 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\Plan.ts                                  | TypeScript |        117 |         12 |         24 |        153 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\Sandbox.ts                               | TypeScript |         49 |         14 |          9 |         72 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\Schedule.ts                              | TypeScript |         90 |          5 |         12 |        107 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\Schema.ts                                | TypeScript |        161 |         12 |         33 |        206 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\Server.ts                                | TypeScript |         98 |         15 |         19 |        132 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\Source.ts                                | TypeScript |         72 |         17 |          8 |         97 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\Step.ts                                  | TypeScript |        334 |         21 |         83 |        438 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\User.ts                                  | TypeScript |         86 |          8 |         18 |        112 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\__tests__\Config.test.ts                 | TypeScript |         18 |          2 |          4 |         24 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\__tests__\Plan.test.ts                   | TypeScript |        432 |         61 |         53 |        546 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\__tests__\Sandbox.test.ts                | TypeScript |        115 |         23 |         22 |        160 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\server\__tests__\User.test.ts                   | TypeScript |         93 |          1 |         13 |        107 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\DataBase.ts                               | TypeScript |         45 |          6 |         12 |         63 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\DataTable.ts                              | TypeScript |        252 |         58 |         67 |        377 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\IAiEngine.ts                              | TypeScript |         10 |          1 |          2 |         13 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\IDataProvider.ts                          | TypeScript |         26 |          1 |          4 |         31 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\TCacheData.ts                             | TypeScript |          8 |          0 |          2 |         10 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\TInternalResponse.ts                      | TypeScript |          6 |          0 |          2 |          8 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\TJson.ts                                  | TypeScript |          1 |          5 |          1 |          7 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\TOptions.ts                               | TypeScript |          7 |          0 |          2 |          9 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\TSchedule.ts                              | TypeScript |          5 |          5 |          1 |         11 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\TSchemaRequest.ts                         | TypeScript |         12 |          7 |          1 |         20 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\TSchemaResponse.ts                        | TypeScript |         47 |          6 |          9 |         62 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\TSourceParams.ts                          | TypeScript |         11 |          0 |          1 |         12 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\__tests__\DataTable.test.ts               | TypeScript |      1,245 |         56 |        100 |      1,401 |
+| c:\Users\Administrator\OneDrive\Projets\Metl\metal-server\src\types\__tests__\TJson.test.ts                   | TypeScript |         47 |          3 |          9 |         59 |
+| Total                                                                                                         |            |      7,952 |        720 |      1,315 |      9,987 |
++---------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
