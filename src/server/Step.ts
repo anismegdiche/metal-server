@@ -309,9 +309,14 @@ export class Step {
             output: TJson
         }
 
+        const promises = []
+
         for await (const [_rowIndex, _rowData] of stepArguments.currentDataTable.Rows.entries()) {
-            const __result = <Record<string, any>>(await AiEngine.AiEngine[ai].Run(<string>_rowData[input]))
-            if (__result) {
+            promises.push((async () => {
+                const __result = <Record<string, any>>(await AiEngine.AiEngine[ai].Run(<string>_rowData[input]))
+                if (!__result) {
+                    return
+                }
                 // check if output is empty
                 // eslint-disable-next-line you-dont-need-lodash-underscore/is-nil
                 if (_.isNil(output) || _.isEmpty(output)) {
@@ -319,7 +324,7 @@ export class Step {
                         ..._rowData
                     }
                     stepArguments.currentDataTable.Rows[_rowIndex][ai] = __result
-                    continue
+                    return
                 }
 
                 // check if output is string
@@ -329,7 +334,7 @@ export class Step {
                         ..._rowData
                     }
                     stepArguments.currentDataTable.Rows[_rowIndex][output] = __result
-                    continue
+                    return
                 }
 
                 // else                
@@ -337,8 +342,11 @@ export class Step {
                     _rowData[___outField as string] = __result[___inField]
                 }
                 stepArguments.currentDataTable.Rows[_rowIndex] = _rowData
-            }
+            })())
         }
+
+        await Promise.all(promises)
+
         return stepArguments.currentDataTable.SetFields()
     }
     static async Sync(stepArguments: TStepArguments): Promise<DataTable> {
@@ -406,7 +414,7 @@ export class Step {
                 data: syncReport.AddedRows
             })
         }
-        
+
         // Fallback return
         if (!destination) {
             stepArguments.currentDataTable.Rows = [
