@@ -68,9 +68,9 @@ export class MetalClient {
 
     static ConvertToURLParams(jsonObj: object): string {
         const params: string[] = []
-        for (const [key, value] of Object.entries(jsonObj)) {
-            if (value != null) {
-                params.push(`${encodeURIComponent(key)}=${encodeURIComponent(value.toString())}`)
+        for (const [_key, _value] of Object.entries(jsonObj)) {
+            if (_value != null) {
+                params.push(`${encodeURIComponent(_key)}=${encodeURIComponent(_value.toString())}`)
             }
         }
         return params.join('&')

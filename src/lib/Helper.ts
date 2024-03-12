@@ -20,8 +20,8 @@ export class Helper {
     }
 
     static HasExpectedProperties(myObject: any, expectedProperties: string[]): boolean {
-        for (const [key] of Object.entries(myObject)) {
-            if (!expectedProperties.includes(key)) {
+        for (const [_key] of Object.entries(myObject)) {
+            if (!expectedProperties.includes(_key)) {
                 return false
             }
         }
