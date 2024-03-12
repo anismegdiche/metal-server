@@ -11,7 +11,7 @@
     "scripts": {
         "build": "tsc --watch",
         "lint": "eslint --fix .",
-        "dev": "nodemon ./build/index.js -i data/",
+        "dev": "nodemon --exec ts-node ./src/index.ts -i data/",
         "test": "jest",
         "test-client": "jest --testMatch \"**/client/__tests__/**/*.js\"",
         "prod": "node ./build/index.js"
