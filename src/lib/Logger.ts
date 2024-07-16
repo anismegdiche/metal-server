@@ -10,6 +10,7 @@ import morgan from "morgan"
 //
 import { SERVER } from './Const'
 
+/* eslint-disable no-unused-vars */
 export enum VERBOSITY {
     TRACE = "trace",
     DEBUG = "debug",
@@ -17,23 +18,24 @@ export enum VERBOSITY {
     WARN = "warn",
     ERROR = "error"
 }
+/* eslint-enable no-unused-vars */
 
 const Colors: Record<string, Function> = {
-    'TRACE': chalk.magenta,
-    'DEBUG': chalk.green,
-    'INFO': chalk.cyan,
-    'WARN': chalk.yellow,
-    'ERROR': chalk.red
+    [VERBOSITY.TRACE.toUpperCase()]: chalk.magenta,
+    [VERBOSITY.DEBUG.toUpperCase()]: chalk.green,
+    [VERBOSITY.INFO.toUpperCase()]: chalk.cyan,
+    [VERBOSITY.WARN.toUpperCase()]: chalk.yellow,
+    [VERBOSITY.ERROR.toUpperCase()]: chalk.red
 }
 
-export const DefaultLevel: LogLevel.LogLevelDesc = 'warn'
+export const DefaultLevel: LogLevel.LogLevelDesc = VERBOSITY.WARN
 
 Prefix.reg(LogLevel)
 LogLevel.setLevel(DefaultLevel)
 
 Prefix.apply(LogLevel, {
     format(level: string, name: string | undefined, timestamp: Date) {
-        return `${chalk.gray(`${timestamp}`)} ${Colors[level.toUpperCase()]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${chalk.whiteBright(`${name}:`)}`
+        return `${chalk.gray(timestamp)} ${Colors[level]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${chalk.whiteBright(`${name}:`)}`
     }
 })
 
