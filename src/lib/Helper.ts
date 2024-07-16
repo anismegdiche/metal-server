@@ -12,7 +12,7 @@ import { Validator } from "jsonschema"
 
 export class Helper {
 
-    static JsonValidator = new Validator()
+    static readonly JsonValidator = new Validator()
 
     static CaseMapNotFound(key: string): undefined {
         Logger.Error(`Key '${key}' not found`)
@@ -33,7 +33,7 @@ export class Helper {
             return JSON.parse(jsonString, (key, value) => {
                 if (typeof value === 'string') {
                     const date = new Date(value)
-                    if (!isNaN(date.getTime())) {
+                    if (!Number.isNaN(date.getTime())) {
                         return date
                     }
                 }
