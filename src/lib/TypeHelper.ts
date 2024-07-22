@@ -3,8 +3,6 @@
 //
 //
 //
-
-import _ from "lodash"
 import { DataTable } from "../types/DataTable"
 import { TSchemaRequest } from "../types/TSchemaRequest"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from "../types/TSchemaResponse"
