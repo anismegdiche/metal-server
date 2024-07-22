@@ -10,9 +10,8 @@ const GetMongoQuery = require("sql2mongo").getMongoQuery
 export class MongoDbHelper {
 
     static ConvertSqlSort(key: any, value: string) {
-        if (value.split(" ").length > 2) {
+        if (value.split(" ").length != 2)
             return {}
-        }
 
         const field = value.split(" ")[0]
         const sqlSortDirection = value.split(" ")[1].toLowerCase()
@@ -27,6 +26,6 @@ export class MongoDbHelper {
     }
 
     static ConvertSqlQuery(sqlQuery: string) {
-       return GetMongoQuery(sqlQuery)
+        return GetMongoQuery(sqlQuery)
     }
 }
