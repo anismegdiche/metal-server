@@ -5,7 +5,6 @@
 //
 //
 import * as MongoDb from 'mongodb'
-import _ from 'lodash'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const GetMongoQuery = require("sql2mongo").getMongoQuery
 //
@@ -201,7 +200,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`MongoDbDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
 
-        const options: MongoDb.Document[] = _.values(this.Options.Parse(schemaRequest))
+        const options: MongoDb.Document[] = Object.values(this.Options.Parse(schemaRequest))
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
