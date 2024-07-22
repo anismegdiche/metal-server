@@ -5,8 +5,6 @@
 //
 //
 import * as MongoDb from 'mongodb'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const GetMongoQuery = require("sql2mongo").getMongoQuery
 //
 import * as IDataProvider from "../../types/IDataProvider"
 import { Convert } from '../../lib/Convert'
@@ -20,6 +18,7 @@ import { DataTable } from "../../types/DataTable"
 import { Logger } from "../../lib/Logger"
 import { Cache } from '../../server/Cache'
 import DATA_PROVIDER, { Source } from '../../server/Source'
+import { MongoDbHelper } from '../../lib/MongoDbHelper'
 
 
 class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
@@ -41,7 +40,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
 
             if (schemaRequest?.filterExpression) {
                 // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
-                filter = GetMongoQuery(schemaRequest.filterExpression.replace(/%/igm, ".*"))
+                filter = MongoDbHelper.ConvertSqlQuery(schemaRequest.filterExpression.replace(/%/igm, ".*"))
             }
             if (schemaRequest?.filter)
                 filter = schemaRequest.filter
@@ -95,7 +94,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
             }
             Logger.Debug(_sortArray)
             if (_sortArray.length > 0) {
-                _sortArray = _sortArray.reduce(Convert.SqlSortToMongoSort, {})
+                _sortArray = _sortArray.reduce(MongoDbHelper.ConvertSqlSort, {})
             }
             Logger.Debug(_sortArray)
             options.Sort = {
@@ -130,7 +129,6 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
         this.Init(sourceParams)
         this.Connect()
     }
-
 
     async Init(sourceParams: TSourceParams): Promise<void> {
         Logger.Debug("MongoDbDataProvider.Init")
@@ -253,6 +251,10 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
+        //TODO: throw error 400
+        //if (!options?.Data?.Rows)
+    
+
         await this.Connection.connect()
 
         await this.Connection
@@ -261,6 +263,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
             .updateMany(
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>,
                 {
+                    //TODO: replace by upper safer const
                     $set: (options?.Data?.Rows).at(0)
                 }
             )

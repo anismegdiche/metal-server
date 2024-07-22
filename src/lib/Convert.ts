@@ -17,23 +17,6 @@ import { Helper } from './Helper'
 
 export class Convert {
 
-    static SqlSortToMongoSort(key: any, value: string) {
-        if (value.split(" ").length > 2) {
-            return {}
-        }
-
-        const field = value.split(" ")[0]
-        const sqlSortDirection = value.split(" ")[1].toLowerCase()
-        const mongoSortDirection = (sqlSortDirection == "asc")
-            ? 1
-            : -1
-
-        return {
-            ...key,
-            [field]: mongoSortDirection
-        }
-    }
-
     static JsonToArray(obj: TJson) {
         return Object
             .entries(obj)
@@ -113,6 +96,7 @@ export class Convert {
             })
         }
 
+        // deepcode ignore UsageOfUndefinedReturnValue: <please specify a reason of ignoring this>
         const _objectString = Convert.ReplacePlaceholders(JSON.stringify(value))
         return Helper.JsonTryParse(_objectString, {})
     }
