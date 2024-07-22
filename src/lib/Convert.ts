@@ -3,7 +3,6 @@
 //
 //
 //
-import _ from 'lodash'
 import { Request, Response } from 'express'
 //
 import { TSchemaRequest } from '../types/TSchemaRequest'
@@ -36,11 +35,13 @@ export class Convert {
     }
 
     static JsonToArray(obj: TJson) {
-        return _.map(_.entries(obj), ([k, v]) => ({ [k]: v }))
+        return Object
+            .entries(obj)
+            .map(([k, v]) => ({ [k]: v }))
     }
 
     static RequestToSchemaRequest(req: Request): TSchemaRequest {
-        const { schemaName, entityName } = req.params        
+        const { schemaName, entityName } = req.params
 
         // Merge body and query parameters into schemaRequest
         return <TSchemaRequest>{
@@ -57,7 +58,7 @@ export class Convert {
 
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, response: Response) {
         const { schemaName, entityName, transaction, result, status } = schemaResponse
-        
+
         let _responseJson: TJson = {
             schemaName,
             entityName,
@@ -110,9 +111,9 @@ export class Convert {
                     return `$\{{${code}}}`
                 }
             })
-        } else {
-            const _objectString = Convert.ReplacePlaceholders(JSON.stringify(value))
-            return Helper.JsonTryParse(_objectString, {})
         }
+
+        const _objectString = Convert.ReplacePlaceholders(JSON.stringify(value))
+        return Helper.JsonTryParse(_objectString, {})
     }
 }

@@ -153,7 +153,7 @@ export class SqlQueryHelper {
             this.Query = `${this.Query} VALUES`
             data.forEach((_values, _index) => {
                 const newValues = _.chain(_values)
-                    .mapValues((_value, _field) => {
+                    .mapValues((_value) => {
                         if (_value == null || _value == undefined)
                             return
                         if (typeof _value === 'object') {
