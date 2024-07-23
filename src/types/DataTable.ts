@@ -1,9 +1,3 @@
-/* eslint-disable you-dont-need-lodash-underscore/find */
-/* eslint-disable you-dont-need-lodash-underscore/for-each */
-/* eslint-disable no-continue */
-/* eslint-disable you-dont-need-lodash-underscore/omit */
-/* eslint-disable you-dont-need-lodash-underscore/join */
-/* eslint-disable you-dont-need-lodash-underscore/cast-array */
 //
 //
 //
@@ -15,6 +9,7 @@ import alasql from 'alasql'
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
 
+// eslint-disable-next-line no-unused-vars
 const SqlToJsType: TJson = {
     // Integer (number with truncation)
     smallint: 'number',
@@ -117,6 +112,7 @@ const SqlToJsType: TJson = {
     // Not yet realized
 }
 
+
 export type TRow = TJson
 export type TFields = TJson
 export type TMetaData = Record<string, unknown>
@@ -134,24 +130,21 @@ export class DataTable {
     MetaData: TMetaData = {}
 
     constructor(name: string | undefined, rows: TJson[] | undefined = undefined, fields: TJson | undefined = undefined, metaData: TJson | undefined = undefined) {
-        if (name === undefined) {
+        if (name === undefined)
             throw new Error("undefined DataTable name")
-        }
+
         this.Name = name
 
-        if (rows) {
-            if (Array.isArray(rows)) {
-                this.Set(rows)
-            } else {
-                this.Set(_.castArray(rows))
-            }
-        }
-        if (fields) {
+        if (rows)
+            this.Set(Array.isArray(rows)
+                ? rows
+                : [rows])
+
+        if (fields)
             this.Fields = fields as TFields
-        }
-        if (metaData) {
+
+        if (metaData)
             this.MetaData = metaData as TMetaData
-        }
     }
 
     Set(rows: TJson[] | undefined = undefined): this {
@@ -164,6 +157,7 @@ export class DataTable {
 
     SetFields(): this {
         const _cols: TJson = { ...this.Rows.at(0) }
+        // eslint-disable-next-line you-dont-need-lodash-underscore/reduce
         this.Fields = _.reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
             return _cols
@@ -294,7 +288,7 @@ export class DataTable {
             return this
 
         this.Rows = alasql(`
-            SELECT \`${_.join(fields, '`,`')}\` 
+            SELECT \`${fields.join('`,`')}\` 
             FROM ? \`${this.Name}\``,
             [this.Rows]
         )
