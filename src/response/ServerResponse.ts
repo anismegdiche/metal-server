@@ -38,6 +38,7 @@ export class ServerResponse {
                 message: 'Something Went Wrong',
                 error: error.message,
                 stack: (status == 500)
+                    // eslint-disable-next-line you-dont-need-lodash-underscore/split
                     ? _.split(error.stack, '\n')
                     : undefined
             })
@@ -72,14 +73,12 @@ export class ServerResponse {
     }
 
     static AllowMethods(req: Request, res: Response, next: NextFunction, ...methods: string[]) {
-
-        if (methods.includes(req.method)) {
+        if (methods.includes(req.method))
             next()
-        } else {
+        else
             res
                 .status(HTTP_STATUS_CODE.METHOD_NOT_ALLOWED)
                 .json({ error: HTTP_STATUS_MESSAGE.METHOD_NOT_ALLOWED })
                 .end()
-        }
     }
 }

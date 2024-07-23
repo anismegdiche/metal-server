@@ -17,26 +17,27 @@ import { Logger } from '../lib/Logger'
 import { Config } from '../server/Config'
 import { TJson } from '../types/TJson'
 import { TCacheData } from '../types/TCacheData'
+import { HttpError } from '../server/HttpErrors'
 
 
 export class CacheResponse {
     static View(req: Request, res: Response): void {
         Cache.View()
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
-            .catch((error: unknown) => ServerResponse.Error(res, error as Error))
+            .catch((error: HttpError) => ServerResponse.Error(res, error))
 
     }
 
     static Clean(req: Request, res: Response): void {
         Cache.Clean()
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
-            .catch((error: unknown) => ServerResponse.Error(res, error as Error))
+            .catch((error: HttpError) => ServerResponse.Error(res, error))
     }
 
     static Purge(req: Request, res: Response): void {
         Cache.Purge()
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
-            .catch((error: unknown) => ServerResponse.Error(res, error as Error))
+            .catch((error: HttpError) => ServerResponse.Error(res, error))
     }
 
     static Get(req: Request, res: Response, next: NextFunction): void {
@@ -79,8 +80,8 @@ export class CacheResponse {
                         next()
                     }
                 })
-                .catch((error: unknown) => {
-                    ServerResponse.Error(res, error as Error)
+                .catch((error: Error) => {
+                    ServerResponse.Error(res, error)
                 })
         } catch (error: unknown) {
             ServerResponse.Error(res, error as Error)

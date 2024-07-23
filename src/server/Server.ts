@@ -25,8 +25,8 @@ import { Sandbox} from './Sandbox'
 
 export class Server {
 
-    static App: Express = express()
-    static Sandbox: Sandbox = new Sandbox()
+    static readonly App: Express = express()
+    static readonly Sandbox: Sandbox = new Sandbox()
     static Port: number
     static CurrentPath: string
 
@@ -36,6 +36,7 @@ export class Server {
 
         Server.Port = Config.Configuration.server?.port ?? Config.DEFAULTS["server.port"]
 
+        //TODO: add rate limit config.yml
         const limiter = rateLimit({
             windowMs: 1 * 60 * 1000,
             max: 600,
