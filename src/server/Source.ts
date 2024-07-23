@@ -41,7 +41,7 @@ export class Source {
     // global sources
     static Sources: Record<string, IDataProvider> = {}
 
-    static #ProviderCaseMap: Record<DATA_PROVIDER, Function> = {
+    static #NewProviderCaseMap: Record<DATA_PROVIDER, Function> = {
         [DATA_PROVIDER.METAL]: (source: string, sourceParams: TSourceParams) => new MetalDataProvider(source, sourceParams),
         [DATA_PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanDataProvider(source, sourceParams),
         [DATA_PROVIDER.MEMORY]: (source: string, sourceParams: TSourceParams) => new MemoryDataProvider(source, sourceParams),
@@ -52,17 +52,17 @@ export class Source {
     }
 
     static async Connect(source: string | null, sourceParams: TSourceParams): Promise<void> {
-        if (!(sourceParams.provider in Source.#ProviderCaseMap)) {
+        if (!(sourceParams.provider in Source.#NewProviderCaseMap)) {
             Logger.Error(`Source '${source}', Provider '${sourceParams.provider}' not found. The source will not be connected`)
             return
         }
 
         if (source === null)
             // cache
-            Cache.CacheSource = Source.#ProviderCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
+            Cache.CacheSource = Source.#NewProviderCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
         else
             // sources
-            Source.Sources[source] = Source.#ProviderCaseMap[sourceParams.provider](source, sourceParams)
+            Source.Sources[source] = Source.#NewProviderCaseMap[sourceParams.provider](source, sourceParams)
     }
 
     static async ConnectAll(): Promise<void> {
