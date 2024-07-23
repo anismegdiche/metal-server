@@ -370,10 +370,17 @@ export class DataTable {
         }
     }
 
-    AnonymizeFields(fields: string[]): this {
-        this.Rows.forEach((_row,_idx) => {
+    AnonymizeFields(fields: string | string[]): this {
+        let _fields = (typeof fields === 'string')
+            ? [fields]
+            : fields
+
+        if (_fields.at(0) == '*')
+            _fields = this.GetFieldNames()
+
+        this.Rows.forEach((_row, _idx) => {
             const _newRow = { ..._row }
-            fields.forEach(__field => {
+            _fields.forEach(__field => {
                 if (__field in _newRow) {
                     // deepcode ignore InsecureHash: used for data anonymization
                     _newRow[__field] = createHash('md5')

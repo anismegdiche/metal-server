@@ -1400,7 +1400,7 @@ describe("DataTable", () => {
         // Anonymizes specified fields in all rows
         it('should anonymize specified fields in all rows', () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Rows = [
+            dataTable.Set([
                 {
                     name: 'John Doe',
                     email: 'john@example.com'
@@ -1409,7 +1409,7 @@ describe("DataTable", () => {
                     name: 'Jane Doe',
                     email: 'jane@example.com'
                 }
-            ]
+            ])
             const fieldsToAnonymize = ['email']
             dataTable.AnonymizeFields(fieldsToAnonymize)
             dataTable.Rows.forEach(row => {
@@ -1420,7 +1420,7 @@ describe("DataTable", () => {
         // Anonymizes fields when no rows are present
         it('should handle anonymization when no rows are present', () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Rows = []
+            dataTable.Set([])
             const fieldsToAnonymize = ['email']
             dataTable.AnonymizeFields(fieldsToAnonymize)
             expect(dataTable.Rows).toEqual([])
@@ -1437,7 +1437,7 @@ describe("DataTable", () => {
         // Handles multiple fields for anonymization
         it('should anonymize specified fields for all rows when multiple fields are provided', () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Rows = [
+            dataTable.Set([
                 {
                     name: 'Alice',
                     email: 'alice@example.com'
@@ -1445,7 +1445,7 @@ describe("DataTable", () => {
                     name: 'Bob',
                     email: 'bob@example.com'
                 }
-            ]
+            ])
             const fields = ['name', 'email']
             dataTable.AnonymizeFields(fields)
             expect(dataTable.Rows[0].name).not.toBe('Alice')
@@ -1457,7 +1457,7 @@ describe("DataTable", () => {
         // Processes all rows in the DataTable
         it('should anonymize specified fields for all rows when processing all rows', () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Rows = [
+            dataTable.Set([
                 {
                     name: 'Alice',
                     email: 'alice@example.com'
@@ -1465,7 +1465,7 @@ describe("DataTable", () => {
                     name: 'Bob',
                     email: 'bob@example.com'
                 }
-            ]
+            ])
             const fields = ['name', 'email']
             dataTable.AnonymizeFields(fields)
             expect(dataTable.Rows[0].name).not.toBe('Alice')
@@ -1486,7 +1486,7 @@ describe("DataTable", () => {
                     age: 25
                 }
             ]
-            dataTable.Rows = rows
+            dataTable.Set(rows)
 
             expect(dataTable.AnonymizeFields([]).Rows).toEqual(rows)
         })
@@ -1500,7 +1500,7 @@ describe("DataTable", () => {
                     age: 30
                 }, { name: 'Bob' }
             ]
-            dataTable.Rows = rows
+            dataTable.Set(rows)
 
             const expectedRows = [
                 {
@@ -1509,6 +1509,32 @@ describe("DataTable", () => {
                 }, { name: 'Bob' }
             ]
             expect(dataTable.AnonymizeFields(['age']).Rows).toEqual(expectedRows)
+        })
+
+        // Processes all fields in the DataTable
+        it('should anonymize all fields for all rows', () => {
+            const dataTable = new DataTable("myTable")
+            dataTable.Set([
+                {
+                    name: 'Alice',
+                    email: 'alice@example.com'
+                }, {
+                    name: 'Bob',
+                    email: 'bob@example.com'
+                }
+            ])
+            const fields = '*'
+            dataTable.AnonymizeFields(fields)
+            expect(dataTable.Rows).toEqual([
+                {
+                    name: "64489c85dc2fe0787b85cd87214b3810",
+                    email: "c160f8cc69a4f0bf2b0362752353d060"
+                },
+                {
+                    name: "2fc1c0beb992cd7096975cfebf9d5c3b",
+                    email: "4b9bb80620f03eb3719e0a061c14283d"
+                }
+            ])
         })
     })
 
