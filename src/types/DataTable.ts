@@ -5,6 +5,7 @@
 //
 import _ from 'lodash'
 import alasql from 'alasql'
+import { createHash } from 'crypto'
 //
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
@@ -367,5 +368,21 @@ export class DataTable {
             DeletedRows,
             UpdatedRows
         }
+    }
+
+    AnonymizeFields(fields: string[]): this {
+        this.Rows.forEach((_row,_idx) => {
+            const _newRow = { ..._row }
+            fields.forEach(__field => {
+                if (__field in _newRow) {
+                    // deepcode ignore InsecureHash: used for data anonymization
+                    _newRow[__field] = createHash('md5')
+                        .update(_.toString(_newRow[__field]))
+                        .digest('hex')
+                }
+            })
+            this.Rows[_idx] = _newRow
+        })
+        return this
     }
 }

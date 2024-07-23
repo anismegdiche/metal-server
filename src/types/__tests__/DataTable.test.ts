@@ -1394,5 +1394,123 @@ describe("DataTable", () => {
             })
         })
     })
+
+    describe('AnonymizeFields', () => {
+
+        // Anonymizes specified fields in all rows
+        it('should anonymize specified fields in all rows', () => {
+            const dataTable = new DataTable("myTable")
+            dataTable.Rows = [
+                {
+                    name: 'John Doe',
+                    email: 'john@example.com'
+                },
+                {
+                    name: 'Jane Doe',
+                    email: 'jane@example.com'
+                }
+            ]
+            const fieldsToAnonymize = ['email']
+            dataTable.AnonymizeFields(fieldsToAnonymize)
+            dataTable.Rows.forEach(row => {
+                expect(row.email).toMatch(/^[a-f0-9]{32}$/)
+            })
+        })
+
+        // Anonymizes fields when no rows are present
+        it('should handle anonymization when no rows are present', () => {
+            const dataTable = new DataTable("myTable")
+            dataTable.Rows = []
+            const fieldsToAnonymize = ['email']
+            dataTable.AnonymizeFields(fieldsToAnonymize)
+            expect(dataTable.Rows).toEqual([])
+        })
+
+        // Returns the DataTable instance after anonymization
+        it('should return DataTable instance after anonymization when fields are provided', () => {
+            const dataTable = new DataTable("myTable")
+            const fields = ['email', 'phone']
+            const result = dataTable.AnonymizeFields(fields)
+            expect(result).toBeInstanceOf(DataTable)
+        })
+
+        // Handles multiple fields for anonymization
+        it('should anonymize specified fields for all rows when multiple fields are provided', () => {
+            const dataTable = new DataTable("myTable")
+            dataTable.Rows = [
+                {
+                    name: 'Alice',
+                    email: 'alice@example.com'
+                }, {
+                    name: 'Bob',
+                    email: 'bob@example.com'
+                }
+            ]
+            const fields = ['name', 'email']
+            dataTable.AnonymizeFields(fields)
+            expect(dataTable.Rows[0].name).not.toBe('Alice')
+            expect(dataTable.Rows[0].email).not.toBe('alice@example.com')
+            expect(dataTable.Rows[1].name).not.toBe('Bob')
+            expect(dataTable.Rows[1].email).not.toBe('bob@example.com')
+        })
+
+        // Processes all rows in the DataTable
+        it('should anonymize specified fields for all rows when processing all rows', () => {
+            const dataTable = new DataTable("myTable")
+            dataTable.Rows = [
+                {
+                    name: 'Alice',
+                    email: 'alice@example.com'
+                }, {
+                    name: 'Bob',
+                    email: 'bob@example.com'
+                }
+            ]
+            const fields = ['name', 'email']
+            dataTable.AnonymizeFields(fields)
+            expect(dataTable.Rows[0].name).not.toBe('Alice')
+            expect(dataTable.Rows[0].email).not.toBe('alice@example.com')
+            expect(dataTable.Rows[1].name).not.toBe('Bob')
+            expect(dataTable.Rows[1].email).not.toBe('bob@example.com')
+        })
+
+        // Handles empty fields array without errors
+        it('should handle empty fields array without errors when calling AnonymizeFields', () => {
+            const dataTable = new DataTable("myTable")
+            const rows = [
+                {
+                    name: 'Alice',
+                    age: 30
+                }, {
+                    name: 'Bob',
+                    age: 25
+                }
+            ]
+            dataTable.Rows = rows
+
+            expect(dataTable.AnonymizeFields([]).Rows).toEqual(rows)
+        })
+
+        // Anonymizes fields when some rows lack the specified fields
+        it('should anonymize fields when some rows lack the specified fields when calling AnonymizeFields', () => {
+            const dataTable = new DataTable("myTable")
+            const rows = [
+                {
+                    name: 'Alice',
+                    age: 30
+                }, { name: 'Bob' }
+            ]
+            dataTable.Rows = rows
+
+            const expectedRows = [
+                {
+                    name: 'Alice',
+                    age: '34173cb38f07f89ddbebc2ac9128303f'
+                }, { name: 'Bob' }
+            ]
+            expect(dataTable.AnonymizeFields(['age']).Rows).toEqual(expectedRows)
+        })
+    })
+
 })
 
