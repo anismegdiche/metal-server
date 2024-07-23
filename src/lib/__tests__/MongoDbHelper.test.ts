@@ -1,6 +1,5 @@
 
 
-import { Convert } from '../Convert'
 import { MongoDbHelper } from '../MongoDbHelper'
 
 describe('MongoDbHelper', () => {
