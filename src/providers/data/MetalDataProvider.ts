@@ -142,11 +142,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
     }
 
     static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest): object {
-        return _.chain(schemaRequest)
-            .omit('sourceName')
-            .omit('schemaName')
-            .omit('entityName')
-            .value()
+        return _.omit(schemaRequest, ['sourceName', 'schemaName', 'entityName'])
     }
 
     static #ConvertResponseToSchemaRequest(res: AxiosResponse): TSchemaResponse {

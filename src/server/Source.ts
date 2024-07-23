@@ -57,13 +57,12 @@ export class Source {
             return
         }
 
-        if (source === null) {
+        if (source === null)
             // cache
             Cache.CacheSource = Source.#ProviderCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
-        } else {
+        else
             // sources
             Source.Sources[source] = Source.#ProviderCaseMap[sourceParams.provider](source, sourceParams)
-        }
     }
 
     static async ConnectAll(): Promise<void> {
@@ -76,9 +75,8 @@ export class Source {
         }
     }
     static async Disconnect(source: string): Promise<void> {
-        if (source) {
+        if (source)
             Source.Sources[source].Disconnect()
-        }
     }
 
     static async DisconnectAll(): Promise<void> {

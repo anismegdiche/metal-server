@@ -5,7 +5,7 @@
 //
 import { Request, Response, NextFunction } from 'express'
 //
-import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from '../lib/Const'
+import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE, VALIDATION_ERROR_MESSAGE } from '../lib/Const'
 import { User } from '../server/User'
 import { Config } from '../server/Config'
 import { ServerResponse } from '../response/ServerResponse'
@@ -26,13 +26,13 @@ export class UserResponse {
             in: ['body'],
             trim: true,
             isString: true,
-            errorMessage: 'must be a string'
+            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_STRING
         },
         password: {
             in: ['body'],
             trim: true,
             isString: true,
-            errorMessage: 'must be a string'
+            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_STRING
         }
     })
 

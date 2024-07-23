@@ -200,6 +200,4 @@ export class Schema {
             }
         })
     }
-
-
 }

@@ -108,6 +108,13 @@ export enum HTTP_STATUS_MESSAGE {
     NOT_IMPLEMENTED = 'Not Implemented'
 }
 
+export enum VALIDATION_ERROR_MESSAGE {
+    MUST_BE_NUMBER = 'must be a number',
+    MUST_BE_JSON = 'must be a JSON object',
+    MUST_BE_JSON_ARRAY_OR_OBJECT = 'must be a JSON array or a JSON object',
+    MUST_BE_STRING = 'must be a string'
+}
+
 export const RESPONSE_STATUS = {
     HTTP_200: {
         status: HTTP_STATUS_CODE.OK

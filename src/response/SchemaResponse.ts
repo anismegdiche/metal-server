@@ -8,7 +8,7 @@ import { checkSchema, validationResult } from 'express-validator'
 import _ from 'lodash'
 //
 import { Convert } from '../lib/Convert'
-import { RESPONSE_RESULT, RESPONSE_STATUS, HTTP_STATUS_CODE } from '../lib/Const'
+import { RESPONSE_RESULT, RESPONSE_STATUS, HTTP_STATUS_CODE, VALIDATION_ERROR_MESSAGE } from '../lib/Const'
 import { Logger } from '../lib/Logger'
 import { ServerResponse } from './ServerResponse'
 import { Schema } from '../server/Schema'
@@ -29,13 +29,13 @@ export class SchemaResponse {
             in: ['params'],
             trim: true,
             isString: true,
-            errorMessage: 'must be a string'
+            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_STRING
         },
         entityName: {
             in: ['params'],
             trim: true,
             isString: true,
-            errorMessage: 'must be a string'
+            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_STRING
         },
         filter: {
             in: ['body', 'query'],
@@ -54,7 +54,7 @@ export class SchemaResponse {
                     return true
                 }
             },
-            errorMessage: 'must be a JSON object',
+            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_JSON,
             customSanitizer: {
                 options: (value) => {
                     if (typeof value === 'string') {
@@ -73,28 +73,28 @@ export class SchemaResponse {
             trim: true,
             optional: true,
             isString: true,
-            errorMessage: 'must be a string'
+            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_STRING
         },
         fields: {
             in: ['body', 'query'],
             trim: true,
             optional: true,
             isString: true,
-            errorMessage: 'must be a string'
+            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_STRING
         },
         sort: {
             in: ['body', 'query'],
             trim: true,
             optional: true,
             isString: true,
-            errorMessage: 'must be a string'
+            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_STRING
         },
         cache: {
             in: ['body', 'query'],
             trim: true,
             optional: true,
             isNumeric: true,
-            errorMessage: 'must be a number',
+            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_NUMBER,
             customSanitizer: {
                 options: (value) => {
                     if (typeof value === 'string') {
@@ -115,7 +115,7 @@ export class SchemaResponse {
                     return (_.isObject(value) || Array.isArray(value))
                 }
             },
-            errorMessage: 'must be a JSON array or a JSON object'
+            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_JSON_ARRAY_OR_OBJECT
         }
     })
 
