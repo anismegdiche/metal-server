@@ -12,7 +12,7 @@ import { Logger } from "../lib/Logger"
 import { TInternalResponse } from '../types/TInternalResponse'
 import { Server } from '../server/Server'
 import { TypeHelper } from './TypeHelper'
-import { Helper } from './Helper'
+import { JsonHelper } from './JsonHelper'
 
 
 export class Convert {
@@ -21,6 +21,12 @@ export class Convert {
         return Object
             .entries(obj)
             .map(([k, v]) => ({ [k]: v }))
+    }
+
+    static HumainSizeToBytes(size: string) {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const bytes = require('bytes')
+        return bytes(size)
     }
 
     static RequestToSchemaRequest(req: Request): TSchemaRequest {
@@ -89,7 +95,7 @@ export class Convert {
                         ? ''
                         : __result.toString()
                 } catch (error) {
-                    Logger.Error(`Error evaluating code: ${code}, ${JSON.stringify(error)}`)
+                    Logger.Error(`Error evaluating code: ${code}, ${JsonHelper.Stringify(error)}`)
                     // Return the original placeholder if there's an error
                     return `$\{{${code}}}`
                 }
@@ -98,6 +104,6 @@ export class Convert {
 
         // deepcode ignore UsageOfUndefinedReturnValue: <please specify a reason of ignoring this>
         const _objectString = Convert.ReplacePlaceholders(JSON.stringify(value))
-        return Helper.JsonTryParse(_objectString, {})
+        return JsonHelper.TryParse(_objectString, {})
     }
 }

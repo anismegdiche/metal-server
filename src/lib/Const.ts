@@ -105,7 +105,8 @@ export enum HTTP_STATUS_MESSAGE {
     METHOD_NOT_ALLOWED = 'Method Not Allowed',
     TOO_MANY_REQUESTS = 'Too Many Requests',
     INTERNAL_SERVER_ERROR = 'Internal Server Error',
-    NOT_IMPLEMENTED = 'Not Implemented'
+    NOT_IMPLEMENTED = 'Not Implemented',
+    CONTENT_TOO_LARGE = 'Content Too Large'
 }
 
 export enum VALIDATION_ERROR_MESSAGE {

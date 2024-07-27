@@ -8,6 +8,7 @@ import _ from 'lodash'
 import { TRow } from "../types/DataTable"
 import { TJson } from '../types/TJson'
 import { Logger } from './Logger'
+import { JsonHelper } from './JsonHelper'
 
 export class SqlQueryHelper {
     Query: string = ''
@@ -120,7 +121,7 @@ export class SqlQueryHelper {
                             this.Data.push(_value)
                         break
                     default:
-                        __formattedValue = `'${JSON.stringify(_value)}'`
+                        __formattedValue = `'${JsonHelper.Stringify(_value)}'`
                         break
                 }
                 return `${_field}=${__formattedValue}`
