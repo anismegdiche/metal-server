@@ -16,6 +16,7 @@ import { Config } from './Config'
 import { IDataProvider } from '../types/IDataProvider'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
+import { JsonHelper } from '../lib/JsonHelper'
 
 
 export class Cache {
@@ -43,10 +44,10 @@ export class Cache {
     }
 
     static async Set(schemaRequest: TSchemaRequest, datatable: DataTable): Promise<void> {
-        Logger.Debug(`${Logger.In} Cache.Set: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} Cache.Set: ${JsonHelper.Stringify(schemaRequest)}`)
         
         // bypassing 
-        if (this.CacheSource == undefined || schemaRequest?.cache !== undefined) {
+        if (this.CacheSource == undefined) {
             return
         }
 

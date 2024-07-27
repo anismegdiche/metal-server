@@ -22,6 +22,7 @@ import { JsonContent } from "../content/JsonContent"
 import { AzureBlobStorage } from '../storage/AzureBlobStorage'
 import { FsStorage } from '../storage/FsStorage'
 import { CsvContent } from '../content/CsvContent'
+import { JsonHelper } from "../../lib/JsonHelper"
 
 /* eslint-disable no-unused-vars */
 export enum STORAGE_PROVIDER {
@@ -118,7 +119,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} FilesDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -163,7 +164,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} FilesDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
 
@@ -187,7 +188,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             }
         }
         this.Content.Init(entityName, fileString)
-        
+
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
             .From(`\`${entityName}\``)
@@ -201,12 +202,13 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         const fileDataTable = await this.Content.Get(sqlQuery)
 
         if (fileDataTable && fileDataTable.Rows.length > 0) {
-            Cache.Set({
-                ...schemaRequest,
-                sourceName: this.SourceName
-            },
-                fileDataTable
-            )
+            if (options?.Cache)
+                Cache.Set({
+                    ...schemaRequest,
+                    sourceName: this.SourceName
+                },
+                    fileDataTable
+                )
             return <TSchemaResponseData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
@@ -223,7 +225,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} FilesDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
 
@@ -266,7 +268,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} FilesDataProvider.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest

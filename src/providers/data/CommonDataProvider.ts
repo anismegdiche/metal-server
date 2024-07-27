@@ -13,6 +13,7 @@ import { Logger } from '../../lib/Logger'
 import { Convert } from "../../lib/Convert"
 import { DataTable } from "../../types/DataTable"
 import { TOptions } from "../../types/TOptions"
+import { JsonHelper } from '../../lib/JsonHelper'
 
 
 export class CommonDataProviderOptions implements IDataProvider.IDataProviderOptions {
@@ -24,6 +25,7 @@ export class CommonDataProviderOptions implements IDataProvider.IDataProviderOpt
             options = this.GetFields(options, schemaRequest)
             options = this.GetSort(options, schemaRequest)
             options = this.GetData(options, schemaRequest)
+            options = this.GetCache(options, schemaRequest)
         }
         return options
     }
@@ -71,6 +73,13 @@ export class CommonDataProviderOptions implements IDataProvider.IDataProviderOpt
         }
         return options
     }
+
+    GetCache(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        if (schemaRequest?.cache)
+            options.Cache = schemaRequest.cache
+
+        return options
+    }
 }
 
 
@@ -105,7 +114,7 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} CommonDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} CommonDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
@@ -117,7 +126,7 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} CommonDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} CommonDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
@@ -129,7 +138,7 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} CommonDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} CommonDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
@@ -141,7 +150,7 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} CommonDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} CommonDataProvider.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,

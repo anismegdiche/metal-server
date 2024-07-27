@@ -17,6 +17,7 @@ import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import DATA_PROVIDER, { Source } from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
+import { JsonHelper } from '../../lib/JsonHelper'
 
 
 export class MemoryDataProvider implements IDataProvider.IDataProvider {
@@ -56,7 +57,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MemoryDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} MemoryDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
@@ -82,7 +83,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`MemoryDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -118,12 +119,13 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         const memoryDataTable = await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQuery, sqlQueryHelper.Data)
 
         if (memoryDataTable && memoryDataTable.Rows.length > 0) {
-            Cache.Set({
-                ...schemaRequest,
-                sourceName: this.SourceName
-            },
-                memoryDataTable
-            )
+            if (options?.Cache)
+                Cache.Set({
+                    ...schemaRequest,
+                    sourceName: this.SourceName
+                },
+                    memoryDataTable
+                )
             return <TSchemaResponseData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
@@ -141,7 +143,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`MemoryDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         const schemaResponse = <TSchemaResponse>{
             schemaName,
@@ -179,7 +181,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryDataProvider.Delete : ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`MemoryDataProvider.Delete : ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         const schemaResponse = <TSchemaResponse>{
             schemaName,

@@ -13,5 +13,6 @@
         "revealOn": "run",
         "revealWithFocus": "test-results",
         "clearOnRun": "none"
-    }
+    },
+    "codescene.previewCodeHealthGate": true
 }

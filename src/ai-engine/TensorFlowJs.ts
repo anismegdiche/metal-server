@@ -16,6 +16,7 @@ import { Helper } from '../lib/Helper'
 import * as Tf from '@tensorflow/tfjs'
 import * as MobileNet from '@tensorflow-models/mobilenet'
 import { AI_ENGINE, TConfigAiEngineTensorFlowJsImageClassifyOptions, TENSORFLOW_JS_MODEL } from '../server/AiEngine'
+import { JsonHelper } from '../lib/JsonHelper'
 
 
 export class TensorFlowJs implements IAiEngine {
@@ -59,7 +60,7 @@ export class TensorFlowJs implements IAiEngine {
 	async Run(imagePath: string): Promise<any> {
 		return await this.#RunModel[this.Model](imagePath)
 			.catch((error: any) => {
-				Logger.Error(`TensorFlowJs.Run '${this.InstanceName}': '${JSON.stringify(this.Options)}', on '${imagePath}'`)
+				Logger.Error(`TensorFlowJs.Run '${this.InstanceName}': '${JsonHelper.Stringify(this.Options)}', on '${imagePath}'`)
 				Logger.Error(error)
 				return undefined
 			})

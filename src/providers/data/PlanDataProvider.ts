@@ -17,6 +17,7 @@ import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { Plan } from '../../server/Plan'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER from '../../server/Source'
+import { JsonHelper } from '../../lib/JsonHelper'
 
 
 export class PlanDataProvider implements IDataProvider.IDataProvider {
@@ -48,7 +49,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} PlanDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} PlanDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Insert: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{
@@ -62,7 +63,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PlanDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -86,12 +87,13 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
         const planDataTable = await Plan.Process(schemaRequest, sqlQuery)
 
         if (planDataTable && planDataTable.Rows.length > 0) {
-            Cache.Set({
-                ...schemaRequest,
-                sourceName: this.SourceName
-            },
-                planDataTable
-            )
+            if (options?.Cache)
+                Cache.Set({
+                    ...schemaRequest,
+                    sourceName: this.SourceName
+                },
+                    planDataTable
+                )
             return <TSchemaResponseData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
@@ -109,7 +111,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PlanDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Update: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{
@@ -124,7 +126,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanDataProvider.Delete : ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PlanDataProvider.Delete : ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Delete: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{

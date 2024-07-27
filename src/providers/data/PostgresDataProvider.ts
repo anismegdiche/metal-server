@@ -19,6 +19,7 @@ import { Cache } from '../../server/Cache'
 import { Logger } from '../../lib/Logger'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER, { Source } from '../../server/Source'
+import { JsonHelper } from '../../lib/JsonHelper'
 
 
 export class PostgresDataProvider implements IDataProvider.IDataProvider {
@@ -86,7 +87,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} PostgresDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} PostgresDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -115,7 +116,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PostgresDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PostgresDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -138,7 +139,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         const _data = await this.Connection.query(sqlQueryHelper.Query)
         if (_data.rows.length > 0) {
             const _dt = new DataTable(schemaRequest.entityName, _data.rows)
-            Cache.Set(schemaRequest, _dt)
+            if (options?.Cache)
+                Cache.Set(schemaRequest, _dt)
             schemaResponse = <TSchemaResponseData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
@@ -156,7 +158,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PostgresDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PostgresDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -186,7 +188,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PostgresDataProvider.Delete : ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`PostgresDataProvider.Delete : ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,

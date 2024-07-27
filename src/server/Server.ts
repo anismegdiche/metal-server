@@ -22,6 +22,7 @@ import { PlanRouter } from '../routes/PlanRouter'
 import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
 import { Sandbox} from './Sandbox'
+import { JsonHelper } from '../lib/JsonHelper'
 
 export class Server {
 
@@ -105,7 +106,7 @@ export class Server {
                     Logger.Error(`Port ${Server.Port} is already in use. Exiting the process.`)
                     process.exit(1)
                 } else {
-                    Logger.Error(`An error occurred: ${JSON.stringify(error)}`)
+                    Logger.Error(`An error occurred: ${JsonHelper.Stringify(error)}`)
                 }
             })
     }

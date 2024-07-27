@@ -12,7 +12,9 @@ import { RESPONSE_RESULT, RESPONSE_STATUS, HTTP_STATUS_CODE, VALIDATION_ERROR_ME
 import { Logger } from '../lib/Logger'
 import { ServerResponse } from './ServerResponse'
 import { Schema } from '../server/Schema'
-import { BadRequestError, HttpError } from '../server/HttpErrors'
+import { BadRequestError, ContentTooLarge, HttpError } from '../server/HttpErrors'
+import { Config } from '../server/Config'
+import { JsonHelper } from '../lib/JsonHelper'
 
 
 const REQUEST_TRANSACTION: Record<string, string> = {
@@ -141,7 +143,16 @@ export class SchemaResponse {
     static Select(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
         Schema.Select(schemaRequest)
-            .then(schRes => Convert.SchemaResponseToResponse(schRes, res))
+            .then(schRes => {
+                const _resSize = JsonHelper.Size(schRes)
+                //TODO: check how to remove casting
+                const _responseLimit = Config.Flags.ResponseLimit as number
+                // file deepcode ignore NoEffectExpression: debugging pupose
+                Logger.Debug(`${Logger.Out} SchemaResponse.Select: response size = ${_resSize} bytes`)
+                if (_resSize > _responseLimit)
+                    throw new ContentTooLarge("Response body too large")
+                return Convert.SchemaResponseToResponse(schRes, res)
+            })
             .catch((error: HttpError) => ServerResponse.Error(res, error))
     }
 

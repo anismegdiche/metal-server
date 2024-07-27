@@ -14,11 +14,12 @@ import { Step, TStepArguments } from "./Step"
 import { DataTable } from "../types/DataTable"
 import { Helper } from "../lib/Helper"
 import { WarnError } from "./InternalError"
+import { JsonHelper } from "../lib/JsonHelper"
 
 
 export class Plan {
     static async Process(schemaRequest: TSchemaRequest | TScheduleConfig, sqlQuery: string | undefined = undefined): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Plan.Execute: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} Plan.Execute: ${JsonHelper.Stringify(schemaRequest)}`)
 
         // TSchemaRequest
         if (TypeHelper.IsSchemaRequest(schemaRequest)) {
@@ -36,7 +37,7 @@ export class Plan {
             }
 
             const entitySteps: TJson[] = Config.Get(`plans.${sourcePlanName}.${entityName}`)
-            Logger.Debug(`${Logger.In} Plan.Execute: ${sourceName}.${entityName}: ${JSON.stringify(entitySteps)}`)
+            Logger.Debug(`${Logger.In} Plan.Execute: ${sourceName}.${entityName}: ${JsonHelper.Stringify(entitySteps)}`)
             const currentDatatable = await Plan.ExecuteSteps(schemaName, sourceName, entityName, entitySteps)
             await currentDatatable.FreeSql(sqlQuery)
 
@@ -57,7 +58,7 @@ export class Plan {
         }
 
         const entitySteps: TJson[] = Config.Get(`plans.${planName}.${entityName}`)
-        Logger.Debug(`${Logger.In} Plan.Execute: ${planName}.${entityName}: ${JSON.stringify(entitySteps)}`)
+        Logger.Debug(`${Logger.In} Plan.Execute: ${planName}.${entityName}: ${JsonHelper.Stringify(entitySteps)}`)
         const currentDatatable = await Plan.ExecuteSteps(undefined, planName, entityName, entitySteps)
         Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entityName}`)
         return await currentDatatable.FreeSql(sqlQuery)
@@ -69,10 +70,10 @@ export class Plan {
 
         for await (const [stepIndex, step] of Object.entries(steps)) {
             const _stepIndex = parseInt(stepIndex, 10) + 1
-            Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}': Step ${_stepIndex}, ${JSON.stringify(step)}`)
+            Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}': Step ${_stepIndex}, ${JsonHelper.Stringify(step)}`)
 
             if (step === null) {
-                Logger.Error(`Plan.ExecuteSteps '${currentPlanName}': error have been encountered in step ${_stepIndex}, ${JSON.stringify(step)}`)
+                Logger.Error(`Plan.ExecuteSteps '${currentPlanName}': error have been encountered in step ${_stepIndex}, ${JsonHelper.Stringify(step)}`)
                 break
             }
 
@@ -83,7 +84,7 @@ export class Plan {
                 const __stepParams: TJson = _.values(<object>step)[0]
 
                 if (__stepCommand === 'break') {
-                    Logger.Info(`Plan.ExecuteSteps '${currentPlanName}': user break at step '${_stepIndex}', ${JSON.stringify(step)}`)
+                    Logger.Info(`Plan.ExecuteSteps '${currentPlanName}': user break at step '${_stepIndex}', ${JsonHelper.Stringify(step)}`)
                     return currentDataTable
                 }
 
@@ -100,7 +101,7 @@ export class Plan {
                 }
             } catch (error: unknown) {
                 const _error = error as Error
-                const _errorMessage = `Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' is ignored because of error ${JSON.stringify(_error?.message)}`
+                const _errorMessage = `Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JsonHelper.Stringify(step)}' is ignored because of error ${JsonHelper.Stringify(_error?.message)}`
 
                 if (error instanceof WarnError) {
                     Logger.Warn(_errorMessage)
@@ -116,7 +117,7 @@ export class Plan {
                     */
                     const _planErrors: TJson = {}
                     _planErrors[`entity(${currentEntityName}), step(${stepIndex})`] = step
-                    Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JSON.stringify(step)}' added error ${JSON.stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
+                    Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JsonHelper.Stringify(step)}' added error ${JsonHelper.Stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
                 }
             }
         }

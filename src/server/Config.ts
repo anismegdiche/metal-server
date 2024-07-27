@@ -17,7 +17,8 @@ import { Cache } from '../server/Cache'
 import { User } from './User'
 import DATA_PROVIDER, { Source } from './Source'
 import { AI_ENGINE, AiEngine } from './AiEngine'
-import { Helper } from '../lib/Helper'
+import { JsonHelper } from '../lib/JsonHelper'
+import { Convert } from '../lib/Convert'
 
 export class Config {
 
@@ -29,12 +30,14 @@ export class Config {
         "server.port": 3000,
         "server.timezone": 'UTC',
         "server.verbosity": 'warn',
-        "server.request-limit": '100mb'
+        "server.request-limit": '100mb',
+        "server.response-limit": '2mb'
     }
 
     static Flags: TJson = {
         EnableCache: false,              // enable/disable cache
-        EnableAuthentication: false      // enable/disable authentication
+        EnableAuthentication: false,     // enable/disable authentication
+        ResponseLimit: 2 * 1024 * 1024   // response body size limit
     }
 
     static #ConfigSchema: any = {
@@ -43,7 +46,7 @@ export class Config {
         properties: {
             "version": {
                 type: "string",
-                enum: ["0.1", "0.2"]
+                enum: ["0.1", "0.2", "0.3"]
             },
             "server": {
                 type: "object",
@@ -60,6 +63,7 @@ export class Config {
                     "timezone": { type: "string" },
                     "authentication": { type: "null" },
                     "request-limit": { type: "string" },
+                    "response-limit": { type: "string" },
                     "cache": { type: "object" }
                 }
             },
@@ -115,7 +119,8 @@ export class Config {
                                         required: ["sourceName", "entityName"]
                                     }
                                 }
-                            }
+                            },
+                            "anonymize": { type: "string" }
                         }
                     }
                 }
@@ -204,6 +209,11 @@ export class Config {
         Config.Flags.EnableAuthentication = Config.Has('server.authentication')
         Config.Flags.EnableAuthentication && User.LoadUsers()
         Config.Flags.EnableCache = Config.Has('server.cache')
+        // add response-limit
+        Config.Flags.ResponseLimit = Convert.HumainSizeToBytes(
+            Config.Configuration.server?.['response-limit'] ?? Config.DEFAULTS["server.response-limit"]
+        )
+        Logger.Debug(`Server Response Limit set to ${Config.Flags.ResponseLimit}`)
         Config.Flags.EnableCache && await Cache.Connect()
         Config.Has('sources') && await Source.ConnectAll()
         Config.Has('ai-engines') && await AiEngine.Init()
@@ -236,7 +246,7 @@ export class Config {
 
     static async Validate(): Promise<void> {
         Logger.Debug('Config.Validate')
-        const { errors } = Helper.JsonValidator.validate(this.Configuration, this.#ConfigSchema)
+        const { errors } = JsonHelper.Validator.validate(this.Configuration, this.#ConfigSchema)
 
         if (errors.length <= 0) {
             return
@@ -247,10 +257,8 @@ export class Config {
     }
 
     static GetErrors(schemaErrors: any): string[] {
-        return _.filter(
-            schemaErrors,
-            (e) => e.message.includes('is required') || e.message.includes('must be')
-        )
+        return schemaErrors
+            .filter((e: Error) => e.message.includes('is required') || e.message.includes('must be'))
     }
     static Has(path: string): boolean {
         return _.has(Config.Configuration, path)

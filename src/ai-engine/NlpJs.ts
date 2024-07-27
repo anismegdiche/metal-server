@@ -8,6 +8,7 @@ import { IAiEngine } from '../types/IAiEngine'
 import { TJson } from '../types/TJson'
 import { Helper } from '../lib/Helper'
 import { AI_ENGINE, TConfigAiEngineNlpJsSentimentOptions, TConfigAiEngineNlpJsGuessLangOptions, TConfigAiEngineNlpJs, NLP_JS_MODEL } from '../server/AiEngine'
+import { JsonHelper } from '../lib/JsonHelper'
 //
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { SentimentAnalyzer, Language } = require('node-nlp')
@@ -49,7 +50,7 @@ export class NlpJs implements IAiEngine {
 	async Run(text: string): Promise<any> {
 		return await this.#RunModel[this.Model](text)
 			.catch((error: any) => {
-				Logger.Error(`NlpJs.Run '${this.InstanceName}': '${JSON.stringify(this.Options)}',Text= '${text}'`)
+				Logger.Error(`NlpJs.Run '${this.InstanceName}': '${JsonHelper.Stringify(this.Options)}',Text= '${text}'`)
 				Logger.Error(error)
 				return undefined
 			})

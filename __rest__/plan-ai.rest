@@ -12,10 +12,14 @@ Content-Type: application/json
 @token={{login.response.body.token}}
 
 ###
-@plan=etl1
+# @name ocr-test
+GET http://localhost:3000/schema/sch-etl1/ocr
+Content-Type: application/json
+authorization: Bearer {{token}}
+
 
 ###
 # @name get-plan
-GET http://localhost:3000/schema/{{plan}}/aitest
+GET http://localhost:3000/schema/sch-etl1/aitest
 Content-Type: application/json
 authorization: Bearer {{token}}

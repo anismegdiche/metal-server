@@ -13,6 +13,7 @@ import { IAiEngine } from '../types/IAiEngine'
 import { TesseractJs } from '../ai-engine/TesseractJs'
 import { TensorFlowJs } from '../ai-engine/TensorFlowJs'
 import { NlpJs } from '../ai-engine/NlpJs'
+import { JsonHelper } from '../lib/JsonHelper'
 
 //
 //  config types
@@ -201,7 +202,7 @@ export class AiEngine {
     }
 
     static async Create(aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineDefault): Promise<void> {
-        Logger.Debug(`${Logger.In} Starting '${aiEngineInstanceName}' with params '${JSON.stringify(AiEngineConfig)}'`)
+        Logger.Debug(`${Logger.In} Starting '${aiEngineInstanceName}' with params '${JsonHelper.Stringify(AiEngineConfig)}'`)
         if (!(AiEngineConfig.engine in AiEngine.#NewAiEngineTypeCaseMap)) {
             Logger.Error(`Unknown engine type: ${AiEngineConfig.engine}`)
             return

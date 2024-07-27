@@ -18,6 +18,7 @@ import { Logger } from '../../lib/Logger'
 import { Cache } from '../../server/Cache'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER, { Source } from '../../server/Source'
+import { JsonHelper } from '../../lib/JsonHelper'
 
 
 export class SqlServerDataProvider implements IDataProvider.IDataProvider {
@@ -86,7 +87,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} SqlServerDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} SqlServerDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -115,7 +116,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} SqlServerDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.Out} SqlServerDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -138,7 +139,8 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
         const data = await this.Connection.query(sqlQueryHelper.Query)
         if (data.recordset != null && data.recordset.length > 0) {
             const _dt = new DataTable(schemaRequest.entityName, data.recordset)
-            Cache.Set(schemaRequest, _dt)
+            if (options?.Cache)
+                Cache.Set(schemaRequest, _dt)
             schemaResponse = <TSchemaResponseData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
@@ -156,7 +158,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`SqlServerDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`SqlServerDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -185,7 +187,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`SqlServerDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`SqlServerDataProvider.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,

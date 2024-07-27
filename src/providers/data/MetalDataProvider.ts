@@ -17,6 +17,7 @@ import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { TJson } from '../../types/TJson'
 import { DataTable } from '../../types/DataTable'
 import { SERVER } from '../../lib/Const'
+import { JsonHelper } from '../../lib/JsonHelper'
 
 
 type TMetalClientParams = {
@@ -220,7 +221,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MetalDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)
@@ -236,7 +237,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MetalDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)
@@ -258,7 +259,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MetalDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)
@@ -274,7 +275,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`${Logger.In} MetalDataProvider.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)

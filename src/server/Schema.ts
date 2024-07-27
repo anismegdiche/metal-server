@@ -5,6 +5,7 @@
 //
 //
 import _ from 'lodash'
+//
 import { Source } from "./Source"
 import { RESPONSE_RESULT, RESPONSE_STATUS } from '../lib/Const'
 import { Logger } from '../lib/Logger'
@@ -13,6 +14,9 @@ import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
 import { TJson } from '../types/TJson'
 import { NotFoundError } from './HttpErrors'
+import { TypeHelper } from '../lib/TypeHelper'
+import { StringHelper } from '../lib/StringHelper'
+import { JsonHelper } from '../lib/JsonHelper'
 
 export type TSchemaRoute = {
     type: "source" | "nothing",
@@ -34,13 +38,13 @@ export class Schema {
     //
     sourceName?: string
 
-    static SourceTypeCaseMap: Record<string, Function> = {
+    static readonly SourceTypeCaseMap: Record<string, Function> = {
         'nothing': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await Schema.NothingTodo(sourceTypeExecuteParams),
         'source': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await sourceTypeExecuteParams.CrudFunction()
     }
 
     static async IsExists(schemaRequest: TSchemaRequest): Promise<void> {
-        Logger.Debug(`Schema.IsExists: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`Schema.IsExists: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const { schemaName } = schemaRequest
 
@@ -118,28 +122,40 @@ export class Schema {
     }
 
     static async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Select: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`Schema.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
         const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
         const schemaRoute = Schema.GetRoute(schemaName, entityName, schemaConfig)
+        // Anonymizer
+        let isAnonymize = false
+        let fieldsToAnonymize: string[] = []
+        if (Config.Has(`schemas.${schemaName}.anonymize`)) {
+            isAnonymize = true
+            fieldsToAnonymize = StringHelper.Split(Config.Get(`schemas.${schemaName}.anonymize`), ",")
+        }
+        //
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
             sourceName: schemaRoute.routeName,
             entityName: schemaRoute.entityName,
             schemaRequest,
             CrudFunction: async () => {
-                return await Source.Sources[schemaRoute.routeName].Select({
+                const _schemaresponse = await Source.Sources[schemaRoute.routeName].Select({
                     ...schemaRequest,
                     sourceName: schemaRoute.routeName,
                     entityName: schemaRoute.entityName ?? schemaRequest.entityName
                 })
+                // Anonymizer
+                if (isAnonymize && TypeHelper.IsSchemaResponseData(_schemaresponse))
+                    _schemaresponse.data.AnonymizeFields(fieldsToAnonymize)
+                return _schemaresponse
             }
         })
     }
 
     static async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Delete: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`Schema.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
         const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
@@ -160,7 +176,7 @@ export class Schema {
     }
 
     static async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Update: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`Schema.Update: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
         const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
@@ -181,7 +197,7 @@ export class Schema {
     }
 
     static async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Insert: ${JSON.stringify(schemaRequest)}`)
+        Logger.Debug(`Schema.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
         const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)

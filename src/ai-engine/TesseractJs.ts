@@ -32,7 +32,6 @@ export class TesseractJs implements IAiEngine {
             .recognize(imagePath, this.Model)
             .progress(Logger.Debug)
             .then(_result => {
-                Logger.Debug(_result)
                 return _result
             })
             .catch(_error => {

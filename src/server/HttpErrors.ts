@@ -30,6 +30,13 @@ export class NotFoundError extends HttpError {
     }
 }
 
+export class ContentTooLarge extends HttpError {
+    constructor(message?: string) {
+        super(413, message ?? HTTP_STATUS_MESSAGE.CONTENT_TOO_LARGE)
+        this.name = "ContentTooLarge"
+    }
+}
+
 export class ServerError extends HttpError {
     constructor(message?: string) {
         super(500, message ?? HTTP_STATUS_MESSAGE.INTERNAL_SERVER_ERROR)

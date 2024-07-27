@@ -12,6 +12,7 @@ import { TSchedule } from '../types/TSchedule'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { Plan } from './Plan'
+import { JsonHelper } from '../lib/JsonHelper'
 
 export type TScheduleConfig = {
     planName: string
@@ -24,7 +25,7 @@ export class Schedule {
     static Jobs: TSchedule[] = []
 
     static async CreateAndStartAll() {
-        Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: ${JSON.stringify(Config.Configuration.schedules)}`)
+        Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: ${JsonHelper.Stringify(Config.Configuration.schedules)}`)
         if (!Config.Configuration?.schedules) {
             return undefined
         }
@@ -48,7 +49,7 @@ export class Schedule {
                                 Logger.Debug(`${Logger.Out} Schedule.CreateAndStartAll: job '${_scheduleName}' terminated`)
                             })
                             .catch((error) => {
-                                Logger.Error(`${Logger.Out} Schedule.CreateAndStartAll: Error has occured with '${_scheduleName}' : ${JSON.stringify(error)}`)
+                                Logger.Error(`${Logger.Out} Schedule.CreateAndStartAll: Error has occured with '${_scheduleName}' : ${JsonHelper.Stringify(error)}`)
                             })
                     },
                     null,

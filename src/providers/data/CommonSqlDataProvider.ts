@@ -19,6 +19,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
             options = this.GetFields(options, schemaRequest)
             options = this.GetSort(options, schemaRequest)
             options = this.GetData(options, schemaRequest)
+            options = this.GetCache(options, schemaRequest)
         }
         return options
     }
@@ -60,6 +61,13 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
                 Convert.ReplacePlaceholders(schemaRequest.data)
             )
         }
+        return options
+    }
+
+    GetCache(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        if (schemaRequest?.cache)
+            options.Cache = schemaRequest.cache
+
         return options
     }
 }

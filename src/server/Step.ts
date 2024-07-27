@@ -19,6 +19,7 @@ import { TOptions } from "../types/TOptions"
 import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
 import { WarnError } from "./InternalError"
+import { JsonHelper } from "../lib/JsonHelper"
 
 export type TStepArguments = {
     currentSchemaName: string
@@ -30,7 +31,7 @@ export type TStepArguments = {
 
 export class Step {
 
-    static Options = new CommonSqlDataProviderOptions()
+    static readonly Options = new CommonSqlDataProviderOptions()
 
     static ExecuteCaseMap: Record<string, Function> = {
         debug: async (stepArguments: TStepArguments) => await Step.Debug(stepArguments),
@@ -42,7 +43,8 @@ export class Step {
         fields: async (stepArguments: TStepArguments) => await Step.Fields(stepArguments),
         sort: async (stepArguments: TStepArguments) => await Step.Sort(stepArguments),
         run: async (stepArguments: TStepArguments) => await Step.Run(stepArguments),
-        sync: async (stepArguments: TStepArguments) => await Step.Sync(stepArguments)
+        sync: async (stepArguments: TStepArguments) => await Step.Sync(stepArguments),
+        anonymize: async (stepArguments: TStepArguments) => await Step.Anonymize(stepArguments)
     }
 
     static JoinCaseMap: Record<string, Function> = {
@@ -55,11 +57,11 @@ export class Step {
 
 
     static async Select(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Select: ${JSON.stringify(stepArguments.stepParams)}`)
+        Logger.Debug(`${Logger.In} Step.Select: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
-            Logger.Error(`${Logger.Out} Step.Select: Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
-            throw new Error(`Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
+            Logger.Error(`${Logger.Out} Step.Select: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+            throw new Error(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         const { currentSchemaName } = stepArguments
@@ -83,6 +85,7 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
+        //TODO: missing options.cache
         if (!schemaName && !entityName) {
             const options: TOptions = Step.Options.Parse(schemaRequest)
             const sqlQueryHelper = new SqlQueryHelper()
@@ -105,11 +108,11 @@ export class Step {
     }
 
     static async Insert(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Insert: ${JSON.stringify(stepArguments.stepParams)}`)
+        Logger.Debug(`${Logger.In} Step.Insert: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
-            Logger.Error(`${Logger.Out} Step.Insert: Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
-            throw new Error(`Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
+            Logger.Error(`${Logger.Out} Step.Insert: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+            throw new Error(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         const { currentSchemaName } = stepArguments
@@ -118,7 +121,7 @@ export class Step {
         let { currentDataTable } = stepArguments
 
         if (!data && currentDataTable.Rows.length == 0) {
-            throw new WarnError(`Step.Insert: No data to insert ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new WarnError(`Step.Insert: No data to insert ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         if (entityName) {
@@ -135,7 +138,7 @@ export class Step {
         }
 
         if (!data) {
-            throw new WarnError(`Step.Insert: No data to insert ${JSON.stringify(stepArguments.stepParams)}`)
+            throw new WarnError(`Step.Insert: No data to insert ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         // case no schema and no entity --> use current datatable
@@ -147,11 +150,11 @@ export class Step {
     }
 
     static async Update(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Update: ${JSON.stringify(stepArguments.stepParams)}`)
+        Logger.Debug(`${Logger.In} Step.Update: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
-            Logger.Error(`${Logger.Out} Step.Update: Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
-            throw new Error(`Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
+            Logger.Error(`${Logger.Out} Step.Update: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+            throw new Error(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         const { currentSchemaName } = stepArguments
@@ -160,8 +163,8 @@ export class Step {
         let { currentDataTable } = stepArguments
 
         if (!data) {
-            Logger.Error(`Step.Update: no data to update ${JSON.stringify(stepArguments.stepParams)}`)
-            throw new Error(`No data to update ${JSON.stringify(stepArguments.stepParams)}`)
+            Logger.Error(`Step.Update: no data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+            throw new Error(`No data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         if (entityName) {
@@ -191,11 +194,11 @@ export class Step {
     }
 
     static async Delete(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Delete: ${JSON.stringify(stepArguments.stepParams)}`)
+        Logger.Debug(`${Logger.In} Step.Delete: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
-            Logger.Error(`${Logger.Out} Step.Delete: Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
-            throw new Error(`Wrong argument passed ${JSON.stringify(stepArguments.stepParams)}`)
+            Logger.Error(`${Logger.Out} Step.Delete: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+            throw new Error(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         const { currentSchemaName } = stepArguments
@@ -209,9 +212,9 @@ export class Step {
                 schemaName: schemaName ?? currentSchemaName
             })
 
-            if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
+            if (TypeHelper.IsSchemaResponseError(_schemaResponse))
                 throw new Error(_schemaResponse.error)
-            }
+
             return currentDataTable
         }
 
@@ -230,14 +233,13 @@ export class Step {
     }
 
     static async Join(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Join: ${JSON.stringify(stepArguments.stepParams)}`)
+        Logger.Debug(`${Logger.In} Step.Join: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const stepParams: Record<string, string> = stepArguments.stepParams as Record<string, string>
         const { currentPlanName, currentDataTable } = stepArguments
 
-        if (stepParams === null) {
+        if (stepParams === null)
             return currentDataTable
-        }
 
         const { schemaName, entityName, type, leftField, rightField } = stepParams
 
@@ -268,14 +270,14 @@ export class Step {
 
 
     static async Fields(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Fields: ${JSON.stringify(stepArguments.stepParams)}`)
+        Logger.Debug(`${Logger.In} Step.Fields: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         const stepParams: string = stepArguments.stepParams as string
         const fields = StringHelper.Split(stepParams, ",")
         return stepArguments.currentDataTable.SelectFields(fields)
     }
 
     static async Sort(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Sort: ${JSON.stringify(stepArguments.stepParams)}`)
+        Logger.Debug(`${Logger.In} Step.Sort: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const stepParams = stepArguments.stepParams as Record<string, TOrder>
         const { currentDataTable } = stepArguments
@@ -289,7 +291,7 @@ export class Step {
     }
 
     static async Debug(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Debug: ${JSON.stringify(stepArguments.stepParams)}`)
+        Logger.Debug(`${Logger.In} Step.Debug: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         const debug = stepArguments.stepParams as string ?? 'error'
         stepArguments.currentDataTable.SetMetaData(METADATA.PLAN_DEBUG, debug)
 
@@ -301,7 +303,7 @@ export class Step {
     }
 
     static async Run(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Run: ${JSON.stringify(stepArguments.stepParams)}`)
+        Logger.Debug(`${Logger.In} Step.Run: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const { ai, input, output } = stepArguments.stepParams as {
             ai: string
@@ -323,7 +325,7 @@ export class Step {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
                     }
-                    stepArguments.currentDataTable.Rows[_rowIndex][ai] = __result
+                    stepArguments.currentDataTable.Rows[_rowIndex][ai] = JsonHelper.SafeCopy(__result)
                     return
                 }
 
@@ -350,7 +352,7 @@ export class Step {
         return stepArguments.currentDataTable.SetFields()
     }
     static async Sync(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Run: ${JSON.stringify(stepArguments.stepParams)}`)
+        Logger.Debug(`${Logger.In} Step.Run: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const { source, destination, on } = stepArguments.stepParams as {
             source: {
@@ -425,6 +427,13 @@ export class Step {
         }
 
         return stepArguments.currentDataTable.SetFields()
+    }
+
+    static async Anonymize(stepArguments: TStepArguments): Promise<DataTable> {
+        Logger.Debug(`${Logger.In} Step.Anonymize: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+        const stepParams: string = stepArguments.stepParams as string
+        const fieldsToAnonymize = StringHelper.Split(stepParams, ",")
+        return stepArguments.currentDataTable.AnonymizeFields(fieldsToAnonymize)
     }
 
     static async #_Select(schemaName: string, entityName: string): Promise<DataTable | undefined> {
