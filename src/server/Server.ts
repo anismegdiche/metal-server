@@ -53,6 +53,7 @@ export class Server {
 
         Server.App.use((req: Request, res: Response, next: NextFunction) => {
             res.setHeader('X-Powered-By', 'Metal')
+            res.setHeader('Content-Type', 'application/json; charset=utf-8')
             next()
         })
 
