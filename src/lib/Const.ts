@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+ 
 //
 //
 //
@@ -90,7 +90,8 @@ export enum HTTP_STATUS_CODE {
     METHOD_NOT_ALLOWED = 405,
     TOO_MANY_REQUESTS = 429,
     INTERNAL_SERVER_ERROR = 500,
-    NOT_IMPLEMENTED = 501
+    NOT_IMPLEMENTED = 501,
+    CONTENT_TOO_LARGE = 413
 }
 
 export enum HTTP_STATUS_MESSAGE {

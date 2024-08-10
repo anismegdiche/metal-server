@@ -4,6 +4,7 @@
 //
 //
 import { Request, Response } from 'express'
+import { Readable } from 'stream'
 //
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TJson } from '../types/TJson'
@@ -13,6 +14,7 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { Server } from '../server/Server'
 import { TypeHelper } from './TypeHelper'
 import { JsonHelper } from './JsonHelper'
+import { ServerError } from '../server/HttpErrors'
 
 
 export class Convert {
@@ -24,7 +26,8 @@ export class Convert {
     }
 
     static HumainSizeToBytes(size: string) {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
+         
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const bytes = require('bytes')
         return bytes(size)
     }
@@ -45,10 +48,11 @@ export class Convert {
         res.status(intRes.StatusCode).json(intRes.Body)
     }
 
-    static SchemaResponseToResponse(schemaResponse: TSchemaResponse, response: Response) {
+    static SchemaResponseToResponse(schemaResponse: TSchemaResponse, res: Response) {
         const { schemaName, entityName, transaction, result, status } = schemaResponse
 
-        let _responseJson: TJson = {
+
+        let resJson: TJson = {
             schemaName,
             entityName,
             transaction,
@@ -56,31 +60,69 @@ export class Convert {
             status
         }
 
-        if (TypeHelper.IsSchemaResponseData(schemaResponse))
-            _responseJson = {
-                ..._responseJson,
+        if (TypeHelper.IsSchemaResponseError(schemaResponse)) {
+            return res
+                .status(schemaResponse.status)
+                .json({
+                    ...resJson,
+                    error: schemaResponse.error
+                })
+        }
+
+        if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
+            resJson = {
+                ...resJson,
                 cache: schemaResponse.cache,
                 metadata: schemaResponse.data.MetaData,
-                fields: schemaResponse.data.Fields,
-                rows: schemaResponse.data.Rows
+                fields: schemaResponse.data.Fields
             }
+        }
 
-        if (TypeHelper.IsSchemaResponseError(schemaResponse))
-            _responseJson = {
-                ..._responseJson,
-                error: schemaResponse.error
+        // Create a readable stream for the response
+        const readable = new Readable({
+            objectMode: true,
+            read() {
+                if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
+                    // Push the initial part of the JSON response
+                    this.push(
+                        JSON.stringify(resJson)
+                            .replace(/}$/, ',')) // Remove closing brace to continue streaming rows
+
+                    this.push('rows:[')
+
+                    this.push(JSON.stringify(schemaResponse.data.Rows.shift()))
+
+                    while (schemaResponse.data.Rows.length > 0) {
+                        this.push(`,${JSON.stringify(schemaResponse.data.Rows.shift())}`)
+                    }
+                    this.push(']') // End of array
+                    this.push('}') // End of json
+                } else {
+                    this.push(JSON.stringify(resJson))
+                }
+                this.push(null) // End of stream
             }
+        })
 
-        return response
-            .status(schemaResponse.status)
-            .json(_responseJson)
+        // Pipe the readable stream to the response
+        readable.pipe(res)
+
+        readable.on('error', (err) => {
+            throw new ServerError(`Stream error: ${err}`)
+        })
+
+        res.on('error', (err) => {
+            throw new ServerError(`Response stream error: ${err}`)
+        })
+
+        return res
     }
 
-    // eslint-disable-next-line no-unused-vars
+     
     static ReplacePlaceholders(value: string): string
-    // eslint-disable-next-line no-unused-vars
+     
     static ReplacePlaceholders(value: TJson[] | undefined): TJson[] | undefined
-    // eslint-disable-next-line no-unused-vars
+     
     static ReplacePlaceholders(value: object | TJson): object | TJson
     static ReplacePlaceholders(value: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
         if (value == undefined)

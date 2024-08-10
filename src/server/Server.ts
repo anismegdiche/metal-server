@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+ 
 //
 //
 //
@@ -9,7 +9,7 @@ import { rateLimit } from 'express-rate-limit'
 import responseTime from 'response-time'
 //
 import { TJson } from '../types/TJson'
-import { ROUTE, SERVER } from '../lib/Const'
+import { HTTP_STATUS_CODE, ROUTE, SERVER } from '../lib/Const'
 import { Logger } from '../lib/Logger'
 import { Config } from './Config'
 import { Source } from './Source'
@@ -59,7 +59,7 @@ export class Server {
 
         // path: /
         Server.App.get('/', (req: Request, res: Response) => {
-            res.status(200).send(SERVER.BANNER)
+            res.status(HTTP_STATUS_CODE.OK).send(SERVER.BANNER)
         })
 
         // path: /user

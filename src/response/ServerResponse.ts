@@ -3,9 +3,8 @@
 //
 //
 //
-import _ from 'lodash'
 import { NextFunction, Request, Response } from 'express'
-
+//
 import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE, SERVER } from '../lib/Const'
 import { Server } from '../server/Server'
 import { HttpError } from '../server/HttpErrors'
@@ -37,9 +36,8 @@ export class ServerResponse {
             .json({
                 message: 'Something Went Wrong',
                 error: error.message,
-                stack: (status == 500)
-                    // eslint-disable-next-line you-dont-need-lodash-underscore/split
-                    ? _.split(error.stack, '\n')
+                stack: (status == HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+                    ? (error?.stack?.split('\n') ?? "")
                     : undefined
             })
             .end()
