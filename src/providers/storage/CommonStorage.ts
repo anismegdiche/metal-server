@@ -6,7 +6,7 @@
 import { TSourceParams } from "../../types/TSourceParams"
 import { TFilesDataProviderOptions } from "../data/FilesDataProvider"
 
-/* eslint-disable no-unused-vars */
+ 
 export interface IStorage {
     Params: TSourceParams
     Options: TFilesDataProviderOptions
@@ -17,7 +17,7 @@ export interface IStorage {
     Read(file: string): Promise<string | undefined>
     Write(file: string, content: string): Promise<void>
 }
-/* eslint-enable no-unused-vars */
+ 
 
 export class CommonStorage {
 
@@ -29,38 +29,38 @@ export class CommonStorage {
         this.Options = storageParams.options as TFilesDataProviderOptions
         this.Init()
     }
-
-    // eslint-disable-next-line class-methods-use-this
+     
     Init(): void {
         //
     }
-
-    // eslint-disable-next-line class-methods-use-this
+     
     async Connect(): Promise<void> {
         //
     }
-
+     
     // eslint-disable-next-line class-methods-use-this
     async Disconnect(): Promise<void> {
         //
     }
-
-    // eslint-disable-next-line class-methods-use-this, no-unused-vars
+     
+     
+    // eslint-disable-next-line class-methods-use-this
     async IsExist(file: string): Promise<boolean> {
         return true
     }
-
-    // eslint-disable-next-line class-methods-use-this, no-unused-vars
+     
+     
+    // eslint-disable-next-line class-methods-use-this
     async Read(file: string): Promise<string | undefined> {
         return undefined
     }
-
-    // eslint-disable-next-line class-methods-use-this, no-unused-vars
+     
+     
+    // eslint-disable-next-line class-methods-use-this
     async Write(file: string, content: string): Promise<void> {
         //
     }
-
-    // eslint-disable-next-line class-methods-use-this
+     
     async StreamToBuffer(stream: NodeJS.ReadableStream): Promise<string> {
         return new Promise((resolve, reject) => {
             const chunks: Buffer[] = []
@@ -70,5 +70,3 @@ export class CommonStorage {
         })
     }
 }
-
-

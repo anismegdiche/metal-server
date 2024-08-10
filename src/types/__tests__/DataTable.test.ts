@@ -554,12 +554,12 @@ describe("DataTable", () => {
             const myDataTable = new DataTable("myTable")
             const sqlQuery = "INVALID QUERY"
 
-            // eslint-disable-next-line no-undef-init
-            let result: DataTable | undefined = undefined
+            // eslint-disable-next-line init-declarations
+            let result: DataTable | undefined
 
             // Act
             try {
-                result = await myDataTable.FreeSql(sqlQuery)
+                result = await myDataTable.FreeSql(sqlQuery)           
             } catch (error) {
                 //
             }
@@ -588,8 +588,8 @@ describe("DataTable", () => {
             const myDataTable = new DataTable("myTable")
             const sqlQuery = "SELECT * FROM nonExistentTable"
 
-            // eslint-disable-next-line no-undef-init
-            let result: DataTable | undefined = undefined
+            // eslint-disable-next-line init-declarations
+            let result: DataTable | undefined
 
             // Act
             try {

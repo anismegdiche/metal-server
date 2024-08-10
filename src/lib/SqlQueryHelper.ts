@@ -174,7 +174,6 @@ export class SqlQueryHelper {
                 }
             })
         } else {
-            // eslint-disable-next-line you-dont-need-lodash-underscore/values
             this.Query = `${this.Query} VALUES ('${_.values(data).join('\',\'')}')`
         }
         return this

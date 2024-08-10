@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+ 
 //
 //
 //
@@ -7,7 +7,7 @@
 import { HTTP_STATUS_CODE } from "../lib/Const"
 import { DataTable } from "./DataTable"
 
-
+ 
 export enum TRANSACTION {
     SELECT = "select",
     UPDATE = "update",

@@ -10,16 +10,16 @@ import morgan from "morgan"
 //
 import { SERVER } from './Const'
 
-/* eslint-disable no-unused-vars */
+
 export enum VERBOSITY {
     TRACE = "trace",
     DEBUG = "debug",
     INFO = "info",
     WARN = "warn",
     ERROR = "error"
-}
-/* eslint-enable no-unused-vars */
+} 
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 const Colors: Record<string, Function> = {
     [VERBOSITY.TRACE.toUpperCase()]: chalk.magenta,
     [VERBOSITY.DEBUG.toUpperCase()]: chalk.green,

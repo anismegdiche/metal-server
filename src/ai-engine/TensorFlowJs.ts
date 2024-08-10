@@ -1,4 +1,4 @@
-/* eslint-disable no-plusplus */
+ 
 //
 //
 //
@@ -27,14 +27,17 @@ export class TensorFlowJs implements IAiEngine {
 
 	#Model?: MobileNet.MobileNet = undefined
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	#LoadModel: Record<string, Function> = {
 		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: async () => await MobileNet.load()
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	#RunModel: Record<string, Function> = {
 		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: async (imagePath: string) => await this.#ImageClassify(imagePath)
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	#SetDefaultOptions: Record<string, Function> = {
 		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: (options: Partial<TConfigAiEngineTensorFlowJsImageClassifyOptions> = {}) => TensorFlowJs.#ImageClassifySetDefaultOptions(options)
 	}

@@ -18,10 +18,10 @@ import { PlanDataProvider } from '../providers/data/PlanDataProvider'
 import { FilesDataProvider } from '../providers/data/FilesDataProvider'
 import { MemoryDataProvider } from '../providers/data/MemoryDataProvider'
 import { MetalDataProvider } from '../providers/data/MetalDataProvider'
-//
+
 //  config types
 //
-/* eslint-disable no-unused-vars */
+ 
 enum DATA_PROVIDER {
     METAL = "metal",
     PLAN = "plan",
@@ -30,10 +30,10 @@ enum DATA_PROVIDER {
     MONGODB = "mongodb",
     MSSQL = "mssql",
     FILES = "files"
-}
+} 
+
 export default DATA_PROVIDER
-/* eslint-enable no-unused-vars */
-//
+
 //
 //
 export class Source {
@@ -41,6 +41,7 @@ export class Source {
     // global sources
     static Sources: Record<string, IDataProvider> = {}
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static #NewProviderCaseMap: Record<DATA_PROVIDER, Function> = {
         [DATA_PROVIDER.METAL]: (source: string, sourceParams: TSourceParams) => new MetalDataProvider(source, sourceParams),
         [DATA_PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanDataProvider(source, sourceParams),

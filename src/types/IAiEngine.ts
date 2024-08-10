@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+ 
 
 import { TJson } from './TJson'
 import { Page } from 'tesseract.js'

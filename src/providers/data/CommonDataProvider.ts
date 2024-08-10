@@ -30,7 +30,7 @@ export class CommonDataProviderOptions implements IDataProvider.IDataProviderOpt
         return options
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let filter = {}
         if (schemaRequest?.filterExpression || schemaRequest?.filter) {
@@ -46,7 +46,7 @@ export class CommonDataProviderOptions implements IDataProvider.IDataProviderOpt
         return options
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         options.Fields = (schemaRequest?.fields === undefined)
             ? '*'
@@ -55,7 +55,7 @@ export class CommonDataProviderOptions implements IDataProvider.IDataProviderOpt
         return options
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.sort) {
             options.Sort = schemaRequest.sort
@@ -63,7 +63,7 @@ export class CommonDataProviderOptions implements IDataProvider.IDataProviderOpt
         return options
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.data) {
             options.Data = new DataTable(
@@ -102,17 +102,17 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
         this.Params = sourceParams
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Connect(): Promise<void> {
         Logger.Debug("CommonDataProvider.Connect")
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Disconnect(): Promise<void> {
         Logger.Debug(`${Logger.In} CommonDataProvider.Disconnect`)
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} CommonDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
@@ -124,7 +124,7 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} CommonDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
@@ -136,7 +136,7 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} CommonDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
         return <TSchemaResponseError>{
@@ -148,7 +148,7 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} CommonDataProvider.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
         return <TSchemaResponseError>{

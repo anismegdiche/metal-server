@@ -10,7 +10,7 @@ import { createHash } from 'crypto'
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
 
-// eslint-disable-next-line no-unused-vars
+ 
 const SqlToJsType: TJson = {
     // Integer (number with truncation)
     smallint: 'number',
@@ -158,7 +158,6 @@ export class DataTable {
 
     SetFields(): this {
         const _cols: TJson = { ...this.Rows.at(0) }
-        // eslint-disable-next-line you-dont-need-lodash-underscore/reduce
         this.Fields = _.reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
             return _cols
@@ -167,7 +166,6 @@ export class DataTable {
     }
 
     GetFieldNames(): string[] {
-        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         return _.keys(this.Fields)
     }
 
@@ -336,7 +334,7 @@ export class DataTable {
         const filteredDestination: TRow[] = _.differenceWith(dtDestination.Rows, this.Rows, _.isEqual)
 
         // Remove rows from destination that are not in source
-        let DeletedRows: TRow[] = filteredDestination.filter(row => !filteredSource.some((srcRow: TRow) => _.isEqual(srcRow[on], row[on])))
+        const DeletedRows: TRow[] = filteredDestination.filter(row => !filteredSource.some((srcRow: TRow) => _.isEqual(srcRow[on], row[on])))
 
         // Keep rows from source that are not in destination
         const AddedRows: TRow[] = filteredSource.filter(row => !filteredDestination.some((destRow: TRow) => _.isEqual(destRow[on], row[on])))

@@ -1,4 +1,4 @@
-/* eslint-disable guard-for-in */
+ 
 //
 //
 //
@@ -183,6 +183,7 @@ export class AiEngine {
     static AiEngineConfigurations: Record<string, TConfigAiEngineDefault> = {}
     static AiEngine: Record<string, IAiEngine> = {}
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static #NewAiEngineTypeCaseMap: Record<AI_ENGINE, Function> = {
         [AI_ENGINE.TESSERACT_JS]: (aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineTesseractJs) => new TesseractJs(aiEngineInstanceName, AiEngineConfig),
         [AI_ENGINE.TENSORFLOW_JS]: (aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineTensorFlowJs) => new TensorFlowJs(aiEngineInstanceName, AiEngineConfig),

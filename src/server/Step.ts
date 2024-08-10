@@ -1,7 +1,8 @@
-/* eslint-disable you-dont-need-lodash-underscore/omit */
-/* eslint-disable you-dont-need-lodash-underscore/map */
-/* eslint-disable you-dont-need-lodash-underscore/filter */
-/* eslint-disable no-continue */
+//
+//
+//
+//
+// 
 import _ from "lodash"
 //
 import { METADATA } from "../lib/Const"
@@ -33,6 +34,7 @@ export class Step {
 
     static readonly Options = new CommonSqlDataProviderOptions()
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static ExecuteCaseMap: Record<string, Function> = {
         debug: async (stepArguments: TStepArguments) => await Step.Debug(stepArguments),
         select: async (stepArguments: TStepArguments) => await Step.Select(stepArguments),
@@ -47,6 +49,7 @@ export class Step {
         anonymize: async (stepArguments: TStepArguments) => await Step.Anonymize(stepArguments)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static JoinCaseMap: Record<string, Function> = {
         left: async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.LeftJoin(dtRight, leftFieldName, rightFieldName),
         right: async (dtLeft: DataTable, dtRight: DataTable, leftFieldName: string, rightFieldName: string) => dtLeft.RightJoin(dtRight, leftFieldName, rightFieldName),
@@ -67,7 +70,7 @@ export class Step {
         const { currentSchemaName } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schemaName, entityName } = schemaRequest
-        let { currentDataTable } = stepArguments
+        const { currentDataTable } = stepArguments
 
         if (entityName) {
             const _schemaResponse = await Schema.Select({
@@ -118,7 +121,7 @@ export class Step {
         const { currentSchemaName } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schemaName, entityName, data } = schemaRequest
-        let { currentDataTable } = stepArguments
+        const { currentDataTable } = stepArguments
 
         if (!data && currentDataTable.Rows.length == 0) {
             throw new WarnError(`Step.Insert: No data to insert ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -160,7 +163,7 @@ export class Step {
         const { currentSchemaName } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schemaName, entityName, data } = schemaRequest
-        let { currentDataTable } = stepArguments
+        const { currentDataTable } = stepArguments
 
         if (!data) {
             Logger.Error(`Step.Update: no data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -204,7 +207,7 @@ export class Step {
         const { currentSchemaName } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schemaName, entityName } = schemaRequest
-        let { currentDataTable } = stepArguments
+        const { currentDataTable } = stepArguments
 
         if (entityName) {
             const _schemaResponse = await Schema.Delete({
@@ -282,9 +285,7 @@ export class Step {
         const stepParams = stepArguments.stepParams as Record<string, TOrder>
         const { currentDataTable } = stepArguments
 
-        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         const fields = _.keys(stepParams)
-        // eslint-disable-next-line you-dont-need-lodash-underscore/values
         const orders: TOrder[] = _.values(stepParams)
 
         return currentDataTable.Sort(fields, orders)
@@ -320,7 +321,6 @@ export class Step {
                     return
                 }
                 // check if output is empty
-                // eslint-disable-next-line you-dont-need-lodash-underscore/is-nil
                 if (_.isNil(output) || _.isEmpty(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
@@ -330,7 +330,6 @@ export class Step {
                 }
 
                 // check if output is string
-                // eslint-disable-next-line you-dont-need-lodash-underscore/is-string
                 if (_.isString(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData

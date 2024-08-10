@@ -1,4 +1,4 @@
-/* eslint-disable init-declarations */
+
 //
 //
 //
@@ -24,7 +24,7 @@ import { FsStorage } from '../storage/FsStorage'
 import { CsvContent } from '../content/CsvContent'
 import { JsonHelper } from "../../lib/JsonHelper"
 
-/* eslint-disable no-unused-vars */
+ 
 export enum STORAGE_PROVIDER {
     FILESYSTEM = "fileSystem",
     AZURE_BLOB = "azureBlob"
@@ -34,7 +34,7 @@ export enum CONTENT {
     JSON = "json",
     CSV = "csv"
 }
-/* eslint-enable no-unused-vars */
+
 
 export type TFilesDataProviderOptions = {
     // Common
@@ -72,11 +72,13 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
     Options = new CommonSqlDataProviderOptions()
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static #NewStorageCaseMap: Record<STORAGE_PROVIDER, Function> = {
         [STORAGE_PROVIDER.FILESYSTEM]: (storageParams: TSourceParams) => new FsStorage(storageParams),
         [STORAGE_PROVIDER.AZURE_BLOB]: (storageParams: TSourceParams) => new AzureBlobStorage(storageParams)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static #NewContentCaseMap: Record<CONTENT, Function> = {
         [CONTENT.JSON]: (sourceParams: TSourceParams) => new JsonContent(sourceParams),
         [CONTENT.CSV]: (sourceParams: TSourceParams) => new CsvContent(sourceParams)
@@ -131,6 +133,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         }
 
         let fileString
+        
         if (this.Connection)
             fileString = await this.Connection?.Read(entityName)
         else

@@ -1,5 +1,5 @@
-/* eslint-disable no-unused-expressions */
-/* eslint-disable @typescript-eslint/no-var-requires */
+ 
+ 
 //
 //
 //
@@ -133,7 +133,6 @@ export class Config {
                         properties: {
                             "engine": {
                                 type: "string",
-                                // eslint-disable-next-line you-dont-need-lodash-underscore/values
                                 enum: _.values(AI_ENGINE)
                             },
                             "model": { type: "string" },
@@ -207,6 +206,7 @@ export class Config {
         Logger.SetLevel(verbosity)
 
         Config.Flags.EnableAuthentication = Config.Has('server.authentication')
+        // eslint-disable-next-line no-unused-expressions, @typescript-eslint/no-unused-expressions
         Config.Flags.EnableAuthentication && User.LoadUsers()
         Config.Flags.EnableCache = Config.Has('server.cache')
         // add response-limit
@@ -214,11 +214,13 @@ export class Config {
             Config.Configuration.server?.['response-limit'] ?? Config.DEFAULTS["server.response-limit"]
         )
         Logger.Debug(`Server Response Limit set to ${Config.Flags.ResponseLimit}`)
+        /* eslint-disable @typescript-eslint/no-unused-expressions, no-unused-expressions */
         Config.Flags.EnableCache && await Cache.Connect()
         Config.Has('sources') && await Source.ConnectAll()
         Config.Has('ai-engines') && await AiEngine.Init()
         Config.Has('ai-engines') && await AiEngine.CreateAll()
         Config.Has('schedules') && Schedule.CreateAndStartAll()
+        /* eslint-enable @typescript-eslint/no-unused-expressions, no-unused-expressions */
     }
 
     static async Load(): Promise<void> {

@@ -1,4 +1,3 @@
-/* eslint-disable you-dont-need-lodash-underscore/get */
 //
 //
 //

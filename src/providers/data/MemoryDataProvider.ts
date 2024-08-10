@@ -55,7 +55,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         this.Connection = undefined
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} MemoryDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
         const schemaResponse = <TSchemaResponse>{
@@ -141,7 +141,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`MemoryDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
@@ -179,7 +179,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`MemoryDataProvider.Delete : ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest

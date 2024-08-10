@@ -22,7 +22,7 @@ export class TesseractJs implements IAiEngine {
         this.Model = aiEngineConfig?.model ?? "eng"
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Init(): Promise<void> {
         return undefined
     }

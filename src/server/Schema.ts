@@ -1,4 +1,3 @@
-/* eslint-disable you-dont-need-lodash-underscore/get */
 //
 //
 //
@@ -28,6 +27,7 @@ export type TSourceTypeExecuteParams = {
     sourceName: string,
     entityName: string,
     schemaRequest: TSchemaRequest,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     CrudFunction: Function
 }
 
@@ -38,6 +38,7 @@ export class Schema {
     //
     sourceName?: string
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static readonly SourceTypeCaseMap: Record<string, Function> = {
         'nothing': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await Schema.NothingTodo(sourceTypeExecuteParams),
         'source': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await sourceTypeExecuteParams.CrudFunction()

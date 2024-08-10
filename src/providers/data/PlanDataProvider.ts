@@ -47,7 +47,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
         Logger.Info(`${Logger.In} '${this.SourceName} (${this.Params.database})' disconnected`)
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`${Logger.Out} PlanDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
@@ -109,7 +109,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`PlanDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
@@ -124,7 +124,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         Logger.Debug(`PlanDataProvider.Delete : ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest

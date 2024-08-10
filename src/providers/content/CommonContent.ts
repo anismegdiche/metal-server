@@ -1,6 +1,4 @@
-/* eslint-disable class-methods-use-this */
-/* eslint-disable you-dont-need-lodash-underscore/get */
-//
+ 
 //
 //
 //
@@ -10,7 +8,7 @@ import { TSourceParams } from "../../types/TSourceParams"
 import { DataTable } from "../../types/DataTable"
 import { TFilesDataProviderOptions } from "../data/FilesDataProvider"
 
-/* eslint-disable no-unused-vars */
+ 
 export interface IContent {
     EntityName: string
     Options: TFilesDataProviderOptions
@@ -19,7 +17,7 @@ export interface IContent {
     Get(sqlQuery?: string): Promise<DataTable>
     Set(contentDataTable: DataTable): Promise<string>
 }
-/* eslint-enable no-unused-vars */
+ 
 
 export class CommonContent {
 
@@ -31,4 +29,3 @@ export class CommonContent {
         this.Options = sourceParams.options as TFilesDataProviderOptions
     }
 }
-
