@@ -133,7 +133,7 @@ export class Config {
                         properties: {
                             "engine": {
                                 type: "string",
-                                enum: _.values(AI_ENGINE)
+                                enum: Object.values(AI_ENGINE)
                             },
                             "model": { type: "string" },
                             "options": {
@@ -267,6 +267,7 @@ export class Config {
     }
 
     static Get<T>(path: string): T {
+        // eslint-disable-next-line you-dont-need-lodash-underscore/get
         return _.get(Config.Configuration, path, undefined)
     }
 }

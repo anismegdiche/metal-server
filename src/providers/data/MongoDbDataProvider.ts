@@ -264,7 +264,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        //FIXME: throw error 400
+        //FIXME: throw error 404
         //if (!options?.Data?.Rows)
 
 
