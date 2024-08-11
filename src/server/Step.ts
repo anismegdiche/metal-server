@@ -285,8 +285,8 @@ export class Step {
         const stepParams = stepArguments.stepParams as Record<string, TOrder>
         const { currentDataTable } = stepArguments
 
-        const fields = _.keys(stepParams)
-        const orders: TOrder[] = _.values(stepParams)
+        const fields = Object.keys(stepParams)
+        const orders: TOrder[] = Object.values(stepParams)
 
         return currentDataTable.Sort(fields, orders)
     }

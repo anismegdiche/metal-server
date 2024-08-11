@@ -83,8 +83,8 @@ export class Config {
                         properties: {
                             "provider": {
                                 type: "string",
-                                // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                                enum: _.values(DATA_PROVIDER)
+                                 
+                                enum: Object.values(DATA_PROVIDER)
                             },
                             "host": { type: "string" },
                             "port": {

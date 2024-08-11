@@ -174,7 +174,7 @@ export class SqlQueryHelper {
                 }
             })
         } else {
-            this.Query = `${this.Query} VALUES ('${_.values(data).join('\',\'')}')`
+            this.Query = `${this.Query} VALUES ('${Object.values(data).join('\',\'')}')`
         }
         return this
     }

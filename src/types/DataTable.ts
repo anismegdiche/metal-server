@@ -166,7 +166,7 @@ export class DataTable {
     }
 
     GetFieldNames(): string[] {
-        return _.keys(this.Fields)
+        return Object.keys(this.Fields)
     }
 
     PrefixAllFields(prefix: string): this {
