@@ -15,7 +15,7 @@ import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
-import { CommonSqlDataProviderOptions } from '../providers/data/CommonSqlDataProvider'
+import { CommonSqlDataProviderOptions } from "../providers/data/CommonSqlDataProvider"
 import { TOptions } from "../types/TOptions"
 import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
@@ -96,11 +96,11 @@ export class Step {
                 .From(`\`${currentDataTable.Name}\``)
                 .Where(options.Filter)
 
-            const sqlQuery = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined || options.Data != undefined)
+            const sqlQuery = (options.Fields != "*" || options.Filter != undefined || options.Sort != undefined || options.Data != undefined)
                 ? sqlQueryHelper.Query
                 : undefined
 
-            const sqlData = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined || options.Data != undefined)
+            const sqlData = (options.Fields != "*" || options.Filter != undefined || options.Sort != undefined || options.Data != undefined)
                 ? sqlQueryHelper.Data
                 : undefined
 
@@ -293,7 +293,7 @@ export class Step {
 
     static async Debug(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Debug: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
-        const debug = stepArguments.stepParams as string ?? 'error'
+        const debug = stepArguments.stepParams as string ?? "error"
         stepArguments.currentDataTable.SetMetaData(METADATA.PLAN_DEBUG, debug)
 
         if (stepArguments.currentDataTable.MetaData[METADATA.PLAN_ERRORS] == undefined) {
@@ -350,10 +350,15 @@ export class Step {
 
         return stepArguments.currentDataTable.SetFields()
     }
+
     static async Sync(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Run: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
-        const { source, destination, on } = stepArguments.stepParams as {
+        const {
+            source, destination, on,
+            from, to, id
+        } = stepArguments.stepParams as {
+            // v0.2
             source: {
                 schemaName: string
                 entityName: string
@@ -363,61 +368,77 @@ export class Step {
                 entityName: string
             }
             on: string
+        } & {
+            // v0.3
+            from: {
+                schemaName: string
+                entityName: string
+            }
+            to: {
+                schemaName: string
+                entityName: string
+            }
+            id: string
         }
 
-        if (!on) {
-            throw new Error('on is required')
+        const
+            _from = source ?? from,
+            _to = destination ?? to,
+            _id = on ?? id
+
+        if (!_id) {
+            throw new Error("'on' or 'id' must be provided")
         }
 
-        if (!source && !destination) {
-            throw new Error('source or/and destination is required')
+        if (!_from && !_to) {
+            throw new Error("Either 'source' or 'from', and 'destination' or 'to' must be provided")
         }
 
-        const dtSource: DataTable = (source)
-            ? (await Step.#_Select(source.schemaName, source.entityName)) ?? new DataTable(source.entityName)
+        const dtSource: DataTable = (_from)
+            ? (await Step.#_Select(_from.schemaName, _from.entityName)) ?? new DataTable(_from.entityName)
             : stepArguments.currentDataTable
 
-        const dtDestination: DataTable = (destination)
-            ? (await Step.#_Select(destination.schemaName, destination.entityName)) ?? new DataTable(destination.entityName)
+        const dtDestination: DataTable = (_to)
+            ? (await Step.#_Select(_to.schemaName, _to.entityName)) ?? new DataTable(_to.entityName)
             : stepArguments.currentDataTable
 
 
-        const syncReport = dtSource.SyncReport(dtDestination, on, {
+        const syncReport = dtSource.SyncReport(dtDestination, _id, {
             keepOnlyUpdatedValues: true
         })
 
         // Apply transformations
-        // Delete
-        _.map(syncReport.DeletedRows, on)
+        //// Delete
+        _.map(syncReport.DeletedRows, _id)
             .forEach((value: unknown) => Schema.Delete({
-                schemaName: destination.schemaName,
-                entityName: destination.entityName,
+                schemaName: _to.schemaName,
+                entityName: _to.entityName,
                 filter: {
-                    [on]: value
+                    [_id]: value
                 }
             }))
 
-        // Update
+        //// Update
         syncReport.UpdatedRows.forEach((row: TRow) => Schema.Update({
-            schemaName: destination.schemaName,
-            entityName: destination.entityName,
+            schemaName: _to.schemaName,
+            entityName: _to.entityName,
             filter: {
-                [on]: row[on]
+                [_id]: row[_id]
             },
-            data: [_.omit(row, on)]
+            data: [_.omit(row, _id)]
         }))
 
-        // Insert
+        //// Insert
         if (syncReport.AddedRows.length > 0) {
             Schema.Insert({
-                schemaName: destination.schemaName,
-                entityName: destination.entityName,
+                schemaName: _to.schemaName,
+                entityName: _to.entityName,
                 data: syncReport.AddedRows
             })
         }
 
-        // Fallback return
-        if (!destination) {
+        // if no destination
+        if (!_to) {
             stepArguments.currentDataTable.Rows = [
                 ...syncReport.DeletedRows,
                 ...syncReport.UpdatedRows,
@@ -436,17 +457,17 @@ export class Step {
     }
 
     static async #_Select(schemaName: string, entityName: string): Promise<DataTable | undefined> {
-        const _schemaResponse = await Schema.Select({
+        const schemaResponse = await Schema.Select({
             schemaName,
             entityName
         })
 
-        if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
-            throw new Error(_schemaResponse.error)
+        if (TypeHelper.IsSchemaResponseError(schemaResponse)) {
+            throw new Error(schemaResponse.error)
         }
 
-        if (TypeHelper.IsSchemaResponseData(_schemaResponse)) {
-            return _schemaResponse.data
+        if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
+            return schemaResponse.data
         }
         return undefined
     }
