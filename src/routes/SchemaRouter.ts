@@ -45,3 +45,14 @@ SchemaRouter.route("/:schemaName/:entityName")
     .delete(
         SchemaResponse.Delete
     )
+
+//ROADMAP
+SchemaRouter.route("/:schemaName/:entityName/:id")
+    .all((req: Request, res: Response, next: NextFunction) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
+        UserResponse.IsAuthenticated,
+        SchemaResponse.CheckParameters
+    )
+    .get(ServerResponse.NotImplemented)
+    .post(ServerResponse.NotImplemented)
+    .patch(ServerResponse.NotImplemented)
+    .delete(ServerResponse.NotImplemented)

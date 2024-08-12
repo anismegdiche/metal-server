@@ -14,7 +14,7 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { Server } from '../server/Server'
 import { TypeHelper } from './TypeHelper'
 import { JsonHelper } from './JsonHelper'
-import { ServerError } from '../server/HttpErrors'
+import { HttpInternalServerError } from '../server/HttpErrors'
 
 
 export class Convert {
@@ -108,11 +108,11 @@ export class Convert {
         readable.pipe(res)
 
         readable.on('error', (err) => {
-            throw new ServerError(`Stream error: ${err}`)
+            throw new HttpInternalServerError(`Stream error: ${err}`)
         })
 
         res.on('error', (err) => {
-            throw new ServerError(`Response stream error: ${err}`)
+            throw new HttpInternalServerError(`Response stream error: ${err}`)
         })
 
         return res

@@ -12,7 +12,7 @@ import { RESPONSE_RESULT, RESPONSE_STATUS, HTTP_STATUS_CODE, VALIDATION_ERROR_ME
 import { Logger } from '../lib/Logger'
 import { ServerResponse } from './ServerResponse'
 import { Schema } from '../server/Schema'
-import { BadRequestError, ContentTooLargeError, HttpError } from '../server/HttpErrors'
+import { HttpBadRequestError, HttpContentTooLargeError, HttpError } from '../server/HttpErrors'
 import { Config } from '../server/Config'
 import { JsonHelper } from '../lib/JsonHelper'
 
@@ -137,7 +137,7 @@ export class SchemaResponse {
                 errors.array(),
                 (item: any) => `${item.path}: ${item.msg} in ${item.location}`
             )
-            ServerResponse.Error(res, new BadRequestError(errorMessages.join(', ')))
+            ServerResponse.Error(res, new HttpBadRequestError(errorMessages.join(', ')))
         }
 
     }
@@ -152,7 +152,7 @@ export class SchemaResponse {
                 // file deepcode ignore NoEffectExpression: debugging pupose
                 Logger.Debug(`${Logger.Out} SchemaResponse.Select: response size = ${_resSize} bytes`)
                 if (_resSize > _responseLimit)
-                    throw new ContentTooLargeError("Response body too large")
+                    throw new HttpContentTooLargeError("Response body too large")
                 return Convert.SchemaResponseToResponse(schRes, res)
             })
             .catch((error: HttpError) => ServerResponse.Error(res, error))

@@ -12,7 +12,7 @@ import { Config } from './Config'
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
 import { TJson } from '../types/TJson'
-import { NotFoundError } from './HttpErrors'
+import { HttpNotFoundError } from './HttpErrors'
 import { TypeHelper } from '../lib/TypeHelper'
 import { StringHelper } from '../lib/StringHelper'
 import { JsonHelper } from '../lib/JsonHelper'
@@ -52,13 +52,13 @@ export class Schema {
         // check if schema exists in config file
         if (!Config.Has("schemas")) {
             Logger.Warn(`section 'schemas' not found in configuration`)
-            throw new NotFoundError(`section 'schemas' not found in configuration`)
+            throw new HttpNotFoundError(`section 'schemas' not found in configuration`)
         }
 
         // check if schema exists
         if (!Config.Has(`schemas.${schemaName}`)) {
             Logger.Warn(`schema '${schemaName}' not found in configuration`)
-            throw new NotFoundError(`schema '${schemaName}' not found in configuration`)
+            throw new HttpNotFoundError(`schema '${schemaName}' not found in configuration`)
         }
     }
 

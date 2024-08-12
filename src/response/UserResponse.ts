@@ -11,7 +11,7 @@ import { Config } from '../server/Config'
 import { ServerResponse } from '../response/ServerResponse'
 import { Convert } from '../lib/Convert'
 import { checkSchema, validationResult } from 'express-validator'
-import { BadRequestError } from '../server/HttpErrors'
+import { HttpBadRequestError } from '../server/HttpErrors'
 import _ from 'lodash'
 
 
@@ -46,7 +46,7 @@ export class UserResponse {
                 errors.array(),
                 (item: any) => `${item.path}: ${item.msg} in ${item.location}`
             )
-            ServerResponse.Error(res, new BadRequestError(errorMessages.join(', ')))
+            ServerResponse.Error(res, new HttpBadRequestError(errorMessages.join(', ')))
         }
 
     }

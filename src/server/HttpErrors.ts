@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 //
 //
 //
@@ -12,7 +13,7 @@ export class HttpError extends Error {
     constructor(status: number, message?: string) {
         super(message ?? HTTP_STATUS_MESSAGE.INTERNAL_SERVER_ERROR)
         this.name = "HttpError"
-        this.status = status
+        this.status = status ?? HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR
     }
 
     SetName(name: string) {
@@ -20,30 +21,50 @@ export class HttpError extends Error {
     }
 }
 
-export class BadRequestError extends HttpError {
+export class HttpBadRequestError extends HttpError {
     constructor(message?: string) {
-        super(HTTP_STATUS_CODE.BAD_REQUEST, message ?? HTTP_STATUS_MESSAGE.BAD_REQUEST)
-        this.SetName(HTTP_STATUS_MESSAGE.BAD_REQUEST)
+        const _message = message ?? HTTP_STATUS_MESSAGE.BAD_REQUEST
+        super(HTTP_STATUS_CODE.BAD_REQUEST, _message)
+        this.SetName(_message)
     }
 }
 
-export class NotFoundError extends HttpError {
+export class HttpNotFoundError extends HttpError {
     constructor(message?: string) {
-        super(HTTP_STATUS_CODE.NOT_FOUND, message ?? HTTP_STATUS_MESSAGE.NOT_FOUND)
-        this.SetName(HTTP_STATUS_MESSAGE.NOT_FOUND)
+        const _message = message ?? HTTP_STATUS_MESSAGE.NOT_FOUND
+        super(HTTP_STATUS_CODE.NOT_FOUND, _message)
+        this.SetName(_message)
     }
 }
 
-export class ContentTooLargeError extends HttpError {
+export class HttpContentTooLargeError extends HttpError {
     constructor(message?: string) {
-        super(HTTP_STATUS_CODE.CONTENT_TOO_LARGE, message ?? HTTP_STATUS_MESSAGE.CONTENT_TOO_LARGE)
-        this.SetName(HTTP_STATUS_MESSAGE.CONTENT_TOO_LARGE)
+        const _message = message ?? HTTP_STATUS_MESSAGE.CONTENT_TOO_LARGE
+        super(HTTP_STATUS_CODE.CONTENT_TOO_LARGE, _message)
+        this.SetName(_message)
     }
 }
 
-export class ServerError extends HttpError {
+export class HttpInternalServerError extends HttpError {
     constructor(message?: string) {
-        super(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, message ?? HTTP_STATUS_MESSAGE.INTERNAL_SERVER_ERROR)
-        this.SetName(HTTP_STATUS_MESSAGE.INTERNAL_SERVER_ERROR)
+        const _message = message ?? HTTP_STATUS_MESSAGE.INTERNAL_SERVER_ERROR
+        super(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, _message)
+        this.SetName(_message)
+    }
+}
+
+export class HttpNotImplementedError extends HttpError {
+    constructor(message?: string) {
+        const _message = message ?? HTTP_STATUS_MESSAGE.NOT_IMPLEMENTED
+        super(HTTP_STATUS_CODE.NOT_IMPLEMENTED, _message)
+        this.SetName(_message)
+    }
+}
+
+export class HttpMethodNotAllowedError extends HttpError {
+    constructor(message?: string) {
+        const _message = message ?? HTTP_STATUS_MESSAGE.METHOD_NOT_ALLOWED
+        super(HTTP_STATUS_CODE.METHOD_NOT_ALLOWED, _message)
+        this.SetName(_message)
     }
 }
