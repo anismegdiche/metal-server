@@ -88,7 +88,7 @@ export class Convert {
                         JSON.stringify(resJson)
                             .replace(/}$/, ',')) // Remove closing brace to continue streaming rows
 
-                    this.push('rows:[')
+                    this.push('"rows":[')
 
                     this.push(JSON.stringify(schemaResponse.data.Rows.shift()))
 
