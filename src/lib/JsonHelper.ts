@@ -56,6 +56,7 @@ export class JsonHelper {
     static Stringify<T>(json: T): string {
         try {
             return JSON.stringify(json)
+        // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (error) {
             return SafeStableStringify(json) ?? ""
         }
@@ -64,13 +65,27 @@ export class JsonHelper {
     static SafeCopy<T>(json: T): T {
         try {
             return JSON.parse(JSON.stringify(json))
+        // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (error) {
-            return JSON.parse(JsonHelper.Stringify(json))
+            const _json = JSON.parse(JsonHelper.Stringify(json))
+            JsonHelper.RemoveUselessKeys(_json)
+            return _json
         }
     }
 
     static Size<T>(json: T): number {
         const jsonString = JsonHelper.Stringify(json)
         return Buffer.byteLength(jsonString, 'utf8')
+    }
+
+    static RemoveUselessKeys(obj: any): void {
+        _.forOwn(obj, (value, key) => {
+            if (_.isObject(value)) {
+                JsonHelper.RemoveUselessKeys(value);
+            }
+            if (["[Object]", "[Array]"].includes(value) || (_.isArray(value) && value.every(v => v === null))) {
+                delete obj[key];
+            }
+        });
     }
 }
