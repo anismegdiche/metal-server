@@ -29,6 +29,8 @@ export type TStepArguments = {
     stepParams?: TSchemaRequest | TJson | string
 }
 
+// TODO: create steps arguments types and refactor
+
 
 export class Step {
 
