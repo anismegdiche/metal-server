@@ -104,7 +104,7 @@ export enum HTTP_STATUS_MESSAGE {
     NOT_FOUND = 'Not Found',
     CONFLICT = 'Conflict',
     METHOD_NOT_ALLOWED = 'Method Not Allowed',
-    TOO_MANY_REQUESTS = 'Too Many Requests',
+    TOO_MANY_REQUESTS = 'Too many requests from this IP, please try again later',
     INTERNAL_SERVER_ERROR = 'Internal Server Error',
     NOT_IMPLEMENTED = 'Not Implemented',
     CONTENT_TOO_LARGE = 'Content Too Large'

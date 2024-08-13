@@ -1,5 +1,3 @@
- 
- 
 //
 //
 //
@@ -11,7 +9,7 @@ import _ from 'lodash'
 import * as dotenv from 'dotenv'
 //
 import { TJson } from '../types/TJson'
-import { Logger, DefaultLevel } from '../lib/Logger'
+import { Logger, DefaultLevel, VERBOSITY } from '../lib/Logger'
 import { Schedule } from './Schedule'
 import { Cache } from '../server/Cache'
 import { User } from './User'
@@ -19,6 +17,7 @@ import DATA_PROVIDER, { Source } from './Source'
 import { AI_ENGINE, AiEngine } from './AiEngine'
 import { JsonHelper } from '../lib/JsonHelper'
 import { Convert } from '../lib/Convert'
+import { HTTP_STATUS_MESSAGE } from "../lib/Const"
 
 export class Config {
 
@@ -30,8 +29,13 @@ export class Config {
         "server.port": 3000,
         "server.timezone": 'UTC',
         "server.verbosity": 'warn',
-        "server.request-limit": '100mb',
-        "server.response-limit": '2mb'
+        "server.request-limit": '10mb',
+        "server.response-limit": '10mb',
+        "server.response-rate": {
+            windowMs: 1 * 60 * 1000,
+            max: 600,
+            message: HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS
+        }
     }
 
     static Flags: TJson = {
@@ -58,12 +62,23 @@ export class Config {
                     },
                     "verbosity": {
                         type: "string",
-                        enum: ["debug", "info", "warn", "error", "trace"]
+                        enum: Object.values(VERBOSITY)
                     },
                     "timezone": { type: "string" },
                     "authentication": { type: "null" },
                     "request-limit": { type: "string" },
+                    // v0.3
                     "response-limit": { type: "string" },
+                    // v0.3
+                    "response-rate": {
+                        type: "object",
+                        properties: {
+                            "windowMs": { type: "integer" },
+                            "max": { type: "integer" },
+                            "message": { type: "string" }
+                        },
+                        required: ["windowMs","max","message"]
+                    },
                     "cache": { type: "object" }
                 }
             },
@@ -83,7 +98,6 @@ export class Config {
                         properties: {
                             "provider": {
                                 type: "string",
-                                 
                                 enum: Object.values(DATA_PROVIDER)
                             },
                             "host": { type: "string" },
@@ -233,9 +247,7 @@ export class Config {
             enum: Object.keys(Config.Configuration?.sources ?? [])
         }
 
-
         Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.sourceName = sourceNameConfig
-
         Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.entities.patternProperties[".*"].properties.sourceName = sourceNameConfig
 
         const planNameConfig = {
@@ -250,9 +262,8 @@ export class Config {
         Logger.Debug('Config.Validate')
         const { errors } = JsonHelper.Validator.validate(this.Configuration, this.#ConfigSchema)
 
-        if (errors.length <= 0) {
+        if (errors.length <= 0)
             return
-        }
 
         Logger.Error(`Errors have been detected in configuration file ${this.ConfigFilePath}:\n\n - ${errors.join('\n - ').replace(/instance\./mg, '')}\n`)
         process.exit(1)

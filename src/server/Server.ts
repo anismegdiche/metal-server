@@ -1,4 +1,3 @@
- 
 //
 //
 //
@@ -37,20 +36,12 @@ export class Server {
 
         Server.Port = Config.Configuration.server?.port ?? Config.DEFAULTS["server.port"]
 
-        //TODO: add rate limit config.yml
-        const limiter = rateLimit({
-            windowMs: 1 * 60 * 1000,
-            max: 600,
-            message: 'Too many requests from this IP, please try again later.'
-        })
-
         Server.App.use(responseTime())
         Server.App.use(Logger.RequestMiddleware)
-        Server.App.use(limiter)
+        Server.App.use(rateLimit(Config.Configuration.server['response-rate'] ?? Config.DEFAULTS['server.response-rate']))
         Server.App.use(express.json({
             limit: Config.Configuration.server['request-limit'] ?? Config.DEFAULTS['server.request-limit']
         }))
-
         Server.App.use((req: Request, res: Response, next: NextFunction) => {
             res.setHeader('X-Powered-By', 'Metal')
             res.setHeader('Content-Type', 'application/json; charset=utf-8')
