@@ -77,7 +77,7 @@ export class Config {
                             "max": { type: "integer" },
                             "message": { type: "string" }
                         },
-                        required: ["windowMs","max","message"]
+                        required: ["windowMs","max"]
                     },
                     "cache": { type: "object" }
                 }

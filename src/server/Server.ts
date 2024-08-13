@@ -38,7 +38,10 @@ export class Server {
 
         Server.App.use(responseTime())
         Server.App.use(Logger.RequestMiddleware)
-        Server.App.use(rateLimit(Config.Configuration.server['response-rate'] ?? Config.DEFAULTS['server.response-rate']))
+        Server.App.use(rateLimit({
+            ...(Config.DEFAULTS['server.response-rate'] as object),
+            ...Config.Configuration.server['response-rate']
+        }))
         Server.App.use(express.json({
             limit: Config.Configuration.server['request-limit'] ?? Config.DEFAULTS['server.request-limit']
         }))
