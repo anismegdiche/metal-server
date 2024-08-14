@@ -5,6 +5,7 @@
 //
 import { Request, Response } from 'express'
 import { Readable } from 'stream'
+import _ from "lodash"
 //
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TJson } from '../types/TJson'
@@ -15,6 +16,7 @@ import { Server } from '../server/Server'
 import { TypeHelper } from './TypeHelper'
 import { JsonHelper } from './JsonHelper'
 import { HttpInternalServerError } from '../server/HttpErrors'
+import { Config } from "../server/Config"
 
 
 export class Convert {
@@ -26,7 +28,7 @@ export class Convert {
     }
 
     static HumainSizeToBytes(size: string) {
-         
+
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const bytes = require('bytes')
         return bytes(size)
@@ -51,7 +53,6 @@ export class Convert {
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, res: Response) {
         const { schemaName, entityName, transaction, result, status } = schemaResponse
 
-
         let resJson: TJson = {
             schemaName,
             entityName,
@@ -60,9 +61,10 @@ export class Convert {
             status
         }
 
+        res.status(schemaResponse.status)
+
         if (TypeHelper.IsSchemaResponseError(schemaResponse)) {
             return res
-                .status(schemaResponse.status)
                 .json({
                     ...resJson,
                     error: schemaResponse.error
@@ -74,10 +76,21 @@ export class Convert {
                 ...resJson,
                 cache: schemaResponse.cache,
                 metadata: schemaResponse.data.MetaData,
-                fields: schemaResponse.data.Fields
+                fields: schemaResponse.data.Fields,
+                rows: schemaResponse.data.Rows
             }
         }
 
+        if (Config.Flags.EnableResponseChunk) {
+            Convert.#SchemaResponseToResponseChunkPrepare(schemaResponse, res, resJson)
+        } else {
+            res.json(resJson)
+        }
+
+        return res
+    }
+
+    static #SchemaResponseToResponseChunkPrepare(schemaResponse: TSchemaResponse, res: Response, resJson: TJson) {
         // Create a readable stream for the response
         const readable = new Readable({
             objectMode: true,
@@ -85,7 +98,8 @@ export class Convert {
                 if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
                     // Push the initial part of the JSON response
                     this.push(
-                        JSON.stringify(resJson)
+                        // eslint-disable-next-line you-dont-need-lodash-underscore/omit
+                        JSON.stringify(_.omit(resJson, "rows"))
                             .replace(/}$/, ',')) // Remove closing brace to continue streaming rows
 
                     this.push('"rows":[')
@@ -107,22 +121,18 @@ export class Convert {
         // Pipe the readable stream to the response
         readable.pipe(res)
 
-        readable.on('error', (err) => {
-            throw new HttpInternalServerError(`Stream error: ${err}`)
+        readable.on('error', (error) => {
+            throw new HttpInternalServerError(`Stream error: ${error}`)
         })
 
-        res.on('error', (err) => {
-            throw new HttpInternalServerError(`Response stream error: ${err}`)
+        res.on('error', (error) => {
+            throw new HttpInternalServerError(`Response stream error: ${error}`)
         })
-
-        return res
     }
 
-     
+
     static ReplacePlaceholders(value: string): string
-     
     static ReplacePlaceholders(value: TJson[] | undefined): TJson[] | undefined
-     
     static ReplacePlaceholders(value: object | TJson): object | TJson
     static ReplacePlaceholders(value: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
         if (value == undefined)
