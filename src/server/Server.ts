@@ -20,7 +20,7 @@ import { SchemaRouter } from '../routes/SchemaRouter'
 import { PlanRouter } from '../routes/PlanRouter'
 import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
-import { Sandbox} from './Sandbox'
+import { Sandbox } from './Sandbox'
 import { JsonHelper } from '../lib/JsonHelper'
 
 export class Server {
@@ -34,16 +34,16 @@ export class Server {
         await Config.Init()
         Logger.Debug(`${Logger.In} Server.Init`)
 
-        Server.Port = Config.Configuration.server?.port ?? Config.DEFAULTS["server.port"]
+        Server.Port = Config.Get<number>("server.port") ?? Config.DEFAULTS["server.port"]
 
         Server.App.use(responseTime())
         Server.App.use(Logger.RequestMiddleware)
         Server.App.use(rateLimit({
             ...(Config.DEFAULTS['server.response-rate'] as object),
-            ...Config.Configuration.server['response-rate']
+            ...Config.Get<object>("server.response-rate")
         }))
         Server.App.use(express.json({
-            limit: Config.Configuration.server['request-limit'] ?? Config.DEFAULTS['server.request-limit']
+            limit: Config.Get<string | number>("server.request-limit") ?? Config.DEFAULTS['server.request-limit']
         }))
         Server.App.use((req: Request, res: Response, next: NextFunction) => {
             res.setHeader('X-Powered-By', 'Metal')
