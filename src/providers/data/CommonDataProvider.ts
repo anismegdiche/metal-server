@@ -39,7 +39,7 @@ export class CommonDataProviderOptions implements IDataProvider.IDataProviderOpt
                 filter = schemaRequest.filterExpression
 
             if (schemaRequest?.filter)
-                filter = Convert.JsonToArray(schemaRequest.filter)
+                filter = JsonHelper.ToArray(schemaRequest.filter)
 
             options.Filter = Convert.ReplacePlaceholders(filter)
         }

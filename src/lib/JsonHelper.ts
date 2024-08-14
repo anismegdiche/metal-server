@@ -88,4 +88,10 @@ export class JsonHelper {
             }
         });
     }
+
+    static ToArray(obj: TJson) {
+        return Object
+            .entries(obj)
+            .map(([k, v]) => ({ [k]: v }))
+    }
 }

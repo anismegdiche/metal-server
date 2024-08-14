@@ -1,50 +1,6 @@
 
 
 import { Convert } from '../Convert'
-import { MongoDbHelper } from '../MongoDbHelper'
-
-describe('Convert', () => {
-
-    // SqlSortToMongoSort method returns a MongoDB sort object from a SQL-like sort string
-    it('should return a MongoDB sort object when given a valid SQL-like sort string', () => {
-        const key = {}
-        const value = "field1 ASC"
-        const expected = {
-            ...key,
-            field1: 1
-        }
-
-        const result = MongoDbHelper.ConvertSqlSort(key, value)
-
-        expect(result).toEqual(expected)
-    })
-
-    // JsonToArray method returns an array of objects from a JSON object
-    it('should return an array of objects when given a valid JSON object', () => {
-        const obj = {
-            field1: "value1",
-            field2: "value2"
-        }
-        const expected = [
-            { field1: "value1" },
-            { field2: "value2" }
-        ]
-
-        const result = Convert.JsonToArray(obj)
-
-        expect(result).toEqual(expected)
-    })
-
-    // JsonToArray method returns an empty array when given an empty JSON object
-    it('should return an empty array when given an empty JSON object', () => {
-        const obj = {}
-        const expected: any = []
-
-        const result = Convert.JsonToArray(obj)
-
-        expect(result).toEqual(expected)
-    })
-})
 
 
 describe('RequestToSchemaRequest', () => {

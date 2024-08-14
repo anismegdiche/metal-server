@@ -8,6 +8,7 @@ import { TOptions } from '../../types/TOptions'
 import * as IDataProvider from "../../types/IDataProvider"
 import { DataTable } from '../../types/DataTable'
 import { Convert } from '../../lib/Convert'
+import { JsonHelper } from "../../lib/JsonHelper"
 
 
 export class CommonSqlDataProviderOptions implements IDataProvider.IDataProviderOptions {
@@ -32,7 +33,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
                 filter = schemaRequest.filterExpression
 
             if (schemaRequest?.filter)
-                filter = Convert.JsonToArray(schemaRequest.filter)
+                filter = JsonHelper.ToArray(schemaRequest.filter)
 
             options.Filter = Convert.ReplacePlaceholders(filter)
         }
