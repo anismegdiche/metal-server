@@ -209,8 +209,8 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
         Logger.Debug(`MongoDbDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
-        // eslint-disable-next-line you-dont-need-lodash-underscore/omit
-        const aggregation: MongoDb.Document[] = Object.values(_.omit(options, "Cache"))
+        // eslint-disable-next-line you-dont-need-lodash-underscore/omit, you-dont-need-lodash-underscore/values
+        const aggregation: MongoDb.Document[] = _.values(_.omit(options, "Cache"))
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -277,7 +277,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>,
                 {
                     //FIXME: replace by upper safer const
-                    $set: (options?.Data?.Rows).at(0)
+                    $set: (options?.Data?.Rows)[0]
                 }
             )
 

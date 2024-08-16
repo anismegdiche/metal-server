@@ -12,6 +12,30 @@ import { Logger } from '../lib/Logger'
 import { JsonHelper } from "../lib/JsonHelper"
 
 
+export const  enum SORT_ORDER {
+    ASC = "asc",
+    DESC = "desc"
+}
+
+export const enum REMOVE_DUPLICATES_METHOD {
+    HASH = "hash",	            // Uses a hash function to generate unique values for each row based on specified key(s) for comparison.
+    EXACT = "exact",	        // Performs an exact comparison of the specified key(s) to identify duplicates.
+    IGNORE_CASE = "ignorecase"	// Performs a case insensitive comparison of the specified key(s) to identify duplicates.
+    //   | "fuzzy"	            // Uses fuzzy matching techniques to identify duplicates based on similarity rather than exact match.
+    //   | "script"	            // Executes a user-defined script to identify and handle duplicates.
+    //   | "group"	            // Groups rows by specified key(s) and applies the deduplication strategy within each group.
+    //   | "distinct"           // Removes duplicates by comparing all fields, not just specified key(s).
+    //   | "custom"	            // Allows for a custom method defined by user logic or an external script.
+}
+
+export const enum REMOVE_DUPLICATES_STRATEGY {
+    FIRST = "first",	 // Keeps the first occurrence of each duplicate row based on the specified key(s).
+    LAST = "last",	     // Keeps the last occurrence of each duplicate row based on the specified key(s).
+    MAX = "max",	     // Keeps the duplicate row with the highest value in a specified field.
+    MIN = "min"	         // Keeps the duplicate row with the lowest value in a specified field.
+    //    | "custom"	 // Allows for a custom strategy defined by user logic or an external script.
+}
+
 const SqlToJsType: TJson = {
     // Integer (number with truncation)
     smallint: 'number',
@@ -114,11 +138,10 @@ const SqlToJsType: TJson = {
     // Not yet realized
 }
 
-
 export type TRow = TJson
 export type TFields = TJson
 export type TMetaData = Record<string, unknown>
-export type TOrder = boolean | "asc" | "desc"
+export type TOrder = boolean | SORT_ORDER
 export type TSyncReport = {
     AddedRows: TRow[]
     DeletedRows: TRow[]
@@ -158,7 +181,8 @@ export class DataTable {
     }
 
     SetFields(): this {
-        const _cols: TJson = { ...this.Rows.at(0) }
+        const _cols: TJson = { ...this.Rows[0] }
+        // eslint-disable-next-line you-dont-need-lodash-underscore/reduce
         this.Fields = _.reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
             return _cols
@@ -167,7 +191,8 @@ export class DataTable {
     }
 
     GetFieldNames(): string[] {
-        return Object.keys(this.Fields)
+        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+        return _.keys(this.Fields)
     }
 
     PrefixAllFields(prefix: string): this {
@@ -352,7 +377,8 @@ export class DataTable {
             UpdatedRows = UpdatedRows.map(updatedRow => {
                 const correspondingDestRow = filteredDestination.find(destRow => destRow[on] === updatedRow[on])
                 if (correspondingDestRow) {
-                    Object.keys(updatedRow).forEach(prop => {
+                    // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+                    _.keys(updatedRow).forEach(prop => {
                         if (prop !== on && _.isEqual(updatedRow[prop], correspondingDestRow[prop])) {
                             delete updatedRow[prop]
                         }
@@ -374,7 +400,7 @@ export class DataTable {
             ? [fields]
             : fields
 
-        if (_fields.at(0) == '*')
+        if (_fields[0] == '*')
             _fields = this.GetFieldNames()
 
         this.Rows.forEach((_row, _idx) => {
@@ -392,7 +418,12 @@ export class DataTable {
         return this
     }
 
-    RemoveDuplicates(fields: string[] | undefined, method: string, strategy: string, condition: string | undefined = undefined): this {
+    RemoveDuplicates(
+        fields: string[] | undefined,
+        method: string,
+        strategy: string = REMOVE_DUPLICATES_STRATEGY.FIRST,
+        condition: string | undefined = undefined
+    ): this {
 
         // no fields passed
         let _fields = (fields && fields.length > 0)
@@ -409,13 +440,13 @@ export class DataTable {
                 : row
 
             switch (method) {
-                case 'hash':
+                case REMOVE_DUPLICATES_METHOD.HASH:
                     currentHash = createHash('sha256').update(JsonHelper.Stringify(rowString)).digest('base64')
                     break
-                case 'ignorecase':
+                case REMOVE_DUPLICATES_METHOD.IGNORE_CASE:
                     currentHash = JsonHelper.Stringify(rowString).toLowerCase()
                     break
-                case 'exact':
+                case REMOVE_DUPLICATES_METHOD.EXACT:
                 default:
                     currentHash = JsonHelper.Stringify(rowString)
                     break
@@ -424,10 +455,10 @@ export class DataTable {
             if (mapDeduplicated.has(currentHash)) {
                 // duplicate row
                 switch (strategy) {
-                    case 'last':
+                    case REMOVE_DUPLICATES_STRATEGY.LAST:
                         mapDeduplicated.set(currentHash, row)
                         break
-                    case 'min':
+                    case REMOVE_DUPLICATES_STRATEGY.MIN:
                         mapDeduplicated.set(
                             currentHash,
                             <TRow>_.minBy(
@@ -436,7 +467,7 @@ export class DataTable {
                             )
                         )
                         break
-                    case 'max':
+                    case REMOVE_DUPLICATES_STRATEGY.MAX:
                         mapDeduplicated.set(
                             currentHash,
                             <TRow>_.maxBy(
@@ -445,7 +476,7 @@ export class DataTable {
                             )
                         )
                         break
-                    case 'first':
+                    case REMOVE_DUPLICATES_STRATEGY.FIRST:
                     default:
                         break
                 }

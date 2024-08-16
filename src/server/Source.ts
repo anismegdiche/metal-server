@@ -18,6 +18,7 @@ import { PlanDataProvider } from '../providers/data/PlanDataProvider'
 import { FilesDataProvider } from '../providers/data/FilesDataProvider'
 import { MemoryDataProvider } from '../providers/data/MemoryDataProvider'
 import { MetalDataProvider } from '../providers/data/MetalDataProvider'
+import _ from "lodash"
 
 //  config types
 //
@@ -81,7 +82,8 @@ export class Source {
     }
 
     static async DisconnectAll(): Promise<void> {
-        Object.keys(Source.Sources).forEach(Source.Disconnect)
+        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+        _.keys(Source.Sources).forEach(Source.Disconnect)
     }
 
     static ResponseError(schemaResponse: TSchemaResponse): TSchemaResponseNoData {

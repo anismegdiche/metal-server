@@ -4,12 +4,11 @@
 //
 // 
 import _ from "lodash"
-import typia from "typia"
 //
 import { METADATA } from "../lib/Const"
 import { Helper } from "../lib/Helper"
 import { Logger } from "../lib/Logger"
-import { DataTable, TOrder, TRow } from "../types/DataTable"
+import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TOrder, TRow } from "../types/DataTable"
 import { TJson } from "../types/TJson"
 import { TSchemaRequest } from "../types/TSchemaRequest"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
@@ -22,59 +21,13 @@ import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
 import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
+import { TStepSyncParams, TStepRemoveDuplicatesParams, TStepSortParams } from "../types/StepsParams"
 
 export type TStepArguments = {
     currentSchemaName: string
     currentPlanName: string
     currentDataTable: DataTable
     stepParams?: TSchemaRequest | TJson | string
-}
-
-// TODO: create steps arguments types and refactor
-type TStepSyncParams = {
-    // v0.2
-    source: {
-        schemaName: string
-        entityName: string
-    }
-    destination: {
-        schemaName: string
-        entityName: string
-    }
-    on: string
-} & {
-    // v0.3
-    from: {
-        schemaName: string
-        entityName: string
-    }
-    to: {
-        schemaName: string
-        entityName: string
-    }
-    id: string
-}
-
-type TStepRemoveDuplicatesParams = {
-    key: string
-    keys: string[]
-    condition: string
-    method:
-    | "hash"	     // Uses a hash function to generate unique values for each row based on specified key(s) for comparison.
-    | "exact"	     // Performs an exact comparison of the specified key(s) to identify duplicates.
-    | "ignorecase"	 // Performs a case insensitive comparison of the specified key(s) to identify duplicates.
-    //   | "fuzzy"	 // Uses fuzzy matching techniques to identify duplicates based on similarity rather than exact match.
-    //   | "script"	 // Executes a user-defined script to identify and handle duplicates.
-    //   | "group"	 // Groups rows by specified key(s) and applies the deduplication strategy within each group.
-    //   | "distinct" // Removes duplicates by comparing all fields, not just specified key(s).
-    //   | "custom"	 // Allows for a custom method defined by user logic or an external script.
-    strategy:
-    | "first"	     // Keeps the first occurrence of each duplicate row based on the specified key(s).
-    | "last"	     // Keeps the last occurrence of each duplicate row based on the specified key(s).
-    | "max"	     // Keeps the duplicate row with the highest value in a specified field.
-    | "min"	     // Keeps the duplicate row with the lowest value in a specified field.
-    //    | "all"	         // Keeps all occurrences of duplicate rows. Essentially disables deduplication.
-    //    | "custom"	     // Allows for a custom strategy defined by user logic or an external script.
 }
 
 export class Step {
@@ -210,10 +163,9 @@ export class Step {
             throw new Error(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
-        const { currentSchemaName } = stepArguments
+        const { currentSchemaName,currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schemaName, entityName, data } = schemaRequest
-        const { currentDataTable } = stepArguments
 
         if (!data) {
             Logger.Error(`Step.Update: no data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -334,11 +286,13 @@ export class Step {
     static async Sort(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Sort: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
-        const stepParams = stepArguments.stepParams as Record<string, TOrder>
+        const stepParams = stepArguments.stepParams as TStepSortParams
         const { currentDataTable } = stepArguments
 
-        const fields = Object.keys(stepParams)
-        const orders: TOrder[] = Object.values(stepParams)
+        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+        const fields = _.keys(stepParams)
+        // eslint-disable-next-line you-dont-need-lodash-underscore/values
+        const orders: TOrder[] = _.values(stepParams)
 
         return currentDataTable.Sort(fields, orders)
     }
@@ -373,6 +327,7 @@ export class Step {
                     return
                 }
                 // check if output is empty
+                // eslint-disable-next-line you-dont-need-lodash-underscore/is-nil
                 if (_.isNil(output) || _.isEmpty(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
@@ -382,6 +337,7 @@ export class Step {
                 }
 
                 // check if output is string
+                // eslint-disable-next-line you-dont-need-lodash-underscore/is-string
                 if (_.isString(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
@@ -439,6 +395,7 @@ export class Step {
 
         // Apply transformations
         //// Delete
+        // eslint-disable-next-line you-dont-need-lodash-underscore/map
         _.map(syncReport.DeletedRows, _id)
             .forEach((value: unknown) => Schema.Delete({
                 schemaName: _to.schemaName,
@@ -455,6 +412,7 @@ export class Step {
             filter: {
                 [_id]: row[_id]
             },
+            // eslint-disable-next-line you-dont-need-lodash-underscore/omit
             data: [_.omit(row, _id)]
         }))
 
@@ -490,21 +448,15 @@ export class Step {
         Logger.Debug(`${Logger.In} Step.RemoveDuplicates: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const {
-            key = undefined,
-            keys = undefined,
+            fields = undefined,
             condition = undefined,
-            method = "hash",
-            strategy = "first"
+            method = REMOVE_DUPLICATES_METHOD.HASH,
+            strategy = REMOVE_DUPLICATES_STRATEGY.FIRST
         } = stepArguments.stepParams as TStepRemoveDuplicatesParams
         
         const { currentDataTable } = stepArguments
 
-        // Combine single key and keys array for unified processing
-        const _fields = (typia.is<string>(key) && typia.is<string[]>(keys))
-            ? [key, ...keys]
-            : keys
-
-        currentDataTable.RemoveDuplicates(_fields, method, strategy, condition)
+        currentDataTable.RemoveDuplicates(fields, method, strategy, condition)
 
         Logger.Debug(`${Logger.Out} Step.RemoveDuplicates: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         return currentDataTable

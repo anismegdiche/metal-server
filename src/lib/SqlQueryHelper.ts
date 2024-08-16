@@ -55,9 +55,12 @@ export class SqlQueryHelper {
                 .chain(condition)
                 .map((__filter) => {
                     const ___formattedValue: string = typeof __filter === 'number'
-                        ? Object.values(__filter)[0]
-                        : `'${Object.values(__filter)[0]}'`
-                    return `${Object.keys(__filter)[0]}=${___formattedValue}`
+                        // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                        ? _.values(__filter)[0]
+                        // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                        : `'${_.values(__filter)[0]}'`
+                    // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+                    return `${_.keys(__filter)[0]}=${___formattedValue}`
                 })
                 .join(' AND ')
                 .value()
@@ -66,7 +69,8 @@ export class SqlQueryHelper {
             return this
         }
 
-        if (typeof condition === 'object' && Object.keys(condition).length > 0) {
+        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+        if (typeof condition === 'object' && _.keys(condition).length > 0) {
             const _cond = _
                 .chain(condition)
                 .map((__value, __key) => {
@@ -102,7 +106,7 @@ export class SqlQueryHelper {
 
         let fieldsValues: TRow = <TRow>{}
         fieldsValues = (Array.isArray(rows))
-            ? <TRow>(rows.at(0))
+            ? <TRow>(rows[0])
             : rows
 
         const setValues = _.chain(fieldsValues)
@@ -174,7 +178,8 @@ export class SqlQueryHelper {
                 }
             })
         } else {
-            this.Query = `${this.Query} VALUES ('${Object.values(data).join('\',\'')}')`
+            // eslint-disable-next-line you-dont-need-lodash-underscore/values
+            this.Query = `${this.Query} VALUES ('${_.values(data).join('\',\'')}')`
         }
         return this
     }

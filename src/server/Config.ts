@@ -70,7 +70,8 @@ export class Config {
                     },
                     "verbosity": {
                         type: "string",
-                        enum: Object.values(VERBOSITY)
+                        // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                        enum: _.values(VERBOSITY)
                     },
                     "timezone": { type: "string" },
                     "authentication": { type: "null" },
@@ -106,7 +107,8 @@ export class Config {
                         properties: {
                             "provider": {
                                 type: "string",
-                                enum: Object.values(DATA_PROVIDER)
+                                // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                                enum: _.values(DATA_PROVIDER)
                             },
                             "host": { type: "string" },
                             "port": {
@@ -155,7 +157,8 @@ export class Config {
                         properties: {
                             "engine": {
                                 type: "string",
-                                enum: Object.values(AI_ENGINE)
+                                // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                                enum: _.values(AI_ENGINE)
                             },
                             "model": { type: "string" },
                             "options": {
@@ -254,7 +257,8 @@ export class Config {
 
         const sourceNameConfig = {
             type: "string",
-            enum: Object.keys(Config.Configuration?.sources ?? [])
+            // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+            enum: _.keys(Config.Configuration?.sources ?? [])
         }
 
         Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.sourceName = sourceNameConfig
@@ -262,7 +266,8 @@ export class Config {
 
         const planNameConfig = {
             type: "string",
-            enum: Object.keys(Config.Configuration?.plans ?? [])
+            // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+            enum: _.keys(Config.Configuration?.plans ?? [])
         }
 
         Config.#ConfigSchema.properties.schedules.patternProperties[".*"].properties.planName = planNameConfig

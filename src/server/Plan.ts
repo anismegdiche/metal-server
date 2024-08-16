@@ -78,8 +78,10 @@ export class Plan {
             }
 
             try {
-                const __stepCommand: string = Object.keys(<object>step)[0]
-                const __stepParams: TJson = Object.values(<object>step)[0]
+                // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+                const __stepCommand: string = _.keys(<object>step)[0]
+                // eslint-disable-next-line you-dont-need-lodash-underscore/values
+                const __stepParams: TJson = _.values(<object>step)[0]
 
                 if (__stepCommand === 'break') {
                     Logger.Info(`Plan.ExecuteSteps '${currentPlanName}': user break at step '${_stepIndex}', ${JsonHelper.Stringify(step)}`)

@@ -3,26 +3,26 @@
 //
 //
 //
- 
+import { SORT_ORDER } from "../types/DataTable"
+
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const GetMongoQuery = require("sql2mongo").getMongoQuery
 
-
 export class MongoDbHelper {
-
     static ConvertSqlSort(key: any, value: string) {
-        if (value.split(" ").length != 2)
+        const aSort = value.split(" ")
+        
+        if (aSort.length != 2)
             return {}
 
-        const field = value.split(" ")[0]
-        const sqlSortDirection = value.split(" ")[1].toLowerCase()
-        const mongoSortDirection = (sqlSortDirection == "asc")
-            ? 1
-            : -1
+        const [field, sqlSortDirection] = aSort
 
         return {
             ...key,
-            [field]: mongoSortDirection
+            [field]: (sqlSortDirection.toLowerCase() == SORT_ORDER.ASC)
+                ? 1
+                : -1
         }
     }
 
