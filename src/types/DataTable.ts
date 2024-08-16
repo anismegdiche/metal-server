@@ -9,8 +9,9 @@ import { createHash } from 'crypto'
 //
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
+import { JsonHelper } from "../lib/JsonHelper"
 
- 
+
 const SqlToJsType: TJson = {
     // Integer (number with truncation)
     smallint: 'number',
@@ -388,6 +389,74 @@ export class DataTable {
             })
             this.Rows[_idx] = _newRow
         })
+        return this
+    }
+
+    RemoveDuplicates(fields: string[] | undefined, method: string, strategy: string, condition: string | undefined = undefined): this {
+
+        // no fields passed
+        let _fields = (fields && fields.length > 0)
+            ? fields
+            : undefined
+
+        const mapDeduplicated: Map<string, TRow> = new Map()
+
+        this.Rows.forEach((row: TRow) => {
+            let currentHash: string = ""
+
+            const rowString = (_fields)
+                ? _.pick(row, _fields)
+                : row
+
+            switch (method) {
+                case 'hash':
+                    currentHash = createHash('sha256').update(JsonHelper.Stringify(rowString)).digest('base64')
+                    break
+                case 'ignorecase':
+                    currentHash = JsonHelper.Stringify(rowString).toLowerCase()
+                    break
+                case 'exact':
+                default:
+                    currentHash = JsonHelper.Stringify(rowString)
+                    break
+            }
+
+            if (mapDeduplicated.has(currentHash)) {
+                // duplicate row
+                switch (strategy) {
+                    case 'last':
+                        mapDeduplicated.set(currentHash, row)
+                        break
+                    case 'min':
+                        mapDeduplicated.set(
+                            currentHash,
+                            <TRow>_.minBy(
+                                [mapDeduplicated.get(currentHash), row],
+                                condition
+                            )
+                        )
+                        break
+                    case 'max':
+                        mapDeduplicated.set(
+                            currentHash,
+                            <TRow>_.maxBy(
+                                [mapDeduplicated.get(currentHash), row],
+                                condition
+                            )
+                        )
+                        break
+                    case 'first':
+                    default:
+                        break
+                }
+
+            } else {
+                // new row
+                mapDeduplicated.set(currentHash, row)
+            }
+        })
+        // set rows
+        this.Rows = Array.from(mapDeduplicated.values())
         return this
     }
 }

@@ -53,7 +53,8 @@
         "safe-stable-stringify": "^2.4.3",
         "sql2mongo": "^1.2.1",
         "tesseract.js": "^1.0.19",
-        "tesseract.ts": "^1.1.2"
+        "tesseract.ts": "^1.1.2",
+        "typia": "^6.8.0"
     },
     "devDependencies": {
         "@babel/core": "^7.25.2",

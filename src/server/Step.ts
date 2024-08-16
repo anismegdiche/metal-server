@@ -4,6 +4,7 @@
 //
 // 
 import _ from "lodash"
+import typia from "typia"
 //
 import { METADATA } from "../lib/Const"
 import { Helper } from "../lib/Helper"
@@ -30,7 +31,51 @@ export type TStepArguments = {
 }
 
 // TODO: create steps arguments types and refactor
+type TStepSyncParams = {
+    // v0.2
+    source: {
+        schemaName: string
+        entityName: string
+    }
+    destination: {
+        schemaName: string
+        entityName: string
+    }
+    on: string
+} & {
+    // v0.3
+    from: {
+        schemaName: string
+        entityName: string
+    }
+    to: {
+        schemaName: string
+        entityName: string
+    }
+    id: string
+}
 
+type TStepRemoveDuplicatesParams = {
+    key: string
+    keys: string[]
+    condition: string
+    method:
+    | "hash"	     // Uses a hash function to generate unique values for each row based on specified key(s) for comparison.
+    | "exact"	     // Performs an exact comparison of the specified key(s) to identify duplicates.
+    | "ignorecase"	 // Performs a case insensitive comparison of the specified key(s) to identify duplicates.
+    //   | "fuzzy"	 // Uses fuzzy matching techniques to identify duplicates based on similarity rather than exact match.
+    //   | "script"	 // Executes a user-defined script to identify and handle duplicates.
+    //   | "group"	 // Groups rows by specified key(s) and applies the deduplication strategy within each group.
+    //   | "distinct" // Removes duplicates by comparing all fields, not just specified key(s).
+    //   | "custom"	 // Allows for a custom method defined by user logic or an external script.
+    strategy:
+    | "first"	     // Keeps the first occurrence of each duplicate row based on the specified key(s).
+    | "last"	     // Keeps the last occurrence of each duplicate row based on the specified key(s).
+    | "max"	     // Keeps the duplicate row with the highest value in a specified field.
+    | "min"	     // Keeps the duplicate row with the lowest value in a specified field.
+    //    | "all"	         // Keeps all occurrences of duplicate rows. Essentially disables deduplication.
+    //    | "custom"	     // Allows for a custom strategy defined by user logic or an external script.
+}
 
 export class Step {
 
@@ -47,8 +92,9 @@ export class Step {
         fields: async (stepArguments: TStepArguments) => await Step.Fields(stepArguments),
         sort: async (stepArguments: TStepArguments) => await Step.Sort(stepArguments),
         run: async (stepArguments: TStepArguments) => await Step.Run(stepArguments),
-        sync: async (stepArguments: TStepArguments) => await Step.Sync(stepArguments),
-        anonymize: async (stepArguments: TStepArguments) => await Step.Anonymize(stepArguments)
+        sync: async (stepArguments: TStepArguments) => await Step.Sync(stepArguments),                           // v0.2
+        anonymize: async (stepArguments: TStepArguments) => await Step.Anonymize(stepArguments),                 // v0.3        
+        "remove-duplicates": async (stepArguments: TStepArguments) => await Step.RemoveDuplicates(stepArguments) // v0.3
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -74,6 +120,7 @@ export class Step {
         const { schemaName, entityName } = schemaRequest
         const { currentDataTable } = stepArguments
 
+        // TODO: recheck logic for schemaName=null
         if (entityName) {
             const _schemaResponse = await Schema.Select({
                 ...schemaRequest,
@@ -129,6 +176,7 @@ export class Step {
             throw new WarnError(`Step.Insert: No data to insert ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
+        // TODO: recheck logic for schemaName=null
         if (entityName) {
             const _schemaResponse = await Schema.Insert({
                 ...schemaRequest,
@@ -172,6 +220,7 @@ export class Step {
             throw new Error(`No data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
+        // TODO: recheck logic for schemaName=null
         if (entityName) {
             const _schemaResponse = await Schema.Update({
                 ...schemaRequest,
@@ -211,6 +260,7 @@ export class Step {
         const { schemaName, entityName } = schemaRequest
         const { currentDataTable } = stepArguments
 
+        // TODO: recheck logic for schemaName=null
         if (entityName) {
             const _schemaResponse = await Schema.Delete({
                 ...schemaRequest,
@@ -359,29 +409,7 @@ export class Step {
         const {
             source, destination, on,
             from, to, id
-        } = stepArguments.stepParams as {
-            // v0.2
-            source: {
-                schemaName: string
-                entityName: string
-            }
-            destination: {
-                schemaName: string
-                entityName: string
-            }
-            on: string
-        } & {
-            // v0.3
-            from: {
-                schemaName: string
-                entityName: string
-            }
-            to: {
-                schemaName: string
-                entityName: string
-            }
-            id: string
-        }
+        } = stepArguments.stepParams as TStepSyncParams
 
         const
             _from = source ?? from,
@@ -456,6 +484,30 @@ export class Step {
         const stepParams: string = stepArguments.stepParams as string
         const fieldsToAnonymize = StringHelper.Split(stepParams, ",")
         return stepArguments.currentDataTable.AnonymizeFields(fieldsToAnonymize)
+    }
+
+    static async RemoveDuplicates(stepArguments: TStepArguments): Promise<DataTable> {
+        Logger.Debug(`${Logger.In} Step.RemoveDuplicates: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+
+        const {
+            key = undefined,
+            keys = undefined,
+            condition = undefined,
+            method = "hash",
+            strategy = "first"
+        } = stepArguments.stepParams as TStepRemoveDuplicatesParams
+        
+        const { currentDataTable } = stepArguments
+
+        // Combine single key and keys array for unified processing
+        const _fields = (typia.is<string>(key) && typia.is<string[]>(keys))
+            ? [key, ...keys]
+            : keys
+
+        currentDataTable.RemoveDuplicates(_fields, method, strategy, condition)
+
+        Logger.Debug(`${Logger.Out} Step.RemoveDuplicates: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+        return currentDataTable
     }
 
     static async #_Select(schemaName: string, entityName: string): Promise<DataTable | undefined> {

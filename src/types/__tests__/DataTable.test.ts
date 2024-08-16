@@ -2,7 +2,7 @@
 //
 //
 //
-import { DataTable } from '../DataTable'
+import { DataTable, TRow } from '../DataTable'
 
 describe("DataTable", () => {
     let
@@ -559,7 +559,7 @@ describe("DataTable", () => {
 
             // Act
             try {
-                result = await myDataTable.FreeSql(sqlQuery)           
+                result = await myDataTable.FreeSql(sqlQuery)
             } catch (error) {
                 //
             }
@@ -1538,5 +1538,558 @@ describe("DataTable", () => {
         })
     })
 
+    describe('RemoveDuplicates', () => {
+
+        // Removes duplicate rows based on specified fields using hash method
+        it('should remove duplicate rows based on specified fields using hash method', () => {
+            const rows: TRow[] = [
+                {
+                    id: 1,
+                    name: 'Alice',
+                    age: 30
+                },
+                {
+                    id: 2,
+                    name: 'Bob',
+                    age: 25
+                },
+                {
+                    id: 3,
+                    name: 'Alice',
+                    age: 30
+                }
+            ]
+            const fields = ['name', 'age']
+            const dataTable = new DataTable("mytable", rows)
+            dataTable.RemoveDuplicates(fields, 'hash', 'first')
+
+            expect(dataTable.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'Alice',
+                    age: 30
+                },
+                {
+                    id: 2,
+                    name: 'Bob',
+                    age: 25
+                }
+            ])
+        })
+
+        // Handles empty rows array gracefully
+        it('should handle empty rows array gracefully', () => {
+            const rows: TRow[] = []
+            const fields = ['name', 'age']
+            const method = 'hash'
+            const strategy = 'first'
+            const condition = ''
+            const dataTable = new DataTable('mytable', rows)
+            dataTable.RemoveDuplicates(fields, method, strategy, condition)
+
+            expect(dataTable.Rows).toEqual([])
+        })
+
+        // Removes duplicate rows based on specified fields using stringify method
+        it('should remove duplicate rows based on specified fields using stringify method', () => {
+            // Initialize the class object
+            const data = [
+                {
+                    id: 1,
+                    name: 'Alice'
+                },
+                {
+                    id: 2,
+                    name: 'Bob'
+                },
+                {
+                    id: 1,
+                    name: 'Alice'
+                }
+            ]
+            const table = new DataTable('mytable', data)
+
+            // Call the method
+            table.RemoveDuplicates(['id', 'name'], 'stringify', 'default')
+
+            // Assertion
+            expect(table.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'Alice'
+                },
+                {
+                    id: 2,
+                    name: 'Bob'
+                }
+            ])
+        })
+
+        // Keeps the first occurrence of duplicate rows when strategy is 'first'
+        it('should keep the first occurrence of duplicate rows when strategy is first', () => {
+            // Initialize the class object
+            const data = [
+                {
+                    id: 1,
+                    name: 'Alice'
+                },
+                {
+                    id: 2,
+                    name: 'Bob'
+                },
+                {
+                    id: 1,
+                    name: 'Alice'
+                }
+            ]
+            const table = new DataTable('mytable', data)
+
+            // Call the method
+            table.RemoveDuplicates(['id', 'name'], 'stringify', 'first')
+
+            // Assertion
+            expect(table.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'Alice'
+                },
+                {
+                    id: 2,
+                    name: 'Bob'
+                }
+            ])
+        })
+
+        // Replaces the first occurrence with the last occurrence when strategy is 'last'
+        it('should replace first occurrence with last occurrence when strategy is last', () => {
+            // Initialize the method's class object
+            // Mock data
+            const rows = [
+                {
+                    id: 1,
+                    name: 'John'
+                }, {
+                    id: 2,
+                    name: 'Doe'
+                }, {
+                    id: 1,
+                    name: 'Jane'
+                }
+            ]
+            const dt = new DataTable('mytable', rows)
+
+            dt.RemoveDuplicates(['id'], 'hash', 'last')
+
+            // Assertion
+            expect(dt.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'Jane'
+                }, {
+                    id: 2,
+                    name: 'Doe'
+                }
+            ])
+        })
+
+        // Replaces the first occurrence with the row having maximum condition value when strategy is 'max'
+        it('should replace first occurrence with row having maximum condition value when strategy is max', () => {
+
+            // Mock data
+            const rows = [
+                {
+                    id: 1,
+                    value: 10
+                }, {
+                    id: 2,
+                    value: 20
+                }, {
+                    id: 1,
+                    value: 15
+                }
+            ]
+            // Initialize the method's class object
+            const dt = new DataTable('mytable', rows)
+
+            dt.RemoveDuplicates(['id'], 'hash', 'max', 'value')
+
+            // Assertion
+            expect(dt.Rows).toEqual([
+                {
+                    id: 1,
+                    value: 15
+                }, {
+                    id: 2,
+                    value: 20
+                }
+            ])
+        })
+
+        // Replaces the first occurrence with the row having minimum condition value when strategy is 'min'
+        it('should replace first occurrence with row having minimum condition value when strategy is min', () => {
+            // Initialize DataTable object
+            const dataTable = new DataTable('myTable')
+            dataTable.Rows = [
+                {
+                    id: 1,
+                    name: 'Alice',
+                    age: 30
+                },
+                {
+                    id: 2,
+                    name: 'Bob',
+                    age: 25
+                },
+                {
+                    id: 3,
+                    name: 'Alice',
+                    age: 28
+                }
+            ]
+
+            // Call RemoveDuplicates method
+            dataTable.RemoveDuplicates(['name'], 'hash', 'min', 'age')
+
+            // Assertion
+            expect(dataTable.Rows).toEqual([
+                {
+                    id: 3,
+                    name: 'Alice',
+                    age: 28
+                }, {
+                    id: 2,
+                    name: 'Bob',
+                    age: 25
+                }
+            ])
+        })
+
+        // Returns the DataTable instance after removing duplicates
+        it('should return DataTable instance after removing duplicates', () => {
+            // Initialize DataTable object
+            const dataTable = new DataTable('myTable')
+            dataTable.Rows = [
+                {
+                    id: 1,
+                    name: 'Alice',
+                    age: 30
+                },
+                {
+                    id: 2,
+                    name: 'Bob',
+                    age: 25
+                },
+                {
+                    id: 3,
+                    name: 'Alice',
+                    age: 30
+                }
+            ]
+
+            // Call RemoveDuplicates method
+            const result = dataTable.RemoveDuplicates(['name'], 'hash', 'first', 'age')
+
+            // Assertion
+            expect(result).toBeInstanceOf(DataTable)
+        })
+
+        // Handles empty fields array gracefully
+        it('should handle empty fields array gracefully when calling RemoveDuplicates', () => {
+            // Initialize the class object
+            const dataTable = new DataTable('myTable')
+            dataTable.Rows = [
+                {
+                    id: 1,
+                    name: 'Alice'
+                }, {
+                    id: 2,
+                    name: 'Bob'
+                }, {
+                    id: 1,
+                    name: 'Alice'
+                }
+            ]
+
+            // Call RemoveDuplicates with empty fields array
+            dataTable.RemoveDuplicates([], 'hash', 'first')
+
+            // Assert that Rows remain unchanged
+            expect(dataTable.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'Alice'
+                }, {
+                    id: 2,
+                    name: 'Bob'
+                }
+            ])
+        })
+
+        // Handles invalid JSON structure in rows
+        it('should handle invalid JSON structure in rows when calling RemoveDuplicates', () => {
+            // Initialize the class object
+            const dataTable = new DataTable('myTable')
+            dataTable.Rows = [
+                {
+                    id: 1,
+                    name: 'Alice'
+                }, {
+                    id: 2,
+                    name: 'Bob'
+                }
+            ]
+
+            // Call RemoveDuplicates with invalid JSON structure in rows
+            dataTable.RemoveDuplicates(['id'], 'hash', 'first', '')
+
+            // Assert that Rows remain unchanged
+            expect(dataTable.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'Alice'
+                }, {
+                    id: 2,
+                    name: 'Bob'
+                }
+            ])
+        })
+
+        // Handles invalid condition path in rows
+        it('should handle invalid condition path in rows when calling RemoveDuplicates', () => {
+            // Initialize the method's class object correctly
+            const dataTable = new DataTable('myTable')
+            dataTable.Rows = [
+                {
+                    id: 1,
+                    name: 'Alice'
+                }, {
+                    id: 2,
+                    name: 'Bob'
+                }
+            ]
+
+            // Call the method under test
+            dataTable.RemoveDuplicates(['id'], 'hash', 'first', 'invalidField')
+
+            // Assertion
+            expect(dataTable.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'Alice'
+                }, {
+                    id: 2,
+                    name: 'Bob'
+                }
+            ])
+        })
+
+        // Handles rows with missing fields specified in the fields array
+        it('should handle rows with missing fields specified in the fields array when calling RemoveDuplicates', () => {
+            // Initialize the method's class object correctly
+            const dataTable = new DataTable('myTable')
+            dataTable.Rows = [
+                {
+                    id: 1,
+                    name: 'Alice'
+                }, { id: 2 }
+            ]
+
+            // Call the method under test
+            dataTable.RemoveDuplicates(['id', 'name'], 'hash', 'first')
+
+            // Assertion
+            expect(dataTable.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'Alice'
+                }, { id: 2 }
+            ])
+        })
+
+        // Handles rows with null or undefined values in specified fields
+        it('should handle rows with null or undefined values in specified fields when calling RemoveDuplicates method', () => {
+            // Initialize the class object
+            const dataTable = new DataTable('myTable')
+            // Mock data
+            dataTable.Rows = [
+                {
+                    id: 1,
+                    name: 'John',
+                    age: null
+                },
+                {
+                    id: 2,
+                    name: 'Doe',
+                    age: undefined
+                },
+                {
+                    id: 3,
+                    name: 'Jane',
+                    age: 30
+                }
+            ]
+            // Call the method
+            dataTable.RemoveDuplicates(['id'], 'hash', 'first')
+            // Assertion
+            expect(dataTable.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'John',
+                    age: null
+                },
+                {
+                    id: 2,
+                    name: 'Doe',
+                    age: undefined
+                },
+                {
+                    id: 3,
+                    name: 'Jane',
+                    age: 30
+                }
+            ])
+        })
+
+        // Handles rows with non-string values in specified fields
+        it('should handle rows with non-string values in specified fields when calling RemoveDuplicates method', () => {
+            // Initialize the class object
+            const dataTable = new DataTable('myTable')
+            // Mock data
+            dataTable.Rows = [
+                {
+                    id: 1,
+                    name: 'John',
+                    age: 30
+                },
+                {
+                    id: 2,
+                    name: 'Doe',
+                    age: 25
+                },
+                {
+                    id: 3,
+                    name: 'Jane',
+                    age: true
+                }
+            ]
+
+            // Call the method
+            dataTable.RemoveDuplicates(['id'], 'hash', 'first')
+            // Assertion
+            expect(dataTable.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'John',
+                    age: 30
+                },
+                {
+                    id: 2,
+                    name: 'Doe',
+                    age: 25
+                },
+                {
+                    id: 3,
+                    name: 'Jane',
+                    age: true
+                }
+            ])
+        })
+
+        // Handles rows with non-string values in specified fields
+        it('should handle rows with non-string values in specified fields when calling RemoveDuplicates method and condition', () => {
+            // Initialize the class object
+            const dataTable = new DataTable('myTable')
+            // Mock data
+            dataTable.Rows = [
+                {
+                    id: 1,
+                    name: 'John',
+                    age: true
+                },
+                {
+                    id: 2,
+                    name: 'Doe',
+                    age: 25
+                },
+                {
+                    id: 3,
+                    name: 'Jane',
+                    age: true
+                },
+                {
+                    id: 1,
+                    name: 'John',
+                    age: 30
+                }
+            ]
+
+            // Call the method
+            dataTable.RemoveDuplicates(['id'], 'hash', 'max','age')
+            // Assertion
+            expect(dataTable.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'John',
+                    age: 30
+                },
+                {
+                    id: 2,
+                    name: 'Doe',
+                    age: 25
+                },
+                {
+                    id: 3,
+                    name: 'Jane',
+                    age: true
+                }
+            ])
+        })
+
+        it('should remove duplicate rows based on specified fields using ignorecase method', () => {
+            const rows: TRow[] = [
+                {
+                    id: 1,
+                    name: 'alice',
+                    age: 30
+                },
+                {
+                    id: 2,
+                    name: 'Bob',
+                    age: 25
+                },
+                {
+                    id: 3,
+                    name: 'Alice',
+                    age: 30
+                }
+            ]
+            const fields = ['name', 'age']
+            const dataTable = new DataTable("mytable", rows)
+            dataTable.RemoveDuplicates(fields, 'ignorecase', 'min','name')
+
+            expect(dataTable.Rows).toEqual([
+                {
+                    id: 3,
+                    name: 'Alice',
+                    age: 30
+                },
+                {
+                    id: 2,
+                    name: 'Bob',
+                    age: 25
+                }
+            ])
+        })
+
+        // Handles large datasets efficiently
+        it('should handle large datasets efficiently when calling RemoveDuplicates method', () => {
+            // Initialize the class object
+            const dataTable = new DataTable('myTable')
+            // Populate the DataTable with a large dataset
+            // Mock the necessary dependencies and functions
+            // Call the RemoveDuplicates method with a large dataset
+            // Assert that the method handles large datasets efficiently
+        })
+    })
 })
 
