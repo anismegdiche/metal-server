@@ -2,7 +2,7 @@
 //
 //
 //
-import { DataTable, TRow } from '../DataTable'
+import { DataTable, SORT_ORDER, TRow } from '../DataTable'
 
 describe("DataTable", () => {
     let
@@ -252,7 +252,7 @@ describe("DataTable", () => {
 
     describe('Sort', () => {
         it('should sort the rows by the specified fields in ascending order', () => {
-            const sorted = dtA.Sort(['name'], ['asc']).Rows
+            const sorted = dtA.Sort(['name'], [SORT_ORDER.ASC]).Rows
             expect(sorted).toEqual([
                 {
                     id: 1,
@@ -273,7 +273,7 @@ describe("DataTable", () => {
         })
 
         it('should sort the rows by the specified fields in descending order', () => {
-            const sorted = dtA.Sort(['age'], ['desc']).Rows
+            const sorted = dtA.Sort(['age'], [SORT_ORDER.DESC]).Rows
             expect(sorted).toEqual([
                 {
                     id: 3,
