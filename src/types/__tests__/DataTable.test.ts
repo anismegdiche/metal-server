@@ -3,7 +3,7 @@
 //
 //
 //
-import { DataTable, SORT_ORDER, TRow } from '../DataTable'
+import { DataTable, SORT_ORDER } from '../DataTable'
 
 describe("DataTable", () => {
     let
@@ -1023,129 +1023,21 @@ describe("DataTable", () => {
 
         it('Case: Sync from Memory to Postgres', () => {
             const sourceData = new DataTable("Source", [
-                {
-                    memid: 0,
-                    surname: "GUEST",
-                    firstname: "GUEST",
-                    address: "XXXXXXXXXX",
-                    zipcode: 0,
-                    telephone: "(000) 000-0000",
-                    recommendedby: null,
-                    joindate: "2012-06-30T22:00:00.000Z"
-                },
-                {
-                    memid: 1,
-                    surname: "Smith",
-                    firstname: "Darren",
-                    address: "XXXXXXXXXX",
-                    zipcode: 4321,
-                    telephone: "555-555-5555",
-                    recommendedby: null,
-                    joindate: "2012-07-02T10:02:05.000Z"
-                },
-                {
-                    memid: 2,
-                    surname: "Smith",
-                    firstname: "Tracy",
-                    address: "XXXXXXXXXX",
-                    zipcode: 4321,
-                    telephone: "555-555-5555",
-                    recommendedby: null,
-                    joindate: "2012-07-02T10:08:23.000Z"
-                },
-                {
-                    memid: 3,
-                    surname: "Rownam",
-                    firstname: "Tim",
-                    address: "XXXXXXXXXX",
-                    zipcode: 23423,
-                    telephone: "(844) 693-0723",
-                    recommendedby: null,
-                    joindate: "2012-07-03T07:32:15.000Z"
-                },
-                {
-                    memid: 4,
-                    surname: "Joplette",
-                    firstname: "Janice",
-                    address: "20 Crossing Road, New York",
-                    zipcode: 234,
-                    telephone: "(833) 942-4710",
-                    recommendedby: 1,
-                    joindate: "2012-07-03T08:25:05.000Z"
-                },
-                {
-                    memid: 6,
-                    surname: "toadd",
-                    firstname: "ADD",
-                    address: "where",
-                    zipcode: 234,
-                    telephone: "(833) 942-4710",
-                    recommendedby: 1,
-                    joindate: "2012-07-03T08:25:05.000Z"
-                }
+                { memid: 0, surname: "GUEST", firstname: "GUEST", address: "XXXXXXXXXX", zipcode: 0, telephone: "(000) 000-0000", recommendedby: null, joindate: "2012-06-30T22:00:00.000Z" },
+                { memid: 1, surname: "Smith", firstname: "Darren", address: "XXXXXXXXXX", zipcode: 4321, telephone: "555-555-5555", recommendedby: null, joindate: "2012-07-02T10:02:05.000Z" },
+                { memid: 2, surname: "Smith", firstname: "Tracy", address: "XXXXXXXXXX", zipcode: 4321, telephone: "555-555-5555", recommendedby: null, joindate: "2012-07-02T10:08:23.000Z" },
+                { memid: 3, surname: "Rownam", firstname: "Tim", address: "XXXXXXXXXX", zipcode: 23423, telephone: "(844) 693-0723", recommendedby: null, joindate: "2012-07-03T07:32:15.000Z" },
+                { memid: 4, surname: "Joplette", firstname: "Janice", address: "20 Crossing Road, New York", zipcode: 234, telephone: "(833) 942-4710", recommendedby: 1, joindate: "2012-07-03T08:25:05.000Z" },
+                { memid: 6, surname: "toadd", firstname: "ADD", address: "where", zipcode: 234, telephone: "(833) 942-4710", recommendedby: 1, joindate: "2012-07-03T08:25:05.000Z" }
             ])
 
             const destinationData = new DataTable("Destination", [
-                {
-                    memid: 0,
-                    surname: "GUEST",
-                    firstname: "GUEST",
-                    address: "GUEST",
-                    zipcode: 0,
-                    telephone: "(000) 000-0000",
-                    recommendedby: null,
-                    joindate: "2012-06-30T22:00:00.000Z"
-                },
-                {
-                    memid: 1,
-                    surname: "Smith",
-                    firstname: "Darren",
-                    address: "8 Bloomsbury Close, Boston",
-                    zipcode: 4321,
-                    telephone: "555-555-5555",
-                    recommendedby: null,
-                    joindate: "2012-07-02T10:02:05.000Z"
-                },
-                {
-                    memid: 2,
-                    surname: "Smith",
-                    firstname: "Tracy",
-                    address: "8 Bloomsbury Close, New York",
-                    zipcode: 4321,
-                    telephone: "555-555-5555",
-                    recommendedby: null,
-                    joindate: "2012-07-02T10:08:23.000Z"
-                },
-                {
-                    memid: 3,
-                    surname: "Rownam",
-                    firstname: "Tim",
-                    address: "23 Highway Way, Boston",
-                    zipcode: 23423,
-                    telephone: "(844) 693-0723",
-                    recommendedby: null,
-                    joindate: "2012-07-03T07:32:15.000Z"
-                },
-                {
-                    memid: 4,
-                    surname: "Joplette",
-                    firstname: "Janice",
-                    address: "20 Crossing Road, New York",
-                    zipcode: 234,
-                    telephone: "(833) 942-4710",
-                    recommendedby: 1,
-                    joindate: "2012-07-03T08:25:05.000Z"
-                },
-                {
-                    memid: 5,
-                    surname: "todelete",
-                    firstname: "DELETE",
-                    address: "nowhere",
-                    zipcode: 234,
-                    telephone: "(833) 942-4710",
-                    recommendedby: 1,
-                    joindate: "2012-07-03T08:25:05.000Z"
-                }
+                { memid: 0, surname: "GUEST", firstname: "GUEST", address: "GUEST", zipcode: 0, telephone: "(000) 000-0000", recommendedby: null, joindate: "2012-06-30T22:00:00.000Z" }, 
+                { memid: 1, surname: "Smith", firstname: "Darren", address: "8 Bloomsbury Close, Boston", zipcode: 4321, telephone: "555-555-5555", recommendedby: null, joindate: "2012-07-02T10:02:05.000Z" }, 
+                { memid: 2, surname: "Smith", firstname: "Tracy", address: "8 Bloomsbury Close, New York", zipcode: 4321, telephone: "555-555-5555", recommendedby: null, joindate: "2012-07-02T10:08:23.000Z" }, 
+                { memid: 3, surname: "Rownam", firstname: "Tim", address: "23 Highway Way, Boston", zipcode: 23423, telephone: "(844) 693-0723", recommendedby: null, joindate: "2012-07-03T07:32:15.000Z" }, 
+                { memid: 4, surname: "Joplette", firstname: "Janice", address: "20 Crossing Road, New York", zipcode: 234, telephone: "(833) 942-4710", recommendedby: 1, joindate: "2012-07-03T08:25:05.000Z" }, 
+                { memid: 5, surname: "todelete", firstname: "DELETE", address: "nowhere", zipcode: 234, telephone: "(833) 942-4710", recommendedby: 1, joindate: "2012-07-03T08:25:05.000Z" }
             ])
 
             const syncReport = sourceData.SyncReport(destinationData, "memid")
@@ -1562,7 +1454,7 @@ describe("DataTable", () => {
 
         // Removes duplicate rows based on specified fields using hash method
         it('should remove duplicate rows based on specified fields using hash method', () => {
-            dtDuplicates.RemoveDuplicates(['id','name'], 'hash', 'first')
+            dtDuplicates.RemoveDuplicates(['id', 'name'], 'hash', 'first')
             expect(dtDuplicates.Rows).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 1, name: 'alice', age: 30 },
@@ -1706,18 +1598,6 @@ describe("DataTable", () => {
 
         // Handles rows with null or undefined values in specified fields
         it('should handle rows with null or undefined values in specified fields when calling RemoveDuplicates method', () => {
-            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'first')
-            // Assertion
-            expect(dtDuplicates.Rows).toEqual([
-                { id: 1, name: 'Alice', age: 30, value: 10 },
-                { id: 2, name: 'Bob', age: 25, value: 20 },
-                { id: 3, name: 'Jane', age: 10, value: true },
-                { id: 4 }
-            ])
-        })
-
-        // Handles rows with non-string values in specified fields
-        it('should handle rows with non-string values in specified fields when calling RemoveDuplicates method', () => {
             dtDuplicates.RemoveDuplicates(['id'], 'hash', 'first')
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
