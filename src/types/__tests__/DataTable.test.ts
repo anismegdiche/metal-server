@@ -1032,11 +1032,11 @@ describe("DataTable", () => {
             ])
 
             const destinationData = new DataTable("Destination", [
-                { memid: 0, surname: "GUEST", firstname: "GUEST", address: "GUEST", zipcode: 0, telephone: "(000) 000-0000", recommendedby: null, joindate: "2012-06-30T22:00:00.000Z" }, 
-                { memid: 1, surname: "Smith", firstname: "Darren", address: "8 Bloomsbury Close, Boston", zipcode: 4321, telephone: "555-555-5555", recommendedby: null, joindate: "2012-07-02T10:02:05.000Z" }, 
-                { memid: 2, surname: "Smith", firstname: "Tracy", address: "8 Bloomsbury Close, New York", zipcode: 4321, telephone: "555-555-5555", recommendedby: null, joindate: "2012-07-02T10:08:23.000Z" }, 
-                { memid: 3, surname: "Rownam", firstname: "Tim", address: "23 Highway Way, Boston", zipcode: 23423, telephone: "(844) 693-0723", recommendedby: null, joindate: "2012-07-03T07:32:15.000Z" }, 
-                { memid: 4, surname: "Joplette", firstname: "Janice", address: "20 Crossing Road, New York", zipcode: 234, telephone: "(833) 942-4710", recommendedby: 1, joindate: "2012-07-03T08:25:05.000Z" }, 
+                { memid: 0, surname: "GUEST", firstname: "GUEST", address: "GUEST", zipcode: 0, telephone: "(000) 000-0000", recommendedby: null, joindate: "2012-06-30T22:00:00.000Z" },
+                { memid: 1, surname: "Smith", firstname: "Darren", address: "8 Bloomsbury Close, Boston", zipcode: 4321, telephone: "555-555-5555", recommendedby: null, joindate: "2012-07-02T10:02:05.000Z" },
+                { memid: 2, surname: "Smith", firstname: "Tracy", address: "8 Bloomsbury Close, New York", zipcode: 4321, telephone: "555-555-5555", recommendedby: null, joindate: "2012-07-02T10:08:23.000Z" },
+                { memid: 3, surname: "Rownam", firstname: "Tim", address: "23 Highway Way, Boston", zipcode: 23423, telephone: "(844) 693-0723", recommendedby: null, joindate: "2012-07-03T07:32:15.000Z" },
+                { memid: 4, surname: "Joplette", firstname: "Janice", address: "20 Crossing Road, New York", zipcode: 234, telephone: "(833) 942-4710", recommendedby: 1, joindate: "2012-07-03T08:25:05.000Z" },
                 { memid: 5, surname: "todelete", firstname: "DELETE", address: "nowhere", zipcode: 234, telephone: "(833) 942-4710", recommendedby: 1, joindate: "2012-07-03T08:25:05.000Z" }
             ])
 
@@ -1512,9 +1512,9 @@ describe("DataTable", () => {
             ])
         })
 
-        // Replaces the first occurrence with the row having maximum condition value when strategy is 'max'
+        // Replaces the first occurrence with the row having maximum condition value when strategy is 'highest'
         it('should replace first occurrence with row having maximum condition value when strategy is max', () => {
-            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'max', 'value')
+            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'highest', 'value')
 
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
@@ -1525,9 +1525,9 @@ describe("DataTable", () => {
             ])
         })
 
-        // Replaces the first occurrence with the row having minimum condition value when strategy is 'min'
+        // Replaces the first occurrence with the row having minimum condition value when strategy is 'lowest'
         it('should replace first occurrence with row having minimum condition value when strategy is min', () => {
-            dtDuplicates.RemoveDuplicates(['name'], 'hash', 'min', 'age')
+            dtDuplicates.RemoveDuplicates(['name'], 'hash', 'lowest', 'age')
 
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
@@ -1610,7 +1610,7 @@ describe("DataTable", () => {
 
         // Handles rows with non-string values in specified fields
         it('should handle rows with non-string values in specified fields when calling RemoveDuplicates method and condition', () => {
-            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'max', 'age')
+            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'highest', 'age')
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
@@ -1621,7 +1621,7 @@ describe("DataTable", () => {
         })
 
         it('should remove duplicate rows based on specified fields using ignorecase method', () => {
-            dtDuplicates.RemoveDuplicates(['id', 'name'], 'ignorecase', 'min', 'age')
+            dtDuplicates.RemoveDuplicates(['id', 'name'], 'ignorecase', 'lowest', 'age')
             expect(dtDuplicates.Rows).toEqual([
                 { id: 1, name: 'Alice', age: 15, value: null },
                 { id: 2, name: 'Bob', age: true, value: 15 },
@@ -1639,6 +1639,70 @@ describe("DataTable", () => {
         //     // Call the RemoveDuplicates method with a large dataset
         //     // Assert that the method handles large datasets efficiently
         // })
+    })
+
+
+    describe('FilterRows', () => {
+
+        // Filters rows based on a valid SQL condition
+        it('should filter rows based on a valid SQL condition', () => {
+            const dataTable = new DataTable("myTable")
+            dataTable.Rows = [
+                { id: 1, name: 'Alice' },
+                { id: 2, name: 'Bob' }
+            ]
+            const condition = "name = 'Alice'"
+            dataTable.FilterRows(condition)
+            expect(dataTable.Rows).toEqual([{ id: 1, name: 'Alice' }])
+        })
+
+        // Handles empty Rows array without errors
+        it('should handle empty Rows array without errors', () => {
+            const dataTable = new DataTable("myTable")
+            dataTable.Rows = []
+            const condition = "name = 'Alice'"
+            expect(() => dataTable.FilterRows(condition)).not.toThrow()
+            expect(dataTable.Rows).toEqual([])
+        })
+
+        // Returns the DataTable instance after filtering
+        it('should return DataTable instance after filtering when condition is valid', () => {
+            // Initialize DataTable object
+            const dataTable = new DataTable("myTable")
+            dataTable.Rows = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+
+            // Call the Filter method
+            const result = dataTable.FilterRows('id = 1')
+
+            // Assertions
+            expect(result).toBe(dataTable)
+        })
+
+        // Executes the SQL query using alasql
+        it('should execute SQL query using alasql when condition is valid', () => {
+            // Initialize DataTable object
+            const dataTable = new DataTable("myTable")
+            dataTable.Rows = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+
+            // Call the Filter method
+            const result = dataTable.FilterRows('id = 1')
+
+            // Assertions
+            expect(result).toBe(dataTable)
+        })
+
+        // Handles non-empty Rows array correctly
+        it('should return the filtered Rows when Rows array is non-empty', () => {
+            // Initialize the class object
+            const dataTable = new DataTable("myTable")
+            dataTable.Rows = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+
+            // Call the Filter method with a valid condition
+            dataTable.FilterRows('id = 1')
+
+            // Assertion
+            expect(dataTable.Rows).toEqual([{ id: 1, name: 'Alice' }])
+        })
     })
 })
 
