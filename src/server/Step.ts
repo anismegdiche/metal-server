@@ -21,7 +21,7 @@ import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
 import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
-import { TStepSyncParams, TStepRemoveDuplicatesParams, TStepSortParams } from "../types/StepsParams"
+import { TStepSyncParams, TStepRemoveDuplicatesParams, TStepSortParams, TStepRunParams } from "../types/StepsParams"
 
 export type TStepArguments = {
     currentSchemaName: string
@@ -312,11 +312,7 @@ export class Step {
     static async Run(stepArguments: TStepArguments): Promise<DataTable> {
         Logger.Debug(`${Logger.In} Step.Run: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
-        const { ai, input, output } = stepArguments.stepParams as {
-            ai: string
-            input: string
-            output: TJson
-        }
+        const { ai, input, output } = stepArguments.stepParams as TStepRunParams
 
         const promises = []
 

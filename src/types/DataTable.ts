@@ -10,6 +10,7 @@ import { createHash } from 'crypto'
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
 import { JsonHelper } from "../lib/JsonHelper"
+import { HttpNotImplementedError } from "../server/HttpErrors"
 
 
 export const  enum SORT_ORDER {
@@ -31,9 +32,9 @@ export const enum REMOVE_DUPLICATES_METHOD {
 export const enum REMOVE_DUPLICATES_STRATEGY {
     FIRST = "first",	 // Keeps the first occurrence of each duplicate row based on the specified key(s).
     LAST = "last",	     // Keeps the last occurrence of each duplicate row based on the specified key(s).
-    MAX = "max",	     // Keeps the duplicate row with the highest value in a specified field.
-    MIN = "min"	         // Keeps the duplicate row with the lowest value in a specified field.
-    //    | "custom"	 // Allows for a custom strategy defined by user logic or an external script.
+    HIGHEST = "highest", // Keeps the duplicate row with the highest value in a specified field.
+    LOWEST = "lowest",	 // Keeps the duplicate row with the lowest value in a specified field.
+    CUSTOM = "custom"	 // Allows for a custom strategy defined by user logic.
 }
 
 const SqlToJsType: TJson = {
@@ -458,7 +459,7 @@ export class DataTable {
                     case REMOVE_DUPLICATES_STRATEGY.LAST:
                         mapDeduplicated.set(currentHash, row)
                         break
-                    case REMOVE_DUPLICATES_STRATEGY.MIN:
+                    case REMOVE_DUPLICATES_STRATEGY.LOWEST:
                         mapDeduplicated.set(
                             currentHash,
                             <TRow>_.minBy(
@@ -467,7 +468,7 @@ export class DataTable {
                             )
                         )
                         break
-                    case REMOVE_DUPLICATES_STRATEGY.MAX:
+                    case REMOVE_DUPLICATES_STRATEGY.HIGHEST:
                         mapDeduplicated.set(
                             currentHash,
                             <TRow>_.maxBy(
@@ -476,6 +477,8 @@ export class DataTable {
                             )
                         )
                         break
+                    case REMOVE_DUPLICATES_STRATEGY.CUSTOM:
+                        throw new HttpNotImplementedError('RemoveDuplicates: custom not implemented')
                     case REMOVE_DUPLICATES_STRATEGY.FIRST:
                     default:
                         break

@@ -4,6 +4,7 @@
 //
 //
 import { REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TOrder } from "./DataTable"
+import { TJson } from "./TJson"
 
 
 export type TStepRemoveDuplicatesParams = {
@@ -38,3 +39,9 @@ export type TStepSyncParams = {
 }
 
 export type TStepSortParams = Record<string, TOrder>
+
+export type TStepRunParams = {
+    ai: string
+    input: string
+    output: TJson
+}
