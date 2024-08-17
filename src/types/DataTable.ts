@@ -10,10 +10,9 @@ import { createHash } from 'crypto'
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
 import { JsonHelper } from "../lib/JsonHelper"
-import { HttpNotImplementedError } from "../server/HttpErrors"
 
 
-export const  enum SORT_ORDER {
+export const enum SORT_ORDER {
     ASC = "asc",
     DESC = "desc"
 }
@@ -167,7 +166,7 @@ export class DataTable {
                 : [rows])
 
         if (fields)
-            this.Fields = fields as TFields
+            this.Fields = fields
 
         if (metaData)
             this.MetaData = metaData as TMetaData
@@ -419,6 +418,19 @@ export class DataTable {
         return this
     }
 
+    //FIXME: it generates an error in case of invalid condition
+    FilterRows(condition: string | undefined): this {
+        if (this.Rows.length === 0 || !condition)
+            return this
+        this.Rows = alasql(`
+            SELECT * 
+            FROM ?
+            WHERE ${condition}`,
+            [this.Rows]
+        )
+        return this
+    }
+
     RemoveDuplicates(
         fields: string[] | undefined,
         method: string,
@@ -431,54 +443,66 @@ export class DataTable {
             ? fields
             : undefined
 
-        const mapDeduplicated: Map<string, TRow> = new Map()
+        const _mapDeduplicated: Map<string, TRow> = new Map()
 
         this.Rows.forEach((row: TRow) => {
-            let currentHash: string = ""
+            let __currentHash: string = ""
 
-            const rowString = (_fields)
+            const __rowString = (_fields)
                 ? _.pick(row, _fields)
                 : row
 
             switch (method) {
                 case REMOVE_DUPLICATES_METHOD.HASH:
-                    currentHash = createHash('sha256').update(JsonHelper.Stringify(rowString)).digest('base64')
+                    __currentHash = createHash('sha256').update(JsonHelper.Stringify(__rowString)).digest('base64')
                     break
                 case REMOVE_DUPLICATES_METHOD.IGNORE_CASE:
-                    currentHash = JsonHelper.Stringify(rowString).toLowerCase()
+                    __currentHash = JsonHelper.Stringify(__rowString).toLowerCase()
                     break
                 case REMOVE_DUPLICATES_METHOD.EXACT:
                 default:
-                    currentHash = JsonHelper.Stringify(rowString)
+                    __currentHash = JsonHelper.Stringify(__rowString)
                     break
             }
 
-            if (mapDeduplicated.has(currentHash)) {
+            const __dtDuplicates = new DataTable("duplicates")
+
+            if (_mapDeduplicated.has(__currentHash)) {
                 // duplicate row
                 switch (strategy) {
                     case REMOVE_DUPLICATES_STRATEGY.LAST:
-                        mapDeduplicated.set(currentHash, row)
+                        _mapDeduplicated.set(__currentHash, row)
                         break
                     case REMOVE_DUPLICATES_STRATEGY.LOWEST:
-                        mapDeduplicated.set(
-                            currentHash,
+                        _mapDeduplicated.set(
+                            __currentHash,
                             <TRow>_.minBy(
-                                [mapDeduplicated.get(currentHash), row],
+                                [_mapDeduplicated.get(__currentHash), row],
                                 condition
                             )
                         )
                         break
                     case REMOVE_DUPLICATES_STRATEGY.HIGHEST:
-                        mapDeduplicated.set(
-                            currentHash,
+                        _mapDeduplicated.set(
+                            __currentHash,
                             <TRow>_.maxBy(
-                                [mapDeduplicated.get(currentHash), row],
+                                [_mapDeduplicated.get(__currentHash), row],
                                 condition
                             )
                         )
                         break
                     case REMOVE_DUPLICATES_STRATEGY.CUSTOM:
-                        throw new HttpNotImplementedError('RemoveDuplicates: custom not implemented')
+                        __dtDuplicates.AddRows([
+                            _mapDeduplicated.get(__currentHash) ?? {},
+                            row
+                        ])
+
+                        if (__dtDuplicates.Rows.length > 0)
+                            _mapDeduplicated.set(
+                                __currentHash,
+                                __dtDuplicates.FilterRows(condition).Rows[0]
+                            )
+                        break
                     case REMOVE_DUPLICATES_STRATEGY.FIRST:
                     default:
                         break
@@ -486,11 +510,11 @@ export class DataTable {
 
             } else {
                 // new row
-                mapDeduplicated.set(currentHash, row)
+                _mapDeduplicated.set(__currentHash, row)
             }
         })
         // set rows
-        this.Rows = Array.from(mapDeduplicated.values())
+        this.Rows = Array.from(_mapDeduplicated.values())
         return this
     }
 }
