@@ -3,12 +3,16 @@
 ## Version 0.3 - UNRELEASED
 
 ### Features
+- Response configuration: chunk, rate limit, body limit.
+- Plan commands: anonymize, remove-duplicates.
 
 ### Enhancements
 - Updated packages.
 - Updated Config file validation.
+- Updated Plan sync function usage.
 
 ### Bug Fixes
+- Fixed bugs related to Plan commands.
 
 ---
 # Metal Changelog
