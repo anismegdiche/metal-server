@@ -10,6 +10,7 @@ import { createHash } from 'crypto'
 import { TJson } from './TJson'
 import { Logger } from '../lib/Logger'
 import { JsonHelper } from "../lib/JsonHelper"
+import { StringHelper } from "../lib/StringHelper"
 
 
 export const enum SORT_ORDER {
@@ -420,8 +421,9 @@ export class DataTable {
 
     //FIXME: it generates an error in case of invalid condition
     FilterRows(condition: string | undefined): this {
-        if (this.Rows.length === 0 || !condition)
+        if (this.Rows.length === 0 || !StringHelper.IsEmpty(condition))
             return this
+        
         this.Rows = alasql(`
             SELECT * 
             FROM ?
@@ -493,7 +495,7 @@ export class DataTable {
                         break
                     case REMOVE_DUPLICATES_STRATEGY.CUSTOM:
                         __dtDuplicates.AddRows([
-                            _mapDeduplicated.get(__currentHash) ?? {},
+                            <TJson>_mapDeduplicated.get(__currentHash),
                             row
                         ])
 

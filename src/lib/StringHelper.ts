@@ -17,4 +17,8 @@ export class StringHelper {
         const stringFixed = str.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
         return stringFixed.replace(/:\s*([^"{[,\s][^,\s}]*)/g, ':"$1"')
     }
+
+    static IsEmpty(str: string | undefined | null): boolean {
+        return  str == undefined || str == null || str == '' || str.trim() == ''
+    }
 }
