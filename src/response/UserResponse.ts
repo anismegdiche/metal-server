@@ -4,37 +4,25 @@
 //
 //
 import { Request, Response, NextFunction } from 'express'
+import { checkSchema, validationResult } from 'express-validator'
+import _ from 'lodash'
 //
-import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE, VALIDATION_ERROR_MESSAGE } from '../lib/Const'
+import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from '../lib/Const'
 import { User } from '../server/User'
 import { Config } from '../server/Config'
 import { ServerResponse } from '../response/ServerResponse'
 import { Convert } from '../lib/Convert'
-import { checkSchema, validationResult } from 'express-validator'
 import { HttpBadRequestError } from '../server/HttpErrors'
-import _ from 'lodash'
+import { UserParamsSchema } from "../jsonschema/UserParamsSchema"
 
 
 export class UserResponse {
+    
+    static readonly ParameterValidation = checkSchema(UserParamsSchema)
 
     static #GetRequestToken(req: Request): string | undefined {
         return req.headers.authorization?.replace('Bearer ', '')
     }
-
-    static readonly ParameterValidation = checkSchema({
-        username: {
-            in: ['body'],
-            trim: true,
-            isString: true,
-            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_STRING
-        },
-        password: {
-            in: ['body'],
-            trim: true,
-            isString: true,
-            errorMessage: VALIDATION_ERROR_MESSAGE.MUST_BE_STRING
-        }
-    })
 
     static CheckParameters(req: Request, res: Response, next: NextFunction): void {
         // Check for validation errors
@@ -42,6 +30,7 @@ export class UserResponse {
         if (errors.isEmpty()) {
             next()
         } else {
+            // eslint-disable-next-line you-dont-need-lodash-underscore/map
             const errorMessages = _.map(
                 errors.array(),
                 (item: any) => `${item.path}: ${item.msg} in ${item.location}`
