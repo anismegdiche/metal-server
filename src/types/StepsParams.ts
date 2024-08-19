@@ -8,7 +8,7 @@ import { TJson } from "./TJson"
 
 
 export type TStepRemoveDuplicatesParams = {
-    fields?: string[]
+    keys?: string[]
     condition?: string
     method?: REMOVE_DUPLICATES_METHOD
     strategy?: REMOVE_DUPLICATES_STRATEGY

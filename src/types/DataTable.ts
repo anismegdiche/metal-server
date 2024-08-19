@@ -14,8 +14,8 @@ import { StringHelper } from "../lib/StringHelper"
 
 
 export const enum SORT_ORDER {
-    ASC = "asc",
-    DESC = "desc"
+    ASC = "asc",  // Ascending
+    DESC = "desc" // Descending
 }
 
 export const enum REMOVE_DUPLICATES_METHOD {

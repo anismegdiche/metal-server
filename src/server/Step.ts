@@ -444,7 +444,7 @@ export class Step {
         Logger.Debug(`${Logger.In} Step.RemoveDuplicates: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const {
-            fields = undefined,
+            keys = undefined,
             condition = undefined,
             method = REMOVE_DUPLICATES_METHOD.HASH,
             strategy = REMOVE_DUPLICATES_STRATEGY.FIRST
@@ -452,7 +452,7 @@ export class Step {
         
         const { currentDataTable } = stepArguments
 
-        currentDataTable.RemoveDuplicates(fields, method, strategy, condition)
+        currentDataTable.RemoveDuplicates(keys, method, strategy, condition)
 
         Logger.Debug(`${Logger.Out} Step.RemoveDuplicates: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         return currentDataTable
