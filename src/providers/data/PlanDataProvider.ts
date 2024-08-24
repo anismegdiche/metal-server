@@ -8,31 +8,19 @@ import { RESPONSE_TRANSACTION, RESPONSE, HTTP_STATUS_CODE, RESPONSE_RESULT } fro
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
-import { TJson } from "../../types/TJson"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResponseNoData } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../lib/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { Plan } from '../../server/Plan'
-import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER from '../../server/Source'
 import { JsonHelper } from '../../lib/JsonHelper'
+import { CommonDataProvider } from "./CommonDataProvider"
 
 
-export class PlanDataProvider implements IDataProvider.IDataProvider {
+export class PlanDataProvider extends CommonDataProvider  implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.PLAN
-    SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
-    Config: TJson = {}
-
-    Options = new CommonSqlDataProviderOptions()
-
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
-        this.Init(sourceParams)
-        this.Connect()
-    }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
         Logger.Debug("PlanDataProvider.Init")

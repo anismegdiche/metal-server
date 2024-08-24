@@ -8,7 +8,6 @@ import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
-import { TJson } from "../../types/TJson"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
@@ -16,24 +15,13 @@ import { Logger } from '../../lib/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import DATA_PROVIDER, { Source } from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
-import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import { JsonHelper } from '../../lib/JsonHelper'
+import { CommonDataProvider } from "./CommonDataProvider"
 
 
-export class MemoryDataProvider implements IDataProvider.IDataProvider {
+export class MemoryDataProvider extends CommonDataProvider  implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MEMORY
-    SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
-    Config: TJson = {}
     Connection?: DataBase = undefined
-
-    Options = new CommonSqlDataProviderOptions()
-
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
-        this.Init(sourceParams)
-        this.Connect()
-    }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
         Logger.Debug("MemoryDataProvider.Init")

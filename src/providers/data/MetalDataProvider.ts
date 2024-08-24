@@ -18,6 +18,7 @@ import { TJson } from '../../types/TJson'
 import { DataTable } from '../../types/DataTable'
 import { SERVER } from '../../lib/Const'
 import { JsonHelper } from '../../lib/JsonHelper'
+import { CommonDataProvider } from "./CommonDataProvider"
 
 
 type TMetalClientParams = {
@@ -127,20 +128,9 @@ export class MetalClient {
     }
 }
 
-export class MetalDataProvider implements IDataProvider.IDataProvider {
+export class MetalDataProvider  extends CommonDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.METAL
-    SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
     Connection?: MetalClient = undefined
-    Config: TJson = {}
-
-    Options = new CommonSqlDataProviderOptions()
-
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
-        this.Init(sourceParams)
-        this.Connect()
-    }
 
     static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest): object {
         return _.omit(schemaRequest, ['sourceName', 'schemaName', 'entityName'])

@@ -1,4 +1,3 @@
-
 //
 //
 //
@@ -23,8 +22,9 @@ import { AzureBlobStorage } from '../storage/AzureBlobStorage'
 import { FsStorage } from '../storage/FsStorage'
 import { CsvContent } from '../content/CsvContent'
 import { JsonHelper } from "../../lib/JsonHelper"
+import { CommonDataProvider } from "./CommonDataProvider"
 
- 
+
 export enum STORAGE_PROVIDER {
     FILESYSTEM = "fileSystem",
     AZURE_BLOB = "azureBlob"
@@ -62,10 +62,8 @@ export type TFilesDataProviderOptions = {
     csvSkipEmptyLines?: string | boolean
 }
 
-export class FilesDataProvider implements IDataProvider.IDataProvider {
+export class FilesDataProvider extends CommonDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.FILES
-    SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
     Connection?: IStorage = undefined
     Content: IContent = <IContent>{}
     ContentType: CONTENT = CONTENT.JSON
@@ -82,12 +80,6 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     static #NewContentCaseMap: Record<CONTENT, Function> = {
         [CONTENT.JSON]: (sourceParams: TSourceParams) => new JsonContent(sourceParams),
         [CONTENT.CSV]: (sourceParams: TSourceParams) => new CsvContent(sourceParams)
-    }
-
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
-        this.Init(sourceParams)
-        this.Connect()
     }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
@@ -132,8 +124,8 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE_TRANSACTION.INSERT
         }
 
-        let fileString
-        
+        let fileString: string | undefined = ""
+
         if (this.Connection)
             fileString = await this.Connection?.Read(entityName)
         else
@@ -177,7 +169,8 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE_TRANSACTION.SELECT
         }
 
-        let fileString
+        let fileString: string | undefined = ""
+
         if (this.Connection)
             fileString = await this.Connection?.Read(entityName)
         else
@@ -238,7 +231,8 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE_TRANSACTION.UPDATE
         }
 
-        let fileString
+        let fileString: string | undefined = ""
+
         if (this.Connection)
             fileString = await this.Connection?.Read(entityName)
         else
@@ -282,7 +276,8 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE_TRANSACTION.DELETE
         }
 
-        let fileString
+        let fileString: string | undefined = ""
+        
         if (this.Connection)
             fileString = await this.Connection?.Read(entityName)
         else

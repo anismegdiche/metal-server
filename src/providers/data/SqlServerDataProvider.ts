@@ -4,7 +4,7 @@
 //
 //
 import mssql, { ConnectionPool } from 'mssql'
-
+//
 import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
@@ -12,29 +12,17 @@ import { TSourceParams } from "../../types/TSourceParams"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
-import { TJson } from "../../types/TJson"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Logger } from '../../lib/Logger'
 import { Cache } from '../../server/Cache'
-import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER, { Source } from '../../server/Source'
 import { JsonHelper } from '../../lib/JsonHelper'
+import { CommonDataProvider } from "./CommonDataProvider"
 
 
-export class SqlServerDataProvider implements IDataProvider.IDataProvider {
+export class SqlServerDataProvider extends CommonDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MSSQL
-    SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
     Connection?: ConnectionPool = undefined
-    Config: TJson = {}
-
-    Options = new CommonSqlDataProviderOptions()
-
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
-        this.Init(sourceParams)
-        this.Connect()
-    }
 
     async Init(sourceParams: TSourceParams): Promise<void> {
         Logger.Debug("SqlServerDataProvider.Init")
@@ -61,7 +49,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
                 }
             }
         } = this.Params ?? {}
-        
+
         const connectionConfig = {
             user,
             password,
@@ -104,7 +92,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
         const sqlQueryHelper = new SqlQueryHelper()
             .Insert(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Fields(options.Data.GetFieldNames())
-            .Values(options.Data.Rows)            
+            .Values(options.Data.Rows)
 
         await this.Connection.query(sqlQueryHelper.Query)
         schemaResponse = <TSchemaResponseData>{
@@ -175,7 +163,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
         const sqlQueryHelper = new SqlQueryHelper()
             .Update(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
             .Set(options.Data.Rows)
-            .Where(options.Filter)            
+            .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
         schemaResponse = <TSchemaResponseData>{
@@ -204,7 +192,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
             .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
-            .Where(options.Filter)            
+            .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
         return <TSchemaResponseData>{

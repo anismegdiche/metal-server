@@ -3,16 +3,14 @@
 //
 //
 //
-
 import { Pool } from 'pg'
-
+//
 import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
-import { TJson } from "../../types/TJson"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
@@ -20,6 +18,7 @@ import { Logger } from '../../lib/Logger'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER, { Source } from '../../server/Source'
 import { JsonHelper } from '../../lib/JsonHelper'
+import { TJson } from "../../types/TJson"
 
 
 export class PostgresDataProvider implements IDataProvider.IDataProvider {
