@@ -421,7 +421,7 @@ export class DataTable {
 
     //FIXME: it generates an error in case of invalid condition
     FilterRows(condition: string | undefined): this {
-        if (this.Rows.length === 0 || !StringHelper.IsEmpty(condition))
+        if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))
             return this
         
         this.Rows = alasql(`
