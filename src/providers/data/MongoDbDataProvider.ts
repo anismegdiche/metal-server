@@ -264,8 +264,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        //FIXME: throw error 404
-        //if (!options?.Data?.Rows)
+        //TODO: throw error 400 for bad
 
 
         await this.Connection.connect()
@@ -276,8 +275,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
             .updateMany(
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>,
                 {
-                    //FIXME: replace by upper safer const
-                    $set: (options?.Data?.Rows)[0]
+                    $set: options?.Data?.Rows.at(0)
                 }
             )
 
