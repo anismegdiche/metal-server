@@ -6,6 +6,7 @@
 import * as Fs from 'fs'
 //
 import { CommonStorage, IStorage } from "./CommonStorage"
+import { Logger } from "../../utils/Logger"
 
 type TFsStorageConfig = {
     folder: string
@@ -15,16 +16,19 @@ export class FsStorage extends CommonStorage implements IStorage {
 
     Config = <TFsStorageConfig>{}
 
+    @Logger.LogFunction()
     Init(): void {
         this.Config = {
             folder: this.Options.fsFolder ?? '.'
         }
     }
 
+    @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
         return Fs.existsSync(`${this.Config.folder}${file}`)
     }
 
+    @Logger.LogFunction()
     async Read(file: string): Promise<string | undefined> {
         if (this.Options.autoCreate && !(await this.IsExist(file))) {
             const _fd = Fs.openSync(`${this.Config.folder}${file}`, 'wx')
@@ -37,6 +41,7 @@ export class FsStorage extends CommonStorage implements IStorage {
         return undefined
     }
 
+    @Logger.LogFunction()
     async Write(file: string, content: string): Promise<void> {
         if (this.Options.autoCreate && !(await this.IsExist(file))) {
             const _fd = Fs.openSync(`${this.Config.folder}${file}`, 'wx')

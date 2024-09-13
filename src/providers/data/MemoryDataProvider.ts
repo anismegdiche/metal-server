@@ -11,11 +11,10 @@ import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
-import { Logger } from '../../lib/Logger'
+import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import DATA_PROVIDER, { Source } from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
-import { JsonHelper } from '../../lib/JsonHelper'
 import { CommonDataProvider } from "./CommonDataProvider"
 
 
@@ -23,29 +22,31 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
     ProviderName = DATA_PROVIDER.MEMORY
     Connection?: DataBase = undefined
 
+    @Logger.LogFunction()
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("MemoryDataProvider.Init")
         this.Params = sourceParams
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Info(`${Logger.In} connected to '${this.SourceName} (${this.Params.database})'`)
-
+        
         const {
             database = 'memory'
         } = this.Params
-
+        
         this.Connection = new DataBase(database)
+        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         Logger.Info(`${Logger.In} '${this.SourceName} (${this.Params.database})' disconnected`)
         this.Connection = undefined
     }
 
      
+    @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MemoryDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
             entityName: schemaRequest.entityName,
@@ -70,8 +71,8 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
         }
     }
 
+    @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -104,7 +105,7 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
             ? sqlQueryHelper.Query
             : undefined
 
-        const memoryDataTable = await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQuery, sqlQueryHelper.Data)
+        const memoryDataTable = await this.Connection.Tables[schemaRequest.entityName].FreeSqlAsync(sqlQuery, sqlQueryHelper.Data)
 
         if (memoryDataTable && memoryDataTable.Rows.length > 0) {
             if (options?.Cache)
@@ -130,8 +131,8 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
     }
 
      
+    @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         const schemaResponse = <TSchemaResponse>{
             schemaName,
@@ -159,7 +160,7 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
-        await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await this.Connection.Tables[schemaRequest.entityName].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
@@ -168,8 +169,8 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
     }
 
      
+    @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryDataProvider.Delete : ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         const schemaResponse = <TSchemaResponse>{
             schemaName,
@@ -197,7 +198,7 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
             .From(`\`${entityName}\``)
             .Where(options.Filter)
 
-        await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await this.Connection.Tables[schemaRequest.entityName].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,

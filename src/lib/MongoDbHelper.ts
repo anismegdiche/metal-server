@@ -4,12 +4,14 @@
 //
 //
 import { SORT_ORDER } from "../types/DataTable"
+import { Logger } from "../utils/Logger"
 
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const GetMongoQuery = require("sql2mongo").getMongoQuery
 
 export class MongoDbHelper {
+    @Logger.LogFunction()
     static ConvertSqlSort(key: any, value: string) {
         const aSort = value.split(" ")
         
@@ -26,6 +28,7 @@ export class MongoDbHelper {
         }
     }
 
+    @Logger.LogFunction()
     static ConvertSqlQuery(sqlQuery: string) {
         return GetMongoQuery(sqlQuery)
     }

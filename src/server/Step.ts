@@ -7,7 +7,7 @@ import _ from "lodash"
 //
 import { METADATA } from "../lib/Const"
 import { Helper } from "../lib/Helper"
-import { Logger } from "../lib/Logger"
+import { Logger } from "../utils/Logger"
 import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TOrder, TRow } from "../types/DataTable"
 import { TJson } from "../types/TJson"
 import { TSchemaRequest } from "../types/TSchemaRequest"
@@ -60,8 +60,8 @@ export class Step {
     }
 
 
+    @Logger.LogFunction()
     static async Select(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Select: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
             Logger.Error(`${Logger.Out} Step.Select: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -106,14 +106,14 @@ export class Step {
                 ? sqlQueryHelper.Data
                 : undefined
 
-            return await currentDataTable.FreeSql(sqlQuery, sqlData)
+            return await currentDataTable.FreeSqlAsync(sqlQuery, sqlData)
         }
 
         return currentDataTable
     }
 
+    @Logger.LogFunction()
     static async Insert(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Insert: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
             Logger.Error(`${Logger.Out} Step.Insert: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -155,8 +155,8 @@ export class Step {
         return currentDataTable
     }
 
+    @Logger.LogFunction()
     static async Update(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Update: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
             Logger.Error(`${Logger.Out} Step.Update: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -193,14 +193,14 @@ export class Step {
                 .Set(_options.Data)
                 .Where(_options.Filter)
 
-            await currentDataTable.FreeSql(_sqlQueryHelper.Query, _sqlQueryHelper.Data)
+            await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query, _sqlQueryHelper.Data)
         }
 
         return currentDataTable
     }
 
+    @Logger.LogFunction()
     static async Delete(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Delete: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
             Logger.Error(`${Logger.Out} Step.Delete: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -233,14 +233,14 @@ export class Step {
                 .From(`\`${currentDataTable.Name}\``)
                 .Where(_options.Filter)
 
-            await currentDataTable.FreeSql(_sqlQueryHelper.Query, _sqlQueryHelper.Data)
+            await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query, _sqlQueryHelper.Data)
         }
 
         return currentDataTable
     }
 
+    @Logger.LogFunction()
     static async Join(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Join: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const stepParams: Record<string, string> = stepArguments.stepParams as Record<string, string>
         const { currentPlanName, currentDataTable } = stepArguments
@@ -276,15 +276,15 @@ export class Step {
     }
 
 
+    @Logger.LogFunction()
     static async Fields(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Fields: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         const stepParams: string = stepArguments.stepParams as string
         const fields = StringHelper.Split(stepParams, ",")
         return stepArguments.currentDataTable.SelectFields(fields)
     }
 
+    @Logger.LogFunction()
     static async Sort(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Sort: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const stepParams = stepArguments.stepParams as TStepSortParams
         const { currentDataTable } = stepArguments
@@ -297,8 +297,8 @@ export class Step {
         return currentDataTable.Sort(fields, orders)
     }
 
+    @Logger.LogFunction()
     static async Debug(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Debug: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         const debug = stepArguments.stepParams as string ?? "error"
         stepArguments.currentDataTable.SetMetaData(METADATA.PLAN_DEBUG, debug)
 
@@ -309,11 +309,10 @@ export class Step {
         return stepArguments.currentDataTable
     }
 
+    @Logger.LogFunction()
     static async Run(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Run: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const { ai, input, output } = stepArguments.stepParams as TStepRunParams
-
         const promises = []
 
         for await (const [_rowIndex, _rowData] of stepArguments.currentDataTable.Rows.entries()) {
@@ -355,8 +354,8 @@ export class Step {
         return stepArguments.currentDataTable.SetFields()
     }
 
+    @Logger.LogFunction()
     static async Sync(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Run: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const {
             source, destination, on,
@@ -433,15 +432,15 @@ export class Step {
         return stepArguments.currentDataTable.SetFields()
     }
 
+    @Logger.LogFunction()
     static async Anonymize(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.Anonymize: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         const stepParams: string = stepArguments.stepParams as string
         const fieldsToAnonymize = StringHelper.Split(stepParams, ",")
         return stepArguments.currentDataTable.AnonymizeFields(fieldsToAnonymize)
     }
 
+    @Logger.LogFunction()
     static async RemoveDuplicates(stepArguments: TStepArguments): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Step.RemoveDuplicates: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const {
             keys = undefined,

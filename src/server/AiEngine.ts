@@ -4,7 +4,7 @@
 //
 //
 //
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { Config } from '../server/Config'
 import { Helper } from '../lib/Helper'
 import { TJson } from '../types/TJson'
@@ -13,7 +13,6 @@ import { IAiEngine } from '../types/IAiEngine'
 import { TesseractJs } from '../ai-engine/TesseractJs'
 import { TensorFlowJs } from '../ai-engine/TensorFlowJs'
 import { NlpJs } from '../ai-engine/NlpJs'
-import { JsonHelper } from '../lib/JsonHelper'
 
 //
 //  config types
@@ -190,10 +189,12 @@ export class AiEngine {
         [AI_ENGINE.NLP_JS]: (aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineNlpJs) => new NlpJs(aiEngineInstanceName, AiEngineConfig)
     }
 
+    @Logger.LogFunction()
     static async Init(): Promise<void> {
         AiEngine.AiEngineConfigurations = Config.Get("ai-engines")
     }
 
+    @Logger.LogFunction()
     static async CreateAll(): Promise<void> {
         await Promise.all(
             Object.entries(AiEngine.AiEngineConfigurations).map(async ([aiEngineInstanceName, aiEngineParams]) => {
@@ -202,8 +203,8 @@ export class AiEngine {
         )
     }
 
+    @Logger.LogFunction()
     static async Create(aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineDefault): Promise<void> {
-        Logger.Debug(`${Logger.In} Starting '${aiEngineInstanceName}' with params '${JsonHelper.Stringify(AiEngineConfig)}'`)
         if (!(AiEngineConfig.engine in AiEngine.#NewAiEngineTypeCaseMap)) {
             Logger.Error(`Unknown engine type: ${AiEngineConfig.engine}`)
             return
@@ -213,6 +214,7 @@ export class AiEngine {
         Logger.Debug(`${Logger.Out} AI Engine '${aiEngineInstanceName}' created`)
     }
 
+    @Logger.LogFunction()
     static async Run(aiEngineInstanceName: string, input: string) {
         return await AiEngine.AiEngine[aiEngineInstanceName].Run(input)
     }

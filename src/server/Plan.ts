@@ -3,7 +3,7 @@ import * as Yaml from "js-yaml"
 import _ from "lodash"
 //
 import { HTTP_STATUS_CODE, METADATA } from "../lib/Const"
-import { Logger } from "../lib/Logger"
+import { Logger } from "../utils/Logger"
 import { Config } from "./Config"
 import { TInternalResponse } from "../types/TInternalResponse"
 import { TJson } from "../types/TJson"
@@ -18,8 +18,8 @@ import { JsonHelper } from "../lib/JsonHelper"
 
 
 export class Plan {
+    @Logger.LogFunction()
     static async Process(schemaRequest: TSchemaRequest | TScheduleConfig, sqlQuery: string | undefined = undefined): Promise<DataTable> {
-        Logger.Debug(`${Logger.In} Plan.Execute: ${JsonHelper.Stringify(schemaRequest)}`)
 
         // TSchemaRequest
         if (TypeHelper.IsSchemaRequest(schemaRequest)) {
@@ -39,7 +39,7 @@ export class Plan {
             const entitySteps: TJson[] = Config.Get(`plans.${sourcePlanName}.${entityName}`)
             Logger.Debug(`${Logger.In} Plan.Execute: ${sourceName}.${entityName}: ${JsonHelper.Stringify(entitySteps)}`)
             const currentDatatable = await Plan.ExecuteSteps(schemaName, sourceName, entityName, entitySteps)
-            await currentDatatable.FreeSql(sqlQuery)
+            await currentDatatable.FreeSqlAsync(sqlQuery)
 
             Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entityName}`)
             return currentDatatable
@@ -61,9 +61,10 @@ export class Plan {
         Logger.Debug(`${Logger.In} Plan.Execute: ${planName}.${entityName}: ${JsonHelper.Stringify(entitySteps)}`)
         const currentDatatable = await Plan.ExecuteSteps(undefined, planName, entityName, entitySteps)
         Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entityName}`)
-        return await currentDatatable.FreeSql(sqlQuery)
+        return await currentDatatable.FreeSqlAsync(sqlQuery)
     }
 
+    @Logger.LogFunction()
     static async ExecuteSteps(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: TJson[]): Promise<DataTable> {
 
         let currentDataTable = new DataTable(currentEntityName)
@@ -124,8 +125,8 @@ export class Plan {
         return currentDataTable
     }
 
+    @Logger.LogFunction()
     static Reload(planName: string): TInternalResponse {
-        Logger.Debug(`${Logger.In} Plans.Reload`)
         const configFileRaw = Fs.readFileSync(Config.ConfigFilePath, 'utf8')
         const configFileJson: any = Yaml.load(configFileRaw)
 

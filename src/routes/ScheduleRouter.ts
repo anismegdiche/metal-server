@@ -3,7 +3,8 @@
 //
 //
 //
-import { Router } from "express"
+import { Router, Request, Response, NextFunction } from "express"
+//
 import { UserResponse } from "../response/UserResponse"
 import { ServerResponse } from "../response/ServerResponse"
 import { HTTP_METHOD } from "../lib/Const"
@@ -13,7 +14,7 @@ export const ScheduleRouter = Router()
 
 //ROADMAP
 ScheduleRouter.route("/:jobName")
-    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
+    .all(ServerResponse.AllowOnlyCrudMethods,
         UserResponse.IsAuthenticated
     )
     .get(ServerResponse.NotImplemented)
@@ -22,13 +23,13 @@ ScheduleRouter.route("/:jobName")
     .delete(ServerResponse.NotImplemented)
 
 ScheduleRouter.route("/:jobName/start")
-    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
+    .all((req: Request, res: Response, next: NextFunction) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
         UserResponse.IsAuthenticated
     )
     .post(ScheduleResponse.Start)
 
 ScheduleRouter.route("/:jobName/stop")
-    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
+    .all((req: Request, res: Response, next: NextFunction) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
         UserResponse.IsAuthenticated
     )
     .post(ScheduleResponse.Stop)

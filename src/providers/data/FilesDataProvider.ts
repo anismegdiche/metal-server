@@ -5,7 +5,7 @@
 //
 import { RESPONSE_TRANSACTION, RESPONSE } from "../../lib/Const"
 import { Helper } from "../../lib/Helper"
-import { Logger } from "../../lib/Logger"
+import { Logger } from "../../utils/Logger"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { Cache } from "../../server/Cache"
 import DATA_PROVIDER from "../../server/Source"
@@ -21,7 +21,6 @@ import { JsonContent } from "../content/JsonContent"
 import { AzureBlobStorage } from '../storage/AzureBlobStorage'
 import { FsStorage } from '../storage/FsStorage'
 import { CsvContent } from '../content/CsvContent'
-import { JsonHelper } from "../../lib/JsonHelper"
 import { CommonDataProvider } from "./CommonDataProvider"
 
 
@@ -82,6 +81,7 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         [CONTENT.CSV]: (sourceParams: TSourceParams) => new CsvContent(sourceParams)
     }
 
+    @Logger.LogFunction()
     async Init(sourceParams: TSourceParams): Promise<void> {
         Logger.Debug("FilesDataProvider.Init")
         this.Params = sourceParams
@@ -100,20 +100,22 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         this.Content = FilesDataProvider.#NewContentCaseMap[contentType](this.Params) ?? Helper.CaseMapNotFound(contentType)
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
         if (this.Connection && this.Content) {
             this.Connection.Connect()
         }
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         if (this.Connection && this.Content) {
             this.Connection.Disconnect()
         }
     }
 
+    @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -147,7 +149,7 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
             .Fields(options.Data.GetFieldNames(), '`')
             .Values(options.Data.Rows)
 
-        await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await fileDataTable.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
         fileString = await this.Content.Set(fileDataTable)
         await this.Connection?.Write(entityName, fileString)
 
@@ -158,8 +160,8 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         }
     }
 
+    @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
 
@@ -220,8 +222,8 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         }
     }
 
+    @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
 
@@ -253,7 +255,7 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
-        await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await fileDataTable.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
         fileString = await this.Content.Set(fileDataTable)
         await this.Connection?.Write(entityName, fileString)
 
@@ -264,8 +266,8 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         }
     }
 
+    @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -298,7 +300,7 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
             .From(`\`${entityName}\``)
             .Where(options.Filter)
 
-        await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await fileDataTable.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
         fileString = await this.Content.Set(fileDataTable)
 
         if (this.Connection)

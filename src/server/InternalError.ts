@@ -3,7 +3,7 @@
 //
 //
 //
-import { VERBOSITY } from "../lib/Logger"
+import { VERBOSITY } from "../utils/Logger"
 
 export class InternalError extends Error {
     verbosity: VERBOSITY

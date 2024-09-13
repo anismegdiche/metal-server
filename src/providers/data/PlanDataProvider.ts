@@ -11,33 +11,35 @@ import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResponseNoData } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
-import { Logger } from '../../lib/Logger'
+import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { Plan } from '../../server/Plan'
 import DATA_PROVIDER from '../../server/Source'
-import { JsonHelper } from '../../lib/JsonHelper'
 import { CommonDataProvider } from "./CommonDataProvider"
 
 
 export class PlanDataProvider extends CommonDataProvider  implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.PLAN
 
+    @Logger.LogFunction()
     async Init(sourceParams: TSourceParams): Promise<void> {
         Logger.Debug("PlanDataProvider.Init")
         this.Params = sourceParams
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Info(`${Logger.In} connected to '${this.SourceName} (${this.Params.database})'`)
+        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         Logger.Info(`${Logger.In} '${this.SourceName} (${this.Params.database})' disconnected`)
     }
 
      
+    @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} PlanDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Insert: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{
@@ -50,8 +52,8 @@ export class PlanDataProvider extends CommonDataProvider  implements IDataProvid
         }
     }
 
+    @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -98,8 +100,8 @@ export class PlanDataProvider extends CommonDataProvider  implements IDataProvid
     }
 
      
+    @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Update: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{
@@ -113,8 +115,8 @@ export class PlanDataProvider extends CommonDataProvider  implements IDataProvid
     }
 
      
+    @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanDataProvider.Delete : ${JsonHelper.Stringify(schemaRequest)}`)
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Delete: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         return <TSchemaResponseError>{

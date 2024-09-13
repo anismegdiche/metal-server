@@ -8,7 +8,7 @@ import alasql from 'alasql'
 //
 import { DataTable, TRow } from './DataTable'
 import { TJson } from './TJson'
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 
 
 export class DataBase {
@@ -22,6 +22,7 @@ export class DataBase {
         this.Name = name
     }
 
+    @Logger.LogFunction()
     AddTable(entityName: string, rows: TJson[] | undefined = undefined) {
         if (this.Tables[entityName] === undefined)
             this.Tables[entityName] = new DataTable(entityName, rows)
@@ -29,6 +30,7 @@ export class DataBase {
             Logger.Error(`DataBase '${this.Name}' has already entity named '${entityName}'`)
     }
 
+    @Logger.LogFunction()
     SetTable(entityName: string, rows: TJson[] | undefined = undefined) {
         if (this.Tables[entityName] === undefined)
             this.AddTable(entityName, rows)
@@ -36,6 +38,7 @@ export class DataBase {
             this.Tables[entityName].Set(rows)
     }
 
+    @Logger.LogFunction()
     FreeSql(name: string, sqlQuery: string): DataTable | undefined {
 
         let sqlQueryModified = sqlQuery

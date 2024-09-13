@@ -10,6 +10,8 @@ import { Schedule } from '../server/Schedule'
 import { Convert } from '../lib/Convert'
 
 export class ScheduleResponse {
+    
+    //@Logger.LogFunction()
     static Start(req: Request, res: Response) {
         try {
             const { jobName } = req.params
@@ -20,6 +22,7 @@ export class ScheduleResponse {
         }
     }
 
+    //@Logger.LogFunction()
     static Stop(req: Request, res: Response) {
         try {
             const { jobName } = req.params

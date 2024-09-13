@@ -3,7 +3,8 @@
 //
 //
 //
-import { Router } from "express"
+import { Router, Request, Response, NextFunction } from "express"
+//
 import { UserResponse } from "../response/UserResponse"
 import { ServerResponse } from "../response/ServerResponse"
 import { HTTP_METHOD } from "../lib/Const"
@@ -13,7 +14,7 @@ export const PlanRouter = Router()
 
 //ROADMAP
 PlanRouter.route("/:planName")
-    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE),
+    .all(ServerResponse.AllowOnlyCrudMethods,
         UserResponse.IsAuthenticated
     )
     .get(ServerResponse.NotImplemented)
@@ -22,7 +23,7 @@ PlanRouter.route("/:planName")
     .delete(ServerResponse.NotImplemented)
 
 PlanRouter.route('/:planName/reload')
-    .all((req, res, next) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
+    .all((req: Request, res: Response, next: NextFunction) => ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.POST),
         UserResponse.IsAuthenticated
     )
     .post(PlanResponse.Reload)

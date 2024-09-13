@@ -5,7 +5,7 @@
 //
 import { createContext, Script } from 'vm'
 //
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 
 export class Sandbox {
     #Context: any
@@ -16,6 +16,7 @@ export class Sandbox {
         this.Reset()
     }
 
+    @Logger.LogFunction()
     Reset() {
         // Create a context
         this.#Context = createContext()
@@ -28,6 +29,7 @@ export class Sandbox {
     }
 
     // Evaluate dynamic code
+    @Logger.LogFunction()
     Evaluate(code: string): string | undefined {
         try {
             // Perform additional validation if necessary

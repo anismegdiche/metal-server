@@ -6,7 +6,7 @@
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob'
 //
 import { CommonStorage, IStorage } from "./CommonStorage"
-import { Logger } from '../../lib/Logger'
+import { Logger } from '../../utils/Logger'
 
 type TAzureBlobStorageConfig = {
     connectionString?: string
@@ -21,6 +21,7 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
 
     Config: TAzureBlobStorageConfig = {}
 
+    @Logger.LogFunction()
     Init(): void {
         Logger.Debug("AzureBlobStorage.Init")
         this.Config = <TAzureBlobStorageConfig>{
@@ -30,6 +31,7 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
         }
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
         const { connectionString, containerName } = this.Config
 
@@ -45,11 +47,13 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
 
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         this.#BlobServiceClient = undefined
         this.#ContainerClient = undefined
     }
 
+    @Logger.LogFunction()
     async IsConnected(): Promise<boolean> {
         if (!this.#ContainerClient) {
             Logger.Error('AzureBlobStorage: Connection to Azure Blob Storage not established')
@@ -58,6 +62,7 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
         return true
     }
 
+    @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
         if (!this.#ContainerClient) {
             throw new Error('AzureBlobStorage: Connection to Azure Blob Storage not established')
@@ -67,6 +72,7 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
         return await blobClient.exists()
     }
 
+    @Logger.LogFunction()
     async Read(file: string): Promise<string> {
         if (!this.#ContainerClient) {
             throw new Error('Connection to Azure Blob Storage not established')
@@ -77,6 +83,7 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
         return await this.StreamToBuffer(downloadBlockBlobResponse.readableStreamBody!)
     }
 
+    @Logger.LogFunction()
     async Write(file: string, content: string): Promise<void> {
         if (!this.#ContainerClient) {
             throw new Error('Connection to Azure Blob Storage not established')

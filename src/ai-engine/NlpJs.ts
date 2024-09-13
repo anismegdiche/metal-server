@@ -3,7 +3,7 @@
 //
 //
 //
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { IAiEngine } from '../types/IAiEngine'
 import { TJson } from '../types/TJson'
 import { Helper } from '../lib/Helper'
@@ -47,11 +47,13 @@ export class NlpJs implements IAiEngine {
 		this.Options = this.#SetDefaultOptions[this.Model](aiEngineConfig.options) ?? Helper.CaseMapNotFound(this.Model)
 	}
 
-	async Init(): Promise<void> {
+	@Logger.LogFunction()
+    async Init(): Promise<void> {
 		this.#Model = await this.#LoadModel[this.Model]()
 	}
 
-	async Run(text: string): Promise<any> {
+	@Logger.LogFunction()
+    async Run(text: string): Promise<any> {
 		return await this.#RunModel[this.Model](text)
 			.catch((error: any) => {
 				Logger.Error(`NlpJs.Run '${this.InstanceName}': '${JsonHelper.Stringify(this.Options)}',Text= '${text}'`)

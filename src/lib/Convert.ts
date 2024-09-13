@@ -10,7 +10,7 @@ import _ from "lodash"
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TJson } from '../types/TJson'
 import { TSchemaResponse } from '../types/TSchemaResponse'
-import { Logger } from "../lib/Logger"
+import { Logger } from "../utils/Logger"
 import { TInternalResponse } from '../types/TInternalResponse'
 import { Server } from '../server/Server'
 import { TypeHelper } from './TypeHelper'
@@ -21,12 +21,14 @@ import { Config } from "../server/Config"
 
 export class Convert {
 
+    @Logger.LogFunction()
     static JsonToArray(obj: TJson) {
         return Object
             .entries(obj)
             .map(([k, v]) => ({ [k]: v }))
     }
 
+    @Logger.LogFunction()
     static HumainSizeToBytes(size: string) {
 
         // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -34,6 +36,7 @@ export class Convert {
         return bytes(size)
     }
 
+    @Logger.LogFunction()
     static RequestToSchemaRequest(req: Request): TSchemaRequest {
         const { schemaName, entityName } = req.params
 
@@ -46,10 +49,12 @@ export class Convert {
         }
     }
 
+    @Logger.LogFunction()
     static InternalResponseToResponse(res: Response, intRes: TInternalResponse): void {
         res.status(intRes.StatusCode).json(intRes.Body)
     }
 
+    @Logger.LogFunction()
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, res: Response) {
         const { schemaName, entityName, transaction, result, status } = schemaResponse
 
@@ -134,6 +139,7 @@ export class Convert {
     static ReplacePlaceholders(value: string): string
     static ReplacePlaceholders(value: TJson[] | undefined): TJson[] | undefined
     static ReplacePlaceholders(value: object | TJson): object | TJson
+    @Logger.LogFunction()
     static ReplacePlaceholders(value: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
         if (value == undefined)
             return undefined

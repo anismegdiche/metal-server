@@ -13,7 +13,7 @@ import { Convert } from '../lib/Convert'
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { RESPONSE, RESPONSE_TRANSACTION } from '../lib/Const'
 import { Schema } from '../server/Schema'
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { Config } from '../server/Config'
 import { TJson } from '../types/TJson'
 import { TCacheData } from '../types/TCacheData'
@@ -21,6 +21,7 @@ import { HttpError } from '../server/HttpErrors'
 
 
 export class CacheResponse {
+    //@Logger.LogFunction()
     static View(req: Request, res: Response): void {
         Cache.View()
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
@@ -28,18 +29,22 @@ export class CacheResponse {
 
     }
 
+    //@Logger.LogFunction()
     static Clean(req: Request, res: Response): void {
         Cache.Clean()
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.Error(res, error))
     }
 
+    //@Logger.LogFunction()
     static Purge(req: Request, res: Response): void {
         Cache.Purge()
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.Error(res, error))
     }
 
+    // TODO: refactor to be compliant with architecture logic
+    //@Logger.LogFunction()
     static Get(req: Request, res: Response, next: NextFunction): void {
         try {
             const schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)

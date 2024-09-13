@@ -7,17 +7,15 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import _ from 'lodash'
 //
-import { Logger } from "../../lib/Logger"
+import { Logger } from "../../utils/Logger"
 import DATA_PROVIDER from "../../server/Source"
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TRANSACTION, TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from "../../types/TSchemaResponse"
 import { TSourceParams } from "../../types/TSourceParams"
-import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { TJson } from '../../types/TJson'
 import { DataTable } from '../../types/DataTable'
 import { SERVER } from '../../lib/Const'
-import { JsonHelper } from '../../lib/JsonHelper'
 import { CommonDataProvider } from "./CommonDataProvider"
 
 
@@ -68,6 +66,7 @@ export class MetalClient {
         return { headers }
     }
 
+    @Logger.LogFunction()
     static ConvertToURLParams(jsonObj: object): string {
         const params: string[] = []
         for (const [_key, _value] of Object.entries(jsonObj)) {
@@ -186,9 +185,9 @@ export class MetalDataProvider  extends CommonDataProvider implements IDataProvi
 
         this.Connection.Login(user, password)
             .then(() => {
-                Logger.Info(`${Logger.In} connected to '${sourceName} (${database})'`)
                 this.Connection?.Get(`${this.Params.host}${this.Connection.API.server}/info`)
-                    .then((res: AxiosResponse) => {
+                .then((res: AxiosResponse) => {
+                        Logger.Info(`${Logger.Out} connected to '${sourceName} (${database})'`)
                         const { data } = res
                         if (data?.version != SERVER.VERSION) {
                             Logger.Warn(`⚠️  WARNING ⚠️  The server version for '${sourceName}' (version: ${data?.version}) do not match with current Metal Server (version: ${SERVER.VERSION}). Please proceed with caution.`)
@@ -211,7 +210,6 @@ export class MetalDataProvider  extends CommonDataProvider implements IDataProvi
     }
 
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)
@@ -227,7 +225,6 @@ export class MetalDataProvider  extends CommonDataProvider implements IDataProvi
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)
@@ -249,7 +246,6 @@ export class MetalDataProvider  extends CommonDataProvider implements IDataProvi
 
 
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)
@@ -265,7 +261,6 @@ export class MetalDataProvider  extends CommonDataProvider implements IDataProvi
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
 
         if (this.Connection === undefined) {
             throw new Error(`${this.SourceName}: Failed to connect`)

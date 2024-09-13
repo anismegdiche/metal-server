@@ -11,6 +11,7 @@ import Bcrypt from 'bcrypt'
 import { Config } from './Config'
 import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from '../lib/Const'
 import { TInternalResponse } from '../types/TInternalResponse'
+import { Logger } from "../utils/Logger"
 
 type TUser = Record<string, string>
 export type TToken = string | undefined
@@ -33,7 +34,6 @@ export class User {
         return Bcrypt.hashSync(password, User.#SALT_ROUNDS)
     }
 
-
     static #CheckToken(token: TToken) {
         if (token === undefined) {
             return false
@@ -41,11 +41,13 @@ export class User {
         return _.has(User.LoggedInUsers, token)
     }
 
+    @Logger.LogFunction()
     static LoadUsers(): void {
         if (Config.Flags.EnableAuthentication)
             User.Users = _.mapValues(Config.Configuration.users, user => user.toString())
     }
 
+    @Logger.LogFunction()
     static LogIn(username: string, password: string): TInternalResponse {
 
         // Check if the user exists and the password is correct
@@ -69,7 +71,7 @@ export class User {
         }
     }
 
-
+    @Logger.LogFunction()
     static LogOut(token: TToken): TInternalResponse {
         if (token && User.#CheckToken(token)) {
             delete User.LoggedInUsers[token]
@@ -84,7 +86,7 @@ export class User {
         }
     }
 
-
+    @Logger.LogFunction()
     static GetInfo(token: TToken): TInternalResponse {
         if (token && User.#CheckToken(token)) {
             const { username } = User.LoggedInUsers[token]
@@ -99,6 +101,7 @@ export class User {
         }
     }
 
+    @Logger.LogFunction()
     static IsAuthenticated(token: TToken) {
         return Boolean(
             !Config.Flags.EnableAuthentication ||
@@ -106,6 +109,7 @@ export class User {
         )
     }
 
+    @Logger.LogFunction()
     static IsNotAuthenticated(token: TToken) {
         return !User.IsAuthenticated(token)
     }

@@ -8,7 +8,7 @@ import { Validator } from "jsonschema"
 import { configure } from 'safe-stable-stringify'
 //
 import { TJson } from "../types/TJson"
-import { Logger } from "./Logger"
+import { Logger } from "../utils/Logger"
 
 const SafeStableStringify = configure({
     circularValue: undefined,
@@ -83,6 +83,7 @@ export class JsonHelper {
             if (_.isObject(value)) {
                 JsonHelper.RemoveUselessKeys(value);
             }
+            // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
             if (["[Object]", "[Array]"].includes(value) || (_.isArray(value) && value.every(v => v === null))) {
                 delete obj[key];
             }

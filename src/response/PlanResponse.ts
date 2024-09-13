@@ -12,6 +12,7 @@ import { Convert } from '../lib/Convert'
 
 export class PlanResponse {
 
+    //@Logger.LogFunction()
     static Reload(req: Request, res: Response) {
         try {
             const { planName } = req.params

@@ -11,12 +11,11 @@ import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TSchemaResponse, TSchemaResponseData, TRANSACTION } from '../types/TSchemaResponse'
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { IDataProvider } from '../types/IDataProvider'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
-import { JsonHelper } from '../lib/JsonHelper'
 
 
 export class Cache {
@@ -31,20 +30,20 @@ export class Cache {
         entityName: Cache.Table
     }
 
+    @Logger.LogFunction()
     static async Connect(): Promise<void> {
-        Logger.Debug(`Cache.Connect`)
         if (Config.Flags.EnableCache)
             Source.Connect(null, Config.Get("server.cache"))
     }
 
+    @Logger.LogFunction()
     static async Disconnect(): Promise<void> {
-        Logger.Debug(`Cache.Disconnect`)
         if (Config.Flags.EnableCache)
             await Cache.CacheSource.Disconnect()
     }
 
+    @Logger.LogFunction()
     static async Set(schemaRequest: TSchemaRequest, datatable: DataTable): Promise<void> {
-        Logger.Debug(`${Logger.In} Cache.Set: ${JsonHelper.Stringify(schemaRequest)}`)
         
         // bypassing 
         if (this.CacheSource == undefined) {
@@ -74,7 +73,7 @@ export class Cache {
         // const cacheData = await Cache.Get(hash)
 
         if (_expires == 0) {
-            Logger.Debug(`Cache.Set: no cache found, creating Hash=${hash}`)
+            Logger.Debug(`${Logger.Out} Cache.Set: no cache found, creating Hash=${hash}`)
             datatable.SetMetaData(METADATA.CACHE, true)
             datatable.SetMetaData(METADATA.CACHE_EXPIRE, expires)
             await Cache.CacheSource.Insert(<TSchemaRequest>{
@@ -111,18 +110,20 @@ export class Cache {
         })
     }
 
+    @Logger.LogFunction()
     static Hash(schemaRequest: TSchemaRequest): string {
         return Sha512.sha512(JSON.stringify(schemaRequest))
     }
 
+    @Logger.LogFunction()
     static IsValid(expires: number): boolean {
         const isValid = expires !== undefined && Date.now() <= expires
         Logger.Info(`Cache.IsValid = ${isValid}`)
         return isValid
     }
 
+    @Logger.LogFunction()
     static async Get(cacheHash: string): Promise<TCacheData | undefined> {
-        Logger.Debug(`Cache.Get: Hash=${cacheHash}`)
         if (!Config.Flags.EnableCache || this.CacheSource === undefined) {
             return undefined
         }
@@ -143,8 +144,8 @@ export class Cache {
         return undefined
     }
 
+    @Logger.LogFunction()
     static async IsExists(hash: string): Promise<number> {
-        Logger.Debug(`Cache.IsExists`)
         if (!Config.Flags.EnableCache) {
             return 0
         }
@@ -162,8 +163,8 @@ export class Cache {
         return 0
     }
 
+    @Logger.LogFunction()
     static async View(): Promise<TInternalResponse> {
-        Logger.Debug(`${Logger.In} Cache.View`)
         let schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(Cache.#SchemaRequest)
         schemaResponse.transaction = TRANSACTION.CACHE_DATA
         const intRes: TInternalResponse = {
@@ -180,8 +181,8 @@ export class Cache {
         return intRes
     }
 
+    @Logger.LogFunction()
     static async Purge(): Promise<TInternalResponse> {
-        Logger.Debug(`${Logger.In} Cache.Purge`)
         await Cache.CacheSource.Delete(Cache.#SchemaRequest)
         Logger.Debug(`${Logger.Out} Cache.Purge`)
         return {
@@ -190,10 +191,10 @@ export class Cache {
         }
     }
 
+    @Logger.LogFunction()
     static async Clean(): Promise<TInternalResponse> {
-        Logger.Debug(`${Logger.In} Cache.Clean`)
         const _expireDate = new Date().getTime()
-        Logger.Debug(`Cache.Clean  ${_expireDate}`)
+        Logger.Debug(`Cache.Clean ${_expireDate}`)
         await Cache.CacheSource.Delete(<TSchemaRequest>{
             ...Cache.#SchemaRequest,
             filterExpression: `expires < ${_expireDate}`

@@ -3,6 +3,7 @@
 //
 //
 //
+import { Logger } from "../../utils/Logger"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TFilesDataProviderOptions } from "../data/FilesDataProvider"
 
@@ -30,37 +31,44 @@ export class CommonStorage {
         this.Init()
     }
      
+    @Logger.LogFunction()
     Init(): void {
         //
     }
      
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
         //
     }
      
     // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         //
     }
      
      
     // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
         return true
     }
      
      
     // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
     async Read(file: string): Promise<string | undefined> {
         return undefined
     }
      
      
     // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
     async Write(file: string, content: string): Promise<void> {
         //
     }
      
+    @Logger.LogFunction()
     async StreamToBuffer(stream: NodeJS.ReadableStream): Promise<string> {
         return new Promise((resolve, reject) => {
             const chunks: Buffer[] = []

@@ -9,7 +9,7 @@ import _ from 'lodash'
 import { HTTP_STATUS_CODE } from '../lib/Const'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchedule } from '../types/TSchedule'
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { Plan } from './Plan'
 import { JsonHelper } from '../lib/JsonHelper'
@@ -24,8 +24,8 @@ export class Schedule {
 
     static Jobs: TSchedule[] = []
 
+    @Logger.LogFunction()
     static async CreateAndStartAll() {
-        Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: ${JsonHelper.Stringify(Config.Configuration.schedules)}`)
         if (!Config.Configuration?.schedules) {
             return undefined
         }
@@ -60,8 +60,8 @@ export class Schedule {
         }
     }
 
+    @Logger.LogFunction()
     static Start(jobName: string): TInternalResponse {
-        Logger.Debug(`${Logger.In} Schedule.Start: Starting job '${jobName}'`)
         const _jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (_jobKey) {
             this.Jobs[Number(_jobKey)].cronJob.start()
@@ -76,8 +76,8 @@ export class Schedule {
         }
     }
 
+    @Logger.LogFunction()
     static Stop(jobName: string): TInternalResponse {
-        Logger.Debug(`${Logger.In} Schedule.Stop: Stopping job '${jobName}'`)
         const _jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (_jobKey) {
             const __jobKey = parseInt(_jobKey, 10)
@@ -93,6 +93,7 @@ export class Schedule {
         }
     }
 
+    @Logger.LogFunction()
     static StartAll() {
         for (const _job of this.Jobs) {
             _job.cronJob.start()
@@ -100,6 +101,7 @@ export class Schedule {
     }
 
 
+    @Logger.LogFunction()
     static StopAll() {
         for (const _job of this.Jobs) {
             _job.cronJob.stop()

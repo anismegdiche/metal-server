@@ -3,7 +3,7 @@
 //
 //
 //
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { Cache } from './Cache'
 import { Config } from './Config'
 import { IDataProvider } from '../types/IDataProvider'
@@ -53,6 +53,7 @@ export class Source {
         [DATA_PROVIDER.FILES]: (source: string, sourceParams: TSourceParams) => new FilesDataProvider(source, sourceParams)
     }
 
+    @Logger.LogFunction()
     static async Connect(source: string | null, sourceParams: TSourceParams): Promise<void> {
         if (!(sourceParams.provider in Source.#NewProviderCaseMap)) {
             Logger.Error(`Source '${source}', Provider '${sourceParams.provider}' not found. The source will not be connected`)
@@ -67,6 +68,7 @@ export class Source {
             Source.Sources[source] = Source.#NewProviderCaseMap[sourceParams.provider](source, sourceParams)
     }
 
+    @Logger.LogFunction()
     static async ConnectAll(): Promise<void> {
         for (const _source in Config.Configuration.sources) {
             if (Object.hasOwn(Config.Configuration.sources, _source)) {
@@ -76,16 +78,19 @@ export class Source {
             }
         }
     }
+    @Logger.LogFunction()
     static async Disconnect(source: string): Promise<void> {
         if (source)
             Source.Sources[source].Disconnect()
     }
 
+    @Logger.LogFunction()
     static async DisconnectAll(): Promise<void> {
         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         _.keys(Source.Sources).forEach(Source.Disconnect)
     }
 
+    @Logger.LogFunction()
     static ResponseError(schemaResponse: TSchemaResponse): TSchemaResponseNoData {
         return <TSchemaResponseNoData>{
             ...schemaResponse,

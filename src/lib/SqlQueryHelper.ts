@@ -7,7 +7,7 @@ import _ from 'lodash'
 //
 import { TRow } from "../types/DataTable"
 import { TJson } from '../types/TJson'
-import { Logger } from './Logger'
+import { Logger } from '../utils/Logger'
 import { JsonHelper } from './JsonHelper'
 
 export class SqlQueryHelper {
@@ -19,31 +19,36 @@ export class SqlQueryHelper {
             this.SetQuery(query)
     }
 
+    @Logger.LogFunction()
     SetQuery(query: string) {
         this.Query = query
         return this
     }
 
+    @Logger.LogFunction()
     Select(fields: TJson | string | undefined = undefined) {
         if (typeof fields === 'object') {
             Logger.Error('SqlQueryHelper.Select: fields must be a string or undefined')
             return this
         }
+
         this.Query = (fields === undefined)
             ? "SELECT *"
             : `SELECT ${fields}`
+
         return this
     }
 
+    @Logger.LogFunction()
     From(entity: string) {
         this.Query = `${this.Query} FROM ${entity}`
         return this
     }
 
+    @Logger.LogFunction()
     Where(condition: string | object | undefined = undefined) {
-        if (condition === undefined) {
+        if (condition === undefined)
             return this
-        }
 
         if (typeof condition === 'string' && condition.length > 0) {
             this.Query = `${this.Query} WHERE ${condition}`
@@ -89,20 +94,22 @@ export class SqlQueryHelper {
     }
 
 
+    @Logger.LogFunction()
     Delete() {
         this.Query = 'DELETE'
         return this
     }
 
+    @Logger.LogFunction()
     Update(entity: string) {
         this.Query = `UPDATE ${entity}`
         return this
     }
 
+    @Logger.LogFunction()
     Set(rows: TRow[] | TRow | undefined) {
-        if (rows === undefined) {
+        if (rows === undefined)
             return this
-        }
 
         let fieldsValues: TRow = <TRow>{}
         fieldsValues = (Array.isArray(rows))
@@ -138,11 +145,13 @@ export class SqlQueryHelper {
         return this
     }
 
+    @Logger.LogFunction()
     Insert(entity: string) {
         this.Query = `INSERT INTO ${entity}`
         return this
     }
 
+    @Logger.LogFunction()
     Fields(data: string[] | string, sep: string = '') {
         const joinString = `${sep},${sep}`
 
@@ -153,6 +162,7 @@ export class SqlQueryHelper {
         return this
     }
 
+    @Logger.LogFunction()
     Values(data: TRow[]): SqlQueryHelper {
         if (Array.isArray(data) && data.length > 0) {
             this.Query = `${this.Query} VALUES`
@@ -184,15 +194,15 @@ export class SqlQueryHelper {
         return this
     }
 
+    @Logger.LogFunction()
     OrderBy(order: TJson | string | undefined = undefined) {
         if (typeof order !== 'string' && order !== undefined) {
             Logger.Error('SqlQueryHelper.OrderBy: order must be a string or undefined')
             return this
         }
 
-        if (typeof order === 'string') {
+        if (typeof order === 'string')
             this.Query = `${this.Query} ORDER BY ${order}`
-        }
 
         return this
     }

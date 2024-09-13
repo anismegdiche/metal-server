@@ -13,7 +13,7 @@ import { Config } from '../server/Config'
 import { ServerResponse } from '../response/ServerResponse'
 import { Convert } from '../lib/Convert'
 import { HttpBadRequestError } from '../server/HttpErrors'
-import { UserParamsSchema } from "../jsonschema/UserParamsSchema"
+import { UserParamsSchema } from "../schemas/UserParams.schema"
 
 
 export class UserResponse {
@@ -24,6 +24,7 @@ export class UserResponse {
         return req.headers.authorization?.replace('Bearer ', '')
     }
 
+    //@Logger.LogFunction()
     static CheckParameters(req: Request, res: Response, next: NextFunction): void {
         // Check for validation errors
         const errors = validationResult(req)
@@ -40,6 +41,7 @@ export class UserResponse {
 
     }
 
+    //@Logger.LogFunction()
     static LogIn(req: Request, res: Response): void {
         try {
             const { username, password } = req.body
@@ -54,6 +56,7 @@ export class UserResponse {
         }
     }
 
+    //@Logger.LogFunction()
     static LogOut(req: Request, res: Response): void {
         try {
             const token = UserResponse.#GetRequestToken(req)
@@ -64,6 +67,7 @@ export class UserResponse {
         }
     }
 
+    //@Logger.LogFunction()
     static GetInfo(req: Request, res: Response): void {
         try {
             const token = UserResponse.#GetRequestToken(req)
@@ -74,6 +78,7 @@ export class UserResponse {
         }
     }
 
+    //@Logger.LogFunction()
     static IsAuthenticated(req: Request, res: Response, next: NextFunction): void {
         if (!Config.Flags.EnableAuthentication) {
             next()
@@ -91,6 +96,7 @@ export class UserResponse {
         })
     }
 
+    //@Logger.LogFunction()
     static IsNotAuthenticated(req: Request, res: Response, next: NextFunction): void {
         if (!Config.Flags.EnableAuthentication) {
             next()

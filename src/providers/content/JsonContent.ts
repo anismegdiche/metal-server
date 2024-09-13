@@ -9,6 +9,7 @@ import { DataTable } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
 import { CommonContent, IContent } from './CommonContent'
 import { JsonHelper } from '../../lib/JsonHelper'
+import { Logger } from "../../utils/Logger"
 
 type TJsonContentConfig = {
     arrayPath?: string
@@ -20,6 +21,7 @@ export class JsonContent extends CommonContent implements IContent {
     Config = <TJsonContentConfig>{}
     IsArray = false
 
+    @Logger.LogFunction()
     async Init(entityName: string, content: string): Promise<void> {
         this.EntityName = entityName
         if (this.Options) {
@@ -40,12 +42,14 @@ export class JsonContent extends CommonContent implements IContent {
         this.IsArray = _.isArray(this.Content)
     }
 
+    @Logger.LogFunction()
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
         let data: TJson[] = []
         data = JsonHelper.Get<TJson[]>(this.Content, this.Config.arrayPath)
-        return new DataTable(this.EntityName, data).FreeSql(sqlQuery)
+        return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
+    @Logger.LogFunction()
     async Set(contentDataTable: DataTable): Promise<string> {
 
         this.Content = JsonHelper.Set(
