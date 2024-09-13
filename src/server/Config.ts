@@ -5,20 +5,21 @@
 //
 import * as Fs from 'fs'
 import * as Yaml from 'js-yaml'
-import _ from 'lodash'
 import * as dotenv from 'dotenv'
+import _ from 'lodash'
 //
 import { TJson } from '../types/TJson'
-import { Logger, DefaultLevel, VERBOSITY } from '../lib/Logger'
+import { Logger, DefaultLevel } from '../utils/Logger'
 import { Schedule } from './Schedule'
 import { Cache } from '../server/Cache'
 import { User } from './User'
-import DATA_PROVIDER, { Source } from './Source'
-import { AI_ENGINE, AiEngine } from './AiEngine'
+import { Source } from './Source'
+import { AiEngine } from './AiEngine'
 import { JsonHelper } from '../lib/JsonHelper'
 import { Convert } from '../lib/Convert'
 import { HTTP_STATUS_MESSAGE } from "../lib/Const"
 import { LogLevelDesc } from "loglevel"
+import { ConfigSchema } from "../schemas/Config.schema"
 
 export class Config {
 
@@ -52,174 +53,10 @@ export class Config {
         ResponseLimit: 10 * 1024 * 1024   // response body size limit
     }
 
-    static #ConfigSchema: any = {
-        id: "/",
-        type: "object",
-        properties: {
-            "version": {
-                type: "string",
-                enum: ["0.1", "0.2", "0.3"]
-            },
-            "server": {
-                type: "object",
-                properties: {
-                    "port": {
-                        type: "integer",
-                        minimum: 1,
-                        maximum: 65_535
-                    },
-                    "verbosity": {
-                        type: "string",
-                        // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                        enum: _.values(VERBOSITY)
-                    },
-                    "timezone": { type: "string" },
-                    "authentication": { type: "null" },
-                    "request-limit": { type: "string" },
-                    // v0.3
-                    "response-limit": { type: "string" },
-                    // v0.3
-                    "response-rate": {
-                        type: "object",
-                        properties: {
-                            "windowMs": { type: "integer" },
-                            "max": { type: "integer" },
-                            "message": { type: "string" }
-                        },
-                        required: ["windowMs", "max"]
-                    },
-                    "cache": { type: "object" }
-                }
-            },
-            "users": {
-                type: "object",
-                patternProperties: {
-                    ".*": {
-                        type: ["string", "number"]
-                    }
-                }
-            },
-            "sources": {
-                type: "object",
-                patternProperties: {
-                    ".*": {
-                        type: "object",
-                        properties: {
-                            "provider": {
-                                type: "string",
-                                // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                                enum: _.values(DATA_PROVIDER)
-                            },
-                            "host": { type: "string" },
-                            "port": {
-                                type: "integer",
-                                minimum: 1,
-                                maximum: 65_535
-                            },
-                            "user": { type: "string" },
-                            "password": { type: "string" },
-                            "database": { type: "string" }
-                        },
-                        required: ["provider"]
-                    }
-                }
-            },
-            "schemas": {
-                type: "object",
-                patternProperties: {
-                    ".*": {
-                        type: "object",
-                        properties: {
-                            "sourceName": { type: "string" },
-                            "entities": {
-                                type: "object",
-                                patternProperties: {
-                                    ".*": {
-                                        type: "object",
-                                        properties: {
-                                            "sourceName": { type: "string" },
-                                            "entityName": { type: "string" }
-                                        },
-                                        required: ["sourceName", "entityName"]
-                                    }
-                                }
-                            },
-                            "anonymize": { type: "string" }
-                        }
-                    }
-                }
-            },
-            "ai-engines": {
-                type: "object",
-                patternProperties: {
-                    ".*": {
-                        type: "object",
-                        properties: {
-                            "engine": {
-                                type: "string",
-                                // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                                enum: _.values(AI_ENGINE)
-                            },
-                            "model": { type: "string" },
-                            "options": {
-                                type: "object",
-                                patternProperties: {
-                                    ".*": {
-                                        type: "any"
-                                    }
-                                }
-                            }
-                        },
-                        required: ["engine", "model"]
-                    }
-                }
-            },
-            "plans": {
-                type: "object",
-                patternProperties: {
-                    // planName
-                    ".*": {
-                        type: "object",
-                        patternProperties: {
-                            // entityName
-                            ".*": {
-                                type: "array",
-                                items: {
-                                    // step
-                                    type: "object",
-                                    patternProperties: {
-                                        ".*": {
-                                            type: "any"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "schedules": {
-                type: "object",
-                patternProperties: {
-                    ".*": {
-                        type: "object",
-                        properties: {
-                            "planName": { type: "string" },
-                            "entityName": { type: "string" },
-                            "cron": {
-                                type: "string",
-                                pattern: "(@(annually|yearly|monthly|weekly|daily|hourly|start))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|([\\d\\*]+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})"
-                            }
-                        },
-                        required: ["planName", "entityName", "cron"]
-                    }
-                }
-            }
-        }
-    }
+    static #ConfigSchema = ConfigSchema
 
+    @Logger.LogFunction()
     static async Init(): Promise<void> {
-        Logger.Info('Config.Init')
         // ENV
         dotenv.config()
 
@@ -236,7 +73,7 @@ export class Config {
             Config.Get("server.response-limit") ?? Config.DEFAULTS["server.response-limit"]
         )
         Config.Flags.EnableResponseChunk = Boolean(Config.Get('server.response-chunk'))
-        
+
         // eslint-disable-next-line no-unused-expressions, @typescript-eslint/no-unused-expressions
         Config.Flags.EnableAuthentication && User.LoadUsers()
         // add response-limit
@@ -250,11 +87,15 @@ export class Config {
         /* eslint-enable @typescript-eslint/no-unused-expressions, no-unused-expressions */
     }
 
+    @Logger.LogFunction()
     static async Load(): Promise<void> {
-        Logger.Debug('Config.Load')
         const configFileRaw = Fs.readFileSync(this.ConfigFilePath, 'utf8')
         Config.Configuration = await Yaml.load(configFileRaw)
+        Config.ExtendSchema()
+    }
 
+    @Logger.LogFunction()
+    static ExtendSchema(): void {
         const sourceNameConfig = {
             type: "string",
             // eslint-disable-next-line you-dont-need-lodash-underscore/keys
@@ -273,8 +114,8 @@ export class Config {
         Config.#ConfigSchema.properties.schedules.patternProperties[".*"].properties.planName = planNameConfig
     }
 
+    @Logger.LogFunction()
     static async Validate(): Promise<void> {
-        Logger.Debug('Config.Validate')
         const { errors } = JsonHelper.Validator.validate(this.Configuration, this.#ConfigSchema)
 
         if (errors.length <= 0)
@@ -284,15 +125,18 @@ export class Config {
         process.exit(1)
     }
 
+    @Logger.LogFunction()
     static GetErrors(schemaErrors: any): string[] {
         return schemaErrors
             .filter((e: Error) => e.message.includes('is required') || e.message.includes('must be'))
     }
+    @Logger.LogFunction()
     static Has(path: string): boolean {
         return _.has(Config.Configuration, path)
     }
 
-    static Get<T>(path: string, defaultValue:any = undefined): T {
+    @Logger.LogFunction()
+    static Get<T>(path: string, defaultValue: any = undefined): T {
         // eslint-disable-next-line you-dont-need-lodash-underscore/get
         return _.get(Config.Configuration, path, defaultValue)
     }
