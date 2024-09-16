@@ -8,7 +8,7 @@ import alasql from 'alasql'
 import { createHash } from 'crypto'
 //
 import { TJson } from './TJson'
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { JsonHelper } from "../lib/JsonHelper"
 import { StringHelper } from "../lib/StringHelper"
 
@@ -173,6 +173,7 @@ export class DataTable {
             this.MetaData = metaData as TMetaData
     }
 
+    @Logger.LogFunction()
     Set(rows: TJson[] | undefined = undefined): this {
         if (rows) {
             this.Rows = [...rows]
@@ -181,6 +182,7 @@ export class DataTable {
         return this
     }
 
+    @Logger.LogFunction()
     SetFields(): this {
         const _cols: TJson = { ...this.Rows[0] }
         // eslint-disable-next-line you-dont-need-lodash-underscore/reduce
@@ -191,11 +193,13 @@ export class DataTable {
         return this
     }
 
+    @Logger.LogFunction()
     GetFieldNames(): string[] {
         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         return _.keys(this.Fields)
     }
 
+    @Logger.LogFunction()
     PrefixAllFields(prefix: string): this {
         if (this.Rows.length === 0)
             return this
@@ -209,6 +213,7 @@ export class DataTable {
         return this.SetFields()
     }
 
+    @Logger.LogFunction()
     UnPrefixAllfields(): this {
         if (this.Rows.length === 0) {
             return this
@@ -227,14 +232,38 @@ export class DataTable {
         return this.SetFields()
     }
 
-    async FreeSql(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): Promise<this> {
+    @Logger.LogFunction()
+    FreeSql(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): this {
+        if (sqlQuery == undefined)
+            return this
+
+
+        alasql.options.errorlog = true
+        alasql(`CREATE TABLE IF NOT EXISTS [${this.Name}]`)
+        alasql.tables[this.Name].data = this.Rows
+
+        try {
+            const _result = alasql(sqlQuery, jsonData)
+            this.Rows = (typeof _result === 'object')
+                ? _result
+                : alasql.tables[this.Name].data
+
+        } catch (error: any) {
+            Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
+            throw error
+        }
+        return this.SetFields()
+    }
+
+    @Logger.LogFunction()
+    async FreeSqlAsync(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): Promise<this> {
         if (sqlQuery == undefined) {
             return this
         }
 
         alasql.options.errorlog = true
 
-        alasql(`CREATE TABLE IF NOT EXISTS \`${this.Name}\``)
+        alasql(`CREATE TABLE IF NOT EXISTS [${this.Name}]`)
 
         alasql.tables[this.Name].data = this.Rows
 
@@ -260,81 +289,89 @@ export class DataTable {
     }
 
 
+    @Logger.LogFunction()
     LeftJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
-            SELECT * FROM ? \`${this.Name}\` 
-            LEFT JOIN ? \`${dtB.Name}\` 
-            ON \`${this.Name}\`.\`${leftFieldName}\` = \`${dtB.Name}\`.\`${rightFieldName}\``,
+            SELECT * FROM ? [${this.Name}] 
+            LEFT JOIN ? [${dtB.Name}] 
+            ON [${this.Name}].[${leftFieldName}] = [${dtB.Name}].[${rightFieldName}]`,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
     }
 
+    @Logger.LogFunction()
     InnerJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
-            SELECT * FROM ? \`${this.Name}\` 
-            INNER JOIN ? \`${dtB.Name}\` 
-            ON \`${this.Name}\`.\`${leftFieldName}\` = \`${dtB.Name}\`.\`${rightFieldName}\``,
+            SELECT * FROM ? [${this.Name}] 
+            INNER JOIN ? [${dtB.Name}] 
+            ON [${this.Name}].[${leftFieldName}] = [${dtB.Name}].[${rightFieldName}]`,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
     }
 
+    @Logger.LogFunction()
     RightJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
-            SELECT * FROM ? \`${this.Name}\` 
-            RIGHT JOIN ? \`${dtB.Name}\` 
-            ON \`${this.Name}\`.\`${leftFieldName}\` = \`${dtB.Name}\`.\`${rightFieldName}\``,
+            SELECT * FROM ? [${this.Name}] 
+            RIGHT JOIN ? [${dtB.Name}] 
+            ON [${this.Name}].[${leftFieldName}] = [${dtB.Name}].[${rightFieldName}]`,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
     }
 
+    @Logger.LogFunction()
     FullOuterJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
         this.Rows = alasql(`
-            SELECT * FROM ? \`${this.Name}\` 
-            FULL OUTER JOIN ? \`${dtB.Name}\` 
-            ON \`${this.Name}\`.\`${leftFieldName}\` = \`${dtB.Name}\`.\`${rightFieldName}\``,
+            SELECT * FROM ? [${this.Name}] 
+            FULL OUTER JOIN ? [${dtB.Name}] 
+            ON [${this.Name}].[${leftFieldName}] = [${dtB.Name}].[${rightFieldName}]`,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
     }
 
+    @Logger.LogFunction()
     CrossJoin(dtB: this): this {
         this.Rows = alasql(`
-            SELECT * FROM ? \`${this.Name}\` 
-            CROSS JOIN ? \`${dtB.Name}\``,
+            SELECT * FROM ? [${this.Name}] 
+            CROSS JOIN ? [${dtB.Name}]`,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
     }
 
+    @Logger.LogFunction()
     SelectFields(fields: string[]): this {
         if (this.Rows.length === 0 || fields.length === 0)
             return this
 
         this.Rows = alasql(`
-            SELECT \`${fields.join('`,`')}\` 
-            FROM ? \`${this.Name}\``,
+            SELECT [${fields.join('],[')}] 
+            FROM ? [${this.Name}]`,
             [this.Rows]
         )
         return this.SetFields()
     }
 
+    @Logger.LogFunction()
     Sort(fields: string[], orders: TOrder[]): this {
         this.Rows = _.orderBy(this.Rows, fields, orders)
         return this
     }
 
+    @Logger.LogFunction()
     SetMetaData(metadata: string, value: unknown): this {
         this.MetaData[metadata] = value
         return this
     }
 
+    @Logger.LogFunction()
     AddRows(newRows: TJson | TJson[] | undefined = undefined): this {
-        if (!newRows) {
+        if (!newRows)
             return this
-        }
 
         this.Rows = Array.isArray(newRows)
             ? [...this.Rows, ...newRows]
@@ -343,6 +380,7 @@ export class DataTable {
         return this.SetFields()
     }
 
+    @Logger.LogFunction()
     SyncReport(dtDestination: DataTable, on: string, flags: { keepOnlyUpdatedValues: boolean } | undefined = undefined): TSyncReport {
         const sourceHasProperty = this.Rows.some(row => on in row)
 
@@ -396,6 +434,7 @@ export class DataTable {
         }
     }
 
+    @Logger.LogFunction()
     AnonymizeFields(fields: string | string[]): this {
         let _fields = (typeof fields === 'string')
             ? [fields]
@@ -420,10 +459,11 @@ export class DataTable {
     }
 
     //FIXME: it generates an error in case of invalid condition
+    @Logger.LogFunction()
     FilterRows(condition: string | undefined): this {
         if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))
             return this
-        
+
         this.Rows = alasql(`
             SELECT * 
             FROM ?
@@ -433,6 +473,16 @@ export class DataTable {
         return this
     }
 
+    //FIXME: it generates an error in case of invalid condition
+    @Logger.LogFunction()
+    DeleteRows(condition: string | undefined): this {
+        if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))
+            return this
+
+        return this.FreeSql(`DELETE FROM [${this.Name}] WHERE ${condition}`)
+    }
+
+    @Logger.LogFunction()
     RemoveDuplicates(
         fields: string[] | undefined,
         method: string,

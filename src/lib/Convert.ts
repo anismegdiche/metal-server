@@ -36,7 +36,7 @@ export class Convert {
         return bytes(size)
     }
 
-    @Logger.LogFunction()
+    // @Logger.LogFunction()
     static RequestToSchemaRequest(req: Request): TSchemaRequest {
         const { schemaName, entityName } = req.params
 
@@ -49,12 +49,12 @@ export class Convert {
         }
     }
 
-    @Logger.LogFunction()
+    // @Logger.LogFunction()
     static InternalResponseToResponse(res: Response, intRes: TInternalResponse): void {
         res.status(intRes.StatusCode).json(intRes.Body)
     }
 
-    @Logger.LogFunction()
+    // @Logger.LogFunction()
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, res: Response) {
         const { schemaName, entityName, transaction, result, status } = schemaResponse
 
@@ -139,7 +139,7 @@ export class Convert {
     static ReplacePlaceholders(value: string): string
     static ReplacePlaceholders(value: TJson[] | undefined): TJson[] | undefined
     static ReplacePlaceholders(value: object | TJson): object | TJson
-    @Logger.LogFunction()
+    // @Logger.LogFunction()
     static ReplacePlaceholders(value: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
         if (value == undefined)
             return undefined

@@ -5,11 +5,14 @@
 ### Features
 - Response configuration: chunk, rate limit, body limit.
 - Plan commands: anonymize, remove-duplicates.
+- Added SwaggerUI.
+- Schema: List entities.
 
 ### Enhancements
 - Updated packages.
 - Updated Config file validation.
 - Updated Plan sync function usage.
+- Enhanced Logging feature throw TS decorator.
 
 ### Bug Fixes
 - Fixed bugs related to Plan commands.

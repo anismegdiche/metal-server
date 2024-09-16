@@ -7,15 +7,16 @@ import _ from 'lodash'
 //
 import { Source } from "./Source"
 import { RESPONSE_RESULT, RESPONSE_STATUS } from '../lib/Const'
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { TSchemaRequest } from '../types/TSchemaRequest'
-import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../types/TSchemaResponse'
 import { TJson } from '../types/TJson'
-import { HttpNotFoundError } from './HttpErrors'
+import { HttpNotFoundError, HttpNotImplementedError } from './HttpErrors'
 import { TypeHelper } from '../lib/TypeHelper'
 import { StringHelper } from '../lib/StringHelper'
 import { JsonHelper } from '../lib/JsonHelper'
+import { TConfigSchema, TConfigSchemaEntity } from "../types/TConfig"
 
 export type TSchemaRoute = {
     type: "source" | "nothing",
@@ -31,6 +32,11 @@ export type TSourceTypeExecuteParams = {
     CrudFunction: Function
 }
 
+export type TEntitiesMap = Map<string, {
+    sourceName: string,
+    database?: string
+}>
+
 export class Schema {
 
     sort?: string
@@ -40,12 +46,12 @@ export class Schema {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static readonly SourceTypeCaseMap: Record<string, Function> = {
-        'nothing': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await Schema.NothingTodo(sourceTypeExecuteParams),
+        'nothing': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await Schema.#NothingTodo(sourceTypeExecuteParams),
         'source': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await sourceTypeExecuteParams.CrudFunction()
     }
 
+    @Logger.LogFunction()
     static async IsExists(schemaRequest: TSchemaRequest): Promise<void> {
-        Logger.Debug(`Schema.IsExists: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const { schemaName } = schemaRequest
 
@@ -62,6 +68,8 @@ export class Schema {
         }
     }
 
+    //TODO: rewrite with GetEntitiesSources
+    @Logger.LogFunction()
     static GetRoute(schemaName: string, entityName: string, schemaConfig: any): TSchemaRoute {
 
         const nothingToDoSchemaRoute: TSchemaRoute = {
@@ -69,7 +77,7 @@ export class Schema {
             routeName: ''
         }
 
-        // schema.entities.<entity>
+        // schema.entities.*
         if (_.has(schemaConfig, `entities.${entityName}`)) {
             const _schemaEntityConfig = _.get(schemaConfig.entities, entityName)
 
@@ -80,7 +88,7 @@ export class Schema {
 
             const { sourceName: _sourceName, entityName: _entityName } = _schemaEntityConfig
 
-            // schema.entities.<entity>.sourceName
+            // schema.entities.*.sourceName
             if (_sourceName) {
                 if (!Config.Has(`sources.${_sourceName}`)) {
                     Logger.Warn(`Source not found for entity '${entityName}'`)
@@ -111,7 +119,7 @@ export class Schema {
         return nothingToDoSchemaRoute
     }
 
-    static async NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<TSchemaResponseNoData> {
+    static async #NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<TSchemaResponseNoData> {
         Logger.Warn(`Nothing to do in schema '${sourceTypeExecuteParams.schemaRequest.schemaName}'`)
         const { schemaName, entityName } = sourceTypeExecuteParams.schemaRequest
         return <TSchemaResponseNoData>{
@@ -122,8 +130,41 @@ export class Schema {
         }
     }
 
+    static #MergeData(schemaResponse: TSchemaResponse, schemaResponseToMerge: TSchemaResponse | undefined): TSchemaResponse {
+        if (!schemaResponseToMerge)
+            return schemaResponse
+        
+        // only schemaResponse got data
+        if (TypeHelper.IsSchemaResponseData(schemaResponse) && !TypeHelper.IsSchemaResponseData(schemaResponseToMerge))
+            return schemaResponse as TSchemaResponseData
+
+        // only schemaResponseToMerge got data
+        if (!TypeHelper.IsSchemaResponseData(schemaResponse) && TypeHelper.IsSchemaResponseData(schemaResponseToMerge))
+            return <TSchemaResponseData>{
+                ...schemaResponseToMerge,
+                schemaName: schemaResponse.schemaName,
+                entityName: schemaResponse.entityName,
+                transaction: schemaResponse.transaction,
+                result: schemaResponseToMerge.result,
+                status: schemaResponseToMerge.status
+            }
+
+        // both got data
+        if (TypeHelper.IsSchemaResponseData(schemaResponse) && TypeHelper.IsSchemaResponseData(schemaResponseToMerge))
+            return <TSchemaResponseData>{
+                ...schemaResponse,
+                data: schemaResponse.data.AddRows(
+                    schemaResponseToMerge.data.Rows
+                )
+            }
+
+        // anything else
+        return schemaResponse
+    }
+
+
+    @Logger.LogFunction()
     static async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
         const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
@@ -155,8 +196,8 @@ export class Schema {
         })
     }
 
+    @Logger.LogFunction()
     static async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
         const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
@@ -176,8 +217,8 @@ export class Schema {
         })
     }
 
+    @Logger.LogFunction()
     static async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Update: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
         const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
@@ -197,8 +238,8 @@ export class Schema {
         })
     }
 
+    @Logger.LogFunction()
     static async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const { schemaName, entityName } = schemaRequest
         const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
@@ -216,5 +257,56 @@ export class Schema {
                 })
             }
         })
+    }
+
+    @Logger.LogFunction()
+    static async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        const { schemaName } = schemaRequest
+        const entitiesSources = Schema.GetEntitiesSources(schemaName)
+
+        let schResp:TSchemaResponse = {} as TSchemaResponse
+
+        if (entitiesSources.has("*")) {
+            const _source = (<TConfigSchemaEntity>entitiesSources.get("*")).sourceName
+            schResp = await Source.Sources[_source].ListEntities(schemaRequest)
+            entitiesSources.delete("*")
+        }
+
+        for await (const [entityName, entitySource] of entitiesSources) {
+            const _source = (<TConfigSchemaEntity>entitySource).sourceName
+            if (TypeHelper.IsSchemaResponseData(schResp))
+                schResp.data.DeleteRows(`name = '${entityName}'`)
+            const schRespToMerge = await Source.Sources[_source].ListEntities(schemaRequest)            
+                .catch(() => undefined)
+            
+            Schema.#MergeData(schResp,schRespToMerge)
+        }
+        return schResp
+    }
+
+    // static #GetSource(schemaRequest: TSchemaRequest): TSchemaResponse {
+    //     const { schemaName } = schemaRequest
+    //     const aEntities = Source.Sources[schemaRoute.routeName]
+
+    // }
+
+    static GetEntitiesSources(schemaName: string): TEntitiesMap {
+        const entities: TEntitiesMap = new Map()
+        const schemaConfig: TConfigSchema = Config.Get(`schemas.${schemaName}`)
+        if (schemaConfig?.sourceName)
+            entities.set("*", {
+                sourceName: schemaConfig.sourceName,
+                database: Config.Get<string | undefined>(`sources.${schemaConfig.sourceName}.database`)
+            })
+
+        if (schemaConfig?.entities)
+            // eslint-disable-next-line you-dont-need-lodash-underscore/for-each
+            _.forEach(schemaConfig.entities, (entityConfig: TConfigSchemaEntity, entity: string) => {
+                entities.set(entity, {
+                    sourceName: entityConfig.sourceName,
+                    database: Config.Get<string | undefined>(`sources.${entityConfig.sourceName}.database`)
+                })
+            })
+        return entities
     }
 }

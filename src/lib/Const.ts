@@ -1,22 +1,17 @@
- 
-//
-//
-//
-//
-//
-import * as Fs from 'fs'
 
-const packageJsonString = Fs.readFileSync('./package.json', 'utf8')
-
-// Parse the JSON content
-const packageJson = JSON.parse(packageJsonString)
+//
+//
+//
+//
+//
+import { Package } from "../utils/Package"
 
 
-export enum SERVER {
-    NAME = 'Metal',
-    VERSION = packageJson.version,
-    BANNER = '<h1>\\m/ Metal Server</h1>',
-    CONSOLE_BANNER = `\x1b[31m
+export const SERVER = {
+    NAME: 'Metal',
+    VERSION: Package.Json.version as string,
+    BANNER: '<h1>\\m/ Metal Server</h1>',
+    CONSOLE_BANNER: `\x1b[31m
                ,,,,,
              ▓▓▓▓▓▓▓▓▓
         ,    ▓▓▓▓▓▓▓▓▓    ,   \x1b[0m   ▄▄▄      ▄▄               ██▌             ██▌\x1b[31m
@@ -28,7 +23,7 @@ export enum SERVER {
         ▀▓▓▓▓█▄▄╦╥   ▐▓▓▓▓▀   \x1b[0m▐██    ███    ██▌ ▀▀█████▀   ██▌  ▀▀████▀██▌ ██▌\x1b[31m
           ▀▓▓▓▓▓▓▓   ▐▓▓▀ 
              ╚▀▀▀▀   ▀        \x1b[0m M i d d l e w a r e     -     E T L    -    A I \x1b[31m
-`,
+`
 }
 
 export enum ROUTE {
@@ -37,7 +32,8 @@ export enum ROUTE {
     SCHEMA_PATH = '/schema',
     PLAN_PATH = '/plan',
     CACHE_PATH = '/cache',
-    SCHEDULE_PATH = '/schedule'
+    SCHEDULE_PATH = '/schedule',
+    SWAGGER_UI_PATH = '/api-docs'
 }
 
 export const RESPONSE_TRANSACTION = {
@@ -52,6 +48,9 @@ export const RESPONSE_TRANSACTION = {
     },
     INSERT: {
         transaction: 'insert'
+    },
+    LIST_ENTITIES: {
+        transaction: 'listEntities'
     }
 }
 
@@ -110,13 +109,6 @@ export enum HTTP_STATUS_MESSAGE {
     CONTENT_TOO_LARGE = 'Content Too Large'
 }
 
-export enum VALIDATION_ERROR_MESSAGE {
-    MUST_BE_NUMBER = 'must be a number',
-    MUST_BE_JSON = 'must be a JSON object',
-    MUST_BE_JSON_ARRAY_OR_OBJECT = 'must be a JSON array or a JSON object',
-    MUST_BE_STRING = 'must be a string'
-}
-
 export const RESPONSE_STATUS = {
     HTTP_200: {
         status: HTTP_STATUS_CODE.OK
@@ -141,6 +133,12 @@ export const RESPONSE_STATUS = {
     }
 }
 
+export enum VALIDATION_ERROR_MESSAGE {
+    MUST_BE_NUMBER = 'must be a number',
+    MUST_BE_JSON = 'must be a JSON object',
+    MUST_BE_JSON_ARRAY_OR_OBJECT = 'must be a JSON array or a JSON object',
+    MUST_BE_STRING = 'must be a string'
+}
 
 export const RESPONSE = {
     SELECT: {

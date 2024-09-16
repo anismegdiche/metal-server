@@ -494,7 +494,7 @@ describe("DataTable", () => {
             const sqlQuery = "SELECT * FROM myTable WHERE id = 1"
 
             // Act
-            const result = await myDataTable.FreeSql(sqlQuery)
+            const result = await myDataTable.FreeSqlAsync(sqlQuery)
 
             // Assert
             expect(result).toBeInstanceOf(DataTable)
@@ -526,7 +526,7 @@ describe("DataTable", () => {
             const sqlQuery = "SELECT * FROM myTable WHERE id = 3"
 
             // Act
-            const result = await myDataTable.FreeSql(sqlQuery)
+            const result = await myDataTable.FreeSqlAsync(sqlQuery)
 
             // Assert
             expect(result).toBeInstanceOf(DataTable)
@@ -541,7 +541,7 @@ describe("DataTable", () => {
             const sqlQuery = "SELECT * FROM myTable"
 
             // Act
-            const result = await myDataTable.FreeSql(sqlQuery)
+            const result = await myDataTable.FreeSqlAsync(sqlQuery)
 
             // Assert
             expect(result).toBeInstanceOf(DataTable)
@@ -560,7 +560,7 @@ describe("DataTable", () => {
 
             // Act
             try {
-                result = await myDataTable.FreeSql(sqlQuery)
+                result = await myDataTable.FreeSqlAsync(sqlQuery)
             } catch (error) {
                 //
             }
@@ -575,7 +575,7 @@ describe("DataTable", () => {
             const sqlQuery = "SELECT * FROM myTable WHERE id = 1"
 
             // Act
-            const result = await myDataTable.FreeSql(sqlQuery)
+            const result = await myDataTable.FreeSqlAsync(sqlQuery)
 
             // Assert
             expect(result).toBeInstanceOf(DataTable)
@@ -594,7 +594,7 @@ describe("DataTable", () => {
 
             // Act
             try {
-                result = await myDataTable.FreeSql(sqlQuery)
+                result = await myDataTable.FreeSqlAsync(sqlQuery)
             } catch (error) {
                 //
             }
@@ -618,7 +618,7 @@ describe("DataTable", () => {
             const sqlQuery = "INSERT INTO myTable(name) VALUES ('John'),  ('June'),  ('Jane')"
 
             // Act
-            const result = await myDataTable.FreeSql(sqlQuery)
+            const result = await myDataTable.FreeSqlAsync(sqlQuery)
 
             // Assert
             expect(result).toBeInstanceOf(DataTable)

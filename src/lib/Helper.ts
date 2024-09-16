@@ -3,22 +3,20 @@
 //
 //
 //
-import { Logger } from "./Logger"
+import _ from "lodash"
+import { Logger } from "../utils/Logger"
 
 
 export class Helper {
 
+    @Logger.LogFunction()
     static CaseMapNotFound(key: string): undefined {
         Logger.Error(`Key '${key}' not found`)
         return undefined
     }
 
-    static HasExpectedProperties(myObject: any, expectedProperties: string[]): boolean {
-        for (const [_key] of Object.entries(myObject)) {
-            if (!expectedProperties.includes(_key)) {
-                return false
-            }
-        }
-        return true
+    //@Logger.DebugFunction()
+    static HasExpectedProperties<T>(obj: T, expectedProps: (keyof T)[] | string[]): boolean {
+        return expectedProps.every(prop => _.has(obj, prop))
     }
 }

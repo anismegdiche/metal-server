@@ -9,14 +9,13 @@ import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TSourceParams } from "../../types/TSourceParams"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResponseNoData } from "../../types/TSchemaResponse"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
-import { Logger } from '../../lib/Logger'
+import { Logger } from '../../utils/Logger'
 import { Cache } from '../../server/Cache'
 import DATA_PROVIDER, { Source } from '../../server/Source'
-import { JsonHelper } from '../../lib/JsonHelper'
 import { CommonDataProvider } from "./CommonDataProvider"
 
 
@@ -24,13 +23,13 @@ export class SqlServerDataProvider extends CommonDataProvider implements IDataPr
     ProviderName = DATA_PROVIDER.MSSQL
     Connection?: ConnectionPool = undefined
 
+    @Logger.LogFunction()
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("SqlServerDataProvider.Init")
         this.Params = sourceParams
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Debug("SqlServerDataProvider.Connect")
         const {
             user = 'sa',
             password = '',
@@ -60,22 +59,22 @@ export class SqlServerDataProvider extends CommonDataProvider implements IDataPr
         }
         try {
             this.Connection = await mssql.connect(connectionConfig)
-            Logger.Info(`${Logger.In} connected to '${this.SourceName} (${database})'`)
+            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName} (${database})': ${host}: ${port}[${database}]`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName} (${database})': ${host}: ${port}[${database}]`)
             Logger.Error(JSON.stringify(error))
         }
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        Logger.Debug(`${Logger.In} SqlServerDataProvider.Disconnect`)
         if (this.Connection !== undefined) {
             this.Connection.close()
         }
     }
 
+    @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} SqlServerDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -103,8 +102,8 @@ export class SqlServerDataProvider extends CommonDataProvider implements IDataPr
         return schemaResponse
     }
 
+    @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} SqlServerDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -125,6 +124,7 @@ export class SqlServerDataProvider extends CommonDataProvider implements IDataPr
             .OrderBy(options.Sort)
 
         const data = await this.Connection.query(sqlQueryHelper.Query)
+
         if (data.recordset != null && data.recordset.length > 0) {
             const _dt = new DataTable(schemaRequest.entityName, data.recordset)
             if (options?.Cache)
@@ -145,8 +145,8 @@ export class SqlServerDataProvider extends CommonDataProvider implements IDataPr
         return schemaResponse
     }
 
+    @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`SqlServerDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -174,8 +174,8 @@ export class SqlServerDataProvider extends CommonDataProvider implements IDataPr
         return schemaResponse
     }
 
+    @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`SqlServerDataProvider.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -200,5 +200,56 @@ export class SqlServerDataProvider extends CommonDataProvider implements IDataPr
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
         }
+    }
+
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        
+        const schemaName = schemaRequest.schemaName
+        const entityName = `${schemaRequest.schemaName}-entities`
+
+        let schemaResponse = <TSchemaResponse>{
+            schemaName,
+            entityName,
+            ...RESPONSE_TRANSACTION.LIST_ENTITIES
+        }
+
+        if (this.Connection === undefined) {
+            return Source.ResponseError(schemaResponse)
+        }
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
+
+        const sqlQuery = `
+            SELECT t.name AS name, 
+                'table' AS type, 
+                SUM(p.rows) AS [size]
+            FROM sys.tables t
+            JOIN sys.partitions p ON t.object_id = p.object_id
+            WHERE p.index_id IN (0, 1) -- 0 for heap tables, 1 for clustered indexes
+            GROUP BY t.name
+            ORDER BY t.name;
+            `
+
+        const data = await this.Connection.query(sqlQuery)
+        
+        if (data?.recordset.length > 0) {
+            const _dt = new DataTable(entityName, data.recordset)
+            if (options?.Cache)
+                Cache.Set(schemaRequest, _dt)
+            schemaResponse = <TSchemaResponseData>{
+                ...schemaResponse,
+                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+                ...RESPONSE.SELECT.SUCCESS.STATUS,
+                data: _dt
+            }
+        } else {
+            schemaResponse = <TSchemaResponseNoData>{
+                ...schemaResponse,
+                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
+                ...RESPONSE.SELECT.NOT_FOUND.STATUS
+            }
+        }
+        return schemaResponse
     }
 }

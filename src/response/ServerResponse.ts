@@ -5,21 +5,24 @@
 //
 import { NextFunction, Request, Response } from 'express'
 //
-import { HTTP_STATUS_CODE, SERVER } from '../lib/Const'
-import { Server } from '../server/Server'
+import { HTTP_METHOD, HTTP_STATUS_CODE, SERVER } from '../lib/Const'
 import { HttpBadRequestError, HttpError, HttpMethodNotAllowedError, HttpNotImplementedError } from '../server/HttpErrors'
+import { Server } from '../server/Server'
 
 
 export class ServerResponse {
 
+    //@Logger.LogFunction()
     static NotImplemented(req: Request, res: Response): void {
         ServerResponse.Error(res, new HttpNotImplementedError())
     }
 
+    //@Logger.LogFunction()
     static BadRequest(res: Response): void {
         ServerResponse.Error(res, new HttpBadRequestError())
     }
 
+    //@Logger.LogFunction()
     static Error(res: Response, error: HttpError | Error) {
         const status = (error instanceof HttpError)
             ? error.status
@@ -37,6 +40,7 @@ export class ServerResponse {
             .end()
     }
 
+    //@Logger.LogFunction()
     static GetInfo(req: Request, res: Response): void {
         try {
             res
@@ -48,6 +52,7 @@ export class ServerResponse {
         }
     }
 
+    //@Logger.LogFunction()
     static Reload(req: Request, res: Response): void {
         try {
             Server.Reload()
@@ -64,10 +69,16 @@ export class ServerResponse {
         }
     }
 
+    //@Logger.LogFunction()
     static AllowMethods(req: Request, res: Response, next: NextFunction, ...methods: string[]) {
         if (methods.includes(req.method))
             next()
         else
             ServerResponse.Error(res, new HttpMethodNotAllowedError())
+    }
+
+    //@Logger.LogFunction()
+    static AllowOnlyCrudMethods(req: Request, res: Response, next: NextFunction) {
+        ServerResponse.AllowMethods(req, res, next, HTTP_METHOD.GET, HTTP_METHOD.POST, HTTP_METHOD.PATCH, HTTP_METHOD.DELETE)
     }
 }

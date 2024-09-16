@@ -11,13 +11,12 @@ import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResponseNoData } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
-import { Logger } from '../../lib/Logger'
+import { Logger } from '../../utils/Logger'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER, { Source } from '../../server/Source'
-import { JsonHelper } from '../../lib/JsonHelper'
 import { TJson } from "../../types/TJson"
 
 
@@ -36,11 +35,12 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         this.Connect()
     }
 
+    @Logger.LogFunction()
     async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("PostgresDataProvider.Init")
         this.Params = sourceParams
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
         const sourceName = this.SourceName
         const {
@@ -66,27 +66,28 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
                     if (err)
                         throw err
                     else
-                        Logger.Info(`${Logger.In} connected to '${sourceName} (${database})'`)
+                        Logger.Info(`${Logger.Out} connected to '${sourceName} (${database})'`)
 
                 } catch (error: unknown) {
-                    Logger.Error(`${Logger.In} Failed to connect to '${sourceName} (${database})'`)
+                    Logger.Error(`${Logger.Out} Failed to connect to '${sourceName} (${database})'`)
                     Logger.Error(error)
                 }
             })
         } catch (error: unknown) {
-            Logger.Error(`${Logger.In} Failed to connect to '${sourceName} (${database})'`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${sourceName} (${database})'`)
             Logger.Error(error)
         }
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        if (this.Connection !== undefined) {
+        if (this.Connection !== undefined)
             await this.Connection.end()
-        }
+
     }
 
+    @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} PostgresDataProvider.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -94,9 +95,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE_TRANSACTION.INSERT
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -105,8 +105,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Fields(options.Data.GetFieldNames(), '"')
             .Values(options.Data.Rows)
 
-
         await this.Connection.query(sqlQueryHelper.Query)
+
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
@@ -114,8 +114,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
+    @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PostgresDataProvider.Select: ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -123,9 +123,9 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE_TRANSACTION.SELECT
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
+
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -135,9 +135,10 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
-        const _data = await this.Connection.query(sqlQueryHelper.Query)
-        if (_data.rows.length > 0) {
-            const _dt = new DataTable(schemaRequest.entityName, _data.rows)
+        const result = await this.Connection.query(sqlQueryHelper.Query)
+
+        if (result.rows.length > 0) {
+            const _dt = new DataTable(schemaRequest.entityName, result.rows)
             if (options?.Cache)
                 Cache.Set(schemaRequest, _dt)
             schemaResponse = <TSchemaResponseData>{
@@ -156,8 +157,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         return schemaResponse
     }
 
+    @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PostgresDataProvider.Update: ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -166,8 +167,10 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         }
 
         if (this.Connection === undefined) {
+
             return Source.ResponseError(schemaResponse)
         }
+
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -176,8 +179,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
-
         await this.Connection.query(sqlQueryHelper.Query)
+
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
@@ -186,8 +189,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         return schemaResponse
     }
 
+    @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PostgresDataProvider.Delete : ${JsonHelper.Stringify(schemaRequest)}`)
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -195,9 +198,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE_TRANSACTION.DELETE
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -207,10 +209,89 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
+
         schemaResponse = <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
+        }
+        return schemaResponse
+    }
+
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+
+        const schemaName = schemaRequest.schemaName
+        const entityName = `${schemaRequest.schemaName}-entities`
+
+        let schemaResponse = <TSchemaResponse>{
+            schemaName,
+            entityName,
+            ...RESPONSE_TRANSACTION.LIST_ENTITIES
+        }
+
+        if (this.Connection === undefined)
+            return Source.ResponseError(schemaResponse)
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
+
+        // Refresh analyze
+        let sqlQuery = `
+            DO $$ 
+            DECLARE
+                r RECORD;
+            BEGIN
+                FOR r IN 
+                    SELECT table_schema, table_name
+                    FROM information_schema.tables
+                    WHERE table_type = 'BASE TABLE'
+                    AND table_schema NOT IN ('pg_catalog', 'information_schema')
+                LOOP
+                    EXECUTE 'ANALYZE ' || quote_ident(r.table_schema) || '.' || quote_ident(r.table_name);
+                END LOOP;
+            END $$;
+            `
+        let result = await this.Connection.query(sqlQuery)
+
+        // Get Data
+        sqlQuery = `
+            SELECT 
+                t.table_name AS name, 
+                'table' AS type, 
+                CASE 
+                    WHEN c.reltuples < 0 THEN NULL  -- or you can replace NULL with a default value
+                    ELSE c.reltuples 
+                END AS size
+            FROM 
+                information_schema.tables t
+            JOIN 
+                pg_class c ON t.table_name = c.relname
+            JOIN 
+                pg_namespace n ON n.oid = c.relnamespace
+            WHERE 
+                t.table_type = 'BASE TABLE' 
+                AND t.table_schema NOT IN ('pg_catalog', 'information_schema')
+                AND n.nspname = t.table_schema;
+            `
+
+        result = await this.Connection.query(sqlQuery)
+
+        if (result?.rows.length > 0) {
+            const _dt = new DataTable(entityName, result.rows)
+            if (options?.Cache)
+                Cache.Set(schemaRequest, _dt)
+            schemaResponse = <TSchemaResponseData>{
+                ...schemaResponse,
+                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+                ...RESPONSE.SELECT.SUCCESS.STATUS,
+                data: _dt
+            }
+        } else {
+            schemaResponse = <TSchemaResponseNoData>{
+                ...schemaResponse,
+                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
+                ...RESPONSE.SELECT.NOT_FOUND.STATUS
+            }
         }
         return schemaResponse
     }

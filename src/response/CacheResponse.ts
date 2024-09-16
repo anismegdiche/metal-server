@@ -43,7 +43,7 @@ export class CacheResponse {
             .catch((error: HttpError) => ServerResponse.Error(res, error))
     }
 
-    // TODO: refactor to be compliant with architecture logic
+    // TODO: refactor to be compliant with response/class architecture logic
     //@Logger.LogFunction()
     static Get(req: Request, res: Response, next: NextFunction): void {
         try {

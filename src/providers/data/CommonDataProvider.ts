@@ -3,15 +3,14 @@
 //
 //
 //
-import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSourceParams } from "../../types/TSourceParams"
-import { TSchemaResponse, TSchemaResponseError } from "../../types/TSchemaResponse"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TJson } from "../../types/TJson"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
-import { Logger } from '../../lib/Logger'
-import { JsonHelper } from '../../lib/JsonHelper'
+import { Logger } from '../../utils/Logger'
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { HttpNotImplementedError } from "../../server/HttpErrors"
 
 
 export class CommonDataProvider implements IDataProvider.IDataProvider {
@@ -28,66 +27,50 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
         this.Connect()
     }
 
+    @Logger.LogFunction()
     Init(sourceParams: TSourceParams): void {
         Logger.Debug("CommonDataProvider.Init")
         this.Params = sourceParams
     }
 
-     
+
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Debug(`${Logger.In} ${this.ProviderName}.Connect`)
+        throw new HttpNotImplementedError()
     }
 
-     
+
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        Logger.Debug(`${Logger.In} ${this.ProviderName}.Disconnect`)
+        throw new HttpNotImplementedError()
     }
 
-     
+
+    @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} ${this.ProviderName}.Insert: ${JsonHelper.Stringify(schemaRequest)}`)
-        return <TSchemaResponseError>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.INSERT,
-            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
-            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
-        }
+        throw new HttpNotImplementedError()
     }
 
-     
+
+    @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} ${this.ProviderName}.Select: ${JsonHelper.Stringify(schemaRequest)}`)
-        return <TSchemaResponseError>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.SELECT,
-            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
-            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
-        }
+        throw new HttpNotImplementedError()
     }
 
-     
+
+    @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} ${this.ProviderName}.Update: ${JsonHelper.Stringify(schemaRequest)}`)
-        return <TSchemaResponseError>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.UPDATE,
-            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
-            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
-        }
+        throw new HttpNotImplementedError()
     }
 
-     
+
+    @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} ${this.ProviderName}.Delete: ${JsonHelper.Stringify(schemaRequest)}`)
-        return <TSchemaResponseError>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.DELETE,
-            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
-            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
-        }
+        throw new HttpNotImplementedError()
+    }
+
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        throw new HttpNotImplementedError()
     }
 }
