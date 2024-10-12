@@ -55,20 +55,20 @@ export type TConfigSchema =
 
 // step commands
 
-type Debug = { [STEP.DEBUG]: TStepDebug }
-type Select = { [STEP.SELECT]: TStepSelect }
-type Update = { [STEP.UPDATE]: TStepUpdate }
-type Delete = { [STEP.DELETE]: TStepDelete }
-type Insert = { [STEP.INSERT]: TStepInsert }
-type Join = { [STEP.JOIN]: TStepJoin }
-type Fields = { [STEP.FIELDS]: TStepFields }
-type Sort = { [STEP.SORT]: TStepSort }
-type Run = { [STEP.RUN]: TStepRun }
-type Sync = { [STEP.SYNC]: TStepSync }
-type Anonymize = { [STEP.ANONYMIZE]: TStepAnonymize }
-type RemoveDuplicates = { [STEP.REMOVE_DUPLICATE]: TStepRemoveDuplicates }
+export type Debug = { [STEP.DEBUG]: TStepDebug }
+export type Select = { [STEP.SELECT]: TStepSelect }
+export type Update = { [STEP.UPDATE]: TStepUpdate }
+export type Delete = { [STEP.DELETE]: TStepDelete }
+export type Insert = { [STEP.INSERT]: TStepInsert }
+export type Join = { [STEP.JOIN]: TStepJoin }
+export type Fields = { [STEP.FIELDS]: TStepFields }
+export type Sort = { [STEP.SORT]: TStepSort }
+export type Run = { [STEP.RUN]: TStepRun }
+export type Sync = { [STEP.SYNC]: TStepSync }
+export type Anonymize = { [STEP.ANONYMIZE]: TStepAnonymize }
+export type RemoveDuplicates = { [STEP.REMOVE_DUPLICATE]: TStepRemoveDuplicates }
 
-type StepCommand =
+export type StepCommand =
     | Debug
     | Select
     | Update
