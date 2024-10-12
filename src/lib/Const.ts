@@ -51,6 +51,9 @@ export const RESPONSE_TRANSACTION = {
     },
     LIST_ENTITIES: {
         transaction: 'listEntities'
+    },
+    ADD_ENTITY: {
+        transaction: 'addEntity'
     }
 }
 

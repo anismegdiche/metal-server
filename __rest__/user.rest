@@ -23,10 +23,6 @@ authorization: Bearer {{token}}
 ###
 
 # @name logout
-GET  http://localhost:3000/user/logout
+POST  http://localhost:3000/user/logout
 Content-Type: application/json
 authorization: Bearer {{token}}
-
-{
-}
-

@@ -4,9 +4,10 @@
 //
 //
 import * as Fs from 'fs'
-import * as Yaml from 'js-yaml'
+import * as Yaml from 'js-yaml'   //TODO: Use only one YAML lib
 import * as dotenv from 'dotenv'
 import _ from 'lodash'
+import typia from "typia"
 //
 import { TJson } from '../types/TJson'
 import { Logger, DefaultLevel } from '../utils/Logger'
@@ -15,19 +16,21 @@ import { Cache } from '../server/Cache'
 import { User } from './User'
 import { Source } from './Source'
 import { AiEngine } from './AiEngine'
-import { JsonHelper } from '../lib/JsonHelper'
 import { Convert } from '../lib/Convert'
 import { HTTP_STATUS_MESSAGE } from "../lib/Const"
 import { LogLevelDesc } from "loglevel"
-import { ConfigSchema } from "../schemas/Config.schema"
+//XXX import { ConfigFileSchema } from "../schemas/ConfigFile.schema"
+import { TConfig } from "../types/TConfig"
+import { TypeHelper } from "../lib/TypeHelper"
+import { HttpErrorBadRequest } from "./HttpErrors"
 
 export class Config {
 
     // global configuration
-    static Configuration: any = {}
+    static Configuration: TConfig
     static ConfigFilePath = './config/config.yml'
 
-    static DEFAULTS: TJson = {
+    static readonly DEFAULTS: TJson = {
         "server.port": 3000,
         "server.timezone": 'UTC',
         "server.verbosity": 'warn',
@@ -53,15 +56,14 @@ export class Config {
         ResponseLimit: 10 * 1024 * 1024   // response body size limit
     }
 
-    static #ConfigSchema = ConfigSchema
+    //XXX static #ConfigSchema = ConfigFileSchema
 
     @Logger.LogFunction()
     static async Init(): Promise<void> {
         // ENV
         dotenv.config()
 
-        await Config.Load()
-        await Config.Validate()
+        await Config.Validate(await Config.Load())
 
         const verbosity = Config.Get<LogLevelDesc>("server.verbosity") ?? DefaultLevel
 
@@ -88,41 +90,46 @@ export class Config {
     }
 
     @Logger.LogFunction()
-    static async Load(): Promise<void> {
+    static async Load(): Promise<TConfig> {
         const configFileRaw = Fs.readFileSync(this.ConfigFilePath, 'utf8')
-        Config.Configuration = await Yaml.load(configFileRaw)
-        Config.ExtendSchema()
+        return await Yaml.load(configFileRaw) as TConfig
     }
 
     @Logger.LogFunction()
-    static ExtendSchema(): void {
+    static CheckRessourcesUsage(newConfig: TConfig): void {
+        // TODO check for used sources and plans in config
         const sourceNameConfig = {
             type: "string",
             // eslint-disable-next-line you-dont-need-lodash-underscore/keys
-            enum: _.keys(Config.Configuration?.sources ?? [])
+            enum: _.keys(newConfig?.sources ?? [])
         }
 
-        Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.sourceName = sourceNameConfig
-        Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.entities.patternProperties[".*"].properties.sourceName = sourceNameConfig
+        //XXX Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.sourceName = sourceNameConfig
+        //XXX Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.entities.patternProperties[".*"].properties.sourceName = sourceNameConfig
 
         const planNameConfig = {
             type: "string",
             // eslint-disable-next-line you-dont-need-lodash-underscore/keys
-            enum: _.keys(Config.Configuration?.plans ?? [])
+            enum: _.keys(newConfig?.plans ?? [])
         }
 
-        Config.#ConfigSchema.properties.schedules.patternProperties[".*"].properties.planName = planNameConfig
+        //XXX Config.#ConfigSchema.properties.schedules.patternProperties[".*"].properties.planName = planNameConfig
     }
 
     @Logger.LogFunction()
-    static async Validate(): Promise<void> {
-        const { errors } = JsonHelper.Validator.validate(this.Configuration, this.#ConfigSchema)
+    static async Validate(newConfig: TConfig): Promise<void> {
 
-        if (errors.length <= 0)
-            return
+        TypeHelper.Validate(typia.validateEquals<TConfig>(newConfig), new HttpErrorBadRequest())
+        Config.CheckRessourcesUsage(newConfig)
+        Config.Configuration = newConfig
 
-        Logger.Error(`Errors have been detected in configuration file ${this.ConfigFilePath}:\n\n - ${errors.join('\n - ').replace(/instance\./mg, '')}\n`)
-        process.exit(1)
+        //XXX const { errors } = JsonHelper .Validator.validate(this.Configuration, this.#ConfigSchema)
+
+        //XXX if (errors.length <= 0)
+        //XXX     return
+
+        //XXX Logger.Error(`Errors have been detected in configuration file ${this.ConfigFilePath}:\n\n - ${errors.join('\n - ').replace(/instance\./mg, '')}\n`)
+        //XXX process.exit(1)
     }
 
     @Logger.LogFunction()
@@ -139,6 +146,11 @@ export class Config {
     static Get<T>(path: string, defaultValue: any = undefined): T {
         // eslint-disable-next-line you-dont-need-lodash-underscore/get
         return _.get(Config.Configuration, path, defaultValue)
+    }
+
+    @Logger.LogFunction()
+    static Set<T>(path: string, value: T): void {
+        _.set(Config.Configuration, path, value)
     }
 }
 

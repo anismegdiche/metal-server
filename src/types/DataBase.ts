@@ -9,6 +9,7 @@ import alasql from 'alasql'
 import { DataTable, TRow } from './DataTable'
 import { TJson } from './TJson'
 import { Logger } from '../utils/Logger'
+import { HttpErrorInternalServerError } from "../server/HttpErrors"
 
 
 export class DataBase {
@@ -18,7 +19,7 @@ export class DataBase {
 
     constructor(name: string) {
         if (name === undefined)
-            throw new Error("undefined DataBase name")
+            throw new HttpErrorInternalServerError("undefined DataBase name")
         this.Name = name
     }
 
@@ -50,6 +51,7 @@ export class DataBase {
         if (dataTables === null)
             return undefined
 
+        // eslint-disable-next-line you-dont-need-lodash-underscore/uniq
         _.uniq(dataTables).forEach((_dt: string) => {
             sqlQueryModified = sqlQueryModified.replace(`{${_dt}}`, ` ? ${_dt}`)
             rows = [

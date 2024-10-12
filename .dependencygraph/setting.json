@@ -1,6 +1,6 @@
 {
-  "entryFilePath": "build\\index.js",
-  "alias": false,
+  "entryFilePath": "src\\index.ts",
+  "alias": {},
   "resolveExtensions": [
     ".js",
     ".jsx",

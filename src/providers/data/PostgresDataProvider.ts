@@ -11,13 +11,14 @@ import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResponseNoData } from '../../types/TSchemaResponse'
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER, { Source } from '../../server/Source'
 import { TJson } from "../../types/TJson"
+import { HttpErrorNotImplemented } from "../../server/HttpErrors"
 
 
 export class PostgresDataProvider implements IDataProvider.IDataProvider {
@@ -216,6 +217,11 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE.DELETE.SUCCESS.STATUS
         }
         return schemaResponse
+    }
+
+    @Logger.LogFunction()
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        throw new HttpErrorNotImplemented()
     }
 
     @Logger.LogFunction()

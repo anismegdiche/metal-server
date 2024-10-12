@@ -1,5 +1,5 @@
 
-# <img src="metal-logo.png" style="height: 100px;"/><br><span style="font-size: 0.6em"> `version 0.2`</span>
+# <img src="metal-logo.png" style="height: 100px;"/><br><span style="font-size: 0.6em"> `version 0.3`</span>
 
 ## Overview
 

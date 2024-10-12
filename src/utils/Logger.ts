@@ -77,38 +77,39 @@ export class Logger {
     }
 
     static Trace(msg: any): void {
-        LogLevel.trace(msg)
+        setImmediate(() => LogLevel.trace(msg))
     }
 
     static Debug(msg: any): void {
-        LogLevel.debug(msg)
+        setImmediate(() => LogLevel.debug(msg))
     }
 
     static Info(msg: any): void {
-        LogLevel.info(msg)
+        setImmediate(() => LogLevel.info(msg))
     }
 
     static Warn(msg: any): void {
-        LogLevel.warn(msg)
+        setImmediate(() => LogLevel.warn(msg))
     }
 
     static Error(msg: any): void {
-        LogLevel.error(msg)
+        setImmediate(() => LogLevel.error(msg))
     }
 
     static Message(msg: any): void {
-        Logger.EnableAll()
-        Logger.Info(msg)
-        Logger.SetLevel()
+        setImmediate(() => {
+            Logger.EnableAll()
+            Logger.Info(msg)
+            Logger.SetLevel()
+        })
     }
 
-     
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static LogFunction(logger: Function = Logger.Debug) {
+    static LogFunction(logger: Function = Logger.Debug, hideParameters: boolean = false): any {
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             const originalMethod = descriptor.value
             descriptor.value = function (...args: any[]) {
-                const _argsString = (args.length == 0 || args.every(v => v === null) || args.every(v => v === undefined))
+                const _argsString = (hideParameters || args.length == 0 || args.every(v => v === null) || args.every(v => v === undefined))
                     ? ''
                     : `: ${JsonHelper.Stringify(args)}`
 

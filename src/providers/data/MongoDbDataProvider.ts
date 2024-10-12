@@ -20,7 +20,7 @@ import { Logger } from "../../utils/Logger"
 import { Cache } from '../../server/Cache'
 import DATA_PROVIDER, { Source } from '../../server/Source'
 import { MongoDbHelper } from '../../lib/MongoDbHelper'
-import { HttpNotImplementedError } from "../../server/HttpErrors"
+import { HttpErrorNotImplemented } from "../../server/HttpErrors"
 
 
 class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
@@ -122,7 +122,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
         return options
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug, true)
     GetCache(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.cache)
             options.Cache = schemaRequest.cache
@@ -190,9 +190,8 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE_TRANSACTION.INSERT
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -222,9 +221,8 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE_TRANSACTION.SELECT
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
 
         await this.Connection.connect()
 
@@ -262,9 +260,8 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
             ...RESPONSE_TRANSACTION.UPDATE
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -302,9 +299,8 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         const options: any = this.Options.Parse(schemaRequest)
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
 
         await this.Connection
             .db(this.Params.database)
@@ -321,7 +317,56 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     }
 
     @Logger.LogFunction()
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        throw new HttpErrorNotImplemented()
+    }
+
+    //CURRENT:
+    @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        throw new HttpNotImplementedError()
+
+        const { schemaName } = schemaRequest
+        const entityName = `${schemaRequest.schemaName}-entities`
+
+        let schemaResponse = <TSchemaResponse>{
+            schemaName,
+            entityName,
+            ...RESPONSE_TRANSACTION.LIST_ENTITIES
+        }
+
+        if (this.Connection === undefined)
+            return Source.ResponseError(schemaResponse)
+
+        await this.Connection.connect()
+
+        const data = await this.Connection.db(this.Params.database).listCollections().toArray()
+
+        const result = await Promise.all(
+            data.map(async (item) => {
+                let size = -1
+                if (this.Connection !== undefined) {
+                    const collection = this.Connection.db(this.Params.database).collection(item.name)
+                    size = await collection.countDocuments()
+                }
+                return _.assign(_.pick(item, ['name', 'type']), { size })
+            })
+        )
+
+        if (data.length > 0) {
+            const _dt = new DataTable(entityName, result)
+            schemaResponse = <TSchemaResponseData>{
+                ...schemaResponse,
+                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+                ...RESPONSE.SELECT.SUCCESS.STATUS,
+                data: _dt
+            }
+        } else {
+            schemaResponse = <TSchemaResponseNoData>{
+                ...schemaResponse,
+                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
+                ...RESPONSE.SELECT.NOT_FOUND.STATUS
+            }
+        }
+        return schemaResponse
     }
 }

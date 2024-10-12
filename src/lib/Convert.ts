@@ -15,8 +15,9 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { Server } from '../server/Server'
 import { TypeHelper } from './TypeHelper'
 import { JsonHelper } from './JsonHelper'
-import { HttpInternalServerError } from '../server/HttpErrors'
+import { HttpErrorInternalServerError } from '../server/HttpErrors'
 import { Config } from "../server/Config"
+import { HTTP_STATUS_CODE } from "./Const"
 
 
 export class Convert {
@@ -51,7 +52,10 @@ export class Convert {
 
     // @Logger.LogFunction()
     static InternalResponseToResponse(res: Response, intRes: TInternalResponse): void {
-        res.status(intRes.StatusCode).json(intRes.Body)
+        res
+            .status(intRes.StatusCode)
+            .json(intRes.Body)
+            .end()
     }
 
     // @Logger.LogFunction()
@@ -89,7 +93,10 @@ export class Convert {
         if (Config.Flags.EnableResponseChunk) {
             Convert.#SchemaResponseToResponseChunkPrepare(schemaResponse, res, resJson)
         } else {
-            res.json(resJson)
+            res.json(schemaResponse.status === HTTP_STATUS_CODE.NO_CONTENT
+                ? undefined
+                : resJson
+            )
         }
 
         return res
@@ -127,11 +134,11 @@ export class Convert {
         readable.pipe(res)
 
         readable.on('error', (error) => {
-            throw new HttpInternalServerError(`Stream error: ${error}`)
+            throw new HttpErrorInternalServerError(`Stream error: ${error}`)
         })
 
         res.on('error', (error) => {
-            throw new HttpInternalServerError(`Response stream error: ${error}`)
+            throw new HttpErrorInternalServerError(`Response stream error: ${error}`)
         })
     }
 

@@ -25,12 +25,18 @@ export interface IDataProvider {
     Params: TJson
     Connection?: unknown
     Options: IDataProviderOptions
+
     // Connection
     Init: (sourceParams: TSourceParams) => void
     Connect: () => Promise<void>
     Disconnect: () => Promise<void>
+
     // Entities
     ListEntities: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
+    AddEntity: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
+    //ROADMAP RenameEntity: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
+    //ROADMAP DeleteEntity: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
+    
     // Data
     Insert: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
     Select: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>

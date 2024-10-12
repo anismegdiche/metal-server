@@ -1,24 +1,18 @@
 
+import typia from "typia"
+import { TConfig } from "../../types/TConfig"
 import { Config } from '../Config'
 
 describe('Config', () => {
+
     beforeAll(async () => {
-        // Initialize the configuration before running tests
-        //await Config.Init()
+        Config.Configuration = typia.random<TConfig>()
     })
 
-    describe('Load', () => {
-        it('should load the configuration from file', async () => {
-            Config.Load()
-            expect.assertions(1)
-            expect(Config.Configuration).toBeDefined()
-        })
-    })
-
-    describe('Check', () => {
+    describe('Validate', () => {
         it('should check the configuration', async () => {
             expect.assertions(1)
-            await expect(Config.Validate()).resolves.not.toThrow()
+            await expect(Config.Validate(Config.Configuration)).resolves.not.toThrow()
         })
     })
 })

@@ -25,7 +25,7 @@ export class CacheResponse {
     static View(req: Request, res: Response): void {
         Cache.View()
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
-            .catch((error: HttpError) => ServerResponse.Error(res, error))
+            .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
 
     }
 
@@ -33,14 +33,14 @@ export class CacheResponse {
     static Clean(req: Request, res: Response): void {
         Cache.Clean()
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
-            .catch((error: HttpError) => ServerResponse.Error(res, error))
+            .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
     //@Logger.LogFunction()
     static Purge(req: Request, res: Response): void {
         Cache.Purge()
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
-            .catch((error: HttpError) => ServerResponse.Error(res, error))
+            .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
     // TODO: refactor to be compliant with response/class architecture logic
@@ -86,10 +86,10 @@ export class CacheResponse {
                     }
                 })
                 .catch((error: Error) => {
-                    ServerResponse.Error(res, error)
+                    ServerResponse.ResponseError(res, error)
                 })
         } catch (error: unknown) {
-            ServerResponse.Error(res, error as Error)
+            ServerResponse.ResponseError(res, error as Error)
         }
     }
 }

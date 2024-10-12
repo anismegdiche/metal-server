@@ -6,6 +6,7 @@
 import { createContext, Script } from 'vm'
 //
 import { Logger } from '../utils/Logger'
+import { HttpErrorInternalServerError } from "./HttpErrors"
 
 export class Sandbox {
     #Context: any
@@ -33,13 +34,11 @@ export class Sandbox {
     Evaluate(code: string): string | undefined {
         try {
             // Perform additional validation if necessary
-            if (!Sandbox.#IsValidCode(code)) {
-                throw new Error('Invalid code')
-            }
+            if (!Sandbox.#IsValidCode(code))
+                throw new HttpErrorInternalServerError('Invalid code')
 
-            if (!this.#KeepState) {
+            if (!this.#KeepState)
                 this.Reset()
-            }
 
             // Execute the code within the context
             const script = new Script(code)

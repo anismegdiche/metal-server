@@ -6,6 +6,7 @@
 import express, { Express, NextFunction, Request, Response } from 'express'
 import { rateLimit } from 'express-rate-limit'
 import responseTime from 'response-time'
+import chokidar from 'chokidar'
 //
 import { TJson } from '../types/TJson'
 import { HTTP_STATUS_CODE, ROUTE, SERVER } from '../lib/Const'
@@ -22,7 +23,7 @@ import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
 import { Sandbox } from './Sandbox'
 import { JsonHelper } from '../lib/JsonHelper'
-import { HttpNotImplementedError } from "./HttpErrors"
+import { HttpErrorNotImplemented } from "./HttpErrors"
 import { Swagger } from '../utils/Swagger'
 
 export class Server {
@@ -44,13 +45,19 @@ export class Server {
             ...(Config.DEFAULTS['server.response-rate'] as object),
             ...Config.Get<object>("server.response-rate")
         }))
+
         Server.App.use(express.json({
             limit: Config.Get<string | number>("server.request-limit") ?? Config.DEFAULTS['server.request-limit']
         }))
+
         Server.App.use((req: Request, res: Response, next: NextFunction) => {
             res.setHeader('X-Powered-By', 'Metal')
             next()
         })
+
+        Swagger.Load()
+        Swagger.StartUi(Server.App)
+        Swagger.Validator(Server.App)
 
         // path: /
         Server.App.get('/', (req: Request, res: Response) => {
@@ -87,7 +94,17 @@ export class Server {
 
         // path: /api-docs
         Logger.Info(`Route: Enabling API, URL= ${ROUTE.SWAGGER_UI_PATH}`)
-        Swagger.StartUi(Server.App)
+
+        // error handler
+        Server.App.use((err: any, req: Request, res: Response, next: NextFunction) => {
+            // format error
+            res.status(err.status || 500).json({
+                message: err.message,
+                errors: err.errors
+            })
+        })
+
+        Server.StartWatcher()
     }
 
     @Logger.LogFunction()
@@ -113,15 +130,18 @@ export class Server {
 
     @Logger.LogFunction()
     static Stop() {
-        throw new HttpNotImplementedError(`Server.Stop: ${JsonHelper.Stringify({})}`)
+        throw new HttpErrorNotImplemented()
     }
 
     @Logger.LogFunction()
-    static async Reload(): Promise<void> {
+    static async Reload(): Promise<TJson> {
         Schedule.StopAll()
         await Cache.Disconnect()
         await Source.DisconnectAll()
-        Config.Init()
+        await Config.Init()
+        return {
+            message: `Server reloaded`
+        }
     }
 
     @Logger.LogFunction()
@@ -138,14 +158,20 @@ export class Server {
         next()
     }
 
-    // @Logger.DebugFunction()
-    // static async StartSwaggerUi() {
-    //     // Swagger UI
-    //     // Logger.Info(`Route: Enabling API, URL= ${ROUTE.SWAGGER_UI_PATH}`)
-
-    //     // const swaggerConfigFileRaw = Fs.readFileSync('./openapi.yml', 'utf8')
-    //     // const swaggerConfig = await Yaml.load(swaggerConfigFileRaw) as swaggerUi.JsonObject
-
-    //     // Server.App.use(`${ROUTE.SWAGGER_UI_PATH}/`, swaggerUi.serve, swaggerUi.setup(swaggerConfig))
-    // }
+    @Logger.LogFunction()
+    static StartWatcher(): void {
+        
+        // Config
+        chokidar.watch(Config.ConfigFilePath).on('change', () => {
+            Logger.Info('Config file changed. Reloading...')
+            Server.Reload()
+        })
+        
+        // // OpenApi
+        // chokidar.watch(Swagger.OpenApiFilePath).on('change', () => {
+        //     Logger.Info('OpenAPI specification changed. Reloading...')
+        //     Swagger.Load()
+        //     Swagger.Validator(Server.App)
+        // })
+    }
 }

@@ -1,4 +1,3 @@
-###
 # @name login
 POST  http://localhost:3000/user/login
 Content-Type: application/json
@@ -7,57 +6,101 @@ Content-Type: application/json
     "username":"myapiuser",
     "password": "myStr@ngpa$$w0rd"
 }
-
 ###
+
+
 @token={{login.response.body.token}}
-
 ###
-# @name select
-GET http://localhost:3000/schema/northwind/customers
+
+
+# DONE
+# @name list-entities
+GET http://localhost:3000/schema/clubdata
 Content-Type: application/json
 authorization: Bearer {{token}}
 ###
 
+
+# DONE
+# @name select
+GET http://localhost:3000/schema/clubdata/members
+Content-Type: application/json
+authorization: Bearer {{token}}
+###
+
+
+# DONE
 # @name select-filtered
-GET http://localhost:3000/schema/northwind/customers
-    ?fields=contact_name, company_name
-    &filterExpression=customer_id LIKE 'A%'
-    &filter={"company_name": "Alfreds Futterkiste"}
-    &sort=contact_name asc,company_name desc
+GET http://localhost:3000/schema/clubdata/members
+    ?fields=firstname, surname
+    # &filterExpression=customer_id LIKE 'A%'
+    &filter={"surname": "Smith"}
+    &sort=firstname asc,surname desc
     &cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}
-
 ###
+
+
+# TODO
 # @name insert-one
-POST http://localhost:3000/schema/northwind/customers
+POST http://localhost:3000/schema/clubdata/members
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 {
     "data": {
-                "customer_id": "MLLD",
-                "contact_name":"Mark Moe",
-                "company_name": "Moe LLD"
-            }
+      "memid": "1000",
+      "firstname": "John",
+      "surname": "Doe",
+      "address": "GUEST",
+      "zipcode": 0,
+      "telephone": "(000) 000-0000",
+      "recommendedby": null,
+      "joindate": "2012-06-30T22:00:00.000Z"
+    }
 }
-
 ###
+
+
+# TODO
 # @name insert-many
-POST http://localhost:3000/schema/insert/northwind/customers
+POST http://localhost:3000/schema/clubdata/members
 Content-Type: application/json
+authorization: Bearer {{token}}
 
 {
     "data": [
             {
-                "customer_id": "PLLD",
-                "contact_name": "Jane Poe",
-                "company_name": "Poe LLD"
-            },
-            {
-                "customer_id": "LLLD",
-                "contact_name": "Larry Loe",
-                "company_name": "Loe LLD"
-            }
-        ]
+      "memid": "1001",
+      "firstname": "Joe",
+      "surname": "Doe",
+      "address": "GUEST",
+      "zipcode": 0,
+      "telephone": "(000) 000-0000",
+      "recommendedby": null,
+      "joindate": "2012-06-30T22:00:00.000Z"
+    },{
+      "memid": "1002",
+      "firstname": "Jane",
+      "surname": "Doe",
+      "address": "GUEST",
+      "zipcode": 0,
+      "telephone": "(000) 000-0000",
+      "recommendedby": null,
+      "joindate": "2012-06-30T22:00:00.000Z"
+    }
+    ]
+}
+###
+
+
+# TODO
+# @name delete
+DELETE http://localhost:3000/schema/clubdata/members
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "filerExpression": "customer_id like '%LLD'"
 }

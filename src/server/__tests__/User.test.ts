@@ -1,14 +1,16 @@
 import { expect, describe, beforeAll, it } from '@jest/globals'
 
-import { TToken, User } from '../User'
+import { TUserToken, User } from '../User'
 import { Config } from '../Config'
+import { HttpErrorBadRequest, HttpErrorUnauthorized } from "../HttpErrors"
+import { HTTP_STATUS_CODE } from "../../lib/Const"
 
 describe('User', () => {
     beforeAll(() => {
         // Set up test data
         Config.Flags.EnableAuthentication = true
         Config.Configuration.users = {
-            alice: 123456789,
+            alice: 123_456_789,
             bob: 'password2'
         }
         User.LoadUsers()
@@ -27,31 +29,44 @@ describe('User', () => {
 
     describe('LogIn', () => {
         it('should return a token for a valid username and password', () => {
-            const _intLogIn = User.LogIn('alice', '123456789')
+            const _intLogIn = User.LogIn({
+                username: 'alice',
+                // file deepcode ignore NoHardcodedPasswords/test: testing
+                password: '123456789'
+            })
             expect(_intLogIn.Body?.token).toBeDefined()
         })
 
-        it('should return undefined for an invalid username', () => {
-            const _intLogIn = User.LogIn('eve', 'password')
-            expect(_intLogIn).toEqual({
-                StatusCode: 403,
-                Body: { message: "Invalid username or password" }
-            })
+        it('should throw HttpUnauthorized for invalid username', () => {
+            try {
+                User.LogIn({
+                    username: 'eve',
+                    password: 'password'
+                })
+            } catch (error) {
+                expect(error).toBeInstanceOf(HttpErrorUnauthorized)
+            }
         })
 
-        it('should return undefined for an invalid password', () => {
-            const _intLogIn = User.LogIn('alice', 'wrongpassword')
-            expect(_intLogIn).toEqual({
-                StatusCode: 403,
-                Body: { message: "Invalid username or password" }
-            })
+        it('should throw HttpUnauthorized for an invalid password', () => {
+            try {
+                User.LogIn({
+                    username: 'alice',
+                    password: 'wrongpassword'
+                })
+            } catch (error) {
+                expect(error).toBeInstanceOf(HttpErrorUnauthorized)
+            }
         })
     })
 
     describe('GetInfo', () => {
         it('should return username for a valid token', () => {
-            const _IRLogIn = User.LogIn('alice', '123456789')
-            const _IRGetInfo = User.GetInfo(<TToken>_IRLogIn.Body?.token)
+            const _IRLogIn = User.LogIn({
+                username: 'alice',
+                password: '123456789'
+            })
+            const _IRGetInfo = User.GetInfo(<TUserToken>_IRLogIn.Body?.token)
             expect(_IRGetInfo).toEqual({
                 StatusCode: 200,
                 Body: {
@@ -61,47 +76,41 @@ describe('User', () => {
         })
 
         it('should return nothing for an invalid token', () => {
-            const info = User.GetInfo(undefined)
-            expect(info).toEqual({
-                StatusCode: 403,
-                Body: {
-                    message: 'Forbidden'
-                }
-            })
+            try {
+                User.GetInfo(undefined)
+            } catch (error) {
+                expect(error).toBeInstanceOf(HttpErrorBadRequest)
+            }
         })
     })
 
     describe('LogOut', () => {
         it('should remove a user from the logged-in users list', () => {
-            const _intLogIn = User.LogIn('alice', '123456789')
-            const _intLogOut = User.LogOut(<TToken>_intLogIn.Body?.token)
+            const _intLogIn = User.LogIn({
+                username: 'alice',
+                password: '123456789'
+            })
+            const _intLogOut = User.LogOut(<TUserToken>_intLogIn.Body?.token)
             expect(_intLogOut).toEqual({
-                StatusCode: 200,
-                Body: {
-                    message: "Logged out successfully"
-                }
+                StatusCode: HTTP_STATUS_CODE.NO_CONTENT,
+                Body: undefined
             })
         })
 
         it('should do nothing if the token is undefined', () => {
-            const _intLogOut = User.LogOut(undefined)
-            expect(_intLogOut).toEqual({
-                StatusCode: 400,
-                Body: {
-                  message: "Invalid username"
-                }
-              })
+            try {
+                User.LogOut(undefined)
+            } catch (error) {
+                expect(error).toBeInstanceOf(HttpErrorBadRequest)
+            }
         })
 
         it('should do nothing if the token is invalid', () => {
-            const _intLogOut = User.LogOut('invalidtoken')
-            expect(_intLogOut).toEqual({
-                StatusCode: 400,
-                Body: {
-                  message: "Invalid username"
-                }
-              })
+            try {
+                User.LogOut('invalidtoken')
+            } catch (error) {
+                expect(error).toBeInstanceOf(HttpErrorBadRequest)
+            }
         })
     })
-
 })

@@ -18,7 +18,7 @@ export class ScheduleResponse {
             const intRes = Schedule.Start(jobName)
             Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {
-            ServerResponse.Error(res, error as Error)
+            ServerResponse.ResponseError(res, error as Error)
         }
     }
 
@@ -29,7 +29,7 @@ export class ScheduleResponse {
             const intRes = Schedule.Stop(jobName)
             Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {
-            ServerResponse.Error(res, error as Error)
+            ServerResponse.ResponseError(res, error as Error)
         }
     }
 }

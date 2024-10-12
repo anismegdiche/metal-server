@@ -10,7 +10,7 @@ import { TJson } from "../../types/TJson"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Logger } from '../../utils/Logger'
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
-import { HttpNotImplementedError } from "../../server/HttpErrors"
+import { HttpErrorNotImplemented } from "../../server/HttpErrors"
 
 
 export class CommonDataProvider implements IDataProvider.IDataProvider {
@@ -36,41 +36,46 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        throw new HttpNotImplementedError()
+        throw new HttpErrorNotImplemented()
     }
 
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        throw new HttpNotImplementedError()
+        throw new HttpErrorNotImplemented()
     }
 
 
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        throw new HttpNotImplementedError()
+        throw new HttpErrorNotImplemented()
     }
 
 
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        throw new HttpNotImplementedError()
+        throw new HttpErrorNotImplemented()
     }
 
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        throw new HttpNotImplementedError()
+        throw new HttpErrorNotImplemented()
     }
 
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        throw new HttpNotImplementedError()
+        throw new HttpErrorNotImplemented()
+    }
+
+    @Logger.LogFunction()
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        throw new HttpErrorNotImplemented()
     }
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        throw new HttpNotImplementedError()
+        throw new HttpErrorNotImplemented()
     }
 }

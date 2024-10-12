@@ -1,8 +1,6 @@
-import * as Fs from "fs"
-import * as Yaml from "js-yaml"
 import _ from "lodash"
 //
-import { HTTP_STATUS_CODE, METADATA } from "../lib/Const"
+import { METADATA } from "../lib/Const"
 import { Logger } from "../utils/Logger"
 import { Config } from "./Config"
 import { TInternalResponse } from "../types/TInternalResponse"
@@ -15,6 +13,8 @@ import { DataTable } from "../types/DataTable"
 import { Helper } from "../lib/Helper"
 import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
+import { HttpResponse } from "./HttpResponse"
+import { HttpErrorNotFound } from "./HttpErrors"
 
 
 export class Plan {
@@ -126,29 +126,19 @@ export class Plan {
     }
 
     @Logger.LogFunction()
-    static Reload(planName: string): TInternalResponse {
-        const configFileRaw = Fs.readFileSync(Config.ConfigFilePath, 'utf8')
-        const configFileJson: any = Yaml.load(configFileRaw)
+    static async Reload(planName: string): Promise<TInternalResponse> {
+        const configFileJson = await Config.Load()
 
         // check if plan exist
         if (Config.Has(`plans.${planName}`) && _.has(configFileJson.plans, planName)) {
-            Config.Configuration.plans[planName] = configFileJson.plans[planName]
-            return {
-                StatusCode: HTTP_STATUS_CODE.OK,
-                Body: {
-                    plan: planName,
-                    message: `Plan reloaded`
-                }
-            }
+            Config.Set(`plans.${planName}`, configFileJson.plans[planName])
+            return HttpResponse.Ok({
+                plan: planName,
+                message: `Plan reloaded`
+            })
         }
 
         // plan not found
-        return {
-            StatusCode: HTTP_STATUS_CODE.NOT_FOUND,
-            Body: {
-                plan: planName,
-                message: `Plan not found`
-            }
-        }
+        throw new HttpErrorNotFound("Plan not found")
     }
 }

@@ -1,4 +1,3 @@
-###
 # @name login
 POST  http://localhost:3000/user/login
 Content-Type: application/json
@@ -8,27 +7,35 @@ Content-Type: application/json
     "password": "myStr@ngpa$$w0rd"
 }
 
-###
-@token={{login.response.body.token}}
 
 ###
-# @name select
-GET http://localhost:3000/schema/hr/dbo.countries
-Content-Type: application/json
+@token={{login.response.body.token}}
+###
+
+
+# @name list
+GET http://localhost:3000/schema/hr
 authorization: Bearer {{token}}
 ###
 
+
+# @name select
+GET http://localhost:3000/schema/hr/countries
+authorization: Bearer {{token}}
+###
+
+
 # @name select-filtered
-GET http://localhost:3000/schema/hr/dbo.countries
+GET http://localhost:3000/schema/hr/countries
     ?filterExpression=country_name LIKE '*a'
     &fields=country_id,country_name
     &sort=country_id asc,country_name desc
-Content-Type: application/json
 authorization: Bearer {{token}}
-
 ###
+
+
 # @name insert-one
-POST http://localhost:3000/schema/hr/dbo.countries
+POST http://localhost:3000/schema/hr/countries
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -39,37 +46,4 @@ authorization: Bearer {{token}}
                 "region_id": 1
             }
 }
-
-#################################################################
 ###
-# @name insert-many
-POST http://localhost:3000/schema/insert/hr/dbo.countries
-Content-Type: application/json
-
-{
-    "data": [
-            {
-                "last_name": "PLLD",
-                "first_name": "Jane Poe",
-                "last_name": "Poe LLD"
-            },
-            {
-                "last_name": "LLLD",
-                "first_name": "Larry Loe",
-                "last_name": "Loe LLD"
-            }
-        ]
-}
-
-
-###
-# U
-POST http://localhost:3000/schema/update/hr/dbo.countries
-Content-Type: application/json
-
-{
-    "filterExpression": "name LIKE 'Tw%'",
-    "data": {
-        "color":5
-    }
-}

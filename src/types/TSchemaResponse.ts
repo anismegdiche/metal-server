@@ -45,7 +45,7 @@ export type TSchemaResponseNoData = {
     entityName: string
     transaction: TTransactionNoData
     result: string
-    status: HTTP_STATUS_CODE.CREATED | HTTP_STATUS_CODE.NOT_FOUND
+    status: HTTP_STATUS_CODE.CREATED | HTTP_STATUS_CODE.NO_CONTENT | HTTP_STATUS_CODE.NOT_FOUND
 }
 
 export type TSchemaResponseError = {

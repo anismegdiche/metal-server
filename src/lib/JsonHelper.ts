@@ -4,8 +4,10 @@
 //
 //
 import _ from "lodash"
-import { Validator } from "jsonschema"
+//XXX import { Validator } from "jsonschema"
 import { configure } from 'safe-stable-stringify'
+import * as chrono from 'chrono-node'
+
 //
 import { TJson } from "../types/TJson"
 import { Logger } from "../utils/Logger"
@@ -18,16 +20,17 @@ const SafeStableStringify = configure({
 
 export class JsonHelper {
 
-    static readonly Validator = new Validator()
+    //XXX static readonly Validator = new Validator()
 
     static TryParse<T>(jsonString: string, defaultValue: T): T {
         try {
             return JSON.parse(jsonString, (key, value) => {
                 if (typeof value === 'string') {
-                    const date = new Date(value)
-                    if (!Number.isNaN(date.getTime())) {
-                        return date
-                    }
+                    // case Date string
+                    const _parsedDate = chrono.parseDate(value)
+                    if (_parsedDate !== null)
+                        return _parsedDate
+                    //
                 }
                 return value
             })
@@ -56,7 +59,7 @@ export class JsonHelper {
     static Stringify<T>(json: T): string {
         try {
             return JSON.stringify(json)
-        // eslint-disable-next-line unused-imports/no-unused-vars
+            // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (error) {
             return SafeStableStringify(json) ?? ""
         }
@@ -65,7 +68,7 @@ export class JsonHelper {
     static SafeCopy<T>(json: T): T {
         try {
             return JSON.parse(JSON.stringify(json))
-        // eslint-disable-next-line unused-imports/no-unused-vars
+            // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (error) {
             const _json = JSON.parse(JsonHelper.Stringify(json))
             JsonHelper.RemoveUselessKeys(_json)
@@ -81,13 +84,13 @@ export class JsonHelper {
     static RemoveUselessKeys(obj: any): void {
         _.forOwn(obj, (value, key) => {
             if (_.isObject(value)) {
-                JsonHelper.RemoveUselessKeys(value);
+                JsonHelper.RemoveUselessKeys(value)
             }
             // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
             if (["[Object]", "[Array]"].includes(value) || (_.isArray(value) && value.every(v => v === null))) {
-                delete obj[key];
+                delete obj[key]
             }
-        });
+        })
     }
 
     static ToArray(obj: TJson) {

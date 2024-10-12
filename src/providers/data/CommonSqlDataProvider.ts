@@ -71,7 +71,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
         return options
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug,true)
     GetCache(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.cache)
             options.Cache = schemaRequest.cache

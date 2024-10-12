@@ -15,13 +15,15 @@ import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
 import { TSourceParams } from "../../types/TSourceParams"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
-import { IStorage } from "../storage/CommonStorage"
+import { IStorageProvider } from "../../types/IStorageProvider"
 import { IContent } from "../content/CommonContent"
 import { JsonContent } from "../content/JsonContent"
 import { AzureBlobStorage } from '../storage/AzureBlobStorage'
 import { FsStorage } from '../storage/FsStorage'
 import { CsvContent } from '../content/CsvContent'
-import { CommonDataProvider } from "./CommonDataProvider"
+import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { TJson } from "../../types/TJson"
+import { DataTable } from "../../types/DataTable"
 
 
 export enum STORAGE_PROVIDER {
@@ -61,13 +63,22 @@ export type TFilesDataProviderOptions = {
     csvSkipEmptyLines?: string | boolean
 }
 
-export class FilesDataProvider extends CommonDataProvider implements IDataProvider.IDataProvider {
+export class FilesDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.FILES
-    Connection?: IStorage = undefined
+    Connection?: IStorageProvider = undefined
     Content: IContent = <IContent>{}
     ContentType: CONTENT = CONTENT.JSON
+    SourceName: string
+    Params: TSourceParams = <TSourceParams>{}
+    Config: TJson = {}
 
     Options = new CommonSqlDataProviderOptions()
+
+    constructor(sourceName: string, sourceParams: TSourceParams) {
+        this.SourceName = sourceName
+        this.Init(sourceParams)
+        this.Connect()
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static #NewStorageCaseMap: Record<STORAGE_PROVIDER, Function> = {
@@ -95,7 +106,7 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         if (this.Connection)
             this.Connection?.Init()
         else
-            throw new Error(`${this.SourceName}: Failed to initialize storage provider`)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize storage provider`)
 
         this.Content = FilesDataProvider.#NewContentCaseMap[contentType](this.Params) ?? Helper.CaseMapNotFound(contentType)
     }
@@ -131,7 +142,7 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         if (this.Connection)
             fileString = await this.Connection?.Read(entityName)
         else
-            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         if (fileString == undefined) {
             return <TSchemaResponseNoData>{
@@ -159,7 +170,6 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
             ...RESPONSE.INSERT.SUCCESS.STATUS
         }
     }
-
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         const options: TOptions = this.Options.Parse(schemaRequest)
@@ -176,7 +186,7 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         if (this.Connection)
             fileString = await this.Connection?.Read(entityName)
         else
-            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         if (fileString == undefined) {
             return <TSchemaResponseNoData>{
@@ -185,6 +195,7 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
                 ...RESPONSE.SELECT.NOT_FOUND.STATUS
             }
         }
+
         this.Content.Init(entityName, fileString)
 
         const sqlQueryHelper = new SqlQueryHelper()
@@ -238,7 +249,7 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         if (this.Connection)
             fileString = await this.Connection?.Read(entityName)
         else
-            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         if (fileString == undefined) {
             return <TSchemaResponseNoData>{
@@ -279,11 +290,11 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         }
 
         let fileString: string | undefined = ""
-        
+
         if (this.Connection)
             fileString = await this.Connection?.Read(entityName)
         else
-            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         if (fileString == undefined) {
             return <TSchemaResponseNoData>{
@@ -306,12 +317,53 @@ export class FilesDataProvider extends CommonDataProvider implements IDataProvid
         if (this.Connection)
             await this.Connection?.Write(entityName, fileString)
         else
-            throw new Error(`${this.SourceName}: Failed to write in storage provider`)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to write in storage provider`)
 
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
+        }
+    }
+
+    @Logger.LogFunction()
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        throw new HttpErrorNotImplemented()
+    }
+
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+
+        const { schemaName } = schemaRequest
+        const entityName = `${schemaRequest.schemaName}-entities`
+
+        const schemaResponse = <TSchemaResponse>{
+            schemaName,
+            entityName,
+            ...RESPONSE_TRANSACTION.LIST_ENTITIES
+        }
+
+        let data: DataTable
+
+        if (this.Connection)
+            data = await this.Connection?.List()
+        else
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+
+        if (data !== undefined && data.Rows.length > 0) {
+            return <TSchemaResponseData>{
+                ...schemaResponse,
+                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+                ...RESPONSE.SELECT.SUCCESS.STATUS,
+                data
+            }
+
+        } else {
+            return <TSchemaResponseNoData>{
+                ...schemaResponse,
+                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
+                ...RESPONSE.SELECT.NOT_FOUND.STATUS
+            }
         }
     }
 }

@@ -6,20 +6,10 @@
 import { Logger } from "../../utils/Logger"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TFilesDataProviderOptions } from "../data/FilesDataProvider"
+import { HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { DataTable } from "../../types/DataTable"
 
  
-export interface IStorage {
-    Params: TSourceParams
-    Options: TFilesDataProviderOptions
-    Init(): void
-    Connect(): Promise<void>
-    Disconnect(): Promise<void>
-    IsExist(file: string): Promise<boolean>
-    Read(file: string): Promise<string | undefined>
-    Write(file: string, content: string): Promise<void>
-}
- 
-
 export class CommonStorage {
 
     Params: TSourceParams
@@ -66,6 +56,12 @@ export class CommonStorage {
     @Logger.LogFunction()
     async Write(file: string, content: string): Promise<void> {
         //
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
+    async List(): Promise<DataTable> {
+        throw new HttpErrorNotImplemented()
     }
      
     @Logger.LogFunction()

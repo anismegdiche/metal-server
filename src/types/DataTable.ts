@@ -142,7 +142,7 @@ const SqlToJsType: TJson = {
 export type TRow = TJson
 export type TFields = TJson
 export type TMetaData = Record<string, unknown>
-export type TOrder = boolean | SORT_ORDER
+export type TSortOrder = boolean | SORT_ORDER
 export type TSyncReport = {
     AddedRows: TRow[]
     DeletedRows: TRow[]
@@ -156,10 +156,8 @@ export class DataTable {
     MetaData: TMetaData = {}
 
     constructor(name: string | undefined, rows: TJson[] | undefined = undefined, fields: TJson | undefined = undefined, metaData: TJson | undefined = undefined) {
-        if (name === undefined)
-            throw new Error("undefined DataTable name")
-
-        this.Name = name
+        
+        this.Name = name ?? crypto.randomUUID()
 
         if (rows)
             this.Set(Array.isArray(rows)
@@ -173,7 +171,7 @@ export class DataTable {
             this.MetaData = metaData as TMetaData
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug, true)
     Set(rows: TJson[] | undefined = undefined): this {
         if (rows) {
             this.Rows = [...rows]
@@ -357,7 +355,7 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
-    Sort(fields: string[], orders: TOrder[]): this {
+    Sort(fields: string[], orders: TSortOrder[]): this {
         this.Rows = _.orderBy(this.Rows, fields, orders)
         return this
     }

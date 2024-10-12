@@ -13,5 +13,6 @@
         "revealWithFocus": "test-results",
         "clearOnRun": "none"
     },
-    "codescene.previewCodeHealthGate": true
+    "codescene.previewCodeHealthGate": true,
+    "codescene.enableAutoRefactor": true
 }

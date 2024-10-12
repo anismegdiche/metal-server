@@ -5,7 +5,7 @@
 //
 import * as Sha512 from 'js-sha512'
 //
-import { HTTP_STATUS_CODE, METADATA } from '../lib/Const'
+import { METADATA } from '../lib/Const'
 import { TCacheData } from '../types/TCacheData'
 import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
@@ -16,6 +16,7 @@ import { Config } from './Config'
 import { IDataProvider } from '../types/IDataProvider'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
+import { HttpResponse } from "./HttpResponse"
 
 
 export class Cache {
@@ -44,7 +45,7 @@ export class Cache {
 
     @Logger.LogFunction()
     static async Set(schemaRequest: TSchemaRequest, datatable: DataTable): Promise<void> {
-        
+
         // bypassing 
         if (this.CacheSource == undefined) {
             return
@@ -169,9 +170,7 @@ export class Cache {
         schemaResponse.transaction = TRANSACTION.CACHE_DATA
         const intRes: TInternalResponse = {
             StatusCode: schemaResponse.status,
-            Body: {
-                message: 'Cache data'
-            }
+            Body: { message: 'Cache data' }
         }
         schemaResponse = schemaResponse as TSchemaResponseData
         if (TypeHelper.IsSchemaResponseData(schemaResponse) && intRes.Body) {
@@ -185,10 +184,7 @@ export class Cache {
     static async Purge(): Promise<TInternalResponse> {
         await Cache.CacheSource.Delete(Cache.#SchemaRequest)
         Logger.Debug(`${Logger.Out} Cache.Purge`)
-        return {
-            StatusCode: HTTP_STATUS_CODE.OK,
-            Body: { message: 'Cache purged' }
-        }
+        return HttpResponse.Ok({ message: 'Cache purged' })
     }
 
     @Logger.LogFunction()
@@ -200,9 +196,6 @@ export class Cache {
             filterExpression: `expires < ${_expireDate}`
         })
         Logger.Debug(`${Logger.Out} Cache.Clean`)
-        return {
-            StatusCode: HTTP_STATUS_CODE.OK,
-            Body: { message: 'Cache cleaned' }
-        }
+        return HttpResponse.Ok({ message: 'Cache cleaned' })
     }
 }

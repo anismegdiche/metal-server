@@ -12,7 +12,8 @@
 - Updated packages.
 - Updated Config file validation.
 - Updated Plan sync function usage.
-- Enhanced Logging feature throw TS decorator.
+- Enhanced Logging feature.
+- Enhanced Tessract.js Engine.
 
 ### Bug Fixes
 - Fixed bugs related to Plan commands.

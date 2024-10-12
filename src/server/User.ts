@@ -7,23 +7,33 @@ import _ from 'lodash'
 import jwt from 'jsonwebtoken'
 import { randomBytes } from 'crypto'
 import Bcrypt from 'bcrypt'
+import typia from "typia"
 //
 import { Config } from './Config'
-import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from '../lib/Const'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { Logger } from "../utils/Logger"
+import { HttpErrorBadRequest, HttpErrorUnauthorized } from "./HttpErrors"
+import { TypeHelper } from "../lib/TypeHelper"
+import { HttpResponse } from "./HttpResponse"
 
-type TUser = Record<string, string>
-export type TToken = string | undefined
+type TUsersList = Record<string, string>
+
+export type TUserCredentials = {
+    username: string
+    password: string
+}
+
+export type TUserToken = string | undefined
 
 export class User {
 
     static readonly #SALT_ROUNDS = 10
-    static readonly #JWT_EXPIRATION_TIME = 60 * 60 // 1 hour
-    static readonly #SECRET_LENGTH = 64 // Length of the JWT secret
-    
-    static Users: TUser = {}
-    static LoggedInUsers: { [token: string]: TUser } = {}
+    static readonly #JWT_EXPIRATION_TIME = 60 * 60          // 1 hour
+    static readonly #SECRET_LENGTH = 64                     // Length of the JWT secret
+    static Users: TUsersList = {}
+    static LoggedInUsers: { [token: string]: TUsersList } = {}
+    static AuthenticationType =  'jwt'
+
 
     static #GenerateJwtSecret(): string {
         const bytes = randomBytes(this.#SECRET_LENGTH)
@@ -34,11 +44,12 @@ export class User {
         return Bcrypt.hashSync(password, User.#SALT_ROUNDS)
     }
 
-    static #CheckToken(token: TToken) {
-        if (token === undefined) {
+    // TODO: move to be decorator
+    static #CheckToken(userToken: TUserToken) {
+        if (userToken === undefined)
             return false
-        }
-        return _.has(User.LoggedInUsers, token)
+
+        return _.has(User.LoggedInUsers, userToken)
     }
 
     @Logger.LogFunction()
@@ -47,70 +58,50 @@ export class User {
             User.Users = _.mapValues(Config.Configuration.users, user => user.toString())
     }
 
-    @Logger.LogFunction()
-    static LogIn(username: string, password: string): TInternalResponse {
+    @Logger.LogFunction(Logger.Debug, true)
+    static LogIn(userCredentials: TUserCredentials): TInternalResponse {
+        TypeHelper.Validate(typia.validateEquals<TUserCredentials>(userCredentials), new HttpErrorBadRequest())
+
+        const { username, password } = userCredentials
 
         // Check if the user exists and the password is correct
-        const _isUserExist: boolean = _.has(User.Users, username)
-        if (!_isUserExist || !Bcrypt.compareSync(password, User.#HashPassword(User.Users[username]))) {
-            return {
-                StatusCode: HTTP_STATUS_CODE.FORBIDDEN,
-                Body: { message: 'Invalid username or password' }
-            }
+        const isUserExist: boolean = _.has(User.Users, username)
+        if (!isUserExist || !Bcrypt.compareSync(password, User.#HashPassword(User.Users[username]))) {
+            throw new HttpErrorUnauthorized("Invalid username or password")
         }
 
         // Generate a JWT token and return it
-        const token = jwt.sign({ username }, User.#GenerateJwtSecret(), { expiresIn: User.#JWT_EXPIRATION_TIME })
-        User.LoggedInUsers[token] = {
+        const userToken = jwt.sign({ username }, User.#GenerateJwtSecret(), { expiresIn: User.#JWT_EXPIRATION_TIME })
+        User.LoggedInUsers[userToken] = {
             username,
             password
         }
-        return {
-            StatusCode: HTTP_STATUS_CODE.OK,
-            Body: { token }
-        }
+        return HttpResponse.Ok({ token: userToken })
     }
 
     @Logger.LogFunction()
-    static LogOut(token: TToken): TInternalResponse {
-        if (token && User.#CheckToken(token)) {
-            delete User.LoggedInUsers[token]
-            return {
-                StatusCode: HTTP_STATUS_CODE.OK,
-                Body: { message: 'Logged out successfully' }
-            }
+    static LogOut(userToken: TUserToken): TInternalResponse {
+        if (userToken && User.#CheckToken(userToken)) {
+            delete User.LoggedInUsers[userToken]
+            return HttpResponse.NoContent()
         }
-        return {
-            StatusCode: HTTP_STATUS_CODE.BAD_REQUEST,
-            Body: { message: 'Invalid username' }
-        }
+        throw new HttpErrorBadRequest("Invalid username")
     }
 
     @Logger.LogFunction()
-    static GetInfo(token: TToken): TInternalResponse {
-        if (token && User.#CheckToken(token)) {
-            const { username } = User.LoggedInUsers[token]
-            return {
-                StatusCode: HTTP_STATUS_CODE.OK,
-                Body: { username }
-            }
+    static GetInfo(userToken: TUserToken): TInternalResponse {
+        if (userToken && User.#CheckToken(userToken)) {
+            const { username } = User.LoggedInUsers[userToken]
+            return HttpResponse.Ok({ username })
         }
-        return {
-            StatusCode: HTTP_STATUS_CODE.FORBIDDEN,
-            Body: { message: HTTP_STATUS_MESSAGE.FORBIDDEN }
-        }
+        throw new HttpErrorBadRequest("Invalid username")
     }
 
-    @Logger.LogFunction()
-    static IsAuthenticated(token: TToken) {
+    @Logger.LogFunction(Logger.Debug, true)
+    static IsAuthenticated(userToken: TUserToken) {
         return Boolean(
             !Config.Flags.EnableAuthentication ||
-            (token != undefined && User.#CheckToken(token))
+            (userToken != undefined && User.#CheckToken(userToken))
         )
-    }
-
-    @Logger.LogFunction()
-    static IsNotAuthenticated(token: TToken) {
-        return !User.IsAuthenticated(token)
     }
 }

@@ -5,8 +5,12 @@
 //
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob'
 //
-import { CommonStorage, IStorage } from "./CommonStorage"
+import { CommonStorage } from "./CommonStorage"
+import { IStorageProvider } from "../../types/IStorageProvider"
 import { Logger } from '../../utils/Logger'
+import { HttpErrorInternalServerError } from "../../server/HttpErrors"
+import { TJson } from "../../types/TJson"
+import { DataTable } from "../../types/DataTable"
 
 type TAzureBlobStorageConfig = {
     connectionString?: string
@@ -14,7 +18,7 @@ type TAzureBlobStorageConfig = {
     createContainerIfNotExists?: boolean
 }
 
-export class AzureBlobStorage extends CommonStorage implements IStorage {
+export class AzureBlobStorage extends CommonStorage implements IStorageProvider {
 
     #BlobServiceClient: BlobServiceClient | undefined
     #ContainerClient: ContainerClient | undefined
@@ -65,7 +69,7 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
     @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
         if (!this.#ContainerClient) {
-            throw new Error('AzureBlobStorage: Connection to Azure Blob Storage not established')
+            throw new HttpErrorInternalServerError('AzureBlobStorage: Connection to Azure Blob Storage not established')
         }
 
         const blobClient = this.#ContainerClient.getBlockBlobClient(file)
@@ -75,7 +79,7 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
     @Logger.LogFunction()
     async Read(file: string): Promise<string> {
         if (!this.#ContainerClient) {
-            throw new Error('Connection to Azure Blob Storage not established')
+            throw new HttpErrorInternalServerError('Connection to Azure Blob Storage not established')
         }
 
         const blobClient = this.#ContainerClient.getBlockBlobClient(file)
@@ -86,10 +90,28 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
     @Logger.LogFunction()
     async Write(file: string, content: string): Promise<void> {
         if (!this.#ContainerClient) {
-            throw new Error('Connection to Azure Blob Storage not established')
+            throw new HttpErrorInternalServerError('Connection to Azure Blob Storage not established')
         }
 
         const blobClient = this.#ContainerClient.getBlockBlobClient(file)
         await blobClient.upload(content, Buffer.byteLength(content))
+    }
+
+    @Logger.LogFunction()
+    async List(): Promise<DataTable> {
+        if (!this.#ContainerClient) 
+            throw new HttpErrorInternalServerError('AzureBlobStorage: Connection to Azure Blob Storage not established')
+
+        const blobs = this.#ContainerClient.listBlobsFlat()
+        const result: TJson[] = []
+
+        for await (const blob of blobs) {
+            result.push({
+                name: blob.name,
+                type: 'file',
+                size: blob.properties.contentLength
+            })
+        }
+        return new DataTable(undefined,result)
     }
 }

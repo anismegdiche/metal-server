@@ -9,19 +9,32 @@ import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TSourceParams } from "../../types/TSourceParams"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResponseNoData } from "../../types/TSchemaResponse"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Logger } from '../../utils/Logger'
 import { Cache } from '../../server/Cache'
 import DATA_PROVIDER, { Source } from '../../server/Source'
-import { CommonDataProvider } from "./CommonDataProvider"
+import { HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { TJson } from "../../types/TJson"
 
 
-export class SqlServerDataProvider extends CommonDataProvider implements IDataProvider.IDataProvider {
+export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MSSQL
     Connection?: ConnectionPool = undefined
+    SourceName: string
+    Params: TSourceParams = <TSourceParams>{}
+    Config: TJson = {}
+
+    Options = new CommonSqlDataProviderOptions()
+
+    constructor(sourceName: string, sourceParams: TSourceParams) {
+        this.SourceName = sourceName
+        this.Init(sourceParams)
+        this.Connect()
+    }
 
     @Logger.LogFunction()
     async Init(sourceParams: TSourceParams): Promise<void> {
@@ -202,10 +215,16 @@ export class SqlServerDataProvider extends CommonDataProvider implements IDataPr
         }
     }
 
+    // @Logger.LogFunction()
+    // eslint-disable-next-line class-methods-use-this
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        throw new HttpErrorNotImplemented()
+    }
+
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
         
-        const schemaName = schemaRequest.schemaName
+        const { schemaName } = schemaRequest
         const entityName = `${schemaRequest.schemaName}-entities`
 
         let schemaResponse = <TSchemaResponse>{
@@ -235,8 +254,6 @@ export class SqlServerDataProvider extends CommonDataProvider implements IDataPr
         
         if (data?.recordset.length > 0) {
             const _dt = new DataTable(entityName, data.recordset)
-            if (options?.Cache)
-                Cache.Set(schemaRequest, _dt)
             schemaResponse = <TSchemaResponseData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,

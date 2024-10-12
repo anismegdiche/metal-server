@@ -6,13 +6,14 @@
 import { CronJob } from 'cron'
 import _ from 'lodash'
 
-import { HTTP_STATUS_CODE } from '../lib/Const'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchedule } from '../types/TSchedule'
 import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { Plan } from './Plan'
 import { JsonHelper } from '../lib/JsonHelper'
+import { HttpResponse } from "./HttpResponse"
+import { HttpErrorNotFound } from "./HttpErrors"
 
 export type TScheduleConfig = {
     planName: string
@@ -54,7 +55,7 @@ export class Schedule {
                     },
                     null,
                     true,
-                    Config.Configuration?.server?.timezone ?? Config.DEFAULTS['server.timezone']
+                    Config.Configuration?.server?.timezone as string ?? Config.DEFAULTS['server.timezone']
                 )
             })
         }
@@ -65,15 +66,9 @@ export class Schedule {
         const _jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (_jobKey) {
             this.Jobs[Number(_jobKey)].cronJob.start()
-            return {
-                StatusCode: HTTP_STATUS_CODE.OK,
-                Body: { message: `Job '${jobName}' started` }
-            }
+            return HttpResponse.Ok({ message: `Job '${jobName}' started` })
         }
-        return {
-            StatusCode: HTTP_STATUS_CODE.NOT_FOUND,
-            Body: { message: `Job '${jobName}' not found` }
-        }
+        throw new HttpErrorNotFound(`Job '${jobName}' not found`)
     }
 
     @Logger.LogFunction()
@@ -82,15 +77,9 @@ export class Schedule {
         if (_jobKey) {
             const __jobKey = parseInt(_jobKey, 10)
             this.Jobs[__jobKey].cronJob.stop()
-            return {
-                StatusCode: HTTP_STATUS_CODE.OK,
-                Body: { message: `Job '${jobName}' stopped` }
-            }
-        }
-        return {
-            StatusCode: HTTP_STATUS_CODE.NOT_FOUND,
-            Body: { message: `Job '${jobName}' not found` }
-        }
+            return HttpResponse.Ok({ message: `Job '${jobName}' stopped` })
+        }        
+        throw new HttpErrorNotFound(`Job '${jobName}' not found`)
     }
 
     @Logger.LogFunction()

@@ -1,0 +1,27 @@
+# TODO
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+###
+
+
+@token={{login.response.body.token}}
+###
+
+
+# TODO
+# @name stop
+POST http://localhost:3000/schedule/test/stop
+authorization: Bearer {{token}}
+###
+
+
+# TODO
+# @name start
+POST http://localhost:3000/schedule/test/start
+authorization: Bearer {{token}}

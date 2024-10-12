@@ -8,7 +8,7 @@ import _ from "lodash"
 import { METADATA } from "../lib/Const"
 import { Helper } from "../lib/Helper"
 import { Logger } from "../utils/Logger"
-import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TOrder, TRow } from "../types/DataTable"
+import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TSortOrder, TRow } from "../types/DataTable"
 import { TJson } from "../types/TJson"
 import { TSchemaRequest } from "../types/TSchemaRequest"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
@@ -21,7 +21,32 @@ import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
 import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
-import { TStepSyncParams, TStepRemoveDuplicatesParams, TStepSortParams, TStepRunParams } from "../types/StepsParams"
+import { TStepSync, TStepRemoveDuplicates, TStepSort, TStepRun } from "../types/StepsParams"
+import { HttpErrorInternalServerError } from "./HttpErrors"
+
+
+export enum STEP {
+    DEBUG = "debug",
+    SELECT = "select",
+    UPDATE = "update",
+    DELETE = "delete",
+    INSERT = "insert",
+    JOIN = "join",
+    FIELDS = "fields",
+    SORT = "sort",
+    RUN = "run",
+    SYNC = "sync",                           // v0.2
+    ANONYMIZE = "anonymize",                 // v0.3        
+    REMOVE_DUPLICATE = "remove-duplicates"   // v0.3
+}
+
+export enum JOIN_TYPE {
+    LEFT = "left",
+    RIGHT = "right",
+    INNER = "inner",
+    FULL_OUTER = "fullOuter",
+    CROSS = "cross"
+}
 
 export type TStepArguments = {
     currentSchemaName: string
@@ -36,18 +61,18 @@ export class Step {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static ExecuteCaseMap: Record<string, Function> = {
-        debug: async (stepArguments: TStepArguments) => await Step.Debug(stepArguments),
-        select: async (stepArguments: TStepArguments) => await Step.Select(stepArguments),
-        update: async (stepArguments: TStepArguments) => await Step.Update(stepArguments),
-        delete: async (stepArguments: TStepArguments) => await Step.Delete(stepArguments),
-        insert: async (stepArguments: TStepArguments) => await Step.Insert(stepArguments),
-        join: async (stepArguments: TStepArguments) => await Step.Join(stepArguments),
-        fields: async (stepArguments: TStepArguments) => await Step.Fields(stepArguments),
-        sort: async (stepArguments: TStepArguments) => await Step.Sort(stepArguments),
-        run: async (stepArguments: TStepArguments) => await Step.Run(stepArguments),
-        sync: async (stepArguments: TStepArguments) => await Step.Sync(stepArguments),                           // v0.2
-        anonymize: async (stepArguments: TStepArguments) => await Step.Anonymize(stepArguments),                 // v0.3        
-        "remove-duplicates": async (stepArguments: TStepArguments) => await Step.RemoveDuplicates(stepArguments) // v0.3
+        [STEP.DEBUG]: async (stepArguments: TStepArguments) => await Step.Debug(stepArguments),
+        [STEP.SELECT]: async (stepArguments: TStepArguments) => await Step.Select(stepArguments),
+        [STEP.UPDATE]: async (stepArguments: TStepArguments) => await Step.Update(stepArguments),
+        [STEP.DELETE]: async (stepArguments: TStepArguments) => await Step.Delete(stepArguments),
+        [STEP.INSERT]: async (stepArguments: TStepArguments) => await Step.Insert(stepArguments),
+        [STEP.JOIN]: async (stepArguments: TStepArguments) => await Step.Join(stepArguments),
+        [STEP.FIELDS]: async (stepArguments: TStepArguments) => await Step.Fields(stepArguments),
+        [STEP.SORT]: async (stepArguments: TStepArguments) => await Step.Sort(stepArguments),
+        [STEP.RUN]: async (stepArguments: TStepArguments) => await Step.Run(stepArguments),
+        [STEP.SYNC]: async (stepArguments: TStepArguments) => await Step.Sync(stepArguments),
+        [STEP.ANONYMIZE]: async (stepArguments: TStepArguments) => await Step.Anonymize(stepArguments),
+        [STEP.REMOVE_DUPLICATE]: async (stepArguments: TStepArguments) => await Step.RemoveDuplicates(stepArguments)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -65,7 +90,7 @@ export class Step {
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
             Logger.Error(`${Logger.Out} Step.Select: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
-            throw new Error(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+            throw new HttpErrorInternalServerError(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         const { currentSchemaName } = stepArguments
@@ -80,13 +105,11 @@ export class Step {
                 schemaName: schemaName ?? currentSchemaName
             })
 
-            if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
-                throw new Error(_schemaResponse.error)
-            }
+            if (TypeHelper.IsSchemaResponseError(_schemaResponse))
+                throw new HttpErrorInternalServerError(_schemaResponse.error)
 
-            if (TypeHelper.IsSchemaResponseData(_schemaResponse)) {
+            if (TypeHelper.IsSchemaResponseData(_schemaResponse))
                 return _schemaResponse.data
-            }
         }
 
         // case no schema and no entity --> use current datatable
@@ -117,7 +140,7 @@ export class Step {
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
             Logger.Error(`${Logger.Out} Step.Insert: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
-            throw new Error(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+            throw new HttpErrorInternalServerError(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         const { currentSchemaName } = stepArguments
@@ -138,7 +161,7 @@ export class Step {
             })
 
             if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
-                throw new Error(_schemaResponse.error)
+                throw new HttpErrorInternalServerError(_schemaResponse.error)
             }
             return currentDataTable
         }
@@ -160,16 +183,16 @@ export class Step {
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
             Logger.Error(`${Logger.Out} Step.Update: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
-            throw new Error(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+            throw new HttpErrorInternalServerError(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
-        const { currentSchemaName,currentDataTable } = stepArguments
+        const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schemaName, entityName, data } = schemaRequest
 
         if (!data) {
             Logger.Error(`Step.Update: no data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
-            throw new Error(`No data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+            throw new HttpErrorInternalServerError(`No data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         // TODO: recheck logic for schemaName=null
@@ -180,7 +203,7 @@ export class Step {
             })
 
             if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
-                throw new Error(_schemaResponse.error)
+                throw new HttpErrorInternalServerError(_schemaResponse.error)
             }
             return currentDataTable
         }
@@ -204,7 +227,7 @@ export class Step {
 
         if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams)) {
             Logger.Error(`${Logger.Out} Step.Delete: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
-            throw new Error(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
+            throw new HttpErrorInternalServerError(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         const { currentSchemaName } = stepArguments
@@ -220,7 +243,7 @@ export class Step {
             })
 
             if (TypeHelper.IsSchemaResponseError(_schemaResponse))
-                throw new Error(_schemaResponse.error)
+                throw new HttpErrorInternalServerError(_schemaResponse.error)
 
             return currentDataTable
         }
@@ -286,13 +309,13 @@ export class Step {
     @Logger.LogFunction()
     static async Sort(stepArguments: TStepArguments): Promise<DataTable> {
 
-        const stepParams = stepArguments.stepParams as TStepSortParams
+        const stepParams = stepArguments.stepParams as TStepSort
         const { currentDataTable } = stepArguments
 
         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         const fields = _.keys(stepParams)
         // eslint-disable-next-line you-dont-need-lodash-underscore/values
-        const orders: TOrder[] = _.values(stepParams)
+        const orders: TSortOrder[] = _.values(stepParams)
 
         return currentDataTable.Sort(fields, orders)
     }
@@ -312,7 +335,7 @@ export class Step {
     @Logger.LogFunction()
     static async Run(stepArguments: TStepArguments): Promise<DataTable> {
 
-        const { ai, input, output } = stepArguments.stepParams as TStepRunParams
+        const { ai, input, output } = stepArguments.stepParams as TStepRun
         const promises = []
 
         for await (const [_rowIndex, _rowData] of stepArguments.currentDataTable.Rows.entries()) {
@@ -360,7 +383,7 @@ export class Step {
         const {
             source, destination, on,
             from, to, id
-        } = stepArguments.stepParams as TStepSyncParams
+        } = stepArguments.stepParams as TStepSync
 
         const
             _from = source ?? from,
@@ -368,11 +391,11 @@ export class Step {
             _id = on ?? id
 
         if (!_id) {
-            throw new Error("'on' or 'id' must be provided")
+            throw new HttpErrorInternalServerError("'on' or 'id' must be provided")
         }
 
         if (!_from && !_to) {
-            throw new Error("Either 'source' or 'from', and 'destination' or 'to' must be provided")
+            throw new HttpErrorInternalServerError("Either 'source' or 'from', and 'destination' or 'to' must be provided")
         }
 
         const dtSource: DataTable = (_from)
@@ -447,8 +470,8 @@ export class Step {
             condition = undefined,
             method = REMOVE_DUPLICATES_METHOD.HASH,
             strategy = REMOVE_DUPLICATES_STRATEGY.FIRST
-        } = stepArguments.stepParams as TStepRemoveDuplicatesParams
-        
+        } = stepArguments.stepParams as TStepRemoveDuplicates
+
         const { currentDataTable } = stepArguments
 
         currentDataTable.RemoveDuplicates(keys, method, strategy, condition)
@@ -464,7 +487,7 @@ export class Step {
         })
 
         if (TypeHelper.IsSchemaResponseError(schemaResponse)) {
-            throw new Error(schemaResponse.error)
+            throw new HttpErrorInternalServerError(schemaResponse.error)
         }
 
         if (TypeHelper.IsSchemaResponseData(schemaResponse)) {

@@ -3,7 +3,6 @@
 //
 //
 //
-
 import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSourceParams } from "../../types/TSourceParams"
@@ -15,12 +14,31 @@ import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import DATA_PROVIDER, { Source } from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
-import { CommonDataProvider } from "./CommonDataProvider"
+import { TJson } from "../../types/TJson"
+import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { HttpErrorNotFound } from "../../server/HttpErrors"
+import { DataTable } from "../../types/DataTable"
 
 
-export class MemoryDataProvider extends CommonDataProvider  implements IDataProvider.IDataProvider {
+export type TMemoryDataProviderOptions = {
+    // v0.3
+    autoCreate?: boolean            // Auto create table if not exist
+}
+
+export class MemoryDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MEMORY
+    SourceName: string
+    Params: TSourceParams = <TSourceParams>{}
+    Config: TJson = {}
     Connection?: DataBase = undefined
+
+    Options = new CommonSqlDataProviderOptions()
+
+    constructor(sourceName: string, sourceParams: TSourceParams) {
+        this.SourceName = sourceName
+        this.Init(sourceParams)
+        this.Connect()
+    }
 
     @Logger.LogFunction()
     async Init(sourceParams: TSourceParams): Promise<void> {
@@ -29,11 +47,11 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        
+
         const {
             database = 'memory'
         } = this.Params
-        
+
         this.Connection = new DataBase(database)
         Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
     }
@@ -44,25 +62,29 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
         this.Connection = undefined
     }
 
-     
+
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+
+        const { schemaName, entityName } = schemaRequest
+
         const schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
+            schemaName,
+            entityName,
             ...RESPONSE_TRANSACTION.INSERT
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
 
-        if (this.Connection.Tables[schemaRequest.entityName] === undefined) {
-            this.Connection.AddTable(schemaRequest.entityName)
-        }
+        await this.AddEntity(schemaRequest)
+
+        if (this.Connection.Tables[entityName] === undefined)
+            throw new HttpErrorNotFound(`Insert: Entity '${entityName}' not found`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
-        this.Connection.Tables[schemaRequest.entityName].AddRows(options.Data.Rows)
+
+        this.Connection.Tables[entityName].AddRows(options.Data.Rows)
 
         return <TSchemaResponseData>{
             ...schemaResponse,
@@ -74,7 +96,6 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
 
         const schemaResponse = <TSchemaResponse>{
@@ -83,17 +104,15 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
             ...RESPONSE_TRANSACTION.SELECT
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
 
-        if (this.Connection.Tables[schemaRequest.entityName] === undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
+        await this.AddEntity(schemaRequest)
+
+        if (this.Connection.Tables[entityName] === undefined)
+            throw new HttpErrorNotFound(`Select: Entity '${entityName}' not found`)
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
@@ -105,7 +124,7 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
             ? sqlQueryHelper.Query
             : undefined
 
-        const memoryDataTable = await this.Connection.Tables[schemaRequest.entityName].FreeSqlAsync(sqlQuery, sqlQueryHelper.Data)
+        const memoryDataTable = await this.Connection.Tables[entityName].FreeSqlAsync(sqlQuery, sqlQueryHelper.Data)
 
         if (memoryDataTable && memoryDataTable.Rows.length > 0) {
             if (options?.Cache)
@@ -130,28 +149,25 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
         }
     }
 
-     
+
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+
         const { schemaName, entityName } = schemaRequest
+
         const schemaResponse = <TSchemaResponse>{
             schemaName,
             entityName,
             ...RESPONSE_TRANSACTION.UPDATE
         }
 
-
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
 
-        if (this.Connection.Tables[schemaRequest.entityName] === undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
+        await this.AddEntity(schemaRequest)
+
+        if (this.Connection.Tables[entityName] === undefined)
+            throw new HttpErrorNotFound(`Update: Entity '${entityName}' not found`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -160,7 +176,7 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
-        await this.Connection.Tables[schemaRequest.entityName].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await this.Connection.Tables[entityName].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
@@ -168,28 +184,25 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
         }
     }
 
-     
+
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+
         const { schemaName, entityName } = schemaRequest
+
         const schemaResponse = <TSchemaResponse>{
             schemaName,
             entityName,
             ...RESPONSE_TRANSACTION.DELETE
         }
 
-
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             return Source.ResponseError(schemaResponse)
-        }
 
-        if (this.Connection.Tables[schemaRequest.entityName] === undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
+        await this.AddEntity(schemaRequest)
+
+        if (this.Connection.Tables[entityName] === undefined)
+            throw new HttpErrorNotFound(`Delete: Entity '${entityName}' not found`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -198,11 +211,67 @@ export class MemoryDataProvider extends CommonDataProvider  implements IDataProv
             .From(`\`${entityName}\``)
             .Where(options.Filter)
 
-        await this.Connection.Tables[schemaRequest.entityName].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await this.Connection.Tables[entityName].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
         }
+    }
+
+    @Logger.LogFunction()
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+        const { schemaName, entityName } = schemaRequest
+
+        if (this.Connection &&
+            this.Params.options?.autoCreate === true) {
+            this.Connection.AddTable(entityName)
+        }
+
+        return <TSchemaResponse>{
+            schemaName,
+            entityName,
+            ...RESPONSE_TRANSACTION.ADD_ENTITY,
+            ...RESPONSE.INSERT.SUCCESS.MESSAGE,
+            ...RESPONSE.INSERT.SUCCESS.STATUS
+        }
+    }
+
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+
+        const { schemaName } = schemaRequest
+        const entityName = `${schemaRequest.schemaName}-entities`
+
+        let schemaResponse = <TSchemaResponse>{
+            schemaName,
+            ...RESPONSE_TRANSACTION.LIST_ENTITIES
+        }
+
+        if (this.Connection === undefined)
+            return Source.ResponseError(schemaResponse)
+
+        const data = Object.keys(this.Connection.Tables).map(entity => ({
+            name: entity,
+            type: 'datatable',
+            size: this.Connection?.Tables[entity].Rows.length
+        }))
+
+        if (data.length > 0) {
+            const _dt = new DataTable(entityName, data)
+            schemaResponse = <TSchemaResponseData>{
+                ...schemaResponse,
+                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+                ...RESPONSE.SELECT.SUCCESS.STATUS,
+                data: _dt
+            }
+        } else {
+            schemaResponse = <TSchemaResponseNoData>{
+                ...schemaResponse,
+                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
+                ...RESPONSE.SELECT.NOT_FOUND.STATUS
+            }
+        }
+        return schemaResponse
     }
 }
