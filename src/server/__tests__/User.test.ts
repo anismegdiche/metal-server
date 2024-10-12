@@ -4,10 +4,13 @@ import { TUserToken, User } from '../User'
 import { Config } from '../Config'
 import { HttpErrorBadRequest, HttpErrorUnauthorized } from "../HttpErrors"
 import { HTTP_STATUS_CODE } from "../../lib/Const"
+import { TConfig } from "../../types/TConfig"
+import typia from "typia"
 
 describe('User', () => {
     beforeAll(() => {
         // Set up test data
+        Config.Configuration = typia.random<TConfig>()
         Config.Flags.EnableAuthentication = true
         Config.Configuration.users = {
             alice: 123_456_789,

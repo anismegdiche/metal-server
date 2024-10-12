@@ -1,8 +1,9 @@
- 
+
 
 import { DataTable } from "../../types/DataTable"
 import { Step } from "../Step"
 import { Plan } from "../Plan"
+import { StepCommand } from "../../types/TConfig"
 
 describe('Step', () => {
 
@@ -180,10 +181,10 @@ describe('Step', () => {
             const schemaName = "mySchema"
             const plan = "myPlan"
             const entity = "users"
-            const steps = [
+            const steps = <Array<StepCommand>>[
                 {
                     insert: {
-                        entity: "users"
+                        entityName: "users"
                     }
                 }
             ]
@@ -231,10 +232,10 @@ describe('Step', () => {
             const schemaName = "mySchema"
             const plan = "myPlan"
             const entity = "myEntity"
-            const steps = [
+            const steps = <Array<StepCommand>>[
                 {
                     update: {
-                        entity: "users",
+                        entityName: "users",
                         data: { age: 30 },
                         filter: {
                             name: "John"
@@ -392,13 +393,13 @@ describe('Step', () => {
             const schemaName = "mySchema"
             const plan = "myPlan"
             const entity = "myEntity"
-            const steps = [
+            const steps = <Array<StepCommand>>[
                 {
                     join: {
-                        entity: "orders",
+                        entityName: "orders",
                         type: "left",
-                        "leftField": "user_id",
-                        "rightField": "id"
+                        leftField: "user_id",
+                        rightField: "id"
                     }
                 }
             ]

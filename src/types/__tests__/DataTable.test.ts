@@ -79,10 +79,9 @@ describe("DataTable", () => {
             })
         })
 
-        it("should throw an error if name is undefined", () => {
-            expect(() => new DataTable(undefined)).toThrowError(
-                "undefined DataTable name"
-            )
+        it("should assign a random name if undefined", () => {
+            const dt = new DataTable(undefined)
+            expect(dt.Name).toBeDefined()
         })
     })
 
