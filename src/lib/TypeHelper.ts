@@ -3,11 +3,11 @@
 //
 //
 //
+import typia from "typia"
 //
 import { DataTable } from "../types/DataTable"
 import { TSchemaRequest } from "../types/TSchemaRequest"
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from "../types/TSchemaResponse"
-import { Helper } from "./Helper"
 import { Logger } from "../utils/Logger"
 import { HttpError, HttpErrorInternalServerError } from "../server/HttpErrors"
 
@@ -15,41 +15,22 @@ export class TypeHelper {
     // TODO: to check
     @Logger.LogFunction(Logger.Debug, true)
     static IsSchemaRequest(schemaRequest: any): schemaRequest is TSchemaRequest {
-        if (schemaRequest?.schemaName !== undefined && !schemaRequest?.entityName) {
-            return false
-        }
-        return Helper.HasExpectedProperties(schemaRequest, [
-            'schemaName',
-            'entityName',
-            'filter',
-            'filterExpression',
-            'fields',
-            'data',
-            'sort',
-            'cache',
-            'sourceName'
-        ])
+        return typia.is<TSchemaRequest>(schemaRequest)
     }
 
     @Logger.LogFunction(Logger.Debug, true)
     static IsSchemaResponse(schemaResponse: any): schemaResponse is TSchemaResponse {
-        return Helper.HasExpectedProperties(schemaResponse, [
-            'schemaName',
-            'entityName',
-            'transaction',
-            'result',
-            'status'
-        ])
+        return typia.is<TSchemaResponse>(schemaResponse)
     }
 
     @Logger.LogFunction(Logger.Debug, true)
     static IsSchemaResponseError(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponseError {
-        return Helper.HasExpectedProperties(schemaResponse, ['error'])
+        return typia.is<TSchemaResponseError>(schemaResponse)
     }
 
     @Logger.LogFunction(Logger.Debug, true)
     static IsSchemaResponseData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponseData {
-        return 'data' in schemaResponse && schemaResponse?.data?.Rows?.length > 0
+        return typia.is<TSchemaResponseData>(schemaResponse)
     }
 
     @Logger.LogFunction(Logger.Debug, true)

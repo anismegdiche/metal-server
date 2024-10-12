@@ -144,7 +144,7 @@ export class Convert {
 
 
     static ReplacePlaceholders(value: string): string
-    static ReplacePlaceholders(value: TJson[] | undefined): TJson[] | undefined
+    static ReplacePlaceholders(value: TJson | TJson[] | undefined): TJson[] | undefined
     static ReplacePlaceholders(value: object | TJson): object | TJson
     // @Logger.LogFunction()
     static ReplacePlaceholders(value: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {

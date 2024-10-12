@@ -93,10 +93,9 @@ export class Step {
             throw new HttpErrorInternalServerError(`Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
-        const { currentSchemaName } = stepArguments
+        const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schemaName, entityName } = schemaRequest
-        const { currentDataTable } = stepArguments
 
         // TODO: recheck logic for schemaName=null
         if (entityName) {

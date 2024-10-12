@@ -14,7 +14,7 @@ export type TSchemaRequest = {
     entityName: string
 
     // from Request Options
-    data?: TJson[]
+    data?: TJson | TJson[]
     fields?: string
     filter?: TJson
     filterExpression?: string

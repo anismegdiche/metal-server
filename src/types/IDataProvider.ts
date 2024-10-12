@@ -3,7 +3,7 @@
 // 
 // 
 // 
-import { TSchemaRequest } from './TSchemaRequest'
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from './TSchemaRequest'
 import { TOptions } from './TOptions'
 import { TSourceParams } from './TSourceParams'
 import { TJson } from './TJson'
@@ -38,8 +38,8 @@ export interface IDataProvider {
     //ROADMAP DeleteEntity: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
     
     // Data
-    Insert: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    Select: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    Update: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    Delete: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
+    Insert: (schemaRequest: TSchemaRequestInsert) => Promise<TSchemaResponse>
+    Select: (schemaRequest: TSchemaRequestSelect) => Promise<TSchemaResponse>
+    Update: (schemaRequest: TSchemaRequestUpdate) => Promise<TSchemaResponse>
+    Delete: (schemaRequest: TSchemaRequestDelete) => Promise<TSchemaResponse>
 }

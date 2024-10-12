@@ -15,6 +15,7 @@ import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
 import { HttpResponse } from "./HttpResponse"
 import { HttpErrorNotFound } from "./HttpErrors"
+import {StepCommand} from '../types/TConfig'
 
 
 export class Plan {
@@ -36,7 +37,7 @@ export class Plan {
                 return new DataTable(entityName)
             }
 
-            const entitySteps: TJson[] = Config.Get(`plans.${sourcePlanName}.${entityName}`)
+            const entitySteps: Array<StepCommand> = Config.Get(`plans.${sourcePlanName}.${entityName}`)
             Logger.Debug(`${Logger.In} Plan.Execute: ${sourceName}.${entityName}: ${JsonHelper.Stringify(entitySteps)}`)
             const currentDatatable = await Plan.ExecuteSteps(schemaName, sourceName, entityName, entitySteps)
             await currentDatatable.FreeSqlAsync(sqlQuery)
@@ -57,15 +58,17 @@ export class Plan {
             return new DataTable(entityName)
         }
 
-        const entitySteps: TJson[] = Config.Get(`plans.${planName}.${entityName}`)
+        const entitySteps: Array<StepCommand> = Config.Get(`plans.${planName}.${entityName}`)
+       
         Logger.Debug(`${Logger.In} Plan.Execute: ${planName}.${entityName}: ${JsonHelper.Stringify(entitySteps)}`)
         const currentDatatable = await Plan.ExecuteSteps(undefined, planName, entityName, entitySteps)
+        
         Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entityName}`)
         return await currentDatatable.FreeSqlAsync(sqlQuery)
     }
 
     @Logger.LogFunction()
-    static async ExecuteSteps(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: TJson[]): Promise<DataTable> {
+    static async ExecuteSteps(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: Array<StepCommand>): Promise<DataTable> {
 
         let currentDataTable = new DataTable(currentEntityName)
 
