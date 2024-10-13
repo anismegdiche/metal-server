@@ -36,3 +36,6 @@ export type TSchemaRequestDelete = Pick<TSchemaRequest,
 
 export type TSchemaRequestInsert = Pick<TSchemaRequest,
     'schemaName' | 'entityName' | 'sourceName' | 'data'>
+
+export type TSchemaRequestListEntities = Pick<TSchemaRequest,
+    'schemaName' | 'entityName' | 'sourceName'>

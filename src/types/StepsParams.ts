@@ -6,7 +6,7 @@
 import { JOIN_TYPE } from "../server/Step"
 import { REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, SORT_ORDER } from "./DataTable"
 import { TJson } from "./TJson"
-import { TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from "./TSchemaRequest"
+import { TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "./TSchemaRequest"
 
 
 export type TStepDebug = string | null
@@ -83,4 +83,8 @@ export type TStepRemoveDuplicates = {
     condition?: string
     method?: REMOVE_DUPLICATES_METHOD
     strategy?: REMOVE_DUPLICATES_STRATEGY
+}
+
+export type TStepListEntities = Omit<TSchemaRequestListEntities, 'schemaName' | 'entityName' | 'sourceName'> & {
+    schemaName?: string
 }
