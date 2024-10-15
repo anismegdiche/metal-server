@@ -15,8 +15,16 @@ import { HttpErrorInternalServerError } from "../server/HttpErrors"
 
 
 export const enum SORT_ORDER {
-    ASC = "asc",  // Ascending
-    DESC = "desc" // Descending
+    ASC = "asc",      // Ascending
+    DESC = "desc"     // Descending
+}
+
+export const enum JOIN_TYPE {
+    LEFT = "left",            // Left Join
+    RIGHT = "right",          // Right Join
+    INNER = "inner",          // Inner Join
+    FULL_OUTER = "fullOuter", // Full Outer Join
+    CROSS = "cross"           // Cross Join
 }
 
 export const enum REMOVE_DUPLICATES_METHOD {

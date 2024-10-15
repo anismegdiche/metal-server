@@ -8,7 +8,7 @@ import _ from "lodash"
 import { METADATA } from "../lib/Const"
 import { Helper } from "../lib/Helper"
 import { Logger } from "../utils/Logger"
-import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TSortOrder, TRow } from "../types/DataTable"
+import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TSortOrder, TRow, JOIN_TYPE } from "../types/DataTable"
 import { TJson } from "../types/TJson"
 import { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect } from "../types/TSchemaRequest"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
@@ -40,14 +40,6 @@ export enum STEP {
     ANONYMIZE = "anonymize",                 // v0.3        
     REMOVE_DUPLICATE = "remove-duplicates",  // v0.3
     LIST_ENTITIES = "list-entities"          // v0.3
-}
-
-export enum JOIN_TYPE {
-    LEFT = "left",
-    RIGHT = "right",
-    INNER = "inner",
-    FULL_OUTER = "fullOuter",
-    CROSS = "cross"
 }
 
 export type TStepArguments = {

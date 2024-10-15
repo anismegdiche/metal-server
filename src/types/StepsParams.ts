@@ -3,8 +3,7 @@
 //
 //
 //
-import { JOIN_TYPE } from "../server/Step"
-import { REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, SORT_ORDER } from "./DataTable"
+import { JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, SORT_ORDER } from "./DataTable"
 import { TJson } from "./TJson"
 import { TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "./TSchemaRequest"
 
