@@ -80,7 +80,7 @@ describe("DataTable", () => {
         })
 
         it("should assign a random name if undefined", () => {
-            const dt = new DataTable(undefined)
+            const dt = new DataTable()
             expect(dt.Name).toBeDefined()
         })
     })

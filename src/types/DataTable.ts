@@ -11,6 +11,7 @@ import { TJson } from './TJson'
 import { Logger } from '../utils/Logger'
 import { JsonHelper } from "../lib/JsonHelper"
 import { StringHelper } from "../lib/StringHelper"
+import { HttpErrorInternalServerError } from "../server/HttpErrors"
 
 
 export const enum SORT_ORDER {
@@ -155,10 +156,8 @@ export class DataTable {
     Rows: TRow[] = []
     MetaData: TMetaData = {}
 
-    constructor(name: string | undefined, rows: TJson[] | undefined = undefined, fields: TJson | undefined = undefined, metaData: TJson | undefined = undefined) {
-        
+    constructor(name: string | undefined = undefined, rows: TJson[] | undefined = undefined, fields: TJson | undefined = undefined, metaData: TJson | undefined = undefined) {
         this.Name = name ?? crypto.randomUUID()
-
         if (rows)
             this.Set(Array.isArray(rows)
                 ? rows
@@ -213,9 +212,9 @@ export class DataTable {
 
     @Logger.LogFunction()
     UnPrefixAllfields(): this {
-        if (this.Rows.length === 0) {
+        if (this.Rows.length === 0)
             return this
-        }
+        
         for (const _row of this.Rows) {
             for (const [__col, __value] of Object.entries(_row)) {
                 const ___colNew = __col.includes('.')
@@ -234,7 +233,6 @@ export class DataTable {
     FreeSql(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): this {
         if (sqlQuery == undefined)
             return this
-
 
         alasql.options.errorlog = true
         alasql(`CREATE TABLE IF NOT EXISTS [${this.Name}]`)
@@ -255,14 +253,11 @@ export class DataTable {
 
     @Logger.LogFunction()
     async FreeSqlAsync(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): Promise<this> {
-        if (sqlQuery == undefined) {
+        if (sqlQuery == undefined)
             return this
-        }
 
         alasql.options.errorlog = true
-
         alasql(`CREATE TABLE IF NOT EXISTS [${this.Name}]`)
-
         alasql.tables[this.Name].data = this.Rows
 
         try {
@@ -383,7 +378,7 @@ export class DataTable {
         const sourceHasProperty = this.Rows.some(row => on in row)
 
         if (!sourceHasProperty) {
-            throw Error(`DataTable.SyncReport: '${this.Name}' has no property '${on}'`)
+            throw new HttpErrorInternalServerError(`DataTable.SyncReport: '${this.Name}' has no property '${on}'`)
         }
 
         const emptySyncReport = <TSyncReport>{
