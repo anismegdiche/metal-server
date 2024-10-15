@@ -67,7 +67,7 @@ export class Logger {
             LogLevel.setLevel(Logger.Level)
         } catch (error: unknown) {
             LogLevel.setLevel(DefaultLevel)
-            Logger.Error(`Logger.SetLevel ${Logger.In} Error while setting verbosity`)
+            Logger.Error(`Logger.SetLevel: Error while setting verbosity, resetting to default`)
             Logger.Error(error)
         }
     }
@@ -85,23 +85,21 @@ export class Logger {
     }
 
     static Info(msg: any): void {
-        setImmediate(() => LogLevel.info(msg))
+        LogLevel.info(msg)
     }
 
     static Warn(msg: any): void {
-        setImmediate(() => LogLevel.warn(msg))
+        LogLevel.warn(msg)
     }
 
     static Error(msg: any): void {
-        setImmediate(() => LogLevel.error(msg))
+        LogLevel.error(msg)
     }
 
     static Message(msg: any): void {
-        setImmediate(() => {
-            Logger.EnableAll()
-            Logger.Info(msg)
-            Logger.SetLevel()
-        })
+        Logger.EnableAll()
+        Logger.Info(msg)
+        Logger.SetLevel()
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
