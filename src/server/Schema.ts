@@ -170,14 +170,14 @@ export class Schema {
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schemaName, entityName } = schemaRequest
-        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schemaName}`)
         const schemaRoute = Schema.GetRoute(schemaName, entityName, schemaConfig)
         // Anonymizer
         let isAnonymize = false
         let fieldsToAnonymize: string[] = []
-        if (Config.Has(`schemas.${schemaName}.anonymize`)) {
+        if (schemaConfig.anonymize) {
             isAnonymize = true
-            fieldsToAnonymize = StringHelper.Split(Config.Get(`schemas.${schemaName}.anonymize`), ",")
+            fieldsToAnonymize = StringHelper.Split(schemaConfig.anonymize, ",")
         }
         //
 
@@ -206,7 +206,7 @@ export class Schema {
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schemaName, entityName } = schemaRequest
-        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schemaName}`)
         const schemaRoute = Schema.GetRoute(schemaName, entityName, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
@@ -230,7 +230,7 @@ export class Schema {
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schemaName, entityName } = schemaRequest
-        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schemaName}`)
         const schemaRoute = Schema.GetRoute(schemaName, entityName, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
@@ -254,7 +254,7 @@ export class Schema {
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schemaName, entityName } = schemaRequest
-        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schemaName}`)
         const schemaRoute = Schema.GetRoute(schemaName, entityName, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
@@ -276,7 +276,7 @@ export class Schema {
         const { schemaName } = schemaRequest
         const entitiesSources = Schema.GetEntitiesSources(schemaName)
 
-        let schResp: TSchemaResponse = {} as TSchemaResponse
+        let schResp = {} as TSchemaResponse
 
         if (entitiesSources.has("*")) {
             const _source = (<TConfigSchemaEntity>entitiesSources.get("*")).sourceName
@@ -296,15 +296,11 @@ export class Schema {
         return schResp
     }
 
-    // static #GetSource(schemaRequest: TSchemaRequest): TSchemaResponse {
-    //     const { schemaName } = schemaRequest
-    //     const aEntities = Source.Sources[schemaRoute.routeName]
-
-    // }
-
     static GetEntitiesSources(schemaName: string): TEntitiesMap {
+        
         const entities: TEntitiesMap = new Map()
-        const schemaConfig: TConfigSchema = Config.Get(`schemas.${schemaName}`)
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schemaName}`)
+        
         if (schemaConfig?.sourceName)
             entities.set("*", {
                 sourceName: schemaConfig.sourceName,
@@ -319,6 +315,7 @@ export class Schema {
                     database: Config.Get<string | undefined>(`sources.${entityConfig.sourceName}.database`)
                 })
             })
+            
         return entities
     }
 }
