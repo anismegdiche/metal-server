@@ -476,16 +476,12 @@ export class Step {
     @Logger.LogFunction()
     static async ListEntities(stepArguments: TStepArguments): Promise<DataTable> {
 
-        const { currentSchemaName, currentDataTable, currentPlanName } = stepArguments
+        const { currentDataTable, currentPlanName } = stepArguments
         const schemaRequest = stepArguments.stepParams as TStepListEntities
-        const { schemaName } = schemaRequest
 
         // schemaName is defined
-        if (schemaName) {
-            const _schemaResponse = await Schema.ListEntities(<TSchemaRequestListEntities>{
-                ...schemaRequest,
-                schemaName: schemaName ?? currentSchemaName
-            })
+        if (schemaRequest?.schemaName) {
+            const _schemaResponse = await Schema.ListEntities(<TSchemaRequestListEntities>schemaRequest)
 
             if (TypeHelper.IsSchemaResponseError(_schemaResponse))
                 throw new HttpErrorInternalServerError(_schemaResponse.error)

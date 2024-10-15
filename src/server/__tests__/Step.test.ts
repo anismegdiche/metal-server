@@ -1,13 +1,23 @@
 
 
-import { DataTable } from "../../types/DataTable"
+import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../types/DataTable"
 import { Step } from "../Step"
 import { Plan } from "../Plan"
-import { StepCommand } from "../../types/TConfig"
+import { StepCommand, TConfig } from "../../types/TConfig"
+import { Schema } from "../Schema"
+import { HttpErrorInternalServerError } from "../HttpErrors"
+import { TSchemaResponseData, TSchemaResponseError } from "../../types/TSchemaResponse"
+import typia from "typia"
+import { Config } from "../Config"
 
 describe('Step', () => {
 
-    describe('select', () => {
+    beforeAll(async () => {
+		jest.clearAllMocks()
+        Config.Configuration = typia.random<TConfig>()
+	}, 120000)
+
+    describe('Select', () => {
         // Executes a valid 'select' step and returns a DataTable object.
         it('should execute a valid select step and return a DataTable object', async () => {
             // Mock the necessary dependencies
@@ -115,7 +125,7 @@ describe('Step', () => {
         })
     })
 
-    describe('insert', () => {
+    describe('Insert', () => {
 
         // Executes a valid 'insert' step and returns a DataTable object.
         it('should execute a valid insert step and return a DataTable object', async () => {
@@ -225,7 +235,7 @@ describe('Step', () => {
         })
     })
 
-    describe('update', () => {
+    describe('Update', () => {
         // Executes a valid 'update' step and returns a DataTable object.
         it('should execute a valid update step and return a DataTable object', async () => {
             // Mock the necessary dependencies
@@ -331,7 +341,7 @@ describe('Step', () => {
             ])
         })
     })
-    describe('delete', () => {
+    describe('Delete', () => {
         // Executes a valid 'delete' step and returns a DataTable object.
         it('should execute a valid delete step and return a DataTable object', async () => {
             // Mock the necessary dependencies
@@ -386,7 +396,7 @@ describe('Step', () => {
         })
     })
 
-    describe('join', () => {
+    describe('Join', () => {
         // Executes a valid 'join' step and returns a DataTable object.
         it('should execute a valid join step and return a DataTable object', async () => {
             // Mock the necessary dependencies
@@ -455,7 +465,7 @@ describe('Step', () => {
         })
     })
 
-    describe('fields', () => {
+    describe('Fields', () => {
         // Executes a valid 'fields' step and returns a DataTable object.
         it('should execute a valid fields step and return a DataTable object', async () => {
             // Mock the necessary dependencies
@@ -505,7 +515,7 @@ describe('Step', () => {
         })
     })
 
-    describe('debug', () => {
+    describe('Debug', () => {
         // Executes a valid 'debug' step and returns a DataTable object.
         it('should execute a valid debug step and return a DataTable object', async () => {
             // Mock the necessary dependencies
@@ -555,7 +565,7 @@ describe('Step', () => {
         })
     })
 
-    describe('anonymize', () => {
+    describe('Anonymize', () => {
         // Anonymize fields when stepParams of field names
         it('should anonymize specified fields', async () => {
             const mockDataTable = new DataTable('testTable', [
@@ -596,6 +606,256 @@ describe('Step', () => {
 
             expect(result.Rows[0].name).toBe('John')
             expect(result.Rows[0].email).toBe('john@example.com')
+        })
+    })
+
+    describe('RemoveDuplicates', () => {
+
+        const dt1 = new DataTable(undefined, [
+            {
+                id: 1,
+                name: 'Alice'
+            },
+            {
+                id: 1,
+                name: 'Alice'
+            },
+            {
+                id: 2,
+                name: 'Bob'
+            }
+        ])
+
+        const dt2 = new DataTable(undefined, [
+            {
+                id: 1,
+                name: 'Alice'
+            },
+            {
+                id: 2,
+                name: 'Bob'
+            },
+            {
+                id: 1,
+                name: 'Alice'
+            }
+        ])
+
+        // Remove duplicates using default HASH method and FIRST strategy
+        it('should remove duplicates using default HASH method and FIRST strategy when no keys or condition are provided', async () => {
+            const stepArguments = {
+                currentSchemaName: 'testSchema',
+                currentPlanName: 'testPlan',
+                currentDataTable: dt1,
+                stepParams: {}
+            }
+
+            const result = await Step.RemoveDuplicates(stepArguments)
+
+            expect(result.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'Alice'
+                },
+                {
+                    id: 2,
+                    name: 'Bob'
+                }
+            ])
+        })
+
+        // Handle undefined keys and condition gracefully
+        it('should handle undefined keys and condition gracefully', async () => {
+            const stepArguments = {
+                currentSchemaName: 'testSchema',
+                currentPlanName: 'testPlan',
+                currentDataTable: dt1,
+                stepParams: {
+                    keys: undefined,
+                    condition: undefined
+                }
+            }
+
+            const result = await Step.RemoveDuplicates(stepArguments)
+
+            expect(result.Rows).toEqual([
+                {
+                    id: 1,
+                    name: 'Alice'
+                },
+                {
+                    id: 2,
+                    name: 'Bob'
+                }
+            ])
+        })
+
+        // Remove duplicates with specified keys and condition
+        it('should remove duplicates with specified keys and condition when called', async () => {
+            // Set up step arguments
+            const stepArguments = {
+                currentSchemaName: 'schema1',
+                currentPlanName: 'plan1',
+                currentDataTable: dt2,
+                stepParams: {
+                    keys: ['id'],
+                    condition: 'name === "Alice"',
+                    method: REMOVE_DUPLICATES_METHOD.HASH,
+                    strategy: REMOVE_DUPLICATES_STRATEGY.FIRST
+                }
+            }
+
+            // Call RemoveDuplicates method
+            const result = await Step.RemoveDuplicates(stepArguments)
+
+            // Assert the modified DataTable
+            expect(result.Rows.length).toBe(2)
+        })
+
+        // Return the modified DataTable after duplicates removal
+        it('should return modified DataTable after duplicates removal when duplicates exist', async () => {
+            // Call RemoveDuplicates method
+            const result = await Step.RemoveDuplicates({
+                currentSchemaName: 'schema1',
+                currentPlanName: 'plan1',
+                currentDataTable: dt2,
+                stepParams: {
+                    keys: ['id'],
+                    method: REMOVE_DUPLICATES_METHOD.HASH,
+                    strategy: REMOVE_DUPLICATES_STRATEGY.FIRST
+                }
+            })
+
+            // Assert the modified DataTable
+            expect(result.Rows.length).toBe(2)
+        })
+
+        // Handle empty DataTable without errors
+        it('should handle empty DataTable without errors when removing duplicates', async () => {
+            // Initialize empty DataTable
+            const dataTable = new DataTable()
+
+            // Call RemoveDuplicates method on empty DataTable
+            const result = await Step.RemoveDuplicates({
+                currentSchemaName: 'schema1',
+                currentPlanName: 'plan1',
+                currentDataTable: dataTable,
+                stepParams: {
+                    keys: ['id'],
+                    method: REMOVE_DUPLICATES_METHOD.HASH,
+                    strategy: REMOVE_DUPLICATES_STRATEGY.FIRST
+                }
+            })
+
+            // Assert the result is still an empty DataTable
+            expect(result.Rows.length).toBe(0)
+        })
+    })
+
+
+    describe('ListEntities', () => {
+
+        afterEach(() => {
+            jest.clearAllMocks()
+        })
+
+        // Returns a DataTable with entities when schemaName is provided and valid
+        it('should return DataTable with entities when schemaName is valid', async () => {
+            const stepArguments = {
+                currentSchemaName: 'validSchema',
+                currentDataTable: new DataTable('TestTable', []),
+                currentPlanName: 'TestPlan',
+                stepParams: { schemaName: 'validSchema' }
+            }
+
+            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponseData>{
+                ...typia.random<TSchemaResponseData>(),
+                data: new DataTable('TestTable', [{ name: 'entity1' }, { name: 'entity2' }])
+            })
+
+            const result = await Step.ListEntities(stepArguments)
+
+            expect(result).toBeInstanceOf(DataTable)
+            expect(result.Rows).toHaveLength(2)
+        })
+
+        // Throws HttpErrorInternalServerError if Schema.ListEntities returns an error response
+        it('should throw HttpErrorInternalServerError when Schema.ListEntities returns error', async () => {
+            const stepArguments = {
+                currentSchemaName: 'invalidSchema',
+                currentDataTable: new DataTable('TestTable', []),
+                currentPlanName: 'TestPlan',
+                stepParams: { schemaName: 'invalidSchema' }
+            }
+
+            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponseError>{
+                ...typia.random<TSchemaResponseError>(),
+                error: 'Some error occurred'
+            })
+
+            await expect(Step.ListEntities(stepArguments)).rejects.toThrow(HttpErrorInternalServerError)
+        })
+
+        // Returns a DataTable with plan entities when schemaName is not provided
+        it('should return DataTable with plan entities when schemaName is not provided', async () => {
+
+            Config.Configuration.plans = {
+                plan1: {
+                    entity1: typia.random<StepCommand[]>()
+                }
+            }
+            
+            const data = new DataTable('table1', [
+                {
+                    name: 'entity1',
+                    type: 'plan entity'
+                }
+            ])
+            
+            // Mock stepArguments          
+            const stepArguments = {
+                currentSchemaName: 'schema1',
+                currentDataTable: data,
+                currentPlanName: 'plan1',
+                stepParams: {}
+            }
+
+            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponseData>{
+                ...typia.random<TSchemaResponseData>(),
+                data: new DataTable('table2', [
+                    {
+                        name: 'entity2',
+                        type: 'plan entity'
+                    }
+                ])
+            })
+
+            const result = await Step.ListEntities(stepArguments)
+
+            // Assertion
+            expect(result).toEqual(data)
+        })
+
+        // Successfully calls Schema.ListEntities with the correct schemaRequest
+        it('should call Schema.ListEntities with correct schemaRequest when schemaName is provided', async () => {
+            // Arrange
+            const stepArguments = {
+                currentSchemaName: 'currentSchema',
+                currentDataTable: new DataTable(),
+                currentPlanName: 'currentPlan',
+                stepParams: { schemaName: 'testSchema' }
+            }
+
+            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponseData>{
+                ...typia.random<TSchemaResponseData>(),
+                data: new DataTable('TestTable', [{ name: 'entity1' }, { name: 'entity2' }])
+            })
+
+            // Act
+            await Step.ListEntities(stepArguments)
+
+            // Assert
+            expect(Schema.ListEntities).toHaveBeenCalledWith({ schemaName: 'testSchema' })
         })
     })
 })
