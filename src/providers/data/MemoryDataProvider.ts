@@ -7,12 +7,12 @@ import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
+import { TSchemaResponse, TSchemaResponseData } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import DATA_PROVIDER, { Source } from '../../server/Source'
+import DATA_PROVIDER from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
 import { TJson } from "../../types/TJson"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
@@ -123,28 +123,26 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
             ? sqlQueryHelper.Query
             : undefined
 
+        const data =  new DataTable(entityName)
+
         const memoryDataTable = await this.Connection.Tables[entityName].FreeSqlAsync(sqlQuery, sqlQueryHelper.Data)
 
         if (memoryDataTable && memoryDataTable.Rows.length > 0) {
+            data.AddRows(memoryDataTable.Rows)
             if (options?.Cache)
                 Cache.Set({
                     ...schemaRequest,
                     sourceName: this.SourceName
                 },
-                    memoryDataTable
+                    data
                 )
-            return <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: memoryDataTable
-            }
-        } else {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+        }
+        
+        return <TSchemaResponseData>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
         }
     }
 
@@ -246,27 +244,22 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
-        const data = Object.keys(this.Connection.Tables).map(entity => ({
+        const rows = Object.keys(this.Connection.Tables).map(entity => ({
             name: entity,
             type: 'datatable',
             size: this.Connection?.Tables[entity].Rows.length
         }))
 
-        if (data.length > 0) {
-            const _dt = new DataTable(entityName, data)
+        if (rows.length > 0) {
+            const _dt = new DataTable(entityName, rows)
             schemaResponse = <TSchemaResponseData>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data: _dt
             }
-        } else {
-            schemaResponse = <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
         }
+        
         return schemaResponse
     }
 }

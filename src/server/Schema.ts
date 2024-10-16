@@ -6,12 +6,10 @@
 import _ from 'lodash'
 //
 import { Source } from "./Source"
-import { RESPONSE_RESULT, RESPONSE_STATUS } from '../lib/Const'
 import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest'
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../types/TSchemaResponse'
-import { TJson } from '../types/TJson'
+import { TSchemaResponse, TSchemaResponseData } from '../types/TSchemaResponse'
 import { HttpErrorBadRequest, HttpErrorNotFound } from './HttpErrors'
 import { TypeHelper } from '../lib/TypeHelper'
 import { StringHelper } from '../lib/StringHelper'
@@ -119,15 +117,10 @@ export class Schema {
         return nothingToDoSchemaRoute
     }
 
-    static async #NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<TSchemaResponseNoData> {
+    static async #NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<void> {
         Logger.Warn(`Nothing to do in schema '${sourceTypeExecuteParams.schemaRequest.schemaName}'`)
         const { schemaName, entityName } = sourceTypeExecuteParams.schemaRequest
-        return <TSchemaResponseNoData>{
-            schemaName,
-            entityName,
-            ...RESPONSE_RESULT.NOT_FOUND,
-            ...RESPONSE_STATUS.HTTP_404
-        }
+        throw new HttpErrorNotFound(`Nothing to do in schema '${schemaName}'`)
     }
 
     static #MergeData(schemaResponse: TSchemaResponse, schemaResponseToMerge: TSchemaResponse | undefined): TSchemaResponse {

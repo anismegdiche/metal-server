@@ -47,8 +47,8 @@ export class CommonStorage {
      
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Read(file: string): Promise<string | undefined> {
-        return undefined
+    async Read(file: string): Promise<string> {
+        throw new HttpErrorNotImplemented()
     }
      
      

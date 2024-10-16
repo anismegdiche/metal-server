@@ -18,12 +18,12 @@ export type TSchemaResponseData = {
     data: DataTable
 }
 
-export type TSchemaResponseNoData = {
-    schemaName: string
-    entityName: string
-    result: string
-    status: HTTP_STATUS_CODE.CREATED | HTTP_STATUS_CODE.NO_CONTENT | HTTP_STATUS_CODE.NOT_FOUND
-}
+//XXX export type TSchemaResponseNoData = {
+//XXX     schemaName: string
+//XXX     entityName: string
+//XXX     result: string
+//XXX     status: HTTP_STATUS_CODE.CREATED | HTTP_STATUS_CODE.NO_CONTENT | HTTP_STATUS_CODE.NOT_FOUND
+//XXX }
 
 export type TSchemaResponseError = {
     schemaName: string
@@ -35,4 +35,4 @@ export type TSchemaResponseError = {
     expires?: number
 }
 
-export type TSchemaResponse = TSchemaResponseData | TSchemaResponseNoData | TSchemaResponseError
+export type TSchemaResponse = TSchemaResponseData | TSchemaResponseError //XXX | TSchemaResponseNoData 

@@ -1,3 +1,8 @@
+//
+//
+//
+//
+//
 import { HTTP_STATUS_CODE } from "../lib/Const"
 import { TInternalResponse } from "../types/TInternalResponse"
 
@@ -9,7 +14,7 @@ export class HttpResponse {
         } 
     }
 
-    static Created<T>(data: T): TInternalResponse {
+    static Created(): TInternalResponse {
         return {
             StatusCode: HTTP_STATUS_CODE.CREATED
         }
@@ -20,6 +25,4 @@ export class HttpResponse {
             StatusCode: HTTP_STATUS_CODE.NO_CONTENT
         }
     }
-
-    // You can add more methods for other status codes.
 }

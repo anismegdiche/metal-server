@@ -9,13 +9,13 @@ import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TSourceParams } from "../../types/TSourceParams"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
+import { TSchemaResponse, TSchemaResponseData } from "../../types/TSchemaResponse"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Logger } from '../../utils/Logger'
 import { Cache } from '../../server/Cache'
-import DATA_PROVIDER, { Source } from '../../server/Source'
+import DATA_PROVIDER from '../../server/Source'
 import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { TJson } from "../../types/TJson"
@@ -106,12 +106,12 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             .Values(options.Data.Rows)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        schemaResponse = <TSchemaResponseData>{
+
+        return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
         }
-        return schemaResponse
     }
 
     @Logger.LogFunction()
@@ -134,26 +134,22 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
-        const data = await this.Connection.query(sqlQueryHelper.Query)
+        const sqlServerResult = await this.Connection.query(sqlQueryHelper.Query)
 
-        if (data.recordset != null && data.recordset.length > 0) {
-            const _dt = new DataTable(schemaRequest.entityName, data.recordset)
+        const data = new DataTable(schemaRequest.entityName)
+
+        if (sqlServerResult.recordset != null && sqlServerResult.recordset.length > 0) {
+            data.AddRows(sqlServerResult.recordset)
             if (options?.Cache)
-                Cache.Set(schemaRequest, _dt)
-            schemaResponse = <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: _dt
-            }
-        } else {
-            schemaResponse = <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+                Cache.Set(schemaRequest, data)
         }
-        return schemaResponse
+
+        return <TSchemaResponseData>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        }
     }
 
     @Logger.LogFunction()
@@ -164,9 +160,8 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             entityName: schemaRequest.entityName
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
-        }
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -176,12 +171,12 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        schemaResponse = <TSchemaResponseData>{
+
+        return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
         }
-        return schemaResponse
     }
 
     @Logger.LogFunction()
@@ -192,9 +187,8 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             entityName: schemaRequest.entityName
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
-        }
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -204,6 +198,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
+
         return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
@@ -219,7 +214,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        
+
         const { schemaName } = schemaRequest
         const entityName = `${schemaRequest.schemaName}-entities`
 
@@ -228,11 +223,8 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             entityName
         }
 
-        if (this.Connection === undefined) {
+        if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
-        }
-
-        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQuery = `
             SELECT t.name AS name, 
@@ -245,23 +237,19 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             ORDER BY t.name;
             `
 
-        const data = await this.Connection.query(sqlQuery)
-        
-        if (data?.recordset.length > 0) {
-            const _dt = new DataTable(entityName, data.recordset)
-            schemaResponse = <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: _dt
-            }
-        } else {
-            schemaResponse = <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+        const sqlServerResult = await this.Connection.query(sqlQuery)
+
+        const _dt = new DataTable(entityName)
+
+        if (sqlServerResult?.recordset.length > 0) {
+            _dt.AddRows(sqlServerResult.recordset)
         }
-        return schemaResponse
+
+        return <TSchemaResponseData>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data: _dt
+        }
     }
 }

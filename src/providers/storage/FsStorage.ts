@@ -8,7 +8,7 @@ import * as Fs from 'fs'
 import { CommonStorage } from "./CommonStorage"
 import { IStorageProvider } from "../../types/IStorageProvider"
 import { Logger } from "../../utils/Logger"
-import { HttpErrorInternalServerError } from "../../server/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 
 type TFsStorageConfig = {
@@ -32,7 +32,7 @@ export class FsStorage extends CommonStorage implements IStorageProvider {
     }
 
     @Logger.LogFunction()
-    async Read(file: string): Promise<string | undefined> {
+    async Read(file: string): Promise<string> {
 
         const filePath = this.Config.folder + file
 
@@ -45,7 +45,7 @@ export class FsStorage extends CommonStorage implements IStorageProvider {
         if (await this.IsExist(file))
             return Fs.promises.readFile(filePath, 'utf8')
 
-        return undefined
+        throw new HttpErrorNotFound(`File '${file}' does not exist`)
     }
 
     @Logger.LogFunction()

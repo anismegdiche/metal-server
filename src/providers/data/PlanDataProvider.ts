@@ -7,7 +7,7 @@ import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
+import { TSchemaResponse, TSchemaResponseData } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
@@ -80,28 +80,26 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
             ? sqlQueryHelper.Query
             : undefined
 
-        const planDataTable = await Plan.Process(schemaRequest, sqlQuery)
+        const planData = await Plan.Process(schemaRequest, sqlQuery)
 
-        if (planDataTable && planDataTable.Rows.length > 0) {
+        const data = new DataTable(schemaRequest.entityName)
+
+        if (planData && planData.Rows.length > 0) {
+            data.AddRows(planData.Rows)
             if (options?.Cache)
                 Cache.Set({
                     ...schemaRequest,
                     sourceName: this.SourceName
                 },
-                    planDataTable
+                    data
                 )
-            return <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: planDataTable
-            }
-        } else {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+        }
+        
+        return <TSchemaResponseData>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
         }
     }
 
@@ -152,13 +150,8 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data: _dt
             }
-        } else {
-            schemaResponse = <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
         }
+        
         return schemaResponse
     }
 }

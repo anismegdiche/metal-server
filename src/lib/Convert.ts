@@ -89,13 +89,10 @@ export class Convert {
             }
         }
 
-        if (Config.Flags.EnableResponseChunk) {
+        if (Config.Flags.EnableResponseChunk && schemaResponse.status === HTTP_STATUS_CODE.OK) {
             Convert.#SchemaResponseToResponseChunkPrepare(schemaResponse, res, resJson)
         } else {
-            res.json(schemaResponse.status === HTTP_STATUS_CODE.NO_CONTENT
-                ? undefined
-                : resJson
-            )
+            res.json(resJson)
         }
 
         return res

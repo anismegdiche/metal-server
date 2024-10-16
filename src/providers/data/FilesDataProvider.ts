@@ -12,7 +12,7 @@ import DATA_PROVIDER from "../../server/Source"
 import * as IDataProvider from "../../types/IDataProvider"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
+import { TSchemaResponse, TSchemaResponseData } from "../../types/TSchemaResponse"
 import { TSourceParams } from "../../types/TSourceParams"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { IStorageProvider } from "../../types/IStorageProvider"
@@ -142,14 +142,6 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (fileString == undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
-
         this.Content.Init(entityName, fileString)
         const fileDataTable = await this.Content.Get()
 
@@ -185,14 +177,6 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (fileString == undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
-
         this.Content.Init(entityName, fileString)
 
         const sqlQueryHelper = new SqlQueryHelper()
@@ -205,28 +189,21 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             ? sqlQueryHelper.Query
             : undefined
 
-        const fileDataTable = await this.Content.Get(sqlQuery)
+        const data = await this.Content.Get(sqlQuery)
 
-        if (fileDataTable && fileDataTable.Rows.length > 0) {
-            if (options?.Cache)
-                Cache.Set({
-                    ...schemaRequest,
-                    sourceName: this.SourceName
-                },
-                    fileDataTable
-                )
-            return <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: fileDataTable
-            }
-        } else {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+        if (options?.Cache)
+            Cache.Set({
+                ...schemaRequest,
+                sourceName: this.SourceName
+            },
+                data
+            )
+
+        return <TSchemaResponseData>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
         }
     }
 
@@ -247,13 +224,6 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (fileString == undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
         this.Content.Init(entityName, fileString)
         const fileDataTable = await this.Content.Get()
 
@@ -291,13 +261,6 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (fileString == undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
         this.Content.Init(entityName, fileString)
         const fileDataTable = await this.Content.Get()
 
@@ -340,24 +303,15 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         let data: DataTable
 
         if (this.Connection)
-            data = await this.Connection?.List()
+            data = await this.Connection.List()
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (data !== undefined && data.Rows.length > 0) {
-            return <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data
-            }
-
-        } else {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+        return <TSchemaResponseData>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
         }
     }
 }

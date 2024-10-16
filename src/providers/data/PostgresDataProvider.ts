@@ -11,12 +11,12 @@ import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
+import { TSchemaResponse, TSchemaResponseData } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
-import DATA_PROVIDER, { Source } from '../../server/Source'
+import DATA_PROVIDER from '../../server/Source'
 import { TJson } from "../../types/TJson"
 import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"
@@ -126,7 +126,6 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
-
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
@@ -137,24 +136,20 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         const result = await this.Connection.query(sqlQueryHelper.Query)
 
+        const data = new DataTable(schemaRequest.entityName)
+
         if (result.rows.length > 0) {
-            const _dt = new DataTable(schemaRequest.entityName, result.rows)
+            data.AddRows(result.rows)
             if (options?.Cache)
-                Cache.Set(schemaRequest, _dt)
-            schemaResponse = <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: _dt
-            }
-        } else {
-            schemaResponse = <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+                Cache.Set(schemaRequest, data)
         }
-        return schemaResponse
+
+        return <TSchemaResponseData>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        }
     }
 
     @Logger.LogFunction()
@@ -165,11 +160,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             entityName: schemaRequest.entityName
         }
 
-        if (this.Connection === undefined) {
-
+        if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
-        }
-
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -180,12 +172,11 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.query(sqlQueryHelper.Query)
 
-        schemaResponse = <TSchemaResponseData>{
+        return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
         }
-        return schemaResponse
     }
 
     @Logger.LogFunction()
@@ -208,12 +199,11 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.query(sqlQueryHelper.Query)
 
-        schemaResponse = <TSchemaResponseData>{
+        return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
         }
-        return schemaResponse
     }
 
     @Logger.LogFunction()
@@ -278,23 +268,19 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         result = await this.Connection.query(sqlQuery)
 
+        const data = new DataTable(entityName)
+
         if (result?.rows.length > 0) {
-            const _dt = new DataTable(entityName, result.rows)
+            data.AddRows(result.rows)
             if (options?.Cache)
-                Cache.Set(schemaRequest, _dt)
-            schemaResponse = <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: _dt
-            }
-        } else {
-            schemaResponse = <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+                Cache.Set(schemaRequest, data)
         }
-        return schemaResponse
+
+        return <TSchemaResponseData>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        }
     }
 }

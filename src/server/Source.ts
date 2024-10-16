@@ -8,8 +8,6 @@ import { Cache } from './Cache'
 import { Config } from './Config'
 import { IDataProvider } from '../types/IDataProvider'
 import { TSourceParams } from '../types/TSourceParams'
-import { RESPONSE } from '../lib/Const'
-import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
 // Providers
 import { PostgresDataProvider } from '../providers/data/PostgresDataProvider'
 import { MongoDbDataProvider } from '../providers/data/MongoDbDataProvider'
@@ -90,12 +88,12 @@ export class Source {
         _.keys(Source.Sources).forEach(Source.Disconnect)
     }
 
-    // @Logger.LogFunction()
-    // static ResponseError(schemaResponse: TSchemaResponse): TSchemaResponseNoData {
-    //     return <TSchemaResponseNoData>{
-    //         ...schemaResponse,
-    //         ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
-    //         ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
-    //     }
-    // }
+    //XXX @Logger.LogFunction()
+    //XXX static ResponseError(schemaResponse: TSchemaResponse): TSchemaResponseNoData {
+    //XXX     return <TSchemaResponseNoData>{
+    //XXX         ...schemaResponse,
+    //XXX         ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
+    //XXX         ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
+    //XXX     }
+    //XXX }
 }

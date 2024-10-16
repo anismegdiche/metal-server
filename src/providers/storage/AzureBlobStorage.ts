@@ -8,7 +8,7 @@ import { BlobServiceClient, ContainerClient } from '@azure/storage-blob'
 import { CommonStorage } from "./CommonStorage"
 import { IStorageProvider } from "../../types/IStorageProvider"
 import { Logger } from '../../utils/Logger'
-import { HttpErrorInternalServerError } from "../../server/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
 
@@ -78,13 +78,21 @@ export class AzureBlobStorage extends CommonStorage implements IStorageProvider 
 
     @Logger.LogFunction()
     async Read(file: string): Promise<string> {
-        if (!this.#ContainerClient) {
+        if (!this.#ContainerClient)
             throw new HttpErrorInternalServerError('Connection to Azure Blob Storage not established')
-        }
 
-        const blobClient = this.#ContainerClient.getBlockBlobClient(file)
-        const downloadBlockBlobResponse = await blobClient.download(0)
-        return await this.StreamToBuffer(downloadBlockBlobResponse.readableStreamBody!)
+        try {
+            const blobClient = this.#ContainerClient.getBlockBlobClient(file)
+
+            if (!blobClient.exists())
+                throw new HttpErrorNotFound(`File '${file}' does not exist`)
+
+            const downloadBlockBlobResponse = await blobClient.download(0)
+            return await this.StreamToBuffer(downloadBlockBlobResponse.readableStreamBody!)
+
+        } catch (error: any) {
+            throw new HttpErrorInternalServerError(error.message)
+        }
     }
 
     @Logger.LogFunction()
@@ -99,7 +107,7 @@ export class AzureBlobStorage extends CommonStorage implements IStorageProvider 
 
     @Logger.LogFunction()
     async List(): Promise<DataTable> {
-        if (!this.#ContainerClient) 
+        if (!this.#ContainerClient)
             throw new HttpErrorInternalServerError('AzureBlobStorage: Connection to Azure Blob Storage not established')
 
         const blobs = this.#ContainerClient.listBlobsFlat()
@@ -112,6 +120,6 @@ export class AzureBlobStorage extends CommonStorage implements IStorageProvider 
                 size: blob.properties.contentLength
             })
         }
-        return new DataTable(undefined,result)
+        return new DataTable(undefined, result)
     }
 }

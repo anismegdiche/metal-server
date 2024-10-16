@@ -12,13 +12,13 @@ import { Convert } from '../../lib/Convert'
 import { RESPONSE } from '../../lib/Const'
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from '../../types/TOptions'
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
+import { TSchemaResponse, TSchemaResponseData } from "../../types/TSchemaResponse"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
 import { Logger } from "../../utils/Logger"
 import { Cache } from '../../server/Cache'
-import DATA_PROVIDER, { Source } from '../../server/Source'
+import DATA_PROVIDER from '../../server/Source'
 import { MongoDbHelper } from '../../lib/MongoDbHelper'
 import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"
@@ -201,53 +201,51 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
             .collection(schemaRequest.entityName)
             .insertMany(options?.Data?.Rows)
 
-        schemaResponse = <TSchemaResponseData>{
+        return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
         }
-        return schemaResponse
     }
 
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        // eslint-disable-next-line you-dont-need-lodash-underscore/omit, you-dont-need-lodash-underscore/values
-        const aggregation: MongoDb.Document[] = _.values(_.omit(options, "Cache"))
+
+        const { schemaName, entityName } = schemaRequest
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName
+            schemaName,
+            entityName
         }
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
+        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line you-dont-need-lodash-underscore/omit, you-dont-need-lodash-underscore/values
+        const aggregation: MongoDb.Document[] = _.values(_.omit(options, "Cache"))
+
         await this.Connection.connect()
 
-        const data = await this.Connection.db(this.Params.database)
+        const rows = await this.Connection.db(this.Params.database)
             .collection(schemaRequest.entityName)
             .aggregate(aggregation)
             .toArray()
 
-        if (data.length > 0) {
-            const _dt = new DataTable(schemaRequest.entityName, data)
+        const data = new DataTable(entityName)
+
+        if (rows.length > 0) {
+            data.AddRows(rows)
             if (options?.Cache)
-                Cache.Set(schemaRequest, _dt)
-            schemaResponse = <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: _dt
-            }
-        } else {
-            schemaResponse = <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+                Cache.Set(schemaRequest, data)
         }
-        return schemaResponse
+
+        return <TSchemaResponseData>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        }
     }
 
     @Logger.LogFunction()
@@ -263,9 +261,6 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
-        //TODO: throw error 400 for bad
-
-
         await this.Connection.connect()
 
         await this.Connection
@@ -278,12 +273,11 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
                 }
             )
 
-        schemaResponse = <TSchemaResponseData>{
+        return <TSchemaResponseData>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
         }
-        return schemaResponse
     }
 
     @Logger.LogFunction()
@@ -335,10 +329,10 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.connect()
 
-        const data = await this.Connection.db(this.Params.database).listCollections().toArray()
+        const collections = await this.Connection.db(this.Params.database).listCollections().toArray()
 
-        const result = await Promise.all(
-            data.map(async (item) => {
+        const rows = await Promise.all(
+            collections.map(async (item) => {
                 let size = -1
                 if (this.Connection !== undefined) {
                     const collection = this.Connection.db(this.Params.database).collection(item.name)
@@ -349,21 +343,18 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
             })
         )
 
-        if (data.length > 0) {
-            const _dt = new DataTable(entityName, result)
-            schemaResponse = <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: _dt
-            }
-        } else {
-            schemaResponse = <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+        const data = new DataTable(entityName)
+
+        if (collections.length > 0) {
+            //TODO: add cache
+            data.AddRows(rows)
         }
-        return schemaResponse
+
+        return <TSchemaResponseData>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        }
     }
 }
