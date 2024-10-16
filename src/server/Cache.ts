@@ -10,7 +10,7 @@ import { TCacheData } from '../types/TCacheData'
 import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
 import { TSchemaRequest } from '../types/TSchemaRequest'
-import { TSchemaResponse, TSchemaResponseData, TRANSACTION } from '../types/TSchemaResponse'
+import { TSchemaResponse, TSchemaResponseData } from '../types/TSchemaResponse'
 import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { IDataProvider } from '../types/IDataProvider'
@@ -167,7 +167,7 @@ export class Cache {
     @Logger.LogFunction()
     static async View(): Promise<TInternalResponse> {
         let schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(Cache.#SchemaRequest)
-        schemaResponse.transaction = TRANSACTION.CACHE_DATA
+        
         const intRes: TInternalResponse = {
             StatusCode: schemaResponse.status,
             Body: { message: 'Cache data' }

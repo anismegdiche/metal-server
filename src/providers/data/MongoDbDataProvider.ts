@@ -9,7 +9,7 @@ import * as MongoDb from 'mongodb'
 //
 import * as IDataProvider from "../../types/IDataProvider"
 import { Convert } from '../../lib/Convert'
-import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+import { RESPONSE } from '../../lib/Const'
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from '../../types/TOptions'
 import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
@@ -20,7 +20,8 @@ import { Logger } from "../../utils/Logger"
 import { Cache } from '../../server/Cache'
 import DATA_PROVIDER, { Source } from '../../server/Source'
 import { MongoDbHelper } from '../../lib/MongoDbHelper'
-import { HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { JsonHelper } from "../../lib/JsonHelper"
 
 
 class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
@@ -186,12 +187,11 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.INSERT
+            entityName: schemaRequest.entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -217,12 +217,11 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.SELECT
+            entityName: schemaRequest.entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         await this.Connection.connect()
 
@@ -256,12 +255,11 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.UPDATE
+            entityName: schemaRequest.entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -293,14 +291,13 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.DELETE
+            entityName: schemaRequest.entityName
         }
 
         const options: any = this.Options.Parse(schemaRequest)
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         await this.Connection
             .db(this.Params.database)
@@ -330,12 +327,11 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.LIST_ENTITIES
+            entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         await this.Connection.connect()
 
@@ -348,6 +344,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
                     const collection = this.Connection.db(this.Params.database).collection(item.name)
                     size = await collection.countDocuments()
                 }
+                // eslint-disable-next-line you-dont-need-lodash-underscore/assign
                 return _.assign(_.pick(item, ['name', 'type']), { size })
             })
         )

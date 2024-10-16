@@ -60,12 +60,11 @@ export class Convert {
 
     // @Logger.LogFunction()
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, res: Response) {
-        const { schemaName, entityName, transaction, result, status } = schemaResponse
+        const { schemaName, entityName, result, status } = schemaResponse
 
         let resJson: TJson = {
             schemaName,
             entityName,
-            transaction,
             result,
             status
         }

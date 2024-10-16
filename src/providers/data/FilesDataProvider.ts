@@ -3,7 +3,7 @@
 //
 //
 //
-import { RESPONSE_TRANSACTION, RESPONSE } from "../../lib/Const"
+import { RESPONSE } from "../../lib/Const"
 import { Helper } from "../../lib/Helper"
 import { Logger } from "../../utils/Logger"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
@@ -35,7 +35,6 @@ export enum CONTENT {
     JSON = "json",
     CSV = "csv"
 }
-
 
 export type TFilesDataProviderOptions = {
     // Common
@@ -133,8 +132,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.INSERT
+            entityName
         }
 
         let fileString: string | undefined = ""
@@ -177,8 +175,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.SELECT
+            entityName
         }
 
         let fileString: string | undefined = ""
@@ -240,8 +237,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.UPDATE
+            entityName
         }
 
         let fileString: string | undefined = ""
@@ -285,8 +281,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.DELETE
+            entityName
         }
 
         let fileString: string | undefined = ""
@@ -339,8 +334,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.LIST_ENTITIES
+            entityName
         }
 
         let data: DataTable

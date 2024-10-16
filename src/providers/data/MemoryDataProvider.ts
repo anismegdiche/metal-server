@@ -3,7 +3,7 @@
 //
 //
 //
-import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
@@ -16,8 +16,9 @@ import DATA_PROVIDER, { Source } from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
 import { TJson } from "../../types/TJson"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
-import { HttpErrorNotFound } from "../../server/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
+import { JsonHelper } from "../../lib/JsonHelper"
 
 
 export type TMemoryDataProviderOptions = {
@@ -70,12 +71,11 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.INSERT
+            entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         await this.AddEntity(schemaRequest)
 
@@ -100,12 +100,11 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.SELECT
+            entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         await this.AddEntity(schemaRequest)
 
@@ -157,12 +156,11 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.UPDATE
+            entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         await this.AddEntity(schemaRequest)
 
@@ -192,12 +190,11 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.DELETE
+            entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         await this.AddEntity(schemaRequest)
 
@@ -231,7 +228,6 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         return <TSchemaResponse>{
             schemaName,
             entityName,
-            ...RESPONSE_TRANSACTION.ADD_ENTITY,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
         }
@@ -244,12 +240,11 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         const entityName = `${schemaRequest.schemaName}-entities`
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName,
-            ...RESPONSE_TRANSACTION.LIST_ENTITIES
+            schemaName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         const data = Object.keys(this.Connection.Tables).map(entity => ({
             name: entity,

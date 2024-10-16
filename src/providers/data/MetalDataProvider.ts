@@ -11,11 +11,11 @@ import { Logger } from "../../utils/Logger"
 import DATA_PROVIDER from "../../server/Source"
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
-import { TRANSACTION, TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from "../../types/TSchemaResponse"
+import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from "../../types/TSchemaResponse"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TJson } from '../../types/TJson'
 import { DataTable } from '../../types/DataTable'
-import { SERVER } from '../../lib/Const'
+import { HTTP_STATUS_CODE, SERVER } from '../../lib/Const'
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
 
@@ -150,7 +150,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
     static #ConvertResponseToSchemaRequest(res: AxiosResponse): TSchemaResponse {
         const metalResponse = res.data
-        if (metalResponse?.transaction == TRANSACTION.SELECT) {
+        if (res.status == HTTP_STATUS_CODE.OK) {
             const data = new DataTable(
                 metalResponse?.entityName,
                 metalResponse?.rows,

@@ -11,7 +11,7 @@ import { ServerResponse } from './ServerResponse'
 import { TSchemaResponseData } from '../types/TSchemaResponse'
 import { Convert } from '../lib/Convert'
 import { TSchemaRequest } from '../types/TSchemaRequest'
-import { RESPONSE, RESPONSE_TRANSACTION } from '../lib/Const'
+import { RESPONSE } from '../lib/Const'
 import { Schema } from '../server/Schema'
 import { Logger } from '../utils/Logger'
 import { Config } from '../server/Config'
@@ -72,7 +72,6 @@ export class CacheResponse {
                             <TSchemaResponseData>{
                                 schemaName: _cacheData.schemaRequest.schemaName,
                                 entityName: _cacheData.schemaRequest.entityName,
-                                ...RESPONSE_TRANSACTION.SELECT,
                                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                                 cache: "true",

@@ -4,7 +4,6 @@
 //
 //
 import _ from "lodash"
-//XXX import { Validator } from "jsonschema"
 import { configure } from 'safe-stable-stringify'
 import * as chrono from 'chrono-node'
 
@@ -19,8 +18,6 @@ const SafeStableStringify = configure({
 
 
 export class JsonHelper {
-
-    //XXX static readonly Validator = new Validator()
 
     static TryParse<T>(jsonString: string, defaultValue: T): T {
         try {

@@ -5,7 +5,7 @@
 //
 import { Pool } from 'pg'
 //
-import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TSourceParams } from "../../types/TSourceParams"
@@ -18,7 +18,8 @@ import { Logger } from '../../utils/Logger'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER, { Source } from '../../server/Source'
 import { TJson } from "../../types/TJson"
-import { HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { JsonHelper } from "../../lib/JsonHelper"
 
 
 export class PostgresDataProvider implements IDataProvider.IDataProvider {
@@ -92,12 +93,11 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.INSERT
+            entityName: schemaRequest.entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -120,12 +120,11 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.SELECT
+            entityName: schemaRequest.entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
 
         const options: TOptions = this.Options.Parse(schemaRequest)
@@ -163,13 +162,12 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.UPDATE
+            entityName: schemaRequest.entityName
         }
 
         if (this.Connection === undefined) {
 
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
         }
 
 
@@ -195,12 +193,11 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.DELETE
+            entityName: schemaRequest.entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -232,12 +229,11 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.LIST_ENTITIES
+            entityName
         }
 
         if (this.Connection === undefined)
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 

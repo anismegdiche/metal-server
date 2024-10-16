@@ -144,7 +144,6 @@ export class Schema {
                 ...schemaResponseToMerge,
                 schemaName: schemaResponse.schemaName,
                 entityName: schemaResponse.entityName,
-                transaction: schemaResponse.transaction,
                 result: schemaResponseToMerge.result,
                 status: schemaResponseToMerge.status
             }

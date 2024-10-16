@@ -19,7 +19,6 @@ import { AiEngine } from './AiEngine'
 import { Convert } from '../lib/Convert'
 import { HTTP_STATUS_MESSAGE } from "../lib/Const"
 import { LogLevelDesc } from "loglevel"
-//XXX import { ConfigFileSchema } from "../schemas/ConfigFile.schema"
 import { TConfig } from "../types/TConfig"
 import { TypeHelper } from "../lib/TypeHelper"
 import { HttpErrorBadRequest } from "./HttpErrors"
@@ -48,15 +47,11 @@ export class Config {
     }
 
     static Flags: TJson = {
-        EnableCache: false,              // enable/disable cache
-        EnableAuthentication: false,     // enable/disable authentication
-        // v0.3
-        EnableResponseChunk: false,      // enable/disable response chunking
-        // v0.3
-        ResponseLimit: 10 * 1024 * 1024   // response body size limit
+        EnableCache: false,               // Enable/disable cache
+        EnableAuthentication: false,      // Enable/disable authentication
+        EnableResponseChunk: false,       // v0.3, Enable/disable response chunking
+        ResponseLimit: 10 * 1024 * 1024   // v0.3, Response body size limit
     }
-
-    //XXX static #ConfigSchema = ConfigFileSchema
 
     @Logger.LogFunction()
     static async Init(): Promise<void> {
@@ -104,32 +99,19 @@ export class Config {
             enum: _.keys(newConfig?.sources ?? [])
         }
 
-        //XXX Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.sourceName = sourceNameConfig
-        //XXX Config.#ConfigSchema.properties.schemas.patternProperties[".*"].properties.entities.patternProperties[".*"].properties.sourceName = sourceNameConfig
-
         const planNameConfig = {
             type: "string",
             // eslint-disable-next-line you-dont-need-lodash-underscore/keys
             enum: _.keys(newConfig?.plans ?? [])
         }
-
-        //XXX Config.#ConfigSchema.properties.schedules.patternProperties[".*"].properties.planName = planNameConfig
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug, true)
     static async Validate(newConfig: TConfig): Promise<void> {
 
         TypeHelper.Validate(typia.validateEquals<TConfig>(newConfig), new HttpErrorBadRequest())
         Config.CheckRessourcesUsage(newConfig)
         Config.Configuration = newConfig
-
-        //XXX const { errors } = JsonHelper .Validator.validate(this.Configuration, this.#ConfigSchema)
-
-        //XXX if (errors.length <= 0)
-        //XXX     return
-
-        //XXX Logger.Error(`Errors have been detected in configuration file ${this.ConfigFilePath}:\n\n - ${errors.join('\n - ').replace(/instance\./mg, '')}\n`)
-        //XXX process.exit(1)
     }
 
     @Logger.LogFunction()

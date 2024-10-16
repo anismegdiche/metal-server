@@ -3,7 +3,7 @@
 //
 //
 //
-import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
@@ -67,8 +67,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.SELECT
+            entityName
         }
 
         const sqlQueryHelper = new SqlQueryHelper()
@@ -137,8 +136,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
         const entityName = `${schemaRequest.schemaName}-entities`
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName,
-            ...RESPONSE_TRANSACTION.LIST_ENTITIES
+            schemaName
         }
 
         const data = Object.keys(Config.Get('plans')).map(key => ({

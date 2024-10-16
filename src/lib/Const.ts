@@ -36,27 +36,6 @@ export enum ROUTE {
     SWAGGER_UI_PATH = '/api-docs'
 }
 
-export const RESPONSE_TRANSACTION = {
-    SELECT: {
-        transaction: 'select'
-    },
-    DELETE: {
-        transaction: 'delete'
-    },
-    UPDATE: {
-        transaction: 'update'
-    },
-    INSERT: {
-        transaction: 'insert'
-    },
-    LIST_ENTITIES: {
-        transaction: 'listEntities'
-    },
-    ADD_ENTITY: {
-        transaction: 'addEntity'
-    }
-}
-
 export const RESPONSE_RESULT = {
     SUCCESS: {
         result: 'success'

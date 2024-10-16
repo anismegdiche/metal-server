@@ -90,12 +90,12 @@ export class Source {
         _.keys(Source.Sources).forEach(Source.Disconnect)
     }
 
-    @Logger.LogFunction()
-    static ResponseError(schemaResponse: TSchemaResponse): TSchemaResponseNoData {
-        return <TSchemaResponseNoData>{
-            ...schemaResponse,
-            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
-            ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
-        }
-    }
+    // @Logger.LogFunction()
+    // static ResponseError(schemaResponse: TSchemaResponse): TSchemaResponseNoData {
+    //     return <TSchemaResponseNoData>{
+    //         ...schemaResponse,
+    //         ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
+    //         ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
+    //     }
+    // }
 }
