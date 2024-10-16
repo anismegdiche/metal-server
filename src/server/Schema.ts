@@ -127,12 +127,15 @@ export class Schema {
         if (!schemaResponseToMerge)
             return schemaResponse
 
+        const isSchemaResponseWithData = schemaResponse?.data?.Rows?.length > 0
+        const isSchemaResponseToMergeWithData = schemaResponse?.data?.Rows?.length > 0
+
         // only schemaResponse got data
-        if (TypeHelper.IsSchemaResponseData(schemaResponse) && !TypeHelper.IsSchemaResponseData(schemaResponseToMerge))
-            return schemaResponse as TSchemaResponseData
+        if (isSchemaResponseWithData && !isSchemaResponseToMergeWithData)
+            return schemaResponse
 
         // only schemaResponseToMerge got data
-        if (!TypeHelper.IsSchemaResponseData(schemaResponse) && TypeHelper.IsSchemaResponseData(schemaResponseToMerge))
+        if (!isSchemaResponseWithData && isSchemaResponseToMergeWithData)
             return <TSchemaResponseData>{
                 ...schemaResponseToMerge,
                 schemaName: schemaResponse.schemaName,
@@ -142,7 +145,7 @@ export class Schema {
             }
 
         // both got data
-        if (TypeHelper.IsSchemaResponseData(schemaResponse) && TypeHelper.IsSchemaResponseData(schemaResponseToMerge))
+        if (isSchemaResponseWithData && isSchemaResponseToMergeWithData)
             return <TSchemaResponseData>{
                 ...schemaResponse,
                 data: schemaResponse.data.AddRows(

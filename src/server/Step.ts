@@ -93,8 +93,8 @@ export class Step {
                 schemaName: schemaName ?? currentSchemaName
             })
 
-            if (TypeHelper.IsSchemaResponseError(_schemaResponse))
-                throw new HttpErrorInternalServerError(_schemaResponse.error)
+            //XXX if (TypeHelper.IsSchemaResponseError(_schemaResponse))
+            //XXX     throw new HttpErrorInternalServerError(_schemaResponse.error)
 
             if (TypeHelper.IsSchemaResponseData(_schemaResponse))
                 return _schemaResponse.data
@@ -147,9 +147,9 @@ export class Step {
                 data: data ?? currentDataTable.Rows
             })
 
-            if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
-                throw new HttpErrorInternalServerError(_schemaResponse.error)
-            }
+            //XXX if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
+            //XXX     throw new HttpErrorInternalServerError(_schemaResponse.error)
+            //XXX }
             return currentDataTable
         }
 
@@ -189,9 +189,9 @@ export class Step {
                 schemaName: schemaName ?? currentSchemaName
             })
 
-            if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
-                throw new HttpErrorInternalServerError(_schemaResponse.error)
-            }
+            //XXX if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
+            //XXX     throw new HttpErrorInternalServerError(_schemaResponse.error)
+            //XXX }
             return currentDataTable
         }
 
@@ -228,8 +228,8 @@ export class Step {
                 schemaName: schemaName ?? currentSchemaName
             })
 
-            if (TypeHelper.IsSchemaResponseError(_schemaResponse))
-                throw new HttpErrorInternalServerError(_schemaResponse.error)
+            //XXX if (TypeHelper.IsSchemaResponseError(_schemaResponse))
+            //XXX     throw new HttpErrorInternalServerError(_schemaResponse.error)
 
             return currentDataTable
         }
@@ -475,8 +475,8 @@ export class Step {
         if (schemaRequest?.schemaName) {
             const _schemaResponse = await Schema.ListEntities(<TSchemaRequestListEntities>schemaRequest)
 
-            if (TypeHelper.IsSchemaResponseError(_schemaResponse))
-                throw new HttpErrorInternalServerError(_schemaResponse.error)
+            //XXX if (TypeHelper.IsSchemaResponseError(_schemaResponse))
+            //XXX     throw new HttpErrorInternalServerError(_schemaResponse.error)
 
             if (TypeHelper.IsSchemaResponseData(_schemaResponse)) {
                 Logger.Debug(`${Logger.Out} Step.ListEntities: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -500,9 +500,9 @@ export class Step {
             entityName
         })
 
-        if (TypeHelper.IsSchemaResponseError(schemaResponse)) {
-            throw new HttpErrorInternalServerError(schemaResponse.error)
-        }
+        //XXX if (TypeHelper.IsSchemaResponseError(schemaResponse)) {
+        //XXX     throw new HttpErrorInternalServerError(schemaResponse.error)
+        //XXX }
 
         if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
             return schemaResponse.data

@@ -71,13 +71,13 @@ export class Convert {
 
         res.status(schemaResponse.status)
 
-        if (TypeHelper.IsSchemaResponseError(schemaResponse)) {
-            return res
-                .json({
-                    ...resJson,
-                    error: schemaResponse.error
-                })
-        }
+        //XXX if (TypeHelper.IsSchemaResponseError(schemaResponse)) {
+        //XXX     return res
+        //XXX         .json({
+        //XXX             ...resJson,
+        //XXX             error: schemaResponse.error
+        //XXX         })
+        //XXX }
 
         if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
             resJson = {

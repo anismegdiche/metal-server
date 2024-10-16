@@ -6,7 +6,7 @@ import { Plan } from "../Plan"
 import { StepCommand, TConfig } from "../../types/TConfig"
 import { Schema } from "../Schema"
 import { HttpErrorInternalServerError } from "../HttpErrors"
-import { TSchemaResponseData, TSchemaResponseError } from "../../types/TSchemaResponse"
+import { TSchemaResponseData } from "../../types/TSchemaResponse"
 import typia from "typia"
 import { Config } from "../Config"
 
@@ -777,23 +777,6 @@ describe('Step', () => {
 
             expect(result).toBeInstanceOf(DataTable)
             expect(result.Rows).toHaveLength(2)
-        })
-
-        // Throws HttpErrorInternalServerError if Schema.ListEntities returns an error response
-        it('should throw HttpErrorInternalServerError when Schema.ListEntities returns error', async () => {
-            const stepArguments = {
-                currentSchemaName: 'invalidSchema',
-                currentDataTable: new DataTable('TestTable', []),
-                currentPlanName: 'TestPlan',
-                stepParams: { schemaName: 'invalidSchema' }
-            }
-
-            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponseError>{
-                ...typia.random<TSchemaResponseError>(),
-                error: 'Some error occurred'
-            })
-
-            await expect(Step.ListEntities(stepArguments)).rejects.toThrow(HttpErrorInternalServerError)
         })
 
         // Returns a DataTable with plan entities when schemaName is not provided

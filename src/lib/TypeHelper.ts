@@ -7,7 +7,7 @@ import typia from "typia"
 //
 import { DataTable } from "../types/DataTable"
 import { TSchemaRequest } from "../types/TSchemaRequest"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from "../types/TSchemaResponse"
+import { TSchemaResponse, TSchemaResponseData } from "../types/TSchemaResponse"
 import { Logger } from "../utils/Logger"
 import { HttpError, HttpErrorInternalServerError } from "../server/HttpErrors"
 
@@ -23,10 +23,10 @@ export class TypeHelper {
         return typia.is<TSchemaResponse>(schemaResponse)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
-    static IsSchemaResponseError(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponseError {
-        return typia.is<TSchemaResponseError>(schemaResponse)
-    }
+    //XXX @Logger.LogFunction(Logger.Debug, true)
+    //XXX static IsSchemaResponseError(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponseError {
+    //XXX     return typia.is<TSchemaResponseError>(schemaResponse)
+    //XXX }
 
     @Logger.LogFunction(Logger.Debug, true)
     static IsSchemaResponseData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponseData {

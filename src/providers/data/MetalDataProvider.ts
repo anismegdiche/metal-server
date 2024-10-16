@@ -1,4 +1,4 @@
- 
+
 //
 //
 //
@@ -11,13 +11,13 @@ import { Logger } from "../../utils/Logger"
 import DATA_PROVIDER from "../../server/Source"
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from "../../types/TSchemaResponse"
+import { TSchemaResponse, TSchemaResponseData } from "../../types/TSchemaResponse"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TJson } from '../../types/TJson'
 import { DataTable } from '../../types/DataTable'
 import { HTTP_STATUS_CODE, SERVER } from '../../lib/Const'
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
-import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented, HttpErrorUnauthorized } from "../../server/HttpErrors"
 
 
 type TMetalClientParams = {
@@ -137,6 +137,17 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
     Options = new CommonSqlDataProviderOptions()
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    static readonly #ErrorCaseMap: Record<number, Function> = {
+        [HTTP_STATUS_CODE.BAD_REQUEST as number]: (message: string) => new HttpErrorBadRequest(message),
+        [HTTP_STATUS_CODE.UNAUTHORIZED as number]: (message: string) => new HttpErrorUnauthorized(message),
+        [HTTP_STATUS_CODE.FORBIDDEN as number]: (message: string) => new HttpErrorForbidden(message),
+        [HTTP_STATUS_CODE.NOT_FOUND as number]: (message: string) => new HttpErrorNotFound(message),
+        [HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR as number]: (message: string) => new HttpErrorInternalServerError(message),
+        [HTTP_STATUS_CODE.NOT_IMPLEMENTED as number]: (message: string) => new HttpErrorNotImplemented(message)
+    }
+
+
     constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
         this.Init(sourceParams)
@@ -165,13 +176,10 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         return metalResponse
     }
 
-    static #HandleError(error: AxiosError): TSchemaResponseError {
-        if (!error?.response) {
-            throw error
-        }
-        if (error?.response?.data) {
-            return error.response.data as TSchemaResponseError
-        }
+    static #HandleError(error: AxiosError): void {
+        if (error?.response?.status)
+            this.#ErrorCaseMap[error?.response?.status](error.message)
+
         throw error
     }
 
@@ -199,7 +207,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         this.Connection.Login(user, password)
             .then(() => {
                 this.Connection?.Get(`${this.Params.host}${this.Connection.API.server}/info`)
-                .then((res: AxiosResponse) => {
+                    .then((res: AxiosResponse) => {
                         Logger.Info(`${Logger.Out} connected to '${sourceName} (${database})'`)
                         const { data } = res
                         if (data?.version != SERVER.VERSION) {
@@ -231,9 +239,13 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
 
-        return this.Connection.Post(url, options)
+        return await this.Connection.Post(url, options)
             .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalDataProvider.#HandleError)
+            .catch((error: AxiosError) => {
+                MetalDataProvider.#HandleError(error)
+                //FIX workaround
+                return {} as TSchemaResponse
+            })
     }
 
     async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
@@ -250,9 +262,13 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
             url += `?${urlParams}`
         }
 
-        return this.Connection.Get(url)
+        return await this.Connection.Get(url)
             .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalDataProvider.#HandleError)
+            .catch((error: AxiosError) => {
+                MetalDataProvider.#HandleError(error)
+                //FIX workaround
+                return {} as TSchemaResponse
+            })
     }
 
 
@@ -267,7 +283,11 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         return await this.Connection.Patch(url, options)
             .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalDataProvider.#HandleError)
+            .catch((error: AxiosError) => {
+                MetalDataProvider.#HandleError(error)
+                //FIX workaround
+                return {} as TSchemaResponse
+            })
     }
 
     async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
@@ -281,7 +301,11 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         return await this.Connection.Delete(url, options)
             .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalDataProvider.#HandleError)
+            .catch((error: AxiosError) => {
+                MetalDataProvider.#HandleError(error)
+                //FIX workaround
+                return {} as TSchemaResponse
+            })
     }
 
     @Logger.LogFunction()
@@ -306,6 +330,10 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         return this.Connection.Get(url)
             .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalDataProvider.#HandleError)
+            .catch((error: AxiosError) => {
+                MetalDataProvider.#HandleError(error)
+                //FIX workaround
+                return {} as TSchemaResponse
+            })
     }
 }
