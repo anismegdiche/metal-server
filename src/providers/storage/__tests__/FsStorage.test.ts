@@ -1,3 +1,4 @@
+import { HttpErrorNotFound } from "../../../server/HttpErrors"
 import { TSourceParams } from '../../../types/TSourceParams'
 import { FsStorage } from '../FsStorage'
 import Fs from 'fs'
@@ -48,12 +49,13 @@ describe('FsStorage', () => {
             expect(result).toBe('File content')
         })
 
-        it('should return undefined if the file does not exist', async () => {
+        it('should return throw Not Found if the file does not exist', async () => {
             jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(false)
-
-            const result = await fsStorage.Read('test.txt')
-
-            expect(result).toBeUndefined()
+            try {
+                await fsStorage.Read('test.txt')
+            } catch (error: any) {
+                expect(error?.name).toBe('HttpErrorNotFound')
+            }
         })
     })
 
