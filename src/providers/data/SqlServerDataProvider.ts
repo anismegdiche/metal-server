@@ -9,7 +9,7 @@ import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TSourceParams } from "../../types/TSourceParams"
-import { TSchemaResponse, TSchemaResponseData } from "../../types/TSchemaResponse"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
@@ -107,7 +107,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.query(sqlQueryHelper.Query)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
@@ -144,7 +144,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
                 Cache.Set(schemaRequest, data)
         }
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
@@ -172,7 +172,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.query(sqlQueryHelper.Query)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
@@ -199,7 +199,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.query(sqlQueryHelper.Query)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
@@ -245,7 +245,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             _dt.AddRows(sqlServerResult.recordset)
         }
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,

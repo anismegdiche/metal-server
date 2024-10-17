@@ -8,7 +8,7 @@ import { HTTP_STATUS_CODE } from "../lib/Const"
 import { DataTable } from "./DataTable"
 
 
-export type TSchemaResponseData = {
+export type TSchemaResponse = {
     schemaName: string
     entityName: string
     result: string
@@ -35,4 +35,4 @@ export type TSchemaResponseData = {
 //XXX     expires?: number
 //XXX }
 
-export type TSchemaResponse = TSchemaResponseData //XXX: | TSchemaResponseError //XXX | TSchemaResponseNoData 
+//XXX export type TSchemaResponse = TSchemaResponseData //XXX: | TSchemaResponseError //XXX | TSchemaResponseNoData 

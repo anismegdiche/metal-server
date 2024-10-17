@@ -10,7 +10,7 @@ import { TCacheData } from '../types/TCacheData'
 import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
 import { TSchemaRequest } from '../types/TSchemaRequest'
-import { TSchemaResponse, TSchemaResponseData } from '../types/TSchemaResponse'
+import { TSchemaResponse } from '../types/TSchemaResponse'
 import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { IDataProvider } from '../types/IDataProvider'
@@ -172,7 +172,7 @@ export class Cache {
             StatusCode: schemaResponse.status,
             Body: { message: 'Cache data' }
         }
-        schemaResponse = schemaResponse as TSchemaResponseData
+        schemaResponse = schemaResponse as TSchemaResponse
         if (TypeHelper.IsSchemaResponseData(schemaResponse) && intRes.Body) {
             intRes.Body.data = schemaResponse.data.Rows
         }

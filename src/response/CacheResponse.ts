@@ -8,7 +8,7 @@ import { NextFunction, Request, Response } from 'express'
 import { Cache } from '../server/Cache'
 import { ServerResponse } from './ServerResponse'
 
-import { TSchemaResponseData } from '../types/TSchemaResponse'
+import { TSchemaResponse } from '../types/TSchemaResponse'
 import { Convert } from '../lib/Convert'
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { RESPONSE } from '../lib/Const'
@@ -69,7 +69,7 @@ export class CacheResponse {
                 .then((_cacheData: TCacheData | undefined) => {
                     if (_cacheData && Cache.IsValid(_cacheData?.expires)) {
                         Convert.SchemaResponseToResponse(
-                            <TSchemaResponseData>{
+                            <TSchemaResponse>{
                                 schemaName: _cacheData.schemaRequest.schemaName,
                                 entityName: _cacheData.schemaRequest.entityName,
                                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,

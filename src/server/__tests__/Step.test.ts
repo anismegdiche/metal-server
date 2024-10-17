@@ -5,8 +5,7 @@ import { Step } from "../Step"
 import { Plan } from "../Plan"
 import { StepCommand, TConfig } from "../../types/TConfig"
 import { Schema } from "../Schema"
-import { HttpErrorInternalServerError } from "../HttpErrors"
-import { TSchemaResponseData } from "../../types/TSchemaResponse"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
 import typia from "typia"
 import { Config } from "../Config"
 
@@ -768,8 +767,8 @@ describe('Step', () => {
                 stepParams: { schemaName: 'validSchema' }
             }
 
-            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponseData>{
-                ...typia.random<TSchemaResponseData>(),
+            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponse>{
+                ...typia.random<TSchemaResponse>(),
                 data: new DataTable('TestTable', [{ name: 'entity1' }, { name: 'entity2' }])
             })
 
@@ -803,8 +802,8 @@ describe('Step', () => {
                 stepParams: {}
             }
 
-            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponseData>{
-                ...typia.random<TSchemaResponseData>(),
+            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponse>{
+                ...typia.random<TSchemaResponse>(),
                 data: new DataTable('table2', [
                     {
                         name: 'entity2',
@@ -829,8 +828,8 @@ describe('Step', () => {
                 stepParams: { schemaName: 'testSchema' }
             }
 
-            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponseData>{
-                ...typia.random<TSchemaResponseData>(),
+            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponse>{
+                ...typia.random<TSchemaResponse>(),
                 data: new DataTable('TestTable', [{ name: 'entity1' }, { name: 'entity2' }])
             })
 

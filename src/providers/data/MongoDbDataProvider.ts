@@ -12,7 +12,7 @@ import { Convert } from '../../lib/Convert'
 import { RESPONSE } from '../../lib/Const'
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from '../../types/TOptions'
-import { TSchemaResponse, TSchemaResponseData } from "../../types/TSchemaResponse"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
@@ -201,7 +201,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
             .collection(schemaRequest.entityName)
             .insertMany(options?.Data?.Rows)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
@@ -240,7 +240,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
                 Cache.Set(schemaRequest, data)
         }
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
@@ -273,7 +273,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
                 }
             )
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
@@ -300,7 +300,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>
             )
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
@@ -350,7 +350,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
             data.AddRows(rows)
         }
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,

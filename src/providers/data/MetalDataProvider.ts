@@ -11,7 +11,7 @@ import { Logger } from "../../utils/Logger"
 import DATA_PROVIDER from "../../server/Source"
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
-import { TSchemaResponse, TSchemaResponseData } from "../../types/TSchemaResponse"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TJson } from '../../types/TJson'
 import { DataTable } from '../../types/DataTable'
@@ -168,7 +168,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
                 metalResponse?.fields,
                 metalResponse?.metadata
             )
-            return <TSchemaResponseData>{
+            return <TSchemaResponse>{
                 ...metalResponse,
                 data
             }

@@ -7,7 +7,7 @@ import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
-import { TSchemaResponse, TSchemaResponseData } from '../../types/TSchemaResponse'
+import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
@@ -86,7 +86,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
 
         this.Connection.Tables[entityName].AddRows(options.Data.Rows)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
@@ -138,7 +138,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
                 )
         }
         
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
@@ -173,7 +173,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.Tables[entityName].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
@@ -207,7 +207,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.Tables[entityName].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
@@ -252,7 +252,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
 
         if (rows.length > 0) {
             const _dt = new DataTable(entityName, rows)
-            schemaResponse = <TSchemaResponseData>{
+            schemaResponse = <TSchemaResponse>{
                 ...schemaResponse,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,

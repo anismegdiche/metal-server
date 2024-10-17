@@ -12,7 +12,7 @@ import DATA_PROVIDER from "../../server/Source"
 import * as IDataProvider from "../../types/IDataProvider"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
-import { TSchemaResponse, TSchemaResponseData } from "../../types/TSchemaResponse"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSourceParams } from "../../types/TSourceParams"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { IStorageProvider } from "../../types/IStorageProvider"
@@ -154,7 +154,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         fileString = await this.Content.Set(fileDataTable)
         await this.Connection?.Write(entityName, fileString)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
@@ -199,7 +199,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
                 data
             )
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
@@ -236,7 +236,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         fileString = await this.Content.Set(fileDataTable)
         await this.Connection?.Write(entityName, fileString)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
@@ -277,7 +277,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to write in storage provider`)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
@@ -307,7 +307,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,

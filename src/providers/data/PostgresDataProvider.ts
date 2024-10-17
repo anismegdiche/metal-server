@@ -11,7 +11,7 @@ import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TSourceParams } from "../../types/TSourceParams"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
-import { TSchemaResponse, TSchemaResponseData } from '../../types/TSchemaResponse'
+import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
@@ -108,7 +108,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.query(sqlQueryHelper.Query)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.INSERT.SUCCESS.MESSAGE,
             ...RESPONSE.INSERT.SUCCESS.STATUS
@@ -144,7 +144,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
                 Cache.Set(schemaRequest, data)
         }
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
@@ -172,7 +172,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.query(sqlQueryHelper.Query)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
             ...RESPONSE.UPDATE.SUCCESS.STATUS
@@ -199,7 +199,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.query(sqlQueryHelper.Query)
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.DELETE.SUCCESS.MESSAGE,
             ...RESPONSE.DELETE.SUCCESS.STATUS
@@ -276,7 +276,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
                 Cache.Set(schemaRequest, data)
         }
 
-        return <TSchemaResponseData>{
+        return <TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,

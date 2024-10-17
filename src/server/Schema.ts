@@ -9,7 +9,7 @@ import { Source } from "./Source"
 import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest'
-import { TSchemaResponse, TSchemaResponseData } from '../types/TSchemaResponse'
+import { TSchemaResponse } from '../types/TSchemaResponse'
 import { HttpErrorBadRequest, HttpErrorNotFound } from './HttpErrors'
 import { TypeHelper } from '../lib/TypeHelper'
 import { StringHelper } from '../lib/StringHelper'
@@ -136,7 +136,7 @@ export class Schema {
 
         // only schemaResponseToMerge got data
         if (!isSchemaResponseWithData && isSchemaResponseToMergeWithData)
-            return <TSchemaResponseData>{
+            return <TSchemaResponse>{
                 ...schemaResponseToMerge,
                 schemaName: schemaResponse.schemaName,
                 entityName: schemaResponse.entityName,
@@ -146,7 +146,7 @@ export class Schema {
 
         // both got data
         if (isSchemaResponseWithData && isSchemaResponseToMergeWithData)
-            return <TSchemaResponseData>{
+            return <TSchemaResponse>{
                 ...schemaResponse,
                 data: schemaResponse.data.AddRows(
                     schemaResponseToMerge.data.Rows
