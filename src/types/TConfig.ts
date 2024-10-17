@@ -9,7 +9,7 @@ import { VERBOSITY } from "../utils/Logger"
 import DATA_PROVIDER from "../server/Source"
 import { AI_ENGINE } from "../server/AiEngine"
 import { TJson } from "./TJson"
-import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepRemoveDuplicates, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "./StepsParams"
+import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "./StepsParams"
 import { STEP } from "../server/Step"
 
 // Friendly renaming for errors return
@@ -53,7 +53,7 @@ export type TConfigSchema =
     }
 
 
-// step commands
+// step commands friendly renaming
 
 export type Debug = { [STEP.DEBUG]: TStepDebug }
 export type Select = { [STEP.SELECT]: TStepSelect }
@@ -67,6 +67,7 @@ export type Run = { [STEP.RUN]: TStepRun }
 export type Sync = { [STEP.SYNC]: TStepSync }
 export type Anonymize = { [STEP.ANONYMIZE]: TStepAnonymize }
 export type RemoveDuplicates = { [STEP.REMOVE_DUPLICATE]: TStepRemoveDuplicates }
+export type ListEntities = { [STEP.LIST_ENTITIES]: TStepListEntities }
 
 export type StepCommand =
     | Debug
@@ -81,6 +82,7 @@ export type StepCommand =
     | Sync
     | Anonymize
     | RemoveDuplicates
+    | ListEntities
 
 //
 
