@@ -25,6 +25,8 @@ import { Sandbox } from './Sandbox'
 import { JsonHelper } from '../lib/JsonHelper'
 import { HttpErrorNotImplemented } from "./HttpErrors"
 import { Swagger } from '../utils/Swagger'
+import { TInternalResponse } from "../types/TInternalResponse"
+import { HttpResponse } from "./HttpResponse"
 
 export class Server {
 
@@ -134,22 +136,22 @@ export class Server {
     }
 
     @Logger.LogFunction()
-    static async Reload(): Promise<TJson> {
+    static async Reload(): Promise<TInternalResponse<TJson>> {
         Schedule.StopAll()
         await Cache.Disconnect()
         await Source.DisconnectAll()
         await Config.Init()
-        return {
+        return HttpResponse.Ok({
             message: `Server reloaded`
-        }
+        })
     }
 
     @Logger.LogFunction()
-    static GetInfo(): TJson {
-        return {
+    static async GetInfo(): Promise<TInternalResponse<TJson>> {
+        return HttpResponse.Ok({
             server: SERVER.NAME,
             version: SERVER.VERSION
-        }
+        })
     }
 
     // @Logger.LogFunction()
