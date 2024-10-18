@@ -22,37 +22,37 @@ export class TypeHelper {
     static IsSchemaResponse(schemaResponse: any): schemaResponse is TSchemaResponse {
         return typia.is<TSchemaResponse>(schemaResponse)
     }
-
-    //XXX @Logger.LogFunction(Logger.Debug, true)
-    //XXX static IsSchemaResponseError(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponseError {
-    //XXX     return typia.is<TSchemaResponseError>(schemaResponse)
-    //XXX }
-
+    
     @Logger.LogFunction(Logger.Debug, true)
     static IsSchemaResponseData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponse {
-        return typia.is<TSchemaResponse>(schemaResponse)
+        return typia.is<TSchemaResponse>(schemaResponse) &&
+            typia.is<DataTable>(schemaResponse.data)
     }
 
     @Logger.LogFunction(Logger.Debug, true)
     static IsDataTable(dataTable: unknown): dataTable is DataTable {
-        return dataTable instanceof DataTable
+        return typia.is<DataTable>(dataTable)
     }
 
     @Logger.LogFunction(Logger.Debug, true)
     static Validate(res: any, httpError: HttpError = new HttpErrorInternalServerError()) {
-        if (res.success) {
+        if (res.success)
             return
-        }
+        
         const _renamedErrors = res.errors.map((error: any) => {
             let _ret = `${error.path.replace('$input.', '')} expected to be ${error.expected}`
-            // rename firendly naming
-            _ret = _ret.replace("TJson", "JSON")
-            return _ret
+            return TypeHelper.TranslateFriendlyErrors(_ret)
         })
 
         Logger.Error(`${httpError.Name}:\r\n - ${_renamedErrors.join('\r\n - ')}`)
         httpError.message = _renamedErrors
         delete httpError.stack
         throw httpError
+    }
+
+    static TranslateFriendlyErrors(txt: string) {
+        return txt
+            .replace("TJson", "JSON")
+            .replace("$input expected to be TConfig", "Configuration file is empty")
     }
 }
