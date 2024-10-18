@@ -88,16 +88,13 @@ export class Step {
 
         // TODO: recheck logic for schemaName=null
         if (entityName) {
-            const _schemaResponse = await Schema.Select(<TSchemaRequestSelect>{
+            const _internalResponse = await Schema.Select(<TSchemaRequestSelect>{
                 ...schemaRequest,
                 schemaName: schemaName ?? currentSchemaName
             })
 
-            //XXX if (TypeHelper.IsSchemaResponseError(_schemaResponse))
-            //XXX     throw new HttpErrorInternalServerError(_schemaResponse.error)
-
-            if (TypeHelper.IsSchemaResponseData(_schemaResponse))
-                return _schemaResponse.data
+            if (_internalResponse.Body && TypeHelper.IsSchemaResponseData(_internalResponse.Body))
+                return _internalResponse.Body.data
         }
 
         // case no schema and no entity --> use current datatable
@@ -147,9 +144,6 @@ export class Step {
                 data: data ?? currentDataTable.Rows
             })
 
-            //XXX if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
-            //XXX     throw new HttpErrorInternalServerError(_schemaResponse.error)
-            //XXX }
             return currentDataTable
         }
 
@@ -189,9 +183,6 @@ export class Step {
                 schemaName: schemaName ?? currentSchemaName
             })
 
-            //XXX if (TypeHelper.IsSchemaResponseError(_schemaResponse)) {
-            //XXX     throw new HttpErrorInternalServerError(_schemaResponse.error)
-            //XXX }
             return currentDataTable
         }
 
@@ -227,9 +218,6 @@ export class Step {
                 ...schemaRequest,
                 schemaName: schemaName ?? currentSchemaName
             })
-
-            //XXX if (TypeHelper.IsSchemaResponseError(_schemaResponse))
-            //XXX     throw new HttpErrorInternalServerError(_schemaResponse.error)
 
             return currentDataTable
         }
@@ -473,14 +461,11 @@ export class Step {
 
         // schemaName is defined
         if (schemaRequest?.schemaName) {
-            const _schemaResponse = await Schema.ListEntities(<TSchemaRequestListEntities>schemaRequest)
+            const _internalResponse = await Schema.ListEntities(<TSchemaRequestListEntities>schemaRequest)
 
-            //XXX if (TypeHelper.IsSchemaResponseError(_schemaResponse))
-            //XXX     throw new HttpErrorInternalServerError(_schemaResponse.error)
-
-            if (TypeHelper.IsSchemaResponseData(_schemaResponse)) {
+            if (_internalResponse.Body && TypeHelper.IsSchemaResponseData(_internalResponse.Body)) {
                 Logger.Debug(`${Logger.Out} Step.ListEntities: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
-                return _schemaResponse.data
+                return _internalResponse.Body.data
             }
         }
 
@@ -495,18 +480,14 @@ export class Step {
     }
 
     static async #_Select(schemaName: string, entityName: string): Promise<DataTable | undefined> {
-        const schemaResponse = await Schema.Select({
+        const internalResponse = await Schema.Select({
             schemaName,
             entityName
         })
 
-        //XXX if (TypeHelper.IsSchemaResponseError(schemaResponse)) {
-        //XXX     throw new HttpErrorInternalServerError(schemaResponse.error)
-        //XXX }
+        if (internalResponse.Body && TypeHelper.IsSchemaResponseData(internalResponse.Body))
+            return internalResponse.Body.data
 
-        if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
-            return schemaResponse.data
-        }
         return undefined
     }
 }

@@ -87,13 +87,4 @@ export class Source {
         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         _.keys(Source.Sources).forEach(Source.Disconnect)
     }
-
-    //XXX @Logger.LogFunction()
-    //XXX static ResponseError(schemaResponse: TSchemaResponse): TSchemaResponseNoData {
-    //XXX     return <TSchemaResponseNoData>{
-    //XXX         ...schemaResponse,
-    //XXX         ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.MESSAGE,
-    //XXX         ...RESPONSE.SERVER.INTERNAL_SERVER_ERROR.STATUS
-    //XXX     }
-    //XXX }
 }

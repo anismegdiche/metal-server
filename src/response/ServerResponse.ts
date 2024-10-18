@@ -9,6 +9,7 @@ import { HTTP_STATUS_CODE } from '../lib/Const'
 import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented } from '../server/HttpErrors'
 import { Server } from '../server/Server'
 import { TJson } from "../types/TJson"
+import typia from "typia"
 
 
 export class ServerResponse {
@@ -36,14 +37,14 @@ export class ServerResponse {
 
     //@Logger.LogFunction()
     static ResponseError(res: Response, error: HttpError | Error) {
-        const status = (error instanceof HttpError)
+        const status = typia.is<HttpError>(error)
             ? error.Status
             : HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR
 
         res
             .status(status)
             .json({
-                message: 'Something Went Wrong',
+                // message: 'Something Went Wrong',
                 error: error.message,
                 stack: (status == HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
                     ? (error?.stack?.split('\n') ?? "")

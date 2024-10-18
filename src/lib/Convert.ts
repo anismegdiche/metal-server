@@ -51,15 +51,15 @@ export class Convert {
     }
 
     // @Logger.LogFunction()
-    static InternalResponseToResponse(res: Response, intRes: TInternalResponse): void {
-        res
+    static InternalResponseToResponse(res: Response, intRes: TInternalResponse<any>): Response {
+        return res
             .status(intRes.StatusCode)
             .json(intRes.Body)
             .end()
     }
 
     // @Logger.LogFunction()
-    static SchemaResponseToResponse(schemaResponse: TSchemaResponse, res: Response) {
+    static SchemaResponseToResponse(schemaResponse: TSchemaResponse, res: Response): Response {
         const { schemaName, entityName, result, status } = schemaResponse
 
         let resJson: TJson = {
@@ -69,15 +69,7 @@ export class Convert {
             status
         }
 
-        res.status(schemaResponse.status)
-
-        //XXX if (TypeHelper.IsSchemaResponseError(schemaResponse)) {
-        //XXX     return res
-        //XXX         .json({
-        //XXX             ...resJson,
-        //XXX             error: schemaResponse.error
-        //XXX         })
-        //XXX }
+        res.status(status)
 
         if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
             resJson = {

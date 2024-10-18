@@ -69,7 +69,7 @@ export class Config {
         Config.Flags.ResponseLimit = Convert.HumainSizeToBytes(
             Config.Get("server.response-limit") ?? Config.DEFAULTS["server.response-limit"]
         )
-        Config.Flags.EnableResponseChunk = Boolean(Config.Get('server.response-chunk'))
+        Config.Flags.EnableResponseChunk = Config.Get<boolean>('server.response-chunk')
 
         // eslint-disable-next-line no-unused-expressions, @typescript-eslint/no-unused-expressions
         Config.Flags.EnableAuthentication && User.LoadUsers()
@@ -108,7 +108,6 @@ export class Config {
 
     @Logger.LogFunction(Logger.Debug, true)
     static async Validate(newConfig: TConfig): Promise<void> {
-
         TypeHelper.Validate(typia.validateEquals<TConfig>(newConfig), new HttpErrorBadRequest())
         Config.CheckRessourcesUsage(newConfig)
         Config.Configuration = newConfig

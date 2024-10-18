@@ -16,6 +16,7 @@ import { JsonHelper } from "../lib/JsonHelper"
 import { HttpResponse } from "./HttpResponse"
 import { HttpErrorNotFound } from "./HttpErrors"
 import {StepCommand} from '../types/TConfig'
+import typia from "typia"
 
 
 export class Plan {
@@ -107,7 +108,7 @@ export class Plan {
                 const _error = error as Error
                 const _errorMessage = `Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JsonHelper.Stringify(step)}' is ignored because of error ${JsonHelper.Stringify(_error?.message)}`
 
-                if (error instanceof WarnError) {
+                if (typia.is<WarnError>(error)) {
                     Logger.Warn(_errorMessage)
                 } else {
                     Logger.Error(_errorMessage)
@@ -129,7 +130,7 @@ export class Plan {
     }
 
     @Logger.LogFunction()
-    static async Reload(planName: string): Promise<TInternalResponse> {
+    static async Reload(planName: string): Promise<TInternalResponse<TJson>> {
         const configFileJson = await Config.Load()
 
         // check if plan exist

@@ -14,6 +14,7 @@ import { Plan } from './Plan'
 import { JsonHelper } from '../lib/JsonHelper'
 import { HttpResponse } from "./HttpResponse"
 import { HttpErrorNotFound } from "./HttpErrors"
+import { TJson } from "../types/TJson"
 
 export type TScheduleConfig = {
     planName: string
@@ -62,21 +63,21 @@ export class Schedule {
     }
 
     @Logger.LogFunction()
-    static Start(jobName: string): TInternalResponse {
-        const _jobKey = _.findKey(this.Jobs, ["name", jobName])
-        if (_jobKey) {
-            this.Jobs[Number(_jobKey)].cronJob.start()
+    static Start(jobName: string): TInternalResponse<TJson> {
+        const jobKey = _.findKey(this.Jobs, ["name", jobName])
+        if (jobKey) {
+            this.Jobs[Number(jobKey)].cronJob.start()
             return HttpResponse.Ok({ message: `Job '${jobName}' started` })
         }
         throw new HttpErrorNotFound(`Job '${jobName}' not found`)
     }
 
     @Logger.LogFunction()
-    static Stop(jobName: string): TInternalResponse {
-        const _jobKey = _.findKey(this.Jobs, ["name", jobName])
-        if (_jobKey) {
-            const __jobKey = parseInt(_jobKey, 10)
-            this.Jobs[__jobKey].cronJob.stop()
+    static Stop(jobName: string): TInternalResponse<TJson> {
+        const jobKey = _.findKey(this.Jobs, ["name", jobName])
+        if (jobKey) {
+            const _jobKey = parseInt(jobKey, 10)
+            this.Jobs[_jobKey].cronJob.stop()
             return HttpResponse.Ok({ message: `Job '${jobName}' stopped` })
         }        
         throw new HttpErrorNotFound(`Job '${jobName}' not found`)
@@ -84,16 +85,16 @@ export class Schedule {
 
     @Logger.LogFunction()
     static StartAll() {
-        for (const _job of this.Jobs) {
-            _job.cronJob.start()
+        for (const job of this.Jobs) {
+            job.cronJob.start()
         }
     }
 
 
     @Logger.LogFunction()
     static StopAll() {
-        for (const _job of this.Jobs) {
-            _job.cronJob.stop()
+        for (const job of this.Jobs) {
+            job.cronJob.stop()
         }
     }
 }

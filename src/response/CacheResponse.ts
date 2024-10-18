@@ -67,7 +67,7 @@ export class CacheResponse {
 
             Cache.Get(cacheHash)
                 .then((_cacheData: TCacheData | undefined) => {
-                    if (_cacheData && Cache.IsValid(_cacheData?.expires)) {
+                    if (_cacheData && Cache.IsCacheValid(_cacheData?.expires)) {
                         Convert.SchemaResponseToResponse(
                             <TSchemaResponse>{
                                 schemaName: _cacheData.schemaRequest.schemaName,
@@ -76,7 +76,7 @@ export class CacheResponse {
                                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                                 cache: "true",
                                 expires: _cacheData.expires,
-                                data: _cacheData.datatable
+                                data: _cacheData.data
                             },
                             res
                         )

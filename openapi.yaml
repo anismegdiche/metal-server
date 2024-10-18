@@ -21,6 +21,12 @@ components:
         - type: object
 
   responses:
+    DefaultError:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            type: object
     http400:
       description: Bad Request
       content:
@@ -144,6 +150,8 @@ paths:
                   type: string
               additionalProperties: false
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Successful login
           content:
@@ -188,6 +196,8 @@ paths:
       security:
         - bearerAuth: []
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Successful retrieval of user information
           content:
@@ -210,6 +220,8 @@ paths:
       security:
         - bearerAuth: []
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Server information
           content:
@@ -232,6 +244,8 @@ paths:
       security:
         - bearerAuth: []
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Server reloaded
           content:
@@ -261,6 +275,8 @@ paths:
           required: true
           description: The name of the schema
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: A list of entities in the schema
           content:
@@ -322,6 +338,8 @@ paths:
           allowReserved: true
           description: sort data with given order
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Data in the entity of the schema
           content:
@@ -363,10 +381,6 @@ paths:
       responses:
         201:
           description: Operation success
-          content:
-            application/json:
-              schema:
-                type: object
         400:
           $ref: "#/components/responses/http400"
         401:
@@ -413,13 +427,9 @@ paths:
                   $ref: '#/components/schemas/filterExpression'
                 data:
                   $ref: '#/components/schemas/data'
-      responses:
-        200:
-          description: A list of entities in the schema
-          content:
-            application/json:
-              schema:
-                type: object
+      responses:        
+        204:
+          description: Operation success
         400:
           $ref: "#/components/responses/http400"
         401:
@@ -483,6 +493,8 @@ paths:
       security:
         - bearerAuth: []
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Cache data
           content:
@@ -507,6 +519,8 @@ paths:
       security:
         - bearerAuth: []
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Cache cleaned
           content:
@@ -529,6 +543,8 @@ paths:
       security:
         - bearerAuth: []
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Cache purged
           content:
@@ -558,6 +574,8 @@ paths:
           required: true
           description: Plan name
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Plan reloaded successfully
           content:
@@ -590,6 +608,8 @@ paths:
           required: true
           description: The name of the job to start
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Job started successfully
           content:
@@ -621,6 +641,8 @@ paths:
           required: true
           description: The name of the job to stop
       responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
         200:
           description: Job stopped successfully
           content:

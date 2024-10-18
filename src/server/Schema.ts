@@ -15,6 +15,8 @@ import { TypeHelper } from '../lib/TypeHelper'
 import { StringHelper } from '../lib/StringHelper'
 import { TConfigSchema, TConfigSchemaEntity } from "../types/TConfig"
 import typia from "typia"
+import { TInternalResponse } from "../types/TInternalResponse"
+import { HttpResponse } from "./HttpResponse"
 
 export type TSchemaRoute = {
     type: "source" | "nothing",
@@ -54,13 +56,13 @@ export class Schema {
         const { schemaName } = schemaRequest
 
         // check if schema exists in config file
-        if (!Config.Has("schemas")) {
+        if (!Config.Configuration.schemas) {
             Logger.Warn(`section 'schemas' not found in configuration`)
             throw new HttpErrorNotFound(`section 'schemas' not found in configuration`)
         }
 
         // check if schema exists
-        if (!Config.Has(`schemas.${schemaName}`)) {
+        if (!Config.Configuration.schemas[schemaName]) {
             Logger.Warn(`schema '${schemaName}' not found in configuration`)
             throw new HttpErrorNotFound(`schema '${schemaName}' not found in configuration`)
         }
@@ -118,9 +120,9 @@ export class Schema {
     }
 
     static async #NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<void> {
-        Logger.Warn(`Nothing to do in schema '${sourceTypeExecuteParams.schemaRequest.schemaName}'`)
         const { schemaName, entityName } = sourceTypeExecuteParams.schemaRequest
-        throw new HttpErrorNotFound(`Nothing to do in schema '${schemaName}'`)
+        Logger.Warn(`${schemaName}: Entity '${entityName}' not found`)
+        throw new HttpErrorNotFound(`${schemaName}: Entity '${entityName}' not found`)
     }
 
     static #MergeData(schemaResponse: TSchemaResponse, schemaResponseToMerge: TSchemaResponse | undefined): TSchemaResponse {
@@ -159,7 +161,7 @@ export class Schema {
 
 
     @Logger.LogFunction()
-    static async Select(schemaRequest: TSchemaRequestSelect): Promise<TSchemaResponse> {
+    static async Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
@@ -181,21 +183,26 @@ export class Schema {
             entityName: schemaRoute.entityName,
             schemaRequest,
             CrudFunction: async () => {
-                const _schemaresponse = await Source.Sources[schemaRoute.routeName].Select(<TSchemaRequestSelect>{
+                const _internalResponse = await Source.Sources[schemaRoute.routeName].Select(<TSchemaRequestSelect>{
                     ...schemaRequest,
                     sourceName: schemaRoute.routeName,
                     entityName: schemaRoute.entityName ?? schemaRequest.entityName
                 })
+
+                if (!_internalResponse.Body)
+                    return _internalResponse
+
                 // Anonymizer
-                if (isAnonymize && TypeHelper.IsSchemaResponseData(_schemaresponse))
-                    _schemaresponse.data.AnonymizeFields(fieldsToAnonymize)
-                return _schemaresponse
+                if (isAnonymize && TypeHelper.IsSchemaResponseData(<TSchemaResponse>_internalResponse.Body)) {
+                    (<TSchemaResponse>_internalResponse.Body).data.AnonymizeFields(fieldsToAnonymize)
+                }
+                return _internalResponse
             }
         })
     }
 
     @Logger.LogFunction()
-    static async Delete(schemaRequest: TSchemaRequestDelete): Promise<TSchemaResponse> {
+    static async Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestDelete>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
@@ -219,7 +226,7 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async Update(schemaRequest: TSchemaRequestUpdate): Promise<TSchemaResponse> {
+    static async Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestUpdate>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
@@ -243,7 +250,7 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async Insert(schemaRequest: TSchemaRequestInsert): Promise<TSchemaResponse> {
+    static async Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestInsert>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
@@ -267,35 +274,36 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    static async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
         const { schemaName } = schemaRequest
         const entitiesSources = Schema.GetEntitiesSources(schemaName)
 
-        let schResp = {} as TSchemaResponse
+        let schemaResponse = {} as TSchemaResponse
 
         if (entitiesSources.has("*")) {
             const _source = (<TConfigSchemaEntity>entitiesSources.get("*")).sourceName
-            schResp = await Source.Sources[_source].ListEntities(schemaRequest)
+            const _internalResponse = await Source.Sources[_source].ListEntities(schemaRequest)
+            schemaResponse = <TSchemaResponse>_internalResponse.Body
             entitiesSources.delete("*")
         }
 
         for await (const [entityName, entitySource] of entitiesSources) {
             const _source = (<TConfigSchemaEntity>entitySource).sourceName
-            if (TypeHelper.IsSchemaResponseData(schResp))
-                schResp.data.DeleteRows(`name = '${entityName}'`)
-            const schRespToMerge = await Source.Sources[_source].ListEntities(schemaRequest)
-                .catch(() => undefined)
+            if (TypeHelper.IsSchemaResponseData(schemaResponse))
+                schemaResponse.data.DeleteRows(`name = '${entityName}'`)
 
-            Schema.#MergeData(schResp, schRespToMerge)
+            const _internalResponse = await Source.Sources[_source].ListEntities(schemaRequest)            
+
+            Schema.#MergeData(schemaResponse, <TSchemaResponse>_internalResponse.Body)
         }
-        return schResp
+        return HttpResponse.Ok(schemaResponse)
     }
 
     static GetEntitiesSources(schemaName: string): TEntitiesMap {
-        
+
         const entities: TEntitiesMap = new Map()
         const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schemaName}`)
-        
+
         if (schemaConfig?.sourceName)
             entities.set("*", {
                 sourceName: schemaConfig.sourceName,
@@ -310,7 +318,7 @@ export class Schema {
                     database: Config.Get<string | undefined>(`sources.${entityConfig.sourceName}.database`)
                 })
             })
-            
+
         return entities
     }
 }

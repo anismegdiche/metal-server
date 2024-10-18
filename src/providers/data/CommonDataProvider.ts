@@ -11,6 +11,7 @@ import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Logger } from '../../utils/Logger'
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { TInternalResponse } from "../../types/TInternalResponse"
 
 
 export class CommonDataProvider implements IDataProvider.IDataProvider {
@@ -47,35 +48,35 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
 
 
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
 
     @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
         throw new HttpErrorNotImplemented()
     }
 
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
     @Logger.LogFunction()
-    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
         throw new HttpErrorNotImplemented()
     }
 }

@@ -21,9 +21,12 @@ import { JsonContent } from "../content/JsonContent"
 import { AzureBlobStorage } from '../storage/AzureBlobStorage'
 import { FsStorage } from '../storage/FsStorage'
 import { CsvContent } from '../content/CsvContent'
-import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
+import { TInternalResponse } from "../../types/TInternalResponse"
+import { HttpResponse } from "../../server/HttpResponse"
+import { rows } from "mssql"
 
 
 export enum STORAGE_PROVIDER {
@@ -125,7 +128,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -154,14 +157,13 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         fileString = await this.Content.Set(fileDataTable)
         await this.Connection?.Write(entityName, fileString)
 
-        return <TSchemaResponse>{
-            ...schemaResponse,
-            ...RESPONSE.INSERT.SUCCESS.MESSAGE,
-            ...RESPONSE.INSERT.SUCCESS.STATUS
-        }
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.Created()
     }
     @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
 
@@ -199,16 +201,16 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
                 data
             )
 
-        return <TSchemaResponse>{
+        return HttpResponse.Ok(<TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
-        }
+        })
     }
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
 
@@ -236,15 +238,14 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         fileString = await this.Content.Set(fileDataTable)
         await this.Connection?.Write(entityName, fileString)
 
-        return <TSchemaResponse>{
-            ...schemaResponse,
-            ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
-            ...RESPONSE.UPDATE.SUCCESS.STATUS
-        }
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
     }
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -277,29 +278,23 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to write in storage provider`)
 
-        return <TSchemaResponse>{
-            ...schemaResponse,
-            ...RESPONSE.DELETE.SUCCESS.MESSAGE,
-            ...RESPONSE.DELETE.SUCCESS.STATUS
-        }
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
     }
 
     @Logger.LogFunction()
-    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         const { schemaName } = schemaRequest
-        const entityName = `${schemaRequest.schemaName}-entities`
 
-        const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName
-        }
-
+        // eslint-disable-next-line init-declarations
         let data: DataTable
 
         if (this.Connection)
@@ -307,11 +302,14 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        return <TSchemaResponse>{
-            ...schemaResponse,
+        if (data.Rows.length == 0)
+            throw new HttpErrorNotFound(`${schemaName}: No entities found`)
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schemaName,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
-        }
+        })
     }
 }

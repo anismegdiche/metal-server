@@ -39,16 +39,18 @@ export class AzureBlobStorage extends CommonStorage implements IStorageProvider 
     async Connect(): Promise<void> {
         const { connectionString, containerName } = this.Config
 
-        if (!connectionString || !containerName) {
-            Logger.Error('AzureBlobStorage: Missing Azure Blob Storage connection string or container name')
-            this.Disconnect()
-            return
+        try {
+            if (!connectionString || !containerName) {
+                Logger.Error('AzureBlobStorage: Missing Azure Blob Storage connection string or container name')
+                this.Disconnect()
+                return
+            }
+            this.#BlobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
+            this.#ContainerClient = this.#BlobServiceClient.getContainerClient(containerName)
+            await this.#ContainerClient.createIfNotExists()
+        } catch (error) {
+            Logger.Error(`AzureBlobStorage Error: ${error}`)
         }
-
-        this.#BlobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
-        this.#ContainerClient = this.#BlobServiceClient.getContainerClient(containerName)
-        await this.#ContainerClient.createIfNotExists()
-
     }
 
     @Logger.LogFunction()

@@ -7,7 +7,8 @@ import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequ
 import { TOptions } from './TOptions'
 import { TSourceParams } from './TSourceParams'
 import { TJson } from './TJson'
-import { TSchemaResponse } from './TSchemaResponse'
+import { TInternalResponse } from './TInternalResponse'
+import { TSchemaResponse } from "./TSchemaResponse"
 
 
 export interface IDataProviderOptions {
@@ -32,14 +33,14 @@ export interface IDataProvider {
     Disconnect: () => Promise<void>
 
     // Entities
-    ListEntities: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    AddEntity: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    //ROADMAP RenameEntity: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    //ROADMAP DeleteEntity: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
+    ListEntities: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
+    AddEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<undefined>>
+    //ROADMAP RenameEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
+    //ROADMAP DeleteEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
     
     // Data
-    Insert: (schemaRequest: TSchemaRequestInsert) => Promise<TSchemaResponse>
-    Select: (schemaRequest: TSchemaRequestSelect) => Promise<TSchemaResponse>
-    Update: (schemaRequest: TSchemaRequestUpdate) => Promise<TSchemaResponse>
-    Delete: (schemaRequest: TSchemaRequestDelete) => Promise<TSchemaResponse>
+    Insert: (schemaRequest: TSchemaRequestInsert) => Promise<TInternalResponse<undefined>>
+    Select: (schemaRequest: TSchemaRequestSelect) => Promise<TInternalResponse<TSchemaResponse>>
+    Update: (schemaRequest: TSchemaRequestUpdate) => Promise<TInternalResponse<undefined>>
+    Delete: (schemaRequest: TSchemaRequestDelete) => Promise<TInternalResponse<undefined>>
 }

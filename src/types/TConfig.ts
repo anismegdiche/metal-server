@@ -3,7 +3,7 @@
 //
 //
 //
-import { tags } from "typia"
+import typia, { tags } from "typia"
 //
 import { VERBOSITY } from "../utils/Logger"
 import DATA_PROVIDER from "../server/Source"
@@ -14,6 +14,7 @@ import { STEP } from "../server/Step"
 
 // Friendly renaming for errors return
 type JSON = TJson
+
 
 // sources.*
 export type TConfigSource = {

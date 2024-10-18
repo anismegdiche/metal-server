@@ -18,8 +18,10 @@ import { Logger } from '../../utils/Logger'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER from '../../server/Source'
 import { TJson } from "../../types/TJson"
-import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"
+import { TInternalResponse } from "../../types/TInternalResponse"
+import { HttpResponse } from "../../server/HttpResponse"
 
 
 export class PostgresDataProvider implements IDataProvider.IDataProvider {
@@ -89,7 +91,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     }
 
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         const schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -97,7 +99,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         }
 
         if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -107,16 +109,15 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Values(options.Data.Rows)
 
         await this.Connection.query(sqlQueryHelper.Query)
+        
+        // clean cache
+        Cache.Remove(schemaRequest)
 
-        return <TSchemaResponse>{
-            ...schemaResponse,
-            ...RESPONSE.INSERT.SUCCESS.MESSAGE,
-            ...RESPONSE.INSERT.SUCCESS.STATUS
-        }
+        return HttpResponse.Created()
     }
 
     @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -124,7 +125,9 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         }
 
         if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        //TODO check if entity exists, if not return 404
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -144,16 +147,16 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
                 Cache.Set(schemaRequest, data)
         }
 
-        return <TSchemaResponse>{
+        return HttpResponse.Ok(<TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
-        }
+        })
     }
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -161,7 +164,9 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         }
 
         if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        //TODO check if entity exists, if not return 404
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -171,16 +176,15 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
+        
+        // clean cache
+        Cache.Remove(schemaRequest)
 
-        return <TSchemaResponse>{
-            ...schemaResponse,
-            ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
-            ...RESPONSE.UPDATE.SUCCESS.STATUS
-        }
+        return HttpResponse.NoContent()
     }
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         let schemaResponse = <TSchemaResponse>{
             schemaName: schemaRequest.schemaName,
@@ -188,7 +192,9 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         }
 
         if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        //TODO check if entity exists, if not return 404
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -198,32 +204,25 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
+        
+        // clean cache
+        Cache.Remove(schemaRequest)
 
-        return <TSchemaResponse>{
-            ...schemaResponse,
-            ...RESPONSE.DELETE.SUCCESS.MESSAGE,
-            ...RESPONSE.DELETE.SUCCESS.STATUS
-        }
+        return HttpResponse.NoContent()
     }
 
     @Logger.LogFunction()
-    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const schemaName = schemaRequest.schemaName
-        const entityName = `${schemaRequest.schemaName}-entities`
-
-        let schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName
-        }
+        const { schemaName } = schemaRequest
 
         if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaResponse))
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -268,19 +267,19 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
         result = await this.Connection.query(sqlQuery)
 
-        const data = new DataTable(entityName)
+        if (result?.rows.length == 0)
+            throw new HttpErrorNotFound(`${schemaName}: No entities found`)
 
-        if (result?.rows.length > 0) {
-            data.AddRows(result.rows)
-            if (options?.Cache)
-                Cache.Set(schemaRequest, data)
-        }
 
-        return <TSchemaResponse>{
-            ...schemaResponse,
+        const data = new DataTable(undefined, result.rows)
+        if (options?.Cache)
+            Cache.Set(schemaRequest, data)
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schemaName,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
-        }
+        })
     }
 }

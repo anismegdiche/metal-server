@@ -8,13 +8,14 @@ import { Schema } from "../Schema"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import typia from "typia"
 import { Config } from "../Config"
+import { HttpResponse } from "../HttpResponse"
 
 describe('Step', () => {
 
     beforeAll(async () => {
-		jest.clearAllMocks()
+        jest.clearAllMocks()
         Config.Configuration = typia.random<TConfig>()
-	}, 120000)
+    }, 120000)
 
     describe('Select', () => {
         // Executes a valid 'select' step and returns a DataTable object.
@@ -767,10 +768,11 @@ describe('Step', () => {
                 stepParams: { schemaName: 'validSchema' }
             }
 
-            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponse>{
-                ...typia.random<TSchemaResponse>(),
-                data: new DataTable('TestTable', [{ name: 'entity1' }, { name: 'entity2' }])
-            })
+            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(HttpResponse.Ok(
+                <TSchemaResponse>{
+                    ...typia.random<TSchemaResponse>(),
+                    data: new DataTable('TestTable', [{ name: 'entity1' }, { name: 'entity2' }])
+                }))
 
             const result = await Step.ListEntities(stepArguments)
 
@@ -786,14 +788,14 @@ describe('Step', () => {
                     entity1: typia.random<StepCommand[]>()
                 }
             }
-            
+
             const data = new DataTable('table1', [
                 {
                     name: 'entity1',
                     type: 'plan entity'
                 }
             ])
-            
+
             // Mock stepArguments          
             const stepArguments = {
                 currentSchemaName: 'schema1',
@@ -802,15 +804,16 @@ describe('Step', () => {
                 stepParams: {}
             }
 
-            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponse>{
-                ...typia.random<TSchemaResponse>(),
-                data: new DataTable('table2', [
-                    {
-                        name: 'entity2',
-                        type: 'plan entity'
-                    }
-                ])
-            })
+            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(HttpResponse.Ok(
+                <TSchemaResponse>{
+                    ...typia.random<TSchemaResponse>(),
+                    data: new DataTable('table2', [
+                        {
+                            name: 'entity2',
+                            type: 'plan entity'
+                        }
+                    ])
+                }))
 
             const result = await Step.ListEntities(stepArguments)
 
@@ -828,10 +831,11 @@ describe('Step', () => {
                 stepParams: { schemaName: 'testSchema' }
             }
 
-            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(<TSchemaResponse>{
-                ...typia.random<TSchemaResponse>(),
-                data: new DataTable('TestTable', [{ name: 'entity1' }, { name: 'entity2' }])
-            })
+            jest.spyOn(Schema, 'ListEntities').mockResolvedValue(HttpResponse.Ok(
+                <TSchemaResponse>{
+                    ...typia.random<TSchemaResponse>(),
+                    data: new DataTable('TestTable', [{ name: 'entity1' }, { name: 'entity2' }])
+                }))
 
             // Act
             await Step.ListEntities(stepArguments)

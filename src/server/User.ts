@@ -15,6 +15,7 @@ import { Logger } from "../utils/Logger"
 import { HttpErrorBadRequest, HttpErrorUnauthorized } from "./HttpErrors"
 import { TypeHelper } from "../lib/TypeHelper"
 import { HttpResponse } from "./HttpResponse"
+import { TJson } from "../types/TJson"
 
 type TUsersList = Record<string, string>
 
@@ -59,7 +60,7 @@ export class User {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    static LogIn(userCredentials: TUserCredentials): TInternalResponse {
+    static LogIn(userCredentials: TUserCredentials): TInternalResponse<TJson> {
         TypeHelper.Validate(typia.validateEquals<TUserCredentials>(userCredentials), new HttpErrorBadRequest())
 
         const { username, password } = userCredentials
@@ -80,7 +81,7 @@ export class User {
     }
 
     @Logger.LogFunction()
-    static LogOut(userToken: TUserToken): TInternalResponse {
+    static LogOut(userToken: TUserToken): TInternalResponse<undefined> {
         if (userToken && User.#CheckToken(userToken)) {
             delete User.LoggedInUsers[userToken]
             return HttpResponse.NoContent()
@@ -89,7 +90,7 @@ export class User {
     }
 
     @Logger.LogFunction()
-    static GetInfo(userToken: TUserToken): TInternalResponse {
+    static GetInfo(userToken: TUserToken): TInternalResponse<TJson> {
         if (userToken && User.#CheckToken(userToken)) {
             const { username } = User.LoggedInUsers[userToken]
             return HttpResponse.Ok({ username })

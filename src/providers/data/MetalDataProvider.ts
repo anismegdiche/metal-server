@@ -18,6 +18,8 @@ import { DataTable } from '../../types/DataTable'
 import { HTTP_STATUS_CODE, SERVER } from '../../lib/Const'
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented, HttpErrorUnauthorized } from "../../server/HttpErrors"
+import { TInternalResponse } from "../../types/TInternalResponse"
+import { HttpResponse } from "../../server/HttpResponse"
 
 
 type TMetalClientParams = {
@@ -159,7 +161,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         return _.omit(schemaRequest, ['sourceName', 'schemaName', 'entityName'])
     }
 
-    static #ConvertResponseToSchemaRequest(res: AxiosResponse): TSchemaResponse {
+    static #ConvertResponseToSchemaResponse(res: AxiosResponse): TSchemaResponse {
         const metalResponse = res.data
         if (res.status == HTTP_STATUS_CODE.OK) {
             const data = new DataTable(
@@ -176,7 +178,28 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         return metalResponse
     }
 
-    static #HandleError(error: AxiosError): void {
+    // static #ConvertResponseToInternalResponse(res: AxiosResponse): TInternalResponse<TSchemaResponse> {
+
+    //     const status = res.status
+    //     const body = res.data
+
+    //     if (status == HTTP_STATUS_CODE.OK) {
+    //         const data = new DataTable(
+    //             body?.entityName,
+    //             body?.rows,
+    //             body?.fields,
+    //             body?.metadata
+    //         )
+    //         body.data = data
+    //     }
+
+    //     return <TInternalResponse<TSchemaResponse>>{
+    //         StatusCode: status,
+    //         Body: body
+    //     }
+    // }
+
+    static #ThrowError(error: AxiosError): undefined {
         if (error?.response?.status)
             this.#ErrorCaseMap[error?.response?.status](error.message)
 
@@ -230,7 +253,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
@@ -239,16 +262,13 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
 
-        return await this.Connection.Post(url, options)
-            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch((error: AxiosError) => {
-                MetalDataProvider.#HandleError(error)
-                //FIX workaround
-                return {} as TSchemaResponse
-            })
+        await this.Connection.Post(url, options)
+            .catch(MetalDataProvider.#ThrowError)
+
+        return HttpResponse.NoContent()
     }
 
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
@@ -262,17 +282,15 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
             url += `?${urlParams}`
         }
 
-        return await this.Connection.Get(url)
-            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch((error: AxiosError) => {
-                MetalDataProvider.#HandleError(error)
-                //FIX workaround
-                return {} as TSchemaResponse
-            })
+        const schemaResponse = await this.Connection.Get(url)
+            .then(MetalDataProvider.#ConvertResponseToSchemaResponse)
+            .catch(MetalDataProvider.#ThrowError)
+
+        return HttpResponse.Ok(schemaResponse as TSchemaResponse)
     }
 
 
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
@@ -281,16 +299,13 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
 
-        return await this.Connection.Patch(url, options)
-            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch((error: AxiosError) => {
-                MetalDataProvider.#HandleError(error)
-                //FIX workaround
-                return {} as TSchemaResponse
-            })
+        await this.Connection.Patch(url, options)
+            .catch(MetalDataProvider.#ThrowError)
+
+        return HttpResponse.NoContent()
     }
 
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
@@ -299,22 +314,19 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
 
-        return await this.Connection.Delete(url, options)
-            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch((error: AxiosError) => {
-                MetalDataProvider.#HandleError(error)
-                //FIX workaround
-                return {} as TSchemaResponse
-            })
+        await this.Connection.Delete(url, options)
+            .catch(MetalDataProvider.#ThrowError)
+
+        return HttpResponse.NoContent()
     }
 
     @Logger.LogFunction()
-    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
@@ -328,12 +340,10 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
             url += `?${urlParams}`
         }
 
-        return this.Connection.Get(url)
-            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch((error: AxiosError) => {
-                MetalDataProvider.#HandleError(error)
-                //FIX workaround
-                return {} as TSchemaResponse
-            })
+        const schemaResponse = await this.Connection.Get(url)
+            .then(MetalDataProvider.#ConvertResponseToSchemaResponse)
+            .catch(MetalDataProvider.#ThrowError)
+
+        return HttpResponse.Ok(schemaResponse as TSchemaResponse)
     }
 }

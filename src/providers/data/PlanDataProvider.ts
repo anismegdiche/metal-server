@@ -14,11 +14,13 @@ import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { Plan } from '../../server/Plan'
 import DATA_PROVIDER from '../../server/Source'
-import { HttpErrorBadRequest } from "../../server/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorNotFound } from "../../server/HttpErrors"
 import { Config } from "../../server/Config"
 import { DataTable } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { HttpResponse } from "../../server/HttpResponse"
+import { TInternalResponse } from "../../types/TInternalResponse"
 
 
 export class PlanDataProvider implements IDataProvider.IDataProvider {
@@ -53,14 +55,14 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
 
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Insert: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
     @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schemaName, entityName } = schemaRequest
@@ -94,18 +96,18 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
                     data
                 )
         }
-        
-        return <TSchemaResponse>{
+
+        return HttpResponse.Ok(<TSchemaResponse>{
             ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
-        }
+        })
     }
 
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Update: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
@@ -113,7 +115,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Delete: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
@@ -121,37 +123,30 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async AddEntity(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schemaName, entityName } = schemaRequest
         Logger.Error(`Delete: Not allowed for plans '${schemaName}', entity '${entityName}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         const { schemaName } = schemaRequest
-        const entityName = `${schemaRequest.schemaName}-entities`
-
-        let schemaResponse = <TSchemaResponse>{
-            schemaName
-        }
 
         const data = Object.keys(Config.Get('plans')).map(key => ({
             name: key,
             type: 'plan'
         }))
 
-        if (data.length > 0) {
-            const _dt = new DataTable(entityName, data)
-            schemaResponse = <TSchemaResponse>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: _dt
-            }
-        }
-        
-        return schemaResponse
+        if (data.length == 0)
+            throw new HttpErrorNotFound(`${schemaName}: No entities found`)
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schemaName,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data: new DataTable(undefined, data)
+        })
     }
 }
