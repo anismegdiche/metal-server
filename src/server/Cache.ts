@@ -73,8 +73,7 @@ export class Cache {
 
     @Logger.LogFunction()
     static IsCacheValid(expires: number): boolean {
-        const isValid = expires !== undefined && Date.now() <= expires
-        return isValid
+        return expires !== undefined && Date.now() <= expires
     }
 
     @Logger.LogFunction()
@@ -104,7 +103,7 @@ export class Cache {
     @Logger.LogFunction()
     static async Set(schemaRequest: TSchemaRequest, datatable: DataTable): Promise<void> {
 
-        if (!this.IsArgumentsValid(schemaRequest))
+        if (!Cache.IsArgumentsValid(schemaRequest))
             return
 
         const { schemaName, entityName, cache = 0 } = schemaRequest
@@ -221,7 +220,7 @@ export class Cache {
     @Logger.LogFunction()
     static async Remove(schemaRequest: TSchemaRequest): Promise<void> {
 
-        if (!this.IsArgumentsValid(schemaRequest))
+        if (!Cache.IsArgumentsValid(schemaRequest))
             return
 
         const { schemaName, entityName } = schemaRequest
