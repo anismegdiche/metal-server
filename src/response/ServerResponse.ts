@@ -6,7 +6,7 @@
 import { Request, Response } from 'express'
 //
 import { HTTP_STATUS_CODE } from '../lib/Const'
-import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented, HttpErrorInternalServerError } from '../server/HttpErrors'
+import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented } from '../server/HttpErrors'
 import { Server } from '../server/Server'
 import { TJson } from "../types/TJson"
 import typia from "typia"

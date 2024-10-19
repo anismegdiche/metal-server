@@ -46,10 +46,10 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
         let filter: any = {}
         if (schemaRequest?.filterExpression || schemaRequest?.filter) {
 
-            if (schemaRequest?.filterExpression) {
+            if (schemaRequest?.filterExpression)
                 // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
                 filter = MongoDbHelper.ConvertSqlQuery(schemaRequest.filterExpression.replace(/%/igm, ".*"))
-            }
+            
             if (schemaRequest?.filter)
                 filter = schemaRequest.filter
 
@@ -91,21 +91,19 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
     GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.sort) {
             const _sort = schemaRequest.sort.trim()
-            let _sortArray = []
+
             // test if array
-            if (_sort.includes(",")) {
-                _sortArray = _sort
+            let _sortArray = _sort.includes(",")
+                ? _sort
                     .split(",")
                     .filter(__field => !(__field == undefined || __field.trim() == ""))
                     .map(__field => __field.trim().replace(/\W+/igm, " "))
-            } else {
-                // single field
-                _sortArray = [_sort.replace(/\W+/igm, " ")]
-            }
+                : [_sort.replace(/\W+/igm, " ")]
+
             Logger.Debug(_sortArray)
-            if (_sortArray.length > 0) {
+            if (_sortArray.length > 0)
                 _sortArray = _sortArray.reduce(MongoDbHelper.ConvertSqlSort, {})
-            }
+            
             Logger.Debug(_sortArray)
             options.Sort = {
                 $sort: _sortArray

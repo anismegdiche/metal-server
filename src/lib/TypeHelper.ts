@@ -39,13 +39,13 @@ export class TypeHelper {
         if (res.success)
             return
         
-        const _renamedErrors = res.errors.map((error: any) => {
-            let _ret = `${error.path.replace('$input.', '')} expected to be ${error.expected}`
+        const renamedErrors = res.errors.map((error: any) => {
+            const _ret = `${error.path.replace('$input.', '')} expected to be ${error.expected}`
             return TypeHelper.TranslateFriendlyErrors(_ret)
         })
 
-        Logger.Error(`${httpError.Name}:\r\n - ${_renamedErrors.join('\r\n - ')}`)
-        httpError.message = _renamedErrors
+        Logger.Error(`${httpError.Name}:\r\n - ${renamedErrors.join('\r\n - ')}`)
+        httpError.message = renamedErrors
         delete httpError.stack
         throw httpError
     }

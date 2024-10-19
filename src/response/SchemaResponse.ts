@@ -12,7 +12,6 @@ import { Schema } from '../server/Schema'
 import { HttpErrorContentTooLarge, HttpError, HttpErrorInternalServerError } from '../server/HttpErrors'
 import { Config } from '../server/Config'
 import { JsonHelper } from '../lib/JsonHelper'
-import { TSchemaResponse } from "../types/TSchemaResponse"
 import { HTTP_STATUS_CODE } from "../lib/Const"
 
 export class SchemaResponse {

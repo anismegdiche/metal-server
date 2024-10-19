@@ -3,7 +3,7 @@
 //
 //
 //
-import typia, { tags } from "typia"
+import { tags } from "typia"
 //
 import { VERBOSITY } from "../utils/Logger"
 import DATA_PROVIDER from "../server/Source"

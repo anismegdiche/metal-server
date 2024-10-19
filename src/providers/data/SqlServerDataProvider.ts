@@ -3,7 +3,7 @@
 //
 //
 //
-import mssql, { ConnectionPool, rows } from 'mssql'
+import mssql, { ConnectionPool } from 'mssql'
 //
 import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
