@@ -8,12 +8,8 @@ import { tags } from "typia"
 import { VERBOSITY } from "../utils/Logger"
 import DATA_PROVIDER from "../server/Source"
 import { AI_ENGINE } from "../server/AiEngine"
-import { TJson } from "./TJson"
 import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "./StepsParams"
 import { STEP } from "../server/Step"
-
-// Friendly renaming for errors return
-type JSON = TJson
 
 
 // sources.*
