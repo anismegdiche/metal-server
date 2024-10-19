@@ -39,13 +39,14 @@ export class Plan {
             }
 
             const entitySteps: Array<StepCommand> = Config.Get(`plans.${sourcePlanName}.${entityName}`)
-            Logger.Debug(`${Logger.In} Plan.Execute: ${sourceName}.${entityName}: ${JsonHelper.Stringify(entitySteps)}`)
+
             const currentDatatable = await Plan.ExecuteSteps(schemaName, sourceName, entityName, entitySteps)
             await currentDatatable.FreeSqlAsync(sqlQuery)
 
             Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entityName}`)
             return currentDatatable
         }
+
         // TScheduleConfig
         const { planName, entityName } = schemaRequest
 

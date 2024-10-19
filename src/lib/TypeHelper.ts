@@ -12,7 +12,7 @@ import { Logger } from "../utils/Logger"
 import { HttpError, HttpErrorInternalServerError } from "../server/HttpErrors"
 
 export class TypeHelper {
-    // TODO: to check
+
     @Logger.LogFunction(Logger.Debug, true)
     static IsSchemaRequest(schemaRequest: any): schemaRequest is TSchemaRequest {
         return typia.is<TSchemaRequest>(schemaRequest)
