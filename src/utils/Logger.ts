@@ -52,7 +52,7 @@ export class Logger {
     static readonly Out = '<-'
     static Level: LogLevel.LogLevelDesc = DefaultLevel
 
-    static RequestMiddleware = morgan(
+    static readonly RequestMiddleware = morgan(
         ':remote-addr, :method :url, :status, :res[content-length], :response-time ms',
         {
             stream: {
