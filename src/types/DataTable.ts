@@ -274,7 +274,7 @@ export class DataTable {
                     return r
                 })
                 .catch((error: any) => {
-                    Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}', Error: ${error}`)
+                    Logger.Error(`DataTable.FreeSqlAsync: '${this.Name}' Error executing SQL query: '${sqlQuery}', Error: ${error}`)
                     throw error
                 })
 
@@ -283,7 +283,7 @@ export class DataTable {
                 : alasql.tables[this.Name].data
 
         } catch (error: any) {
-            Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
+            Logger.Error(`DataTable.FreeSqlAsync: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
             throw error
         }
         return this.SetFields()
