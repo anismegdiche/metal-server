@@ -1,4 +1,10 @@
+//
+//
+//
+//
+//
 import _ from "lodash"
+import typia from "typia"
 //
 import { METADATA } from "../lib/Const"
 import { Logger } from "../utils/Logger"
@@ -15,17 +21,21 @@ import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
 import { HttpResponse } from "./HttpResponse"
 import { HttpErrorNotFound } from "./HttpErrors"
-import {StepCommand} from '../types/TConfig'
-import typia from "typia"
+import { StepCommand } from '../types/TConfig'
 
 
 export class Plan {
+
     @Logger.LogFunction()
     static async Process(schemaRequest: TSchemaRequest | TScheduleConfig, sqlQuery: string | undefined = undefined): Promise<DataTable> {
+        return TypeHelper.IsSchemaRequest(schemaRequest)
+            ? await Plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
+            : await Plan.ProcessScheduleConfig(schemaRequest, sqlQuery)
+    }
 
-        // TSchemaRequest
-        if (TypeHelper.IsSchemaRequest(schemaRequest)) {
-            const { schemaName, sourceName, entityName } = schemaRequest
+    static async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery: string | undefined) {
+        
+        const { schemaName, sourceName, entityName } = schemaRequest
             const sourcePlanName: string = Config.Get(`sources.${sourceName}.database`)
 
             if (sourceName === undefined || sourcePlanName === undefined) {
@@ -45,9 +55,10 @@ export class Plan {
 
             Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entityName}`)
             return currentDatatable
-        }
+    }
 
-        // TScheduleConfig
+    static async ProcessScheduleConfig(schemaRequest: TScheduleConfig, sqlQuery: string | undefined) {
+        
         const { planName, entityName } = schemaRequest
 
         if (planName === undefined) {
