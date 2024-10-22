@@ -77,3 +77,37 @@ authorization: Bearer {{token}}
         "Country": "USA"
     }
 }
+
+###
+
+
+# @name xls-list
+GET http://localhost:3000/schema/xls
+authorization: Bearer {{token}}
+###
+
+
+# @name xls-select
+GET http://localhost:3000/schema/xls/sample.xlsx
+    ?filterExpression=Lastname like '%oe'
+authorization: Bearer {{token}}
+###
+
+
+PATCH  http://localhost:3000/schema/xls/sample.xlsx
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": {
+        "Country": "France",
+        "City": "Paris"
+    }
+}
+
+###
+
+# @name xls-select
+GET http://localhost:3000/schema/xls/ref.xlsx
+authorization: Bearer {{token}}
+###
