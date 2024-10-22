@@ -11,8 +11,8 @@ import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 
-type TFsStorageConfig = {
-    folder: string
+export type TFsStorageConfig = {
+    fsFolder?: string
 }
 
 export class FsStorage extends CommonStorage implements IStorageProvider {
@@ -22,19 +22,19 @@ export class FsStorage extends CommonStorage implements IStorageProvider {
     @Logger.LogFunction()
     Init(): void {
         this.Config = {
-            folder: this.Options.fsFolder ?? '.'
+            fsFolder: this.Options.fsFolder ?? '.'
         }
     }
 
     @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
-        return Fs.existsSync(`${this.Config.folder}${file}`)
+        return Fs.existsSync(`${this.Config.fsFolder}${file}`)
     }
 
     @Logger.LogFunction()
-    async Read(file: string): Promise<string> {
+    async Read(file: string): Promise<Buffer> {
 
-        const filePath = this.Config.folder + file
+        const filePath = this.Config.fsFolder + file
 
         if (this.Options.autoCreate && !(await this.IsExist(file))) {
             const _fd = Fs.openSync(filePath, 'wx')
@@ -43,15 +43,15 @@ export class FsStorage extends CommonStorage implements IStorageProvider {
         }
 
         if (await this.IsExist(file))
-            return Fs.promises.readFile(filePath, 'utf8')
+            return Fs.promises.readFile(filePath)
 
         throw new HttpErrorNotFound(`File '${file}' does not exist`)
     }
 
     @Logger.LogFunction()
-    async Write(file: string, content: string): Promise<void> {
+    async Write(file: string, content: Buffer): Promise<void> {
 
-        const filePath = this.Config.folder + file
+        const filePath = this.Config.fsFolder + file
 
         if (this.Options.autoCreate && !(await this.IsExist(file))) {
             const _fd = Fs.openSync(filePath, 'wx')
@@ -63,9 +63,10 @@ export class FsStorage extends CommonStorage implements IStorageProvider {
 
     @Logger.LogFunction()
     async List(): Promise<DataTable> {
-        const result = await Fs.promises.readdir(this.Config.folder)
+        // TODO: fix workaround:  this.Config.fsFolder ?? '.'
+        const result = await Fs.promises.readdir(this.Config.fsFolder ?? '.')
             .then(files => Promise.all(files.map(async file => {
-                const stats = await Fs.promises.stat(`${this.Config.folder}${file}`)
+                const stats = await Fs.promises.stat(`${this.Config.fsFolder}${file}`)
                 return {
                     name: file,
                     type: 'file',
@@ -73,7 +74,7 @@ export class FsStorage extends CommonStorage implements IStorageProvider {
                 }
             })))
             .catch((error) => {
-                throw new HttpErrorInternalServerError(`Failed to read directory '${this.Config.folder}': ${error.message}`)
+                throw new HttpErrorInternalServerError(`Failed to read directory '${this.Config.fsFolder}': ${error.message}`)
             })
 
         return new DataTable(undefined, result)

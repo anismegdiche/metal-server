@@ -7,57 +7,59 @@ import _ from 'lodash'
 //
 import { DataTable } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
-import { CommonContent, IContent } from './CommonContent'
+import { CommonContent } from './CommonContent'
+import { IContent } from "../../types/IContent"
 import { JsonHelper } from '../../lib/JsonHelper'
 import { Logger } from "../../utils/Logger"
 
-type TJsonContentConfig = {
-    arrayPath?: string
+export type TJsonContentConfig = {
+    jsonArrayPath?: string
 }
 
 export class JsonContent extends CommonContent implements IContent {
 
-    Content: TJson = {}
     Config = <TJsonContentConfig>{}
+    Content: Buffer | undefined = undefined
+    JsonObject: TJson = {}
     IsArray = false
 
     @Logger.LogFunction()
-    async Init(entityName: string, content: string): Promise<void> {
+    async Init(entityName: string, content: Buffer): Promise<void> {
         this.EntityName = entityName
         if (this.Options) {
             const {
-                jsonArrayPath: arrayPath = undefined
+                jsonArrayPath = undefined
             } = this.Options
 
             this.Config = {
                 ...this.Config,
-                arrayPath
+                jsonArrayPath: jsonArrayPath
             }
         }
 
-        this.RawContent = content
+        this.Content = content
         //TODO: when content = "", data has empty json object {}
-        this.Content = JsonHelper.TryParse(content, {})
+        this.JsonObject = JsonHelper.TryParse(this.Content.toString('utf8'), {})
         // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
-        this.IsArray = _.isArray(this.Content)
+        this.IsArray = _.isArray(this.JsonObject)
     }
 
     @Logger.LogFunction()
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
         let data: TJson[] = []
-        data = JsonHelper.Get<TJson[]>(this.Content, this.Config.arrayPath)
+        data = JsonHelper.Get<TJson[]>(this.JsonObject, this.Config.jsonArrayPath)
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
     @Logger.LogFunction()
-    async Set(contentDataTable: DataTable): Promise<string> {
+    async Set(contentDataTable: DataTable): Promise<Buffer> {
 
-        this.Content = JsonHelper.Set(
-            this.Content,
-            this.Config.arrayPath,
+        this.JsonObject = JsonHelper.Set(
+            this.JsonObject,
+            this.Config.jsonArrayPath,
             contentDataTable.Rows
         )
-        this.RawContent = JSON.stringify(this.Content)
-        return this.RawContent
+        this.Content = Buffer.from(JSON.stringify(this.JsonObject), 'utf-8')
+        return this.Content
     }
 }

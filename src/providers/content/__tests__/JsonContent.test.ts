@@ -19,7 +19,7 @@ describe('JsonContent', () => {
     describe('Init', () => {
         it('should initialize the content and config correctly with empty options', async () => {
             const name = 'test'
-            const content = '{"key": "value"}'
+            const content = Buffer.from('{"key": "value"}', 'utf-8')
 
             const jsonContentEmptyOptions = new JsonContent(<TSourceParams>{
                 ...sourceParams,
@@ -32,31 +32,31 @@ describe('JsonContent', () => {
 
         it('should initialize the content and config correctly', async () => {
             const name = 'test'
-            const content = '{"key": "value"}'
+            const content = Buffer.from('{"key": "value"}', 'utf-8')
 
             await jsonContent.Init(name, content)
 
             expect(jsonContent.EntityName).toBe(name)
-            expect(jsonContent.RawContent).toBe(content)
-            expect(jsonContent.Content).toEqual({ "key": "value" })
+            expect(jsonContent.Content).toBe(content)
+            expect(jsonContent.JsonObject).toEqual({ "key": "value" })
         })
 
         it('should handle empty content and set default values', async () => {
             const name = 'test'
-            const content = ''
+            const content = Buffer.from('', 'utf-8')
 
             await jsonContent.Init(name, content)
 
             expect(jsonContent.EntityName).toBe(name)
-            expect(jsonContent.RawContent).toBe(content)
-            expect(jsonContent.Content).toEqual({})
+            expect(jsonContent.Content).toBe(content)
+            expect(jsonContent.JsonObject).toEqual({})
         })
     })
 
     describe('Get', () => {
         beforeEach(async () => {
             const name = 'test'
-            const content = '{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}'
+            const content = Buffer.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}', 'utf-8')
 
             await jsonContent.Init(name, content)
         })
@@ -79,7 +79,7 @@ describe('JsonContent', () => {
         })
 
         it('should return an empty DataTable if arrayPath is not found', async () => {
-            jsonContent.Config.arrayPath = 'nonexistent.path'
+            jsonContent.Config.jsonArrayPath = 'nonexistent.path'
 
             const dataTable = await jsonContent.Get()
 
@@ -92,7 +92,7 @@ describe('JsonContent', () => {
     describe('Set', () => {
         beforeEach(async () => {
             const name = 'test'
-            const content = '{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}'
+            const content = Buffer.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}', 'utf-8')
 
             await jsonContent.Init(name, content)
         })
@@ -109,9 +109,9 @@ describe('JsonContent', () => {
                 }
             ])
 
-            const rawContent = await jsonContent.Set(newDataTable)
+            const buffer = await jsonContent.Set(newDataTable)
 
-            expect(jsonContent.Content).toEqual({
+            expect(jsonContent.JsonObject).toEqual({
                 "data": [
                     {
                         "id": 3,
@@ -123,8 +123,7 @@ describe('JsonContent', () => {
                     }
                 ]
             })
-            expect(jsonContent.RawContent).toBe(rawContent)
-            expect(rawContent).toBe(JSON.stringify(jsonContent.Content))
+            expect(jsonContent.Content).toBe(buffer)
         })
     })
 })

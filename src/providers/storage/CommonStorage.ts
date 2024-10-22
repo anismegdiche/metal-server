@@ -47,14 +47,14 @@ export class CommonStorage {
      
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Read(file: string): Promise<string> {
+    async Read(file: string): Promise<Buffer> {
         throw new HttpErrorNotImplemented()
     }
      
      
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Write(file: string, content: string): Promise<void> {
+    async Write(file: string, content: Buffer): Promise<void> {
         //
     }
     

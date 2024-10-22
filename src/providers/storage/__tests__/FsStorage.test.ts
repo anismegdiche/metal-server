@@ -62,7 +62,7 @@ describe('FsStorage', () => {
         it('should write the content to the file', async () => {
             jest.spyOn(Fs.promises, 'writeFile').mockResolvedValue(undefined)
 
-            await fsStorage.Write('test.txt', 'File content')
+            await fsStorage.Write('test.txt', Buffer.from('File content','utf-8'))
 
             expect(Fs.promises.writeFile).toHaveBeenCalledWith(
                 `${fsStorage.Params.database}test.txt`,

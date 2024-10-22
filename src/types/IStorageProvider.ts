@@ -10,7 +10,7 @@ export interface IStorageProvider {
     Connect(): Promise<void>
     Disconnect(): Promise<void>
     IsExist(file: string): Promise<boolean>
-    Read(file: string): Promise<string>
-    Write(file: string, content: string): Promise<void>
+    Read(file: string): Promise<Buffer>
+    Write(file: string, content: Buffer): Promise<void>
     List(): Promise<DataTable>
 }

@@ -16,16 +16,17 @@ import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSourceParams } from "../../types/TSourceParams"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { IStorageProvider } from "../../types/IStorageProvider"
-import { IContent } from "../content/CommonContent"
-import { JsonContent } from "../content/JsonContent"
-import { AzureBlobStorage } from '../storage/AzureBlobStorage'
-import { FsStorage } from '../storage/FsStorage'
-import { CsvContent } from '../content/CsvContent'
+import { IContent } from "../../types/IContent"
+import { JsonContent, TJsonContentConfig } from "../content/JsonContent"
+import { AzureBlobStorage, TAzureBlobStorageConfig } from '../storage/AzureBlobStorage'
+import { FsStorage, TFsStorageConfig } from '../storage/FsStorage'
+import { CsvContent, TCsvContentConfig } from '../content/CsvContent'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
 
 
 export enum STORAGE_PROVIDER {
@@ -35,7 +36,8 @@ export enum STORAGE_PROVIDER {
 
 export enum CONTENT {
     JSON = "json",
-    CSV = "csv"
+    CSV = "csv",
+    XLS = "xls"
 }
 
 export type TFilesDataProviderOptions = {
@@ -44,25 +46,15 @@ export type TFilesDataProviderOptions = {
     contentType?: CONTENT
     //TODO: to test
     autoCreate?: boolean
-} &
-{    // Filesystem
-    fsFolder?: string
-} &
-{    // Azure Blob
-    azureBlobConnectionString?: string
-    azureBlobContainerName?: string
-    azureBlobCreateContainerIfNotExists?: boolean
-} &
-{    // JSON
-    jsonArrayPath?: string
-} &
-{    // CSV
-    csvDelimiter?: string
-    csvNewline?: string
-    csvHeader?: boolean
-    csvQuoteChar?: string
-    csvSkipEmptyLines?: string | boolean
 }
+    // Storage
+    & TFsStorageConfig
+    & TAzureBlobStorageConfig
+    
+    // Content
+    & TJsonContentConfig
+    & TCsvContentConfig
+    & TXlsContentConfig
 
 export class FilesDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.FILES
@@ -82,15 +74,16 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static #NewStorageCaseMap: Record<STORAGE_PROVIDER, Function> = {
+    static readonly #NewStorageCaseMap: Record<STORAGE_PROVIDER, Function> = {
         [STORAGE_PROVIDER.FILESYSTEM]: (storageParams: TSourceParams) => new FsStorage(storageParams),
         [STORAGE_PROVIDER.AZURE_BLOB]: (storageParams: TSourceParams) => new AzureBlobStorage(storageParams)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static #NewContentCaseMap: Record<CONTENT, Function> = {
+    static readonly #NewContentCaseMap: Record<CONTENT, Function> = {
         [CONTENT.JSON]: (sourceParams: TSourceParams) => new JsonContent(sourceParams),
-        [CONTENT.CSV]: (sourceParams: TSourceParams) => new CsvContent(sourceParams)
+        [CONTENT.CSV]: (sourceParams: TSourceParams) => new CsvContent(sourceParams),
+        [CONTENT.XLS]: (sourceParams: TSourceParams) => new XlsContent(sourceParams)
     }
 
     @Logger.LogFunction()
@@ -130,21 +123,17 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schemaName, entityName } = schemaRequest
+        const { entityName } = schemaRequest
 
-        const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName
-        }
-
-        let fileString: string | undefined = ""
+        // eslint-disable-next-line init-declarations
+        let buffer: Buffer | undefined
 
         if (this.Connection)
-            fileString = await this.Connection?.Read(entityName)
+            buffer = await this.Connection?.Read(entityName)
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.Content.Init(entityName, fileString)
+        this.Content.Init(entityName, buffer)
         const fileDataTable = await this.Content.Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
@@ -153,8 +142,8 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             .Values(options.Data.Rows)
 
         await fileDataTable.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        fileString = await this.Content.Set(fileDataTable)
-        await this.Connection?.Write(entityName, fileString)
+        buffer = await this.Content.Set(fileDataTable)
+        await this.Connection?.Write(entityName, buffer)
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -171,14 +160,15 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             entityName
         }
 
-        let fileString: string | undefined = ""
+        // eslint-disable-next-line init-declarations
+        let buffer: Buffer | undefined
 
         if (this.Connection)
-            fileString = await this.Connection?.Read(entityName)
+            buffer = await this.Connection?.Read(entityName)
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.Content.Init(entityName, fileString)
+        this.Content.Init(entityName, buffer)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
@@ -211,21 +201,17 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schemaName, entityName } = schemaRequest
+        const { entityName } = schemaRequest
 
-        const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName
-        }
-
-        let fileString: string | undefined = ""
+        // eslint-disable-next-line init-declarations
+        let buffer: Buffer | undefined
 
         if (this.Connection)
-            fileString = await this.Connection?.Read(entityName)
+            buffer = await this.Connection?.Read(entityName)
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.Content.Init(entityName, fileString)
+        this.Content.Init(entityName, buffer)
         const fileDataTable = await this.Content.Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
@@ -234,8 +220,8 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await fileDataTable.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        fileString = await this.Content.Set(fileDataTable)
-        await this.Connection?.Write(entityName, fileString)
+        buffer = await this.Content.Set(fileDataTable)
+        await this.Connection?.Write(entityName, buffer)
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -247,14 +233,10 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schemaName, entityName } = schemaRequest
+        const { entityName } = schemaRequest
 
-        const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName
-        }
-
-        let fileString: string | undefined = ""
+        // eslint-disable-next-line init-declarations
+        let fileString: Buffer | undefined
 
         if (this.Connection)
             fileString = await this.Connection?.Read(entityName)
