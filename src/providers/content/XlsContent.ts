@@ -3,20 +3,21 @@
 //
 //
 //
+import { Readable } from 'node:stream'
 import * as ExcelJS from 'exceljs'
-import _ from "lodash"
+import _ from 'lodash'
 //
-import { DataTable } from "../../types/DataTable"
+import { DataTable } from '../../types/DataTable'
 import { CommonContent } from './CommonContent'
-import { IContent } from "../../types/IContent"
-import { Logger } from "../../utils/Logger"
-import { TJson } from "../../types/TJson"
-import { HttpErrorInternalServerError } from "../../server/HttpErrors"
-
+import { IContent } from '../../types/IContent'
+import { Logger } from '../../utils/Logger'
+import { TJson } from '../../types/TJson'
+import { HttpErrorInternalServerError } from '../../server/HttpErrors'
+import { VirtualFileSystem } from "../../utils/VirtualFileSystem "
 
 export type TXlsContentConfig = {
     xlsSheetName?: string        // Specify which sheet to use, default first sheet
-    xlsStartingCell?: string     // Specify the starting cell (e.g., "B2"), default "A1"
+    xlsStartingCell?: string     // Specify the starting cell (e.g., 'B2'), default 'A1'
     xlsDefaultValue?: any        // Default value for empty cells
     xlsCellDates?: boolean       // Parse dates from cells, default false
     xlsDateFormat?: string       // Specify the date format for parsing dates
@@ -35,13 +36,11 @@ export function columnLetterToNumber(letter: string): number {
 }
 
 export class XlsContent extends CommonContent implements IContent {
-
-    Content: Buffer | undefined = undefined;
-    Config = <TXlsContentConfig>{};
+    Config = <TXlsContentConfig>{}
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Init(name: string, content: Buffer): Promise<void> {
-        this.EntityName = name
+    async Init(entityName: string, content: Readable): Promise<void> {
+        this.EntityName = entityName
         if (this.Options) {
             const {
                 xlsSheetName,
@@ -51,7 +50,7 @@ export class XlsContent extends CommonContent implements IContent {
                 xlsStartingCell = 'A1'
             } = this.Options
 
-            this.Config = <TXlsContentConfig>{
+            this.Config = {
                 ...this.Config,
                 xlsSheetName,
                 xlsCellDates,
@@ -60,14 +59,17 @@ export class XlsContent extends CommonContent implements IContent {
                 xlsStartingCell
             }
         }
-        this.Content = content
+        this.Content.UploadFile(entityName, content)
     }
 
     @Logger.LogFunction(Logger.Debug, true)
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
-        const workbook = new ExcelJS.Workbook()
-        await workbook.xlsx.load(this.Content!)
 
+        const workbook = new ExcelJS.Workbook()
+        Logger.Debug('XlsContent.Get: reading stream')
+        await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
+
+        Logger.Debug('XlsContent.Get: Converting')
         const sheetName = this.Config.xlsSheetName ?? workbook.worksheets[0].name
         const worksheet = workbook.getWorksheet(sheetName)
         const { xlsStartingCell, xlsCellDates, xlsDefaultValue } = this.Config
@@ -79,7 +81,6 @@ export class XlsContent extends CommonContent implements IContent {
         const colIndex = columnLetterToNumber(startCol) // Convert column letter to number
 
         const fields = _.compact(worksheet.getRow(parseInt(startRow, 10)).values as string[])
-
         if (fields == undefined || fields.length == 0)
             throw new HttpErrorInternalServerError(`Data in "${sheetName}" not found.`)
 
@@ -109,15 +110,15 @@ export class XlsContent extends CommonContent implements IContent {
                 rows.push(row)
             }
         })
-
+        Logger.Debug('XlsContent.Get: Exporting')
         const dataTable = new DataTable(this.EntityName, rows)
         return await dataTable.FreeSqlAsync(sqlQuery)
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Set(contentDataTable: DataTable): Promise<Buffer> {
+    async Set(data: DataTable): Promise<Readable> {
         const workbook = new ExcelJS.Workbook()
-        await workbook.xlsx.load(this.Content!)
+        await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
 
         const sheetName = this.Config.xlsSheetName ?? workbook.worksheets[0].name
         let worksheet = workbook.getWorksheet(sheetName)
@@ -130,13 +131,13 @@ export class XlsContent extends CommonContent implements IContent {
         const colIndex = columnLetterToNumber(startCol) // Convert column letter to number
 
         // Set headers
-        const fields = Object.keys(contentDataTable.Rows[0])
+        const fields = Object.keys(data.Rows[0])
         fields.forEach((field, colIdx) => {
             worksheet.getCell(parseInt(startRow, 10), colIndex + colIdx).value = field
         })
 
         // Set data
-        contentDataTable.Rows.forEach((row, rowIndex) => {
+        data.Rows.forEach((row, rowIndex) => {
             fields.forEach((field: string, fieldIdx: number) => {
                 const _rowIdx = parseInt(startRow, 10) + 1 + rowIndex
                 const _colIdx: number = colIndex + fieldIdx
@@ -151,14 +152,14 @@ export class XlsContent extends CommonContent implements IContent {
                 // Handle date formatting if specified and xlsCellDates is true
                 if (xlsCellDates && _valueToSet instanceof Date) {
                     worksheet.getCell(_rowIdx, _colIdx).numFmt = xlsDateFormat! // Apply date format
-                    worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet     // Set date value directly
-                } else {
-                    worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet     // Set other values directly
                 }
+                worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet     // Set other values directly
             })
         })
 
-        this.Content = await workbook.xlsx.writeBuffer() as Buffer
-        return this.Content
+        const streamOut: Readable = new Readable()
+        await workbook.xlsx.write(streamOut)
+        this.Content.UploadFile(this.EntityName, streamOut)
+        return this.Content.ReadFile(this.EntityName)
     }
 }

@@ -1,3 +1,4 @@
+import { Readable } from "node:stream"
 import { DataTable } from '../../../types/DataTable'
 import { TSourceParams } from '../../../types/TSourceParams'
 import { JsonContent } from '../JsonContent'
@@ -19,7 +20,7 @@ describe('JsonContent', () => {
     describe('Init', () => {
         it('should initialize the content and config correctly with empty options', async () => {
             const name = 'test'
-            const content = Buffer.from('{"key": "value"}', 'utf-8')
+            const content = Readable.from('{"key": "value"}')
 
             const jsonContentEmptyOptions = new JsonContent(<TSourceParams>{
                 ...sourceParams,
@@ -32,7 +33,7 @@ describe('JsonContent', () => {
 
         it('should initialize the content and config correctly', async () => {
             const name = 'test'
-            const content = Buffer.from('{"key": "value"}', 'utf-8')
+            const content = Readable.from('{"key": "value"}')
 
             await jsonContent.Init(name, content)
 
@@ -43,7 +44,7 @@ describe('JsonContent', () => {
 
         it('should handle empty content and set default values', async () => {
             const name = 'test'
-            const content = Buffer.from('', 'utf-8')
+            const content = Readable.from('')
 
             await jsonContent.Init(name, content)
 
@@ -56,7 +57,7 @@ describe('JsonContent', () => {
     describe('Get', () => {
         beforeEach(async () => {
             const name = 'test'
-            const content = Buffer.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}', 'utf-8')
+            const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
 
             await jsonContent.Init(name, content)
         })
@@ -92,7 +93,7 @@ describe('JsonContent', () => {
     describe('Set', () => {
         beforeEach(async () => {
             const name = 'test'
-            const content = Buffer.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}', 'utf-8')
+            const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
 
             await jsonContent.Init(name, content)
         })

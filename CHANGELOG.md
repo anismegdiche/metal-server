@@ -5,8 +5,9 @@
 ### Features
 - Response configuration: chunk, rate limit, body limit.
 - Plan commands: anonymize, remove-duplicates.
-- Added SwaggerUI.
+- SwaggerUI.
 - Schema: List entities.
+- File Content: XLS/XLSX.
 
 ### Enhancements
 - Updated packages.
@@ -14,9 +15,11 @@
 - Updated Plan sync function usage.
 - Enhanced Logging feature.
 - Enhanced Tessract.js Engine.
+- Enhanced File Provider.
 
 ### Bug Fixes
 - Fixed bugs related to Plan commands.
+- Fixed bugs related to File Provider.
 
 ---
 # Metal Changelog

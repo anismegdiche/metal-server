@@ -4,6 +4,7 @@
 //
 //
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob'
+import { Readable } from "node:stream"
 //
 import { CommonStorage } from "./CommonStorage"
 import { IStorageProvider } from "../../types/IStorageProvider"
@@ -79,7 +80,7 @@ export class AzureBlobStorage extends CommonStorage implements IStorageProvider 
     }
 
     @Logger.LogFunction()
-    async Read(file: string): Promise<Buffer> {
+    async Read(file: string): Promise<Readable> {
         if (!this.#ContainerClient)
             throw new HttpErrorInternalServerError('Connection to Azure Blob Storage not established')
 
@@ -89,9 +90,7 @@ export class AzureBlobStorage extends CommonStorage implements IStorageProvider 
             if (!await blobClient.exists())
                 throw new HttpErrorNotFound(`File '${file}' does not exist`)
 
-            const downloadBlockBlobResponse = await blobClient.download(0)
-            const buffer = Buffer.from(await this.StreamToBuffer(downloadBlockBlobResponse.readableStreamBody!))
-            return buffer
+            return Readable.from(await blobClient.downloadToBuffer(0))
 
         } catch (error: any) {
             throw new HttpErrorInternalServerError(error.message)
@@ -99,17 +98,12 @@ export class AzureBlobStorage extends CommonStorage implements IStorageProvider 
     }
 
     @Logger.LogFunction()
-    async Write(file: string, content: Buffer): Promise<void> {
-        if (!this.#ContainerClient) {
+    async Write(file: string, content: Readable): Promise<void> {
+        if (!this.#ContainerClient)
             throw new HttpErrorInternalServerError('Connection to Azure Blob Storage not established')
-        }
 
         const blobClient = this.#ContainerClient.getBlockBlobClient(file)
-        await blobClient.uploadData(content, {
-            blobHTTPHeaders: {
-                blobContentType: 'application/octet-stream'
-            }
-        })
+        await blobClient.uploadStream(content)
     }
 
     @Logger.LogFunction()

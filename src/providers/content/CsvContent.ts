@@ -10,6 +10,7 @@ import { CommonContent } from './CommonContent'
 import { IContent } from "../../types/IContent"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
+import { Readable } from "node:stream"
 
 export type TCsvContentConfig = {
     csvDelimiter?: string
@@ -21,12 +22,11 @@ export type TCsvContentConfig = {
 
 export class CsvContent extends CommonContent implements IContent {
 
-    Content: Buffer | undefined = undefined
     Config = <Csv.ParseWorkerConfig>{}
 
     @Logger.LogFunction()
-    async Init(name: string, content: Buffer): Promise<void> {
-        this.EntityName = name
+    async Init(entityName: string, content: Readable): Promise<void> {
+        this.EntityName = entityName
         if (this.Options) {
             const {
                 csvDelimiter: delimiter = ',',
@@ -45,8 +45,7 @@ export class CsvContent extends CommonContent implements IContent {
                 skipEmptyLines
             }
         }
-
-        this.Content = content
+        this.Content.UploadFile(entityName, content)
     }
 
     @Logger.LogFunction()
@@ -54,16 +53,22 @@ export class CsvContent extends CommonContent implements IContent {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
-        const result = Csv.parse<string>(this.Content.toString('utf8'), this.Config) as any
+        const result: any = Csv.parse<string>(
+            await CommonContent.ReadableToString(
+                this.Content.ReadFile(this.EntityName)
+            ), 
+            this.Config
+        )
         return new DataTable(this.EntityName, result?.data).FreeSqlAsync(sqlQuery)
     }
 
     @Logger.LogFunction()
-    async Set(contentDataTable: DataTable): Promise<Buffer> {
+    async Set(contentDataTable: DataTable): Promise<Readable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
-        this.Content = Buffer.from(Csv.unparse(contentDataTable.Rows, this.Config as Csv.UnparseConfig), 'utf8')
-        return this.Content
+        const streamOut = Readable.from(Csv.unparse(contentDataTable.Rows, this.Config as Csv.UnparseConfig))
+        this.Content.UploadFile(this.EntityName, streamOut)
+        return this.Content.ReadFile(this.EntityName)
     }
 }

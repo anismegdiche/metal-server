@@ -10,6 +10,8 @@ import { IStorageProvider } from "../../types/IStorageProvider"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
+import { Readable } from "node:stream"
+import { ServiceListContainersSegmentResponseInternal } from "@azure/storage-blob"
 
 export type TFsStorageConfig = {
     fsFolder?: string
@@ -32,7 +34,7 @@ export class FsStorage extends CommonStorage implements IStorageProvider {
     }
 
     @Logger.LogFunction()
-    async Read(file: string): Promise<Buffer> {
+    async Read(file: string): Promise<Readable> {
 
         const filePath = this.Config.fsFolder + file
 
@@ -43,13 +45,13 @@ export class FsStorage extends CommonStorage implements IStorageProvider {
         }
 
         if (await this.IsExist(file))
-            return Fs.promises.readFile(filePath)
-
+            return this.ConvertReadStreamToReadable(Fs.createReadStream(filePath))
+        
         throw new HttpErrorNotFound(`File '${file}' does not exist`)
     }
 
     @Logger.LogFunction()
-    async Write(file: string, content: Buffer): Promise<void> {
+    async Write(file: string, content: Readable): Promise<void> {
 
         const filePath = this.Config.fsFolder + file
 

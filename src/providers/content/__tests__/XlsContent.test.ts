@@ -1,309 +1,116 @@
-
-// import { columnLetterToNumber, TXlsContentConfig, XlsContent } from '../XlsContent'
-// import * as ExcelJS from 'exceljs'
-// import { DataTable } from "../../../types/DataTable"
-// import { HttpErrorInternalServerError } from "../../../server/HttpErrors"
-// import typia from "typia"
-// import { TSourceParams } from "../../../types/TSourceParams"
-// import { TFilesDataProviderOptions } from "../../data/FilesDataProvider"
-
-
-// describe('XlsContent', () => {
-
-//     const randomSourceParams = {
-//         ...typia.random<TSourceParams>(),
-//         options: typia.random<TXlsContentConfig>()
-//     }
-
-//     describe('Init', () => {
+/* eslint-disable init-declarations */
+import { Readable } from "node:stream"
+import * as ExcelJS from 'exceljs'
+import { XlsContent, columnLetterToNumber, TXlsContentConfig } from '../XlsContent'
+import { DataTable } from "../../../types/DataTable"
+import { HttpErrorInternalServerError } from "../../../server/HttpErrors"
+import typia from "typia"
+import { TSourceParams } from "../../../types/TSourceParams"
 
 
-//         // Initialize XlsContent with valid buffer and options
-//         it('should initialize with valid buffer and options', async () => {
-//             const buffer = Buffer.from('test')
-//             const options: TFilesDataProviderOptions = {
-//                 xlsSheetName: 'Sheet1',
-//                 xlsCellDates: true,
-//                 xlsDefaultValue: 'N/A',
-//                 xlsDateFormat: 'mm/dd/yyyy',
-//                 xlsStartingCell: 'B2'
-//             }
-//             const sourceParams = {
-//                 ...typia.random<TSourceParams>(),
-//                 options
-//             }
-//             const xlsContent = new XlsContent(sourceParams)
-//             await xlsContent.Init('TestEntity', buffer)
-//             expect(xlsContent.EntityName).toBe('TestEntity')
-//             expect(xlsContent.Content).toBe(buffer)
-//             expect(xlsContent.Config).toEqual(options)
-//         })
+describe("columnLetterToNumber", () => {
+    it("should convert a single letter column 'A' to 1", () => {
+        expect(columnLetterToNumber('A')).toBe(1)
+    })
 
-//         // Verify that the buffer is correctly assigned to the Content property
-//         it('should assign buffer to Content property', () => {
-//             const contentBuffer = Buffer.from('Test Buffer')
-//             const xlsContent = new XlsContent(randomSourceParams)
+    it("should convert a two-letter column 'AA' to 27", () => {
+        expect(columnLetterToNumber('AA')).toBe(27)
+    })
 
-//             // Call the Init method
-//             xlsContent.Init('TestName', contentBuffer)
+    it("should convert 'ZZ' to the correct column number", () => {
+        expect(columnLetterToNumber('ZZ')).toBe(702)
+    })
+})
 
-//             // Assertion
-//             expect(xlsContent.Content).toEqual(contentBuffer)
-//         })
-//     })
+describe("XlsContent", () => {
+    let xlsContent: XlsContent
+    let readableMock: Readable
 
-//     describe('Get', () => {
-//         // Retrieve data from a valid Excel sheet using Get method
-//         it('should retrieve data from a valid Excel sheet', async () => {
-//             const buffer = Buffer.from('test')
-//             const xlsContent = new XlsContent(randomSourceParams)
-//             await xlsContent.Init('TestEntity', buffer)
-//             jest.spyOn(ExcelJS.Workbook.prototype, 'xlsx' as any).mockImplementation(() => ({
-//                 load: jest.fn().mockResolvedValueOnce(undefined),
-//                 worksheets: [
-//                     {
-//                         name: 'Sheet1',
-//                         getRow: jest.fn().mockReturnValue({ values: ['Field1'] }),
-//                         eachRow: jest.fn()
-//                     }
-//                 ]
-//             }))
-//             const dataTable = await xlsContent.Get()
-//             expect(dataTable).toBeInstanceOf(DataTable)
-//         })
+    const randomSourceParams = {
+        ...typia.random<TSourceParams>(),
+        options: typia.random<TXlsContentConfig>()
+    }
 
-//         // Handle date parsing and formatting correctly when xlsCellDates is true
-//         it('should handle date parsing and formatting when xlsCellDates is true', async () => {
-//             const buffer = Buffer.from('test')
-//             const options = {
-//                 xlsCellDates: true,
-//                 xlsDateFormat: 'mm/dd/yyyy'
-//             }
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options
-//             })
-//             await xlsContent.Init('TestEntity', buffer)
-//             jest.spyOn(ExcelJS.Workbook.prototype, 'xlsx' as any).mockImplementation(() => ({
-//                 load: jest.fn().mockResolvedValueOnce(undefined),
-//                 worksheets: [
-//                     {
-//                         name: 'Sheet1',
-//                         getRow: jest.fn().mockReturnValue({ values: ['DateField'] }),
-//                         eachRow: jest.fn((_, cb) => cb({ getCell: jest.fn().mockReturnValue({ value: new Date() }) }, 2))
-//                     }
-//                 ]
-//             }))
-//             const dataTable = await xlsContent.Get()
-//             expect(dataTable.Rows[0].DateField).toBeInstanceOf(Date)
-//         })
+    beforeEach(() => {
+        readableMock = new Readable()
+        xlsContent = new XlsContent(randomSourceParams)
+    })
 
-//         // Use default values for empty cells when xlsDefaultValue is specified
-//         it('should use default values for empty cells', async () => {
-//             const buffer = Buffer.from('test')
-//             const options = { xlsDefaultValue: 'N/A' }
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options
-//             })
-//             await xlsContent.Init('TestEntity', buffer)
-//             jest.spyOn(ExcelJS.Workbook.prototype, 'xlsx' as any).mockImplementation(() => ({
-//                 load: jest.fn().mockResolvedValueOnce(undefined),
-//                 worksheets: [
-//                     {
-//                         name: 'Sheet1',
-//                         getRow: jest.fn().mockReturnValue({ values: ['Field1'] }),
-//                         eachRow: jest.fn((_, cb) => cb({ getCell: jest.fn().mockReturnValue({ value: null }) }, 2))
-//                     }
-//                 ]
-//             }))
-//             const dataTable = await xlsContent.Get()
-//             expect(dataTable.Rows[0].Field1).toBe('N/A')
-//         })
+    describe("Init", () => {
+        it("should initialize the content and configuration", async () => {
+            const mockOptions: TXlsContentConfig = {
+                xlsSheetName: "Sheet1",
+                xlsStartingCell: "B2",
+                xlsDefaultValue: "N/A",
+                xlsCellDates: true,
+                xlsDateFormat: "MM-DD-YYYY"
+            }
 
-//         // Handle missing or undefined worksheet gracefully
-//         it('should throw error for missing worksheet', async () => {
-//             const buffer = Buffer.from('test')
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options: {}
-//             })
-//             await xlsContent.Init('TestEntity', buffer)
-//             jest.spyOn(ExcelJS.Workbook.prototype, 'xlsx' as any).mockImplementation(() => ({
-//                 load: jest.fn().mockResolvedValueOnce(undefined),
-//                 worksheets: []
-//             }))
-//             await expect(xlsContent.Get()).rejects.toThrow(HttpErrorInternalServerError)
-//         })
+            xlsContent.Options = mockOptions
+            await xlsContent.Init("TestEntity", readableMock)
 
-//         // Handle empty or undefined content buffer
-//         it('should throw error for empty content buffer', async () => {
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options: {}
-//             })
-//             await expect(xlsContent.Get()).rejects.toThrow()
-//         })
+            expect(xlsContent.Config.xlsSheetName).toBe("Sheet1")
+            expect(xlsContent.Config.xlsStartingCell).toBe("B2")
+            expect(xlsContent.Config.xlsDefaultValue).toBe("N/A")
+            expect(xlsContent.Content).toBe(readableMock)
+            expect(xlsContent.EntityName).toBe("TestEntity")
+        })
+    })
 
-//         // Handle invalid or non-existent starting cell address
-//         it('should throw error for invalid starting cell address', async () => {
-//             const buffer = Buffer.from('test')
-//             const options = { xlsStartingCell: 'Invalid' }
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options
-//             })
-//             await xlsContent.Init('TestEntity', buffer)
-//             jest.spyOn(ExcelJS.Workbook.prototype, 'xlsx' as any).mockImplementation(() => ({
-//                 load: jest.fn().mockResolvedValueOnce(undefined),
-//                 worksheets: [{ name: 'Sheet1' }]
-//             }))
-//             await expect(xlsContent.Get()).rejects.toThrow()
-//         })
+    describe("Get", () => {
+        it("should throw error when worksheet is not found", async () => {
+            jest.mock('exceljs', () => ({ Workbook: jest.fn() }))
+            await xlsContent.Init("TestEntity", readableMock)
+            await expect(xlsContent.Get()).rejects.toThrow(HttpErrorInternalServerError)
+        })
 
-//         // Handle invalid or malformed SQL query in Get method
-//         it('should throw error for invalid SQL query', async () => {
-//             const buffer = Buffer.from('test')
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options: {}
-//             })
-//             await xlsContent.Init('TestEntity', buffer)
-//             jest.spyOn(ExcelJS.Workbook.prototype, 'xlsx' as any).mockImplementation(() => ({
-//                 load: jest.fn().mockResolvedValueOnce(undefined),
-//                 worksheets: [
-//                     {
-//                         name: 'Sheet1',
-//                         getRow: jest.fn().mockReturnValue({ values: ['Field1'] }),
-//                         eachRow: jest.fn()
-//                     }
-//                 ]
-//             }))
-//             await expect(xlsContent.Get('INVALID SQL')).rejects.toThrow()
-//         })
+        it("should return DataTable with parsed rows", async () => {
+            const mockWorkbook = {
+                xlsx: { load: jest.fn() },
+                getWorksheet: jest.fn(() => ({
+                    getCell: jest.fn(() => ({ address: "A1" })),
+                    getRow: jest.fn(() => ({ values: ["Column1", "Column2"] })),
+                    eachRow: jest.fn((options, callback) => {
+                        callback({ getCell: jest.fn(() => ({ value: "value1" })) }, 2)
+                    })
+                }))
+            }
+            jest.mock('exceljs', () => ({ Workbook: jest.fn(() => mockWorkbook) }))
+            await xlsContent.Init("TestEntity", readableMock)
+            const dataTable = await xlsContent.Get()
 
-//         // Handle Excel sheet with no data rows
-//         it('should throw error for Excel sheet with no data rows', async () => {
-//             const buffer = Buffer.from('test')
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options: {}
-//             })
-//             await xlsContent.Init('TestEntity', buffer)
-//             jest.spyOn(ExcelJS.Workbook.prototype, 'xlsx' as any).mockImplementation(() => ({
-//                 load: jest.fn().mockResolvedValueOnce(undefined),
-//                 worksheets: [
-//                     {
-//                         name: 'Sheet1',
-//                         getRow: jest.fn().mockReturnValue({ values: [] }),
-//                         eachRow: jest.fn()
-//                     }
-//                 ]
-//             }))
-//             await expect(xlsContent.Get()).rejects.toThrow(HttpErrorInternalServerError)
-//         })
+            expect(dataTable).toBeInstanceOf(DataTable)
+            expect(mockWorkbook.getWorksheet).toHaveBeenCalledWith("Sheet1")
+            expect(xlsContent.Content).toBeDefined()
+        })
+    })
 
+    describe("Set", () => {
+        it("should set content based on DataTable", async () => {
+            const mockWorkbook = {
+                xlsx: {
+                    load: jest.fn(),
+                    write: jest.fn()
+                },
+                worksheets: [{ getCell: jest.fn(() => ({ address: "A1" })) }]
+            }
+            const dataTable = new DataTable("TestEntity", [{ field1: "value1" }])
+            jest.mock('exceljs', () => ({ Workbook: jest.fn(() => mockWorkbook) }))
+            await xlsContent.Init("TestEntity", readableMock)
+            const result = await xlsContent.Set(dataTable)
 
-//         // Validate behavior when xlsSheetName is not specified
-//         it('should use first sheet when xlsSheetName is not specified', async () => {
-//             const buffer = Buffer.from('test')
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options: {}
-//             })
-//             await xlsContent.Init('TestEntity', buffer)
-//             jest.spyOn(ExcelJS.Workbook.prototype, 'xlsx' as any).mockImplementation(() => ({
-//                 load: jest.fn().mockResolvedValueOnce(undefined),
-//                 worksheets: [{ name: 'FirstSheet' }]
-//             }))
-//             const dataTable = await xlsContent.Get()
-//             expect(dataTable.Name).toBe('TestEntity')
-//         })
-//     })
+            expect(result).toBe(readableMock)
+            expect(mockWorkbook.xlsx.write).toHaveBeenCalledWith(readableMock)
+        })
 
-//     describe('Set', () => {
-//         // Set data into an Excel sheet using Set method
-//         it('should set data into an Excel sheet', async () => {
-//             const buffer = Buffer.from('test')
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options: {}
-//             })
-//             await xlsContent.Init('TestEntity', buffer)
-//             const dataTable = new DataTable('TestEntity', [{ Field1: 'Value1' }])
-//             jest.spyOn(ExcelJS.Workbook.prototype, 'xlsx' as any).mockImplementation(() => ({
-//                 load: jest.fn().mockResolvedValueOnce(undefined),
-//                 writeBuffer: jest.fn().mockResolvedValueOnce(Buffer.from('new content'))
-//             }))
-//             const resultBuffer = await xlsContent.Set(dataTable)
-//             expect(resultBuffer).toBeInstanceOf(Buffer)
-//         })
-
-//         it('should handle date formatting when xlsDateFormat is not specified', () => {
-//             // Mock ExcelJS Workbook and Worksheet
-//             const mockWorkbook = {
-//                 xlsx: {
-//                     load: jest.fn().mockResolvedValue(undefined),
-//                     writeBuffer: jest.fn().mockResolvedValue(Buffer.from('mocked buffer'))
-//                 },
-//                 getWorksheet: jest.fn().mockReturnValue(null),
-//                 addWorksheet: jest.fn().mockReturnValue({})
-//             }
-//             jest.mock('exceljs', () => ({
-//                 Workbook: jest.fn(() => mockWorkbook)
-//             }))
-
-//             const contentDataTable = new DataTable('Test', [{ Date: new Date() }])
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options: {}
-//             })
-
-//             return xlsContent.Set(contentDataTable).then(() => {
-//                 expect(mockWorkbook.xlsx.writeBuffer).toHaveBeenCalled()
-//             })
-//         })
-
-//         // Test with various data types in Excel cells
-//         it('should handle various data types in Excel cells', () => {
-//             // Mock ExcelJS Workbook and Worksheet
-//             const mockWorkbook = {
-//                 xlsx: {
-//                     load: jest.fn().mockResolvedValue(undefined),
-//                     writeBuffer: jest.fn().mockResolvedValue(Buffer.from('mocked buffer'))
-//                 },
-//                 getWorksheet: jest.fn().mockReturnValue({})
-//             }
-//             jest.mock('exceljs', () => ({
-//                 Workbook: jest.fn(() => mockWorkbook)
-//             }))
-
-//             const contentDataTable = new DataTable('Test', [
-//                 {
-//                     Number: 123,
-//                     String: 'abc',
-//                     Date: new Date()
-//                 }
-//             ])
-//             const xlsContent = new XlsContent({
-//                 ...randomSourceParams,
-//                 options: {}
-//             })
-
-//             return xlsContent.Set(contentDataTable).then(() => {
-//                 expect(mockWorkbook.xlsx.writeBuffer).toHaveBeenCalled()
-//             })
-//         })
-//     })
-
-//     describe('columnLetterToNumber', () => {
-//         // Ensure columnLetterToNumber handles single and multiple letter columns
-//         it('should convert column letters to numbers correctly', () => {
-//             expect(columnLetterToNumber('A')).toBe(1)
-//             expect(columnLetterToNumber('Z')).toBe(26)
-//             expect(columnLetterToNumber('AA')).toBe(27)
-//             expect(columnLetterToNumber('AZ')).toBe(52)
-//             expect(columnLetterToNumber('BA')).toBe(53)
-//         })
-//     })
-// })
+        it("should throw error when worksheet is not found", async () => {
+            const mockWorkbook = {
+                xlsx: { load: jest.fn() },
+                worksheets: []
+            }
+            jest.mock('exceljs', () => ({ Workbook: jest.fn(() => mockWorkbook) }))
+            await xlsContent.Init("TestEntity", readableMock)
+            await expect(xlsContent.Set(new DataTable("TestEntity", []))).rejects.toThrow(HttpErrorInternalServerError)
+        })
+    })
+})

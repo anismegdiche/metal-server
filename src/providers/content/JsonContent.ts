@@ -3,6 +3,7 @@
 //
 //
 //
+import { Readable } from "node:stream"
 import _ from 'lodash'
 //
 import { DataTable } from "../../types/DataTable"
@@ -19,12 +20,11 @@ export type TJsonContentConfig = {
 export class JsonContent extends CommonContent implements IContent {
 
     Config = <TJsonContentConfig>{}
-    Content: Buffer | undefined = undefined
     JsonObject: TJson = {}
     IsArray = false
 
     @Logger.LogFunction()
-    async Init(entityName: string, content: Buffer): Promise<void> {
+    async Init(entityName: string, content: Readable): Promise<void> {
         this.EntityName = entityName
         if (this.Options) {
             const {
@@ -37,9 +37,12 @@ export class JsonContent extends CommonContent implements IContent {
             }
         }
 
-        this.Content = content
+        this.Content.UploadFile(entityName, content)
         //TODO: when content = "", data has empty json object {}
-        this.JsonObject = JsonHelper.TryParse(this.Content.toString('utf8'), {})
+        this.JsonObject = JsonHelper.TryParse(
+            await CommonContent.ReadableToString(
+                this.Content.ReadFile(this.EntityName)
+            ), {})
         // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
         this.IsArray = _.isArray(this.JsonObject)
     }
@@ -52,14 +55,15 @@ export class JsonContent extends CommonContent implements IContent {
     }
 
     @Logger.LogFunction()
-    async Set(contentDataTable: DataTable): Promise<Buffer> {
+    async Set(contentDataTable: DataTable): Promise<Readable> {
 
         this.JsonObject = JsonHelper.Set(
             this.JsonObject,
             this.Config.jsonArrayPath,
             contentDataTable.Rows
         )
-        this.Content = Buffer.from(JSON.stringify(this.JsonObject), 'utf-8')
-        return this.Content
+        const streamOut = Readable.from(JSON.stringify(this.JsonObject))
+        this.Content.UploadFile(this.EntityName, streamOut)
+        return this.Content.ReadFile(this.EntityName)
     }
 }

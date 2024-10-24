@@ -3,6 +3,8 @@
 //
 //
 //
+import _ from "lodash"
+//
 import { RESPONSE } from "../../lib/Const"
 import { Helper } from "../../lib/Helper"
 import { Logger } from "../../utils/Logger"
@@ -50,7 +52,7 @@ export type TFilesDataProviderOptions = {
     // Storage
     & TFsStorageConfig
     & TAzureBlobStorageConfig
-    
+
     // Content
     & TJsonContentConfig
     & TCsvContentConfig
@@ -65,8 +67,12 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     Params: TSourceParams = <TSourceParams>{}
     Config: TJson = {}
 
+    // FilesDataProvider
+    File: Record<string, IContent> = {}
+
     Options = new CommonSqlDataProviderOptions()
 
+    //TODO: Refactor this asynchronous operation outside of the constructor.sonarlint(typescript:S7059)
     constructor(sourceName: string, sourceParams: TSourceParams) {
         this.SourceName = sourceName
         this.Init(sourceParams)
@@ -107,16 +113,14 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        if (this.Connection && this.Content) {
+        if (this.Connection && this.Content)
             this.Connection.Connect()
-        }
     }
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        if (this.Connection && this.Content) {
+        if (this.Connection && this.Content)
             this.Connection.Disconnect()
-        }
     }
 
     @Logger.LogFunction()
@@ -125,25 +129,29 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { entityName } = schemaRequest
 
-        // eslint-disable-next-line init-declarations
-        let buffer: Buffer | undefined
-
-        if (this.Connection)
-            buffer = await this.Connection?.Read(entityName)
-        else
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.Content.Init(entityName, buffer)
-        const fileDataTable = await this.Content.Get()
+        if (!_.has(this.File, entityName))
+            this.File[entityName] = this.Content
+
+        this.File[entityName].Init(
+            entityName,
+            await this.Connection?.Read(entityName)
+        )
+
+        const data = await this.File[entityName].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Insert(`\`${entityName}\``)
             .Fields(options.Data.GetFieldNames(), '`')
             .Values(options.Data.Rows)
 
-        await fileDataTable.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        buffer = await this.Content.Set(fileDataTable)
-        await this.Connection?.Write(entityName, buffer)
+        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await this.Connection?.Write(
+            entityName,
+            await this.File[entityName].Set(data)
+        )
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -160,15 +168,16 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             entityName
         }
 
-        // eslint-disable-next-line init-declarations
-        let buffer: Buffer | undefined
-
-        if (this.Connection)
-            buffer = await this.Connection?.Read(entityName)
-        else
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.Content.Init(entityName, buffer)
+        if (!_.has(this.File, entityName))
+            this.File[entityName] = this.Content
+
+        this.File[entityName].Init(
+            entityName,
+            await this.Connection?.Read(entityName)
+        )
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
@@ -180,7 +189,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             ? sqlQueryHelper.Query
             : undefined
 
-        const data = await this.Content.Get(sqlQuery)
+        const data = await this.File[entityName].Get(sqlQuery)
 
         if (options?.Cache)
             Cache.Set({
@@ -203,25 +212,30 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { entityName } = schemaRequest
 
-        // eslint-disable-next-line init-declarations
-        let buffer: Buffer | undefined
-
-        if (this.Connection)
-            buffer = await this.Connection?.Read(entityName)
-        else
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.Content.Init(entityName, buffer)
-        const fileDataTable = await this.Content.Get()
+        if (!_.has(this.File, entityName))
+            this.File[entityName] = this.Content
+
+        this.File[entityName].Init(
+            entityName,
+            await this.Connection?.Read(entityName)
+        )
+
+        const data = await this.File[entityName].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Update(`\`${entityName}\``)
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
-        await fileDataTable.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        buffer = await this.Content.Set(fileDataTable)
-        await this.Connection?.Write(entityName, buffer)
+        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+
+        await this.Connection?.Write(
+            entityName,
+            await this.File[entityName].Set(data)            
+        )
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -235,29 +249,31 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { entityName } = schemaRequest
 
-        // eslint-disable-next-line init-declarations
-        let fileString: Buffer | undefined
 
-        if (this.Connection)
-            fileString = await this.Connection?.Read(entityName)
-        else
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.Content.Init(entityName, fileString)
-        const fileDataTable = await this.Content.Get()
+        if (!_.has(this.File, entityName))
+            this.File[entityName] = this.Content
+
+        this.File[entityName].Init(
+            entityName,
+            await this.Connection?.Read(entityName)
+        )
+
+        const data = await this.File[entityName].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
             .From(`\`${entityName}\``)
             .Where(options.Filter)
 
-        await fileDataTable.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        fileString = await this.Content.Set(fileDataTable)
+        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
-        if (this.Connection)
-            await this.Connection?.Write(entityName, fileString)
-        else
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to write in storage provider`)
+        await this.Connection?.Write(
+            entityName,
+            await this.File[entityName].Set(data)
+        )
 
         // clean cache
         Cache.Remove(schemaRequest)

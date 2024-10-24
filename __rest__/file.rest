@@ -88,8 +88,8 @@ authorization: Bearer {{token}}
 
 
 # @name xls-select
-GET http://localhost:3000/schema/xls/sample.xlsx
-    ?filterExpression=Lastname like '%oe'
+GET http://localhost:3000/schema/xls/sample2.xlsx
+   ?filterExpression=Name = 'Mary'
 authorization: Bearer {{token}}
 ###
 
@@ -101,13 +101,21 @@ authorization: Bearer {{token}}
 {
     "data": {
         "Country": "France",
-        "City": "Paris"
+        "City": "Paris 16e"
     }
 }
 
 ###
 
 # @name xls-select
-GET http://localhost:3000/schema/xls/ref.xlsx
+GET http://localhost:3000/schema/xls/ref2.xlsx
+authorization: Bearer {{token}}
+###
+
+
+
+
+GET http://localhost:3000/schema/csv/covid.csv
+    # ?filterExpression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
 ###
