@@ -1,6 +1,5 @@
 /* eslint-disable init-declarations */
 import { Readable } from "node:stream"
-import * as ExcelJS from 'exceljs'
 import { XlsContent, columnLetterToNumber, TXlsContentConfig } from '../XlsContent'
 import { DataTable } from "../../../types/DataTable"
 import { HttpErrorInternalServerError } from "../../../server/HttpErrors"

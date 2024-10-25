@@ -11,7 +11,6 @@ import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { Readable } from "node:stream"
-import { ServiceListContainersSegmentResponseInternal } from "@azure/storage-blob"
 
 export type TFsStorageConfig = {
     fsFolder?: string

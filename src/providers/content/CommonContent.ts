@@ -8,6 +8,7 @@ import { PassThrough, Readable } from "node:stream"
 import { TSourceParams } from "../../types/TSourceParams"
 import { TFilesDataProviderOptions } from "../data/FilesDataProvider"
 import { VirtualFileSystem } from "../../utils/VirtualFileSystem "
+import { Logger } from "../../utils/Logger"
 
 
 export class CommonContent {

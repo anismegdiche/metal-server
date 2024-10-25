@@ -24,32 +24,36 @@ export class CommonStorage {
         this.Init()
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     Init(): void {
-        //
+        Logger.Debug('Init')
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        //
+        Logger.Debug('Connected')
     }
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        //
+        Logger.Debug('Disconnected')
     }
 
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async IsExist(file: string): Promise<boolean> {
-        return true
+        throw new HttpErrorNotImplemented()
     }
 
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async Read(file: string): Promise<Readable> {
         throw new HttpErrorNotImplemented()
     }
@@ -57,6 +61,7 @@ export class CommonStorage {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async Write(file: string, content: Readable): Promise<void> {
         //
     }
