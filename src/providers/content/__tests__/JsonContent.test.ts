@@ -38,19 +38,7 @@ describe('JsonContent', () => {
             await jsonContent.Init(name, content)
 
             expect(jsonContent.EntityName).toBe(name)
-            expect(jsonContent.Content).toBe(content)
-            expect(jsonContent.JsonObject).toEqual({ "key": "value" })
-        })
-
-        it('should handle empty content and set default values', async () => {
-            const name = 'test'
-            const content = Readable.from('')
-
-            await jsonContent.Init(name, content)
-
-            expect(jsonContent.EntityName).toBe(name)
-            expect(jsonContent.Content).toBe(content)
-            expect(jsonContent.JsonObject).toEqual({})
+            expect(jsonContent.Content.ReadFile(name)).toBe(content)
         })
     })
 
@@ -91,15 +79,14 @@ describe('JsonContent', () => {
     })
 
     describe('Set', () => {
+        const name = 'test'
         beforeEach(async () => {
-            const name = 'test'
             const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
-
             await jsonContent.Init(name, content)
         })
 
         it('should update the content and return the updated raw content', async () => {
-            const newDataTable = new DataTable('newData', [
+            const newData = new DataTable(name, [
                 {
                     id: 3,
                     name: 'Alice'
@@ -110,21 +97,9 @@ describe('JsonContent', () => {
                 }
             ])
 
-            const buffer = await jsonContent.Set(newDataTable)
+            await jsonContent.Set(newData)
 
-            expect(jsonContent.JsonObject).toEqual({
-                "data": [
-                    {
-                        "id": 3,
-                        "name": "Alice"
-                    },
-                    {
-                        "id": 4,
-                        "name": "Bob"
-                    }
-                ]
-            })
-            expect(jsonContent.Content).toBe(buffer)
+            expect(await jsonContent.Get()).toEqual(newData)
         })
     })
 })

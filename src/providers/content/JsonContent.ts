@@ -12,6 +12,7 @@ import { CommonContent } from './CommonContent'
 import { IContent } from "../../types/IContent"
 import { JsonHelper } from '../../lib/JsonHelper'
 import { Logger } from "../../utils/Logger"
+import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 
 export type TJsonContentConfig = {
     jsonArrayPath?: string
@@ -20,8 +21,8 @@ export type TJsonContentConfig = {
 export class JsonContent extends CommonContent implements IContent {
 
     Config = <TJsonContentConfig>{}
-    JsonObject: TJson = {}
-    IsArray = false
+    //XXX JsonObject: TJson = {}
+    //XXX IsArray = false
 
     @Logger.LogFunction()
     async Init(entityName: string, content: Readable): Promise<void> {
@@ -38,31 +39,44 @@ export class JsonContent extends CommonContent implements IContent {
         }
 
         this.Content.UploadFile(entityName, content)
-        //TODO: when content = "", data has empty json object {}
-        this.JsonObject = JsonHelper.TryParse(
-            await CommonContent.ReadableToString(
-                this.Content.ReadFile(this.EntityName)
-            ), {})
-        // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
-        this.IsArray = _.isArray(this.JsonObject)
+
+        //XXX eslint-disable-next-line you-dont-need-lodash-underscore/is-array
+        //XXX this.IsArray = _.isArray(this.JsonObject)
     }
 
     @Logger.LogFunction()
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
-        let data: TJson[] = []
-        data = JsonHelper.Get<TJson[]>(this.JsonObject, this.Config.jsonArrayPath)
+        if (!this.Content)
+            throw new HttpErrorInternalServerError('Content is not defined')
+
+        //TODO: when content = "", data has empty json object {}
+        const json = JsonHelper.TryParse(
+            await CommonContent.ReadableToString(
+                this.Content.ReadFile(this.EntityName)
+            ), {})
+
+        //XXX let data: TJson[] = []
+        const data = JsonHelper.Get<TJson[]>(json, this.Config.jsonArrayPath)
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
     @Logger.LogFunction()
-    async Set(contentDataTable: DataTable): Promise<Readable> {
+    async Set(data: DataTable): Promise<Readable> {
+        if (!this.Content)
+            throw new HttpErrorInternalServerError('Content is not defined')
 
-        this.JsonObject = JsonHelper.Set(
-            this.JsonObject,
+        //TODO: when content = "", data has empty json object {}
+        let json = JsonHelper.TryParse(
+            await CommonContent.ReadableToString(
+                this.Content.ReadFile(this.EntityName)
+            ), {})
+
+        json = JsonHelper.Set(
+            json,
             this.Config.jsonArrayPath,
-            contentDataTable.Rows
+            data.Rows
         )
-        const streamOut = Readable.from(JSON.stringify(this.JsonObject))
+        const streamOut = Readable.from(JSON.stringify(json))
         this.Content.UploadFile(this.EntityName, streamOut)
         return this.Content.ReadFile(this.EntityName)
     }
