@@ -159,4 +159,17 @@ export class Convert {
         const _objectString = Convert.ReplacePlaceholders(JSON.stringify(value))
         return JsonHelper.TryParse(_objectString, {})
     }
+
+    static ConvertPatternToRegex(pattern: string): RegExp {
+        // Escape special regex characters except for * and ?
+        const escapedPattern = pattern.replace(/([.+?^${}()|[\]\\])/g, '\\$1');
+    
+        // Replace friendly wildcards with regex equivalents
+        const regexPattern = escapedPattern
+            .replace(/\*/g, '.*')   // Convert * to .*
+            .replace(/\?/g, '.');   // Convert ? to .
+    
+        // Create and return the RegExp object
+        return new RegExp(`^${regexPattern}$`); // Anchored to match the whole string
+    }
 }
