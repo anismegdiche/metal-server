@@ -53,13 +53,13 @@ export class CsvContent extends CommonContent implements IContent {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
-        const result: any = Csv.parse<string>(
+        const parsedCsv: any = Csv.parse<string>(
             await CommonContent.ReadableToString(
                 this.Content.ReadFile(this.EntityName)
             ), 
             this.Config
         )
-        return new DataTable(this.EntityName, result?.data).FreeSqlAsync(sqlQuery)
+        return new DataTable(this.EntityName, parsedCsv?.data).FreeSqlAsync(sqlQuery)
     }
 
     @Logger.LogFunction()

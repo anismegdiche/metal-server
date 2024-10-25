@@ -24,7 +24,7 @@ describe('CsvContent', () => {
             await csvContent.Init(name, content)
 
             expect(csvContent.EntityName).toBe(name)
-            expect(csvContent.Content).toBe(content)
+            expect(csvContent.Content.ReadFile(name)).toBe(content)
         })
 
         test('should set default values for Config when Options is not provided', async () => {
