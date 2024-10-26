@@ -1,20 +1,17 @@
 import { Readable } from "node:stream"
 import { DataTable } from '../../../types/DataTable'
-import { TSourceParams } from '../../../types/TSourceParams'
 import { JsonContent } from '../JsonContent'
+import { TContentConfig } from "../../data/FilesDataProvider"
 
 describe('JsonContent', () => {
-    const sourceParams: TSourceParams = <TSourceParams>{
-        provider: "files",
-        options: {
-            jsonArrayPath: 'data'
-        }
+    const contentConfig: TContentConfig = {
+        jsonArrayPath: 'data'
     }
 
-    let jsonContent = new JsonContent(sourceParams)
+    let jsonContent = new JsonContent(contentConfig)
 
     beforeEach(() => {
-        jsonContent = new JsonContent(sourceParams)
+        jsonContent = new JsonContent(contentConfig)
     })
 
     describe('Init', () => {
@@ -22,10 +19,7 @@ describe('JsonContent', () => {
             const name = 'test'
             const content = Readable.from('{"key": "value"}')
 
-            const jsonContentEmptyOptions = new JsonContent(<TSourceParams>{
-                ...sourceParams,
-                options: {}
-            })
+            const jsonContentEmptyOptions = new JsonContent({})
 
             await jsonContentEmptyOptions.Init(name, content)
             expect(jsonContentEmptyOptions.Config).toEqual({ arrayPath: undefined })

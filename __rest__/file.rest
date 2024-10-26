@@ -82,19 +82,19 @@ authorization: Bearer {{token}}
 
 
 # @name xls-list
-GET http://localhost:3000/schema/xls
+GET http://localhost:3000/schema/v2
 authorization: Bearer {{token}}
 ###
 
 
 # @name xls-select
-GET http://localhost:3000/schema/xls/sample2.xlsx
+GET http://localhost:3000/schema/v2/sample.xlsx
    ?filterExpression=Name = 'Mary'
 authorization: Bearer {{token}}
 ###
 
 
-PATCH  http://localhost:3000/schema/xls/sample.xlsx
+PATCH  http://localhost:3000/schema/v2/sample.xlsx
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -108,14 +108,20 @@ authorization: Bearer {{token}}
 ###
 
 # @name xls-select
-GET http://localhost:3000/schema/xls/ref2.xlsx
+GET http://localhost:3000/schema/v2/ref2.xlsx
 authorization: Bearer {{token}}
 ###
 
 
 
 
-GET http://localhost:3000/schema/csv/covid.csv
+GET http://localhost:3000/schema/v2/covid.csv
+    # ?filterExpression=hexcode LIKE '%%00'
+authorization: Bearer {{token}}
+###
+
+
+GET http://localhost:3000/schema/v2/sample.csv
     # ?filterExpression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
 ###

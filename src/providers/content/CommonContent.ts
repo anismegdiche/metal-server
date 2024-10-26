@@ -5,21 +5,19 @@
 //
 //
 import { PassThrough, Readable } from "node:stream"
-import { TSourceParams } from "../../types/TSourceParams"
-import { TFilesDataProviderOptions } from "../data/FilesDataProvider"
+import { TContentConfig } from "../data/FilesDataProvider"
 import { VirtualFileSystem } from "../../utils/VirtualFileSystem "
-import { Logger } from "../../utils/Logger"
 
 
 export class CommonContent {
 
     EntityName: string = "DEFAULT"
-    Options: TFilesDataProviderOptions
+    Options: TContentConfig
     RawContent?: string = undefined
     Content = new VirtualFileSystem()
 
-    constructor(sourceParams: TSourceParams) {
-        this.Options = sourceParams.options as TFilesDataProviderOptions
+    constructor(contentConfig: TContentConfig) {
+        this.Options = contentConfig
     }
 
     static async ReadableToString(readable: Readable): Promise<string> {

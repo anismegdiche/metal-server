@@ -48,7 +48,7 @@ export class TypeHelper {
         httpError.message = renamedErrors
         delete httpError.stack
         throw httpError
-    }
+    }    
 
     static TranslateFriendlyErrors(txt: string) {
         return txt

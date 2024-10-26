@@ -1,19 +1,17 @@
-import { TSourceParams } from '../../../types/TSourceParams'
 import { CsvContent, TCsvContentConfig } from '../CsvContent'
 import { DataTable } from '../../../types/DataTable'
 import { Readable } from "node:stream"
+import { TContentConfig } from "../../data/FilesDataProvider"
 
 describe('CsvContent', () => {
-    const sourceParams: TSourceParams = <TSourceParams>{
-        provider: "files",
-        options: {
-            jsonArrayPath: 'data'
-        }
+    const contentConfig: TContentConfig = <TContentConfig>{
+        jsonArrayPath: 'data'
     }
-    let csvContent = new CsvContent(sourceParams)
+    
+    let csvContent = new CsvContent(contentConfig)
 
     beforeEach(() => {
-        csvContent = new CsvContent(sourceParams)
+        csvContent = new CsvContent(contentConfig)
     })
 
     describe('Init', () => {

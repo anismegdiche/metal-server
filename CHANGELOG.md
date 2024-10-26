@@ -2,12 +2,23 @@
 
 ## Version 0.3 - UNRELEASED
 
+### ⚠️ Breaking Changes
+- Updated to Node v23
+- File Provider:
+    - Changed `contentType` → `content` (Now supports multiple content type for the same storage, which may cause changes in behavior for existing configuration).
+    - Changed `storageType` → `storage`.
+    - Changed `fileSystem` storage → `fs`.
+- Plan sync function parameters have changed:
+  - `source` → `from`
+  - `destination` → `to`
+  - `on` → `id`
+
 ### Features
 - Response configuration: chunk, rate limit, body limit.
 - Plan commands: anonymize, remove-duplicates.
 - SwaggerUI.
 - Schema: List entities.
-- File Content: XLS/XLSX.
+- File Content: XLSX.
 
 ### Enhancements
 - Updated packages.
@@ -15,7 +26,7 @@
 - Updated Plan sync function usage.
 - Enhanced Logging feature.
 - Enhanced Tessract.js Engine.
-- Enhanced File Provider.
+- Enhanced File Provider (now supports multiple content types in the same storage).
 
 ### Bug Fixes
 - Fixed bugs related to Plan commands.

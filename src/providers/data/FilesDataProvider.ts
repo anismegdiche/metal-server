@@ -24,15 +24,15 @@ import { AzureBlobStorage, TAzureBlobStorageConfig } from '../storage/AzureBlobS
 import { FsStorage, TFsStorageConfig } from '../storage/FsStorage'
 import { CsvContent, TCsvContentConfig } from '../content/CsvContent'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
-import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
+import { Convert } from "../../lib/Convert"
 
 
 export enum STORAGE_PROVIDER {
-    FILESYSTEM = "fileSystem",
+    FILESYSTEM = "fs",
     AZURE_BLOB = "azureBlob"
 }
 
@@ -42,32 +42,34 @@ export enum CONTENT {
     XLS = "xls"
 }
 
+export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig
+
+export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsContentConfig
+
 export type TFilesDataProviderOptions = {
     // Common
     storageType?: STORAGE_PROVIDER
-    contentType?: CONTENT
+    content?: {
+        [pattern: string]: {
+            type: CONTENT
+        } & TContentConfig
+    }
+
     //TODO: to test
     autoCreate?: boolean
 }
-    // Storage
-    & TFsStorageConfig
-    & TAzureBlobStorageConfig
-
-    // Content
-    & TJsonContentConfig
-    & TCsvContentConfig
-    & TXlsContentConfig
+    & TStorageConfig
 
 export class FilesDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.FILES
     Connection?: IStorageProvider = undefined
-    Content: IContent = <IContent>{}
-    ContentType: CONTENT = CONTENT.JSON
+    //XXX ContentType: CONTENT = CONTENT.JSON
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
-    Config: TJson = {}
+    //XXX Config: TJson = {}
 
     // FilesDataProvider
+    ContentHandler: Record<string, IContent> = {}
     File: Record<string, IContent> = {}
 
     Options = new CommonSqlDataProviderOptions()
@@ -87,9 +89,19 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static readonly #NewContentCaseMap: Record<CONTENT, Function> = {
-        [CONTENT.JSON]: (sourceParams: TSourceParams) => new JsonContent(sourceParams),
-        [CONTENT.CSV]: (sourceParams: TSourceParams) => new CsvContent(sourceParams),
-        [CONTENT.XLS]: (sourceParams: TSourceParams) => new XlsContent(sourceParams)
+        [CONTENT.JSON]: (contentConfig: TContentConfig) => new JsonContent(contentConfig),
+        [CONTENT.CSV]: (contentConfig: TContentConfig) => new CsvContent(contentConfig),
+        [CONTENT.XLS]: (contentConfig: TContentConfig) => new XlsContent(contentConfig)
+    }
+
+    #SetHandler(entityName: string) {
+        if (!_.has(this.File, entityName)) {
+            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.ConvertPatternToRegex(pattern).test(entityName))
+            if (handler)
+                this.File[entityName] = this.ContentHandler[handler]
+            else
+                throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entityName}`)
+        }
     }
 
     @Logger.LogFunction()
@@ -98,28 +110,39 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         this.Params = sourceParams
         const {
             storageType = STORAGE_PROVIDER.FILESYSTEM,
-            contentType = CONTENT.JSON
+            content
         } = this.Params.options as TFilesDataProviderOptions
+
+        if (content === undefined)
+            throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
 
         this.Connection = FilesDataProvider.#NewStorageCaseMap[storageType](this.Params) ?? Helper.CaseMapNotFound(storageType)
 
+        // init storage
         if (this.Connection)
-            this.Connection?.Init()
+            this.Connection.Init()
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize storage provider`)
 
-        this.Content = FilesDataProvider.#NewContentCaseMap[contentType](this.Params) ?? Helper.CaseMapNotFound(contentType)
+        // init content
+        for (const filePattern in content) {
+            if (Object.prototype.hasOwnProperty.call(content, filePattern)) {
+                const { type } = content[filePattern]
+                this.ContentHandler[filePattern] =
+                    FilesDataProvider.#NewContentCaseMap[type](content[filePattern])
+            }
+        }
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        if (this.Connection && this.Content)
+        if (this.Connection && this.ContentHandler)
             this.Connection.Connect()
     }
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        if (this.Connection && this.Content)
+        if (this.Connection && this.ContentHandler)
             this.Connection.Disconnect()
     }
 
@@ -132,12 +155,11 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (!_.has(this.File, entityName))
-            this.File[entityName] = this.Content
+        this.#SetHandler(entityName)
 
         this.File[entityName].Init(
             entityName,
-            await this.Connection?.Read(entityName)
+            await this.Connection.Read(entityName)
         )
 
         const data = await this.File[entityName].Get()
@@ -148,7 +170,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             .Values(options.Data.Rows)
 
         await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        await this.Connection?.Write(
+        await this.Connection.Write(
             entityName,
             await this.File[entityName].Set(data)
         )
@@ -158,6 +180,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         return HttpResponse.Created()
     }
+
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
         const options: TOptions = this.Options.Parse(schemaRequest)
@@ -171,12 +194,11 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (!_.has(this.File, entityName))
-            this.File[entityName] = this.Content
+        this.#SetHandler(entityName)
 
         this.File[entityName].Init(
             entityName,
-            await this.Connection?.Read(entityName)
+            await this.Connection.Read(entityName)
         )
 
         const sqlQueryHelper = new SqlQueryHelper()
@@ -215,12 +237,11 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (!_.has(this.File, entityName))
-            this.File[entityName] = this.Content
+        this.#SetHandler(entityName)
 
         this.File[entityName].Init(
             entityName,
-            await this.Connection?.Read(entityName)
+            await this.Connection.Read(entityName)
         )
 
         const data = await this.File[entityName].Get()
@@ -232,9 +253,9 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
-        await this.Connection?.Write(
+        await this.Connection.Write(
             entityName,
-            await this.File[entityName].Set(data)            
+            await this.File[entityName].Set(data)
         )
 
         // clean cache
@@ -253,12 +274,11 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (!_.has(this.File, entityName))
-            this.File[entityName] = this.Content
+        this.#SetHandler(entityName)
 
         this.File[entityName].Init(
             entityName,
-            await this.Connection?.Read(entityName)
+            await this.Connection.Read(entityName)
         )
 
         const data = await this.File[entityName].Get()
@@ -270,7 +290,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
-        await this.Connection?.Write(
+        await this.Connection.Write(
             entityName,
             await this.File[entityName].Set(data)
         )

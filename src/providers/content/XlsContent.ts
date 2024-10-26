@@ -23,7 +23,7 @@ export type TXlsContentConfig = {
 }
 
 // Convert column letter (e.g., 'A', 'B', 'AA') to a column number
-export function columnLetterToNumber(letter: string): number {
+export function ColumnLetterToNumber(letter: string): number {
     let column = 0
     const { length } = letter
     // eslint-disable-next-line no-plusplus
@@ -77,7 +77,7 @@ export class XlsContent extends CommonContent implements IContent {
             throw new HttpErrorInternalServerError(`Worksheet "${sheetName}" not found in workbook.`)
 
         const [startCol, startRow] = worksheet.getCell(xlsStartingCell!).address.match(/[A-Z]+|\d+/g)!
-        const colIndex = columnLetterToNumber(startCol) // Convert column letter to number
+        const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
         const fields = _.compact(worksheet.getRow(parseInt(startRow, 10)).values as string[])
         if (fields == undefined || fields.length == 0)
@@ -127,7 +127,7 @@ export class XlsContent extends CommonContent implements IContent {
 
         const { xlsStartingCell, xlsDateFormat, xlsCellDates } = this.Config
         const [startCol, startRow] = worksheet.getCell(xlsStartingCell!).address.match(/[A-Z]+|\d+/g)!
-        const colIndex = columnLetterToNumber(startCol) // Convert column letter to number
+        const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
         // Set headers
         const fields = Object.keys(data.Rows[0])

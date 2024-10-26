@@ -10,6 +10,7 @@ import DATA_PROVIDER from "../server/Source"
 import { AI_ENGINE } from "../server/AiEngine"
 import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "./StepsParams"
 import { STEP } from "../server/Step"
+import { TJson } from "./TJson"
 
 
 // sources.*
@@ -21,7 +22,7 @@ export type TConfigSource = {
     password?: string
     database?: string
     options?: {
-        [key: string]: string | number | JSON | boolean
+        [key: string]: string | number | TJson | boolean
     }
 }
 
