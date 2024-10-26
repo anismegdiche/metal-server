@@ -48,7 +48,7 @@ export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsConten
 
 export type TFilesDataProviderOptions = {
     // Common
-    storageType?: STORAGE_PROVIDER
+    storage?: STORAGE_PROVIDER
     content?: {
         [pattern: string]: {
             type: CONTENT
@@ -109,14 +109,14 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         Logger.Debug("FilesDataProvider.Init")
         this.Params = sourceParams
         const {
-            storageType = STORAGE_PROVIDER.FILESYSTEM,
+            storage = STORAGE_PROVIDER.FILESYSTEM,
             content
         } = this.Params.options as TFilesDataProviderOptions
 
         if (content === undefined)
             throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
 
-        this.Connection = FilesDataProvider.#NewStorageCaseMap[storageType](this.Params) ?? Helper.CaseMapNotFound(storageType)
+        this.Connection = FilesDataProvider.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
 
         // init storage
         if (this.Connection)
