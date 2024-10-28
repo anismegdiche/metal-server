@@ -121,10 +121,6 @@ tags:
       description: "Find out more"
       url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#schedule"
 
-servers:
-  - url: http://localhost:3000
-    description: Default test server
-
 paths:
   /user/login:
     post:
