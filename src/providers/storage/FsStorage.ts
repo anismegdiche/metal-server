@@ -4,13 +4,14 @@
 //
 //
 import * as Fs from 'fs'
+import { Readable } from "node:stream"
 //
 import { CommonStorage } from "./CommonStorage"
 import { IStorage } from "../../types/IStorage"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
-import { Readable } from "node:stream"
+import { Convert } from "../../lib/Convert"
 
 export type TFsStorageConfig = {
     fsFolder?: string
@@ -25,6 +26,17 @@ export class FsStorage extends CommonStorage implements IStorage {
         this.Config = {
             fsFolder: this.Options.fsFolder ?? '.'
         }
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    async Connect(): Promise<void> {
+        Logger.Debug(`Connected`)
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
+    async Disconnect(): Promise<void> {
+        Logger.Debug(`Disconnected`)
     }
 
     @Logger.LogFunction()
@@ -44,7 +56,7 @@ export class FsStorage extends CommonStorage implements IStorage {
         }
 
         if (await this.IsExist(file))
-            return this.ConvertReadStreamToReadable(Fs.createReadStream(filePath))
+            return Convert.ReadStreamToReadable(Fs.createReadStream(filePath))
         
         throw new HttpErrorNotFound(`File '${file}' does not exist`)
     }

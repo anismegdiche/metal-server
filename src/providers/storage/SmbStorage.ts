@@ -20,6 +20,10 @@ export class SmbStorage extends CommonStorage implements IStorage {
     Config = <Required<TSmbStorageConfig>>{}
     #SmbClient: Smb2 | undefined
 
+    #GetFilePath(file: string): string {
+        return `${this.Config.smbPath}/${file}`.replace(/\/+/g, "/")  // Ensure correct path format
+    }
+
     @Logger.LogFunction()
     Init(): void {
         this.Config = <Required<TSmbStorageConfig>>{
@@ -29,18 +33,31 @@ export class SmbStorage extends CommonStorage implements IStorage {
             smbPassword: this.Options.smbPassword,
             smbPath: this.Options.smbPath ?? ""
         }
-
-        // Initialize the SMB2 client
-        this.#SmbClient = new Smb2({
-            share: this.Config.smbShare,
-            domain: this.Config.smbDomain,
-            username: this.Config.smbUsername,
-            password: this.Config.smbPassword
-        })
     }
 
-    private getFilePath(file: string): string {
-        return `${this.Config.smbPath}/${file}`.replace(/\/+/g, "/")  // Ensure correct path format
+    async Connect(): Promise<void> {
+        try {
+            // Initialize the SMB2 client
+            this.#SmbClient = new Smb2({
+                share: this.Config.smbShare,
+                domain: this.Config.smbDomain,
+                username: this.Config.smbUsername,
+                password: this.Config.smbPassword
+            })
+        } catch (error: any) {
+            Logger.Error(`Failed to connect to FTP server '${this.Config.smbDomain}': ${error.message}`)
+        }
+    }
+
+    @Logger.LogFunction()
+    async Disconnect(): Promise<void> {
+        if (this.#SmbClient) {
+            await new Promise<void>((resolve) => {
+                this.#SmbClient!.close()
+                resolve()
+            })
+            this.#SmbClient = undefined
+        }
     }
 
     @Logger.LogFunction()
@@ -49,7 +66,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
             throw new HttpErrorInternalServerError("SMB client not initialized")
         }
 
-        const filePath = this.getFilePath(file)
+        const filePath = this.#GetFilePath(file)
 
         try {
             return await new Promise<boolean>((resolve, reject) => {
@@ -76,7 +93,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
             throw new HttpErrorNotFound(`File '${file}' does not exist on the SMB server`)
         }
 
-        const filePath = this.getFilePath(file)
+        const filePath = this.#GetFilePath(file)
 
         return new Promise<Readable>((resolve, reject) => {
             this.#SmbClient!.readFile(filePath, (err: any, dataString) => {
@@ -95,7 +112,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
             throw new HttpErrorInternalServerError('SMB client not initialized')
         }
 
-        const filePath = this.getFilePath(file)
+        const filePath = this.#GetFilePath(file)
 
         try {
             const contentString = await ReadableHelper.ToString(content)
@@ -146,17 +163,6 @@ export class SmbStorage extends CommonStorage implements IStorage {
             throw error instanceof Error
                 ? error
                 : new HttpErrorInternalServerError('Unknown error during file listing')
-        }
-    }
-
-    @Logger.LogFunction()
-    async Disconnect(): Promise<void> {
-        if (this.#SmbClient) {
-            await new Promise<void>((resolve) => {
-                this.#SmbClient!.close()
-                resolve()
-            })
-            this.#SmbClient = undefined
         }
     }
 }

@@ -5,6 +5,7 @@
 //
 import { Request, Response } from 'express'
 import { Readable } from 'node:stream'
+import { ReadStream } from "fs"
 import _ from "lodash"
 //
 import { TSchemaRequest } from '../types/TSchemaRequest'
@@ -173,5 +174,26 @@ export class Convert {
         return new RegExp(`^${regexPattern}$`) // Anchored to match the whole string
     }
 
+    static ReadStreamToReadable(readStream: ReadStream): Readable {
+        const readableStream = new Readable({
+            read() {
+                // No-op, because we're manually pushing data
+            }
+        })
 
+        // Pipe data from ReadStream into Readable
+        readStream.on('data', (chunk) => {
+            readableStream.push(chunk)  // Push data into the new Readable stream
+        })
+
+        readStream.on('end', () => {
+            readableStream.push(null)  // Signal the end of the stream
+        })
+
+        readStream.on('error', (err) => {
+            readableStream.emit('error', err)  // Forward any errors
+        })
+
+        return readableStream
+    }
 }

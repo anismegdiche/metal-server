@@ -29,7 +29,6 @@ export class FtpStorage extends CommonStorage implements IStorage {
             ftpSecure: this.Options.ftpSecure ?? false,
             ftpRemoteFolder: this.Options.ftpRemoteFolder ?? '/'
         }
-        this.FtpClient = new Ftp.Client()
     }
 
     async Connect(): Promise<void> {
