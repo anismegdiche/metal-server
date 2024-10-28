@@ -11,6 +11,7 @@ import { IContent } from "../../types/IContent"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { Readable } from "node:stream"
+import { ReadableHelper } from "../../lib/ReadableHelper"
 
 export type TCsvContentConfig = {
     csvDelimiter?: string
@@ -54,7 +55,7 @@ export class CsvContent extends CommonContent implements IContent {
             throw new HttpErrorInternalServerError('Content is not defined')
 
         const parsedCsv: any = Csv.parse<string>(
-            await CommonContent.ReadableToString(
+            await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
             ), 
             this.Config

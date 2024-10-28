@@ -5,7 +5,7 @@ import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/Ht
 import { DataTable } from "../../types/DataTable"
 import { Readable } from "node:stream"
 import * as Ftp from "basic-ftp"
-import { Convert } from "../../lib/Convert"
+import { ReadableHelper } from "../../lib/ReadableHelper"
 
 export type TFtpStorageConfig = {
     ftpHost: string
@@ -64,7 +64,7 @@ export class FtpStorage extends CommonStorage implements IStorage {
                 throw new HttpErrorNotFound(`File '${file}' does not exist on the FTP server`)
 
             const stream = new Readable()
-            await this.FtpClient.downloadTo(Convert.ReadableToWritable(stream), path)
+            await this.FtpClient.downloadTo(ReadableHelper.ToWritable(stream), path)
             return stream
         } catch (error: any) {
             throw (error instanceof HttpErrorNotFound)

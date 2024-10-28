@@ -2,7 +2,7 @@ import { Readable } from "node:stream"
 import { TSourceParams } from '../../../types/TSourceParams'
 import { FsStorage } from '../FsStorage'
 import Fs from 'fs'
-import { CommonContent } from "../../content/CommonContent"
+import { ReadableHelper } from "../../../lib/ReadableHelper"
 
 
 describe('FsStorage', () => {
@@ -47,7 +47,7 @@ describe('FsStorage', () => {
 
             const result = await fsStorage.Read('test.txt')
             expect(result).toBeInstanceOf(Readable)
-            expect(CommonContent.ReadableToString(result)).resolves.toBe('File content')
+            expect(ReadableHelper.ToString(result)).resolves.toBe('File content')
         })
 
         it('should return throw Not Found if the file does not exist', async () => {

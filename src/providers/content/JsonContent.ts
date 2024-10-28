@@ -12,6 +12,7 @@ import { IContent } from "../../types/IContent"
 import { JsonHelper } from '../../lib/JsonHelper'
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
+import { ReadableHelper } from "../../lib/ReadableHelper"
 
 export type TJsonContentConfig = {
     jsonArrayPath?: string
@@ -50,7 +51,7 @@ export class JsonContent extends CommonContent implements IContent {
 
         //TODO: when content = "", data has empty json object {}
         const json = JsonHelper.TryParse(
-            await CommonContent.ReadableToString(
+            await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
             ), {})
 
@@ -66,7 +67,7 @@ export class JsonContent extends CommonContent implements IContent {
 
         //TODO: when content = "", data has empty json object {}
         let json = JsonHelper.TryParse(
-            await CommonContent.ReadableToString(
+            await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
             ), {})
 

@@ -6,7 +6,7 @@ import { IStorage } from "../../types/IStorage"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
-import { Convert } from "../../lib/Convert"
+import { ReadableHelper } from "../../lib/ReadableHelper"
 
 export type TSmbStorageConfig = {
     smbShare: string            // SMB share path, e.g., "\\server\share"
@@ -98,7 +98,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
         const filePath = this.getFilePath(file)
 
         try {
-            const contentString = await Convert.ReadableToString(content)
+            const contentString = await ReadableHelper.ToString(content)
 
             return new Promise<void>((resolve, reject) => {
                 this.#SmbClient!.writeFile(filePath, contentString, (err: any) => {

@@ -4,7 +4,7 @@
 //
 //
 import { Request, Response } from 'express'
-import { PassThrough, Readable, Writable } from 'node:stream'
+import { Readable } from 'node:stream'
 import _ from "lodash"
 //
 import { TSchemaRequest } from '../types/TSchemaRequest'
@@ -171,40 +171,6 @@ export class Convert {
 
         // Create and return the RegExp object
         return new RegExp(`^${regexPattern}$`) // Anchored to match the whole string
-    }
-
-    static async ReadableToBuffer(stream: Readable): Promise<Buffer> {
-        const chunks: any[] = []
-        return new Promise((resolve, reject) => {
-            stream.on('data', (chunk) => chunks.push(chunk))
-            stream.on('end', () => resolve(Buffer.concat(chunks)))
-            stream.on('error', reject)
-        })
-    }
-
-    static ReadableToWritable(readable: Readable): Writable {
-        const writable = new PassThrough()
-        readable.pipe(writable)
-        return writable
-    }
-
-    static async ReadableToString(stream: Readable): Promise<string> {
-        const chunks: any[] = []
-        return new Promise((resolve, reject) => {
-            stream.on('data', (chunk) => chunks.push(chunk))
-            stream.on('end', () => resolve(Buffer.concat(chunks).toString()))
-            stream.on('error', reject)
-        })
-    }
-
-    static DuplicateReadable(original: Readable): [Readable, Readable] {
-        const passThrough1 = new PassThrough()
-        const passThrough2 = new PassThrough()
-
-        original.pipe(passThrough1)
-        original.pipe(passThrough2)
-
-        return [passThrough1, passThrough2]
     }
 
 
