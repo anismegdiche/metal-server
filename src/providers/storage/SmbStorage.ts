@@ -45,7 +45,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
                 password: this.Config.smbPassword
             })
         } catch (error: any) {
-            Logger.Error(`Failed to connect to FTP server '${this.Config.smbDomain}': ${error.message}`)
+            Logger.Error(`Failed to connect to server '${this.Config.smbDomain}': ${error.message}`)
         }
     }
 

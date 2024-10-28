@@ -1,142 +1,231 @@
 import { Readable } from "node:stream"
-import { HttpErrorNotFound, HttpErrorInternalServerError } from "../../../server/HttpErrors"
-import { DataTable } from "../../../types/DataTable"
+import Smb2 from "smb2"
 import { SmbStorage } from "../SmbStorage"
-import typia from "typia"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../../server/HttpErrors"
+import { ReadableHelper } from "../../../lib/ReadableHelper"
 import { TConfigSource } from "../../../types/TConfig"
+import typia from "typia"
 import DATA_PROVIDER from "../../../server/Source"
 import { STORAGE } from "../../data/FilesDataProvider"
 
-const rndSourceConfig = <TConfigSource>{
-    ...typia.random<TConfigSource>(),
-    provider: DATA_PROVIDER.FILES,
-    options: {
-        storage: STORAGE.SMB
+// Mock the smb2 module
+jest.mock("smb2")
+jest.mock("../../../lib/ReadableHelper")
+
+describe("SmbStorage", () => {
+    // eslint-disable-next-line init-declarations
+    let storage: SmbStorage
+    const mockConfig = <TConfigSource>{
+        ...typia.random<TConfigSource>(),
+        provider: DATA_PROVIDER.FILES,
+        options: {
+            storage: STORAGE.SMB,
+            smbShare: "\\\\server\\share",
+            smbDomain: "domain",
+            smbUsername: "user",
+            smbPassword: "pass",
+            smbPath: "/test/path"
+        }
     }
-}
 
-describe('SmbStorage', () => {
-    const options = {
-        ...rndSourceConfig.options,
-        smbShare: '\\\\server\\share',
-        smbUsername: 'user',
-        smbPassword: 'pass'
+    // Mock SMB client implementation
+    const mockSmb2Client = {
+        exists: jest.fn(),
+        readFile: jest.fn(),
+        writeFile: jest.fn(),
+        readdir: jest.fn(),
+        close: jest.fn()
     }
 
-    // Successfully initialize SMB client with valid configuration
-    it('should initialize SMB client with valid configuration', () => {
-        
-        const smbStorage = new SmbStorage({
-            ...rndSourceConfig,
-            options
-        })
-        smbStorage.Init()
-        expect(smbStorage.Config.smbShare).toBe(options.smbShare)
-        expect(smbStorage.Config.smbUsername).toBe(options.smbUsername)
-        expect(smbStorage.Config.smbPassword).toBe(options.smbPassword)
+    beforeEach(() => {
+        // Reset all mocks
+        jest.clearAllMocks()
+
+            // Setup the mock implementation for Smb2 constructor
+            // eslint-disable-next-line semi-style
+            ; (Smb2 as jest.MockedClass<typeof Smb2>).mockImplementation(() => mockSmb2Client as any)
+
+        // Initialize storage with test config
+        storage = new SmbStorage(mockConfig)
+        storage.Init()
     })
 
-    // Connect to SMB server without errors
-    it('should connect to SMB server without errors', async () => {
-        const smbStorage = new SmbStorage(rndSourceConfig)
-        smbStorage.Init()
-        await expect(smbStorage.Connect()).resolves.not.toThrow()
-    })
-
-    // Disconnect from SMB server gracefully
-    it('should disconnect from SMB server gracefully', async () => {
-        const smbStorage = new SmbStorage(rndSourceConfig)
-        smbStorage.Init()
-        await smbStorage.Connect()
-        await expect(smbStorage.Disconnect()).resolves.not.toThrow()
-    })
-
-    // Check if a file exists on the SMB server
-    it('should check if a file exists on the SMB server', async () => {
-        const smbStorage = new SmbStorage({
-            ...rndSourceConfig,
-            options
-        })
-        smbStorage.Init()
-        await smbStorage.Connect()
-        const exists = await smbStorage.IsExist('test.txt')
-        expect(exists).toBe(true)
-    },300_000)
-
-    // Read a file from the SMB server if it exists
-    it('should read a file from the SMB server if it exists', async () => {
-        const smbStorage = new SmbStorage(rndSourceConfig)
-        smbStorage.Init()
-        await smbStorage.Connect()
-        const readable = await smbStorage.Read('test.txt')
-        expect(readable).toBeInstanceOf(Readable)
-    })
-
-    // Write a file to the SMB server without errors
-    it('should write a file to the SMB server without errors', async () => {
-        const smbStorage = new SmbStorage(rndSourceConfig)
-        smbStorage.Init()
-        await smbStorage.Connect()
-        const content = Readable.from(['Hello World'])
-        await expect(smbStorage.Write('test.txt', content)).resolves.not.toThrow()
-    })
-
-    // Attempt to connect with invalid credentials
-    it('should fail to connect with invalid credentials', async () => {
-        const smbStorage = new SmbStorage(<TConfigSource>{})
-        smbStorage.Init()
-        await expect(smbStorage.Connect()).rejects.toThrow()
-    })
-
-    // Try to read a non-existent file
-    it('should throw error when reading a non-existent file', async () => {
-        const smbStorage = new SmbStorage(rndSourceConfig)
-        smbStorage.Init()
-        await smbStorage.Connect()
-        await expect(smbStorage.Read('nonexistent.txt')).rejects.toThrow(HttpErrorNotFound)
-    })
-
-    // Write to a file when SMB client is not initialized
-    it('should throw error when writing without initializing SMB client', async () => {
-        const smbStorage = new SmbStorage(rndSourceConfig)
-        const content = Readable.from(['Hello World'])
-        await expect(smbStorage.Write('test.txt', content)).rejects.toThrow(HttpErrorInternalServerError)
-    })
-
-    // List files when SMB client is not initialized
-    it('should throw error when listing files without initializing SMB client', async () => {
-        const smbStorage = new SmbStorage(rndSourceConfig)
-        await expect(smbStorage.List()).rejects.toThrow(HttpErrorInternalServerError)
-    })
-
-    // Handle network interruptions during file operations
-    it('should handle network interruptions during file operations gracefully', async () => {
-        const smbStorage = new SmbStorage(rndSourceConfig)
-        smbStorage.Init()
-        await smbStorage.Connect()
-
-        jest.spyOn(smbStorage, 'Read').mockImplementation(() => {
-            throw new Error('Network interruption')
+    describe("Init", () => {
+        it("should initialize with correct configuration", () => {
+            expect(storage["Config"]).toEqual({
+                smbShare: mockConfig.options!.smbShare,
+                smbDomain: mockConfig.options!.smbDomain,
+                smbUsername: mockConfig.options!.smbUsername,
+                smbPassword: mockConfig.options!.smbPassword,
+                smbPath: mockConfig.options!.smbPath
+            })
         })
 
-        await expect(smbStorage.Read('test.txt')).rejects.toThrow('Network interruption')
-    })
-
-    // List files in the specified SMB path
-    it('should list files in the specified SMB path', async () => {
-        const smbStorage = new SmbStorage(rndSourceConfig)
-        smbStorage.Init()
-        await smbStorage.Connect()
-
-        jest.spyOn(smbStorage, 'List').mockResolvedValue(new DataTable("", [
-            {
-                name: "file1.txt",
-                type: "file"
+        it("should use default values for optional parameters", () => {
+            const minimalConfig = {
+                smbShare: "\\\\server\\share",
+                smbUsername: "user",
+                smbPassword: "pass"
             }
-        ]))
+            const minimalStorage = new SmbStorage({
+                ...mockConfig,
+                options: minimalConfig
+            })
 
-        const dataTable = await smbStorage.List()
-        expect(dataTable.Rows.length).toBeGreaterThan(0)
-        expect(dataTable.Rows[0].name).toBe("file1.txt")
+            minimalStorage.Init()
+
+            expect(minimalStorage["Config"]).toEqual({
+                ...minimalConfig,
+                smbDomain: "",
+                smbPath: ""
+            })
+        })
+    })
+
+    describe("Connect", () => {
+        it("should initialize SMB client with correct configuration", async () => {
+            await storage.Connect()
+
+            expect(Smb2).toHaveBeenCalledWith({
+                share: mockConfig.options!.smbShare,
+                domain: mockConfig.options!.smbDomain,
+                username: mockConfig.options!.smbUsername,
+                password: mockConfig.options!.smbPassword
+            })
+        })
+
+        it("should handle connection errors gracefully", async () => {
+            const errorMessage = "Connection failed";
+            (Smb2 as jest.MockedClass<typeof Smb2>).mockImplementationOnce(() => {
+                throw new Error(errorMessage)
+            })
+
+            await storage.Connect()
+            // Verify the error was logged (you might need to mock your Logger here)
+        })
+    })
+
+    describe("Disconnect", () => {
+        it("should close the SMB client connection", async () => {
+            await storage.Connect()
+            await storage.Disconnect()
+
+            expect(mockSmb2Client.close).toHaveBeenCalled()
+        })
+
+        it("should handle disconnect when client is not initialized", async () => {
+            await storage.Disconnect()
+            expect(mockSmb2Client.close).not.toHaveBeenCalled()
+        })
+    })
+
+    describe("IsExist", () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it("should return true when file exists", async () => {
+            mockSmb2Client.exists.mockImplementation((path, callback) => callback(null, true))
+
+            const result = await storage.IsExist("test.txt")
+            expect(result).toBe(true)
+        })
+
+        it("should return false when file does not exist", async () => {
+            mockSmb2Client.exists.mockImplementation((path, callback) => callback(null, false))
+
+            const result = await storage.IsExist("nonexistent.txt")
+            expect(result).toBe(false)
+        })
+
+        it("should throw error when client is not initialized", async () => {
+            await storage.Disconnect()
+            await expect(storage.IsExist("test.txt")).rejects.toThrow(HttpErrorInternalServerError)
+        })
+    })
+
+    describe("Read", () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it("should read file successfully", async () => {
+            const fileContent = "test content"
+            mockSmb2Client.exists.mockImplementation((path, callback) => callback(null, true))
+            mockSmb2Client.readFile.mockImplementation((path, callback) => callback(null, fileContent))
+
+            const result = await storage.Read("test.txt")
+            expect(result).toBeInstanceOf(Readable)
+        })
+
+        it("should throw NotFound error when file does not exist", async () => {
+            mockSmb2Client.exists.mockImplementation((path, callback) => callback(null, false))
+
+            await expect(storage.Read("nonexistent.txt")).rejects.toThrow(HttpErrorNotFound)
+        })
+
+        it("should throw error when client is not initialized", async () => {
+            await storage.Disconnect()
+            await expect(storage.Read("test.txt")).rejects.toThrow(HttpErrorInternalServerError)
+        })
+    })
+
+    describe("Write", () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it("should write file successfully", async () => {
+            const content = Readable.from("test content");
+            (ReadableHelper.ToString as jest.Mock).mockResolvedValue("test content")
+            mockSmb2Client.writeFile.mockImplementation((path, content, callback) => callback(null))
+
+            await expect(storage.Write("test.txt", content)).resolves.not.toThrow()
+            expect(mockSmb2Client.writeFile).toHaveBeenCalled()
+        })
+
+        it("should throw error when client is not initialized", async () => {
+            const content = Readable.from("test content")
+            await storage.Disconnect()
+            await expect(storage.Write("test.txt", content)).rejects.toThrow(HttpErrorInternalServerError)
+        })
+
+        it("should handle write errors", async () => {
+            const content = Readable.from("test content");
+            (ReadableHelper.ToString as jest.Mock).mockResolvedValue("test content")
+            mockSmb2Client.writeFile.mockImplementation((path, content, callback) => callback(new Error("Write failed"))
+            )
+
+            await expect(storage.Write("test.txt", content)).rejects.toThrow(HttpErrorInternalServerError)
+        })
+    })
+
+    describe("List", () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it("should list files successfully", async () => {
+            const mockFiles = ["file1.txt", "file2.txt"]
+            mockSmb2Client.readdir.mockImplementation((path, callback) => callback(null, mockFiles))
+
+            const result = await storage.List()
+            expect(result.Rows).toEqual(mockFiles.map(file => ({
+                name: file,
+                type: "file"
+            })))
+        })
+
+        it("should throw error when client is not initialized", async () => {
+            await storage.Disconnect()
+            await expect(storage.List()).rejects.toThrow(HttpErrorInternalServerError)
+        })
+
+        it("should handle listing errors", async () => {
+            mockSmb2Client.readdir.mockImplementation((path, callback) => callback(new Error("Listing failed"))
+            )
+
+            await expect(storage.List()).rejects.toThrow(HttpErrorInternalServerError)
+        })
     })
 })
