@@ -7,7 +7,7 @@ import { Readable } from 'node:stream'
 //
 import { DataTable } from "./DataTable"
 import { TContentConfig } from "../providers/data/FilesDataProvider"
-import { VirtualFileSystem } from "../utils/VirtualFileSystem "
+import { VirtualFileSystem } from "../utils/VirtualFileSystem"
 
 
 export interface IContent {
