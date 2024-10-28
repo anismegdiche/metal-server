@@ -21,7 +21,7 @@ import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
 import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
-import { TStepSync, TStepRemoveDuplicates, TStepSort, TStepRun, TStepSelect, TStepListEntities, TStepInsert } from "../types/StepsParams"
+import { TStepSync, TStepRemoveDuplicates, TStepSort, TStepRun, TStepSelect, TStepListEntities, TStepInsert } from "../types/TStep"
 import { HttpErrorInternalServerError } from "./HttpErrors"
 import { Config } from "./Config"
 
