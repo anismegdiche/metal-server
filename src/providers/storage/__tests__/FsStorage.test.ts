@@ -1,12 +1,12 @@
 import { Readable } from "node:stream"
-import { TSourceParams } from '../../../types/TSourceParams'
+import { TConfigSource } from '../../../types/TConfig'
 import { FsStorage } from '../FsStorage'
 import Fs from 'fs'
 import { ReadableHelper } from "../../../lib/ReadableHelper"
 
 
 describe('FsStorage', () => {
-    const sourceParams = <TSourceParams>{
+    const sourceParams = <TConfigSource>{
         provider: "files",
         options: {
             jsonArrayPath: 'data'

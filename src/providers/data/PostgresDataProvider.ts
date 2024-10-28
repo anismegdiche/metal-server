@@ -8,7 +8,7 @@ import { Pool } from 'pg'
 import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
@@ -27,20 +27,20 @@ import { HttpResponse } from "../../server/HttpResponse"
 export class PostgresDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.POSTGRES
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
+    Params: TConfigSource = <TConfigSource>{}
     Connection?: Pool = undefined
     Config: TJson = {}
 
     Options = new CommonSqlDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
+    constructor(sourceName: string, sourceParams: TConfigSource) {
         this.SourceName = sourceName
         this.Init(sourceParams)
         this.Connect()
     }
 
     @Logger.LogFunction()
-    async Init(sourceParams: TSourceParams): Promise<void> {
+    async Init(sourceParams: TConfigSource): Promise<void> {
         this.Params = sourceParams
     }
 

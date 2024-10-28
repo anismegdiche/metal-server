@@ -5,7 +5,7 @@
 //
 import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
@@ -31,20 +31,20 @@ export type TMemoryDataProviderOptions = {
 export class MemoryDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MEMORY
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
+    Params: TConfigSource = <TConfigSource>{}
     Config: TJson = {}
     Connection?: DataBase = undefined
 
     Options = new CommonSqlDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
+    constructor(sourceName: string, sourceParams: TConfigSource) {
         this.SourceName = sourceName
         this.Init(sourceParams)
         this.Connect()
     }
 
     @Logger.LogFunction()
-    async Init(sourceParams: TSourceParams): Promise<void> {
+    async Init(sourceParams: TConfigSource): Promise<void> {
         this.Params = sourceParams
     }
 

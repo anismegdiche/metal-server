@@ -15,7 +15,7 @@ import * as IDataProvider from "../../types/IDataProvider"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { IStorage } from "../../types/IStorage"
 import { IContent } from "../../types/IContent"
@@ -71,7 +71,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     Connection?: IStorage = undefined
     //XXX ContentType: CONTENT = CONTENT.JSON
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
+    Params: TConfigSource = <TConfigSource>{}
     //XXX Config: TJson = {}
 
     // FilesDataProvider
@@ -81,7 +81,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     Options = new CommonSqlDataProviderOptions()
 
     //TODO: Refactor this asynchronous operation outside of the constructor.sonarlint(typescript:S7059)
-    constructor(sourceName: string, sourceParams: TSourceParams) {
+    constructor(sourceName: string, sourceParams: TConfigSource) {
         this.SourceName = sourceName
         this.Init(sourceParams)
         this.Connect()
@@ -89,10 +89,10 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static readonly #NewStorageCaseMap: Record<STORAGE, Function> = {
-        [STORAGE.FILESYSTEM]: (storageParams: TSourceParams) => new FsStorage(storageParams),
-        [STORAGE.AZURE_BLOB]: (storageParams: TSourceParams) => new AzureBlobStorage(storageParams),
-        [STORAGE.FTP]: (storageParams: TSourceParams) => new FtpStorage(storageParams),
-        [STORAGE.SMB]: (storageParams: TSourceParams) => new SmbStorage(storageParams)
+        [STORAGE.FILESYSTEM]: (storageParams: TConfigSource) => new FsStorage(storageParams),
+        [STORAGE.AZURE_BLOB]: (storageParams: TConfigSource) => new AzureBlobStorage(storageParams),
+        [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams),
+        [STORAGE.SMB]: (storageParams: TConfigSource) => new SmbStorage(storageParams)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -113,7 +113,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(sourceParams: TSourceParams): Promise<void> {
+    async Init(sourceParams: TConfigSource): Promise<void> {
         Logger.Debug("FilesDataProvider.Init")
         this.Params = sourceParams
         const {

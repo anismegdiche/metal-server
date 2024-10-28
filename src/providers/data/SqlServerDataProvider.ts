@@ -8,7 +8,7 @@ import mssql, { ConnectionPool } from 'mssql'
 import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
@@ -28,19 +28,19 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MSSQL
     Connection?: ConnectionPool = undefined
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
+    Params: TConfigSource = <TConfigSource>{}
     Config: TJson = {}
 
     Options = new CommonSqlDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
+    constructor(sourceName: string, sourceParams: TConfigSource) {
         this.SourceName = sourceName
         this.Init(sourceParams)
         this.Connect()
     }
 
     @Logger.LogFunction()
-    async Init(sourceParams: TSourceParams): Promise<void> {
+    async Init(sourceParams: TConfigSource): Promise<void> {
         this.Params = sourceParams
     }
 

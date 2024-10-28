@@ -3,13 +3,13 @@ import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../../server
 import { DataTable } from '../../../types/DataTable'
 import * as Ftp from 'basic-ftp'
 import { Readable } from 'stream'
-import { TSourceParams } from "../../../types/TSourceParams"
+import { TConfigSource } from "../../../types/TConfig"
 import typia from "typia"
 
 jest.mock('basic-ftp')
 jest.mock('../../../lib/Convert')
 
-const rndParams = typia.random<TSourceParams>()
+const rndParams = typia.random<TConfigSource>()
 
 describe('FtpStorage', () => {
     // eslint-disable-next-line init-declarations

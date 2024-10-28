@@ -4,7 +4,7 @@
 //
 //
 import * as IDataProvider from "../../types/IDataProvider"
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TJson } from "../../types/TJson"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
@@ -17,19 +17,19 @@ import { TInternalResponse } from "../../types/TInternalResponse"
 export class CommonDataProvider implements IDataProvider.IDataProvider {
     ProviderName = "CommonDataProvider"
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
+    Params: TConfigSource = <TConfigSource>{}
     Config: TJson = {}
 
     Options = new CommonSqlDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
+    constructor(sourceName: string, sourceParams: TConfigSource) {
         this.SourceName = sourceName
         this.Init(sourceParams)
         this.Connect()
     }
 
     @Logger.LogFunction()
-    Init(sourceParams: TSourceParams): void {
+    Init(sourceParams: TConfigSource): void {
         Logger.Debug("CommonDataProvider.Init")
         this.Params = sourceParams
     }

@@ -10,7 +10,7 @@ import * as MongoDb from 'mongodb'
 import * as IDataProvider from "../../types/IDataProvider"
 import { Convert } from '../../lib/Convert'
 import { RESPONSE } from '../../lib/Const'
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from '../../types/TOptions'
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
@@ -136,19 +136,19 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
 export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MONGODB
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
+    Params: TConfigSource = <TConfigSource>{}
     Connection?: MongoDb.MongoClient = undefined
 
     Options: MongoDbDataProviderOptions = new MongoDbDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
+    constructor(sourceName: string, sourceParams: TConfigSource) {
         this.SourceName = sourceName
         this.Init(sourceParams)
         this.Connect()
     }
 
     @Logger.LogFunction()
-    async Init(sourceParams: TSourceParams): Promise<void> {
+    async Init(sourceParams: TConfigSource): Promise<void> {
         this.Params = sourceParams
     }
 

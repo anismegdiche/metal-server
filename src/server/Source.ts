@@ -7,7 +7,7 @@ import { Logger } from '../utils/Logger'
 import { Cache } from './Cache'
 import { Config } from './Config'
 import { IDataProvider } from '../types/IDataProvider'
-import { TSourceParams } from '../types/TSourceParams'
+import { TConfigSource } from '../types/TConfig'
 // Providers
 import { PostgresDataProvider } from '../providers/data/PostgresDataProvider'
 import { MongoDbDataProvider } from '../providers/data/MongoDbDataProvider'
@@ -44,18 +44,18 @@ export class Source {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static #NewProviderCaseMap: Record<DATA_PROVIDER, Function> = {
-        [DATA_PROVIDER.METAL]: (source: string, sourceParams: TSourceParams) => new MetalDataProvider(source, sourceParams),
-        [DATA_PROVIDER.PLAN]: (source: string, sourceParams: TSourceParams) => new PlanDataProvider(source, sourceParams),
-        [DATA_PROVIDER.MEMORY]: (source: string, sourceParams: TSourceParams) => new MemoryDataProvider(source, sourceParams),
-        [DATA_PROVIDER.POSTGRES]: (source: string, sourceParams: TSourceParams) => new PostgresDataProvider(source, sourceParams),
-        [DATA_PROVIDER.MONGODB]: (source: string, sourceParams: TSourceParams) => new MongoDbDataProvider(source, sourceParams),
-        [DATA_PROVIDER.MSSQL]: (source: string, sourceParams: TSourceParams) => new SqlServerDataProvider(source, sourceParams),
-        [DATA_PROVIDER.FILES]: (source: string, sourceParams: TSourceParams) => new FilesDataProvider(source, sourceParams),
-        [DATA_PROVIDER.MYSQL]: (source: string, sourceParams: TSourceParams) => new MysqlDataProvider(source, sourceParams)
+        [DATA_PROVIDER.METAL]: (source: string, sourceParams: TConfigSource) => new MetalDataProvider(source, sourceParams),
+        [DATA_PROVIDER.PLAN]: (source: string, sourceParams: TConfigSource) => new PlanDataProvider(source, sourceParams),
+        [DATA_PROVIDER.MEMORY]: (source: string, sourceParams: TConfigSource) => new MemoryDataProvider(source, sourceParams),
+        [DATA_PROVIDER.POSTGRES]: (source: string, sourceParams: TConfigSource) => new PostgresDataProvider(source, sourceParams),
+        [DATA_PROVIDER.MONGODB]: (source: string, sourceParams: TConfigSource) => new MongoDbDataProvider(source, sourceParams),
+        [DATA_PROVIDER.MSSQL]: (source: string, sourceParams: TConfigSource) => new SqlServerDataProvider(source, sourceParams),
+        [DATA_PROVIDER.FILES]: (source: string, sourceParams: TConfigSource) => new FilesDataProvider(source, sourceParams),
+        [DATA_PROVIDER.MYSQL]: (source: string, sourceParams: TConfigSource) => new MysqlDataProvider(source, sourceParams)
     }
 
     @Logger.LogFunction()
-    static async Connect(source: string | null, sourceParams: TSourceParams): Promise<void> {
+    static async Connect(source: string | null, sourceParams: TConfigSource): Promise<void> {
         if (!(sourceParams.provider in Source.#NewProviderCaseMap)) {
             Logger.Error(`Source '${source}', Provider '${sourceParams.provider}' not found. The source will not be connected`)
             return

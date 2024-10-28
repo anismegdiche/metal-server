@@ -12,7 +12,7 @@ import DATA_PROVIDER from "../../server/Source"
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { TJson } from '../../types/TJson'
 import { DataTable } from '../../types/DataTable'
 import { HTTP_STATUS_CODE, SERVER } from '../../lib/Const'
@@ -134,7 +134,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.METAL
     Connection?: MetalClient = undefined
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
+    Params: TConfigSource = <TConfigSource>{}
     Config: TJson = {}
 
     Options = new CommonSqlDataProviderOptions()
@@ -150,7 +150,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
     }
 
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
+    constructor(sourceName: string, sourceParams: TConfigSource) {
         this.SourceName = sourceName
         this.Init(sourceParams)
         this.Connect()
@@ -206,7 +206,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         throw error
     }
 
-    async Init(sourceParams: TSourceParams): Promise<void> {
+    async Init(sourceParams: TConfigSource): Promise<void> {
         Logger.Debug("MetalDataProvider.Init")
         this.Params = sourceParams
     }

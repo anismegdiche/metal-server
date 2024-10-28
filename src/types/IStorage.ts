@@ -1,11 +1,12 @@
-import { DataTable } from "./DataTable"
-import { TSourceParams } from "./TSourceParams"
-import { TFilesDataProviderOptions } from "../providers/data/FilesDataProvider"
 import { Readable } from "node:stream"
+//
+import { DataTable } from "./DataTable"
+import { TConfigSource } from "./TConfig"
+import { TFilesDataProviderOptions } from "../providers/data/FilesDataProvider"
 
 
 export interface IStorage {
-    Params: TSourceParams
+    Params: TConfigSource
     Options: TFilesDataProviderOptions
     Init(): void
     Connect(): Promise<void>

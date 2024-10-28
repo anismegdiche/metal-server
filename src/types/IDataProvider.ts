@@ -5,7 +5,7 @@
 // 
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from './TSchemaRequest'
 import { TOptions } from './TOptions'
-import { TSourceParams } from './TSourceParams'
+import { TConfigSource } from './TConfig'
 import { TJson } from './TJson'
 import { TInternalResponse } from './TInternalResponse'
 import { TSchemaResponse } from "./TSchemaResponse"
@@ -28,7 +28,7 @@ export interface IDataProvider {
     Options: IDataProviderOptions
 
     // Connection
-    Init: (sourceParams: TSourceParams) => void
+    Init: (sourceParams: TConfigSource) => void
     Connect: () => Promise<void>
     Disconnect: () => Promise<void>
 

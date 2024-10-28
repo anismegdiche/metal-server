@@ -6,7 +6,7 @@
 import { Readable } from "node:stream"
 //
 import { Logger } from "../../utils/Logger"
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { TFilesDataProviderOptions } from "../data/FilesDataProvider"
 import { HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
@@ -15,10 +15,10 @@ import { ReadStream } from "fs"
 
 export class CommonStorage {
 
-    Params: TSourceParams
+    Params: TConfigSource
     Options: TFilesDataProviderOptions
 
-    constructor(storageParams: TSourceParams) {
+    constructor(storageParams: TConfigSource) {
         this.Params = storageParams
         this.Options = storageParams.options as TFilesDataProviderOptions
         this.Init()

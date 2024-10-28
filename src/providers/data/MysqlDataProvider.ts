@@ -2,7 +2,7 @@ import mysql, { Pool } from 'mysql2/promise'
 import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { DataTable, TRow } from "../../types/DataTable"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
@@ -19,18 +19,18 @@ import { HttpResponse } from "../../server/HttpResponse"
 export class MysqlDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MYSQL;
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{};
+    Params: TConfigSource = <TConfigSource>{};
     Connection?: Pool
     Config: TJson = {};
     Options = new CommonSqlDataProviderOptions();
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
+    constructor(sourceName: string, sourceParams: TConfigSource) {
         this.SourceName = sourceName
         this.Init(sourceParams)
     }
 
     @Logger.LogFunction()
-    async Init(sourceParams: TSourceParams): Promise<void> {
+    async Init(sourceParams: TConfigSource): Promise<void> {
         this.Params = sourceParams
         await this.Connect()
     }
