@@ -156,8 +156,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
 
             return new DataTable("", files.map((file: string) => ({
                 name: file,
-                type: "file",
-                size: -1
+                type: "file"
             })))
         } catch (error) {
             throw error instanceof Error

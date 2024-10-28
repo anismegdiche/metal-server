@@ -17,7 +17,7 @@ import { FilesDataProvider } from '../providers/data/FilesDataProvider'
 import { MemoryDataProvider } from '../providers/data/MemoryDataProvider'
 import { MetalDataProvider } from '../providers/data/MetalDataProvider'
 import _ from "lodash"
-import { MysqlDataProvider } from "../providers/data/MysqlDataProvider"
+import { MySqlDataProvider } from "../providers/data/MySqlDataProvider"
 
 //  config types
 //
@@ -51,7 +51,7 @@ export class Source {
         [DATA_PROVIDER.MONGODB]: (source: string, sourceParams: TConfigSource) => new MongoDbDataProvider(source, sourceParams),
         [DATA_PROVIDER.MSSQL]: (source: string, sourceParams: TConfigSource) => new SqlServerDataProvider(source, sourceParams),
         [DATA_PROVIDER.FILES]: (source: string, sourceParams: TConfigSource) => new FilesDataProvider(source, sourceParams),
-        [DATA_PROVIDER.MYSQL]: (source: string, sourceParams: TConfigSource) => new MysqlDataProvider(source, sourceParams)
+        [DATA_PROVIDER.MYSQL]: (source: string, sourceParams: TConfigSource) => new MySqlDataProvider(source, sourceParams)
     }
 
     @Logger.LogFunction()

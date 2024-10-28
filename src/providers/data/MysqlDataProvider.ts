@@ -1,4 +1,8 @@
+//
+//
+//
 import mysql, { Pool } from 'mysql2/promise'
+//
 import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
@@ -16,7 +20,7 @@ import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemente
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 
-export class MysqlDataProvider implements IDataProvider.IDataProvider {
+export class MySqlDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MYSQL;
     SourceName: string
     Params: TConfigSource = <TConfigSource>{};
