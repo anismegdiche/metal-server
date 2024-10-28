@@ -3,7 +3,7 @@
 ## Version 0.3 - UNRELEASED
 
 ### ⚠️ Breaking Changes
-- Updated to Node v23
+- Updated to Node v22.10.0
 - File Provider:
     - Changed `contentType` → `content` (Now supports multiple content type for the same storage, which may cause changes in behavior for existing configuration).
     - Changed `storageType` → `storage`.
@@ -18,6 +18,7 @@
 - Plan commands: anonymize, remove-duplicates.
 - SwaggerUI.
 - Schema: List entities.
+- File Provider: FTP, SMB.
 - File Content: XLSX.
 
 ### Enhancements

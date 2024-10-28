@@ -125,3 +125,8 @@ GET http://localhost:3000/schema/v2/sample.csv
     # ?filterExpression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
 ###
+
+
+GET http://localhost:3000/schema/ftp
+authorization: Bearer {{token}}
+###

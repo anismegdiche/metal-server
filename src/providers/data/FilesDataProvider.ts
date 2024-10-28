@@ -17,23 +17,29 @@ import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSourceParams } from "../../types/TSourceParams"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
-import { IStorageProvider } from "../../types/IStorageProvider"
+import { IStorage } from "../../types/IStorage"
 import { IContent } from "../../types/IContent"
-import { JsonContent, TJsonContentConfig } from "../content/JsonContent"
-import { AzureBlobStorage, TAzureBlobStorageConfig } from '../storage/AzureBlobStorage'
-import { FsStorage, TFsStorageConfig } from '../storage/FsStorage'
-import { CsvContent, TCsvContentConfig } from '../content/CsvContent'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
-import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
 import { Convert } from "../../lib/Convert"
+// Storage
+import { AzureBlobStorage, TAzureBlobStorageConfig } from '../storage/AzureBlobStorage'
+import { FsStorage, TFsStorageConfig } from '../storage/FsStorage'
+import { FtpStorage, TFtpStorageConfig } from "../storage/FtpStorage"
+import { SmbStorage, TSmbStorageConfig } from "../storage/SmbStorage"
+// Content
+import { JsonContent, TJsonContentConfig } from "../content/JsonContent"
+import { CsvContent, TCsvContentConfig } from '../content/CsvContent'
+import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
 
 
-export enum STORAGE_PROVIDER {
+export enum STORAGE {
     FILESYSTEM = "fs",
-    AZURE_BLOB = "azureBlob"
+    AZURE_BLOB = "azureBlob",
+    FTP = "ftp",
+    SMB = "smb"
 }
 
 export enum CONTENT {
@@ -42,13 +48,13 @@ export enum CONTENT {
     XLS = "xls"
 }
 
-export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig
+export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig & TFtpStorageConfig & TSmbStorageConfig
 
 export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsContentConfig
 
 export type TFilesDataProviderOptions = {
     // Common
-    storage?: STORAGE_PROVIDER
+    storage?: STORAGE
     content?: {
         [pattern: string]: {
             type: CONTENT
@@ -62,7 +68,7 @@ export type TFilesDataProviderOptions = {
 
 export class FilesDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.FILES
-    Connection?: IStorageProvider = undefined
+    Connection?: IStorage = undefined
     //XXX ContentType: CONTENT = CONTENT.JSON
     SourceName: string
     Params: TSourceParams = <TSourceParams>{}
@@ -82,9 +88,11 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static readonly #NewStorageCaseMap: Record<STORAGE_PROVIDER, Function> = {
-        [STORAGE_PROVIDER.FILESYSTEM]: (storageParams: TSourceParams) => new FsStorage(storageParams),
-        [STORAGE_PROVIDER.AZURE_BLOB]: (storageParams: TSourceParams) => new AzureBlobStorage(storageParams)
+    static readonly #NewStorageCaseMap: Record<STORAGE, Function> = {
+        [STORAGE.FILESYSTEM]: (storageParams: TSourceParams) => new FsStorage(storageParams),
+        [STORAGE.AZURE_BLOB]: (storageParams: TSourceParams) => new AzureBlobStorage(storageParams),
+        [STORAGE.FTP]: (storageParams: TSourceParams) => new FtpStorage(storageParams),
+        [STORAGE.SMB]: (storageParams: TSourceParams) => new SmbStorage(storageParams)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -96,7 +104,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
     #SetHandler(entityName: string) {
         if (!_.has(this.File, entityName)) {
-            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.ConvertPatternToRegex(pattern).test(entityName))
+            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entityName))
             if (handler)
                 this.File[entityName] = this.ContentHandler[handler]
             else
@@ -109,7 +117,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         Logger.Debug("FilesDataProvider.Init")
         this.Params = sourceParams
         const {
-            storage = STORAGE_PROVIDER.FILESYSTEM,
+            storage = STORAGE.FILESYSTEM,
             content
         } = this.Params.options as TFilesDataProviderOptions
 
@@ -136,14 +144,24 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        if (this.Connection && this.ContentHandler)
-            this.Connection.Connect()
+        try {
+            if (this.Connection && this.ContentHandler) {
+                this.Connection.Connect()
+                Logger.Debug(`${Logger.Out} Storage provider '${this.SourceName}' connected`)
+            }
+        } catch (error: any) {
+            Logger.Error(`${this.SourceName}: Failed to connect in storage provider: ${error.message}`)
+        }
     }
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        if (this.Connection && this.ContentHandler)
-            this.Connection.Disconnect()
+        try {
+            if (this.Connection && this.ContentHandler)
+                this.Connection.Disconnect()
+        } catch (error: any) {
+            Logger.Error(`${this.SourceName}: Failed to disconnect in storage provider: ${error.message}`)
+        }
     }
 
     @Logger.LogFunction()

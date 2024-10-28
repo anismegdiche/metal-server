@@ -1,6 +1,6 @@
 {
   "engines": {
-    "node": ">=23.1.0"
+    "node": ">=22.10.0"
   },
   "name": "metal",
   "version": "0.3-dev",
@@ -25,6 +25,7 @@
     "@types/jsonstream": "^0.8.33",
     "alasql": "^4.5.2",
     "axios": "^1.7.7",
+    "basic-ftp": "^5.0.5",
     "bcrypt": "^5.1.1",
     "bytes": "^3.1.2",
     "chalk": "^4.1.2",
@@ -47,11 +48,13 @@
     "mongodb": "^6.10.0",
     "morgan": "^1.10.0",
     "mssql": "^11.0.1",
+    "mysql2": "^3.11.3",
     "node-nlp": "^4.27.0",
     "papaparse": "^5.4.1",
     "pg": "^8.13.0",
     "response-time": "^2.3.3",
     "safe-stable-stringify": "^2.5.0",
+    "smb2": "^0.2.11",
     "sql2mongo": "^1.2.1",
     "swagger-ui-express": "^5.0.1",
     "tesseract.js": "^5.1.1",
@@ -80,6 +83,7 @@
     "@types/papaparse": "^5.3.15",
     "@types/pg": "^8.11.10",
     "@types/response-time": "^2.3.8",
+    "@types/smb2": "^0.2.4",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.6",
     "@types/yamljs": "^0.2.34",

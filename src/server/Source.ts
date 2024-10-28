@@ -17,10 +17,11 @@ import { FilesDataProvider } from '../providers/data/FilesDataProvider'
 import { MemoryDataProvider } from '../providers/data/MemoryDataProvider'
 import { MetalDataProvider } from '../providers/data/MetalDataProvider'
 import _ from "lodash"
+import { MysqlDataProvider } from "../providers/data/MysqlDataProvider"
 
 //  config types
 //
- 
+
 enum DATA_PROVIDER {
     METAL = "metal",
     PLAN = "plan",
@@ -28,8 +29,9 @@ enum DATA_PROVIDER {
     POSTGRES = "postgres",
     MONGODB = "mongodb",
     MSSQL = "mssql",
-    FILES = "files"
-} 
+    FILES = "files",
+    MYSQL = "mysql"
+}
 
 export default DATA_PROVIDER
 
@@ -48,7 +50,8 @@ export class Source {
         [DATA_PROVIDER.POSTGRES]: (source: string, sourceParams: TSourceParams) => new PostgresDataProvider(source, sourceParams),
         [DATA_PROVIDER.MONGODB]: (source: string, sourceParams: TSourceParams) => new MongoDbDataProvider(source, sourceParams),
         [DATA_PROVIDER.MSSQL]: (source: string, sourceParams: TSourceParams) => new SqlServerDataProvider(source, sourceParams),
-        [DATA_PROVIDER.FILES]: (source: string, sourceParams: TSourceParams) => new FilesDataProvider(source, sourceParams)
+        [DATA_PROVIDER.FILES]: (source: string, sourceParams: TSourceParams) => new FilesDataProvider(source, sourceParams),
+        [DATA_PROVIDER.MYSQL]: (source: string, sourceParams: TSourceParams) => new MysqlDataProvider(source, sourceParams)
     }
 
     @Logger.LogFunction()
@@ -57,13 +60,16 @@ export class Source {
             Logger.Error(`Source '${source}', Provider '${sourceParams.provider}' not found. The source will not be connected`)
             return
         }
-
-        if (source === null)
-            // cache
-            Cache.CacheSource = Source.#NewProviderCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
-        else
-            // sources
-            Source.Sources[source] = Source.#NewProviderCaseMap[sourceParams.provider](source, sourceParams)
+        try {
+            if (source === null)
+                // cache
+                Cache.CacheSource = Source.#NewProviderCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
+            else
+                // sources
+                Source.Sources[source] = Source.#NewProviderCaseMap[sourceParams.provider](source, sourceParams)
+        } catch (error: any) {
+            Logger.Error(error.message)
+        }
     }
 
     @Logger.LogFunction()

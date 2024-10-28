@@ -6,7 +6,7 @@
 import * as Fs from 'fs'
 //
 import { CommonStorage } from "./CommonStorage"
-import { IStorageProvider } from "../../types/IStorageProvider"
+import { IStorage } from "../../types/IStorage"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
@@ -16,7 +16,7 @@ export type TFsStorageConfig = {
     fsFolder?: string
 }
 
-export class FsStorage extends CommonStorage implements IStorageProvider {
+export class FsStorage extends CommonStorage implements IStorage {
 
     Config = <TFsStorageConfig>{}
 

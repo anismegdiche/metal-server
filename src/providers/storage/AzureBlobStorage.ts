@@ -7,7 +7,7 @@ import { BlobServiceClient, ContainerClient } from '@azure/storage-blob'
 import { Readable } from "node:stream"
 //
 import { CommonStorage } from "./CommonStorage"
-import { IStorageProvider } from "../../types/IStorageProvider"
+import { IStorage } from "../../types/IStorage"
 import { Logger } from '../../utils/Logger'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { TJson } from "../../types/TJson"
@@ -19,7 +19,7 @@ export type TAzureBlobStorageConfig = {
     azureBlobCreateContainerIfNotExists?: boolean
 }
 
-export class AzureBlobStorage extends CommonStorage implements IStorageProvider {
+export class AzureBlobStorage extends CommonStorage implements IStorage {
 
     #BlobServiceClient: BlobServiceClient | undefined
     #ContainerClient: ContainerClient | undefined
