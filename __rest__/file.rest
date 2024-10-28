@@ -127,6 +127,6 @@ authorization: Bearer {{token}}
 ###
 
 
-GET http://localhost:3000/schema/ftp
+GET http://localhost:3000/schema/ftp/sample.csv
 authorization: Bearer {{token}}
 ###

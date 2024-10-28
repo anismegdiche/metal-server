@@ -1,11 +1,11 @@
+import * as Ftp from "basic-ftp"
+import { PassThrough, Readable } from "node:stream"
+//
 import { CommonStorage } from "./CommonStorage"
 import { IStorage } from "../../types/IStorage"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
-import { Readable } from "node:stream"
-import * as Ftp from "basic-ftp"
-import { ReadableHelper } from "../../lib/ReadableHelper"
 
 export type TFtpStorageConfig = {
     ftpHost: string
@@ -62,9 +62,9 @@ export class FtpStorage extends CommonStorage implements IStorage {
             if (!(await this.IsExist(file)))
                 throw new HttpErrorNotFound(`File '${file}' does not exist on the FTP server`)
 
-            const stream = new Readable()
-            await this.FtpClient.downloadTo(ReadableHelper.ToWritable(stream), path)
-            return stream
+            const content = new PassThrough()
+            await this.FtpClient.downloadTo(content, path)
+            return Readable.from(content)
         } catch (error: any) {
             throw (error instanceof HttpErrorNotFound)
                 ? error

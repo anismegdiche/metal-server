@@ -47,6 +47,13 @@ export class ReadableHelper {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
+    static FromWritable(writable: Writable): Readable {
+        const readable = new PassThrough()
+        writable.pipe(readable)
+        return readable
+    }
+
+    @Logger.LogFunction(Logger.Debug, true)
     static Duplicate(original: Readable): [Readable, Readable] {
         const passThrough1 = new PassThrough()
         const passThrough2 = new PassThrough()
