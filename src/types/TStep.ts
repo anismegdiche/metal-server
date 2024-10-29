@@ -79,9 +79,14 @@ export type TStepAnonymize = string
 
 export type TStepRemoveDuplicates = {
     keys?: string[]
-    condition?: string
     method?: REMOVE_DUPLICATES_METHOD
-    strategy?: REMOVE_DUPLICATES_STRATEGY
+    strategy?: REMOVE_DUPLICATES_STRATEGY.FIRST | REMOVE_DUPLICATES_STRATEGY.LAST
+    condition: undefined
+} | {
+    keys?: string[]
+    method?: REMOVE_DUPLICATES_METHOD
+    strategy?: REMOVE_DUPLICATES_STRATEGY.LOWEST | REMOVE_DUPLICATES_STRATEGY.HIGHEST | REMOVE_DUPLICATES_STRATEGY.CUSTOM
+    condition: string
 }
 
 export type TStepListEntities = Omit<TSchemaRequestListEntities, 'schemaName' | 'entityName' | 'sourceName'> & {
