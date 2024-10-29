@@ -20,14 +20,14 @@ sources:
   fs-json-data:
     provider: files
     options:
-      storageType: fileSystem
+      storage: fs
       contentType: json
       fsFolder: ./data/
       jsonArrayPath: rows
   fs-csv-data:
     provider: files
     options:
-      storageType: fileSystem
+      storage: fs
       contentType: csv
       fsFolder: ./data/
       csvDelimiter: ','
@@ -37,14 +37,14 @@ sources:
   az-json-data:
     provider: files
     options:
-      storageType: azureBlob
+      storage: azureBlob
       contentType: json
       azureBlobConnectionString: UseDevelopmentStorage=true
       azureBlobContainerName: datacontainer1
   az-csv-data:
     provider: files
     options:
-      storageType: azureBlob
+      storage: azureBlob
       contentType: csv
       azureBlobConnectionString: UseDevelopmentStorage=true
       azureBlobContainerName: datacontainer1

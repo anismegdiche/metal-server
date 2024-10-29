@@ -19,24 +19,43 @@ sources:
     database: mem
     options:
       autoCreate: true
-  fs-xls:
+  fs-v2:
     provider: files
     options:
-      storageType: fileSystem
-      contentType: xls
+      storage: fs
       fsFolder: ./data/
-      # xlsSheetName: TBL_Core
-      # xlsStartingCell: E6
-  fs-csv:
+      autoCreate: true
+      content:
+        "*.csv":
+          type: csv
+          csvDelimiter: ";"
+          csvNewline: "\r\n"
+          csvHeader: true
+          csvQuoteChar: "\""
+        "ref*.xlsx":
+          type: xls
+          xlsSheetName: Feuil1
+        "sample*.xlsx":
+          type: xls
+          xlsStartingCell: E6
+  ftp:
     provider: files
     options:
-      storageType: fileSystem
-      contentType: csv
-      fsFolder: ./data/
-      csvDelimiter: ','
-      csvNewline: "\n"
-      csvHeader: true
-      csvQuoteChar: '"'
+      storage: ftp
+      ftpHost: localhost
+      ftpPort: 21
+      ftpUser: ftpuser
+      ftpPassword: ftppass
+      ftpFolder: /
+      autoCreate: true
+      content:
+        "*.csv":
+          type: csv
+          csvDelimiter: ";"
+          csvNewline: "\r\n"
+          csvHeader: true
+          csvQuoteChar: "\""
+
 #   ms-hr:
 #     provider: mssql
 #     host: localhost
@@ -57,15 +76,15 @@ sources:
 #   fs-json-data:
 #     provider: files
 #     options:
-#       storageType: fileSystem
-#       contentType: json
+#       storage: fs
+#       content: json
 #       fsFolder: ./data/
 #       jsonArrayPath: rows
 #   az-json-data:
 #     provider: files
 #     options:
-#       storageType: azureBlob
-#       contentType: json
+#       storage: azureBlob
+#       content: json
 #       azureBlobConnectionString: UseDevelopmentStorage=true
 #       azureBlobContainerName: datacontainer1
 
@@ -76,6 +95,11 @@ schemas:
     sourceName: fs-xls
   csv:
     sourceName: fs-csv
+  v2:
+    sourceName: fs-v2
+  ftp:
+    sourceName: ftp
+  #
 #   hr:
 #     sourceName: ms-hr
 #   mflix:

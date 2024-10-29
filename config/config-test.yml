@@ -49,14 +49,14 @@ sources:
     provider: files
     database: ./data/
     options:
-      storageType: fileSystem
+      storage: fs
       contentType: json
       jsonArrayPath: rows
   fs-csv-data:
     provider: files
     database: ./data/
     options:
-      storageType: fileSystem
+      storage: fs
       contentType: csv
       csvDelimiter: ','
       csvNewline: "\n"
@@ -67,7 +67,7 @@ sources:
     host: UseDevelopmentStorage=true
     database: datacontainer1
     options:
-      storageType: azureBlob
+      storage: azureBlob
       contentType: json
 
 schemas:
