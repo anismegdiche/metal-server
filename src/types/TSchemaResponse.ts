@@ -9,7 +9,7 @@ import { DataTable } from "./DataTable"
 
 
 export type TSchemaResponse = {
-    schemaName: string
+    schema: string
     entityName?: string
     result: string
     status: HTTP_STATUS_CODE.OK

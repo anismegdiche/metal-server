@@ -5,7 +5,7 @@ import { TSchemaRequest } from "./TSchemaRequest"
 export type TCacheData = {
     hash: string
     expires: number
-    schemaName: string
+    schema: string
     entityName?: string
     schemaRequest: TSchemaRequest
     data: DataTable

@@ -158,7 +158,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
     static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest): object {
         // eslint-disable-next-line you-dont-need-lodash-underscore/omit
-        return _.omit(schemaRequest, ['sourceName', 'schemaName', 'entityName'])
+        return _.omit(schemaRequest, ['sourceName', 'schema', 'entityName'])
     }
 
     static #ConvertResponseToSchemaResponse(res: AxiosResponse): TSchemaResponse {

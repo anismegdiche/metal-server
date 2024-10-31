@@ -7,7 +7,7 @@ describe('Process', () => {
     // Process a valid TSchemaRequest and return a DataTable
     it('should return a DataTable when processing a valid TSchemaRequest', async () => {
         const schemaRequest = {
-            schemaName: 'testSchema',
+            schema: 'testSchema',
             entityName: 'testEntity',
             data: [
                 {
@@ -30,7 +30,7 @@ describe('Process', () => {
     // Handle undefined sqlQuery gracefully
     it('should handle undefined sqlQuery gracefully', async () => {
         const schemaRequest = {
-            schemaName: 'testSchema',
+            schema: 'testSchema',
             entityName: 'testEntity',
             data: [
                 {
@@ -70,7 +70,7 @@ describe('Process', () => {
         // Arrange
         const schemaRequest = {
             anonymize: 'email',
-            schemaName: 'TestSchema',
+            schema: 'TestSchema',
             entityName: 'TestEntity',
             data: [
                 {
@@ -98,7 +98,7 @@ describe('Process', () => {
     it('should handle a valid SQL query with TScheduleConfig', async () => {
         // Arrange
         const schemaRequest = {
-            schemaName: 'TestSchema',
+            schema: 'TestSchema',
             entityName: 'TestEntity'
         }
         const sqlQuery = 'SELECT * FROM TestTable'

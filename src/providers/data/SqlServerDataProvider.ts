@@ -93,7 +93,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
+            schema: schemaRequest.schema,
             entityName: schemaRequest.entityName
         }
 
@@ -119,7 +119,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
+            schema: schemaRequest.schema,
             entityName: schemaRequest.entityName
         }
 
@@ -157,7 +157,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
+            schema: schemaRequest.schema,
             entityName: schemaRequest.entityName
         }
 
@@ -183,7 +183,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         const schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
+            schema: schemaRequest.schema,
             entityName: schemaRequest.entityName
         }
 
@@ -214,7 +214,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schemaName } = schemaRequest
+        const { schema } = schemaRequest
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
@@ -233,10 +233,10 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
         const sqlServerResult = await this.Connection.query(sqlQuery)
         
         if (sqlServerResult?.recordset.length == 0)
-            throw new HttpErrorNotFound(`${schemaName}: No entities found`)
+            throw new HttpErrorNotFound(`${schema}: No entities found`)
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            schemaName,
+            schema,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data: new DataTable(undefined, sqlServerResult.recordset)

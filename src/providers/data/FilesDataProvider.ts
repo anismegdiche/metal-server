@@ -200,10 +200,10 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schemaName, entityName } = schemaRequest
+        const { schema, entityName } = schemaRequest
 
         const schemaResponse = <TSchemaResponse>{
-            schemaName,
+            schema,
             entityName
         }
 
@@ -327,7 +327,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schemaName } = schemaRequest
+        const { schema } = schemaRequest
 
         // eslint-disable-next-line init-declarations
         let data: DataTable
@@ -338,10 +338,10 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         if (data.Rows.length == 0)
-            throw new HttpErrorNotFound(`${schemaName}: No entities found`)
+            throw new HttpErrorNotFound(`${schema}: No entities found`)
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            schemaName,
+            schema,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data

@@ -133,7 +133,7 @@ plans:
           var: startTimer
           value: {{Date.now()}}
       - select:
-          schemaName: mflix
+          schema: mflix
           entityName: movies
           filter:
             year: 2001
@@ -153,7 +153,7 @@ plans:
     aitest2:
       - debug:
       - select:
-          schemaName: mflix
+          schema: mflix
           entityName: movies
           filter:
             year: 2001
@@ -199,7 +199,7 @@ plans:
     contact:
       - debug:
       - select:
-          schemaName: demo
+          schema: demo
           entityName: res_partner
           fields: id, name, display_name
       - addField:
@@ -223,7 +223,7 @@ plans:
     login:
       - debug:
       - select:
-          schemaName: demo
+          schema: demo
           entityName: res_users
           fields: login, partner_id
       # - bad-step-test1: "***TEST***"
@@ -240,15 +240,15 @@ plans:
           name: desc
       # - bad-step-test2: "***TEST***"
       - insert:
-          schemaName: demo
+          schema: demo
           entityName: res_users
       - delete:
-          schemaName: demo
+          schema: demo
           entityName: res_users
           filter:
             lang: fr_FR
       - update: # not tested
-          schemaName: demo
+          schema: demo
           entityName: res_users
           filter:
             lang: fr_FR

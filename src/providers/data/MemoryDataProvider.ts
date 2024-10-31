@@ -69,7 +69,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        const { schemaName, entityName } = schemaRequest
+        const { schema, entityName } = schemaRequest
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
@@ -77,7 +77,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entityName] === undefined)
-            throw new HttpErrorNotFound(`${schemaName}: Entity '${entityName}' not found`)
+            throw new HttpErrorNotFound(`${schema}: Entity '${entityName}' not found`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -92,10 +92,10 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schemaName, entityName } = schemaRequest
+        const { schema, entityName } = schemaRequest
 
         const schemaResponse = <TSchemaResponse>{
-            schemaName,
+            schema,
             entityName
         }
 
@@ -106,7 +106,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         //await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entityName] === undefined)
-            throw new HttpErrorNotFound(`${schemaName}: Entity '${entityName}' not found`)
+            throw new HttpErrorNotFound(`${schema}: Entity '${entityName}' not found`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -147,7 +147,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        const { schemaName, entityName } = schemaRequest
+        const { schema, entityName } = schemaRequest
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
@@ -156,7 +156,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         //await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entityName] === undefined)
-            throw new HttpErrorNotFound(`${schemaName}: Entity '${entityName}' not found`)
+            throw new HttpErrorNotFound(`${schema}: Entity '${entityName}' not found`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -177,7 +177,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        const { schemaName, entityName } = schemaRequest
+        const { schema, entityName } = schemaRequest
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
@@ -186,7 +186,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         //await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entityName] === undefined)
-            throw new HttpErrorNotFound(`${schemaName}: Entity '${entityName}' not found`)
+            throw new HttpErrorNotFound(`${schema}: Entity '${entityName}' not found`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -222,7 +222,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schemaName } = schemaRequest
+        const { schema } = schemaRequest
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
@@ -234,10 +234,10 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         }))
 
         if (rows.length == 0)
-            throw new HttpErrorNotFound(`${schemaName}: No entities found`)
+            throw new HttpErrorNotFound(`${schema}: No entities found`)
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            schemaName,
+            schema,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data: new DataTable(undefined, rows)

@@ -133,7 +133,7 @@ plans:
     aitest2:
       - debug:
       - select:
-          schemaName: mflix
+          schema: mflix
           entityName: movies
           filter:
             year: 2001

@@ -44,33 +44,33 @@ plans:
     members-up:
       - sync:
           source:
-            schemaName: pg
+            schema: pg
             entityName: members
           destination:
-            schemaName: mem
+            schema: mem
             entityName: members
           on: memid
 
       - update:
-          schemaName: mem
+          schema: mem
           entityName: members
           data:
             address: XXXXXXXXXX
     
       - sync:
           source:
-            schemaName: mem
+            schema: mem
             entityName: members
           destination:
-            schemaName: pg
+            schema: pg
             entityName: members
           on: memid
     members-down:
       - sync:
           source:
-            schemaName: mem
+            schema: mem
             entityName: members
           destination:
-            schemaName: pg
+            schema: pg
             entityName: members
           on: memid

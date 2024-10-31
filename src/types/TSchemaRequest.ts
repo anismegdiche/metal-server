@@ -10,7 +10,7 @@ export type TSchemaRequest = {
     anonymize?: string | string[]
 
     // from Config or Request
-    schemaName: string
+    schema: string
     entityName: string
 
     // from Request Options
@@ -26,16 +26,16 @@ export type TSchemaRequest = {
 }
 
 export type TSchemaRequestSelect = Pick<TSchemaRequest,
-    'schemaName' | 'entityName' | 'sourceName' | 'fields' | 'filter' | 'filter-expression' | 'sort' | 'cache' | 'anonymize'>
+    'schema' | 'entityName' | 'sourceName' | 'fields' | 'filter' | 'filter-expression' | 'sort' | 'cache' | 'anonymize'>
 
 export type TSchemaRequestUpdate = Pick<TSchemaRequest,
-    'schemaName' | 'entityName' | 'sourceName' | 'data' | 'filter' | 'filter-expression'>
+    'schema' | 'entityName' | 'sourceName' | 'data' | 'filter' | 'filter-expression'>
 
 export type TSchemaRequestDelete = Pick<TSchemaRequest,
-    'schemaName' | 'entityName' | 'sourceName' | 'filter' | 'filter-expression'>
+    'schema' | 'entityName' | 'sourceName' | 'filter' | 'filter-expression'>
 
 export type TSchemaRequestInsert = Pick<TSchemaRequest,
-    'schemaName' | 'entityName' | 'sourceName' | 'data'>
+    'schema' | 'entityName' | 'sourceName' | 'data'>
 
 export type TSchemaRequestListEntities = Pick<TSchemaRequest,
-    'schemaName' | 'entityName' | 'sourceName'>
+    'schema' | 'entityName' | 'sourceName'>

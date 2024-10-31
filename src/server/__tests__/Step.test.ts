@@ -21,7 +21,7 @@ describe('Step', () => {
         // Executes a valid 'select' step and returns a DataTable object.
         it('should execute a valid select step and return a DataTable object', async () => {
             // Mock the necessary dependencies
-            const schemaName = "mySchema"
+            const schema = "mySchema"
             const plan = "myPlan"
             const entity = "myEntity"
             const steps = [
@@ -54,7 +54,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
+            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -74,7 +74,7 @@ describe('Step', () => {
 
         it('should execute a select step with an invalid entity and return the current DataTable object', async () => {
             // Mock the necessary dependencies
-            const schemaName = "mySchema"
+            const schema = "mySchema"
             const plan = "myPlan"
             const entity = "users"
             const steps = [
@@ -106,7 +106,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
+            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -130,7 +130,7 @@ describe('Step', () => {
         // Executes a valid 'insert' step and returns a DataTable object.
         it('should execute a valid insert step and return a DataTable object', async () => {
             // Mock the necessary dependencies
-            const schemaName = "mySchema"
+            const schema = "mySchema"
             const plan = "myPlan"
             const entity = "myEntity"
             const steps = [
@@ -169,7 +169,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
+            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -188,7 +188,7 @@ describe('Step', () => {
         })
         it('should execute an insert step with no data and return the current DataTable object', async () => {
             // Mock the necessary dependencies
-            const schemaName = "mySchema"
+            const schema = "mySchema"
             const plan = "myPlan"
             const entity = "users"
             const steps = <Array<StepCommand>>[
@@ -216,7 +216,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
+            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -239,7 +239,7 @@ describe('Step', () => {
         // Executes a valid 'update' step and returns a DataTable object.
         it('should execute a valid update step and return a DataTable object', async () => {
             // Mock the necessary dependencies
-            const schemaName = "mySchema"
+            const schema = "mySchema"
             const plan = "myPlan"
             const entity = "myEntity"
             const steps = <Array<StepCommand>>[
@@ -272,7 +272,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
+            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -292,7 +292,7 @@ describe('Step', () => {
 
         it('should execute an update step with no data and return the current DataTable object', async () => {
             // Mock the necessary dependencies
-            const schemaName = "mySchema"
+            const schema = "mySchema"
             const plan = "myPlan"
             const entity = "users"
             const steps = [
@@ -323,7 +323,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
+            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -345,7 +345,7 @@ describe('Step', () => {
         // Executes a valid 'delete' step and returns a DataTable object.
         it('should execute a valid delete step and return a DataTable object', async () => {
             // Mock the necessary dependencies
-            const schemaName = "mySchema"
+            const schema = "mySchema"
             const plan = "myPlan"
             const entity = "myEntity"
             const steps = [
@@ -377,7 +377,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
+            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -400,7 +400,7 @@ describe('Step', () => {
         // Executes a valid 'join' step and returns a DataTable object.
         it('should execute a valid join step and return a DataTable object', async () => {
             // Mock the necessary dependencies
-            const schemaName = "mySchema"
+            const schema = "mySchema"
             const plan = "myPlan"
             const entity = "myEntity"
             const steps = <Array<StepCommand>>[
@@ -446,7 +446,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
+            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -469,7 +469,7 @@ describe('Step', () => {
         // Executes a valid 'fields' step and returns a DataTable object.
         it('should execute a valid fields step and return a DataTable object', async () => {
             // Mock the necessary dependencies
-            const schemaName = "mySchema"
+            const schema = "mySchema"
             const plan = "myPlan"
             const entity = "myEntity"
             const steps = [
@@ -496,7 +496,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
+            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -519,7 +519,7 @@ describe('Step', () => {
         // Executes a valid 'debug' step and returns a DataTable object.
         it('should execute a valid debug step and return a DataTable object', async () => {
             // Mock the necessary dependencies
-            const schemaName = "mySchema"
+            const schema = "mySchema"
             const plan = "myPlan"
             const entity = "myEntity"
             const steps = [
@@ -546,7 +546,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schemaName, plan, entity, steps)
+            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -759,13 +759,13 @@ describe('Step', () => {
             jest.clearAllMocks()
         })
 
-        // Returns a DataTable with entities when schemaName is provided and valid
-        it('should return DataTable with entities when schemaName is valid', async () => {
+        // Returns a DataTable with entities when schema is provided and valid
+        it('should return DataTable with entities when schema is valid', async () => {
             const stepArguments = {
                 currentSchemaName: 'validSchema',
                 currentDataTable: new DataTable('TestTable', []),
                 currentPlanName: 'TestPlan',
-                stepParams: { schemaName: 'validSchema' }
+                stepParams: { schema: 'validSchema' }
             }
 
             jest.spyOn(Schema, 'ListEntities').mockResolvedValue(HttpResponse.Ok(
@@ -780,8 +780,8 @@ describe('Step', () => {
             expect(result.Rows).toHaveLength(2)
         })
 
-        // Returns a DataTable with plan entities when schemaName is not provided
-        it('should return DataTable with plan entities when schemaName is not provided', async () => {
+        // Returns a DataTable with plan entities when schema is not provided
+        it('should return DataTable with plan entities when schema is not provided', async () => {
 
             Config.Configuration.plans = {
                 plan1: {
@@ -822,13 +822,13 @@ describe('Step', () => {
         })
 
         // Successfully calls Schema.ListEntities with the correct schemaRequest
-        it('should call Schema.ListEntities with correct schemaRequest when schemaName is provided', async () => {
+        it('should call Schema.ListEntities with correct schemaRequest when schema is provided', async () => {
             // Arrange
             const stepArguments = {
                 currentSchemaName: 'currentSchema',
                 currentDataTable: new DataTable(),
                 currentPlanName: 'currentPlan',
-                stepParams: { schemaName: 'testSchema' }
+                stepParams: { schema: 'testSchema' }
             }
 
             jest.spyOn(Schema, 'ListEntities').mockResolvedValue(HttpResponse.Ok(
@@ -841,7 +841,7 @@ describe('Step', () => {
             await Step.ListEntities(stepArguments)
 
             // Assert
-            expect(Schema.ListEntities).toHaveBeenCalledWith({ schemaName: 'testSchema' })
+            expect(Schema.ListEntities).toHaveBeenCalledWith({ schema: 'testSchema' })
         })
     })
 })

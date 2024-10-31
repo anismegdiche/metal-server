@@ -5,12 +5,12 @@ import { Convert } from '../Convert'
 
 describe('RequestToSchemaRequest', () => {
 
-    // Returns a TSchemaRequest object with schemaName and entityName properties populated from the request params, and any additional properties from the request body and query.
-    it('should populate schemaName and entityName properties from request params, and include additional properties from request body and query', () => {
+    // Returns a TSchemaRequest object with schema and entityName properties populated from the request params, and any additional properties from the request body and query.
+    it('should populate schema and entityName properties from request params, and include additional properties from request body and query', () => {
         // Arrange
         const req: any = {
             params: {
-                schemaName: 'testSchema',
+                schema: 'testSchema',
                 entityName: 'testEntity'
             },
             body: {
@@ -33,7 +33,7 @@ describe('RequestToSchemaRequest', () => {
 
         // Assert
         expect(result).toEqual({
-            schemaName: 'testSchema',
+            schema: 'testSchema',
             entityName: 'testEntity',
             data: [
                 {
@@ -49,12 +49,12 @@ describe('RequestToSchemaRequest', () => {
         })
     })
 
-    // Returns a TSchemaRequest object with only schemaName and entityName properties if the request body and query are empty.
-    it('should only include schemaName and entityName properties if request body and query are empty', () => {
+    // Returns a TSchemaRequest object with only schema and entityName properties if the request body and query are empty.
+    it('should only include schema and entityName properties if request body and query are empty', () => {
         // Arrange
         const req: any = {
             params: {
-                schemaName: 'testSchema',
+                schema: 'testSchema',
                 entityName: 'testEntity'
             }
         }
@@ -64,17 +64,17 @@ describe('RequestToSchemaRequest', () => {
 
         // Assert
         expect(result).toEqual({
-            schemaName: 'testSchema',
+            schema: 'testSchema',
             entityName: 'testEntity'
         })
     })
 
-    // Returns a TSchemaRequest object with only schemaName and entityName properties if the request params are empty.
-    it('should only include schemaName and entityName properties if request params are empty', () => {
+    // Returns a TSchemaRequest object with only schema and entityName properties if the request params are empty.
+    it('should only include schema and entityName properties if request params are empty', () => {
         // Arrange
         const req: any = {
             params: {
-                schemaName: 'testSchema',
+                schema: 'testSchema',
                 entityName: 'testEntity'
             },
             body: {
@@ -97,7 +97,7 @@ describe('RequestToSchemaRequest', () => {
 
         // Assert
         expect(result).toEqual({
-            schemaName: 'testSchema',
+            schema: 'testSchema',
             entityName: 'testEntity',
             data: [
                 {
@@ -115,12 +115,12 @@ describe('RequestToSchemaRequest', () => {
         })
     })
 
-    // Returns a TSchemaRequest object with only schemaName and entityName properties if the request params are missing schemaName or entityName.
-    it('should only include schemaName and entityName properties if request params are missing schemaName or entityName', () => {
+    // Returns a TSchemaRequest object with only schema and entityName properties if the request params are missing schema or entityName.
+    it('should only include schema and entityName properties if request params are missing schema or entityName', () => {
         // Arrange
         const req: any = {
             params: {
-                schemaName: 'testSchema',
+                schema: 'testSchema',
                 entityName: 'testEntity'
             },
             body: {
@@ -143,7 +143,7 @@ describe('RequestToSchemaRequest', () => {
 
         // Assert
         expect(result).toEqual({
-            schemaName: "testSchema",
+            schema: "testSchema",
             entityName: "testEntity",
             data: [
                 {
@@ -166,7 +166,7 @@ describe('RequestToSchemaRequest', () => {
         // Arrange
         const req: any = {
             params: {
-                schemaName: 'testSchema',
+                schema: 'testSchema',
                 entityName: 'testEntity'
             },
             body: {
@@ -189,7 +189,7 @@ describe('RequestToSchemaRequest', () => {
 
         // Assert
         expect(result).toEqual({
-            schemaName: 'testSchema',
+            schema: 'testSchema',
             entityName: 'testEntity',
             data: [
                 {
@@ -210,7 +210,7 @@ describe('RequestToSchemaRequest', () => {
         // Arrange
         const req: any = {
             params: {
-                schemaName: 'testSchema',
+                schema: 'testSchema',
                 entityName: 'testEntity'
             },
             query: {
@@ -227,7 +227,7 @@ describe('RequestToSchemaRequest', () => {
 
         // Assert
         expect(result).toEqual({
-            schemaName: 'testSchema',
+            schema: 'testSchema',
             entityName: 'testEntity',
             fields: 'id',
             filter: { id: 2 },

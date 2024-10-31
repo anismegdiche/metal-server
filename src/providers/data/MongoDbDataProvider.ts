@@ -207,10 +207,10 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schemaName, entityName } = schemaRequest
+        const { schema, entityName } = schemaRequest
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName,
+            schema,
             entityName
         }
 
@@ -301,7 +301,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schemaName } = schemaRequest
+        const { schema } = schemaRequest
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
@@ -311,7 +311,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
         const collections = await this.Connection.db(this.Params.database).listCollections().toArray()
 
         if (collections.length == 0)
-            throw new HttpErrorNotFound(`${schemaName}: No entities found`)
+            throw new HttpErrorNotFound(`${schema}: No entities found`)
 
         const rows = await Promise.all(
             collections.map(async (item) => {
@@ -326,7 +326,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
         )
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            schemaName,
+            schema,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data: new DataTable(undefined, rows)

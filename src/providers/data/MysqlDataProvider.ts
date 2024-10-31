@@ -151,7 +151,7 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
             }
 
             return HttpResponse.Ok(<TSchemaResponse>{
-                schemaName: schemaRequest.schemaName,
+                schema: schemaRequest.schema,
                 entityName: schemaRequest.entityName,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
@@ -230,10 +230,10 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
                 FROM information_schema.tables 
                 WHERE table_schema = ?`
 
-            const [rows] = await connection.query(sqlQuery, [schemaRequest.schemaName])
+            const [rows] = await connection.query(sqlQuery, [schemaRequest.schema])
 
             if (!Array.isArray(rows) || rows.length === 0) {
-                throw new HttpErrorNotFound(`No entities found in schema '${schemaRequest.schemaName}'`)
+                throw new HttpErrorNotFound(`No entities found in schema '${schemaRequest.schema}'`)
             }
 
             const data = new DataTable(undefined, rows as TRow[])
@@ -242,7 +242,7 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
             }
 
             return HttpResponse.Ok(<TSchemaResponse>{
-                schemaName: schemaRequest.schemaName,
+                schema: schemaRequest.schema,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data

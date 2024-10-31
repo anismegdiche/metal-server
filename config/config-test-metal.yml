@@ -30,5 +30,5 @@ plans:
   plan1:
     start:
       - select:
-          schemaName: metalws
+          schema: metalws
           entityName: members

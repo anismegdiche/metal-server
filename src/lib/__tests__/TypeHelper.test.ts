@@ -11,7 +11,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (wrong data property types)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -37,7 +37,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (wrong data property values)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -63,7 +63,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (missing Fields property)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -84,7 +84,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (missing Rows property)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -113,7 +113,7 @@ describe('TypeHelper', () => {
         it('should return false for invalid TSchemaRequest object (wrong property types)', () => {
             expect(TypeHelper.IsSchemaRequest({
                 // wrong property types
-                schemaName: 123,
+                schema: 123,
                 entityName: 'string'
             })).toBe(false)
         })
@@ -134,7 +134,7 @@ describe('TypeHelper', () => {
     describe('IsSchemaResponseData', () => {
         it('should return false for invalid TSchemaResponse object (wrong data property types)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -160,7 +160,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (wrong data property values)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -186,7 +186,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (missing Fields property)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -207,7 +207,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (missing Rows property)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -226,7 +226,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (empty Fields property)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -248,7 +248,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (empty Rows property)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -272,7 +272,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (missing properties)', () => {
             const schemaResponse: any = {
-                schemaName: 'test-schema',
+                schema: 'test-schema',
                 entityName: 'test-entity'
             }
             expect(TypeHelper.IsSchemaResponseData(schemaResponse)).toBe(false)
@@ -280,7 +280,7 @@ describe('TypeHelper', () => {
 
         it('should return false for invalid TSchemaResponse object (wrong property types)', () => {
             const schemaResponse: any = {
-                schemaName: 123,
+                schema: 123,
                 entityName: 'test-entity',
                 result: 'success',
                 status: '200',
@@ -297,7 +297,7 @@ describe('TypeHelper', () => {
 
         it('UC 1', () => {
             const schemaResponse: any = {
-                schemaName: "mem",
+                schema: "mem",
                 entityName: "users",
                 result: "OK",
                 status: 200,
@@ -341,7 +341,7 @@ describe('TypeHelper', () => {
 
         it('UC 2', () => {
             const schemaResponse: any = {
-                schemaName: "mem",
+                schema: "mem",
                 result: "OK",
                 status: 200,
                 data: {

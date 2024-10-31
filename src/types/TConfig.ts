@@ -104,7 +104,7 @@ export type TConfig = {
         [sourceName: string]: TConfigSource
     }
     schemas?: {
-        [schemaName: string]: TConfigSchema
+        [schema: string]: TConfigSchema
     }
     "ai-engines"?: {
         [aiEngineName: string]: {
