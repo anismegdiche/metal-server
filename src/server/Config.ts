@@ -93,7 +93,7 @@ export class Config {
     @Logger.LogFunction()
     static CheckRessourcesUsage(newConfig: TConfig): void {
         // TODO check for used sources and plans in config
-        const sourceNameConfig = {
+        const sourceConfig = {
             type: "string",
             // eslint-disable-next-line you-dont-need-lodash-underscore/keys
             enum: _.keys(newConfig?.sources ?? [])

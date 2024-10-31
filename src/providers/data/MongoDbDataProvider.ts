@@ -142,8 +142,8 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     //TODO: change MongoDbDataProviderOptions to static
     Options: MongoDbDataProviderOptions = new MongoDbDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TConfigSource) {
-        this.SourceName = sourceName
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }

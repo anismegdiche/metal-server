@@ -31,8 +31,8 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
     Options = new CommonSqlDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TConfigSource) {
-        this.SourceName = sourceName
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }
@@ -91,7 +91,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
             if (options?.Cache)
                 Cache.Set({
                     ...schemaRequest,
-                    sourceName: this.SourceName
+                    source: this.SourceName
                 },
                     data
                 )

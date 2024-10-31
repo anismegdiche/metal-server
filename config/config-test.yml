@@ -72,37 +72,37 @@ sources:
 
 schemas:
   json:
-    sourceName: fs-json-data
+    source: fs-json-data
   csv:
-    sourceName: fs-csv-data
+    source: fs-csv-data
   hr:
-    sourceName: mssql
+    source: mssql
     access:
       - root@*: crud
       - user@localhost: r
       - any@*: r
 
   mflix:
-    sourceName: mongo
+    source: mongo
 
   northwind:
-    sourceName: postgres1
+    source: postgres1
 
   clubdata:
-    sourceName: postgres2
+    source: postgres2
 
   merge:
-    sourceName: postgres2
+    source: postgres2
     entities:
       orders:
-        sourceName: postgres1
+        source: postgres1
         entity: orders
       users:
-        sourceName: mongo
+        source: mongo
         entity: users
 
   etl1:
-    sourceName: plan-etl1
+    source: plan-etl1
 
 ai-engines:
   ocr: # Tested

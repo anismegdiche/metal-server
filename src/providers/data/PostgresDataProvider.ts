@@ -33,8 +33,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
     Options = new CommonSqlDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TConfigSource) {
-        this.SourceName = sourceName
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }
@@ -46,7 +46,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        const sourceName = this.SourceName
+        const source = this.SourceName
         const {
             user = 'root',
             password = '',
@@ -70,15 +70,15 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
                     if (err)
                         throw err
                     else
-                        Logger.Info(`${Logger.Out} connected to '${sourceName} (${database})'`)
+                        Logger.Info(`${Logger.Out} connected to '${source} (${database})'`)
 
                 } catch (error: unknown) {
-                    Logger.Error(`${Logger.Out} Failed to connect to '${sourceName} (${database})'`)
+                    Logger.Error(`${Logger.Out} Failed to connect to '${source} (${database})'`)
                     Logger.Error(error)
                 }
             })
         } catch (error: unknown) {
-            Logger.Error(`${Logger.Out} Failed to connect to '${sourceName} (${database})'`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${source} (${database})'`)
             Logger.Error(error)
         }
     }

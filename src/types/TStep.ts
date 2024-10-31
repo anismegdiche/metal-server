@@ -10,23 +10,23 @@ import { TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities,
 
 export type TStepDebug = string | null
 
-export type TStepSelect = Omit<TSchemaRequestSelect, 'schema' | 'entity' | 'sourceName'> & {
+export type TStepSelect = Omit<TSchemaRequestSelect, 'schema' | 'entity' | 'source'> & {
     schema?: string
     entity?: string
 }
 
-export type TStepUpdate = Omit<TSchemaRequestUpdate, 'schema' | 'entity' | 'sourceName'> & {
+export type TStepUpdate = Omit<TSchemaRequestUpdate, 'schema' | 'entity' | 'source'> & {
     schema?: string
     entity?: string
 }
 
-export type TStepDelete = Omit<TSchemaRequestDelete, 'schema' | 'entity' | 'sourceName'> & {
+export type TStepDelete = Omit<TSchemaRequestDelete, 'schema' | 'entity' | 'source'> & {
     schema?: string
     entity?: string
 }
 
 
-export type TStepInsert = Omit<TSchemaRequestInsert, 'schema' | 'entity' | 'sourceName'> & {
+export type TStepInsert = Omit<TSchemaRequestInsert, 'schema' | 'entity' | 'source'> & {
     schema?: string
     entity?: string
 }
@@ -89,6 +89,6 @@ export type TStepRemoveDuplicates = {
     condition: string
 }
 
-export type TStepListEntities = Omit<TSchemaRequestListEntities, 'schema' | 'entity' | 'sourceName'> & {
+export type TStepListEntities = Omit<TSchemaRequestListEntities, 'schema' | 'entity' | 'source'> & {
     schema?: string
 }

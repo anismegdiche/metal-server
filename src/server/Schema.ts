@@ -25,7 +25,7 @@ export type TSchemaRoute = {
 }
 
 export type TSourceTypeExecuteParams = {
-    sourceName: string,
+    source: string,
     entity: string,
     schemaRequest: TSchemaRequestSelect | TSchemaRequestUpdate | TSchemaRequestDelete | TSchemaRequestInsert,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -33,7 +33,7 @@ export type TSourceTypeExecuteParams = {
 }
 
 export type TEntitiesMap = Map<string, {
-    sourceName: string,
+    source: string,
     database?: string
 }>
 
@@ -42,7 +42,7 @@ export class Schema {
     sort?: string
     cache?: string
     //
-    sourceName?: string
+    source?: string
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static readonly SourceTypeCaseMap: Record<string, Function> = {
@@ -86,31 +86,31 @@ export class Schema {
                 return nothingToDoSchemaRoute
             }
 
-            const { sourceName: _sourceName, entity: _entity } = _schemaEntityConfig
+            const { source: _source, entity: _entity } = _schemaEntityConfig
 
-            // schema.entities.*.sourceName
-            if (_sourceName) {
-                if (!Config.Has(`sources.${_sourceName}`)) {
+            // schema.entities.*.source
+            if (_source) {
+                if (!Config.Has(`sources.${_source}`)) {
                     Logger.Warn(`Source not found for entity '${entity}'`)
                     return nothingToDoSchemaRoute
                 }
                 return {
                     type: 'source',
-                    routeName: _sourceName,
+                    routeName: _source,
                     entity: _entity
                 }
             }
         }
 
-        // schema.sourceName
-        if (schemaConfig?.sourceName) {
-            if (!Config.Has(`sources.${schemaConfig.sourceName}`)) {
+        // schema.source
+        if (schemaConfig?.source) {
+            if (!Config.Has(`sources.${schemaConfig.source}`)) {
                 Logger.Warn(`Source not found for schema '${schema}'`)
                 return nothingToDoSchemaRoute
             }
             return {
                 type: 'source',
-                routeName: schemaConfig.sourceName,
+                routeName: schemaConfig.source,
                 entity
             }
         }
@@ -179,13 +179,13 @@ export class Schema {
         //
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
-            sourceName: schemaRoute.routeName,
+            source: schemaRoute.routeName,
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
                 const _internalResponse = await Source.Sources[schemaRoute.routeName].Select(<TSchemaRequestSelect>{
                     ...schemaRequest,
-                    sourceName: schemaRoute.routeName,
+                    source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
                 })
 
@@ -212,13 +212,13 @@ export class Schema {
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
-            sourceName: schemaRoute.routeName,
+            source: schemaRoute.routeName,
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
                 return await Source.Sources[schemaRoute.routeName].Delete(<TSchemaRequestDelete>{
                     ...schemaRequest,
-                    sourceName: schemaRoute.routeName,
+                    source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
                 })
             }
@@ -236,13 +236,13 @@ export class Schema {
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
-            sourceName: schemaRoute.routeName,
+            source: schemaRoute.routeName,
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
                 return await Source.Sources[schemaRoute.routeName].Update(<TSchemaRequestUpdate>{
                     ...schemaRequest,
-                    sourceName: schemaRoute.routeName,
+                    source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
                 })
             }
@@ -260,13 +260,13 @@ export class Schema {
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
-            sourceName: schemaRoute.routeName,
+            source: schemaRoute.routeName,
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
                 return await Source.Sources[schemaRoute.routeName].Insert(<TSchemaRequestInsert>{
                     ...schemaRequest,
-                    sourceName: schemaRoute.routeName,
+                    source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
                 })
             }
@@ -281,14 +281,14 @@ export class Schema {
         let schemaResponse = {} as TSchemaResponse
 
         if (entitiesSources.has("*")) {
-            const _source = (<TConfigSchemaEntity>entitiesSources.get("*")).sourceName
+            const _source = (<TConfigSchemaEntity>entitiesSources.get("*")).source
             const _internalResponse = await Source.Sources[_source].ListEntities(schemaRequest)
             schemaResponse = <TSchemaResponse>_internalResponse.Body
             entitiesSources.delete("*")
         }
 
         for await (const [entity, entitySource] of entitiesSources) {
-            const _source = (<TConfigSchemaEntity>entitySource).sourceName
+            const _source = (<TConfigSchemaEntity>entitySource).source
             if (TypeHelper.IsSchemaResponseData(schemaResponse))
                 schemaResponse.data.DeleteRows(`name = '${entity}'`)
 
@@ -304,18 +304,18 @@ export class Schema {
         const entities: TEntitiesMap = new Map()
         const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
 
-        if (schemaConfig?.sourceName)
+        if (schemaConfig?.source)
             entities.set("*", {
-                sourceName: schemaConfig.sourceName,
-                database: Config.Get<string | undefined>(`sources.${schemaConfig.sourceName}.database`)
+                source: schemaConfig.source,
+                database: Config.Get<string | undefined>(`sources.${schemaConfig.source}.database`)
             })
 
         if (schemaConfig?.entities)
             // eslint-disable-next-line you-dont-need-lodash-underscore/for-each
             _.forEach(schemaConfig.entities, (entityConfig: TConfigSchemaEntity, entity: string) => {
                 entities.set(entity, {
-                    sourceName: entityConfig.sourceName,
-                    database: Config.Get<string | undefined>(`sources.${entityConfig.sourceName}.database`)
+                    source: entityConfig.source,
+                    database: Config.Get<string | undefined>(`sources.${entityConfig.source}.database`)
                 })
             })
 

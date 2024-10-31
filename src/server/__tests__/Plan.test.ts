@@ -83,7 +83,7 @@ describe('Process', () => {
             "filter-expression": 'id = 1',
             sort: 'name',
             cache: 60,
-            sourceName: 'TestSource'
+            source: 'TestSource'
         }
         const sqlQuery = 'SELECT * FROM TestTable'
 

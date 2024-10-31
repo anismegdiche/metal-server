@@ -28,19 +28,19 @@ export type TConfigSource = {
 
 // schemas.*.entities
 export type TConfigSchemaEntity = {
-    sourceName: string
+    source: string
     entity: string
 }
 
 // schemas.*
 export type TConfigSchema = {
-    sourceName: string
+    source: string
     entities?: {
         [entity: string]: TConfigSchemaEntity
     }
     anonymize?: string
 } | {
-    sourceName?: string
+    source?: string
     entities: {
         [entity: string]: TConfigSchemaEntity
     }
@@ -101,7 +101,7 @@ export type TConfig = {
         [userName: string]: string | number
     }
     sources: {
-        [sourceName: string]: TConfigSource
+        [source: string]: TConfigSource
     }
     schemas?: {
         [schema: string]: TConfigSchema

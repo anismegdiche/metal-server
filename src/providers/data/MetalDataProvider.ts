@@ -150,15 +150,15 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
     }
 
 
-    constructor(sourceName: string, sourceParams: TConfigSource) {
-        this.SourceName = sourceName
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }
 
     static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest): object {
         // eslint-disable-next-line you-dont-need-lodash-underscore/omit
-        return _.omit(schemaRequest, ['sourceName', 'schema', 'entity'])
+        return _.omit(schemaRequest, ['source', 'schema', 'entity'])
     }
 
     static #ConvertResponseToSchemaResponse(res: AxiosResponse): TSchemaResponse {
@@ -212,7 +212,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
     }
 
     async Connect(): Promise<void> {
-        const sourceName = this.SourceName
+        const source = this.SourceName
         const {
             user = '',
             password = '',
@@ -231,10 +231,10 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
             .then(() => {
                 this.Connection?.Get(`${this.Params.host}${this.Connection.API.server}/info`)
                     .then((res: AxiosResponse) => {
-                        Logger.Info(`${Logger.Out} connected to '${sourceName} (${database})'`)
+                        Logger.Info(`${Logger.Out} connected to '${source} (${database})'`)
                         const { data } = res
                         if (data?.version != SERVER.VERSION) {
-                            Logger.Warn(`⚠️  WARNING ⚠️  The server version for '${sourceName}' (version: ${data?.version}) do not match with current Metal Server (version: ${SERVER.VERSION}). Please proceed with caution.`)
+                            Logger.Warn(`⚠️  WARNING ⚠️  The server version for '${source}' (version: ${data?.version}) do not match with current Metal Server (version: ${SERVER.VERSION}). Please proceed with caution.`)
                         }
                     })
                     .catch((error: unknown) => {
@@ -242,7 +242,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
                     })
             })
             .catch((error: unknown) => {
-                Logger.Error(`${Logger.In} Failed to connect to '${sourceName} (${database})'`)
+                Logger.Error(`${Logger.In} Failed to connect to '${source} (${database})'`)
                 Logger.Error(error)
             })
     }

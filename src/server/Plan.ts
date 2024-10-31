@@ -35,10 +35,10 @@ export class Plan {
 
     static async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery: string | undefined) {
         
-        const { schema, sourceName, entity } = schemaRequest
-            const sourcePlanName: string = Config.Get(`sources.${sourceName}.database`)
+        const { schema, source, entity } = schemaRequest
+            const sourcePlanName: string = Config.Get(`sources.${source}.database`)
 
-            if (sourceName === undefined || sourcePlanName === undefined) {
+            if (source === undefined || sourcePlanName === undefined) {
                 Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schema}`)
                 return new DataTable(entity)
             }
@@ -50,10 +50,10 @@ export class Plan {
 
             const entitySteps: Array<StepCommand> = Config.Get(`plans.${sourcePlanName}.${entity}`)
 
-            const currentDatatable = await Plan.ExecuteSteps(schema, sourceName, entity, entitySteps)
+            const currentDatatable = await Plan.ExecuteSteps(schema, source, entity, entitySteps)
             await currentDatatable.FreeSqlAsync(sqlQuery)
 
-            Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entity}`)
+            Logger.Debug(`${Logger.Out} Plan.Execute: ${source}.${entity}`)
             return currentDatatable
     }
 

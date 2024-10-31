@@ -72,33 +72,33 @@ sources:
 
 schemas:
   northwind:
-    sourceName: pg-northwind
+    source: pg-northwind
   hr:
-    sourceName: ms-hr
+    source: ms-hr
   mflix:
-    sourceName: mdb-mflix
+    source: mdb-mflix
   clubdata:
     entities:
       members:
-        sourceName: pg-clubdata-members
+        source: pg-clubdata-members
         entity: members
       facilities:
-        sourceName: pg-clubdata-facilities
+        source: pg-clubdata-facilities
         entity: facilities
       bookings:
-        sourceName: pg-clubdata-bookings
+        source: pg-clubdata-bookings
         entity: bookings
   merge:
-    sourceName: pg-clubdata
+    source: pg-clubdata
     entities:
       orders:
-        sourceName: pg-northwind
+        source: pg-northwind
         entity: orders
       users:
-        sourceName: mdb-mflix
+        source: mdb-mflix
         entity: users
   sch-etl1:
-    sourceName: plan-etl1
+    source: plan-etl1
 
 ai-engines:
   ocr:

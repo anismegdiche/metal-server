@@ -79,8 +79,8 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     Options = new CommonSqlDataProviderOptions()
 
     //TODO: Refactor this asynchronous operation outside of the constructor.sonarlint(typescript:S7059)
-    constructor(sourceName: string, sourceParams: TConfigSource) {
-        this.SourceName = sourceName
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }
@@ -232,7 +232,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         if (options?.Cache)
             await Cache.Set({
                   ...schemaRequest,
-                  sourceName: this.SourceName
+                  source: this.SourceName
               },
               data
             )

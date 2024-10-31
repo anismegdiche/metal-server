@@ -56,10 +56,10 @@ sources:
 
 schemas:
   fsjson:
-    sourceName: fs-json-data
+    source: fs-json-data
   fscsv:
-    sourceName: fs-csv-data
+    source: fs-csv-data
   azjson:
-    sourceName: az-json-data
+    source: az-json-data
   azcsv:
-    sourceName: az-csv-data
+    source: az-csv-data

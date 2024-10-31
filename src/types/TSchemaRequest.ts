@@ -22,20 +22,20 @@ export type TSchemaRequest = {
     cache?: number
 
     //
-    sourceName?: string
+    source?: string
 }
 
 export type TSchemaRequestSelect = Pick<TSchemaRequest,
-    'schema' | 'entity' | 'sourceName' | 'fields' | 'filter' | 'filter-expression' | 'sort' | 'cache' | 'anonymize'>
+    'schema' | 'entity' | 'source' | 'fields' | 'filter' | 'filter-expression' | 'sort' | 'cache' | 'anonymize'>
 
 export type TSchemaRequestUpdate = Pick<TSchemaRequest,
-    'schema' | 'entity' | 'sourceName' | 'data' | 'filter' | 'filter-expression'>
+    'schema' | 'entity' | 'source' | 'data' | 'filter' | 'filter-expression'>
 
 export type TSchemaRequestDelete = Pick<TSchemaRequest,
-    'schema' | 'entity' | 'sourceName' | 'filter' | 'filter-expression'>
+    'schema' | 'entity' | 'source' | 'filter' | 'filter-expression'>
 
 export type TSchemaRequestInsert = Pick<TSchemaRequest,
-    'schema' | 'entity' | 'sourceName' | 'data'>
+    'schema' | 'entity' | 'source' | 'data'>
 
 export type TSchemaRequestListEntities = Pick<TSchemaRequest,
-    'schema' | 'entity' | 'sourceName'>
+    'schema' | 'entity' | 'source'>

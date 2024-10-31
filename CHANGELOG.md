@@ -4,6 +4,7 @@
 
 ### ⚠️ Breaking Changes
 - Updated to Node v22.10.0
+- Parameter `sourceName` changed to `source`
 - Parameter `entityName` changed to `entity`
 - Parameter `schemaName` changed to `schema`
 - Parameter `fileExpression` changed to `filter-expression`

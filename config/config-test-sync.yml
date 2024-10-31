@@ -25,13 +25,13 @@ sources:
 
 schemas:
   mem:
-    sourceName: mem-data
+    source: mem-data
     entities:
       syncdown:
-        sourceName: plan-sync
+        source: plan-sync
         entity: members-down
   pg:
-    sourceName: pg-clubdata-members
+    source: pg-clubdata-members
 
 schedules:
   start:

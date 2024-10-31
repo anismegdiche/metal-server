@@ -18,7 +18,7 @@ sources:
 
 schemas:
   metalws:
-    sourceName: metal-clubdata
+    source: metal-clubdata
 
 # schedules:
 #   start:

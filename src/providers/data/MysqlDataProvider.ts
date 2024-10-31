@@ -28,8 +28,8 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
     Config: TJson = {};
     Options = new CommonSqlDataProviderOptions();
 
-    constructor(sourceName: string, sourceParams: TConfigSource) {
-        this.SourceName = sourceName
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
     }
 

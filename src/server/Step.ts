@@ -260,7 +260,7 @@ export class Step {
 
         const requestToCurrentPlan: TSchemaRequest = {
             schema,
-            sourceName: currentPlanName,
+            source: currentPlanName,
             entity
         }
 
