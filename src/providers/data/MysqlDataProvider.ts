@@ -112,7 +112,7 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
         try {
             const options: TOptions = this.Options.Parse(schemaRequest)
             const sqlQueryHelper = new SqlQueryHelper()
-                .Insert(`\`${schemaRequest.entityName}\``)
+                .Insert(`\`${schemaRequest.entity}\``)
                 .Fields(options.Data.GetFieldNames(), '`')
                 .Values(options.Data.Rows)
 
@@ -136,12 +136,12 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
             const options: TOptions = this.Options.Parse(schemaRequest)
             const sqlQueryHelper = new SqlQueryHelper()
                 .Select(options.Fields)
-                .From(`\`${schemaRequest.entityName}\``)
+                .From(`\`${schemaRequest.entity}\``)
                 .Where(options.Filter)
                 .OrderBy(options.Sort)
 
             const [rows] = await connection.query(sqlQueryHelper.Query)
-            const data = new DataTable(schemaRequest.entityName)
+            const data = new DataTable(schemaRequest.entity)
 
             if (Array.isArray(rows) && rows.length > 0) {
                 data.AddRows(<TRow[]>rows)
@@ -152,7 +152,7 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
 
             return HttpResponse.Ok(<TSchemaResponse>{
                 schema: schemaRequest.schema,
-                entityName: schemaRequest.entityName,
+                entity: schemaRequest.entity,
                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                 data
@@ -172,7 +172,7 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
         try {
             const options: TOptions = this.Options.Parse(schemaRequest)
             const sqlQueryHelper = new SqlQueryHelper()
-                .Update(`\`${schemaRequest.entityName}\``)
+                .Update(`\`${schemaRequest.entity}\``)
                 .Set(options.Data.Rows)
                 .Where(options.Filter)
 
@@ -196,7 +196,7 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
             const options: TOptions = this.Options.Parse(schemaRequest)
             const sqlQueryHelper = new SqlQueryHelper()
                 .Delete()
-                .From(`\`${schemaRequest.entityName}\``)
+                .From(`\`${schemaRequest.entity}\``)
                 .Where(options.Filter)
 
             await connection.query(sqlQueryHelper.Query)

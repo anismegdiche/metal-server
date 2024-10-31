@@ -10,7 +10,7 @@ import { DataTable } from "./DataTable"
 
 export type TSchemaResponse = {
     schema: string
-    entityName?: string
+    entity?: string
     result: string
     status: HTTP_STATUS_CODE.OK
     cache?: string

@@ -21,12 +21,12 @@ import { HttpResponse } from "./HttpResponse"
 export type TSchemaRoute = {
     type: "source" | "nothing",
     routeName: string
-    entityName?: string
+    entity?: string
 }
 
 export type TSourceTypeExecuteParams = {
     sourceName: string,
-    entityName: string,
+    entity: string,
     schemaRequest: TSchemaRequestSelect | TSchemaRequestUpdate | TSchemaRequestDelete | TSchemaRequestInsert,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     CrudFunction: Function
@@ -70,7 +70,7 @@ export class Schema {
 
     //TODO: rewrite with GetEntitiesSources
     @Logger.LogFunction()
-    static GetRoute(schema: string, entityName: string, schemaConfig: any): TSchemaRoute {
+    static GetRoute(schema: string, entity: string, schemaConfig: any): TSchemaRoute {
 
         const nothingToDoSchemaRoute: TSchemaRoute = {
             type: 'nothing',
@@ -78,26 +78,26 @@ export class Schema {
         }
 
         // schema.entities.*
-        if (_.has(schemaConfig, `entities.${entityName}`)) {
-            const _schemaEntityConfig = _.get(schemaConfig.entities, entityName)
+        if (_.has(schemaConfig, `entities.${entity}`)) {
+            const _schemaEntityConfig = _.get(schemaConfig.entities, entity)
 
             if (_schemaEntityConfig === undefined) {
-                Logger.Warn(`Entity '${entityName}' not found in schema '${schema}'`)
+                Logger.Warn(`Entity '${entity}' not found in schema '${schema}'`)
                 return nothingToDoSchemaRoute
             }
 
-            const { sourceName: _sourceName, entityName: _entityName } = _schemaEntityConfig
+            const { sourceName: _sourceName, entity: _entity } = _schemaEntityConfig
 
             // schema.entities.*.sourceName
             if (_sourceName) {
                 if (!Config.Has(`sources.${_sourceName}`)) {
-                    Logger.Warn(`Source not found for entity '${entityName}'`)
+                    Logger.Warn(`Source not found for entity '${entity}'`)
                     return nothingToDoSchemaRoute
                 }
                 return {
                     type: 'source',
                     routeName: _sourceName,
-                    entityName: _entityName
+                    entity: _entity
                 }
             }
         }
@@ -111,7 +111,7 @@ export class Schema {
             return {
                 type: 'source',
                 routeName: schemaConfig.sourceName,
-                entityName
+                entity
             }
         }
 
@@ -120,9 +120,9 @@ export class Schema {
     }
 
     static async #NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<void> {
-        const { schema, entityName } = sourceTypeExecuteParams.schemaRequest
-        Logger.Warn(`${schema}: Entity '${entityName}' not found`)
-        throw new HttpErrorNotFound(`${schema}: Entity '${entityName}' not found`)
+        const { schema, entity } = sourceTypeExecuteParams.schemaRequest
+        Logger.Warn(`${schema}: Entity '${entity}' not found`)
+        throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
     }
 
     static #MergeData(schemaResponse: TSchemaResponse, schemaResponseToMerge: TSchemaResponse | undefined): TSchemaResponse {
@@ -141,7 +141,7 @@ export class Schema {
             return <TSchemaResponse>{
                 ...schemaResponseToMerge,
                 schema: schemaResponse.schema,
-                entityName: schemaResponse.entityName,
+                entity: schemaResponse.entity,
                 result: schemaResponseToMerge.result,
                 status: schemaResponseToMerge.status
             }
@@ -166,9 +166,9 @@ export class Schema {
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
-        const { schema, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
         const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
-        const schemaRoute = Schema.GetRoute(schema, entityName, schemaConfig)
+        const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
         // Anonymizer
         let isAnonymize = false
         let fieldsToAnonymize: string[] = []
@@ -180,13 +180,13 @@ export class Schema {
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
             sourceName: schemaRoute.routeName,
-            entityName: schemaRoute.entityName,
+            entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
                 const _internalResponse = await Source.Sources[schemaRoute.routeName].Select(<TSchemaRequestSelect>{
                     ...schemaRequest,
                     sourceName: schemaRoute.routeName,
-                    entityName: schemaRoute.entityName ?? schemaRequest.entityName
+                    entity: schemaRoute.entity ?? schemaRequest.entity
                 })
 
                 if (!_internalResponse.Body)
@@ -207,19 +207,19 @@ export class Schema {
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestDelete>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
-        const { schema, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
         const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
-        const schemaRoute = Schema.GetRoute(schema, entityName, schemaConfig)
+        const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
             sourceName: schemaRoute.routeName,
-            entityName: schemaRoute.entityName,
+            entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
                 return await Source.Sources[schemaRoute.routeName].Delete(<TSchemaRequestDelete>{
                     ...schemaRequest,
                     sourceName: schemaRoute.routeName,
-                    entityName: schemaRoute.entityName ?? schemaRequest.entityName
+                    entity: schemaRoute.entity ?? schemaRequest.entity
                 })
             }
         })
@@ -231,19 +231,19 @@ export class Schema {
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestUpdate>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
-        const { schema, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
         const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
-        const schemaRoute = Schema.GetRoute(schema, entityName, schemaConfig)
+        const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
             sourceName: schemaRoute.routeName,
-            entityName: schemaRoute.entityName,
+            entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
                 return await Source.Sources[schemaRoute.routeName].Update(<TSchemaRequestUpdate>{
                     ...schemaRequest,
                     sourceName: schemaRoute.routeName,
-                    entityName: schemaRoute.entityName ?? schemaRequest.entityName
+                    entity: schemaRoute.entity ?? schemaRequest.entity
                 })
             }
         })
@@ -255,19 +255,19 @@ export class Schema {
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestInsert>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
-        const { schema, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
         const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
-        const schemaRoute = Schema.GetRoute(schema, entityName, schemaConfig)
+        const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
             sourceName: schemaRoute.routeName,
-            entityName: schemaRoute.entityName,
+            entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
                 return await Source.Sources[schemaRoute.routeName].Insert(<TSchemaRequestInsert>{
                     ...schemaRequest,
                     sourceName: schemaRoute.routeName,
-                    entityName: schemaRoute.entityName ?? schemaRequest.entityName
+                    entity: schemaRoute.entity ?? schemaRequest.entity
                 })
             }
         })
@@ -287,10 +287,10 @@ export class Schema {
             entitiesSources.delete("*")
         }
 
-        for await (const [entityName, entitySource] of entitiesSources) {
+        for await (const [entity, entitySource] of entitiesSources) {
             const _source = (<TConfigSchemaEntity>entitySource).sourceName
             if (TypeHelper.IsSchemaResponseData(schemaResponse))
-                schemaResponse.data.DeleteRows(`name = '${entityName}'`)
+                schemaResponse.data.DeleteRows(`name = '${entity}'`)
 
             const _internalResponse = await Source.Sources[_source].ListEntities(schemaRequest)            
 

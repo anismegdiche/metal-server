@@ -194,7 +194,7 @@ describe('Step', () => {
             const steps = <Array<StepCommand>>[
                 {
                     insert: {
-                        entityName: "users"
+                        entity: "users"
                     }
                 }
             ]
@@ -245,7 +245,7 @@ describe('Step', () => {
             const steps = <Array<StepCommand>>[
                 {
                     update: {
-                        entityName: "users",
+                        entity: "users",
                         data: { age: 30 },
                         filter: {
                             name: "John"
@@ -406,7 +406,7 @@ describe('Step', () => {
             const steps = <Array<StepCommand>>[
                 {
                     join: {
-                        entityName: "orders",
+                        entity: "orders",
                         type: "left",
                         leftField: "user_id",
                         rightField: "id"

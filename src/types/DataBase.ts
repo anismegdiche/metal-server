@@ -24,19 +24,19 @@ export class DataBase {
     }
 
     @Logger.LogFunction()
-    AddTable(entityName: string, rows: TJson[] | undefined = undefined) {
-        if (this.Tables[entityName] === undefined)
-            this.Tables[entityName] = new DataTable(entityName, rows)
+    AddTable(entity: string, rows: TJson[] | undefined = undefined) {
+        if (this.Tables[entity] === undefined)
+            this.Tables[entity] = new DataTable(entity, rows)
         else
-            Logger.Error(`DataBase '${this.Name}' has already entity named '${entityName}'`)
+            Logger.Error(`DataBase '${this.Name}' has already entity named '${entity}'`)
     }
 
     @Logger.LogFunction()
-    SetTable(entityName: string, rows: TJson[] | undefined = undefined) {
-        if (this.Tables[entityName] === undefined)
-            this.AddTable(entityName, rows)
+    SetTable(entity: string, rows: TJson[] | undefined = undefined) {
+        if (this.Tables[entity] === undefined)
+            this.AddTable(entity, rows)
         else
-            this.Tables[entityName].Set(rows)
+            this.Tables[entity].Set(rows)
     }
 
     @Logger.LogFunction()

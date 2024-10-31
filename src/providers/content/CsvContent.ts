@@ -26,8 +26,8 @@ export class CsvContent extends CommonContent implements IContent {
     Config = <Csv.ParseWorkerConfig>{}
 
     @Logger.LogFunction()
-    async Init(entityName: string, content: Readable): Promise<void> {
-        this.EntityName = entityName
+    async Init(entity: string, content: Readable): Promise<void> {
+        this.EntityName = entity
         if (this.Options) {
             const {
                 csvDelimiter: delimiter = ',',
@@ -46,7 +46,7 @@ export class CsvContent extends CommonContent implements IContent {
                 skipEmptyLines
             }
         }
-        this.Content.UploadFile(entityName, content)
+        this.Content.UploadFile(entity, content)
     }
 
     @Logger.LogFunction()

@@ -29,7 +29,7 @@ schemas:
     entities:
       syncdown:
         sourceName: plan-sync
-        entityName: members-down
+        entity: members-down
   pg:
     sourceName: pg-clubdata-members
 
@@ -37,7 +37,7 @@ schedules:
   start:
     cron: "@start"
     planName: sync
-    entityName: members-up
+    entity: members-up
 
 plans:
   sync:
@@ -45,32 +45,32 @@ plans:
       - sync:
           source:
             schema: pg
-            entityName: members
+            entity: members
           destination:
             schema: mem
-            entityName: members
+            entity: members
           on: memid
 
       - update:
           schema: mem
-          entityName: members
+          entity: members
           data:
             address: XXXXXXXXXX
     
       - sync:
           source:
             schema: mem
-            entityName: members
+            entity: members
           destination:
             schema: pg
-            entityName: members
+            entity: members
           on: memid
     members-down:
       - sync:
           source:
             schema: mem
-            entityName: members
+            entity: members
           destination:
             schema: pg
-            entityName: members
+            entity: members
           on: memid

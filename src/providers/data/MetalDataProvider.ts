@@ -158,14 +158,14 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
     static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest): object {
         // eslint-disable-next-line you-dont-need-lodash-underscore/omit
-        return _.omit(schemaRequest, ['sourceName', 'schema', 'entityName'])
+        return _.omit(schemaRequest, ['sourceName', 'schema', 'entity'])
     }
 
     static #ConvertResponseToSchemaResponse(res: AxiosResponse): TSchemaResponse {
         const metalResponse = res.data
         if (res.status == HTTP_STATUS_CODE.OK) {
             const data = new DataTable(
-                metalResponse?.entityName,
+                metalResponse?.entity,
                 metalResponse?.rows,
                 metalResponse?.fields,
                 metalResponse?.metadata
@@ -185,7 +185,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
     //     if (status == HTTP_STATUS_CODE.OK) {
     //         const data = new DataTable(
-    //             body?.entityName,
+    //             body?.entity,
     //             body?.rows,
     //             body?.fields,
     //             body?.metadata
@@ -260,7 +260,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
 
-        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
+        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
 
         await this.Connection.Post(url, options)
             .catch(MetalDataProvider.#ThrowError)
@@ -276,7 +276,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
         const urlParams = MetalClient.ConvertToURLParams(options)
 
-        let url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
+        let url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
 
         if (urlParams.length > 0) {
             url += `?${urlParams}`
@@ -297,7 +297,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
 
-        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
+        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
 
         await this.Connection.Patch(url, options)
             .catch(MetalDataProvider.#ThrowError)
@@ -312,7 +312,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
 
-        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
+        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
 
         await this.Connection.Delete(url, options)
             .catch(MetalDataProvider.#ThrowError)

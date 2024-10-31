@@ -24,11 +24,11 @@ schemas:
 #   start:
 #     cron: "@start"
 #     planName: plan1
-#     entityName: start
+#     entity: start
     
 plans:
   plan1:
     start:
       - select:
           schema: metalws
-          entityName: members
+          entity: members

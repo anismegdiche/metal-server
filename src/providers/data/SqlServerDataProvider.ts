@@ -94,7 +94,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
-            entityName: schemaRequest.entityName
+            entity: schemaRequest.entity
         }
 
         if (this.Connection === undefined)
@@ -103,7 +103,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Insert(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
+            .Insert(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
             .Fields(options.Data.GetFieldNames())
             .Values(options.Data.Rows)
 
@@ -120,7 +120,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
-            entityName: schemaRequest.entityName
+            entity: schemaRequest.entity
         }
 
         if (this.Connection === undefined) {
@@ -131,13 +131,13 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
+            .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
         const sqlServerResult = await this.Connection.query(sqlQueryHelper.Query)
 
-        const data = new DataTable(schemaRequest.entityName)
+        const data = new DataTable(schemaRequest.entity)
 
         if (sqlServerResult.recordset != null && sqlServerResult.recordset.length > 0) {
             data.AddRows(sqlServerResult.recordset)
@@ -158,7 +158,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
 
         let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
-            entityName: schemaRequest.entityName
+            entity: schemaRequest.entity
         }
 
         if (this.Connection === undefined)
@@ -167,7 +167,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
+            .Update(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
@@ -184,7 +184,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
 
         const schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
-            entityName: schemaRequest.entityName
+            entity: schemaRequest.entity
         }
 
         if (this.Connection === undefined)
@@ -194,7 +194,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
-            .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
+            .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)

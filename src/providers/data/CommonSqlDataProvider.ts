@@ -64,7 +64,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
     GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.data) {
             options.Data = new DataTable(
-                schemaRequest.entityName,
+                schemaRequest.entity,
                 Convert.EvaluateJsCode(schemaRequest.data)
             )
         }

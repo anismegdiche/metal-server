@@ -100,13 +100,13 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         [CONTENT.XLS]: (contentConfig: TContentConfig) => new XlsContent(contentConfig)
     }
 
-    #SetHandler(entityName: string) {
-        if (!_.has(this.Files, entityName)) {
-            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entityName))
+    #SetHandler(entity: string) {
+        if (!_.has(this.Files, entity)) {
+            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entity))
             if (handler)
-                this.Files[entityName] = this.ContentHandler[handler]
+                this.Files[entity] = this.ContentHandler[handler]
             else
-                throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entityName}`)
+                throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entity}`)
         }
     }
 
@@ -166,29 +166,29 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entityName } = schemaRequest
+        const { entity } = schemaRequest
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.#SetHandler(entityName)
+        this.#SetHandler(entity)
 
-        this.Files[entityName].Init(
-            entityName,
-            await this.Connection.Read(entityName)
+        this.Files[entity].Init(
+            entity,
+            await this.Connection.Read(entity)
         )
 
-        const data = await this.Files[entityName].Get()
+        const data = await this.Files[entity].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Insert(`\`${entityName}\``)
+            .Insert(`\`${entity}\``)
             .Fields(options.Data.GetFieldNames(), '`')
             .Values(options.Data.Rows)
 
         await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
         await this.Connection.Write(
-            entityName,
-            await this.Files[entityName].Set(data)
+            entity,
+            await this.Files[entity].Set(data)
         )
 
         // clean cache
@@ -200,26 +200,26 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schema, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
 
         const schemaResponse = <TSchemaResponse>{
             schema,
-            entityName
+            entity
         }
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.#SetHandler(entityName)
+        this.#SetHandler(entity)
 
-        this.Files[entityName].Init(
-            entityName,
-            await this.Connection.Read(entityName)
+        this.Files[entity].Init(
+            entity,
+            await this.Connection.Read(entity)
         )
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`\`${entityName}\``)
+            .From(`\`${entity}\``)
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
@@ -227,7 +227,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             ? sqlQueryHelper.Query
             : undefined
 
-        const data = await this.Files[entityName].Get(sqlQuery)
+        const data = await this.Files[entity].Get(sqlQuery)
 
         if (options?.Cache)
             await Cache.Set({
@@ -248,30 +248,30 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entityName } = schemaRequest
+        const { entity } = schemaRequest
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.#SetHandler(entityName)
+        this.#SetHandler(entity)
 
-        this.Files[entityName].Init(
-            entityName,
-            await this.Connection.Read(entityName)
+        this.Files[entity].Init(
+            entity,
+            await this.Connection.Read(entity)
         )
 
-        const data = await this.Files[entityName].Get()
+        const data = await this.Files[entity].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`\`${entityName}\``)
+            .Update(`\`${entity}\``)
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
         await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
         await this.Connection.Write(
-            entityName,
-            await this.Files[entityName].Set(data)
+            entity,
+            await this.Files[entity].Set(data)
         )
 
         // clean cache
@@ -284,31 +284,31 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entityName } = schemaRequest
+        const { entity } = schemaRequest
 
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.#SetHandler(entityName)
+        this.#SetHandler(entity)
 
-        this.Files[entityName].Init(
-            entityName,
-            await this.Connection.Read(entityName)
+        this.Files[entity].Init(
+            entity,
+            await this.Connection.Read(entity)
         )
 
-        const data = await this.Files[entityName].Get()
+        const data = await this.Files[entity].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
-            .From(`\`${entityName}\``)
+            .From(`\`${entity}\``)
             .Where(options.Filter)
 
         await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
         await this.Connection.Write(
-            entityName,
-            await this.Files[entityName].Set(data)
+            entity,
+            await this.Files[entity].Set(data)
         )
 
         // clean cache

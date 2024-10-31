@@ -96,10 +96,10 @@ schemas:
     entities:
       orders:
         sourceName: postgres1
-        entityName: orders
+        entity: orders
       users:
         sourceName: mongo
-        entityName: users
+        entity: users
 
   etl1:
     sourceName: plan-etl1
@@ -134,7 +134,7 @@ plans:
           value: {{Date.now()}}
       - select:
           schema: mflix
-          entityName: movies
+          entity: movies
           filter:
             year: 2001
       - set:
@@ -154,7 +154,7 @@ plans:
       - debug:
       - select:
           schema: mflix
-          entityName: movies
+          entity: movies
           filter:
             year: 2001
           fields: title
@@ -200,7 +200,7 @@ plans:
       - debug:
       - select:
           schema: demo
-          entityName: res_partner
+          entity: res_partner
           fields: id, name, display_name
       - addField:
           name: quality
@@ -224,13 +224,13 @@ plans:
       - debug:
       - select:
           schema: demo
-          entityName: res_users
+          entity: res_users
           fields: login, partner_id
       # - bad-step-test1: "***TEST***"
       # - break: step by step test
       - join:
           type: left
-          entityName: contact
+          entity: contact
           leftField: partner_id
           rightField: id
       - fields: id, name, login
@@ -241,14 +241,14 @@ plans:
       # - bad-step-test2: "***TEST***"
       - insert:
           schema: demo
-          entityName: res_users
+          entity: res_users
       - delete:
           schema: demo
-          entityName: res_users
+          entity: res_users
           filter:
             lang: fr_FR
       - update: # not tested
           schema: demo
-          entityName: res_users
+          entity: res_users
           filter:
             lang: fr_FR

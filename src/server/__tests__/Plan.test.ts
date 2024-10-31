@@ -8,7 +8,7 @@ describe('Process', () => {
     it('should return a DataTable when processing a valid TSchemaRequest', async () => {
         const schemaRequest = {
             schema: 'testSchema',
-            entityName: 'testEntity',
+            entity: 'testEntity',
             data: [
                 {
                     id: 1,
@@ -31,7 +31,7 @@ describe('Process', () => {
     it('should handle undefined sqlQuery gracefully', async () => {
         const schemaRequest = {
             schema: 'testSchema',
-            entityName: 'testEntity',
+            entity: 'testEntity',
             data: [
                 {
                     id: 1,
@@ -54,7 +54,7 @@ describe('Process', () => {
         // Arrange
         const scheduleConfig = {
             planName: 'TestPlan',
-            entityName: 'TestEntity',
+            entity: 'TestEntity',
             cron: '* * * * *'
         }
 
@@ -71,7 +71,7 @@ describe('Process', () => {
         const schemaRequest = {
             anonymize: 'email',
             schema: 'TestSchema',
-            entityName: 'TestEntity',
+            entity: 'TestEntity',
             data: [
                 {
                     id: 1,
@@ -99,7 +99,7 @@ describe('Process', () => {
         // Arrange
         const schemaRequest = {
             schema: 'TestSchema',
-            entityName: 'TestEntity'
+            entity: 'TestEntity'
         }
         const sqlQuery = 'SELECT * FROM TestTable'
 

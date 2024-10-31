@@ -23,8 +23,8 @@ export class JsonContent extends CommonContent implements IContent {
     Config = <TJsonContentConfig>{}
 
     @Logger.LogFunction()
-    async Init(entityName: string, content: Readable): Promise<void> {
-        this.EntityName = entityName
+    async Init(entity: string, content: Readable): Promise<void> {
+        this.EntityName = entity
         if (this.Options) {
             const {
                 jsonArrayPath = undefined
@@ -36,7 +36,7 @@ export class JsonContent extends CommonContent implements IContent {
             }
         }
 
-        this.Content.UploadFile(entityName, content)
+        this.Content.UploadFile(entity, content)
     }
 
     @Logger.LogFunction()

@@ -40,12 +40,12 @@ export class Convert {
 
     // @Logger.LogFunction()
     static RequestToSchemaRequest(req: Request): TSchemaRequest {
-        const { schema, entityName } = req.params
+        const { schema, entity } = req.params
 
         // Merge body and query parameters into schemaRequest
         return <TSchemaRequest>{
             schema,
-            entityName,
+            entity,
             ...req.body,
             ...req.query
         }
@@ -61,11 +61,11 @@ export class Convert {
 
     // @Logger.LogFunction()
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, res: Response): Response {
-        const { schema, entityName, result, status } = schemaResponse
+        const { schema, entity, result, status } = schemaResponse
 
         let resJson: TJson = {
             schema,
-            entityName,
+            entity,
             result,
             status
         }

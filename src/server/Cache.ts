@@ -29,7 +29,7 @@ export class Cache {
 
     static readonly #CacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
         schema: Cache.Schema,
-        entityName: Cache.Table
+        entity: Cache.Table
     }
 
     @Logger.LogFunction()
@@ -83,7 +83,7 @@ export class Cache {
             return false
         }
 
-        if (schemaRequest.schema === Cache.Schema && schemaRequest.entityName === Cache.Table) {
+        if (schemaRequest.schema === Cache.Schema && schemaRequest.entity === Cache.Table) {
             Logger.Debug(`${Logger.Out} Cache.Set: bypassing for schema cache`)
             return false
         }
@@ -106,7 +106,7 @@ export class Cache {
         if (!Cache.IsArgumentsValid(schemaRequest))
             return
 
-        const { schema, entityName, cache = 0 } = schemaRequest
+        const { schema, entity, cache = 0 } = schemaRequest
 
         // calculate cache expiration time
         const now = new Date()
@@ -129,7 +129,7 @@ export class Cache {
                         hash,
                         expires,
                         schema,
-                        entityName,
+                        entity,
                         schemaRequest,
                         data: datatable
                     }
@@ -223,13 +223,13 @@ export class Cache {
         if (!Cache.IsArgumentsValid(schemaRequest))
             return
 
-        const { schema, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
 
         try {
             await Cache.CacheSource.Delete(<TSchemaRequest>{
                 ...Cache.#CacheSchemaRequest,
                 //FIXME: only usable with memory provider, should correct escape char ` in where close from sqlhelper
-                "filter-expression": `\`schema\`= '${schema}' AND \`entityName\`= '${entityName}'`
+                "filter-expression": `\`schema\`= '${schema}' AND \`entity\`= '${entity}'`
             })
         } catch (error) {
             //

@@ -38,8 +38,8 @@ export class XlsContent extends CommonContent implements IContent {
     Config = <TXlsContentConfig>{}
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Init(entityName: string, content: Readable): Promise<void> {
-        this.EntityName = entityName
+    async Init(entity: string, content: Readable): Promise<void> {
+        this.EntityName = entity
         if (this.Options) {
             const {
                 xlsSheetName,
@@ -58,7 +58,7 @@ export class XlsContent extends CommonContent implements IContent {
                 xlsStartingCell
             }
         }
-        this.Content.UploadFile(entityName, content)
+        this.Content.UploadFile(entity, content)
     }
 
     @Logger.LogFunction(Logger.Debug, true)

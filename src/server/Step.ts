@@ -84,10 +84,10 @@ export class Step {
 
         const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams as TStepSelect
-        const { schema, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
 
         // TODO: recheck logic for schema=null
-        if (entityName) {
+        if (entity) {
             const _internalResponse = await Schema.Select(<TSchemaRequestSelect>{
                 ...schemaRequest,
                 schema: schema ?? currentSchemaName
@@ -99,7 +99,7 @@ export class Step {
 
         // case no schema and no entity --> use current datatable
         //TODO: missing options.cache
-        if (!schema && !entityName) {
+        if (!schema && !entity) {
             const options: TOptions = Step.Options.Parse(<TSchemaRequestSelect>schemaRequest)
             const sqlQueryHelper = new SqlQueryHelper()
                 .Select(options.Fields)
@@ -130,14 +130,14 @@ export class Step {
 
         const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams as TStepInsert
-        const { schema, entityName, data } = schemaRequest
+        const { schema, entity, data } = schemaRequest
 
         if (!data && currentDataTable.Rows.length == 0) {
             throw new WarnError(`Step.Insert: No data to insert ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
         // TODO: recheck logic for schema=null
-        if (entityName) {
+        if (entity) {
             const _schemaResponse = await Schema.Insert(<TSchemaRequestInsert>{
                 ...schemaRequest,
                 schema: schema ?? currentSchemaName,
@@ -152,7 +152,7 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
-        if (!schema && !entityName) {
+        if (!schema && !entity) {
             currentDataTable.AddRows(data)
         }
 
@@ -169,7 +169,7 @@ export class Step {
 
         const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams
-        const { schema, entityName, data } = schemaRequest
+        const { schema, entity, data } = schemaRequest
 
         if (!data) {
             Logger.Error(`Step.Update: no data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -177,7 +177,7 @@ export class Step {
         }
 
         // TODO: recheck logic for schema=null
-        if (entityName) {
+        if (entity) {
             const _schemaResponse = await Schema.Update({
                 ...schemaRequest,
                 schema: schema ?? currentSchemaName
@@ -187,7 +187,7 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
-        if (!schema && !entityName) {
+        if (!schema && !entity) {
             const _options: TOptions = Step.Options.Parse(schemaRequest)
             const _sqlQueryHelper = new SqlQueryHelper()
                 .Update(`\`${currentDataTable.Name}\``)
@@ -210,10 +210,10 @@ export class Step {
 
         const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams
-        const { schema, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
 
         // TODO: recheck logic for schema=null
-        if (entityName) {
+        if (entity) {
             const _schemaResponse = await Schema.Delete({
                 ...schemaRequest,
                 schema: schema ?? currentSchemaName
@@ -223,7 +223,7 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
-        if (!schema && !entityName) {
+        if (!schema && !entity) {
             const _options: TOptions = Step.Options.Parse(schemaRequest)
             const _sqlQueryHelper = new SqlQueryHelper()
                 .Delete()
@@ -245,23 +245,23 @@ export class Step {
         if (stepParams === null)
             return currentDataTable
 
-        const { schema, entityName, type, leftField, rightField } = stepParams
+        const { schema, entity, type, leftField, rightField } = stepParams
 
-        let dtRight = new DataTable(entityName)
+        let dtRight = new DataTable(entity)
 
         const requestToSchema: TStepArguments = {
             ...stepArguments,
             currentDataTable: dtRight,
             stepParams: {
                 schema,
-                entityName
+                entity
             }
         }
 
         const requestToCurrentPlan: TSchemaRequest = {
             schema,
             sourceName: currentPlanName,
-            entityName
+            entity
         }
 
         dtRight = (schema)
@@ -372,11 +372,11 @@ export class Step {
         }
 
         const dtSource: DataTable = (_from)
-            ? (await Step.#_Select(_from.schema, _from.entityName)) ?? new DataTable(_from.entityName)
+            ? (await Step.#_Select(_from.schema, _from.entity)) ?? new DataTable(_from.entity)
             : stepArguments.currentDataTable
 
         const dtDestination: DataTable = (_to)
-            ? (await Step.#_Select(_to.schema, _to.entityName)) ?? new DataTable(_to.entityName)
+            ? (await Step.#_Select(_to.schema, _to.entity)) ?? new DataTable(_to.entity)
             : stepArguments.currentDataTable
 
 
@@ -390,7 +390,7 @@ export class Step {
         _.map(syncReport.DeletedRows, _id)
             .forEach((value: unknown) => Schema.Delete({
                 schema: _to.schema,
-                entityName: _to.entityName,
+                entity: _to.entity,
                 filter: {
                     [_id]: value
                 }
@@ -399,7 +399,7 @@ export class Step {
         //// Update
         syncReport.UpdatedRows.forEach((row: TRow) => Schema.Update({
             schema: _to.schema,
-            entityName: _to.entityName,
+            entity: _to.entity,
             filter: {
                 [_id]: row[_id]
             },
@@ -411,7 +411,7 @@ export class Step {
         if (syncReport.AddedRows.length > 0) {
             Schema.Insert({
                 schema: _to.schema,
-                entityName: _to.entityName,
+                entity: _to.entity,
                 data: syncReport.AddedRows
             })
         }
@@ -479,10 +479,10 @@ export class Step {
         return new DataTable(currentDataTable.Name, entitiesList)
     }
 
-    static async #_Select(schema: string, entityName: string): Promise<DataTable | undefined> {
+    static async #_Select(schema: string, entity: string): Promise<DataTable | undefined> {
         const internalResponse = await Schema.Select({
             schema,
-            entityName
+            entity
         })
 
         if (internalResponse.Body && TypeHelper.IsSchemaResponseData(internalResponse.Body))

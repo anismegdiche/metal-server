@@ -29,20 +29,20 @@ export type TConfigSource = {
 // schemas.*.entities
 export type TConfigSchemaEntity = {
     sourceName: string
-    entityName: string
+    entity: string
 }
 
 // schemas.*
 export type TConfigSchema = {
     sourceName: string
     entities?: {
-        [entityName: string]: TConfigSchemaEntity
+        [entity: string]: TConfigSchemaEntity
     }
     anonymize?: string
 } | {
     sourceName?: string
     entities: {
-        [entityName: string]: TConfigSchemaEntity
+        [entity: string]: TConfigSchemaEntity
     }
     anonymize?: string
 }
@@ -115,13 +115,13 @@ export type TConfig = {
     }
     plans?: {
         [planName: string]: {
-            [entityName: string]: Array<StepCommand>
+            [entity: string]: Array<StepCommand>
         }
     }
     schedules?: {
         [scheduleName: string]: {
             planName: string
-            entityName: string
+            entity: string
             cron: string & tags.Pattern<"(@(annually|yearly|monthly|weekly|daily|hourly|start))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|([\\d\\*]+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})">
         }
     }

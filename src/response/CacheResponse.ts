@@ -48,9 +48,9 @@ export class CacheResponse {
     static Get(req: Request, res: Response, next: NextFunction): void {
         try {
             const schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)
-            const { schema, entityName } = schemaRequest
+            const { schema, entity } = schemaRequest
             const schemaConfig: TJson = Config.Get(`schemas.${schemaRequest.schema}`)
-            schemaRequest.sourceName = Schema.GetRoute(schema, entityName, schemaConfig).routeName
+            schemaRequest.sourceName = Schema.GetRoute(schema, entity, schemaConfig).routeName
 
             if (!Config.Flags.EnableCache && schemaRequest?.cache) {
                 Logger.Warn(`Cache.Get: 'server.cache' is not configured, bypassing option 'cache'`)
@@ -71,7 +71,7 @@ export class CacheResponse {
                         Convert.SchemaResponseToResponse(
                             <TSchemaResponse>{
                                 schema: _cacheData.schemaRequest.schema,
-                                entityName: _cacheData.schemaRequest.entityName,
+                                entity: _cacheData.schemaRequest.entity,
                                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                                 ...RESPONSE.SELECT.SUCCESS.STATUS,
                                 cache: "true",

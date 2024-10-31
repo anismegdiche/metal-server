@@ -116,7 +116,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
     GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.data) {
             options.Data = new DataTable(
-                schemaRequest.entityName,
+                schemaRequest.entity,
                 Convert.EvaluateJsCode(schemaRequest.data)
             )
         }
@@ -195,7 +195,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
         await this.Connection.connect()
         await this.Connection
             .db(this.Params.database)
-            .collection(schemaRequest.entityName)
+            .collection(schemaRequest.entity)
             .insertMany(options?.Data?.Rows)
 
         // clean cache
@@ -207,11 +207,11 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schema, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
 
         let schemaResponse = <TSchemaResponse>{
             schema,
-            entityName
+            entity
         }
 
         if (this.Connection === undefined)
@@ -224,11 +224,11 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
         await this.Connection.connect()
 
         const rows = await this.Connection.db(this.Params.database)
-            .collection(schemaRequest.entityName)
+            .collection(schemaRequest.entity)
             .aggregate(aggregation)
             .toArray()
 
-        const data = new DataTable(entityName)
+        const data = new DataTable(entity)
 
         if (rows.length > 0) {
             data.AddRows(rows)
@@ -257,7 +257,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection
             .db(this.Params.database)
-            .collection(schemaRequest.entityName)
+            .collection(schemaRequest.entity)
             .updateMany(
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>,
                 {
@@ -282,7 +282,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection
             .db(this.Params.database)
-            .collection(schemaRequest.entityName)
+            .collection(schemaRequest.entity)
             .deleteMany(
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>
             )

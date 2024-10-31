@@ -133,7 +133,7 @@ schemas:
 #   test:
 #     cron: "@start"
 #     planName: etl1
-#     entityName: src
+#     entity: src
 
 # plans:
 #   etl1:
@@ -151,7 +151,7 @@ schemas:
 #       - debug:
 #       - select:
 #           schema: mflix
-#           entityName: movies
+#           entity: movies
 #           filter:
 #             year: 2001
 #           fields: title
@@ -280,23 +280,23 @@ schemas:
 #     entities:
 #       members:
 #         sourceName: pg-clubdata-members
-#         entityName: members
+#         entity: members
 #       facilities:
 #         sourceName: pg-clubdata-facilities
-#         entityName: facilities
+#         entity: facilities
 #       bookings:
 #         sourceName: pg-clubdata-bookings
-#         entityName: bookings
+#         entity: bookings
 
 #   merge:
 #     sourceName: pg-clubdata
 #     entities:
 #       orders:
 #         sourceName: pg-northwind
-#         entityName: orders
+#         entity: orders
 #       users:
 #         sourceName: mdb-mflix
-#         entityName: users
+#         entity: users
 
 #   sch-etl1:
 #     sourceName: plan-etl1

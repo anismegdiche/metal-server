@@ -11,7 +11,7 @@ export type TSchemaRequest = {
 
     // from Config or Request
     schema: string
-    entityName: string
+    entity: string
 
     // from Request Options
     data?: TJson | TJson[]
@@ -26,16 +26,16 @@ export type TSchemaRequest = {
 }
 
 export type TSchemaRequestSelect = Pick<TSchemaRequest,
-    'schema' | 'entityName' | 'sourceName' | 'fields' | 'filter' | 'filter-expression' | 'sort' | 'cache' | 'anonymize'>
+    'schema' | 'entity' | 'sourceName' | 'fields' | 'filter' | 'filter-expression' | 'sort' | 'cache' | 'anonymize'>
 
 export type TSchemaRequestUpdate = Pick<TSchemaRequest,
-    'schema' | 'entityName' | 'sourceName' | 'data' | 'filter' | 'filter-expression'>
+    'schema' | 'entity' | 'sourceName' | 'data' | 'filter' | 'filter-expression'>
 
 export type TSchemaRequestDelete = Pick<TSchemaRequest,
-    'schema' | 'entityName' | 'sourceName' | 'filter' | 'filter-expression'>
+    'schema' | 'entity' | 'sourceName' | 'filter' | 'filter-expression'>
 
 export type TSchemaRequestInsert = Pick<TSchemaRequest,
-    'schema' | 'entityName' | 'sourceName' | 'data'>
+    'schema' | 'entity' | 'sourceName' | 'data'>
 
 export type TSchemaRequestListEntities = Pick<TSchemaRequest,
-    'schema' | 'entityName' | 'sourceName'>
+    'schema' | 'entity' | 'sourceName'>

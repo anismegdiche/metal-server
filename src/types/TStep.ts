@@ -10,31 +10,31 @@ import { TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities,
 
 export type TStepDebug = string | null
 
-export type TStepSelect = Omit<TSchemaRequestSelect, 'schema' | 'entityName' | 'sourceName'> & {
+export type TStepSelect = Omit<TSchemaRequestSelect, 'schema' | 'entity' | 'sourceName'> & {
     schema?: string
-    entityName?: string
+    entity?: string
 }
 
-export type TStepUpdate = Omit<TSchemaRequestUpdate, 'schema' | 'entityName' | 'sourceName'> & {
+export type TStepUpdate = Omit<TSchemaRequestUpdate, 'schema' | 'entity' | 'sourceName'> & {
     schema?: string
-    entityName?: string
+    entity?: string
 }
 
-export type TStepDelete = Omit<TSchemaRequestDelete, 'schema' | 'entityName' | 'sourceName'> & {
+export type TStepDelete = Omit<TSchemaRequestDelete, 'schema' | 'entity' | 'sourceName'> & {
     schema?: string
-    entityName?: string
+    entity?: string
 }
 
 
-export type TStepInsert = Omit<TSchemaRequestInsert, 'schema' | 'entityName' | 'sourceName'> & {
+export type TStepInsert = Omit<TSchemaRequestInsert, 'schema' | 'entity' | 'sourceName'> & {
     schema?: string
-    entityName?: string
+    entity?: string
 }
 
 export type TStepJoin = {
     type: JOIN_TYPE
     schema?: string
-    entityName: string
+    entity: string
     leftField: string
     rightField: string
 }
@@ -55,22 +55,22 @@ export type TStepSync = {
     // v0.2
     source: {
         schema: string
-        entityName: string
+        entity: string
     }
     destination: {
         schema: string
-        entityName: string
+        entity: string
     }
     on: string
 } & {
     // v0.3
     from: {
         schema: string
-        entityName: string
+        entity: string
     }
     to: {
         schema: string
-        entityName: string
+        entity: string
     }
     id: string
 }
@@ -89,6 +89,6 @@ export type TStepRemoveDuplicates = {
     condition: string
 }
 
-export type TStepListEntities = Omit<TSchemaRequestListEntities, 'schema' | 'entityName' | 'sourceName'> & {
+export type TStepListEntities = Omit<TSchemaRequestListEntities, 'schema' | 'entity' | 'sourceName'> & {
     schema?: string
 }

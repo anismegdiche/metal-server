@@ -17,7 +17,7 @@ SchemaRouter.route("/:schema")
     .all(UserResponse.IsAuthenticated)
     .get(SchemaResponse.ListEntities)
 
-SchemaRouter.route("/:schema/:entityName")
+SchemaRouter.route("/:schema/:entity")
     .all(UserResponse.IsAuthenticated)
     .get(CacheResponse.Get, SchemaResponse.Select)
     .post(SchemaResponse.Insert)
@@ -25,7 +25,7 @@ SchemaRouter.route("/:schema/:entityName")
     .delete(SchemaResponse.Delete)
 
 //ROADMAP
-SchemaRouter.route("/:schema/:entityName/:id")
+SchemaRouter.route("/:schema/:entity/:id")
     .all(UserResponse.IsAuthenticated)
     .get(ServerResponse.ResponseNotImplemented)
     .post(ServerResponse.ResponseNotImplemented)

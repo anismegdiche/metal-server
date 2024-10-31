@@ -35,48 +35,48 @@ export class Plan {
 
     static async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery: string | undefined) {
         
-        const { schema, sourceName, entityName } = schemaRequest
+        const { schema, sourceName, entity } = schemaRequest
             const sourcePlanName: string = Config.Get(`sources.${sourceName}.database`)
 
             if (sourceName === undefined || sourcePlanName === undefined) {
                 Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schema}`)
-                return new DataTable(entityName)
+                return new DataTable(entity)
             }
 
-            if (!Config.Has(`plans.${sourcePlanName}.${entityName}`)) {
-                Logger.Error(`${Logger.Out} Plan.Execute: entityName '${entityName}' not found in plan ${sourcePlanName}`)
-                return new DataTable(entityName)
+            if (!Config.Has(`plans.${sourcePlanName}.${entity}`)) {
+                Logger.Error(`${Logger.Out} Plan.Execute: entity '${entity}' not found in plan ${sourcePlanName}`)
+                return new DataTable(entity)
             }
 
-            const entitySteps: Array<StepCommand> = Config.Get(`plans.${sourcePlanName}.${entityName}`)
+            const entitySteps: Array<StepCommand> = Config.Get(`plans.${sourcePlanName}.${entity}`)
 
-            const currentDatatable = await Plan.ExecuteSteps(schema, sourceName, entityName, entitySteps)
+            const currentDatatable = await Plan.ExecuteSteps(schema, sourceName, entity, entitySteps)
             await currentDatatable.FreeSqlAsync(sqlQuery)
 
-            Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entityName}`)
+            Logger.Debug(`${Logger.Out} Plan.Execute: ${sourceName}.${entity}`)
             return currentDatatable
     }
 
     static async ProcessScheduleConfig(schemaRequest: TScheduleConfig, sqlQuery: string | undefined) {
         
-        const { planName, entityName } = schemaRequest
+        const { planName, entity } = schemaRequest
 
         if (planName === undefined) {
             Logger.Error(`${Logger.Out} Plan.Execute: plan '${planName}' not found`)
-            return new DataTable(entityName)
+            return new DataTable(entity)
         }
 
-        if (!Config.Has(`plans.${planName}.${entityName}`)) {
-            Logger.Error(`${Logger.Out} Plan.Execute: entityName '${entityName}' not found in plan ${planName}`)
-            return new DataTable(entityName)
+        if (!Config.Has(`plans.${planName}.${entity}`)) {
+            Logger.Error(`${Logger.Out} Plan.Execute: entity '${entity}' not found in plan ${planName}`)
+            return new DataTable(entity)
         }
 
-        const entitySteps: Array<StepCommand> = Config.Get(`plans.${planName}.${entityName}`)
+        const entitySteps: Array<StepCommand> = Config.Get(`plans.${planName}.${entity}`)
        
-        Logger.Debug(`${Logger.In} Plan.Execute: ${planName}.${entityName}: ${JsonHelper.Stringify(entitySteps)}`)
-        const currentDatatable = await Plan.ExecuteSteps(undefined, planName, entityName, entitySteps)
+        Logger.Debug(`${Logger.In} Plan.Execute: ${planName}.${entity}: ${JsonHelper.Stringify(entitySteps)}`)
+        const currentDatatable = await Plan.ExecuteSteps(undefined, planName, entity, entitySteps)
         
-        Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entityName}`)
+        Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entity}`)
         return await currentDatatable.FreeSqlAsync(sqlQuery)
     }
 

@@ -6,7 +6,7 @@ export type TCacheData = {
     hash: string
     expires: number
     schema: string
-    entityName?: string
+    entity?: string
     schemaRequest: TSchemaRequest
     data: DataTable
 }

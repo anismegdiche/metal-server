@@ -18,7 +18,7 @@ import { TJson } from "../types/TJson"
 
 export type TScheduleConfig = {
     planName: string
-    entityName: string
+    entity: string
     cron: string
 }
 

@@ -56,8 +56,8 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        const { schema, entityName } = schemaRequest
-        Logger.Error(`Insert: Not allowed for plans '${schema}', entity '${entityName}'`)
+        const { schema, entity } = schemaRequest
+        Logger.Error(`Insert: Not allowed for plans '${schema}', entity '${entity}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
@@ -65,16 +65,16 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schema, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
 
         const schemaResponse = <TSchemaResponse>{
             schema,
-            entityName
+            entity
         }
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`\`${entityName}\``)
+            .From(`\`${entity}\``)
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
@@ -84,7 +84,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
         const planData = await Plan.Process(schemaRequest, sqlQuery)
 
-        const data = new DataTable(schemaRequest.entityName)
+        const data = new DataTable(schemaRequest.entity)
 
         if (planData && planData.Rows.length > 0) {
             data.AddRows(planData.Rows)
@@ -108,24 +108,24 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        const { schema, entityName } = schemaRequest
-        Logger.Error(`Update: Not allowed for plans '${schema}', entity '${entityName}'`)
+        const { schema, entity } = schemaRequest
+        Logger.Error(`Update: Not allowed for plans '${schema}', entity '${entity}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        const { schema, entityName } = schemaRequest
-        Logger.Error(`Delete: Not allowed for plans '${schema}', entity '${entityName}'`)
+        const { schema, entity } = schemaRequest
+        Logger.Error(`Delete: Not allowed for plans '${schema}', entity '${entity}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        const { schema, entityName } = schemaRequest
-        Logger.Error(`Delete: Not allowed for plans '${schema}', entity '${entityName}'`)
+        const { schema, entity } = schemaRequest
+        Logger.Error(`Delete: Not allowed for plans '${schema}', entity '${entity}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
