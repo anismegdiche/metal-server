@@ -11,6 +11,10 @@ import { TSchemaResponse } from "../types/TSchemaResponse"
 import { Logger } from "../utils/Logger"
 import { HttpError, HttpErrorInternalServerError } from "../server/HttpErrors"
 
+
+export type TConvertParams<S extends string> = 
+    S extends `${infer T}-${infer U}` ? `${T}${Capitalize<TConvertParams<U>>}` : S;
+
 export class TypeHelper {
 
     @Logger.LogFunction(Logger.Debug, true)
