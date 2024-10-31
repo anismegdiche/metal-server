@@ -32,8 +32,8 @@ describe('FtpStorage', () => {
             "ftp-host": 'localhost',
             "ftp-user": 'user',
             "ftp-password": 'password',
-            ftps: false,
-            "ftp-remote-folder": '/'
+            "ftp-secure": false,
+            "ftp-folder": '/'
         }
     })
 

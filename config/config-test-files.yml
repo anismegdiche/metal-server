@@ -21,14 +21,14 @@ sources:
     provider: files
     options:
       storage: fs
-      contentType: json
+      type: json
       fs-folder: ./data/
       jsonArrayPath: rows
   fs-csv-data:
     provider: files
     options:
       storage: fs
-      contentType: csv
+      type: csv
       fs-folder: ./data/
       csvDelimiter: ','
       csvNewline: "\n"
@@ -38,14 +38,14 @@ sources:
     provider: files
     options:
       storage: az-blob
-      contentType: json
+      type: json
       az-blob-connection-string: UseDevelopmentStorage=true
       az-blob-container: datacontainer1
   az-csv-data:
     provider: files
     options:
       storage: az-blob
-      contentType: csv
+      type: csv
       az-blob-connection-string: UseDevelopmentStorage=true
       az-blob-container: datacontainer1
       csvDelimiter: ','

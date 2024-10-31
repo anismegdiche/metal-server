@@ -43,10 +43,10 @@ sources:
     options:
       storage: ftp
       ftp-host: localhost
-      ftpPort: 21
+      ftp-port: 21
       ftp-user: ftpuser
       ftp-password: ftppass
-      ftpFolder: /
+      ftp-folder: /
       autocreate: true
       content:
         "*.csv":
