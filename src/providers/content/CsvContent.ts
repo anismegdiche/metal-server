@@ -23,27 +23,18 @@ export type TCsvContentConfig = {
 
 export class CsvContent extends CommonContent implements IContent {
 
-    Config = <Csv.ParseWorkerConfig>{}
+    Params: any = {}
 
     @Logger.LogFunction()
     async Init(entity: string, content: Readable): Promise<void> {
         this.EntityName = entity
-        if (this.Options) {
-            const {
-                "csv-delimiter": delimiter = ',',
-                "csv-newline": newline = '\n',
-                "csv-header": header = true,
-                "csv-quote": quoteChar = '"',
-                "csv-skip-empty": skipEmptyLines = 'greedy'
-            } = this.Options
-
-            this.Config = <Csv.ParseWorkerConfig>{
-                ...this.Config,
-                delimiter,
-                newline,
-                header,
-                quoteChar,
-                skipEmptyLines
+        if (this.Config) {
+            this.Params = {
+                delimiter: this.Config["csv-delimiter"] ?? ',',
+                newline: this.Config["csv-newline"] ?? '\n',
+                header: this.Config["csv-header"] ?? true,
+                quoteChar: this.Config["csv-quote"] ?? '"',
+                skipEmptyLines: this.Config["csv-skip-empty"] ?? 'greedy'
             }
         }
         this.Content.UploadFile(entity, content)
@@ -57,8 +48,8 @@ export class CsvContent extends CommonContent implements IContent {
         const parsedCsv: any = Csv.parse<string>(
             await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
-            ), 
-            this.Config
+            ),
+            this.Params
         )
         return new DataTable(this.EntityName, parsedCsv?.data).FreeSqlAsync(sqlQuery)
     }
@@ -68,7 +59,12 @@ export class CsvContent extends CommonContent implements IContent {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
-        const streamOut = Readable.from(Csv.unparse(contentDataTable.Rows, this.Config as Csv.UnparseConfig))
+        const streamOut = Readable.from(
+            Csv.unparse(
+                contentDataTable.Rows,
+                this.Params as Csv.UnparseConfig
+            )
+        )
         this.Content.UploadFile(this.EntityName, streamOut)
         return this.Content.ReadFile(this.EntityName)
     }

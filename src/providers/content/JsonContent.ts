@@ -20,19 +20,14 @@ export type TJsonContentConfig = {
 
 export class JsonContent extends CommonContent implements IContent {
 
-    Config = <TJsonContentConfig>{}
+    Params:any = {}
 
     @Logger.LogFunction()
     async Init(entity: string, content: Readable): Promise<void> {
         this.EntityName = entity
-        if (this.Options) {
-            const {
-                "json-path": jsonPath  = undefined
-            } = this.Options
-
-            this.Config = {
-                ...this.Config,
-                "json-path": jsonPath
+        if (this.Config) {
+            this.Params = {
+                jsonPath: this.Config["json-path"] ?? ""
             }
         }
 
@@ -50,7 +45,7 @@ export class JsonContent extends CommonContent implements IContent {
                 this.Content.ReadFile(this.EntityName)
             ), {})
 
-        const data = JsonHelper.Get<TJson[]>(json, this.Config["json-path"])
+        const data = JsonHelper.Get<TJson[]>(json, this.Params.jsonPath)
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
@@ -67,9 +62,10 @@ export class JsonContent extends CommonContent implements IContent {
 
         json = JsonHelper.Set(
             json,
-            this.Config["json-path"],
+            this.Params.jsonPath,
             data.Rows
         )
+
         const streamOut = Readable.from(JSON.stringify(json))
         this.Content.UploadFile(this.EntityName, streamOut)
         return this.Content.ReadFile(this.EntityName)

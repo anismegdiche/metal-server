@@ -35,11 +35,11 @@ describe('CsvContent', () => {
 
             await csvContent.Init(name, content)
 
-            expect(csvContent.Config.delimiter).toBe(',')
-            expect(csvContent.Config.newline).toBe('\n')
-            expect(csvContent.Config.header).toBe(true)
-            expect(csvContent.Config.quoteChar).toBe('"')
-            expect(csvContent.Config.skipEmptyLines).toBe('greedy')
+            expect(csvContent.Params.delimiter).toBe(',')
+            expect(csvContent.Params.newline).toBe('\n')
+            expect(csvContent.Params.header).toBe(true)
+            expect(csvContent.Params.quoteChar).toBe('"')
+            expect(csvContent.Params.skipEmptyLines).toBe('greedy')
         })
 
         test('should override default values for Config when Options is provided', async () => {
@@ -53,15 +53,15 @@ describe('CsvContent', () => {
                 "csv-skip-empty": 'greedy'
             }
 
-            csvContent.Options = <TCsvContentConfig>options
+            csvContent.Config = <TCsvContentConfig>options
 
             await csvContent.Init(name, content)
 
-            expect(csvContent.Config.delimiter).toBe('')
-            expect(csvContent.Config.newline).toBe('\r\n')
-            expect(csvContent.Config.header).toBe(false)
-            expect(csvContent.Config.quoteChar).toBe("'")
-            expect(csvContent.Config.skipEmptyLines).toBe('greedy')
+            expect(csvContent.Params.delimiter).toBe('')
+            expect(csvContent.Params.newline).toBe('\r\n')
+            expect(csvContent.Params.header).toBe(false)
+            expect(csvContent.Params.quoteChar).toBe("'")
+            expect(csvContent.Params.skipEmptyLines).toBe('greedy')
         })
     })
 

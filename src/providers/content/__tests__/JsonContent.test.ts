@@ -22,7 +22,7 @@ describe('JsonContent', () => {
             const jsonContentEmptyOptions = new JsonContent({})
 
             await jsonContentEmptyOptions.Init(name, content)
-            expect(jsonContentEmptyOptions.Config).toEqual({ arrayPath: undefined })
+            expect(jsonContentEmptyOptions.Params).toEqual({ arrayPath: undefined })
         })
 
         it('should initialize the content and config correctly', async () => {
@@ -62,7 +62,7 @@ describe('JsonContent', () => {
         })
 
         it('should return an empty DataTable if arrayPath is not found', async () => {
-            jsonContent.Config["json-path"] = 'nonexistent.path'
+            jsonContent.Params["json-path"] = 'nonexistent.path'
 
             const dataTable = await jsonContent.Get()
 

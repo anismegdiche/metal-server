@@ -11,11 +11,11 @@ import { VirtualFileSystem } from "../../utils/VirtualFileSystem"
 export class CommonContent {
 
     EntityName: string = "DEFAULT"
-    Options: TContentConfig
+    Config: TContentConfig
     RawContent?: string = undefined
     Content = new VirtualFileSystem()
 
     constructor(contentConfig: TContentConfig) {
-        this.Options = contentConfig
+        this.Config = contentConfig
     }    
 }
