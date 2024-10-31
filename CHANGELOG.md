@@ -26,6 +26,7 @@
 - Updated Config file validation.
 - Updated Plan sync function usage.
 - Enhanced Logging feature.
+- Enhanced MongoDb filter expression.
 - Enhanced Tessract.js Engine.
 - Enhanced File Provider (now supports multiple content types in the same storage).
 
