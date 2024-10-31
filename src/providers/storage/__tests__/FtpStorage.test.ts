@@ -23,17 +23,17 @@ describe('FtpStorage', () => {
         ftpStorage = new FtpStorage({
             ...rndParams,
             options: {
-                ftpHost: 'localhost',
-                ftpUser: 'user',
-                ftpPassword: 'password'
+                "ftp-host": 'localhost',
+                "ftp-user": 'user',
+                "ftp-password": 'password'
             }
         })
         ftpStorage.Config = {
-            ftpHost: 'localhost',
-            ftpUser: 'user',
-            ftpPassword: 'password',
-            ftpSecure: false,
-            ftpRemoteFolder: '/'
+            "ftp-host": 'localhost',
+            "ftp-user": 'user',
+            "ftp-password": 'password',
+            ftps: false,
+            "ftp-remote-folder": '/'
         }
     })
 
@@ -44,7 +44,7 @@ describe('FtpStorage', () => {
     describe('Init', () => {
         it('should initialize the FTP client with given options', async () => {
             await ftpStorage.Init()
-            expect(ftpStorage.Config.ftpHost).toBe('localhost')
+            expect(ftpStorage.Config["ftp-host"]).toBe('localhost')
         })
     })
 

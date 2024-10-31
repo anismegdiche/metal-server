@@ -42,10 +42,10 @@ sources:
     provider: files
     options:
       storage: ftp
-      ftpHost: localhost
+      ftp-host: localhost
       ftpPort: 21
-      ftpUser: ftpuser
-      ftpPassword: ftppass
+      ftp-user: ftpuser
+      ftp-password: ftppass
       ftpFolder: /
       autocreate: true
       content:

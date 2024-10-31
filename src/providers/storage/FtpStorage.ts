@@ -8,11 +8,11 @@ import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/Ht
 import { DataTable } from "../../types/DataTable"
 
 export type TFtpStorageConfig = {
-    ftpHost: string                 // FTP server host
-    ftpUser: string                 // FTP server username
-    ftpPassword: string             // FTP server password
-    ftpSecure?: boolean             // Enable secure FTP connection (default: false)
-    ftpRemoteFolder?: string        // Remote folder on the FTP server (default: '/')
+    "ftp-host": string                 // FTP server host
+    "ftp-user": string                 // FTP server username
+    "ftp-password": string             // FTP server password
+    ftps?: boolean                     // Enable secure FTP connection (default: false)
+    "ftp-remote-folder"?: string       // Remote folder on the FTP server (default: '/')
 }
 
 export class FtpStorage extends CommonStorage implements IStorage {
@@ -23,31 +23,31 @@ export class FtpStorage extends CommonStorage implements IStorage {
     @Logger.LogFunction()
     async Init(): Promise<void> {
         this.Config = {
-            ftpHost: this.Options.ftpHost,
-            ftpUser: this.Options.ftpUser,
-            ftpPassword: this.Options.ftpPassword,
-            ftpSecure: this.Options.ftpSecure ?? false,
-            ftpRemoteFolder: this.Options.ftpRemoteFolder ?? '/'
+            "ftp-host": this.Options["ftp-host"],
+            "ftp-user": this.Options["ftp-user"],
+            "ftp-password": this.Options["ftp-password"],
+            ftps: this.Options.ftps ?? false,
+            "ftp-remote-folder": this.Options["ftp-remote-folder"] ?? '/'
         }
     }
 
     async Connect(): Promise<void> {
         try {
             await this.FtpClient.access({
-                host: this.Config.ftpHost,
-                user: this.Config.ftpUser,
-                password: this.Config.ftpPassword,
-                secure: this.Config.ftpSecure
+                host: this.Config["ftp-host"],
+                user: this.Config["ftp-user"],
+                password: this.Config["ftp-password"],
+                secure: this.Config.ftps
             })
         } catch (error: any) {
-            Logger.Error(`Failed to connect to FTP server '${this.Config.ftpHost}': ${error.message}`)
+            Logger.Error(`Failed to connect to FTP server '${this.Config["ftp-host"]}': ${error.message}`)
         }
     }
 
     @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
         try {
-            const path = `${this.Config.ftpRemoteFolder}${file}`
+            const path = `${this.Config["ftp-remote-folder"]}${file}`
             const fileInfo = await this.FtpClient.size(path)
             return fileInfo !== -1
         } catch {
@@ -57,7 +57,7 @@ export class FtpStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async Read(file: string): Promise<Readable> {
-        const path = `${this.Config.ftpRemoteFolder}${file}`
+        const path = `${this.Config["ftp-remote-folder"]}${file}`
         try {
             if (!(await this.IsExist(file)))
                 throw new HttpErrorNotFound(`File '${file}' does not exist on the FTP server`)
@@ -74,7 +74,7 @@ export class FtpStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async Write(file: string, content: Readable): Promise<void> {
-        const path = `${this.Config.ftpRemoteFolder}${file}`
+        const path = `${this.Config["ftp-remote-folder"]}${file}`
         try {
             if (this.Options["autocreate"] && !(await this.IsExist(file))) {
                 await this.FtpClient.uploadFrom(content, path)
@@ -91,7 +91,7 @@ export class FtpStorage extends CommonStorage implements IStorage {
     @Logger.LogFunction()
     async List(): Promise<DataTable> {
         try {
-            const result = await this.FtpClient.list(this.Config.ftpRemoteFolder)
+            const result = await this.FtpClient.list(this.Config["ftp-remote-folder"])
             const formattedResult = result
                 .filter(file => !file.isDirectory)
                 .map(file => ({
@@ -102,7 +102,7 @@ export class FtpStorage extends CommonStorage implements IStorage {
 
             return new DataTable(undefined, formattedResult)
         } catch (error: any) {
-            throw new HttpErrorInternalServerError(`Failed to list directory '${this.Config.ftpRemoteFolder}': ${error.message}`)
+            throw new HttpErrorInternalServerError(`Failed to list directory '${this.Config["ftp-remote-folder"]}': ${error.message}`)
         }
     }
 
