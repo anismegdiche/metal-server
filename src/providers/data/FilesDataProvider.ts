@@ -37,7 +37,7 @@ import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
 
 export enum STORAGE {
     FILESYSTEM = "fs",
-    AZURE_BLOB = "azureBlob",
+    AZURE_BLOB = "azure-blob",
     FTP = "ftp",
     SMB = "smb"
 }

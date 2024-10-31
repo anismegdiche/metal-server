@@ -7,7 +7,7 @@ components:
   schemas:
     filter:
       type: object
-    filterExpression:
+    filter-expression:
       type: string
     fields:
       type: string
@@ -62,17 +62,17 @@ components:
           schema:
             type: object
   parameters:
-    schemaName:
+    schema:
       in: path
-      name: schemaName
+      name: schema
       schema:
         type: string
       required: true
       description: The name of the schema
 
-    entityName:
+    entity:
       in: path
-      name: entityName
+      name: entity
       schema:
         type: string
       required: true
@@ -255,7 +255,7 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /schema/{schemaName}:
+  /schema/{schema}:
     get:
       tags:
         - Schema
@@ -265,7 +265,7 @@ paths:
         - bearerAuth: []
       parameters:
         - in: path
-          name: schemaName
+          name: schema
           schema:
             type: string
           required: true
@@ -288,7 +288,7 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /schema/{schemaName}/{entityName}:
+  /schema/{schema}/{entity}:
     get:
       tags:
         - Schema
@@ -297,8 +297,8 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - $ref: "#/components/parameters/schemaName"
-        - $ref: "#/components/parameters/entityName"
+        - $ref: "#/components/parameters/schema"
+        - $ref: "#/components/parameters/entity"
         - in: query
           name: filter
           schema:
@@ -307,9 +307,9 @@ paths:
           allowReserved: true
           description: Simple filtering feature by providing fields and values
         - in: query
-          name: filterExpression
+          name: filter-expression
           schema:
-            $ref: '#/components/schemas/filterExpression'
+            $ref: '#/components/schemas/filter-expression'
           required: false
           allowReserved: true
           description: Free expression for more complex data filtering expressed in SQL-like syntax
@@ -359,8 +359,8 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - $ref: "#/components/parameters/schemaName"
-        - $ref: "#/components/parameters/entityName"
+        - $ref: "#/components/parameters/schema"
+        - $ref: "#/components/parameters/entity"
       requestBody:
         description: Optional parameters
         required: false
@@ -395,13 +395,13 @@ paths:
         - bearerAuth: []
       parameters:
         - in: path
-          name: schemaName
+          name: schema
           schema:
             type: string
           required: true
           description: The name of the schema
         - in: path
-          name: entityName
+          name: entity
           schema:
             type: string
           required: true
@@ -419,8 +419,8 @@ paths:
               properties:
                 filter:
                   $ref: '#/components/schemas/filter'
-                filterExpression:
-                  $ref: '#/components/schemas/filterExpression'
+                filter-expression:
+                  $ref: '#/components/schemas/filter-expression'
                 data:
                   $ref: '#/components/schemas/data'
       responses:        
@@ -444,13 +444,13 @@ paths:
         - bearerAuth: []
       parameters:
         - in: path
-          name: schemaName
+          name: schema
           schema:
             type: string
           required: true
           description: The name of the schema
         - in: path
-          name: entityName
+          name: entity
           schema:
             type: string
           required: true
@@ -466,8 +466,8 @@ paths:
               properties:
                 filter:
                   $ref: '#/components/schemas/filter'
-                filterExpression:
-                  $ref: '#/components/schemas/filterExpression'
+                filter-expression:
+                  $ref: '#/components/schemas/filter-expression'
       responses:
         204:
           description: Operation success

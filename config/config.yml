@@ -23,7 +23,7 @@ sources:
     provider: files
     options:
       storage: fs
-      fsFolder: ./data/
+      fs-folder: ./data/
       auto-create: true
       content:
         "*.csv":
@@ -78,12 +78,12 @@ sources:
 #     options:
 #       storage: fs
 #       content: json
-#       fsFolder: ./data/
+#       fs-folder: ./data/
 #       jsonArrayPath: rows
 #   az-json-data:
 #     provider: files
 #     options:
-#       storage: azureBlob
+#       storage: azure-blob
 #       content: json
 #       azureBlobConnectionString: UseDevelopmentStorage=true
 #       azureBlobContainerName: datacontainer1

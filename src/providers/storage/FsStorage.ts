@@ -14,7 +14,7 @@ import { DataTable } from "../../types/DataTable"
 import { Convert } from "../../lib/Convert"
 
 export type TFsStorageConfig = {
-    fsFolder?: string
+    "fs-folder"?: string
 }
 
 export class FsStorage extends CommonStorage implements IStorage {
@@ -24,7 +24,7 @@ export class FsStorage extends CommonStorage implements IStorage {
     @Logger.LogFunction()
     Init(): void {
         this.Config = {
-            fsFolder: this.Options.fsFolder ?? '.'
+            "fs-folder": this.Options["fs-folder"] ?? '.'
         }
     }
 
@@ -41,13 +41,13 @@ export class FsStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
-        return Fs.existsSync(`${this.Config.fsFolder}${file}`)
+        return Fs.existsSync(`${this.Config["fs-folder"]}${file}`)
     }
 
     @Logger.LogFunction()
     async Read(file: string): Promise<Readable> {
 
-        const filePath = this.Config.fsFolder + file
+        const filePath = this.Config["fs-folder"] + file
 
         if (this.Options["auto-create"] && !(await this.IsExist(file))) {
             const _fd = Fs.openSync(filePath, 'wx')
@@ -64,7 +64,7 @@ export class FsStorage extends CommonStorage implements IStorage {
     @Logger.LogFunction()
     async Write(file: string, content: Readable): Promise<void> {
 
-        const filePath = this.Config.fsFolder + file
+        const filePath = this.Config["fs-folder"] + file
 
         if (this.Options["auto-create"] && !(await this.IsExist(file))) {
             const _fd = Fs.openSync(filePath, 'wx')
@@ -76,10 +76,10 @@ export class FsStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async List(): Promise<DataTable> {
-        // TODO: fix workaround:  this.Config.fsFolder ?? '.'
-        const result = await Fs.promises.readdir(this.Config.fsFolder ?? '.')
+        // TODO: fix workaround:  this.Config["fs-folder"] ?? '.'
+        const result = await Fs.promises.readdir(this.Config["fs-folder"] ?? '.')
             .then(files => Promise.all(files.map(async file => {
-                const stats = await Fs.promises.stat(`${this.Config.fsFolder}${file}`)
+                const stats = await Fs.promises.stat(`${this.Config["fs-folder"]}${file}`)
                 return {
                     name: file,
                     type: 'file',
@@ -87,7 +87,7 @@ export class FsStorage extends CommonStorage implements IStorage {
                 }
             })))
             .catch((error) => {
-                throw new HttpErrorInternalServerError(`Failed to read directory '${this.Config.fsFolder}': ${error.message}`)
+                throw new HttpErrorInternalServerError(`Failed to read directory '${this.Config["fs-folder"]}': ${error.message}`)
             })
 
         return new DataTable(undefined, result)
