@@ -34,10 +34,10 @@ sources:
           csv-quote: "\""
         "ref*.xlsx":
           type: xls
-          xlsSheetName: Feuil1
+          xls-sheet: Feuil1
         "sample*.xlsx":
           type: xls
-          xlsStartingCell: E6
+          xls-starting-cell: E6
   ftp:
     provider: files
     options:

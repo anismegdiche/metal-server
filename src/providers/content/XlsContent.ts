@@ -15,11 +15,11 @@ import { TJson } from '../../types/TJson'
 import { HttpErrorInternalServerError } from '../../server/HttpErrors'
 
 export type TXlsContentConfig = {
-    xlsSheetName?: string        // Specify which sheet to use, default first sheet
-    xlsStartingCell?: string     // Specify the starting cell (e.g., 'B2'), default 'A1'
-    xlsDefaultValue?: any        // Default value for empty cells
-    xlsCellDates?: boolean       // Parse dates from cells, default false
-    xlsDateFormat?: string       // Specify the date format for parsing dates
+    "xls-sheet"?: string              // Specify which sheet to use, default first sheet
+    "xls-starting-cell"?: string      // Specify the starting cell (e.g., 'B2'), default 'A1'
+    "xls-default"?: any               // Default value for empty cells
+    "xls-parse-dates"?: boolean       // Parse dates from cells, default false
+    "xls-date-format"?: string        // Specify the date format for parsing dates
 }
 
 // Convert column letter (e.g., 'A', 'B', 'AA') to a column number
@@ -42,20 +42,20 @@ export class XlsContent extends CommonContent implements IContent {
         this.EntityName = entity
         if (this.Options) {
             const {
-                xlsSheetName,
-                xlsCellDates = false,
-                xlsDefaultValue = null,
-                xlsDateFormat = 'dd/mm/yyyy',
-                xlsStartingCell = 'A1'
+                "xls-sheet": sheet,
+                "xls-parse-dates": parseDates = false,
+                "xls-default": defaultValue = null,
+                "xls-date-format": dateFormat = 'dd/mm/yyyy',
+                "xls-starting-cell": startingCell = 'A1'
             } = this.Options
 
             this.Config = {
                 ...this.Config,
-                xlsSheetName,
-                xlsCellDates,
-                xlsDefaultValue,
-                xlsDateFormat,
-                xlsStartingCell
+                "xls-sheet": sheet,
+                "xls-parse-dates": parseDates,
+                "xls-default": defaultValue,
+                "xls-date-format": dateFormat,
+                "xls-starting-cell": startingCell
             }
         }
         this.Content.UploadFile(entity, content)
@@ -69,14 +69,18 @@ export class XlsContent extends CommonContent implements IContent {
         await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
 
         Logger.Debug('XlsContent.Get: Converting')
-        const sheetName = this.Config.xlsSheetName ?? workbook.worksheets[0].name
+        const sheetName = this.Config["xls-sheet"] ?? workbook.worksheets[0].name
         const worksheet = workbook.getWorksheet(sheetName)
-        const { xlsStartingCell, xlsCellDates, xlsDefaultValue } = this.Config
+        const {
+            "xls-starting-cell": startCell,
+            "xls-parse-dates": parseDates,
+            "xls-default": defaultValue
+        } = this.Config
 
         if (worksheet == undefined)
             throw new HttpErrorInternalServerError(`Worksheet "${sheetName}" not found in workbook.`)
 
-        const [startCol, startRow] = worksheet.getCell(xlsStartingCell!).address.match(/[A-Z]+|\d+/g)!
+        const [startCol, startRow] = worksheet.getCell(startCell!).address.match(/[A-Z]+|\d+/g)!
         const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
         const fields = _.compact(worksheet.getRow(parseInt(startRow, 10)).values as string[])
@@ -90,10 +94,10 @@ export class XlsContent extends CommonContent implements IContent {
                     let cellValue = sheetRow.getCell(colIndex + index).value
 
                     // Handle date parsing if enabled
-                    if (xlsCellDates && cellValue instanceof Date) {
+                    if (parseDates && cellValue instanceof Date) {
                         cellValue = new Intl.DateTimeFormat('en-US', { dateStyle: 'short' }).format(cellValue) // Adjust formatting as needed
-                    } else if (xlsCellDates && typeof cellValue === 'string') {
-                        // Attempt to parse string as date if xlsCellDates is enabled
+                    } else if (parseDates && typeof cellValue === 'string') {
+                        // Attempt to parse string as date if parseDates is enabled
                         const parsedDate = new Date(cellValue)
                         if (!isNaN(parsedDate.getTime())) {
                             cellValue = parsedDate // Store as Date object
@@ -101,7 +105,7 @@ export class XlsContent extends CommonContent implements IContent {
                     }
 
                     _row[field] = cellValue === null
-                        ? xlsDefaultValue
+                        ? defaultValue
                         : cellValue
 
                     return _row
@@ -119,14 +123,19 @@ export class XlsContent extends CommonContent implements IContent {
         const workbook = new ExcelJS.Workbook()
         await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
 
-        const sheetName = this.Config.xlsSheetName ?? workbook.worksheets[0].name
+        const sheetName = this.Config["xls-sheet"] ?? workbook.worksheets[0].name
         let worksheet = workbook.getWorksheet(sheetName)
 
         if (!worksheet)
             worksheet = workbook.addWorksheet(sheetName)
 
-        const { xlsStartingCell, xlsDateFormat, xlsCellDates } = this.Config
-        const [startCol, startRow] = worksheet.getCell(xlsStartingCell!).address.match(/[A-Z]+|\d+/g)!
+        const {
+            "xls-starting-cell": startCell,
+            "xls-date-format": xlsDateFormat,
+            "xls-parse-dates": parseDates
+        } = this.Config
+
+        const [startCol, startRow] = worksheet.getCell(startCell!).address.match(/[A-Z]+|\d+/g)!
         const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
         // Set headers
@@ -144,12 +153,12 @@ export class XlsContent extends CommonContent implements IContent {
                 let _valueToSet: any = row[field]
 
                 // If raw data is specified, set directly; otherwise apply formatting or defaults
-                if (_valueToSet === null && this.Config.xlsDefaultValue !== undefined) {
-                    _valueToSet = this.Config.xlsDefaultValue // Use default value for empty cells
+                if (_valueToSet === null && this.Config["xls-default"] !== undefined) {
+                    _valueToSet = this.Config["xls-default"] // Use default value for empty cells
                 }
 
-                // Handle date formatting if specified and xlsCellDates is true
-                if (xlsCellDates && _valueToSet instanceof Date) {
+                // Handle date formatting if specified and "xls-parse-dates" is true
+                if (parseDates && _valueToSet instanceof Date) {
                     worksheet.getCell(_rowIdx, _colIdx).numFmt = xlsDateFormat! // Apply date format
                 }
                 worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet     // Set other values directly

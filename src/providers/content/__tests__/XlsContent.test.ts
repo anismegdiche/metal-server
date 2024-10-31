@@ -78,19 +78,19 @@ describe("ColumnLetterToNumber", () => {
 //         it("should initialize the content and configuration", async () => {
 //             const name = "TestEntity"
 //             const mockOptions: TXlsContentConfig = {
-//                 xlsSheetName: "Sheet1",
-//                 xlsStartingCell: "B2",
-//                 xlsDefaultValue: "N/A",
-//                 xlsCellDates: true,
-//                 xlsDateFormat: "MM-DD-YYYY"
+//                 xls-sheet: "Sheet1",
+//                 xls-starting-cell: "B2",
+//                 xls-default: "N/A",
+//                 xls-parse-dates: true,
+//                 xls-date-format: "MM-DD-YYYY"
 //             }
 
 //             xlsContent.Options = mockOptions
 //             await xlsContent.Init(name, readableMock)
 
-//             expect(xlsContent.Config.xlsSheetName).toBe("Sheet1")
-//             expect(xlsContent.Config.xlsStartingCell).toBe("B2")
-//             expect(xlsContent.Config.xlsDefaultValue).toBe("N/A")
+//             expect(xlsContent.Config.xls-sheet).toBe("Sheet1")
+//             expect(xlsContent.Config.xls-starting-cell).toBe("B2")
+//             expect(xlsContent.Config.xls-default).toBe("N/A")
 //             expect(xlsContent.Content.ReadFile(name)).toBe(readableMock)
 //             expect(xlsContent.EntityName).toBe("TestEntity")
 //         })
