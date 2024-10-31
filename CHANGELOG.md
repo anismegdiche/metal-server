@@ -18,6 +18,12 @@
     - Changed Parameter `azureBlobConnectionString` → `az-blob-connection-string`.
     - Changed Parameter `azureBlobContainerName` → `az-blob-container`.
     - Changed Parameter `azureBlobCreateContainerIfNotExists` → `az-blob-autocreate`.
+    - Changed Parameter `jsonArrayPath` → `json-array`.
+    - Changed Parameter `csvDelimiter` → `csv-delimiter`.
+    - Changed Parameter `csvNewline` → `csv-newline`.
+    - Changed Parameter `csvHeader` → `csv-header`.
+    - Changed Parameter `csvQuoteChar` → `csv-quote`.
+    - Changed Parameter `csvSkipEmptyLines` → `csv-skip-empty`.
 - Plan sync function parameters have changed:
   - `source` → `from`
   - `destination` → `to`

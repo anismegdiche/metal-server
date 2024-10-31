@@ -14,11 +14,11 @@ import { Readable } from "node:stream"
 import { ReadableHelper } from "../../lib/ReadableHelper"
 
 export type TCsvContentConfig = {
-    csvDelimiter?: string
-    csvNewline?: string
-    csvHeader?: boolean
-    csvQuoteChar?: string,
-    csvSkipEmptyLines?: string | boolean
+    "csv-delimiter"?: string
+    "csv-newline"?: string
+    "csv-header"?: boolean
+    "csv-quote"?: string,
+    "csv-skip-empty"?: boolean | "greedy"
 }
 
 export class CsvContent extends CommonContent implements IContent {
@@ -30,11 +30,11 @@ export class CsvContent extends CommonContent implements IContent {
         this.EntityName = entity
         if (this.Options) {
             const {
-                csvDelimiter: delimiter = ',',
-                csvNewline: newline = '\n',
-                csvHeader: header = true,
-                csvQuoteChar: quoteChar = '"',
-                csvSkipEmptyLines: skipEmptyLines = 'greedy'
+                "csv-delimiter": delimiter = ',',
+                "csv-newline": newline = '\n',
+                "csv-header": header = true,
+                "csv-quote": quoteChar = '"',
+                "csv-skip-empty": skipEmptyLines = 'greedy'
             } = this.Options
 
             this.Config = <Csv.ParseWorkerConfig>{

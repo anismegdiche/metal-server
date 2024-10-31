@@ -58,10 +58,10 @@ sources:
     options:
       storage: fs
       type: csv
-      csvDelimiter: ','
-      csvNewline: "\n"
-      csvHeader: true
-      csvQuoteChar: '"'
+      csv-delimiter: ','
+      csv-newline: "\n"
+      csv-header: true
+      csv-quote: '"'
   az-json-data:
     provider: files
     host: UseDevelopmentStorage=true

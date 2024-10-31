@@ -28,10 +28,10 @@ sources:
       content:
         "*.csv":
           type: csv
-          csvDelimiter: ";"
-          csvNewline: "\r\n"
-          csvHeader: true
-          csvQuoteChar: "\""
+          csv-delimiter: ";"
+          csv-newline: "\r\n"
+          csv-header: true
+          csv-quote: "\""
         "ref*.xlsx":
           type: xls
           xlsSheetName: Feuil1
@@ -51,10 +51,10 @@ sources:
       content:
         "*.csv":
           type: csv
-          csvDelimiter: ";"
-          csvNewline: "\r\n"
-          csvHeader: true
-          csvQuoteChar: "\""
+          csv-delimiter: ";"
+          csv-newline: "\r\n"
+          csv-header: true
+          csv-quote: "\""
 
 #   ms-hr:
 #     provider: mssql

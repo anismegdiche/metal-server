@@ -30,10 +30,10 @@ sources:
       storage: fs
       type: csv
       fs-folder: ./data/
-      csvDelimiter: ','
-      csvNewline: "\n"
-      csvHeader: true
-      csvQuoteChar: '"'
+      csv-delimiter: ','
+      csv-newline: "\n"
+      csv-header: true
+      csv-quote: '"'
   az-json-data:
     provider: files
     options:
@@ -48,10 +48,10 @@ sources:
       type: csv
       az-blob-connection-string: UseDevelopmentStorage=true
       az-blob-container: datacontainer1
-      csvDelimiter: ','
-      csvNewline: "\n"
-      csvHeader: true
-      csvQuoteChar: '"'
+      csv-delimiter: ','
+      csv-newline: "\n"
+      csv-header: true
+      csv-quote: '"'
 
 
 schemas:

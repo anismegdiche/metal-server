@@ -5,11 +5,11 @@ import { TContentConfig } from "../../data/FilesDataProvider"
 
 describe('CsvContent', () => {
     const contentConfig: TContentConfig = <TContentConfig>{
-        csvDelimiter: ',',
-        csvNewline: '\n',
-        csvHeader: true,
-        csvQuoteChar: '"',
-        csvSkipEmptyLines: 'greedy'
+        "csv-delimiter": ',',
+        "csv-newline": '\n',
+        "csv-header": true,
+        "csv-quote": '"',
+        "csv-skip-empty": 'greedy'
     }
     
     let csvContent = new CsvContent(contentConfig)
@@ -46,11 +46,11 @@ describe('CsvContent', () => {
             const name = 'test.csv'
             const content = Readable.from('idname\n1John\n2Jane')
             const options = {
-                csvDelimiter: '',
-                csvNewline: '\r\n',
-                csvHeader: false,
-                csvQuoteChar: "'",
-                csvSkipEmptyLines: 'greedy'
+                "csv-delimiter": '',
+                "csv-newline": '\r\n',
+                "csv-header": false,
+                "csv-quote": "'",
+                "csv-skip-empty": 'greedy'
             }
 
             csvContent.Options = <TCsvContentConfig>options
