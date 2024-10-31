@@ -16,6 +16,17 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}\\build\\index.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Current File",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${file}", // Starts debugging the currently open file
+            "cwd": "${workspaceFolder}", // Sets the working directory
+            "console": "integratedTerminal", // Optional: Sets the console to VS Code's integrated terminal
         }
     ]
 }

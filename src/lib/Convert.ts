@@ -132,33 +132,32 @@ export class Convert {
     }
 
 
-    static ReplacePlaceholders(value: string): string
-    static ReplacePlaceholders(value: TJson | TJson[] | undefined): TJson[] | undefined
-    static ReplacePlaceholders(value: object | TJson): object | TJson
-    // @Logger.LogFunction()
-    static ReplacePlaceholders(value: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
+    static EvaluateJsCode(value: string): string
+    static EvaluateJsCode(value: TJson | TJson[] | undefined): TJson[] | undefined
+    static EvaluateJsCode(value: object | TJson): object | TJson
+    static EvaluateJsCode(value: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
         if (value == undefined)
             return undefined
-
+        
+        const rxJsCode = /\$\{\{([^}]+)\}\}/g
+        
         if (typeof value === 'string') {
-            const _placeholderRegex = /\$\{\{([^}]+)\}\}/g
-            return value.replace(_placeholderRegex, (match, code) => {
+            return value.replace(rxJsCode, (match, code) => {
                 try {
                     const __result = Server.Sandbox.Evaluate(code)
                     return (__result === undefined)
                         ? ''
                         : __result.toString()
                 } catch (error) {
-                    Logger.Error(`Error evaluating code: ${code}, ${JsonHelper.Stringify(error)}`)
+                    Logger.Error(`Error evaluating code: ${code}\r${JsonHelper.Stringify(error)}`)
                     // Return the original placeholder if there's an error
                     return `$\{{${code}}}`
                 }
             })
         }
 
-        // deepcode ignore UsageOfUndefinedReturnValue: <please specify a reason of ignoring this>
-        const _objectString = Convert.ReplacePlaceholders(JSON.stringify(value))
-        return JsonHelper.TryParse(_objectString, {})
+        const evalString = Convert.EvaluateJsCode(JsonHelper.Stringify(value))
+        return JsonHelper.TryParse(evalString, {})
     }
 
     static PatternToRegex(pattern: string): RegExp {
@@ -166,12 +165,12 @@ export class Convert {
         const escapedPattern = pattern.replace(/([.+?^${}()|[\]\\])/g, '\\$1')
 
         // Replace friendly wildcards with regex equivalents
-        const regexPattern = escapedPattern
+        const rxPattern = escapedPattern
             .replace(/\*/g, '.*')   // Convert * to .*
-            .replace(/\?/g, '.')   // Convert ? to .
+            .replace(/\?/g, '.')    // Convert ? to .
 
         // Create and return the RegExp object
-        return new RegExp(`^${regexPattern}$`) // Anchored to match the whole string
+        return new RegExp(`^${rxPattern}$`) // Anchored to match the whole string
     }
 
     static ReadStreamToReadable(readStream: ReadStream): Readable {

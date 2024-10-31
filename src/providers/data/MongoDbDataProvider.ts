@@ -57,7 +57,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
                 filter._id = new MongoDb.ObjectId(filter._id)
 
             options.Filter = <TJson>{
-                $match: Convert.ReplacePlaceholders(filter)
+                $match: Convert.EvaluateJsCode(filter)
             }
         }
         return options
@@ -117,7 +117,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
         if (schemaRequest?.data) {
             options.Data = new DataTable(
                 schemaRequest.entityName,
-                Convert.ReplacePlaceholders(schemaRequest.data)
+                Convert.EvaluateJsCode(schemaRequest.data)
             )
         }
         return options
@@ -139,6 +139,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     Params: TConfigSource = <TConfigSource>{}
     Connection?: MongoDb.MongoClient = undefined
 
+    //TODO: change MongoDbDataProviderOptions to static
     Options: MongoDbDataProviderOptions = new MongoDbDataProviderOptions()
 
     constructor(sourceName: string, sourceParams: TConfigSource) {
@@ -185,10 +186,6 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName
-        }
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
@@ -250,10 +247,6 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName
-        }
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
@@ -281,10 +274,6 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        const schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName
-        }
 
         const options: any = this.Options.Parse(schemaRequest)
 

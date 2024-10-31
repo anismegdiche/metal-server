@@ -3,18 +3,23 @@
 //
 //
 //
+import { HttpErrorInternalServerError } from "../server/HttpErrors"
 import { SORT_ORDER } from "../types/DataTable"
 import { Logger } from "../utils/Logger"
+import { SQLParser } from 'sql-in-mongodb'
 
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const GetMongoQuery = require("sql2mongo").getMongoQuery
+//XXX const { getMongoQuery } = require("sql2mongo")
 
 export class MongoDbHelper {
+
+    static readonly WhereParser = new SQLParser()
+
     @Logger.LogFunction()
     static ConvertSqlSort(key: any, value: string) {
         const aSort = value.split(" ")
-        
+
         if (aSort.length != 2)
             return {}
 
@@ -30,6 +35,6 @@ export class MongoDbHelper {
 
     @Logger.LogFunction()
     static ConvertSqlQuery(sqlQuery: string) {
-        return GetMongoQuery(sqlQuery)
+        return this.WhereParser.parseSql(`WHERE ${sqlQuery}`)
     }
 }

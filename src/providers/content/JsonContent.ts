@@ -21,8 +21,6 @@ export type TJsonContentConfig = {
 export class JsonContent extends CommonContent implements IContent {
 
     Config = <TJsonContentConfig>{}
-    //XXX JsonObject: TJson = {}
-    //XXX IsArray = false
 
     @Logger.LogFunction()
     async Init(entityName: string, content: Readable): Promise<void> {
@@ -39,9 +37,6 @@ export class JsonContent extends CommonContent implements IContent {
         }
 
         this.Content.UploadFile(entityName, content)
-
-        //XXX eslint-disable-next-line you-dont-need-lodash-underscore/is-array
-        //XXX this.IsArray = _.isArray(this.JsonObject)
     }
 
     @Logger.LogFunction()
@@ -55,7 +50,6 @@ export class JsonContent extends CommonContent implements IContent {
                 this.Content.ReadFile(this.EntityName)
             ), {})
 
-        //XXX let data: TJson[] = []
         const data = JsonHelper.Get<TJson[]>(json, this.Config.jsonArrayPath)
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }

@@ -69,14 +69,12 @@ export type TFilesDataProviderOptions = {
 export class FilesDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.FILES
     Connection?: IStorage = undefined
-    //XXX ContentType: CONTENT = CONTENT.JSON
     SourceName: string
     Params: TConfigSource = <TConfigSource>{}
-    //XXX Config: TJson = {}
 
     // FilesDataProvider
     ContentHandler: Record<string, IContent> = {}
-    File: Record<string, IContent> = {}
+    Files: Record<string, IContent> = {}
 
     Options = new CommonSqlDataProviderOptions()
 
@@ -103,10 +101,10 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     #SetHandler(entityName: string) {
-        if (!_.has(this.File, entityName)) {
+        if (!_.has(this.Files, entityName)) {
             const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entityName))
             if (handler)
-                this.File[entityName] = this.ContentHandler[handler]
+                this.Files[entityName] = this.ContentHandler[handler]
             else
                 throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entityName}`)
         }
@@ -158,7 +156,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     async Disconnect(): Promise<void> {
         try {
             if (this.Connection && this.ContentHandler)
-                this.Connection.Disconnect()
+                await this.Connection.Disconnect()
         } catch (error: any) {
             Logger.Error(`${this.SourceName}: Failed to disconnect in storage provider: ${error.message}`)
         }
@@ -175,12 +173,12 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         this.#SetHandler(entityName)
 
-        this.File[entityName].Init(
+        this.Files[entityName].Init(
             entityName,
             await this.Connection.Read(entityName)
         )
 
-        const data = await this.File[entityName].Get()
+        const data = await this.Files[entityName].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Insert(`\`${entityName}\``)
@@ -190,7 +188,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
         await this.Connection.Write(
             entityName,
-            await this.File[entityName].Set(data)
+            await this.Files[entityName].Set(data)
         )
 
         // clean cache
@@ -214,7 +212,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         this.#SetHandler(entityName)
 
-        this.File[entityName].Init(
+        this.Files[entityName].Init(
             entityName,
             await this.Connection.Read(entityName)
         )
@@ -229,14 +227,14 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             ? sqlQueryHelper.Query
             : undefined
 
-        const data = await this.File[entityName].Get(sqlQuery)
+        const data = await this.Files[entityName].Get(sqlQuery)
 
         if (options?.Cache)
-            Cache.Set({
-                ...schemaRequest,
-                sourceName: this.SourceName
-            },
-                data
+            await Cache.Set({
+                  ...schemaRequest,
+                  sourceName: this.SourceName
+              },
+              data
             )
 
         return HttpResponse.Ok(<TSchemaResponse>{
@@ -257,12 +255,12 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         this.#SetHandler(entityName)
 
-        this.File[entityName].Init(
+        this.Files[entityName].Init(
             entityName,
             await this.Connection.Read(entityName)
         )
 
-        const data = await this.File[entityName].Get()
+        const data = await this.Files[entityName].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Update(`\`${entityName}\``)
@@ -273,7 +271,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.Write(
             entityName,
-            await this.File[entityName].Set(data)
+            await this.Files[entityName].Set(data)
         )
 
         // clean cache
@@ -294,12 +292,12 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         this.#SetHandler(entityName)
 
-        this.File[entityName].Init(
+        this.Files[entityName].Init(
             entityName,
             await this.Connection.Read(entityName)
         )
 
-        const data = await this.File[entityName].Get()
+        const data = await this.Files[entityName].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
@@ -310,7 +308,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.Write(
             entityName,
-            await this.File[entityName].Set(data)
+            await this.Files[entityName].Set(data)
         )
 
         // clean cache
@@ -319,7 +317,9 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         return HttpResponse.NoContent()
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }

@@ -8,11 +8,11 @@ import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/Ht
 import { DataTable } from "../../types/DataTable"
 
 export type TFtpStorageConfig = {
-    ftpHost: string
-    ftpUser: string
-    ftpPassword: string
-    ftpSecure?: boolean
-    ftpRemoteFolder?: string
+    ftpHost: string                 // FTP server host
+    ftpUser: string                 // FTP server username
+    ftpPassword: string             // FTP server password
+    ftpSecure?: boolean             // Enable secure FTP connection (default: false)
+    ftpRemoteFolder?: string        // Remote folder on the FTP server (default: '/')
 }
 
 export class FtpStorage extends CommonStorage implements IStorage {

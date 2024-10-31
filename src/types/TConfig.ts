@@ -33,22 +33,19 @@ export type TConfigSchemaEntity = {
 }
 
 // schemas.*
-export type TConfigSchema =
-    {
-        sourceName: string
-        entities?: {
-            [entityName: string]: TConfigSchemaEntity
-        }
-        anonymize?: string
+export type TConfigSchema = {
+    sourceName: string
+    entities?: {
+        [entityName: string]: TConfigSchemaEntity
     }
-    |
-    {
-        sourceName?: string
-        entities: {
-            [entityName: string]: TConfigSchemaEntity
-        }
-        anonymize?: string
+    anonymize?: string
+} | {
+    sourceName?: string
+    entities: {
+        [entityName: string]: TConfigSchemaEntity
     }
+    anonymize?: string
+}
 
 
 // step commands friendly renaming

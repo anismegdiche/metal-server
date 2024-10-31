@@ -38,7 +38,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
             if (schemaRequest?.filter)
                 filter = JsonHelper.ToArray(schemaRequest.filter)
 
-            options.Filter = Convert.ReplacePlaceholders(filter)
+            options.Filter = Convert.EvaluateJsCode(filter)
         }
         return options
     }
@@ -65,7 +65,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
         if (schemaRequest?.data) {
             options.Data = new DataTable(
                 schemaRequest.entityName,
-                Convert.ReplacePlaceholders(schemaRequest.data)
+                Convert.EvaluateJsCode(schemaRequest.data)
             )
         }
         return options

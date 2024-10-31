@@ -81,5 +81,72 @@ describe('MongoDbHelper', () => {
         })
     })
 
+    // describe('ConvertSql_v2', () => {
+    //     it('SELECT FROM WHERE ORDER BY', () => {
+    //         const sqlQuery = `SELECT name, age FROM Users WHERE age > 30 ORDER BY name ASC`
+    //         const expectedMongoQuery = {
+    //             filter: {
+    //               age: {
+    //                 $gt: 30
+    //               }
+    //             },
+    //             options: {
+    //               projection: {
+    //                 name: 1,
+    //                 age: 1
+    //               },
+    //               sort: {
+    //                 name: 1
+    //               }
+    //             }
+    //           }
+    //         const result = MongoDbHelper.ConvertSql_v2(sqlQuery)
+    //         expect(result).toEqual(expectedMongoQuery)
+    //     })
+
+    //     it(`SELECT FROM WHERE OR`, () => {
+    //         const sqlQuery = `SELECT name, age FROM Users WHERE age > 30 OR name = 'Jane Doe'`
+    //         const expectedMongoQuery = {}
+    //         const result = MongoDbHelper.ConvertSql_v2(sqlQuery)
+    //         expect(result).toEqual(expectedMongoQuery)
+    //     })
+
+    //     // it('SELECT FROM INNER JOIN WHERE ORDER BY', () => {
+    //     //     const sqlQuery = `
+    //     //         SELECT Users.name, Orders.total 
+    //     //         FROM Users 
+    //     //         INNER JOIN Orders ON Users.userId = Orders.userId 
+    //     //         WHERE Orders.total > 100 
+    //     //         ORDER BY Users.name ASC
+    //     //         `
+    //     //     const expectedMongoQuery = {}
+    //     //     const result = MongoDbHelper.ConvertSql_v2(sqlQuery)
+    //     //     expect(result).toEqual(expectedMongoQuery)
+    //     // })
+
+    //     it(`INSERT INTO () VALUES ()`, () => {
+    //         const sqlQuery = `INSERT INTO Users (name, age) VALUES ('John Doe', 29)`
+    //         const expectedMongoQuery = {
+    //             name: "John Doe",
+    //             age: 29
+    //         }
+    //         const result = MongoDbHelper.ConvertSql_v2(sqlQuery)
+    //         expect(result).toEqual(expectedMongoQuery)
+    //     })
+
+    //     it(`UPDATE SET WHERE`, () => {
+    //         const sqlQuery = `UPDATE Users SET name = 'John Doe' WHERE age > 30`
+    //         const expectedMongoQuery = {}
+    //         const result = MongoDbHelper.ConvertSql_v2(sqlQuery)
+    //         expect(result).toEqual(expectedMongoQuery)
+    //     })
+
+    //     it(`DELETE FROM WHERE`, () => {
+    //         const sqlQuery = `DELETE FROM Users WHERE name = 'John Doe'`
+    //         const expectedMongoQuery = {}
+    //         const result = MongoDbHelper.ConvertSql_v2(sqlQuery)
+    //         expect(result).toEqual(expectedMongoQuery)
+    //     })
+    // })
 
 })
