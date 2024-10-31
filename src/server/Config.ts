@@ -90,7 +90,7 @@ export class Config {
         return await Yaml.load(configFileRaw) as TConfig
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug, true)
     static CheckRessourcesUsage(newConfig: TConfig): void {
         // TODO check for used sources and plans in config
         const sourceConfig = {
