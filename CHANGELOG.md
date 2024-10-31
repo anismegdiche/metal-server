@@ -8,6 +8,7 @@
 - Parameter `entityName` changed to `entity`
 - Parameter `schemaName` changed to `schema`
 - Parameter `fileExpression` changed to `filter-expression`
+- Parameter `autoCreate` changed to `auto-create`
 - File Provider:
     - Changed `contentType` → `content` (Now supports multiple content type for the same storage, which may cause changes in behavior for existing configuration).
     - Changed `storageType` → `storage`.

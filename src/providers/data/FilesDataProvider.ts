@@ -62,7 +62,7 @@ export type TFilesDataProviderOptions = {
     }
 
     //TODO: to test
-    autoCreate?: boolean
+    "auto-create"?: boolean
 }
     & TStorageConfig
 
@@ -74,7 +74,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
     // FilesDataProvider
     ContentHandler: Record<string, IContent> = {}
-    Files: Record<string, IContent> = {}
+    File: Record<string, IContent> = {}
 
     Options = new CommonSqlDataProviderOptions()
 
@@ -101,10 +101,10 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     #SetHandler(entity: string) {
-        if (!_.has(this.Files, entity)) {
+        if (!_.has(this.File, entity)) {
             const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entity))
             if (handler)
-                this.Files[entity] = this.ContentHandler[handler]
+                this.File[entity] = this.ContentHandler[handler]
             else
                 throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entity}`)
         }
@@ -173,12 +173,12 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         this.#SetHandler(entity)
 
-        this.Files[entity].Init(
+        this.File[entity].Init(
             entity,
             await this.Connection.Read(entity)
         )
 
-        const data = await this.Files[entity].Get()
+        const data = await this.File[entity].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Insert(`\`${entity}\``)
@@ -188,7 +188,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
         await this.Connection.Write(
             entity,
-            await this.Files[entity].Set(data)
+            await this.File[entity].Set(data)
         )
 
         // clean cache
@@ -212,7 +212,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         this.#SetHandler(entity)
 
-        this.Files[entity].Init(
+        this.File[entity].Init(
             entity,
             await this.Connection.Read(entity)
         )
@@ -227,7 +227,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             ? sqlQueryHelper.Query
             : undefined
 
-        const data = await this.Files[entity].Get(sqlQuery)
+        const data = await this.File[entity].Get(sqlQuery)
 
         if (options?.Cache)
             await Cache.Set({
@@ -255,12 +255,12 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         this.#SetHandler(entity)
 
-        this.Files[entity].Init(
+        this.File[entity].Init(
             entity,
             await this.Connection.Read(entity)
         )
 
-        const data = await this.Files[entity].Get()
+        const data = await this.File[entity].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Update(`\`${entity}\``)
@@ -271,7 +271,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.Write(
             entity,
-            await this.Files[entity].Set(data)
+            await this.File[entity].Set(data)
         )
 
         // clean cache
@@ -292,12 +292,12 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         this.#SetHandler(entity)
 
-        this.Files[entity].Init(
+        this.File[entity].Init(
             entity,
             await this.Connection.Read(entity)
         )
 
-        const data = await this.Files[entity].Get()
+        const data = await this.File[entity].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
@@ -308,7 +308,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection.Write(
             entity,
-            await this.Files[entity].Set(data)
+            await this.File[entity].Set(data)
         )
 
         // clean cache

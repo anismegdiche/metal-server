@@ -25,7 +25,7 @@ import { HttpResponse } from "../../server/HttpResponse"
 
 export type TMemoryDataProviderOptions = {
     // v0.3
-    autoCreate?: boolean            // Auto create table if not exist
+    "auto-create"?: boolean            // Auto create table if not exist
 }
 
 export class MemoryDataProvider implements IDataProvider.IDataProvider {
@@ -102,7 +102,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        // removed: in case of autoCreate and select, entity should not be created
+        // removed: in case of auto-create and select, entity should not be created
         //await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entity] === undefined)
@@ -152,7 +152,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        // removed: in case of autoCreate and select, entity should not be created
+        // removed: in case of auto-create and select, entity should not be created
         //await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entity] === undefined)
@@ -166,7 +166,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
 
@@ -182,7 +182,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        // removed: in case of autoCreate and select, entity should not be created
+        // removed: in case of auto-create and select, entity should not be created
         //await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entity] === undefined)
@@ -196,10 +196,10 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
-        
+
         return HttpResponse.NoContent()
     }
 
@@ -210,8 +210,9 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { entity } = schemaRequest
+        const autoCreate: boolean = (this.Params.options && this.Params.options["auto-create"] as boolean) ?? false
 
-        if (this.Params.options?.autoCreate === true &&
+        if (autoCreate &&
             !Object.keys(this.Connection.Tables).includes(entity)) {
             this.Connection.AddTable(entity)
         }

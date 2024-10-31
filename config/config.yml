@@ -8,7 +8,7 @@ server:
     provider: memory
     database: cache
     options:
-      autoCreate: true
+      auto-create: true
 
 users:
   myapiuser: myStr@ngpa$$w0rd
@@ -18,13 +18,13 @@ sources:
     provider: memory
     database: mem
     options:
-      autoCreate: true
+      auto-create: true
   fs-v2:
     provider: files
     options:
       storage: fs
       fsFolder: ./data/
-      autoCreate: true
+      auto-create: true
       content:
         "*.csv":
           type: csv
@@ -47,7 +47,7 @@ sources:
       ftpUser: ftpuser
       ftpPassword: ftppass
       ftpFolder: /
-      autoCreate: true
+      auto-create: true
       content:
         "*.csv":
           type: csv
