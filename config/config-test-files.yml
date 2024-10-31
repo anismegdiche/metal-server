@@ -23,7 +23,7 @@ sources:
       storage: fs
       type: json
       fs-folder: ./data/
-      jsonArrayPath: rows
+      json-path: rows
   fs-csv-data:
     provider: files
     options:

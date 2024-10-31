@@ -5,7 +5,7 @@ import { TContentConfig } from "../../data/FilesDataProvider"
 
 describe('JsonContent', () => {
     const contentConfig: TContentConfig = {
-        jsonArrayPath: 'data'
+        "json-path": 'data'
     }
 
     let jsonContent = new JsonContent(contentConfig)
@@ -62,7 +62,7 @@ describe('JsonContent', () => {
         })
 
         it('should return an empty DataTable if arrayPath is not found', async () => {
-            jsonContent.Config.jsonArrayPath = 'nonexistent.path'
+            jsonContent.Config["json-path"] = 'nonexistent.path'
 
             const dataTable = await jsonContent.Get()
 

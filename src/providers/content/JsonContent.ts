@@ -15,7 +15,7 @@ import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { ReadableHelper } from "../../lib/ReadableHelper"
 
 export type TJsonContentConfig = {
-    jsonArrayPath?: string
+    "json-path"?: string
 }
 
 export class JsonContent extends CommonContent implements IContent {
@@ -27,12 +27,12 @@ export class JsonContent extends CommonContent implements IContent {
         this.EntityName = entity
         if (this.Options) {
             const {
-                jsonArrayPath = undefined
+                "json-path": jsonPath  = undefined
             } = this.Options
 
             this.Config = {
                 ...this.Config,
-                jsonArrayPath: jsonArrayPath
+                "json-path": jsonPath
             }
         }
 
@@ -50,7 +50,7 @@ export class JsonContent extends CommonContent implements IContent {
                 this.Content.ReadFile(this.EntityName)
             ), {})
 
-        const data = JsonHelper.Get<TJson[]>(json, this.Config.jsonArrayPath)
+        const data = JsonHelper.Get<TJson[]>(json, this.Config["json-path"])
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
@@ -67,7 +67,7 @@ export class JsonContent extends CommonContent implements IContent {
 
         json = JsonHelper.Set(
             json,
-            this.Config.jsonArrayPath,
+            this.Config["json-path"],
             data.Rows
         )
         const streamOut = Readable.from(JSON.stringify(json))

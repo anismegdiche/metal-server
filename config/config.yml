@@ -79,7 +79,7 @@ sources:
 #       storage: fs
 #       content: json
 #       fs-folder: ./data/
-#       jsonArrayPath: rows
+#       json-path: rows
 #   az-json-data:
 #     provider: files
 #     options:

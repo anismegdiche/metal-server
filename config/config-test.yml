@@ -51,7 +51,7 @@ sources:
     options:
       storage: fs
       type: json
-      jsonArrayPath: rows
+      json-path: rows
   fs-csv-data:
     provider: files
     database: ./data/

@@ -9,7 +9,7 @@ describe('FsStorage', () => {
     const sourceParams = <TConfigSource>{
         provider: "files",
         options: {
-            jsonArrayPath: 'data'
+            "json-path": 'data'
         }
     }
     const fsStorage = new FsStorage(sourceParams)
