@@ -8,7 +8,7 @@ server:
     provider: memory
     database: cache
     options:
-      auto-create: true
+      autocreate: true
 
 users:
   myapiuser: myStr@ngpa$$w0rd
@@ -18,13 +18,13 @@ sources:
     provider: memory
     database: mem
     options:
-      auto-create: true
+      autocreate: true
   fs-v2:
     provider: files
     options:
       storage: fs
       fs-folder: ./data/
-      auto-create: true
+      autocreate: true
       content:
         "*.csv":
           type: csv
@@ -47,7 +47,7 @@ sources:
       ftpUser: ftpuser
       ftpPassword: ftppass
       ftpFolder: /
-      auto-create: true
+      autocreate: true
       content:
         "*.csv":
           type: csv
@@ -83,10 +83,10 @@ sources:
 #   az-json-data:
 #     provider: files
 #     options:
-#       storage: azure-blob
+#       storage: az-blob
 #       content: json
-#       azureBlobConnectionString: UseDevelopmentStorage=true
-#       azureBlobContainerName: datacontainer1
+#       az-blob-connection-string: UseDevelopmentStorage=true
+#       az-blob-container: datacontainer1
 
 schemas:
   mem:

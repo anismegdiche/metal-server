@@ -14,9 +14,9 @@ import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
 
 export type TAzureBlobStorageConfig = {
-    azureBlobConnectionString?: string
-    azureBlobContainerName?: string
-    azureBlobCreateContainerIfNotExists?: boolean
+    "az-blob-connection-string"?: string
+    "az-blob-container"?: string
+    "az-blob-autocreate"?: boolean
 }
 
 export class AzureBlobStorage extends CommonStorage implements IStorage {
@@ -30,15 +30,18 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
     Init(): void {
         Logger.Debug("AzureBlobStorage.Init")
         this.Config = <TAzureBlobStorageConfig>{
-            azureBlobConnectionString: this.Options.azureBlobConnectionString,
-            azureBlobContainerName: this.Options.azureBlobContainerName,
-            azureBlobCreateContainerIfNotExists: this.Options.azureBlobCreateContainerIfNotExists || false
+            "az-blob-connection-string": this.Options["az-blob-connection-string"],
+            "az-blob-container": this.Options["az-blob-container"],
+            "az-blob-autocreate": this.Options["az-blob-autocreate"] || false
         }
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        const { azureBlobConnectionString: connectionString, azureBlobContainerName: containerName } = this.Config
+        const {
+            "az-blob-connection-string": connectionString,
+            "az-blob-container": containerName
+        } = this.Config
 
         try {
             if (!connectionString || !containerName) {

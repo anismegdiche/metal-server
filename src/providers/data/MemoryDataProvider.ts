@@ -25,7 +25,7 @@ import { HttpResponse } from "../../server/HttpResponse"
 
 export type TMemoryDataProviderOptions = {
     // v0.3
-    "auto-create"?: boolean            // Auto create table if not exist
+    "autocreate"?: boolean            // Auto create table if not exist
 }
 
 export class MemoryDataProvider implements IDataProvider.IDataProvider {
@@ -102,7 +102,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        // removed: in case of auto-create and select, entity should not be created
+        // removed: in case of autocreate and select, entity should not be created
         //await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entity] === undefined)
@@ -152,7 +152,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        // removed: in case of auto-create and select, entity should not be created
+        // removed: in case of autocreate and select, entity should not be created
         //await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entity] === undefined)
@@ -182,7 +182,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        // removed: in case of auto-create and select, entity should not be created
+        // removed: in case of autocreate and select, entity should not be created
         //await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entity] === undefined)
@@ -210,7 +210,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { entity } = schemaRequest
-        const autoCreate: boolean = (this.Params.options && this.Params.options["auto-create"] as boolean) ?? false
+        const autoCreate: boolean = (this.Params.options && this.Params.options["autocreate"] as boolean) ?? false
 
         if (autoCreate &&
             !Object.keys(this.Connection.Tables).includes(entity)) {

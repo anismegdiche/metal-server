@@ -8,13 +8,16 @@
 - Parameter `entityName` changed to `entity`
 - Parameter `schemaName` changed to `schema`
 - Parameter `filterExpression` changed to `filter-expression`
-- Parameter `autoCreate` changed to `auto-create`
+- Parameter `autoCreate` changed to `autocreate`
 - File Provider:
     - Changed `contentType` → `content` (Now supports multiple content type for the same storage, which may cause changes in behavior for existing configuration).
     - Changed `storageType` → `storage`.
     - Changed `fileSystem` storage → `fs`.
-    - Changed `azureBlob` storage → `azure-blob`.
     - Changed Parameter `fsFolder` → `fs-folder`.
+    - Changed `azureBlob` storage → `az-blob`.
+    - Changed Parameter `azureBlobConnectionString` → `az-blob-connection-string`.
+    - Changed Parameter `azureBlobContainerName` → `az-blob-container`.
+    - Changed Parameter `azureBlobCreateContainerIfNotExists` → `az-blob-autocreate`.
 - Plan sync function parameters have changed:
   - `source` → `from`
   - `destination` → `to`

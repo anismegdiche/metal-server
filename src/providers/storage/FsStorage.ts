@@ -49,7 +49,7 @@ export class FsStorage extends CommonStorage implements IStorage {
 
         const filePath = this.Config["fs-folder"] + file
 
-        if (this.Options["auto-create"] && !(await this.IsExist(file))) {
+        if (this.Options["autocreate"] && !(await this.IsExist(file))) {
             const _fd = Fs.openSync(filePath, 'wx')
             await Fs.promises.writeFile(filePath, '', 'utf8')
             Fs.closeSync(_fd)
@@ -66,7 +66,7 @@ export class FsStorage extends CommonStorage implements IStorage {
 
         const filePath = this.Config["fs-folder"] + file
 
-        if (this.Options["auto-create"] && !(await this.IsExist(file))) {
+        if (this.Options["autocreate"] && !(await this.IsExist(file))) {
             const _fd = Fs.openSync(filePath, 'wx')
             await Fs.promises.writeFile(filePath, '', 'utf8')
             Fs.closeSync(_fd)

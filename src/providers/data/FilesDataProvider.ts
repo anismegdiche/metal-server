@@ -37,7 +37,7 @@ import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
 
 export enum STORAGE {
     FILESYSTEM = "fs",
-    AZURE_BLOB = "azure-blob",
+    AZURE_BLOB = "az-blob",
     FTP = "ftp",
     SMB = "smb"
 }
@@ -62,7 +62,7 @@ export type TFilesDataProviderOptions = {
     }
 
     //TODO: to test
-    "auto-create"?: boolean
+    "autocreate"?: boolean
 }
     & TStorageConfig
 

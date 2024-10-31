@@ -37,17 +37,17 @@ sources:
   az-json-data:
     provider: files
     options:
-      storage: azure-blob
+      storage: az-blob
       contentType: json
-      azureBlobConnectionString: UseDevelopmentStorage=true
-      azureBlobContainerName: datacontainer1
+      az-blob-connection-string: UseDevelopmentStorage=true
+      az-blob-container: datacontainer1
   az-csv-data:
     provider: files
     options:
-      storage: azure-blob
+      storage: az-blob
       contentType: csv
-      azureBlobConnectionString: UseDevelopmentStorage=true
-      azureBlobContainerName: datacontainer1
+      az-blob-connection-string: UseDevelopmentStorage=true
+      az-blob-container: datacontainer1
       csvDelimiter: ','
       csvNewline: "\n"
       csvHeader: true

@@ -2,6 +2,7 @@
 //
 //
 //
+import _ from "lodash"
 //
 import { Logger } from '../utils/Logger'
 import { Cache } from './Cache'
@@ -16,7 +17,6 @@ import { PlanDataProvider } from '../providers/data/PlanDataProvider'
 import { FilesDataProvider } from '../providers/data/FilesDataProvider'
 import { MemoryDataProvider } from '../providers/data/MemoryDataProvider'
 import { MetalDataProvider } from '../providers/data/MetalDataProvider'
-import _ from "lodash"
 import { MySqlDataProvider } from "../providers/data/MySqlDataProvider"
 
 //  config types

@@ -76,7 +76,7 @@ export class FtpStorage extends CommonStorage implements IStorage {
     async Write(file: string, content: Readable): Promise<void> {
         const path = `${this.Config.ftpRemoteFolder}${file}`
         try {
-            if (this.Options["auto-create"] && !(await this.IsExist(file))) {
+            if (this.Options["autocreate"] && !(await this.IsExist(file))) {
                 await this.FtpClient.uploadFrom(content, path)
             } else {
                 await this.FtpClient.appendFrom(content, path)
