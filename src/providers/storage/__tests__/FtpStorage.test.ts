@@ -28,12 +28,13 @@ describe('FtpStorage', () => {
                 "ftp-password": 'password'
             }
         })
-        ftpStorage.Config = {
-            "ftp-host": 'localhost',
-            "ftp-user": 'user',
-            "ftp-password": 'password',
-            "ftp-secure": false,
-            "ftp-folder": '/'
+        ftpStorage.Params = {
+            host: 'localhost',
+            port: 21,
+            user: 'user',
+            password: 'password',
+            secure: false,
+            folder: '/'
         }
     })
 
@@ -44,7 +45,7 @@ describe('FtpStorage', () => {
     describe('Init', () => {
         it('should initialize the FTP client with given options', async () => {
             await ftpStorage.Init()
-            expect(ftpStorage.Config["ftp-host"]).toBe('localhost')
+            expect(ftpStorage.ConfigStorage["ftp-host"]).toBe('localhost')
         })
     })
 

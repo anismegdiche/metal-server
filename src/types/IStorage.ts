@@ -6,8 +6,8 @@ import { TFilesDataProviderOptions } from "../providers/data/FilesDataProvider"
 
 
 export interface IStorage {
-    Params: TConfigSource
-    Options: TFilesDataProviderOptions
+    ConfigSource: TConfigSource
+    ConfigStorage: TFilesDataProviderOptions
     Init(): void
     Connect(): Promise<void>
     Disconnect(): Promise<void>

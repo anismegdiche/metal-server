@@ -7,51 +7,65 @@ import { IStorage } from "../../types/IStorage"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
+import { TConvertParams } from "../../lib/TypeHelper"
 
 export type TFtpStorageConfig = {
-    "ftp-host": string                                           // FTP server host
+    "ftp-host": string                                            // FTP server host
     "ftp-port"?: number & tags.Minimum<1> & tags.Maximum<65_535>  // FTP server port
-    "ftp-user": string                                           // FTP server username
-    "ftp-password": string                                       // FTP server password
-    "ftp-secure"?: boolean                                               // Enable secure FTP connection (default: false)
-    "ftp-folder"?: string                                        // Remote folder on the FTP server (default: '/')
+    "ftp-user": string                                            // FTP server username
+    "ftp-password": string                                        // FTP server password
+    "ftp-secure"?: boolean                                        // Enable secure FTP connection (default: false)
+    "ftp-folder"?: string                                         // Remote folder on the FTP server (default: '/')
 }
+
+type TFtpStorageParams = Required<{
+    [K in keyof TFtpStorageConfig as K extends `ftp-${infer U}` ? TConvertParams<U> : K]: TFtpStorageConfig[K]
+}>
+
 
 export class FtpStorage extends CommonStorage implements IStorage {
 
-    Config = <TFtpStorageConfig>{}
+    Params: TFtpStorageParams | undefined
+    
+    // FTP
     FtpClient: Ftp.Client = new Ftp.Client()
 
     @Logger.LogFunction()
     async Init(): Promise<void> {
-        this.Config = {
-            "ftp-host": this.Options["ftp-host"],
-            "ftp-port": this.Options["ftp-port"] ?? 21,
-            "ftp-user": this.Options["ftp-user"],
-            "ftp-password": this.Options["ftp-password"],
-            "ftp-secure": this.Options["ftp-secure"] ?? false,
-            "ftp-folder": this.Options["ftp-folder"] ?? '/'
+        this.Params = <TFtpStorageParams>{
+            host: this.ConfigStorage["ftp-host"],
+            port: this.ConfigStorage["ftp-port"] ?? 21,
+            user: this.ConfigStorage["ftp-user"],
+            password: this.ConfigStorage["ftp-password"],
+            secure: this.ConfigStorage["ftp-secure"] ?? false,
+            folder: this.ConfigStorage["ftp-folder"] ?? '/'
         }
     }
 
     async Connect(): Promise<void> {
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('FtpStorage: No params defined')
+
         try {
             await this.FtpClient.access({
-                host: this.Config["ftp-host"],
-                port: this.Config["ftp-port"],
-                user: this.Config["ftp-user"],
-                password: this.Config["ftp-password"],
-                secure: this.Config["ftp-secure"]
+                host: this.Params.host,
+                port: this.Params.port,
+                user: this.Params.user,
+                password: this.Params.password,
+                secure: this.Params.secure
             })
         } catch (error: any) {
-            Logger.Error(`Failed to connect to FTP server '${this.Config["ftp-host"]}': ${error.message}`)
+            Logger.Error(`Failed to connect to FTP server '${this.Params.host}': ${error.message}`)
         }
     }
 
     @Logger.LogFunction()
-    async IsExist(file: string): Promise<boolean> {
+    async IsExist(file: string): Promise<boolean> {        
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('FtpStorage: No params defined')
+
         try {
-            const path = `${this.Config["ftp-folder"]}${file}`
+            const path = `${this.Params.folder}${file}`
             const fileInfo = await this.FtpClient.size(path)
             return fileInfo !== -1
         } catch {
@@ -61,7 +75,10 @@ export class FtpStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async Read(file: string): Promise<Readable> {
-        const path = `${this.Config["ftp-folder"]}${file}`
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('FtpStorage: No params defined')
+
+        const path = `${this.Params.folder}${file}`
         try {
             if (!(await this.IsExist(file)))
                 throw new HttpErrorNotFound(`File '${file}' does not exist on the FTP server`)
@@ -78,9 +95,12 @@ export class FtpStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async Write(file: string, content: Readable): Promise<void> {
-        const path = `${this.Config["ftp-folder"]}${file}`
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('FtpStorage: No params defined')
+
+        const path = `${this.Params.folder}${file}`
         try {
-            if (this.Options["autocreate"] && !(await this.IsExist(file))) {
+            if (this.ConfigStorage["autocreate"] && !(await this.IsExist(file))) {
                 await this.FtpClient.uploadFrom(content, path)
             } else {
                 await this.FtpClient.appendFrom(content, path)
@@ -94,8 +114,11 @@ export class FtpStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async List(): Promise<DataTable> {
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('FtpStorage: No params defined')
+        
         try {
-            const result = await this.FtpClient.list(this.Config["ftp-folder"])
+            const result = await this.FtpClient.list(this.Params.folder)
             const formattedResult = result
                 .filter(file => !file.isDirectory)
                 .map(file => ({
@@ -106,7 +129,7 @@ export class FtpStorage extends CommonStorage implements IStorage {
 
             return new DataTable(undefined, formattedResult)
         } catch (error: any) {
-            throw new HttpErrorInternalServerError(`Failed to list directory '${this.Config["ftp-folder"]}': ${error.message}`)
+            throw new HttpErrorInternalServerError(`Failed to list directory '${this.Params.folder}': ${error.message}`)
         }
     }
 

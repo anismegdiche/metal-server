@@ -12,6 +12,7 @@ import { Logger } from '../../utils/Logger'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
+import { TConvertParams } from "../../lib/TypeHelper"
 
 export type TAzureBlobStorageConfig = {
     "az-blob-connection-string"?: string
@@ -19,38 +20,43 @@ export type TAzureBlobStorageConfig = {
     "az-blob-autocreate"?: boolean
 }
 
+type TAzureBlobStorageParams = Required<{
+    [K in keyof TAzureBlobStorageConfig as K extends `az-blob-${infer U}` ? TConvertParams<U> : K]: TAzureBlobStorageConfig[K]
+}>
+
 export class AzureBlobStorage extends CommonStorage implements IStorage {
 
+    Params: TAzureBlobStorageParams | undefined
+
+    // Azure Blob
     #BlobServiceClient: BlobServiceClient | undefined
     #ContainerClient: ContainerClient | undefined
-
-    Config: TAzureBlobStorageConfig = {}
 
     @Logger.LogFunction()
     Init(): void {
         Logger.Debug("AzureBlobStorage.Init")
-        this.Config = <TAzureBlobStorageConfig>{
-            "az-blob-connection-string": this.Options["az-blob-connection-string"],
-            "az-blob-container": this.Options["az-blob-container"],
-            "az-blob-autocreate": this.Options["az-blob-autocreate"] || false
+        this.Params = <TAzureBlobStorageParams>{
+            connectionString: this.ConfigStorage["az-blob-connection-string"],
+            container: this.ConfigStorage["az-blob-container"],
+            autocreate: this.ConfigStorage["az-blob-autocreate"] || false
         }
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        const {
-            "az-blob-connection-string": connectionString,
-            "az-blob-container": containerName
-        } = this.Config
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('AzureBlobStorage: No params defined')
+
+        const { connectionString, container } = this.Params
 
         try {
-            if (!connectionString || !containerName) {
+            if (!connectionString || !container) {
                 Logger.Error('AzureBlobStorage: Missing Azure Blob Storage connection string or container name')
                 this.Disconnect()
                 return
             }
             this.#BlobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
-            this.#ContainerClient = this.#BlobServiceClient.getContainerClient(containerName)
+            this.#ContainerClient = this.#BlobServiceClient.getContainerClient(container)
             await this.#ContainerClient.createIfNotExists()
         } catch (error) {
             Logger.Error(`AzureBlobStorage Error: ${error}`)

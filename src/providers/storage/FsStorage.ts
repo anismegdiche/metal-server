@@ -12,19 +12,27 @@ import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { Convert } from "../../lib/Convert"
+import { TConvertParams } from "../../lib/TypeHelper"
 
 export type TFsStorageConfig = {
     "fs-folder"?: string
+    autocreate?: boolean
 }
+
+type TFsStorageParams = Required<{
+    [K in keyof TFsStorageConfig as K extends `fs-${infer U}` ? TConvertParams<U> : K]: TFsStorageConfig[K]
+}>
+
 
 export class FsStorage extends CommonStorage implements IStorage {
 
-    Config = <TFsStorageConfig>{}
+    Params: TFsStorageParams | undefined
 
     @Logger.LogFunction()
     Init(): void {
-        this.Config = {
-            "fs-folder": this.Options["fs-folder"] ?? '.'
+        this.Params = <TFsStorageParams>{
+            folder: this.ConfigStorage["fs-folder"] ?? '',
+            autocreate: this.ConfigStorage["autocreate"] || false
         }
     }
 
@@ -41,15 +49,20 @@ export class FsStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
-        return Fs.existsSync(`${this.Config["fs-folder"]}${file}`)
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('FsStorage: No params defined')
+
+        return Fs.existsSync(`${this.Params.folder}${file}`)
     }
 
     @Logger.LogFunction()
     async Read(file: string): Promise<Readable> {
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('FsStorage: No params defined')
 
-        const filePath = this.Config["fs-folder"] + file
+        const filePath = this.Params.folder + file
 
-        if (this.Options["autocreate"] && !(await this.IsExist(file))) {
+        if (this.Params.autocreate && !(await this.IsExist(file))) {
             const _fd = Fs.openSync(filePath, 'wx')
             await Fs.promises.writeFile(filePath, '', 'utf8')
             Fs.closeSync(_fd)
@@ -57,16 +70,18 @@ export class FsStorage extends CommonStorage implements IStorage {
 
         if (await this.IsExist(file))
             return Convert.ReadStreamToReadable(Fs.createReadStream(filePath))
-        
+
         throw new HttpErrorNotFound(`File '${file}' does not exist`)
     }
 
     @Logger.LogFunction()
     async Write(file: string, content: Readable): Promise<void> {
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('FsStorage: No params defined')
 
-        const filePath = this.Config["fs-folder"] + file
+        const filePath = this.Params.folder + file
 
-        if (this.Options["autocreate"] && !(await this.IsExist(file))) {
+        if (this.Params.autocreate && !(await this.IsExist(file))) {
             const _fd = Fs.openSync(filePath, 'wx')
             await Fs.promises.writeFile(filePath, '', 'utf8')
             Fs.closeSync(_fd)
@@ -76,10 +91,12 @@ export class FsStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async List(): Promise<DataTable> {
-        // TODO: fix workaround:  this.Config["fs-folder"] ?? '.'
-        const result = await Fs.promises.readdir(this.Config["fs-folder"] ?? '.')
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('FsStorage: No params defined')
+
+        const result = await Fs.promises.readdir(this.Params.folder)
             .then(files => Promise.all(files.map(async file => {
-                const stats = await Fs.promises.stat(`${this.Config["fs-folder"]}${file}`)
+                const stats = await Fs.promises.stat(`${this.Params!.folder}${file}`)
                 return {
                     name: file,
                     type: 'file',
@@ -87,7 +104,7 @@ export class FsStorage extends CommonStorage implements IStorage {
                 }
             })))
             .catch((error) => {
-                throw new HttpErrorInternalServerError(`Failed to read directory '${this.Config["fs-folder"]}': ${error.message}`)
+                throw new HttpErrorInternalServerError(`Failed to read directory '${this.Params!.folder}': ${error.message}`)
             })
 
         return new DataTable(undefined, result)
