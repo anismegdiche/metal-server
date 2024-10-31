@@ -5,7 +5,11 @@ import { TContentConfig } from "../../data/FilesDataProvider"
 
 describe('CsvContent', () => {
     const contentConfig: TContentConfig = <TContentConfig>{
-        jsonArrayPath: 'data'
+        csvDelimiter: ',',
+        csvNewline: '\n',
+        csvHeader: true,
+        csvQuoteChar: '"',
+        csvSkipEmptyLines: 'greedy'
     }
     
     let csvContent = new CsvContent(contentConfig)
