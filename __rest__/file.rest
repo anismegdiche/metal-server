@@ -57,13 +57,13 @@ authorization: Bearer {{token}}
 
 # @name select
 GET http://localhost:3000/schema/azjson/colors.json
-    ?filterExpression=hexcode LIKE '%%00'
+    ?filter-expression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
 ###
 
 
 GET http://localhost:3000/schema/azcsv/addresses.csv
-    # ?filterExpression=hexcode LIKE '%%00'
+    # ?filter-expression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
 ###
 
@@ -89,7 +89,7 @@ authorization: Bearer {{token}}
 
 # @name xls-select
 GET http://localhost:3000/schema/v2/sample.xlsx
-   ?filterExpression=Name = 'Mary'
+   ?filter-expression=Name = 'Mary'
 authorization: Bearer {{token}}
 ###
 
@@ -116,13 +116,13 @@ authorization: Bearer {{token}}
 
 
 GET http://localhost:3000/schema/v2/covid.csv
-    # ?filterExpression=hexcode LIKE '%%00'
+    # ?filter-expression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
 ###
 
 
 GET http://localhost:3000/schema/v2/sample.csv
-    # ?filterExpression=hexcode LIKE '%%00'
+    # ?filter-expression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
 ###
 

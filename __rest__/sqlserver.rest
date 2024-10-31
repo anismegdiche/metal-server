@@ -27,7 +27,7 @@ authorization: Bearer {{token}}
 
 # @name select-filtered
 GET http://localhost:3000/schema/hr/countries
-    ?filterExpression=country_name LIKE '*a'
+    ?filter-expression=country_name LIKE '*a'
     &fields=country_id,country_name
     &sort=country_id asc,country_name desc
 authorization: Bearer {{token}}

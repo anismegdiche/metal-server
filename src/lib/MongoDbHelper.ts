@@ -3,7 +3,6 @@
 //
 //
 //
-import { HttpErrorInternalServerError } from "../server/HttpErrors"
 import { SORT_ORDER } from "../types/DataTable"
 import { Logger } from "../utils/Logger"
 import { SQLParser } from 'sql-in-mongodb'

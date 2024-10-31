@@ -4,6 +4,7 @@
 
 ### ⚠️ Breaking Changes
 - Updated to Node v22.10.0
+- Parameter `fileExpression` changed to `filter-expression`
 - File Provider:
     - Changed `contentType` → `content` (Now supports multiple content type for the same storage, which may cause changes in behavior for existing configuration).
     - Changed `storageType` → `storage`.

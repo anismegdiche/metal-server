@@ -33,7 +33,7 @@ authorization: Bearer {{token}}
 # @name select-filtered
 GET http://localhost:3000/schema/clubdata/members
     ?fields=firstname, surname
-    # &filterExpression=customer_id LIKE 'A%'
+    # &filter-expression=customer_id LIKE 'A%'
     &filter={"surname": "Smith"}
     &sort=firstname asc,surname desc
     &cache=300

@@ -44,11 +44,11 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
     @Logger.LogFunction()
     GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let filter: any = {}
-        if (schemaRequest?.filterExpression || schemaRequest?.filter) {
+        if (schemaRequest["filter-expression"] || schemaRequest?.filter) {
 
-            if (schemaRequest?.filterExpression)
+            if (schemaRequest["filter-expression"])
                 // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
-                filter = MongoDbHelper.ConvertSqlQuery(schemaRequest.filterExpression.replace(/%/igm, ".*"))
+                filter = MongoDbHelper.ConvertSqlQuery(schemaRequest["filter-expression"].replace(/%/igm, ".*"))
             
             if (schemaRequest?.filter)
                 filter = schemaRequest.filter

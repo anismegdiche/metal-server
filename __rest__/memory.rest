@@ -65,7 +65,7 @@ authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-    "filterExpression":"name like 'John%'",
+    "filter-expression":"name like 'John%'",
     "data": {
                 "city":"Paris"
     }

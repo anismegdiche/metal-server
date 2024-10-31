@@ -30,10 +30,10 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
     @Logger.LogFunction()
     GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let filter = {}
-        if (schemaRequest?.filterExpression || schemaRequest?.filter) {
+        if (schemaRequest["filter-expression"] || schemaRequest?.filter) {
 
-            if (schemaRequest?.filterExpression)
-                filter = schemaRequest.filterExpression
+            if (schemaRequest["filter-expression"])
+                filter = schemaRequest["filter-expression"]
 
             if (schemaRequest?.filter)
                 filter = JsonHelper.ToArray(schemaRequest.filter)

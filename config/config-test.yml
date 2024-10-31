@@ -208,12 +208,12 @@ plans:
       - sort:
           id:
       - update:
-          filterExpression: "id < 10"
+          filter-expression: "id < 10"
           data:
             name: "AAA"
             display_name: "BBB"
       - delete:
-          filterExpression: "id >= 100"
+          filter-expression: "id >= 100"
       - insert:
           data:
             name: John

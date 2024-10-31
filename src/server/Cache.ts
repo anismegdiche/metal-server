@@ -211,7 +211,7 @@ export class Cache {
         Logger.Debug(`Cache.Clean ${_expireDate}`)
         await Cache.CacheSource.Delete(<TSchemaRequest>{
             ...Cache.#CacheSchemaRequest,
-            filterExpression: `expires < ${_expireDate}`
+            "filter-expression": `expires < ${_expireDate}`
         })
         Logger.Debug(`${Logger.Out} Cache.Clean`)
         return HttpResponse.Ok({ message: 'Cache cleaned' })
@@ -229,7 +229,7 @@ export class Cache {
             await Cache.CacheSource.Delete(<TSchemaRequest>{
                 ...Cache.#CacheSchemaRequest,
                 //FIXME: only usable with memory provider, should correct escape char ` in where close from sqlhelper
-                filterExpression: `\`schemaName\`= '${schemaName}' AND \`entityName\`= '${entityName}'`
+                "filter-expression": `\`schemaName\`= '${schemaName}' AND \`entityName\`= '${entityName}'`
             })
         } catch (error) {
             //

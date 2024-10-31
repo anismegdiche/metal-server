@@ -80,7 +80,7 @@ describe('Process', () => {
             ],
             fields: 'id, name',
             filter: { id: 1 },
-            filterExpression: 'id = 1',
+            "filter-expression": 'id = 1',
             sort: 'name',
             cache: 60,
             sourceName: 'TestSource'

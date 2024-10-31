@@ -22,7 +22,7 @@ describe('RequestToSchemaRequest', () => {
                 ],
                 fields: 'id,name',
                 filter: { id: 1 },
-                filterExpression: 'id = 1',
+                "filter-expression": 'id = 1',
                 sort: 'name asc',
                 cache: '300'
             }
@@ -43,7 +43,7 @@ describe('RequestToSchemaRequest', () => {
             ],
             fields: 'id,name',
             filter: { id: 1 },
-            filterExpression: 'id = 1',
+            "filter-expression": 'id = 1',
             sort: 'name asc',
             cache: '300'
         })
@@ -86,7 +86,7 @@ describe('RequestToSchemaRequest', () => {
                 ],
                 fields: 'id,name',
                 filter: { id: 1 },
-                filterExpression: 'id = 1',
+                "filter-expression": 'id = 1',
                 sort: 'name asc',
                 cache: 300
             }
@@ -109,7 +109,7 @@ describe('RequestToSchemaRequest', () => {
             filter: {
                 id: 1
             },
-            filterExpression: "id = 1",
+            "filter-expression": "id = 1",
             sort: "name asc",
             cache: 300
         })
@@ -132,7 +132,7 @@ describe('RequestToSchemaRequest', () => {
                 ],
                 fields: 'id,name',
                 filter: { id: 1 },
-                filterExpression: 'id = 1',
+                "filter-expression": 'id = 1',
                 sort: 'name asc',
                 cache: 300
             }
@@ -155,7 +155,7 @@ describe('RequestToSchemaRequest', () => {
             filter: {
                 id: 1
             },
-            filterExpression: "id = 1",
+            "filter-expression": "id = 1",
             sort: "name asc",
             cache: 300
         })
@@ -178,7 +178,7 @@ describe('RequestToSchemaRequest', () => {
                 ],
                 fields: 'id,name',
                 filter: { id: 1 },
-                filterExpression: 'id = 1',
+                "filter-expression": 'id = 1',
                 sort: 'name asc',
                 cache: 300
             }
@@ -199,7 +199,7 @@ describe('RequestToSchemaRequest', () => {
             ],
             fields: 'id,name',
             filter: { id: 1 },
-            filterExpression: 'id = 1',
+            "filter-expression": 'id = 1',
             sort: 'name asc',
             cache: 300
         })
@@ -216,7 +216,7 @@ describe('RequestToSchemaRequest', () => {
             query: {
                 fields: 'id',
                 filter: { id: 2 },
-                filterExpression: 'id = 2',
+                "filter-expression": 'id = 2',
                 sort: 'id desc',
                 cache: 300
             }
@@ -231,7 +231,7 @@ describe('RequestToSchemaRequest', () => {
             entityName: 'testEntity',
             fields: 'id',
             filter: { id: 2 },
-            filterExpression: 'id = 2',
+            "filter-expression": 'id = 2',
             sort: 'id desc',
             cache: 300
         })
