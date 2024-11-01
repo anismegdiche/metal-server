@@ -3,7 +3,7 @@
 ## Version 0.3 - UNRELEASED
 
 ### ⚠️ Breaking Changes
-- Updated to Node v22.10.0
+- Updated to Node.js v22.10.0 for improved performance and security.
 - Parameter `sourceName` changed to `source`
 - Parameter `entityName` changed to `entity`
 - Parameter `schemaName` changed to `schema`
@@ -34,7 +34,7 @@
 - Plan commands: anonymize, remove-duplicates.
 - SwaggerUI.
 - Schema: List entities.
-- File Provider: FTP, SMB.
+- File Provider: FTP.
 - File Content: XLSX.
 
 ### Enhancements
