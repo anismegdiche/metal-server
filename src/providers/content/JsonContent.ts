@@ -13,21 +13,26 @@ import { JsonHelper } from '../../lib/JsonHelper'
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { ReadableHelper } from "../../lib/ReadableHelper"
+import { TConvertParams } from "../../lib/TypeHelper"
 
 export type TJsonContentConfig = {
     "json-path"?: string
 }
 
+type TJsonContentParams = Required<{
+    [K in keyof TJsonContentConfig as K extends `json-${infer U}` ? TConvertParams<U> : K]: TJsonContentConfig[K]
+}>
+
 export class JsonContent extends CommonContent implements IContent {
 
-    Params:any = {}
+    Params: TJsonContentParams | undefined
 
     @Logger.LogFunction()
     async Init(entity: string, content: Readable): Promise<void> {
         this.EntityName = entity
         if (this.Config) {
             this.Params = {
-                jsonPath: this.Config["json-path"] ?? ""
+                path: this.Config["json-path"] ?? ""
             }
         }
 
@@ -36,6 +41,9 @@ export class JsonContent extends CommonContent implements IContent {
 
     @Logger.LogFunction()
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('Json: Params is not defined')
+
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
@@ -45,12 +53,15 @@ export class JsonContent extends CommonContent implements IContent {
                 this.Content.ReadFile(this.EntityName)
             ), {})
 
-        const data = JsonHelper.Get<TJson[]>(json, this.Params.jsonPath)
+        const data = JsonHelper.Get<TJson[]>(json, this.Params.path)
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
     @Logger.LogFunction()
     async Set(data: DataTable): Promise<Readable> {
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('Json: Params is not defined')
+        
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
@@ -62,7 +73,7 @@ export class JsonContent extends CommonContent implements IContent {
 
         json = JsonHelper.Set(
             json,
-            this.Params.jsonPath,
+            this.Params.path,
             data.Rows
         )
 

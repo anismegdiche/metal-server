@@ -12,6 +12,8 @@ import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { Readable } from "node:stream"
 import { ReadableHelper } from "../../lib/ReadableHelper"
+import { TConvertParams } from "../../lib/TypeHelper"
+
 
 export type TCsvContentConfig = {
     "csv-delimiter"?: string
@@ -21,9 +23,14 @@ export type TCsvContentConfig = {
     "csv-skip-empty"?: boolean | "greedy"
 }
 
+type TCsvContentParams = Required<{
+    [K in keyof TCsvContentConfig as K extends `csv-${infer U}` ? TConvertParams<U> : K]: TCsvContentConfig[K]
+}>
+
+
 export class CsvContent extends CommonContent implements IContent {
 
-    Params: any = {}
+    Params: TCsvContentParams | undefined
 
     @Logger.LogFunction()
     async Init(entity: string, content: Readable): Promise<void> {

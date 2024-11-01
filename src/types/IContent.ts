@@ -14,7 +14,7 @@ import { TJson } from "./TJson"
 export interface IContent {
     EntityName: string
     Config: TContentConfig   // raw configuration
-    Params: TJson            // TS transformed configuration
+    Params: unknown            // TS transformed configuration
     Content: VirtualFileSystem
     Init(name: string, content: Readable): void
     Get(sqlQuery?: string): Promise<DataTable>

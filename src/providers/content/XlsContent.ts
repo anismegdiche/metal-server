@@ -13,13 +13,19 @@ import { IContent } from '../../types/IContent'
 import { Logger } from '../../utils/Logger'
 import { TJson } from '../../types/TJson'
 import { HttpErrorInternalServerError } from '../../server/HttpErrors'
+import { TConvertParams } from "../../lib/TypeHelper"
+
 
 export type TXlsContentConfig = {
-    "xls-sheet"?: string              // Specify which sheet to use, default first sheet
-    "xls-starting-cell"?: string      // Specify the starting cell (e.g., 'B2'), default 'A1'
-    "xls-default"?: any               // Default value for empty cells
-    "xls-parse-dates"?: boolean       // Parse dates from cells, default false
-    "xls-date-format"?: string        // Specify the date format for parsing dates
+    "xls-sheet"?: string                     // Specify which sheet to use, default first sheet
+    "xls-starting-cell"?: string             // Specify the starting cell (e.g., 'B2'), default 'A1'
+    "xls-default"?: number | string | null   // Default value for empty cells
+    "xls-parse-dates"?: boolean              // Parse dates from cells, default false
+    "xls-date-format"?: string               // Specify the date format for parsing dates
+}
+
+export type TXlsContentParams = {
+    [K in keyof TXlsContentConfig as K extends `xls-${infer U}` ? TConvertParams<U> : K]: TXlsContentConfig[K]
 }
 
 // Convert column letter (e.g., 'A', 'B', 'AA') to a column number
@@ -36,7 +42,7 @@ export function ColumnLetterToNumber(letter: string): number {
 
 export class XlsContent extends CommonContent implements IContent {
 
-    Params: any = {}
+    Params: TXlsContentParams | undefined
 
     @Logger.LogFunction(Logger.Debug, true)
     async Init(entity: string, content: Readable): Promise<void> {
@@ -45,7 +51,7 @@ export class XlsContent extends CommonContent implements IContent {
             this.Params = {
                 sheet: this.Config["xls-sheet"],
                 parseDates: this.Config["xls-parse-dates"] ?? false,
-                defaultValue: this.Config["xls-default"] ?? null,
+                default: this.Config["xls-default"] ?? null,
                 dateFormat: this.Config["xls-date-format"] ?? 'dd/mm/yyyy',
                 startingCell: this.Config["xls-starting-cell"] ?? 'A1'
             }
@@ -55,6 +61,8 @@ export class XlsContent extends CommonContent implements IContent {
 
     @Logger.LogFunction(Logger.Debug, true)
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('Xls: Params is not defined')
 
         const workbook = new ExcelJS.Workbook()
         Logger.Debug('XlsContent.Get: reading stream')
@@ -68,7 +76,7 @@ export class XlsContent extends CommonContent implements IContent {
             throw new HttpErrorInternalServerError(`Worksheet "${sheetName}" not found in workbook.`)
 
         const [startCol, startRow] = worksheet
-            .getCell(this.Params.startCell)
+            .getCell(this.Params.startingCell!)
             .address
             .match(/[A-Z]+|\d+/g)!
 
@@ -86,9 +94,9 @@ export class XlsContent extends CommonContent implements IContent {
                     let cellValue = sheetRow.getCell(colIndex + index).value
 
                     // Handle date parsing if enabled
-                    if (this.Params.parseDates && cellValue instanceof Date) {
+                    if (this.Params!.parseDates && cellValue instanceof Date) {
                         cellValue = new Intl.DateTimeFormat('en-US', { dateStyle: 'short' }).format(cellValue) // Adjust formatting as needed
-                    } else if (this.Params.parseDates && typeof cellValue === 'string') {
+                    } else if (this.Params!.parseDates && typeof cellValue === 'string') {
                         // Attempt to parse string as date if this.Params.parseDates is enabled
                         const _parsedDate = new Date(cellValue)
                         if (!isNaN(_parsedDate.getTime())) {
@@ -97,7 +105,7 @@ export class XlsContent extends CommonContent implements IContent {
                     }
 
                     _row[field] = cellValue === null
-                        ? this.Params.defaultValue
+                        ? this.Params!.default
                         : cellValue
 
                     return _row
@@ -112,6 +120,9 @@ export class XlsContent extends CommonContent implements IContent {
 
     @Logger.LogFunction(Logger.Debug, true)
     async Set(data: DataTable): Promise<Readable> {
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('Json: Params is not defined')
+
         const workbook = new ExcelJS.Workbook()
         await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
 
@@ -121,7 +132,7 @@ export class XlsContent extends CommonContent implements IContent {
         if (!worksheet)
             worksheet = workbook.addWorksheet(sheetName)
 
-        const [startCol, startRow] = worksheet.getCell(this.Params.startCell).address.match(/[A-Z]+|\d+/g)!
+        const [startCol, startRow] = worksheet.getCell(this.Params.startingCell!).address.match(/[A-Z]+|\d+/g)!
         const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
         // Set headers
@@ -139,13 +150,13 @@ export class XlsContent extends CommonContent implements IContent {
                 let _valueToSet: any = row[field]
 
                 // If raw data is specified, set directly; otherwise apply formatting or defaults
-                if (_valueToSet === null && this.Params.defaultValue !== undefined) {
-                    _valueToSet = this.Params.defaultValue // Use default value for empty cells
+                if (_valueToSet === null) {
+                    _valueToSet = this.Params!.default // Use default value for empty cells
                 }
 
                 // Handle date formatting if specified and "xls-parse-dates" is true
-                if (this.Params.parseDates && _valueToSet instanceof Date) {
-                    worksheet.getCell(_rowIdx, _colIdx).numFmt = this.Params.dateFormat // Apply date format
+                if (this.Params!.parseDates && _valueToSet instanceof Date) {
+                    worksheet.getCell(_rowIdx, _colIdx).numFmt = this.Params!.dateFormat as string // Apply date format
                 }
                 worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet     // Set other values directly
             })
@@ -153,6 +164,7 @@ export class XlsContent extends CommonContent implements IContent {
 
         const streamOut: Readable = new Readable()
         await workbook.xlsx.write(streamOut)
+        
         this.Content.UploadFile(this.EntityName, streamOut)
         return this.Content.ReadFile(this.EntityName)
     }
