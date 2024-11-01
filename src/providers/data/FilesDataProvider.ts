@@ -28,7 +28,6 @@ import { Convert } from "../../lib/Convert"
 import { AzureBlobStorage, TAzureBlobStorageConfig } from '../storage/AzureBlobStorage'
 import { FsStorage, TFsStorageConfig } from '../storage/FsStorage'
 import { FtpStorage, TFtpStorageConfig } from "../storage/FtpStorage"
-import { SmbStorage, TSmbStorageConfig } from "../storage/SmbStorage"
 // Content
 import { JsonContent, TJsonContentConfig } from "../content/JsonContent"
 import { CsvContent, TCsvContentConfig } from '../content/CsvContent'
@@ -38,8 +37,7 @@ import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
 export enum STORAGE {
     FILESYSTEM = "fs",
     AZURE_BLOB = "az-blob",
-    FTP = "ftp",
-    SMB = "smb"
+    FTP = "ftp"
 }
 
 export enum CONTENT {
@@ -48,7 +46,7 @@ export enum CONTENT {
     XLS = "xls"
 }
 
-export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig & TFtpStorageConfig & TSmbStorageConfig
+export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig & TFtpStorageConfig
 
 export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsContentConfig
 
@@ -89,8 +87,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     static readonly #NewStorageCaseMap: Record<STORAGE, Function> = {
         [STORAGE.FILESYSTEM]: (storageParams: TConfigSource) => new FsStorage(storageParams),
         [STORAGE.AZURE_BLOB]: (storageParams: TConfigSource) => new AzureBlobStorage(storageParams),
-        [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams),
-        [STORAGE.SMB]: (storageParams: TConfigSource) => new SmbStorage(storageParams)
+        [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

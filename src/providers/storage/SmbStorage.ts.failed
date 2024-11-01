@@ -5,6 +5,7 @@
 //
 import { Readable } from "node:stream"
 import Smb2 from "smb2"
+import path from "node:path"
 //
 import { CommonStorage } from "./CommonStorage"
 import { IStorage } from "../../types/IStorage"
@@ -19,7 +20,6 @@ export type TSmbStorageConfig = {
     "smb-domain"?: string          // SMB domain (optional)
     "smb-username": string         // SMB username
     "smb-password": string         // SMB password
-    "smb-path"?: string            // Path within the share to operate in
 }
 
 type TSmbStorageParams = Required<{
@@ -33,11 +33,12 @@ export class SmbStorage extends CommonStorage implements IStorage {
     // SMB
     #SmbClient: Smb2 | undefined
 
-    #GetFilePath(file: string): string {
+    @Logger.LogFunction()
+    GetFilePath(file: string): string {
         if (!this.Params)
             throw new HttpErrorInternalServerError('SmbStorage: No params defined')
 
-        return `${this.Params.path}/${file}`.replace(/\/+/g, "/")  // Ensure correct path format
+        return path.join(this.Params.share, file).replace(/\\/g, "/")
     }
 
     @Logger.LogFunction()
@@ -45,9 +46,8 @@ export class SmbStorage extends CommonStorage implements IStorage {
         this.Params = <TSmbStorageParams>{
             share: this.ConfigStorage["smb-share"],
             domain: this.ConfigStorage["smb-domain"] ?? "",
-            username: this.ConfigStorage["smb-username"],
-            password: this.ConfigStorage["smb-password"],
-            path: this.ConfigStorage["smb-path"] ?? ""
+            username: this.ConfigStorage["smb-username"] ?? "",
+            password: this.ConfigStorage["smb-password"] ?? ""
         }
     }
 
@@ -57,9 +57,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
 
         try {
             // Initialize the SMB2 client
-            this.#SmbClient = new Smb2(
-                <Omit<TSmbStorageParams, "path">> this.Params
-            )
+            this.#SmbClient = new Smb2(this.Params as TSmbStorageParams)
         } catch (error: any) {
             Logger.Error(`Failed to connect to server '${this.Params.share}': ${error.message}`)
         }
@@ -82,7 +80,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
             throw new HttpErrorInternalServerError("SMB client not initialized")
         }
 
-        const filePath = this.#GetFilePath(file)
+        const filePath = this.GetFilePath(file)
 
         try {
             return await new Promise<boolean>((resolve, reject) => {
@@ -109,7 +107,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
             throw new HttpErrorNotFound(`File '${file}' does not exist on the SMB server`)
         }
 
-        const filePath = this.#GetFilePath(file)
+        const filePath = this.GetFilePath(file)
 
         return new Promise<Readable>((resolve, reject) => {
             this.#SmbClient!.readFile(filePath, (err: any, dataString) => {
@@ -128,7 +126,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
             throw new HttpErrorInternalServerError('SMB client not initialized')
         }
 
-        const filePath = this.#GetFilePath(file)
+        const filePath = this.GetFilePath(file)
 
         try {
             const contentString = await ReadableHelper.ToString(content)
@@ -160,9 +158,11 @@ export class SmbStorage extends CommonStorage implements IStorage {
         if (!this.Params)
             throw new HttpErrorInternalServerError('SmbStorage: No params defined')
 
+        const share = this.Params!.share.replace(/\\/g, "/")
+
         try {
             const files = await new Promise<string[]>((resolve, reject) => {
-                this.#SmbClient!.readdir(this.Params!.path, (err: any, files) => {
+                this.#SmbClient!.readdir(share, (err: any, files) => {
                     if (err) {
                         reject(new HttpErrorInternalServerError(`Failed to list files: ${err.message}`))
                         return

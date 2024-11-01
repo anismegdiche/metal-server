@@ -54,7 +54,6 @@
     "pg": "^8.13.0",
     "response-time": "^2.3.3",
     "safe-stable-stringify": "^2.5.0",
-    "smb2": "^0.2.11",
     "sql-in-mongodb": "^1.0.0",
     "sql2mongo": "^1.2.1",
     "swagger-ui-express": "^5.0.1",
