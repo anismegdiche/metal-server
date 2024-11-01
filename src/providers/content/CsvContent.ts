@@ -23,9 +23,15 @@ export type TCsvContentConfig = {
     "csv-skip-empty"?: boolean | "greedy"
 }
 
-type TCsvContentParams = Required<{
+type TCsvContentParams = Omit<Required<{
     [K in keyof TCsvContentConfig as K extends `csv-${infer U}` ? TConvertParams<U> : K]: TCsvContentConfig[K]
-}>
+}> & {
+    // WOrkaround to alaign with Csv.ParseConfig
+    quoteChar: string
+    skipEmptyLines: boolean | "greedy"
+},
+    'quote' | 'skipEmpty'
+>
 
 
 export class CsvContent extends CommonContent implements IContent {
@@ -56,7 +62,7 @@ export class CsvContent extends CommonContent implements IContent {
             await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
             ),
-            this.Params
+            this.Params as Csv.ParseConfig
         )
         return new DataTable(this.EntityName, parsedCsv?.data).FreeSqlAsync(sqlQuery)
     }

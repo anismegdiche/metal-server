@@ -62,7 +62,7 @@ describe('JsonContent', () => {
         })
 
         it('should return an empty DataTable if arrayPath is not found', async () => {
-            jsonContent.Params["json-path"] = 'nonexistent.path'
+            jsonContent.Params!.path = 'nonexistent.path'
 
             const dataTable = await jsonContent.Get()
 
