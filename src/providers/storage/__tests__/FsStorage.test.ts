@@ -1,18 +1,22 @@
 import { Readable } from "node:stream"
 import { TConfigSource } from '../../../types/TConfig'
-import { FsStorage } from '../FsStorage'
+import { FsStorage, TFsStorageConfig } from '../FsStorage'
 import Fs from 'fs'
 import { ReadableHelper } from "../../../lib/ReadableHelper"
+import typia from "typia"
+import { TJsonContentConfig } from "../../content/JsonContent"
 
 
 describe('FsStorage', () => {
     const sourceParams = <TConfigSource>{
         provider: "files",
         options: {
-            "json-path": 'data'
+            ...typia.random<TFsStorageConfig>(),
+            ...typia.random<TJsonContentConfig>()
         }
     }
     const fsStorage = new FsStorage(sourceParams)
+    fsStorage.Init()
 
     beforeEach(() => {
         //
@@ -69,7 +73,7 @@ describe('FsStorage', () => {
             await fsStorage.Write('test.txt', stream)
 
             expect(Fs.promises.writeFile).toHaveBeenCalledWith(
-                `${fsStorage.ConfigSource.database}test.txt`,
+                `${fsStorage.Params!.folder}test.txt`,
                 stream,
                 'utf8'
             )
