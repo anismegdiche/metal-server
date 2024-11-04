@@ -408,8 +408,8 @@ describe('Step', () => {
                     join: {
                         entity: "orders",
                         type: "left",
-                        leftField: "user_id",
-                        rightField: "id"
+                        "left-field": "user_id",
+                        "right-field": "id"
                     }
                 }
             ]

@@ -35,8 +35,8 @@ export type TStepJoin = {
     type: JOIN_TYPE
     schema?: string
     entity: string
-    leftField: string
-    rightField: string
+    "left-field": string
+    "right-field": string
 }
 
 export type TStepFields = string

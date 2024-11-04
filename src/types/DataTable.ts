@@ -291,44 +291,44 @@ export class DataTable {
 
 
     @Logger.LogFunction()
-    LeftJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
+    LeftJoin(dtB: this, leftField: string, rightField: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? [${this.Name}] 
             LEFT JOIN ? [${dtB.Name}] 
-            ON [${this.Name}].[${leftFieldName}] = [${dtB.Name}].[${rightFieldName}]`,
+            ON [${this.Name}].[${leftField}] = [${dtB.Name}].[${rightField}]`,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
     }
 
     @Logger.LogFunction()
-    InnerJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
+    InnerJoin(dtB: this, leftField: string, rightField: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? [${this.Name}] 
             INNER JOIN ? [${dtB.Name}] 
-            ON [${this.Name}].[${leftFieldName}] = [${dtB.Name}].[${rightFieldName}]`,
+            ON [${this.Name}].[${leftField}] = [${dtB.Name}].[${rightField}]`,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
     }
 
     @Logger.LogFunction()
-    RightJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
+    RightJoin(dtB: this, leftField: string, rightField: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? [${this.Name}] 
             RIGHT JOIN ? [${dtB.Name}] 
-            ON [${this.Name}].[${leftFieldName}] = [${dtB.Name}].[${rightFieldName}]`,
+            ON [${this.Name}].[${leftField}] = [${dtB.Name}].[${rightField}]`,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()
     }
 
     @Logger.LogFunction()
-    FullOuterJoin(dtB: this, leftFieldName: string, rightFieldName: string): this {
+    FullOuterJoin(dtB: this, leftField: string, rightField: string): this {
         this.Rows = alasql(`
             SELECT * FROM ? [${this.Name}] 
             FULL OUTER JOIN ? [${dtB.Name}] 
-            ON [${this.Name}].[${leftFieldName}] = [${dtB.Name}].[${rightFieldName}]`,
+            ON [${this.Name}].[${leftField}] = [${dtB.Name}].[${rightField}]`,
             [this.Rows, dtB.Rows]
         )
         return this.SetFields()

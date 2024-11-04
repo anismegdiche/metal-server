@@ -231,8 +231,8 @@ plans:
       - join:
           type: left
           entity: contact
-          leftField: partner_id
-          rightField: id
+          left-field: partner_id
+          right-field: id
       - fields: id, name, login
       # - debug:
       - sort:
