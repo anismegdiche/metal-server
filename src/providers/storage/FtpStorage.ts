@@ -8,6 +8,7 @@ import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { TConvertParams } from "../../lib/TypeHelper"
+import path from "node:path"
 
 export type TFtpStorageConfig = {
     "ftp-host": string                                            // FTP server host
@@ -26,7 +27,7 @@ type TFtpStorageParams = Required<{
 export class FtpStorage extends CommonStorage implements IStorage {
 
     Params: TFtpStorageParams | undefined
-    
+
     // FTP
     FtpClient: Ftp.Client = new Ftp.Client()
 
@@ -60,13 +61,14 @@ export class FtpStorage extends CommonStorage implements IStorage {
     }
 
     @Logger.LogFunction()
-    async IsExist(file: string): Promise<boolean> {        
+    async IsExist(file: string): Promise<boolean> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('FtpStorage: No params defined')
 
         try {
-            const path = `${this.Params.folder}${file}`
-            const fileInfo = await this.FtpClient.size(path)
+            const fileInfo = await this.FtpClient.size(
+                path.join(this.Params.folder, file)
+            )
             return fileInfo !== -1
         } catch {
             return false
@@ -78,13 +80,15 @@ export class FtpStorage extends CommonStorage implements IStorage {
         if (!this.Params)
             throw new HttpErrorInternalServerError('FtpStorage: No params defined')
 
-        const path = `${this.Params.folder}${file}`
         try {
             if (!(await this.IsExist(file)))
                 throw new HttpErrorNotFound(`File '${file}' does not exist on the FTP server`)
 
             const content = new PassThrough()
-            await this.FtpClient.downloadTo(content, path)
+            await this.FtpClient.downloadTo(
+                content,
+                path.join(this.Params.folder, file)
+            )
             return Readable.from(content)
         } catch (error: any) {
             throw (error instanceof HttpErrorNotFound)
@@ -98,13 +102,13 @@ export class FtpStorage extends CommonStorage implements IStorage {
         if (!this.Params)
             throw new HttpErrorInternalServerError('FtpStorage: No params defined')
 
-        const path = `${this.Params.folder}${file}`
+        const _path = path.join(this.Params.folder, file)
         try {
-            if (this.ConfigStorage["autocreate"] && !(await this.IsExist(file))) {
-                await this.FtpClient.uploadFrom(content, path)
-            } else {
-                await this.FtpClient.appendFrom(content, path)
-            }
+            if (this.ConfigStorage["autocreate"] && !(await this.IsExist(file)))
+                await this.FtpClient.uploadFrom(content, _path)
+            else
+                await this.FtpClient.appendFrom(content, _path)
+
         } catch (error: any) {
             throw (error instanceof HttpErrorNotFound)
                 ? error
@@ -116,7 +120,7 @@ export class FtpStorage extends CommonStorage implements IStorage {
     async List(): Promise<DataTable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('FtpStorage: No params defined')
-        
+
         try {
             const result = await this.FtpClient.list(this.Params.folder)
             const formattedResult = result

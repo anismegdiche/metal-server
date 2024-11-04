@@ -55,6 +55,7 @@ describe('FtpStorage', () => {
             expect(mockFtpClient.access).toHaveBeenCalledWith({
                 host: 'localhost',
                 user: 'user',
+                port: 21,
                 password: 'password',
                 secure: false
             })
@@ -62,7 +63,7 @@ describe('FtpStorage', () => {
 
         it('should throw HttpErrorInternalServerError on connection failure', async () => {
             mockFtpClient.access.mockRejectedValue(new Error('Connection failed'))
-            await expect(ftpStorage.Connect()).rejects.toThrow(HttpErrorInternalServerError)
+            expect(() => ftpStorage.Connect()).toThrow(HttpErrorInternalServerError)
         })
     })
 
@@ -83,7 +84,6 @@ describe('FtpStorage', () => {
     describe('Read', () => {
         it('should return a readable stream of the file content', async () => {
             jest.spyOn(ftpStorage, 'IsExist').mockResolvedValue(true)
-            const mockStream = Readable.from('file content')
 
             mockFtpClient.downloadTo.mockResolvedValue({} as Ftp.FTPResponse)
 
