@@ -99,7 +99,7 @@ export class Config {
             enum: _.keys(newConfig?.sources ?? [])
         }
 
-        const planNameConfig = {
+        const planConfig = {
             type: "string",
             // eslint-disable-next-line you-dont-need-lodash-underscore/keys
             enum: _.keys(newConfig?.plans ?? [])

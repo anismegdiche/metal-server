@@ -17,8 +17,8 @@ export class PlanResponse {
 
     //@Logger.LogFunction()
     static Reload(req: Request, res: Response) {
-        const { planName } = req.params
-        Plan.Reload(planName)
+        const { plan } = req.params
+        Plan.Reload(plan)
             .then((intRes: TInternalResponse<TJson>) => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }

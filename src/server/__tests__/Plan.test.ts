@@ -53,7 +53,7 @@ describe('Process', () => {
     it('should process valid TScheduleConfig and return a DataTable', async () => {
         // Arrange
         const scheduleConfig = {
-            planName: 'TestPlan',
+            plan: 'TestPlan',
             entity: 'TestEntity',
             cron: '* * * * *'
         }

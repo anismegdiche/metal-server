@@ -59,24 +59,24 @@ export class Plan {
 
     static async ProcessScheduleConfig(schemaRequest: TScheduleConfig, sqlQuery: string | undefined) {
         
-        const { planName, entity } = schemaRequest
+        const { plan, entity } = schemaRequest
 
-        if (planName === undefined) {
-            Logger.Error(`${Logger.Out} Plan.Execute: plan '${planName}' not found`)
+        if (plan === undefined) {
+            Logger.Error(`${Logger.Out} Plan.Execute: plan '${plan}' not found`)
             return new DataTable(entity)
         }
 
-        if (!Config.Has(`plans.${planName}.${entity}`)) {
-            Logger.Error(`${Logger.Out} Plan.Execute: entity '${entity}' not found in plan ${planName}`)
+        if (!Config.Has(`plans.${plan}.${entity}`)) {
+            Logger.Error(`${Logger.Out} Plan.Execute: entity '${entity}' not found in plan ${plan}`)
             return new DataTable(entity)
         }
 
-        const entitySteps: Array<StepCommand> = Config.Get(`plans.${planName}.${entity}`)
+        const entitySteps: Array<StepCommand> = Config.Get(`plans.${plan}.${entity}`)
        
-        Logger.Debug(`${Logger.In} Plan.Execute: ${planName}.${entity}: ${JsonHelper.Stringify(entitySteps)}`)
-        const currentDatatable = await Plan.ExecuteSteps(undefined, planName, entity, entitySteps)
+        Logger.Debug(`${Logger.In} Plan.Execute: ${plan}.${entity}: ${JsonHelper.Stringify(entitySteps)}`)
+        const currentDatatable = await Plan.ExecuteSteps(undefined, plan, entity, entitySteps)
         
-        Logger.Debug(`${Logger.Out} Plan.Execute: ${planName}.${entity}`)
+        Logger.Debug(`${Logger.Out} Plan.Execute: ${plan}.${entity}`)
         return await currentDatatable.FreeSqlAsync(sqlQuery)
     }
 
@@ -142,14 +142,14 @@ export class Plan {
     }
 
     @Logger.LogFunction()
-    static async Reload(planName: string): Promise<TInternalResponse<TJson>> {
+    static async Reload(plan: string): Promise<TInternalResponse<TJson>> {
         const configFileJson = await Config.Load()
 
         // check if plan exist
-        if (Config.Has(`plans.${planName}`) && _.has(configFileJson.plans, planName)) {
-            Config.Set(`plans.${planName}`, configFileJson.plans[planName])
+        if (Config.Has(`plans.${plan}`) && _.has(configFileJson.plans, plan)) {
+            Config.Set(`plans.${plan}`, configFileJson.plans[plan])
             return HttpResponse.Ok({
-                plan: planName,
+                plan: plan,
                 message: `Plan reloaded`
             })
         }

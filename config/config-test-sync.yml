@@ -36,7 +36,7 @@ schemas:
 schedules:
   start:
     cron: "@start"
-    planName: sync
+    plan: sync
     entity: members-up
 
 plans:

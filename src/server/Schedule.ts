@@ -17,7 +17,7 @@ import { HttpErrorNotFound } from "./HttpErrors"
 import { TJson } from "../types/TJson"
 
 export type TScheduleConfig = {
-    planName: string
+    plan: string
     entity: string
     cron: string
 }

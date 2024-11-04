@@ -114,13 +114,13 @@ export type TConfig = {
         }
     }
     plans?: {
-        [planName: string]: {
+        [plan: string]: {
             [entity: string]: Array<StepCommand>
         }
     }
     schedules?: {
         [scheduleName: string]: {
-            planName: string
+            plan: string
             entity: string
             cron: string & tags.Pattern<"(@(annually|yearly|monthly|weekly|daily|hourly|start))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|([\\d\\*]+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})">
         }

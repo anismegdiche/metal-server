@@ -554,7 +554,7 @@ paths:
         500:
           $ref: "#/components/responses/http500"
   
-  /plan/{planName}/reload:
+  /plan/{plan}/reload:
     post:
       summary: Reload plan
       description: Reload plan by name
@@ -564,7 +564,7 @@ paths:
         - bearerAuth: []
       parameters:
         - in: path
-          name: planName
+          name: plan
           schema:
             type: string
           required: true

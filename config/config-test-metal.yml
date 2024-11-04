@@ -23,7 +23,7 @@ schemas:
 # schedules:
 #   start:
 #     cron: "@start"
-#     planName: plan1
+#     plan: plan1
 #     entity: start
     
 plans:

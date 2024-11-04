@@ -132,7 +132,7 @@ schemas:
 # schedules:
 #   test:
 #     cron: "@start"
-#     planName: etl1
+#     plan: etl1
 #     entity: src
 
 # plans:
