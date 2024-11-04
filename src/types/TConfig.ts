@@ -98,7 +98,7 @@ export type TConfig = {
         cache?: TConfigSource
     }
     users?: {
-        [userName: string]: string | number
+        [user: string]: string | number
     }
     sources: {
         [source: string]: TConfigSource
@@ -107,7 +107,7 @@ export type TConfig = {
         [schema: string]: TConfigSchema
     }
     "ai-engines"?: {
-        [aiEngineName: string]: {
+        [aiEngine: string]: {
             engine: AI_ENGINE
             model: string
             options?: JSON
@@ -119,7 +119,7 @@ export type TConfig = {
         }
     }
     schedules?: {
-        [scheduleName: string]: {
+        [schedule: string]: {
             plan: string
             entity: string
             cron: string & tags.Pattern<"(@(annually|yearly|monthly|weekly|daily|hourly|start))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|([\\d\\*]+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})">
