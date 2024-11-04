@@ -22,7 +22,7 @@ describe('JsonContent', () => {
             const jsonContentEmptyOptions = new JsonContent({})
 
             await jsonContentEmptyOptions.Init(name, content)
-            expect(jsonContentEmptyOptions.Params).toEqual({ arrayPath: undefined })
+            expect(jsonContentEmptyOptions.Params).toEqual({ path: "" })
         })
 
         it('should initialize the content and config correctly', async () => {
