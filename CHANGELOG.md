@@ -7,6 +7,9 @@
 - Parameter `sourceName` changed to `source`
 - Parameter `entityName` changed to `entity`
 - Parameter `schemaName` changed to `schema`
+- Parameter `planName` changed to `plan`
+- Parameter `leftField` changed to `left-field`
+- Parameter `rightField` changed to `right-field`
 - Parameter `filterExpression` changed to `filter-expression`
 - Parameter `autoCreate` changed to `autocreate`
 - File Provider:
