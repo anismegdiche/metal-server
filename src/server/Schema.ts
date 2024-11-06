@@ -50,6 +50,46 @@ export class Schema {
         'source': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await sourceTypeExecuteParams.CrudFunction()
     }
 
+    static async #NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<void> {
+        const { schema, entity } = sourceTypeExecuteParams.schemaRequest
+        Logger.Warn(`${schema}: Entity '${entity}' not found`)
+        throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
+    }
+
+    static #MergeData(schemaResponse: TSchemaResponse, schemaResponseToMerge: TSchemaResponse | undefined): TSchemaResponse {
+        if (!schemaResponseToMerge)
+            return schemaResponse
+
+        const isSchemaResponseWithData = schemaResponse?.data?.Rows?.length > 0
+        const isSchemaResponseToMergeWithData = schemaResponse?.data?.Rows?.length > 0
+
+        // only schemaResponse got data
+        if (isSchemaResponseWithData && !isSchemaResponseToMergeWithData)
+            return schemaResponse
+
+        // only schemaResponseToMerge got data
+        if (!isSchemaResponseWithData && isSchemaResponseToMergeWithData)
+            return <TSchemaResponse>{
+                ...schemaResponseToMerge,
+                schema: schemaResponse.schema,
+                entity: schemaResponse.entity,
+                result: schemaResponseToMerge.result,
+                status: schemaResponseToMerge.status
+            }
+
+        // both got data
+        if (isSchemaResponseWithData && isSchemaResponseToMergeWithData)
+            return <TSchemaResponse>{
+                ...schemaResponse,
+                data: schemaResponse.data.AddRows(
+                    schemaResponseToMerge.data.Rows
+                )
+            }
+
+        // anything else
+        return schemaResponse
+    }
+
     @Logger.LogFunction()
     static async IsExists(schemaRequest: TSchemaRequest): Promise<void> {
 
@@ -118,47 +158,6 @@ export class Schema {
         Logger.Warn(`Nothing to do in the 'schemas' section`)
         return nothingToDoSchemaRoute
     }
-
-    static async #NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<void> {
-        const { schema, entity } = sourceTypeExecuteParams.schemaRequest
-        Logger.Warn(`${schema}: Entity '${entity}' not found`)
-        throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
-    }
-
-    static #MergeData(schemaResponse: TSchemaResponse, schemaResponseToMerge: TSchemaResponse | undefined): TSchemaResponse {
-        if (!schemaResponseToMerge)
-            return schemaResponse
-
-        const isSchemaResponseWithData = schemaResponse?.data?.Rows?.length > 0
-        const isSchemaResponseToMergeWithData = schemaResponse?.data?.Rows?.length > 0
-
-        // only schemaResponse got data
-        if (isSchemaResponseWithData && !isSchemaResponseToMergeWithData)
-            return schemaResponse
-
-        // only schemaResponseToMerge got data
-        if (!isSchemaResponseWithData && isSchemaResponseToMergeWithData)
-            return <TSchemaResponse>{
-                ...schemaResponseToMerge,
-                schema: schemaResponse.schema,
-                entity: schemaResponse.entity,
-                result: schemaResponseToMerge.result,
-                status: schemaResponseToMerge.status
-            }
-
-        // both got data
-        if (isSchemaResponseWithData && isSchemaResponseToMergeWithData)
-            return <TSchemaResponse>{
-                ...schemaResponse,
-                data: schemaResponse.data.AddRows(
-                    schemaResponseToMerge.data.Rows
-                )
-            }
-
-        // anything else
-        return schemaResponse
-    }
-
 
     @Logger.LogFunction()
     static async Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>> {

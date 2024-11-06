@@ -16,7 +16,6 @@ import { HTTP_STATUS_CODE } from "../lib/Const"
 
 export class SchemaResponse {
 
-    //@Logger.LogFunction()
     static Select(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
         Schema.Select(schemaRequest)
@@ -25,7 +24,6 @@ export class SchemaResponse {
                     throw new HttpErrorInternalServerError()
 
                 const _schemaResponse = intRes.Body
-
                 const _resSize = JsonHelper.Size(_schemaResponse)
                 //TODO: check how to remove casting
                 const _resLimit = Config.Flags.ResponseLimit as number
@@ -39,7 +37,6 @@ export class SchemaResponse {
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
-    //@Logger.LogFunction()
     static Delete(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
         Schema.Delete(schemaRequest)
@@ -51,7 +48,6 @@ export class SchemaResponse {
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
-    //@Logger.LogFunction()
     static Update(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
         Schema.Update(schemaRequest)
@@ -63,7 +59,6 @@ export class SchemaResponse {
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
-    //@Logger.LogFunction()
     static Insert(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
         Schema.Insert(schemaRequest)
@@ -75,7 +70,6 @@ export class SchemaResponse {
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
-    //@Logger.LogFunction()
     static ListEntities(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
         Schema.ListEntities(schemaRequest)
