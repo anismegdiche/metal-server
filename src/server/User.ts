@@ -87,7 +87,7 @@ export class User {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    static GetUserInfo(userToken: TUserToken): TInternalResponse<TUserTokenInfo> {
+    static async GetUserInfo(userToken: TUserToken): Promise<TInternalResponse<TUserTokenInfo>> {
         return HttpResponse.Ok(this.#DecodeToken(userToken))
     }
 

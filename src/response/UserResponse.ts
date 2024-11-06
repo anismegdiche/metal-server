@@ -8,7 +8,7 @@ import { Request, Response, NextFunction } from 'express'
 import { User } from '../server/User'
 import { ServerResponse } from '../response/ServerResponse'
 import { Convert } from '../lib/Convert'
-import { HttpErrorUnauthorized, HttpErrorForbidden } from "../server/HttpErrors"
+import { HttpErrorUnauthorized, HttpErrorForbidden, HttpError } from "../server/HttpErrors"
 import { TUserCredentials } from "../providers/ACAuthProvider"
 
 
@@ -20,34 +20,25 @@ export class UserResponse {
     }
 
     static async Authenticate(req: Request, res: Response): Promise<void> {
-        try {
-            const { username, password } = req.body
-            const intRes = await User.Authenticate(<TUserCredentials>{
-                username,
-                password
-            })
-            Convert.InternalResponseToResponse(res, intRes)
-        } catch (error: unknown) {
-            ServerResponse.ResponseError(res, error as Error)
-        }
+        const { username, password } = req.body
+        User.Authenticate(<TUserCredentials>{
+            username,
+            password
+        })
+            .then(intRes => Convert.InternalResponseToResponse(res, intRes))
+            .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
     static async LogOut(req: Request, res: Response): Promise<void> {
-        try {
-            const intRes = await User.LogOut(UserResponse.#GetRequestToken(req))
-            Convert.InternalResponseToResponse(res, intRes)
-        } catch (error: unknown) {
-            ServerResponse.ResponseError(res, error as Error)
-        }
+        User.LogOut(UserResponse.#GetRequestToken(req))
+            .then(intRes => Convert.InternalResponseToResponse(res, intRes))
+            .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
     static GetInfo(req: Request, res: Response): void {
-        try {
-            const intRes = User.GetUserInfo(UserResponse.#GetRequestToken(req))
-            Convert.InternalResponseToResponse(res, intRes)
-        } catch (error: unknown) {
-            ServerResponse.ResponseError(res, error as Error)
-        }
+        User.GetUserInfo(UserResponse.#GetRequestToken(req))
+            .then(intRes => Convert.InternalResponseToResponse(res, intRes))
+            .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
     static IsAuthenticated(req: Request, res: Response, next: NextFunction): void {
