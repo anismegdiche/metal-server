@@ -13,7 +13,6 @@ import { TJson } from '../types/TJson'
 import { Logger, DefaultLevel } from '../utils/Logger'
 import { Schedule } from './Schedule'
 import { Cache } from '../server/Cache'
-import { User } from './User'
 import { Source } from './Source'
 import { AiEngine } from './AiEngine'
 import { Convert } from '../lib/Convert'
@@ -22,6 +21,7 @@ import { LogLevelDesc } from "loglevel"
 import { TConfig } from "../types/TConfig"
 import { TypeHelper } from "../lib/TypeHelper"
 import { HttpErrorBadRequest } from "./HttpErrors"
+import { AuthProvider } from "../providers/AuthProvider"
 
 export class Config {
 
@@ -48,6 +48,7 @@ export class Config {
 
     static Flags: TJson = {
         EnableCache: false,               // Enable/disable cache
+        // @deprecated: to remove
         EnableAuthentication: false,      // Enable/disable authentication
         EnableResponseChunk: false,       // v0.3, Enable/disable response chunking
         ResponseLimit: 10 * 1024 * 1024   // v0.3, Response body size limit
@@ -60,23 +61,13 @@ export class Config {
 
         await Config.Validate(await Config.Load())
 
-        const verbosity = Config.Get<LogLevelDesc>("server.verbosity") ?? DefaultLevel
+        this.InitLogging()
+        this.InitAuthentication()
+        await this.InitCache()
+        this.InitResponse()
 
-        Logger.SetLevel(verbosity)
-        // set flags
-        Config.Flags.EnableAuthentication = Config.Has('server.authentication')
-        Config.Flags.EnableCache = Config.Has('server.cache')
-        Config.Flags.ResponseLimit = Convert.HumainSizeToBytes(
-            Config.Get("server.response-limit") ?? Config.DEFAULTS["server.response-limit"]
-        )
-        Config.Flags.EnableResponseChunk = Config.Get<boolean>('server.response-chunk')
 
-        // eslint-disable-next-line no-unused-expressions, @typescript-eslint/no-unused-expressions
-        Config.Flags.EnableAuthentication && User.LoadUsers()
-        // add response-limit
-        Logger.Debug(`Server Response Limit set to ${Config.Flags.ResponseLimit}`)
         /* eslint-disable @typescript-eslint/no-unused-expressions, no-unused-expressions */
-        Config.Flags.EnableCache && await Cache.Connect()
         Config.Has('sources') && await Source.ConnectAll()
         Config.Has('ai-engines') && await AiEngine.Init()
         Config.Has('ai-engines') && await AiEngine.CreateAll()
@@ -132,6 +123,37 @@ export class Config {
     @Logger.LogFunction()
     static Set<T>(path: string, value: T): void {
         _.set(Config.Configuration, path, value)
+    }
+
+    @Logger.LogFunction()
+    static InitLogging(): void {
+        const verbosity = Config.Get<LogLevelDesc>("server.verbosity") ?? DefaultLevel
+        Logger.SetLevel(verbosity)
+    }
+
+    @Logger.LogFunction()
+    static InitAuthentication(): void {
+        Config.Flags.EnableAuthentication = Config.Has('server.authentication')
+        AuthProvider.SetCurrent(Config.Get<string>('server.authentication'))
+        if (Config.Flags.EnableAuthentication) {
+            AuthProvider.Provider.Init()
+        }
+    }
+
+    @Logger.LogFunction()
+    static async InitCache(): Promise<void> {
+        Config.Flags.EnableCache = Config.Has('server.cache')
+        // eslint-disable-next-line no-unused-expressions, @typescript-eslint/no-unused-expressions
+        Config.Flags.EnableCache && await Cache.Connect()
+    }
+
+    @Logger.LogFunction()
+    static InitResponse(): void {
+        Config.Flags.ResponseLimit = Convert.HumainSizeToBytes(
+            Config.Get("server.response-limit") ?? Config.DEFAULTS["server.response-limit"]
+        )
+        Config.Flags.EnableResponseChunk = Config.Get<boolean>('server.response-chunk')
+        Logger.Debug(`Server Response Limit set to ${Config.Flags.ResponseLimit}`)
     }
 }
 

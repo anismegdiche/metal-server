@@ -27,6 +27,7 @@ import { HttpErrorNotImplemented } from "./HttpErrors"
 import { Swagger } from '../utils/Swagger'
 import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"
+import { AuthProvider } from "../providers/AuthProvider"
 
 export class Server {
 
@@ -37,6 +38,10 @@ export class Server {
 
     @Logger.LogFunction()
     static async Init(): Promise<void> {
+        // Load Core
+        Server.CoreLoad()
+        
+        // Init config
         await Config.Init()
 
         Server.Port = Config.Get<number>("server.port") ?? Config.DEFAULTS["server.port"]
@@ -162,18 +167,22 @@ export class Server {
 
     @Logger.LogFunction()
     static StartWatcher(): void {
-        
+
         // Config
         chokidar.watch(Config.ConfigFilePath).on('change', () => {
             Logger.Info('Config file changed. Reloading...')
             Server.Reload()
         })
-        
+
         // // OpenApi
         // chokidar.watch(Swagger.OpenApiFilePath).on('change', () => {
         //     Logger.Info('OpenAPI specification changed. Reloading...')
         //     Swagger.Load()
         //     Swagger.Validator(Server.App)
         // })
+    }
+
+    static CoreLoad() {
+        AuthProvider.RegisterProviders()
     }
 }

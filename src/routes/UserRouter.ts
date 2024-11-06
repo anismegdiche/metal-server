@@ -12,12 +12,12 @@ export const UserRouter = Router()
 
 UserRouter.route('/login')
     .all(UserResponse.IsNotAuthenticated)
-    .post(UserResponse.LogIn)
+    .post(UserResponse.Authenticate)
 
 UserRouter.route('/logout')
-    .all(UserResponse.IsNotAuthenticated)
+    .all(UserResponse.IsAuthenticated)
     .post(UserResponse.LogOut)
 
 UserRouter.route('/info')
-    .all(UserResponse.IsNotAuthenticated)
+    .all(UserResponse.IsAuthenticated)
     .get(UserResponse.GetInfo)

@@ -1,28 +1,35 @@
 import { expect, describe, beforeAll, it } from '@jest/globals'
 
-import { TUserToken, User } from '../User'
+import { TUserToken, TUserTokenInfo, User } from '../User'
 import { Config } from '../Config'
-import { HttpErrorBadRequest, HttpErrorUnauthorized } from "../HttpErrors"
+import { HttpErrorUnauthorized } from "../HttpErrors"
 import { HTTP_STATUS_CODE } from "../../lib/Const"
 import { TConfig } from "../../types/TConfig"
 import typia from "typia"
+import { AUTH_PROVIDER, AuthProvider } from "../../providers/AuthProvider"
+import { Server } from "../Server"
+import _ from "lodash"
 
 describe('User', () => {
     beforeAll(() => {
+        Server.CoreLoad()
         // Set up test data
         Config.Configuration = typia.random<TConfig>()
-        Config.Flags.EnableAuthentication = true
+        Config.Configuration.server = {
+            ...Config.Configuration.server,
+            authentication: AUTH_PROVIDER.BASIC
+        }
+        Config.Flags.EnableAuthentication = AUTH_PROVIDER.BASIC
         Config.Configuration.users = {
             alice: 123_456_789,
             bob: 'password2'
         }
-        User.LoadUsers()
+        Config.InitAuthentication()
     })
 
     describe('LoadUsers', () => {
         it('should convert password to string', () => {
-            User.LoadUsers()
-            expect(User.Users).toEqual({
+            expect(AuthProvider.Provider.GetUsers()).toEqual({
                 alice: '123456789',
                 bob: 'password2'
             })
@@ -31,8 +38,8 @@ describe('User', () => {
 
 
     describe('LogIn', () => {
-        it('should return a token for a valid username and password', () => {
-            const _intLogIn = User.LogIn({
+        it('should return a token for a valid username and password', async () => {
+            const _intLogIn = await User.Authenticate({
                 username: 'alice',
                 // file deepcode ignore NoHardcodedPasswords/test: testing
                 password: '123456789'
@@ -40,9 +47,9 @@ describe('User', () => {
             expect(_intLogIn.Body?.token).toBeDefined()
         })
 
-        it('should throw HttpUnauthorized for invalid username', () => {
+        it('should throw HttpUnauthorized for invalid username', async () => {
             try {
-                User.LogIn({
+                await User.Authenticate({
                     username: 'eve',
                     password: 'password'
                 })
@@ -51,9 +58,9 @@ describe('User', () => {
             }
         })
 
-        it('should throw HttpUnauthorized for an invalid password', () => {
+        it('should throw HttpUnauthorized for an invalid password', async () => {
             try {
-                User.LogIn({
+                await User.Authenticate({
                     username: 'alice',
                     password: 'wrongpassword'
                 })
@@ -64,55 +71,47 @@ describe('User', () => {
     })
 
     describe('GetInfo', () => {
-        it('should return username for a valid token', () => {
-            const _IRLogIn = User.LogIn({
+        it('should return user for a valid token', async () => {
+            const respLogin = await User.Authenticate({
                 username: 'alice',
                 password: '123456789'
             })
-            const _IRGetInfo = User.GetInfo(<TUserToken>_IRLogIn.Body?.token)
-            expect(_IRGetInfo).toEqual({
+            const _IRGetInfo = User.GetUserInfo(<TUserToken>respLogin.Body?.token)
+            // eslint-disable-next-line you-dont-need-lodash-underscore/omit
+            expect(_.omit(_IRGetInfo, 'Body.exp', 'Body.iat')).toEqual({
                 StatusCode: 200,
-                Body: {
-                    username: 'alice'
+                Body: <TUserTokenInfo>{
+                    user: 'alice'
                 }
             })
         })
 
         it('should return nothing for an invalid token', () => {
             try {
-                User.GetInfo(undefined)
+                User.GetUserInfo('invalidtoken')
             } catch (error) {
-                expect(error).toBeInstanceOf(HttpErrorBadRequest)
+                expect(error).toBeInstanceOf(HttpErrorUnauthorized)
             }
         })
     })
 
     describe('LogOut', () => {
-        it('should remove a user from the logged-in users list', () => {
-            const _intLogIn = User.LogIn({
+        it('should remove a user from the logged-in users list', async () => {
+            const intrespLogIn = await User.Authenticate({
                 username: 'alice',
                 password: '123456789'
             })
-            const _intLogOut = User.LogOut(<TUserToken>_intLogIn.Body?.token)
-            expect(_intLogOut).toEqual({
-                StatusCode: HTTP_STATUS_CODE.NO_CONTENT,
-                Body: undefined
+            const intrespLogOut = await User.LogOut(<TUserToken>intrespLogIn.Body?.token)
+            expect(intrespLogOut).toEqual({
+                StatusCode: HTTP_STATUS_CODE.NO_CONTENT
             })
         })
 
-        it('should do nothing if the token is undefined', () => {
+        it('should do nothing if the token is invalid', async () => {
             try {
-                User.LogOut(undefined)
+                await User.LogOut('invalidtoken')
             } catch (error) {
-                expect(error).toBeInstanceOf(HttpErrorBadRequest)
-            }
-        })
-
-        it('should do nothing if the token is invalid', () => {
-            try {
-                User.LogOut('invalidtoken')
-            } catch (error) {
-                expect(error).toBeInstanceOf(HttpErrorBadRequest)
+                expect(error).toBeInstanceOf(HttpErrorUnauthorized)
             }
         })
     })
