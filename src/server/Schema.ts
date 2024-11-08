@@ -10,13 +10,15 @@ import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest'
 import { TSchemaResponse } from '../types/TSchemaResponse'
-import { HttpErrorBadRequest, HttpErrorNotFound } from './HttpErrors'
+import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorNotFound } from './HttpErrors'
 import { TypeHelper } from '../lib/TypeHelper'
 import { StringHelper } from '../lib/StringHelper'
 import { TConfigSchema, TConfigSchemaEntity } from "../types/TConfig"
 import typia from "typia"
 import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"
+import { PERMISSION, TUserTokenInfo } from "./User"
+import { Roles } from "./Roles"
 
 export type TSchemaRoute = {
     type: "source" | "nothing",
@@ -160,18 +162,23 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>> {
+    static async Select(schemaRequest: TSchemaRequestSelect, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
+
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schema, entity } = schemaRequest
         const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+
+        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.READ))
+            throw new HttpErrorForbidden('Permission denied')
+
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
         // Anonymizer
         let isAnonymize = false
         let fieldsToAnonymize: string[] = []
-        if (schemaConfig.anonymize) {
+        if (schemaConfig?.anonymize) {
             isAnonymize = true
             fieldsToAnonymize = StringHelper.Split(schemaConfig.anonymize, ",")
         }
@@ -201,13 +208,17 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<TSchemaResponse>> {
+    static async Delete(schemaRequest: TSchemaRequestDelete, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestDelete>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schema, entity } = schemaRequest
         const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+
+        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.DELETE))
+            throw new HttpErrorForbidden('Permission denied')
+
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
@@ -225,13 +236,17 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<TSchemaResponse>> {
+    static async Update(schemaRequest: TSchemaRequestUpdate, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestUpdate>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schema, entity } = schemaRequest
         const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+
+        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.UPDATE))
+            throw new HttpErrorForbidden('Permission denied')
+
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
@@ -249,13 +264,17 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<TSchemaResponse>> {
+    static async Insert(schemaRequest: TSchemaRequestInsert, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestInsert>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schema, entity } = schemaRequest
         const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+
+        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.CREATE))
+            throw new HttpErrorForbidden('Permission denied')
+
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
@@ -273,8 +292,13 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    static async ListEntities(schemaRequest: TSchemaRequest, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
         const { schema } = schemaRequest
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+
+        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.LIST))
+            throw new HttpErrorForbidden('Permission denied')
+
         const entitiesSources = Schema.GetEntitiesSources(schema)
 
         let schemaResponse = {} as TSchemaResponse
@@ -291,7 +315,7 @@ export class Schema {
             if (TypeHelper.IsSchemaResponseData(schemaResponse))
                 schemaResponse.data.DeleteRows(`name = '${entity}'`)
 
-            const _internalResponse = await Source.Sources[_source].ListEntities(schemaRequest)            
+            const _internalResponse = await Source.Sources[_source].ListEntities(schemaRequest)
 
             Schema.#MergeData(schemaResponse, <TSchemaResponse>_internalResponse.Body)
         }

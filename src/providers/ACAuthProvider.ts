@@ -3,6 +3,8 @@
 //
 //
 
+import { TUserTokenInfo } from "../server/User"
+
 //
 export type TUserCredentials = {
     username: string
@@ -13,7 +15,6 @@ export type TUserCredentials = {
 export abstract class ACAuthProvider {
     abstract Init(): void
     abstract GetUsers(): any
-    abstract IsUserExist(username: string): boolean
-    abstract Authenticate(userCredentials: TUserCredentials): Promise<void>
+    abstract Authenticate(userCredentials: TUserCredentials): Promise<TUserTokenInfo>
     abstract LogOut(username: string): Promise<void>
 }

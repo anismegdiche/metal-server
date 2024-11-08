@@ -8,9 +8,7 @@ import { Logger } from "../utils/Logger"
 import { SQLParser } from 'sql-in-mongodb'
 
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-//XXX const { getMongoQuery } = require("sql2mongo")
-
+//
 export class MongoDbHelper {
 
     static readonly WhereParser = new SQLParser()

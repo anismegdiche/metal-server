@@ -15,10 +15,10 @@ import { TJson } from "../types/TJson"
 
 export class PlanResponse {
 
-    //@Logger.LogFunction()
     static Reload(req: Request, res: Response) {
+        ServerResponse.CheckRequest(req)
         const { plan } = req.params
-        Plan.Reload(plan)
+        Plan.Reload(plan,req.__METAL_CURRENT_USER)
             .then((intRes: TInternalResponse<TJson>) => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }

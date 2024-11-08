@@ -21,31 +21,31 @@ import { HttpError } from '../server/HttpErrors'
 
 
 export class CacheResponse {
-    //@Logger.LogFunction()
     static View(req: Request, res: Response): void {
-        Cache.View()
+        ServerResponse.CheckRequest(req)
+        Cache.View(req.__METAL_CURRENT_USER)
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
 
     }
 
-    //@Logger.LogFunction()
     static Clean(req: Request, res: Response): void {
-        Cache.Clean()
+        ServerResponse.CheckRequest(req)
+        Cache.Clean(req.__METAL_CURRENT_USER)
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
-    //@Logger.LogFunction()
     static Purge(req: Request, res: Response): void {
-        Cache.Purge()
+        ServerResponse.CheckRequest(req)
+        Cache.Purge(req.__METAL_CURRENT_USER)
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
     // TODO: refactor to be compliant with response/class architecture logic
-    //@Logger.LogFunction()
     static Get(req: Request, res: Response, next: NextFunction): void {
+        ServerResponse.CheckRequest(req)
         try {
             const schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)
             const { schema, entity } = schemaRequest

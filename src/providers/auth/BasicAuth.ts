@@ -3,49 +3,55 @@
 //
 //
 //
-import _ from "lodash"
 import Bcrypt from 'bcrypt'
 //
 import { Logger } from "../../utils/Logger"
 import { Config } from "../../server/Config"
 import { ACAuthProvider, TUserCredentials } from "../ACAuthProvider"
-import { HttpErrorUnauthorized } from "../../server/HttpErrors"
-
-
-//
-export type TUsersList = Record<string, string>
+import { HttpErrorInternalServerError, HttpErrorUnauthorized } from "../../server/HttpErrors"
+import { TUserTokenInfo } from "../../server/User"
+import { TConfigUsers } from "../../types/TConfig"
 
 
 //
 export class BasicAuthProvider extends ACAuthProvider {
 
     readonly #SALT_ROUNDS = 10
-    #Users: TUsersList = {}
-    
+    #Users: TConfigUsers = {}
+
     #HashPassword(password: string): string {
         return Bcrypt.hashSync(password, this.#SALT_ROUNDS)
     }
-  
+
     GetUsers() {
         return this.#Users
     }
 
     @Logger.LogFunction()
+
     Init(): void {
-        if (Config.Flags.EnableAuthentication)
-            this.#Users = _.mapValues(Config.Configuration.users, user => user.toString())
+        if (!Config.Configuration.users)
+            throw new HttpErrorInternalServerError("users configuration is not set")
+
+        this.#Users = Config.Configuration.users
     }
 
-    IsUserExist(username: string): boolean {
-        return _.has(this.#Users, username)
-    }
-
-    async Authenticate(userCredentials: TUserCredentials): Promise<void> {
+    async Authenticate(userCredentials: TUserCredentials): Promise<TUserTokenInfo> {
         const { username, password } = userCredentials
-        // Check if the user exists and the password is correct
-        const isUserExist = this.IsUserExist(username)
-        if (!isUserExist || !Bcrypt.compareSync(password, this.#HashPassword(this.#Users[username]))) {
+
+        const userInfo = this.#Users[username] ?? undefined
+
+        if (!userInfo) {
             throw new HttpErrorUnauthorized("Invalid username or password")
+        }
+
+        if (!Bcrypt.compareSync(password, this.#HashPassword(this.#Users[username].password.toString()))) {
+            throw new HttpErrorUnauthorized("Invalid username or password")
+        }
+
+        return <TUserTokenInfo>{
+            user: username,
+            roles: userInfo.roles
         }
     }
 
@@ -53,5 +59,4 @@ export class BasicAuthProvider extends ACAuthProvider {
     async LogOut(username: string): Promise<void> {
         Logger.Debug(`User ${username} logged out`)
     }
-  }
-  
+}

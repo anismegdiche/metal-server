@@ -23,11 +23,13 @@ import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
 import { Sandbox } from './Sandbox'
 import { JsonHelper } from '../lib/JsonHelper'
-import { HttpErrorNotImplemented } from "./HttpErrors"
+import { HttpErrorForbidden, HttpErrorNotImplemented } from "./HttpErrors"
 import { Swagger } from '../utils/Swagger'
 import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"
 import { AuthProvider } from "../providers/AuthProvider"
+import { Roles } from "./Roles"
+import { PERMISSION, TUserTokenInfo } from "./User"
 
 export class Server {
 
@@ -40,7 +42,7 @@ export class Server {
     static async Init(): Promise<void> {
         // Load Core
         Server.CoreLoad()
-        
+
         // Init config
         await Config.Init()
 
@@ -141,7 +143,10 @@ export class Server {
     }
 
     @Logger.LogFunction()
-    static async Reload(): Promise<TInternalResponse<TJson>> {
+    static async Reload(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+
         Schedule.StopAll()
         await Cache.Disconnect()
         await Source.DisconnectAll()
@@ -152,7 +157,10 @@ export class Server {
     }
 
     @Logger.LogFunction()
-    static async GetInfo(): Promise<TInternalResponse<TJson>> {
+    static async GetInfo(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+
         return HttpResponse.Ok({
             server: SERVER.NAME,
             version: SERVER.VERSION

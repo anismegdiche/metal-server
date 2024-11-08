@@ -3,15 +3,25 @@ server:
 #   port: 3000
   verbosity: debug
 #   timezone: UTC
-  # authentication:
+  authentication: basic
   cache:
     provider: memory
     database: cache
     options:
       autocreate: true
 
+roles:
+  admin: lacrud
+  jsonreader: r
+  lister: l
+  memlister: lr
+  modifier: cud
+
 users:
-  myapiuser: myStr@ngpa$$w0rd
+  myapiuser:
+    password: myStr@ngpa$$w0rd
+    # secret: 1234567890
+    roles: [lister,admin]
 
 sources:
   mem-data:
@@ -91,6 +101,7 @@ sources:
 schemas:
   mem:
     source: mem-data
+    # roles: [jsonreader, lister, memlister]
   xls:
     source: fs-xls
   csv:

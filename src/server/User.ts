@@ -7,7 +7,6 @@ import jwt, { JsonWebTokenError, Secret } from 'jsonwebtoken'
 import { randomBytes } from 'crypto'
 import typia from "typia"
 //
-import { Config } from './Config'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { Logger } from "../utils/Logger"
 import { HttpErrorBadRequest, HttpErrorUnauthorized } from "./HttpErrors"
@@ -23,9 +22,19 @@ export type TUserToken = string | undefined
 
 export type TUserTokenInfo = {
     user: string
-    role: undefined
+    roles?: string[]
 }
 
+export enum PERMISSION {
+    ADMIN = 'a',
+    CREATE = 'c',
+    READ = 'r',
+    UPDATE = 'u',
+    DELETE = 'd',
+    LIST = 'l'
+}
+
+export type TPermission = PERMISSION
 
 //
 export class User {
@@ -33,7 +42,6 @@ export class User {
     static readonly #JWT_EXPIRATION_TIME = 60 * 60          // 1 hour
     static readonly #JWT_SECRET_LENGTH = 64                 // Length of the JWT secret
     static readonly #Tokens: Map<string, Secret> = new Map()
-
 
     static #GenerateJwtSecret(): Secret {
         const bytes = randomBytes(this.#JWT_SECRET_LENGTH)
@@ -56,22 +64,20 @@ export class User {
     static async Authenticate(userCredentials: TUserCredentials): Promise<TInternalResponse<TJson>> {
         TypeHelper.Validate(typia.validateEquals<TUserCredentials>(userCredentials), new HttpErrorBadRequest())
 
-        const { username } = userCredentials
+        const userTokenInfo = await AuthProvider.Provider.Authenticate(userCredentials)
 
-        await AuthProvider.Provider.Authenticate(userCredentials)
+        // Generate a JWT Secret
+        const userSecret = this.#GenerateJwtSecret()
 
         // Generate a JWT token and return it
-        const userSecret = this.#GenerateJwtSecret()
         const userToken = jwt.sign(
-            <TUserTokenInfo>{
-                user: username,
-                role: undefined
-            },
+            userTokenInfo,
             userSecret,
             {
                 expiresIn: this.#JWT_EXPIRATION_TIME
             }
         )
+
         this.#Tokens.set(userToken, userSecret)
         return HttpResponse.Ok({ token: userToken })
     }
@@ -92,11 +98,10 @@ export class User {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    static IsAuthenticated(userToken: TUserToken) {
+    static IsAuthenticated(userToken: TUserToken): TUserTokenInfo | undefined {
         if (userToken === undefined)
-            return false
+            return undefined
 
-        return !Config.Flags.EnableAuthentication ||
-            Boolean(this.#DecodeToken(userToken))
+        return this.#DecodeToken(userToken)
     }
 }

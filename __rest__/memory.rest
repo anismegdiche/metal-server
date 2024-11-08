@@ -13,21 +13,18 @@ Content-Type: application/json
 ### 
 
 
-# DONE
 # @name list
 GET http://localhost:3000/schema/mem
 authorization: Bearer {{token}}
 ### 
 
 
-# DONE
 # @name select
 GET http://localhost:3000/schema/mem/users
 authorization: Bearer {{token}}
 ###
 
 
-# DONE
 # @name insert
 POST http://localhost:3000/schema/mem/users
 authorization: Bearer {{token}}
@@ -50,7 +47,6 @@ Content-Type: application/json
 ###
 
 
-# DONE
 # @name get-cache
 GET http://localhost:3000/schema/mem/users
     ?cache=3600
@@ -58,7 +54,6 @@ authorization: Bearer {{token}}
 ###
 
 
-# DONE
 # @name update
 PATCH http://localhost:3000/schema/mem/users
 authorization: Bearer {{token}}
@@ -73,7 +68,6 @@ Content-Type: application/json
 ###
 
 
-# DONE
 # @name delete
 DELETE http://localhost:3000/schema/mem/users
 authorization: Bearer {{token}}

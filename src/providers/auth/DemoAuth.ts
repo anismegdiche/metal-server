@@ -7,7 +7,8 @@ import typia from "typia"
 //
 import { Logger } from "../../utils/Logger"
 import { ACAuthProvider, TUserCredentials } from "../ACAuthProvider"
-import { TUsersList } from "./BasicAuth"
+import { TUserTokenInfo } from "../../server/User"
+import { TConfigUsers } from "../../types/TConfig"
 
 
 //
@@ -20,17 +21,13 @@ export class DemoAuthProvider extends ACAuthProvider {
 
     // eslint-disable-next-line class-methods-use-this
     GetUsers() {
-        return typia.random<TUsersList>()
+        return typia.random<TConfigUsers>()
     }
 
     // eslint-disable-next-line class-methods-use-this, unused-imports/no-unused-vars
-    IsUserExist(username: string): boolean {
-        return true
-    }
-
-    // eslint-disable-next-line class-methods-use-this, unused-imports/no-unused-vars
-    async Authenticate(userCredentials: TUserCredentials): Promise<void> {
+    async Authenticate(userCredentials: TUserCredentials): Promise<TUserTokenInfo> {
         Logger.Debug("DemoAuthProvider.Authenticate")
+        return typia.random<TUserTokenInfo>()
     }
 
     // eslint-disable-next-line class-methods-use-this, unused-imports/no-unused-vars

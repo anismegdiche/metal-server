@@ -12,6 +12,33 @@ import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TSte
 import { STEP } from "../server/Step"
 import { TJson } from "./TJson"
 import { AUTH_PROVIDER } from "../providers/AuthProvider"
+import { TPermission } from "../server/User"
+
+
+// roles.*
+export type TConfigRole = `${TPermission}`
+    | `${TPermission}${TPermission}`
+    | `${TPermission}${TPermission}${TPermission}`
+    | `${TPermission}${TPermission}${TPermission}${TPermission}`
+    | `${TPermission}${TPermission}${TPermission}${TPermission}${TPermission}`
+    | `${TPermission}${TPermission}${TPermission}${TPermission}${TPermission}${TPermission}`
+
+// roles
+export type TConfigRoles = {
+    [role: string]: TConfigRole
+}
+
+// users.*
+export type TConfigUser = {
+    password: string | number
+    secret?: string
+    roles?: string[]
+}
+
+// users
+export type TConfigUsers = {
+    [user: string]: TConfigUser
+}
 
 // sources.*
 export type TConfigSource = {
@@ -33,21 +60,23 @@ export type TConfigSchemaEntity = {
 }
 
 // schemas.*
-export type TConfigSchema = {
+export type TConfigSchema = ({
     source: string
     entities?: {
         [entity: string]: TConfigSchemaEntity
     }
-    anonymize?: string
 } | {
     source?: string
     entities: {
         [entity: string]: TConfigSchemaEntity
     }
-    anonymize?: string
+}) & {
+    anonymize?: string                                  // v0.3     fields to anonymize
+    roles?: string[]                                    // v0.3     roles that can access this schema
 }
 
 
+// plans..*
 // step commands friendly renaming
 
 export type Debug = { [STEP.DEBUG]: TStepDebug }
@@ -97,9 +126,8 @@ export type TConfig = {
         }
         cache?: TConfigSource
     }
-    users?: {
-        [user: string]: string | number
-    }
+    roles?: TConfigRoles
+    users?: TConfigUsers
     sources: {
         [source: string]: TConfigSource
     }

@@ -6,7 +6,7 @@
 import { Request, Response } from 'express'
 //
 import { HTTP_STATUS_CODE } from '../lib/Const'
-import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented } from '../server/HttpErrors'
+import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented, HttpErrorUnauthorized } from '../server/HttpErrors'
 import { Server } from '../server/Server'
 import { TJson } from "../types/TJson"
 import typia from "typia"
@@ -16,13 +16,15 @@ import { Convert } from "../lib/Convert"
 export class ServerResponse {
 
     static async GetInfo(req: Request, res: Response): Promise<void> {
-        await Server.GetInfo()
-        .then(intRes => Convert.InternalResponseToResponse(res, intRes))
-        .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
+        ServerResponse.CheckRequest(req)
+        await Server.GetInfo(req.__METAL_CURRENT_USER)
+            .then(intRes => Convert.InternalResponseToResponse(res, intRes))
+            .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
     static async Reload(req: Request, res: Response): Promise<void> {
-        await Server.Reload()
+        ServerResponse.CheckRequest(req)
+        await Server.Reload(req.__METAL_CURRENT_USER)
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
 
@@ -59,5 +61,10 @@ export class ServerResponse {
 
     static ResponseBadRequest(res: Response): void {
         ServerResponse.ResponseError(res, new HttpErrorBadRequest())
+    }
+
+    static CheckRequest(req: Request) {
+        if (!req.__METAL_CURRENT_USER)
+            throw new HttpErrorUnauthorized()
     }
 }

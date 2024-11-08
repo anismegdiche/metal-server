@@ -20,8 +20,10 @@ import { Helper } from "../lib/Helper"
 import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
 import { HttpResponse } from "./HttpResponse"
-import { HttpErrorNotFound } from "./HttpErrors"
+import { HttpErrorForbidden, HttpErrorNotFound } from "./HttpErrors"
 import { StepCommand } from '../types/TConfig'
+import { Roles } from "./Roles"
+import { PERMISSION, TUserTokenInfo } from "./User"
 
 
 export class Plan {
@@ -142,7 +144,10 @@ export class Plan {
     }
 
     @Logger.LogFunction()
-    static async Reload(plan: string): Promise<TInternalResponse<TJson>> {
+    static async Reload(plan: string,userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+
         const configFileJson = await Config.Load()
 
         // check if plan exist

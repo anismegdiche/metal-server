@@ -18,7 +18,9 @@ export class SchemaResponse {
 
     static Select(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
-        Schema.Select(schemaRequest)
+        ServerResponse.CheckRequest(req)
+        
+        Schema.Select(schemaRequest,req.__METAL_CURRENT_USER)
             .then(intRes => {
                 if (!intRes.Body)
                     throw new HttpErrorInternalServerError()
@@ -39,7 +41,9 @@ export class SchemaResponse {
 
     static Delete(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
-        Schema.Delete(schemaRequest)
+        ServerResponse.CheckRequest(req)
+        
+        Schema.Delete(schemaRequest,req.__METAL_CURRENT_USER)
             .then(intRes => {
                 if (intRes.StatusCode !== HTTP_STATUS_CODE.NO_CONTENT)
                     throw new HttpErrorInternalServerError()
@@ -50,7 +54,9 @@ export class SchemaResponse {
 
     static Update(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
-        Schema.Update(schemaRequest)
+        ServerResponse.CheckRequest(req)
+        
+        Schema.Update(schemaRequest,req.__METAL_CURRENT_USER)
             .then(intRes => {
                 if (intRes.StatusCode !== HTTP_STATUS_CODE.NO_CONTENT)
                     throw new HttpErrorInternalServerError()
@@ -61,7 +67,9 @@ export class SchemaResponse {
 
     static Insert(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
-        Schema.Insert(schemaRequest)
+        ServerResponse.CheckRequest(req)
+        
+        Schema.Insert(schemaRequest,req.__METAL_CURRENT_USER)
             .then(intRes => {
                 if (intRes.StatusCode !== HTTP_STATUS_CODE.CREATED)
                     throw new HttpErrorInternalServerError()
@@ -72,7 +80,9 @@ export class SchemaResponse {
 
     static ListEntities(req: Request, res: Response): void {
         const schemaRequest = Convert.RequestToSchemaRequest(req)
-        Schema.ListEntities(schemaRequest)
+        ServerResponse.CheckRequest(req)
+        
+        Schema.ListEntities(schemaRequest,req.__METAL_CURRENT_USER)
             .then(intRes => {
                 if (!intRes.Body)
                     throw new HttpErrorInternalServerError()

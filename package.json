@@ -10,7 +10,7 @@
   "main": "./build/index.js",
   "scripts": {
     "build": "tsc --watch",
-    "dev": "nodemon --exec ts-node ./src/index.ts -i data/",
+    "dev": "nodemon ./build/index.js -i data/",
     "lint": "eslint --fix src",
     "test": "jest",
     "test-client": "jest --testMatch \"**/client/__tests__/**/*.js\"",

@@ -204,6 +204,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         500:
           $ref: "#/components/responses/http500"
 
@@ -228,6 +230,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         500:
           $ref: "#/components/responses/http500"
 
@@ -252,6 +256,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         500:
           $ref: "#/components/responses/http500"
 
@@ -283,6 +289,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         404:
           $ref: "#/components/responses/http404"
         500:
@@ -346,6 +354,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         404:
           $ref: "#/components/responses/http404"
         500:
@@ -381,6 +391,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         404:
           $ref: "#/components/responses/http404"
         500:
@@ -430,6 +442,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         404:
           $ref: "#/components/responses/http404"
         500:
@@ -475,6 +489,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         404:
           $ref: "#/components/responses/http404"
         500:
@@ -501,6 +517,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         404:
           $ref: "#/components/responses/http404"
         500:
@@ -527,6 +545,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         500:
           $ref: "#/components/responses/http500"
      
@@ -551,6 +571,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         500:
           $ref: "#/components/responses/http500"
   
@@ -582,6 +604,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         404:
           $ref: "#/components/responses/http404"
         500:
@@ -616,6 +640,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         404:
           $ref: "#/components/responses/http404"
         500:
@@ -649,6 +675,8 @@ paths:
           $ref: "#/components/responses/http400"
         401:
           $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
         404:
           $ref: "#/components/responses/http404"
         500:

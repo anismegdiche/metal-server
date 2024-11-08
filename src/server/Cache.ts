@@ -17,7 +17,9 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
 import { HttpResponse } from "./HttpResponse"
 import { TJson } from "../types/TJson"
-import { HttpErrorInternalServerError } from "./HttpErrors"
+import { HttpErrorForbidden, HttpErrorInternalServerError } from "./HttpErrors"
+import { Roles } from "./Roles"
+import { PERMISSION, TUserTokenInfo } from "./User"
 
 
 export class Cache {
@@ -194,19 +196,28 @@ export class Cache {
     }
 
     @Logger.LogFunction()
-    static async View(): Promise<TInternalResponse<TJson>> {
+    static async View(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+
         return await Cache.CacheSource.Select(Cache.#CacheSchemaRequest)
     }
 
     @Logger.LogFunction()
-    static async Purge(): Promise<TInternalResponse<TJson>> {
+    static async Purge(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+
         await Cache.CacheSource.Delete(Cache.#CacheSchemaRequest)
         Logger.Debug(`${Logger.Out} Cache.Purge`)
         return HttpResponse.Ok({ message: 'Cache purged' })
     }
 
     @Logger.LogFunction()
-    static async Clean(): Promise<TInternalResponse<TJson>> {
+    static async Clean(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+        
         const _expireDate = new Date().getTime()
         Logger.Debug(`Cache.Clean ${_expireDate}`)
         await Cache.CacheSource.Delete(<TSchemaRequest>{

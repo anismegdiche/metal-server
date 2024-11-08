@@ -13,8 +13,10 @@ import { Config } from './Config'
 import { Plan } from './Plan'
 import { JsonHelper } from '../lib/JsonHelper'
 import { HttpResponse } from "./HttpResponse"
-import { HttpErrorNotFound } from "./HttpErrors"
+import { HttpErrorForbidden, HttpErrorNotFound } from "./HttpErrors"
 import { TJson } from "../types/TJson"
+import { Roles } from "./Roles"
+import { PERMISSION, TUserTokenInfo } from "./User"
 
 export type TScheduleConfig = {
     plan: string
@@ -63,7 +65,10 @@ export class Schedule {
     }
 
     @Logger.LogFunction()
-    static Start(jobName: string): TInternalResponse<TJson> {
+    static Start(jobName: string, userToken: TUserTokenInfo | undefined = undefined): TInternalResponse<TJson> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+
         const jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (jobKey) {
             this.Jobs[Number(jobKey)].cronJob.start()
@@ -73,13 +78,16 @@ export class Schedule {
     }
 
     @Logger.LogFunction()
-    static Stop(jobName: string): TInternalResponse<TJson> {
+    static Stop(jobName: string, userToken: TUserTokenInfo | undefined = undefined): TInternalResponse<TJson> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+
         const jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (jobKey) {
             const _jobKey = parseInt(jobKey, 10)
             this.Jobs[_jobKey].cronJob.stop()
             return HttpResponse.Ok({ message: `Job '${jobName}' stopped` })
-        }        
+        }
         throw new HttpErrorNotFound(`Job '${jobName}' not found`)
     }
 

@@ -22,6 +22,7 @@ import { TConfig } from "../types/TConfig"
 import { TypeHelper } from "../lib/TypeHelper"
 import { HttpErrorBadRequest } from "./HttpErrors"
 import { AuthProvider } from "../providers/AuthProvider"
+import { Roles } from "./Roles"
 
 export class Config {
 
@@ -137,6 +138,7 @@ export class Config {
         AuthProvider.SetCurrent(Config.Get<string>('server.authentication'))
         if (Config.Flags.EnableAuthentication) {
             AuthProvider.Provider.Init()
+            Roles.Init()
         }
     }
 

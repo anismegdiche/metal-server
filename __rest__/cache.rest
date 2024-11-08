@@ -13,11 +13,10 @@ Content-Type: application/json
 ###
 
 
-# FIX: datatable has uppercase  letters in Fields, Rows & Meta
 # @name add-some-data
 GET http://localhost:3000/schema/mflix/users
     ?filter={"country":"France","name":"John"}
-    &cache="100"
+    &cache=100
 authorization: Bearer {{token}}
 Content-Type: application/json
 ###
