@@ -4,6 +4,7 @@
 //
 //
 import Bcrypt from 'bcrypt'
+import _ from "lodash"
 //
 import { Logger } from "../../utils/Logger"
 import { Config } from "../../server/Config"
@@ -33,7 +34,11 @@ export class BasicAuthProvider extends ACAuthProvider {
         if (!Config.Configuration.users)
             throw new HttpErrorInternalServerError("users configuration is not set")
 
-        this.#Users = Config.Configuration.users
+        // convert password to string
+        this.#Users = _.mapValues(Config.Configuration.users, (user) => ({
+            ...user,
+            password: String(user.password)
+        }))
     }
 
     async Authenticate(userCredentials: TUserCredentials): Promise<TUserTokenInfo> {
