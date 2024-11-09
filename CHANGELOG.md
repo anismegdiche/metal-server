@@ -39,11 +39,13 @@
 - Schema: List entities.
 - File Provider: FTP.
 - File Content: XLSX.
+- Role Based Access Control.
 
 ### Enhancements
 - Updated packages.
 - Updated Config file validation.
 - Updated Plan sync function usage.
+- Enhanced Authentication.
 - Enhanced Logging feature.
 - Enhanced MongoDb filter expression.
 - Enhanced Tessract.js Engine.
