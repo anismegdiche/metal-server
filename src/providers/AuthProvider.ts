@@ -2,19 +2,22 @@
 //
 //
 //
-
-import { HttpErrorNotFound } from "../server/HttpErrors";
+//
+import { HttpErrorNotFound } from "../server/HttpErrors"
 import { Factory } from "../utils/Factory"
-import { ACAuthProvider } from "./ACAuthProvider";
+import { ACAuthProvider } from "./ACAuthProvider"
 import { BasicAuthProvider } from "./auth/BasicAuth"
 import { DemoAuthProvider } from "./auth/DemoAuth"
 
 
+//
 export enum AUTH_PROVIDER {
     BASIC = "basic",
     DEMO = "demo"
 }
 
+
+//
 export class AuthProvider {
 
     static readonly #AuthFactory = new Factory<ACAuthProvider>()
@@ -24,7 +27,7 @@ export class AuthProvider {
         if (AuthProvider.#AuthFactory.Has(providerName))
             return AuthProvider.#AuthFactory.Get(providerName)!
         else
-            throw new HttpErrorNotFound(`Provider '${providerName}' not found`)
+            throw new HttpErrorNotFound(`Auth Provider '${providerName}' not found`)
     }
 
     static RegisterProviders() {
