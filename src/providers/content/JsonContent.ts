@@ -7,13 +7,12 @@ import { Readable } from "node:stream"
 //
 import { DataTable } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
-import { CommonContent } from './CommonContent'
-import { IContent } from "../../types/IContent"
 import { JsonHelper } from '../../lib/JsonHelper'
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { ReadableHelper } from "../../lib/ReadableHelper"
 import { TConvertParams } from "../../lib/TypeHelper"
+import { ACContentProvider } from "../ACContentProvider"
 
 export type TJsonContentConfig = {
     "json-path"?: string
@@ -23,7 +22,7 @@ type TJsonContentParams = Required<{
     [K in keyof TJsonContentConfig as K extends `json-${infer U}` ? TConvertParams<U> : K]: TJsonContentConfig[K]
 }>
 
-export class JsonContent extends CommonContent implements IContent {
+export class JsonContent extends ACContentProvider {
 
     Params: TJsonContentParams | undefined
 

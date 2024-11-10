@@ -6,13 +6,12 @@
 import * as Csv from 'papaparse'
 //
 import { DataTable } from "../../types/DataTable"
-import { CommonContent } from './CommonContent'
-import { IContent } from "../../types/IContent"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { Readable } from "node:stream"
 import { ReadableHelper } from "../../lib/ReadableHelper"
 import { TConvertParams } from "../../lib/TypeHelper"
+import { ACContentProvider } from "../ACContentProvider"
 
 
 export type TCsvContentConfig = {
@@ -26,7 +25,7 @@ export type TCsvContentConfig = {
 type TCsvContentParams = Omit<Required<{
     [K in keyof TCsvContentConfig as K extends `csv-${infer U}` ? TConvertParams<U> : K]: TCsvContentConfig[K]
 }> & {
-    // WOrkaround to alaign with Csv.ParseConfig
+    // Workaround to align with Csv.ParseConfig
     quoteChar: string
     skipEmptyLines: boolean | "greedy"
 },
@@ -34,7 +33,7 @@ type TCsvContentParams = Omit<Required<{
 >
 
 
-export class CsvContent extends CommonContent implements IContent {
+export class CsvContent extends ACContentProvider {
 
     Params: TCsvContentParams | undefined
 

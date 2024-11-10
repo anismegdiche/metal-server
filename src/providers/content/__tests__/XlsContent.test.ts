@@ -71,7 +71,6 @@ describe('XlsContent', () => {
 
         // Setup XlsContent
         xlsContent = new XlsContent(typia.random<TContentConfig>())
-        xlsContent.Content = virtualFileSystem
     })
 
 

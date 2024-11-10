@@ -82,16 +82,14 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         this.Init(sourceParams)
         this.Connect()
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static readonly #NewStorageCaseMap: Record<STORAGE, Function> = {
+     
+    static readonly #NewStorageCaseMap: Record<STORAGE, (storageParams: TConfigSource) => IStorage> = {
         [STORAGE.FILESYSTEM]: (storageParams: TConfigSource) => new FsStorage(storageParams),
         [STORAGE.AZURE_BLOB]: (storageParams: TConfigSource) => new AzureBlobStorage(storageParams),
         [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams)
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static readonly #NewContentCaseMap: Record<CONTENT, Function> = {
+     
+    static readonly #NewContentCaseMap: Record<CONTENT, (contentConfig: TContentConfig) => IContent> = {
         [CONTENT.JSON]: (contentConfig: TContentConfig) => new JsonContent(contentConfig),
         [CONTENT.CSV]: (contentConfig: TContentConfig) => new CsvContent(contentConfig),
         [CONTENT.XLS]: (contentConfig: TContentConfig) => new XlsContent(contentConfig)

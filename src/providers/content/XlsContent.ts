@@ -8,12 +8,11 @@ import * as ExcelJS from 'exceljs'
 import _ from 'lodash'
 //
 import { DataTable } from '../../types/DataTable'
-import { CommonContent } from './CommonContent'
-import { IContent } from '../../types/IContent'
 import { Logger } from '../../utils/Logger'
 import { TJson } from '../../types/TJson'
 import { HttpErrorInternalServerError } from '../../server/HttpErrors'
 import { TConvertParams } from "../../lib/TypeHelper"
+import { ACContentProvider } from "../ACContentProvider"
 
 
 export type TXlsContentConfig = {
@@ -40,7 +39,7 @@ export function ColumnLetterToNumber(letter: string): number {
     return column
 }
 
-export class XlsContent extends CommonContent implements IContent {
+export class XlsContent extends ACContentProvider {
 
     Params: TXlsContentParams | undefined
 
