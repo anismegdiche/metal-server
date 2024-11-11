@@ -82,13 +82,13 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         this.Init(sourceParams)
         this.Connect()
     }
-     
+
     static readonly #NewStorageCaseMap: Record<STORAGE, (storageParams: TConfigSource) => IStorage> = {
         [STORAGE.FILESYSTEM]: (storageParams: TConfigSource) => new FsStorage(storageParams),
         [STORAGE.AZURE_BLOB]: (storageParams: TConfigSource) => new AzureBlobStorage(storageParams),
         [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams)
     }
-     
+
     static readonly #NewContentCaseMap: Record<CONTENT, (contentConfig: TContentConfig) => IContent> = {
         [CONTENT.JSON]: (contentConfig: TContentConfig) => new JsonContent(contentConfig),
         [CONTENT.CSV]: (contentConfig: TContentConfig) => new CsvContent(contentConfig),
@@ -226,10 +226,10 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         if (options?.Cache)
             await Cache.Set({
-                  ...schemaRequest,
-                  source: this.SourceName
-              },
-              data
+                ...schemaRequest,
+                source: this.SourceName
+            },
+                data
             )
 
         return HttpResponse.Ok(<TSchemaResponse>{
@@ -324,12 +324,20 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
         const { schema } = schemaRequest
 
+        const rxFilePatterns = new RegExp(
+            `(${Object.keys(this.ContentHandler)
+                .map(filePattern => Convert.PatternToRegex(filePattern)
+                    .toString()
+                    .replace(/\//g, '')
+                ).join('|')})`)
+
         // eslint-disable-next-line init-declarations
         let data: DataTable
 
-        if (this.Connection)
+        if (this.Connection) {
             data = await this.Connection.List()
-        else
+            data.Rows = data.Rows.filter(row => rxFilePatterns.test(row.name as string))
+        } else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         if (data.Rows.length == 0)
