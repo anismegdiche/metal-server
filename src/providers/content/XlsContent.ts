@@ -98,7 +98,7 @@ export class XlsContent extends ACContentProvider {
                     } else if (this.Params!.parseDates && typeof cellValue === 'string') {
                         // Attempt to parse string as date if this.Params.parseDates is enabled
                         const _parsedDate = new Date(cellValue)
-                        if (!isNaN(_parsedDate.getTime())) {
+                        if (!Number.isNaN(_parsedDate.getTime())) {
                             cellValue = _parsedDate // Store as Date object
                         }
                     }

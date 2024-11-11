@@ -62,10 +62,10 @@ export class Config {
 
         await Config.Validate(await Config.Load())
 
-        this.InitLogging()
-        this.InitAuthentication()
-        await this.InitCache()
-        this.InitResponse()
+        Config.InitLogging()
+        Config.InitAuthentication()
+        await Config.InitCache()
+        Config.InitResponse()
 
 
         /* eslint-disable @typescript-eslint/no-unused-expressions, no-unused-expressions */
@@ -78,7 +78,7 @@ export class Config {
 
     @Logger.LogFunction()
     static async Load(): Promise<TConfig> {
-        const configFileRaw = Fs.readFileSync(this.ConfigFilePath, 'utf8')
+        const configFileRaw = Fs.readFileSync(Config.ConfigFilePath, 'utf8')
         return await Yaml.load(configFileRaw) as TConfig
     }
 
