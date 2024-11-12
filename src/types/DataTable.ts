@@ -23,7 +23,7 @@ export const enum JOIN_TYPE {
     LEFT = "left",            // Left Join
     RIGHT = "right",          // Right Join
     INNER = "inner",          // Inner Join
-    FULL_OUTER = "fullOuter", // Full Outer Join
+    FULL_OUTER = "full-outer", // Full Outer Join
     CROSS = "cross"           // Cross Join
 }
 
@@ -44,108 +44,6 @@ export const enum REMOVE_DUPLICATES_STRATEGY {
     HIGHEST = "highest", // Keeps the duplicate row with the highest value in a specified field.
     LOWEST = "lowest",	 // Keeps the duplicate row with the lowest value in a specified field.
     CUSTOM = "custom"	 // Allows for a custom strategy defined by user logic.
-}
-
-const SqlToJsType: TJson = {
-    // Integer (number with truncation)
-    smallint: 'number',
-    integer: 'number',
-    bigint: 'number',
-
-    // Decimal (number)
-    decimal: 'number',
-    numeric: 'number',
-
-    // Floating-Point (number)
-    real: 'number',
-    doubleprecision: 'number',
-
-    // Serial (number with AUTO_INCREMENT)
-    smallserial: 'number',
-    serial: 'number',
-    bigserial: 'number',
-
-    // Monetary (number)
-    money: 'number',
-
-    // Character (string)
-    charactervarying: 'string',
-    varchar: 'string',
-    nvarchar: 'string',
-    character: 'string',
-    char: 'string',
-    nchar: 'string',
-    text: 'string',
-
-    // Binary Data Types
-    // TBD - To Be Determined
-
-    // Date/Time (string and Date)
-    datestring: 'string',
-    timestring: 'string',
-    interval: 'number',
-    dateobject: 'date',
-
-    // Boolean (boolean)
-    boolean: 'boolean',
-
-    // Complex data types
-    // Enumeration (array of strings or numbers)
-    enum: 'enum',
-
-    // Geometric Types
-    // Not realized
-
-    // Network Address Types
-    // Not realized
-
-    // Bit String
-    // Not realized
-
-    // Text Search
-    // Not realized
-
-    // UUID (string)
-    uuid: 'string',
-
-    // XML (object with special structure)
-    xml: 'object',
-    html: 'object',
-
-    // JSON (object)
-    json: 'object',
-    jsonb: 'object',
-
-    // Array (object)
-    array: 'object',
-
-    // Composite (object)
-    composite: 'object',
-
-    // Range (object)
-    // Not yet realized
-
-    // OID
-    // Not realized yet
-
-    // Graph data types
-    // Class (realized with tables)
-    class: 'object',
-
-    // Object (object)
-    object: 'object'
-
-    // Document (object)
-    // TBD - To Be Determined
-
-    // Object reference (number or string)
-    // TBD - To Be Determined
-
-    // Domain
-    // TBD - To Be Determined
-
-    // Pseudo
-    // Not yet realized
 }
 
 export type TRow = TJson
@@ -571,3 +469,106 @@ export class DataTable {
         return this
     }
 }
+
+
+// const SqlToJsType: TJson = {
+//     // Integer (number with truncation)
+//     smallint: 'number',
+//     integer: 'number',
+//     bigint: 'number',
+
+//     // Decimal (number)
+//     decimal: 'number',
+//     numeric: 'number',
+
+//     // Floating-Point (number)
+//     real: 'number',
+//     doubleprecision: 'number',
+
+//     // Serial (number with AUTO_INCREMENT)
+//     smallserial: 'number',
+//     serial: 'number',
+//     bigserial: 'number',
+
+//     // Monetary (number)
+//     money: 'number',
+
+//     // Character (string)
+//     charactervarying: 'string',
+//     varchar: 'string',
+//     nvarchar: 'string',
+//     character: 'string',
+//     char: 'string',
+//     nchar: 'string',
+//     text: 'string',
+
+//     // Binary Data Types
+//     // TBD - To Be Determined
+
+//     // Date/Time (string and Date)
+//     datestring: 'string',
+//     timestring: 'string',
+//     interval: 'number',
+//     dateobject: 'date',
+
+//     // Boolean (boolean)
+//     boolean: 'boolean',
+
+//     // Complex data types
+//     // Enumeration (array of strings or numbers)
+//     enum: 'enum',
+
+//     // Geometric Types
+//     // Not realized
+
+//     // Network Address Types
+//     // Not realized
+
+//     // Bit String
+//     // Not realized
+
+//     // Text Search
+//     // Not realized
+
+//     // UUID (string)
+//     uuid: 'string',
+
+//     // XML (object with special structure)
+//     xml: 'object',
+//     html: 'object',
+
+//     // JSON (object)
+//     json: 'object',
+//     jsonb: 'object',
+
+//     // Array (object)
+//     array: 'object',
+
+//     // Composite (object)
+//     composite: 'object',
+
+//     // Range (object)
+//     // Not yet realized
+
+//     // OID
+//     // Not realized yet
+
+//     // Graph data types
+//     // Class (realized with tables)
+//     class: 'object',
+
+//     // Object (object)
+//     object: 'object'
+
+//     // Document (object)
+//     // TBD - To Be Determined
+
+//     // Object reference (number or string)
+//     // TBD - To Be Determined
+
+//     // Domain
+//     // TBD - To Be Determined
+
+//     // Pseudo
+//     // Not yet realized
+// }

@@ -27,6 +27,7 @@ export type TXlsContentParams = {
     [K in keyof TXlsContentConfig as K extends `xls-${infer U}` ? TConvertParams<U> : K]: TXlsContentConfig[K]
 }
 
+
 // Convert column letter (e.g., 'A', 'B', 'AA') to a column number
 export function ColumnLetterToNumber(letter: string): number {
     let column = 0
@@ -39,6 +40,8 @@ export function ColumnLetterToNumber(letter: string): number {
     return column
 }
 
+
+//
 export class XlsContent extends ACContentProvider {
 
     Params: TXlsContentParams | undefined
