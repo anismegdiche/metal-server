@@ -10,6 +10,16 @@ import { TUserTokenInfo } from "./User"
 
 
 //
+export enum PERMISSION {
+    ADMIN = 'a',
+    CREATE = 'c',
+    READ = 'r',
+    UPDATE = 'u',
+    DELETE = 'd',
+    LIST = 'l'
+}
+
+//
 export class Roles {
 
     static ServerRoles: TConfigRoles

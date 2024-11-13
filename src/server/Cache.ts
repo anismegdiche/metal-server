@@ -18,8 +18,8 @@ import { TypeHelper } from '../lib/TypeHelper'
 import { HttpResponse } from "./HttpResponse"
 import { TJson } from "../types/TJson"
 import { HttpErrorForbidden, HttpErrorInternalServerError } from "./HttpErrors"
-import { Roles } from "./Roles"
-import { PERMISSION, TUserTokenInfo } from "./User"
+import { PERMISSION, Roles } from "./Roles"
+import { TUserTokenInfo } from "./User"
 
 
 export class Cache {

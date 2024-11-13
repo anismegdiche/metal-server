@@ -17,8 +17,8 @@ import { TConfigSchema, TConfigSchemaEntity } from "../types/TConfig"
 import typia from "typia"
 import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"
-import { PERMISSION, TUserTokenInfo } from "./User"
-import { Roles } from "./Roles"
+import { TUserTokenInfo } from "./User"
+import { PERMISSION, Roles } from "./Roles"
 
 export type TSchemaRoute = {
     type: "source" | "nothing",

@@ -25,16 +25,6 @@ export type TUserTokenInfo = {
     roles?: string[]
 }
 
-export enum PERMISSION {
-    ADMIN = 'a',
-    CREATE = 'c',
-    READ = 'r',
-    UPDATE = 'u',
-    DELETE = 'd',
-    LIST = 'l'
-}
-
-export type TPermission = PERMISSION
 
 //
 export class User {

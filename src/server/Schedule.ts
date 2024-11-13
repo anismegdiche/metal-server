@@ -15,8 +15,8 @@ import { JsonHelper } from '../lib/JsonHelper'
 import { HttpResponse } from "./HttpResponse"
 import { HttpErrorForbidden, HttpErrorNotFound } from "./HttpErrors"
 import { TJson } from "../types/TJson"
-import { Roles } from "./Roles"
-import { PERMISSION, TUserTokenInfo } from "./User"
+import { PERMISSION, Roles } from "./Roles"
+import { TUserTokenInfo } from "./User"
 
 export type TScheduleConfig = {
     plan: string

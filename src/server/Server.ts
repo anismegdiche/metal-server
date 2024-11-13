@@ -28,8 +28,8 @@ import { Swagger } from '../utils/Swagger'
 import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"
 import { AuthProvider } from "../providers/AuthProvider"
-import { Roles } from "./Roles"
-import { PERMISSION, TUserTokenInfo } from "./User"
+import { PERMISSION, Roles } from "./Roles"
+import { TUserTokenInfo } from "./User"
 
 export class Server {
 

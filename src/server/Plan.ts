@@ -22,8 +22,8 @@ import { JsonHelper } from "../lib/JsonHelper"
 import { HttpResponse } from "./HttpResponse"
 import { HttpErrorForbidden, HttpErrorNotFound } from "./HttpErrors"
 import { StepCommand } from '../types/TConfig'
-import { Roles } from "./Roles"
-import { PERMISSION, TUserTokenInfo } from "./User"
+import { PERMISSION, Roles } from "./Roles"
+import { TUserTokenInfo } from "./User"
 
 
 export class Plan {
