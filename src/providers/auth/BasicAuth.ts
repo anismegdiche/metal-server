@@ -15,7 +15,7 @@ import { TConfigUsers } from "../../types/TConfig"
 
 
 //
-export class BasicAuthProvider extends ACAuthProvider {
+export class BasicAuth extends ACAuthProvider {
 
     readonly #SALT_ROUNDS = 10
     #Users: TConfigUsers = {}

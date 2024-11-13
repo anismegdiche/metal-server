@@ -6,8 +6,8 @@
 import { HttpErrorNotFound } from "../server/HttpErrors"
 import { Factory } from "../utils/Factory"
 import { ACAuthProvider } from "./ACAuthProvider"
-import { BasicAuthProvider } from "./auth/BasicAuth"
-import { DemoAuthProvider } from "./auth/DemoAuth"
+import { BasicAuth } from "./auth/BasicAuth"
+import { DemoAuth } from "./auth/DemoAuth"
 
 
 //
@@ -31,8 +31,8 @@ export class AuthProvider {
     }
 
     static RegisterProviders() {
-        AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.DEMO, new DemoAuthProvider())
-        AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.BASIC, new BasicAuthProvider())
+        AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.DEMO, new DemoAuth())
+        AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.BASIC, new BasicAuth())
     }
 
     static SetCurrent(providerName: string) {

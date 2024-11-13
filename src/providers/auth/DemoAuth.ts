@@ -12,7 +12,7 @@ import { TConfigUsers } from "../../types/TConfig"
 
 
 //
-export class DemoAuthProvider extends ACAuthProvider {
+export class DemoAuth extends ACAuthProvider {
 
     // eslint-disable-next-line class-methods-use-this
     Init(): void {
