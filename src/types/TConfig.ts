@@ -12,7 +12,7 @@ import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TSte
 import { STEP } from "../server/Step"
 import { TJson } from "./TJson"
 import { AUTH_PROVIDER } from "../providers/AuthProvider"
-import { TPermission } from "../server/User"
+import { LogLevelDesc } from "loglevel"
 
 
 // roles.*
@@ -114,7 +114,7 @@ export type TConfig = {
     version: "0.1" | "0.2" | "0.3"
     server?: {
         port?: number & tags.Minimum<1> & tags.Maximum<65_535>
-        verbosity?: VERBOSITY
+        verbosity?: LogLevelDesc
         timezone?: string
         authentication: AUTH_PROVIDER               // v0.3
         "request-limit"?: string                    // v0.3

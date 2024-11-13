@@ -128,7 +128,7 @@ export class Config {
 
     @Logger.LogFunction()
     static InitLogging(): void {
-        const verbosity = Config.Get<LogLevelDesc>("server.verbosity") ?? DefaultLevel
+        const verbosity = Config.Configuration.server?.verbosity ?? DefaultLevel
         Logger.SetLevel(verbosity)
     }
 
