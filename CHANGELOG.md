@@ -1,6 +1,6 @@
 # Metal Changelog
 
-## Version 0.3 - UNRELEASED
+## Version 0.3 - November 14, 2024
 
 ### ⚠️ Breaking Changes
 - Updated to Node.js v22.10.0 for improved performance and security.
