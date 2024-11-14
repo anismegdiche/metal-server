@@ -5,27 +5,19 @@
 //
 import { tags } from "typia"
 //
-import { VERBOSITY } from "../utils/Logger"
 import DATA_PROVIDER from "../server/Source"
 import { AI_ENGINE } from "../server/AiEngine"
 import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "./TStep"
 import { STEP } from "../server/Step"
 import { TJson } from "./TJson"
-import { AUTH_PROVIDER } from "../providers/AuthProvider"
+import { TAuthentication } from "../providers/AuthProvider"
+import { TRolePermissions } from "../server/Roles"
 import { LogLevelDesc } from "loglevel"
 
 
-// roles.*
-export type TConfigRole = `${TPermission}`
-    | `${TPermission}${TPermission}`
-    | `${TPermission}${TPermission}${TPermission}`
-    | `${TPermission}${TPermission}${TPermission}${TPermission}`
-    | `${TPermission}${TPermission}${TPermission}${TPermission}${TPermission}`
-    | `${TPermission}${TPermission}${TPermission}${TPermission}${TPermission}${TPermission}`
-
 // roles
 export type TConfigRoles = {
-    [role: string]: TConfigRole
+    [role: string]: TRolePermissions
 }
 
 // users.*
@@ -116,10 +108,10 @@ export type TConfig = {
         port?: number & tags.Minimum<1> & tags.Maximum<65_535>
         verbosity?: LogLevelDesc
         timezone?: string
-        authentication: AUTH_PROVIDER               // v0.3
-        "request-limit"?: string                    // v0.3
-        "response-limit"?: string                   // v0.3
-        "response-rate"?: {                         // v0.3
+        authentication: TAuthentication                 // v0.3
+        "request-limit"?: string                        // v0.3
+        "response-limit"?: string                       // v0.3
+        "response-rate"?: {                             // v0.3
             windowMs?: number
             max?: number
             message?: string

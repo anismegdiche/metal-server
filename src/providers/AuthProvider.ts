@@ -6,16 +6,29 @@
 import { HttpErrorNotFound } from "../server/HttpErrors"
 import { Factory } from "../utils/Factory"
 import { ACAuthProvider } from "./ACAuthProvider"
-import { BasicAuth } from "./auth/BasicAuth"
+// import { AzureAdAuth, TAzureAdAuthConfig } from "./auth/AzureAdAuth"
+import { LocalAuth } from "./auth/LocalAuth"
 import { DemoAuth } from "./auth/DemoAuth"
+// import { LocalAuth } from "./auth/LocalAuth"
+// import { TOpenIdConnectAuthConfig } from "./auth/OpenIDConnectAuth"
+
 
 
 //
 export enum AUTH_PROVIDER {
-    BASIC = "basic",
-    DEMO = "demo"
+    LOCAL = "local",
+    DEMO = "demo"//,
+    // SYSTEM = "system",
+    // AZURE_AD = "azure-ad"
 }
 
+export type TAuthentication = {
+    provider: AUTH_PROVIDER
+    "default-role"?: string
+    // autocreate?: boolean
+}
+    // & TAzureAdAuthConfig
+    // & TOpenIdConnectAuthConfig
 
 //
 export class AuthProvider {
@@ -32,7 +45,9 @@ export class AuthProvider {
 
     static RegisterProviders() {
         AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.DEMO, new DemoAuth())
-        AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.BASIC, new BasicAuth())
+        AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.LOCAL, new LocalAuth())
+        // AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.LOCAL, new LocalAuth())
+        // AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.AZURE_AD, new AzureAdAuth())
     }
 
     static SetCurrent(providerName: string) {

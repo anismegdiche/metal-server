@@ -17,11 +17,10 @@ import { Source } from './Source'
 import { AiEngine } from './AiEngine'
 import { Convert } from '../lib/Convert'
 import { HTTP_STATUS_MESSAGE } from "../lib/Const"
-import { LogLevelDesc } from "loglevel"
 import { TConfig } from "../types/TConfig"
 import { TypeHelper } from "../lib/TypeHelper"
-import { HttpErrorBadRequest } from "./HttpErrors"
-import { AuthProvider } from "../providers/AuthProvider"
+import { HttpError, HttpErrorBadRequest, HttpErrorInternalServerError } from "./HttpErrors"
+import { AUTH_PROVIDER, AuthProvider } from "../providers/AuthProvider"
 import { Roles } from "./Roles"
 
 export class Config {
@@ -100,16 +99,21 @@ export class Config {
 
     @Logger.LogFunction(Logger.Debug, true)
     static async Validate(newConfig: TConfig): Promise<void> {
-        TypeHelper.Validate(typia.validateEquals<TConfig>(newConfig), new HttpErrorBadRequest())
+        try {
+            TypeHelper.Validate(typia.validateEquals<TConfig>(newConfig), new HttpErrorInternalServerError("Configuration file errors found"))
+        } catch (error: any) {
+            throw new Error(error.message)
+        }
         Config.CheckRessourcesUsage(newConfig)
         Config.Configuration = newConfig
     }
 
-    @Logger.LogFunction()
-    static GetErrors(schemaErrors: any): string[] {
-        return schemaErrors
-            .filter((e: Error) => e.message.includes('is required') || e.message.includes('must be'))
-    }
+    // @Logger.LogFunction()
+    // static GetErrors(schemaErrors: any): string[] {
+    //     return schemaErrors
+    //         .filter((e: Error) => e.message.includes('is required') || e.message.includes('must be'))
+    // }
+
     @Logger.LogFunction()
     static Has(path: string): boolean {
         return _.has(Config.Configuration, path)
@@ -134,8 +138,13 @@ export class Config {
 
     @Logger.LogFunction()
     static InitAuthentication(): void {
-        Config.Flags.EnableAuthentication = Config.Has('server.authentication')
-        AuthProvider.SetCurrent(Config.Get<string>('server.authentication'))
+        Config.Flags.EnableAuthentication = (Config.Configuration.server?.authentication !== undefined)
+
+        const {
+            provider = AUTH_PROVIDER.LOCAL
+        } = Config.Configuration.server?.authentication ?? {}
+
+        AuthProvider.SetCurrent(provider)
         if (Config.Flags.EnableAuthentication) {
             AuthProvider.Provider.Init()
             Roles.Init()
@@ -157,5 +166,10 @@ export class Config {
         Config.Flags.EnableResponseChunk = Config.Get<boolean>('server.response-chunk')
         Logger.Debug(`Server Response Limit set to ${Config.Flags.ResponseLimit}`)
     }
-}
 
+    @Logger.LogFunction()
+    static Save(): void {
+        const configFileRaw = Yaml.dump(Config.Configuration)
+        Fs.writeFileSync(Config.ConfigFilePath, configFileRaw)
+    }
+}

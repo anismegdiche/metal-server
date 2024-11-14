@@ -180,6 +180,7 @@ export class Server {
         chokidar.watch(Config.ConfigFilePath).on('change', () => {
             Logger.Info('Config file changed. Reloading...')
             Server.Reload()
+                .catch((err: Error) => Logger.Error(err.message))
         })
 
         // // OpenApi

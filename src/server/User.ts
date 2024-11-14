@@ -5,16 +5,17 @@
 //
 import jwt, { JsonWebTokenError, Secret } from 'jsonwebtoken'
 import { randomBytes } from 'crypto'
-import typia from "typia"
 //
 import { TInternalResponse } from '../types/TInternalResponse'
 import { Logger } from "../utils/Logger"
-import { HttpErrorBadRequest, HttpErrorUnauthorized } from "./HttpErrors"
-import { TypeHelper } from "../lib/TypeHelper"
+import { HttpErrorUnauthorized } from "./HttpErrors"
 import { HttpResponse } from "./HttpResponse"
 import { TJson } from "../types/TJson"
 import { AuthProvider } from "../providers/AuthProvider"
 import { TUserCredentials } from "../providers/ACAuthProvider"
+import { Config } from "./Config"
+import { TConfigUser } from "../types/TConfig"
+import { Roles } from "./Roles"
 
 
 //
@@ -52,9 +53,15 @@ export class User {
 
     @Logger.LogFunction(Logger.Debug, true)
     static async Authenticate(userCredentials: TUserCredentials): Promise<TInternalResponse<TJson>> {
-        TypeHelper.Validate(typia.validateEquals<TUserCredentials>(userCredentials), new HttpErrorBadRequest())
 
         const userTokenInfo = await AuthProvider.Provider.Authenticate(userCredentials)
+
+        // User.AddUser(userTokenInfo.user)
+
+        userTokenInfo.roles = userTokenInfo.roles || []
+
+        if (Roles.UserDefaultRole !== undefined && !userTokenInfo.roles.includes(Roles.UserDefaultRole))
+            userTokenInfo.roles.push(Roles.UserDefaultRole)
 
         // Generate a JWT Secret
         const userSecret = this.#GenerateJwtSecret()
@@ -94,4 +101,14 @@ export class User {
 
         return this.#DecodeToken(userToken)
     }
+
+    // @Logger.LogFunction(Logger.Debug, true)
+    // static AddUser(newUser: string): TInternalResponse<undefined> {
+    //     if (!Config.Has(`users.${newUser}`)) {
+    //         Config.Set(`users.${newUser}`, {})
+    //         Config.Save()
+    //         return HttpResponse.Created()
+    //     }
+    //     return HttpResponse.NoContent()
+    // }
 }

@@ -50,6 +50,7 @@ export class TypeHelper {
 
         Logger.Error(`${httpError.Name}:\r\n - ${renamedErrors.join('\r\n - ')}`)
         httpError.message = renamedErrors
+        httpError.Name = "Bad Parameters"
         delete httpError.stack
         throw httpError
     }    
@@ -58,5 +59,7 @@ export class TypeHelper {
         return txt
             .replace("TJson", "JSON")
             .replace("$input expected to be TConfig", "Configuration file is empty")
+            .replace(/__type\.o\d+/, "object")
+            .replace(" | undefined", "")
     }
 }
