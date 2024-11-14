@@ -1,6 +1,28 @@
 version: "0.3"
+
 server:
-    port: 3000
-    verbosity: debug
-    timezone: UTC
-    request-limit: 100mb
+  port: 3000
+  verbosity: debug
+  timezone: UTC
+  request-limit: 100mb
+  authentication:
+    provider: local
+    default-role: all
+
+roles:
+  all: lacrud
+
+users:
+  myapiuser:
+    password: myStr@ngpa$$w0rd
+
+sources:
+  src-mem:
+    provider: memory
+    database: memory
+    options:
+      autocreate: true
+
+schemas:
+  mem:
+    source: src-mem
