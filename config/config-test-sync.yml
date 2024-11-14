@@ -1,4 +1,4 @@
-version: "0.2"
+version: "0.3"
 server:
   port: 3000
   verbosity: debug
@@ -25,52 +25,52 @@ sources:
 
 schemas:
   mem:
-    sourceName: mem-data
+    source: mem-data
     entities:
       syncdown:
-        sourceName: plan-sync
-        entityName: members-down
+        source: plan-sync
+        entity: members-down
   pg:
-    sourceName: pg-clubdata-members
+    source: pg-clubdata-members
 
 schedules:
   start:
     cron: "@start"
-    planName: sync
-    entityName: members-up
+    plan: sync
+    entity: members-up
 
 plans:
   sync:
     members-up:
       - sync:
           source:
-            schemaName: pg
-            entityName: members
+            schema: pg
+            entity: members
           destination:
-            schemaName: mem
-            entityName: members
+            schema: mem
+            entity: members
           on: memid
 
       - update:
-          schemaName: mem
-          entityName: members
+          schema: mem
+          entity: members
           data:
             address: XXXXXXXXXX
     
       - sync:
           source:
-            schemaName: mem
-            entityName: members
+            schema: mem
+            entity: members
           destination:
-            schemaName: pg
-            entityName: members
+            schema: pg
+            entity: members
           on: memid
     members-down:
       - sync:
           source:
-            schemaName: mem
-            entityName: members
+            schema: mem
+            entity: members
           destination:
-            schemaName: pg
-            entityName: members
+            schema: pg
+            entity: members
           on: memid

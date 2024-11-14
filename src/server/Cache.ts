@@ -5,17 +5,21 @@
 //
 import * as Sha512 from 'js-sha512'
 //
-import { HTTP_STATUS_CODE, METADATA } from '../lib/Const'
+import { METADATA } from '../lib/Const'
 import { TCacheData } from '../types/TCacheData'
 import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
 import { TSchemaRequest } from '../types/TSchemaRequest'
-import { TSchemaResponse, TSchemaResponseData, TRANSACTION } from '../types/TSchemaResponse'
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { IDataProvider } from '../types/IDataProvider'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
+import { HttpResponse } from "./HttpResponse"
+import { TJson } from "../types/TJson"
+import { HttpErrorForbidden, HttpErrorInternalServerError } from "./HttpErrors"
+import { PERMISSION, Roles } from "./Roles"
+import { TUserTokenInfo } from "./User"
 
 
 export class Cache {
@@ -25,46 +29,90 @@ export class Cache {
 
     static CacheSource: IDataProvider
 
-    static readonly #SchemaRequest: TSchemaRequest = <TSchemaRequest>{
-        schemaName: Cache.Schema,
-        entityName: Cache.Table
+    static readonly #CacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
+        schema: Cache.Schema,
+        entity: Cache.Table
     }
 
+    @Logger.LogFunction()
     static async Connect(): Promise<void> {
-        Logger.Debug(`Cache.Connect`)
         if (Config.Flags.EnableCache)
             Source.Connect(null, Config.Get("server.cache"))
     }
 
+    @Logger.LogFunction()
     static async Disconnect(): Promise<void> {
-        Logger.Debug(`Cache.Disconnect`)
         if (Config.Flags.EnableCache)
             await Cache.CacheSource.Disconnect()
     }
 
-    static async Set(schemaRequest: TSchemaRequest, datatable: DataTable): Promise<void> {
-        Logger.Debug(`${Logger.In} Cache.Set: ${JSON.stringify(schemaRequest)}`)
-        
-        // bypassing 
-        if (this.CacheSource == undefined || schemaRequest?.cache !== undefined) {
-            return
+    @Logger.LogFunction()
+    static async IsExists(hash: string): Promise<number> {
+        if (!Config.Flags.EnableCache)
+            return 0
+
+        try {
+            const internalResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
+                ...Cache.#CacheSchemaRequest,
+                filter: {
+                    hash
+                }
+            })
+
+            const schemaResponse = internalResponse.Body
+
+            if (!schemaResponse)
+                throw new HttpErrorInternalServerError()
+
+            if (TypeHelper.IsSchemaResponseData(schemaResponse) && schemaResponse.data.Rows.length > 0)
+                return (schemaResponse.data.Rows[0] as TCacheData).expires
+
+            return 0
+        } catch (error) {
+            return 0
+        }
+    }
+
+    @Logger.LogFunction()
+    static IsCacheValid(expires: number): boolean {
+        return expires !== undefined && Date.now() <= expires
+    }
+
+    @Logger.LogFunction()
+    static IsArgumentsValid(schemaRequest: TSchemaRequest): boolean {
+        // bypassing cache source not defined
+        if (this.CacheSource == undefined) {
+            return false
         }
 
-        if (schemaRequest.schemaName === Cache.Schema && schemaRequest.entityName === Cache.Table) {
+        if (schemaRequest.schema === Cache.Schema && schemaRequest.entity === Cache.Table) {
             Logger.Debug(`${Logger.Out} Cache.Set: bypassing for schema cache`)
-            return
+            return false
         }
 
         if (!Config.Flags.EnableCache && schemaRequest?.cache !== undefined) {
             Logger.Debug(`${Logger.Out} Cache.Set: 'server.cache' is not configured, bypassing option 'cache'`)
-            return
+            return false
         }
+        return true
+    }
 
-        const { cache: ttl = 0 } = schemaRequest
+    @Logger.LogFunction()
+    static Hash(schemaRequest: TSchemaRequest): string {
+        return Sha512.sha512(JSON.stringify(schemaRequest))
+    }
+
+    @Logger.LogFunction()
+    static async Set(schemaRequest: TSchemaRequest, datatable: DataTable): Promise<void> {
+
+        if (!Cache.IsArgumentsValid(schemaRequest))
+            return
+
+        const { schema, entity, cache = 0 } = schemaRequest
 
         // calculate cache expiration time
         const now = new Date()
-        now.setSeconds(now.getSeconds() + ttl)
+        now.setSeconds(now.getSeconds() + cache)
         const expires = now.getTime()
 
         // get cached data
@@ -73,134 +121,130 @@ export class Cache {
         // const cacheData = await Cache.Get(hash)
 
         if (_expires == 0) {
-            Logger.Debug(`Cache.Set: no cache found, creating Hash=${hash}`)
+            Logger.Debug(`${Logger.Out} Cache.Set: no cache found, creating Hash=${hash}`)
             datatable.SetMetaData(METADATA.CACHE, true)
             datatable.SetMetaData(METADATA.CACHE_EXPIRE, expires)
             await Cache.CacheSource.Insert(<TSchemaRequest>{
-                ...Cache.#SchemaRequest,
+                ...Cache.#CacheSchemaRequest,
                 data: <TCacheData[]>[
                     {
                         hash,
                         expires,
+                        schema,
+                        entity,
                         schemaRequest,
-                        datatable
+                        data: datatable
                     }
                 ]
             })
             return
         }
 
-        if (Cache.IsValid(_expires)) {
+        if (Cache.IsCacheValid(_expires)) {
             Logger.Debug(`Cache.Set: cache is valid, bypassing Hash=${hash}`)
             return
         }
 
         Logger.Debug(`Cache.Set: cache expired, updating Hash=${hash}`)
+        await Cache.Update(hash, expires, datatable)
+    }
+
+    @Logger.LogFunction()
+    static async Get(cacheHash: string): Promise<TCacheData | undefined> {
+        if (!Config.Flags.EnableCache || this.CacheSource === undefined)
+            return undefined
+
+        try {
+            const internalResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
+                ...Cache.#CacheSchemaRequest,
+                filter: {
+                    hash: cacheHash
+                }
+            })
+
+            const schemaResponse = internalResponse.Body
+
+            if (!schemaResponse)
+                throw new HttpErrorInternalServerError()
+
+            if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
+                Logger.Debug(`Cache.Get: Cache found, Hash=${cacheHash}`)
+                return schemaResponse.data.Rows[0] as TCacheData
+            }
+            Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
+            return undefined
+
+        } catch (error) {
+            Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
+            return undefined
+        }
+    }
+
+    static async Update(hash: string, expires: number, datatable: DataTable) {
         await Cache.CacheSource.Update(<TSchemaRequest>{
-            ...Cache.#SchemaRequest,
+            ...Cache.#CacheSchemaRequest,
             filter: {
                 hash
             },
             data: <TCacheData[]>[
                 {
                     expires,
-                    datatable
+                    data: datatable
                 }
             ]
         })
     }
 
-    static Hash(schemaRequest: TSchemaRequest): string {
-        return Sha512.sha512(JSON.stringify(schemaRequest))
+    @Logger.LogFunction()
+    static async View(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+
+        return await Cache.CacheSource.Select(Cache.#CacheSchemaRequest)
     }
 
-    static IsValid(expires: number): boolean {
-        const isValid = expires !== undefined && Date.now() <= expires
-        Logger.Info(`Cache.IsValid = ${isValid}`)
-        return isValid
-    }
+    @Logger.LogFunction()
+    static async Purge(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
 
-    static async Get(cacheHash: string): Promise<TCacheData | undefined> {
-        Logger.Debug(`Cache.Get: Hash=${cacheHash}`)
-        if (!Config.Flags.EnableCache || this.CacheSource === undefined) {
-            return undefined
-        }
-
-        const schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
-            ...Cache.#SchemaRequest,
-            filter: {
-                hash: cacheHash
-            }
-        })
-
-        if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
-            Logger.Debug(`Cache.Get: Cache found, Hash=${cacheHash}`)
-            return schemaResponse.data.Rows[0] as TCacheData
-        }
-
-        Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
-        return undefined
-    }
-
-    static async IsExists(hash: string): Promise<number> {
-        Logger.Debug(`Cache.IsExists`)
-        if (!Config.Flags.EnableCache) {
-            return 0
-        }
-
-        const schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
-            ...Cache.#SchemaRequest,
-            filter: {
-                hash
-            }
-        })
-
-        if (TypeHelper.IsSchemaResponseData(schemaResponse) && schemaResponse.data.Rows.length > 0) {
-            return (schemaResponse.data.Rows[0] as TCacheData).expires
-        }
-        return 0
-    }
-
-    static async View(): Promise<TInternalResponse> {
-        Logger.Debug(`${Logger.In} Cache.View`)
-        let schemaResponse: TSchemaResponse = await Cache.CacheSource.Select(Cache.#SchemaRequest)
-        schemaResponse.transaction = TRANSACTION.CACHE_DATA
-        const intRes: TInternalResponse = {
-            StatusCode: schemaResponse.status,
-            Body: {
-                message: 'Cache data'
-            }
-        }
-        schemaResponse = schemaResponse as TSchemaResponseData
-        if (TypeHelper.IsSchemaResponseData(schemaResponse) && intRes.Body) {
-            intRes.Body.data = schemaResponse.data.Rows
-        }
-        Logger.Debug(`${Logger.Out} Cache.View`)
-        return intRes
-    }
-
-    static async Purge(): Promise<TInternalResponse> {
-        Logger.Debug(`${Logger.In} Cache.Purge`)
-        await Cache.CacheSource.Delete(Cache.#SchemaRequest)
+        await Cache.CacheSource.Delete(Cache.#CacheSchemaRequest)
         Logger.Debug(`${Logger.Out} Cache.Purge`)
-        return {
-            StatusCode: HTTP_STATUS_CODE.OK,
-            Body: { message: 'Cache purged' }
-        }
+        return HttpResponse.Ok({ message: 'Cache purged' })
     }
 
-    static async Clean(): Promise<TInternalResponse> {
-        Logger.Debug(`${Logger.In} Cache.Clean`)
+    @Logger.LogFunction()
+    static async Clean(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+        
         const _expireDate = new Date().getTime()
-        Logger.Debug(`Cache.Clean  ${_expireDate}`)
+        Logger.Debug(`Cache.Clean ${_expireDate}`)
         await Cache.CacheSource.Delete(<TSchemaRequest>{
-            ...Cache.#SchemaRequest,
-            filterExpression: `expires < ${_expireDate}`
+            ...Cache.#CacheSchemaRequest,
+            "filter-expression": `expires < ${_expireDate}`
         })
         Logger.Debug(`${Logger.Out} Cache.Clean`)
-        return {
-            StatusCode: HTTP_STATUS_CODE.OK,
-            Body: { message: 'Cache cleaned' }
+        return HttpResponse.Ok({ message: 'Cache cleaned' })
+    }
+
+    @Logger.LogFunction()
+    static async Remove(schemaRequest: TSchemaRequest): Promise<void> {
+
+        if (!Cache.IsArgumentsValid(schemaRequest))
+            return
+
+        const { schema, entity } = schemaRequest
+
+        try {
+            await Cache.CacheSource.Delete(<TSchemaRequest>{
+                ...Cache.#CacheSchemaRequest,
+                //FIXME: only usable with memory provider, should correct escape char ` in where close from sqlhelper
+                "filter-expression": `\`schema\`= '${schema}' AND \`entity\`= '${entity}'`
+            })
+        } catch (error) {
+            //
         }
+        Logger.Debug(`${Logger.Out} Cache.Removed`)
     }
 }

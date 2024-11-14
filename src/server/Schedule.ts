@@ -6,16 +6,21 @@
 import { CronJob } from 'cron'
 import _ from 'lodash'
 
-import { HTTP_STATUS_CODE } from '../lib/Const'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchedule } from '../types/TSchedule'
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { Plan } from './Plan'
+import { JsonHelper } from '../lib/JsonHelper'
+import { HttpResponse } from "./HttpResponse"
+import { HttpErrorForbidden, HttpErrorNotFound } from "./HttpErrors"
+import { TJson } from "../types/TJson"
+import { PERMISSION, Roles } from "./Roles"
+import { TUserTokenInfo } from "./User"
 
 export type TScheduleConfig = {
-    planName: string
-    entityName: string
+    plan: string
+    entity: string
     cron: string
 }
 
@@ -23,85 +28,81 @@ export class Schedule {
 
     static Jobs: TSchedule[] = []
 
+    @Logger.LogFunction()
     static async CreateAndStartAll() {
-        Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: ${JSON.stringify(Config.Configuration.schedules)}`)
         if (!Config.Configuration?.schedules) {
             return undefined
         }
 
         const scheduleConfig: Array<[string, TScheduleConfig]> = Object.entries(Config.Configuration.schedules)
 
-        for (const [_scheduleName, _scheduleParams] of scheduleConfig) {
-            Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_scheduleName}'`)
+        for (const [_schedule, _scheduleParams] of scheduleConfig) {
+            Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_schedule}'`)
             const currentDate = new Date()
             currentDate.setSeconds(currentDate.getSeconds() + 1)
             this.Jobs.push(<TSchedule>{
-                scheduleName: _scheduleName,
+                schedule: _schedule,
                 cronJob: new CronJob(
                     (_scheduleParams.cron === '@start')
                         ? currentDate
                         : _scheduleParams.cron,
                     () => {
-                        Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: Running job '${_scheduleName}'`)
+                        Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: Running job '${_schedule}'`)
                         Plan.Process(_scheduleParams)
                             .then(() => {
-                                Logger.Debug(`${Logger.Out} Schedule.CreateAndStartAll: job '${_scheduleName}' terminated`)
+                                Logger.Debug(`${Logger.Out} Schedule.CreateAndStartAll: job '${_schedule}' terminated`)
                             })
                             .catch((error) => {
-                                Logger.Error(`${Logger.Out} Schedule.CreateAndStartAll: Error has occured with '${_scheduleName}' : ${JSON.stringify(error)}`)
+                                Logger.Error(`${Logger.Out} Schedule.CreateAndStartAll: Error has occured with '${_schedule}' : ${JsonHelper.Stringify(error)}`)
                             })
                     },
                     null,
                     true,
-                    Config.Configuration?.server?.timezone ?? Config.DEFAULTS['server.timezone']
+                    Config.Configuration?.server?.timezone as string ?? Config.DEFAULTS['server.timezone']
                 )
             })
         }
     }
 
-    static Start(jobName: string): TInternalResponse {
-        Logger.Debug(`${Logger.In} Schedule.Start: Starting job '${jobName}'`)
-        const _jobKey = _.findKey(this.Jobs, ["name", jobName])
-        if (_jobKey) {
-            this.Jobs[Number(_jobKey)].cronJob.start()
-            return {
-                StatusCode: HTTP_STATUS_CODE.OK,
-                Body: { message: `Job '${jobName}' started` }
-            }
+    @Logger.LogFunction()
+    static Start(jobName: string, userToken: TUserTokenInfo | undefined = undefined): TInternalResponse<TJson> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+
+        const jobKey = _.findKey(this.Jobs, ["name", jobName])
+        if (jobKey) {
+            this.Jobs[Number(jobKey)].cronJob.start()
+            return HttpResponse.Ok({ message: `Job '${jobName}' started` })
         }
-        return {
-            StatusCode: HTTP_STATUS_CODE.NOT_FOUND,
-            Body: { message: `Job '${jobName}' not found` }
-        }
+        throw new HttpErrorNotFound(`Job '${jobName}' not found`)
     }
 
-    static Stop(jobName: string): TInternalResponse {
-        Logger.Debug(`${Logger.In} Schedule.Stop: Stopping job '${jobName}'`)
-        const _jobKey = _.findKey(this.Jobs, ["name", jobName])
-        if (_jobKey) {
-            const __jobKey = parseInt(_jobKey, 10)
-            this.Jobs[__jobKey].cronJob.stop()
-            return {
-                StatusCode: HTTP_STATUS_CODE.OK,
-                Body: { message: `Job '${jobName}' stopped` }
-            }
+    @Logger.LogFunction()
+    static Stop(jobName: string, userToken: TUserTokenInfo | undefined = undefined): TInternalResponse<TJson> {
+        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
+            throw new HttpErrorForbidden('Permission denied')
+
+        const jobKey = _.findKey(this.Jobs, ["name", jobName])
+        if (jobKey) {
+            const _jobKey = parseInt(jobKey, 10)
+            this.Jobs[_jobKey].cronJob.stop()
+            return HttpResponse.Ok({ message: `Job '${jobName}' stopped` })
         }
-        return {
-            StatusCode: HTTP_STATUS_CODE.NOT_FOUND,
-            Body: { message: `Job '${jobName}' not found` }
-        }
+        throw new HttpErrorNotFound(`Job '${jobName}' not found`)
     }
 
+    @Logger.LogFunction()
     static StartAll() {
-        for (const _job of this.Jobs) {
-            _job.cronJob.start()
+        for (const job of this.Jobs) {
+            job.cronJob.start()
         }
     }
 
 
+    @Logger.LogFunction()
     static StopAll() {
-        for (const _job of this.Jobs) {
-            _job.cronJob.stop()
+        for (const job of this.Jobs) {
+            job.cronJob.stop()
         }
     }
 }

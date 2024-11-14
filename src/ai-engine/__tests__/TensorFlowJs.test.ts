@@ -1,4 +1,4 @@
-/* eslint-disable init-declarations */
+ 
 import _ from 'lodash'
 import { IAiEngine } from '../../types/IAiEngine'
 import { TensorFlowJs } from '../TensorFlowJs'

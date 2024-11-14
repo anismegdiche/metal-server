@@ -1,7 +1,4 @@
-/* eslint-disable class-methods-use-this */
-/* eslint-disable object-curly-spacing */
-/* eslint-disable max-classes-per-file */
-/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-require-imports */
 //
 //
 //

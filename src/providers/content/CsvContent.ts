@@ -6,52 +6,78 @@
 import * as Csv from 'papaparse'
 //
 import { DataTable } from "../../types/DataTable"
-import { CommonContent, IContent } from './CommonContent'
+import { Logger } from "../../utils/Logger"
+import { HttpErrorInternalServerError } from "../../server/HttpErrors"
+import { Readable } from "node:stream"
+import { ReadableHelper } from "../../lib/ReadableHelper"
+import { TConvertParams } from "../../lib/TypeHelper"
+import { ACContentProvider } from "../ACContentProvider"
 
-type TCsvContentConfig = {
-    delimiter: string
-    newline: string
-    header: boolean
-    quoteChar: string,
-    skipEmptyLines: string | boolean
+
+export type TCsvContentConfig = {
+    "csv-delimiter"?: string
+    "csv-newline"?: string
+    "csv-header"?: boolean
+    "csv-quote"?: string,
+    "csv-skip-empty"?: boolean | "greedy"
 }
 
-export class CsvContent extends CommonContent implements IContent {
+type TCsvContentParams = Omit<Required<{
+    [K in keyof TCsvContentConfig as K extends `csv-${infer U}` ? TConvertParams<U> : K]: TCsvContentConfig[K]
+}> & {
+    // Workaround to align with Csv.ParseConfig
+    quoteChar: string
+    skipEmptyLines: boolean | "greedy"
+},
+    'quote' | 'skipEmpty'
+>
 
-    Content: string = ""
-    Config = <TCsvContentConfig>{}
 
-    async Init(name: string, content: string): Promise<void> {
-        this.EntityName = name
-        if (this.Options) {
-            const {
-                csvDelimiter: delimiter = ',',
-                csvNewline: newline = '\n',
-                csvHeader: header = true,
-                csvQuoteChar: quoteChar = '"',
-                csvSkipEmptyLines: skipEmptyLines = 'greedy'
-            } = this.Options
+export class CsvContent extends ACContentProvider {
 
-            this.Config = <TCsvContentConfig>{
-                ...this.Config,
-                delimiter,
-                newline,
-                header,
-                quoteChar,
-                skipEmptyLines
+    Params: TCsvContentParams | undefined
+
+    @Logger.LogFunction()
+    async Init(entity: string, content: Readable): Promise<void> {
+        this.EntityName = entity
+        if (this.Config) {
+            this.Params = {
+                delimiter: this.Config["csv-delimiter"] ?? ',',
+                newline: this.Config["csv-newline"] ?? '\n',
+                header: this.Config["csv-header"] ?? true,
+                quoteChar: this.Config["csv-quote"] ?? '"',
+                skipEmptyLines: this.Config["csv-skip-empty"] ?? 'greedy'
             }
         }
-
-        this.Content = content
+        this.Content.UploadFile(entity, content)
     }
 
+    @Logger.LogFunction()
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
-        const result = Csv.parse<string>(this.Content, this.Config as Csv.ParseWorkerConfig) as any
-        return new DataTable(this.EntityName, result?.data).FreeSql(sqlQuery)
+        if (!this.Content)
+            throw new HttpErrorInternalServerError('Content is not defined')
+
+        const parsedCsv: any = Csv.parse<string>(
+            await ReadableHelper.ToString(
+                this.Content.ReadFile(this.EntityName)
+            ),
+            this.Params as Csv.ParseConfig
+        )
+        return new DataTable(this.EntityName, parsedCsv?.data).FreeSqlAsync(sqlQuery)
     }
 
-    async Set(contentDataTable: DataTable): Promise<string> {
-        this.Content = Csv.unparse(contentDataTable.Rows, this.Config as Csv.UnparseConfig)
-        return this.Content
+    @Logger.LogFunction()
+    async Set(contentDataTable: DataTable): Promise<Readable> {
+        if (!this.Content)
+            throw new HttpErrorInternalServerError('Content is not defined')
+
+        const streamOut = Readable.from(
+            Csv.unparse(
+                contentDataTable.Rows,
+                this.Params as Csv.UnparseConfig
+            )
+        )
+        this.Content.UploadFile(this.EntityName, streamOut)
+        return this.Content.ReadFile(this.EntityName)
     }
 }

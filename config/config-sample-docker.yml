@@ -1,4 +1,4 @@
-version: "0.2"
+version: "0.3"
 server:
   port: 3000
   verbosity: debug
@@ -72,33 +72,33 @@ sources:
 
 schemas:
   northwind:
-    sourceName: pg-northwind
+    source: pg-northwind
   hr:
-    sourceName: ms-hr
+    source: ms-hr
   mflix:
-    sourceName: mdb-mflix
+    source: mdb-mflix
   clubdata:
     entities:
       members:
-        sourceName: pg-clubdata-members
-        entityName: members
+        source: pg-clubdata-members
+        entity: members
       facilities:
-        sourceName: pg-clubdata-facilities
-        entityName: facilities
+        source: pg-clubdata-facilities
+        entity: facilities
       bookings:
-        sourceName: pg-clubdata-bookings
-        entityName: bookings
+        source: pg-clubdata-bookings
+        entity: bookings
   merge:
-    sourceName: pg-clubdata
+    source: pg-clubdata
     entities:
       orders:
-        sourceName: pg-northwind
-        entityName: orders
+        source: pg-northwind
+        entity: orders
       users:
-        sourceName: mdb-mflix
-        entityName: users
+        source: mdb-mflix
+        entity: users
   sch-etl1:
-    sourceName: plan-etl1
+    source: plan-etl1
 
 ai-engines:
   ocr:
@@ -133,8 +133,8 @@ plans:
     aitest2:
       - debug:
       - select:
-          schemaName: mflix
-          entityName: movies
+          schema: mflix
+          entity: movies
           filter:
             year: 2001
           fields: title

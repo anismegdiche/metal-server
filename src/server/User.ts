@@ -3,113 +3,112 @@
 //
 //
 //
-import _ from 'lodash'
-import jwt from 'jsonwebtoken'
+import jwt, { JsonWebTokenError, Secret } from 'jsonwebtoken'
 import { randomBytes } from 'crypto'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const Bcrypt = require('bcrypt')
-
-import { Config } from './Config'
-import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from '../lib/Const'
+//
 import { TInternalResponse } from '../types/TInternalResponse'
+import { Logger } from "../utils/Logger"
+import { HttpErrorUnauthorized } from "./HttpErrors"
+import { HttpResponse } from "./HttpResponse"
+import { TJson } from "../types/TJson"
+import { AuthProvider } from "../providers/AuthProvider"
+import { TUserCredentials } from "../providers/ACAuthProvider"
+import { Config } from "./Config"
+import { TConfigUser } from "../types/TConfig"
+import { Roles } from "./Roles"
 
-type TUser = Record<string, string>
-export type TToken = string | undefined
 
+//
+export type TUserToken = string | undefined
+
+export type TUserTokenInfo = {
+    user: string
+    roles?: string[]
+}
+
+
+//
 export class User {
 
-    static readonly #SALT_ROUNDS = 10
-    static readonly JWT_EXPIRATION_TIME = 60 * 60 // 1 hour
-    static Users: TUser = {}
-    static LoggedInUsers: { [token: string]: TUser } = {}
+    static readonly #JWT_EXPIRATION_TIME = 60 * 60          // 1 hour
+    static readonly #JWT_SECRET_LENGTH = 64                 // Length of the JWT secret
+    static readonly #Tokens: Map<string, Secret> = new Map()
 
-    static #GenerateJwtSecret(): string {
-        const secretLength = 64 // Length of the JWT secret
-        const bytes = randomBytes(secretLength)
-        return bytes.toString('hex')
+    static #GenerateJwtSecret(): Secret {
+        const bytes = randomBytes(this.#JWT_SECRET_LENGTH)
+        return bytes.toString('hex') as Secret
     }
 
-    static #HashPassword(password: string): string {
-        return Bcrypt.hashSync(password, User.#SALT_ROUNDS)
-    }
+    static #DecodeToken(userToken: TUserToken): TUserTokenInfo {
+        if (userToken === undefined)
+            throw new HttpErrorUnauthorized()
 
-    
-    static #CheckToken(token: TToken) {
-        if (token === undefined) {
-            return false
+        try {
+            const _decoded = jwt.verify(userToken, this.#Tokens.get(userToken) as Secret)
+            return _decoded as TUserTokenInfo
+        } catch (error: unknown) {
+            throw new HttpErrorUnauthorized((<JsonWebTokenError>error).message)
         }
-        return _.has(User.LoggedInUsers, token)
     }
 
-    static LoadUsers(): void {
-        if (Config.Flags.EnableAuthentication)
-            User.Users = _.mapValues(Config.Configuration.users, user => user.toString())
-    }
+    @Logger.LogFunction(Logger.Debug, true)
+    static async Authenticate(userCredentials: TUserCredentials): Promise<TInternalResponse<TJson>> {
 
-    static LogIn(username: string, password: string): TInternalResponse {
+        const userTokenInfo = await AuthProvider.Provider.Authenticate(userCredentials)
 
-        // Check if the user exists and the password is correct
-        const _isUserExist: boolean = _.has(User.Users, username)
-        if (!_isUserExist || !Bcrypt.compareSync(password, User.#HashPassword(User.Users[username]))) {
-            return {
-                StatusCode: HTTP_STATUS_CODE.FORBIDDEN,
-                Body: { message: 'Invalid username or password' }
-            }
-        }
+        // User.AddUser(userTokenInfo.user)
+
+        userTokenInfo.roles = userTokenInfo.roles || []
+
+        if (Roles.UserDefaultRole !== undefined && !userTokenInfo.roles.includes(Roles.UserDefaultRole))
+            userTokenInfo.roles.push(Roles.UserDefaultRole)
+
+        // Generate a JWT Secret
+        const userSecret = this.#GenerateJwtSecret()
 
         // Generate a JWT token and return it
-        const token = jwt.sign({ username }, User.#GenerateJwtSecret(), { expiresIn: User.JWT_EXPIRATION_TIME })
-        User.LoggedInUsers[token] = {
-            username,
-            password
-        }
-        return {
-            StatusCode: HTTP_STATUS_CODE.OK,
-            Body: { token }
-        }
-    }
-
-
-    static LogOut(token: TToken): TInternalResponse {
-        if (token  && User.#CheckToken(token)) {
-            delete User.LoggedInUsers[token]
-            return {
-                StatusCode: HTTP_STATUS_CODE.OK,
-                Body: { message: 'Logged out successfully' }
+        const userToken = jwt.sign(
+            userTokenInfo,
+            userSecret,
+            {
+                expiresIn: this.#JWT_EXPIRATION_TIME
             }
-        }
-        return {
-            StatusCode: HTTP_STATUS_CODE.BAD_REQUEST,
-            Body: { message: 'Invalid username' }
-        }
+        )
+
+        this.#Tokens.set(userToken, userSecret)
+        return HttpResponse.Ok({ token: userToken })
     }
 
-
-    static GetInfo(token: TToken): TInternalResponse {
-        if (token  && User.#CheckToken(token)) {
-            const { username } = User.LoggedInUsers[token]
-            return {
-                StatusCode: HTTP_STATUS_CODE.OK,
-                Body: { username }
-            }
+    @Logger.LogFunction(Logger.Debug, true)
+    static async LogOut(userToken: TUserToken): Promise<TInternalResponse<undefined>> {
+        const decoded = this.#DecodeToken(userToken)
+        if (userToken) {
+            this.#Tokens.delete(userToken)
+            await AuthProvider.Provider.LogOut(decoded.user)
         }
-        return {
-            StatusCode: HTTP_STATUS_CODE.FORBIDDEN,
-            Body: { message: HTTP_STATUS_MESSAGE.FORBIDDEN }
-        }
+        return HttpResponse.NoContent()
     }
 
-    static IsAuthenticated(token: TToken) {
-        if (!Config.Flags.EnableAuthentication) {
-            return true
-        }
-        if (token != undefined && User.#CheckToken(token)) {
-            return true
-        }
-        return false
+    @Logger.LogFunction(Logger.Debug, true)
+    static async GetUserInfo(userToken: TUserToken): Promise<TInternalResponse<TUserTokenInfo>> {
+        return HttpResponse.Ok(this.#DecodeToken(userToken))
     }
 
-    static IsNotAuthenticated(token: TToken) {
-        return !User.IsAuthenticated(token)
+    @Logger.LogFunction(Logger.Debug, true)
+    static IsAuthenticated(userToken: TUserToken): TUserTokenInfo | undefined {
+        if (userToken === undefined)
+            return undefined
+
+        return this.#DecodeToken(userToken)
     }
+
+    // @Logger.LogFunction(Logger.Debug, true)
+    // static AddUser(newUser: string): TInternalResponse<undefined> {
+    //     if (!Config.Has(`users.${newUser}`)) {
+    //         Config.Set(`users.${newUser}`, {})
+    //         Config.Save()
+    //         return HttpResponse.Created()
+    //     }
+    //     return HttpResponse.NoContent()
+    // }
 }

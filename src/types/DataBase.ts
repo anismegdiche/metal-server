@@ -8,7 +8,8 @@ import alasql from 'alasql'
 //
 import { DataTable, TRow } from './DataTable'
 import { TJson } from './TJson'
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
+import { HttpErrorInternalServerError } from "../server/HttpErrors"
 
 
 export class DataBase {
@@ -18,24 +19,27 @@ export class DataBase {
 
     constructor(name: string) {
         if (name === undefined)
-            throw new Error("undefined DataBase name")
+            throw new HttpErrorInternalServerError("undefined DataBase name")
         this.Name = name
     }
 
-    AddTable(entityName: string, rows: TJson[] | undefined = undefined) {
-        if (this.Tables[entityName] === undefined)
-            this.Tables[entityName] = new DataTable(entityName, rows)
+    @Logger.LogFunction()
+    AddTable(entity: string, rows: TJson[] | undefined = undefined) {
+        if (this.Tables[entity] === undefined)
+            this.Tables[entity] = new DataTable(entity, rows)
         else
-            Logger.Error(`DataBase '${this.Name}' has already entity named '${entityName}'`)
+            Logger.Error(`DataBase '${this.Name}' has already entity named '${entity}'`)
     }
 
-    SetTable(entityName: string, rows: TJson[] | undefined = undefined) {
-        if (this.Tables[entityName] === undefined)
-            this.AddTable(entityName, rows)
+    @Logger.LogFunction()
+    SetTable(entity: string, rows: TJson[] | undefined = undefined) {
+        if (this.Tables[entity] === undefined)
+            this.AddTable(entity, rows)
         else
-            this.Tables[entityName].Set(rows)
+            this.Tables[entity].Set(rows)
     }
 
+    @Logger.LogFunction()
     FreeSql(name: string, sqlQuery: string): DataTable | undefined {
 
         let sqlQueryModified = sqlQuery
@@ -47,6 +51,7 @@ export class DataBase {
         if (dataTables === null)
             return undefined
 
+        // eslint-disable-next-line you-dont-need-lodash-underscore/uniq
         _.uniq(dataTables).forEach((_dt: string) => {
             sqlQueryModified = sqlQueryModified.replace(`{${_dt}}`, ` ? ${_dt}`)
             rows = [

@@ -1,4 +1,4 @@
-/* eslint-disable init-declarations */
+
 //
 //
 //
@@ -7,16 +7,19 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import _ from 'lodash'
 //
-import { Logger } from "../../lib/Logger"
+import { Logger } from "../../utils/Logger"
 import DATA_PROVIDER from "../../server/Source"
 import * as IDataProvider from "../../types/IDataProvider"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
-import { TRANSACTION, TSchemaResponse, TSchemaResponseData, TSchemaResponseError } from "../../types/TSchemaResponse"
-import { TSourceParams } from "../../types/TSourceParams"
-import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
+import { TConfigSource } from "../../types/TConfig"
 import { TJson } from '../../types/TJson'
 import { DataTable } from '../../types/DataTable'
-import { SERVER } from '../../lib/Const'
+import { HTTP_STATUS_CODE, SERVER } from '../../lib/Const'
+import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented, HttpErrorUnauthorized } from "../../server/HttpErrors"
+import { TInternalResponse } from "../../types/TInternalResponse"
+import { HttpResponse } from "../../server/HttpResponse"
 
 
 type TMetalClientParams = {
@@ -66,11 +69,12 @@ export class MetalClient {
         return { headers }
     }
 
+    @Logger.LogFunction()
     static ConvertToURLParams(jsonObj: object): string {
         const params: string[] = []
-        for (const [key, value] of Object.entries(jsonObj)) {
-            if (value != null) {
-                params.push(`${encodeURIComponent(key)}=${encodeURIComponent(value.toString())}`)
+        for (const [_key, _value] of Object.entries(jsonObj)) {
+            if (_value != null) {
+                params.push(`${encodeURIComponent(_key)}=${encodeURIComponent(_value.toString())}`)
             }
         }
         return params.join('&')
@@ -84,7 +88,7 @@ export class MetalClient {
             password
         })
         if (!response?.data?.token) {
-            throw new Error('Token not found in response')
+            throw new HttpErrorInternalServerError('Token not found in response')
         }
         const { token } = response.data
         this.#Token = token
@@ -128,37 +132,45 @@ export class MetalClient {
 
 export class MetalDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.METAL
-    SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
     Connection?: MetalClient = undefined
+    SourceName: string
+    Params: TConfigSource = <TConfigSource>{}
     Config: TJson = {}
 
     Options = new CommonSqlDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    static readonly #ErrorCaseMap: Record<number, Function> = {
+        [HTTP_STATUS_CODE.BAD_REQUEST as number]: (message: string) => new HttpErrorBadRequest(message),
+        [HTTP_STATUS_CODE.UNAUTHORIZED as number]: (message: string) => new HttpErrorUnauthorized(message),
+        [HTTP_STATUS_CODE.FORBIDDEN as number]: (message: string) => new HttpErrorForbidden(message),
+        [HTTP_STATUS_CODE.NOT_FOUND as number]: (message: string) => new HttpErrorNotFound(message),
+        [HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR as number]: (message: string) => new HttpErrorInternalServerError(message),
+        [HTTP_STATUS_CODE.NOT_IMPLEMENTED as number]: (message: string) => new HttpErrorNotImplemented(message)
+    }
+
+
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }
 
     static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest): object {
-        return _.chain(schemaRequest)
-            .omit('sourceName')
-            .omit('schemaName')
-            .omit('entityName')
-            .value()
+        // eslint-disable-next-line you-dont-need-lodash-underscore/omit
+        return _.omit(schemaRequest, ['source', 'schema', 'entity'])
     }
 
-    static #ConvertResponseToSchemaRequest(res: AxiosResponse): TSchemaResponse {
+    static #ConvertResponseToSchemaResponse(res: AxiosResponse): TSchemaResponse {
         const metalResponse = res.data
-        if (metalResponse?.transaction == TRANSACTION.SELECT) {
+        if (res.status == HTTP_STATUS_CODE.OK) {
             const data = new DataTable(
-                metalResponse?.entityName,
+                metalResponse?.entity,
                 metalResponse?.rows,
                 metalResponse?.fields,
                 metalResponse?.metadata
             )
-            return <TSchemaResponseData>{
+            return <TSchemaResponse>{
                 ...metalResponse,
                 data
             }
@@ -166,23 +178,41 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         return metalResponse
     }
 
-    static #HandleError(error: AxiosError): TSchemaResponseError {
-        if (!error?.response) {
-            throw error
-        }
-        if (error?.response?.data) {
-            return error.response.data as TSchemaResponseError
-        }
+    // static #ConvertResponseToInternalResponse(res: AxiosResponse): TInternalResponse<TSchemaResponse> {
+
+    //     const status = res.status
+    //     const body = res.data
+
+    //     if (status == HTTP_STATUS_CODE.OK) {
+    //         const data = new DataTable(
+    //             body?.entity,
+    //             body?.rows,
+    //             body?.fields,
+    //             body?.metadata
+    //         )
+    //         body.data = data
+    //     }
+
+    //     return <TInternalResponse<TSchemaResponse>>{
+    //         StatusCode: status,
+    //         Body: body
+    //     }
+    // }
+
+    static #ThrowError(error: AxiosError): undefined {
+        if (error?.response?.status)
+            this.#ErrorCaseMap[error?.response?.status](error.message)
+
         throw error
     }
 
-    async Init(sourceParams: TSourceParams): Promise<void> {
+    async Init(sourceParams: TConfigSource): Promise<void> {
         Logger.Debug("MetalDataProvider.Init")
         this.Params = sourceParams
     }
 
     async Connect(): Promise<void> {
-        const sourceName = this.SourceName
+        const source = this.SourceName
         const {
             user = '',
             password = '',
@@ -199,12 +229,12 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         this.Connection.Login(user, password)
             .then(() => {
-                Logger.Info(`${Logger.In} connected to '${sourceName} (${database})'`)
                 this.Connection?.Get(`${this.Params.host}${this.Connection.API.server}/info`)
                     .then((res: AxiosResponse) => {
+                        Logger.Info(`${Logger.Out} connected to '${source} (${database})'`)
                         const { data } = res
                         if (data?.version != SERVER.VERSION) {
-                            Logger.Warn(`⚠️  WARNING ⚠️  The server version for '${sourceName}' (version: ${data?.version}) do not match with current Metal Server (version: ${SERVER.VERSION}). Please proceed with caution.`)
+                            Logger.Warn(`⚠️  WARNING ⚠️  The server version for '${source}' (version: ${data?.version}) do not match with current Metal Server (version: ${SERVER.VERSION}). Please proceed with caution.`)
                         }
                     })
                     .catch((error: unknown) => {
@@ -212,7 +242,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
                     })
             })
             .catch((error: unknown) => {
-                Logger.Error(`${Logger.In} Failed to connect to '${sourceName} (${database})'`)
+                Logger.Error(`${Logger.In} Failed to connect to '${source} (${database})'`)
                 Logger.Error(error)
             })
     }
@@ -223,73 +253,97 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        if (this.Connection === undefined) {
-            throw new Error(`${this.SourceName}: Failed to connect`)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
 
-        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
+        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
 
-        return this.Connection.Post(url, options)
-            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalDataProvider.#HandleError)
+        await this.Connection.Post(url, options)
+            .catch(MetalDataProvider.#ThrowError)
+
+        return HttpResponse.NoContent()
     }
 
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        if (this.Connection === undefined) {
-            throw new Error(`${this.SourceName}: Failed to connect`)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
         const urlParams = MetalClient.ConvertToURLParams(options)
 
-        let url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
+        let url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
 
         if (urlParams.length > 0) {
             url += `?${urlParams}`
         }
 
-        return this.Connection.Get(url)
-            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalDataProvider.#HandleError)
+        const schemaResponse = await this.Connection.Get(url)
+            .then(MetalDataProvider.#ConvertResponseToSchemaResponse)
+            .catch(MetalDataProvider.#ThrowError)
+
+        return HttpResponse.Ok(schemaResponse as TSchemaResponse)
     }
 
 
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        if (this.Connection === undefined) {
-            throw new Error(`${this.SourceName}: Failed to connect`)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
 
-        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
+        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
 
-        return await this.Connection.Patch(url, options)
-            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalDataProvider.#HandleError)
+        await this.Connection.Patch(url, options)
+            .catch(MetalDataProvider.#ThrowError)
+
+        return HttpResponse.NoContent()
     }
 
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} MetalDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        if (this.Connection === undefined) {
-            throw new Error(`${this.SourceName}: Failed to connect`)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
 
-        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entityName}`
+        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
 
-        return await this.Connection.Delete(url, options)
-            .then(MetalDataProvider.#ConvertResponseToSchemaRequest)
-            .catch(MetalDataProvider.#HandleError)
+        await this.Connection.Delete(url, options)
+            .catch(MetalDataProvider.#ThrowError)
+
+        return HttpResponse.NoContent()
+    }
+
+    @Logger.LogFunction()
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+        throw new HttpErrorNotImplemented()
+    }
+
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
+
+        const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
+        const urlParams = MetalClient.ConvertToURLParams(options)
+
+        let url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}`
+
+        if (urlParams.length > 0) {
+            url += `?${urlParams}`
+        }
+
+        const schemaResponse = await this.Connection.Get(url)
+            .then(MetalDataProvider.#ConvertResponseToSchemaResponse)
+            .catch(MetalDataProvider.#ThrowError)
+
+        return HttpResponse.Ok(schemaResponse as TSchemaResponse)
     }
 }

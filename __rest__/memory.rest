@@ -1,4 +1,3 @@
-###
 # @name login
 POST  http://localhost:3000/user/login
 Content-Type: application/json
@@ -7,14 +6,29 @@ Content-Type: application/json
     "username":"myapiuser",
     "password": "myStr@ngpa$$w0rd"
 }
-
 ###
+
+
 @token={{login.response.body.token}}
+### 
 
-###
-POST http://localhost:3000/schema/mem/users
-Content-Type: application/json
+
+# @name list
+GET http://localhost:3000/schema/mem
 authorization: Bearer {{token}}
+### 
+
+
+# @name select
+GET http://localhost:3000/schema/mem/users
+authorization: Bearer {{token}}
+###
+
+
+# @name insert
+POST http://localhost:3000/schema/mem/users
+authorization: Bearer {{token}}
+Content-Type: application/json
 
 {
     "data": [
@@ -30,42 +44,31 @@ authorization: Bearer {{token}}
         }
     ]
 }
-
 ###
+
+
+# @name get-cache
 GET http://localhost:3000/schema/mem/users
-    ?cache=100
-Content-Type: application/json
+    ?cache=3600
 authorization: Bearer {{token}}
-
 ###
-# @name view
-GET http://localhost:3000/cache/view
-Content-Type: application/json
-authorization: Bearer {{token}}
 
-###
-# @name purge
-POST http://localhost:3000/cache/purge
-Content-Type: application/json
-authorization: Bearer {{token}}
 
-###
+# @name update
 PATCH http://localhost:3000/schema/mem/users
-Content-Type: application/json
 authorization: Bearer {{token}}
+Content-Type: application/json
 
 {
-    "filterExpression":"name like 'John%'",
+    "filter-expression":"name like 'John%'",
     "data": {
                 "city":"Paris"
     }
 }
-
 ###
-DELETE http://localhost:3000/schema/mem/users
-Content-Type: application/json
-authorization: Bearer {{token}}
 
-# {
-#     "filterExpression":"name like 'John%'"
-# }
+
+# @name delete
+DELETE http://localhost:3000/schema/mem/users
+authorization: Bearer {{token}}
+Content-Type: application/json

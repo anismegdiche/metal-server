@@ -3,7 +3,7 @@
 //  Metal Server
 //
 //
-import { Logger } from './lib/Logger'
+import { Logger } from './utils/Logger'
 import { Server } from './server/Server'
 
 Server.Init()

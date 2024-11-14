@@ -1,4 +1,4 @@
-version: "0.2"
+version: "0.3"
 server:
   port: 3000
   verbosity: debug
@@ -20,46 +20,46 @@ sources:
   fs-json-data:
     provider: files
     options:
-      storageType: fileSystem
-      contentType: json
-      fsFolder: ./data/
-      jsonArrayPath: rows
+      storage: fs
+      type: json
+      fs-folder: ./data/
+      json-path: rows
   fs-csv-data:
     provider: files
     options:
-      storageType: fileSystem
-      contentType: csv
-      fsFolder: ./data/
-      csvDelimiter: ','
-      csvNewline: "\n"
-      csvHeader: true
-      csvQuoteChar: '"'
+      storage: fs
+      type: csv
+      fs-folder: ./data/
+      csv-delimiter: ','
+      csv-newline: "\n"
+      csv-header: true
+      csv-quote: '"'
   az-json-data:
     provider: files
     options:
-      storageType: azureBlob
-      contentType: json
-      azureBlobConnectionString: UseDevelopmentStorage=true
-      azureBlobContainerName: datacontainer1
+      storage: az-blob
+      type: json
+      az-blob-connection-string: UseDevelopmentStorage=true
+      az-blob-container: datacontainer1
   az-csv-data:
     provider: files
     options:
-      storageType: azureBlob
-      contentType: csv
-      azureBlobConnectionString: UseDevelopmentStorage=true
-      azureBlobContainerName: datacontainer1
-      csvDelimiter: ','
-      csvNewline: "\n"
-      csvHeader: true
-      csvQuoteChar: '"'
+      storage: az-blob
+      type: csv
+      az-blob-connection-string: UseDevelopmentStorage=true
+      az-blob-container: datacontainer1
+      csv-delimiter: ','
+      csv-newline: "\n"
+      csv-header: true
+      csv-quote: '"'
 
 
 schemas:
   fsjson:
-    sourceName: fs-json-data
+    source: fs-json-data
   fscsv:
-    sourceName: fs-csv-data
+    source: fs-csv-data
   azjson:
-    sourceName: az-json-data
+    source: az-json-data
   azcsv:
-    sourceName: az-csv-data
+    source: az-csv-data

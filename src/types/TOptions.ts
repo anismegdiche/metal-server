@@ -6,4 +6,5 @@ export type TOptions  = {
     Filter?: any
     Sort?: TJson | string
     Data?: any
+    Cache?: number
 }

@@ -1,4 +1,3 @@
-###
 # @name login
 POST  http://localhost:3000/user/login
 Content-Type: application/json
@@ -7,38 +6,37 @@ Content-Type: application/json
     "username":"myapiuser",
     "password": "myStr@ngpa$$w0rd"
 }
-
 ###
+
+
 @token={{login.response.body.token}}
-
 ###
+
+
 # @name add-some-data
 GET http://localhost:3000/schema/mflix/users
     ?filter={"country":"France","name":"John"}
-    &cache="100"
-Content-Type: application/json
+    &cache=100
 authorization: Bearer {{token}}
-
+Content-Type: application/json
 ###
 
-###
+
+# DONE
 # @name view
 GET http://localhost:3000/cache/view
-Content-Type: application/json
 authorization: Bearer {{token}}
-
 ###
+
+
+# DONE
 # @name purge
 POST http://localhost:3000/cache/purge
-Content-Type: application/json
 authorization: Bearer {{token}}
-
 ###
+
+
+# DONE
 # @name clean
 POST http://localhost:3000/cache/clean
-Content-Type: application/json
 authorization: Bearer {{token}}
-
-{
-
-}

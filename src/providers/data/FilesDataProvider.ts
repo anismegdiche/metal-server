@@ -1,196 +1,220 @@
-/* eslint-disable init-declarations */
 //
 //
 //
 //
 //
-import { RESPONSE_TRANSACTION, RESPONSE } from "../../lib/Const"
+import _ from "lodash"
+//
+import { RESPONSE } from "../../lib/Const"
 import { Helper } from "../../lib/Helper"
-import { Logger } from "../../lib/Logger"
+import { Logger } from "../../utils/Logger"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { Cache } from "../../server/Cache"
 import DATA_PROVIDER from "../../server/Source"
 import * as IDataProvider from "../../types/IDataProvider"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
-import { TSourceParams } from "../../types/TSourceParams"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
+import { TConfigSource } from "../../types/TConfig"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
-import { IStorage } from "../storage/CommonStorage"
-import { IContent } from "../content/CommonContent"
-import { JsonContent } from "../content/JsonContent"
-import { AzureBlobStorage } from '../storage/AzureBlobStorage'
-import { FsStorage } from '../storage/FsStorage'
-import { CsvContent } from '../content/CsvContent'
+import { IStorage } from "../../types/IStorage"
+import { IContent } from "../../types/IContent"
+import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { DataTable } from "../../types/DataTable"
+import { TInternalResponse } from "../../types/TInternalResponse"
+import { HttpResponse } from "../../server/HttpResponse"
+import { Convert } from "../../lib/Convert"
+// Storage
+import { AzureBlobStorage, TAzureBlobStorageConfig } from '../storage/AzureBlobStorage'
+import { FsStorage, TFsStorageConfig } from '../storage/FsStorage'
+import { FtpStorage, TFtpStorageConfig } from "../storage/FtpStorage"
+// Content
+import { JsonContent, TJsonContentConfig } from "../content/JsonContent"
+import { CsvContent, TCsvContentConfig } from '../content/CsvContent'
+import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
 
-/* eslint-disable no-unused-vars */
-export enum STORAGE_PROVIDER {
-    FILESYSTEM = "fileSystem",
-    AZURE_BLOB = "azureBlob"
+
+export enum STORAGE {
+    FILESYSTEM = "fs",
+    AZURE_BLOB = "az-blob",
+    FTP = "ftp"
 }
 
 export enum CONTENT {
     JSON = "json",
-    CSV = "csv"
+    CSV = "csv",
+    XLS = "xls"
 }
-/* eslint-enable no-unused-vars */
+
+export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig & TFtpStorageConfig
+
+export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsContentConfig
 
 export type TFilesDataProviderOptions = {
     // Common
-    storageType?: STORAGE_PROVIDER
-    contentType?: CONTENT
+    storage?: STORAGE
+    content?: {
+        [pattern: string]: {
+            type: CONTENT
+        } & TContentConfig
+    }
+
     //TODO: to test
-    autoCreate?: boolean
-} &
-{    // Filesystem
-    fsFolder?: string
-} &
-{    // Azure Blob
-    azureBlobConnectionString?: string
-    azureBlobContainerName?: string
-    azureBlobCreateContainerIfNotExists?: boolean
-} &
-{    // JSON
-    jsonArrayPath?: string
-} &
-{    // CSV
-    csvDelimiter?: string
-    csvNewline?: string
-    csvHeader?: boolean
-    csvQuoteChar?: string
-    csvSkipEmptyLines?: string | boolean
+    "autocreate"?: boolean
 }
+    & TStorageConfig
 
 export class FilesDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.FILES
-    SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
     Connection?: IStorage = undefined
-    Content: IContent = <IContent>{}
-    ContentType: CONTENT = CONTENT.JSON
+    SourceName: string
+    Params: TConfigSource = <TConfigSource>{}
+
+    // FilesDataProvider
+    ContentHandler: Record<string, IContent> = {}
+    File: Record<string, IContent> = {}
 
     Options = new CommonSqlDataProviderOptions()
 
-    static #NewStorageCaseMap: Record<STORAGE_PROVIDER, Function> = {
-        [STORAGE_PROVIDER.FILESYSTEM]: (storageParams: TSourceParams) => new FsStorage(storageParams),
-        [STORAGE_PROVIDER.AZURE_BLOB]: (storageParams: TSourceParams) => new AzureBlobStorage(storageParams)
-    }
-
-    static #NewContentCaseMap: Record<CONTENT, Function> = {
-        [CONTENT.JSON]: (sourceParams: TSourceParams) => new JsonContent(sourceParams),
-        [CONTENT.CSV]: (sourceParams: TSourceParams) => new CsvContent(sourceParams)
-    }
-
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
+    //TODO: Refactor this asynchronous operation outside of the constructor.sonarlint(typescript:S7059)
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }
 
-    async Init(sourceParams: TSourceParams): Promise<void> {
+    static readonly #NewStorageCaseMap: Record<STORAGE, (storageParams: TConfigSource) => IStorage> = {
+        [STORAGE.FILESYSTEM]: (storageParams: TConfigSource) => new FsStorage(storageParams),
+        [STORAGE.AZURE_BLOB]: (storageParams: TConfigSource) => new AzureBlobStorage(storageParams),
+        [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams)
+    }
+
+    static readonly #NewContentCaseMap: Record<CONTENT, (contentConfig: TContentConfig) => IContent> = {
+        [CONTENT.JSON]: (contentConfig: TContentConfig) => new JsonContent(contentConfig),
+        [CONTENT.CSV]: (contentConfig: TContentConfig) => new CsvContent(contentConfig),
+        [CONTENT.XLS]: (contentConfig: TContentConfig) => new XlsContent(contentConfig)
+    }
+
+    #SetHandler(entity: string) {
+        if (!_.has(this.File, entity)) {
+            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entity))
+            if (handler)
+                this.File[entity] = this.ContentHandler[handler]
+            else
+                throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entity}`)
+        }
+    }
+
+    @Logger.LogFunction()
+    async Init(sourceParams: TConfigSource): Promise<void> {
         Logger.Debug("FilesDataProvider.Init")
         this.Params = sourceParams
         const {
-            storageType = STORAGE_PROVIDER.FILESYSTEM,
-            contentType = CONTENT.JSON
+            storage = STORAGE.FILESYSTEM,
+            content
         } = this.Params.options as TFilesDataProviderOptions
 
-        this.Connection = FilesDataProvider.#NewStorageCaseMap[storageType](this.Params) ?? Helper.CaseMapNotFound(storageType)
+        if (content === undefined)
+            throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
 
+        this.Connection = FilesDataProvider.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
+
+        // init storage
         if (this.Connection)
-            this.Connection?.Init()
+            this.Connection.Init()
         else
-            throw new Error(`${this.SourceName}: Failed to initialize storage provider`)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize storage provider`)
 
-        this.Content = FilesDataProvider.#NewContentCaseMap[contentType](this.Params) ?? Helper.CaseMapNotFound(contentType)
-    }
-
-    async Connect(): Promise<void> {
-        if (this.Connection && this.Content) {
-            this.Connection.Connect()
-        }
-    }
-
-    async Disconnect(): Promise<void> {
-        if (this.Connection && this.Content) {
-            this.Connection.Disconnect()
-        }
-    }
-
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
-
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schemaName, entityName } = schemaRequest
-
-        const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.INSERT
-        }
-
-        let fileString
-        if (this.Connection)
-            fileString = await this.Connection?.Read(entityName)
-        else
-            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
-
-        if (fileString == undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
+        // init content
+        for (const filePattern in content) {
+            if (Object.prototype.hasOwnProperty.call(content, filePattern)) {
+                const { type } = content[filePattern]
+                this.ContentHandler[filePattern] =
+                    FilesDataProvider.#NewContentCaseMap[type](content[filePattern])
             }
         }
+    }
 
-        this.Content.Init(entityName, fileString)
-        const fileDataTable = await this.Content.Get()
+    @Logger.LogFunction()
+    async Connect(): Promise<void> {
+        try {
+            if (this.Connection && this.ContentHandler) {
+                this.Connection.Connect()
+                Logger.Debug(`${Logger.Out} Storage provider '${this.SourceName}' connected`)
+            }
+        } catch (error: any) {
+            Logger.Error(`${this.SourceName}: Failed to connect in storage provider: ${error.message}`)
+        }
+    }
+
+    @Logger.LogFunction()
+    async Disconnect(): Promise<void> {
+        try {
+            if (this.Connection && this.ContentHandler)
+                await this.Connection.Disconnect()
+        } catch (error: any) {
+            Logger.Error(`${this.SourceName}: Failed to disconnect in storage provider: ${error.message}`)
+        }
+    }
+
+    @Logger.LogFunction()
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
+        const { entity } = schemaRequest
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+
+        this.#SetHandler(entity)
+
+        this.File[entity].Init(
+            entity,
+            await this.Connection.Read(entity)
+        )
+
+        const data = await this.File[entity].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Insert(`\`${entityName}\``)
+            .Insert(`\`${entity}\``)
             .Fields(options.Data.GetFieldNames(), '`')
             .Values(options.Data.Rows)
 
-        await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        fileString = await this.Content.Set(fileDataTable)
-        await this.Connection?.Write(entityName, fileString)
+        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await this.Connection.Write(
+            entity,
+            await this.File[entity].Set(data)
+        )
 
-        return <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.INSERT.SUCCESS.MESSAGE,
-            ...RESPONSE.INSERT.SUCCESS.STATUS
-        }
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.Created()
     }
 
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schemaName, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
 
         const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.SELECT
+            schema,
+            entity
         }
 
-        let fileString
-        if (this.Connection)
-            fileString = await this.Connection?.Read(entityName)
-        else
-            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (fileString == undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
-        this.Content.Init(entityName, fileString)
-        
+        this.#SetHandler(entity)
+
+        this.File[entity].Init(
+            entity,
+            await this.Connection.Read(entity)
+        )
+
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`\`${entityName}\``)
+            .From(`\`${entity}\``)
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
@@ -198,118 +222,132 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             ? sqlQueryHelper.Query
             : undefined
 
-        const fileDataTable = await this.Content.Get(sqlQuery)
+        const data = await this.File[entity].Get(sqlQuery)
 
-        if (fileDataTable && fileDataTable.Rows.length > 0) {
-            Cache.Set({
+        if (options?.Cache)
+            await Cache.Set({
                 ...schemaRequest,
-                sourceName: this.SourceName
+                source: this.SourceName
             },
-                fileDataTable
+                data
             )
-            return <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: fileDataTable
-            }
-        } else {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        })
     }
 
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schemaName, entityName } = schemaRequest
+        const { entity } = schemaRequest
 
-        const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.UPDATE
-        }
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        let fileString
-        if (this.Connection)
-            fileString = await this.Connection?.Read(entityName)
-        else
-            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
+        this.#SetHandler(entity)
 
-        if (fileString == undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
-        this.Content.Init(entityName, fileString)
-        const fileDataTable = await this.Content.Get()
+        this.File[entity].Init(
+            entity,
+            await this.Connection.Read(entity)
+        )
+
+        const data = await this.File[entity].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`\`${entityName}\``)
+            .Update(`\`${entity}\``)
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
-        await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        fileString = await this.Content.Set(fileDataTable)
-        await this.Connection?.Write(entityName, fileString)
+        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
-        return <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
-            ...RESPONSE.UPDATE.SUCCESS.STATUS
-        }
+        await this.Connection.Write(
+            entity,
+            await this.File[entity].Set(data)
+        )
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
     }
 
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.In} FilesDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schemaName, entityName } = schemaRequest
+        const { entity } = schemaRequest
 
-        const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.DELETE
-        }
 
-        let fileString
-        if (this.Connection)
-            fileString = await this.Connection?.Read(entityName)
-        else
-            throw new Error(`${this.SourceName}: Failed to read in storage provider`)
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        if (fileString == undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
-        this.Content.Init(entityName, fileString)
-        const fileDataTable = await this.Content.Get()
+        this.#SetHandler(entity)
+
+        this.File[entity].Init(
+            entity,
+            await this.Connection.Read(entity)
+        )
+
+        const data = await this.File[entity].Get()
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
-            .From(`\`${entityName}\``)
+            .From(`\`${entity}\``)
             .Where(options.Filter)
 
-        await fileDataTable.FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        fileString = await this.Content.Set(fileDataTable)
+        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
-        if (this.Connection)
-            await this.Connection?.Write(entityName, fileString)
-        else
-            throw new Error(`${this.SourceName}: Failed to write in storage provider`)
+        await this.Connection.Write(
+            entity,
+            await this.File[entity].Set(data)
+        )
 
-        return <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.DELETE.SUCCESS.MESSAGE,
-            ...RESPONSE.DELETE.SUCCESS.STATUS
-        }
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+        throw new HttpErrorNotImplemented()
+    }
+
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+
+        const { schema } = schemaRequest
+
+        const rxFilePatterns = new RegExp(
+            `(${Object.keys(this.ContentHandler)
+                .map(filePattern => Convert.PatternToRegex(filePattern)
+                    .toString()
+                    .replace(/\//g, '')
+                ).join('|')})`)
+
+        // eslint-disable-next-line init-declarations
+        let data: DataTable
+
+        if (this.Connection) {
+            data = await this.Connection.List()
+            data.Rows = data.Rows.filter(row => rxFilePatterns.test(row.name as string))
+        } else
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+
+        if (data.Rows.length == 0)
+            throw new HttpErrorNotFound(`${schema}: No entities found`)
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schema,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        })
     }
 }

@@ -3,79 +3,78 @@
 //
 //
 //
-
-import { RESPONSE_TRANSACTION, RESPONSE, HTTP_STATUS_CODE, RESPONSE_RESULT } from '../../lib/Const'
+import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
-import { TJson } from "../../types/TJson"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseError, TSchemaResponseNoData } from '../../types/TSchemaResponse'
+import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
-import { Logger } from '../../lib/Logger'
+import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { Plan } from '../../server/Plan'
-import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
 import DATA_PROVIDER from '../../server/Source'
+import { HttpErrorBadRequest, HttpErrorNotFound } from "../../server/HttpErrors"
+import { Config } from "../../server/Config"
+import { DataTable } from "../../types/DataTable"
+import { TJson } from "../../types/TJson"
+import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { HttpResponse } from "../../server/HttpResponse"
+import { TInternalResponse } from "../../types/TInternalResponse"
 
 
 export class PlanDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.PLAN
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
+    Params: TConfigSource = <TConfigSource>{}
     Config: TJson = {}
 
     Options = new CommonSqlDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }
 
-    async Init(sourceParams: TSourceParams): Promise<void> {
+    @Logger.LogFunction()
+    async Init(sourceParams: TConfigSource): Promise<void> {
         Logger.Debug("PlanDataProvider.Init")
         this.Params = sourceParams
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Info(`${Logger.In} connected to '${this.SourceName} (${this.Params.database})'`)
+        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         Logger.Info(`${Logger.In} '${this.SourceName} (${this.Params.database})' disconnected`)
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} PlanDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
-        const { schemaName, entityName } = schemaRequest
-        Logger.Error(`Insert: Not allowed for plans '${schemaName}', entity '${entityName}'`)
-        return <TSchemaResponseError>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.INSERT,
-            ...RESPONSE_RESULT.ERROR,
-            status: HTTP_STATUS_CODE.BAD_REQUEST,
-            error: "Not allowed for plans"
-        }
+
+    @Logger.LogFunction()
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+        const { schema, entity } = schemaRequest
+        Logger.Error(`Insert: Not allowed for plans '${schema}', entity '${entity}'`)
+        throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schemaName, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
 
         const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.SELECT
+            schema,
+            entity
         }
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`\`${entityName}\``)
+            .From(`\`${entity}\``)
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
@@ -83,57 +82,71 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
             ? sqlQueryHelper.Query
             : undefined
 
-        const planDataTable = await Plan.Process(schemaRequest, sqlQuery)
+        const planData = await Plan.Process(schemaRequest, sqlQuery)
 
-        if (planDataTable && planDataTable.Rows.length > 0) {
-            Cache.Set({
-                ...schemaRequest,
-                sourceName: this.SourceName
-            },
-                planDataTable
-            )
-            return <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: planDataTable
-            }
-        } else {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+        const data = new DataTable(schemaRequest.entity)
+
+        if (planData && planData.Rows.length > 0) {
+            data.AddRows(planData.Rows)
+            if (options?.Cache)
+                Cache.Set({
+                    ...schemaRequest,
+                    source: this.SourceName
+                },
+                    data
+                )
         }
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        })
+    }
+
+
+    @Logger.LogFunction()
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+        const { schema, entity } = schemaRequest
+        Logger.Error(`Update: Not allowed for plans '${schema}', entity '${entity}'`)
+        throw new HttpErrorBadRequest("Not allowed for plans")
+    }
+
+
+    @Logger.LogFunction()
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+        const { schema, entity } = schemaRequest
+        Logger.Error(`Delete: Not allowed for plans '${schema}', entity '${entity}'`)
+        throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
     // eslint-disable-next-line class-methods-use-this
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
-        const { schemaName, entityName } = schemaRequest
-        Logger.Error(`Update: Not allowed for plans '${schemaName}', entity '${entityName}'`)
-        return <TSchemaResponseError>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.UPDATE,
-            ...RESPONSE_RESULT.ERROR,
-            status: HTTP_STATUS_CODE.BAD_REQUEST,
-            error: "Not allowed for plans"
-        }
+    @Logger.LogFunction()
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+        const { schema, entity } = schemaRequest
+        Logger.Error(`Delete: Not allowed for plans '${schema}', entity '${entity}'`)
+        throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`PlanDataProvider.Delete : ${JSON.stringify(schemaRequest)}`)
-        const { schemaName, entityName } = schemaRequest
-        Logger.Error(`Delete: Not allowed for plans '${schemaName}', entity '${entityName}'`)
-        return <TSchemaResponseError>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.DELETE,
-            ...RESPONSE_RESULT.ERROR,
-            status: HTTP_STATUS_CODE.BAD_REQUEST,
-            error: "Not allowed for plans"
-        }
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+
+        const { schema } = schemaRequest
+
+        const data = Object.keys(Config.Get('plans')).map(key => ({
+            name: key,
+            type: 'plan'
+        }))
+
+        if (data.length == 0)
+            throw new HttpErrorNotFound(`${schema}: No entities found`)
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schema,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data: new DataTable(undefined, data)
+        })
     }
 }

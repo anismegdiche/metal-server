@@ -3,83 +3,68 @@
 //
 //
 //
-import _ from 'lodash'
-import { NextFunction, Request, Response } from 'express'
-
-import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE, SERVER } from '../lib/Const'
+import { Request, Response } from 'express'
+//
+import { HTTP_STATUS_CODE } from '../lib/Const'
+import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented, HttpErrorUnauthorized } from '../server/HttpErrors'
 import { Server } from '../server/Server'
-import { HttpError } from '../server/HttpErrors'
+import { TJson } from "../types/TJson"
+import typia from "typia"
+import { Convert } from "../lib/Convert"
 
 
 export class ServerResponse {
 
-    static NotImplemented(req: Request, res: Response): void {
-        res
-            .status(HTTP_STATUS_CODE.NOT_IMPLEMENTED)
-            .json({ message: HTTP_STATUS_MESSAGE.NOT_IMPLEMENTED })
-            .end()
+    static async GetInfo(req: Request, res: Response): Promise<void> {
+        ServerResponse.CheckRequest(req)
+        await Server.GetInfo(req.__METAL_CURRENT_USER)
+            .then(intRes => Convert.InternalResponseToResponse(res, intRes))
+            .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
-    static BadRequest(res: Response): void {
-        res
-            .status(HTTP_STATUS_CODE.BAD_REQUEST)
-            .json({ message: HTTP_STATUS_MESSAGE.BAD_REQUEST })
-            .end()
+    static async Reload(req: Request, res: Response): Promise<void> {
+        ServerResponse.CheckRequest(req)
+        await Server.Reload(req.__METAL_CURRENT_USER)
+            .then(intRes => Convert.InternalResponseToResponse(res, intRes))
+            .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
+
     }
 
-    static Error(res: Response, error: HttpError | Error) {
-        const status = (error instanceof HttpError)
-            ? error.status
+    static Response(res: Response, body: TJson, status: HTTP_STATUS_CODE = HTTP_STATUS_CODE.OK): void {
+        try {
+            res.status(status).json(body).end()
+        } catch (error: unknown) {
+            ServerResponse.ResponseError(res, error as Error)
+        }
+    }
+
+    static ResponseError(res: Response, error: HttpError | Error) {
+        const status = typia.is<HttpError>(error)
+            ? error.Status
             : HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR
 
         res
             .status(status)
             .json({
-                message: 'Something Went Wrong',
+                // message: 'Something Went Wrong',
                 error: error.message,
-                stack: (status == 500)
-                    ? _.split(error.stack, '\n')
+                stack: (status == HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
+                    ? (error?.stack?.split('\n') ?? "")
                     : undefined
             })
             .end()
     }
 
-    static GetInfo(req: Request, res: Response): void {
-        try {
-            res
-                .status(HTTP_STATUS_CODE.OK)
-                .json(Server.GetInfo())
-                .end()
-        } catch (error: unknown) {
-            ServerResponse.Error(res, error as Error)
-        }
+    static ResponseNotImplemented(req: Request, res: Response): void {
+        ServerResponse.ResponseError(res, new HttpErrorNotImplemented())
     }
 
-    static Reload(req: Request, res: Response): void {
-        try {
-            Server.Reload()
-            res
-                .status(HTTP_STATUS_CODE.OK)
-                .json({
-                    server: SERVER.NAME,
-                    message: `Server reloaded`
-                })
-                .end()
-
-        } catch (error: unknown) {
-            ServerResponse.Error(res, error as Error)
-        }
+    static ResponseBadRequest(res: Response): void {
+        ServerResponse.ResponseError(res, new HttpErrorBadRequest())
     }
 
-    static AllowMethods(req: Request, res: Response, next: NextFunction, ...methods: string[]) {
-
-        if (methods.includes(req.method)) {
-            next()
-        } else {
-            res
-                .status(HTTP_STATUS_CODE.METHOD_NOT_ALLOWED)
-                .json({ error: HTTP_STATUS_MESSAGE.METHOD_NOT_ALLOWED })
-                .end()
-        }
+    static CheckRequest(req: Request) {
+        if (!req.__METAL_CURRENT_USER)
+            throw new HttpErrorUnauthorized()
     }
 }

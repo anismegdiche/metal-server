@@ -3,111 +3,116 @@
 //
 //
 //
-
-import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
-import { TSourceParams } from "../../types/TSourceParams"
+import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
-import { TJson } from "../../types/TJson"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from '../../types/TSchemaResponse'
+import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
-import { Logger } from '../../lib/Logger'
+import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import DATA_PROVIDER, { Source } from '../../server/Source'
+import DATA_PROVIDER from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
-import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
+import { TJson } from "../../types/TJson"
+import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
+import { DataTable } from "../../types/DataTable"
+import { JsonHelper } from "../../lib/JsonHelper"
+import { TInternalResponse } from "../../types/TInternalResponse"
+import { HttpResponse } from "../../server/HttpResponse"
 
+
+export type TMemoryDataProviderOptions = {
+    // v0.3
+    "autocreate"?: boolean            // Auto create table if not exist
+}
 
 export class MemoryDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MEMORY
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
+    Params: TConfigSource = <TConfigSource>{}
     Config: TJson = {}
     Connection?: DataBase = undefined
 
     Options = new CommonSqlDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }
 
-    async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("MemoryDataProvider.Init")
+    @Logger.LogFunction()
+    async Init(sourceParams: TConfigSource): Promise<void> {
         this.Params = sourceParams
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Info(`${Logger.In} connected to '${this.SourceName} (${this.Params.database})'`)
 
         const {
             database = 'memory'
         } = this.Params
 
         this.Connection = new DataBase(database)
+        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         Logger.Info(`${Logger.In} '${this.SourceName} (${this.Params.database})' disconnected`)
         this.Connection = undefined
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MemoryDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
-        const schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.INSERT
-        }
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+    @Logger.LogFunction()
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        if (this.Connection.Tables[schemaRequest.entityName] === undefined) {
-            this.Connection.AddTable(schemaRequest.entityName)
-        }
+        const { schema, entity } = schemaRequest
+
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        await this.AddEntity(schemaRequest)
+
+        if (this.Connection.Tables[entity] === undefined)
+            throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
-        this.Connection.Tables[schemaRequest.entityName].AddRows(options.Data.Rows)
 
-        return <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.INSERT.SUCCESS.MESSAGE,
-            ...RESPONSE.INSERT.SUCCESS.STATUS
-        }
+        this.Connection.Tables[entity].AddRows(options.Data.Rows)
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.Created()
     }
 
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schemaName, entityName } = schemaRequest
+        const { schema, entity } = schemaRequest
 
         const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.SELECT
+            schema,
+            entity
         }
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        if (this.Connection.Tables[schemaRequest.entityName] === undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
+        // removed: in case of autocreate and select, entity should not be created
+        //await this.AddEntity(schemaRequest)
+
+        if (this.Connection.Tables[entity] === undefined)
+            throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`\`${entityName}\``)
+            .From(`\`${entity}\``)
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
@@ -115,103 +120,128 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
             ? sqlQueryHelper.Query
             : undefined
 
-        const memoryDataTable = await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQuery, sqlQueryHelper.Data)
+        const data = new DataTable(entity)
+
+        const memoryDataTable = await this.Connection.Tables[entity].FreeSqlAsync(sqlQuery, sqlQueryHelper.Data)
 
         if (memoryDataTable && memoryDataTable.Rows.length > 0) {
-            Cache.Set({
-                ...schemaRequest,
-                sourceName: this.SourceName
-            },
-                memoryDataTable
-            )
-            return <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: memoryDataTable
-            }
-        } else {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+            data.AddRows(memoryDataTable.Rows)
+            if (options?.Cache)
+                Cache.Set({
+                    ...schemaRequest,
+                    source: this.SourceName
+                },
+                    data
+                )
         }
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        })
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
-        const { schemaName, entityName } = schemaRequest
-        const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.UPDATE
-        }
 
+    @Logger.LogFunction()
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+        const { schema, entity } = schemaRequest
 
-        if (this.Connection.Tables[schemaRequest.entityName] === undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        // removed: in case of autocreate and select, entity should not be created
+        //await this.AddEntity(schemaRequest)
+
+        if (this.Connection.Tables[entity] === undefined)
+            throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`\`${entityName}\``)
+            .Update(`\`${entity}\``)
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
-        await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        return <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
-            ...RESPONSE.UPDATE.SUCCESS.STATUS
-        }
+        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MemoryDataProvider.Delete : ${JSON.stringify(schemaRequest)}`)
-        const { schemaName, entityName } = schemaRequest
-        const schemaResponse = <TSchemaResponse>{
-            schemaName,
-            entityName,
-            ...RESPONSE_TRANSACTION.DELETE
-        }
 
+    @Logger.LogFunction()
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+        const { schema, entity } = schemaRequest
 
-        if (this.Connection.Tables[schemaRequest.entityName] === undefined) {
-            return <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        // removed: in case of autocreate and select, entity should not be created
+        //await this.AddEntity(schemaRequest)
+
+        if (this.Connection.Tables[entity] === undefined)
+            throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
-            .From(`\`${entityName}\``)
+            .From(`\`${entity}\``)
             .Where(options.Filter)
 
-        await this.Connection.Tables[schemaRequest.entityName].FreeSql(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        return <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.DELETE.SUCCESS.MESSAGE,
-            ...RESPONSE.DELETE.SUCCESS.STATUS
+        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
+    }
+
+    @Logger.LogFunction()
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        const { entity } = schemaRequest
+        const autoCreate: boolean = (this.Params.options && this.Params.options["autocreate"] as boolean) ?? false
+
+        if (autoCreate &&
+            !Object.keys(this.Connection.Tables).includes(entity)) {
+            this.Connection.AddTable(entity)
         }
+
+        return HttpResponse.Created()
+    }
+
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+
+        const { schema } = schemaRequest
+
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        const rows = Object.keys(this.Connection.Tables).map(entity => ({
+            name: entity,
+            type: 'datatable',
+            size: this.Connection?.Tables[entity].Rows.length
+        }))
+
+        if (rows.length == 0)
+            throw new HttpErrorNotFound(`${schema}: No entities found`)
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schema,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data: new DataTable(undefined, rows)
+        })
     }
 }

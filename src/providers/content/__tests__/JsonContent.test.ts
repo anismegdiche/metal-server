@@ -1,62 +1,45 @@
+import { Readable } from "node:stream"
 import { DataTable } from '../../../types/DataTable'
-import { TSourceParams } from '../../../types/TSourceParams'
 import { JsonContent } from '../JsonContent'
+import { TContentConfig } from "../../data/FilesDataProvider"
 
 describe('JsonContent', () => {
-    const sourceParams: TSourceParams = <TSourceParams>{
-        provider: "files",
-        options: {
-            jsonArrayPath: 'data'
-        }
+    const contentConfig: TContentConfig = {
+        "json-path": 'data'
     }
 
-    let jsonContent = new JsonContent(sourceParams)
+    let jsonContent = new JsonContent(contentConfig)
 
     beforeEach(() => {
-        jsonContent = new JsonContent(sourceParams)
+        jsonContent = new JsonContent(contentConfig)
     })
 
     describe('Init', () => {
         it('should initialize the content and config correctly with empty options', async () => {
             const name = 'test'
-            const content = '{"key": "value"}'
+            const content = Readable.from('{"key": "value"}')
 
-            const jsonContentEmptyOptions = new JsonContent(<TSourceParams>{
-                ...sourceParams,
-                options: {}
-            })
+            const jsonContentEmptyOptions = new JsonContent({})
 
             await jsonContentEmptyOptions.Init(name, content)
-            expect(jsonContentEmptyOptions.Config).toEqual({ arrayPath: undefined })
+            expect(jsonContentEmptyOptions.Params).toEqual({ path: "" })
         })
 
         it('should initialize the content and config correctly', async () => {
             const name = 'test'
-            const content = '{"key": "value"}'
+            const content = Readable.from('{"key": "value"}')
 
             await jsonContent.Init(name, content)
 
             expect(jsonContent.EntityName).toBe(name)
-            expect(jsonContent.RawContent).toBe(content)
-            expect(jsonContent.Content).toEqual({ "key": "value" })
-        })
-
-        it('should handle empty content and set default values', async () => {
-            const name = 'test'
-            const content = ''
-
-            await jsonContent.Init(name, content)
-
-            expect(jsonContent.EntityName).toBe(name)
-            expect(jsonContent.RawContent).toBe(content)
-            expect(jsonContent.Content).toEqual({})
+            expect(jsonContent.Content.ReadFile(name)).toBe(content)
         })
     })
 
     describe('Get', () => {
         beforeEach(async () => {
             const name = 'test'
-            const content = '{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}'
+            const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
 
             await jsonContent.Init(name, content)
         })
@@ -79,7 +62,7 @@ describe('JsonContent', () => {
         })
 
         it('should return an empty DataTable if arrayPath is not found', async () => {
-            jsonContent.Config.arrayPath = 'nonexistent.path'
+            jsonContent.Params!.path = 'nonexistent.path'
 
             const dataTable = await jsonContent.Get()
 
@@ -90,15 +73,14 @@ describe('JsonContent', () => {
     })
 
     describe('Set', () => {
+        const name = 'test'
         beforeEach(async () => {
-            const name = 'test'
-            const content = '{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}'
-
+            const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
             await jsonContent.Init(name, content)
         })
 
         it('should update the content and return the updated raw content', async () => {
-            const newDataTable = new DataTable('newData', [
+            const newData = new DataTable(name, [
                 {
                     id: 3,
                     name: 'Alice'
@@ -109,22 +91,9 @@ describe('JsonContent', () => {
                 }
             ])
 
-            const rawContent = await jsonContent.Set(newDataTable)
+            await jsonContent.Set(newData)
 
-            expect(jsonContent.Content).toEqual({
-                "data": [
-                    {
-                        "id": 3,
-                        "name": "Alice"
-                    },
-                    {
-                        "id": 4,
-                        "name": "Bob"
-                    }
-                ]
-            })
-            expect(jsonContent.RawContent).toBe(rawContent)
-            expect(rawContent).toBe(JSON.stringify(jsonContent.Content))
+            expect(await jsonContent.Get()).toEqual(newData)
         })
     })
 })

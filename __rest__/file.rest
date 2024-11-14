@@ -1,4 +1,3 @@
-###
 # @name login
 POST  http://localhost:3000/user/login
 Content-Type: application/json
@@ -7,27 +6,33 @@ Content-Type: application/json
     "username":"myapiuser",
     "password": "myStr@ngpa$$w0rd"
 }
-
 ###
-@token={{login.response.body.token}}
 
+
+@token={{login.response.body.token}}
+###
 ###### FS   ######
 
-###
-GET http://localhost:3000/schema/fsjson/customer.json
-    ?fields=city,country
-    &filter={"country":"France"}
-    &cache=300
-Content-Type: application/json
+# @name list
+GET http://localhost:3000/schema/fsjson
 authorization: Bearer {{token}}
-
 ###
+
+# @name select
+GET http://localhost:3000/schema/fsjson/customer.json
+    # ?fields=city,country
+    # &filter={"country":"France"}
+    # &cache=300
+authorization: Bearer {{token}}
+###
+
+
 GET http://localhost:3000/schema/fscsv/covid.csv
     ?fields=iso_code,continent,location
-Content-Type: application/json
 authorization: Bearer {{token}}
-
 ###
+
+
 # @name patch_customer_json
 PATCH  http://localhost:3000/schema/fsjson/customer.json
 Content-Type: application/json
@@ -41,23 +46,28 @@ authorization: Bearer {{token}}
         "city": "XXXXXXXXXX"
     }
 }
-
-
+###
 ###### AZURE BLOB   ######
+
+# @name list
+GET http://localhost:3000/schema/azjson
+authorization: Bearer {{token}}
 ###
+
+
+# @name select
 GET http://localhost:3000/schema/azjson/colors.json
-    ?filterExpression=hexcode LIKE '%%00'
-Content-Type: application/json
+    ?filter-expression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
-
-
 ###
+
+
 GET http://localhost:3000/schema/azcsv/addresses.csv
-    # ?filterExpression=hexcode LIKE '%%00'
-Content-Type: application/json
+    # ?filter-expression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
-
 ###
+
+
 PATCH  http://localhost:3000/schema/azcsv/addresses.csv
 Content-Type: application/json
 authorization: Bearer {{token}}
@@ -67,3 +77,56 @@ authorization: Bearer {{token}}
         "Country": "USA"
     }
 }
+
+###
+
+
+# @name xls-list
+GET http://localhost:3000/schema/v2
+authorization: Bearer {{token}}
+###
+
+
+# @name xls-select
+GET http://localhost:3000/schema/v2/sample.xlsx
+   ?filter-expression=Name = 'Mary'
+authorization: Bearer {{token}}
+###
+
+
+PATCH  http://localhost:3000/schema/v2/sample.xlsx
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": {
+        "Country": "France",
+        "City": "Paris 16e"
+    }
+}
+
+###
+
+# @name xls-select
+GET http://localhost:3000/schema/v2/ref2.xlsx
+authorization: Bearer {{token}}
+###
+
+
+
+
+GET http://localhost:3000/schema/v2/covid.csv
+    # ?filter-expression=hexcode LIKE '%%00'
+authorization: Bearer {{token}}
+###
+
+
+GET http://localhost:3000/schema/v2/sample.csv
+    # ?filter-expression=hexcode LIKE '%%00'
+authorization: Bearer {{token}}
+###
+
+
+GET http://localhost:3000/schema/ftp/sample.csv
+authorization: Bearer {{token}}
+###

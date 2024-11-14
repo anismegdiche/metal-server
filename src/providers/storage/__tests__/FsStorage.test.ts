@@ -1,16 +1,22 @@
-import { TSourceParams } from '../../../types/TSourceParams'
-import { FsStorage } from '../FsStorage'
+import { Readable } from "node:stream"
+import { TConfigSource } from '../../../types/TConfig'
+import { FsStorage, TFsStorageConfig } from '../FsStorage'
 import Fs from 'fs'
+import { ReadableHelper } from "../../../lib/ReadableHelper"
+import typia from "typia"
+import { TJsonContentConfig } from "../../content/JsonContent"
 
 
 describe('FsStorage', () => {
-    const sourceParams = <TSourceParams>{
+    const sourceParams = <TConfigSource>{
         provider: "files",
         options: {
-            jsonArrayPath: 'data'
+            ...typia.random<TFsStorageConfig>(),
+            ...typia.random<TJsonContentConfig>()
         }
     }
     const fsStorage = new FsStorage(sourceParams)
+    fsStorage.Init()
 
     beforeEach(() => {
         //
@@ -44,16 +50,17 @@ describe('FsStorage', () => {
             jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(true)
 
             const result = await fsStorage.Read('test.txt')
-
-            expect(result).toBe('File content')
+            expect(result).toBeInstanceOf(Readable)
+            expect(ReadableHelper.ToString(result)).resolves.toBe('File content')
         })
 
-        it('should return undefined if the file does not exist', async () => {
+        it('should return throw Not Found if the file does not exist', async () => {
             jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(false)
-
-            const result = await fsStorage.Read('test.txt')
-
-            expect(result).toBeUndefined()
+            try {
+                await fsStorage.Read('test.txt')
+            } catch (error: any) {
+                expect(error?.name).toBe('HttpErrorNotFound')
+            }
         })
     })
 
@@ -61,11 +68,13 @@ describe('FsStorage', () => {
         it('should write the content to the file', async () => {
             jest.spyOn(Fs.promises, 'writeFile').mockResolvedValue(undefined)
 
-            await fsStorage.Write('test.txt', 'File content')
+            const stream = Readable.from('File content')
+
+            await fsStorage.Write('test.txt', stream)
 
             expect(Fs.promises.writeFile).toHaveBeenCalledWith(
-                `${fsStorage.Params.database}test.txt`,
-                'File content',
+                `${fsStorage.Params!.folder}test.txt`,
+                stream,
                 'utf8'
             )
         })

@@ -19,6 +19,7 @@ describe('Sandbox', () => {
         const sandbox = new Sandbox()
         const code = 'Math.abs(2 - 9)'
         const result = sandbox.Evaluate(code)
+         
         // eslint-disable-next-line no-eval
         expect(result).toStrictEqual(eval(code))
     })
@@ -27,7 +28,7 @@ describe('Sandbox', () => {
         const sandbox = new Sandbox()
         let result = sandbox.Evaluate('var x = 5')
         result = sandbox.Evaluate('x * 2')
-        // eslint-disable-next-line no-eval
+         
         expect(result).toBeUndefined()
     })
 

@@ -1,22 +1,17 @@
-/* eslint-disable no-unused-vars */
-//
-//
-//
-//
-//
-import * as Fs from 'fs'
 
-const packageJsonString = Fs.readFileSync('./package.json', 'utf8')
-
-// Parse the JSON content
-const packageJson = JSON.parse(packageJsonString)
+//
+//
+//
+//
+//
+import { Package } from "../utils/Package"
 
 
-export enum SERVER {
-    NAME = 'Metal',
-    VERSION = packageJson.version,
-    BANNER = '<h1>\\m/ Metal Server</h1>',
-    CONSOLE_BANNER = `\x1b[31m
+export const SERVER = {
+    NAME: 'Metal',
+    VERSION: Package.Json.version as string,
+    BANNER: '<h1>\\m/ Metal Server</h1>',
+    CONSOLE_BANNER: `\x1b[31m
                ,,,,,
              ▓▓▓▓▓▓▓▓▓
         ,    ▓▓▓▓▓▓▓▓▓    ,   \x1b[0m   ▄▄▄      ▄▄               ██▌             ██▌\x1b[31m
@@ -28,7 +23,7 @@ export enum SERVER {
         ▀▓▓▓▓█▄▄╦╥   ▐▓▓▓▓▀   \x1b[0m▐██    ███    ██▌ ▀▀█████▀   ██▌  ▀▀████▀██▌ ██▌\x1b[31m
           ▀▓▓▓▓▓▓▓   ▐▓▓▀ 
              ╚▀▀▀▀   ▀        \x1b[0m M i d d l e w a r e     -     E T L    -    A I \x1b[31m
-`,
+`
 }
 
 export enum ROUTE {
@@ -37,22 +32,8 @@ export enum ROUTE {
     SCHEMA_PATH = '/schema',
     PLAN_PATH = '/plan',
     CACHE_PATH = '/cache',
-    SCHEDULE_PATH = '/schedule'
-}
-
-export const RESPONSE_TRANSACTION = {
-    SELECT: {
-        transaction: 'select'
-    },
-    DELETE: {
-        transaction: 'delete'
-    },
-    UPDATE: {
-        transaction: 'update'
-    },
-    INSERT: {
-        transaction: 'insert'
-    }
+    SCHEDULE_PATH = '/schedule',
+    SWAGGER_UI_PATH = '/api-docs'
 }
 
 export const RESPONSE_RESULT = {
@@ -90,7 +71,8 @@ export enum HTTP_STATUS_CODE {
     METHOD_NOT_ALLOWED = 405,
     TOO_MANY_REQUESTS = 429,
     INTERNAL_SERVER_ERROR = 500,
-    NOT_IMPLEMENTED = 501
+    NOT_IMPLEMENTED = 501,
+    CONTENT_TOO_LARGE = 413
 }
 
 export enum HTTP_STATUS_MESSAGE {
@@ -103,9 +85,10 @@ export enum HTTP_STATUS_MESSAGE {
     NOT_FOUND = 'Not Found',
     CONFLICT = 'Conflict',
     METHOD_NOT_ALLOWED = 'Method Not Allowed',
-    TOO_MANY_REQUESTS = 'Too Many Requests',
+    TOO_MANY_REQUESTS = 'Too many requests from this IP, please try again later',
     INTERNAL_SERVER_ERROR = 'Internal Server Error',
-    NOT_IMPLEMENTED = 'Not Implemented'
+    NOT_IMPLEMENTED = 'Not Implemented',
+    CONTENT_TOO_LARGE = 'Content Too Large'
 }
 
 export const RESPONSE_STATUS = {
@@ -132,6 +115,12 @@ export const RESPONSE_STATUS = {
     }
 }
 
+export enum VALIDATION_ERROR_MESSAGE {
+    MUST_BE_NUMBER = 'must be a number',
+    MUST_BE_JSON = 'must be a JSON object',
+    MUST_BE_JSON_ARRAY_OR_OBJECT = 'must be a JSON array or a JSON object',
+    MUST_BE_STRING = 'must be a string'
+}
 
 export const RESPONSE = {
     SELECT: {

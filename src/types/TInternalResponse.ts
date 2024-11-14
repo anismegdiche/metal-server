@@ -1,8 +1,7 @@
 import { HTTP_STATUS_CODE } from '../lib/Const'
-import { TJson } from './TJson'
 
 
-export type TInternalResponse = {
+export type TInternalResponse<T> = {
     StatusCode: HTTP_STATUS_CODE
-    Body?: TJson
+    Body?: T
 }

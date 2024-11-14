@@ -1,4 +1,4 @@
-/* eslint-disable no-plusplus */
+ 
 //
 //
 //
@@ -8,7 +8,7 @@ import Axios from 'axios'
 import Jimp from 'jimp'
 import * as Fs from 'fs'
 //
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { IAiEngine } from '../types/IAiEngine'
 import { TJson } from '../types/TJson'
 import { Helper } from '../lib/Helper'
@@ -16,6 +16,7 @@ import { Helper } from '../lib/Helper'
 import * as Tf from '@tensorflow/tfjs'
 import * as MobileNet from '@tensorflow-models/mobilenet'
 import { AI_ENGINE, TConfigAiEngineTensorFlowJsImageClassifyOptions, TENSORFLOW_JS_MODEL } from '../server/AiEngine'
+import { JsonHelper } from '../lib/JsonHelper'
 
 
 export class TensorFlowJs implements IAiEngine {
@@ -26,14 +27,17 @@ export class TensorFlowJs implements IAiEngine {
 
 	#Model?: MobileNet.MobileNet = undefined
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	#LoadModel: Record<string, Function> = {
 		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: async () => await MobileNet.load()
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	#RunModel: Record<string, Function> = {
 		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: async (imagePath: string) => await this.#ImageClassify(imagePath)
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	#SetDefaultOptions: Record<string, Function> = {
 		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: (options: Partial<TConfigAiEngineTensorFlowJsImageClassifyOptions> = {}) => TensorFlowJs.#ImageClassifySetDefaultOptions(options)
 	}
@@ -52,20 +56,22 @@ export class TensorFlowJs implements IAiEngine {
 		Tf.setBackend('cpu')
 	}
 
-	async Init(): Promise<void> {
+	@Logger.LogFunction()
+    async Init(): Promise<void> {
 		this.#Model = await this.#LoadModel[this.Model]()
 	}
 
-	async Run(imagePath: string): Promise<any> {
+	@Logger.LogFunction()
+    async Run(imagePath: string): Promise<any> {
 		return await this.#RunModel[this.Model](imagePath)
 			.catch((error: any) => {
-				Logger.Error(`TensorFlowJs.Run '${this.InstanceName}': '${JSON.stringify(this.Options)}', on '${imagePath}'`)
+				Logger.Error(`TensorFlowJs.Run '${this.InstanceName}': '${JsonHelper.Stringify(this.Options)}', on '${imagePath}'`)
 				Logger.Error(error)
 				return undefined
 			})
 	}
 
-	static async #LoadImage(imagePath: string): Promise<Buffer> {
+    static async #LoadImage(imagePath: string): Promise<Buffer> {
 		if (imagePath.startsWith('http')) {
 			const response = await Axios.get(imagePath, {
 				responseType: 'arraybuffer'

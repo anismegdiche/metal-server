@@ -21,7 +21,7 @@ authorization: Bearer {{token}}
 # @name select-filtered
 GET http://localhost:3000/schema/metalws/members
     ?fields=firstname,surname,address
-    &filterExpression=address LIKE '%oo%'
+    &filter-expression=address LIKE '%oo%'
     # &filter={"firstname": "Darren"}
     # &sort=contact_name asc,company_name desc
     # &cache=300

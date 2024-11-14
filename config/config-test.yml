@@ -1,4 +1,4 @@
-version: "0.2"
+version: "0.3"
 server:
   port: 3000
   verbosity: debug
@@ -13,8 +13,22 @@ server:
       connectTimeoutMS: 5000
       serverSelectionTimeoutMS: 5000
 
+roles:
+  admin: crudl
+  jsonreader: r
+  lister: l
+  modifier: cud
+
 users:
-  myapiuser: myStr@ngpa$$w0rd
+  myapiuser:
+    password: myStr@ngpa$$w0rd
+    secret: 1234567890
+    roles: [jsonreader, lister, modifier]
+    
+  myguest:
+    password: guest
+    secret: 1234567890
+    roles: [jsonreader]
 
 sources:
   mssql:
@@ -49,60 +63,62 @@ sources:
     provider: files
     database: ./data/
     options:
-      storageType: fileSystem
-      contentType: json
-      jsonArrayPath: rows
+      storage: fs
+      type: json
+      json-path: rows
   fs-csv-data:
     provider: files
     database: ./data/
     options:
-      storageType: fileSystem
-      contentType: csv
-      csvDelimiter: ','
-      csvNewline: "\n"
-      csvHeader: true
-      csvQuoteChar: '"'
+      storage: fs
+      type: csv
+      csv-delimiter: ","
+      csv-newline: "\n"
+      csv-header: true
+      csv-quote: '"'
   az-json-data:
     provider: files
     host: UseDevelopmentStorage=true
     database: datacontainer1
     options:
-      storageType: azureBlob
-      contentType: json
+      storage: azureBlob
+      type: json
 
 schemas:
   json:
-    sourceName: fs-json-data
+    source: fs-json-data
+    roles: [jsonreader, lister, modifier]
   csv:
-    sourceName: fs-csv-data
+    source: fs-csv-data
+    roles: [admin]
   hr:
-    sourceName: mssql
+    source: mssql
     access:
       - root@*: crud
       - user@localhost: r
       - any@*: r
 
   mflix:
-    sourceName: mongo
+    source: mongo
 
   northwind:
-    sourceName: postgres1
+    source: postgres1
 
   clubdata:
-    sourceName: postgres2
+    source: postgres2
 
   merge:
-    sourceName: postgres2
+    source: postgres2
     entities:
       orders:
-        sourceName: postgres1
-        entityName: orders
+        source: postgres1
+        entity: orders
       users:
-        sourceName: mongo
-        entityName: users
+        source: mongo
+        entity: users
 
   etl1:
-    sourceName: plan-etl1
+    source: plan-etl1
 
 ai-engines:
   ocr: # Tested
@@ -131,15 +147,15 @@ plans:
       - newContext: false
       - set:
           var: startTimer
-          value: {{Date.now()}}
+          value: { { Date.now() } }
       - select:
-          schemaName: mflix
-          entityName: movies
+          schema: mflix
+          entity: movies
           filter:
             year: 2001
       - set:
           var: time
-          value: {{Date.now() - startTimer}}
+          value: { { Date.now() - startTimer } }
       - set:
           var: count
           value: $ROWS.length
@@ -147,14 +163,14 @@ plans:
           filter:
             year: 2001
           data:
-            time: {{time}}
-            count: {{count}}
+            time: { { time } }
+            count: { { count } }
 
     aitest2:
       - debug:
       - select:
-          schemaName: mflix
-          entityName: movies
+          schema: mflix
+          entity: movies
           filter:
             year: 2001
           fields: title
@@ -199,8 +215,8 @@ plans:
     contact:
       - debug:
       - select:
-          schemaName: demo
-          entityName: res_partner
+          schema: demo
+          entity: res_partner
           fields: id, name, display_name
       - addField:
           name: quality
@@ -208,12 +224,12 @@ plans:
       - sort:
           id:
       - update:
-          filterExpression: "id < 10"
+          filter-expression: "id < 10"
           data:
             name: "AAA"
             display_name: "BBB"
       - delete:
-          filterExpression: "id >= 100"
+          filter-expression: "id >= 100"
       - insert:
           data:
             name: John
@@ -223,16 +239,16 @@ plans:
     login:
       - debug:
       - select:
-          schemaName: demo
-          entityName: res_users
+          schema: demo
+          entity: res_users
           fields: login, partner_id
       # - bad-step-test1: "***TEST***"
       # - break: step by step test
       - join:
           type: left
-          entityName: contact
-          leftField: partner_id
-          rightField: id
+          entity: contact
+          left-field: partner_id
+          right-field: id
       - fields: id, name, login
       # - debug:
       - sort:
@@ -240,15 +256,15 @@ plans:
           name: desc
       # - bad-step-test2: "***TEST***"
       - insert:
-          schemaName: demo
-          entityName: res_users
+          schema: demo
+          entity: res_users
       - delete:
-          schemaName: demo
-          entityName: res_users
+          schema: demo
+          entity: res_users
           filter:
             lang: fr_FR
       - update: # not tested
-          schemaName: demo
-          entityName: res_users
+          schema: demo
+          entity: res_users
           filter:
             lang: fr_FR

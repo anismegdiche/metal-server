@@ -1,0 +1,684 @@
+openapi: "3.0.3"
+info:
+  title: Metal Server API Docs
+  version: "0.3-dev"
+
+components:
+  schemas:
+    filter:
+      type: object
+    filter-expression:
+      type: string
+    fields:
+      type: string
+    sort:
+      type: string
+    cache:
+      type: number
+    data:
+      oneOf:
+        - type: array
+        - type: object
+
+  responses:
+    DefaultError:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            type: object
+    http400:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+
+    http401:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+
+    http403:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+
+    http404:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+
+    http500:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+  parameters:
+    schema:
+      in: path
+      name: schema
+      schema:
+        type: string
+      required: true
+      description: The name of the schema
+
+    entity:
+      in: path
+      name: entity
+      schema:
+        type: string
+      required: true
+      description: The name of the entity
+
+tags:
+  - name: "User"
+    description: "Operations about User"
+    externalDocs:
+      description: "Find out more"
+      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#user"
+
+  - name: "Server"
+    description: "Operations about Server"
+    externalDocs:
+      description: "Find out more"
+      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#server"
+
+  - name: "Schema"
+    description: "Operations about Schema"
+    externalDocs:
+      description: "Find out more"
+      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#schema"
+
+  - name: "Entity"
+    description: "Operations about Entity"
+    externalDocs:
+      description: "Find out more"
+      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#schema"
+
+  - name: "Plan"
+    description: "Operations about Plan"
+    externalDocs:
+      description: "Find out more"
+      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#plan"
+
+  - name: "Cache"
+    description: "Operations about Cache"
+    externalDocs:
+      description: "Find out more"
+      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#cache"
+
+  - name: "Schedule"
+    description: "Operations about Scheduler"
+    externalDocs:
+      description: "Find out more"
+      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#schedule"
+
+paths:
+  /user/login:
+    post:
+      summary: Login to the Metal server
+      description: Returns a JWT token if the credentials are valid
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              additionalProperties: false
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /user/logout:
+    post:
+      summary: Logout from the Metal server
+      description: Invalidates the JWT token
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        204:
+          description: Successful logout
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /user/info:
+    get:
+      summary: Get user information
+      description: Returns user information
+      tags:
+        - User
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Successful retrieval of user information
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /server/info:
+    get:
+      tags:
+        - Server
+      summary: Get server information
+      description: Returns server information
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Server information
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /server/reload:
+    post:
+      tags:
+        - Server
+      summary: Reload server
+      description: Reloads the server
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Server reloaded
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /schema/{schema}:
+    get:
+      tags:
+        - Schema
+      summary: List entities in a schema
+      description: Retrieves a list of entities in the specified schema
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: schema
+          schema:
+            type: string
+          required: true
+          description: The name of the schema
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: A list of entities in the schema
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /schema/{schema}/{entity}:
+    get:
+      tags:
+        - Schema
+      summary: Get data from an entity in the schema
+      description: Retrieves data from an entity in the specified schema
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/schema"
+        - $ref: "#/components/parameters/entity"
+        - in: query
+          name: filter
+          schema:
+            $ref: '#/components/schemas/filter'
+          required: false
+          allowReserved: true
+          description: Simple filtering feature by providing fields and values
+        - in: query
+          name: filter-expression
+          schema:
+            $ref: '#/components/schemas/filter-expression'
+          required: false
+          allowReserved: true
+          description: Free expression for more complex data filtering expressed in SQL-like syntax
+        - in: query
+          name: fields
+          schema:
+            $ref: '#/components/schemas/fields'
+          required: false
+          allowReserved: true
+          description: fields to return
+        - in: query
+          name: cache
+          schema:
+            $ref: '#/components/schemas/cache'
+          required: false
+          description: cache the returned data for given seconds
+        - in: query
+          name: sort
+          schema:
+            $ref: '#/components/schemas/sort'
+          required: false
+          allowReserved: true
+          description: sort data with given order
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Data in the entity of the schema
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+    post:
+      tags:
+        - Schema
+      summary: Insert Data in an entity in the schema
+      description: Creates a new entity in the specified schema
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/schema"
+        - $ref: "#/components/parameters/entity"
+      requestBody:
+        description: Optional parameters
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - data
+              properties:
+                data:
+                  $ref: '#/components/schemas/data'
+      responses:
+        201:
+          description: Operation success
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+    patch:
+      tags:
+        - Schema
+      summary: Update Data in an entity in the schema
+      description: updates an existing entity in the specified schema
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: schema
+          schema:
+            type: string
+          required: true
+          description: The name of the schema
+        - in: path
+          name: entity
+          schema:
+            type: string
+          required: true
+          description: The name of the entity
+      requestBody:
+        description: Optional parameters
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - data
+              properties:
+                filter:
+                  $ref: '#/components/schemas/filter'
+                filter-expression:
+                  $ref: '#/components/schemas/filter-expression'
+                data:
+                  $ref: '#/components/schemas/data'
+      responses:        
+        204:
+          description: Operation success
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+    delete:
+      tags:
+        - Schema
+      summary: Delete Data in an entity in the schema
+      description: Deletes an existing entity in the specified schema
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: schema
+          schema:
+            type: string
+          required: true
+          description: The name of the schema
+        - in: path
+          name: entity
+          schema:
+            type: string
+          required: true
+          description: The name of the entity
+      requestBody:
+        description: Optional parameters
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                filter:
+                  $ref: '#/components/schemas/filter'
+                filter-expression:
+                  $ref: '#/components/schemas/filter-expression'
+      responses:
+        204:
+          description: Operation success
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /cache/view:
+    get:
+      tags:
+        - Cache
+      summary: View cache
+      description: Returns the current cache
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Cache data
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+     
+  /cache/clean:
+    post:
+      tags:
+        - Cache
+      summary: Clean cache
+      description: Cleans the cache
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Cache cleaned
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+     
+  /cache/purge:
+    post:
+      tags:
+        - Cache
+      summary: Purge cache
+      description: Purges the cache
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Cache purged
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+  
+  /plan/{plan}/reload:
+    post:
+      summary: Reload plan
+      description: Reload plan by name
+      tags:
+        - Plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: plan
+          schema:
+            type: string
+          required: true
+          description: Plan name
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Plan reloaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+
+  /schedule/{jobName}/start:
+    post:
+      summary: Start a job
+      description: Start a job with the given job name
+      security:
+        - bearerAuth: []
+      tags:
+        - Schedule
+      parameters:
+        - in: path
+          name: jobName
+          schema:
+            type: string
+          required: true
+          description: The name of the job to start
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Job started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+  
+  /schedule/{jobName}/stop:
+    post:
+      summary: Stop a job
+      description: Stop a job with the given job name
+      security:
+        - bearerAuth: []
+      tags:
+        - Schedule
+      parameters:
+        - in: path
+          name: jobName
+          schema:
+            type: string
+          required: true
+          description: The name of the job to stop
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Job stopped successfully
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+  

@@ -1,70 +1,74 @@
-import { TSourceParams } from '../../../types/TSourceParams'
-import { CsvContent } from '../CsvContent'
+import { CsvContent, TCsvContentConfig } from '../CsvContent'
 import { DataTable } from '../../../types/DataTable'
+import { Readable } from "node:stream"
+import { TContentConfig } from "../../data/FilesDataProvider"
 
 describe('CsvContent', () => {
-    const sourceParams: TSourceParams = <TSourceParams>{
-        provider: "files",
-        options: {
-            jsonArrayPath: 'data'
-        }
+    const contentConfig: TContentConfig = <TContentConfig>{
+        "csv-delimiter": ',',
+        "csv-newline": '\n',
+        "csv-header": true,
+        "csv-quote": '"',
+        "csv-skip-empty": 'greedy'
     }
-    let csvContent = new CsvContent(sourceParams)
+    
+    let csvContent = new CsvContent(contentConfig)
 
     beforeEach(() => {
-        csvContent = new CsvContent(sourceParams)
+        csvContent = new CsvContent(contentConfig)
     })
 
     describe('Init', () => {
         test('should initialize the CsvContent instance with provided name and content', async () => {
             const name = 'test.csv'
-            const content = 'id,name\n1,John\n2,Jane'
+            const content = Readable.from('id,name\n1,John\n2,Jane')
 
             await csvContent.Init(name, content)
 
             expect(csvContent.EntityName).toBe(name)
-            expect(csvContent.Content).toBe(content)
+            expect(csvContent.Content.ReadFile(name)).toBe(content)
         })
 
         test('should set default values for Config when Options is not provided', async () => {
             const name = 'test.csv'
-            const content = 'id,name\n1,John\n2,Jane'
+            const content = Readable.from('id,name\n1,John\n2,Jane')
 
             await csvContent.Init(name, content)
 
-            expect(csvContent.Config.delimiter).toBe(',')
-            expect(csvContent.Config.newline).toBe('\n')
-            expect(csvContent.Config.header).toBe(true)
-            expect(csvContent.Config.quoteChar).toBe('"')
-            expect(csvContent.Config.skipEmptyLines).toBe('greedy')
+            expect(csvContent.Params!.delimiter).toBe(',')
+            expect(csvContent.Params!.newline).toBe('\n')
+            expect(csvContent.Params!.header).toBe(true)
+            expect(csvContent.Params!.quoteChar).toBe('"')
+            expect(csvContent.Params!.skipEmptyLines).toBe('greedy')
         })
 
         test('should override default values for Config when Options is provided', async () => {
             const name = 'test.csv'
-            const content = 'idname\n1John\n2Jane'
+            const content = Readable.from('idname\n1John\n2Jane')
             const options = {
-                csvDelimiter: '',
-                csvNewline: '\r\n',
-                csvHeader: false,
-                csvQuoteChar: "'",
-                csvSkipEmptyLines: 'greedy'
+                "csv-delimiter": '',
+                "csv-newline": '\r\n',
+                "csv-header": false,
+                "csv-quote": "'",
+                "csv-skip-empty": 'greedy'
             }
 
-            csvContent.Options = options
+            csvContent.Config = <TCsvContentConfig>options
+
             await csvContent.Init(name, content)
 
-            expect(csvContent.Config.delimiter).toBe('')
-            expect(csvContent.Config.newline).toBe('\r\n')
-            expect(csvContent.Config.header).toBe(false)
-            expect(csvContent.Config.quoteChar).toBe("'")
-            expect(csvContent.Config.skipEmptyLines).toBe('greedy')
+            expect(csvContent.Params!.delimiter).toBe('')
+            expect(csvContent.Params!.newline).toBe('\r\n')
+            expect(csvContent.Params!.header).toBe(false)
+            expect(csvContent.Params!.quoteChar).toBe("'")
+            expect(csvContent.Params!.skipEmptyLines).toBe('greedy')
         })
     })
 
     describe('Get', () => {
         test('should parse the CsvContent content and return a DataTable object', async () => {
             const name = 'test.csv'
-            const content = 'id,name\n1,John\n2,Jane'
+            const content = Readable.from('id,name\n1,John\n2,Jane')
 
             await csvContent.Init(name, content)
             const dataTable = await csvContent.Get()
@@ -84,7 +88,7 @@ describe('CsvContent', () => {
 
         test('should return an empty DataTable object when content is empty', async () => {
             const name = 'test.csv'
-            const content = ''
+            const content = Readable.from('')
 
             await csvContent.Init(name, content)
             const dataTable = await csvContent.Get()
@@ -95,7 +99,7 @@ describe('CsvContent', () => {
 
         test('should return an empty DataTable object when content is invalid', async () => {
             const name = 'test.csv'
-            const content = 'id,name\n1,John\n2'
+            const content = Readable.from('id,name\n1,John\n2')
 
             await csvContent.Init(name, content)
             const dataTable = await csvContent.Get()
@@ -116,7 +120,7 @@ describe('CsvContent', () => {
     describe('Set', () => {
         test('should set the content of CsvContent using the provided DataTable and return the updated content', async () => {
             const name = 'test.csv'
-            const content = 'id,name\n1,John\n2,Jane'
+            const content = Readable.from('id,name\n1,John\n2,Jane')
             const dataTable = new DataTable(name, [
                 {
                     id: '3',
@@ -130,9 +134,9 @@ describe('CsvContent', () => {
 
             await csvContent.Init(name, content)
             const updatedContent = await csvContent.Set(dataTable)
+            const expectedContent = Readable.from('id,name\n3,Alice\n4,Bob')
 
-            expect(csvContent.Content).toBe(updatedContent)
-            expect(updatedContent).toBe('id,name\n3,Alice\n4,Bob')
+            expect(updatedContent.read().toString()).toBe(expectedContent.read().toString())
         })
     })
 })

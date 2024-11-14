@@ -1,10 +1,14 @@
-/* eslint-disable no-unused-vars */
-
-import { TSchemaRequest } from './TSchemaRequest'
+// 
+// 
+// 
+// 
+// 
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from './TSchemaRequest'
 import { TOptions } from './TOptions'
-import { TSourceParams } from './TSourceParams'
+import { TConfigSource } from './TConfig'
 import { TJson } from './TJson'
-import { TSchemaResponse } from './TSchemaResponse'
+import { TInternalResponse } from './TInternalResponse'
+import { TSchemaResponse } from "./TSchemaResponse"
 
 
 export interface IDataProviderOptions {
@@ -13,6 +17,7 @@ export interface IDataProviderOptions {
     GetFields: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
     GetSort: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
     GetData: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
+    GetCache: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
 }
 
 export interface IDataProvider {
@@ -20,12 +25,22 @@ export interface IDataProvider {
     SourceName: string
     Params: TJson
     Connection?: unknown
-    Init: (sourceParams: TSourceParams) => void
+    Options: IDataProviderOptions
+
+    // Connection
+    Init: (sourceParams: TConfigSource) => void
     Connect: () => Promise<void>
     Disconnect: () => Promise<void>
-    Insert: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    Select: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    Update: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    Delete: (schemaRequest: TSchemaRequest) => Promise<TSchemaResponse>
-    Options: IDataProviderOptions
+
+    // Entities
+    ListEntities: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
+    AddEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<undefined>>
+    //ROADMAP RenameEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
+    //ROADMAP DeleteEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
+    
+    // Data
+    Insert: (schemaRequest: TSchemaRequestInsert) => Promise<TInternalResponse<undefined>>
+    Select: (schemaRequest: TSchemaRequestSelect) => Promise<TInternalResponse<TSchemaResponse>>
+    Update: (schemaRequest: TSchemaRequestUpdate) => Promise<TInternalResponse<undefined>>
+    Delete: (schemaRequest: TSchemaRequestDelete) => Promise<TInternalResponse<undefined>>
 }

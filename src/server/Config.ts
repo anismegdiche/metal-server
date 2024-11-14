@@ -1,249 +1,175 @@
-/* eslint-disable no-unused-expressions */
-/* eslint-disable @typescript-eslint/no-var-requires */
 //
 //
 //
 //
 //
 import * as Fs from 'fs'
-import * as Yaml from 'js-yaml'
-import _ from 'lodash'
+import * as Yaml from 'js-yaml'   //TODO: Use only one YAML lib
 import * as dotenv from 'dotenv'
+import _ from 'lodash'
+import typia from "typia"
 //
 import { TJson } from '../types/TJson'
-import { Logger, DefaultLevel } from '../lib/Logger'
+import { Logger, DefaultLevel } from '../utils/Logger'
 import { Schedule } from './Schedule'
 import { Cache } from '../server/Cache'
-import { User } from './User'
-import DATA_PROVIDER, { Source } from './Source'
-import { AI_ENGINE, AiEngine } from './AiEngine'
-import { Helper } from '../lib/Helper'
+import { Source } from './Source'
+import { AiEngine } from './AiEngine'
+import { Convert } from '../lib/Convert'
+import { HTTP_STATUS_MESSAGE } from "../lib/Const"
+import { TConfig } from "../types/TConfig"
+import { TypeHelper } from "../lib/TypeHelper"
+import { HttpError, HttpErrorBadRequest, HttpErrorInternalServerError } from "./HttpErrors"
+import { AUTH_PROVIDER, AuthProvider } from "../providers/AuthProvider"
+import { Roles } from "./Roles"
 
 export class Config {
 
     // global configuration
-    static Configuration: any = {}
+    static Configuration: TConfig
     static ConfigFilePath = './config/config.yml'
 
-    static DEFAULTS: TJson = {
+    static readonly DEFAULTS: TJson = {
         "server.port": 3000,
         "server.timezone": 'UTC',
         "server.verbosity": 'warn',
-        "server.request-limit": '100mb'
-    }
-
-    static Flags: TJson = {
-        EnableCache: false,              // enable/disable cache
-        EnableAuthentication: false      // enable/disable authentication
-    }
-
-    static #ConfigSchema: any = {
-        id: "/",
-        type: "object",
-        properties: {
-            "version": {
-                type: "string",
-                enum: ["0.1", "0.2"]
-            },
-            "server": {
-                type: "object",
-                properties: {
-                    "port": {
-                        type: "integer",
-                        minimum: 1,
-                        maximum: 65_535
-                    },
-                    "verbosity": {
-                        type: "string",
-                        enum: ["debug", "info", "warn", "error", "trace"]
-                    },
-                    "timezone": { type: "string" },
-                    "authentication": { type: "null" },
-                    "request-limit": { type: "string" },
-                    "cache": { type: "object" }
-                }
-            },
-            "users": {
-                type: "object",
-                patternProperties: {
-                    ".*": {
-                        type: ["string", "number"]
-                    }
-                }
-            },
-            "sources": {
-                type: "object",
-                patternProperties: {
-                    ".*": {
-                        type: "object",
-                        properties: {
-                            "provider": {
-                                type: "string",
-                                // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                                enum: _.values(DATA_PROVIDER)
-                            },
-                            "host": { type: "string" },
-                            "port": {
-                                type: "integer",
-                                minimum: 1,
-                                maximum: 65_535
-                            },
-                            "user": { type: "string" },
-                            "password": { type: "string" },
-                            "database": { type: "string" }
-                        },
-                        required: ["provider"]
-                    }
-                }
-            },
-            "schemas": {
-                type: "object",
-                patternProperties: {
-                    ".*": {
-                        type: "object",
-                        properties: {
-                            "sourceName": { type: "string" },
-                            "entities": {
-                                type: "object",
-                                patternProperties: {
-                                    ".*": {
-                                        type: "object",
-                                        properties: {
-                                            "sourceName": { type: "string" },
-                                            "entityName": { type: "string" }
-                                        },
-                                        required: ["sourceName", "entityName"]
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "ai-engines": {
-                type: "object",
-                patternProperties: {
-                    ".*": {
-                        type: "object",
-                        properties: {
-                            "engine": {
-                                type: "string",
-                                // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                                enum: _.values(AI_ENGINE)
-                            },
-                            "model": { type: "string" },
-                            "options": {
-                                type: "object",
-                                patternProperties: {
-                                    ".*": {
-                                        type: "any"
-                                    }
-                                }
-                            }
-                        },
-                        required: ["engine", "model"]
-                    }
-                }
-            },
-            "plans": {
-                type: "object",
-                patternProperties: {
-                    // planName
-                    ".*": {
-                        type: "object",
-                        patternProperties: {
-                            // entityName
-                            ".*": {
-                                type: "array",
-                                items: {
-                                    // step
-                                    type: "object",
-                                    patternProperties: {
-                                        ".*": {
-                                            type: "any"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "schedules": {
-                type: "object",
-                patternProperties: {
-                    ".*": {
-                        type: "object",
-                        properties: {
-                            "planName": { type: "string" },
-                            "entityName": { type: "string" },
-                            "cron": {
-                                type: "string",
-                                pattern: "(@(annually|yearly|monthly|weekly|daily|hourly|start))|(@every (\\d+(ns|us|µs|ms|s|m|h))+)|((((\\d+,)+\\d+|([\\d\\*]+(\\/|-)\\d+)|\\d+|\\*) ?){5,7})"
-                            }
-                        },
-                        required: ["planName", "entityName", "cron"]
-                    }
-                }
-            }
+        "server.request-limit": '10mb',
+        // v0.3
+        "server.response-limit": '10mb',
+        // v0.3
+        "server.response-chunk": false,
+        // v0.3
+        "server.response-rate": {
+            windowMs: 1 * 60 * 1000,
+            max: 600,
+            message: HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS
         }
     }
 
+    static Flags: TJson = {
+        EnableCache: false,               // Enable/disable cache
+        // @deprecated: to remove
+        EnableAuthentication: false,      // Enable/disable authentication
+        EnableResponseChunk: false,       // v0.3, Enable/disable response chunking
+        ResponseLimit: 10 * 1024 * 1024   // v0.3, Response body size limit
+    }
+
+    @Logger.LogFunction()
     static async Init(): Promise<void> {
-        Logger.Info('Config.Init')
         // ENV
         dotenv.config()
 
-        await Config.Load()
-        await Config.Validate()
+        await Config.Validate(await Config.Load())
 
-        const verbosity = (Config.Configuration.server?.verbosity ?? DefaultLevel).toLowerCase()
+        Config.InitLogging()
+        Config.InitAuthentication()
+        await Config.InitCache()
+        Config.InitResponse()
 
-        Logger.SetLevel(verbosity)
 
-        Config.Flags.EnableAuthentication = Config.Has('server.authentication')
-        Config.Flags.EnableAuthentication && User.LoadUsers()
-        Config.Flags.EnableCache = Config.Has('server.cache')
-        Config.Flags.EnableCache && await Cache.Connect()
+        /* eslint-disable @typescript-eslint/no-unused-expressions, no-unused-expressions */
         Config.Has('sources') && await Source.ConnectAll()
         Config.Has('ai-engines') && await AiEngine.Init()
         Config.Has('ai-engines') && await AiEngine.CreateAll()
         Config.Has('schedules') && Schedule.CreateAndStartAll()
+        /* eslint-enable @typescript-eslint/no-unused-expressions, no-unused-expressions */
     }
 
-    static async Load(): Promise<void> {
-        Logger.Debug('Config.Load')
-        const configFileRaw = Fs.readFileSync(this.ConfigFilePath, 'utf8')
-        Config.Configuration = Yaml.load(configFileRaw)
+    @Logger.LogFunction()
+    static async Load(): Promise<TConfig> {
+        const configFileRaw = Fs.readFileSync(Config.ConfigFilePath, 'utf8')
+        return await Yaml.load(configFileRaw) as TConfig
     }
 
-    static async Validate(): Promise<void> {
-        Logger.Debug('Config.Validate')
-        const { errors } = Helper.JsonValidator.validate(this.Configuration, this.#ConfigSchema)
-
-        if (errors.length <= 0) {
-            return
+    @Logger.LogFunction(Logger.Debug, true)
+    static CheckRessourcesUsage(newConfig: TConfig): void {
+        // TODO check for used sources and plans in config
+        const sourceConfig = {
+            type: "string",
+            // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+            enum: _.keys(newConfig?.sources ?? [])
         }
 
-        Logger.Error(`Errors have been detected in configuration file: ${this.ConfigFilePath}`)
-        errors.forEach((i) => {
-            Logger.Error(i.stack.replace(/instance\./, ''))
-        })
-        process.exit(1)
+        const planConfig = {
+            type: "string",
+            // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+            enum: _.keys(newConfig?.plans ?? [])
+        }
     }
 
-    static GetErrors(schemaErrors: any): string[] {
-        return _.filter(
-            schemaErrors,
-            (e) => e.message.includes('is required') || e.message.includes('must be')
-        )
+    @Logger.LogFunction(Logger.Debug, true)
+    static async Validate(newConfig: TConfig): Promise<void> {
+        try {
+            TypeHelper.Validate(typia.validateEquals<TConfig>(newConfig), new HttpErrorInternalServerError("Configuration file errors found"))
+        } catch (error: any) {
+            throw new Error(error.message)
+        }
+        Config.CheckRessourcesUsage(newConfig)
+        Config.Configuration = newConfig
     }
+
+    // @Logger.LogFunction()
+    // static GetErrors(schemaErrors: any): string[] {
+    //     return schemaErrors
+    //         .filter((e: Error) => e.message.includes('is required') || e.message.includes('must be'))
+    // }
+
+    @Logger.LogFunction()
     static Has(path: string): boolean {
         return _.has(Config.Configuration, path)
     }
 
-    static Get<T>(path: string): T {
-        return _.get(Config.Configuration, path, undefined)
+    @Logger.LogFunction()
+    static Get<T>(path: string, defaultValue: any = undefined): T {
+        // eslint-disable-next-line you-dont-need-lodash-underscore/get
+        return _.get(Config.Configuration, path, defaultValue)
+    }
+
+    @Logger.LogFunction()
+    static Set<T>(path: string, value: T): void {
+        _.set(Config.Configuration, path, value)
+    }
+
+    @Logger.LogFunction()
+    static InitLogging(): void {
+        const verbosity = Config.Configuration.server?.verbosity ?? DefaultLevel
+        Logger.SetLevel(verbosity)
+    }
+
+    @Logger.LogFunction()
+    static InitAuthentication(): void {
+        Config.Flags.EnableAuthentication = (Config.Configuration.server?.authentication !== undefined)
+
+        const {
+            provider = AUTH_PROVIDER.LOCAL
+        } = Config.Configuration.server?.authentication ?? {}
+
+        AuthProvider.SetCurrent(provider)
+        if (Config.Flags.EnableAuthentication) {
+            AuthProvider.Provider.Init()
+            Roles.Init()
+        }
+    }
+
+    @Logger.LogFunction()
+    static async InitCache(): Promise<void> {
+        Config.Flags.EnableCache = Config.Has('server.cache')
+        // eslint-disable-next-line no-unused-expressions, @typescript-eslint/no-unused-expressions
+        Config.Flags.EnableCache && await Cache.Connect()
+    }
+
+    @Logger.LogFunction()
+    static InitResponse(): void {
+        Config.Flags.ResponseLimit = Convert.HumainSizeToBytes(
+            Config.Get("server.response-limit") ?? Config.DEFAULTS["server.response-limit"]
+        )
+        Config.Flags.EnableResponseChunk = Config.Get<boolean>('server.response-chunk')
+        Logger.Debug(`Server Response Limit set to ${Config.Flags.ResponseLimit}`)
+    }
+
+    @Logger.LogFunction()
+    static Save(): void {
+        const configFileRaw = Yaml.dump(Config.Configuration)
+        Fs.writeFileSync(Config.ConfigFilePath, configFileRaw)
     }
 }
-

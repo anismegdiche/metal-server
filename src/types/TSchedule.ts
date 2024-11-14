@@ -6,6 +6,6 @@
 import { CronJob } from 'cron'
 
 export type TSchedule = {
-    scheduleName: string
+    schedule: string
     cronJob: CronJob
 }

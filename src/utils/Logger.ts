@@ -8,7 +8,9 @@ import LogLevel from 'loglevel'
 import Prefix from 'loglevel-plugin-prefix'
 import morgan from "morgan"
 //
-import { SERVER } from './Const'
+import { SERVER } from '../lib/Const'
+import { JsonHelper } from "../lib/JsonHelper"
+
 
 export enum VERBOSITY {
     TRACE = "trace",
@@ -18,22 +20,23 @@ export enum VERBOSITY {
     ERROR = "error"
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 const Colors: Record<string, Function> = {
-    'TRACE': chalk.magenta,
-    'DEBUG': chalk.green,
-    'INFO': chalk.cyan,
-    'WARN': chalk.yellow,
-    'ERROR': chalk.red
+    [VERBOSITY.TRACE.toUpperCase()]: chalk.magenta,
+    [VERBOSITY.DEBUG.toUpperCase()]: chalk.green,
+    [VERBOSITY.INFO.toUpperCase()]: chalk.cyan,
+    [VERBOSITY.WARN.toUpperCase()]: chalk.yellow,
+    [VERBOSITY.ERROR.toUpperCase()]: chalk.red
 }
 
-export const DefaultLevel: LogLevel.LogLevelDesc = 'warn'
+export const DefaultLevel: LogLevel.LogLevelDesc = VERBOSITY.WARN
 
 Prefix.reg(LogLevel)
 LogLevel.setLevel(DefaultLevel)
 
 Prefix.apply(LogLevel, {
     format(level: string, name: string | undefined, timestamp: Date) {
-        return `${chalk.gray(`${timestamp}`)} ${Colors[level.toUpperCase()]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${chalk.whiteBright(`${name}:`)}`
+        return `${chalk.gray(timestamp)} ${Colors[level]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${chalk.whiteBright(`${name}:`)}`
     }
 })
 
@@ -45,11 +48,11 @@ Prefix.apply(LogLevel.getLogger('critical'), {
 
 export class Logger {
 
-    static In = '-->'
-    static Out = '<--'
+    static readonly In = '->'
+    static readonly Out = '<-'
     static Level: LogLevel.LogLevelDesc = DefaultLevel
 
-    static RequestMiddleware = morgan(
+    static readonly RequestMiddleware = morgan(
         ':remote-addr, :method :url, :status, :res[content-length], :response-time ms',
         {
             stream: {
@@ -64,7 +67,7 @@ export class Logger {
             LogLevel.setLevel(Logger.Level)
         } catch (error: unknown) {
             LogLevel.setLevel(DefaultLevel)
-            Logger.Error(`Logger.SetLevel ${Logger.In} Error while setting verbosity`)
+            Logger.Error(`Logger.SetLevel: Error while setting verbosity, resetting to default`)
             Logger.Error(error)
         }
     }
@@ -74,11 +77,11 @@ export class Logger {
     }
 
     static Trace(msg: any): void {
-        LogLevel.trace(msg)
+        setImmediate(() => LogLevel.trace(msg))
     }
 
     static Debug(msg: any): void {
-        LogLevel.debug(msg)
+        setImmediate(() => LogLevel.debug(msg))
     }
 
     static Info(msg: any): void {
@@ -97,5 +100,21 @@ export class Logger {
         Logger.EnableAll()
         Logger.Info(msg)
         Logger.SetLevel()
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    static LogFunction(logger: Function = Logger.Debug, hideParameters: boolean = false): any {
+        return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+            const originalMethod = descriptor.value
+            descriptor.value = function (...args: any[]) {
+                const _argsString = (hideParameters || args.length == 0 || args.every(v => v === null) || args.every(v => v === undefined))
+                    ? ''
+                    : `: ${JsonHelper.Stringify(args)}`
+
+                logger(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`)
+                return originalMethod.apply(this, args)
+            }
+            return descriptor
+        }
     }
 }

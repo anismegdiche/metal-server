@@ -1,4 +1,4 @@
-version: "0.2"
+version: "0.3"
 server:
   verbosity: debug
   port: 3000
@@ -18,17 +18,17 @@ sources:
 
 schemas:
   metalws:
-    sourceName: metal-clubdata
+    source: metal-clubdata
 
 # schedules:
 #   start:
 #     cron: "@start"
-#     planName: plan1
-#     entityName: start
+#     plan: plan1
+#     entity: start
     
 plans:
   plan1:
     start:
       - select:
-          schemaName: metalws
-          entityName: members
+          schema: metalws
+          entity: members

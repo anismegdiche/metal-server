@@ -1,104 +1,159 @@
-/* eslint-disable you-dont-need-lodash-underscore/get */
 //
 //
 //
 //
 //
 import _ from 'lodash'
+//
 import { Source } from "./Source"
-import { RESPONSE_RESULT, RESPONSE_STATUS } from '../lib/Const'
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { Config } from './Config'
-import { TSchemaRequest } from '../types/TSchemaRequest'
-import { TSchemaResponse, TSchemaResponseNoData } from '../types/TSchemaResponse'
-import { TJson } from '../types/TJson'
-import { NotFoundError } from './HttpErrors'
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest'
+import { TSchemaResponse } from '../types/TSchemaResponse'
+import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorNotFound } from './HttpErrors'
+import { TypeHelper } from '../lib/TypeHelper'
+import { StringHelper } from '../lib/StringHelper'
+import { TConfigSchema, TConfigSchemaEntity } from "../types/TConfig"
+import typia from "typia"
+import { TInternalResponse } from "../types/TInternalResponse"
+import { HttpResponse } from "./HttpResponse"
+import { TUserTokenInfo } from "./User"
+import { PERMISSION, Roles } from "./Roles"
 
 export type TSchemaRoute = {
     type: "source" | "nothing",
     routeName: string
-    entityName?: string
+    entity?: string
 }
 
 export type TSourceTypeExecuteParams = {
-    sourceName: string,
-    entityName: string,
-    schemaRequest: TSchemaRequest,
+    source: string,
+    entity: string,
+    schemaRequest: TSchemaRequestSelect | TSchemaRequestUpdate | TSchemaRequestDelete | TSchemaRequestInsert,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     CrudFunction: Function
 }
+
+export type TEntitiesMap = Map<string, {
+    source: string,
+    database?: string
+}>
 
 export class Schema {
 
     sort?: string
     cache?: string
     //
-    sourceName?: string
+    source?: string
 
-    static SourceTypeCaseMap: Record<string, Function> = {
-        'nothing': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await Schema.NothingTodo(sourceTypeExecuteParams),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    static readonly SourceTypeCaseMap: Record<string, Function> = {
+        'nothing': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await Schema.#NothingTodo(sourceTypeExecuteParams),
         'source': async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await sourceTypeExecuteParams.CrudFunction()
     }
 
-    static async IsExists(schemaRequest: TSchemaRequest): Promise<void> {
-        Logger.Debug(`Schema.IsExists: ${JSON.stringify(schemaRequest)}`)
+    static async #NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<void> {
+        const { schema, entity } = sourceTypeExecuteParams.schemaRequest
+        Logger.Warn(`${schema}: Entity '${entity}' not found`)
+        throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
+    }
 
-        const { schemaName } = schemaRequest
+    static #MergeData(schemaResponse: TSchemaResponse, schemaResponseToMerge: TSchemaResponse | undefined): TSchemaResponse {
+        if (!schemaResponseToMerge)
+            return schemaResponse
+
+        const isSchemaResponseWithData = schemaResponse?.data?.Rows?.length > 0
+        const isSchemaResponseToMergeWithData = schemaResponse?.data?.Rows?.length > 0
+
+        // only schemaResponse got data
+        if (isSchemaResponseWithData && !isSchemaResponseToMergeWithData)
+            return schemaResponse
+
+        // only schemaResponseToMerge got data
+        if (!isSchemaResponseWithData && isSchemaResponseToMergeWithData)
+            return <TSchemaResponse>{
+                ...schemaResponseToMerge,
+                schema: schemaResponse.schema,
+                entity: schemaResponse.entity,
+                result: schemaResponseToMerge.result,
+                status: schemaResponseToMerge.status
+            }
+
+        // both got data
+        if (isSchemaResponseWithData && isSchemaResponseToMergeWithData)
+            return <TSchemaResponse>{
+                ...schemaResponse,
+                data: schemaResponse.data.AddRows(
+                    schemaResponseToMerge.data.Rows
+                )
+            }
+
+        // anything else
+        return schemaResponse
+    }
+
+    @Logger.LogFunction()
+    static async IsExists(schemaRequest: TSchemaRequest): Promise<void> {
+
+        const { schema } = schemaRequest
 
         // check if schema exists in config file
-        if (!Config.Has("schemas")) {
+        if (!Config.Configuration.schemas) {
             Logger.Warn(`section 'schemas' not found in configuration`)
-            throw new NotFoundError(`section 'schemas' not found in configuration`)
+            throw new HttpErrorNotFound(`section 'schemas' not found in configuration`)
         }
 
         // check if schema exists
-        if (!Config.Has(`schemas.${schemaName}`)) {
-            Logger.Warn(`schema '${schemaName}' not found in configuration`)
-            throw new NotFoundError(`schema '${schemaName}' not found in configuration`)
+        if (!Config.Configuration.schemas[schema]) {
+            Logger.Warn(`schema '${schema}' not found in configuration`)
+            throw new HttpErrorNotFound(`schema '${schema}' not found in configuration`)
         }
     }
 
-    static GetRoute(schemaName: string, entityName: string, schemaConfig: any): TSchemaRoute {
+    //TODO: rewrite with GetEntitiesSources
+    @Logger.LogFunction()
+    static GetRoute(schema: string, entity: string, schemaConfig: any): TSchemaRoute {
 
         const nothingToDoSchemaRoute: TSchemaRoute = {
             type: 'nothing',
             routeName: ''
         }
 
-        // schema.entities.<entity>
-        if (_.has(schemaConfig, `entities.${entityName}`)) {
-            const _schemaEntityConfig = _.get(schemaConfig.entities, entityName)
+        // schema.entities.*
+        if (_.has(schemaConfig, `entities.${entity}`)) {
+            const _schemaEntityConfig = _.get(schemaConfig.entities, entity)
 
             if (_schemaEntityConfig === undefined) {
-                Logger.Warn(`Entity '${entityName}' not found in schema '${schemaName}'`)
+                Logger.Warn(`Entity '${entity}' not found in schema '${schema}'`)
                 return nothingToDoSchemaRoute
             }
 
-            const { sourceName: _sourceName, entityName: _entityName } = _schemaEntityConfig
+            const { source: _source, entity: _entity } = _schemaEntityConfig
 
-            // schema.entities.<entity>.sourceName
-            if (_sourceName) {
-                if (!Config.Has(`sources.${_sourceName}`)) {
-                    Logger.Warn(`Source not found for entity '${entityName}'`)
+            // schema.entities.*.source
+            if (_source) {
+                if (!Config.Has(`sources.${_source}`)) {
+                    Logger.Warn(`Source not found for entity '${entity}'`)
                     return nothingToDoSchemaRoute
                 }
                 return {
                     type: 'source',
-                    routeName: _sourceName,
-                    entityName: _entityName
+                    routeName: _source,
+                    entity: _entity
                 }
             }
         }
 
-        // schema.sourceName
-        if (schemaConfig?.sourceName) {
-            if (!Config.Has(`sources.${schemaConfig.sourceName}`)) {
-                Logger.Warn(`Source not found for schema '${schemaName}'`)
+        // schema.source
+        if (schemaConfig?.source) {
+            if (!Config.Has(`sources.${schemaConfig.source}`)) {
+                Logger.Warn(`Source not found for schema '${schema}'`)
                 return nothingToDoSchemaRoute
             }
             return {
                 type: 'source',
-                routeName: schemaConfig.sourceName,
-                entityName
+                routeName: schemaConfig.source,
+                entity
             }
         }
 
@@ -106,100 +161,187 @@ export class Schema {
         return nothingToDoSchemaRoute
     }
 
-    static async NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<TSchemaResponseNoData> {
-        Logger.Warn(`Nothing to do in schema '${sourceTypeExecuteParams.schemaRequest.schemaName}'`)
-        const { schemaName, entityName } = sourceTypeExecuteParams.schemaRequest
-        return <TSchemaResponseNoData>{
-            schemaName,
-            entityName,
-            ...RESPONSE_RESULT.NOT_FOUND,
-            ...RESPONSE_STATUS.HTTP_404
+    @Logger.LogFunction()
+    static async Select(schemaRequest: TSchemaRequestSelect, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
+
+
+        TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
+            new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
+
+        const { schema, entity } = schemaRequest
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+
+        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.READ))
+            throw new HttpErrorForbidden('Permission denied')
+
+        const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
+        // Anonymizer
+        let isAnonymize = false
+        let fieldsToAnonymize: string[] = []
+        if (schemaConfig?.anonymize) {
+            isAnonymize = true
+            fieldsToAnonymize = StringHelper.Split(schemaConfig.anonymize, ",")
         }
-    }
-
-    static async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Select: ${JSON.stringify(schemaRequest)}`)
-
-        const { schemaName, entityName } = schemaRequest
-        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
-        const schemaRoute = Schema.GetRoute(schemaName, entityName, schemaConfig)
+        //
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
-            sourceName: schemaRoute.routeName,
-            entityName: schemaRoute.entityName,
+            source: schemaRoute.routeName,
+            entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                return await Source.Sources[schemaRoute.routeName].Select({
+                const _internalResponse = await Source.Sources[schemaRoute.routeName].Select(<TSchemaRequestSelect>{
                     ...schemaRequest,
-                    sourceName: schemaRoute.routeName,
-                    entityName: schemaRoute.entityName ?? schemaRequest.entityName
+                    source: schemaRoute.routeName,
+                    entity: schemaRoute.entity ?? schemaRequest.entity
+                })
+
+                if (!_internalResponse.Body)
+                    return _internalResponse
+
+                // Anonymizer
+                if (isAnonymize && TypeHelper.IsSchemaResponseData(<TSchemaResponse>_internalResponse.Body)) {
+                    (<TSchemaResponse>_internalResponse.Body).data.AnonymizeFields(fieldsToAnonymize)
+                }
+                return _internalResponse
+            }
+        })
+    }
+
+    @Logger.LogFunction()
+    static async Delete(schemaRequest: TSchemaRequestDelete, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
+
+        TypeHelper.Validate(typia.validateEquals<TSchemaRequestDelete>(schemaRequest),
+            new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
+
+        const { schema, entity } = schemaRequest
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+
+        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.DELETE))
+            throw new HttpErrorForbidden('Permission denied')
+
+        const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
+
+        return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
+            source: schemaRoute.routeName,
+            entity: schemaRoute.entity,
+            schemaRequest,
+            CrudFunction: async () => {
+                return await Source.Sources[schemaRoute.routeName].Delete(<TSchemaRequestDelete>{
+                    ...schemaRequest,
+                    source: schemaRoute.routeName,
+                    entity: schemaRoute.entity ?? schemaRequest.entity
                 })
             }
         })
     }
 
-    static async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Delete: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    static async Update(schemaRequest: TSchemaRequestUpdate, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schemaName, entityName } = schemaRequest
-        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
-        const schemaRoute = Schema.GetRoute(schemaName, entityName, schemaConfig)
+        TypeHelper.Validate(typia.validateEquals<TSchemaRequestUpdate>(schemaRequest),
+            new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
+
+        const { schema, entity } = schemaRequest
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+
+        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.UPDATE))
+            throw new HttpErrorForbidden('Permission denied')
+
+        const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
-            sourceName: schemaRoute.routeName,
-            entityName: schemaRoute.entityName,
+            source: schemaRoute.routeName,
+            entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                return await Source.Sources[schemaRoute.routeName].Delete({
+                return await Source.Sources[schemaRoute.routeName].Update(<TSchemaRequestUpdate>{
                     ...schemaRequest,
-                    sourceName: schemaRoute.routeName,
-                    entityName: schemaRoute.entityName ?? schemaRequest.entityName
+                    source: schemaRoute.routeName,
+                    entity: schemaRoute.entity ?? schemaRequest.entity
                 })
             }
         })
     }
 
-    static async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Update: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    static async Insert(schemaRequest: TSchemaRequestInsert, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schemaName, entityName } = schemaRequest
-        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
-        const schemaRoute = Schema.GetRoute(schemaName, entityName, schemaConfig)
+        TypeHelper.Validate(typia.validateEquals<TSchemaRequestInsert>(schemaRequest),
+            new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
+
+        const { schema, entity } = schemaRequest
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+
+        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.CREATE))
+            throw new HttpErrorForbidden('Permission denied')
+
+        const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
-            sourceName: schemaRoute.routeName,
-            entityName: schemaRoute.entityName,
+            source: schemaRoute.routeName,
+            entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                return await Source.Sources[schemaRoute.routeName].Update({
+                return await Source.Sources[schemaRoute.routeName].Insert(<TSchemaRequestInsert>{
                     ...schemaRequest,
-                    sourceName: schemaRoute.routeName,
-                    entityName: schemaRoute.entityName ?? schemaRequest.entityName
+                    source: schemaRoute.routeName,
+                    entity: schemaRoute.entity ?? schemaRequest.entity
                 })
             }
         })
     }
 
-    static async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`Schema.Insert: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    static async ListEntities(schemaRequest: TSchemaRequest, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
+        const { schema } = schemaRequest
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
 
-        const { schemaName, entityName } = schemaRequest
-        const schemaConfig: TJson = Config.Get(`schemas.${schemaName}`)
-        const schemaRoute = Schema.GetRoute(schemaName, entityName, schemaConfig)
+        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.LIST))
+            throw new HttpErrorForbidden('Permission denied')
 
-        return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
-            sourceName: schemaRoute.routeName,
-            entityName: schemaRoute.entityName,
-            schemaRequest,
-            CrudFunction: async () => {
-                return await Source.Sources[schemaRoute.routeName].Insert({
-                    ...schemaRequest,
-                    sourceName: schemaRoute.routeName,
-                    entityName: schemaRoute.entityName ?? schemaRequest.entityName
-                })
-            }
-        })
+        const entitiesSources = Schema.GetEntitiesSources(schema)
+
+        let schemaResponse = {} as TSchemaResponse
+
+        if (entitiesSources.has("*")) {
+            const _source = (<TConfigSchemaEntity>entitiesSources.get("*")).source
+            const _internalResponse = await Source.Sources[_source].ListEntities(schemaRequest)
+            schemaResponse = <TSchemaResponse>_internalResponse.Body
+            entitiesSources.delete("*")
+        }
+
+        for await (const [entity, entitySource] of entitiesSources) {
+            const _source = (<TConfigSchemaEntity>entitySource).source
+            if (TypeHelper.IsSchemaResponseData(schemaResponse))
+                schemaResponse.data.DeleteRows(`name = '${entity}'`)
+
+            const _internalResponse = await Source.Sources[_source].ListEntities(schemaRequest)
+
+            Schema.#MergeData(schemaResponse, <TSchemaResponse>_internalResponse.Body)
+        }
+        return HttpResponse.Ok(schemaResponse)
     }
 
+    static GetEntitiesSources(schema: string): TEntitiesMap {
 
+        const entities: TEntitiesMap = new Map()
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+
+        if (schemaConfig?.source)
+            entities.set("*", {
+                source: schemaConfig.source,
+                database: Config.Get<string | undefined>(`sources.${schemaConfig.source}.database`)
+            })
+
+        if (schemaConfig?.entities)
+            // eslint-disable-next-line you-dont-need-lodash-underscore/for-each
+            _.forEach(schemaConfig.entities, (entityConfig: TConfigSchemaEntity, entity: string) => {
+                entities.set(entity, {
+                    source: entityConfig.source,
+                    database: Config.Get<string | undefined>(`sources.${entityConfig.source}.database`)
+                })
+            })
+
+        return entities
+    }
 }

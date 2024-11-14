@@ -1,60 +1,83 @@
-/* eslint-disable you-dont-need-lodash-underscore/get */
 //
 //
 //
 //
 //
-import _ from 'lodash'
+import { Readable } from "node:stream"
 //
 import { DataTable } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
-import { CommonContent, IContent } from './CommonContent'
-import { Helper } from '../../lib/Helper'
+import { JsonHelper } from '../../lib/JsonHelper'
+import { Logger } from "../../utils/Logger"
+import { HttpErrorInternalServerError } from "../../server/HttpErrors"
+import { ReadableHelper } from "../../lib/ReadableHelper"
+import { TConvertParams } from "../../lib/TypeHelper"
+import { ACContentProvider } from "../ACContentProvider"
 
-type TJsonContentConfig = {
-    arrayPath?: string
+export type TJsonContentConfig = {
+    "json-path"?: string
 }
 
-export class JsonContent extends CommonContent implements IContent {
+type TJsonContentParams = Required<{
+    [K in keyof TJsonContentConfig as K extends `json-${infer U}` ? TConvertParams<U> : K]: TJsonContentConfig[K]
+}>
 
-    Content: TJson = {}
-    Config = <TJsonContentConfig>{}
-    IsArray = false
+export class JsonContent extends ACContentProvider {
 
-    async Init(entityName: string, content: string): Promise<void> {
-        this.EntityName = entityName
-        if (this.Options) {
-            const {
-                jsonArrayPath: arrayPath = undefined
-            } = this.Options
+    Params: TJsonContentParams | undefined
 
-            this.Config = {
-                ...this.Config,
-                arrayPath
+    @Logger.LogFunction()
+    async Init(entity: string, content: Readable): Promise<void> {
+        this.EntityName = entity
+        if (this.Config) {
+            this.Params = {
+                path: this.Config["json-path"] ?? ""
             }
         }
 
-        this.RawContent = content
-        //TODO: when content = "", data has empty json object {}
-        this.Content = Helper.JsonTryParse(content, {})
-        // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
-        this.IsArray = _.isArray(this.Content)
+        this.Content.UploadFile(entity, content)
     }
 
+    @Logger.LogFunction()
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
-        let data: TJson[] = []
-        data = Helper.JsonGet<TJson[]>(this.Content, this.Config.arrayPath)
-        return new DataTable(this.EntityName, data).FreeSql(sqlQuery)
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('Json: Params is not defined')
+
+        if (!this.Content)
+            throw new HttpErrorInternalServerError('Content is not defined')
+
+        //TODO: when content = "", data has empty json object {}
+        const json = JsonHelper.TryParse(
+            await ReadableHelper.ToString(
+                this.Content.ReadFile(this.EntityName)
+            ), {})
+
+        const data = JsonHelper.Get<TJson[]>(json, this.Params.path)
+        return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
-    async Set(contentDataTable: DataTable): Promise<string> {
+    @Logger.LogFunction()
+    async Set(data: DataTable): Promise<Readable> {
+        if (!this.Params)
+            throw new HttpErrorInternalServerError('Json: Params is not defined')
+        
+        if (!this.Content)
+            throw new HttpErrorInternalServerError('Content is not defined')
 
-        this.Content = Helper.JsonSet(
-            this.Content,
-            this.Config.arrayPath,
-            contentDataTable.Rows
+        //TODO: when content = "", data has empty json object {}
+        let json = JsonHelper.TryParse(
+            await ReadableHelper.ToString(
+                this.Content.ReadFile(this.EntityName)
+            ), {})
+
+        json = JsonHelper.Set(
+            json,
+            this.Params.path,
+            data.Rows
         )
-        this.RawContent = JSON.stringify(this.Content)
-        return this.RawContent
+
+        const streamOut = Readable.from(JSON.stringify(json))
+        this.Content.UploadFile(this.EntityName, streamOut)
+        return this.Content.ReadFile(this.EntityName)
     }
 }

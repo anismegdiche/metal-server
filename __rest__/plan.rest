@@ -1,4 +1,3 @@
-###
 # @name login
 POST  http://localhost:3000/user/login
 Content-Type: application/json
@@ -7,31 +6,44 @@ Content-Type: application/json
     "username":"myapiuser",
     "password": "myStr@ngpa$$w0rd"
 }
-
 ###
+
+
 @token={{login.response.body.token}}
-
 ###
+
+
 @plan=etl1
 @schema=sch-etl1
-
 ###
+
+
+# @name list
+GET http://localhost:3000/schema/etl1
+authorization: Bearer {{token}}
+
+
 # @name reload
 POST http://localhost:3000/plan/{{plan}}/reload
-Content-Type: application/json
 authorization: Bearer {{token}}
-
-
 ###
+
+
 # @name get-plan-aitest
-GET http://localhost:3000/schema/{{schema}}/aitest
-    ?cache=300
-Content-Type: application/json
+GET http://localhost:3000/schema/etl1/src
+    # ?cache=300
 authorization: Bearer {{token}}
-
 ###
-# @name get-plan-aitest2
-GET http://localhost:3000/schema/{{schema}}/aitest2
+
+
+# @name get-plan-aitest
+GET http://localhost:3000/schema/etl1/aitest
     ?cache=300
-Content-Type: application/json
+authorization: Bearer {{token}}
+###
+
+
+# @name get-plan-aitest2
+GET http://localhost:3000/schema/etl1/aitest2
+    ?cache=300
 authorization: Bearer {{token}}

@@ -4,44 +4,48 @@
 //
 //
 import mssql, { ConnectionPool } from 'mssql'
-
-import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
+//
+import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import { TSourceParams } from "../../types/TSourceParams"
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
+import { TConfigSource } from "../../types/TConfig"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
-import { TJson } from "../../types/TJson"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
-import { Logger } from '../../lib/Logger'
+import { Logger } from '../../utils/Logger'
 import { Cache } from '../../server/Cache'
-import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
-import DATA_PROVIDER, { Source } from '../../server/Source'
+import DATA_PROVIDER from '../../server/Source'
+import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { TJson } from "../../types/TJson"
+import { JsonHelper } from "../../lib/JsonHelper"
+import { TInternalResponse } from "../../types/TInternalResponse"
+import { HttpResponse } from "../../server/HttpResponse"
 
 
 export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MSSQL
-    SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
     Connection?: ConnectionPool = undefined
+    SourceName: string
+    Params: TConfigSource = <TConfigSource>{}
     Config: TJson = {}
 
     Options = new CommonSqlDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }
 
-    async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("SqlServerDataProvider.Init")
+    @Logger.LogFunction()
+    async Init(sourceParams: TConfigSource): Promise<void> {
         this.Params = sourceParams
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Debug("SqlServerDataProvider.Connect")
         const {
             user = 'sa',
             password = '',
@@ -60,7 +64,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
                 }
             }
         } = this.Params ?? {}
-        
+
         const connectionConfig = {
             user,
             password,
@@ -71,144 +75,171 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
         }
         try {
             this.Connection = await mssql.connect(connectionConfig)
-            Logger.Info(`${Logger.In} connected to '${this.SourceName} (${database})'`)
+            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName} (${database})': ${host}: ${port}[${database}]`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName} (${database})': ${host}: ${port}[${database}]`)
             Logger.Error(JSON.stringify(error))
         }
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        Logger.Debug(`${Logger.In} SqlServerDataProvider.Disconnect`)
         if (this.Connection !== undefined) {
             this.Connection.close()
         }
     }
 
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} SqlServerDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.INSERT
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity
         }
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Insert(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
+            .Insert(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
             .Fields(options.Data.GetFieldNames())
-            .Values(options.Data.Rows)            
+            .Values(options.Data.Rows)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        schemaResponse = <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.INSERT.SUCCESS.MESSAGE,
-            ...RESPONSE.INSERT.SUCCESS.STATUS
-        }
-        return schemaResponse
+        
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.Created()
     }
 
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} SqlServerDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.SELECT
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity
         }
 
         if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
         }
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
+            .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
-        const data = await this.Connection.query(sqlQueryHelper.Query)
-        if (data.recordset != null && data.recordset.length > 0) {
-            const _dt = new DataTable(schemaRequest.entityName, data.recordset)
-            Cache.Set(schemaRequest, _dt)
-            schemaResponse = <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: _dt
-            }
-        } else {
-            schemaResponse = <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+        const sqlServerResult = await this.Connection.query(sqlQueryHelper.Query)
+
+        const data = new DataTable(schemaRequest.entity)
+
+        if (sqlServerResult.recordset != null && sqlServerResult.recordset.length > 0) {
+            data.AddRows(sqlServerResult.recordset)
+            if (options?.Cache)
+                Cache.Set(schemaRequest, data)
         }
-        return schemaResponse
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        })
     }
 
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`SqlServerDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.UPDATE
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity
         }
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
+            .Update(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
             .Set(options.Data.Rows)
-            .Where(options.Filter)            
+            .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        schemaResponse = <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
-            ...RESPONSE.UPDATE.SUCCESS.STATUS
-        }
-        return schemaResponse
+        
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
     }
 
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`SqlServerDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
         const schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.DELETE
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity
         }
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
-            .From(`[${schemaRequest.entityName}]`.replace(/\./g, "].["))
-            .Where(options.Filter)            
+            .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
+            .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        return <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.DELETE.SUCCESS.MESSAGE,
-            ...RESPONSE.DELETE.SUCCESS.STATUS
-        }
+        
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
+    }
+
+    // @Logger.LogFunction()
+    // eslint-disable-next-line class-methods-use-this
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+        throw new HttpErrorNotImplemented()
+    }
+
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+
+        const { schema } = schemaRequest
+
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        const sqlQuery = `
+            SELECT t.name AS name, 
+                'table' AS type, 
+                SUM(p.rows) AS [size]
+            FROM sys.tables t
+            JOIN sys.partitions p ON t.object_id = p.object_id
+            WHERE p.index_id IN (0, 1) -- 0 for heap tables, 1 for clustered indexes
+            GROUP BY t.name
+            ORDER BY t.name;
+            `
+
+        const sqlServerResult = await this.Connection.query(sqlQuery)
+        
+        if (sqlServerResult?.recordset.length == 0)
+            throw new HttpErrorNotFound(`${schema}: No entities found`)
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schema,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data: new DataTable(undefined, sqlServerResult.recordset)
+        })
     }
 }

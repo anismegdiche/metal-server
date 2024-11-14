@@ -1,29 +1,33 @@
-/* eslint-disable class-methods-use-this */
+
 //
 //
 //
 //
 //
-import * as MongoDb from 'mongodb'
 import _ from 'lodash'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const GetMongoQuery = require("sql2mongo").getMongoQuery
+import * as MongoDb from 'mongodb'
 //
 import * as IDataProvider from "../../types/IDataProvider"
 import { Convert } from '../../lib/Convert'
-import { RESPONSE_TRANSACTION, RESPONSE } from '../../lib/Const'
-import { TSourceParams } from "../../types/TSourceParams"
+import { RESPONSE } from '../../lib/Const'
+import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from '../../types/TOptions'
-import { TSchemaResponse, TSchemaResponseData, TSchemaResponseNoData } from "../../types/TSchemaResponse"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
-import { Logger } from "../../lib/Logger"
+import { Logger } from "../../utils/Logger"
 import { Cache } from '../../server/Cache'
-import DATA_PROVIDER, { Source } from '../../server/Source'
+import DATA_PROVIDER from '../../server/Source'
+import { MongoDbHelper } from '../../lib/MongoDbHelper'
+import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { JsonHelper } from "../../lib/JsonHelper"
+import { TInternalResponse } from "../../types/TInternalResponse"
+import { HttpResponse } from "../../server/HttpResponse"
 
 
 class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
+    @Logger.LogFunction()
     Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}
         if (schemaRequest) {
@@ -31,19 +35,21 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
             options = this.GetFields(options, schemaRequest)
             options = this.GetSort(options, schemaRequest)
             options = this.GetData(options, schemaRequest)
+            options = this.GetCache(options, schemaRequest)
         }
 
         return options
     }
 
+    @Logger.LogFunction()
     GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let filter: any = {}
-        if (schemaRequest?.filterExpression || schemaRequest?.filter) {
+        if (schemaRequest["filter-expression"] || schemaRequest?.filter) {
 
-            if (schemaRequest?.filterExpression) {
+            if (schemaRequest["filter-expression"])
                 // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
-                filter = GetMongoQuery(schemaRequest.filterExpression.replace(/%/igm, ".*"))
-            }
+                filter = MongoDbHelper.ConvertSqlQuery(schemaRequest["filter-expression"].replace(/%/igm, ".*"))
+            
             if (schemaRequest?.filter)
                 filter = schemaRequest.filter
 
@@ -51,12 +57,13 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
                 filter._id = new MongoDb.ObjectId(filter._id)
 
             options.Filter = <TJson>{
-                $match: Convert.ReplacePlaceholders(filter)
+                $match: Convert.EvaluateJsCode(filter)
             }
         }
         return options
     }
 
+    @Logger.LogFunction()
     GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.fields) {
             let _fields: string[] | Record<string, unknown> = []
@@ -80,24 +87,23 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
         return options
     }
 
+    @Logger.LogFunction()
     GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.sort) {
             const _sort = schemaRequest.sort.trim()
-            let _sortArray = []
+
             // test if array
-            if (_sort.includes(",")) {
-                _sortArray = _sort
+            let _sortArray = _sort.includes(",")
+                ? _sort
                     .split(",")
                     .filter(__field => !(__field == undefined || __field.trim() == ""))
                     .map(__field => __field.trim().replace(/\W+/igm, " "))
-            } else {
-                // single field
-                _sortArray = [_sort.replace(/\W+/igm, " ")]
-            }
+                : [_sort.replace(/\W+/igm, " ")]
+
             Logger.Debug(_sortArray)
-            if (_sortArray.length > 0) {
-                _sortArray = _sortArray.reduce(Convert.SqlSortToMongoSort, {})
-            }
+            if (_sortArray.length > 0)
+                _sortArray = _sortArray.reduce(MongoDbHelper.ConvertSqlSort, {})
+            
             Logger.Debug(_sortArray)
             options.Sort = {
                 $sort: _sortArray
@@ -106,13 +112,22 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
         return options
     }
 
+    @Logger.LogFunction()
     GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.data) {
             options.Data = new DataTable(
-                schemaRequest.entityName,
-                Convert.ReplacePlaceholders(schemaRequest.data)
+                schemaRequest.entity,
+                Convert.EvaluateJsCode(schemaRequest.data)
             )
         }
+        return options
+    }
+
+    @Logger.LogFunction(Logger.Debug, true)
+    GetCache(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+        if (schemaRequest?.cache)
+            options.Cache = schemaRequest.cache
+
         return options
     }
 }
@@ -121,25 +136,25 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
 export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MONGODB
     SourceName: string
-    Params: TSourceParams = <TSourceParams>{}
+    Params: TConfigSource = <TConfigSource>{}
     Connection?: MongoDb.MongoClient = undefined
 
+    //TODO: change MongoDbDataProviderOptions to static
     Options: MongoDbDataProviderOptions = new MongoDbDataProviderOptions()
 
-    constructor(sourceName: string, sourceParams: TSourceParams) {
-        this.SourceName = sourceName
+    constructor(source: string, sourceParams: TConfigSource) {
+        this.SourceName = source
         this.Init(sourceParams)
         this.Connect()
     }
 
-
-    async Init(sourceParams: TSourceParams): Promise<void> {
-        Logger.Debug("MongoDbDataProvider.Init")
+    @Logger.LogFunction()
+    async Init(sourceParams: TConfigSource): Promise<void> {
         this.Params = sourceParams
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Debug("MongoDbDataProvider.Connect")
         const {
             host: uri = 'mongodb://localhost:27017/',
             database,
@@ -154,103 +169,87 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
                 .command({
                     ping: 1
                 })
-            Logger.Info(`${Logger.In} connected to '${this.SourceName} (${database})'`)
+            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName}/${database}'`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName}/${database}'`)
             Logger.Error(error)
         }
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        Logger.Debug("MongoDbDataProvider.Disconnect")
         if (this.Connection !== undefined) {
             await this.Connection.close()
         }
     }
 
-    async Insert(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MongoDbDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.INSERT
-        }
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         await this.Connection.connect()
         await this.Connection
             .db(this.Params.database)
-            .collection(schemaRequest.entityName)
+            .collection(schemaRequest.entity)
             .insertMany(options?.Data?.Rows)
 
-        Logger.Debug(`${Logger.In} MongoDbDataProvider.Insert: ${JSON.stringify(schemaRequest)}`)
-        schemaResponse = <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.INSERT.SUCCESS.MESSAGE,
-            ...RESPONSE.INSERT.SUCCESS.STATUS
-        }
-        return schemaResponse
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.Created()
     }
 
-    async Select(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`MongoDbDataProvider.Select: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const options: MongoDb.Document[] = _.values(this.Options.Parse(schemaRequest))
+        const { schema, entity } = schemaRequest
 
         let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.SELECT
+            schema,
+            entity
         }
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line you-dont-need-lodash-underscore/omit, you-dont-need-lodash-underscore/values
+        const aggregation: MongoDb.Document[] = _.values(_.omit(options, "Cache"))
 
         await this.Connection.connect()
 
-        const _data = await this.Connection.db(this.Params.database)
-            .collection(schemaRequest.entityName)
-            .aggregate(options)
+        const rows = await this.Connection.db(this.Params.database)
+            .collection(schemaRequest.entity)
+            .aggregate(aggregation)
             .toArray()
 
-        if (_data.length > 0) {
-            const _dt = new DataTable(schemaRequest.entityName, _data)
-            Cache.Set(schemaRequest, _dt)
-            schemaResponse = <TSchemaResponseData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: _dt
-            }
-        } else {
-            schemaResponse = <TSchemaResponseNoData>{
-                ...schemaResponse,
-                ...RESPONSE.SELECT.NOT_FOUND.MESSAGE,
-                ...RESPONSE.SELECT.NOT_FOUND.STATUS
-            }
+        const data = new DataTable(entity)
+
+        if (rows.length > 0) {
+            data.AddRows(rows)
+            if (options?.Cache)
+                Cache.Set(schemaRequest, data)
         }
-        return schemaResponse
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            ...schemaResponse,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        })
     }
 
-    async Update(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MongoDbDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        let schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.UPDATE
-        }
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
@@ -258,51 +257,79 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
         await this.Connection
             .db(this.Params.database)
-            .collection(schemaRequest.entityName)
+            .collection(schemaRequest.entity)
             .updateMany(
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>,
                 {
-                    $set: (options?.Data?.Rows).at(0)
+                    $set: options?.Data?.Rows.at(0)
                 }
             )
 
-        Logger.Debug(`${Logger.In} MongoDbDataProvider.Update: ${JSON.stringify(schemaRequest)}`)
-        schemaResponse = <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.UPDATE.SUCCESS.MESSAGE,
-            ...RESPONSE.UPDATE.SUCCESS.STATUS
-        }
-        return schemaResponse
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
     }
 
-    async Delete(schemaRequest: TSchemaRequest): Promise<TSchemaResponse> {
-        Logger.Debug(`${Logger.Out} MongoDbDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+    @Logger.LogFunction()
+    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        const schemaResponse = <TSchemaResponse>{
-            schemaName: schemaRequest.schemaName,
-            entityName: schemaRequest.entityName,
-            ...RESPONSE_TRANSACTION.DELETE
-        }
 
         const options: any = this.Options.Parse(schemaRequest)
 
-        if (this.Connection === undefined) {
-            return Source.ResponseError(schemaResponse)
-        }
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         await this.Connection
             .db(this.Params.database)
-            .collection(schemaRequest.entityName)
+            .collection(schemaRequest.entity)
             .deleteMany(
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>
             )
 
-        Logger.Debug(`${Logger.In} MongoDbDataProvider.Delete: ${JSON.stringify(schemaRequest)}`)
+        // clean cache
+        Cache.Remove(schemaRequest)
 
-        return <TSchemaResponseData>{
-            ...schemaResponse,
-            ...RESPONSE.DELETE.SUCCESS.MESSAGE,
-            ...RESPONSE.DELETE.SUCCESS.STATUS
-        }
+        return HttpResponse.NoContent()
+    }
+
+    @Logger.LogFunction()
+    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+        throw new HttpErrorNotImplemented()
+    }
+
+    @Logger.LogFunction()
+    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+
+        const { schema } = schemaRequest
+
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        await this.Connection.connect()
+
+        const collections = await this.Connection.db(this.Params.database).listCollections().toArray()
+
+        if (collections.length == 0)
+            throw new HttpErrorNotFound(`${schema}: No entities found`)
+
+        const rows = await Promise.all(
+            collections.map(async (item) => {
+                let size = -1
+                if (this.Connection !== undefined) {
+                    const collection = this.Connection.db(this.Params.database).collection(item.name)
+                    size = await collection.countDocuments()
+                }
+                // eslint-disable-next-line you-dont-need-lodash-underscore/assign
+                return _.assign(_.pick(item, ['name', 'type']), { size })
+            })
+        )
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schema,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data: new DataTable(undefined, rows)
+        })
     }
 }

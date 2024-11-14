@@ -3,13 +3,15 @@
 //
 //
 //
-import { Logger } from '../lib/Logger'
+import { Logger } from '../utils/Logger'
 import { IAiEngine } from '../types/IAiEngine'
 import { TJson } from '../types/TJson'
 import { Helper } from '../lib/Helper'
 import { AI_ENGINE, TConfigAiEngineNlpJsSentimentOptions, TConfigAiEngineNlpJsGuessLangOptions, TConfigAiEngineNlpJs, NLP_JS_MODEL } from '../server/AiEngine'
-//
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+import { JsonHelper } from '../lib/JsonHelper'
+
+ 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { SentimentAnalyzer, Language } = require('node-nlp')
 
 export class NlpJs implements IAiEngine {
@@ -21,16 +23,19 @@ export class NlpJs implements IAiEngine {
 
 	#Model?: typeof SentimentAnalyzer | typeof Language = undefined
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	#LoadModel: Record<string, Function> = {
 		[NLP_JS_MODEL.SENTIMENT]: () => new SentimentAnalyzer({ language: this.Options.Lang }),
 		[NLP_JS_MODEL.GUESS_LANG]: () => new Language()
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	#RunModel: Record<string, Function> = {
 		[NLP_JS_MODEL.SENTIMENT]: async (text: string) => await this.#SentimentAnalyze(text),
 		[NLP_JS_MODEL.GUESS_LANG]: async (text: string) => await this.#GuessLanguage(text)
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 	#SetDefaultOptions: Record<string, Function> = {
 		[NLP_JS_MODEL.SENTIMENT]: (options: Partial<TConfigAiEngineNlpJsSentimentOptions> = {}) => NlpJs.#SentimentAnalyzeSetDefaultOptions(options),
 		[NLP_JS_MODEL.GUESS_LANG]: (options: Partial<TConfigAiEngineNlpJsGuessLangOptions> = {}) => NlpJs.#GuessLanguageSetDefaultOptions(options)
@@ -42,14 +47,16 @@ export class NlpJs implements IAiEngine {
 		this.Options = this.#SetDefaultOptions[this.Model](aiEngineConfig.options) ?? Helper.CaseMapNotFound(this.Model)
 	}
 
-	async Init(): Promise<void> {
+	@Logger.LogFunction()
+    async Init(): Promise<void> {
 		this.#Model = await this.#LoadModel[this.Model]()
 	}
 
-	async Run(text: string): Promise<any> {
+	@Logger.LogFunction()
+    async Run(text: string): Promise<any> {
 		return await this.#RunModel[this.Model](text)
 			.catch((error: any) => {
-				Logger.Error(`NlpJs.Run '${this.InstanceName}': '${JSON.stringify(this.Options)}',Text= '${text}'`)
+				Logger.Error(`NlpJs.Run '${this.InstanceName}': '${JsonHelper.Stringify(this.Options)}',Text= '${text}'`)
 				Logger.Error(error)
 				return undefined
 			})
