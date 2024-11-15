@@ -4,27 +4,26 @@
 //
 //
 import { Request, Response } from 'express'
+import typia from "typia"
 //
 import { HTTP_STATUS_CODE } from '../lib/Const'
-import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented, HttpErrorUnauthorized } from '../server/HttpErrors'
+import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented, HttpErrorUnauthorized, HttpErrorInternalServerError } from '../server/HttpErrors'
 import { Server } from '../server/Server'
 import { TJson } from "../types/TJson"
-import typia from "typia"
 import { Convert } from "../lib/Convert"
 
 
 export class ServerResponse {
 
     static async GetInfo(req: Request, res: Response): Promise<void> {
-        ServerResponse.CheckRequest(req)
-        await Server.GetInfo(req.__METAL_CURRENT_USER)
+        Server.GetInfo()
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
     static async Reload(req: Request, res: Response): Promise<void> {
         ServerResponse.CheckRequest(req)
-        await Server.Reload(req.__METAL_CURRENT_USER)
+        Server.Reload(req.__METAL_CURRENT_USER)
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
 
@@ -64,7 +63,11 @@ export class ServerResponse {
     }
 
     static CheckRequest(req: Request) {
-        if (!req.__METAL_CURRENT_USER)
-            throw new HttpErrorUnauthorized()
+        try {
+            if (!req.__METAL_CURRENT_USER)
+                throw new HttpErrorUnauthorized()
+        } catch (error: any) {
+            throw new HttpErrorInternalServerError(error.message)
+        }
     }
 }
