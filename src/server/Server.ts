@@ -157,10 +157,7 @@ export class Server {
     }
 
     @Logger.LogFunction()
-    static async GetInfo(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
-
+    static async GetInfo(): Promise<TInternalResponse<TJson>> {
         return HttpResponse.Ok({
             server: SERVER.NAME,
             version: SERVER.VERSION
