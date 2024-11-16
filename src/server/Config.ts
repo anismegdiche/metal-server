@@ -19,7 +19,7 @@ import { Convert } from '../lib/Convert'
 import { HTTP_STATUS_MESSAGE } from "../lib/Const"
 import { TConfig } from "../types/TConfig"
 import { TypeHelper } from "../lib/TypeHelper"
-import { HttpError, HttpErrorBadRequest, HttpErrorInternalServerError } from "./HttpErrors"
+import { ConfigFileError } from "./HttpErrors"
 import { AUTH_PROVIDER, AuthProvider } from "../providers/AuthProvider"
 import { Roles } from "./Roles"
 
@@ -100,7 +100,7 @@ export class Config {
     @Logger.LogFunction(Logger.Debug, true)
     static async Validate(newConfig: TConfig): Promise<void> {
         try {
-            TypeHelper.Validate(typia.validateEquals<TConfig>(newConfig), new HttpErrorInternalServerError("Configuration file errors found"))
+            TypeHelper.Validate(typia.validateEquals<TConfig>(newConfig), new ConfigFileError("Configuration file errors found"))
         } catch (error: any) {
             throw new Error(error.message)
         }

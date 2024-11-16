@@ -24,19 +24,19 @@ export class NlpJs implements IAiEngine {
 	#Model?: typeof SentimentAnalyzer | typeof Language = undefined
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-	#LoadModel: Record<string, Function> = {
+	readonly #LoadModel: Record<string, Function> = {
 		[NLP_JS_MODEL.SENTIMENT]: () => new SentimentAnalyzer({ language: this.Options.Lang }),
 		[NLP_JS_MODEL.GUESS_LANG]: () => new Language()
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-	#RunModel: Record<string, Function> = {
+	readonly #RunModel: Record<string, Function> = {
 		[NLP_JS_MODEL.SENTIMENT]: async (text: string) => await this.#SentimentAnalyze(text),
 		[NLP_JS_MODEL.GUESS_LANG]: async (text: string) => await this.#GuessLanguage(text)
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-	#SetDefaultOptions: Record<string, Function> = {
+	readonly #SetDefaultOptions: Record<string, Function> = {
 		[NLP_JS_MODEL.SENTIMENT]: (options: Partial<TConfigAiEngineNlpJsSentimentOptions> = {}) => NlpJs.#SentimentAnalyzeSetDefaultOptions(options),
 		[NLP_JS_MODEL.GUESS_LANG]: (options: Partial<TConfigAiEngineNlpJsGuessLangOptions> = {}) => NlpJs.#GuessLanguageSetDefaultOptions(options)
 	}
