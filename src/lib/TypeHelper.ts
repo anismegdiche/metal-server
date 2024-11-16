@@ -59,7 +59,9 @@ export class TypeHelper {
         return txt
             .replace("TJson", "JSON")
             .replace("$input expected to be TConfig", "Configuration file is empty")
+            .replace("$input", "")
             .replace(/__type\.o\d+/, "object")
+            .replace(/__@toStringTag@\d+/, "")
             .replace(" | undefined", "")
     }
 }

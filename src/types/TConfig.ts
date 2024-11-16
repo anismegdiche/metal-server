@@ -130,7 +130,7 @@ export type TConfig = {
         [aiEngine: string]: {
             engine: AI_ENGINE
             model: string
-            options?: JSON
+            options?: TJson
         }
     }
     plans?: {

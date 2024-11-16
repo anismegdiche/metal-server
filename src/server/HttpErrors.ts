@@ -82,3 +82,11 @@ export class HttpErrorForbidden extends HttpError {
         this.Name = HTTP_STATUS_MESSAGE.FORBIDDEN
     }
 }
+
+export class ConfigFileError extends HttpError {
+    constructor(message?: string) {
+        super(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, message ?? "Config File Error")
+        this.name = "ConfigFileError"
+        this.Name = "Config File Error"
+    }
+}
