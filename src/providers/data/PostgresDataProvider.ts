@@ -93,11 +93,6 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        const schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity
-        }
-
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
@@ -119,7 +114,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        let schemaResponse = <TSchemaResponse>{
+        const schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity
         }
@@ -158,11 +153,6 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity
-        }
-
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
@@ -185,11 +175,6 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
-        let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity
-        }
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
