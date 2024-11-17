@@ -5,17 +5,59 @@ info:
 
 components:
   schemas:
+    dataResponse:
+        type: object
+        properties:
+          schema:
+            type: string
+            description: Name of the schema
+          entity:
+            type: string
+            description: Name of the entity
+          result:
+            type: string
+            enum: [success, error]
+          status:
+            type: integer
+            enum: [200]
+          cache:
+            type: string
+          expires:
+            type: integer
+          data:
+            description: Data
+            type: array
+            items:
+              type: object
+        required:
+          - schema
+          - result
+          - status
+          - data
+        additionalProperties: false
+
     filter:
       type: object
+      description: Simple filtering feature by providing fields and values
+
     filter-expression:
       type: string
+      description: SQL WHERE condition
+
     fields:
       type: string
+      description: Fields to return
+
     sort:
       type: string
+      description: Sorting order
+
     cache:
       type: number
+      description: Cache time in seconds
+
     data:
+      description: Data to insert or update
       oneOf:
         - type: array
         - type: object
@@ -68,7 +110,7 @@ components:
       schema:
         type: string
       required: true
-      description: The name of the schema
+      description: Name of the schema
 
     entity:
       in: path
@@ -76,7 +118,7 @@ components:
       schema:
         type: string
       required: true
-      description: The name of the entity
+      description: Name of the entity
 
 tags:
   - name: "User"
@@ -345,11 +387,11 @@ paths:
         default:
           $ref: '#/components/responses/DefaultError'
         200:
-          description: Data in the entity of the schema
+          description: Ok
           content:
             application/json:
               schema:
-                type: object
+                $ref: '#/components/schemas/dataResponse'
         400:
           $ref: "#/components/responses/http400"
         401:
