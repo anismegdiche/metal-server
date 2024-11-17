@@ -75,7 +75,6 @@ export class Schema {
                 ...schemaResponseToMerge,
                 schema: schemaResponse.schema,
                 entity: schemaResponse.entity,
-                result: schemaResponseToMerge.result,
                 status: schemaResponseToMerge.status
             }
 
