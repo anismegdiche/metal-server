@@ -16,7 +16,7 @@ import { Logger } from "./Logger"
 
 export class Swagger {
 
-    static OpenApiFilePath = './openapi.yaml'
+    static OpenApiFilePath = './openapi.yml'
 
     static Spec: TJson
 

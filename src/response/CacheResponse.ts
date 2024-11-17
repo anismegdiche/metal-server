@@ -74,8 +74,6 @@ export class CacheResponse {
                                 entity: _cacheData.schemaRequest.entity,
                                 ...RESPONSE.SELECT.SUCCESS.MESSAGE,
                                 ...RESPONSE.SELECT.SUCCESS.STATUS,
-                                cache: "true",
-                                expires: _cacheData.expires,
                                 data: _cacheData.data
                             },
                             res
