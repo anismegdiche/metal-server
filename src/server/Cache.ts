@@ -118,13 +118,12 @@ export class Cache {
         // get cached data
         const hash = Cache.Hash(schemaRequest)
         const _expires = await Cache.IsExists(hash)
-        // const cacheData = await Cache.Get(hash)
 
         if (_expires == 0) {
             Logger.Debug(`${Logger.Out} Cache.Set: no cache found, creating Hash=${hash}`)
             datatable.SetMetaData(METADATA.CACHE, true)
             datatable.SetMetaData(METADATA.CACHE_EXPIRE, expires)
-            await Cache.CacheSource.Insert(<TSchemaRequest>{
+            await Cache.CacheSource.Insert({
                 ...Cache.#CacheSchemaRequest,
                 data: <TCacheData[]>[
                     {
@@ -171,10 +170,9 @@ export class Cache {
                 Logger.Debug(`Cache.Get: Cache found, Hash=${cacheHash}`)
                 return schemaResponse.data.Rows[0] as TCacheData
             }
-            Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
-            return undefined
+            throw new Error()
 
-        } catch (error) {
+        } catch {
             Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
             return undefined
         }

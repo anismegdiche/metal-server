@@ -8,6 +8,11 @@ server:
   authentication:
     provider: local
     default-role: all
+  cache:
+    provider: memory
+    database: cache
+    options:
+      autocreate: true
 
 roles:
   all: lacrud

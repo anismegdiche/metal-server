@@ -15,13 +15,13 @@ components:
             type: string
             description: Name of the entity
           status:
+            description: Status
             type: integer
             enum: [200]
-          cache:
-            type: string
-          expires:
-            type: integer
-          data:
+          metadata:
+            description: Metadata
+            type: object
+          rows:
             description: Data
             type: array
             items:
@@ -30,8 +30,8 @@ components:
           - schema
           - entity
           - status
-          - data
-        additionalProperties: false
+          - metadata
+          - rows
 
     filter:
       type: object

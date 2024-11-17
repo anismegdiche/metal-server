@@ -63,7 +63,7 @@ export class Convert {
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, res: Response): Response {
         const { schema, entity, status } = schemaResponse
 
-        let resJson: TJson = {
+        let commonJsonResponse: TJson = {
             schema,
             entity,
             status
@@ -72,9 +72,8 @@ export class Convert {
         res.status(status)
 
         if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
-            resJson = {
-                ...resJson,
-                cache: schemaResponse.cache,
+            commonJsonResponse = {
+                ...commonJsonResponse,
                 metadata: schemaResponse.data.MetaData,
                 fields: schemaResponse.data.Fields,
                 rows: schemaResponse.data.Rows
@@ -82,9 +81,9 @@ export class Convert {
         }
 
         if (Config.Flags.EnableResponseChunk && schemaResponse.status === HTTP_STATUS_CODE.OK) {
-            Convert.#SchemaResponseToResponseChunkPrepare(schemaResponse, res, resJson)
+            Convert.#SchemaResponseToResponseChunkPrepare(schemaResponse, res, commonJsonResponse)
         } else {
-            res.json(resJson)
+            res.json(commonJsonResponse)
         }
 
         return res
