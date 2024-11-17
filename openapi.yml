@@ -14,9 +14,6 @@ components:
           entity:
             type: string
             description: Name of the entity
-          result:
-            type: string
-            enum: [success, error]
           status:
             type: integer
             enum: [200]
@@ -31,7 +28,7 @@ components:
               type: object
         required:
           - schema
-          - result
+          - entity
           - status
           - data
         additionalProperties: false

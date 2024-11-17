@@ -1,4 +1,3 @@
-
 //
 //
 //
@@ -7,6 +6,7 @@
 import { Package } from "../utils/Package"
 
 
+//
 export const SERVER = {
     NAME: 'Metal',
     VERSION: Package.Json.version as string,
@@ -34,18 +34,6 @@ export enum ROUTE {
     CACHE_PATH = '/cache',
     SCHEDULE_PATH = '/schedule',
     SWAGGER_UI_PATH = '/api-docs'
-}
-
-export const RESPONSE_RESULT = {
-    SUCCESS: {
-        result: 'success'
-    },
-    ERROR: {
-        result: 'error'
-    },
-    NOT_FOUND: {
-        result: 'not found'
-    }
 }
 
 
