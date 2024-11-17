@@ -4,6 +4,8 @@ server:
   verbosity: debug
   timezone: UTC
   authentication:
+    provider: local
+    default-role: all
   request-limit: 100mb
   cache:
     provider: mongodb
@@ -13,8 +15,12 @@ server:
       connectTimeoutMS: 5000
       serverSelectionTimeoutMS: 5000
 
+roles:
+  all: lacrud
+
 users:
-  myapiuser: myStr@ngpa$$w0rd
+  myapiuser:
+    password: myStr@ngpa$$w0rd
 
 sources:
   ms-hr:
