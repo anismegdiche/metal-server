@@ -12,6 +12,7 @@ import { Readable } from "node:stream"
 import { ReadableHelper } from "../../lib/ReadableHelper"
 import { TConvertParams } from "../../lib/TypeHelper"
 import { ACContentProvider } from "../ACContentProvider"
+import { StringHelper } from "../../lib/StringHelper"
 
 
 export type TCsvContentConfig = {
@@ -45,14 +46,16 @@ export class CsvContent extends ACContentProvider {
                 delimiter: this.Config["csv-delimiter"] ?? ',',
                 newline: this.Config["csv-newline"] ?? '\n',
                 header: this.Config["csv-header"] ?? true,
-                quoteChar: this.Config["csv-quote"] ?? '"',
+                quoteChar: (StringHelper.IsEmpty(this.Config["csv-quote"]))
+                    ? '"'
+                    : this.Config["csv-quote"]!,
                 skipEmptyLines: this.Config["csv-skip-empty"] ?? 'greedy'
             }
         }
         this.Content.UploadFile(entity, content)
     }
 
-    @Logger.LogFunction(Logger.Debug,true)
+    @Logger.LogFunction(Logger.Debug, true)
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
@@ -66,7 +69,7 @@ export class CsvContent extends ACContentProvider {
         return new DataTable(this.EntityName, parsedCsv?.data).FreeSqlAsync(sqlQuery)
     }
 
-    @Logger.LogFunction(Logger.Debug,true)
+    @Logger.LogFunction(Logger.Debug, true)
     async Set(contentDataTable: DataTable): Promise<Readable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
@@ -74,7 +77,7 @@ export class CsvContent extends ACContentProvider {
         const streamOut = Readable.from(
             Csv.unparse(
                 contentDataTable.Rows,
-                this.Params as Csv.UnparseConfig
+                this.Params
             )
         )
         this.Content.UploadFile(this.EntityName, streamOut)
