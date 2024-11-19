@@ -82,51 +82,52 @@ authorization: Bearer {{token}}
 
 
 # @name xls-list
-GET http://localhost:3000/schema/v2
+GET http://localhost:3000/schema/fs
 authorization: Bearer {{token}}
 ###
 
 
 # @name xls-select
-GET http://localhost:3000/schema/v2/sample.xlsx
+GET http://localhost:3000/schema/fs/sample.xlsx
    ?filter-expression=Name = 'Mary'
 authorization: Bearer {{token}}
 ###
 
 
-PATCH  http://localhost:3000/schema/v2/sample.xlsx
+PATCH  http://localhost:3000/schema/fs/sample.xlsx
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 {
     "data": {
         "Country": "France",
-        "City": "Paris 16e"
+        "City": "Paris"
     }
 }
 
 ###
-
-# @name xls-select
-GET http://localhost:3000/schema/v2/ref2.xlsx
+GET http://localhost:3000/schema/fs
 authorization: Bearer {{token}}
+
+
 ###
-
-
-
-
-GET http://localhost:3000/schema/v2/covid.csv
-    # ?filter-expression=hexcode LIKE '%%00'
+GET http://localhost:3000/schema/fs/homes.csv
 authorization: Bearer {{token}}
+
+
 ###
-
-
-GET http://localhost:3000/schema/v2/sample.csv
-    # ?filter-expression=hexcode LIKE '%%00'
+PATCH  http://localhost:3000/schema/fs/homes.csv
+Content-Type: application/json
 authorization: Bearer {{token}}
+
+{
+    "data": {
+        "Country": "USA",
+        "City": "New York"
+    }
+}
+
+
 ###
-
-
-GET http://localhost:3000/schema/ftp/sample.csv
+GET http://localhost:3000/schema/fs/industry_sic.csv
 authorization: Bearer {{token}}
-###
