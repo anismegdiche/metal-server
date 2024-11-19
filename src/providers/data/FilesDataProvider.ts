@@ -32,6 +32,7 @@ import { FtpStorage, TFtpStorageConfig } from "../storage/FtpStorage"
 import { JsonContent, TJsonContentConfig } from "../content/JsonContent"
 import { CsvContent, TCsvContentConfig } from '../content/CsvContent'
 import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
+import { Mutex } from "async-mutex"
 
 
 export enum STORAGE {
@@ -73,6 +74,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     // FilesDataProvider
     ContentHandler: Record<string, IContent> = {}
     File: Record<string, IContent> = {}
+    Lock: Map<string, Mutex> = new Map<string, Mutex>()
 
     Options = new CommonSqlDataProviderOptions()
 
@@ -103,6 +105,11 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             else
                 throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entity}`)
         }
+    }
+
+    #SetLock(entity: string) {
+        if (!this.Lock.has(entity))
+            this.Lock.set(entity, new Mutex())
     }
 
     @Logger.LogFunction()
@@ -167,29 +174,36 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         this.#SetHandler(entity)
+        this.#SetLock(entity)
+        const release = await this.Lock.get(entity)!.acquire()
+        try {
+            this.File[entity].Init(
+                entity,
+                await this.Connection.Read(entity)
+            )
 
-        this.File[entity].Init(
-            entity,
-            await this.Connection.Read(entity)
-        )
+            const data = await this.File[entity].Get()
 
-        const data = await this.File[entity].Get()
+            const sqlQueryHelper = new SqlQueryHelper()
+                .Insert(`\`${entity}\``)
+                .Fields(options.Data.GetFieldNames(), '`')
+                .Values(options.Data.Rows)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Insert(`\`${entity}\``)
-            .Fields(options.Data.GetFieldNames(), '`')
-            .Values(options.Data.Rows)
+            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await this.Connection.Write(
+                entity,
+                await this.File[entity].Set(data)
+            )
 
-        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        await this.Connection.Write(
-            entity,
-            await this.File[entity].Set(data)
-        )
+            // clean cache
+            Cache.Remove(schemaRequest)
 
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.Created()
+            return HttpResponse.Created()
+        } catch (error: any) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: ${error.message}`)
+        } finally {
+            release()
+        }
     }
 
     @Logger.LogFunction()
@@ -249,30 +263,37 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         this.#SetHandler(entity)
+        this.#SetLock(entity)
+        const release = await this.Lock.get(entity)!.acquire()
+        try {
+            this.File[entity].Init(
+                entity,
+                await this.Connection.Read(entity)
+            )
 
-        this.File[entity].Init(
-            entity,
-            await this.Connection.Read(entity)
-        )
+            const data = await this.File[entity].Get()
 
-        const data = await this.File[entity].Get()
+            const sqlQueryHelper = new SqlQueryHelper()
+                .Update(`\`${entity}\``)
+                .Set(options.Data.Rows)
+                .Where(options.Filter)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`\`${entity}\``)
-            .Set(options.Data.Rows)
-            .Where(options.Filter)
+            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
-        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await this.Connection.Write(
+                entity,
+                await this.File[entity].Set(data)
+            )
 
-        await this.Connection.Write(
-            entity,
-            await this.File[entity].Set(data)
-        )
+            // clean cache
+            Cache.Remove(schemaRequest)
+            return HttpResponse.NoContent()
 
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.NoContent()
+        } catch (error: any) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${entity} in storage provider: ${error.message}`)
+        } finally {
+            release()
+        }
     }
 
     @Logger.LogFunction()
@@ -286,30 +307,37 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         this.#SetHandler(entity)
+        this.#SetLock(entity)
+        const release = await this.Lock.get(entity)!.acquire()
+        try {
+            this.File[entity].Init(
+                entity,
+                await this.Connection.Read(entity)
+            )
 
-        this.File[entity].Init(
-            entity,
-            await this.Connection.Read(entity)
-        )
+            const data = await this.File[entity].Get()
 
-        const data = await this.File[entity].Get()
+            const sqlQueryHelper = new SqlQueryHelper()
+                .Delete()
+                .From(`\`${entity}\``)
+                .Where(options.Filter)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Delete()
-            .From(`\`${entity}\``)
-            .Where(options.Filter)
+            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
-        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await this.Connection.Write(
+                entity,
+                await this.File[entity].Set(data)
+            )
 
-        await this.Connection.Write(
-            entity,
-            await this.File[entity].Set(data)
-        )
+            // clean cache
+            Cache.Remove(schemaRequest)
 
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.NoContent()
+            return HttpResponse.NoContent()
+        } catch (error: any) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${entity} in storage provider: ${error.message}`)
+        } finally {
+            release()
+        }
     }
 
     // eslint-disable-next-line class-methods-use-this
