@@ -120,6 +120,7 @@ export class Schema {
 
         // schema.entities.*
         if (_.has(schemaConfig, `entities.${entity}`)) {
+            // eslint-disable-next-line you-dont-need-lodash-underscore/get
             const _schemaEntityConfig = _.get(schemaConfig.entities, entity)
 
             if (_schemaEntityConfig === undefined) {
@@ -198,8 +199,8 @@ export class Schema {
                     return _internalResponse
 
                 // Anonymizer
-                if (isAnonymize && TypeHelper.IsSchemaResponseData(<TSchemaResponse>_internalResponse.Body)) {
-                    (<TSchemaResponse>_internalResponse.Body).data.AnonymizeFields(fieldsToAnonymize)
+                if (isAnonymize && TypeHelper.IsSchemaResponseData(_internalResponse.Body)) {
+                    (_internalResponse.Body).data.AnonymizeFields(fieldsToAnonymize)
                 }
                 return _internalResponse
             }
