@@ -52,7 +52,7 @@ export class CsvContent extends ACContentProvider {
         this.Content.UploadFile(entity, content)
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug,true)
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
@@ -66,7 +66,7 @@ export class CsvContent extends ACContentProvider {
         return new DataTable(this.EntityName, parsedCsv?.data).FreeSqlAsync(sqlQuery)
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug,true)
     async Set(contentDataTable: DataTable): Promise<Readable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')

@@ -38,7 +38,7 @@ export class JsonContent extends ACContentProvider {
         this.Content.UploadFile(entity, content)
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug,true)
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')
@@ -56,7 +56,7 @@ export class JsonContent extends ACContentProvider {
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug,true)
     async Set(data: DataTable): Promise<Readable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')
