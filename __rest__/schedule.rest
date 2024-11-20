@@ -1,4 +1,3 @@
-# TODO
 # @name login
 POST  http://localhost:3000/user/login
 Content-Type: application/json
@@ -14,14 +13,12 @@ Content-Type: application/json
 ###
 
 
-# TODO
 # @name stop
 POST http://localhost:3000/schedule/test/stop
 authorization: Bearer {{token}}
 ###
 
 
-# TODO
 # @name start
 POST http://localhost:3000/schedule/test/start
 authorization: Bearer {{token}}

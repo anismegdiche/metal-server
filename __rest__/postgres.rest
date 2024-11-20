@@ -42,7 +42,6 @@ authorization: Bearer {{token}}
 ###
 
 
-# TODO
 # @name insert-one
 POST http://localhost:3000/schema/clubdata/members
 Content-Type: application/json
@@ -63,7 +62,6 @@ authorization: Bearer {{token}}
 ###
 
 
-# TODO
 # @name insert-many
 POST http://localhost:3000/schema/clubdata/members
 Content-Type: application/json
@@ -95,7 +93,6 @@ authorization: Bearer {{token}}
 ###
 
 
-# TODO
 # @name delete
 DELETE http://localhost:3000/schema/clubdata/members
 Content-Type: application/json
