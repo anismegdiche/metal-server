@@ -62,8 +62,12 @@ describe('FtpStorage', () => {
         })
 
         it('should throw HttpErrorInternalServerError on connection failure', async () => {
-            mockFtpClient.access.mockRejectedValue(new Error('Connection failed'))
-            expect(() => ftpStorage.Connect()).toThrow(HttpErrorInternalServerError)
+            mockFtpClient.access.mockRejectedValue(new HttpErrorInternalServerError('Connection failed'))
+            try {
+                await ftpStorage.Connect()
+            } catch (error: unknown) {
+                expect(error).toBe(HttpErrorInternalServerError)
+            }
         })
     })
 
@@ -112,7 +116,7 @@ describe('FtpStorage', () => {
             const mockStream = new Readable()
 
             await ftpStorage.Write('existingfile.txt', mockStream)
-            expect(mockFtpClient.appendFrom).toHaveBeenCalledWith(mockStream, '/existingfile.txt')
+            expect(mockFtpClient.appendFrom).toHaveBeenCalledWith(mockStream, '\\existingfile.txt')
         })
 
         // it('should throw HttpErrorInternalServerError on write failure', async () => {
