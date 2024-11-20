@@ -24,58 +24,72 @@ export class CommonDataProvider implements IDataProvider.IDataProvider {
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
-    }
-
-    @Logger.LogFunction()
-    Init(sourceParams: TConfigSource): void {
-        Logger.Debug("CommonDataProvider.Init")
         this.Params = sourceParams
+        this.Init()
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
+    Init(): void {
+        Logger.Debug("CommonDataProvider.Init")
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         throw new HttpErrorNotImplemented()
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         throw new HttpErrorNotImplemented()
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
         throw new HttpErrorNotImplemented()
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
         throw new HttpErrorNotImplemented()
     }

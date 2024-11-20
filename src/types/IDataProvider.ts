@@ -23,12 +23,12 @@ export interface IDataProviderOptions {
 export interface IDataProvider {
     ProviderName: string
     SourceName: string
-    Params: TJson
+    Params: unknown
     Connection?: unknown
     Options: IDataProviderOptions
 
     // Connection
-    Init: (sourceParams: TConfigSource) => void
+    Init: () => void
     Connect: () => Promise<void>
     Disconnect: () => Promise<void>
 

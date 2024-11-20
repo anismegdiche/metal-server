@@ -78,11 +78,9 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
     Options = new CommonSqlDataProviderOptions()
 
-    //TODO: Refactor this asynchronous operation outside of the constructor.sonarlint(typescript:S7059)
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        this.Params = sourceParams
     }
 
     static readonly #NewStorageCaseMap: Record<STORAGE, (storageParams: TConfigSource) => IStorage> = {
@@ -113,9 +111,8 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        Logger.Debug("FilesDataProvider.Init")
-        this.Params = sourceParams
+    async Init(): Promise<void> {
+        Logger.Debug(`${Logger.Out} FilesDataProvider.Init`)
         const {
             storage = STORAGE.FILESYSTEM,
             content

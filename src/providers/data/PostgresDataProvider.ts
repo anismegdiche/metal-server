@@ -8,7 +8,7 @@ import { Pool } from 'pg'
 import { RESPONSE } from '../../lib/Const'
 import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import { TConfigSource } from "../../types/TConfig"
+import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
@@ -24,24 +24,42 @@ import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 
 
+//
+export type TPostgresDataConfig = {
+    host: string,
+    port: number,
+    user: string,
+    password: string,
+    database: string,
+    options?: TConfigSourceOptions
+}
+
+
+//
 export class PostgresDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.POSTGRES
     SourceName: string
-    Params: TConfigSource = <TConfigSource>{}
+    Params: TPostgresDataConfig = <TPostgresDataConfig>{}
     Connection?: Pool = undefined
-    Config: TJson = {}
 
     Options = new CommonSqlDataProviderOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        this.Params = {
+            host: sourceParams.host ?? 'localhost',
+            port: sourceParams.port ?? 5432,
+            user: sourceParams.user ?? 'root',
+            password: sourceParams.password ?? '',
+            database: sourceParams.database ?? 'postgres',
+            options: sourceParams.options
+        }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        this.Params = sourceParams
+    async Init(): Promise<void> {
+        Logger.Debug("PostgresDataProvider.Init")
     }
 
     @Logger.LogFunction()
@@ -104,7 +122,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Values(options.Data.Rows)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
 
@@ -166,7 +184,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
 
@@ -189,7 +207,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
 

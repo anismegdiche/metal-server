@@ -27,20 +27,18 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.PLAN
     SourceName: string
     Params: TConfigSource = <TConfigSource>{}
-    Config: TJson = {}
 
     Options = new CommonSqlDataProviderOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        this.Params = sourceParams
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
+    async Init(): Promise<void> {
         Logger.Debug("PlanDataProvider.Init")
-        this.Params = sourceParams
     }
 
     @Logger.LogFunction()
@@ -54,6 +52,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest

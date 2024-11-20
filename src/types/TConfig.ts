@@ -32,6 +32,11 @@ export type TConfigUsers = {
     [user: string]: TConfigUser
 }
 
+// sources.*.options
+export type TConfigSourceOptions = {
+    [key: string]: string | number | TJson | boolean
+}
+
 // sources.*
 export type TConfigSource = {
     provider: DATA_PROVIDER
@@ -40,9 +45,7 @@ export type TConfigSource = {
     user?: string
     password?: string
     database?: string
-    options?: {
-        [key: string]: string | number | TJson | boolean
-    }
+    options?: TConfigSourceOptions
 }
 
 // schemas.*.entities

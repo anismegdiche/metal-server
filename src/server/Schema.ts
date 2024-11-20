@@ -189,7 +189,7 @@ export class Schema {
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                const _internalResponse = await Source.Sources[schemaRoute.routeName].Select(<TSchemaRequestSelect>{
+                const _internalResponse = await Source.Sources.get(schemaRoute.routeName)!.Select(<TSchemaRequestSelect>{
                     ...schemaRequest,
                     source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
@@ -226,7 +226,7 @@ export class Schema {
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                return await Source.Sources[schemaRoute.routeName].Delete(<TSchemaRequestDelete>{
+                return await Source.Sources.get(schemaRoute.routeName)!.Delete(<TSchemaRequestDelete>{
                     ...schemaRequest,
                     source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
@@ -254,7 +254,7 @@ export class Schema {
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                return await Source.Sources[schemaRoute.routeName].Update(<TSchemaRequestUpdate>{
+                return await Source.Sources.get(schemaRoute.routeName)!.Update(<TSchemaRequestUpdate>{
                     ...schemaRequest,
                     source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
@@ -282,7 +282,7 @@ export class Schema {
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                return await Source.Sources[schemaRoute.routeName].Insert(<TSchemaRequestInsert>{
+                return await Source.Sources.get(schemaRoute.routeName)!.Insert(<TSchemaRequestInsert>{
                     ...schemaRequest,
                     source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
@@ -305,7 +305,7 @@ export class Schema {
 
         if (entitiesSources.has("*")) {
             const _source = (<TConfigSchemaEntity>entitiesSources.get("*")).source
-            const _internalResponse = await Source.Sources[_source].ListEntities(schemaRequest)
+            const _internalResponse = await Source.Sources.get(_source)!.ListEntities(schemaRequest)
             schemaResponse = <TSchemaResponse>_internalResponse.Body
             entitiesSources.delete("*")
         }
@@ -315,7 +315,7 @@ export class Schema {
             if (TypeHelper.IsSchemaResponseData(schemaResponse))
                 schemaResponse.data.DeleteRows(`name = '${entity}'`)
 
-            const _internalResponse = await Source.Sources[_source].ListEntities(schemaRequest)
+            const _internalResponse = await Source.Sources.get(_source)!.ListEntities(schemaRequest)
 
             Schema.#MergeData(schemaResponse, <TSchemaResponse>_internalResponse.Body)
         }

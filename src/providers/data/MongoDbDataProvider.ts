@@ -10,7 +10,7 @@ import * as MongoDb from 'mongodb'
 import * as IDataProvider from "../../types/IDataProvider"
 import { Convert } from '../../lib/Convert'
 import { RESPONSE } from '../../lib/Const'
-import { TConfigSource } from "../../types/TConfig"
+import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
 import { TOptions } from '../../types/TOptions'
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
@@ -24,6 +24,14 @@ import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemente
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+
+
+//
+export type TMongoDbDataConfig = {
+    uri: string,
+    database?: string,
+    options?: TConfigSourceOptions
+}
 
 
 class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
@@ -49,7 +57,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
             if (schemaRequest["filter-expression"])
                 // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
                 filter = MongoDbHelper.ConvertSqlQuery(schemaRequest["filter-expression"].replace(/%/igm, ".*"))
-            
+
             if (schemaRequest?.filter)
                 filter = schemaRequest.filter
 
@@ -103,7 +111,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
             Logger.Debug(_sortArray)
             if (_sortArray.length > 0)
                 _sortArray = _sortArray.reduce(MongoDbHelper.ConvertSqlSort, {})
-            
+
             Logger.Debug(_sortArray)
             options.Sort = {
                 $sort: _sortArray
@@ -136,7 +144,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
 export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MONGODB
     SourceName: string
-    Params: TConfigSource = <TConfigSource>{}
+    Params: TMongoDbDataConfig = <TMongoDbDataConfig>{}
     Connection?: MongoDb.MongoClient = undefined
 
     //TODO: change MongoDbDataProviderOptions to static
@@ -144,34 +152,32 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        this.Params = {
+            uri: sourceParams.host ?? 'mongodb://localhost:27017/',
+            database: sourceParams.database,
+            options: sourceParams.options
+        }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        this.Params = sourceParams
+    async Init(): Promise<void> {
+        Logger.Debug("MongoDbDataProvider.Init")
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        const {
-            host: uri = 'mongodb://localhost:27017/',
-            database,
-            options = {}
-        } = this.Params ?? {}
-
-        this.Connection = new MongoDb.MongoClient(uri, options)
+        this.Connection = new MongoDb.MongoClient(this.Params.uri, this.Params.options)
         try {
             await this.Connection.connect()
             await this.Connection
-                .db(database)
+                .db(this.Params.database)
                 .command({
                     ping: 1
                 })
-            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${database})'`)
+            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName}/${database}'`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName}/${this.Params.database}'`)
             Logger.Error(error)
         }
     }
@@ -247,7 +253,6 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
@@ -273,7 +278,6 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
 
         const options: any = this.Options.Parse(schemaRequest)
 

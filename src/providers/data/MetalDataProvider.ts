@@ -22,19 +22,28 @@ import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 
 
+//
+export type TMetalDataConfig = {
+    url: string
+    user: string
+    password: string
+    schema: string
+}
+
+
 type TMetalClientParams = {
-    host: string
-    user?: string
-    password?: string
-    database?: string
+    url: string
+    user: string
+    password: string
+    schema: string
 }
 
 export class MetalClient {
     Params: TMetalClientParams = {
-        host: "http://localhost:3000",
-        user: undefined,
-        password: undefined,
-        database: undefined
+        url: "http://localhost:3000",
+        user: '',
+        password: '',
+        schema: ''
     }
 
     Authentication = false
@@ -83,7 +92,7 @@ export class MetalClient {
     async Login(username: string, password: string): Promise<void> {
         this.Params.user = username
         this.Params.password = password
-        const response = await this.Post(`${this.Params.host}${this.API.user}/login`, {
+        const response = await this.Post(`${this.Params.url}${this.API.user}/login`, {
             username,
             password
         })
@@ -134,8 +143,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.METAL
     Connection?: MetalClient = undefined
     SourceName: string
-    Params: TConfigSource = <TConfigSource>{}
-    Config: TJson = {}
+    Params: TMetalDataConfig = <TMetalDataConfig>{}
 
     Options = new CommonSqlDataProviderOptions()
 
@@ -152,8 +160,12 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        this.Params = {
+            url: sourceParams.host ?? 'http://localhost:3000',
+            user: sourceParams.user ?? '',
+            password: sourceParams.password ?? '',
+            schema: sourceParams.database ?? ''
+        }
     }
 
     static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest): object {
@@ -178,27 +190,6 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         return metalResponse
     }
 
-    // static #ConvertResponseToInternalResponse(res: AxiosResponse): TInternalResponse<TSchemaResponse> {
-
-    //     const status = res.status
-    //     const body = res.data
-
-    //     if (status == HTTP_STATUS_CODE.OK) {
-    //         const data = new DataTable(
-    //             body?.entity,
-    //             body?.rows,
-    //             body?.fields,
-    //             body?.metadata
-    //         )
-    //         body.data = data
-    //     }
-
-    //     return <TInternalResponse<TSchemaResponse>>{
-    //         StatusCode: status,
-    //         Body: body
-    //     }
-    // }
-
     static #ThrowError(error: AxiosError): undefined {
         if (error?.response?.status)
             this.#ErrorCaseMap[error?.response?.status](error.message)
@@ -206,35 +197,21 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         throw error
     }
 
-    async Init(sourceParams: TConfigSource): Promise<void> {
+    async Init(): Promise<void> {
         Logger.Debug("MetalDataProvider.Init")
-        this.Params = sourceParams
     }
 
     async Connect(): Promise<void> {
-        const source = this.SourceName
-        const {
-            user = '',
-            password = '',
-            host = 'http://localhost:3000',
-            database = ''
-        } = this.Params
+        this.Connection = new MetalClient(this.Params)
 
-        this.Connection = new MetalClient({
-            host,
-            user,
-            password,
-            database
-        })
-
-        this.Connection.Login(user, password)
+        this.Connection.Login(this.Params.user, this.Params.password)
             .then(() => {
-                this.Connection?.Get(`${this.Params.host}${this.Connection.API.server}/info`)
+                this.Connection?.Get(`${this.Params.url}${this.Connection.API.server}/info`)
                     .then((res: AxiosResponse) => {
-                        Logger.Info(`${Logger.Out} connected to '${source} (${database})'`)
+                        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.schema})'`)
                         const { data } = res
                         if (data?.version != SERVER.VERSION) {
-                            Logger.Warn(`⚠️  WARNING ⚠️  The server version for '${source}' (version: ${data?.version}) do not match with current Metal Server (version: ${SERVER.VERSION}). Please proceed with caution.`)
+                            Logger.Warn(`⚠️ WARNING ⚠️  The server version for '${this.SourceName}' (version: ${data?.version}) do not match with current Metal Server (version: ${SERVER.VERSION}). Please proceed with caution.`)
                         }
                     })
                     .catch((error: unknown) => {
@@ -242,7 +219,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
                     })
             })
             .catch((error: unknown) => {
-                Logger.Error(`${Logger.In} Failed to connect to '${source} (${database})'`)
+                Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName} (${this.Params.schema})'`)
                 Logger.Error(error)
             })
     }
@@ -259,8 +236,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
-
-        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
+        const url = `${this.Params.url}${this.Connection.API.schema}/${this.Params.schema}/${schemaRequest.entity}`
 
         await this.Connection.Post(url, options)
             .catch(MetalDataProvider.#ThrowError)
@@ -275,8 +251,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
         const urlParams = MetalClient.ConvertToURLParams(options)
-
-        let url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
+        let url = `${this.Params.url}${this.Connection.API.schema}/${this.Params.schema}/${schemaRequest.entity}`
 
         if (urlParams.length > 0) {
             url += `?${urlParams}`
@@ -296,8 +271,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
-
-        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
+        const url = `${this.Params.url}${this.Connection.API.schema}/${this.Params.schema}/${schemaRequest.entity}`
 
         await this.Connection.Patch(url, options)
             .catch(MetalDataProvider.#ThrowError)
@@ -311,8 +285,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
-
-        const url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}/${schemaRequest.entity}`
+        const url = `${this.Params.url}${this.Connection.API.schema}/${this.Params.schema}/${schemaRequest.entity}`
 
         await this.Connection.Delete(url, options)
             .catch(MetalDataProvider.#ThrowError)
@@ -320,7 +293,9 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
         return HttpResponse.NoContent()
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
@@ -333,8 +308,7 @@ export class MetalDataProvider implements IDataProvider.IDataProvider {
 
         const options = MetalDataProvider.#ConvertSchemaRequestToJsonOptions(schemaRequest)
         const urlParams = MetalClient.ConvertToURLParams(options)
-
-        let url = `${this.Params.host}${this.Connection.API.schema}/${this.Params.database}`
+        let url = `${this.Params.url}${this.Connection.API.schema}/${this.Params.schema}`
 
         if (urlParams.length > 0) {
             url += `?${urlParams}`

@@ -40,7 +40,7 @@ export default DATA_PROVIDER
 export class Source {
 
     // global sources
-    static Sources: Record<string, IDataProvider> = {}
+    static Sources = new Map<string, IDataProvider>()
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static #NewProviderCaseMap: Record<DATA_PROVIDER, Function> = {
@@ -61,12 +61,17 @@ export class Source {
             return
         }
         try {
-            if (source === null)
+            if (source === null) {
                 // cache
                 Cache.CacheSource = Source.#NewProviderCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
-            else
+                Cache.CacheSource.Init()
+                Cache.CacheSource.Connect()
+            } else {
                 // sources
-                Source.Sources[source] = Source.#NewProviderCaseMap[sourceParams.provider](source, sourceParams)
+                Source.Sources.set(source, Source.#NewProviderCaseMap[sourceParams.provider](source, sourceParams))
+                Source.Sources.get(source)!.Init()
+                Source.Sources.get(source)!.Connect()
+            }
         } catch (error: any) {
             Logger.Error(error.message)
         }
@@ -84,13 +89,14 @@ export class Source {
     }
     @Logger.LogFunction()
     static async Disconnect(source: string): Promise<void> {
-        if (source)
-            Source.Sources[source].Disconnect()
+        if (source !== undefined && Source.Sources.has(source)) {
+            await Source.Sources.get(source)!.Disconnect()
+            Source.Sources.delete(source)
+        }
     }
 
     @Logger.LogFunction()
     static async DisconnectAll(): Promise<void> {
-        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
-        _.keys(Source.Sources).forEach(Source.Disconnect)
+        Source.Sources.forEach(async (_dataProvider, source) => await Source.Disconnect(source))
     }
 }

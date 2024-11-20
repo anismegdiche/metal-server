@@ -23,39 +23,45 @@ import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 
 
+//
 export type TMemoryDataProviderOptions = {
-    // v0.3
-    "autocreate"?: boolean            // Auto create table if not exist
+    "autocreate"?: boolean            // v0.3, Auto create table if not exist
 }
 
+
+//
+export type TMemoryDataConfig = {
+    database: string,
+    options?: TMemoryDataProviderOptions
+}
+
+
+//
 export class MemoryDataProvider implements IDataProvider.IDataProvider {
     ProviderName = DATA_PROVIDER.MEMORY
     SourceName: string
-    Params: TConfigSource = <TConfigSource>{}
-    Config: TJson = {}
+    Params: TMemoryDataConfig = <TMemoryDataConfig>{}
     Connection?: DataBase = undefined
-
+    
     Options = new CommonSqlDataProviderOptions()
-
+    
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        this.Params = {
+            database: sourceParams.database ?? 'memory',
+            options: sourceParams.options
+        }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        this.Params = sourceParams
+    async Init(): Promise<void> {
+        Logger.Debug(`${Logger.Out} MemoryDataProvider.Init`)
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-
-        const {
-            database = 'memory'
-        } = this.Params
-
-        this.Connection = new DataBase(database)
+        this.Connection = new DataBase(this.Params.database)
         Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
     }
 
@@ -210,7 +216,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { entity } = schemaRequest
-        const autoCreate: boolean = (this.Params.options && this.Params.options["autocreate"] as boolean) ?? false
+        const autoCreate: boolean = this.Params.options?.autocreate ?? false
 
         if (autoCreate &&
             !Object.keys(this.Connection.Tables).includes(entity)) {
