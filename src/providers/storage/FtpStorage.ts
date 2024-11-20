@@ -104,7 +104,7 @@ export class FtpStorage extends CommonStorage implements IStorage {
 
         const _path = path.join(this.Params.folder, file)
         try {
-            if (this.ConfigStorage["autocreate"] && !(await this.IsExist(file)))
+            if (this.ConfigStorage.autocreate && !(await this.IsExist(file)))
                 await this.FtpClient.uploadFrom(content, _path)
             else
                 await this.FtpClient.appendFrom(content, _path)

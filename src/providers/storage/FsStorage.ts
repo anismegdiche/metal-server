@@ -32,20 +32,20 @@ export class FsStorage extends CommonStorage implements IStorage {
     Init(): void {
         this.Params = <TFsStorageParams>{
             folder: this.ConfigStorage["fs-folder"] ?? '',
-            autocreate: this.ConfigStorage["autocreate"] || false
+            autocreate: this.ConfigStorage.autocreate ?? false
         }
     }
 
     // eslint-disable-next-line class-methods-use-this
     async Connect(): Promise<void> {
-        Logger.Debug(`Connected`)
+        Logger.Debug(`${Logger.Out} FsStorage: Connected`)
     }
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        Logger.Debug(`Disconnected`)
-    }
+        Logger.Debug(`${Logger.Out} FsStorage: Disconnected`)
+    } 
 
     @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
