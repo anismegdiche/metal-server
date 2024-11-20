@@ -5,14 +5,14 @@
 //
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { TOptions } from '../../types/TOptions'
-import * as IDataProvider from "../../types/IDataProvider"
+import * as IData from "../../types/IData"
 import { DataTable } from '../../types/DataTable'
 import { Convert } from '../../lib/Convert'
 import { JsonHelper } from "../../lib/JsonHelper"
 import { Logger } from "../../utils/Logger"
 
 
-export class CommonSqlDataProviderOptions implements IDataProvider.IDataProviderOptions {
+export class CommonSqlDataOptions implements IData.IDataOptions {
 
     @Logger.LogFunction()
     Parse(schemaRequest: TSchemaRequest): TOptions {

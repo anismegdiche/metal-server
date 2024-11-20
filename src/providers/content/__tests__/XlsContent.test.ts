@@ -6,7 +6,7 @@ import { DataTable } from "../../../types/DataTable"
 import { HttpErrorInternalServerError } from "../../../server/HttpErrors"
 import * as ExcelJS from 'exceljs'
 import typia from "typia"
-import { TContentConfig } from "../../data/FilesDataProvider"
+import { TContentConfig } from "../../data/FilesData"
 
 
 describe("ColumnLetterToNumber", () => {

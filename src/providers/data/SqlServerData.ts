@@ -3,109 +3,93 @@
 //
 //
 //
-import { Pool } from 'pg'
+import mssql, { ConnectionPool } from 'mssql'
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IDataProvider from "../../types/IDataProvider"
+import * as IData from "../../types/IData"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
+import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
-import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
-import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
-import { DATA_PROVIDER } from '../../server/Source'
-import { TJson } from "../../types/TJson"
+import { Cache } from '../../server/Cache'
+import {DATA_PROVIDER} from '../../server/Source'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { CommonSqlDataOptions } from "./CommonSqlData"
+import { TJson } from "../../types/TJson"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 
 
 //
-export type TPostgresDataConfig = {
-    host: string,
+export type TSqlServerDataConfig = {
+    server: string,
     port: number,
     user: string,
     password: string,
     database: string,
-    options?: TConfigSourceOptions
+    options: TConfigSourceOptions
 }
 
 
 //
-export class PostgresDataProvider implements IDataProvider.IDataProvider {
-    ProviderName = DATA_PROVIDER.POSTGRES
+export class SqlServerData implements IData.IData {
+    ProviderName = DATA_PROVIDER.MSSQL
+    Connection?: ConnectionPool = undefined
     SourceName: string
-    Params: TPostgresDataConfig = <TPostgresDataConfig>{}
-    Connection?: Pool = undefined
+    Params: TSqlServerDataConfig = <TSqlServerDataConfig>{}
 
-    Options = new CommonSqlDataProviderOptions()
+    Options = new CommonSqlDataOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
         this.Params = {
-            host: sourceParams.host ?? 'localhost',
-            port: sourceParams.port ?? 5432,
-            user: sourceParams.user ?? 'root',
+            user: sourceParams.user ?? 'sa',
             password: sourceParams.password ?? '',
-            database: sourceParams.database ?? 'postgres',
-            options: sourceParams.options
+            database: sourceParams.database ?? 'master',
+            server: sourceParams.host ?? 'localhost',
+            port: sourceParams.port ?? 1433,
+            options: {
+                pool: {
+                    max: 10,
+                    min: 0,
+                    idleTimeoutMillis: 30_000
+                },
+                options: {
+                    encrypt: false,                     // true for azure
+                    trustServerCertificate: true        // change to true for local dev / self-signed certs
+                },
+                ...sourceParams.options
+
+            }
         }
     }
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Init(): Promise<void> {
-        Logger.Debug("PostgresDataProvider.Init")
+        Logger.Debug("SqlServerData.Init")
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        const source = this.SourceName
-        const {
-            user = 'root',
-            password = '',
-            database = 'postgres',
-            host = 'localhost',
-            port = 5432,
-            options
-        } = this.Params ?? {}
-
         try {
-            this.Connection = new Pool({
-                user,
-                password,
-                database,
-                host,
-                port,
-                ...options
-            })
-            this.Connection.query('SELECT NOW()', async function (err) {
-                try {
-                    if (err)
-                        throw err
-                    else
-                        Logger.Info(`${Logger.Out} connected to '${source} (${database})'`)
-
-                } catch (error: unknown) {
-                    Logger.Error(`${Logger.Out} Failed to connect to '${source} (${database})'`)
-                    Logger.Error(error)
-                }
-            })
+            this.Connection = await mssql.connect(this.Params)
+            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.Out} Failed to connect to '${source} (${database})'`)
-            Logger.Error(error)
+            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName} (${this.Params.database})'`)
+            Logger.Error(JSON.stringify(error))
         }
     }
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        if (this.Connection !== undefined)
-            await this.Connection.end()
-
+        if (this.Connection !== undefined) {
+            this.Connection.close()
+        }
     }
 
     @Logger.LogFunction()
@@ -117,8 +101,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Insert(`"${schemaRequest.entity}"`)
-            .Fields(options.Data.GetFieldNames(), '"')
+            .Insert(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
+            .Fields(options.Data.GetFieldNames())
             .Values(options.Data.Rows)
 
         await this.Connection.query(sqlQueryHelper.Query)
@@ -132,30 +116,29 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const schemaResponse = <TSchemaResponse>{
+        let schemaResponse = <TSchemaResponse>{
             schema: schemaRequest.schema,
             entity: schemaRequest.entity
         }
 
-        if (this.Connection === undefined)
+        if (this.Connection === undefined) {
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        //TODO check if entity exists, if not return 404
+        }
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`"${schemaRequest.entity}"`)
+            .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
-        const result = await this.Connection.query(sqlQueryHelper.Query)
+        const sqlServerResult = await this.Connection.query(sqlQueryHelper.Query)
 
         const data = new DataTable(schemaRequest.entity)
 
-        if (result.rows.length > 0) {
-            data.AddRows(result.rows)
+        if (sqlServerResult.recordset != null && sqlServerResult.recordset.length > 0) {
+            data.AddRows(sqlServerResult.recordset)
             if (options?.Cache)
                 Cache.Set(schemaRequest, data)
         }
@@ -171,15 +154,18 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
+        let schemaResponse = <TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity
+        }
+
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        //TODO check if entity exists, if not return 404
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`"${schemaRequest.entity}"`)
+            .Update(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
@@ -194,16 +180,19 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
+        const schemaResponse = <TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity
+        }
+
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        //TODO check if entity exists, if not return 404
 
         const options: TOptions = this.Options.Parse(schemaRequest)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
-            .From(`"${schemaRequest.entity}"`)
+            .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
@@ -214,7 +203,8 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         return HttpResponse.NoContent()
     }
 
-    @Logger.LogFunction()
+    // @Logger.LogFunction()
+    // eslint-disable-next-line class-methods-use-this
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
@@ -227,62 +217,27 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
-        // Refresh analyze
-        let sqlQuery = `
-            DO $$ 
-            DECLARE
-                r RECORD;
-            BEGIN
-                FOR r IN 
-                    SELECT table_schema, table_name
-                    FROM information_schema.tables
-                    WHERE table_type = 'BASE TABLE'
-                    AND table_schema NOT IN ('pg_catalog', 'information_schema')
-                LOOP
-                    EXECUTE 'ANALYZE ' || quote_ident(r.table_schema) || '.' || quote_ident(r.table_name);
-                END LOOP;
-            END $$;
-            `
-        let result = await this.Connection.query(sqlQuery)
-
-        // Get Data
-        sqlQuery = `
-            SELECT 
-                t.table_name AS name, 
+        const sqlQuery = `
+            SELECT t.name AS name, 
                 'table' AS type, 
-                CASE 
-                    WHEN c.reltuples < 0 THEN NULL  -- or you can replace NULL with a default value
-                    ELSE c.reltuples 
-                END AS size
-            FROM 
-                information_schema.tables t
-            JOIN 
-                pg_class c ON t.table_name = c.relname
-            JOIN 
-                pg_namespace n ON n.oid = c.relnamespace
-            WHERE 
-                t.table_type = 'BASE TABLE' 
-                AND t.table_schema NOT IN ('pg_catalog', 'information_schema')
-                AND n.nspname = t.table_schema;
+                SUM(p.rows) AS [size]
+            FROM sys.tables t
+            JOIN sys.partitions p ON t.object_id = p.object_id
+            WHERE p.index_id IN (0, 1) -- 0 for heap tables, 1 for clustered indexes
+            GROUP BY t.name
+            ORDER BY t.name;
             `
 
-        result = await this.Connection.query(sqlQuery)
+        const sqlServerResult = await this.Connection.query(sqlQuery)
 
-        if (result?.rows.length == 0)
+        if (sqlServerResult?.recordset.length == 0)
             throw new HttpErrorNotFound(`${schema}: No entities found`)
-
-
-        const data = new DataTable(undefined, result.rows)
-        if (options?.Cache)
-            Cache.Set(schemaRequest, data)
 
         return HttpResponse.Ok(<TSchemaResponse>{
             schema,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
-            data
+            data: new DataTable(undefined, sqlServerResult.recordset)
         })
     }
 }

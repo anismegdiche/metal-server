@@ -11,12 +11,12 @@ import { Logger } from "../../utils/Logger"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { Cache } from "../../server/Cache"
 import { DATA_PROVIDER } from "../../server/Source"
-import * as IDataProvider from "../../types/IDataProvider"
+import * as IData from "../../types/IData"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
-import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { CommonSqlDataOptions } from "./CommonSqlData"
 import { IStorage } from "../../types/IStorage"
 import { IContent } from "../../types/IContent"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
@@ -51,7 +51,7 @@ export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig & TFtpSt
 
 export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsContentConfig
 
-export type TFilesDataProviderOptions = {
+export type TFilesDataOptions = {
     // Common
     storage?: STORAGE
     content?: {
@@ -65,18 +65,18 @@ export type TFilesDataProviderOptions = {
 }
     & TStorageConfig
 
-export class FilesDataProvider implements IDataProvider.IDataProvider {
+export class FilesData implements IData.IData {
     ProviderName = DATA_PROVIDER.FILES
     Connection?: IStorage = undefined
     SourceName: string
     Params: TConfigSource = <TConfigSource>{}
 
-    // FilesDataProvider
+    // FilesData
     ContentHandler: Record<string, IContent> = {}
     File: Record<string, IContent> = {}
     Lock: Map<string, Mutex> = new Map<string, Mutex>()
 
-    Options = new CommonSqlDataProviderOptions()
+    Options = new CommonSqlDataOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
@@ -112,16 +112,16 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async Init(): Promise<void> {
-        Logger.Debug(`${Logger.Out} FilesDataProvider.Init`)
+        Logger.Debug(`${Logger.Out} FilesData.Init`)
         const {
             storage = STORAGE.FILESYSTEM,
             content
-        } = this.Params.options as TFilesDataProviderOptions
+        } = this.Params.options as TFilesDataOptions
 
         if (content === undefined)
             throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
 
-        this.Connection = FilesDataProvider.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
+        this.Connection = FilesData.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
 
         // init storage
         if (this.Connection)
@@ -134,7 +134,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             if (Object.prototype.hasOwnProperty.call(content, filePattern)) {
                 const { type } = content[filePattern]
                 this.ContentHandler[filePattern] =
-                    FilesDataProvider.#NewContentCaseMap[type](content[filePattern])
+                    FilesData.#NewContentCaseMap[type](content[filePattern])
             }
         }
     }

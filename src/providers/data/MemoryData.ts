@@ -4,7 +4,7 @@
 //
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IDataProvider from "../../types/IDataProvider"
+import * as IData from "../../types/IData"
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
@@ -15,7 +15,7 @@ import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { DATA_PROVIDER } from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
 import { TJson } from "../../types/TJson"
-import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { CommonSqlDataOptions } from "./CommonSqlData"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { JsonHelper } from "../../lib/JsonHelper"
@@ -24,7 +24,7 @@ import { HttpResponse } from "../../server/HttpResponse"
 
 
 //
-export type TMemoryDataProviderOptions = {
+export type TMemoryDataOptions = {
     "autocreate"?: boolean            // v0.3, Auto create table if not exist
 }
 
@@ -32,18 +32,18 @@ export type TMemoryDataProviderOptions = {
 //
 export type TMemoryDataConfig = {
     database: string,
-    options?: TMemoryDataProviderOptions
+    options?: TMemoryDataOptions
 }
 
 
 //
-export class MemoryDataProvider implements IDataProvider.IDataProvider {
+export class MemoryData implements IData.IData {
     ProviderName = DATA_PROVIDER.MEMORY
     SourceName: string
     Params: TMemoryDataConfig = <TMemoryDataConfig>{}
     Connection?: DataBase = undefined
 
-    Options = new CommonSqlDataProviderOptions()
+    Options = new CommonSqlDataOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
@@ -56,7 +56,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Init(): Promise<void> {
-        Logger.Debug(`${Logger.Out} MemoryDataProvider.Init`)
+        Logger.Debug(`${Logger.Out} MemoryData.Init`)
     }
 
     @Logger.LogFunction()

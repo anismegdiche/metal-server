@@ -11,7 +11,7 @@ import { TInternalResponse } from './TInternalResponse'
 import { TSchemaResponse } from "./TSchemaResponse"
 
 
-export interface IDataProviderOptions {
+export interface IDataOptions {
     Parse: (schemaRequest: TSchemaRequest) => TOptions
     GetFilter: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
     GetFields: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
@@ -20,12 +20,12 @@ export interface IDataProviderOptions {
     GetCache: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
 }
 
-export interface IDataProvider {
+export interface IData {
     ProviderName: string
     SourceName: string
     Params: unknown
     Connection?: unknown
-    Options: IDataProviderOptions
+    Options: IDataOptions
 
     // Connection
     Init: () => void

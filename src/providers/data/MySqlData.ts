@@ -6,7 +6,7 @@
 import mysql, { Pool } from 'mysql2/promise'
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IDataProvider from "../../types/IDataProvider"
+import * as IData from "../../types/IData"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
@@ -15,20 +15,20 @@ import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
+import { CommonSqlDataOptions } from './CommonSqlData'
 import { DATA_PROVIDER } from '../../server/Source'
 import { TJson } from "../../types/TJson"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 
-export class MySqlDataProvider implements IDataProvider.IDataProvider {
+export class MySqlData implements IData.IData {
     ProviderName = DATA_PROVIDER.MYSQL
     SourceName: string
     Params: mysql.PoolOptions = <mysql.PoolOptions>{}
     Connection?: Pool
 
-    Options = new CommonSqlDataProviderOptions()
+    Options = new CommonSqlDataOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
@@ -58,7 +58,7 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Init(): Promise<void> {
-        Logger.Debug("MySqlDataProvider.Init")
+        Logger.Debug("MySqlData.Init")
     }
 
     private async ensureConnection(): Promise<Pool> {

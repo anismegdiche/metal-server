@@ -7,7 +7,7 @@
 import _ from 'lodash'
 import * as MongoDb from 'mongodb'
 //
-import * as IDataProvider from "../../types/IDataProvider"
+import * as IData from "../../types/IData"
 import { Convert } from '../../lib/Convert'
 import { RESPONSE } from '../../lib/Const'
 import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
@@ -34,7 +34,7 @@ export type TMongoDbDataConfig = {
 }
 
 
-class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
+class MongoDbDataOptions implements IData.IDataOptions {
     @Logger.LogFunction()
     Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}
@@ -141,14 +141,14 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
 }
 
 
-export class MongoDbDataProvider implements IDataProvider.IDataProvider {
+export class MongoDbData implements IData.IData {
     ProviderName = DATA_PROVIDER.MONGODB
     SourceName: string
     Params: TMongoDbDataConfig = <TMongoDbDataConfig>{}
     Connection?: MongoDb.MongoClient = undefined
 
-    //TODO: change MongoDbDataProviderOptions to static
-    Options: MongoDbDataProviderOptions = new MongoDbDataProviderOptions()
+    //TODO: change MongoDbDataOptions to static
+    Options: MongoDbDataOptions = new MongoDbDataOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
@@ -162,7 +162,7 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Init(): Promise<void> {
-        Logger.Debug("MongoDbDataProvider.Init")
+        Logger.Debug("MongoDbData.Init")
     }
 
     @Logger.LogFunction()

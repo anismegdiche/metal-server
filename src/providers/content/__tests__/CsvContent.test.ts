@@ -1,7 +1,7 @@
 import { CsvContent, TCsvContentConfig } from '../CsvContent'
 import { DataTable } from '../../../types/DataTable'
 import { Readable } from "node:stream"
-import { TContentConfig } from "../../data/FilesDataProvider"
+import { TContentConfig } from "../../data/FilesData"
 
 describe('CsvContent', () => {
     const contentConfig: TContentConfig = <TContentConfig>{

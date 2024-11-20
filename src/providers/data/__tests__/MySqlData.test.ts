@@ -1,5 +1,5 @@
 import mysql from 'mysql2/promise'
-import { MySqlDataProvider } from '../MySqlDataProvider'
+import { MySqlData } from '../MySqlData'
 import { TSchemaRequest } from '../../../types/TSchemaRequest'
 import { Cache } from '../../../server/Cache'
 import { DataTable } from '../../../types/DataTable'
@@ -11,9 +11,9 @@ jest.mock('mysql2/promise')
 // Mock the Cache module
 jest.mock('../../../server/Cache')
 
-describe('MySqlDataProvider', () => {
+describe('MySqlData', () => {
     // eslint-disable-next-line init-declarations
-    let provider: MySqlDataProvider
+    let provider: MySqlData
     const mockPool = {
         query: jest.fn(),
         end: jest.fn()
@@ -27,7 +27,7 @@ describe('MySqlDataProvider', () => {
         mockPool.query.mockResolvedValue([[{ dummy: 'data' }]])
 
         // Create a new provider instance with test configuration
-        provider = new MySqlDataProvider('test-source', <TConfigSource>{
+        provider = new MySqlData('test-source', <TConfigSource>{
             host: 'localhost',
             port: 3306,
             user: 'test-user',

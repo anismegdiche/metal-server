@@ -4,7 +4,7 @@
 //
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IDataProvider from "../../types/IDataProvider"
+import * as IData from "../../types/IData"
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
@@ -18,17 +18,17 @@ import { HttpErrorBadRequest, HttpErrorNotFound } from "../../server/HttpErrors"
 import { Config } from "../../server/Config"
 import { DataTable } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
-import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
+import { CommonSqlDataOptions } from "./CommonSqlData"
 import { HttpResponse } from "../../server/HttpResponse"
 import { TInternalResponse } from "../../types/TInternalResponse"
 
 
-export class PlanDataProvider implements IDataProvider.IDataProvider {
+export class PlanData implements IData.IData {
     ProviderName = DATA_PROVIDER.PLAN
     SourceName: string
     Params: TConfigSource = <TConfigSource>{}
 
-    Options = new CommonSqlDataProviderOptions()
+    Options = new CommonSqlDataOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
@@ -38,7 +38,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Init(): Promise<void> {
-        Logger.Debug("PlanDataProvider.Init")
+        Logger.Debug("PlanData.Init")
     }
 
     @Logger.LogFunction()

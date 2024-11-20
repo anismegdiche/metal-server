@@ -7,17 +7,17 @@ import _ from "lodash"
 import { Logger } from '../utils/Logger'
 import { Cache } from './Cache'
 import { Config } from './Config'
-import { IDataProvider } from '../types/IDataProvider'
+import { IData } from '../types/IData'
 import { TConfigSource } from '../types/TConfig'
 // Providers
-import { PostgresDataProvider } from '../providers/data/PostgresDataProvider'
-import { MongoDbDataProvider } from '../providers/data/MongoDbDataProvider'
-import { SqlServerDataProvider } from '../providers/data/SqlServerDataProvider'
-import { PlanDataProvider } from '../providers/data/PlanDataProvider'
-import { FilesDataProvider } from '../providers/data/FilesDataProvider'
-import { MemoryDataProvider } from '../providers/data/MemoryDataProvider'
-import { MetalDataProvider } from '../providers/data/MetalDataProvider'
-import { MySqlDataProvider } from "../providers/data/MySqlDataProvider"
+import { PostgresData } from '../providers/data/PostgresData'
+import { MongoDbData } from '../providers/data/MongoDbData'
+import { SqlServerData } from '../providers/data/SqlServerData'
+import { PlanData } from '../providers/data/PlanData'
+import { FilesData } from '../providers/data/FilesData'
+import { MemoryData } from '../providers/data/MemoryData'
+import { MetalData } from '../providers/data/MetalData'
+import { MySqlData } from "../providers/data/MySqlData"
 
 //  config types
 //
@@ -40,18 +40,18 @@ export enum DATA_PROVIDER {
 export class Source {
 
     // global sources
-    static Sources = new Map<string, IDataProvider>()
+    static Sources = new Map<string, IData>()
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static #NewProviderCaseMap: Record<DATA_PROVIDER, Function> = {
-        [DATA_PROVIDER.METAL]: (source: string, sourceParams: TConfigSource) => new MetalDataProvider(source, sourceParams),
-        [DATA_PROVIDER.PLAN]: (source: string, sourceParams: TConfigSource) => new PlanDataProvider(source, sourceParams),
-        [DATA_PROVIDER.MEMORY]: (source: string, sourceParams: TConfigSource) => new MemoryDataProvider(source, sourceParams),
-        [DATA_PROVIDER.POSTGRES]: (source: string, sourceParams: TConfigSource) => new PostgresDataProvider(source, sourceParams),
-        [DATA_PROVIDER.MONGODB]: (source: string, sourceParams: TConfigSource) => new MongoDbDataProvider(source, sourceParams),
-        [DATA_PROVIDER.MSSQL]: (source: string, sourceParams: TConfigSource) => new SqlServerDataProvider(source, sourceParams),
-        [DATA_PROVIDER.FILES]: (source: string, sourceParams: TConfigSource) => new FilesDataProvider(source, sourceParams),
-        [DATA_PROVIDER.MYSQL]: (source: string, sourceParams: TConfigSource) => new MySqlDataProvider(source, sourceParams)
+        [DATA_PROVIDER.METAL]: (source: string, sourceParams: TConfigSource) => new MetalData(source, sourceParams),
+        [DATA_PROVIDER.PLAN]: (source: string, sourceParams: TConfigSource) => new PlanData(source, sourceParams),
+        [DATA_PROVIDER.MEMORY]: (source: string, sourceParams: TConfigSource) => new MemoryData(source, sourceParams),
+        [DATA_PROVIDER.POSTGRES]: (source: string, sourceParams: TConfigSource) => new PostgresData(source, sourceParams),
+        [DATA_PROVIDER.MONGODB]: (source: string, sourceParams: TConfigSource) => new MongoDbData(source, sourceParams),
+        [DATA_PROVIDER.MSSQL]: (source: string, sourceParams: TConfigSource) => new SqlServerData(source, sourceParams),
+        [DATA_PROVIDER.FILES]: (source: string, sourceParams: TConfigSource) => new FilesData(source, sourceParams),
+        [DATA_PROVIDER.MYSQL]: (source: string, sourceParams: TConfigSource) => new MySqlData(source, sourceParams)
     }
 
     @Logger.LogFunction()

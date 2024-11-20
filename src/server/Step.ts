@@ -15,7 +15,7 @@ import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
-import { CommonSqlDataProviderOptions } from "../providers/data/CommonSqlDataProvider"
+import { CommonSqlDataOptions } from "../providers/data/CommonSqlData"
 import { TOptions } from "../types/TOptions"
 import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
@@ -51,7 +51,7 @@ export type TStepArguments = {
 
 export class Step {
 
-    static readonly Options = new CommonSqlDataProviderOptions()
+    static readonly Options = new CommonSqlDataOptions()
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static ExecuteCaseMap: Record<string, Function> = {
