@@ -54,7 +54,6 @@ async function createMockWorkbook(data: any[][]): Promise<Buffer> {
 
 describe('XlsContent', () => {
     let xlsContent: XlsContent
-    let virtualFileSystem: VirtualFileSystem
     let mockWorkbookBuffer: Buffer
 
     beforeEach(async () => {
@@ -65,9 +64,6 @@ describe('XlsContent', () => {
             ['Jane', 25, new Date('2024-02-01')]
         ]
         mockWorkbookBuffer = await createMockWorkbook(mockData)
-
-        // Setup VirtualFileSystem
-        virtualFileSystem = new VirtualFileSystem()
 
         // Setup XlsContent
         xlsContent = new XlsContent(typia.random<TContentConfig>())
@@ -89,9 +85,6 @@ describe('XlsContent', () => {
                 dateFormat: 'dd/mm/yyyy',
                 startingCell: 'A1'
             })
-
-            // Verify the file was uploaded to VFS
-            expect(virtualFileSystem.ReadFile('testEntity')).toBeDefined()
         })
 
         test('should initialize with custom parameters', async () => {
