@@ -13,7 +13,7 @@ import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { Plan } from '../../server/Plan'
-import DATA_PROVIDER from '../../server/Source'
+import { DATA_PROVIDER } from '../../server/Source'
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../server/HttpErrors"
 import { Config } from "../../server/Config"
 import { DataTable } from "../../types/DataTable"

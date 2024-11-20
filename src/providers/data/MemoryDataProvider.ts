@@ -12,7 +12,7 @@ import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import DATA_PROVIDER from '../../server/Source'
+import { DATA_PROVIDER } from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
 import { TJson } from "../../types/TJson"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
@@ -42,9 +42,9 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
     SourceName: string
     Params: TMemoryDataConfig = <TMemoryDataConfig>{}
     Connection?: DataBase = undefined
-    
+
     Options = new CommonSqlDataProviderOptions()
-    
+
     constructor(source: string, sourceParams: TConfigSource) {
         this.SourceName = source
         this.Params = {

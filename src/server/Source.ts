@@ -22,7 +22,7 @@ import { MySqlDataProvider } from "../providers/data/MySqlDataProvider"
 //  config types
 //
 
-enum DATA_PROVIDER {
+export enum DATA_PROVIDER {
     METAL = "metal",
     PLAN = "plan",
     MEMORY = "memory",
@@ -33,7 +33,7 @@ enum DATA_PROVIDER {
     MYSQL = "mysql"
 }
 
-export default DATA_PROVIDER
+//XXX export default DATA_PROVIDER
 
 //
 //

@@ -5,7 +5,7 @@
 //
 import { tags } from "typia"
 //
-import DATA_PROVIDER from "../server/Source"
+import { DATA_PROVIDER } from "../server/Source"
 import { AI_ENGINE } from "../server/AiEngine"
 import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "./TStep"
 import { STEP } from "../server/Step"

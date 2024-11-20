@@ -16,7 +16,7 @@ import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
-import DATA_PROVIDER from '../../server/Source'
+import { DATA_PROVIDER } from '../../server/Source'
 import { TJson } from "../../types/TJson"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"

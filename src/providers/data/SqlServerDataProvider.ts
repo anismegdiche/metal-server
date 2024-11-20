@@ -15,7 +15,7 @@ import { DataTable } from "../../types/DataTable"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Logger } from '../../utils/Logger'
 import { Cache } from '../../server/Cache'
-import DATA_PROVIDER from '../../server/Source'
+import {DATA_PROVIDER} from '../../server/Source'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { TJson } from "../../types/TJson"
