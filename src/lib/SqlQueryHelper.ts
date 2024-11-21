@@ -113,7 +113,7 @@ export class SqlQueryHelper {
 
         let fieldsValues: TRow = <TRow>{}
         fieldsValues = (Array.isArray(rows))
-            ? <TRow>(rows[0])
+            ? rows[0]
             : rows
 
         const setValues = _.chain(fieldsValues)
