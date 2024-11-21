@@ -160,6 +160,6 @@ export class Plan {
         }
 
         // plan not found
-        throw new HttpErrorNotFound("Plan not found")
+        throw new HttpErrorNotFound(`Plan '${plan}' not found`)
     }
 }
