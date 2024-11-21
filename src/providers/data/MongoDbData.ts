@@ -6,6 +6,7 @@
 //
 import _ from 'lodash'
 import * as MongoDb from 'mongodb'
+import { SQLParser } from 'sql-in-mongodb'
 //
 import { Convert } from '../../lib/Convert'
 import { RESPONSE } from '../../lib/Const'
@@ -14,11 +15,10 @@ import { TOptions } from '../../types/TOptions'
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TJson } from "../../types/TJson"
-import { DataTable } from "../../types/DataTable"
+import { SORT_ORDER, DataTable } from "../../types/DataTable"
 import { Logger } from "../../utils/Logger"
 import { Cache } from '../../server/Cache'
 import { DATA_PROVIDER } from '../../server/Source'
-import { MongoDbHelper } from '../../lib/MongoDbHelper'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
@@ -34,6 +34,34 @@ export type TMongoDbDataConfig = {
     options?: TConfigSourceOptions
 }
 
+
+//
+export class MongoDbHelper {
+
+    static readonly WhereParser = new SQLParser()
+
+    @Logger.LogFunction()
+    static ConvertSqlSort(key: any, value: string) {
+        const aSort = value.split(" ")
+
+        if (aSort.length != 2)
+            return {}
+
+        const [field, sqlSortDirection] = aSort
+
+        return {
+            ...key,
+            [field]: (sqlSortDirection.toLowerCase() == SORT_ORDER.ASC)
+                ? 1
+                : -1
+        }
+    }
+
+    @Logger.LogFunction()
+    static ConvertSqlQuery(sqlQuery: string) {
+        return this.WhereParser.parseSql(`WHERE ${sqlQuery}`)
+    }
+}
 
 class MongoDbDataOptions extends absDataProviderOptions {
 
