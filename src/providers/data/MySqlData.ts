@@ -6,7 +6,6 @@
 import mysql, { Pool } from 'mysql2/promise'
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IData from "../../types/IData"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
@@ -15,23 +14,19 @@ import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { CommonSqlDataOptions } from './CommonSqlData'
 import { DATA_PROVIDER } from '../../server/Source'
-import { TJson } from "../../types/TJson"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
 
-export class MySqlData implements IData.IData {
+export class MySqlData extends absDataProvider {
     ProviderName = DATA_PROVIDER.MYSQL
-    SourceName: string
     Params: mysql.PoolOptions = <mysql.PoolOptions>{}
     Connection?: Pool
 
-    Options = new CommonSqlDataOptions()
-
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
+        super(source, sourceParams)
 
         // default MySql options
         const options = {

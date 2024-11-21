@@ -6,7 +6,6 @@
 import mssql, { ConnectionPool } from 'mssql'
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IData from "../../types/IData"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
@@ -17,11 +16,10 @@ import { Logger } from '../../utils/Logger'
 import { Cache } from '../../server/Cache'
 import {DATA_PROVIDER} from '../../server/Source'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
-import { CommonSqlDataOptions } from "./CommonSqlData"
-import { TJson } from "../../types/TJson"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
 
 
 //
@@ -36,16 +34,13 @@ export type TSqlServerDataConfig = {
 
 
 //
-export class SqlServerData implements IData.IData {
+export class SqlServerData extends absDataProvider {
     ProviderName = DATA_PROVIDER.MSSQL
-    Connection?: ConnectionPool = undefined
-    SourceName: string
     Params: TSqlServerDataConfig = <TSqlServerDataConfig>{}
-
-    Options = new CommonSqlDataOptions()
+    Connection?: ConnectionPool = undefined
 
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
+        super(source, sourceParams)
         this.Params = {
             user: sourceParams.user ?? 'sa',
             password: sourceParams.password ?? '',

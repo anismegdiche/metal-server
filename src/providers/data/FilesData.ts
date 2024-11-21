@@ -4,19 +4,19 @@
 //
 //
 import _ from "lodash"
+import { Mutex } from "async-mutex"
 //
+import { absDataProvider } from "../absDataProvider"
 import { RESPONSE } from "../../lib/Const"
 import { Helper } from "../../lib/Helper"
 import { Logger } from "../../utils/Logger"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { Cache } from "../../server/Cache"
 import { DATA_PROVIDER } from "../../server/Source"
-import * as IData from "../../types/IData"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
-import { CommonSqlDataOptions } from "./CommonSqlData"
 import { IStorage } from "../../types/IStorage"
 import { IContent } from "../../types/IContent"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
@@ -32,7 +32,6 @@ import { FtpStorage, TFtpStorageConfig } from "../storage/FtpStorage"
 import { JsonContent, TJsonContentConfig } from "../content/JsonContent"
 import { CsvContent, TCsvContentConfig } from '../content/CsvContent'
 import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
-import { Mutex } from "async-mutex"
 
 
 export enum STORAGE {
@@ -59,27 +58,22 @@ export type TFilesDataOptions = {
             type: CONTENT
         } & TContentConfig
     }
-
-    //TODO: to test
-    "autocreate"?: boolean
+    autocreate?: boolean
 }
     & TStorageConfig
 
-export class FilesData implements IData.IData {
+export class FilesData extends absDataProvider {
     ProviderName = DATA_PROVIDER.FILES
-    Connection?: IStorage = undefined
-    SourceName: string
     Params: TConfigSource = <TConfigSource>{}
+    Connection?: IStorage = undefined
 
     // FilesData
     ContentHandler: Record<string, IContent> = {}
     File: Record<string, IContent> = {}
     Lock: Map<string, Mutex> = new Map<string, Mutex>()
 
-    Options = new CommonSqlDataOptions()
-
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
+        super(source, sourceParams)
         this.Params = sourceParams
     }
 

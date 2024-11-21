@@ -6,7 +6,6 @@
 import { Pool } from 'pg'
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IData from "../../types/IData"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
@@ -15,13 +14,12 @@ import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { CommonSqlDataOptions } from './CommonSqlData'
 import { DATA_PROVIDER } from '../../server/Source'
-import { TJson } from "../../types/TJson"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
 
 
 //
@@ -36,16 +34,13 @@ export type TPostgresDataConfig = {
 
 
 //
-export class PostgresData implements IData.IData {
+export class PostgresData extends absDataProvider {
     ProviderName = DATA_PROVIDER.POSTGRES
-    SourceName: string
     Params: TPostgresDataConfig = <TPostgresDataConfig>{}
     Connection?: Pool = undefined
 
-    Options = new CommonSqlDataOptions()
-
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
+        super(source, sourceParams)
         this.Params = {
             host: sourceParams.host ?? 'localhost',
             port: sourceParams.port ?? 5432,

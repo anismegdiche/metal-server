@@ -7,7 +7,6 @@
 import _ from 'lodash'
 import * as MongoDb from 'mongodb'
 //
-import * as IData from "../../types/IData"
 import { Convert } from '../../lib/Convert'
 import { RESPONSE } from '../../lib/Const'
 import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
@@ -24,6 +23,8 @@ import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemente
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
+import { absDataProviderOptions } from "../absDataProviderOptions"
 
 
 //
@@ -34,21 +35,9 @@ export type TMongoDbDataConfig = {
 }
 
 
-class MongoDbDataOptions implements IData.IDataOptions {
-    @Logger.LogFunction()
-    Parse(schemaRequest: TSchemaRequest): TOptions {
-        let options: TOptions = <TOptions>{}
-        if (schemaRequest) {
-            options = this.GetFilter(options, schemaRequest)
-            options = this.GetFields(options, schemaRequest)
-            options = this.GetSort(options, schemaRequest)
-            options = this.GetData(options, schemaRequest)
-            options = this.GetCache(options, schemaRequest)
-        }
+class MongoDbDataOptions extends absDataProviderOptions {
 
-        return options
-    }
-
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let filter: any = {}
@@ -71,6 +60,7 @@ class MongoDbDataOptions implements IData.IDataOptions {
         return options
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.fields) {
@@ -95,6 +85,7 @@ class MongoDbDataOptions implements IData.IDataOptions {
         return options
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.sort) {
@@ -119,31 +110,11 @@ class MongoDbDataOptions implements IData.IDataOptions {
         }
         return options
     }
-
-    @Logger.LogFunction()
-    GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
-        if (schemaRequest?.data) {
-            options.Data = new DataTable(
-                schemaRequest.entity,
-                Convert.EvaluateJsCode(schemaRequest.data)
-            )
-        }
-        return options
-    }
-
-    @Logger.LogFunction(Logger.Debug, true)
-    GetCache(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
-        if (schemaRequest?.cache)
-            options.Cache = schemaRequest.cache
-
-        return options
-    }
 }
 
 
-export class MongoDbData implements IData.IData {
+export class MongoDbData extends absDataProvider {
     ProviderName = DATA_PROVIDER.MONGODB
-    SourceName: string
     Params: TMongoDbDataConfig = <TMongoDbDataConfig>{}
     Connection?: MongoDb.MongoClient = undefined
 
@@ -151,7 +122,7 @@ export class MongoDbData implements IData.IData {
     Options: MongoDbDataOptions = new MongoDbDataOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
+        super(source, sourceParams)
         this.Params = {
             uri: sourceParams.host ?? 'mongodb://localhost:27017/',
             database: sourceParams.database,

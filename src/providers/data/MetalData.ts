@@ -9,17 +9,16 @@ import _ from 'lodash'
 //
 import { Logger } from "../../utils/Logger"
 import { DATA_PROVIDER } from "../../server/Source"
-import * as IData from "../../types/IData"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
 import { TJson } from '../../types/TJson'
 import { DataTable } from '../../types/DataTable'
 import { HTTP_STATUS_CODE, SERVER } from '../../lib/Const'
-import { CommonSqlDataOptions } from "./CommonSqlData"
 import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented, HttpErrorUnauthorized } from "../../server/HttpErrors"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
 
 
 //
@@ -139,13 +138,11 @@ export class MetalClient {
     }
 }
 
-export class MetalData implements IData.IData {
+export class MetalData extends absDataProvider {
     ProviderName = DATA_PROVIDER.METAL
-    Connection?: MetalClient = undefined
-    SourceName: string
     Params: TMetalDataConfig = <TMetalDataConfig>{}
+    Connection?: MetalClient = undefined
 
-    Options = new CommonSqlDataOptions()
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static readonly #ErrorCaseMap: Record<number, Function> = {
@@ -159,7 +156,7 @@ export class MetalData implements IData.IData {
 
 
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
+        super(source, sourceParams)
         this.Params = {
             url: sourceParams.host ?? 'http://localhost:3000',
             user: sourceParams.user ?? '',

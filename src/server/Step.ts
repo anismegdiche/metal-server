@@ -15,7 +15,6 @@ import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
-import { CommonSqlDataOptions } from "../providers/data/CommonSqlData"
 import { TOptions } from "../types/TOptions"
 import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
@@ -24,6 +23,8 @@ import { JsonHelper } from "../lib/JsonHelper"
 import { TStepSync, TStepRemoveDuplicates, TStepSort, TStepRun, TStepSelect, TStepListEntities, TStepInsert } from "../types/TStep"
 import { HttpErrorInternalServerError } from "./HttpErrors"
 import { Config } from "./Config"
+import { absDataProviderOptions } from "../providers/absDataProviderOptions"
+import { DataProviderOptions } from "../providers/absDataProvider"
 
 
 export enum STEP {
@@ -51,7 +52,7 @@ export type TStepArguments = {
 
 export class Step {
 
-    static readonly Options = new CommonSqlDataOptions()
+    static Options: absDataProviderOptions = new DataProviderOptions()
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static ExecuteCaseMap: Record<string, Function> = {

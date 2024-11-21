@@ -4,7 +4,6 @@
 //
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IData from "../../types/IData"
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
@@ -14,18 +13,17 @@ import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { DATA_PROVIDER } from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
-import { TJson } from "../../types/TJson"
-import { CommonSqlDataOptions } from "./CommonSqlData"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
 
 
 //
 export type TMemoryDataOptions = {
-    "autocreate"?: boolean            // v0.3, Auto create table if not exist
+    autocreate?: boolean            // v0.3, Auto create table if not exist
 }
 
 
@@ -37,16 +35,13 @@ export type TMemoryDataConfig = {
 
 
 //
-export class MemoryData implements IData.IData {
+export class MemoryData extends absDataProvider {
     ProviderName = DATA_PROVIDER.MEMORY
-    SourceName: string
     Params: TMemoryDataConfig = <TMemoryDataConfig>{}
     Connection?: DataBase = undefined
 
-    Options = new CommonSqlDataOptions()
-
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
+        super(source, sourceParams)
         this.Params = {
             database: sourceParams.database ?? 'memory',
             options: sourceParams.options

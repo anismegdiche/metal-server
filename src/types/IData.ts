@@ -1,46 +1,44 @@
-// 
-// 
-// 
-// 
-// 
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from './TSchemaRequest'
-import { TOptions } from './TOptions'
-import { TConfigSource } from './TConfig'
-import { TJson } from './TJson'
-import { TInternalResponse } from './TInternalResponse'
-import { TSchemaResponse } from "./TSchemaResponse"
+//XXX //XXX 
+//XXX //XXX 
+//XXX //XXX 
+//XXX //XXX 
+//XXX //XXX 
+//XXX import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from './TSchemaRequest'
+//XXX import { TOptions } from './TOptions'
+//XXX import { TInternalResponse } from './TInternalResponse'
+//XXX import { TSchemaResponse } from "./TSchemaResponse"
 
 
-export interface IDataOptions {
-    Parse: (schemaRequest: TSchemaRequest) => TOptions
-    GetFilter: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
-    GetFields: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
-    GetSort: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
-    GetData: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
-    GetCache: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
-}
+//XXX export interface IDataOptions {
+//XXX     Parse: (schemaRequest: TSchemaRequest) => TOptions
+//XXX     GetFilter: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
+//XXX     GetFields: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
+//XXX     GetSort: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
+//XXX     GetData: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
+//XXX     GetCache: (options: TOptions, schemaRequest: TSchemaRequest) => TOptions
+//XXX }
 
-export interface IData {
-    ProviderName: string
-    SourceName: string
-    Params: unknown
-    Connection?: unknown
-    Options: IDataOptions
+//XXX export interface IData {
+//XXX     ProviderName: string
+//XXX     SourceName: string
+//XXX     Params: unknown
+//XXX     Connection?: unknown
+//XXX     Options: IDataOptions
 
-    // Connection
-    Init: () => void
-    Connect: () => Promise<void>
-    Disconnect: () => Promise<void>
+//XXX     //XXX Connection
+//XXX     Init: () => void
+//XXX     Connect: () => Promise<void>
+//XXX     Disconnect: () => Promise<void>
 
-    // Entities
-    ListEntities: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
-    AddEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<undefined>>
-    //ROADMAP RenameEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
-    //ROADMAP DeleteEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
+//XXX     //XXX Entities
+//XXX     ListEntities: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
+//XXX     AddEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<undefined>>
+//XXX     //XXXROADMAP RenameEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
+//XXX     //XXXROADMAP DeleteEntity: (schemaRequest: TSchemaRequest) => Promise<TInternalResponse<TSchemaResponse>>
     
-    // Data
-    Insert: (schemaRequest: TSchemaRequestInsert) => Promise<TInternalResponse<undefined>>
-    Select: (schemaRequest: TSchemaRequestSelect) => Promise<TInternalResponse<TSchemaResponse>>
-    Update: (schemaRequest: TSchemaRequestUpdate) => Promise<TInternalResponse<undefined>>
-    Delete: (schemaRequest: TSchemaRequestDelete) => Promise<TInternalResponse<undefined>>
-}
+//XXX     //XXX Data
+//XXX     Insert: (schemaRequest: TSchemaRequestInsert) => Promise<TInternalResponse<undefined>>
+//XXX     Select: (schemaRequest: TSchemaRequestSelect) => Promise<TInternalResponse<TSchemaResponse>>
+//XXX     Update: (schemaRequest: TSchemaRequestUpdate) => Promise<TInternalResponse<undefined>>
+//XXX     Delete: (schemaRequest: TSchemaRequestDelete) => Promise<TInternalResponse<undefined>>
+//XXX }

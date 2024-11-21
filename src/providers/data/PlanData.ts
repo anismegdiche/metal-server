@@ -4,7 +4,6 @@
 //
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IData from "../../types/IData"
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
@@ -17,21 +16,18 @@ import { DATA_PROVIDER } from '../../server/Source'
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../server/HttpErrors"
 import { Config } from "../../server/Config"
 import { DataTable } from "../../types/DataTable"
-import { TJson } from "../../types/TJson"
-import { CommonSqlDataOptions } from "./CommonSqlData"
 import { HttpResponse } from "../../server/HttpResponse"
 import { TInternalResponse } from "../../types/TInternalResponse"
+import { absDataProvider } from "../absDataProvider"
 
 
-export class PlanData implements IData.IData {
+export class PlanData extends absDataProvider {
     ProviderName = DATA_PROVIDER.PLAN
-    SourceName: string
     Params: TConfigSource = <TConfigSource>{}
-
-    Options = new CommonSqlDataOptions()
+    Connection: undefined
 
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
+        super(source, sourceParams)
         this.Params = sourceParams
     }
 

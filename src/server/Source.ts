@@ -2,12 +2,10 @@
 //
 //
 //
-import _ from "lodash"
 //
 import { Logger } from '../utils/Logger'
 import { Cache } from './Cache'
 import { Config } from './Config'
-import { IData } from '../types/IData'
 import { TConfigSource } from '../types/TConfig'
 // Providers
 import { PostgresData } from '../providers/data/PostgresData'
@@ -18,6 +16,7 @@ import { FilesData } from '../providers/data/FilesData'
 import { MemoryData } from '../providers/data/MemoryData'
 import { MetalData } from '../providers/data/MetalData'
 import { MySqlData } from "../providers/data/MySqlData"
+import { absDataProvider } from "../providers/absDataProvider"
 
 //  config types
 //
@@ -40,7 +39,7 @@ export enum DATA_PROVIDER {
 export class Source {
 
     // global sources
-    static Sources = new Map<string, IData>()
+    static Sources = new Map<string, absDataProvider>()
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static #NewProviderCaseMap: Record<DATA_PROVIDER, Function> = {
