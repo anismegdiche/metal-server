@@ -1,6 +1,5 @@
 /* eslint-disable init-declarations */
 import { Readable } from "node:stream"
-import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
 import { XlsContent, ColumnLetterToNumber } from '../XlsContent'
 import { DataTable } from "../../../types/DataTable"
 import { HttpErrorInternalServerError } from "../../../server/HttpErrors"

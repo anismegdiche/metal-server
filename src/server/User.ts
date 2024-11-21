@@ -13,8 +13,6 @@ import { HttpResponse } from "./HttpResponse"
 import { TJson } from "../types/TJson"
 import { AuthProvider } from "../providers/AuthProvider"
 import { TUserCredentials } from "../providers/ACAuthProvider"
-import { Config } from "./Config"
-import { TConfigUser } from "../types/TConfig"
 import { Roles } from "./Roles"
 
 
