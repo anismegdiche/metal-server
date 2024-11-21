@@ -28,17 +28,17 @@ export class TensorFlowJs implements IAiEngine {
 	#Model?: MobileNet.MobileNet = undefined
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-	#LoadModel: Record<string, Function> = {
+	readonly #LoadModel: Record<string, Function> = {
 		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: async () => await MobileNet.load()
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-	#RunModel: Record<string, Function> = {
+	readonly #RunModel: Record<string, Function> = {
 		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: async (imagePath: string) => await this.#ImageClassify(imagePath)
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-	#SetDefaultOptions: Record<string, Function> = {
+	readonly #SetDefaultOptions: Record<string, Function> = {
 		[TENSORFLOW_JS_MODEL.IMAGE_CLASSIFY]: (options: Partial<TConfigAiEngineTensorFlowJsImageClassifyOptions> = {}) => TensorFlowJs.#ImageClassifySetDefaultOptions(options)
 	}
 
@@ -49,6 +49,7 @@ export class TensorFlowJs implements IAiEngine {
 		}
 	}
 
+	//FIXME: remove async from constructor
 	constructor(aiEngineInstanceName: string, aiEngineConfig: any) {
 		this.InstanceName = aiEngineInstanceName
 		this.Model = aiEngineConfig.model
