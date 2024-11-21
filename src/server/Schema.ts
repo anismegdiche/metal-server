@@ -4,6 +4,7 @@
 //
 //
 import _ from 'lodash'
+import typia from "typia"
 //
 import { Source } from "./Source"
 import { Logger } from '../utils/Logger'
@@ -14,7 +15,6 @@ import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorNotFound } from './Ht
 import { TypeHelper } from '../lib/TypeHelper'
 import { StringHelper } from '../lib/StringHelper'
 import { TConfigSchema, TConfigSchemaEntity } from "../types/TConfig"
-import typia from "typia"
 import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"
 import { TUserTokenInfo } from "./User"
@@ -169,7 +169,7 @@ export class Schema {
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schema, entity } = schemaRequest
-        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+        const schemaConfig = Schema.GetSchemaConfig(schema)
 
         if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.READ))
             throw new HttpErrorForbidden('Permission denied')
@@ -214,7 +214,7 @@ export class Schema {
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schema, entity } = schemaRequest
-        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+        const schemaConfig = Schema.GetSchemaConfig(schema)
 
         if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.DELETE))
             throw new HttpErrorForbidden('Permission denied')
@@ -242,7 +242,7 @@ export class Schema {
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schema, entity } = schemaRequest
-        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+        const schemaConfig = Schema.GetSchemaConfig(schema)
 
         if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.UPDATE))
             throw new HttpErrorForbidden('Permission denied')
@@ -270,7 +270,7 @@ export class Schema {
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schema, entity } = schemaRequest
-        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+        const schemaConfig = Schema.GetSchemaConfig(schema)
 
         if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.CREATE))
             throw new HttpErrorForbidden('Permission denied')
@@ -294,8 +294,8 @@ export class Schema {
     @Logger.LogFunction()
     static async ListEntities(schemaRequest: TSchemaRequest, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
         const { schema } = schemaRequest
-        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
-
+        const schemaConfig = Schema.GetSchemaConfig(schema)
+    
         if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.LIST))
             throw new HttpErrorForbidden('Permission denied')
 
@@ -325,7 +325,7 @@ export class Schema {
     static GetEntitiesSources(schema: string): TEntitiesMap {
 
         const entities: TEntitiesMap = new Map()
-        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+        const schemaConfig = Schema.GetSchemaConfig(schema)
 
         if (schemaConfig?.source)
             entities.set("*", {
@@ -343,5 +343,13 @@ export class Schema {
             })
 
         return entities
+    }
+
+    static GetSchemaConfig(schema: string): TConfigSchema {
+        const schemaConfig = Config.Get<TConfigSchema>(`schemas.${schema}`)
+        if (!schemaConfig)
+            throw new HttpErrorNotFound(`Schema '${schema}' not found`)
+
+        return schemaConfig
     }
 }
