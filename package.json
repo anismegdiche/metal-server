@@ -3,7 +3,7 @@
     "node": ">=22.10.0"
   },
   "name": "metal",
-  "version": "0.3",
+  "version": "0.3.1",
   "description": "Metal Server",
   "author": "Anis Megdiche",
   "license": "GPL-3.0-or-later",
@@ -56,7 +56,6 @@
     "response-time": "^2.3.3",
     "safe-stable-stringify": "^2.5.0",
     "sql-in-mongodb": "^1.0.0",
-    "sql2mongo": "^1.2.1",
     "swagger-ui-express": "^5.0.1",
     "tesseract.js": "^5.1.1",
     "ts-patch": "^3.2.1",
