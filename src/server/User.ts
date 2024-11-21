@@ -12,7 +12,7 @@ import { HttpErrorUnauthorized } from "./HttpErrors"
 import { HttpResponse } from "./HttpResponse"
 import { TJson } from "../types/TJson"
 import { AuthProvider } from "../providers/AuthProvider"
-import { TUserCredentials } from "../providers/ACAuthProvider"
+import { TUserCredentials } from "../providers/absAuthProvider"
 import { Roles } from "./Roles"
 
 

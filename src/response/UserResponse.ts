@@ -9,7 +9,7 @@ import { User } from '../server/User'
 import { ServerResponse } from '../response/ServerResponse'
 import { Convert } from '../lib/Convert'
 import { HttpErrorUnauthorized, HttpErrorForbidden, HttpError } from "../server/HttpErrors"
-import { TUserCredentials } from "../providers/ACAuthProvider"
+import { TUserCredentials } from "../providers/absAuthProvider"
 
 
 //
