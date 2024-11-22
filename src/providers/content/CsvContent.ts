@@ -11,7 +11,7 @@ import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { Readable } from "node:stream"
 import { ReadableHelper } from "../../lib/ReadableHelper"
 import { TConvertParams } from "../../lib/TypeHelper"
-import { ACContentProvider } from "../ACContentProvider"
+import { absContentProvider } from "../absContentProvider"
 import { StringHelper } from "../../lib/StringHelper"
 
 
@@ -34,7 +34,7 @@ type TCsvContentParams = Omit<Required<{
 >
 
 
-export class CsvContent extends ACContentProvider {
+export class CsvContent extends absContentProvider {
 
     Params: TCsvContentParams | undefined
 

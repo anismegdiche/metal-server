@@ -12,7 +12,7 @@ import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { ReadableHelper } from "../../lib/ReadableHelper"
 import { TConvertParams } from "../../lib/TypeHelper"
-import { ACContentProvider } from "../ACContentProvider"
+import { absContentProvider } from "../absContentProvider"
 
 export type TJsonContentConfig = {
     "json-path"?: string
@@ -22,7 +22,7 @@ type TJsonContentParams = Required<{
     [K in keyof TJsonContentConfig as K extends `json-${infer U}` ? TConvertParams<U> : K]: TJsonContentConfig[K]
 }>
 
-export class JsonContent extends ACContentProvider {
+export class JsonContent extends absContentProvider {
 
     Params: TJsonContentParams | undefined
 

@@ -12,7 +12,7 @@ import { Logger } from '../../utils/Logger'
 import { TJson } from '../../types/TJson'
 import { HttpErrorInternalServerError } from '../../server/HttpErrors'
 import { TConvertParams } from "../../lib/TypeHelper"
-import { ACContentProvider } from "../ACContentProvider"
+import { absContentProvider } from "../absContentProvider"
 
 
 export type TXlsContentConfig = {
@@ -42,7 +42,7 @@ export function ColumnLetterToNumber(letter: string): number {
 
 
 //
-export class XlsContent extends ACContentProvider {
+export class XlsContent extends absContentProvider {
 
     Params: TXlsContentParams | undefined
 

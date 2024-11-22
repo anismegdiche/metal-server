@@ -15,15 +15,15 @@ import { DemoAuth } from "./auth/DemoAuth"
 
 //
 export enum AUTH_PROVIDER {
-    LOCAL = "local",
-    DEMO = "demo"//,
+    LOCAL = "local",            // Metal Config authentication
+    DEMO = "demo"//,            // Demo authentication, not for production
     // SYSTEM = "system",
     // AZURE_AD = "azure-ad"
 }
 
 export type TAuthentication = {
-    provider: AUTH_PROVIDER
-    "default-role"?: string
+    provider: AUTH_PROVIDER     // authentication provider
+    "default-role"?: string     // default user role
     // autocreate?: boolean
 }
     // & TAzureAdAuthConfig
