@@ -87,7 +87,7 @@ export class Step {
         const schemaRequest = stepArguments.stepParams as TStepSelect
         const { schema, entity } = schemaRequest
 
-        // TODO: recheck logic for schema=null
+        // TODO recheck logic for schema=null
         if (entity) {
             const _internalResponse = await Schema.Select(<TSchemaRequestSelect>{
                 ...schemaRequest,
@@ -99,7 +99,7 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
-        //TODO: missing options.cache
+        //TODO missing options.cache
         if (!schema && !entity) {
             const options: TOptions = Step.Options.Parse(<TSchemaRequestSelect>schemaRequest)
             const sqlQueryHelper = new SqlQueryHelper()
@@ -137,7 +137,7 @@ export class Step {
             throw new WarnError(`Step.Insert: No data to insert ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
-        // TODO: recheck logic for schema=null
+        // TODO recheck logic for schema=null
         if (entity) {
             const _schemaResponse = await Schema.Insert(<TSchemaRequestInsert>{
                 ...schemaRequest,
@@ -177,7 +177,7 @@ export class Step {
             throw new HttpErrorInternalServerError(`No data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
-        // TODO: recheck logic for schema=null
+        // TODO recheck logic for schema=null
         if (entity) {
             const _schemaResponse = await Schema.Update({
                 ...schemaRequest,
@@ -213,7 +213,7 @@ export class Step {
         const schemaRequest = stepArguments.stepParams
         const { schema, entity } = schemaRequest
 
-        // TODO: recheck logic for schema=null
+        // TODO recheck logic for schema=null
         if (entity) {
             const _schemaResponse = await Schema.Delete({
                 ...schemaRequest,

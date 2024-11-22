@@ -146,7 +146,7 @@ export class MongoDbData extends absDataProvider {
     Params: TMongoDbDataConfig = <TMongoDbDataConfig>{}
     Connection?: MongoDb.MongoClient = undefined
 
-    //TODO: change MongoDbDataOptions to static
+    //TODO change MongoDbDataOptions to static
     Options: MongoDbDataOptions = new MongoDbDataOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {

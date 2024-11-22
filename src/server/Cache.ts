@@ -237,7 +237,7 @@ export class Cache {
         try {
             await Cache.CacheSource.Delete(<TSchemaRequest>{
                 ...Cache.#CacheSchemaRequest,
-                //FIXME: only usable with memory provider, should correct escape char ` in where close from sqlhelper
+                //FIXME only usable with memory provider, should correct escape char ` in where close from sqlhelper
                 "filter-expression": `\`schema\`= '${schema}' AND \`entity\`= '${entity}'`
             })
         } catch (error) {

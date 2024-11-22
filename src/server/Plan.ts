@@ -129,9 +129,7 @@ export class Plan {
                 }
 
                 if (currentDataTable.MetaData[METADATA.PLAN_DEBUG] == 'error') {
-                    /*
-                    FIXME
-                    In case of cross entities, only errors in the final entity are returned.
+                    /* FIXME In case of cross entities, only errors in the final entity are returned.
                     Console log is working fine.
                     */
                     const _planErrors: TJson = {}

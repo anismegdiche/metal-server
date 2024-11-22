@@ -4,7 +4,7 @@
 //
 //
 import * as Fs from 'fs'
-import * as Yaml from 'js-yaml'   //TODO: Use only one YAML lib
+import * as Yaml from 'js-yaml'   //TODO Use only one YAML lib
 import * as dotenv from 'dotenv'
 import _ from 'lodash'
 import typia from "typia"

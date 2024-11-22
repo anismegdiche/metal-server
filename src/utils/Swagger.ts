@@ -5,7 +5,7 @@
 //
 import { Express, Response, Request, NextFunction } from 'express'
 import swaggerUi from 'swagger-ui-express'
-//TODO: Use only one YAML lib
+//TODO Use only one YAML lib
 import YAML from 'yamljs'
 import * as OpenApiValidator from 'express-openapi-validator'
 //

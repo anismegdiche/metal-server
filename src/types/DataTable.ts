@@ -357,7 +357,7 @@ export class DataTable {
         return this
     }
 
-    //FIXME: it generates an error in case of invalid condition
+    //FIXME it generates an error in case of invalid condition
     @Logger.LogFunction()
     FilterRows(condition: string | undefined): this {
         if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))
@@ -372,7 +372,7 @@ export class DataTable {
         return this
     }
 
-    //FIXME: it generates an error in case of invalid condition
+    //FIXME it generates an error in case of invalid condition
     @Logger.LogFunction()
     DeleteRows(condition: string | undefined): this {
         if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))

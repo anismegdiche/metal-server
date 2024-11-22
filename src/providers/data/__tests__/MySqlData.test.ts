@@ -38,6 +38,7 @@ describe('MySqlData', () => {
     })
 
     describe('Init and Connection', () => {
+        //FIXME test to fix
         it('should successfully initialize and connect', async () => {
             await provider.Init()
 
@@ -115,6 +116,8 @@ describe('MySqlData', () => {
             expect(Cache.Set).toHaveBeenCalled()
         })
 
+
+        //FIXME test to fix
         it('should handle empty result set', async () => {
             mockPool.query.mockResolvedValueOnce([[]])
 
@@ -183,6 +186,7 @@ describe('MySqlData', () => {
             cache: 60
         }
 
+        //FIXME test to fix
         it('should successfully list entities', async () => {
             mockPool.query.mockResolvedValueOnce([
                 [
@@ -205,6 +209,7 @@ describe('MySqlData', () => {
             expect(response.Body?.data.Rows).toHaveLength(2)
         })
 
+        //FIXME test to fix
         it('should throw NotFound when no entities exist', async () => {
             mockPool.query.mockResolvedValueOnce([[]])
 

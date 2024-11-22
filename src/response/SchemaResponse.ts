@@ -27,7 +27,7 @@ export class SchemaResponse {
 
                 const _schemaResponse = intRes.Body
                 const _resSize = JsonHelper.Size(_schemaResponse)
-                //TODO: check how to remove casting
+                //TODO check how to remove casting
                 const _resLimit = Config.Flags.ResponseLimit as number
                 // file deepcode ignore NoEffectExpression: debugging pupose
                 Logger.Debug(`${Logger.Out} SchemaResponse.Select: response size = ${_resSize} bytes`)
