@@ -35,6 +35,7 @@ jest.mock('../../../utils//Logger', () => ({
 function createReadableStream(data: string | Buffer): Readable {
     return new Readable({
         read() {
+            // file deepcode ignore ArrayMethodOnNonArray/test: testing purpose
             this.push(data)
             this.push(null)
         }
