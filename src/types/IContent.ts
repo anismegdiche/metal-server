@@ -1,21 +1,23 @@
-//
-//
-//
-//
-//
-import { Readable } from 'node:stream'
-//
-import { DataTable } from "./DataTable"
-import { TContentConfig } from "../providers/data/FilesData"
-import { VirtualFileSystem } from "../utils/VirtualFileSystem"
+//XXX //XXX
+//XXX //XXX
+//XXX //XXX
+//XXX //XXX
+//XXX //XXX
+//XXX import { Readable } from 'node:stream'
+//XXX //XXX
+//XXX import { DataTable } from "./DataTable"
+//XXX import { VirtualFileSystem } from "../utils/VirtualFileSystem"
+//XXX import { TContentConfig } from "../providers/ContentProvider"
 
 
-export interface IContent {
-    EntityName: string
-    Config: TContentConfig   // raw configuration
-    Params: unknown            // TS transformed configuration
-    Content: VirtualFileSystem
-    Init(name: string, content: Readable): void
-    Get(sqlQuery?: string): Promise<DataTable>
-    Set(contentDataTable: DataTable): Promise<Readable>
-}
+//XXX export interface IContent {
+//XXX     EntityName: string
+//XXX     Config: TContentConfig   //XXX raw configuration
+//XXX     Params: unknown            //XXX TS transformed configuration
+//XXX     Content: VirtualFileSystem
+
+//XXX     SetConfig(contentConfig: TContentConfig): void
+//XXX     InitContent(name: string, content: Readable): void
+//XXX     Get(sqlQuery?: string): Promise<DataTable>
+//XXX     Set(contentDataTable: DataTable): Promise<Readable>
+//XXX }

@@ -5,24 +5,37 @@
 import { Readable } from 'node:stream'
 //
 import { DataTable } from "../types/DataTable"
-import { TContentConfig } from "./data/FilesData"
 import { VirtualFileSystem } from "../utils/VirtualFileSystem"
-import { IContent } from "../types/IContent"
+import { TContentConfig } from "./ContentProvider"
+import { TJson } from "../types/TJson"
 
 
 //
-export abstract class absContentProvider implements IContent {
+export abstract class absContentProvider {
     
     abstract Params: unknown            // TS transformed configuration
     EntityName: string = "DEFAULT"
-    Config: TContentConfig              // raw configuration
-    readonly Content = new VirtualFileSystem()
+    Config?: TContentConfig              // raw configuration
+    Content = new VirtualFileSystem()
 
-    constructor(contentConfig: TContentConfig) {
+    SetConfig(contentConfig: TContentConfig) {
         this.Config = contentConfig
     }
 
-    abstract Init(name: string, content: Readable): void
+    GetConfig(): TJson {
+        return this.Config ?? {}
+    }
+
+    abstract InitContent(name: string, content: Readable): void
     abstract Get(sqlQuery?: string): Promise<DataTable>
-    abstract Set(contentDataTable: DataTable): Promise<Readable>
+    abstract Set(data: DataTable): Promise<Readable>
+
+    Clone(): absContentProvider {
+        const clone:absContentProvider = Object.create(this)
+        clone.Params = this.Params
+        clone.EntityName = this.EntityName
+        clone.Config = this.Config
+        clone.Content = this.Content
+        return clone
+    }
 }

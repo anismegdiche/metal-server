@@ -1,17 +1,17 @@
 import { Readable } from "node:stream"
 import { DataTable } from '../../../types/DataTable'
 import { JsonContent } from '../JsonContent'
-import { TContentConfig } from "../../data/FilesData"
+import { TContentConfig } from "../../ContentProvider"
 
 describe('JsonContent', () => {
     const contentConfig: TContentConfig = {
         "json-path": 'data'
     }
 
-    let jsonContent = new JsonContent(contentConfig)
+    let jsonContent = new JsonContent()
 
     beforeEach(() => {
-        jsonContent = new JsonContent(contentConfig)
+        jsonContent.SetConfig(contentConfig)
     })
 
     describe('Init', () => {
@@ -19,9 +19,10 @@ describe('JsonContent', () => {
             const name = 'test'
             const content = Readable.from('{"key": "value"}')
 
-            const jsonContentEmptyOptions = new JsonContent({})
+            const jsonContentEmptyOptions = new JsonContent()
+            jsonContentEmptyOptions.SetConfig({})
 
-            await jsonContentEmptyOptions.Init(name, content)
+            await jsonContentEmptyOptions.InitContent(name, content)
             expect(jsonContentEmptyOptions.Params).toEqual({ path: "" })
         })
 
@@ -29,7 +30,7 @@ describe('JsonContent', () => {
             const name = 'test'
             const content = Readable.from('{"key": "value"}')
 
-            await jsonContent.Init(name, content)
+            await jsonContent.InitContent(name, content)
 
             expect(jsonContent.EntityName).toBe(name)
             expect(jsonContent.Content.ReadFile(name)).toBe(content)
@@ -41,7 +42,7 @@ describe('JsonContent', () => {
             const name = 'test'
             const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
 
-            await jsonContent.Init(name, content)
+            await jsonContent.InitContent(name, content)
         })
 
         it('should return the data as a DataTable', async () => {
@@ -76,7 +77,7 @@ describe('JsonContent', () => {
         const name = 'test'
         beforeEach(async () => {
             const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
-            await jsonContent.Init(name, content)
+            await jsonContent.InitContent(name, content)
         })
 
         it('should update the content and return the updated raw content', async () => {

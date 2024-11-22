@@ -1,11 +1,10 @@
 /* eslint-disable init-declarations */
 import { Readable } from "node:stream"
-import { XlsContent, ColumnLetterToNumber } from '../XlsContent'
+import { XlsContent, ColumnLetterToNumber, TXlsContentConfig } from '../XlsContent'
 import { DataTable } from "../../../types/DataTable"
 import { HttpErrorInternalServerError } from "../../../server/HttpErrors"
 import * as ExcelJS from 'exceljs'
 import typia from "typia"
-import { TContentConfig } from "../../data/FilesData"
 
 
 describe("ColumnLetterToNumber", () => {
@@ -66,7 +65,8 @@ describe('XlsContent', () => {
         mockWorkbookBuffer = await createMockWorkbook(mockData)
 
         // Setup XlsContent
-        xlsContent = new XlsContent(typia.random<TContentConfig>())
+        xlsContent = new XlsContent()
+        xlsContent.SetConfig(typia.random<TXlsContentConfig>())
     })
 
 
@@ -75,7 +75,7 @@ describe('XlsContent', () => {
             const inputStream = createReadableStream(mockWorkbookBuffer)
             xlsContent.Config = {}
 
-            await xlsContent.Init('testEntity', inputStream)
+            await xlsContent.InitContent('testEntity', inputStream)
 
             expect(xlsContent.EntityName).toBe('testEntity')
             expect(xlsContent.Params).toEqual({
@@ -97,7 +97,7 @@ describe('XlsContent', () => {
                 'xls-starting-cell': 'B2'
             }
 
-            await xlsContent.Init('testEntity', inputStream)
+            await xlsContent.InitContent('testEntity', inputStream)
 
             expect(xlsContent.Params).toEqual({
                 sheet: 'Sheet1',
@@ -116,7 +116,7 @@ describe('XlsContent', () => {
                 'xls-sheet': 'Sheet1',
                 'xls-starting-cell': 'A1'
             }
-            await xlsContent.Init('testEntity', inputStream)
+            await xlsContent.InitContent('testEntity', inputStream)
         })
 
         test('should throw error if Params is not defined', async () => {
@@ -153,7 +153,7 @@ describe('XlsContent', () => {
                 'xls-sheet': 'Sheet1',
                 'xls-starting-cell': 'A1'
             }
-            await xlsContent.Init('testEntity', inputStream)
+            await xlsContent.InitContent('testEntity', inputStream)
 
             mockDataTable = new DataTable('testEntity', [
                 {

@@ -14,6 +14,8 @@ import { ReadableHelper } from "../../lib/ReadableHelper"
 import { TConvertParams } from "../../lib/TypeHelper"
 import { absContentProvider } from "../absContentProvider"
 
+
+//
 export type TJsonContentConfig = {
     "json-path"?: string
 }
@@ -22,12 +24,14 @@ type TJsonContentParams = Required<{
     [K in keyof TJsonContentConfig as K extends `json-${infer U}` ? TConvertParams<U> : K]: TJsonContentConfig[K]
 }>
 
+
+//
 export class JsonContent extends absContentProvider {
 
     Params: TJsonContentParams | undefined
 
     @Logger.LogFunction()
-    async Init(entity: string, content: Readable): Promise<void> {
+    async InitContent(entity: string, content: Readable): Promise<void> {
         this.EntityName = entity
         if (this.Config) {
             this.Params = {
@@ -38,7 +42,7 @@ export class JsonContent extends absContentProvider {
         this.Content.UploadFile(entity, content)
     }
 
-    @Logger.LogFunction(Logger.Debug,true)
+    @Logger.LogFunction(Logger.Debug, true)
     async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')
@@ -56,11 +60,11 @@ export class JsonContent extends absContentProvider {
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
-    @Logger.LogFunction(Logger.Debug,true)
+    @Logger.LogFunction(Logger.Debug, true)
     async Set(data: DataTable): Promise<Readable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')
-        
+
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 

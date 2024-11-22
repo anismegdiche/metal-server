@@ -30,6 +30,7 @@ import { HttpResponse } from "./HttpResponse"
 import { AuthProvider } from "../providers/AuthProvider"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
+import { ContentProvider } from "../providers/ContentProvider"
 
 export class Server {
 
@@ -190,5 +191,6 @@ export class Server {
 
     static CoreLoad() {
         AuthProvider.RegisterProviders()
+        ContentProvider.RegisterProviders()
     }
 }

@@ -47,7 +47,7 @@ export class XlsContent extends absContentProvider {
     Params: TXlsContentParams | undefined
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Init(entity: string, content: Readable): Promise<void> {
+    async InitContent(entity: string, content: Readable): Promise<void> {
         this.EntityName = entity
         if (this.Config) {
             this.Params = {

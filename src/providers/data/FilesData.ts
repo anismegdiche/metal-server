@@ -18,7 +18,6 @@ import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
 import { IStorage } from "../../types/IStorage"
-import { IContent } from "../../types/IContent"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { TInternalResponse } from "../../types/TInternalResponse"
@@ -29,9 +28,8 @@ import { AzureBlobStorage, TAzureBlobStorageConfig } from '../storage/AzureBlobS
 import { FsStorage, TFsStorageConfig } from '../storage/FsStorage'
 import { FtpStorage, TFtpStorageConfig } from "../storage/FtpStorage"
 // Content
-import { JsonContent, TJsonContentConfig } from "../content/JsonContent"
-import { CsvContent, TCsvContentConfig } from '../content/CsvContent'
-import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
+import { CONTENT, ContentProvider, TContentConfig } from "../ContentProvider"
+import { absContentProvider } from "../absContentProvider"
 
 
 export enum STORAGE {
@@ -40,15 +38,8 @@ export enum STORAGE {
     FTP = "ftp"
 }
 
-export enum CONTENT {
-    JSON = "json",
-    CSV = "csv",
-    XLS = "xls"
-}
-
 export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig & TFtpStorageConfig
 
-export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsContentConfig
 
 export type TFilesDataOptions = {
     // Common
@@ -68,8 +59,8 @@ export class FilesData extends absDataProvider {
     Connection?: IStorage = undefined
 
     // FilesData
-    ContentHandler: Record<string, IContent> = {}
-    File: Record<string, IContent> = {}
+    ContentHandler: Record<string, absContentProvider> = {}     // Contents set in confi file
+    File: Record<string, absContentProvider> = {}               // Files
     Lock: Map<string, Mutex> = new Map<string, Mutex>()
 
     constructor(source: string, sourceParams: TConfigSource) {
@@ -83,11 +74,11 @@ export class FilesData extends absDataProvider {
         [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams)
     }
 
-    static readonly #NewContentCaseMap: Record<CONTENT, (contentConfig: TContentConfig) => IContent> = {
-        [CONTENT.JSON]: (contentConfig: TContentConfig) => new JsonContent(contentConfig),
-        [CONTENT.CSV]: (contentConfig: TContentConfig) => new CsvContent(contentConfig),
-        [CONTENT.XLS]: (contentConfig: TContentConfig) => new XlsContent(contentConfig)
-    }
+    //XXX static readonly #NewContentCaseMap: Record<CONTENT, (contentConfig: TContentConfig) => IContent> = {
+    //XXX     [CONTENT.JSON]: (contentConfig: TContentConfig) => new JsonContent(contentConfig),
+    //XXX     [CONTENT.CSV]: (contentConfig: TContentConfig) => new CsvContent(contentConfig),
+    //XXX     [CONTENT.XLS]: (contentConfig: TContentConfig) => new XlsContent(contentConfig)
+    //XXX }
 
     #SetHandler(entity: string) {
         if (!_.has(this.File, entity)) {
@@ -125,10 +116,10 @@ export class FilesData extends absDataProvider {
 
         // init content
         for (const filePattern in content) {
-            if (Object.prototype.hasOwnProperty.call(content, filePattern)) {
+            if (Object.hasOwn(content, filePattern)) {
                 const { type } = content[filePattern]
-                this.ContentHandler[filePattern] =
-                    FilesData.#NewContentCaseMap[type](content[filePattern])
+                this.ContentHandler[filePattern] = ContentProvider.GetProvider(type).Clone()
+                this.ContentHandler[filePattern].SetConfig(content[filePattern])
             }
         }
     }
@@ -168,7 +159,7 @@ export class FilesData extends absDataProvider {
         this.#SetLock(entity)
         const release = await this.Lock.get(entity)!.acquire()
         try {
-            this.File[entity].Init(
+            this.File[entity].InitContent(
                 entity,
                 await this.Connection.Read(entity)
             )
@@ -212,7 +203,7 @@ export class FilesData extends absDataProvider {
 
         this.#SetHandler(entity)
 
-        this.File[entity].Init(
+        this.File[entity].InitContent(
             entity,
             await this.Connection.Read(entity)
         )
@@ -228,6 +219,7 @@ export class FilesData extends absDataProvider {
             : undefined
 
         const data = await this.File[entity].Get(sqlQuery)
+        data.SetMetaData("__CONTENT__", this.File[entity].GetConfig())
 
         if (options?.Cache)
             await Cache.Set({
@@ -257,7 +249,7 @@ export class FilesData extends absDataProvider {
         this.#SetLock(entity)
         const release = await this.Lock.get(entity)!.acquire()
         try {
-            this.File[entity].Init(
+            this.File[entity].InitContent(
                 entity,
                 await this.Connection.Read(entity)
             )
@@ -301,7 +293,7 @@ export class FilesData extends absDataProvider {
         this.#SetLock(entity)
         const release = await this.Lock.get(entity)!.acquire()
         try {
-            this.File[entity].Init(
+            this.File[entity].InitContent(
                 entity,
                 await this.Connection.Read(entity)
             )

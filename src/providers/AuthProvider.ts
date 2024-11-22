@@ -45,7 +45,6 @@ export class AuthProvider {
     static RegisterProviders() {
         AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.DEMO, new DemoAuth())
         AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.LOCAL, new LocalAuth())
-        // AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.LOCAL, new LocalAuth())
         // AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.AZURE_AD, new AzureAdAuth())
     }
 
