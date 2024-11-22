@@ -1,10 +1,11 @@
 //
 //
 //
+//
+//
 import mysql, { Pool } from 'mysql2/promise'
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
@@ -13,78 +14,71 @@ import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
-import DATA_PROVIDER from '../../server/Source'
-import { TJson } from "../../types/TJson"
+import { DATA_PROVIDER } from '../../server/Source'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
 
-export class MySqlDataProvider implements IDataProvider.IDataProvider {
-    ProviderName = DATA_PROVIDER.MYSQL;
-    SourceName: string
-    Params: TConfigSource = <TConfigSource>{};
+export class MySqlData extends absDataProvider {
+    ProviderName = DATA_PROVIDER.MYSQL
+    Params: mysql.PoolOptions = <mysql.PoolOptions>{}
     Connection?: Pool
-    Config: TJson = {};
-    Options = new CommonSqlDataProviderOptions();
 
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
-        this.Init(sourceParams)
+        super(source, sourceParams)
+
+        // default MySql options
+        const options = {
+            waitForConnections: true,
+            connectionLimit: 10,
+            maxIdle: 10,
+            idleTimeout: 60000,
+            queueLimit: 0,
+            enableKeepAlive: true,
+            keepAliveInitialDelay: 0,
+            ...sourceParams?.options
+        }
+
+        this.Params = {
+            host: sourceParams?.host ?? 'localhost',
+            port: sourceParams?.port ?? 3306,
+            user: sourceParams?.user ?? 'root',
+            password: sourceParams?.password ?? '',
+            database: sourceParams?.database ?? 'mysql',
+            ...options
+        }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        this.Params = sourceParams
-        await this.Connect()
+    async Init(): Promise<void> {
+        Logger.Debug("MySqlData.Init")
     }
 
     private async ensureConnection(): Promise<Pool> {
-        if (!this.Connection) {
+        if (!this.Connection)
             await this.Connect()
-        }
-        if (!this.Connection) {
+
+        if (!this.Connection)
             throw new HttpErrorInternalServerError('Failed to establish database connection')
-        }
+
         return this.Connection
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        const {
-            user = 'root',
-            password = '',
-            database = 'mysql',
-            host = 'localhost',
-            port = 3306,
-            options = {}
-        } = this.Params ?? {}
-
         try {
-            this.Connection = mysql.createPool({
-                user,
-                password,
-                database,
-                host,
-                port,
-                ...options,
-                waitForConnections: true,
-                connectionLimit: 10,
-                maxIdle: 10,
-                idleTimeout: 60000,
-                queueLimit: 0,
-                enableKeepAlive: true,
-                keepAliveInitialDelay: 0
-            })
+            this.Connection = mysql.createPool(this.Params)
 
             // Test connection
             const [result] = await this.Connection.query('SELECT 1')
-            Logger.Info(`Connected to MySQL database '${database}' at ${host}:${port}`)
+            Logger.Info(`Connected to MySQL database '${this.Params.database}' at ${this.Params.host}:${this.Params.port}`)
         } catch (error) {
             const errorMessage = error instanceof Error
                 ? error.message
                 : 'Unknown error'
-            Logger.Error(`Failed to connect to MySQL database '${database}' at ${host}:${port}: ${errorMessage}`)
+            Logger.Error(`Failed to connect to MySQL database '${this.Params.database}' at ${this.Params.host}:${this.Params.port}: ${errorMessage}`)
             throw new HttpErrorInternalServerError(`Database connection failed: ${errorMessage}`)
         }
     }
@@ -211,7 +205,9 @@ export class MySqlDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
+    // eslint-disable-next-line unused-imports/no-unused-vars
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented('AddEntity operation is not implemented')
     }

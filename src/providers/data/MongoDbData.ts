@@ -6,41 +6,66 @@
 //
 import _ from 'lodash'
 import * as MongoDb from 'mongodb'
+import { SQLParser } from 'sql-in-mongodb'
 //
-import * as IDataProvider from "../../types/IDataProvider"
 import { Convert } from '../../lib/Convert'
 import { RESPONSE } from '../../lib/Const'
-import { TConfigSource } from "../../types/TConfig"
+import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
 import { TOptions } from '../../types/TOptions'
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TJson } from "../../types/TJson"
-import { DataTable } from "../../types/DataTable"
+import { SORT_ORDER, DataTable } from "../../types/DataTable"
 import { Logger } from "../../utils/Logger"
 import { Cache } from '../../server/Cache'
-import DATA_PROVIDER from '../../server/Source'
-import { MongoDbHelper } from '../../lib/MongoDbHelper'
+import { DATA_PROVIDER } from '../../server/Source'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
+import { absDataProviderOptions } from "../absDataProviderOptions"
 
 
-class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
+//
+export type TMongoDbDataConfig = {
+    uri: string,
+    database?: string,
+    options?: TConfigSourceOptions
+}
+
+
+//
+export class MongoDbHelper {
+
+    static readonly WhereParser = new SQLParser()
+
     @Logger.LogFunction()
-    Parse(schemaRequest: TSchemaRequest): TOptions {
-        let options: TOptions = <TOptions>{}
-        if (schemaRequest) {
-            options = this.GetFilter(options, schemaRequest)
-            options = this.GetFields(options, schemaRequest)
-            options = this.GetSort(options, schemaRequest)
-            options = this.GetData(options, schemaRequest)
-            options = this.GetCache(options, schemaRequest)
-        }
+    static ConvertSqlSort(key: any, value: string) {
+        const aSort = value.split(" ")
 
-        return options
+        if (aSort.length != 2)
+            return {}
+
+        const [field, sqlSortDirection] = aSort
+
+        return {
+            ...key,
+            [field]: (sqlSortDirection.toLowerCase() == SORT_ORDER.ASC)
+                ? 1
+                : -1
+        }
     }
 
+    @Logger.LogFunction()
+    static ConvertSqlQuery(sqlQuery: string) {
+        return this.WhereParser.parseSql(`WHERE ${sqlQuery}`)
+    }
+}
+
+class MongoDbDataOptions extends absDataProviderOptions {
+
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let filter: any = {}
@@ -49,7 +74,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
             if (schemaRequest["filter-expression"])
                 // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
                 filter = MongoDbHelper.ConvertSqlQuery(schemaRequest["filter-expression"].replace(/%/igm, ".*"))
-            
+
             if (schemaRequest?.filter)
                 filter = schemaRequest.filter
 
@@ -63,6 +88,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
         return options
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.fields) {
@@ -87,6 +113,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
         return options
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.sort) {
@@ -103,7 +130,7 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
             Logger.Debug(_sortArray)
             if (_sortArray.length > 0)
                 _sortArray = _sortArray.reduce(MongoDbHelper.ConvertSqlSort, {})
-            
+
             Logger.Debug(_sortArray)
             options.Sort = {
                 $sort: _sortArray
@@ -111,67 +138,45 @@ class MongoDbDataProviderOptions implements IDataProvider.IDataProviderOptions {
         }
         return options
     }
-
-    @Logger.LogFunction()
-    GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
-        if (schemaRequest?.data) {
-            options.Data = new DataTable(
-                schemaRequest.entity,
-                Convert.EvaluateJsCode(schemaRequest.data)
-            )
-        }
-        return options
-    }
-
-    @Logger.LogFunction(Logger.Debug, true)
-    GetCache(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
-        if (schemaRequest?.cache)
-            options.Cache = schemaRequest.cache
-
-        return options
-    }
 }
 
 
-export class MongoDbDataProvider implements IDataProvider.IDataProvider {
+export class MongoDbData extends absDataProvider {
     ProviderName = DATA_PROVIDER.MONGODB
-    SourceName: string
-    Params: TConfigSource = <TConfigSource>{}
+    Params: TMongoDbDataConfig = <TMongoDbDataConfig>{}
     Connection?: MongoDb.MongoClient = undefined
 
-    //TODO: change MongoDbDataProviderOptions to static
-    Options: MongoDbDataProviderOptions = new MongoDbDataProviderOptions()
+    //TODO: change MongoDbDataOptions to static
+    Options: MongoDbDataOptions = new MongoDbDataOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        super(source, sourceParams)
+        this.Params = {
+            uri: sourceParams.host ?? 'mongodb://localhost:27017/',
+            database: sourceParams.database,
+            options: sourceParams.options
+        }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        this.Params = sourceParams
+    async Init(): Promise<void> {
+        Logger.Debug("MongoDbData.Init")
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        const {
-            host: uri = 'mongodb://localhost:27017/',
-            database,
-            options = {}
-        } = this.Params ?? {}
-
-        this.Connection = new MongoDb.MongoClient(uri, options)
+        this.Connection = new MongoDb.MongoClient(this.Params.uri, this.Params.options)
         try {
             await this.Connection.connect()
             await this.Connection
-                .db(database)
+                .db(this.Params.database)
                 .command({
                     ping: 1
                 })
-            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${database})'`)
+            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName}/${database}'`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName}/${this.Params.database}'`)
             Logger.Error(error)
         }
     }
@@ -247,7 +252,6 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
@@ -273,7 +277,6 @@ export class MongoDbDataProvider implements IDataProvider.IDataProvider {
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
 
         const options: any = this.Options.Parse(schemaRequest)
 

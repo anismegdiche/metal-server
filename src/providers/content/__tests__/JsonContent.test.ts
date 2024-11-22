@@ -1,7 +1,7 @@
 import { Readable } from "node:stream"
 import { DataTable } from '../../../types/DataTable'
 import { JsonContent } from '../JsonContent'
-import { TContentConfig } from "../../data/FilesDataProvider"
+import { TContentConfig } from "../../data/FilesData"
 
 describe('JsonContent', () => {
     const contentConfig: TContentConfig = {

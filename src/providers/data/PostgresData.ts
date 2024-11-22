@@ -6,42 +6,55 @@
 import { Pool } from 'pg'
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import { TConfigSource } from "../../types/TConfig"
+import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { CommonSqlDataProviderOptions } from './CommonSqlDataProvider'
-import DATA_PROVIDER from '../../server/Source'
-import { TJson } from "../../types/TJson"
+import { DATA_PROVIDER } from '../../server/Source'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
 
 
-export class PostgresDataProvider implements IDataProvider.IDataProvider {
+//
+export type TPostgresDataConfig = {
+    host: string,
+    port: number,
+    user: string,
+    password: string,
+    database: string,
+    options?: TConfigSourceOptions
+}
+
+
+//
+export class PostgresData extends absDataProvider {
     ProviderName = DATA_PROVIDER.POSTGRES
-    SourceName: string
-    Params: TConfigSource = <TConfigSource>{}
+    Params: TPostgresDataConfig = <TPostgresDataConfig>{}
     Connection?: Pool = undefined
-    Config: TJson = {}
-
-    Options = new CommonSqlDataProviderOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        super(source, sourceParams)
+        this.Params = {
+            host: sourceParams.host ?? 'localhost',
+            port: sourceParams.port ?? 5432,
+            user: sourceParams.user ?? 'root',
+            password: sourceParams.password ?? '',
+            database: sourceParams.database ?? 'postgres',
+            options: sourceParams.options
+        }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        this.Params = sourceParams
+    async Init(): Promise<void> {
+        Logger.Debug("PostgresData.Init")
     }
 
     @Logger.LogFunction()
@@ -104,7 +117,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Values(options.Data.Rows)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
 
@@ -166,7 +179,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
 
@@ -189,7 +202,7 @@ export class PostgresDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
 

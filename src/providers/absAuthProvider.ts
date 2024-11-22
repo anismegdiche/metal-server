@@ -14,7 +14,7 @@ export type TUserCredentials = {
 
 
 //
-export abstract class ACAuthProvider {
+export abstract class absAuthProvider {
     abstract Init(): void
     abstract GetUsers(): TConfigUsers
     abstract Authenticate(userCredentials: TUserCredentials): Promise<TUserTokenInfo>

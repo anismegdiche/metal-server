@@ -12,7 +12,6 @@ import { DataTable } from '../types/DataTable'
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { Logger } from '../utils/Logger'
 import { Config } from './Config'
-import { IDataProvider } from '../types/IDataProvider'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
 import { HttpResponse } from "./HttpResponse"
@@ -20,6 +19,7 @@ import { TJson } from "../types/TJson"
 import { HttpErrorForbidden, HttpErrorInternalServerError } from "./HttpErrors"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
+import { absDataProvider } from "../providers/absDataProvider"
 
 
 export class Cache {
@@ -27,7 +27,7 @@ export class Cache {
     static readonly Schema = "metal_cache"
     static readonly Table = "cache"
 
-    static CacheSource: IDataProvider
+    static CacheSource: absDataProvider
 
     static readonly #CacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
         schema: Cache.Schema,

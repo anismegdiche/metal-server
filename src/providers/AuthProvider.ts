@@ -5,13 +5,12 @@
 //
 import { HttpErrorNotFound } from "../server/HttpErrors"
 import { Factory } from "../utils/Factory"
-import { ACAuthProvider } from "./ACAuthProvider"
+import { absAuthProvider } from "./absAuthProvider"
 // import { AzureAdAuth, TAzureAdAuthConfig } from "./auth/AzureAdAuth"
 import { LocalAuth } from "./auth/LocalAuth"
 import { DemoAuth } from "./auth/DemoAuth"
 // import { LocalAuth } from "./auth/LocalAuth"
 // import { TOpenIdConnectAuthConfig } from "./auth/OpenIDConnectAuth"
-
 
 
 //
@@ -33,10 +32,10 @@ export type TAuthentication = {
 //
 export class AuthProvider {
 
-    static readonly #AuthFactory = new Factory<ACAuthProvider>()
-    static Provider: ACAuthProvider
+    static readonly #AuthFactory = new Factory<absAuthProvider>()
+    static Provider: absAuthProvider
 
-    static GetProvider(providerName: string): ACAuthProvider {
+    static GetProvider(providerName: string): absAuthProvider {
         if (AuthProvider.#AuthFactory.Has(providerName))
             return AuthProvider.#AuthFactory.Get(providerName)!
         else

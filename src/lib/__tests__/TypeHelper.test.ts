@@ -299,7 +299,6 @@ describe('TypeHelper', () => {
             const schemaResponse: any = {
                 schema: "mem",
                 entity: "users",
-                result: "OK",
                 status: 200,
                 data: {
                     Name: "users",
@@ -342,7 +341,6 @@ describe('TypeHelper', () => {
         it('UC 2', () => {
             const schemaResponse: any = {
                 schema: "mem",
-                result: "OK",
                 status: 200,
                 data: {
                     Name: "mem-entities",

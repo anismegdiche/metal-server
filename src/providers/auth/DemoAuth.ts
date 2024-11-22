@@ -6,13 +6,13 @@
 import typia from "typia"
 //
 import { Logger } from "../../utils/Logger"
-import { ACAuthProvider, TUserCredentials } from "../ACAuthProvider"
+import { absAuthProvider, TUserCredentials } from "../absAuthProvider"
 import { TUserTokenInfo } from "../../server/User"
 import { TConfigUsers } from "../../types/TConfig"
 
 
 //
-export class DemoAuth extends ACAuthProvider {
+export class DemoAuth extends absAuthProvider {
 
     // eslint-disable-next-line class-methods-use-this
     Init(): void {

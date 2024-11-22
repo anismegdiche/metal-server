@@ -1,65 +1,70 @@
 version: "0.3"
+
 server:
   port: 3000
   verbosity: debug
   timezone: UTC
-  authentication:
   request-limit: 100mb
+  authentication:
+    provider: local
+    default-role: all
   cache:
-    provider: mongodb
-    host: mongodb://localhost:27017/
-    database: metal_cache
+    provider: memory
+    database: cache
     options:
-      connectTimeoutMS: 5000
-      serverSelectionTimeoutMS: 5000
+      autocreate: true
+
+roles:
+  all: lacrud
 
 users:
-  myapiuser: myStr@ngpa$$w0rd
+  myapiuser:
+    password: myStr@ngpa$$w0rd
 
 sources:
-  fs-json-data:
+  src-fs:
     provider: files
     options:
       storage: fs
-      type: json
       fs-folder: ./data/
-      json-path: rows
-  fs-csv-data:
-    provider: files
-    options:
-      storage: fs
-      type: csv
-      fs-folder: ./data/
-      csv-delimiter: ','
-      csv-newline: "\n"
-      csv-header: true
-      csv-quote: '"'
-  az-json-data:
+      content:
+        "homes*.csv":
+          type: csv
+          csv-delimiter: ", "
+          csv-newline: "\n"
+          csv-header: true
+          csv-quote: "\""
+        "industry*.csv":
+          type: csv
+          csv-delimiter: ","
+          csv-newline: "\r\n"
+          csv-header: true
+          csv-quote: "\""
+        "ref*.xlsx":
+          type: xls
+          xls-sheet: Feuil1
+        "sample*.xlsx":
+          type: xls
+          xls-starting-cell: E6
+  src-az-blob:
     provider: files
     options:
       storage: az-blob
-      type: json
       az-blob-connection-string: UseDevelopmentStorage=true
       az-blob-container: datacontainer1
-  az-csv-data:
-    provider: files
-    options:
-      storage: az-blob
-      type: csv
-      az-blob-connection-string: UseDevelopmentStorage=true
-      az-blob-container: datacontainer1
-      csv-delimiter: ','
-      csv-newline: "\n"
-      csv-header: true
-      csv-quote: '"'
-
+      content:
+        "*.json":
+          type: json
+          json-path: rows
+        "*.csv":
+          type: csv
+          csv-delimiter: ','
+          csv-newline: "\n"
+          csv-header: true
+          csv-quote: '"'
 
 schemas:
-  fsjson:
-    source: fs-json-data
-  fscsv:
-    source: fs-csv-data
-  azjson:
-    source: az-json-data
-  azcsv:
-    source: az-csv-data
+  fs:
+    source: src-fs
+  az-blob:
+    source: src-az-blob

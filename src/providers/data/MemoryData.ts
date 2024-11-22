@@ -4,7 +4,6 @@
 //
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IDataProvider from "../../types/IDataProvider"
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
@@ -12,50 +11,52 @@ import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import DATA_PROVIDER from '../../server/Source'
+import { DATA_PROVIDER } from '../../server/Source'
 import { DataBase } from '../../types/DataBase'
-import { TJson } from "../../types/TJson"
-import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
 
 
-export type TMemoryDataProviderOptions = {
-    // v0.3
-    "autocreate"?: boolean            // Auto create table if not exist
+//
+export type TMemoryDataOptions = {
+    autocreate?: boolean            // v0.3, Auto create table if not exist
 }
 
-export class MemoryDataProvider implements IDataProvider.IDataProvider {
+
+//
+export type TMemoryDataConfig = {
+    database: string,
+    options?: TMemoryDataOptions
+}
+
+
+//
+export class MemoryData extends absDataProvider {
     ProviderName = DATA_PROVIDER.MEMORY
-    SourceName: string
-    Params: TConfigSource = <TConfigSource>{}
-    Config: TJson = {}
+    Params: TMemoryDataConfig = <TMemoryDataConfig>{}
     Connection?: DataBase = undefined
 
-    Options = new CommonSqlDataProviderOptions()
-
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        super(source, sourceParams)
+        this.Params = {
+            database: sourceParams.database ?? 'memory',
+            options: sourceParams.options
+        }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        this.Params = sourceParams
+    async Init(): Promise<void> {
+        Logger.Debug(`${Logger.Out} MemoryData.Init`)
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-
-        const {
-            database = 'memory'
-        } = this.Params
-
-        this.Connection = new DataBase(database)
+        this.Connection = new DataBase(this.Params.database)
         Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
     }
 
@@ -210,7 +211,7 @@ export class MemoryDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { entity } = schemaRequest
-        const autoCreate: boolean = (this.Params.options && this.Params.options["autocreate"] as boolean) ?? false
+        const autoCreate: boolean = this.Params.options?.autocreate ?? false
 
         if (autoCreate &&
             !Object.keys(this.Connection.Tables).includes(entity)) {

@@ -8,14 +8,14 @@ import _ from "lodash"
 //
 import { Logger } from "../../utils/Logger"
 import { Config } from "../../server/Config"
-import { ACAuthProvider, TUserCredentials } from "../ACAuthProvider"
+import { absAuthProvider, TUserCredentials } from "../absAuthProvider"
 import { HttpErrorInternalServerError, HttpErrorUnauthorized } from "../../server/HttpErrors"
 import { TUserTokenInfo } from "../../server/User"
 import { TConfigUsers } from "../../types/TConfig"
 
 
 //
-export class LocalAuth extends ACAuthProvider {
+export class LocalAuth extends absAuthProvider {
 
     readonly #SALT_ROUNDS = 10
     #Users: TConfigUsers = {}

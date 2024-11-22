@@ -6,17 +6,17 @@
 //
 import { Logger } from "../../utils/Logger"
 import { TConfigSource } from "../../types/TConfig"
-import { TFilesDataProviderOptions } from "../data/FilesDataProvider"
+import { TFilesDataOptions } from "../data/FilesData"
 
 
 export class CommonStorage {
 
     ConfigSource: TConfigSource
-    ConfigStorage: TFilesDataProviderOptions
+    ConfigStorage: TFilesDataOptions
 
     constructor(configSource: TConfigSource) {
         this.ConfigSource = configSource
-        this.ConfigStorage = configSource.options as TFilesDataProviderOptions
+        this.ConfigStorage = configSource.options as TFilesDataOptions
         this.Init()
     }
 

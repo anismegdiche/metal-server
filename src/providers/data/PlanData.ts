@@ -4,7 +4,6 @@
 //
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IDataProvider from "../../types/IDataProvider"
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
@@ -13,34 +12,29 @@ import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { Plan } from '../../server/Plan'
-import DATA_PROVIDER from '../../server/Source'
+import { DATA_PROVIDER } from '../../server/Source'
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../server/HttpErrors"
 import { Config } from "../../server/Config"
 import { DataTable } from "../../types/DataTable"
-import { TJson } from "../../types/TJson"
-import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { HttpResponse } from "../../server/HttpResponse"
 import { TInternalResponse } from "../../types/TInternalResponse"
+import { absDataProvider } from "../absDataProvider"
 
 
-export class PlanDataProvider implements IDataProvider.IDataProvider {
+export class PlanData extends absDataProvider {
     ProviderName = DATA_PROVIDER.PLAN
-    SourceName: string
     Params: TConfigSource = <TConfigSource>{}
-    Config: TJson = {}
-
-    Options = new CommonSqlDataProviderOptions()
+    Connection: undefined
 
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        super(source, sourceParams)
+        this.Params = sourceParams
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        Logger.Debug("PlanDataProvider.Init")
-        this.Params = sourceParams
+    async Init(): Promise<void> {
+        Logger.Debug("PlanData.Init")
     }
 
     @Logger.LogFunction()
@@ -54,6 +48,7 @@ export class PlanDataProvider implements IDataProvider.IDataProvider {
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest

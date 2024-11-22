@@ -2,12 +2,12 @@ import { Readable } from "node:stream"
 //
 import { DataTable } from "./DataTable"
 import { TConfigSource } from "./TConfig"
-import { TFilesDataProviderOptions } from "../providers/data/FilesDataProvider"
+import { TFilesDataOptions } from "../providers/data/FilesData"
 
 
 export interface IStorage {
     ConfigSource: TConfigSource
-    ConfigStorage: TFilesDataProviderOptions
+    ConfigStorage: TFilesDataOptions
     Init(): void
     Connect(): Promise<void>
     Disconnect(): Promise<void>

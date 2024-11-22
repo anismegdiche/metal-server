@@ -4,19 +4,19 @@
 //
 //
 import _ from "lodash"
+import { Mutex } from "async-mutex"
 //
+import { absDataProvider } from "../absDataProvider"
 import { RESPONSE } from "../../lib/Const"
 import { Helper } from "../../lib/Helper"
 import { Logger } from "../../utils/Logger"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { Cache } from "../../server/Cache"
-import DATA_PROVIDER from "../../server/Source"
-import * as IDataProvider from "../../types/IDataProvider"
+import { DATA_PROVIDER } from "../../server/Source"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
-import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
 import { IStorage } from "../../types/IStorage"
 import { IContent } from "../../types/IContent"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
@@ -50,7 +50,7 @@ export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig & TFtpSt
 
 export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsContentConfig
 
-export type TFilesDataProviderOptions = {
+export type TFilesDataOptions = {
     // Common
     storage?: STORAGE
     content?: {
@@ -58,29 +58,23 @@ export type TFilesDataProviderOptions = {
             type: CONTENT
         } & TContentConfig
     }
-
-    //TODO: to test
-    "autocreate"?: boolean
+    autocreate?: boolean
 }
     & TStorageConfig
 
-export class FilesDataProvider implements IDataProvider.IDataProvider {
+export class FilesData extends absDataProvider {
     ProviderName = DATA_PROVIDER.FILES
-    Connection?: IStorage = undefined
-    SourceName: string
     Params: TConfigSource = <TConfigSource>{}
+    Connection?: IStorage = undefined
 
-    // FilesDataProvider
+    // FilesData
     ContentHandler: Record<string, IContent> = {}
     File: Record<string, IContent> = {}
+    Lock: Map<string, Mutex> = new Map<string, Mutex>()
 
-    Options = new CommonSqlDataProviderOptions()
-
-    //TODO: Refactor this asynchronous operation outside of the constructor.sonarlint(typescript:S7059)
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
+        super(source, sourceParams)
+        this.Params = sourceParams
     }
 
     static readonly #NewStorageCaseMap: Record<STORAGE, (storageParams: TConfigSource) => IStorage> = {
@@ -105,19 +99,23 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
         }
     }
 
+    #SetLock(entity: string) {
+        if (!this.Lock.has(entity))
+            this.Lock.set(entity, new Mutex())
+    }
+
     @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        Logger.Debug("FilesDataProvider.Init")
-        this.Params = sourceParams
+    async Init(): Promise<void> {
+        Logger.Debug(`${Logger.Out} FilesData.Init`)
         const {
             storage = STORAGE.FILESYSTEM,
             content
-        } = this.Params.options as TFilesDataProviderOptions
+        } = this.Params.options as TFilesDataOptions
 
         if (content === undefined)
             throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
 
-        this.Connection = FilesDataProvider.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
+        this.Connection = FilesData.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
 
         // init storage
         if (this.Connection)
@@ -130,7 +128,7 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             if (Object.prototype.hasOwnProperty.call(content, filePattern)) {
                 const { type } = content[filePattern]
                 this.ContentHandler[filePattern] =
-                    FilesDataProvider.#NewContentCaseMap[type](content[filePattern])
+                    FilesData.#NewContentCaseMap[type](content[filePattern])
             }
         }
     }
@@ -167,29 +165,36 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         this.#SetHandler(entity)
+        this.#SetLock(entity)
+        const release = await this.Lock.get(entity)!.acquire()
+        try {
+            this.File[entity].Init(
+                entity,
+                await this.Connection.Read(entity)
+            )
 
-        this.File[entity].Init(
-            entity,
-            await this.Connection.Read(entity)
-        )
+            const data = await this.File[entity].Get()
 
-        const data = await this.File[entity].Get()
+            const sqlQueryHelper = new SqlQueryHelper()
+                .Insert(`\`${entity}\``)
+                .Fields(options.Data.GetFieldNames(), '`')
+                .Values(options.Data.Rows)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Insert(`\`${entity}\``)
-            .Fields(options.Data.GetFieldNames(), '`')
-            .Values(options.Data.Rows)
+            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await this.Connection.Write(
+                entity,
+                await this.File[entity].Set(data)
+            )
 
-        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-        await this.Connection.Write(
-            entity,
-            await this.File[entity].Set(data)
-        )
+            // clean cache
+            Cache.Remove(schemaRequest)
 
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.Created()
+            return HttpResponse.Created()
+        } catch (error: any) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: ${error.message}`)
+        } finally {
+            release()
+        }
     }
 
     @Logger.LogFunction()
@@ -249,30 +254,37 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         this.#SetHandler(entity)
+        this.#SetLock(entity)
+        const release = await this.Lock.get(entity)!.acquire()
+        try {
+            this.File[entity].Init(
+                entity,
+                await this.Connection.Read(entity)
+            )
 
-        this.File[entity].Init(
-            entity,
-            await this.Connection.Read(entity)
-        )
+            const data = await this.File[entity].Get()
 
-        const data = await this.File[entity].Get()
+            const sqlQueryHelper = new SqlQueryHelper()
+                .Update(`\`${entity}\``)
+                .Set(options.Data.Rows)
+                .Where(options.Filter)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`\`${entity}\``)
-            .Set(options.Data.Rows)
-            .Where(options.Filter)
+            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
-        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await this.Connection.Write(
+                entity,
+                await this.File[entity].Set(data)
+            )
 
-        await this.Connection.Write(
-            entity,
-            await this.File[entity].Set(data)
-        )
+            // clean cache
+            Cache.Remove(schemaRequest)
+            return HttpResponse.NoContent()
 
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.NoContent()
+        } catch (error: any) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${entity} in storage provider: ${error.message}`)
+        } finally {
+            release()
+        }
     }
 
     @Logger.LogFunction()
@@ -286,30 +298,37 @@ export class FilesDataProvider implements IDataProvider.IDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         this.#SetHandler(entity)
+        this.#SetLock(entity)
+        const release = await this.Lock.get(entity)!.acquire()
+        try {
+            this.File[entity].Init(
+                entity,
+                await this.Connection.Read(entity)
+            )
 
-        this.File[entity].Init(
-            entity,
-            await this.Connection.Read(entity)
-        )
+            const data = await this.File[entity].Get()
 
-        const data = await this.File[entity].Get()
+            const sqlQueryHelper = new SqlQueryHelper()
+                .Delete()
+                .From(`\`${entity}\``)
+                .Where(options.Filter)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Delete()
-            .From(`\`${entity}\``)
-            .Where(options.Filter)
+            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
-        await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await this.Connection.Write(
+                entity,
+                await this.File[entity].Set(data)
+            )
 
-        await this.Connection.Write(
-            entity,
-            await this.File[entity].Set(data)
-        )
+            // clean cache
+            Cache.Remove(schemaRequest)
 
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.NoContent()
+            return HttpResponse.NoContent()
+        } catch (error: any) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${entity} in storage provider: ${error.message}`)
+        } finally {
+            release()
+        }
     }
 
     // eslint-disable-next-line class-methods-use-this

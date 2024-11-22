@@ -5,7 +5,7 @@
 //
 import { tags } from "typia"
 //
-import DATA_PROVIDER from "../server/Source"
+import { DATA_PROVIDER } from "../server/Source"
 import { AI_ENGINE } from "../server/AiEngine"
 import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "./TStep"
 import { STEP } from "../server/Step"
@@ -32,6 +32,11 @@ export type TConfigUsers = {
     [user: string]: TConfigUser
 }
 
+// sources.*.options
+export type TConfigSourceOptions = {
+    [key: string]: string | number | TJson | boolean
+}
+
 // sources.*
 export type TConfigSource = {
     provider: DATA_PROVIDER
@@ -40,9 +45,7 @@ export type TConfigSource = {
     user?: string
     password?: string
     database?: string
-    options?: {
-        [key: string]: string | number | TJson | boolean
-    }
+    options?: TConfigSourceOptions
 }
 
 // schemas.*.entities
@@ -71,19 +74,19 @@ export type TConfigSchema = ({
 // plans..*
 // step commands friendly renaming
 
-export type Debug = { [STEP.DEBUG]: TStepDebug }
-export type Select = { [STEP.SELECT]: TStepSelect }
-export type Update = { [STEP.UPDATE]: TStepUpdate }
-export type Delete = { [STEP.DELETE]: TStepDelete }
-export type Insert = { [STEP.INSERT]: TStepInsert }
-export type Join = { [STEP.JOIN]: TStepJoin }
-export type Fields = { [STEP.FIELDS]: TStepFields }
-export type Sort = { [STEP.SORT]: TStepSort }
-export type Run = { [STEP.RUN]: TStepRun }
-export type Sync = { [STEP.SYNC]: TStepSync }
-export type Anonymize = { [STEP.ANONYMIZE]: TStepAnonymize }
-export type RemoveDuplicates = { [STEP.REMOVE_DUPLICATE]: TStepRemoveDuplicates }
-export type ListEntities = { [STEP.LIST_ENTITIES]: TStepListEntities }
+type Debug = { [STEP.DEBUG]: TStepDebug }
+type Select = { [STEP.SELECT]: TStepSelect }
+type Update = { [STEP.UPDATE]: TStepUpdate }
+type Delete = { [STEP.DELETE]: TStepDelete }
+type Insert = { [STEP.INSERT]: TStepInsert }
+type Join = { [STEP.JOIN]: TStepJoin }
+type Fields = { [STEP.FIELDS]: TStepFields }
+type Sort = { [STEP.SORT]: TStepSort }
+type Run = { [STEP.RUN]: TStepRun }
+type Sync = { [STEP.SYNC]: TStepSync }
+type Anonymize = { [STEP.ANONYMIZE]: TStepAnonymize }
+type RemoveDuplicates = { [STEP.REMOVE_DUPLICATE]: TStepRemoveDuplicates }
+type ListEntities = { [STEP.LIST_ENTITIES]: TStepListEntities }
 
 export type StepCommand =
     | Debug

@@ -1,6 +1,6 @@
 
 
-import { MongoDbHelper } from '../MongoDbHelper'
+import { MongoDbHelper } from '../../providers/data/MongoDbData'
 
 describe('MongoDbHelper', () => {
 

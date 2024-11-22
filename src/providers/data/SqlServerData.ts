@@ -6,78 +6,76 @@
 import mssql, { ConnectionPool } from 'mssql'
 //
 import { RESPONSE } from '../../lib/Const'
-import * as IDataProvider from "../../types/IDataProvider"
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import { TConfigSource } from "../../types/TConfig"
+import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TOptions } from "../../types/TOptions"
 import { DataTable } from "../../types/DataTable"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Logger } from '../../utils/Logger'
 import { Cache } from '../../server/Cache'
-import DATA_PROVIDER from '../../server/Source'
+import {DATA_PROVIDER} from '../../server/Source'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
-import { CommonSqlDataProviderOptions } from "./CommonSqlDataProvider"
-import { TJson } from "../../types/TJson"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
+import { absDataProvider } from "../absDataProvider"
 
 
-export class SqlServerDataProvider implements IDataProvider.IDataProvider {
+//
+export type TSqlServerDataConfig = {
+    server: string,
+    port: number,
+    user: string,
+    password: string,
+    database: string,
+    options: TConfigSourceOptions
+}
+
+
+//
+export class SqlServerData extends absDataProvider {
     ProviderName = DATA_PROVIDER.MSSQL
+    Params: TSqlServerDataConfig = <TSqlServerDataConfig>{}
     Connection?: ConnectionPool = undefined
-    SourceName: string
-    Params: TConfigSource = <TConfigSource>{}
-    Config: TJson = {}
-
-    Options = new CommonSqlDataProviderOptions()
 
     constructor(source: string, sourceParams: TConfigSource) {
-        this.SourceName = source
-        this.Init(sourceParams)
-        this.Connect()
-    }
-
-    @Logger.LogFunction()
-    async Init(sourceParams: TConfigSource): Promise<void> {
-        this.Params = sourceParams
-    }
-
-    @Logger.LogFunction()
-    async Connect(): Promise<void> {
-        const {
-            user = 'sa',
-            password = '',
-            database = 'master',
-            host = 'localhost',
-            port = 1433,
-            options = {
+        super(source, sourceParams)
+        this.Params = {
+            user: sourceParams.user ?? 'sa',
+            password: sourceParams.password ?? '',
+            database: sourceParams.database ?? 'master',
+            server: sourceParams.host ?? 'localhost',
+            port: sourceParams.port ?? 1433,
+            options: {
                 pool: {
                     max: 10,
                     min: 0,
                     idleTimeoutMillis: 30_000
                 },
                 options: {
-                    encrypt: false, // true for azure
-                    trustServerCertificate: true // change to true for local dev / self-signed certs
-                }
-            }
-        } = this.Params ?? {}
+                    encrypt: false,                     // true for azure
+                    trustServerCertificate: true        // change to true for local dev / self-signed certs
+                },
+                ...sourceParams.options
 
-        const connectionConfig = {
-            user,
-            password,
-            database,
-            server: host,
-            port,
-            ...options
+            }
         }
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
+    async Init(): Promise<void> {
+        Logger.Debug("SqlServerData.Init")
+    }
+
+    @Logger.LogFunction()
+    async Connect(): Promise<void> {
         try {
-            this.Connection = await mssql.connect(connectionConfig)
-            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${database})'`)
+            this.Connection = await mssql.connect(this.Params)
+            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName} (${database})': ${host}: ${port}[${database}]`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName} (${this.Params.database})'`)
             Logger.Error(JSON.stringify(error))
         }
     }
@@ -92,11 +90,6 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity
-        }
-
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
@@ -108,7 +101,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             .Values(options.Data.Rows)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
 
@@ -172,7 +165,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
 
@@ -198,7 +191,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             .Where(options.Filter)
 
         await this.Connection.query(sqlQueryHelper.Query)
-        
+
         // clean cache
         Cache.Remove(schemaRequest)
 
@@ -231,7 +224,7 @@ export class SqlServerDataProvider implements IDataProvider.IDataProvider {
             `
 
         const sqlServerResult = await this.Connection.query(sqlQuery)
-        
+
         if (sqlServerResult?.recordset.length == 0)
             throw new HttpErrorNotFound(`${schema}: No entities found`)
 

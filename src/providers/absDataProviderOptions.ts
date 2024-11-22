@@ -2,18 +2,16 @@
 //
 //
 //
+import { TSchemaRequest } from '../types/TSchemaRequest'
+import { TOptions } from '../types/TOptions'
+import { DataTable } from '../types/DataTable'
+import { Convert } from '../lib/Convert'
+import { JsonHelper } from "../lib/JsonHelper"
+import { Logger } from "../utils/Logger"
+
+
 //
-import { TSchemaRequest } from '../../types/TSchemaRequest'
-import { TOptions } from '../../types/TOptions'
-import * as IDataProvider from "../../types/IDataProvider"
-import { DataTable } from '../../types/DataTable'
-import { Convert } from '../../lib/Convert'
-import { JsonHelper } from "../../lib/JsonHelper"
-import { Logger } from "../../utils/Logger"
-
-
-export class CommonSqlDataProviderOptions implements IDataProvider.IDataProviderOptions {
-
+export abstract class absDataProviderOptions {
     @Logger.LogFunction()
     Parse(schemaRequest: TSchemaRequest): TOptions {
         let options: TOptions = <TOptions>{}
@@ -27,6 +25,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
         return options
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         let filter = {}
@@ -43,6 +42,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
         return options
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         options.Fields = (schemaRequest?.fields === undefined)
@@ -52,6 +52,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
         return options
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.sort) {
@@ -60,6 +61,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
         return options
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.data) {
@@ -71,6 +73,7 @@ export class CommonSqlDataProviderOptions implements IDataProvider.IDataProvider
         return options
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction(Logger.Debug,true)
     GetCache(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.cache)

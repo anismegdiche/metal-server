@@ -1,14 +1,14 @@
 import { CsvContent, TCsvContentConfig } from '../CsvContent'
 import { DataTable } from '../../../types/DataTable'
 import { Readable } from "node:stream"
-import { TContentConfig } from "../../data/FilesDataProvider"
+import { TContentConfig } from "../../data/FilesData"
 
 describe('CsvContent', () => {
     const contentConfig: TContentConfig = <TContentConfig>{
         "csv-delimiter": ',',
         "csv-newline": '\n',
         "csv-header": true,
-        "csv-quote": '"',
+        "csv-quote": '',
         "csv-skip-empty": 'greedy'
     }
     
@@ -49,7 +49,7 @@ describe('CsvContent', () => {
                 "csv-delimiter": '',
                 "csv-newline": '\r\n',
                 "csv-header": false,
-                "csv-quote": "'",
+                "csv-quote": undefined,
                 "csv-skip-empty": 'greedy'
             }
 
@@ -60,7 +60,7 @@ describe('CsvContent', () => {
             expect(csvContent.Params!.delimiter).toBe('')
             expect(csvContent.Params!.newline).toBe('\r\n')
             expect(csvContent.Params!.header).toBe(false)
-            expect(csvContent.Params!.quoteChar).toBe("'")
+            expect(csvContent.Params!.quoteChar).toBe('"')
             expect(csvContent.Params!.skipEmptyLines).toBe('greedy')
         })
     })
