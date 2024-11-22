@@ -18,9 +18,8 @@ import { MetalData } from '../providers/data/MetalData'
 import { MySqlData } from "../providers/data/MySqlData"
 import { absDataProvider } from "../providers/absDataProvider"
 
-//  config types
-//
 
+//
 export enum DATA_PROVIDER {
     METAL = "metal",
     PLAN = "plan",
@@ -32,9 +31,7 @@ export enum DATA_PROVIDER {
     MYSQL = "mysql"
 }
 
-//XXX export default DATA_PROVIDER
 
-//
 //
 export class Source {
 

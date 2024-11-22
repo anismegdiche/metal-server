@@ -74,12 +74,6 @@ export class FilesData extends absDataProvider {
         [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams)
     }
 
-    //XXX static readonly #NewContentCaseMap: Record<CONTENT, (contentConfig: TContentConfig) => IContent> = {
-    //XXX     [CONTENT.JSON]: (contentConfig: TContentConfig) => new JsonContent(contentConfig),
-    //XXX     [CONTENT.CSV]: (contentConfig: TContentConfig) => new CsvContent(contentConfig),
-    //XXX     [CONTENT.XLS]: (contentConfig: TContentConfig) => new XlsContent(contentConfig)
-    //XXX }
-
     #SetHandler(entity: string) {
         if (!_.has(this.File, entity)) {
             const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entity))
