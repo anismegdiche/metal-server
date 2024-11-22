@@ -36,17 +36,6 @@ export enum ROUTE {
     SWAGGER_UI_PATH = '/api-docs'
 }
 
-
-export enum HTTP_METHOD {
-    GET = 'GET',
-    POST = 'POST',
-    PUT = 'PUT',
-    DELETE = 'DELETE',
-    PATCH = 'PATCH',
-    OPTIONS = 'OPTIONS',
-    HEAD = 'HEAD'
-}
-
 export enum HTTP_STATUS_CODE {
     OK = 200,
     CREATED = 201,
@@ -77,30 +66,6 @@ export enum HTTP_STATUS_MESSAGE {
     INTERNAL_SERVER_ERROR = 'Internal Server Error',
     NOT_IMPLEMENTED = 'Not Implemented',
     CONTENT_TOO_LARGE = 'Content Too Large'
-}
-
-export const RESPONSE_STATUS = {
-    HTTP_200: {
-        status: HTTP_STATUS_CODE.OK
-    },
-    HTTP_201: {
-        status: HTTP_STATUS_CODE.CREATED
-    },
-    HTTP_400: {
-        status: HTTP_STATUS_CODE.BAD_REQUEST
-    },
-    HTTP_404: {
-        status: HTTP_STATUS_CODE.NOT_FOUND
-    },
-    HTTP_405: {
-        status: HTTP_STATUS_CODE.METHOD_NOT_ALLOWED
-    },
-    HTTP_429: {
-        status: HTTP_STATUS_CODE.TOO_MANY_REQUESTS
-    },
-    HTTP_500: {
-        status: HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR
-    }
 }
 
 export enum VALIDATION_ERROR_MESSAGE {
