@@ -9,7 +9,7 @@ import { Mutex } from "async-mutex"
 import { absDataProvider } from "../absDataProvider"
 import { RESPONSE } from "../../lib/Const"
 import { Helper } from "../../lib/Helper"
-import { Logger } from "../../utils/Logger"
+import { Logger, VERBOSITY } from "../../utils/Logger"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { Cache } from "../../server/Cache"
 import { DATA_PROVIDER } from "../../server/Source"
@@ -213,7 +213,9 @@ export class FilesData extends absDataProvider {
             : undefined
 
         const data = await this.File[entity].Get(sqlQuery)
-        data.SetMetaData("__CONTENT__", this.File[entity].GetConfig())
+        
+        if (Logger.Level == VERBOSITY.DEBUG)
+            data.SetMetaData("__CONTENT__", this.File[entity].GetConfig())
 
         if (options?.Cache)
             await Cache.Set({
