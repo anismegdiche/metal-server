@@ -111,7 +111,7 @@ export class SqlQueryHelper {
         if (rows === undefined)
             return this
 
-        let fieldsValues: TRow = <TRow>{}
+        let fieldsValues: TRow = {}
         fieldsValues = (Array.isArray(rows))
             ? rows[0]
             : rows
@@ -169,7 +169,7 @@ export class SqlQueryHelper {
             data.forEach((_values, _index) => {
                 const newValues = _.chain(_values)
                     .mapValues((_value) => {
-                        if (_value == null || _value == undefined)
+                        if (_value == null)
                             return
                         if (typeof _value === 'object') {
                             this.Data.push(_value)
