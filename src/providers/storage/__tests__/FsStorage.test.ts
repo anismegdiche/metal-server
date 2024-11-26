@@ -15,7 +15,8 @@ describe('FsStorage', () => {
             ...typia.random<TJsonContentConfig>()
         }
     }
-    const fsStorage = new FsStorage(sourceParams)
+    const fsStorage = new FsStorage()
+    fsStorage.SetConfig(sourceParams)
     fsStorage.Init()
 
     beforeEach(() => {

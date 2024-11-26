@@ -198,7 +198,6 @@ export class SqlServerData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-    // @Logger.LogFunction()
     // eslint-disable-next-line class-methods-use-this
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()

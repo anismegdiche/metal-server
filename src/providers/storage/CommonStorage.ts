@@ -1,28 +1,28 @@
-//
-//
-//
-//
-//
-//
-import { Logger } from "../../utils/Logger"
-import { TConfigSource } from "../../types/TConfig"
-import { TFilesDataOptions } from "../data/FilesData"
+//XXX //XXX
+//XXX //XXX
+//XXX //XXX
+//XXX //XXX
+//XXX //XXX
+//XXX //XXX
+//XXX import { Logger } from "../../utils/Logger"
+//XXX import { TConfigSource } from "../../types/TConfig"
+//XXX import { TFilesDataOptions } from "../data/FilesData"
 
 
-export class CommonStorage {
+//XXX export class CommonStorage {
 
-    ConfigSource: TConfigSource
-    ConfigStorage: TFilesDataOptions
+//XXX     ConfigSource: TConfigSource
+//XXX     ConfigStorage: TFilesDataOptions
 
-    constructor(configSource: TConfigSource) {
-        this.ConfigSource = configSource
-        this.ConfigStorage = configSource.options as TFilesDataOptions
-        this.Init()
-    }
+//XXX     constructor(configSource: TConfigSource) {
+//XXX         this.ConfigSource = configSource
+//XXX         this.ConfigStorage = configSource.options as TFilesDataOptions
+//XXX         this.Init()
+//XXX     }
 
-    // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
-    Init(): void {
-        Logger.Debug('Init')
-    }
-}
+//XXX     //XXX eslint-disable-next-line class-methods-use-this
+//XXX     @Logger.LogFunction()
+//XXX     Init(): void {
+//XXX         Logger.Debug('Init')
+//XXX     }
+//XXX }

@@ -6,14 +6,17 @@
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob'
 import { Readable } from "node:stream"
 //
-import { CommonStorage } from "./CommonStorage"
-import { IStorage } from "../../types/IStorage"
 import { Logger } from '../../utils/Logger'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
 import { TConvertParams } from "../../lib/TypeHelper"
+import { absStorageProvider } from '../absStorageProvider'
+import { TConfigSource } from "../../types/TConfig"
+import { TFilesDataOptions } from "../data/FilesData"
 
+
+//
 export type TAzureBlobStorageConfig = {
     "az-blob-connection-string"?: string
     "az-blob-container"?: string
@@ -24,7 +27,11 @@ type TAzureBlobStorageParams = Required<{
     [K in keyof TAzureBlobStorageConfig as K extends `az-blob-${infer U}` ? TConvertParams<U> : K]: TAzureBlobStorageConfig[K]
 }>
 
-export class AzureBlobStorage extends CommonStorage implements IStorage {
+
+//
+export class AzureBlobStorage extends absStorageProvider {
+    ConfigSource?: TConfigSource | undefined
+    ConfigStorage?: TFilesDataOptions | undefined
 
     Params: TAzureBlobStorageParams | undefined
 
@@ -35,6 +42,9 @@ export class AzureBlobStorage extends CommonStorage implements IStorage {
     @Logger.LogFunction()
     Init(): void {
         Logger.Debug("AzureBlobStorage.Init")
+        if (!this.ConfigStorage)
+            throw new HttpErrorInternalServerError('AzureBlobStorage: No configuration defined')
+
         this.Params = <TAzureBlobStorageParams>{
             connectionString: this.ConfigStorage["az-blob-connection-string"],
             container: this.ConfigStorage["az-blob-container"],

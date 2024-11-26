@@ -20,7 +20,8 @@ describe('FtpStorage', () => {
     beforeEach(() => {
         mockFtpClient = new Ftp.Client() as jest.Mocked<Ftp.Client>;
         (Ftp.Client as jest.Mock).mockReturnValue(mockFtpClient)
-        ftpStorage = new FtpStorage({
+        ftpStorage = new FtpStorage()
+        ftpStorage.SetConfig({
             ...rndParams,
             options: {
                 "ftp-host": 'localhost',
@@ -45,7 +46,7 @@ describe('FtpStorage', () => {
     describe('Init', () => {
         it('should initialize the FTP client with given options', async () => {
             await ftpStorage.Init()
-            expect(ftpStorage.ConfigStorage["ftp-host"]).toBe('localhost')
+            expect(ftpStorage.ConfigStorage?.["ftp-host"]).toBe('localhost')
         })
     })
 

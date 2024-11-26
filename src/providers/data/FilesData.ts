@@ -8,7 +8,6 @@ import { Mutex } from "async-mutex"
 //
 import { absDataProvider } from "../absDataProvider"
 import { RESPONSE } from "../../lib/Const"
-import { Helper } from "../../lib/Helper"
 import { Logger, VERBOSITY } from "../../utils/Logger"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { Cache } from "../../server/Cache"
@@ -17,30 +16,20 @@ import { TOptions } from "../../types/TOptions"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
-import { IStorage } from "../../types/IStorage"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { Convert } from "../../lib/Convert"
-// Storage
-import { AzureBlobStorage, TAzureBlobStorageConfig } from '../storage/AzureBlobStorage'
-import { FsStorage, TFsStorageConfig } from '../storage/FsStorage'
-import { FtpStorage, TFtpStorageConfig } from "../storage/FtpStorage"
 // Content
 import { CONTENT, ContentProvider, TContentConfig } from "../ContentProvider"
 import { absContentProvider } from "../absContentProvider"
+// Storage
+import { STORAGE, StorageProvider, TStorageConfig } from "../StorageProvider"
+import { absStorageProvider } from "../absStorageProvider"
 
 
-export enum STORAGE {
-    FILESYSTEM = "fs",
-    AZURE_BLOB = "az-blob",
-    FTP = "ftp"
-}
-
-export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig & TFtpStorageConfig
-
-
+//
 export type TFilesDataOptions = {
     // Common
     storage?: STORAGE
@@ -53,10 +42,12 @@ export type TFilesDataOptions = {
 }
     & TStorageConfig
 
+
+//
 export class FilesData extends absDataProvider {
     ProviderName = DATA_PROVIDER.FILES
     Params: TConfigSource = <TConfigSource>{}
-    Connection?: IStorage = undefined
+    Connection?: absStorageProvider = undefined
 
     // FilesData
     ContentHandler: Record<string, absContentProvider> = {}     // Contents set in confi file
@@ -68,11 +59,11 @@ export class FilesData extends absDataProvider {
         this.Params = sourceParams
     }
 
-    static readonly #NewStorageCaseMap: Record<STORAGE, (storageParams: TConfigSource) => IStorage> = {
-        [STORAGE.FILESYSTEM]: (storageParams: TConfigSource) => new FsStorage(storageParams),
-        [STORAGE.AZURE_BLOB]: (storageParams: TConfigSource) => new AzureBlobStorage(storageParams),
-        [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams)
-    }
+    //XXX static readonly #NewStorageCaseMap: Record<STORAGE, (storageParams: TConfigSource) => IStorage> = {
+    //XXX     [STORAGE.FILESYSTEM]: (storageParams: TConfigSource) => new FsStorage(storageParams),
+    //XXX     [STORAGE.AZURE_BLOB]: (storageParams: TConfigSource) => new AzureBlobStorage(storageParams),
+    //XXX     [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams)
+    //XXX }
 
     #SetHandler(entity: string) {
         if (!_.has(this.File, entity)) {
@@ -100,7 +91,9 @@ export class FilesData extends absDataProvider {
         if (content === undefined)
             throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
 
-        this.Connection = FilesData.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
+        // this.Connection = FilesData.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
+        this.Connection = StorageProvider.GetProvider(storage).Clone()
+        this.Connection.SetConfig(this.Params)
 
         // init storage
         if (this.Connection)
@@ -213,9 +206,9 @@ export class FilesData extends absDataProvider {
             : undefined
 
         const data = await this.File[entity].Get(sqlQuery)
-        
+
         if (Logger.Level == VERBOSITY.DEBUG)
-            data.SetMetaData("__CONTENT__", this.File[entity].GetConfig())
+            data.SetMetaData("__CONTENT_DEBUG__", this.File[entity].GetConfig())
 
         if (options?.Cache)
             await Cache.Set({

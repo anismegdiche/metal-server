@@ -31,6 +31,7 @@ import { AuthProvider } from "../providers/AuthProvider"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
 import { ContentProvider } from "../providers/ContentProvider"
+import { StorageProvider } from "../providers/StorageProvider"
 
 export class Server {
 
@@ -106,7 +107,7 @@ export class Server {
         Logger.Info(`Route: Enabling API, URL= ${ROUTE.SWAGGER_UI_PATH}`)
 
         // error handler
-        Server.App.use((err: any, req: Request, res: Response, next: NextFunction) => {
+        Server.App.use((err: any, req: Request, res: Response, _next: NextFunction) => {
             // format error
             res.status(err.status || 500).json({
                 message: err.message,
@@ -165,7 +166,6 @@ export class Server {
         })
     }
 
-    // @Logger.LogFunction()
     static SetContentJson(req: Request, res: Response, next: NextFunction) {
         res.setHeader('Content-Type', 'application/json; charset=utf-8')
         next()
@@ -191,6 +191,7 @@ export class Server {
 
     static CoreLoad() {
         AuthProvider.RegisterProviders()
+        StorageProvider.RegisterProviders()
         ContentProvider.RegisterProviders()
     }
 }

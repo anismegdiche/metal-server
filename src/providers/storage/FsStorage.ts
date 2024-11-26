@@ -6,14 +6,17 @@
 import * as Fs from 'fs'
 import { Readable } from "node:stream"
 //
-import { CommonStorage } from "./CommonStorage"
-import { IStorage } from "../../types/IStorage"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { Convert } from "../../lib/Convert"
 import { TConvertParams } from "../../lib/TypeHelper"
+import { absStorageProvider } from '../absStorageProvider'
+import { TConfigSource } from "../../types/TConfig"
+import { TFilesDataOptions } from "../data/FilesData"
 
+
+//
 export type TFsStorageConfig = {
     "fs-folder"?: string
     autocreate?: boolean
@@ -24,12 +27,18 @@ type TFsStorageParams = Required<{
 }>
 
 
-export class FsStorage extends CommonStorage implements IStorage {
+//
+export class FsStorage extends absStorageProvider {
+    ConfigSource?: TConfigSource | undefined
+    ConfigStorage?: TFilesDataOptions | undefined
 
     Params: TFsStorageParams | undefined
 
     @Logger.LogFunction()
     Init(): void {
+        if (!this.ConfigStorage)
+            throw new HttpErrorInternalServerError('FsStorage: No configuration defined')
+
         this.Params = <TFsStorageParams>{
             folder: this.ConfigStorage["fs-folder"] ?? '',
             autocreate: this.ConfigStorage.autocreate ?? false
@@ -45,7 +54,7 @@ export class FsStorage extends CommonStorage implements IStorage {
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         Logger.Debug(`${Logger.Out} FsStorage: Disconnected`)
-    } 
+    }
 
     @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
