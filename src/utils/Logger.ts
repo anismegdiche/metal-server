@@ -7,9 +7,11 @@ import chalk from 'chalk'
 import LogLevel from 'loglevel'
 import Prefix from 'loglevel-plugin-prefix'
 import morgan from "morgan"
+import typia from "typia"
 //
 import { SERVER } from '../lib/Const'
 import { JsonHelper } from "../lib/JsonHelper"
+import { TUserTokenInfo } from "../server/User"
 
 
 export enum VERBOSITY {
@@ -106,13 +108,14 @@ export class Logger {
     static LogFunction(logger: Function = Logger.Debug, hideParameters: boolean = false): any {
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             const originalMethod = descriptor.value
-            descriptor.value = function (...args: any[]) {
-                const _argsString = (hideParameters || args.length == 0 || args.every(v => v === null) || args.every(v => v === undefined))
+            descriptor.value = function (...originalArgs: any[]) {
+                const _filteredArgs = originalArgs.filter(arg => !typia.is<TUserTokenInfo>(arg))
+                const _argsString = (hideParameters || _filteredArgs.length == 0 || _filteredArgs.every(v => v === null) || _filteredArgs.every(v => v === undefined))
                     ? ''
-                    : `: ${JsonHelper.Stringify(args)}`
+                    : `: ${JsonHelper.Stringify(_filteredArgs)}`
 
-                logger(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`)
-                return originalMethod.apply(this, args)
+                setImmediate(() => logger(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`))
+                return originalMethod.apply(this, _filteredArgs)
             }
             return descriptor
         }
