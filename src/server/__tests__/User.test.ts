@@ -24,7 +24,7 @@ const users: TConfigUsers = {
 
 describe('User', () => {
     beforeAll(() => {
-        Server.CoreLoad()
+        Server.RegisterProviders()
         // Set up test data
         Config.Configuration = typia.random<TConfig>()
         Config.Configuration.server = {

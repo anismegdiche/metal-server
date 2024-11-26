@@ -43,7 +43,7 @@ export class Server {
     @Logger.LogFunction()
     static async Init(): Promise<void> {
         // Load Core
-        Server.CoreLoad()
+        Server.RegisterProviders()
 
         // Init config
         await Config.Init()
@@ -189,7 +189,7 @@ export class Server {
         // })
     }
 
-    static CoreLoad() {
+    static RegisterProviders() {
         AuthProvider.RegisterProviders()
         StorageProvider.RegisterProviders()
         ContentProvider.RegisterProviders()
