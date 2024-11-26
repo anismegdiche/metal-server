@@ -117,9 +117,9 @@ export class Cache {
 
         // get cached data
         const hash = Cache.Hash(schemaRequest)
-        const _expires = await Cache.IsExists(hash)
+        const cacheExpires = await Cache.IsExists(hash)
 
-        if (_expires == 0) {
+        if (cacheExpires == 0) {
             Logger.Debug(`${Logger.Out} Cache.Set: no cache found, creating Hash=${hash}`)
             datatable.SetMetaData(METADATA.CACHE, true)
             datatable.SetMetaData(METADATA.CACHE_EXPIRE, expires)
@@ -139,7 +139,7 @@ export class Cache {
             return
         }
 
-        if (Cache.IsCacheValid(_expires)) {
+        if (Cache.IsCacheValid(cacheExpires)) {
             Logger.Debug(`Cache.Set: cache is valid, bypassing Hash=${hash}`)
             return
         }
@@ -216,11 +216,11 @@ export class Cache {
         if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
             throw new HttpErrorForbidden('Permission denied')
 
-        const _expireDate = new Date().getTime()
-        Logger.Debug(`Cache.Clean ${_expireDate}`)
+        const expiresNow = new Date().getTime()
+        Logger.Debug(`Cache.Clean ${expiresNow}`)
         await Cache.CacheSource.Delete(<TSchemaRequest>{
             ...Cache.#CacheSchemaRequest,
-            "filter-expression": `expires < ${_expireDate}`
+            "filter-expression": `expires < ${expiresNow}`
         })
         Logger.Debug(`${Logger.Out} Cache.Clean`)
         return HttpResponse.Ok({ message: 'Cache cleaned' })
