@@ -96,7 +96,7 @@ export class FilesData extends absDataProvider {
             throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
 
         // this.Connection = FilesData.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
-        this.Connection = StorageProvider.GetProvider(storage).Clone()
+        this.Connection = structuredClone(StorageProvider.GetProvider(storage))
         this.Connection.SetConfig(this.Params)
 
         // init storage
@@ -109,7 +109,7 @@ export class FilesData extends absDataProvider {
         for (const filePattern in content) {
             if (Object.hasOwn(content, filePattern)) {
                 const { type } = content[filePattern]
-                this.ContentHandler[filePattern] = ContentProvider.GetProvider(type).Clone()
+                this.ContentHandler[filePattern] = structuredClone(ContentProvider.GetProvider(type))
                 this.ContentHandler[filePattern].SetConfig(content[filePattern])
             }
         }

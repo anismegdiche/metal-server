@@ -29,13 +29,4 @@ export abstract class absContentProvider {
     abstract InitContent(name: string, content: Readable): void
     abstract Get(sqlQuery?: string): Promise<DataTable>
     abstract Set(data: DataTable): Promise<Readable>
-
-    Clone(): absContentProvider {
-        const clone:absContentProvider = Object.create(this)
-        clone.Params = this.Params
-        clone.EntityName = this.EntityName
-        clone.Config = this.Config
-        clone.Content = this.Content
-        return clone
-    }
 }

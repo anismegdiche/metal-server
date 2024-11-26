@@ -32,12 +32,4 @@ export abstract class absStorageProvider {
     abstract Read(file: string): Promise<Readable>
     abstract Write(file: string, content: Readable): Promise<void>
     abstract List(): Promise<DataTable>
-
-
-    Clone(): absStorageProvider {
-        const clone: absStorageProvider = Object.create(this)
-        clone.ConfigSource = this.ConfigSource
-        clone.ConfigStorage = this.ConfigStorage
-        return clone
-    }
 }
