@@ -1,4 +1,4 @@
- 
+
 //
 //
 //
@@ -49,21 +49,20 @@ export class TensorFlowJs implements IAiEngine {
 		}
 	}
 
-	//FIXME: remove async from constructor
 	constructor(aiEngineInstanceName: string, aiEngineConfig: any) {
 		this.InstanceName = aiEngineInstanceName
 		this.Model = aiEngineConfig.model
 		this.Options = this.#SetDefaultOptions[this.Model](aiEngineConfig.options) ?? Helper.CaseMapNotFound(this.Model)
 	}
-	
+
 	@Logger.LogFunction()
-    async Init(): Promise<void> {
+	async Init(): Promise<void> {
 		await Tf.setBackend('cpu')
 		this.#Model = await this.#LoadModel[this.Model]()
 	}
 
 	@Logger.LogFunction()
-    async Run(imagePath: string): Promise<any> {
+	async Run(imagePath: string): Promise<any> {
 		return await this.#RunModel[this.Model](imagePath)
 			.catch((error: any) => {
 				Logger.Error(`TensorFlowJs.Run '${this.InstanceName}': '${JsonHelper.Stringify(this.Options)}', on '${imagePath}'`)
@@ -72,7 +71,7 @@ export class TensorFlowJs implements IAiEngine {
 			})
 	}
 
-    static async #LoadImage(imagePath: string): Promise<Buffer> {
+	static async #LoadImage(imagePath: string): Promise<Buffer> {
 		if (imagePath.startsWith('http')) {
 			const response = await Axios.get(imagePath, {
 				responseType: 'arraybuffer'
@@ -91,10 +90,19 @@ export class TensorFlowJs implements IAiEngine {
 		let offset = 0
 
 		image.scan(0, 0, image.bitmap.width, image.bitmap.height, (x, y, idx) => {
-			imageData[offset++] = image.bitmap.data[idx]
-			imageData[offset++] = image.bitmap.data[idx + 1]
-			imageData[offset++] = image.bitmap.data[idx + 2]
-		})
+			// Read pixel data once
+			const r = image.bitmap.data[idx];     // Red
+			const g = image.bitmap.data[idx + 1]; // Green
+			const b = image.bitmap.data[idx + 2]; // Blue
+		
+			// Set pixel data in imageData array
+			imageData[offset] = r;
+			imageData[offset + 1] = g;
+			imageData[offset + 2] = b;
+		
+			// Increment offset by 3 for the next pixel
+			offset += 3;
+		});
 
 		const tensor = Tf.tensor3d(imageData, [224, 224, 3])
 
