@@ -24,18 +24,18 @@ export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsConten
 //
 export class ContentProvider {
 
-    static readonly #AuthFactory = new Factory<absContentProvider>()
+    static readonly #ContentFactory = new Factory<absContentProvider>()
 
     static GetProvider(providerName: string): absContentProvider {
-        if (ContentProvider.#AuthFactory.Has(providerName))
-            return ContentProvider.#AuthFactory.Get(providerName)!
+        if (ContentProvider.#ContentFactory.Has(providerName))
+            return ContentProvider.#ContentFactory.Get(providerName)!
         else
             throw new HttpErrorNotFound(`Content Provider '${providerName}' not found`)
     }
 
     static RegisterProviders() {
-        ContentProvider.#AuthFactory.Register(CONTENT.JSON, new JsonContent())
-        ContentProvider.#AuthFactory.Register(CONTENT.CSV, new CsvContent())
-        ContentProvider.#AuthFactory.Register(CONTENT.XLS, new XlsContent())
+        ContentProvider.#ContentFactory.Register(CONTENT.JSON, new JsonContent())
+        ContentProvider.#ContentFactory.Register(CONTENT.CSV, new CsvContent())
+        ContentProvider.#ContentFactory.Register(CONTENT.XLS, new XlsContent())
     }
 }

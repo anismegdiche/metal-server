@@ -108,7 +108,6 @@ export class Config {
         Config.Configuration = newConfig
     }
 
-    // @Logger.LogFunction()
     // static GetErrors(schemaErrors: any): string[] {
     //     return schemaErrors
     //         .filter((e: Error) => e.message.includes('is required') || e.message.includes('must be'))

@@ -38,7 +38,6 @@ export class Convert {
         return bytes(size)
     }
 
-    // @Logger.LogFunction()
     static RequestToSchemaRequest(req: Request): TSchemaRequest {
         const { schema, entity } = req.params
 
@@ -51,7 +50,6 @@ export class Convert {
         }
     }
 
-    // @Logger.LogFunction()
     static InternalResponseToResponse(res: Response, intRes: TInternalResponse<any>): Response {
         return res
             .status(intRes.StatusCode)
@@ -59,7 +57,6 @@ export class Convert {
             .end()
     }
 
-    // @Logger.LogFunction()
     static SchemaResponseToResponse(schemaResponse: TSchemaResponse, res: Response): Response {
         const { schema, entity, status } = schemaResponse
 

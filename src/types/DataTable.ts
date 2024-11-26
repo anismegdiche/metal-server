@@ -168,9 +168,7 @@ export class DataTable {
 
         try {
             const _result = await alasql.promise(sqlQuery, jsonData)
-                .then((r: any) => {
-                    return r
-                })
+                .then((r: any) => r)
                 .catch((error: any) => {
                     Logger.Error(`DataTable.FreeSqlAsync: '${this.Name}' Error executing SQL query: '${sqlQuery}', Error: ${error}`)
                     throw error
@@ -390,7 +388,7 @@ export class DataTable {
     ): this {
 
         // no fields passed
-        let _fields = (fields && fields.length > 0)
+        const _fields = (fields && fields.length > 0)
             ? fields
             : undefined
 
