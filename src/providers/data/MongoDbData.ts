@@ -289,7 +289,7 @@ export class MongoDbData extends absDataProvider {
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        const options: any = this.Options.Parse(schemaRequest)
+        const options: TOptions = this.Options.Parse(schemaRequest)
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
@@ -307,8 +307,9 @@ export class MongoDbData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
