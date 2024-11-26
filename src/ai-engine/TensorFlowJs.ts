@@ -54,11 +54,11 @@ export class TensorFlowJs implements IAiEngine {
 		this.InstanceName = aiEngineInstanceName
 		this.Model = aiEngineConfig.model
 		this.Options = this.#SetDefaultOptions[this.Model](aiEngineConfig.options) ?? Helper.CaseMapNotFound(this.Model)
-		Tf.setBackend('cpu')
 	}
-
+	
 	@Logger.LogFunction()
     async Init(): Promise<void> {
+		await Tf.setBackend('cpu')
 		this.#Model = await this.#LoadModel[this.Model]()
 	}
 
