@@ -139,6 +139,17 @@ export class MetalClient {
 }
 
 export class MetalData extends absDataProvider {
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return entity
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return field
+    }
+
     ProviderName = DATA_PROVIDER.METAL
     Params: TMetalDataConfig = <TMetalDataConfig>{}
     Connection?: MetalClient = undefined

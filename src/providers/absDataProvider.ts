@@ -9,7 +9,10 @@ import { absDataProviderOptions } from "./absDataProviderOptions"
 import { TConfigSource } from "../types/TConfig"
 import { DATA_PROVIDER } from "../server/Source"
 
+
+//
 export class DataProviderOptions extends absDataProviderOptions { }
+
 
 //
 export abstract class absDataProvider {
@@ -23,6 +26,9 @@ export abstract class absDataProvider {
     constructor(source: string, _sourceParams: TConfigSource) {
         this.SourceName = source
     }
+
+    abstract EscapeEntity(entity: string): string
+    abstract EscapeField(field: string): string
 
     // Connection
     abstract Init(): void

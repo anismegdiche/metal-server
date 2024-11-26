@@ -21,6 +21,16 @@ import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 
 export class MySqlData extends absDataProvider {
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
+    }
+    
     ProviderName = DATA_PROVIDER.MYSQL
     Params: mysql.PoolOptions = <mysql.PoolOptions>{}
     Connection?: Pool

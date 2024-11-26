@@ -36,6 +36,16 @@ export type TMemoryDataConfig = {
 
 //
 export class MemoryData extends absDataProvider {
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
+    }
+
     ProviderName = DATA_PROVIDER.MEMORY
     Params: TMemoryDataConfig = <TMemoryDataConfig>{}
     Connection?: DataBase = undefined

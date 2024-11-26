@@ -35,6 +35,17 @@ export type TSqlServerDataConfig = {
 
 //
 export class SqlServerData extends absDataProvider {
+    
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `[${entity}]`
+    }
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `[${field}]`
+    }
+
     ProviderName = DATA_PROVIDER.MSSQL
     Params: TSqlServerDataConfig = <TSqlServerDataConfig>{}
     Connection?: ConnectionPool = undefined

@@ -215,7 +215,7 @@ export class Cache {
     static async Clean(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
         if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
             throw new HttpErrorForbidden('Permission denied')
-        
+
         const _expireDate = new Date().getTime()
         Logger.Debug(`Cache.Clean ${_expireDate}`)
         await Cache.CacheSource.Delete(<TSchemaRequest>{
@@ -234,15 +234,11 @@ export class Cache {
 
         const { schema, entity } = schemaRequest
 
-        try {
-            await Cache.CacheSource.Delete(<TSchemaRequest>{
-                ...Cache.#CacheSchemaRequest,
-                //FIXME only usable with memory provider, should correct escape char ` in where close from sqlhelper
-                "filter-expression": `\`schema\`= '${schema}' AND \`entity\`= '${entity}'`
-            })
-        } catch (error) {
-            //
-        }
+        Cache.CacheSource.Delete(<TSchemaRequest>{
+            ...Cache.#CacheSchemaRequest,
+            "filter-expression": `${Cache.CacheSource.EscapeField("schema")}= '${schema}' AND ${Cache.CacheSource.EscapeField("entity")}= '${entity}'`
+        })
+            .catch((error: Error) => Logger.Error(error.message))
         Logger.Debug(`${Logger.Out} Cache.Removed`)
     }
 }

@@ -22,6 +22,16 @@ import { absDataProvider } from "../absDataProvider"
 
 
 export class PlanData extends absDataProvider {
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
+    }
+    
     ProviderName = DATA_PROVIDER.PLAN
     Params: TConfigSource = <TConfigSource>{}
     Connection: undefined

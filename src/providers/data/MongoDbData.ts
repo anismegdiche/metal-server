@@ -142,6 +142,17 @@ class MongoDbDataOptions extends absDataProviderOptions {
 
 
 export class MongoDbData extends absDataProvider {
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return entity
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return field
+    }
+
     ProviderName = DATA_PROVIDER.MONGODB
     Params: TMongoDbDataConfig = <TMongoDbDataConfig>{}
     Connection?: MongoDb.MongoClient = undefined
