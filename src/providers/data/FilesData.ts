@@ -69,12 +69,6 @@ export class FilesData extends absDataProvider {
         this.Params = sourceParams
     }
 
-    //XXX static readonly #NewStorageCaseMap: Record<STORAGE, (storageParams: TConfigSource) => IStorage> = {
-    //XXX     [STORAGE.FILESYSTEM]: (storageParams: TConfigSource) => new FsStorage(storageParams),
-    //XXX     [STORAGE.AZURE_BLOB]: (storageParams: TConfigSource) => new AzureBlobStorage(storageParams),
-    //XXX     [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams)
-    //XXX }
-
     #SetHandler(entity: string) {
         if (!_.has(this.File, entity)) {
             const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entity))
