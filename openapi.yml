@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 info:
   title: Metal Server API Docs
-  version: "0.3-dev"
+  version: "0.3.1"
 
 components:
   schemas:
