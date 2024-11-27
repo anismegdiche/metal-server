@@ -142,18 +142,8 @@ class MongoDbDataOptions extends absDataProviderOptions {
 
 
 export class MongoDbData extends absDataProvider {
-    SourceName?: string | undefined
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return entity
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return field
-    }
-
+    
+    SourceName?: string
     ProviderName = DATA_PROVIDER.MONGODB
     Params: TMongoDbDataConfig = <TMongoDbDataConfig>{}
     Connection?: MongoDb.MongoClient = undefined
@@ -164,7 +154,6 @@ export class MongoDbData extends absDataProvider {
     constructor() {
         super()
     }
-
      
     @Logger.LogFunction()
     async Init(source: string, sourceParams: TConfigSource): Promise<void> {
@@ -175,6 +164,16 @@ export class MongoDbData extends absDataProvider {
             database: sourceParams.database,
             options: sourceParams.options
         }
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return entity
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return field
     }
 
     @Logger.LogFunction()

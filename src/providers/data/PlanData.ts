@@ -22,17 +22,8 @@ import { absDataProvider } from "../absDataProvider"
 
 
 export class PlanData extends absDataProvider {
-    SourceName?: string | undefined
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `\`${entity}\``
-    }
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `\`${field}\``
-    }
     
+    SourceName?: string
     ProviderName = DATA_PROVIDER.PLAN
     Params: TConfigSource = <TConfigSource>{}
     Connection: undefined
@@ -47,6 +38,15 @@ export class PlanData extends absDataProvider {
         Logger.Debug("PlanData.Init")
         this.SourceName = source
         this.Params = sourceParams
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
     }
 
     @Logger.LogFunction()
@@ -113,6 +113,7 @@ export class PlanData extends absDataProvider {
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
@@ -121,6 +122,7 @@ export class PlanData extends absDataProvider {
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
@@ -132,10 +134,11 @@ export class PlanData extends absDataProvider {
     @Logger.LogFunction()
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
-        Logger.Error(`Delete: Not allowed for plans '${schema}', entity '${entity}'`)
+        Logger.Error(`AddEntity: Not allowed for plans '${schema}', entity '${entity}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 

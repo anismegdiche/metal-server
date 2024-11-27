@@ -21,17 +21,8 @@ import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 
 export class MySqlData extends absDataProvider {
-    SourceName?: string | undefined
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `\`${entity}\``
-    }
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `\`${field}\``
-    }
     
+    SourceName?: string
     ProviderName = DATA_PROVIDER.MYSQL
     Params: mysql.PoolOptions = <mysql.PoolOptions>{}
     Connection?: Pool
@@ -39,7 +30,6 @@ export class MySqlData extends absDataProvider {
     constructor() {
         super()
     }
-
      
     @Logger.LogFunction()
     async Init(source: string, sourceParams: TConfigSource): Promise<void> {
@@ -66,6 +56,15 @@ export class MySqlData extends absDataProvider {
             database: sourceParams?.database ?? 'mysql',
             ...options
         }
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
     }
 
     private async ensureConnection(): Promise<Pool> {

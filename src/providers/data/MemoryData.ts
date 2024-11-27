@@ -36,8 +36,8 @@ export type TMemoryDataConfig = {
 
 //
 export class MemoryData extends absDataProvider {
-    SourceName?: string | undefined
-
+    
+    SourceName?: string
     ProviderName = DATA_PROVIDER.MEMORY
     Params: TMemoryDataConfig = <TMemoryDataConfig>{}
     Connection?: DataBase = undefined
@@ -45,16 +45,6 @@ export class MemoryData extends absDataProvider {
     constructor() {
         super()
     }
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `\`${entity}\``
-    }
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `\`${field}\``
-    }
-
      
     @Logger.LogFunction()
     async Init(source: string, sourceParams: TConfigSource): Promise<void> {
@@ -64,6 +54,15 @@ export class MemoryData extends absDataProvider {
             database: sourceParams.database ?? 'memory',
             options: sourceParams.options
         }
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
     }
 
     @Logger.LogFunction()

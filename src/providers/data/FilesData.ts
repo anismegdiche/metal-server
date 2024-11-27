@@ -60,10 +60,43 @@ export class FilesData extends absDataProvider {
         super()
     }
 
+    @Logger.LogFunction()
+    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+        Logger.Debug(`${Logger.Out} FilesData.Init`)
+        this.SourceName = source
+        this.Params = sourceParams
+        const {
+            storage = STORAGE.FILESYSTEM,
+            content
+        } = this.Params.options as TFilesDataOptions
+
+        if (content === undefined)
+            throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
+
+        this.Connection = StorageProvider.GetProvider(storage)
+        this.Connection.SetConfig(this.Params)
+
+        // init storage
+        if (this.Connection)
+            this.Connection.Init()
+        else
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize storage provider`)
+
+        // init content
+        for (const filePattern in content) {
+            if (Object.hasOwn(content, filePattern)) {
+                const { type } = content[filePattern]
+                this.ContentHandler[filePattern] = ContentProvider.GetProvider(type)
+                this.ContentHandler[filePattern].SetConfig(content[filePattern])
+            }
+        }
+    }
+
     // eslint-disable-next-line class-methods-use-this
     EscapeEntity(entity: string): string {
         return `\`${entity}\``
     }
+
     // eslint-disable-next-line class-methods-use-this
     EscapeField(field: string): string {
         return `\`${field}\``
@@ -82,39 +115,6 @@ export class FilesData extends absDataProvider {
     SetLock(entity: string) {
         if (!this.Lock.has(entity))
             this.Lock.set(entity, new Mutex())
-    }
-
-    @Logger.LogFunction()
-    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
-        Logger.Debug(`${Logger.Out} FilesData.Init`)
-        this.SourceName = source
-        this.Params = sourceParams
-        const {
-            storage = STORAGE.FILESYSTEM,
-            content
-        } = this.Params.options as TFilesDataOptions
-
-        if (content === undefined)
-            throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
-
-        // this.Connection = FilesData.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
-        this.Connection = StorageProvider.GetProvider(storage)
-        this.Connection.SetConfig(this.Params)
-
-        // init storage
-        if (this.Connection)
-            this.Connection.Init()
-        else
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize storage provider`)
-
-        // init content
-        for (const filePattern in content) {
-            if (Object.hasOwn(content, filePattern)) {
-                const { type } = content[filePattern]
-                this.ContentHandler[filePattern] = ContentProvider.GetProvider(type)
-                this.ContentHandler[filePattern].SetConfig(content[filePattern])
-            }
-        }
     }
 
     @Logger.LogFunction()
@@ -151,6 +151,7 @@ export class FilesData extends absDataProvider {
         this.SetHandler(entity)
         this.SetLock(entity)
         const release = await this.Lock.get(entity)!.acquire()
+
         try {
             this.File[entity].InitContent(
                 entity,
@@ -186,11 +187,6 @@ export class FilesData extends absDataProvider {
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schema, entity } = schemaRequest
 
-        const schemaResponse = <TSchemaResponse>{
-            schema,
-            entity
-        }
-
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
@@ -225,7 +221,8 @@ export class FilesData extends absDataProvider {
             )
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            ...schemaResponse,
+            schema,
+            entity,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
@@ -287,6 +284,7 @@ export class FilesData extends absDataProvider {
         this.SetHandler(entity)
         this.SetLock(entity)
         const release = await this.Lock.get(entity)!.acquire()
+
         try {
             this.File[entity].InitContent(
                 entity,
@@ -343,8 +341,9 @@ export class FilesData extends absDataProvider {
         if (this.Connection) {
             data = await this.Connection.List()
             data.Rows = data.Rows.filter(row => rxFilePatterns.test(row.name as string))
-        } else
+        } else {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+        }
 
         if (data.Rows.length == 0)
             throw new HttpErrorNotFound(`${schema}: No entities found`)

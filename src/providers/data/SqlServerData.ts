@@ -35,18 +35,8 @@ export type TSqlServerDataConfig = {
 
 //
 export class SqlServerData extends absDataProvider {
-    SourceName?: string | undefined
-
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `[${entity}]`
-    }
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `[${field}]`
-    }
-
+    
+    SourceName?: string
     ProviderName = DATA_PROVIDER.MSSQL
     Params: TSqlServerDataConfig = <TSqlServerDataConfig>{}
     Connection?: ConnectionPool = undefined
@@ -54,7 +44,6 @@ export class SqlServerData extends absDataProvider {
     constructor() {
         super()
     }
-
 
     @Logger.LogFunction()
     async Init(source: string, sourceParams: TConfigSource): Promise<void> {
@@ -80,6 +69,15 @@ export class SqlServerData extends absDataProvider {
 
             }
         }
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `[${entity}]`
+    }
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `[${field}]`
     }
 
     @Logger.LogFunction()

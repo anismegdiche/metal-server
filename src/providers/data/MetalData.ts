@@ -139,22 +139,11 @@ export class MetalClient {
 }
 
 export class MetalData extends absDataProvider {
-    SourceName?: string | undefined
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return entity
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return field
-    }
-
+    
+    SourceName?: string
     ProviderName = DATA_PROVIDER.METAL
     Params: TMetalDataConfig = <TMetalDataConfig>{}
     Connection?: MetalClient = undefined
-
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static readonly #ErrorCaseMap: Record<number, Function> = {
@@ -166,9 +155,29 @@ export class MetalData extends absDataProvider {
         [HTTP_STATUS_CODE.NOT_IMPLEMENTED as number]: (message: string) => new HttpErrorNotImplemented(message)
     }
 
-
     constructor() {
         super()
+    }
+
+    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+        Logger.Debug("MetalData.Init")
+        this.SourceName = source
+        this.Params = {
+            url: sourceParams.host ?? 'http://localhost:3000',
+            user: sourceParams.user ?? '',
+            password: sourceParams.password ?? '',
+            schema: sourceParams.database ?? ''
+        }
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return entity
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return field
     }
 
     static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest): object {
@@ -198,17 +207,6 @@ export class MetalData extends absDataProvider {
             this.#ErrorCaseMap[error?.response?.status](error.message)
 
         throw error
-    }
-
-    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
-        Logger.Debug("MetalData.Init")
-        this.SourceName = source
-        this.Params = {
-            url: sourceParams.host ?? 'http://localhost:3000',
-            user: sourceParams.user ?? '',
-            password: sourceParams.password ?? '',
-            schema: sourceParams.database ?? ''
-        }
     }
 
     async Connect(): Promise<void> {

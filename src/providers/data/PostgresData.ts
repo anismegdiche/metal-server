@@ -35,17 +35,8 @@ export type TPostgresDataConfig = {
 
 //
 export class PostgresData extends absDataProvider {
-    SourceName?: string | undefined
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `"${entity}"`
-    }
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `"${field}"`
-    }
-
+    
+    SourceName?: string
     ProviderName = DATA_PROVIDER.POSTGRES
     Params: TPostgresDataConfig = <TPostgresDataConfig>{}
     Connection?: Pool = undefined
@@ -53,7 +44,6 @@ export class PostgresData extends absDataProvider {
     constructor() {
         super()
     }
-
      
     @Logger.LogFunction()
     async Init(source: string, sourceParams: TConfigSource): Promise<void> {
@@ -67,6 +57,15 @@ export class PostgresData extends absDataProvider {
             database: sourceParams.database ?? 'postgres',
             options: sourceParams.options
         }
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `"${entity}"`
+    }
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `"${field}"`
     }
 
     @Logger.LogFunction()
