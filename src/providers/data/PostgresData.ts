@@ -35,6 +35,7 @@ export type TPostgresDataConfig = {
 
 //
 export class PostgresData extends absDataProvider {
+    SourceName?: string | undefined
 
     // eslint-disable-next-line class-methods-use-this
     EscapeEntity(entity: string): string {
@@ -49,8 +50,15 @@ export class PostgresData extends absDataProvider {
     Params: TPostgresDataConfig = <TPostgresDataConfig>{}
     Connection?: Pool = undefined
 
-    constructor(source: string, sourceParams: TConfigSource) {
-        super(source, sourceParams)
+    constructor() {
+        super()
+    }
+
+     
+    @Logger.LogFunction()
+    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+        Logger.Debug("PostgresData.Init")
+        this.SourceName = source
         this.Params = {
             host: sourceParams.host ?? 'localhost',
             port: sourceParams.port ?? 5432,
@@ -59,12 +67,6 @@ export class PostgresData extends absDataProvider {
             database: sourceParams.database ?? 'postgres',
             options: sourceParams.options
         }
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
-    async Init(): Promise<void> {
-        Logger.Debug("PostgresData.Init")
     }
 
     @Logger.LogFunction()

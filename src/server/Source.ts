@@ -8,15 +8,8 @@ import { Cache } from './Cache'
 import { Config } from './Config'
 import { TConfigSource } from '../types/TConfig'
 // Providers
-import { PostgresData } from '../providers/data/PostgresData'
-import { MongoDbData } from '../providers/data/MongoDbData'
-import { SqlServerData } from '../providers/data/SqlServerData'
-import { PlanData } from '../providers/data/PlanData'
-import { FilesData } from '../providers/data/FilesData'
-import { MemoryData } from '../providers/data/MemoryData'
-import { MetalData } from '../providers/data/MetalData'
-import { MySqlData } from "../providers/data/MySqlData"
 import { absDataProvider } from "../providers/absDataProvider"
+import { DataProvider } from "../providers/DataProvider"
 
 
 //
@@ -38,34 +31,34 @@ export class Source {
     // global sources
     static Sources = new Map<string, absDataProvider>()
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static #NewProviderCaseMap: Record<DATA_PROVIDER, Function> = {
-        [DATA_PROVIDER.METAL]: (source: string, sourceParams: TConfigSource) => new MetalData(source, sourceParams),
-        [DATA_PROVIDER.PLAN]: (source: string, sourceParams: TConfigSource) => new PlanData(source, sourceParams),
-        [DATA_PROVIDER.MEMORY]: (source: string, sourceParams: TConfigSource) => new MemoryData(source, sourceParams),
-        [DATA_PROVIDER.POSTGRES]: (source: string, sourceParams: TConfigSource) => new PostgresData(source, sourceParams),
-        [DATA_PROVIDER.MONGODB]: (source: string, sourceParams: TConfigSource) => new MongoDbData(source, sourceParams),
-        [DATA_PROVIDER.MSSQL]: (source: string, sourceParams: TConfigSource) => new SqlServerData(source, sourceParams),
-        [DATA_PROVIDER.FILES]: (source: string, sourceParams: TConfigSource) => new FilesData(source, sourceParams),
-        [DATA_PROVIDER.MYSQL]: (source: string, sourceParams: TConfigSource) => new MySqlData(source, sourceParams)
-    }
+    //XXX // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    //XXX static #NewProviderCaseMap: Record<DATA_PROVIDER, Function> = {
+    //XXX     [DATA_PROVIDER.METAL]: (source: string, sourceParams: TConfigSource) => new MetalData(source, sourceParams),
+    //XXX     [DATA_PROVIDER.PLAN]: (source: string, sourceParams: TConfigSource) => new PlanData(source, sourceParams),
+    //XXX     [DATA_PROVIDER.MEMORY]: (source: string, sourceParams: TConfigSource) => new MemoryData(source, sourceParams),
+    //XXX     [DATA_PROVIDER.POSTGRES]: (source: string, sourceParams: TConfigSource) => new PostgresData(source, sourceParams),
+    //XXX     [DATA_PROVIDER.MONGODB]: (source: string, sourceParams: TConfigSource) => new MongoDbData(source, sourceParams),
+    //XXX     [DATA_PROVIDER.MSSQL]: (source: string, sourceParams: TConfigSource) => new SqlServerData(source, sourceParams),
+    //XXX     [DATA_PROVIDER.FILES]: (source: string, sourceParams: TConfigSource) => new FilesData(source, sourceParams),
+    //XXX     [DATA_PROVIDER.MYSQL]: (source: string, sourceParams: TConfigSource) => new MySqlData(source, sourceParams)
+    //XXX }
 
     @Logger.LogFunction()
     static async Connect(source: string | null, sourceParams: TConfigSource): Promise<void> {
-        if (!(sourceParams.provider in Source.#NewProviderCaseMap)) {
+        if (!Object.values(DATA_PROVIDER).includes(sourceParams.provider)) {
             Logger.Error(`Source '${source}', Provider '${sourceParams.provider}' not found. The source will not be connected`)
             return
         }
         try {
             if (source === null) {
                 // cache
-                Cache.CacheSource = Source.#NewProviderCaseMap[sourceParams.provider](Cache.Schema, sourceParams)
-                Cache.CacheSource.Init()
+                Cache.CacheSource = DataProvider.GetProvider(sourceParams.provider)
+                Cache.CacheSource.Init(Cache.Schema, sourceParams)
                 Cache.CacheSource.Connect()
             } else {
                 // sources
-                Source.Sources.set(source, Source.#NewProviderCaseMap[sourceParams.provider](source, sourceParams))
-                Source.Sources.get(source)!.Init()
+                Source.Sources.set(source, DataProvider.GetProvider(sourceParams.provider))
+                Source.Sources.get(source)!.Init(source, sourceParams)
                 Source.Sources.get(source)!.Connect()
             }
         } catch (error: any) {

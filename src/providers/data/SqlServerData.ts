@@ -35,6 +35,7 @@ export type TSqlServerDataConfig = {
 
 //
 export class SqlServerData extends absDataProvider {
+    SourceName?: string | undefined
     
 
     // eslint-disable-next-line class-methods-use-this
@@ -50,8 +51,15 @@ export class SqlServerData extends absDataProvider {
     Params: TSqlServerDataConfig = <TSqlServerDataConfig>{}
     Connection?: ConnectionPool = undefined
 
-    constructor(source: string, sourceParams: TConfigSource) {
-        super(source, sourceParams)
+    constructor() {
+        super()
+    }
+
+     
+    @Logger.LogFunction()
+    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+        Logger.Debug("SqlServerData.Init")
+        this.SourceName = source
         this.Params = {
             user: sourceParams.user ?? 'sa',
             password: sourceParams.password ?? '',
@@ -72,12 +80,6 @@ export class SqlServerData extends absDataProvider {
 
             }
         }
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
-    async Init(): Promise<void> {
-        Logger.Debug("SqlServerData.Init")
     }
 
     @Logger.LogFunction()

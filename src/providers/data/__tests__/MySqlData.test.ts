@@ -20,6 +20,15 @@ describe('MySqlData', () => {
     }
     const mockCreatePool = mysql.createPool as jest.Mock
 
+    const providerConfig = <TConfigSource>{
+        host: 'localhost',
+        port: 3306,
+        user: 'test-user',
+        // file deepcode ignore NoHardcodedPasswords/test: testing purpose
+        password: 'test-password',
+        database: 'test-db'
+    }
+
     beforeEach(() => {
         // Reset all mocks before each test
         jest.clearAllMocks()
@@ -27,20 +36,13 @@ describe('MySqlData', () => {
         mockPool.query.mockResolvedValue([[{ dummy: 'data' }]])
 
         // Create a new provider instance with test configuration
-        provider = new MySqlData('test-source', <TConfigSource>{
-            host: 'localhost',
-            port: 3306,
-            user: 'test-user',
-            // file deepcode ignore NoHardcodedPasswords/test: testing purpose
-            password: 'test-password',
-            database: 'test-db'
-        })
+        provider = new MySqlData()
+        provider.Init('test-source', providerConfig)
     })
 
     describe('Init and Connection', () => {
         //FIXME test to fix
         it('should successfully initialize and connect', async () => {
-            await provider.Init()
 
             expect(mockCreatePool).toHaveBeenCalledWith(expect.objectContaining({
                 host: 'localhost',

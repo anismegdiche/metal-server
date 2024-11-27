@@ -28,7 +28,7 @@ export class StorageProvider {
 
     static GetProvider(providerName: string): absStorageProvider {
         if (StorageProvider.#StorageFactory.Has(providerName))
-            return StorageProvider.#StorageFactory.Get(providerName)!
+            return StorageProvider.#StorageFactory.Get(providerName)!.Clone()
         else
             throw new HttpErrorNotFound(`Storage Provider '${providerName}' not found`)
     }

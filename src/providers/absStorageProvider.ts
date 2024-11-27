@@ -7,6 +7,7 @@ import { Readable } from 'node:stream'
 import { DataTable } from "../types/DataTable"
 import { TConfigSource } from "../types/TConfig"
 import { TFilesDataOptions } from "./data/FilesData"
+import _ from "lodash"
 
 
 //
@@ -32,4 +33,9 @@ export abstract class absStorageProvider {
     abstract Read(file: string): Promise<Readable>
     abstract Write(file: string, content: Readable): Promise<void>
     abstract List(): Promise<DataTable>
+
+    Clone(): absStorageProvider {
+        // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
+        return _.cloneDeep(this) as absStorageProvider
+    }
 }

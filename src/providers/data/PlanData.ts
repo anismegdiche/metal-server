@@ -22,6 +22,7 @@ import { absDataProvider } from "../absDataProvider"
 
 
 export class PlanData extends absDataProvider {
+    SourceName?: string | undefined
 
     // eslint-disable-next-line class-methods-use-this
     EscapeEntity(entity: string): string {
@@ -36,15 +37,16 @@ export class PlanData extends absDataProvider {
     Params: TConfigSource = <TConfigSource>{}
     Connection: undefined
 
-    constructor(source: string, sourceParams: TConfigSource) {
-        super(source, sourceParams)
-        this.Params = sourceParams
+    constructor() {
+        super()
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     @Logger.LogFunction()
-    async Init(): Promise<void> {
+    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
         Logger.Debug("PlanData.Init")
+        this.SourceName = source
+        this.Params = sourceParams
     }
 
     @Logger.LogFunction()

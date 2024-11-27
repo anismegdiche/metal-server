@@ -28,7 +28,7 @@ export class ContentProvider {
 
     static GetProvider(providerName: string): absContentProvider {
         if (ContentProvider.#ContentFactory.Has(providerName))
-            return ContentProvider.#ContentFactory.Get(providerName)!
+            return ContentProvider.#ContentFactory.Get(providerName)!.Clone()
         else
             throw new HttpErrorNotFound(`Content Provider '${providerName}' not found`)
     }

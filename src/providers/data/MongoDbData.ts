@@ -142,6 +142,7 @@ class MongoDbDataOptions extends absDataProviderOptions {
 
 
 export class MongoDbData extends absDataProvider {
+    SourceName?: string | undefined
 
     // eslint-disable-next-line class-methods-use-this
     EscapeEntity(entity: string): string {
@@ -160,19 +161,20 @@ export class MongoDbData extends absDataProvider {
     //TODO change MongoDbDataOptions to static
     Options: MongoDbDataOptions = new MongoDbDataOptions()
 
-    constructor(source: string, sourceParams: TConfigSource) {
-        super(source, sourceParams)
+    constructor() {
+        super()
+    }
+
+     
+    @Logger.LogFunction()
+    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+        Logger.Debug("MongoDbData.Init")
+        this.SourceName = source
         this.Params = {
             uri: sourceParams.host ?? 'mongodb://localhost:27017/',
             database: sourceParams.database,
             options: sourceParams.options
         }
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
-    async Init(): Promise<void> {
-        Logger.Debug("MongoDbData.Init")
     }
 
     @Logger.LogFunction()

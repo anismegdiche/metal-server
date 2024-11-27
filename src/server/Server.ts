@@ -32,6 +32,7 @@ import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
 import { ContentProvider } from "../providers/ContentProvider"
 import { StorageProvider } from "../providers/StorageProvider"
+import { DataProvider } from "../providers/DataProvider"
 
 export class Server {
 
@@ -193,5 +194,6 @@ export class Server {
         AuthProvider.RegisterProviders()
         StorageProvider.RegisterProviders()
         ContentProvider.RegisterProviders()
+        DataProvider.RegisterProviders()
     }
 }

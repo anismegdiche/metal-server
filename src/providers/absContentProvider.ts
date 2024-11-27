@@ -8,6 +8,7 @@ import { DataTable } from "../types/DataTable"
 import { VirtualFileSystem } from "../utils/VirtualFileSystem"
 import { TContentConfig } from "./ContentProvider"
 import { TJson } from "../types/TJson"
+import _ from "lodash"
 
 
 //
@@ -29,4 +30,9 @@ export abstract class absContentProvider {
     abstract InitContent(name: string, content: Readable): void
     abstract Get(sqlQuery?: string): Promise<DataTable>
     abstract Set(data: DataTable): Promise<Readable>
+
+    Clone(): absContentProvider {
+        // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
+        return _.cloneDeep(this) as absContentProvider
+    }
 }

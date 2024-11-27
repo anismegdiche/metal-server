@@ -139,6 +139,7 @@ export class MetalClient {
 }
 
 export class MetalData extends absDataProvider {
+    SourceName?: string | undefined
 
     // eslint-disable-next-line class-methods-use-this
     EscapeEntity(entity: string): string {
@@ -166,14 +167,8 @@ export class MetalData extends absDataProvider {
     }
 
 
-    constructor(source: string, sourceParams: TConfigSource) {
-        super(source, sourceParams)
-        this.Params = {
-            url: sourceParams.host ?? 'http://localhost:3000',
-            user: sourceParams.user ?? '',
-            password: sourceParams.password ?? '',
-            schema: sourceParams.database ?? ''
-        }
+    constructor() {
+        super()
     }
 
     static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest): object {
@@ -205,8 +200,15 @@ export class MetalData extends absDataProvider {
         throw error
     }
 
-    async Init(): Promise<void> {
+    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
         Logger.Debug("MetalData.Init")
+        this.SourceName = source
+        this.Params = {
+            url: sourceParams.host ?? 'http://localhost:3000',
+            user: sourceParams.user ?? '',
+            password: sourceParams.password ?? '',
+            schema: sourceParams.database ?? ''
+        }
     }
 
     async Connect(): Promise<void> {

@@ -3,18 +3,19 @@
 //
 //
 //
+import _ from "lodash"
 import typia from "typia"
 //
+import { HttpError, HttpErrorInternalServerError } from "../server/HttpErrors"
 import { DataTable } from "../types/DataTable"
 import { TSchemaRequest } from "../types/TSchemaRequest"
 import { TSchemaResponse } from "../types/TSchemaResponse"
 import { Logger } from "../utils/Logger"
-import { HttpError, HttpErrorInternalServerError } from "../server/HttpErrors"
 
 
 //
-export type TConvertParams<S extends string> = 
-    S extends `${infer T}-${infer U}` ? `${T}${Capitalize<TConvertParams<U>>}` : S;
+export type TConvertParams<S extends string> =
+    S extends `${infer T}-${infer U}` ? `${T}${Capitalize<TConvertParams<U>>}` : S
 
 export class TypeHelper {
 
@@ -27,7 +28,7 @@ export class TypeHelper {
     static IsSchemaResponse(schemaResponse: any): schemaResponse is TSchemaResponse {
         return typia.is<TSchemaResponse>(schemaResponse)
     }
-    
+
     @Logger.LogFunction(Logger.Debug, true)
     static IsSchemaResponseData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponse {
         return typia.is<TSchemaResponse>(schemaResponse) &&
@@ -43,7 +44,7 @@ export class TypeHelper {
     static Validate(res: any, httpError: HttpError = new HttpErrorInternalServerError()) {
         if (res.success)
             return
-        
+
         const renamedErrors = res.errors.map((error: any) => {
             const _ret = `${error.path.replace('$input.', '')} expected to be ${error.expected}`
             return TypeHelper.TranslateFriendlyErrors(_ret)
@@ -54,7 +55,7 @@ export class TypeHelper {
         httpError.Name = "Bad Parameters"
         delete httpError.stack
         throw httpError
-    }    
+    }
 
     static TranslateFriendlyErrors(txt: string) {
         return txt
@@ -64,5 +65,10 @@ export class TypeHelper {
             .replace(/__type\.o\d+/, "object")
             .replace(/__@toStringTag@\d+/, "")
             .replace(" | undefined", "")
+    }
+
+    static Clone<T>(object: T): T {
+        // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
+        return _.cloneDeep(object)
     }
 }
