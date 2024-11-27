@@ -11,7 +11,7 @@ import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import { DATA_PROVIDER } from '../../server/Source'
+import { DATA_PROVIDER } from '../../providers/DataProvider'
 import { DataBase } from '../../types/DataBase'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"

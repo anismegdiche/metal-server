@@ -14,7 +14,7 @@ import { DataTable } from "../../types/DataTable"
 import { TSchemaRequest } from '../../types/TSchemaRequest'
 import { Logger } from '../../utils/Logger'
 import { Cache } from '../../server/Cache'
-import {DATA_PROVIDER} from '../../server/Source'
+import { DATA_PROVIDER } from '../../providers/DataProvider'
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
@@ -36,7 +36,7 @@ export type TSqlServerDataConfig = {
 //
 export class SqlServerData extends absDataProvider {
     SourceName?: string | undefined
-    
+
 
     // eslint-disable-next-line class-methods-use-this
     EscapeEntity(entity: string): string {
@@ -55,7 +55,7 @@ export class SqlServerData extends absDataProvider {
         super()
     }
 
-     
+
     @Logger.LogFunction()
     async Init(source: string, sourceParams: TConfigSource): Promise<void> {
         Logger.Debug("SqlServerData.Init")

@@ -2,13 +2,15 @@
 //
 //
 //
+//
+import _ from "lodash"
+//
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchemaResponse } from "../types/TSchemaResponse"
 import { absDataProviderOptions } from "./absDataProviderOptions"
 import { TConfigSource } from "../types/TConfig"
-import { DATA_PROVIDER } from "../server/Source"
-import _ from "lodash"
+import { DATA_PROVIDER } from "../providers/DataProvider"
 
 
 //

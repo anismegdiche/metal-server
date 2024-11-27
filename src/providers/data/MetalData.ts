@@ -8,7 +8,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios'
 import _ from 'lodash'
 //
 import { Logger } from "../../utils/Logger"
-import { DATA_PROVIDER } from "../../server/Source"
+import { DATA_PROVIDER } from "../../providers/DataProvider"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
