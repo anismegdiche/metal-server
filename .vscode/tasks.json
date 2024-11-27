@@ -15,7 +15,7 @@
 			"type": "npm",
 			"script": "build",
 			"group": "build",
-			"problemMatcher": [],
+			"problemMatcher": ["$eslint-stylish"],
 			"label": "npm: build",
 			"detail": "tsc"
 		},
@@ -27,6 +27,18 @@
 			],
 			"label": "npm: lint",
 			"detail": "npx eslint --fix ."
-		}
+		},
+		// {
+		// 	"label": "eslint: lint whole folder",
+		// 	"type": "shell",
+		// 	"command": "npx eslint --fix src",
+		// 	"group": {
+		// 		"kind": "build",
+		// 		"isDefault": true
+		// 	},
+		// 	"problemMatcher": [
+		// 		"$eslint-stylish"
+		// 	]
+		// }
 	]
 }
