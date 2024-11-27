@@ -560,7 +560,7 @@ describe("DataTable", () => {
             // Act
             try {
                 result = await myDataTable.FreeSqlAsync(sqlQuery)
-            } catch (error) {
+            } catch {
                 //
             }
             // Assert
@@ -594,7 +594,7 @@ describe("DataTable", () => {
             // Act
             try {
                 result = await myDataTable.FreeSqlAsync(sqlQuery)
-            } catch (error) {
+            } catch {
                 //
             }
             // Assert

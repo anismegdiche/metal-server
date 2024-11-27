@@ -11,6 +11,7 @@ import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented, HttpErrorUnaut
 import { Server } from '../server/Server'
 import { TJson } from "../types/TJson"
 import { Convert } from "../lib/Convert"
+import { Logger } from "../utils/Logger"
 
 
 export class ServerResponse {
@@ -42,6 +43,7 @@ export class ServerResponse {
             ? error.Status
             : HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR
 
+        Logger.Error(error)
         res
             .status(status)
             .json({

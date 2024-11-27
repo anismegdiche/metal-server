@@ -68,7 +68,7 @@ export class Cache {
                 return (schemaResponse.data.Rows[0] as TCacheData).expires
 
             return 0
-        } catch (error) {
+        } catch {
             return 0
         }
     }
