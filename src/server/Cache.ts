@@ -4,22 +4,25 @@
 //
 //
 import * as Sha512 from 'js-sha512'
+import typia from "typia"
 //
 import { METADATA } from '../lib/Const'
 import { TCacheData } from '../types/TCacheData'
 import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
-import { TSchemaRequest } from '../types/TSchemaRequest'
+import { TSchemaRequest, TSchemaRequestSelect } from '../types/TSchemaRequest'
 import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
 import { HttpResponse } from "./HttpResponse"
 import { TJson } from "../types/TJson"
-import { HttpErrorForbidden, HttpErrorInternalServerError } from "./HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "./HttpErrors"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
 import { absDataProvider } from "../providers/absDataProvider"
+import { Schema } from "./Schema"
+import { TSchemaResponse } from "../types/TSchemaResponse"
 
 
 export class Cache {
@@ -149,33 +152,42 @@ export class Cache {
     }
 
     @Logger.LogFunction()
-    static async Get(cacheHash: string): Promise<TCacheData | undefined> {
-        if (!Config.Flags.EnableCache || this.CacheSource === undefined)
-            return undefined
+    static async Get(schemaRequest: TSchemaRequestSelect, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse | undefined>> {
 
-        try {
-            const internalResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
-                ...Cache.#CacheSchemaRequest,
-                filter: {
-                    hash: cacheHash
-                }
-            })
+        TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
+            new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
-            const schemaResponse = internalResponse.Body
+        const { schema } = schemaRequest
+        const schemaConfig = Schema.GetSchemaConfig(schema)
 
-            if (!schemaResponse)
-                throw new HttpErrorInternalServerError()
+        Roles.CheckPermission(userToken, schemaConfig?.roles, PERMISSION.READ)
 
-            if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
-                Logger.Debug(`Cache.Get: Cache found, Hash=${cacheHash}`)
-                return schemaResponse.data.Rows[0] as TCacheData
-            }
-            throw new Error()
-
-        } catch {
-            Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
-            return undefined
+        if (!Config.Flags.EnableCache && schemaRequest?.cache) {
+            Logger.Warn(`Cache.Get: 'server.cache' is not configured, bypassing option 'cache'`)
+            return HttpResponse.NoContent()
         }
+
+        if (!Config.Flags.EnableCache || this.CacheSource === undefined) {
+            return HttpResponse.NoContent()
+        }
+
+        const cacheHash = Cache.Hash(schemaRequest)
+
+        const internalResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
+            ...Cache.#CacheSchemaRequest,
+            filter: {
+                hash: cacheHash
+            }
+        })
+
+        // no data
+        if (!internalResponse.Body || internalResponse.Body.data.Rows.length === 0) {
+            Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
+            throw new HttpErrorNotFound('Cache not found')
+        }
+
+        Logger.Debug(`Cache.Get: Cache found, Hash=${cacheHash}`)
+        return internalResponse
     }
 
     static async Update(hash: string, expires: number, datatable: DataTable) {
@@ -195,16 +207,14 @@ export class Cache {
 
     @Logger.LogFunction()
     static async View(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         return await Cache.CacheSource.Select(Cache.#CacheSchemaRequest)
     }
 
     @Logger.LogFunction()
     static async Purge(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         await Cache.CacheSource.Delete(Cache.#CacheSchemaRequest)
         Logger.Debug(`${Logger.Out} Cache.Purge`)
@@ -213,8 +223,7 @@ export class Cache {
 
     @Logger.LogFunction()
     static async Clean(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const expiresNow = new Date().getTime()
         Logger.Debug(`Cache.Clean ${expiresNow}`)

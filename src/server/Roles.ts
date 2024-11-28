@@ -8,6 +8,7 @@ import { tags } from "typia"
 import { TConfigRoles } from "../types/TConfig"
 import { Config } from "./Config"
 import { TUserTokenInfo } from "./User"
+import { HttpErrorForbidden } from "./HttpErrors"
 
 
 //
@@ -55,5 +56,10 @@ export class Roles {
             .value()
 
         return userPermissions.includes(permission)
+    }
+
+    static CheckPermission(userToken: TUserTokenInfo | undefined, schemaRoles: string[] | undefined, permission: string): void {
+        if (!Roles.HasPermission(userToken, schemaRoles, permission))
+            throw new HttpErrorForbidden('Permission denied')
     }
 }

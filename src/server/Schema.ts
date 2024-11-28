@@ -164,15 +164,13 @@ export class Schema {
     @Logger.LogFunction()
     static async Select(schemaRequest: TSchemaRequestSelect, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
 
-
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
         const { schema, entity } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
 
-        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.READ))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, schemaConfig?.roles, PERMISSION.READ)
 
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
         // Anonymizer
@@ -216,8 +214,7 @@ export class Schema {
         const { schema, entity } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
 
-        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.DELETE))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, schemaConfig?.roles, PERMISSION.DELETE)
 
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
@@ -244,8 +241,7 @@ export class Schema {
         const { schema, entity } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
 
-        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.UPDATE))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, schemaConfig?.roles, PERMISSION.UPDATE)
 
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
@@ -272,8 +268,7 @@ export class Schema {
         const { schema, entity } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
 
-        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.CREATE))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, schemaConfig?.roles, PERMISSION.CREATE)
 
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
@@ -296,8 +291,7 @@ export class Schema {
         const { schema } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
     
-        if (!Roles.HasPermission(userToken, schemaConfig?.roles, PERMISSION.LIST))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, schemaConfig?.roles, PERMISSION.LIST)
 
         const entitiesSources = Schema.GetEntitiesSources(schema)
 

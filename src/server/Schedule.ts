@@ -66,8 +66,7 @@ export class Schedule {
 
     @Logger.LogFunction()
     static Start(jobName: string, userToken: TUserTokenInfo | undefined = undefined): TInternalResponse<TJson> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (jobKey) {
@@ -79,8 +78,7 @@ export class Schedule {
 
     @Logger.LogFunction()
     static Stop(jobName: string, userToken: TUserTokenInfo | undefined = undefined): TInternalResponse<TJson> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (jobKey) {

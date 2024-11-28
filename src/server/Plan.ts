@@ -143,8 +143,7 @@ export class Plan {
 
     @Logger.LogFunction()
     static async Reload(plan: string,userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const configFileJson = await Config.Load()
 

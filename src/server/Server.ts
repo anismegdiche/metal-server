@@ -147,8 +147,7 @@ export class Server {
 
     @Logger.LogFunction()
     static async Reload(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
+        Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         Schedule.StopAll()
         await Cache.Disconnect()
