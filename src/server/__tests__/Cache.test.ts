@@ -1,170 +1,170 @@
 // import { Cache } from '../Cache'
+// import { Logger } from '../../utils/Logger'
 // import { Config } from '../Config'
-// import { HttpErrorNotFound } from '../HttpErrors'
+// import { HttpResponse } from '../HttpResponse'
+// import { TSchemaRequest, TSchemaRequestSelect } from '../../types/TSchemaRequest'
+// import { TUserTokenInfo } from '../User'
 // import { DataTable } from '../../types/DataTable'
-// import { absDataProvider } from "../../providers/absDataProvider"
-// import { DATA_PROVIDER } from "../../providers/DataProvider"
-// import { TSchemaRequest } from "../../types/TSchemaRequest"
+// import { HttpErrorNotFound } from '../HttpErrors'
 // import { Source } from "../Source"
+// import { TSchemaResponse } from "../../types/TSchemaResponse"
+// import { TInternalResponse } from "../../types/TInternalResponse"
 
-// // jest.mock('../Config')
-// jest.mock('../Source')
+// // Mock dependencies
+// jest.mock('../../utils/Logger')
 
-// describe('Cache', () => {
-//     // eslint-disable-next-line init-declarations, @typescript-eslint/no-explicit-any
-//     let mockCacheSource: any
+// // Mock CacheSource
+// Cache.CacheSource = {
+//     Select: jest.fn() as jest.Mock,
+//     Insert: jest.fn() as jest.Mock,
+//     Update: jest.fn() as jest.Mock,
+//     Delete: jest.fn() as jest.Mock,
+//     Disconnect: jest.fn() as jest.Mock,
+// } as any
 
-//     let sourceMock = Source as jest.MockedClass<typeof Source>
-
-//     beforeAll(() => {
-//         mockCacheSource = {
-//             Select: jest.fn(),
-//             Insert: jest.fn(),
-//             Update: jest.fn(),
-//             Delete: jest.fn(),
-//             Disconnect: jest.fn(),
-//             ProviderName: "mock" as DATA_PROVIDER,
-//             SourceName: undefined,
-//             Params: undefined,
-//             Connection: undefined,
-//             EscapeEntity: jest.fn(),
-//             EscapeField: jest.fn(),
-//             Init: jest.fn(),
-//             Connect: jest.fn(),
-//             ListEntities: jest.fn(),
-//             AddEntity: jest.fn()
-//         }
-//         Cache.CacheSource = <absDataProvider>mockCacheSource
-//     })
-
+describe('Cache', () => {
 //     beforeEach(() => {
 //         jest.clearAllMocks()
-//         Config.Flags.EnableCache = true
 //     })
 
 //     describe('Connect', () => {
-//         it('should connect if caching is enabled', async () => {
+//         it('should call Source.Connect when caching is enabled', async () => {
 //             Config.Flags.EnableCache = true
+//             Config.Get = jest.fn().mockReturnValue('cacheConnection')
+//             const sourceConnectSpy = jest.spyOn(Source, 'Connect')
+
 //             await Cache.Connect()
-//             expect(sourceMock.Connect).toHaveBeenCalledTimes(1)
+
+//             expect(sourceConnectSpy).toHaveBeenCalledWith(null, 'cacheConnection')
 //         })
 
-//         it('should skip connection if caching is disabled', async () => {
+//         it('should not call Source.Connect when caching is disabled', async () => {
 //             Config.Flags.EnableCache = false
+//             const sourceConnectSpy = jest.spyOn(Source, 'Connect')
+
 //             await Cache.Connect()
-//             expect(sourceMock.Connect).toHaveBeenCalledTimes(0)
+
+//             expect(sourceConnectSpy).not.toHaveBeenCalled()
 //         })
 //     })
 
 //     describe('Disconnect', () => {
-//         it('should disconnect if caching is enabled', async () => {
+//         it('should call CacheSource.Disconnect when caching is enabled', async () => {
+//             Config.Flags.EnableCache = true
+
 //             await Cache.Disconnect()
-//             expect(mockCacheSource.Disconnect).toHaveBeenCalled()
+
+//             expect(Cache.CacheSource.Disconnect).toHaveBeenCalled()
 //         })
 
-//         it('should skip disconnection if caching is disabled', async () => {
+//         it('should not call CacheSource.Disconnect when caching is disabled', async () => {
 //             Config.Flags.EnableCache = false
+
 //             await Cache.Disconnect()
-//             expect(mockCacheSource.Disconnect).not.toHaveBeenCalled()
+
+//             expect(Cache.CacheSource.Disconnect).not.toHaveBeenCalled()
 //         })
 //     })
 
 //     describe('IsExists', () => {
-//         it('should return expiration time if cache exists', async () => {
+//         it('should return cache expiration time if cache exists', async () => {
+//             Config.Flags.EnableCache = true
 //             const mockResponse = {
-//                 Body: { data: { Rows: [{ expires: 12345 }] } }
-//             }
-//             mockCacheSource.Select.mockResolvedValue(mockResponse)
+//                 Body: {
+//                     data: { Rows: [{ expires: 12345 }] },
+//                 },
+//             };
+//             (Cache.CacheSource.Select as jest.Mock).mockResolvedValue(mockResponse) // Use mockResolvedValue
 
-//             const result = await Cache.IsExists('some-hash')
-//             expect(mockCacheSource.Select).toHaveBeenCalledWith(expect.objectContaining({ filter: { hash: 'some-hash' } }))
+//             const result = await Cache.IsExists('hash123')
+
+//             expect(Cache.CacheSource.Select).toHaveBeenCalled()
 //             expect(result).toBe(12345)
 //         })
 
 //         it('should return 0 if cache does not exist', async () => {
-//             mockCacheSource.Select.mockResolvedValue({ Body: null })
+//             Config.Flags.EnableCache = true;
+//             (Cache.CacheSource.Select as jest.Mock).mockResolvedValue({ Body: null })
 
-//             const result = await Cache.IsExists('non-existent-hash')
+//             const result = await Cache.IsExists('hash123')
+
 //             expect(result).toBe(0)
 //         })
 
-//         it('should return 0 on error', async () => {
-//             mockCacheSource.Select.mockRejectedValue(new Error('Unexpected error'))
+//         it('should return 0 if caching is disabled', async () => {
+//             Config.Flags.EnableCache = false
 
-//             const result = await Cache.IsExists('error-hash')
+//             const result = await Cache.IsExists('hash123')
+
 //             expect(result).toBe(0)
-//         })
-//     })
-
-//     describe('IsCacheValid', () => {
-//         it('should return true for valid expiration', () => {
-//             const validExpires = Date.now() + 1000
-//             expect(Cache.IsCacheValid(validExpires)).toBe(true)
-//         })
-
-//         it('should return false for expired cache', () => {
-//             const expired = Date.now() - 1000
-//             expect(Cache.IsCacheValid(expired)).toBe(false)
 //         })
 //     })
 
 //     describe('Set', () => {
-//         it('should insert new cache if it does not exist', async () => {
-//             jest.spyOn(Cache, 'IsExists').mockResolvedValue(0)
-//             jest.spyOn(Cache, 'Hash').mockReturnValue('mock-hash')
-//             const mockDataTable = new DataTable()
+//         it('should insert new cache if not present', async () => {
+//             Config.Flags.EnableCache = true
+//             Cache.IsExists = jest.fn().mockResolvedValue(0)
+//             Cache.Hash = jest.fn().mockReturnValue('hash123')
+//             Cache.IsArgumentsValid = jest.fn().mockReturnValue(true)
 
-//             await Cache.Set({ schema: 'test',
-// entity: 'test',
-// cache: 10 }, mockDataTable)
+//             const schemaRequest = { cache: 10 } as TSchemaRequest
+//             const datatable = new DataTable()
+//             datatable.SetMetaData = jest.fn()
 
-//             expect(mockCacheSource.Insert).toHaveBeenCalledWith(
-//                 expect.objectContaining({
-//                     data: expect.arrayContaining([expect.objectContaining({ hash: 'mock-hash' })])
-//                 })
-//             )
+//             await Cache.Set(schemaRequest, datatable)
+
+//             expect(Cache.CacheSource.Insert).toHaveBeenCalled()
 //         })
 
-//         it('should update cache if expired', async () => {
-//             jest.spyOn(Cache, 'IsExists').mockResolvedValue(Date.now() - 1000)
-//             jest.spyOn(Cache, 'Hash').mockReturnValue('mock-hash')
-//             const mockDataTable = new DataTable()
-//             jest.spyOn(Cache, 'Update').mockResolvedValue()
+//         it('should not insert cache if arguments are invalid', async () => {
+//             Config.Flags.EnableCache = true
+//             Cache.IsArgumentsValid = jest.fn().mockReturnValue(false)
 
-//             await Cache.Set({ schema: 'test',
-// entity: 'test',
-// cache: 10 }, mockDataTable)
+//             const schemaRequest = {} as TSchemaRequest
+//             const datatable = new DataTable()
 
-//             expect(Cache.Update).toHaveBeenCalledWith(
-//                 'mock-hash',
-//                 expect.any(Number),
-//                 mockDataTable
-//             )
+//             await Cache.Set(schemaRequest, datatable)
+
+//             expect(Cache.CacheSource.Insert).not.toHaveBeenCalled()
 //         })
 //     })
 
-//     describe('Get', () => {
-//         it('should return cache if found', async () => {
-//             jest.spyOn(Cache, 'Hash').mockReturnValue('mock-hash')
-//             const mockResponse = { Body: { data: { Rows: [{}] } } }
-//             mockCacheSource.Select.mockResolvedValue(mockResponse)
+//     // describe('Get', () => {
+//     //     it('should return cached data if valid', async () => {
+//     //         Config.Flags.EnableCache = true
 
-//             const result = await Cache.Get(<TSchemaRequest>{ schema: 'test' })
-//             expect(result).toBe(mockResponse)
-//         })
+//     //         (Cache.CacheSource.Select as jest.Mock).mockResolvedValue(HttpResponse.Ok({
+//     //             data: {
+//     //                 Rows: [{ data: 'cachedData', expires: Date.now() + 10000 }],
+//     //             }
+//     //         }))
 
-//         it('should throw not found error if cache is missing', async () => {
-//             jest.spyOn(Cache, 'Hash').mockReturnValue('mock-hash')
-//             mockCacheSource.Select.mockResolvedValue({ Body: { data: { Rows: [] } } })
+//     //         Cache.IsArgumentsValid = jest.fn().mockReturnValue(true)
 
-//             await expect(Cache.Get(<TSchemaRequest>{ schema: 'test' })).rejects.toThrow(HttpErrorNotFound)
-//         })
-//     })
+//     //         const schemaRequest = { schema: 'schema1', entity: 'entity1' } as TSchemaRequestSelect
 
-//     describe('Purge', () => {
-//         it('should delete all cache', async () => {
-//             await Cache.Purge()
-//             expect(mockCacheSource.Delete).toHaveBeenCalledWith(expect.any(Object))
-//         })
-//     })
-// })
+//     //         const response = await Cache.Get(schemaRequest)
+
+//     //         expect(response).toEqual(HttpResponse.Ok(expect.anything()))
+//     //     })
+
+//     //     it('should throw HttpErrorNotFound if cache is expired', async () => {
+//     //         Config.Flags.EnableCache = true
+//     //         const mockResponse = {
+//     //             Body: {
+//     //                 data: {
+//     //                     Rows: [{ data: 'cachedData', expires: Date.now() - 10000 }],
+//     //                 },
+//     //             },
+//     //         }
+//     //             (Cache.CacheSource.Select as jest.Mock).mockResolvedValue(mockResponse)
+//     //         Cache.IsArgumentsValid = jest.fn().mockReturnValue(true)
+
+//     //         const schemaRequest = { schema: 'schema1', entity: 'entity1' } as TSchemaRequestSelect
+
+//     //         await expect(Cache.Get(schemaRequest)).rejects.toThrow(HttpErrorNotFound)
+//     //     })
+//     // })
+
+//     // Add tests for other methods like Purge, Clean, Remove as needed.
+})
