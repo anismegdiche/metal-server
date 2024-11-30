@@ -13,7 +13,6 @@ Content-Type: application/json
 ###
 
 
-# DONE
 # @name list-entities
 GET http://localhost:3000/schema/clubdata
 Content-Type: application/json
@@ -21,7 +20,6 @@ authorization: Bearer {{token}}
 ###
 
 
-# DONE
 # @name select
 GET http://localhost:3000/schema/clubdata/members
 Content-Type: application/json
@@ -29,7 +27,6 @@ authorization: Bearer {{token}}
 ###
 
 
-# DONE
 # @name select-filtered
 GET http://localhost:3000/schema/clubdata/members
     ?fields=firstname, surname

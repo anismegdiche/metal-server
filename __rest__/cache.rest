@@ -22,21 +22,18 @@ Content-Type: application/json
 ###
 
 
-# DONE
 # @name view
 GET http://localhost:3000/cache/view
 authorization: Bearer {{token}}
 ###
 
 
-# DONE
 # @name purge
 POST http://localhost:3000/cache/purge
 authorization: Bearer {{token}}
 ###
 
 
-# DONE
 # @name clean
 POST http://localhost:3000/cache/clean
 authorization: Bearer {{token}}

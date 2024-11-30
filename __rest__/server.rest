@@ -2,7 +2,6 @@
 # login
 #
 
-# DONE
 # @name login
 POST  http://localhost:3000/user/login
 Content-Type: application/json
@@ -16,12 +15,10 @@ Content-Type: application/json
 
 @token={{login.response.body.token}}
 
-# DONE
 # @name info
 GET http://localhost:3000/server/info
 
 ###
-# DONE
 # @name reload
 POST http://localhost:3000/server/reload
 Content-Type: application/json
