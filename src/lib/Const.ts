@@ -68,12 +68,12 @@ export enum HTTP_STATUS_MESSAGE {
     CONTENT_TOO_LARGE = 'Content Too Large'
 }
 
-export enum VALIDATION_ERROR_MESSAGE {
-    MUST_BE_NUMBER = 'must be a number',
-    MUST_BE_JSON = 'must be a JSON object',
-    MUST_BE_JSON_ARRAY_OR_OBJECT = 'must be a JSON array or a JSON object',
-    MUST_BE_STRING = 'must be a string'
-}
+//XXX export enum VALIDATION_ERROR_MESSAGE {
+//XXX     MUST_BE_NUMBER = 'must be a number',
+//XXX     MUST_BE_JSON = 'must be a JSON object',
+//XXX     MUST_BE_JSON_ARRAY_OR_OBJECT = 'must be a JSON array or a JSON object',
+//XXX     MUST_BE_STRING = 'must be a string'
+//XXX }
 
 export const RESPONSE = {
     SELECT: {
