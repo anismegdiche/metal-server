@@ -7,7 +7,7 @@
 	},
 	"extends": [
 		"eslint:recommended",
-        "plugin:@typescript-eslint/eslint-recommended",
+		"plugin:@typescript-eslint/eslint-recommended",
 		"plugin:@typescript-eslint/recommended",
 		"plugin:you-dont-need-lodash-underscore/compatible"
 	],
@@ -294,14 +294,20 @@
 		"no-unused-vars": "off",
 		"@typescript-eslint/no-unused-vars": "off",
 		"unused-imports/no-unused-imports": "warn",
-        "unused-imports/no-unused-vars": [
-            "warn",
-            {
-                "vars": "all",
-                "varsIgnorePattern": "^_",
-                "args": "after-used",
-                "argsIgnorePattern": "^_"
-            }
-        ]
+		"unused-imports/no-unused-vars": [
+			"warn",
+			{
+				"vars": "all",
+				"varsIgnorePattern": "^_",
+				"args": "after-used",
+				"argsIgnorePattern": "^_"
+			}
+		],
+		"import/no-cycle": [
+			"error",
+			{
+				"maxDepth": 1
+			}
+		]
 	}
 }

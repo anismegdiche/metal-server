@@ -28,6 +28,13 @@
 			"label": "npm: lint",
 			"detail": "npx eslint --fix ."
 		},
+		{
+			"label": "Circular Check",
+			"type": "shell",
+			"command": "depcruise -m src",
+			"group": "build",
+			"problemMatcher": ["$eslint-stylish"]
+		}
 		// {
 		// 	"label": "eslint: lint whole folder",
 		// 	"type": "shell",

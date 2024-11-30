@@ -23,14 +23,12 @@ import { HTTP_STATUS_CODE } from "./Const"
 
 export class Convert {
 
-    @Logger.LogFunction()
     static JsonToArray(obj: TJson) {
         return Object
             .entries(obj)
             .map(([k, v]) => ({ [k]: v }))
     }
 
-    @Logger.LogFunction()
     static HumainSizeToBytes(size: string) {
 
         // eslint-disable-next-line @typescript-eslint/no-require-imports

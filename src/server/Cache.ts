@@ -6,7 +6,7 @@
 import * as Sha512 from 'js-sha512'
 import typia from "typia"
 //
-import { METADATA } from '../lib/Const'
+import { METADATA, RESPONSE } from '../lib/Const'
 import { TCacheData } from '../types/TCacheData'
 import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
@@ -15,14 +15,15 @@ import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
-import { HttpResponse } from "./HttpResponse"
+import { HttpResponse } from './HttpResponse'
 import { TJson } from "../types/TJson"
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "./HttpErrors"
+import { HttpError, HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorLog, HttpErrorNotFound } from "./HttpErrors"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
 import { absDataProvider } from "../providers/absDataProvider"
 import { Schema } from "./Schema"
 import { TSchemaResponse } from "../types/TSchemaResponse"
+import { SchemaResponse } from "../response/SchemaResponse"
 
 
 export class Cache {
@@ -83,20 +84,39 @@ export class Cache {
 
     @Logger.LogFunction()
     static IsArgumentsValid(schemaRequest: TSchemaRequest): boolean {
-        // bypassing cache source not defined
-        if (this.CacheSource == undefined) {
-            return false
-        }
+        const isSchemaCacheRequest = Cache.IsSchemaCacheRequest(schemaRequest)
+        const isConfigurationGood = Cache.IsConfigurationGood(schemaRequest)
+        const isParametersDefined = Cache.IsParametersDefined(schemaRequest)
 
+        return isSchemaCacheRequest && isConfigurationGood && isParametersDefined
+    }
+
+    static IsSchemaCacheRequest(schemaRequest: TSchemaRequest): boolean {
         if (schemaRequest.schema === Cache.Schema && schemaRequest.entity === Cache.Table) {
-            Logger.Debug(`${Logger.Out} Cache.Set: bypassing for schema cache`)
+            Logger.Debug(`${Logger.Out} bypassing: schema cache request`)
             return false
         }
+        return true
+    }
 
-        if (!Config.Flags.EnableCache && schemaRequest?.cache !== undefined) {
-            Logger.Debug(`${Logger.Out} Cache.Set: 'server.cache' is not configured, bypassing option 'cache'`)
+    static IsConfigurationGood(schemaRequest: TSchemaRequest): boolean {
+        if (!Config.Flags.EnableCache && schemaRequest?.cache) {
+            Logger.Warn(`${Logger.Out} 'server.cache' is not configured, bypassing option 'cache'`)
             return false
         }
+        return true
+    }
+
+    static IsParametersDefined(schemaRequest: TSchemaRequest): boolean {
+        if (!Config.Flags.EnableCache)
+            return false
+
+        if (this.CacheSource === undefined)
+            return false
+
+        if (!schemaRequest?.cache)
+            return false
+
         return true
     }
 
@@ -110,6 +130,9 @@ export class Cache {
 
         if (!Cache.IsArgumentsValid(schemaRequest))
             return
+
+        // remove source from schemaRequest
+        delete schemaRequest?.source
 
         const { schema, entity, cache = 0 } = schemaRequest
 
@@ -148,7 +171,7 @@ export class Cache {
         }
 
         Logger.Debug(`Cache.Set: cache expired, updating Hash=${hash}`)
-        await Cache.Update(hash, expires, datatable)
+        Cache.Update(hash, expires, datatable)
     }
 
     @Logger.LogFunction()
@@ -157,23 +180,17 @@ export class Cache {
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
 
-        const { schema } = schemaRequest
+        const { schema, entity } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
 
         Roles.CheckPermission(userToken, schemaConfig?.roles, PERMISSION.READ)
 
-        if (!Config.Flags.EnableCache && schemaRequest?.cache) {
-            Logger.Warn(`Cache.Get: 'server.cache' is not configured, bypassing option 'cache'`)
+        if (!Cache.IsArgumentsValid(schemaRequest))
             return HttpResponse.NoContent()
-        }
-
-        if (!Config.Flags.EnableCache || this.CacheSource === undefined) {
-            return HttpResponse.NoContent()
-        }
 
         const cacheHash = Cache.Hash(schemaRequest)
 
-        const internalResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
+        const intResp = await Cache.CacheSource.Select(<TSchemaRequest>{
             ...Cache.#CacheSchemaRequest,
             filter: {
                 hash: cacheHash
@@ -181,17 +198,28 @@ export class Cache {
         })
 
         // no data
-        if (!internalResponse.Body || internalResponse.Body.data.Rows.length === 0) {
+        if (!intResp.Body || intResp.Body.data.Rows.length === 0) {
             Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
-            throw new HttpErrorNotFound('Cache not found')
+            throw new HttpErrorNotFound(`Cache not found, Hash=${cacheHash}`)
         }
 
-        Logger.Debug(`Cache.Get: Cache found, Hash=${cacheHash}`)
-        return internalResponse
+        // return data
+        const { data, expires } = intResp.Body.data.Rows.at(0) as TCacheData
+
+        if (!Cache.IsCacheValid(expires))
+            throw new HttpErrorNotFound(`Cache is old, Hash=${cacheHash}`)
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            entity,
+            schema,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        })
     }
 
     static async Update(hash: string, expires: number, datatable: DataTable) {
-        await Cache.CacheSource.Update(<TSchemaRequest>{
+        Cache.CacheSource.Update(<TSchemaRequest>{
             ...Cache.#CacheSchemaRequest,
             filter: {
                 hash
@@ -208,7 +236,6 @@ export class Cache {
     @Logger.LogFunction()
     static async View(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
-
         return await Cache.CacheSource.Select(Cache.#CacheSchemaRequest)
     }
 
@@ -247,7 +274,7 @@ export class Cache {
             ...Cache.#CacheSchemaRequest,
             "filter-expression": `${Cache.CacheSource.EscapeField("schema")}= '${schema}' AND ${Cache.CacheSource.EscapeField("entity")}= '${entity}'`
         })
-            .catch((error: Error) => Logger.Error(error.message))
+            .catch((error: HttpError | Error) => HttpErrorLog(error))
         Logger.Debug(`${Logger.Out} Cache.Removed`)
     }
 }

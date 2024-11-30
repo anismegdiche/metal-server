@@ -5,6 +5,7 @@
 //
 //
 import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from "../lib/Const"
+import { Logger, VERBOSITY } from "../utils/Logger"
 
 
 export class HttpError extends Error {
@@ -89,4 +90,16 @@ export class ConfigFileError extends HttpError {
         this.name = "ConfigFileError"
         this.Name = "Config File Error"
     }
+}
+
+
+export function HttpErrorLog(error: HttpError | Error): void {
+    const logger = (error instanceof HttpErrorNotFound)
+        ? Logger.Warn
+        : Logger.Error
+
+    if (Logger.Level === VERBOSITY.DEBUG)
+        logger(error.stack)
+    else
+        logger(error.message)
 }
