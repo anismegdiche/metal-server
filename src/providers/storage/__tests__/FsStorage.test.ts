@@ -5,6 +5,7 @@ import Fs from 'fs'
 import { ReadableHelper } from "../../../lib/ReadableHelper"
 import typia from "typia"
 import { TJsonContentConfig } from "../../content/JsonContent"
+import { HttpErrorNotFound } from "../../../server/HttpErrors"
 
 
 describe('FsStorage', () => {
@@ -57,11 +58,10 @@ describe('FsStorage', () => {
 
         it('should return throw Not Found if the file does not exist', async () => {
             jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(false)
-            try {
-                await fsStorage.Read('test.txt')
-            } catch (error: any) {
-                expect(error?.name).toBe('HttpErrorNotFound')
-            }
+            await fsStorage.Read('test.txt')
+                .catch(error => {
+                    expect(error).toBeInstanceOf(HttpErrorNotFound)
+                })
         })
     })
 
