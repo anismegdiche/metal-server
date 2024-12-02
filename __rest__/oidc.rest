@@ -1,0 +1,31 @@
+
+# @name discover
+GET http://localhost:8080/realms/metal/.well-known/openid-configuration
+
+###
+@username=myoidcuser
+@password=123456
+@client_id=metal-server
+@client_secret=dOQoanZt02oGV4jTjGR4LVudwSJqbujT
+
+
+###
+# @name login
+POST http://localhost:8080/realms/metal/protocol/openid-connect/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password
+&username={{username}}
+&password={{password}}
+&client_id={{client_id}}
+&client_secret={{client_secret}}
+
+###
+
+@token={{login.response.body.access_token}}
+
+###
+
+# @name user-info
+GET http://localhost:8080/realms/metal/protocol/openid-connect/userinfo
+authorization: Bearer {{token}}

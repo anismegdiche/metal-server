@@ -6,8 +6,13 @@ server:
   timezone: UTC
   request-limit: 100mb
   authentication:
-    provider: local
-    default-role: all
+    # provider: local
+    # default-role: all
+    provider: oidc
+    issuer: http://localhost:8080/realms/metal/.well-known/openid-configuration
+    client-id: metal-server
+    client-secret: dOQoanZt02oGV4jTjGR4LVudwSJqbujT
+    default-role: none
   cache:
     provider: memory
     database: cache
@@ -16,6 +21,7 @@ server:
 
 roles:
   all: lacrud
+  none:
 
 users:
   myapiuser:

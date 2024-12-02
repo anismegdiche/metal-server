@@ -9,14 +9,14 @@ import { absAuthProvider } from "./absAuthProvider"
 // import { AzureAdAuth, TAzureAdAuthConfig } from "./auth/AzureAdAuth"
 import { LocalAuth } from "./auth/LocalAuth"
 import { DemoAuth } from "./auth/DemoAuth"
-// import { LocalAuth } from "./auth/LocalAuth"
-// import { TOpenIdConnectAuthConfig } from "./auth/OpenIDConnectAuth"
+import { OidcAuth, TOidcAuthConfig } from "./auth/OidcAuth"
 
 
 //
 export enum AUTH_PROVIDER {
-    LOCAL = "local",            // Metal Config authentication
-    DEMO = "demo"//,            // Demo authentication, not for production
+    DEMO = "demo",              // Demo authentication, not for production
+    LOCAL = "local",            // Metal Local authentication
+    OIDC = "oidc"               // OpenID Connect authentication
     // SYSTEM = "system",
     // AZURE_AD = "azure-ad"
 }
@@ -26,8 +26,8 @@ export type TAuthentication = {
     "default-role"?: string     // default user role
     // autocreate?: boolean
 }
+   & TOidcAuthConfig
     // & TAzureAdAuthConfig
-    // & TOpenIdConnectAuthConfig
 
 //
 export class AuthProvider {
@@ -45,6 +45,7 @@ export class AuthProvider {
     static RegisterProviders() {
         AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.DEMO, new DemoAuth())
         AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.LOCAL, new LocalAuth())
+        AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.OIDC, new OidcAuth())
         // AuthProvider.#AuthFactory.Register(AUTH_PROVIDER.AZURE_AD, new AzureAdAuth())
     }
 

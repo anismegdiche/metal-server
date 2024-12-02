@@ -51,6 +51,7 @@
     "mssql": "^11.0.1",
     "mysql2": "^3.11.5",
     "node-nlp": "^4.27.0",
+    "openid-client": "^5.7.1",
     "papaparse": "^5.4.1",
     "pg": "^8.13.1",
     "response-time": "^2.3.3",
