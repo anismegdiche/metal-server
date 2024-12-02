@@ -23,7 +23,6 @@ import { TUserTokenInfo } from "./User"
 import { absDataProvider } from "../providers/absDataProvider"
 import { Schema } from "./Schema"
 import { TSchemaResponse } from "../types/TSchemaResponse"
-import { SchemaResponse } from "../response/SchemaResponse"
 
 
 export class Cache {

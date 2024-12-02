@@ -3,14 +3,14 @@
     "node": ">=22.10.0"
   },
   "name": "metal",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Metal Server",
   "author": "Anis Megdiche",
   "license": "GPL-3.0-or-later",
   "main": "./build/index.js",
   "scripts": {
     "build": "tsc --watch",
-    "dev": "nodemon --exec \"npm run prod-ts\" -i data/",
+    "dev": "nodemon --exec \"npm run prod-ts\" --watch src/",
     "lint": "eslint --fix src",
     "test": "jest",
     "test-client": "jest --testMatch \"**/client/__tests__/**/*.js\"",
