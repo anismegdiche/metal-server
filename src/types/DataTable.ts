@@ -265,7 +265,7 @@ export class DataTable {
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug, true)
     AddRows(newRows: TJson | TJson[] | undefined = undefined): this {
         if (!newRows)
             return this
