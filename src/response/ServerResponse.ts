@@ -9,7 +9,6 @@ import typia from "typia"
 import { HTTP_STATUS_CODE } from '../lib/Const'
 import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented, HttpErrorUnauthorized, HttpErrorInternalServerError, HttpErrorLog, HttpErrorContentTooLarge } from '../server/HttpErrors'
 import { Server } from '../server/Server'
-import { TJson } from "../types/TJson"
 import { Convert } from "../lib/Convert"
 import { TInternalResponse } from "../types/TInternalResponse"
 import { TSchemaResponse } from "../types/TSchemaResponse"
@@ -77,11 +76,7 @@ export class ServerResponse {
     }
 
     static CheckRequest(req: Request) {
-        try {
-            if (!req.__METAL_CURRENT_USER)
-                throw new HttpErrorUnauthorized()
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(error.message)
-        }
+        if (!req.__METAL_CURRENT_USER)
+            throw new HttpErrorUnauthorized()
     }
 }
