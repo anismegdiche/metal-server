@@ -12,6 +12,7 @@ import { Config } from '../../server/Config'
 import { absAuthProvider, TUserCredentials } from '../absAuthProvider'
 import { HttpErrorInternalServerError, HttpErrorUnauthorized } from '../../server/HttpErrors'
 import { TUserTokenInfo } from '../../server/User'
+import { AUTH_PROVIDER } from "../AuthProvider"
 
 
 //
@@ -21,6 +22,7 @@ enum OIDC_ERROR_MESSAGE {
 
 //
 export type TOidcAuthConfig = {
+    provider: AUTH_PROVIDER.OIDC
     issuer: string
     "client-id": string
     "client-secret": string
@@ -45,7 +47,7 @@ export class OidcAuth extends absAuthProvider {
 
     @Logger.LogFunction()
     async Init(): Promise<void> {
-        this.#Config = Config.Configuration.server?.authentication
+        this.#Config = Config.Configuration.server?.authentication as TOidcAuthConfig
 
         if (!this.#Config)
             throw new HttpErrorInternalServerError(OIDC_ERROR_MESSAGE.NOT_INITIALIZED)

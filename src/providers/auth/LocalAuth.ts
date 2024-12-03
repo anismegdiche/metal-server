@@ -12,6 +12,13 @@ import { absAuthProvider, TUserCredentials } from "../absAuthProvider"
 import { HttpErrorInternalServerError, HttpErrorUnauthorized } from "../../server/HttpErrors"
 import { TUserTokenInfo } from "../../server/User"
 import { TConfigUsers } from "../../types/TConfig"
+import { AUTH_PROVIDER } from "../AuthProvider"
+
+
+//
+export type TLocalAuthConfig = {
+    provider: AUTH_PROVIDER.LOCAL
+}
 
 
 //

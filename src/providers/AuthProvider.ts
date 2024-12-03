@@ -7,8 +7,8 @@ import { HttpErrorNotFound } from "../server/HttpErrors"
 import { Factory } from "../utils/Factory"
 import { absAuthProvider } from "./absAuthProvider"
 // import { AzureAdAuth, TAzureAdAuthConfig } from "./auth/AzureAdAuth"
-import { LocalAuth } from "./auth/LocalAuth"
-import { DemoAuth } from "./auth/DemoAuth"
+import { LocalAuth, TLocalAuthConfig } from "./auth/LocalAuth"
+import { DemoAuth, TDemoAuthConfig } from "./auth/DemoAuth"
 import { OidcAuth, TOidcAuthConfig } from "./auth/OidcAuth"
 
 
@@ -22,12 +22,12 @@ export enum AUTH_PROVIDER {
 }
 
 export type TAuthentication = {
-    provider: AUTH_PROVIDER     // authentication provider
+    // Common config
     "default-role"?: string     // default user role
     // autocreate?: boolean
 }
-   & TOidcAuthConfig
-    // & TAzureAdAuthConfig
+    & (TLocalAuthConfig | TDemoAuthConfig | TOidcAuthConfig)
+// & TAzureAdAuthConfig
 
 //
 export class AuthProvider {
