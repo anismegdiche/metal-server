@@ -105,7 +105,7 @@ export class Server {
         Server.App.use(`${ROUTE.SCHEDULE_PATH}/`, Server.SetContentJson, ScheduleRouter)
 
         // path: /api-docs
-        Logger.Info(`Route: Enabling API, URL= ${ROUTE.SWAGGER_UI_PATH}`)
+        Logger.Info(`Route: Enabling Swagger UI, URL= ${ROUTE.SWAGGER_UI_PATH}`)
 
         // error handler
         Server.App.use((err: any, req: Request, res: Response, _next: NextFunction) => {
