@@ -4,7 +4,6 @@
 //
 //
 import _ from "lodash"
-import { Mutex } from "async-mutex"
 //
 import { absDataProvider } from "../absDataProvider"
 import { RESPONSE } from "../../lib/Const"
@@ -150,7 +149,7 @@ export class FilesData extends absDataProvider {
 
         this.SetHandler(entity)
         this.SetLock(entity)
-        const release = await this.Lock.get(entity)!.acquire()
+        await this.Lock.get(entity)!.Acquire()
 
         try {
             this.File[entity].InitContent(
@@ -178,7 +177,7 @@ export class FilesData extends absDataProvider {
         } catch (error: any) {
             throw new HttpErrorInternalServerError(`${this.SourceName}: ${error.message}`)
         } finally {
-            release()
+            this.Lock.get(entity)!.Release()
         }
     }
 
@@ -239,7 +238,7 @@ export class FilesData extends absDataProvider {
 
         this.SetHandler(entity)
         this.SetLock(entity)
-        const release = await this.Lock.get(entity)!.acquire()
+        await this.Lock.get(entity)!.Acquire()
         try {
             this.File[entity].InitContent(
                 entity,
@@ -267,7 +266,7 @@ export class FilesData extends absDataProvider {
         } catch (error: any) {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${entity} in storage provider: ${error.message}`)
         } finally {
-            release()
+            this.Lock.get(entity)!.Release()
         }
     }
 
@@ -283,7 +282,7 @@ export class FilesData extends absDataProvider {
 
         this.SetHandler(entity)
         this.SetLock(entity)
-        const release = await this.Lock.get(entity)!.acquire()
+        await this.Lock.get(entity)!.Acquire()
 
         try {
             this.File[entity].InitContent(
@@ -309,10 +308,11 @@ export class FilesData extends absDataProvider {
             Cache.Remove(schemaRequest)
 
             return HttpResponse.NoContent()
+
         } catch (error: any) {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${entity} in storage provider: ${error.message}`)
         } finally {
-            release()
+            this.Lock.get(entity)!.Release()
         }
     }
 
