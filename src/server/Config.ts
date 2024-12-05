@@ -26,6 +26,7 @@ import { Roles } from "./Roles"
 export class Config {
 
     // global configuration
+    //CURRENT create a single default config and merge it with _.merge
     static Configuration: TConfig
     static ConfigFilePath = './config/config.yml'
 

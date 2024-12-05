@@ -39,7 +39,6 @@ export class Roles {
         Roles.UserDefaultRole = Config.Configuration.server?.authentication["default-role"]
     }
 
-    //BUG refactor cause always true
     static HasPermission(userToken: TUserTokenInfo | undefined, schemaRoles: string[] | undefined, permission: string): boolean {
         if (!userToken)
             return true
@@ -58,6 +57,7 @@ export class Roles {
             .flatten()
             .uniq()
             .value()
+            
         if (userPermissions === undefined)
             return false
 

@@ -29,6 +29,7 @@ export type TAuthentication = {
     & (TLocalAuthConfig | TDemoAuthConfig | TOidcAuthConfig)
 // & TAzureAdAuthConfig
 
+
 //
 export class AuthProvider {
 
