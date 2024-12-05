@@ -47,6 +47,7 @@ export class OidcAuth extends absAuthProvider {
 
     @Logger.LogFunction()
     async Init(): Promise<void> {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
         this.#Config = Config.Configuration.server?.authentication as TOidcAuthConfig
 
         if (!this.#Config)
