@@ -3,8 +3,8 @@ POST  http://localhost:3000/user/login
 Content-Type: application/json
 
 {
-    "username":"myapiuser",
-    "password": "myStr@ngpa$$w0rd"
+    "username":"myoidcuser",
+    "password": "123456"
 }
 ###
 

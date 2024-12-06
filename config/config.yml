@@ -2,14 +2,14 @@ version: "0.3"
 
 server:
   port: 3000
-  verbosity: debug
+  verbosity: info
   timezone: UTC
   request-limit: 100mb
   authentication:
     # provider: local
     # default-role: all
     provider: oidc
-    issuer: http://localhost:8080/realms/metal/.well-known/openid-configuration
+    issuer: http://localhost:8080/realms/metal
     client-id: metal-server
     client-secret: dOQoanZt02oGV4jTjGR4LVudwSJqbujT
     default-role: none

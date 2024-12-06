@@ -1,17 +1,19 @@
+@issuer=https://metal.eu.auth0.com
+
 
 # @name discover
-GET http://localhost:8080/realms/metal/.well-known/openid-configuration
+GET {{issuer}}/.well-known/openid-configuration
 
 ###
-@username=myoidcuser
-@password=123456
-@client_id=metal-server
-@client_secret=dOQoanZt02oGV4jTjGR4LVudwSJqbujT
+@username=user@never.local
+@password=Azerty123!
+@client_id=5tVhz98PMAmmbYNIZNO4iwcNZyvJsvs8
+@client_secret=NwPzKJIyPjhLfkH9EZgchp3ZatiBO_IlqTdH5yWdnZ4s6xgZDlP64hsMu9bomLC0
 
 
 ###
 # @name login
-POST http://localhost:8080/realms/metal/protocol/openid-connect/token HTTP/1.1
+POST {{issuer}}/oauth/token HTTP/1.1
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=password
@@ -19,13 +21,23 @@ grant_type=password
 &password={{password}}
 &client_id={{client_id}}
 &client_secret={{client_secret}}
+&scope=openid profile guest read:roles
+# &connection=Username-Password-Authentication
 
-###
 
 @token={{login.response.body.access_token}}
 
 ###
 
-# @name user-info
-GET http://localhost:8080/realms/metal/protocol/openid-connect/userinfo
+# @name user_info
+GET {{issuer}}/userinfo
+authorization: Bearer {{token}}
+
+
+@sub={{user_info.response.body.sub}}
+###
+
+# @name user-role
+GET {{issuer}}/api/v2/users/{{sub}}/roles
+Accept: application/json
 authorization: Bearer {{token}}
