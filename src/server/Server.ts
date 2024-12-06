@@ -23,7 +23,7 @@ import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
 import { Sandbox } from './Sandbox'
 import { JsonHelper } from '../lib/JsonHelper'
-import { HttpErrorForbidden, HttpErrorNotImplemented } from "./HttpErrors"
+import { HttpError, HttpErrorForbidden, HttpErrorNotImplemented } from "./HttpErrors"
 import { Swagger } from '../utils/Swagger'
 import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"
@@ -110,7 +110,7 @@ export class Server {
         // error handler
         Server.App.use((err: any, req: Request, res: Response, _next: NextFunction) => {
             // format error
-            res.status(err.status || 500).json({
+            res.status(err.Status || err.status || 500).json({
                 message: err.message,
                 errors: err.errors
             })
