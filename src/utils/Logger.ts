@@ -115,7 +115,8 @@ export class Logger {
                     : `: ${JsonHelper.Stringify(_filteredArgs)}`
 
                 setImmediate(() => logger(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`))
-                return originalMethod.apply(this, _filteredArgs)
+                // continue with original args
+                return originalMethod.apply(this, originalArgs)
             }
             return descriptor
         }
