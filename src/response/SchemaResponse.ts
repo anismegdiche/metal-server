@@ -6,12 +6,9 @@
 import { Request, Response } from 'express'
 //
 import { Convert } from '../lib/Convert'
-import { Logger } from '../utils/Logger'
 import { ServerResponse } from './ServerResponse'
 import { Schema } from '../server/Schema'
-import { HttpErrorContentTooLarge, HttpError, HttpErrorInternalServerError } from '../server/HttpErrors'
-import { Config } from '../server/Config'
-import { JsonHelper } from '../lib/JsonHelper'
+import { HttpError, HttpErrorInternalServerError } from '../server/HttpErrors'
 import { HTTP_STATUS_CODE } from "../lib/Const"
 
 export class SchemaResponse {

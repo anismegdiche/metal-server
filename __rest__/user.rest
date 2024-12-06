@@ -14,11 +14,7 @@ Content-Type: application/json
 
 # @name getinfo
 GET  http://localhost:3000/user/info
-Content-Type: application/json
 authorization: Bearer {{token}}
-
-{    
-}
 
 ###
 
