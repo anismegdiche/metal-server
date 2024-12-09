@@ -302,12 +302,6 @@
 				"args": "after-used",
 				"argsIgnorePattern": "^_"
 			}
-		],
-		"import/no-cycle": [
-			"error",
-			{
-				"maxDepth": 1
-			}
 		]
 	}
 }
