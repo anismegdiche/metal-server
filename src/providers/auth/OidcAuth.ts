@@ -70,7 +70,7 @@ export class OidcAuth extends absAuthProvider {
             this.#OidcClient = new oidcIssuer.Client({
                 client_id: this.#Config['client-id'],
                 client_secret: this.#Config["client-secret"],
-                response_types: ['code']
+                response_types: ['token']
             })
         } catch (error: any) {
             throw new HttpErrorInternalServerError(`Failed to initialize OIDC Authentication: ${error.message}`)

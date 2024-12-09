@@ -43,7 +43,7 @@ grant_type=password
 
 ###
 # @name user_info
-GET {{issuer}}/userinfo
+GET {{issuer}}/protocol/openid-connect/userinfo
 authorization: Bearer {{server-token}}
 
 
