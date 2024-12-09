@@ -23,7 +23,7 @@ import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
 import { Sandbox } from './Sandbox'
 import { JsonHelper } from '../lib/JsonHelper'
-import { HttpError, HttpErrorForbidden, HttpErrorNotImplemented } from "./HttpErrors"
+import { HttpErrorNotImplemented } from "./HttpErrors"
 import { Swagger } from '../utils/Swagger'
 import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"

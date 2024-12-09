@@ -53,11 +53,12 @@ export class Roles {
         const userPermissions = _
             .chain(rolesIntersection.map(role => {
                 if (!StringHelper.IsEmpty(Roles.#ServerRoles[role]))
-                    return Roles.#ServerRoles[role]!.split('')}))
+                    return Roles.#ServerRoles[role]!.split('')
+            }))
             .flatten()
             .uniq()
             .value()
-            
+
         if (userPermissions === undefined)
             return false
 

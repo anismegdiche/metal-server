@@ -11,7 +11,7 @@ import { Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest'
 import { TSchemaResponse } from '../types/TSchemaResponse'
-import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorNotFound } from './HttpErrors'
+import { HttpErrorBadRequest, HttpErrorNotFound } from './HttpErrors'
 import { TypeHelper } from '../lib/TypeHelper'
 import { StringHelper } from '../lib/StringHelper'
 import { TConfigSchema, TConfigSchemaEntity } from "../types/TConfig"

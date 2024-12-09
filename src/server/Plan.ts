@@ -20,7 +20,7 @@ import { Helper } from "../lib/Helper"
 import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
 import { HttpResponse } from "./HttpResponse"
-import { HttpErrorForbidden, HttpErrorNotFound } from "./HttpErrors"
+import { HttpErrorNotFound } from "./HttpErrors"
 import { StepCommand } from '../types/TConfig'
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"

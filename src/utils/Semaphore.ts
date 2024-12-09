@@ -14,7 +14,7 @@ class Semaphore {
 
     async Acquire(): Promise<void> {
         if (this.#Available > 0) {
-            this.#Available--
+            this.#Available -= 1
             return Promise.resolve()
         }
         return new Promise((resolve) => this.#Tasks.push(resolve))
@@ -23,10 +23,10 @@ class Semaphore {
     Release(): void {
         if (this.#Tasks.length > 0) {
             const nextTask = this.#Tasks.shift()
-            if (nextTask) 
+            if (nextTask)
                 nextTask()
-        } else {
-            this.#Available++
+            return;
         }
+        this.#Available += 1
     }
 }

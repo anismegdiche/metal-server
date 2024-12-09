@@ -13,7 +13,7 @@ import { Config } from './Config'
 import { Plan } from './Plan'
 import { JsonHelper } from '../lib/JsonHelper'
 import { HttpResponse } from "./HttpResponse"
-import { HttpErrorForbidden, HttpErrorNotFound } from "./HttpErrors"
+import { HttpErrorNotFound } from "./HttpErrors"
 import { TJson } from "../types/TJson"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"

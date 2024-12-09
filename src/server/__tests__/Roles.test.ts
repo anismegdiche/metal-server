@@ -13,11 +13,11 @@ jest.mock("../Config", () => ({
             },
             server: {
                 authentication: {
-                    "default-role": "none",
-                },
-            },
-        },
-    },
+                    "default-role": "none"
+                }
+            }
+        }
+    }
 }))
 
 describe("Roles", () => {
@@ -46,7 +46,8 @@ describe("Roles", () => {
 
         it("should return false if no intersection of roles with schemaRoles", () => {
             const userToken = {
-                user: "test", roles: ["guest"]
+                user: "test",
+roles: ["guest"]
             }
             expect(Roles.HasPermission(userToken, ["admin"], PERMISSION.ADMIN)).toBe(false)
         })
@@ -87,8 +88,7 @@ describe("Roles", () => {
                 user: "test",
                 roles: ["admin"]
             }
-            expect(() =>
-                Roles.CheckPermission(userToken, ["admin"], PERMISSION.ADMIN)
+            expect(() => Roles.CheckPermission(userToken, ["admin"], PERMISSION.ADMIN)
             ).not.toThrow()
         })
 
@@ -97,8 +97,7 @@ describe("Roles", () => {
                 user: "test",
                 roles: ["user"]
             }
-            expect(() =>
-                Roles.CheckPermission(userToken, ["admin"], PERMISSION.ADMIN)
+            expect(() => Roles.CheckPermission(userToken, ["admin"], PERMISSION.ADMIN)
             ).toThrow(HttpErrorForbidden)
         })
     })
