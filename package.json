@@ -9,14 +9,15 @@
   "license": "GPL-3.0-or-later",
   "main": "./build/index.js",
   "scripts": {
-    "build": "tsc --watch",
+    "prod": "node ./build/index.js",
     "dev": "nodemon --exec \"npm run prod-ts\" --watch src/",
-    "lint": "eslint --fix src",
+    "build": "tsc --watch",
     "test": "jest",
     "test-client": "jest --testMatch \"**/client/__tests__/**/*.js\"",
-    "prod": "node ./build/index.js",
-    "prod-ts": "ts-node ./src/index.ts",
-    "typia-prepare": "ts-patch install && typia patch"
+    "_prod-ts": "ts-node ./src/index.ts",
+    "_lint": "eslint --fix src",
+    "_typia-prepare": "ts-patch install && typia patch",
+    "_changelog": "git --no-pager log --since=\"2024-11-14\" --oneline --pretty=format:\"- %s\" > HISTORY.md"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.26.0",
@@ -115,11 +116,5 @@
       "build/**",
       "*.vscode*"
     ]
-  },
-  "auto-changelog": {
-    "output": "HISTORY.md",
-    "template": "keepachangelog",
-    "unreleased": true,
-    "commitLimit": false
   }
 }
