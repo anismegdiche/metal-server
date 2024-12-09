@@ -1,5 +1,15 @@
 # Metal Changelog
 
+## Version 0.4 - TBD
+
+### Features
+
+### Enhancements
+
+### Bug Fixes
+
+---
+
 ## Version 0.3 - November 14, 2024
 
 ### ⚠️ Breaking Changes
