@@ -4,10 +4,9 @@
 //
 //
 
-import { Logger } from "../utils/Logger"
+import path from "node:path"
 
 export class StringHelper {
-    @Logger.LogFunction()
     static Split(str: string, sep: string): string[] {
         return (str.includes(sep))
             ? str.split(sep)
@@ -16,14 +15,16 @@ export class StringHelper {
             : [str]
     }
 
-    @Logger.LogFunction()
     static FixObjectMissingQuotes(str: string): string {
         const stringFixed = str.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
         return stringFixed.replace(/:\s*([^"{[,\s][^,\s}]*)/g, ':"$1"')
     }
 
-    @Logger.LogFunction()
     static IsEmpty(str: string | undefined | null): boolean {
         return  str == undefined || str == null || str == '' || str.trim() == ''
+    }
+
+    static URL(...subpaths: string[]) {
+        return path.join(...subpaths).replace(':/', '://')
     }
 }
