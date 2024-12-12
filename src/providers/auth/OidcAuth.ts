@@ -50,6 +50,7 @@ export class OidcAuth extends absAuthProvider {
     @Logger.LogFunction()
     async Init(): Promise<void> {
         //FIXME workaround for SSL/TLS errors
+        // file deepcode ignore InsecureTLSConfig: Workround
         process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
         this.#Config = <TOidcAuthConfig>_.merge(

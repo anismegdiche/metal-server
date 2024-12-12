@@ -5,6 +5,7 @@
 //
 
 class Semaphore {
+    
     #Tasks: (() => void)[] = [];
     #Available: number
 
@@ -17,7 +18,9 @@ class Semaphore {
             this.#Available -= 1
             return Promise.resolve()
         }
-        return new Promise((resolve) => this.#Tasks.push(resolve))
+        return new Promise((resolve) => {
+            this.#Tasks.push(resolve)
+        })
     }
 
     Release(): void {
@@ -25,7 +28,7 @@ class Semaphore {
             const nextTask = this.#Tasks.shift()
             if (nextTask)
                 nextTask()
-            return;
+            return
         }
         this.#Available += 1
     }
