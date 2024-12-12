@@ -131,7 +131,7 @@ export class Cache {
             return
 
         // remove source from schemaRequest
-        delete schemaRequest?.source
+        delete schemaRequest.source
 
         const { schema, entity, cache = 0 } = schemaRequest
 
