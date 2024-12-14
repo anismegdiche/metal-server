@@ -30,7 +30,6 @@ export class Convert {
     }
 
     static HumainSizeToBytes(size: string) {
-
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const bytes = require('bytes')
         return bytes(size)

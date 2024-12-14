@@ -10,7 +10,7 @@ export class HttpResponse {
     static Ok<T>(data: T): TInternalResponse<T> {
         return <TInternalResponse<T>>{
             StatusCode: HTTP_STATUS_CODE.OK,
-            Body: data as T
+            Body: data
         } 
     }
 

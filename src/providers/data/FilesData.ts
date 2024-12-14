@@ -101,7 +101,7 @@ export class FilesData extends absDataProvider {
         return `\`${field}\``
     }
 
-    SetHandler(entity: string) {
+    SetContentHandler(entity: string) {
         if (!_.has(this.File, entity)) {
             const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entity))
             if (handler)
@@ -147,7 +147,7 @@ export class FilesData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.SetHandler(entity)
+        this.SetContentHandler(entity)
         this.SetLock(entity)
         await this.Lock.get(entity)!.Acquire()
 
@@ -189,7 +189,7 @@ export class FilesData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.SetHandler(entity)
+        this.SetContentHandler(entity)
 
         this.File[entity].InitContent(
             entity,
@@ -236,7 +236,7 @@ export class FilesData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.SetHandler(entity)
+        this.SetContentHandler(entity)
         this.SetLock(entity)
         await this.Lock.get(entity)!.Acquire()
         try {
@@ -280,7 +280,7 @@ export class FilesData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.SetHandler(entity)
+        this.SetContentHandler(entity)
         this.SetLock(entity)
         await this.Lock.get(entity)!.Acquire()
 
