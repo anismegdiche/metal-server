@@ -21,10 +21,17 @@ export class StringHelper {
     }
 
     static IsEmpty(str: string | undefined | null): boolean {
-        return  str == undefined || str == null || str == '' || str.trim() == ''
+        return str == undefined || str == null || str == '' || str.trim() == ''
     }
 
-    static URL(...subpaths: string[]) {
-        return path.join(...subpaths).replace(':/', '://')
+    static Url(...subPaths: Array<string | undefined>) {
+        const cleanSubPaths = subPaths.filter((path: string | undefined) => !StringHelper.IsEmpty(path)) as string[]
+        if (cleanSubPaths.length == 0)
+            return ''
+
+        return path
+            .join(...cleanSubPaths)
+            .replace(/\\/g, '/')
+            .replace(':/', '://')
     }
 }
