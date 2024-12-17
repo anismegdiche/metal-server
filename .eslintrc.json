@@ -171,7 +171,7 @@
 		"no-multi-assign": "error",
 		"no-multi-spaces": "off",
 		"no-multi-str": "error",
-		"no-multiple-empty-lines": "error",
+		"no-multiple-empty-lines": "warn",
 		"no-negated-condition": "error",
 		"no-nested-ternary": "error",
 		"no-new": "error",

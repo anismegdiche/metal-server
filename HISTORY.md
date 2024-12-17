@@ -1,0 +1,119 @@
+- cleanup
+- "Update delete statement in Cache class to use dot notation."
+- `Removed Logger import and added URL function to StringHelper.ts`
+- `Bump package version from 0.3.6 to 0.3.7`
+- Merge branch '0.3' into dev
+- fix version in config.yml
+- `Bump package version from 0.3.5 to 0.3.6`
+- `Update OIDC Keycloak REST endpoint and OidcAuth configuration`
+- lint cleanup
+- fix eslint
+- removed auto-changelog
+- "Added new version 0.4 to CHANGELOG.md with empty features, enhancements, and bug fixes sections, and updated version 0.3."
+- package update
+- packages update
+- cleanup
+- fix OIDC Auth
+- fix server error handler HTTP status code
+- cleanup
+- fix LogFunction
+- fix OIDC TLS errors
+- "Updated log message for Swagger UI route"
+- cleanup
+- new Semaphore and Mutex
+- "Updated AuthProvider and auth modules to include config types and enums"
+- added Roles tests
+- clean up
+- clean up
+- fix ServerResponse.CheckRequest
+- fix empty role
+- OIDC AUth provider
+- "Updated Logger.LogFunction decorator in AddRows method of DataTable class"
+- "Refactor Cache test suite: updated imports, mocks, and test cases for Cache methods"
+- refactor Cache feature response and logic
+- fix FsStorage tests
+- cleanup
+- cleanup
+- fix ts-node
+- "Refactor CacheResponse and Cache classes, update permission checks, and modify various server classes"
+- "Moved EscapeEntity and EscapeField methods to the end of each data provider class in FilesData, MemoryData, MetalData, MongoDbData, MySqlData, PlanData, PostgresData, and SqlServerData."
+- "Moved DATA_PROVIDER enum from server/Source.ts to providers/DataProvider.ts and updated imports accordingly."
+- "Moved DATA_PROVIDER enum from server/Source.ts to providers/DataProvider.ts and updated imports accordingly."
+- "Added Logger.Error call in ServerResponse, removed error variable in catch blocks in Cache and DataTable test"
+- DataProvider refactor
+- Update tasks.json: modified "npm: build" task to use eslint-stylish problem matcher, and added a new commented-out task for eslint to lint whole folder.
+- "Removed Clone() methods from absContentProvider and absStorageProvider, replaced with structuredClone() in FilesData"
+- cleanup
+- "Updated type of 'options' variable in Delete method and added underscore prefix to '_schemaRequest' parameter in AddEntity method."
+- fix openapi yaml
+- "Added new type alias TConvertParams in TypeHelper.ts, renamed Server.CoreLoad to Server.RegisterProviders in Server.ts, and updated references to the renamed method in Server.ts and User.test.ts."
+- "Updated Logger class to filter out UserTokenInfo objects from log messages and use setImmediate for logging"
+- "Rename variables _expires to cacheExpires and _expireDate to expiresNow in Cache class"
+- fix entity & field escape
+- fix plusplus
+- fix async from  constructor
+- cleanup
+- StorageProvider refactor
+- update gitignore
+- "Removed undefined check in null checks and changed type of fieldsValues from <TRow>{} to {}"
+- "Updated FilesData.ts: changed Logger import, added conditional logging of metadata"
+- cleanup
+- cleanup
+- "Bump version from 0.3.1 to 0.3.2 in package.json"
+- "Refactor absContentProvider, update content providers, and adjust related classes, interfaces & tests"
+- "Removed ACContentProvider.ts and replaced ACContentProvider with absContentProvider in CsvContent.ts, JsonContent.ts, and XlsContent.ts. Updated AuthProvider.ts with added comments."
+- Merge branch 'latest' into dev
+- Merge branch 'latest' of https://github.com/anismegdiche/metal-server into latest
+- "Removed HTTP_METHOD enum and RESPONSE_STATUS object from Const.ts, and changed export type to type in TConfig.ts for various step commands."
+- MongoDbHelper refactor
+- "Removed type cast in assignment of fieldsValues"
+- "Added a comment to ignore a deepcode warning in XlsContent.test.ts"
+- "Removed HTTP_METHOD enum and RESPONSE_STATUS object from Const.ts, and changed export type to type in TConfig.ts for various step commands."
+- "Removed @tensorflow/tfjs-core from package.json and package-lock.json, and made several property declarations readonly in TensorFlowJs.ts"
+- cleanup
+- removed sql2mongo
+- "Rename ACAuthProvider to absAuthProvider and update references"
+- Packes updated
+- "Refactored Schema class to use new GetSchemaConfig method instead of direct Config.Get calls"
+- "Updated error message in Plan class to include plan name"
+- clean up
+- DataProvider classes abstraction
+- clean up
+- renamed DataProvider to Data
+- "Removed unnecessary import and config parameter from MySqlDataProvider test"
+- "Update FtpStorage test: modify connection failure test to use try-catch block and update Write test to use backslash in file path"
+- "Removed newline at end of file and reformatted code for consistency"
+- "Updated import statements for DATA_PROVIDER enum in multiple files"
+- Fixed constructor async calls
+- clean up
+- "Updated FsStorage and FtpStorage classes: changed autocreate property access and logging messages."
+- Remove VirtualFileSystem setup and verification from XlsContent test
+- Remove "result" property from schemaResponse objects in TypeHelper test cases.
+- updated config files
+- removed mysql tests
+- updated rest tests
+- Added FileDataProvider Mutex
+- "Removed type cast in Anonymizer and added eslint-disable comment for underscore/get"
+- clean up
+- fix CsvContent.Params.quoteChar bug
+- updated Logger.LogFunction params
+- Merge branch 'latest' into dev
+- "Updated config-sample.yml: added authentication provider and default role, modified user password format, and added roles section"
+- "Updated config.yml, openapi.yml, and multiple TypeScript files to modify cache handling, response structure, and schema response conversion."
+- "Deleted openapi.yaml file and modified Const.ts and Swagger.ts files"
+- Remove `result` property from `TSchemaResponse` type and related code.
+- Remove unnecessary schemaResponse declarations in Insert, Update, and Delete methods.
+- "Updated OpenAPI schema definitions and descriptions"
+- Merge branch 'latest' into dev
+- "Updated NlpJs class with readonly properties, modified TypeHelper to remove certain strings, changed Config class to use ConfigFileError, added ConfigFileError class, and updated TConfig type to use TJson instead of JSON."
+- "Updated package-lock.json and package.json: removed 'dev' flags, updated version numbers, and added 'ts-patch' dependency"
+- "Updated config-sample-docker.yml: added authentication provider and default role, changed user password format, and made no other changes."
+- Merge branch 'latest' into dev
+- "Removed authorization headers and user token checks from server routes"
+- clean up
+- Merge branch 'latest' into dev
+- "Update changelog to reflect version 0.3 release date and Node.js version"
+- Merge branch 'dev' into latest
+- "Update version in package.json from 0.3-dev to 0.3"
+- update config yaml files
+- "Refactored authentication and authorization code, removed BasicAuth provider, updated Config and User classes, and modified tests."

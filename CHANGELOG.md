@@ -1,12 +1,32 @@
 # Metal Changelog
 
-## Version 0.4 - TBD
+<!-- ## Version 0.4 - TBD
 
 ### Features
 
 ### Enhancements
 
 ### Bug Fixes
+
+--- -->
+## Version 0.3.7 🎄✨ X-Mas Patch 🎅🎁 - December 15, 2024 ❄️🌟
+
+### Features
+- Added OpenID Connect Provider for authentication
+
+### Enhancements
+- Refactored Cache feature response, and logic.
+- Refactored DataProvider classes for better abstraction.
+- Refactored Schema class.
+- Improved structure and readability.
+
+### Bug Fixes
+- Fixed server error handler HTTP status code issues.
+- Fixed various logging functions
+- Fixed empty role handling.
+- Addressed bugs in CsvContent.Params.quoteChar functionality.
+- Corrected issues with FsStorage.
+- Corrected config.yml file version 0.3 handling
 
 ---
 
