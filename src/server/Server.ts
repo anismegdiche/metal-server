@@ -33,6 +33,7 @@ import { TUserTokenInfo } from "./User"
 import { ContentProvider } from "../providers/ContentProvider"
 import { StorageProvider } from "../providers/StorageProvider"
 import { DataProvider } from "../providers/DataProvider"
+import { WebServiceProvider } from "../providers/WebServiceProvider"
 
 export class Server {
 
@@ -192,6 +193,7 @@ export class Server {
     static RegisterProviders() {
         AuthProvider.RegisterProviders()
         StorageProvider.RegisterProviders()
+        WebServiceProvider.RegisterProviders()
         ContentProvider.RegisterProviders()
         DataProvider.RegisterProviders()
     }
