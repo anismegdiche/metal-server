@@ -2,17 +2,12 @@ version: "0.3"
 
 server:
   port: 3000
-  verbosity: info
+  verbosity: debug
   timezone: UTC
   request-limit: 100mb
   authentication:
-    # provider: local
-    # default-role: all
-    provider: oidc
-    issuer: http://localhost:8080/realms/metal
-    client-id: metal-server
-    client-secret: dOQoanZt02oGV4jTjGR4LVudwSJqbujT
-    default-role: none
+    provider: local
+    default-role: all
   cache:
     provider: memory
     database: cache
@@ -33,33 +28,49 @@ sources:
     database: memory
     options:
       autocreate: true
-  src-fs:
-    provider: files
+
+  src-ws-noauth:    # https://fakerestapi.azurewebsites.net/index.html
+    provider: webservice
+    host: https://fakerestapi.azurewebsites.net/api/v1/
+    # user: admin
+    # password: 123456
     options:
-      storage: fs
-      fs-folder: ./data/
-      content:
-        "homes*.csv":
-          type: csv
-          csv-delimiter: ", "
-          csv-newline: "\n"
-          csv-header: true
-          csv-quote: "\""
-        "industry*.csv":
-          type: csv
-          csv-delimiter: ","
-          csv-newline: "\r\n"
-          csv-header: true
-          csv-quote: "\""
-        "ref*.xlsx":
-          type: xls
-          xls-sheet: Feuil1
-        "sample*.xlsx":
-          type: xls
-          xls-starting-cell: E6
+      type: rest
+      content: json
+      endpoints:
+        collection:
+          read: GET
+        item:
+          read: GET:/@{id}
+          create: POST
+          update: PUT:/@{id}
+          delete: DELETE:/@{id}
+      
+    # src-ws-auth:    # https://dummyjson.com/docs
+    #   provider: webservice
+    #   host: https://dummyjson.com/
+    #   options:
+    #     type: rest
+    #     response: json
+    #     json-path: ${entity}
+    #     login: 
+    #       url: POST:/user/login
+    #       body:
+    #         username: emilys
+    #         password: emilyspass
+    #       authorization: 
+    #         Bearer: accessToken
+
+    #     urls:
+    #       read: GET
+    #       create: POST:/add
+    #       update:  PUT:/${id}
+    #       delete: DELETE:/${id}
+
+
 
 schemas:
-  mem:
-    source: src-mem
-  fs:
-    source: src-fs
+  ws1:
+    source: src-ws-noauth
+  # ws2:
+  #   source: src-ws-auth

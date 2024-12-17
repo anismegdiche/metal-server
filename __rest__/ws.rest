@@ -1,0 +1,54 @@
+###
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+
+
+###
+@token={{login.response.body.token}}
+
+
+###
+# @name read
+GET http://localhost:3000/schema/ws1/Users
+    ?filter={"id":3,"userName": "User 3"}
+    # &filter={"country":"France"}
+    # &cache=300
+authorization: Bearer {{token}}
+
+
+###
+# @name update
+PATCH  http://localhost:3000/schema/ws1/Users
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": {
+        "userName": "New User 3"
+    }
+}
+
+###
+# @name create
+POST  http://localhost:3000/schema/ws1/Users
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": {
+        "userName": "New User X",
+        "password": "123456"
+    }
+}
+
+###
+# @name delete
+DELETE  http://localhost:3000/schema/ws1/Users
+Content-Type: application/json
+authorization: Bearer {{token}}
