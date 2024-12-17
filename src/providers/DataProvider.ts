@@ -14,6 +14,7 @@ import { MySqlData } from "./data/MySqlData"
 import { PlanData } from "./data/PlanData"
 import { PostgresData } from "./data/PostgresData"
 import { SqlServerData } from "./data/SqlServerData"
+import { WebServiceData } from "./data/WebServiceData"
 
 
 //
@@ -25,7 +26,8 @@ export enum DATA_PROVIDER {
     MONGODB = "mongodb",
     MSSQL = "mssql",
     FILES = "files",
-    MYSQL = "mysql"
+    MYSQL = "mysql",
+    WEBSERVICE = "webservice"
 }
 
 
@@ -50,5 +52,6 @@ export class DataProvider {
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.MEMORY, new MemoryData())
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.FILES, new FilesData())
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.MYSQL, new MySqlData())
+        DataProvider.#StorageFactory.Register(DATA_PROVIDER.WEBSERVICE, new WebServiceData())
     }
 }

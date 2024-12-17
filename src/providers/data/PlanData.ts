@@ -85,9 +85,7 @@ export class PlanData extends absDataProvider {
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
-        const sqlQuery = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
-            ? sqlQueryHelper.Query
-            : undefined
+        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
         const planData = await Plan.Process(schemaRequest, sqlQuery)
 

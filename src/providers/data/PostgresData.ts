@@ -220,8 +220,9 @@ export class PostgresData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
@@ -251,7 +252,7 @@ export class PostgresData extends absDataProvider {
                 END LOOP;
             END $$;
             `
-        let result = await this.Connection.query(sqlQuery)
+        await this.Connection.query(sqlQuery)
 
         // Get Data
         sqlQuery = `
@@ -274,7 +275,7 @@ export class PostgresData extends absDataProvider {
                 AND n.nspname = t.table_schema;
             `
 
-        result = await this.Connection.query(sqlQuery)
+        const result = await this.Connection.query(sqlQuery)
 
         if (result?.rows.length == 0)
             throw new HttpErrorNotFound(`${schema}: No entities found`)

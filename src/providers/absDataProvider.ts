@@ -11,6 +11,8 @@ import { TSchemaResponse } from "../types/TSchemaResponse"
 import { absDataProviderOptions } from "./absDataProviderOptions"
 import { TConfigSource } from "../types/TConfig"
 import { DATA_PROVIDER } from "../providers/DataProvider"
+import { SqlQueryHelper } from "../lib/SqlQueryHelper"
+import { TOptions } from "../types/TOptions"
 
 
 //
@@ -49,5 +51,12 @@ export abstract class absDataProvider {
     Clone(): absDataProvider {
         // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
         return _.cloneDeep(this) as absDataProvider
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    GetSqlQuery(sqlQueryHelper: SqlQueryHelper, options: TOptions): string | undefined {
+        return (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
+            ? sqlQueryHelper.Query
+            : undefined
     }
 }

@@ -202,9 +202,7 @@ export class FilesData extends absDataProvider {
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
-        const sqlQuery = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
-            ? sqlQueryHelper.Query
-            : undefined
+        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
         const data = await this.File[entity].Get(sqlQuery)
 
