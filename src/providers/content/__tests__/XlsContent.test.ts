@@ -48,7 +48,7 @@ async function createMockWorkbook(data: any[][]): Promise<Buffer> {
     data.forEach(row => worksheet.addRow(row))
 
     const buffer = await workbook.xlsx.writeBuffer()
-    return buffer as Buffer
+    return buffer as unknown as Buffer<ArrayBufferLike>
 }
 
 describe('XlsContent', () => {
