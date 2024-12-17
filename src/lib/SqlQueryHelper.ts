@@ -9,6 +9,8 @@ import { TRow } from "../types/DataTable"
 import { TJson } from '../types/TJson'
 import { Logger } from '../utils/Logger'
 import { JsonHelper } from './JsonHelper'
+import { HttpErrorInternalServerError } from "../server/HttpErrors"
+import typia from "typia"
 
 export class SqlQueryHelper {
     Query: string = ''
@@ -47,25 +49,28 @@ export class SqlQueryHelper {
 
     @Logger.LogFunction()
     Where(condition: string | object | undefined = undefined) {
+        // no filters
         if (condition === undefined)
             return this
 
+        // filter-expression
         if (typeof condition === 'string' && condition.length > 0) {
             this.Query = `${this.Query} WHERE ${condition}`
             return this
         }
 
+        // filter
         if (Array.isArray(condition) && condition.length > 0) {
             const _cond = _
                 .chain(condition)
                 .map((__filter) => {
-                    const ___formattedValue: string = typeof __filter === 'number'
-                        // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                        ? _.values(__filter)[0]
-                        // eslint-disable-next-line you-dont-need-lodash-underscore/values
-                        : `'${_.values(__filter)[0]}'`
-                    // eslint-disable-next-line you-dont-need-lodash-underscore/keys
-                    return `${_.keys(__filter)[0]}=${___formattedValue}`
+                    const __field = Object.keys(__filter).at(0)
+                    const __value = Object.values(__filter).at(0)
+
+                    if (!__field)
+                        return ''
+
+                    return this.#WhereCondition(__field, __value)
                 })
                 .join(' AND ')
                 .value()
@@ -78,11 +83,12 @@ export class SqlQueryHelper {
         if (typeof condition === 'object' && _.keys(condition).length > 0) {
             const _cond = _
                 .chain(condition)
-                .map((__value, __key) => {
-                    const ___formattedValue: string = typeof __value === 'number'
-                        ? __value
-                        : `'${__value}'`
-                    return `${__key}=${___formattedValue}`
+                .map((__value, __field) => {                   
+
+                    if (!__field)
+                        return ''
+
+                    return this.#WhereCondition(__field, __value)
                 })
                 .join(' AND ')
                 .value()
@@ -93,6 +99,25 @@ export class SqlQueryHelper {
         return this
     }
 
+    // eslint-disable-next-line class-methods-use-this
+    #WhereCondition(field: string, value: any): string {
+        switch (true) {
+            case typia.is<string>(value):
+                return `${field} = '${value}'`
+
+            case typia.is<null>(value):
+                return `${field} = NULL`
+
+            case typia.is<undefined>(value):
+                throw new HttpErrorInternalServerError(`SqlQueryHelper.Where: undefined value for field '${field}'`)
+
+            case typia.is<number>(value):
+            case typia.is<bigint>(value):
+            case typia.is<boolean>(value):
+            default:
+                return `${field} = ${value}`
+        }
+    }
 
     @Logger.LogFunction()
     Delete() {

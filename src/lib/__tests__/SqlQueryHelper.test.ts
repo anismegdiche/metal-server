@@ -5,6 +5,7 @@
 //
 import { SqlQueryHelper } from '../SqlQueryHelper'
 import { TRow } from '../../types/DataTable'
+import { JsonHelper } from "../JsonHelper"
 
 
 describe('SqlQueryHelper_class', () => {
@@ -55,13 +56,24 @@ describe('SqlQueryHelper_class', () => {
     })
 
     // Tests that Where method sets the Query property correctly with the given object condition. 
-    it("test_where_object", () => {
+    it("test_where_json", () => {
         const queryHelper = new SqlQueryHelper()
         queryHelper.Select('*').From('users').Where({
             id: 1,
             name: 'John'
         })
-        expect(queryHelper.Query).toEqual("SELECT * FROM users WHERE id=1 AND name='John'")
+        expect(queryHelper.Query).toEqual("SELECT * FROM users WHERE id = 1 AND name = 'John'")
+    })
+
+    // Tests that Where method sets the Query property correctly with the given object condition. 
+    it("test_where_array of json", () => {
+        const queryHelper = new SqlQueryHelper()
+        const condition = JsonHelper.ToArray({
+            id: 1,
+            name: 'John'
+        })
+        queryHelper.Select('*').From('users').Where(condition)
+        expect(queryHelper.Query).toEqual("SELECT * FROM users WHERE id = 1 AND name = 'John'")
     })
 
     // Tests that Delete method sets the Query property correctly. 
