@@ -17,12 +17,12 @@ import { absContentProvider } from "../absContentProvider"
 
 //
 export type TJsonContentConfig = {
-    "json-path"?: string
+    "json-path"?: string            // JSON path, if undefined will return the whole JSON
 }
 
-type TJsonContentParams = Required<{
+type TJsonContentParams = {
     [K in keyof TJsonContentConfig as K extends `json-${infer U}` ? TConvertParams<U> : K]: TJsonContentConfig[K]
-}>
+}
 
 
 //
@@ -35,7 +35,7 @@ export class JsonContent extends absContentProvider {
         this.EntityName = entity
         if (this.Config) {
             this.Params = {
-                path: this.Config["json-path"] ?? ""
+                path: this.Config["json-path"]
             }
         }
 

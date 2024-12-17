@@ -23,7 +23,7 @@ describe('JsonContent', () => {
             jsonContentEmptyOptions.SetConfig({})
 
             await jsonContentEmptyOptions.InitContent(name, content)
-            expect(jsonContentEmptyOptions.Params).toEqual({ path: "" })
+            expect(jsonContentEmptyOptions.Params).toEqual({ path: undefined })
         })
 
         it('should initialize the content and config correctly', async () => {
