@@ -52,7 +52,7 @@ export class JsonContent extends absContentProvider {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Json: Content is not defined')
 
-        //TODO when content = "", data has empty json object {}
+        //FIXME when content = "", data has empty json object {}
         const json = JsonHelper.TryParse(
             await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
