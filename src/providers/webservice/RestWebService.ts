@@ -12,6 +12,10 @@ import { Logger } from "../../utils/Logger"
 import { StringHelper } from "../../lib/StringHelper"
 import { HttpErrorBadRequest, HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { JsonHelper } from '../../lib/JsonHelper'
+import { TJson } from "../../types/TJson"
+import { PlaceHolder } from "../../utils/PlaceHolder"
+import { Sandbox } from "../../server/Sandbox"
+import { RX } from "../../lib/Const"
 
 
 //
@@ -27,8 +31,13 @@ export const enum ENDPOINT {
 //
 export type TConfigSourceWebServiceRest = {
     endpoints: {
+        login?: {
+            url?: string
+            body?: TJson<string>
+            headers?: TJson<string>
+        }
         collection?: {
-            read?: string
+            read: string
         },
         item?: {
             create?: string
@@ -64,7 +73,6 @@ export class RestWebService extends absWebServiceProvider {
         "GET": (url: string, _body: string) => this.Client.get(url),
         "POST": (url: string, body: string) => this.Client.post(url, body),
         "PUT": (url: string, body: string) => this.Client.put(url, body),
-
         "DELETE": (url: string, body: string) => this.Client.delete(url, { data: body }),
         "PATCH": (url: string, body: string) => this.Client.patch(url, body)
     }
@@ -89,7 +97,7 @@ export class RestWebService extends absWebServiceProvider {
                     {
                         Url: endpointUrl,
                         Handler: this.MethodCaseMap[endpointMethod],
-                        Key: this.GetKeyFromEndpoint(endpointUrl)
+                        Key: PlaceHolder.GetVarName(endpointUrl)
                     })
             })
 
@@ -102,27 +110,63 @@ export class RestWebService extends absWebServiceProvider {
                     {
                         Url: endpointUrl,
                         Handler: this.MethodCaseMap[endpointMethod],
-                        Key: this.GetKeyFromEndpoint(endpointUrl)
+                        Key: PlaceHolder.GetVarName(endpointUrl)
                     })
             })
     }
 
     @Logger.LogFunction()
     Init(): void {
-        if (this.ConfigSourceOptions?.content) {
-            this.Client.defaults.baseURL = this.ConfigSource!.host
-            const header = Object.keys(HEADER[this.ConfigSourceOptions.content]).at(0)
-            const value = Object.values(HEADER[this.ConfigSourceOptions.content]).at(0)
-            if (typeof header == 'string' && typeof value == 'string')
-                this.Client.defaults.headers.common[header] = value
-            // this.Headers.push(HEADER[this.ConfigSourceOptions.content])
-        }
+        if (!this.ConfigSourceOptions?.content)
+            return
+
+        this.Client.defaults.baseURL = this.ConfigSource!.host
+
+        const header = Object.keys(HEADER[this.ConfigSourceOptions.content]).at(0)
+        const value = Object.values(HEADER[this.ConfigSourceOptions.content]).at(0)
+
+        if (typeof header == 'string' && typeof value == 'string')
+            this.Client.defaults.headers.common[header] = value
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Debug(`${Logger.Out} RestWebService connected`)
+        if (typeof this.ConfigSourceOptions?.endpoints.login !== 'object')
+            return
+
+        const { url, body, headers } = this.ConfigSourceOptions.endpoints.login
+
+        if (!url || !body)
+            return
+
+        const endpointMethod = (url.split(":").at(0) ?? "GET").toUpperCase()
+        const endpointUrl = url.split(":").at(1) ?? ""
+        
+        Logger.Debug(`${Logger.In} RestWebService: Connect ${StringHelper.Url(this.ConfigSource!.host, url)}`)
+        const wsLogin = await this.MethodCaseMap[endpointMethod](
+            StringHelper.Url(
+                this.ConfigSource!.host,
+                endpointUrl
+            ),
+            JsonHelper.Stringify(body)
+        )
+        
+        if (wsLogin.status !== 200)
+            throw new HttpErrorInternalServerError(`RestWebService: ${wsLogin.statusText}`)
+        
+        if (!headers)
+            return
+        
+        const sandBox = new Sandbox(true)
+        sandBox.SetContext({
+            $body: wsLogin.data
+        })
+
+        for (const [headerName, headerValue] of Object.entries(headers)) {
+            const __headerNewValue = PlaceHolder.EvaluateJsCode(headerValue, sandBox)
+            this.Client.defaults.headers.common[headerName] = __headerNewValue
+        }
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -133,7 +177,7 @@ export class RestWebService extends absWebServiceProvider {
 
     @Logger.LogFunction()
     async Create(entity: string, body: string): Promise<Readable> {
-        
+
         if (!this.EndPoints.has(ENDPOINT.ITEM_CREATE))
             throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.ITEM_CREATE}`)
 
@@ -160,6 +204,7 @@ export class RestWebService extends absWebServiceProvider {
 
     @Logger.LogFunction()
     async Read(entity: string): Promise<Readable> {
+
         if (!this.EndPoints.has(ENDPOINT.COLLECTION_READ))
             throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.COLLECTION_READ}`)
 
@@ -181,6 +226,7 @@ export class RestWebService extends absWebServiceProvider {
 
     @Logger.LogFunction()
     async Update(entity: string, key: string, body: string): Promise<Readable> {
+
         if (!this.EndPoints.has(ENDPOINT.ITEM_UPDATE))
             throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.ITEM_UPDATE}`)
 
@@ -191,7 +237,7 @@ export class RestWebService extends absWebServiceProvider {
             const requestUrl = StringHelper.Url(
                 "/",
                 entity,
-                Url.replace(`@{${keyName}}`, key)
+                PlaceHolder.ReplaceVar(Url, keyName, key)
             )
 
             Logger.Debug(`${Logger.In} RestWebService: Update ${StringHelper.Url(this.ConfigSource!.host, requestUrl)}`)
@@ -209,6 +255,7 @@ export class RestWebService extends absWebServiceProvider {
 
     @Logger.LogFunction()
     async Delete(entity: string, key: string): Promise<Readable> {
+
         if (!this.EndPoints.has(ENDPOINT.ITEM_DELETE))
             throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.ITEM_DELETE}`)
 
@@ -219,7 +266,7 @@ export class RestWebService extends absWebServiceProvider {
             const requestUrl = StringHelper.Url(
                 "/",
                 entity,
-                Url.replace(`@{${keyName}}`, key)
+                PlaceHolder.ReplaceVar(Url, keyName, key)
             )
 
             Logger.Debug(`${Logger.In} RestWebService: Delete ${StringHelper.Url(this.ConfigSource!.host, requestUrl)}`)

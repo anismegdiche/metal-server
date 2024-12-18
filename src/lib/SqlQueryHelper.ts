@@ -101,6 +101,7 @@ export class SqlQueryHelper {
 
     // eslint-disable-next-line class-methods-use-this
     #WhereCondition(field: string, value: any): string {
+        // file deepcode ignore DuplicateCaseSwitch: simplicity
         switch (true) {
             case typia.is<string>(value):
                 return `${field} = '${value}'`

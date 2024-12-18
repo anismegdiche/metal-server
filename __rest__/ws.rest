@@ -12,7 +12,7 @@ Content-Type: application/json
 ###
 @token={{login.response.body.token}}
 
-
+######################################
 ###
 # @name read
 GET http://localhost:3000/schema/ws1/Users
@@ -50,5 +50,51 @@ authorization: Bearer {{token}}
 ###
 # @name delete
 DELETE  http://localhost:3000/schema/ws1/Users
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+
+
+######################################
+GET https://dummyjson.com/users
+
+
+###
+# @name read
+GET http://localhost:3000/schema/ws2/carts
+    ?fields=id,userId
+    # &filter-expression=firstName like 'A%'
+    # &cache=300
+authorization: Bearer {{token}}
+
+
+###
+# @name update
+PATCH  http://localhost:3000/schema/ws2/Users
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": {
+        "userName": "New User 3"
+    }
+}
+
+###
+# @name create
+POST  http://localhost:3000/schema/ws2/Users
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": {
+        "userName": "New User X",
+        "password": "123456"
+    }
+}
+
+###
+# @name delete
+DELETE  http://localhost:3000/schema/ws2/Users
 Content-Type: application/json
 authorization: Bearer {{token}}

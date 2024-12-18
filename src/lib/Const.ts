@@ -198,3 +198,8 @@ export const METADATA = {
     PLAN_DEBUG: '__PLAN_DEBUG__',
     PLAN_ERRORS: '__PLAN_ERRORS__'
 }
+
+
+export const RX = {
+    JS_CODE: /\$\{\{([^}]+)\}\}/g
+}

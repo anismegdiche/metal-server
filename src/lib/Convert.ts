@@ -18,7 +18,7 @@ import { TypeHelper } from './TypeHelper'
 import { JsonHelper } from './JsonHelper'
 import { HttpErrorInternalServerError } from '../server/HttpErrors'
 import { Config } from "../server/Config"
-import { HTTP_STATUS_CODE } from "./Const"
+import { HTTP_STATUS_CODE, RX } from "./Const"
 
 
 export class Convert {
@@ -90,23 +90,31 @@ export class Convert {
             read() {
                 if (TypeHelper.IsSchemaResponseData(schemaResponse)) {
                     // Push the initial part of the JSON response
+                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push(
                         // eslint-disable-next-line you-dont-need-lodash-underscore/omit
                         JSON.stringify(_.omit(resJson, "rows"))
                             .replace(/}$/, ',')) // Remove closing brace to continue streaming rows
 
+                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push('"rows":[')
 
+                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push(JSON.stringify(schemaResponse.data.Rows.shift()))
 
                     while (schemaResponse.data.Rows.length > 0) {
+                        // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                         this.push(`,${JSON.stringify(schemaResponse.data.Rows.shift())}`)
                     }
+                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push(']') // End of array
+                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push('}') // End of json
                 } else {
+                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push(JSON.stringify(resJson))
                 }
+                // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                 this.push(null) // End of stream
             }
         })
@@ -130,11 +138,9 @@ export class Convert {
     static EvaluateJsCode(value: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
         if (value == undefined)
             return undefined
-        
-        const rxJsCode = /\$\{\{([^}]+)\}\}/g
-        
+
         if (typeof value === 'string') {
-            return value.replace(rxJsCode, (match, code) => {
+            return value.replace(RX.JS_CODE, (_match, code) => {
                 try {
                     const __result = Server.Sandbox.Evaluate(code)
                     return (__result === undefined)

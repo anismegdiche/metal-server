@@ -32,8 +32,6 @@ sources:
   src-ws-noauth:    # https://fakerestapi.azurewebsites.net/index.html
     provider: webservice
     host: https://fakerestapi.azurewebsites.net/api/v1/
-    # user: admin
-    # password: 123456
     options:
       type: rest
       content: json
@@ -46,31 +44,31 @@ sources:
           update: PUT:/@{id}
           delete: DELETE:/@{id}
       
-    # src-ws-auth:    # https://dummyjson.com/docs
-    #   provider: webservice
-    #   host: https://dummyjson.com/
-    #   options:
-    #     type: rest
-    #     response: json
-    #     json-path: ${entity}
-    #     login: 
-    #       url: POST:/user/login
-    #       body:
-    #         username: emilys
-    #         password: emilyspass
-    #       authorization: 
-    #         Bearer: accessToken
-
-    #     urls:
-    #       read: GET
-    #       create: POST:/add
-    #       update:  PUT:/${id}
-    #       delete: DELETE:/${id}
-
-
+  src-ws-auth:    # https://dummyjson.com/docs
+    provider: webservice
+    host: https://dummyjson.com/
+    options:
+      type: rest
+      content: json
+      json-path: ${{ $entity }}
+      endpoints:
+        login: 
+          url: POST:/user/login
+          body:
+            username: emilys
+            password: emilyspass
+          headers:
+            Authorization: "Bearer: ${{ $body.accessToken }}"
+        collection:
+          read: GET
+        item:
+          read: GET:/@{id}
+          create: POST:/add
+          update: PUT:/@{id}
+          delete: DELETE:/@{id}
 
 schemas:
   ws1:
     source: src-ws-noauth
-  # ws2:
-  #   source: src-ws-auth
+  ws2:
+    source: src-ws-auth

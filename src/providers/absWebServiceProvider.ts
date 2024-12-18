@@ -46,13 +46,4 @@ export abstract class absWebServiceProvider {
         // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
         return _.cloneDeep(this) as absWebServiceProvider
     }
-
-    // eslint-disable-next-line class-methods-use-this
-    GetKeyFromEndpoint(endpoint: string): string | undefined {
-        const RX_KEY_PATTERN = /@\{(\w+)\}/
-        const match = RX_KEY_PATTERN.exec(endpoint)
-        return match
-            ? match[1]
-            : undefined
-    }
 }
