@@ -13,6 +13,8 @@ import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { ReadableHelper } from "../../lib/ReadableHelper"
 import { TConvertParams } from "../../lib/TypeHelper"
 import { absContentProvider } from "../absContentProvider"
+import { Sandbox } from "../../server/Sandbox"
+import { PlaceHolder } from "../../utils/PlaceHolder"
 
 
 //
@@ -48,7 +50,7 @@ export class JsonContent extends absContentProvider {
             throw new HttpErrorInternalServerError('Json: Params is not defined')
 
         if (!this.Content)
-            throw new HttpErrorInternalServerError('Content is not defined')
+            throw new HttpErrorInternalServerError('Json: Content is not defined')
 
         //TODO when content = "", data has empty json object {}
         const json = JsonHelper.TryParse(
@@ -56,7 +58,14 @@ export class JsonContent extends absContentProvider {
                 this.Content.ReadFile(this.EntityName)
             ), {})
 
-        const data = JsonHelper.Get<TJson[]>(json, this.Params.path)
+        const sandBox = new Sandbox(true)
+        sandBox.SetContext({
+            $entity: this.EntityName
+        })
+
+        const path = PlaceHolder.EvaluateJsCode(this.Params.path, sandBox)
+
+        const data = JsonHelper.Get<TJson[]>(json, path)
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
