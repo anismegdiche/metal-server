@@ -9,18 +9,21 @@ import { Logger } from '../utils/Logger'
 import { HttpErrorInternalServerError } from "./HttpErrors"
 
 export class Sandbox {
+    
     #Context = createContext()
     #KeepState: boolean = false
 
-    constructor(resetState: boolean = false) {
-        this.#KeepState = resetState
-        this.Reset()
+    constructor(context?: object) {
+        if (context) {
+            this.SetContext(context) // Set the context
+            this.#KeepState = true
+        }
     }
 
     @Logger.LogFunction()
-    SetContext(customContext: any): void {
+    SetContext(context: object): void {
         // Create a new context
-        this.#Context = createContext(customContext)
+        this.#Context = createContext(context)
 
         // Add additional variables or functions to the context if needed
         this.#Context.global = this.#Context
@@ -33,9 +36,6 @@ export class Sandbox {
     Reset(): void {
         // Create a new context
         this.#Context = createContext()
-
-        // Add additional variables or functions to the context if needed
-        //XXX this.#Context.global = this.#Context
 
         // Add console to the context if you want to allow console.log, etc.
         this.#Context.console = console

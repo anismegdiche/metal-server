@@ -160,9 +160,8 @@ describe('Sandbox', () => {
     })
 
     it('should return context object', () => {
-        const sandbox = new Sandbox(true)
         const o =  { x: 5 }
-        sandbox.SetContext({o})
+        const sandbox = new Sandbox({o})
 
         const code = 'o.x'
         const result = sandbox.Evaluate(code)

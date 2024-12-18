@@ -142,7 +142,7 @@ export class RestWebService extends absWebServiceProvider {
 
         const endpointMethod = (url.split(":").at(0) ?? "GET").toUpperCase()
         const endpointUrl = url.split(":").at(1) ?? ""
-        
+
         Logger.Debug(`${Logger.In} RestWebService: Connect ${StringHelper.Url(this.ConfigSource!.host, url)}`)
         const wsLogin = await this.MethodCaseMap[endpointMethod](
             StringHelper.Url(
@@ -151,20 +151,19 @@ export class RestWebService extends absWebServiceProvider {
             ),
             JsonHelper.Stringify(body)
         )
-        
+
         if (wsLogin.status !== 200)
             throw new HttpErrorInternalServerError(`RestWebService: ${wsLogin.statusText}`)
-        
+
         if (!headers)
             return
-        
-        const sandBox = new Sandbox(true)
-        sandBox.SetContext({
-            $body: wsLogin.data
-        })
 
         for (const [headerName, headerValue] of Object.entries(headers)) {
-            const __headerNewValue = PlaceHolder.EvaluateJsCode(headerValue, sandBox)
+            const __headerNewValue = PlaceHolder.EvaluateJsCode(
+                headerValue,
+                new Sandbox({
+                    $body: wsLogin.data
+                }))
             this.Client.defaults.headers.common[headerName] = __headerNewValue
         }
     }

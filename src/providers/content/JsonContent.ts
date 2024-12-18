@@ -58,12 +58,11 @@ export class JsonContent extends absContentProvider {
                 this.Content.ReadFile(this.EntityName)
             ), {})
 
-        const sandBox = new Sandbox(true)
-        sandBox.SetContext({
-            $entity: this.EntityName
-        })
-
-        const path = PlaceHolder.EvaluateJsCode(this.Params.path, sandBox)
+        const path = PlaceHolder.EvaluateJsCode(
+            this.Params.path,
+            new Sandbox({
+                $entity: this.EntityName
+            }))
 
         const data = JsonHelper.Get<TJson[]>(json, path)
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
