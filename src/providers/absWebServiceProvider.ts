@@ -6,7 +6,6 @@
 //
 import _ from "lodash"
 import { Readable } from "node:stream"
-import axios from "axios"
 //
 import { TConfigSourceWebServiceOptions, TConfigSourceWebService } from "./data/WebServiceData"
 import { CONTENT } from "./ContentProvider"

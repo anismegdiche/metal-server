@@ -130,7 +130,7 @@ export class RestWebService extends absWebServiceProvider {
 
         const [endpointMethod = "GET", endpointUrl = "/"] = url.split(":")
 
-        Logger.Debug(`${Logger.In} RestWebService: Connect ${StringHelper.Url(this.ConfigSource!.host, url)}`)
+        Logger.Debug(`${Logger.In} RestWebService.Connect: ${StringHelper.Url(this.ConfigSource!.host, url)}`)
         const wsLogin = await this.Client({
             method: endpointMethod.toLowerCase(),
             url: StringHelper.Url(
@@ -141,7 +141,7 @@ export class RestWebService extends absWebServiceProvider {
         })
 
         if (wsLogin.status !== 200)
-            throw new HttpErrorInternalServerError(`RestWebService: ${wsLogin.statusText}`)
+            throw new HttpErrorInternalServerError(`RestWebService.Connect: ${wsLogin.statusText}`)
 
         if (!headers)
             return
@@ -166,12 +166,12 @@ export class RestWebService extends absWebServiceProvider {
     async Create(endpoint: string, data: string): Promise<Readable> {
 
         if (!this.Endpoints.has(ENDPOINT.ITEM_CREATE)  || !this.Client)
-            throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.ITEM_CREATE}`)
+            throw new HttpErrorInternalServerError(`RestWebService.Create: undefined endpoint for ${ENDPOINT.ITEM_CREATE}`)
 
         try {
             const { Method } = this.Endpoints.get(ENDPOINT.ITEM_CREATE)!
 
-            Logger.Debug(`${Logger.In} RestWebService: Create`)
+            Logger.Debug(`${Logger.In} RestWebService.Create: ${StringHelper.Url(this.ConfigSource!.host, endpoint)}`)
             const wsResp: AxiosResponse = await this.Client({
                 method: Method.toLowerCase(),
                 url: endpoint,
@@ -179,7 +179,7 @@ export class RestWebService extends absWebServiceProvider {
             })
 
             if (![200, 201].includes(wsResp.status))
-                throw new HttpErrorInternalServerError(`RestWebService: ${wsResp.statusText}`)
+                throw new HttpErrorInternalServerError(`RestWebService.Create: ${wsResp.statusText}`)
 
             return Readable.from(JsonHelper.Stringify(wsResp.data))
         } catch (error: any) {
@@ -191,19 +191,19 @@ export class RestWebService extends absWebServiceProvider {
     async Read(endpoint: string): Promise<Readable> {
 
         if (!this.Endpoints.has(ENDPOINT.COLLECTION_READ) || !this.Client)
-            throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.COLLECTION_READ}`)
+            throw new HttpErrorInternalServerError(`RestWebService.Read: undefined endpoint for ${ENDPOINT.COLLECTION_READ}`)
 
         try {
             const { Method } = this.Endpoints.get(ENDPOINT.COLLECTION_READ)!
 
-            Logger.Debug(`${Logger.In} RestWebService: Read ${endpoint}`)
+            Logger.Debug(`${Logger.In} RestWebService.Read: ${StringHelper.Url(this.ConfigSource!.host, endpoint)}`)
             const wsResp: AxiosResponse = await this.Client({
                 method: Method.toLowerCase(),
                 url: endpoint
             })
 
             if (wsResp.status !== 200)
-                throw new HttpErrorInternalServerError(`RestWebService: ${wsResp.statusText}`)
+                throw new HttpErrorInternalServerError(`RestWebService.Read: ${wsResp.statusText}`)
 
             return Readable.from(JsonHelper.Stringify(wsResp.data))
 
@@ -216,12 +216,12 @@ export class RestWebService extends absWebServiceProvider {
     async Update(endpoint: string, body: string): Promise<Readable> {
 
         if (!this.Endpoints.has(ENDPOINT.ITEM_UPDATE) || !this.Client)
-            throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.ITEM_UPDATE}`)
+            throw new HttpErrorInternalServerError(`RestWebService.Update: undefined endpoint for ${ENDPOINT.ITEM_UPDATE}`)
 
         try {
             const { Method } = this.Endpoints.get(ENDPOINT.ITEM_UPDATE)!
 
-            Logger.Debug(`${Logger.In} RestWebService: Update ${endpoint}`)
+            Logger.Debug(`${Logger.In} RestWebService.Update: ${StringHelper.Url(this.ConfigSource!.host, endpoint)}`)
             const wsResp: AxiosResponse = await this.Client({
                 method: Method.toLowerCase(),
                 url: endpoint,
@@ -229,7 +229,7 @@ export class RestWebService extends absWebServiceProvider {
             })
 
             if (![200, 204].includes(wsResp.status))
-                throw new HttpErrorInternalServerError(`RestWebService: ${wsResp.statusText}`)
+                throw new HttpErrorInternalServerError(`RestWebService.Update: ${wsResp.statusText}`)
 
             return Readable.from(JsonHelper.Stringify(wsResp.data))
 
@@ -242,19 +242,19 @@ export class RestWebService extends absWebServiceProvider {
     async Delete(endpoint: string): Promise<Readable> {
 
         if (!this.Endpoints.has(ENDPOINT.ITEM_DELETE) || !this.Client)
-            throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.ITEM_DELETE}`)
+            throw new HttpErrorInternalServerError(`RestWebService.Delete: undefined endpoint for ${ENDPOINT.ITEM_DELETE}`)
 
         try {
             const { Method } = this.Endpoints.get(ENDPOINT.ITEM_DELETE)!
 
-            Logger.Debug(`${Logger.In} RestWebService: Delete ${endpoint}`)
+            Logger.Debug(`${Logger.In} RestWebService.Delete: ${StringHelper.Url(this.ConfigSource!.host, endpoint)}`)
             const wsResp: AxiosResponse = await this.Client({
                 method: Method.toLowerCase(),
                 url: endpoint
             })
 
             if (![200, 204].includes(wsResp.status))
-                throw new HttpErrorInternalServerError(`RestWebService: ${wsResp.statusText}`)
+                throw new HttpErrorInternalServerError(`RestWebService.Delete: ${wsResp.statusText}`)
 
             return Readable.from(JsonHelper.Stringify(wsResp.data))
 
