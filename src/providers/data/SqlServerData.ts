@@ -160,11 +160,6 @@ export class SqlServerData extends absDataProvider {
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity
-        }
-
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
@@ -185,11 +180,6 @@ export class SqlServerData extends absDataProvider {
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
-        const schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity
-        }
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
