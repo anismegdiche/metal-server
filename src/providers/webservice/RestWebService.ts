@@ -57,7 +57,7 @@ export class RestWebService extends absWebServiceProvider {
 
     ConfigSource?: TConfigSourceWebService
     ConfigSourceOptions?: TConfigSourceWebServiceOptions
-    Client: AxiosInstance = axios.create()
+    Client: AxiosInstance | undefined
 
     Headers: Record<string, string>[] = []
 
@@ -105,6 +105,8 @@ export class RestWebService extends absWebServiceProvider {
         if (!this.ConfigSourceOptions?.content)
             return
 
+        this.Client = axios.create()
+
         this.Client.defaults.baseURL = this.ConfigSource!.host
 
         // set content type
@@ -118,7 +120,7 @@ export class RestWebService extends absWebServiceProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        if (typeof this.ConfigSourceOptions?.endpoints.login !== 'object')
+        if (typeof this.ConfigSourceOptions?.endpoints.login !== 'object'  || !this.Client)
             return
 
         const { url, body, headers } = this.ConfigSourceOptions.endpoints.login
@@ -163,7 +165,7 @@ export class RestWebService extends absWebServiceProvider {
     @Logger.LogFunction()
     async Create(endpoint: string, data: string): Promise<Readable> {
 
-        if (!this.Endpoints.has(ENDPOINT.ITEM_CREATE))
+        if (!this.Endpoints.has(ENDPOINT.ITEM_CREATE)  || !this.Client)
             throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.ITEM_CREATE}`)
 
         try {
@@ -188,7 +190,7 @@ export class RestWebService extends absWebServiceProvider {
     @Logger.LogFunction()
     async Read(endpoint: string): Promise<Readable> {
 
-        if (!this.Endpoints.has(ENDPOINT.COLLECTION_READ))
+        if (!this.Endpoints.has(ENDPOINT.COLLECTION_READ) || !this.Client)
             throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.COLLECTION_READ}`)
 
         try {
@@ -213,7 +215,7 @@ export class RestWebService extends absWebServiceProvider {
     @Logger.LogFunction()
     async Update(endpoint: string, body: string): Promise<Readable> {
 
-        if (!this.Endpoints.has(ENDPOINT.ITEM_UPDATE))
+        if (!this.Endpoints.has(ENDPOINT.ITEM_UPDATE) || !this.Client)
             throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.ITEM_UPDATE}`)
 
         try {
@@ -239,7 +241,7 @@ export class RestWebService extends absWebServiceProvider {
     @Logger.LogFunction()
     async Delete(endpoint: string): Promise<Readable> {
 
-        if (!this.Endpoints.has(ENDPOINT.ITEM_DELETE))
+        if (!this.Endpoints.has(ENDPOINT.ITEM_DELETE) || !this.Client)
             throw new HttpErrorInternalServerError(`RestWebService: undefined endpoint for ${ENDPOINT.ITEM_DELETE}`)
 
         try {

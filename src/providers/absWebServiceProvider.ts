@@ -52,8 +52,6 @@ export abstract class absWebServiceProvider {
 
     Clone(): absWebServiceProvider {
         // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
-        const clone: absWebServiceProvider = _.cloneDeep(this)
-        clone.Client = axios.create()
-        return clone
+        return _.cloneDeep(this) as absWebServiceProvider
     }
 }
