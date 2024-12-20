@@ -201,5 +201,6 @@ export const METADATA = {
 
 
 export const RX = {
-    JS_CODE: /\$\{\{([^}]+)\}\}/g
+    JS_CODE: /\$\{\{([^}]+)\}\}/g,
+    CONTEXT_VAR: /\$[\w\.]{1,}/g
 }

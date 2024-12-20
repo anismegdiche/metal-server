@@ -10,19 +10,10 @@ import { Sandbox } from "../server/Sandbox"
 
 //
 export class PlaceHolder {
-    static ReplaceVar(stringToReplace: string, name: string | undefined, value: string | undefined): string {
-        if (name === undefined || value === undefined)
-            return stringToReplace
 
-        return stringToReplace.replace(`@{${name}}`, value)
-    }
-
-    static GetVarName(str: string): string | undefined {
-        const RX_KEY_PATTERN = /@\{(\w+)\}/
-        const match = RX_KEY_PATTERN.exec(str)
-        return match
-            ? match[1]
-            : undefined
+    static GetVarName(str: string): string[] | undefined {
+        const matches = str.match(RX.CONTEXT_VAR)
+        return matches ?? undefined
     }
 
     static EvaluateJsCode(stringWithJSCode: string | undefined, sandBox: Sandbox): string | undefined {
@@ -35,7 +26,7 @@ export class PlaceHolder {
                 return (__result === undefined)
                     ? ''
                     : __result.toString()
-            // eslint-disable-next-line unused-imports/no-unused-vars
+                // eslint-disable-next-line unused-imports/no-unused-vars
             } catch (_error: unknown) {
                 // Return the original placeholder if there's an error
                 return stringWithJSCode
