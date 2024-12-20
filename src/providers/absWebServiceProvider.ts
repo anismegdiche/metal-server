@@ -6,6 +6,7 @@
 //
 import _ from "lodash"
 import { Readable } from "node:stream"
+import axios from "axios"
 //
 import { TConfigSourceWebServiceOptions, TConfigSourceWebService } from "./data/WebServiceData"
 import { CONTENT } from "./ContentProvider"
@@ -17,9 +18,8 @@ export const HEADER: Record<string, Record<string, string>> = {
 }
 
 export type TEndpoint = {
+    Method: string
     Url: string
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    Handler: Function
     Keys?: string[]
 }
 
@@ -52,6 +52,8 @@ export abstract class absWebServiceProvider {
 
     Clone(): absWebServiceProvider {
         // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
-        return _.cloneDeep(this) as absWebServiceProvider
+        const clone: absWebServiceProvider = _.cloneDeep(this)
+        clone.Client = axios.create()
+        return clone
     }
 }

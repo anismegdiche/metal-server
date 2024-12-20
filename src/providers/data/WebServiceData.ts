@@ -82,7 +82,7 @@ export class WebServiceData extends absDataProvider {
         const { content, type: webservice } = this.Params.options
 
         if (content === undefined)
-            throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Content type is not defined`)
 
         this.Connection = WebServiceProvider.GetProvider(webservice)
         this.Connection.SetConfig(this.Params)
@@ -141,13 +141,16 @@ export class WebServiceData extends absDataProvider {
 
         this.SetContentHandler(entity)
 
-        const endpointUpdate = this.Connection.Endpoints.get(ENDPOINT.ITEM_CREATE)
+        const endpointCreate = this.Connection.Endpoints.get(ENDPOINT.ITEM_CREATE)
 
-        if (!endpointUpdate || !typia.validateEquals<TEndpoint>(endpointUpdate))
+        if (!endpointCreate || !typia.validateEquals<TEndpoint>(endpointCreate))
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
         const requestUrl = PlaceHolder.EvaluateJsCode(
-            StringHelper.Url(entity, endpointUpdate.Url),
+            StringHelper.Url(
+                entity,
+                endpointCreate.Url
+            ),
             new Sandbox({
                 $entity: entity
             })
@@ -179,11 +182,14 @@ export class WebServiceData extends absDataProvider {
 
         const endpointRead = this.Connection.Endpoints.get(ENDPOINT.COLLECTION_READ)
 
-        if (!endpointRead || !typia.validateEquals<TEndpoint>(endpointRead))    
+        if (!endpointRead || !typia.validateEquals<TEndpoint>(endpointRead))
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
         const requestReadUrl = PlaceHolder.EvaluateJsCode(
-            StringHelper.Url(entity, endpointRead.Url),
+            StringHelper.Url(
+                entity,
+                endpointRead.Url
+            ),
             new Sandbox({
                 $entity: entity
             })
@@ -245,7 +251,10 @@ export class WebServiceData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
         const requestReadUrl = PlaceHolder.EvaluateJsCode(
-            StringHelper.Url(entity, endpointRead.Url),
+            StringHelper.Url(
+                entity,
+                endpointRead.Url
+            ),
             new Sandbox({
                 $entity: entity
             })
@@ -280,7 +289,10 @@ export class WebServiceData extends absDataProvider {
                 : options.Data.Rows
 
             const requestUrl = PlaceHolder.EvaluateJsCode(
-                StringHelper.Url(entity, endpointUpdate.Url),
+                StringHelper.Url(
+                    entity,
+                    endpointUpdate.Url
+                ),
                 new Sandbox({
                     $entity: entity,
                     $item: row
@@ -318,7 +330,10 @@ export class WebServiceData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
         const requestReadUrl = PlaceHolder.EvaluateJsCode(
-            StringHelper.Url(entity, endpointRead.Url),
+            StringHelper.Url(
+                entity,
+                endpointRead.Url
+            ),
             new Sandbox({
                 $entity: entity
             })
@@ -349,7 +364,10 @@ export class WebServiceData extends absDataProvider {
 
         await Promise.all(keysCollection.Rows.map((row: TJson) => {
             const requestUrl = PlaceHolder.EvaluateJsCode(
-                StringHelper.Url(entity, endpointDelete.Url),
+                StringHelper.Url(
+                    entity,
+                    endpointDelete.Url
+                ),
                 new Sandbox({
                     $entity: entity,
                     $item: row
