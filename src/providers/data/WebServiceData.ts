@@ -57,7 +57,6 @@ export class WebServiceData extends absDataProvider {
     // WebServiceData
     ContentHandler?: absContentProvider                 // Content set in config file
     File = new Map<string, absContentProvider>()        // Files
-    Lock = new Map<string, Mutex>()
 
     constructor() {
         super()
@@ -102,7 +101,7 @@ export class WebServiceData extends absDataProvider {
     async Connect(): Promise<void> {
         try {
             if (this.Connection && this.ContentHandler) {
-                this.Connection.Connect()
+                await this.Connection.Connect()
                 Logger.Debug(`${Logger.Out} WebService provider '${this.SourceName}' connected`)
             }
         } catch (error: any) {
@@ -392,11 +391,7 @@ export class WebServiceData extends absDataProvider {
             this.File.set(entity, this.ContentHandler)
     }
 
-    SetLock(entity: string) {
-        if (!this.Lock.has(entity))
-            this.Lock.set(entity, new Mutex())
-    }
-
+    // eslint-disable-next-line class-methods-use-this
     GetIdName(endpoint: TEndpoint): string {
         if (!endpoint?.Keys)
             return "*"
