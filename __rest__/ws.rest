@@ -16,7 +16,7 @@ Content-Type: application/json
 ###
 # @name read
 GET http://localhost:3000/schema/ws1/Users
-    ?filter={"id":3,"userName": "User 3"}
+    # ?filter={"id":3,"userName": "User 3"}
     # &filter={"country":"France"}
     # &cache=300
 authorization: Bearer {{token}}
@@ -61,8 +61,8 @@ GET https://dummyjson.com/users
 
 ###
 # @name read
-GET http://localhost:3000/schema/ws2/carts
-    ?fields=id,userId
+GET http://localhost:3000/schema/ws2/users
+    # ?fields=id,userId
     # &filter-expression=firstName like 'A%'
     # &cache=300
 authorization: Bearer {{token}}
@@ -70,7 +70,7 @@ authorization: Bearer {{token}}
 
 ###
 # @name update
-PATCH  http://localhost:3000/schema/ws2/Users
+PATCH  http://localhost:3000/schema/ws2/carts
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -82,7 +82,7 @@ authorization: Bearer {{token}}
 
 ###
 # @name create
-POST  http://localhost:3000/schema/ws2/Users
+POST  http://localhost:3000/schema/ws2/carts
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -95,6 +95,6 @@ authorization: Bearer {{token}}
 
 ###
 # @name delete
-DELETE  http://localhost:3000/schema/ws2/Users
+DELETE  http://localhost:3000/schema/ws2/carts
 Content-Type: application/json
 authorization: Bearer {{token}}

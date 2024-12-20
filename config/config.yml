@@ -39,10 +39,10 @@ sources:
         collection:
           read: GET
         item:
-          read: GET:/@{id}
+          read: GET:/${{ $item.id }}
           create: POST
-          update: PUT:/@{id}
-          delete: DELETE:/@{id}
+          update: PUT:/${{ $item.id }}
+          delete: DELETE:/${{ $item.id }}
       
   src-ws-auth:    # https://dummyjson.com/docs
     provider: webservice
@@ -62,10 +62,10 @@ sources:
         collection:
           read: GET
         item:
-          read: GET:/@{id}
+          read: GET:/${{ $item.id }}
           create: POST:/add
-          update: PUT:/@{id}
-          delete: DELETE:/@{id}
+          update: PUT:/${{ $item.id }}
+          delete: DELETE:/${{ $item.id }}
 
 schemas:
   ws1:
