@@ -30,7 +30,7 @@ export const enum JOIN_TYPE {
 export const enum REMOVE_DUPLICATES_METHOD {
     HASH = "hash",	            // Uses a hash function to generate unique values for each row based on specified key(s) for comparison.
     EXACT = "exact",	        // Performs an exact comparison of the specified key(s) to identify duplicates.
-    IGNORE_CASE = "ignorecase"	// Performs a case insensitive comparison of the specified key(s) to identify duplicates.
+    IGNORE_CASE = "ignorecase"	// Performs a case-insensitive comparison of the specified key(s) to identify duplicates.
     //   | "fuzzy"	            // Uses fuzzy matching techniques to identify duplicates based on similarity rather than exact match.
     //   | "script"	            // Executes a user-defined script to identify and handle duplicates.
     //   | "group"	            // Groups rows by specified key(s) and applies the deduplication strategy within each group.

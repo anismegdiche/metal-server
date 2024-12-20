@@ -4,6 +4,7 @@
 //
 //
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 class Semaphore {
     
     #Tasks: (() => void)[] = [];
