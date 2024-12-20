@@ -20,7 +20,7 @@ export class Sandbox {
         }
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug, true)
     SetContext(context: object): void {
         // Create a new context
         this.#Context = createContext(context)
