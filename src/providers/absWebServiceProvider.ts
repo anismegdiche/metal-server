@@ -16,6 +16,13 @@ export const HEADER: Record<string, Record<string, string>> = {
     [CONTENT.JSON]: { 'Content-Type': 'application/json' }
 }
 
+export type TEndpoint = {
+    Url: string
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    Handler: Function
+    Keys?: string[]
+}
+
 
 //
 export abstract class absWebServiceProvider {
@@ -24,6 +31,7 @@ export abstract class absWebServiceProvider {
     abstract ConfigSource?: TConfigSourceWebService
     abstract ConfigSourceOptions?: TConfigSourceWebServiceOptions
     abstract Client: unknown
+    Endpoints = new Map<string, TEndpoint>()
 
     SetConfig(configSource: TConfigSourceWebService) {
         this.ConfigSource = configSource
@@ -35,12 +43,12 @@ export abstract class absWebServiceProvider {
     abstract Connect(): Promise<void>
     abstract Disconnect(): Promise<void>
     
-    abstract Create(url: string, body: string): Promise<Readable>
-    abstract Read(entity: string): Promise<Readable>
-    abstract Update(entity: string, key: string | undefined, body: string): Promise<Readable>
-    abstract Delete(url: string, key: string | undefined): Promise<Readable>
+    abstract Create(endpoint: string, body: string): Promise<Readable>
+    abstract Read(endpoint: string): Promise<Readable>
+    abstract Update(endpoint: string, body: string): Promise<Readable>
+    abstract Delete(endpoint: string): Promise<Readable>
     
-    abstract GetKeyName(endpoint: string): string | undefined
+    abstract GetKeyName(endpoint: string): string[] | undefined
 
     Clone(): absWebServiceProvider {
         // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
