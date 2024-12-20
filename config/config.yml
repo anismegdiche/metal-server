@@ -29,7 +29,7 @@ sources:
     options:
       autocreate: true
 
-  src-ws-noauth:    # https://fakerestapi.azurewebsites.net/index.html
+  src-ws-fakerestapi:    # https://fakerestapi.azurewebsites.net/index.html
     provider: webservice
     host: https://fakerestapi.azurewebsites.net/api/v1/
     options:
@@ -44,7 +44,7 @@ sources:
           update: PUT:/${{ $item.id }}
           delete: DELETE:/${{ $item.id }}
       
-  src-ws-auth:    # https://dummyjson.com/docs
+  src-ws-dummyjson:    # https://dummyjson.com/docs
     provider: webservice
     host: https://dummyjson.com/
     options:
@@ -69,6 +69,6 @@ sources:
 
 schemas:
   ws1:
-    source: src-ws-noauth
+    source: src-ws-fakerestapi
   ws2:
-    source: src-ws-auth
+    source: src-ws-dummyjson

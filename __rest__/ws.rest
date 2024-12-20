@@ -62,7 +62,7 @@ GET https://dummyjson.com/users
 ###
 # @name read
 GET http://localhost:3000/schema/ws2/users
-    # ?fields=id,userId
+    #?fields=id,userId
     # &filter-expression=firstName like 'A%'
     # &cache=300
 authorization: Bearer {{token}}
@@ -70,13 +70,13 @@ authorization: Bearer {{token}}
 
 ###
 # @name update
-PATCH  http://localhost:3000/schema/ws2/carts
+PATCH  http://localhost:3000/schema/ws2/users
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 {
     "data": {
-        "userName": "New User 3"
+        "firstName": "New User 3"
     }
 }
 
@@ -88,8 +88,7 @@ authorization: Bearer {{token}}
 
 {
     "data": {
-        "userName": "New User X",
-        "password": "123456"
+        "firstName1": "New User 3"
     }
 }
 
