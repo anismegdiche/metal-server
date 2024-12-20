@@ -259,7 +259,7 @@ export class DataTable {
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug, true)
     SetMetaData(metadata: string, value: unknown): this {
         this.MetaData[metadata] = value
         return this
