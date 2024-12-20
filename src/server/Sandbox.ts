@@ -9,7 +9,7 @@ import { Logger } from '../utils/Logger'
 import { HttpErrorInternalServerError } from "./HttpErrors"
 
 export class Sandbox {
-    
+
     #Context = createContext()
     #KeepState: boolean = false
 
@@ -44,20 +44,20 @@ export class Sandbox {
     // Evaluate dynamic code
     @Logger.LogFunction()
     Evaluate(code: string): string | undefined {
+        const _code = code.trim()
         try {
-            // Perform additional validation if necessary
-            if (!Sandbox.#IsValidCode(code))
+
+            if (!Sandbox.#IsValidCode(_code))
                 throw new HttpErrorInternalServerError('Invalid code')
 
             if (!this.#KeepState)
                 this.Reset()
 
-            // Execute the code within the context
-            const script = new Script(code)
+            const script = new Script(_code)
             return script.runInContext(this.#Context)
+
         } catch (error: any) {
-            // Handle errors or log them
-            Logger.Error(`Error evaluating code: ${code}, ${error?.message}`)
+            Logger.Error(`Error evaluating code: ${_code}, ${error?.message}`)
             return undefined
         }
     }
