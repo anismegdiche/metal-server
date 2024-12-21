@@ -61,7 +61,7 @@ GET https://dummyjson.com/users
 
 ###
 # @name read
-GET http://localhost:3000/schema/ws2/users
+GET http://localhost:3000/schema/ws2/carts
     #?fields=id,userId
     # &filter-expression=firstName like 'A%'
     # &cache=300
@@ -70,13 +70,20 @@ authorization: Bearer {{token}}
 
 ###
 # @name update
-PATCH  http://localhost:3000/schema/ws2/users
+PATCH  http://localhost:3000/schema/ws2/carts
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 {
-    "data": {
-        "firstName": "New User 3"
+    "data": 
+    {
+        "merge": true,
+        "products": [
+        {
+            "id": 1,
+            "quantity": 1
+        }
+        ]
     }
 }
 
@@ -88,9 +95,20 @@ authorization: Bearer {{token}}
 
 {
     "data": {
-        "firstName1": "New User 3"
+        "userId": 1,
+        "products": [
+            {
+                "id": 144,
+                "quantity": 4
+            },
+            {
+                "id": 98,
+                "quantity": 1
+            }
+        ]
     }
 }
+
 
 ###
 # @name delete
