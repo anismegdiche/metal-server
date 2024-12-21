@@ -3,8 +3,6 @@
 //
 //
 //
-import _ from "lodash"
-//
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchemaResponse } from "../types/TSchemaResponse"
@@ -13,6 +11,7 @@ import { TConfigSource } from "../types/TConfig"
 import { DATA_PROVIDER } from "../providers/DataProvider"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { TOptions } from "../types/TOptions"
+import { clsClonable } from "../utils/clsClonable"
 
 
 //
@@ -20,7 +19,7 @@ export class DataProviderOptions extends absDataProviderOptions { }
 
 
 //
-export abstract class absDataProvider {
+export abstract class absDataProvider extends clsClonable {
 
     abstract ProviderName: DATA_PROVIDER
     abstract SourceName?: string
@@ -47,11 +46,6 @@ export abstract class absDataProvider {
     abstract Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>>
     abstract Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>>
     abstract Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>>
-
-    Clone(): absDataProvider {
-        // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
-        return _.cloneDeep(this) as absDataProvider
-    }
 
     // eslint-disable-next-line class-methods-use-this
     GetSqlQuery(sqlQueryHelper: SqlQueryHelper, options: TOptions): string | undefined {

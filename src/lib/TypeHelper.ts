@@ -3,7 +3,6 @@
 //
 //
 //
-import _ from "lodash"
 import typia from "typia"
 //
 import { HttpError, HttpErrorInternalServerError } from "../server/HttpErrors"
@@ -65,10 +64,5 @@ export class TypeHelper {
             .replace(/__type\.o\d+/, "object")
             .replace(/__@toStringTag@\d+/, "")
             .replace(" | undefined", "")
-    }
-
-    static Clone<T>(object: T): T {
-        // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
-        return _.cloneDeep(object)
     }
 }

@@ -9,6 +9,7 @@ import { Readable } from "node:stream"
 //
 import { TConfigSourceWebServiceOptions, TConfigSourceWebService } from "./data/WebServiceData"
 import { CONTENT } from "./ContentProvider"
+import { clsClonable } from "../utils/clsClonable"
 
 
 //
@@ -24,7 +25,7 @@ export type TEndpoint = {
 
 
 //
-export abstract class absWebServiceProvider {
+export abstract class absWebServiceProvider extends clsClonable {
 
     abstract DEFAULT: unknown
     abstract ConfigSource?: TConfigSourceWebService
@@ -48,9 +49,4 @@ export abstract class absWebServiceProvider {
     abstract Delete(endpoint: string): Promise<Readable>
     
     abstract GetKeyName(endpoint: string): string[] | undefined
-
-    Clone(): absWebServiceProvider {
-        // eslint-disable-next-line you-dont-need-lodash-underscore/clone-deep
-        return _.cloneDeep(this) as absWebServiceProvider
-    }
 }
