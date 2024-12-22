@@ -6,7 +6,7 @@
 import { Readable } from "stream"
 import axios, { AxiosResponse, AxiosInstance } from "axios"
 //
-import { absWebServiceProvider, HEADER } from "../absWebServiceProvider"
+import { absWebServiceProvider, HEADER, TUrlMethod } from "../absWebServiceProvider"
 import { TConfigSourceWebServiceOptions, TConfigSourceWebService } from "../data/WebServiceData"
 import { Logger } from "../../utils/Logger"
 import { StringHelper } from "../../lib/StringHelper"
@@ -31,21 +31,18 @@ export const enum ENDPOINT {
 export type TConfigSourceWebServiceRest = {
     endpoints: {
         login?: {
-            url?: string
-            //CURRENT change body to data, also config.yml 
+            url?: TUrlMethod
             data?: TJson<string>
             headers?: TJson<string>
         }
         collection?: {
-            // CURRENT change to object method:url, data
-            read: string
+            read: TUrlMethod
         },
         item?: {
-            // CURRENT change to object method:url, data
-            create?: string
-            read?: string
-            update?: string
-            delete?: string
+            create?: TUrlMethod
+            read?: TUrlMethod
+            update?: TUrlMethod
+            delete?: TUrlMethod
         }
     }
 }
@@ -77,8 +74,8 @@ export class RestWebService extends absWebServiceProvider {
         //TODO to simplify
         if (typeof this.ConfigSourceOptions.endpoints.collection == "object")
             Object.entries(this.ConfigSourceOptions.endpoints.collection).forEach(([op, opConfig]) => {
-                const endpointMethod = (opConfig.split(":").at(0) ?? "GET").toUpperCase()
-                const endpointUrl = opConfig.split(":").at(1) ?? ""
+                const [endpointMethod] = Object.keys(opConfig)
+                const [endpointUrl] = Object.values(opConfig)
                 this.Endpoints.set(
                     `collection:${op}`,
                     {
@@ -91,8 +88,8 @@ export class RestWebService extends absWebServiceProvider {
         //TODO to simplify
         if (typeof this.ConfigSourceOptions.endpoints.item == "object")
             Object.entries(this.ConfigSourceOptions.endpoints.item).forEach(([op, opConfig]) => {
-                const endpointMethod = (opConfig.split(":").at(0) ?? "GET").toUpperCase()
-                const endpointUrl = opConfig.split(":").at(1) ?? ""
+                const [endpointMethod] = Object.keys(opConfig)
+                const [endpointUrl] = Object.values(opConfig)
                 this.Endpoints.set(
                     `item:${op}`,
                     {
@@ -123,7 +120,7 @@ export class RestWebService extends absWebServiceProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        if (typeof this.ConfigSourceOptions?.endpoints.login !== 'object'  || !this.Client)
+        if (typeof this.ConfigSourceOptions?.endpoints.login !== 'object' || !this.Client)
             return
 
         const { url, data, headers } = this.ConfigSourceOptions.endpoints.login
@@ -131,9 +128,10 @@ export class RestWebService extends absWebServiceProvider {
         if (!url || !data)
             return
 
-        const [endpointMethod = "GET", endpointUrl = "/"] = url.split(":")
+        const [endpointMethod = "GET"] = Object.keys(url)
+        const [endpointUrl = "/"] = Object.values(url)
 
-        Logger.Debug(`${Logger.In} RestWebService.Connect: ${StringHelper.Url(this.ConfigSource!.host, url)}`)
+        Logger.Debug(`${Logger.In} RestWebService.Connect: ${StringHelper.Url(this.ConfigSource!.host, JsonHelper.Stringify(url))}`)
         const wsLogin = await this.Client({
             method: endpointMethod.toLowerCase(),
             url: StringHelper.Url(
@@ -153,7 +151,11 @@ export class RestWebService extends absWebServiceProvider {
             const __headerNewValue = PlaceHolder.EvaluateJsCode(
                 headerValue,
                 new Sandbox({
-                    $body: wsLogin.data
+                    $response: {
+                        url: wsLogin.config.url,
+                        host: wsLogin.request.host,
+                        body: wsLogin.data
+                    }
                 }))
             this.Client.defaults.headers.common[headerName] = __headerNewValue
         }
@@ -168,7 +170,7 @@ export class RestWebService extends absWebServiceProvider {
     @Logger.LogFunction()
     async Create(endpoint: string, data: string): Promise<Readable> {
 
-        if (!this.Endpoints.has(ENDPOINT.ITEM_CREATE)  || !this.Client)
+        if (!this.Endpoints.has(ENDPOINT.ITEM_CREATE) || !this.Client)
             throw new HttpErrorInternalServerError(`RestWebService.Create: undefined endpoint for ${ENDPOINT.ITEM_CREATE}`)
 
         try {

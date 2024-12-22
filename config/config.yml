@@ -37,12 +37,17 @@ sources:
       content: json
       endpoints:
         collection:
-          read: GET
+          read: 
+            get:
         item:
-          read: GET:/${{ $item.id }}
-          create: POST
-          update: PUT:/${{ $item.id }}
-          delete: DELETE:/${{ $item.id }}
+          read: 
+            get: /${{ $item.id }}
+          create: 
+            post:
+          update: 
+            put: /${{ $item.id }}
+          delete: 
+            delete: /${{ $item.id }}
       
   src-ws-dummyjson:    # https://dummyjson.com/docs
     provider: webservice
@@ -53,19 +58,25 @@ sources:
       json-path: ${{ $entity }}
       endpoints:
         login: 
-          url: POST:/user/login
+          url: 
+            post: /user/login
           data:
             username: emilys
             password: emilyspass
           headers:
-            Authorization: "Bearer: ${{ $body.accessToken }}"
+            Authorization: "Bearer: ${{ $response.body.accessToken }}"
         collection:
-          read: GET
+          read: 
+            get:
         item:
-          read: GET:/${{ $item.id }}
-          create: POST:/add
-          update: PUT:/${{ $item.id }}
-          delete: DELETE:/${{ $item.id }}
+          read: 
+            get: /${{ $item.id }}
+          create: 
+            post: /add
+          update: 
+            put: /${{ $item.id }}
+          delete: 
+            delete: /${{ $item.id }}
       
   src-ws-dog:    # https://dog.ceo/dog-api/documentation/
     provider: webservice
@@ -76,7 +87,8 @@ sources:
       json-path: message
       endpoints:
         collection:
-          read: GET:/list/all
+          read: 
+            get: /list/all
 
 schemas:
   ws1:

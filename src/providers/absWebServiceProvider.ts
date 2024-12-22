@@ -17,6 +17,14 @@ export const HEADER: Record<string, Record<string, string>> = {
     [CONTENT.JSON]: { 'Content-Type': 'application/json' }
 }
 
+
+export type TUrlMethod =
+    | { get?: string; post?: never; put?: never; patch?: never; delete?: never }
+    | { get?: never; post?: string; put?: never; patch?: never; delete?: never }
+    | { get?: never; post?: never; put?: string; patch?: never; delete?: never }
+    | { get?: never; post?: never; put?: never; patch: string; delete?: never }
+    | { get?: never; post?: never; put?: never; patch?: never; delete: string }
+
 export type TEndpoint = {
     Method: string
     Url: string
@@ -42,11 +50,11 @@ export abstract class absWebServiceProvider extends clsClonable {
 
     abstract Connect(): Promise<void>
     abstract Disconnect(): Promise<void>
-    
+
     abstract Create(endpoint: string, body: string): Promise<Readable>
     abstract Read(endpoint: string): Promise<Readable>
     abstract Update(endpoint: string, body: string): Promise<Readable>
     abstract Delete(endpoint: string): Promise<Readable>
-    
+
     abstract GetKeyName(endpoint: string): string[] | undefined
 }
