@@ -5,6 +5,7 @@
 //
 
 import { RX } from "../lib/Const"
+import { StringHelper } from "../lib/StringHelper"
 import { Sandbox } from "../server/Sandbox"
 
 
@@ -12,6 +13,9 @@ import { Sandbox } from "../server/Sandbox"
 export class PlaceHolder {
 
     static GetVarName(str: string): string[] | undefined {
+        if (StringHelper.IsEmpty(str))
+            return undefined
+        
         const matches = str.match(RX.CONTEXT_VAR)
         return matches ?? undefined
     }
