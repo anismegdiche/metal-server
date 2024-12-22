@@ -54,7 +54,7 @@ sources:
       endpoints:
         login: 
           url: POST:/user/login
-          body:
+          data:
             username: emilys
             password: emilyspass
           headers:

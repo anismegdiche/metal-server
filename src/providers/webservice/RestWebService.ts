@@ -33,7 +33,7 @@ export type TConfigSourceWebServiceRest = {
         login?: {
             url?: string
             //CURRENT change body to data, also config.yml 
-            body?: TJson<string>
+            data?: TJson<string>
             headers?: TJson<string>
         }
         collection?: {
@@ -126,9 +126,9 @@ export class RestWebService extends absWebServiceProvider {
         if (typeof this.ConfigSourceOptions?.endpoints.login !== 'object'  || !this.Client)
             return
 
-        const { url, body, headers } = this.ConfigSourceOptions.endpoints.login
+        const { url, data, headers } = this.ConfigSourceOptions.endpoints.login
 
-        if (!url || !body)
+        if (!url || !data)
             return
 
         const [endpointMethod = "GET", endpointUrl = "/"] = url.split(":")
@@ -140,7 +140,7 @@ export class RestWebService extends absWebServiceProvider {
                 this.ConfigSource!.host,
                 endpointUrl
             ),
-            data: JsonHelper.Stringify(body)
+            data
         })
 
         if (wsLogin.status !== 200)
