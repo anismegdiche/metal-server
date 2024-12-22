@@ -32,13 +32,16 @@ export type TConfigSourceWebServiceRest = {
     endpoints: {
         login?: {
             url?: string
+            //CURRENT change body to data, also config.yml 
             body?: TJson<string>
             headers?: TJson<string>
         }
         collection?: {
+            // CURRENT change to object method:url, data
             read: string
         },
         item?: {
+            // CURRENT change to object method:url, data
             create?: string
             read?: string
             update?: string

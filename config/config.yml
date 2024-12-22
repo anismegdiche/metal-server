@@ -66,9 +66,22 @@ sources:
           create: POST:/add
           update: PUT:/${{ $item.id }}
           delete: DELETE:/${{ $item.id }}
+      
+  src-ws-dog:    # https://dog.ceo/dog-api/documentation/
+    provider: webservice
+    host: https://dog.ceo/api
+    options:
+      type: rest
+      content: json
+      json-path: message
+      endpoints:
+        collection:
+          read: GET:/list/all
 
 schemas:
   ws1:
     source: src-ws-fakerestapi
   ws2:
     source: src-ws-dummyjson
+  ws3:
+    source: src-ws-dog

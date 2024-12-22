@@ -56,7 +56,7 @@ authorization: Bearer {{token}}
 
 
 ######################################
-GET https://dummyjson.com/users
+GET https://dummyjson.com/carts
 
 
 ###
@@ -114,4 +114,17 @@ authorization: Bearer {{token}}
 # @name delete
 DELETE  http://localhost:3000/schema/ws2/carts
 Content-Type: application/json
+authorization: Bearer {{token}}
+
+
+######################################
+GET https://dog.ceo/api/breeds/list/all
+
+
+###
+# @name read
+GET http://localhost:3000/schema/ws3/breeds
+    #?fields=id,userId
+    # &filter-expression=firstName like 'A%'
+    # &cache=300
 authorization: Bearer {{token}}
