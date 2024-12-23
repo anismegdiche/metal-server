@@ -15,12 +15,19 @@ export class ReadableHelper {
         let result = ''
 
         return new Promise((resolve, reject) => {
+            let hasData = false
+
             readable.on('data', (chunk) => {
+                hasData = true
                 result += chunk.toString() // Convert each chunk to string and append
             })
 
             readable.on('end', () => {
-                resolve(result) // Resolve with the complete string
+                if (hasData) {
+                    resolve(result) // Resolve with the complete string
+                } else {
+                    resolve('') // If no data was received, resolve with an empty string
+                }
             })
 
             readable.on('error', (err) => {
