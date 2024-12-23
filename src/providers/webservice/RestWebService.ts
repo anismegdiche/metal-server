@@ -110,8 +110,8 @@ export class RestWebService extends absWebServiceProvider {
         this.Client.defaults.baseURL = this.ConfigSource!.host
 
         // set content type
-        const header = Object.keys(HEADER[this.ConfigSourceOptions.content]).at(0)
-        const value = Object.values(HEADER[this.ConfigSourceOptions.content]).at(0)
+        const [header] = Object.keys(HEADER[this.ConfigSourceOptions.content])
+        const [value] = Object.values(HEADER[this.ConfigSourceOptions.content])
 
         if (typeof header == 'string' && typeof value == 'string')
             this.Client.defaults.headers.common[header] = value
