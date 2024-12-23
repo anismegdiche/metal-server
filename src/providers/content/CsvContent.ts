@@ -4,6 +4,7 @@
 //
 //
 import * as Csv from 'papaparse'
+import typia from "typia"
 //
 import { DataTable } from "../../types/DataTable"
 import { Logger } from "../../utils/Logger"
@@ -41,7 +42,7 @@ export class CsvContent extends absContentProvider {
     @Logger.LogFunction()
     async InitContent(entity: string, content: Readable): Promise<void> {
         this.EntityName = entity
-        if (this.Config) {
+        if (this.Config && typia.is<TCsvContentConfig>(this.Config)) {
             this.Params = {
                 delimiter: this.Config["csv-delimiter"] ?? ',',
                 newline: this.Config["csv-newline"] ?? '\n',

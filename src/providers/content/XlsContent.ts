@@ -6,6 +6,7 @@
 import { Readable } from 'node:stream'
 import * as ExcelJS from 'exceljs'
 import _ from 'lodash'
+import typia from "typia"
 //
 import { DataTable } from '../../types/DataTable'
 import { Logger } from '../../utils/Logger'
@@ -49,7 +50,7 @@ export class XlsContent extends absContentProvider {
     @Logger.LogFunction(Logger.Debug, true)
     async InitContent(entity: string, content: Readable): Promise<void> {
         this.EntityName = entity
-        if (this.Config) {
+        if (this.Config && typia.is<TXlsContentConfig>(this.Config)) {
             this.Params = {
                 sheet: this.Config["xls-sheet"],
                 parseDates: this.Config["xls-parse-dates"] ?? false,

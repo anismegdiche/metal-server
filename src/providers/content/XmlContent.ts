@@ -33,7 +33,7 @@ export class XmlContent extends absContentProvider {
     Params: TXmlContentConfig | undefined
 
     DEFAULT = {
-        "xml-path": "",
+        "xml-path": undefined,
         "xml-ignore-attributes": true,
         "xml-attribute-prefix": "@"
     }

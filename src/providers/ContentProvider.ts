@@ -8,17 +8,22 @@ import { Factory } from "../utils/Factory"
 import { absContentProvider } from "./absContentProvider"
 import { JsonContent, TJsonContentConfig } from "./content/JsonContent"
 import { CsvContent, TCsvContentConfig } from "./content/CsvContent"
-import { TXlsContentConfig, XlsContent } from "./content/XlsContent"
+import { XlsContent, TXlsContentConfig } from "./content/XlsContent"
+import { XmlContent, TXmlContentConfig } from "./content/XmlContent"
 
 
 //
 export enum CONTENT {
     JSON = "json",      // JSON files
     CSV = "csv",        // CSV files
-    XLS = "xls"         // XLSX files
+    XLS = "xls",        // XLSX files
+    XML = "xml"         // XML files
 }
 
-export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsContentConfig
+export type TContentConfig = TJsonContentConfig
+    | TCsvContentConfig
+    | TXlsContentConfig
+    | TXmlContentConfig
 
 
 //
@@ -37,5 +42,6 @@ export class ContentProvider {
         ContentProvider.#ContentFactory.Register(CONTENT.JSON, new JsonContent())
         ContentProvider.#ContentFactory.Register(CONTENT.CSV, new CsvContent())
         ContentProvider.#ContentFactory.Register(CONTENT.XLS, new XlsContent())
+        ContentProvider.#ContentFactory.Register(CONTENT.XML, new XmlContent())
     }
 }

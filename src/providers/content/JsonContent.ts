@@ -4,6 +4,7 @@
 //
 //
 import { Readable } from "node:stream"
+import typia from "typia"
 //
 import { DataTable } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
@@ -35,7 +36,7 @@ export class JsonContent extends absContentProvider {
     @Logger.LogFunction()
     async InitContent(entity: string, content: Readable): Promise<void> {
         this.EntityName = entity
-        if (this.Config) {
+        if (this.Config && typia.is<TJsonContentConfig>(this.Config)) {
             this.Params = {
                 path: this.Config["json-path"]
             }
