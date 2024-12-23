@@ -64,8 +64,8 @@ export class SqlQueryHelper {
             const _cond = _
                 .chain(condition)
                 .map((__filter) => {
-                    const __field = Object.keys(__filter).at(0)
-                    const __value = Object.values(__filter).at(0)
+                    const [__field] = Object.keys(__filter)
+                    const [__value] = Object.values(__filter)
 
                     if (!__field)
                         return ''
@@ -83,7 +83,7 @@ export class SqlQueryHelper {
         if (typeof condition === 'object' && _.keys(condition).length > 0) {
             const _cond = _
                 .chain(condition)
-                .map((__value, __field) => {                   
+                .map((__value, __field) => {
 
                     if (!__field)
                         return ''
