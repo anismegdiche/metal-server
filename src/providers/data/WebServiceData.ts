@@ -151,7 +151,9 @@ export class WebServiceData extends absDataProvider {
                 endpointCreate.Url
             ),
             new Sandbox({
-                $entity: entity
+                $request: {
+                    entity
+                }
             })
         )
 
@@ -190,7 +192,9 @@ export class WebServiceData extends absDataProvider {
                 endpointRead.Url
             ),
             new Sandbox({
-                $entity: entity
+                $request: {
+                    entity
+                }
             })
         )
 
@@ -255,7 +259,9 @@ export class WebServiceData extends absDataProvider {
                 endpointRead.Url
             ),
             new Sandbox({
-                $entity: entity
+                $request: {
+                    entity
+                }
             })
         )
 
@@ -293,7 +299,9 @@ export class WebServiceData extends absDataProvider {
                     endpointUpdate.Url
                 ),
                 new Sandbox({
-                    $entity: entity,
+                    $request: {
+                    entity
+                },
                     $item: row
                 })
             )
@@ -334,7 +342,9 @@ export class WebServiceData extends absDataProvider {
                 endpointRead.Url
             ),
             new Sandbox({
-                $entity: entity
+                $request: {
+                    entity
+                }
             })
         )
 
@@ -368,7 +378,9 @@ export class WebServiceData extends absDataProvider {
                     endpointDelete.Url
                 ),
                 new Sandbox({
-                    $entity: entity,
+                    $request: {
+                    entity
+                },
                     $item: row
                 })
             )

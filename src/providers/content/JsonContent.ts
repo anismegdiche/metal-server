@@ -62,7 +62,9 @@ export class JsonContent extends absContentProvider {
         const path = PlaceHolder.EvaluateJsCode(
             this.Params.path,
             new Sandbox({
-                $entity: this.EntityName
+                $request: {
+                    entity: this.EntityName
+                }
             }))
 
         const data = JsonHelper.Get<TJson[]>(json, path)

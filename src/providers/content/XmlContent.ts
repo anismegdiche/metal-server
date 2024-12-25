@@ -69,7 +69,9 @@ export class XmlContent extends absContentProvider {
         const path = PlaceHolder.EvaluateJsCode(
             this.Params["xml-path"],
             new Sandbox({
-                $entity: this.EntityName
+                $request: {
+                    entity: this.EntityName
+                }
             })
         )
 
@@ -98,7 +100,9 @@ export class XmlContent extends absContentProvider {
         const evalPath = PlaceHolder.EvaluateJsCode(
             jsonPath,
             new Sandbox({
-                $entity: this.EntityName
+                $request: {
+                    entity: this.EntityName
+                }
             })
         )
 
