@@ -14,7 +14,8 @@ import { clsClonable } from "../utils/clsClonable"
 
 //
 export const HEADER: Record<string, Record<string, string>> = {
-    [CONTENT.JSON]: { 'Content-Type': 'application/json' }
+    [CONTENT.JSON]: { 'Content-Type': 'application/json' },
+    [CONTENT.XML]: {}
 }
 
 

@@ -7,11 +7,13 @@ import { HttpErrorNotFound } from "../server/HttpErrors"
 import { Factory } from "../utils/Factory"
 import { absWebServiceProvider } from "./absWebServiceProvider"
 import { RestWebService, TConfigSourceWebServiceRest } from "./webservice/RestWebService"
+import { SoapWebService } from "./webservice/SoapWebService"
 
 
 //
 export enum WEBSERVICE {
-    REST = "rest"
+    REST = "rest",
+    SOAP = "soap"
 }
 
 export type TWebServiceConfig = TConfigSourceWebServiceRest
@@ -31,5 +33,6 @@ export class WebServiceProvider {
 
     static RegisterProviders() {
         WebServiceProvider.#WebServiceFactory.Register(WEBSERVICE.REST, new RestWebService())
+        WebServiceProvider.#WebServiceFactory.Register(WEBSERVICE.SOAP, new SoapWebService())
     }
 }

@@ -128,3 +128,14 @@ GET http://localhost:3000/schema/ws3/breeds
     # &filter-expression=firstName like 'A%'
     # &cache=300
 authorization: Bearer {{token}}
+
+
+
+######################################
+###
+# @name read
+GET http://localhost:3000/schema/soap/movies
+    #?fields=id,userId
+    # &filter-expression=firstName like 'A%'
+    # &cache=300
+authorization: Bearer {{token}}

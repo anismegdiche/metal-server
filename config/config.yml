@@ -29,71 +29,85 @@ sources:
     options:
       autocreate: true
 
-  src-ws-fakerestapi:    # https://fakerestapi.azurewebsites.net/index.html
-    provider: webservice
-    host: https://fakerestapi.azurewebsites.net/api/v1/
-    options:
-      type: rest
-      content: json
-      endpoints:
-        collection:
-          read: 
-            get:
-        item:
-          read: 
-            get: /${{ $item.id }}
-          create: 
-            post:
-          update: 
-            put: /${{ $item.id }}
-          delete: 
-            delete: /${{ $item.id }}
+  # rest-fakerestapi:    # https://fakerestapi.azurewebsites.net/index.html
+  #   provider: webservice
+  #   host: https://fakerestapi.azurewebsites.net/api/v1/
+  #   options:
+  #     type: rest
+  #     content: json
+  #     endpoints:
+  #       collection:
+  #         read: 
+  #           get:
+  #       item:
+  #         read: 
+  #           get: /${{ $item.id }}
+  #         create: 
+  #           post:
+  #         update: 
+  #           put: /${{ $item.id }}
+  #         delete: 
+  #           delete: /${{ $item.id }}
       
-  src-ws-dummyjson:    # https://dummyjson.com/docs
-    provider: webservice
-    host: https://dummyjson.com/
-    options:
-      type: rest
-      content: json
-      json-path: ${{ $entity }}
-      endpoints:
-        login: 
-          url: 
-            post: /user/login
-          data:
-            username: emilys
-            password: emilyspass
-          headers:
-            Authorization: "Bearer: ${{ $response.body.accessToken }}"
-        collection:
-          read: 
-            get:
-        item:
-          read: 
-            get: /${{ $item.id }}
-          create: 
-            post: /add
-          update: 
-            put: /${{ $item.id }}
-          delete: 
-            delete: /${{ $item.id }}
+  # rest-dummyjson:    # https://dummyjson.com/docs
+  #   provider: webservice
+  #   host: https://dummyjson.com/
+  #   options:
+  #     type: rest
+  #     content: json
+  #     json-path: ${{ $request.entity }}
+  #     endpoints:
+  #       login: 
+  #         url: 
+  #           post: /user/login
+  #         data:
+  #           username: emilys
+  #           password: emilyspass
+  #         headers:
+  #           Authorization: "Bearer: ${{ $response.body.accessToken }}"
+  #       collection:
+  #         read: 
+  #           get:
+  #       item:
+  #         read: 
+  #           get: /${{ $item.id }}
+  #         create: 
+  #           post: /add
+  #         update: 
+  #           put: /${{ $item.id }}
+  #         delete: 
+  #           delete: /${{ $item.id }}
       
-  src-ws-dog:    # https://dog.ceo/dog-api/documentation/
+  # rest-dog:    # https://dog.ceo/dog-api/documentation/
+  #   provider: webservice
+  #   host: https://dog.ceo/api
+  #   options:
+  #     type: rest
+  #     content: json
+  #     json-path: message
+  #     endpoints:
+  #       collection:
+  #         read: 
+  #           get: /list/all
+      
+  soap-movies:    # http://localhost:8080/ws/movies.wsdl
     provider: webservice
-    host: https://dog.ceo/api
+    host: http://localhost:8080/ws/movies.wsdl
     options:
-      type: rest
-      content: json
-      json-path: message
+      type: soap
+      content: xml
+      xml-path: SOAP-ENV:Envelope.SOAP-ENV:Body.ns2:${{ $request.endpoint }}Response.ns2:${{ $request.entity }}
       endpoints:
         collection:
-          read: 
-            get: /list/all
+          read:
+            listMovies: SOAP-ENV:Envelope.SOAP-ENV:Body.ns2:listMoviesResponse.ns2:movies
 
 schemas:
-  ws1:
-    source: src-ws-fakerestapi
-  ws2:
-    source: src-ws-dummyjson
-  ws3:
-    source: src-ws-dog
+  # ws1:
+  #   source: rest-fakerestapi
+  # ws2:
+  #   source: rest-dummyjson
+  # ws3:
+  #   source: rest-dog
+  soap:
+    source: soap-movies
