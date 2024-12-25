@@ -121,11 +121,11 @@ describe('XlsContent', () => {
 
         test('should throw error if Params is not defined', async () => {
             xlsContent.Params = undefined
-            await expect(xlsContent.Get()).rejects.toThrow(HttpErrorInternalServerError)
+            await expect(xlsContent.Get(undefined,{})).rejects.toThrow(HttpErrorInternalServerError)
         })
 
         test('should parse Excel data correctly', async () => {
-            const result = await xlsContent.Get()
+            const result = await xlsContent.Get(undefined,{})
 
             expect(result).toBeInstanceOf(DataTable)
             expect(result.Rows).toHaveLength(2) // Only one data row since first row is header
@@ -137,7 +137,7 @@ describe('XlsContent', () => {
         })
 
         test('should handle SQL queries', async () => {
-            const result = await xlsContent.Get('SELECT * FROM testEntity WHERE Age > 25')
+            const result = await xlsContent.Get('SELECT * FROM testEntity WHERE Age > 25', {})
 
             expect(result).toBeInstanceOf(DataTable)
             expect(result.Rows.length).toBeGreaterThanOrEqual(0)
@@ -166,7 +166,7 @@ describe('XlsContent', () => {
 
         test('should throw error if Params is not defined', async () => {
             xlsContent.Params = undefined
-            await expect(xlsContent.Set(mockDataTable)).rejects.toThrow(HttpErrorInternalServerError)
+            await expect(xlsContent.Set(mockDataTable,{})).rejects.toThrow(HttpErrorInternalServerError)
         })
 
         // test('should write data to Excel correctly', async () => {

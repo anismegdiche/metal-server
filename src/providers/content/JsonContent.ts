@@ -16,6 +16,7 @@ import { TConvertParams } from "../../lib/TypeHelper"
 import { absContentProvider } from "../absContentProvider"
 import { Sandbox } from "../../server/Sandbox"
 import { PlaceHolder } from "../../utils/PlaceHolder"
+import { TContext } from "../../@types/TContext"
 
 
 //
@@ -46,7 +47,7 @@ export class JsonContent extends absContentProvider {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
+    async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')
 
@@ -61,18 +62,14 @@ export class JsonContent extends absContentProvider {
 
         const path = PlaceHolder.EvaluateJsCode(
             this.Params.path,
-            new Sandbox({
-                $request: {
-                    entity: this.EntityName
-                }
-            }))
+            new Sandbox($context))
 
         const data = JsonHelper.Get<TJson[]>(json, path)
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Set(data: DataTable): Promise<Readable> {
+    async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')
 

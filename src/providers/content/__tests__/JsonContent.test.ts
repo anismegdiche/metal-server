@@ -46,7 +46,7 @@ describe('JsonContent', () => {
         })
 
         it('should return the data as a DataTable', async () => {
-            const dataTable = await jsonContent.Get()
+            const dataTable = await jsonContent.Get(undefined, {})
 
             expect(dataTable).toBeInstanceOf(DataTable)
             expect(dataTable.Name).toBe(jsonContent.EntityName)
@@ -65,7 +65,7 @@ describe('JsonContent', () => {
         it('should return an empty DataTable if arrayPath is not found', async () => {
             jsonContent.Params!.path = 'nonexistent.path'
 
-            const dataTable = await jsonContent.Get()
+            const dataTable = await jsonContent.Get(undefined, {})
 
             expect(dataTable).toBeInstanceOf(DataTable)
             expect(dataTable.Name).toBe(jsonContent.EntityName)
@@ -92,9 +92,9 @@ describe('JsonContent', () => {
                 }
             ])
 
-            await jsonContent.Set(newData)
+            await jsonContent.Set(newData, {})
 
-            expect(await jsonContent.Get()).toEqual(newData)
+            expect(await jsonContent.Get(undefined, {})).toEqual(newData)
         })
     })
 })

@@ -21,7 +21,7 @@ describe('Sandbox', () => {
         const code = 'Math.abs(2 - 9)'
         const result = sandbox.Evaluate(code)
 
-         
+
         expect(result).toStrictEqual(eval(code))
     })
 
@@ -160,10 +160,12 @@ describe('Sandbox', () => {
     })
 
     it('should return context object', () => {
-        const o =  { x: 5 }
-        const sandbox = new Sandbox({o})
+        const $response = {
+            body: { x: 5 }
+        }
+        const sandbox = new Sandbox({ $response })
 
-        const code = 'o.x'
+        const code = '$response.body.x'
         const result = sandbox.Evaluate(code)
         expect(result).toEqual(eval(code))
     })

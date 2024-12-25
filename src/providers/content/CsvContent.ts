@@ -14,6 +14,7 @@ import { ReadableHelper } from "../../lib/ReadableHelper"
 import { TConvertParams } from "../../lib/TypeHelper"
 import { absContentProvider } from "../absContentProvider"
 import { StringHelper } from "../../lib/StringHelper"
+import { TContext } from "../../@types/TContext"
 
 
 export type TCsvContentConfig = {
@@ -57,7 +58,7 @@ export class CsvContent extends absContentProvider {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
+    async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 

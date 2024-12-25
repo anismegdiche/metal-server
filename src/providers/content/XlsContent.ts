@@ -14,6 +14,7 @@ import { TJson } from '../../types/TJson'
 import { HttpErrorInternalServerError } from '../../server/HttpErrors'
 import { TConvertParams } from "../../lib/TypeHelper"
 import { absContentProvider } from "../absContentProvider"
+import { TContext } from "../../@types/TContext"
 
 
 export type TXlsContentConfig = {
@@ -63,7 +64,7 @@ export class XlsContent extends absContentProvider {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
+    async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Xls: Params is not defined')
 
@@ -122,7 +123,7 @@ export class XlsContent extends absContentProvider {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Set(data: DataTable): Promise<Readable> {
+    async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')
 

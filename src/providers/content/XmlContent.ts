@@ -17,6 +17,7 @@ import { Sandbox } from "../../server/Sandbox"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TJson } from "../../types/TJson"
 import { TContentConfig } from "../ContentProvider"
+import { TContext } from "../../@types/TContext"
 
 
 //
@@ -57,7 +58,7 @@ export class XmlContent extends absContentProvider {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
+    async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
         if (!this.Params || !this.Content)
             throw new HttpErrorInternalServerError('XmlContent: something is missing in the configuration')
 
@@ -68,11 +69,7 @@ export class XmlContent extends absContentProvider {
 
         const path = PlaceHolder.EvaluateJsCode(
             this.Params["xml-path"],
-            new Sandbox({
-                $request: {
-                    entity: this.EntityName
-                }
-            })
+            new Sandbox($context)
         )
 
         const data = JsonHelper.Get<TJson[]>(xmlData, path)
@@ -86,7 +83,7 @@ export class XmlContent extends absContentProvider {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Set(data: DataTable): Promise<Readable> {
+    async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         if (!this.Params || !this.Content)
             throw new HttpErrorInternalServerError('XmlContent: something is missing in the configuration')
 
@@ -99,11 +96,7 @@ export class XmlContent extends absContentProvider {
 
         const evalPath = PlaceHolder.EvaluateJsCode(
             jsonPath,
-            new Sandbox({
-                $request: {
-                    entity: this.EntityName
-                }
-            })
+            new Sandbox($context)
         )
 
         xmlData = JsonHelper.Set(

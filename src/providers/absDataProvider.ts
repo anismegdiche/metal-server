@@ -12,6 +12,7 @@ import { DATA_PROVIDER } from "../providers/DataProvider"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { TOptions } from "../types/TOptions"
 import { clsClonable } from "../utils/clsClonable"
+import { TContext } from "../@types/TContext"
 
 
 //
@@ -52,5 +53,15 @@ export abstract class absDataProvider extends clsClonable {
         return (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
             ? sqlQueryHelper.Query
             : undefined
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    GetContext(schemaRequest: TSchemaRequest): Partial<TContext> {
+        return {
+            $request: {
+                entity: schemaRequest.entity,
+                schema: schemaRequest.schema
+            }
+        }
     }
 }

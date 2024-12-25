@@ -9,11 +9,12 @@ import { VirtualFileSystem } from "../utils/VirtualFileSystem"
 import { TContentConfig } from "./ContentProvider"
 import { TJson } from "../types/TJson"
 import { clsClonable } from "../utils/clsClonable"
+import { TContext } from "../@types/TContext"
 
 
 //
 export abstract class absContentProvider extends clsClonable {
-    
+
     abstract Params: unknown            // TS transformed configuration
     EntityName: string = "DEFAULT"
     Config?: TContentConfig              // raw configuration
@@ -28,6 +29,6 @@ export abstract class absContentProvider extends clsClonable {
     }
 
     abstract InitContent(name: string, content: Readable): void
-    abstract Get(sqlQuery?: string): Promise<DataTable>
-    abstract Set(data: DataTable): Promise<Readable>
+    abstract Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable>
+    abstract Set(data: DataTable, $context: Partial<TContext>): Promise<Readable>
 }

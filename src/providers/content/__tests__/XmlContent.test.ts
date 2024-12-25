@@ -77,7 +77,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
         xmlContent.Params = { "xml-path": 'users.user' }
 
-        const result = await xmlContent.Get()
+        const result = await xmlContent.Get(undefined, {})
 
         expect(result).toBeInstanceOf(DataTable)
         expect(result.Rows).toEqual([
@@ -108,7 +108,7 @@ describe('XmlContent', () => {
         xmlContent.EntityName = 'test'
 
         const newData = new DataTable('test', [{ data: 'new' }])
-        const result = await xmlContent.Set(newData)
+        const result = await xmlContent.Set(newData, {})
 
         const updatedContent = await ReadableHelper.ToString(result)
         expect(updatedContent).toContain('<data>new</data>')
@@ -121,7 +121,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
         xmlContent.EntityName = 'users'
 
-        const result = await xmlContent.Get('SELECT * FROM users WHERE id = 1')
+        const result = await xmlContent.Get('SELECT * FROM users WHERE id = 1', {})
 
         expect(result.Rows).toHaveLength(1)
         expect(result.Rows[0]).toEqual({
@@ -141,13 +141,13 @@ describe('XmlContent', () => {
         })
         await xmlContent.InitContent('test', Readable.from(xmlData))
 
-        const result = await xmlContent.Get()
+        const result = await xmlContent.Get(undefined, {})
         await result.FreeSqlAsync("UPDATE test SET `@attr` = 'new value', `#text` = 'new content'")
         //WORKAROUND
         await xmlContent.InitContent('test', Readable.from(xmlData))
-        await xmlContent.Set(result)
+        await xmlContent.Set(result, {})
 
-        const transformed = await xmlContent.Get()
+        const transformed = await xmlContent.Get(undefined, {})
 
         expect(transformed).toEqual(result)
     })
@@ -158,12 +158,12 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('test', Readable.from('<root/>'))
         xmlContent.EntityName = 'test'
 
-        await expect(xmlContent.Get())
+        await expect(xmlContent.Get(undefined, {}))
             .rejects
             .toThrow(HttpErrorInternalServerError)
 
         const dt = new DataTable('test')
-        await expect(xmlContent.Set(dt))
+        await expect(xmlContent.Set(dt, {}))
             .rejects
             .toThrow(HttpErrorInternalServerError)
     })
@@ -174,7 +174,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsersSoap))
         xmlContent.Params = { "xml-path": 'soap:Envelope.soap:Body.GetUsersResponse.GetUsersResult.users.user' }
 
-        const result = await xmlContent.Get()
+        const result = await xmlContent.Get(undefined, {})
 
         expect(result).toBeInstanceOf(DataTable)
         expect(result.Rows).toEqual([
@@ -202,7 +202,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsersSoap))
         xmlContent.EntityName = 'users'
 
-        const result = await xmlContent.Get('SELECT * FROM users WHERE id = 1')
+        const result = await xmlContent.Get('SELECT * FROM users WHERE id = 1', {})
 
         expect(result.Rows).toHaveLength(1)
         expect(result.Rows[0]).toEqual({
@@ -218,7 +218,7 @@ describe('XmlContent', () => {
     //     xmlContent.Content.UploadFile('users', Readable.from(''))
     //     xmlContent.Params = { "xml-path": 'users.user' }
 
-    //     const result = await xmlContent.Get()
+    //     const result = await xmlContent.Get(undefined, {}))
 
     //     expect(result).toBeInstanceOf(DataTable)
     //     expect(result.Rows).toEqual([])
@@ -230,7 +230,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from('<root> invalid xml </root>'))
         xmlContent.Params = { "xml-path": 'users.user' }
 
-        await expect(xmlContent.Get())
+        await expect(xmlContent.Get(undefined, {}))
             .rejects
             .toThrow(HttpErrorInternalServerError)
     })
@@ -241,7 +241,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
         xmlContent.Params = { "xml-path": 'missing.path' }
 
-        await expect(xmlContent.Get())
+        await expect(xmlContent.Get(undefined, {}))
             .rejects
             .toThrow(HttpErrorInternalServerError)
     })
@@ -252,7 +252,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
         xmlContent.Params = { "xml-path": 'users invalid.path' }
 
-        await expect(xmlContent.Get())
+        await expect(xmlContent.Get(undefined, {}))
             .rejects
             .toThrow(HttpErrorInternalServerError)
     })

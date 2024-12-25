@@ -71,7 +71,7 @@ describe('CsvContent', () => {
             const content = Readable.from('id,name\n1,John\n2,Jane')
 
             await csvContent.InitContent(name, content)
-            const dataTable = await csvContent.Get()
+            const dataTable = await csvContent.Get(undefined, {})
 
             expect(dataTable.Name).toBe(name)
             expect(dataTable.Rows).toEqual([
@@ -91,7 +91,7 @@ describe('CsvContent', () => {
             const content = Readable.from('')
 
             await csvContent.InitContent(name, content)
-            const dataTable = await csvContent.Get()
+            const dataTable = await csvContent.Get(undefined, {})
 
             expect(dataTable.Name).toBe(name)
             expect(dataTable.Rows).toEqual([])
@@ -102,7 +102,7 @@ describe('CsvContent', () => {
             const content = Readable.from('id,name\n1,John\n2')
 
             await csvContent.InitContent(name, content)
-            const dataTable = await csvContent.Get()
+            const dataTable = await csvContent.Get(undefined, {})
 
             expect(dataTable.Name).toBe(name)
             expect(dataTable.Rows).toEqual([

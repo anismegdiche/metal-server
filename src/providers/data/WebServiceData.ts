@@ -132,6 +132,7 @@ export class WebServiceData extends absDataProvider {
 
     async Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>> {
 
+        const $context = this.GetContext(schemaRequest)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { entity } = schemaRequest
 
@@ -150,11 +151,7 @@ export class WebServiceData extends absDataProvider {
                 entity,
                 endpointCreate.Url
             ),
-            new Sandbox({
-                $request: {
-                    entity
-                }
-            })
+            new Sandbox($context)
         )
 
         if (!requestUrl)
@@ -173,6 +170,7 @@ export class WebServiceData extends absDataProvider {
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>> {
 
+        const $context = this.GetContext(schemaRequest)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schema, entity } = schemaRequest
 
@@ -191,11 +189,7 @@ export class WebServiceData extends absDataProvider {
                 entity,
                 endpointRead.Url
             ),
-            new Sandbox({
-                $request: {
-                    entity
-                }
-            })
+            new Sandbox($context)
         )
 
         if (!requestReadUrl)
@@ -214,7 +208,7 @@ export class WebServiceData extends absDataProvider {
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const data = await this.File.get(entity)!.Get(sqlQuery)
+        const data = await this.File.get(entity)!.Get(sqlQuery,$context)
 
         if (Logger.Level == VERBOSITY.DEBUG)
             data.SetMetaData("__CONTENT_DEBUG__", this.File.get(entity)!.GetConfig())
@@ -239,6 +233,7 @@ export class WebServiceData extends absDataProvider {
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>> {
 
+        const $context = this.GetContext(schemaRequest)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { entity } = schemaRequest
 
@@ -258,11 +253,7 @@ export class WebServiceData extends absDataProvider {
                 entity,
                 endpointRead.Url
             ),
-            new Sandbox({
-                $request: {
-                    entity
-                }
-            })
+            new Sandbox($context)
         )
 
         if (!requestReadUrl)
@@ -286,7 +277,7 @@ export class WebServiceData extends absDataProvider {
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const keysCollection = await this.File.get(entity)!.Get(sqlQuery)
+        const keysCollection = await this.File.get(entity)!.Get(sqlQuery,$context)
 
         await Promise.all(keysCollection.Rows.map((row: TJson) => {
             const data = Array.isArray(options.Data.Rows)
@@ -298,12 +289,12 @@ export class WebServiceData extends absDataProvider {
                     entity,
                     endpointUpdate.Url
                 ),
-                new Sandbox({
-                    $request: {
-                    entity
-                },
-                    $item: row
-                })
+                new Sandbox(
+                    Sandbox.ContextMerge(
+                        $context, {
+                        $item: row
+                    })
+                )
             )
 
             if (!requestUrl)
@@ -323,6 +314,7 @@ export class WebServiceData extends absDataProvider {
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>> {
 
+        const $context = this.GetContext(schemaRequest)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { entity } = schemaRequest
 
@@ -341,11 +333,7 @@ export class WebServiceData extends absDataProvider {
                 entity,
                 endpointRead.Url
             ),
-            new Sandbox({
-                $request: {
-                    entity
-                }
-            })
+            new Sandbox($context)
         )
 
         if (!requestReadUrl)
@@ -369,7 +357,7 @@ export class WebServiceData extends absDataProvider {
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const keysCollection = await this.File.get(entity)!.Get(sqlQuery)
+        const keysCollection = await this.File.get(entity)!.Get(sqlQuery,$context)
 
         await Promise.all(keysCollection.Rows.map((row: TJson) => {
             const requestUrl = PlaceHolder.EvaluateJsCode(
@@ -377,12 +365,12 @@ export class WebServiceData extends absDataProvider {
                     entity,
                     endpointDelete.Url
                 ),
-                new Sandbox({
-                    $request: {
-                    entity
-                },
-                    $item: row
-                })
+                new Sandbox(
+                    Sandbox.ContextMerge(
+                        $context, {
+                        $item: row
+                    })
+                )
             )
 
             if (!requestUrl)

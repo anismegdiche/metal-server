@@ -141,6 +141,7 @@ export class FilesData extends absDataProvider {
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
+        const $context = this.GetContext(schemaRequest)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { entity } = schemaRequest
 
@@ -157,7 +158,7 @@ export class FilesData extends absDataProvider {
                 await this.Connection.Read(entity)
             )
 
-            const data = await this.File[entity].Get()
+            const data = await this.File[entity].Get(undefined, $context)
 
             const sqlQueryHelper = new SqlQueryHelper()
                 .Insert(`\`${entity}\``)
@@ -167,7 +168,7 @@ export class FilesData extends absDataProvider {
             await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
             await this.Connection.Write(
                 entity,
-                await this.File[entity].Set(data)
+                await this.File[entity].Set(data, $context)
             )
 
             // clean cache
@@ -183,6 +184,8 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+
+        const $context = this.GetContext(schemaRequest)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { schema, entity } = schemaRequest
 
@@ -204,7 +207,7 @@ export class FilesData extends absDataProvider {
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const data = await this.File[entity].Get(sqlQuery)
+        const data = await this.File[entity].Get(sqlQuery, $context)
 
         if (Logger.Level == VERBOSITY.DEBUG)
             data.SetMetaData("__CONTENT_DEBUG__", this.File[entity].GetConfig())
@@ -228,6 +231,8 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+        
+        const $context = this.GetContext(schemaRequest)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { entity } = schemaRequest
 
@@ -243,7 +248,7 @@ export class FilesData extends absDataProvider {
                 await this.Connection.Read(entity)
             )
 
-            const data = await this.File[entity].Get()
+            const data = await this.File[entity].Get(undefined, $context)
 
             const sqlQueryHelper = new SqlQueryHelper()
                 .Update(`\`${entity}\``)
@@ -254,7 +259,7 @@ export class FilesData extends absDataProvider {
 
             await this.Connection.Write(
                 entity,
-                await this.File[entity].Set(data)
+                await this.File[entity].Set(data, $context)
             )
 
             // clean cache
@@ -271,6 +276,7 @@ export class FilesData extends absDataProvider {
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
+        const $context = this.GetContext(schemaRequest)
         const options: TOptions = this.Options.Parse(schemaRequest)
         const { entity } = schemaRequest
 
@@ -288,7 +294,7 @@ export class FilesData extends absDataProvider {
                 await this.Connection.Read(entity)
             )
 
-            const data = await this.File[entity].Get()
+            const data = await this.File[entity].Get(undefined, $context)
 
             const sqlQueryHelper = new SqlQueryHelper()
                 .Delete()
@@ -299,7 +305,7 @@ export class FilesData extends absDataProvider {
 
             await this.Connection.Write(
                 entity,
-                await this.File[entity].Set(data)
+                await this.File[entity].Set(data, $context)
             )
 
             // clean cache
