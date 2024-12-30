@@ -19,6 +19,7 @@ import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"
 import { TUserTokenInfo } from "./User"
 import { PERMISSION, Roles } from "./Roles"
+import { Cache } from "./Cache"
 
 export type TSchemaRoute = {
     type: "source" | "nothing",
@@ -166,6 +167,13 @@ export class Schema {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
+
+        const cachedData = await Cache.Get(schemaRequest, userToken)
+            .then()
+            .catch(undefined)
+
+        if (cachedData)
+            return cachedData
 
         const { schema, entity } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)

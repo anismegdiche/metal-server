@@ -81,7 +81,7 @@ export class Cache {
         return expires !== undefined && Date.now() <= expires
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug, true)
     static IsArgumentsValid(schemaRequest: TSchemaRequest): boolean {
         const isSchemaCacheRequest = Cache.IsSchemaCacheRequest(schemaRequest)
         const isConfigurationGood = Cache.IsConfigurationGood(schemaRequest)
@@ -174,7 +174,7 @@ export class Cache {
     }
 
     @Logger.LogFunction()
-    static async Get(schemaRequest: TSchemaRequestSelect, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse | undefined>> {
+    static async Get(schemaRequest: TSchemaRequestSelect, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse> | undefined> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
@@ -185,7 +185,7 @@ export class Cache {
         Roles.CheckPermission(userToken, schemaConfig?.roles, PERMISSION.READ)
 
         if (!Cache.IsArgumentsValid(schemaRequest))
-            return HttpResponse.NoContent()
+            return undefined
 
         const cacheHash = Cache.Hash(schemaRequest)
 
@@ -195,18 +195,25 @@ export class Cache {
                 hash: cacheHash
             }
         })
+            .then()
+            .catch((err) => {
+                Logger.Error(err)
+                return undefined
+            })
 
         // no data
-        if (!intResp.Body || intResp.Body.data.Rows.length === 0) {
+        if (!intResp?.Body || intResp.Body.data.Rows.length === 0) {
             Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
-            throw new HttpErrorNotFound(`Cache not found, Hash=${cacheHash}`)
+            return undefined
         }
 
         // return data
         const { data, expires } = intResp.Body.data.Rows.at(0) as TCacheData
 
-        if (!Cache.IsCacheValid(expires))
-            throw new HttpErrorNotFound(`Cache is old, Hash=${cacheHash}`)
+        if (!Cache.IsCacheValid(expires)) {
+            Logger.Debug(`Cache is old, Hash=${cacheHash}`)
+            return undefined
+        }
 
         return HttpResponse.Ok(<TSchemaResponse>{
             entity,
@@ -261,7 +268,7 @@ export class Cache {
         return HttpResponse.Ok({ message: 'Cache cleaned' })
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(Logger.Debug, true)
     static async Remove(schemaRequest: TSchemaRequest): Promise<void> {
 
         if (!Cache.IsArgumentsValid(schemaRequest))

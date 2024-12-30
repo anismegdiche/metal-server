@@ -3,13 +3,12 @@
 //
 //
 //
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 //
 import { Cache } from '../server/Cache'
 import { ServerResponse } from './ServerResponse'
 import { Convert } from '../lib/Convert'
-import { TSchemaRequest } from '../types/TSchemaRequest'
-import { HttpError, HttpErrorLog } from '../server/HttpErrors'
+import { HttpError } from '../server/HttpErrors'
 
 
 //
@@ -36,16 +35,16 @@ export class CacheResponse {
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 
-    static async Get(req: Request, res: Response, next: NextFunction): Promise<void> {
+    //XXX static async Get(req: Request, res: Response, next: NextFunction): Promise<void> {
 
-        ServerResponse.CheckRequest(req)
-        const schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)
+    //XXX     ServerResponse.CheckRequest(req)
+    //XXX     const schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)
 
-        Cache.Get(schemaRequest, req.__METAL_CURRENT_USER)
-            .then(intRes => ServerResponse.Response(res, intRes))
-            .catch((error: HttpError) => {
-                HttpErrorLog(error)
-                next()
-            })
-    }
+    //XXX     Cache.Get(schemaRequest, req.__METAL_CURRENT_USER)
+    //XXX         .then(intRes => ServerResponse.Response(res, intRes))
+    //XXX         .catch((error: HttpError) => {
+    //XXX             HttpErrorLog(error)
+    //XXX             next()
+    //XXX         })
+    //XXX }
 }

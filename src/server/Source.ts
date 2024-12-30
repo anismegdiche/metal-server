@@ -9,6 +9,7 @@ import { Config } from './Config'
 import { TConfigSource } from '../types/TConfig'
 import { absDataProvider } from "../providers/absDataProvider"
 import { DATA_PROVIDER, DataProvider } from "../providers/DataProvider"
+import { HttpErrorLog } from "./HttpErrors"
 
 
 //
@@ -36,7 +37,7 @@ export class Source {
                 Source.Sources.get(source)!.Connect()
             }
         } catch (error: any) {
-            Logger.Error(error.message)
+            HttpErrorLog(error)
         }
     }
 
