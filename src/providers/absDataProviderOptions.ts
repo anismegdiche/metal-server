@@ -2,12 +2,17 @@
 //
 //
 //
+//
+import typia from "typia"
+//
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TOptions } from '../types/TOptions'
 import { DataTable } from '../types/DataTable'
 import { Convert } from '../lib/Convert'
 import { JsonHelper } from "../lib/JsonHelper"
 import { Logger } from "../utils/Logger"
+import { TCacheData } from "../types/TCacheData"
+import { TJson } from "../types/TJson"
 
 
 //
@@ -65,16 +70,19 @@ export abstract class absDataProviderOptions {
     @Logger.LogFunction()
     GetData(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.data) {
-            options.Data = new DataTable(
-                schemaRequest.entity,
-                Convert.EvaluateJsCode(schemaRequest.data)
-            )
+            const _isCacheData = typia.is<TCacheData[]>(schemaRequest.data)
+            // no evaluation for CacheData
+            const _data = _isCacheData
+                ? schemaRequest.data as TJson[]
+                : Convert.EvaluateJsCode(schemaRequest.data)
+
+            options.Data = new DataTable(schemaRequest.entity, _data)
         }
         return options
     }
 
     // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction(Logger.Debug,true)
+    @Logger.LogFunction(Logger.Debug, true)
     GetCache(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
         if (schemaRequest?.cache)
             options.Cache = schemaRequest.cache
