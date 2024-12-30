@@ -8,6 +8,7 @@ describe('SOAP E2E Tests', () => {
         // Login and get the token
         const loginResponse = await axios.post('http://localhost:3000/user/login', {
             username: 'myapiuser',
+            // file deepcode ignore NoHardcodedPasswords/test: testing purposes only
             password: 'myStr@ngpa$$w0rd'
         })
 
