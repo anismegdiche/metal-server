@@ -114,9 +114,6 @@ export class MemoryData extends absDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        // removed: in case of autocreate and select, entity should not be created
-        //await this.AddEntity(schemaRequest)
-
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
@@ -162,9 +159,6 @@ export class MemoryData extends absDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        // removed: in case of autocreate and select, entity should not be created
-        //await this.AddEntity(schemaRequest)
-
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
@@ -191,9 +185,6 @@ export class MemoryData extends absDataProvider {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        // removed: in case of autocreate and select, entity should not be created
-        //await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
