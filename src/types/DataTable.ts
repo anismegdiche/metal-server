@@ -120,7 +120,7 @@ export class DataTable {
     UnPrefixAllfields(): this {
         if (this.Rows.length === 0)
             return this
-        
+
         for (const _row of this.Rows) {
             for (const [__col, __value] of Object.entries(_row)) {
                 const ___colNew = __col.includes('.')
@@ -464,6 +464,30 @@ export class DataTable {
         })
         // set rows
         this.Rows = Array.from(_mapDeduplicated.values())
+        return this
+    }
+
+    @Logger.LogFunction()
+    Transpose(renamedColumns?: string[]): this {
+        if (_.isEmpty(this.Rows))
+            return this
+
+        const NAME_PATTERN = "field_"
+
+        // Get keys from the first object
+        const keys = Object.keys(this.Rows[0])
+
+        // Determine column names
+        const columns = (renamedColumns && renamedColumns.length > 0)
+            ? [...renamedColumns, ..._.range(renamedColumns.length, keys.length).map(i => `${NAME_PATTERN}${i + 1}`)]
+            : ["key", ..._.range(1, this.Rows.length + 1).map(i => `${NAME_PATTERN}${i}`)]
+
+        // Transpose using lodash
+        // eslint-disable-next-line you-dont-need-lodash-underscore/map
+        this.Rows = _.map(keys, (key) => {
+            const rowValues = [key, ...this.Rows.map((row) => row[key])]
+            return _.zipObject(columns, rowValues)
+        })
         return this
     }
 }
