@@ -98,8 +98,8 @@ export function HttpErrorLog(error: HttpError | Error): void {
         ? Logger.Warn
         : Logger.Error
 
+    logger(error.message)
     if (Logger.Level === VERBOSITY.DEBUG)
         logger(error.stack)
-    else
-        logger(error.message)
+}
 }
