@@ -17,7 +17,7 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
 import { HttpResponse } from './HttpResponse'
 import { TJson } from "../types/TJson"
-import { HttpError, HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorLog, HttpErrorNotFound } from "./HttpErrors"
+import { HttpError, HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorLog } from "./HttpErrors"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
 import { absDataProvider } from "../providers/absDataProvider"
