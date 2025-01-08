@@ -28,7 +28,7 @@ export class SqlQueryHelper {
     }
 
     @Logger.LogFunction()
-    Select(fields: TJson | string | undefined = undefined) {
+    Select(fields?: TJson | string) {
         if (typeof fields === 'object') {
             Logger.Error('SqlQueryHelper.Select: fields must be a string or undefined')
             return this
@@ -48,7 +48,7 @@ export class SqlQueryHelper {
     }
 
     @Logger.LogFunction()
-    Where(condition: string | object | undefined = undefined) {
+    Where(condition?: string | object) {
         // no filters
         if (condition === undefined)
             return this
@@ -221,7 +221,7 @@ export class SqlQueryHelper {
     }
 
     @Logger.LogFunction()
-    OrderBy(order: TJson | string | undefined = undefined) {
+    OrderBy(order?: TJson | string) {
         if (typeof order !== 'string' && order !== undefined) {
             Logger.Error('SqlQueryHelper.OrderBy: order must be a string or undefined')
             return this

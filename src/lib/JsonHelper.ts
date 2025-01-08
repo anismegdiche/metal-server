@@ -37,7 +37,7 @@ export class JsonHelper {
         }
     }
 
-    static Get<T>(json: TJson, jsonPath: string | undefined = undefined): T {
+    static Get<T>(json: TJson, jsonPath?: string): T {
         return jsonPath
             // eslint-disable-next-line you-dont-need-lodash-underscore/get
             ? _.get(json, jsonPath) as T

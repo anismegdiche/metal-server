@@ -39,7 +39,7 @@ const DEFAULT_SERVER_AUTHENTICATION_OIDC: Partial<TOidcAuthConfig> = {
 export class OidcAuth extends absAuthProvider {
 
     #OidcClient: Client | null = null
-    #Config: TOidcAuthConfig | undefined = undefined
+    #Config?: TOidcAuthConfig
     readonly #TokenCache: Map<string, TokenSet> = new Map()
 
     // eslint-disable-next-line class-methods-use-this

@@ -24,7 +24,7 @@ export class DataBase {
     }
 
     @Logger.LogFunction()
-    AddTable(entity: string, rows: TJson[] | undefined = undefined) {
+    AddTable(entity: string, rows?: TJson[]) {
         if (this.Tables[entity] === undefined)
             this.Tables[entity] = new DataTable(entity, rows)
         else
@@ -32,7 +32,7 @@ export class DataBase {
     }
 
     @Logger.LogFunction()
-    SetTable(entity: string, rows: TJson[] | undefined = undefined) {
+    SetTable(entity: string, rows?: TJson[]) {
         if (this.Tables[entity] === undefined)
             this.AddTable(entity, rows)
         else

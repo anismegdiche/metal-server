@@ -20,11 +20,11 @@ export class PlaceHolder {
         return matches ?? undefined
     }
 
-    static EvaluateJsCode(stringWithJSCode: string | undefined, sandBox: Sandbox): string | undefined {
-        if (stringWithJSCode === undefined)
+    static EvaluateJsCode(stringWithJsCode: string | undefined, sandBox: Sandbox): string | undefined {
+        if (stringWithJsCode === undefined)
             return undefined
 
-        return stringWithJSCode.replace(RX.JS_CODE, (_match, code) => {
+        return stringWithJsCode.replace(RX.JS_CODE, (_match, code) => {
             try {
                 const __result = sandBox.Evaluate(code)
                 return (__result === undefined)
@@ -33,7 +33,7 @@ export class PlaceHolder {
                 // eslint-disable-next-line unused-imports/no-unused-vars
             } catch (_error: unknown) {
                 // Return the original placeholder if there's an error
-                return stringWithJSCode
+                return stringWithJsCode
             }
         })
     }

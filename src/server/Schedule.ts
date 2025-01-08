@@ -65,7 +65,7 @@ export class Schedule {
     }
 
     @Logger.LogFunction()
-    static Start(jobName: string, userToken: TUserTokenInfo | undefined = undefined): TInternalResponse<TJson> {
+    static Start(jobName: string, userToken?: TUserTokenInfo): TInternalResponse<TJson> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const jobKey = _.findKey(this.Jobs, ["name", jobName])
@@ -77,7 +77,7 @@ export class Schedule {
     }
 
     @Logger.LogFunction()
-    static Stop(jobName: string, userToken: TUserTokenInfo | undefined = undefined): TInternalResponse<TJson> {
+    static Stop(jobName: string, userToken?: TUserTokenInfo): TInternalResponse<TJson> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const jobKey = _.findKey(this.Jobs, ["name", jobName])

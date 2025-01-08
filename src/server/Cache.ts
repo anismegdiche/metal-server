@@ -174,7 +174,7 @@ export class Cache {
     }
 
     @Logger.LogFunction()
-    static async Get(schemaRequest: TSchemaRequestSelect, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse> | undefined> {
+    static async Get(schemaRequest: TSchemaRequestSelect, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse> | undefined> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
@@ -240,13 +240,13 @@ export class Cache {
     }
 
     @Logger.LogFunction()
-    static async View(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+    static async View(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
         return await Cache.CacheSource.Select(Cache.#CacheSchemaRequest)
     }
 
     @Logger.LogFunction()
-    static async Purge(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+    static async Purge(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         await Cache.CacheSource.Delete(Cache.#CacheSchemaRequest)
@@ -255,7 +255,7 @@ export class Cache {
     }
 
     @Logger.LogFunction()
-    static async Clean(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+    static async Clean(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const expiresNow = new Date().getTime()

@@ -34,17 +34,4 @@ export class CacheResponse {
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
-
-    //XXX static async Get(req: Request, res: Response, next: NextFunction): Promise<void> {
-
-    //XXX     ServerResponse.CheckRequest(req)
-    //XXX     const schemaRequest: TSchemaRequest = Convert.RequestToSchemaRequest(req)
-
-    //XXX     Cache.Get(schemaRequest, req.__METAL_CURRENT_USER)
-    //XXX         .then(intRes => ServerResponse.Response(res, intRes))
-    //XXX         .catch((error: HttpError) => {
-    //XXX             HttpErrorLog(error)
-    //XXX             next()
-    //XXX         })
-    //XXX }
 }

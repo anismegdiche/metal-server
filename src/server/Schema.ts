@@ -163,7 +163,7 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async Select(schemaRequest: TSchemaRequestSelect, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
+    static async Select(schemaRequest: TSchemaRequestSelect, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
@@ -214,7 +214,7 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async Delete(schemaRequest: TSchemaRequestDelete, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
+    static async Delete(schemaRequest: TSchemaRequestDelete, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestDelete>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
@@ -241,7 +241,7 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async Update(schemaRequest: TSchemaRequestUpdate, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
+    static async Update(schemaRequest: TSchemaRequestUpdate, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestUpdate>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
@@ -268,7 +268,7 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async Insert(schemaRequest: TSchemaRequestInsert, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
+    static async Insert(schemaRequest: TSchemaRequestInsert, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestInsert>(schemaRequest),
             new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
@@ -295,7 +295,7 @@ export class Schema {
     }
 
     @Logger.LogFunction()
-    static async ListEntities(schemaRequest: TSchemaRequest, userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TSchemaResponse>> {
+    static async ListEntities(schemaRequest: TSchemaRequest, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
         const { schema } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
     

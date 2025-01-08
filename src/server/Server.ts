@@ -147,7 +147,7 @@ export class Server {
     }
 
     @Logger.LogFunction()
-    static async Reload(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+    static async Reload(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         Schedule.StopAll()

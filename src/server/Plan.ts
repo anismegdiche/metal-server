@@ -29,38 +29,38 @@ import { TUserTokenInfo } from "./User"
 export class Plan {
 
     @Logger.LogFunction()
-    static async Process(schemaRequest: TSchemaRequest | TScheduleConfig, sqlQuery: string | undefined = undefined): Promise<DataTable> {
+    static async Process(schemaRequest: TSchemaRequest | TScheduleConfig, sqlQuery?: string): Promise<DataTable> {
         return TypeHelper.IsSchemaRequest(schemaRequest)
             ? await Plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
             : await Plan.ProcessScheduleConfig(schemaRequest, sqlQuery)
     }
 
-    static async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery: string | undefined) {
-        
+    static async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery?: string) {
+
         const { schema, source, entity } = schemaRequest
-            const sourcePlanName: string = Config.Get(`sources.${source}.database`)
+        const sourcePlanName: string = Config.Get(`sources.${source}.database`)
 
-            if (source === undefined || sourcePlanName === undefined) {
-                Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schema}`)
-                return new DataTable(entity)
-            }
+        if (source === undefined || sourcePlanName === undefined) {
+            Logger.Error(`${Logger.Out} Plan.Execute: no plan found for ${schema}`)
+            return new DataTable(entity)
+        }
 
-            if (!Config.Has(`plans.${sourcePlanName}.${entity}`)) {
-                Logger.Error(`${Logger.Out} Plan.Execute: entity '${entity}' not found in plan ${sourcePlanName}`)
-                return new DataTable(entity)
-            }
+        if (!Config.Has(`plans.${sourcePlanName}.${entity}`)) {
+            Logger.Error(`${Logger.Out} Plan.Execute: entity '${entity}' not found in plan ${sourcePlanName}`)
+            return new DataTable(entity)
+        }
 
-            const entitySteps: Array<StepCommand> = Config.Get(`plans.${sourcePlanName}.${entity}`)
+        const entitySteps: Array<StepCommand> = Config.Get(`plans.${sourcePlanName}.${entity}`)
 
-            const currentDatatable = await Plan.ExecuteSteps(schema, source, entity, entitySteps)
-            await currentDatatable.FreeSqlAsync(sqlQuery)
+        const currentDatatable = await Plan.ExecuteSteps(schema, source, entity, entitySteps)
+        await currentDatatable.FreeSqlAsync(sqlQuery)
 
-            Logger.Debug(`${Logger.Out} Plan.Execute: ${source}.${entity}`)
-            return currentDatatable
+        Logger.Debug(`${Logger.Out} Plan.Execute: ${source}.${entity}`)
+        return currentDatatable
     }
 
     static async ProcessScheduleConfig(schemaRequest: TScheduleConfig, sqlQuery: string | undefined) {
-        
+
         const { plan, entity } = schemaRequest
 
         if (plan === undefined) {
@@ -74,10 +74,10 @@ export class Plan {
         }
 
         const entitySteps: Array<StepCommand> = Config.Get(`plans.${plan}.${entity}`)
-       
+
         Logger.Debug(`${Logger.In} Plan.Execute: ${plan}.${entity}: ${JsonHelper.Stringify(entitySteps)}`)
         const currentDatatable = await Plan.ExecuteSteps(undefined, plan, entity, entitySteps)
-        
+
         Logger.Debug(`${Logger.Out} Plan.Execute: ${plan}.${entity}`)
         return await currentDatatable.FreeSqlAsync(sqlQuery)
     }
@@ -142,7 +142,7 @@ export class Plan {
     }
 
     @Logger.LogFunction()
-    static async Reload(plan: string,userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
+    static async Reload(plan: string, userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const configFileJson = await Config.Load()

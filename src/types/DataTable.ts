@@ -77,7 +77,7 @@ export class DataTable {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    Set(rows: TJson[] | undefined = undefined): this {
+    Set(rows?: TJson[]): this {
         if (rows) {
             this.Rows = [...rows]
             this.SetFields()
@@ -136,7 +136,7 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
-    FreeSql(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): this {
+    FreeSql(sqlQuery: string | undefined, jsonData?: object[]): this {
         if (sqlQuery == undefined)
             return this
 
@@ -158,7 +158,7 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
-    async FreeSqlAsync(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): Promise<this> {
+    async FreeSqlAsync(sqlQuery: string | undefined, jsonData?: object[]): Promise<this> {
         if (sqlQuery == undefined)
             return this
 
@@ -266,7 +266,7 @@ export class DataTable {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    AddRows(newRows: TJson | TJson[] | undefined = undefined): this {
+    AddRows(newRows?: TJson | TJson[]): this {
         if (!newRows)
             return this
 
@@ -278,7 +278,7 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
-    SyncReport(dtDestination: DataTable, on: string, flags: { keepOnlyUpdatedValues: boolean } | undefined = undefined): TSyncReport {
+    SyncReport(dtDestination: DataTable, on: string, flags?: { keepOnlyUpdatedValues: boolean }): TSyncReport {
         const sourceHasProperty = this.Rows.some(row => on in row)
 
         if (!sourceHasProperty) {
