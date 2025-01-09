@@ -29,66 +29,74 @@ sources:
     options:
       autocreate: true
 
-  # rest-fakerestapi:    # https://fakerestapi.azurewebsites.net/index.html
-  #   provider: webservice
-  #   host: https://fakerestapi.azurewebsites.net/api/v1/
-  #   options:
-  #     type: rest
-  #     content: json
-  #     endpoints:
-  #       collection:
-  #         read: 
-  #           get:
-  #       item:
-  #         read: 
-  #           get: /${{ $item.id }}
-  #         create: 
-  #           post:
-  #         update: 
-  #           put: /${{ $item.id }}
-  #         delete: 
-  #           delete: /${{ $item.id }}
+  rest-fakerestapi:    # https://fakerestapi.azurewebsites.net/index.html
+    provider: webservice
+    host: https://fakerestapi.azurewebsites.net/api/v1/
+    options:
+      type: rest
+      content: json
+      endpoints:
+        collection:
+          read: 
+            get:
+        item:
+          read: 
+            get:
+              request: /${{ $item.id }}
+          create: 
+            post:
+          update: 
+            put:
+              request: /${{ $item.id }}
+          delete: 
+            delete:
+              request: /${{ $item.id }}
       
-  # rest-dummyjson:    # https://dummyjson.com/docs
-  #   provider: webservice
-  #   host: https://dummyjson.com/
-  #   options:
-  #     type: rest
-  #     content: json
-  #     json-path: ${{ $request.entity }}
-  #     endpoints:
-  #       login: 
-  #         url: 
-  #           post: /user/login
-  #         data:
-  #           username: emilys
-  #           password: emilyspass
-  #         headers:
-  #           Authorization: "Bearer: ${{ $response.body.accessToken }}"
-  #       collection:
-  #         read: 
-  #           get:
-  #       item:
-  #         read: 
-  #           get: /${{ $item.id }}
-  #         create: 
-  #           post: /add
-  #         update: 
-  #           put: /${{ $item.id }}
-  #         delete: 
-  #           delete: /${{ $item.id }}
+  rest-dummyjson:    # https://dummyjson.com/docs
+    provider: webservice
+    host: https://dummyjson.com/
+    options:
+      type: rest
+      content: json
+      endpoints:
+        session: 
+          post:
+            request: /user/login
+            data:
+              username: emilys
+              password: emilyspass
+            session-headers:
+              Authorization: "Bearer: ${{ $response.body.accessToken }}"
+        collection:
+          read: 
+            get:
+              response: ${{ $request.entity }}
+        item:
+          read: 
+            get: 
+              request: /${{ $item.id }}
+          create: 
+            post: 
+              request: /add
+          update: 
+            put: 
+              request: /${{ $item.id }}
+          delete: 
+            delete: 
+              request: /${{ $item.id }}
       
-  # rest-dog:    # https://dog.ceo/dog-api/documentation/
-  #   provider: webservice
-  #   host: https://dog.ceo/api
-  #   options:
-  #     type: rest
-  #     content: json
-  #     json-path: message
-  #     endpoints:
-  #       collection:
-  #         read: 
-  #           get: /list/all
+  rest-dog:    # https://dog.ceo/dog-api/documentation/
+    provider: webservice
+    host: https://dog.ceo/api
+    options:
+      type: rest
+      content: json
+      endpoints:
+        collection:
+          read: 
+            get:
+              request: /list/all
+              response: message
       
   soap-movies:    # http://localhost:8080/ws/movies.wsdl
     provider: webservice
@@ -96,11 +104,24 @@ sources:
     options:
       type: soap
       content: xml
-      xml-path: SOAP-ENV:Envelope.SOAP-ENV:Body.ns2:${{ $request.endpoint }}Response.ns2:${{ $request.entity }}
+      # XXX xml-path: SOAP-ENV:Envelope.SOAP-ENV:Body.ns2:${{ $endpoint.name }}Response.ns2:${{ $request.entity }}
       endpoints:
         collection:
           read:
-            listMovies: SOAP-ENV:Envelope.SOAP-ENV:Body.ns2:listMoviesResponse.ns2:movies
+            listMovies:
+              response: SOAP-ENV:Envelope.SOAP-ENV:Body.ns2:listMoviesResponse.ns2:movies
+      
+  soap-missions:    # https://www.crcind.com/csp/samples/SOAP.Demo.cls
+    provider: webservice
+    host: https://www.crcind.com/csp/samples/SOAP.Demo.CLS?WSDL=1
+    options:
+      type: soap
+      content: xml
+      endpoints:
+        collection:
+          read:
+            GetListByName:
+              response: SOAP-ENV:Envelope.SOAP-ENV:Body.GetListByNameResponse.GetListByNameResult.PersonIdentification
 
 schemas:
   # ws1:
@@ -109,5 +130,7 @@ schemas:
   #   source: rest-dummyjson
   # ws3:
   #   source: rest-dog
-  soap:
-    source: soap-movies
+  # soap-movies:
+  #   source: soap-movies
+  soap-missions:
+    source: soap-missions
