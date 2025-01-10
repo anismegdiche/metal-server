@@ -19,7 +19,10 @@ const SafeStableStringify = configure({
 
 export class JsonHelper {
 
-    static TryParse<T>(jsonString: string, defaultValue: T): T {
+    static TryParse<T>(jsonString: string | undefined, defaultValue: T): T {
+        if (!jsonString)
+            return defaultValue
+        
         try {
             return JSON.parse(jsonString, (key, value) => {
                 if (typeof value === 'string') {
