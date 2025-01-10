@@ -206,7 +206,7 @@ export class Schema {
 
                 // Anonymizer
                 if (isAnonymize && TypeHelper.IsSchemaResponseData(_internalResponse.Body)) {
-                    (_internalResponse.Body).data.AnonymizeFields(fieldsToAnonymize)
+                    (_internalResponse.Body).data.Anonymize(fieldsToAnonymize)
                 }
                 return _internalResponse
             }

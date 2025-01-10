@@ -138,6 +138,11 @@ describe("DataTable", () => {
             const fields = dt.GetFieldNames()
             expect(fields).toEqual(["name", "age"])
         })
+        
+        it("should return emty array for empty Datatable", () => {
+            const fields = new DataTable("empty").GetFieldNames()
+            expect(fields).toEqual([])
+        })
     })
 
     describe("PrefixAllFields", () => {
@@ -1303,7 +1308,7 @@ describe("DataTable", () => {
                 }
             ])
             const fieldsToAnonymize = ['email']
-            dataTable.AnonymizeFields(fieldsToAnonymize)
+            dataTable.Anonymize(fieldsToAnonymize)
             dataTable.Rows.forEach(row => {
                 expect(row.email).toMatch(/^[a-f0-9]{32}$/)
             })
@@ -1314,7 +1319,7 @@ describe("DataTable", () => {
             const dataTable = new DataTable("myTable")
             dataTable.Set([])
             const fieldsToAnonymize = ['email']
-            dataTable.AnonymizeFields(fieldsToAnonymize)
+            dataTable.Anonymize(fieldsToAnonymize)
             expect(dataTable.Rows).toEqual([])
         })
 
@@ -1322,7 +1327,7 @@ describe("DataTable", () => {
         it('should return DataTable instance after anonymization when fields are provided', () => {
             const dataTable = new DataTable("myTable")
             const fields = ['email', 'phone']
-            const result = dataTable.AnonymizeFields(fields)
+            const result = dataTable.Anonymize(fields)
             expect(result).toBeInstanceOf(DataTable)
         })
 
@@ -1339,7 +1344,7 @@ describe("DataTable", () => {
                 }
             ])
             const fields = ['name', 'email']
-            dataTable.AnonymizeFields(fields)
+            dataTable.Anonymize(fields)
             expect(dataTable.Rows[0].name).not.toBe('Alice')
             expect(dataTable.Rows[0].email).not.toBe('alice@example.com')
             expect(dataTable.Rows[1].name).not.toBe('Bob')
@@ -1359,7 +1364,7 @@ describe("DataTable", () => {
                 }
             ])
             const fields = ['name', 'email']
-            dataTable.AnonymizeFields(fields)
+            dataTable.Anonymize(fields)
             expect(dataTable.Rows[0].name).not.toBe('Alice')
             expect(dataTable.Rows[0].email).not.toBe('alice@example.com')
             expect(dataTable.Rows[1].name).not.toBe('Bob')
@@ -1380,7 +1385,7 @@ describe("DataTable", () => {
             ]
             dataTable.Set(rows)
 
-            expect(dataTable.AnonymizeFields([]).Rows).toEqual(rows)
+            expect(dataTable.Anonymize([]).Rows).toEqual(rows)
         })
 
         // Anonymizes fields when some rows lack the specified fields
@@ -1400,7 +1405,7 @@ describe("DataTable", () => {
                     age: '34173cb38f07f89ddbebc2ac9128303f'
                 }, { name: 'Bob' }
             ]
-            expect(dataTable.AnonymizeFields(['age']).Rows).toEqual(expectedRows)
+            expect(dataTable.Anonymize(['age']).Rows).toEqual(expectedRows)
         })
 
         // Processes all fields in the DataTable
@@ -1416,7 +1421,7 @@ describe("DataTable", () => {
                 }
             ])
             const fields = '*'
-            dataTable.AnonymizeFields(fields)
+            dataTable.Anonymize(fields)
             expect(dataTable.Rows).toEqual([
                 {
                     name: "64489c85dc2fe0787b85cd87214b3810",

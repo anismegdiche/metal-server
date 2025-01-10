@@ -62,7 +62,12 @@ export class DataTable {
     Rows: TRow[] = []
     MetaData: TMetaData = {}
 
-    constructor(name: string | undefined = undefined, rows: TJson[] | undefined = undefined, fields: TJson | undefined = undefined, metaData: TJson | undefined = undefined) {
+    constructor(
+        name: string | undefined = undefined,
+        rows: TJson | TJson[] | undefined = undefined,
+        fields: TJson | undefined = undefined,
+        metaData: TJson | undefined = undefined
+    ) {
         this.Name = name ?? crypto.randomUUID()
         if (rows)
             this.Set(Array.isArray(rows)
@@ -98,8 +103,7 @@ export class DataTable {
 
     @Logger.LogFunction()
     GetFieldNames(): string[] {
-        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
-        return _.keys(this.Fields)
+        return Object.keys(this.Fields)
     }
 
     @Logger.LogFunction()
@@ -332,13 +336,14 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
-    AnonymizeFields(fields: string | string[]): this {
+    Anonymize(fields: string | string[]): this {
+
         let _fields = (typeof fields === 'string')
             ? [fields]
             : fields
 
         if (_fields[0] == '*')
-            _fields = this.GetFieldNames()
+            _fields = this.GetFieldNames() ?? []
 
         this.Rows.forEach((_row, _idx) => {
             const _newRow = { ..._row }
