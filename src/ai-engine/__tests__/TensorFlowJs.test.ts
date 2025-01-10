@@ -17,7 +17,7 @@ describe('TensorFlowJs', () => {
 			model: 'image-classify'
 		})
 		await tfjs.Init()
-	}, 120000)
+	}, 300_000)
 
 	it('should initialize correctly', async () => {
 		expect(tfjs.AiEngineName).toBe('tensorflowjs')
