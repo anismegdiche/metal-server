@@ -133,7 +133,7 @@ export class SqlQueryHelper {
     }
 
     @Logger.LogFunction()
-    Set(rows: TRow[] | TRow | undefined) {
+    Set(rows?: TRow[] | TRow) {
         if (rows === undefined)
             return this
 
@@ -178,7 +178,10 @@ export class SqlQueryHelper {
     }
 
     @Logger.LogFunction()
-    Fields(data: string[] | string, sep: string = '') {
+    Fields(data?: string[] | string, sep: string = '') {
+        if (!data)
+            return this
+
         const joinString = `${sep},${sep}`
 
         this.Query = Array.isArray(data)
