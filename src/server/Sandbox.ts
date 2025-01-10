@@ -85,7 +85,7 @@ export class Sandbox {
         }
     }
 
-    static ContextMerge(context: Partial<TContext>, ...contexts: Partial<TContext>[]): TContext {
+    static ContextMerge(context: Partial<TContext>, ...contexts: Partial<TContext>[]): Partial<TContext> {
         return _.merge(context, ...contexts)
     }
 }
