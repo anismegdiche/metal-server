@@ -68,7 +68,7 @@ export class XmlContent extends absContentProvider {
         )
 
         const path = PlaceHolder.EvaluateJsCode(
-            this.Params["xml-path"],
+            $context?.$request?.["data-path"] ?? this.Params["xml-path"],
             new Sandbox($context)
         )
 

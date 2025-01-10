@@ -54,17 +54,19 @@ export class JsonContent extends absContentProvider {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Json: Content is not defined')
 
-        //FIXME when content = "", data has empty json object {}
         const json = JsonHelper.TryParse(
             await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
-            ), {})
+            ), {}
+        )
 
         const path = PlaceHolder.EvaluateJsCode(
-            this.Params.path,
-            new Sandbox($context))
+            $context?.$request?.["data-path"] ?? this.Params.path,
+            new Sandbox($context)
+        )
 
         const data = JsonHelper.Get<TJson[]>(json, path)
+        
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
@@ -80,13 +82,15 @@ export class JsonContent extends absContentProvider {
         let json = JsonHelper.TryParse(
             await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
-            ), {})
-
-        json = JsonHelper.Set(
-            json,
-            this.Params.path,
-            data.Rows
+            ), {}
         )
+
+        const path = PlaceHolder.EvaluateJsCode(
+            $context?.$request?.["data-path"] ?? this.Params.path,
+            new Sandbox($context)
+        )
+
+        json = JsonHelper.Set(json, path, data.Rows)
 
         const streamOut = Readable.from(JSON.stringify(json))
         this.Content.UploadFile(this.EntityName, streamOut)
