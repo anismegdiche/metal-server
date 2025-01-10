@@ -15,16 +15,17 @@ import { TConvertParams } from "../../lib/TypeHelper"
 import { absStorageProvider } from '../absStorageProvider';
 import { TConfigSource } from "../../types/TConfig"
 import { TFilesDataOptions } from "../data/FilesData"
+import { TIpPort } from "../../@types/TIpPort"
 
 
 //
 export type TFtpStorageConfig = {
-    "ftp-host": string                                            // FTP server host
-    "ftp-port"?: number & tags.Minimum<1> & tags.Maximum<65_535>  // FTP server port
-    "ftp-user": string                                            // FTP server username
-    "ftp-password": string                                        // FTP server password
-    "ftp-secure"?: boolean                                        // Enable secure FTP connection (default: false)
-    "ftp-folder"?: string                                         // Remote folder on the FTP server (default: '/')
+    "ftp-host": string                    // FTP server host
+    "ftp-port"?: TIpPort                  // FTP server port
+    "ftp-user": string                    // FTP server username
+    "ftp-password": string                // FTP server password
+    "ftp-secure"?: boolean                // Enable secure FTP connection (default: false)
+    "ftp-folder"?: string                 // Remote folder on the FTP server (default: '/')
 }
 
 type TFtpStorageParams = Required<{

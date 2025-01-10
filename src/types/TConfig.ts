@@ -13,6 +13,7 @@ import { TJson } from "./TJson"
 import { TAuthentication } from "../providers/AuthProvider"
 import { TRolePermissions } from "../server/Roles"
 import { LogLevelDesc } from "loglevel"
+import { TIpPort } from "../@types/TIpPort"
 
 
 // roles
@@ -41,7 +42,7 @@ export type TConfigSourceOptions = {
 export type TConfigSource = {
     provider: DATA_PROVIDER
     host?: string
-    port?: number & tags.Minimum<1> & tags.Maximum<65_535>
+    port?: TIpPort
     user?: string
     password?: string
     database?: string
@@ -108,15 +109,15 @@ export type StepCommand =
 export type TConfig = {
     version: "0.3"
     server?: {
-        port?: number & tags.Minimum<1> & tags.Maximum<65_535>
+        port?: TIpPort
         verbosity?: LogLevelDesc
         timezone?: string
         authentication: TAuthentication                 // v0.3
         "request-limit"?: string                        // v0.3
         "response-limit"?: string                       // v0.3
         "response-rate"?: {                             // v0.3
-            windowMs?: number
-            max?: number
+            windowMs?: number & tags.Type<"uint32">
+            max?: number & tags.Type<"uint32">
             message?: string
         }
         cache?: TConfigSource
