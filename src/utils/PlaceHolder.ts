@@ -5,8 +5,10 @@
 //
 
 import { RX } from "../lib/Const"
+import { JsonHelper } from "../lib/JsonHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { Sandbox } from "../server/Sandbox"
+import { Logger } from "./Logger"
 
 
 //
@@ -15,26 +17,37 @@ export class PlaceHolder {
     static GetVarName(str: string): string[] | undefined {
         if (StringHelper.IsEmpty(str))
             return undefined
-        
+
         const matches = str.match(RX.CONTEXT_VAR)
         return matches ?? undefined
     }
 
-    static EvaluateJsCode(stringWithJsCode: string | undefined, sandBox: Sandbox): string | undefined {
+
+    static EvaluateJsCode<T = string>(stringWithJsCode: T | undefined, sandBox: Sandbox): T | undefined {
         if (stringWithJsCode === undefined)
             return undefined
 
-        return stringWithJsCode.replace(RX.JS_CODE, (_match, code) => {
+        const isString = typeof stringWithJsCode === 'string'
+
+        const _stringWithJsCode = isString
+            ? stringWithJsCode
+            : JsonHelper.Stringify(stringWithJsCode)
+
+        const evaluated = _stringWithJsCode.replace(RX.JS_CODE, (_match, _code) => {
             try {
-                const __result = sandBox.Evaluate(code)
+                const __result = sandBox.Evaluate(_code)
                 return (__result === undefined)
                     ? ''
                     : __result.toString()
-                // eslint-disable-next-line unused-imports/no-unused-vars
-            } catch (_error: unknown) {
+            } catch (error: unknown) {
+                Logger.Error(error)
                 // Return the original placeholder if there's an error
-                return stringWithJsCode
+                return _match
             }
         })
+
+        return isString
+            ? evaluated as T | undefined
+            : JsonHelper.TryParse<T | undefined>(evaluated, undefined)
     }
 }
