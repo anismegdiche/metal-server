@@ -8,27 +8,28 @@ import typia, { tags } from "typia"
 //
 import { TConfigSource } from "../../types/TConfig"
 import { TInternalResponse } from "../../types/TInternalResponse"
-import { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestDelete } from "../../types/TSchemaRequest"
+import { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { absDataProvider } from "../absDataProvider"
 import { CONTENT, ContentProvider, TContentConfig } from "../ContentProvider"
 import { DATA_PROVIDER } from "../DataProvider"
 import { absContentProvider } from "../absContentProvider"
-import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { Logger, VERBOSITY } from "../../utils/Logger"
 import { TWebServiceConfig, WEBSERVICE, WebServiceProvider } from "../WebServiceProvider"
-import { absWebServiceProvider, TEndpoint } from "../absWebServiceProvider"
+import { absWebServiceProvider, ENDPOINT, TEndpoint } from "../absWebServiceProvider"
 import { TOptions } from "../../types/TOptions"
 import { RESPONSE } from "../../lib/Const"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { HttpResponse } from "../../server/HttpResponse"
 import { Cache } from "../../server/Cache"
-import { ENDPOINT } from "../webservice/RestWebService"
 import { TJson } from "../../types/TJson"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { StringHelper } from "../../lib/StringHelper"
 import { PlaceHolder } from "../../utils/PlaceHolder"
 import { Sandbox } from "../../server/Sandbox"
+import { DataTable } from "../../types/DataTable"
+import { TContext } from "../../@types/TContext"
 
 
 //
@@ -120,7 +121,7 @@ export class WebServiceData extends absDataProvider {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    ListEntities(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    ListEntities(_schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
         throw new HttpErrorNotImplemented()
     }
 
@@ -129,15 +130,86 @@ export class WebServiceData extends absDataProvider {
         throw new HttpErrorNotImplemented()
     }
 
-
-    async Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>> {
-
-        const $context = this.GetContext(schemaRequest)
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entity } = schemaRequest
+    @Logger.LogFunction()
+    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in WebService provider`)
+
+        const { schema, entity } = schemaRequest
+
+        this.SetContentHandler(entity)
+
+        const endpointRead = this.Connection.Endpoints.get(ENDPOINT.COLLECTION_READ)
+
+        if (!endpointRead || !typia.validateEquals<TEndpoint>(endpointRead))
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest),
+            {
+                $request: {
+                    "data-path": endpointRead.DataPath
+                }
+            }
+        )
+
+        const requestReadUrl = PlaceHolder.EvaluateJsCode(
+            StringHelper.Url(
+                entity,
+                endpointRead.Url
+            ),
+            new Sandbox($context)
+        )
+
+        if (!requestReadUrl)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
+
+        this.File.get(entity)!.InitContent(
+            entity,
+            await this.Connection.Read(requestReadUrl)
+        )
+
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+
+        const sqlQueryHelper = new SqlQueryHelper()
+            .Select(options.Fields)
+            .From(this.EscapeEntity(entity))
+            .Where(options.Filter)
+            .OrderBy(options.Sort)
+
+        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
+
+        const data = await this.File.get(entity)!.Get(sqlQuery, $context)
+
+        if (Logger.Level == VERBOSITY.DEBUG)
+            data.SetMetaData("__CONTENT_DEBUG__", this.File.get(entity)!.GetConfig())
+
+        if (options?.Cache)
+            await Cache.Set({
+                ...schemaRequest,
+                source: this.SourceName
+            },
+                data
+            )
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schema,
+            entity,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        })
+    }
+
+    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in WebService provider`)
+
+        const { entity } = schemaRequest
 
         this.SetContentHandler(entity)
 
@@ -145,6 +217,22 @@ export class WebServiceData extends absDataProvider {
 
         if (!endpointCreate || !typia.validateEquals<TEndpoint>(endpointCreate))
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest),
+            {
+                $request: {
+                    "data-path": endpointCreate.DataPath
+                }
+            }
+        )
+
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         const requestUrl = PlaceHolder.EvaluateJsCode(
             StringHelper.Url(
@@ -168,85 +256,35 @@ export class WebServiceData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>> {
-
-        const $context = this.GetContext(schemaRequest)
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { schema, entity } = schemaRequest
+    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in WebService provider`)
 
-        this.SetContentHandler(entity)
-
-        const endpointRead = this.Connection.Endpoints.get(ENDPOINT.COLLECTION_READ)
-
-        if (!endpointRead || !typia.validateEquals<TEndpoint>(endpointRead))
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
-
-        const requestReadUrl = PlaceHolder.EvaluateJsCode(
-            StringHelper.Url(
-                entity,
-                endpointRead.Url
-            ),
-            new Sandbox($context)
-        )
-
-        if (!requestReadUrl)
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
-
-        this.File.get(entity)!.InitContent(
-            entity,
-            await this.Connection.Read(requestReadUrl)
-        )
-
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(`\`${entity}\``)
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
-
-        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
-
-        const data = await this.File.get(entity)!.Get(sqlQuery,$context)
-
-        if (Logger.Level == VERBOSITY.DEBUG)
-            data.SetMetaData("__CONTENT_DEBUG__", this.File.get(entity)!.GetConfig())
-
-        if (options?.Cache)
-            await Cache.Set({
-                ...schemaRequest,
-                source: this.SourceName
-            },
-                data
-            )
-
-        return HttpResponse.Ok(<TSchemaResponse>{
-            schema,
-            entity,
-            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-            ...RESPONSE.SELECT.SUCCESS.STATUS,
-            data
-        })
-    }
-
-    @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>> {
-
-        const $context = this.GetContext(schemaRequest)
-        const options: TOptions = this.Options.Parse(schemaRequest)
         const { entity } = schemaRequest
 
-
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in WebService provider`)
-
         this.SetContentHandler(entity)
 
         const endpointRead = this.Connection.Endpoints.get(ENDPOINT.COLLECTION_READ)
 
         if (!endpointRead || !typia.validateEquals<TEndpoint>(endpointRead))
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest),
+            {
+                $request: {
+                    "data-path": endpointRead.DataPath
+                }
+            }
+        )
+
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         const requestReadUrl = PlaceHolder.EvaluateJsCode(
             StringHelper.Url(
@@ -272,17 +310,17 @@ export class WebServiceData extends absDataProvider {
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(this.GetIdName(endpointUpdate))
-            .From(`\`${entity}\``)
+            .From(this.EscapeEntity(entity))
             .Where(options.Filter)
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const keysCollection = await this.File.get(entity)!.Get(sqlQuery,$context)
+        const keysCollection = await this.File.get(entity)!.Get(sqlQuery, $context)
 
         await Promise.all(keysCollection.Rows.map((row: TJson) => {
-            const data = Array.isArray(options.Data.Rows)
+            const data = Array.isArray(options.Data?.Rows)
                 ? options.Data.Rows.at(0)
-                : options.Data.Rows
+                : options.Data?.Rows
 
             const requestUrl = PlaceHolder.EvaluateJsCode(
                 StringHelper.Url(
@@ -290,10 +328,12 @@ export class WebServiceData extends absDataProvider {
                     endpointUpdate.Url
                 ),
                 new Sandbox(
-                    Sandbox.ContextMerge(
-                        $context, {
-                        $item: row
-                    })
+                    _.merge(
+                        $context,
+                        {
+                            $item: row
+                        }
+                    )
                 )
             )
 
@@ -312,14 +352,12 @@ export class WebServiceData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>> {
-
-        const $context = this.GetContext(schemaRequest)
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entity } = schemaRequest
+    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in WebService provider`)
+        
+        const { entity } = schemaRequest
 
         this.SetContentHandler(entity)
 
@@ -327,6 +365,19 @@ export class WebServiceData extends absDataProvider {
 
         if (!endpointRead || !typia.validateEquals<TEndpoint>(endpointRead))
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest),
+            {
+                $request: {
+                    "data-path": endpointRead.DataPath
+                }
+            }
+        )
+
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)        
 
         const requestReadUrl = PlaceHolder.EvaluateJsCode(
             StringHelper.Url(
@@ -352,12 +403,12 @@ export class WebServiceData extends absDataProvider {
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(this.GetIdName(endpointDelete))
-            .From(`\`${entity}\``)
+            .From(this.EscapeEntity(entity))
             .Where(options.Filter)
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const keysCollection = await this.File.get(entity)!.Get(sqlQuery,$context)
+        const keysCollection = await this.File.get(entity)!.Get(sqlQuery, $context)
 
         await Promise.all(keysCollection.Rows.map((row: TJson) => {
             const requestUrl = PlaceHolder.EvaluateJsCode(
@@ -366,10 +417,12 @@ export class WebServiceData extends absDataProvider {
                     endpointDelete.Url
                 ),
                 new Sandbox(
-                    Sandbox.ContextMerge(
-                        $context, {
-                        $item: row
-                    })
+                    _.merge(
+                        $context,
+                        {
+                            $item: row
+                        }
+                    )
                 )
             )
 
@@ -384,8 +437,10 @@ export class WebServiceData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
+    //
     // WebServiceData
-
+    //
+    
     SetContentHandler(entity: string) {
         if (!this.File.has(entity) && this.ContentHandler)
             this.File.set(entity, this.ContentHandler)

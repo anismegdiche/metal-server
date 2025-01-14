@@ -7,24 +7,27 @@
 import _ from 'lodash'
 import * as MongoDb from 'mongodb'
 import { SQLParser } from 'sql-in-mongodb'
+import typia from "typia"
 //
-import { Convert } from '../../lib/Convert'
 import { RESPONSE } from '../../lib/Const'
 import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
 import { TOptions } from '../../types/TOptions'
 import { TSchemaResponse } from "../../types/TSchemaResponse"
-import { TSchemaRequest } from "../../types/TSchemaRequest"
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../types/TSchemaRequest"
 import { TJson } from "../../types/TJson"
 import { SORT_ORDER, DataTable } from "../../types/DataTable"
 import { Logger } from "../../utils/Logger"
 import { Cache } from '../../server/Cache'
 import { DATA_PROVIDER } from '../../providers/DataProvider'
-import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { absDataProviderOptions } from "../absDataProviderOptions"
+import { TContext } from "../../@types/TContext"
+import { PlaceHolder } from "../../utils/PlaceHolder"
+import { Sandbox } from "../../server/Sandbox"
 
 
 //
@@ -67,7 +70,7 @@ class MongoDbDataOptions extends absDataProviderOptions {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    GetFilter(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetFilter(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
         let filter: any = {}
         if (schemaRequest["filter-expression"] || schemaRequest?.filter) {
 
@@ -79,10 +82,10 @@ class MongoDbDataOptions extends absDataProviderOptions {
                 filter = schemaRequest.filter
 
             if (filter?._id)
-                filter._id = new MongoDb.ObjectId(filter._id)
+                filter._id = MongoDb.ObjectId.createFromHexString(filter._id)
 
             options.Filter = <TJson>{
-                $match: Convert.EvaluateJsCode(filter)
+                $match: PlaceHolder.EvaluateJsCode<TJson | TJson[]>(filter, new Sandbox($context))
             }
         }
         return options
@@ -90,24 +93,29 @@ class MongoDbDataOptions extends absDataProviderOptions {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    GetFields(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetFields(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
         if (schemaRequest?.fields) {
-            let _fields: string[] | Record<string, unknown> = []
-            if (schemaRequest.fields.includes(",")) {
-                _fields = schemaRequest.fields.split(",")
+            const _fields = PlaceHolder.EvaluateJsCode(
+                schemaRequest.fields.trim(),
+                new Sandbox($context)
+            ) ?? ''
+
+            let _aFields: string[] | Record<string, unknown> = []
+
+            _aFields = _fields.includes(",")
+                ? _fields.split(",")
                     .filter(__field => !(__field == undefined || __field.trim() == ""))
                     .map(__field => __field.trim())
-            } else {
-                _fields = [schemaRequest.fields.trim()]
-            }
-            if (_fields.length > 0) {
-                _fields = _fields.reduce((__key, __value) => ({
+                : [_fields.trim()]
+
+            if (_aFields.length > 0) {
+                _aFields = _aFields.reduce((__key, __value) => ({
                     ...__key,
                     [__value]: 1
                 }), {})
             }
             options.Fields = {
-                $project: _fields
+                $project: _aFields
             }
         }
         return options
@@ -115,9 +123,12 @@ class MongoDbDataOptions extends absDataProviderOptions {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    GetSort(options: TOptions, schemaRequest: TSchemaRequest): TOptions {
+    GetSort(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
         if (schemaRequest?.sort) {
-            const _sort = schemaRequest.sort.trim()
+            const _sort = PlaceHolder.EvaluateJsCode(
+                schemaRequest.sort.trim(),
+                new Sandbox($context)
+            ) ?? ''
 
             // test if array
             let _sortArray = _sort.includes(",")
@@ -142,7 +153,7 @@ class MongoDbDataOptions extends absDataProviderOptions {
 
 
 export class MongoDbData extends absDataProvider {
-    
+
     SourceName?: string
     ProviderName = DATA_PROVIDER.MONGODB
     Params: TMongoDbDataConfig = <TMongoDbDataConfig>{}
@@ -154,7 +165,7 @@ export class MongoDbData extends absDataProvider {
     constructor() {
         super()
     }
-     
+
     @Logger.LogFunction()
     async Init(source: string, sourceParams: TConfigSource): Promise<void> {
         Logger.Debug("MongoDbData.Init")
@@ -165,12 +176,12 @@ export class MongoDbData extends absDataProvider {
             options: sourceParams.options
         }
     }
-    
+
     // eslint-disable-next-line class-methods-use-this
     EscapeEntity(entity: string): string {
         return entity
     }
-    
+
     // eslint-disable-next-line class-methods-use-this
     EscapeField(field: string): string {
         return field
@@ -201,42 +212,24 @@ export class MongoDbData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
+    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
-        await this.Connection.connect()
-        await this.Connection
-            .db(this.Params.database)
-            .collection(schemaRequest.entity)
-            .insertMany(options?.Data?.Rows)
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.Created()
-    }
-
-    @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         const { schema, entity } = schemaRequest
 
-        let schemaResponse = <TSchemaResponse>{
-            schema,
-            entity
-        }
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
 
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        //CURRENT E2E testing
         // eslint-disable-next-line you-dont-need-lodash-underscore/omit, you-dont-need-lodash-underscore/values
-        const aggregation: MongoDb.Document[] = _.values(_.omit(options, "Cache"))
+        const aggregation: MongoDb.Document[] = _.values(_.omit(options, "Cache")) as MongoDb.Document[]
 
         await this.Connection.connect()
 
@@ -254,7 +247,8 @@ export class MongoDbData extends absDataProvider {
         }
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            ...schemaResponse,
+            schema,
+            entity,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
@@ -262,12 +256,50 @@ export class MongoDbData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
+
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        await this.Connection.connect()
+        await this.Connection
+            .db(this.Params.database)
+            .collection(schemaRequest.entity)
+            .insertMany(options?.Data?.Rows)
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.Created()
+    }
+
+    @Logger.LogFunction()
+    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        if (this.Connection === undefined)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
+
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data) || options.Data.Rows.length === 0)
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         await this.Connection.connect()
 
@@ -288,12 +320,18 @@ export class MongoDbData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
-        const options: TOptions = this.Options.Parse(schemaRequest)
+    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
+
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
 
         await this.Connection
             .db(this.Params.database)
@@ -315,12 +353,12 @@ export class MongoDbData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
-
-        const { schema } = schemaRequest
+    async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        const { schema } = schemaRequest
 
         await this.Connection.connect()
 

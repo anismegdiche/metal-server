@@ -7,7 +7,7 @@ import { RESPONSE } from '../../lib/Const'
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
-import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
@@ -19,10 +19,12 @@ import { DataTable } from "../../types/DataTable"
 import { HttpResponse } from "../../server/HttpResponse"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { absDataProvider } from "../absDataProvider"
+import { TContext } from "../../@types/TContext"
+import _ from "lodash"
 
 
 export class PlanData extends absDataProvider {
-    
+
     SourceName?: string
     ProviderName = DATA_PROVIDER.PLAN
     Params: TConfigSource = <TConfigSource>{}
@@ -32,14 +34,14 @@ export class PlanData extends absDataProvider {
         super()
     }
 
-     
+
     @Logger.LogFunction()
     async Init(source: string, sourceParams: TConfigSource): Promise<void> {
         Logger.Debug("PlanData.Init")
         this.SourceName = source
         this.Params = sourceParams
     }
-    
+
     // eslint-disable-next-line class-methods-use-this
     EscapeEntity(entity: string): string {
         return `\`${entity}\``
@@ -59,29 +61,22 @@ export class PlanData extends absDataProvider {
         Logger.Info(`${Logger.In} '${this.SourceName} (${this.Params.database})' disconnected`)
     }
 
-
-    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        const { schema, entity } = schemaRequest
-        Logger.Error(`Insert: Not allowed for plans '${schema}', entity '${entity}'`)
-        throw new HttpErrorBadRequest("Not allowed for plans")
-    }
+    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
-    @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
-
-        const options: TOptions = this.Options.Parse(schemaRequest)
         const { schema, entity } = schemaRequest
 
-        const schemaResponse = <TSchemaResponse>{
-            schema,
-            entity
-        }
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
+
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`\`${entity}\``)
+            .From(this.EscapeEntity(entity))
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
@@ -103,17 +98,25 @@ export class PlanData extends absDataProvider {
         }
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            ...schemaResponse,
+            schema,
+            entity,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
         })
     }
 
+    // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
+    async Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>> {
+        const { schema, entity } = schemaRequest
+        Logger.Error(`Insert: Not allowed for plans '${schema}', entity '${entity}'`)
+        throw new HttpErrorBadRequest("Not allowed for plans")
+    }
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
         Logger.Error(`Update: Not allowed for plans '${schema}', entity '${entity}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
@@ -122,7 +125,7 @@ export class PlanData extends absDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
         Logger.Error(`Delete: Not allowed for plans '${schema}', entity '${entity}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
@@ -138,7 +141,7 @@ export class PlanData extends absDataProvider {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 
         const { schema } = schemaRequest
 

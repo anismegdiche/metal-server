@@ -1,10 +1,17 @@
+//
+//
+//
+//
+//
+import { DataTable } from "./DataTable"
 import { TJson } from "./TJson"
 
 
+//
 export type TOptions  = {
     Fields?: TJson | string
-    Filter?: any
+    Filter?: TJson
     Sort?: TJson | string
-    Data?: any
+    Data?: DataTable
     Cache?: number
 }

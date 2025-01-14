@@ -4,6 +4,7 @@
 //
 //
 import _ from "lodash"
+import typia from "typia"
 //
 import { absDataProvider } from "../absDataProvider"
 import { RESPONSE } from "../../lib/Const"
@@ -12,10 +13,10 @@ import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { Cache } from "../../server/Cache"
 import { DATA_PROVIDER } from "../../providers/DataProvider"
 import { TOptions } from "../../types/TOptions"
-import { TSchemaRequest } from "../../types/TSchemaRequest"
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
-import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
@@ -26,6 +27,7 @@ import { absContentProvider } from "../absContentProvider"
 // Storage
 import { STORAGE, StorageProvider, TStorageConfig } from "../StorageProvider"
 import { absStorageProvider } from "../absStorageProvider"
+import { TContext } from "../../@types/TContext"
 
 
 //
@@ -139,58 +141,12 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
-        const $context = this.GetContext(schemaRequest)
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entity } = schemaRequest
+    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.SetContentHandler(entity)
-        this.SetLock(entity)
-        await this.Lock.get(entity)!.Acquire()
-
-        try {
-            this.File[entity].InitContent(
-                entity,
-                await this.Connection.Read(entity)
-            )
-
-            const data = await this.File[entity].Get(undefined, $context)
-
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Insert(`\`${entity}\``)
-                .Fields(options.Data.GetFieldNames(), '`')
-                .Values(options.Data.Rows)
-
-            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-            await this.Connection.Write(
-                entity,
-                await this.File[entity].Set(data, $context)
-            )
-
-            // clean cache
-            Cache.Remove(schemaRequest)
-
-            return HttpResponse.Created()
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(`${this.SourceName}: ${error.message}`)
-        } finally {
-            this.Lock.get(entity)!.Release()
-        }
-    }
-
-    @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
-
-        const $context = this.GetContext(schemaRequest)
-        const options: TOptions = this.Options.Parse(schemaRequest)
         const { schema, entity } = schemaRequest
-
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
         this.SetContentHandler(entity)
 
@@ -199,9 +155,14 @@ export class FilesData extends absDataProvider {
             await this.Connection.Read(entity)
         )
 
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge($context, this.GetContext(schemaRequest))
+
+        const options: TOptions = this.Options.Parse(schemaRequest,$context)
+
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`\`${entity}\``)
+            .From(this.EscapeEntity(entity))
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
@@ -230,14 +191,73 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        
-        const $context = this.GetContext(schemaRequest)
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entity } = schemaRequest
+    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context, 
+            this.GetContext(schemaRequest)
+        )
+
+        const options: TOptions = this.Options.Parse(schemaRequest,$context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        const { entity } = schemaRequest
+
+        this.SetContentHandler(entity)
+        this.SetLock(entity)
+        await this.Lock.get(entity)!.Acquire()
+
+        try {
+            this.File[entity].InitContent(
+                entity,
+                await this.Connection.Read(entity)
+            )
+
+            const data = await this.File[entity].Get(undefined, $context)
+
+            const sqlQueryHelper = new SqlQueryHelper()
+                .Insert(this.EscapeEntity(entity))
+                .Fields(options.Data.GetFieldNames(), '`')
+                .Values(options.Data.Rows)
+
+            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await this.Connection.Write(
+                entity,
+                await this.File[entity].Set(data, $context)
+            )
+
+            // clean cache
+            Cache.Remove(schemaRequest)
+
+            return HttpResponse.Created()
+        } catch (error: any) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: ${error.message}`)
+        } finally {
+            this.Lock.get(entity)!.Release()
+        }
+    }
+
+    @Logger.LogFunction()
+    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge($context, this.GetContext(schemaRequest))
+
+        const options: TOptions = this.Options.Parse(schemaRequest,$context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        const { entity } = schemaRequest
 
         this.SetContentHandler(entity)
         this.SetLock(entity)
@@ -251,7 +271,7 @@ export class FilesData extends absDataProvider {
             const data = await this.File[entity].Get(undefined, $context)
 
             const sqlQueryHelper = new SqlQueryHelper()
-                .Update(`\`${entity}\``)
+                .Update(this.EscapeEntity(entity))
                 .Set(options.Data.Rows)
                 .Where(options.Filter)
 
@@ -274,15 +294,17 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
-        const $context = this.GetContext(schemaRequest)
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entity } = schemaRequest
-
+    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge($context, this.GetContext(schemaRequest))
+        
+        const options: TOptions = this.Options.Parse(schemaRequest,$context)
+
+        const { entity } = schemaRequest
 
         this.SetContentHandler(entity)
         this.SetLock(entity)
@@ -298,7 +320,7 @@ export class FilesData extends absDataProvider {
 
             const sqlQueryHelper = new SqlQueryHelper()
                 .Delete()
-                .From(`\`${entity}\``)
+                .From(this.EscapeEntity(entity))
                 .Where(options.Filter)
 
             await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
@@ -328,7 +350,7 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 
         const { schema } = schemaRequest
 

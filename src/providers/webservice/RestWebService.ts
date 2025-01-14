@@ -6,43 +6,29 @@
 import { Readable } from "stream"
 import axios, { AxiosResponse, AxiosInstance } from "axios"
 //
-import { absWebServiceProvider, HEADER, TUrlMethod } from "../absWebServiceProvider"
+import { absWebServiceProvider, ENDPOINT, HEADER, TWebServiceEndpointMethod, TWebServiceEndpointMethodConfig } from '../absWebServiceProvider'
 import { TConfigSourceWebServiceOptions, TConfigSourceWebService } from "../data/WebServiceData"
 import { Logger } from "../../utils/Logger"
 import { StringHelper } from "../../lib/StringHelper"
-import { HttpErrorInternalServerError } from "../../server/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../server/HttpErrors"
 import { JsonHelper } from '../../lib/JsonHelper'
-import { TJson } from "../../types/TJson"
 import { PlaceHolder } from "../../utils/PlaceHolder"
 import { Sandbox } from "../../server/Sandbox"
 
 
 //
-export const enum ENDPOINT {
-    COLLECTION_READ = "collection:read",
-    ITEM_CREATE = "item:create",
-    ITEM_READ = "item:read",
-    ITEM_UPDATE = "item:update",
-    ITEM_DELETE = "item:delete"
-}
-
-
-//
+// CURRENT merge with soap, move to absWebServiceProvider
 export type TConfigSourceWebServiceRest = {
     endpoints: {
-        login?: {
-            url?: TUrlMethod
-            data?: TJson<string>
-            headers?: TJson<string>
-        }
+        session?: TWebServiceEndpointMethod
         collection?: {
-            read: TUrlMethod
+            read: TWebServiceEndpointMethod
         },
         item?: {
-            create?: TUrlMethod
-            read?: TUrlMethod
-            update?: TUrlMethod
-            delete?: TUrlMethod
+            create?: TWebServiceEndpointMethod
+            read?: TWebServiceEndpointMethod
+            update?: TWebServiceEndpointMethod
+            delete?: TWebServiceEndpointMethod
         }
     }
 }
@@ -71,33 +57,8 @@ export class RestWebService extends absWebServiceProvider {
         if (this.ConfigSourceOptions?.endpoints === undefined || this.ConfigSource?.host === undefined)
             throw new HttpErrorInternalServerError('RestWebService: No urls defined in config')
 
-        //TODO to simplify
-        if (typeof this.ConfigSourceOptions.endpoints.collection == "object")
-            Object.entries(this.ConfigSourceOptions.endpoints.collection).forEach(([op, opConfig]) => {
-                const [endpointMethod] = Object.keys(opConfig)
-                const [endpointUrl] = Object.values(opConfig)
-                this.Endpoints.set(
-                    `collection:${op}`,
-                    {
-                        Method: endpointMethod,
-                        Url: endpointUrl,
-                        Keys: PlaceHolder.GetVarName(endpointUrl)
-                    })
-            })
-
-        //TODO to simplify
-        if (typeof this.ConfigSourceOptions.endpoints.item == "object")
-            Object.entries(this.ConfigSourceOptions.endpoints.item).forEach(([op, opConfig]) => {
-                const [endpointMethod] = Object.keys(opConfig)
-                const [endpointUrl] = Object.values(opConfig)
-                this.Endpoints.set(
-                    `item:${op}`,
-                    {
-                        Method: endpointMethod,
-                        Url: endpointUrl,
-                        Keys: PlaceHolder.GetVarName(endpointUrl)
-                    })
-            })
+        this.ProcessEndpoints('collection', this.ConfigSourceOptions.endpoints.collection)
+        this.ProcessEndpoints('item', this.ConfigSourceOptions.endpoints.item)
     }
 
     @Logger.LogFunction()
@@ -117,37 +78,39 @@ export class RestWebService extends absWebServiceProvider {
             this.Client.defaults.headers.common[header] = value
     }
 
-
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        if (typeof this.ConfigSourceOptions?.endpoints.login !== 'object' || !this.Client)
+        if (typeof this.ConfigSourceOptions?.endpoints.session !== 'object' || !this.Client)
             return
 
-        const { url, data, headers } = this.ConfigSourceOptions.endpoints.login
-
-        if (!url || !data)
+        const [loginEndpointMethod] = Object.keys(this.ConfigSourceOptions.endpoints.session)
+        if (!loginEndpointMethod)
             return
 
-        const [endpointMethod = "GET"] = Object.keys(url)
-        const [endpointUrl = "/"] = Object.values(url)
+        const loginEndpointConfig: TWebServiceEndpointMethodConfig = this.ConfigSourceOptions.endpoints.session[loginEndpointMethod]
 
-        Logger.Debug(`${Logger.In} RestWebService.Connect: ${StringHelper.Url(this.ConfigSource!.host, JsonHelper.Stringify(url))}`)
+        if (!loginEndpointConfig)
+            return
+
+        Logger.Debug(`${Logger.In} RestWebService.Connect: ${StringHelper.Url(this.ConfigSource!.host, JsonHelper.Stringify(loginEndpointConfig))}`)
         const wsLogin = await this.Client({
-            method: endpointMethod.toLowerCase(),
+            method: loginEndpointMethod.toLowerCase(),
             url: StringHelper.Url(
                 this.ConfigSource!.host,
-                endpointUrl
+                loginEndpointConfig.request
             ),
-            data
+            data: loginEndpointConfig.data
         })
 
         if (wsLogin.status !== 200)
             throw new HttpErrorInternalServerError(`RestWebService.Connect: ${wsLogin.statusText}`)
 
-        if (!headers)
+        if (!loginEndpointConfig["session-headers"])
             return
 
-        for (const [headerName, headerValue] of Object.entries(headers)) {
+        const postHearders = loginEndpointConfig["session-headers"]
+
+        for (const [headerName, headerValue] of Object.entries(postHearders)) {
             const __headerNewValue = PlaceHolder.EvaluateJsCode(
                 headerValue,
                 new Sandbox({
@@ -184,11 +147,11 @@ export class RestWebService extends absWebServiceProvider {
             })
 
             if (![200, 201].includes(wsResp.status))
-                throw new HttpErrorInternalServerError(`RestWebService.Create: ${wsResp.statusText}`)
+                throw HttpErrorSwitch(wsResp.status, `RestWebService.Create: ${wsResp.statusText}`)
 
             return Readable.from(JsonHelper.Stringify(wsResp.data))
         } catch (error: any) {
-            throw new HttpErrorInternalServerError(error.message)
+            throw HttpErrorSwitch(error.status, error.message)
         }
     }
 
@@ -208,12 +171,12 @@ export class RestWebService extends absWebServiceProvider {
             })
 
             if (wsResp.status !== 200)
-                throw new HttpErrorInternalServerError(`RestWebService.Read: ${wsResp.statusText}`)
+                throw HttpErrorSwitch(wsResp.status, `RestWebService.Read: ${wsResp.statusText}`)
 
             return Readable.from(JsonHelper.Stringify(wsResp.data))
 
         } catch (error: any) {
-            throw new HttpErrorInternalServerError(error.message)
+            throw HttpErrorSwitch(error.status, error.message)
         }
     }
 
@@ -234,12 +197,12 @@ export class RestWebService extends absWebServiceProvider {
             })
 
             if (![200, 204].includes(wsResp.status))
-                throw new HttpErrorInternalServerError(`RestWebService.Update: ${wsResp.statusText}`)
+                throw HttpErrorSwitch(wsResp.status, `RestWebService.Update: ${wsResp.statusText}`)
 
             return Readable.from(JsonHelper.Stringify(wsResp.data))
 
         } catch (error: any) {
-            throw new HttpErrorInternalServerError(error.message)
+            throw HttpErrorSwitch(error.status, error.message)
         }
     }
 
@@ -259,16 +222,12 @@ export class RestWebService extends absWebServiceProvider {
             })
 
             if (![200, 204].includes(wsResp.status))
-                throw new HttpErrorInternalServerError(`RestWebService.Delete: ${wsResp.statusText}`)
+                throw HttpErrorSwitch(wsResp.status, `RestWebService.Delete: ${wsResp.statusText}`)
 
             return Readable.from(JsonHelper.Stringify(wsResp.data))
 
         } catch (error: any) {
-            throw new HttpErrorInternalServerError(error.message)
+            throw HttpErrorSwitch(error.status, error.message)
         }
-    }
-
-    GetKeyName(endpoint: string): string[] | undefined {
-        return this.Endpoints.get(endpoint)?.Keys
     }
 }

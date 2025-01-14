@@ -21,7 +21,6 @@ import { SchemaRouter } from '../routes/SchemaRouter'
 import { PlanRouter } from '../routes/PlanRouter'
 import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
-import { Sandbox } from './Sandbox'
 import { JsonHelper } from '../lib/JsonHelper'
 import { HttpErrorNotImplemented } from "./HttpErrors"
 import { Swagger } from '../utils/Swagger'
@@ -38,7 +37,6 @@ import { WebServiceProvider } from "../providers/WebServiceProvider"
 export class Server {
 
     static readonly App: Express = express()
-    static readonly Sandbox: Sandbox = new Sandbox()
     static Port: number
     static CurrentPath: string
 

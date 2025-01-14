@@ -10,7 +10,7 @@ import { Helper } from "../lib/Helper"
 import { Logger } from "../utils/Logger"
 import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TSortOrder, TRow, JOIN_TYPE } from "../types/DataTable"
 import { TJson } from "../types/TJson"
-import { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect } from "../types/TSchemaRequest"
+import { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect } from "../types/TSchemaRequest"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
@@ -25,6 +25,7 @@ import { HttpErrorInternalServerError } from "./HttpErrors"
 import { Config } from "./Config"
 import { absDataProviderOptions } from "../providers/absDataProviderOptions"
 import { DataProviderOptions } from "../providers/absDataProvider"
+import { clsContext } from "../utils/clsContext"
 
 
 export enum STEP {
@@ -51,8 +52,9 @@ export type TStepArguments = {
 }
 
 export class Step {
-
+    
     static Options: absDataProviderOptions = new DataProviderOptions()
+    static GetContext = (schemaRequest: TSchemaRequest) => new clsContext().GetContext(schemaRequest)
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static ExecuteCaseMap: Record<string, Function> = {
@@ -69,7 +71,7 @@ export class Step {
         [STEP.ANONYMIZE]: async (stepArguments: TStepArguments) => await Step.Anonymize(stepArguments),
         [STEP.REMOVE_DUPLICATE]: async (stepArguments: TStepArguments) => await Step.RemoveDuplicates(stepArguments),
         [STEP.LIST_ENTITIES]: async (stepArguments: TStepArguments) => await Step.ListEntities(stepArguments)
-    }
+    }    
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static JoinCaseMap: Record<string, Function> = {
@@ -78,14 +80,16 @@ export class Step {
         [JOIN_TYPE.INNER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.InnerJoin(dtRight, leftField, rightField),
         [JOIN_TYPE.FULL_OUTER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.FullOuterJoin(dtRight, leftField, rightField),
         [JOIN_TYPE.CROSS]: async (dtLeft: DataTable, dtRight: DataTable) => dtLeft.CrossJoin(dtRight)
-    }
+    }    
 
     @Logger.LogFunction()
     static async Select(stepArguments: TStepArguments): Promise<DataTable> {
 
+        //CURRENT $context
         const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams as TStepSelect
         const { schema, entity } = schemaRequest
+        const $context = Step.GetContext(schemaRequest as TSchemaRequest)
 
         // TODO recheck logic for schema=null
         if (entity) {
@@ -100,8 +104,10 @@ export class Step {
 
         // case no schema and no entity --> use current datatable
         //TODO missing options.cache
+        //CURRENT missing $context
         if (!schema && !entity) {
-            const options: TOptions = Step.Options.Parse(<TSchemaRequestSelect>schemaRequest)
+            const options: TOptions = Step.Options.Parse(<TSchemaRequestSelect>schemaRequest, $context)
+
             const sqlQueryHelper = new SqlQueryHelper()
                 .Select(options.Fields)
                 .From(`\`${currentDataTable.Name}\``)
@@ -171,6 +177,7 @@ export class Step {
         const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schema, entity, data } = schemaRequest
+        const $context = Step.GetContext(schemaRequest as TSchemaRequestSelect)
 
         if (!data) {
             Logger.Error(`Step.Update: no data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -179,7 +186,7 @@ export class Step {
 
         // TODO recheck logic for schema=null
         if (entity) {
-            const _schemaResponse = await Schema.Update({
+            await Schema.Update({
                 ...schemaRequest,
                 schema: schema ?? currentSchemaName
             })
@@ -188,11 +195,13 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
+        // CURRENT missing $context
+        // CURRENT escape entity
         if (!schema && !entity) {
-            const _options: TOptions = Step.Options.Parse(schemaRequest)
+            const _options: TOptions = Step.Options.Parse(schemaRequest, $context)
             const _sqlQueryHelper = new SqlQueryHelper()
                 .Update(`\`${currentDataTable.Name}\``)
-                .Set(_options.Data)
+                .Set(_options.Data?.Rows)
                 .Where(_options.Filter)
 
             await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query, _sqlQueryHelper.Data)
@@ -212,6 +221,7 @@ export class Step {
         const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schema, entity } = schemaRequest
+        const $context = Step.GetContext(schemaRequest as TSchemaRequestSelect)
 
         // TODO recheck logic for schema=null
         if (entity) {
@@ -224,8 +234,9 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
+        // CURRENT missing $context
         if (!schema && !entity) {
-            const _options: TOptions = Step.Options.Parse(schemaRequest)
+            const _options: TOptions = Step.Options.Parse(schemaRequest, $context)
             const _sqlQueryHelper = new SqlQueryHelper()
                 .Delete()
                 .From(`\`${currentDataTable.Name}\``)
@@ -433,7 +444,7 @@ export class Step {
     static async Anonymize(stepArguments: TStepArguments): Promise<DataTable> {
         const stepParams: string = stepArguments.stepParams as string
         const fieldsToAnonymize = StringHelper.Split(stepParams, ",")
-        return stepArguments.currentDataTable.AnonymizeFields(fieldsToAnonymize)
+        return stepArguments.currentDataTable.Anonymize(fieldsToAnonymize)
     }
 
     @Logger.LogFunction()
@@ -462,7 +473,7 @@ export class Step {
 
         // schema is defined
         if (schemaRequest?.schema) {
-            const _internalResponse = await Schema.ListEntities(<TSchemaRequestListEntities>schemaRequest)
+            const _internalResponse = await Schema.ListEntities(<TSchemaRequest>schemaRequest)
 
             if (_internalResponse.Body && TypeHelper.IsSchemaResponseData(_internalResponse.Body)) {
                 Logger.Debug(`${Logger.Out} Step.ListEntities: ${JsonHelper.Stringify(stepArguments.stepParams)}`)

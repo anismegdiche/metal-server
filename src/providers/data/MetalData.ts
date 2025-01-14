@@ -9,7 +9,7 @@ import _ from 'lodash'
 //
 import { Logger } from "../../utils/Logger"
 import { DATA_PROVIDER } from "../../providers/DataProvider"
-import { TSchemaRequest } from "../../types/TSchemaRequest"
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
 import { TJson } from '../../types/TJson'
@@ -19,6 +19,7 @@ import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorInternalServerError, 
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
+import { TContext } from "../../@types/TContext"
 
 
 //
@@ -37,6 +38,7 @@ type TMetalClientParams = {
     schema: string
 }
 
+//CURRENT refactor with new WS Rest
 export class MetalClient {
     Params: TMetalClientParams = {
         url: "http://localhost:3000",
@@ -180,7 +182,7 @@ export class MetalData extends absDataProvider {
         return field
     }
 
-    static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest): object {
+    static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest | TSchemaRequestListEntities, $context?: Partial<TContext>): object {
         // eslint-disable-next-line you-dont-need-lodash-underscore/omit
         return _.omit(schemaRequest, ['source', 'schema', 'entity'])
     }
@@ -238,7 +240,7 @@ export class MetalData extends absDataProvider {
         }
     }
 
-    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
@@ -252,7 +254,7 @@ export class MetalData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
@@ -273,7 +275,7 @@ export class MetalData extends absDataProvider {
     }
 
 
-    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
@@ -287,7 +289,7 @@ export class MetalData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
@@ -309,7 +311,7 @@ export class MetalData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)

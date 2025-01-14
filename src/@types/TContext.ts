@@ -8,10 +8,10 @@ import { TJson } from "../types/TJson"
 
 //
 export type TContext = {
+    $entity?: string,           // requested entity name
+    $schema?: string,           // requested schema name
     // available for schema request
     $request?: {
-        entity?: string,        // requested entity name
-        schema?: string,        // requested schema name
         "data-path"?: string    // requested JSON path, if undefined will return the whole JSON
     },
     // available for webservice config (update,delete)

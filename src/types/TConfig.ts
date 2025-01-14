@@ -107,7 +107,7 @@ export type StepCommand =
 //
 
 export type TConfig = {
-    version: "0.3"
+    version: "0.3" | "0.4"
     server?: {
         port?: TIpPort
         verbosity?: LogLevelDesc

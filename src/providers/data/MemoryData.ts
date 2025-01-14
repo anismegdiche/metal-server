@@ -3,22 +3,26 @@
 //
 //
 //
+import typia from "typia"
+import _ from "lodash"
+//
 import { RESPONSE } from '../../lib/Const'
 import { TConfigSource } from "../../types/TConfig"
 import { TOptions } from "../../types/TOptions"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
-import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { DATA_PROVIDER } from '../../providers/DataProvider'
 import { DataBase } from '../../types/DataBase'
-import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
+import { TContext } from "../../@types/TContext"
 
 
 //
@@ -36,7 +40,7 @@ export type TMemoryDataConfig = {
 
 //
 export class MemoryData extends absDataProvider {
-    
+
     SourceName?: string
     ProviderName = DATA_PROVIDER.MEMORY
     Params: TMemoryDataConfig = <TMemoryDataConfig>{}
@@ -45,7 +49,7 @@ export class MemoryData extends absDataProvider {
     constructor() {
         super()
     }
-     
+
     @Logger.LogFunction()
     async Init(source: string, sourceParams: TConfigSource): Promise<void> {
         Logger.Debug(`${Logger.Out} MemoryData.Init`)
@@ -77,32 +81,11 @@ export class MemoryData extends absDataProvider {
         this.Connection = undefined
     }
 
-
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schema, entity } = schemaRequest
-
-        if (this.Connection === undefined)
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        await this.AddEntity(schemaRequest)
-
-        if (this.Connection.Tables[entity] === undefined)
-            throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
-
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
-        this.Connection.Tables[entity].AddRows(options.Data.Rows)
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.Created()
-    }
-
-    @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         const { schema, entity } = schemaRequest
 
@@ -111,17 +94,17 @@ export class MemoryData extends absDataProvider {
             entity
         }
 
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge($context, this.GetContext(schemaRequest))
+
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
-            .From(`\`${entity}\``)
+            .From(this.EscapeEntity(entity))
             .Where(options.Filter)
             .OrderBy(options.Sort)
 
@@ -152,20 +135,53 @@ export class MemoryData extends absDataProvider {
 
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { schema, entity } = schemaRequest
 
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+        await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge($context, this.GetContext(schemaRequest))
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schema}: data is missing`)
+
+        this.Connection.Tables[entity].AddRows(options.Data.Rows)
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.Created()
+    }
+
+    @Logger.LogFunction()
+    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        const { schema, entity } = schemaRequest
+
+        if (this.Connection.Tables[entity] === undefined)
+            throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge($context, this.GetContext(schemaRequest))
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`\`${entity}\``)
+            .Update(this.EscapeEntity(entity))
             .Set(options.Data.Rows)
             .Where(options.Filter)
 
@@ -179,21 +195,23 @@ export class MemoryData extends absDataProvider {
 
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { schema, entity } = schemaRequest
-
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge($context, this.GetContext(schemaRequest))
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()
-            .From(`\`${entity}\``)
+            .From(this.EscapeEntity(entity))
             .Where(options.Filter)
 
         await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
@@ -207,7 +225,7 @@ export class MemoryData extends absDataProvider {
     @Logger.LogFunction()
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        if (this.Connection === undefined)
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { entity } = schemaRequest
@@ -222,12 +240,12 @@ export class MemoryData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { schema } = schemaRequest
-
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const rows = Object.keys(this.Connection.Tables).map(entity => ({
             name: entity,

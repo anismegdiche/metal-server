@@ -70,7 +70,7 @@ sources:
         collection:
           read: 
             get:
-              response: ${{ $request.entity }}
+              response: ${{ $entity }}
         item:
           read: 
             get: 
@@ -104,7 +104,7 @@ sources:
     options:
       type: soap
       content: xml
-      # XXX xml-path: SOAP-ENV:Envelope.SOAP-ENV:Body.ns2:${{ $endpoint.name }}Response.ns2:${{ $request.entity }}
+      # XXX xml-path: SOAP-ENV:Envelope.SOAP-ENV:Body.ns2:${{ $endpoint.name }}Response.ns2:${{ $entity }}
       endpoints:
         collection:
           read:

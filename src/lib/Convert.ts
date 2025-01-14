@@ -11,14 +11,11 @@ import _ from "lodash"
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TJson } from '../types/TJson'
 import { TSchemaResponse } from '../types/TSchemaResponse'
-import { Logger } from "../utils/Logger"
 import { TInternalResponse } from '../types/TInternalResponse'
-import { Server } from '../server/Server'
 import { TypeHelper } from './TypeHelper'
-import { JsonHelper } from './JsonHelper'
 import { HttpErrorInternalServerError } from '../server/HttpErrors'
 import { Config } from "../server/Config"
-import { HTTP_STATUS_CODE, RX } from "./Const"
+import { HTTP_STATUS_CODE } from "./Const"
 
 
 export class Convert {
@@ -129,33 +126,6 @@ export class Convert {
         res.on('error', (error) => {
             throw new HttpErrorInternalServerError(`Response stream error: ${error}`)
         })
-    }
-
-
-    static EvaluateJsCode(value: string): string
-    static EvaluateJsCode(value: TJson | TJson[] | undefined): TJson[] | undefined
-    static EvaluateJsCode(value: object | TJson): object | TJson
-    static EvaluateJsCode(value: string | object | TJson | TJson[] | undefined): string | object | TJson | TJson[] | undefined {
-        if (value == undefined)
-            return undefined
-
-        if (typeof value === 'string') {
-            return value.replace(RX.JS_CODE, (_match, code) => {
-                try {
-                    const __result = Server.Sandbox.Evaluate(code)
-                    return (__result === undefined)
-                        ? ''
-                        : __result.toString()
-                } catch (error) {
-                    Logger.Error(`Error evaluating code: ${code}\r${JsonHelper.Stringify(error)}`)
-                    // Return the original placeholder if there's an error
-                    return `$\{{${code}}}`
-                }
-            })
-        }
-
-        const evalString = Convert.EvaluateJsCode(JsonHelper.Stringify(value))
-        return JsonHelper.TryParse(evalString, {})
     }
 
     static PatternToRegex(pattern: string): RegExp {

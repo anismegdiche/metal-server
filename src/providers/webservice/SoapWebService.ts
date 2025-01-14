@@ -4,41 +4,26 @@
 //
 //
 import { Readable } from "stream"
-import { createClientAsync, Client }  from "soap"
+import { createClientAsync, Client } from "soap"
 //
-import { absWebServiceProvider, HEADER, TUrlMethod } from "../absWebServiceProvider"
+import { absWebServiceProvider, ENDPOINT, HEADER, TWebServiceEndpointMethod } from "../absWebServiceProvider"
+import { JsonHelper } from '../../lib/JsonHelper'
 import { TConfigSourceWebServiceOptions, TConfigSourceWebService } from "../data/WebServiceData"
 import { Logger } from "../../utils/Logger"
 import { StringHelper } from "../../lib/StringHelper"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
-import { JsonHelper } from '../../lib/JsonHelper'
-import { TJson } from "../../types/TJson"
-import { PlaceHolder } from "../../utils/PlaceHolder"
-import { Sandbox } from "../../server/Sandbox"
-
-export const enum ENDPOINT {
-    COLLECTION_READ = "collection:read",
-    ITEM_CREATE = "item:create",
-    ITEM_READ = "item:read",
-    ITEM_UPDATE = "item:update",
-    ITEM_DELETE = "item:delete"
-}
 
 export type TConfigSourceWebServiceSoap = {
     endpoints: {
-        login?: {
-            url?: TUrlMethod
-            data?: TJson<string>
-            headers?: TJson<string>
-        }
+        session?: TWebServiceEndpointMethod
         collection?: {
-            read: TJson
+            read: TWebServiceEndpointMethod
         },
         item?: {
-            create?: TJson
-            read?: TJson
-            update?: TJson
-            delete?: TJson
+            create?: TWebServiceEndpointMethod
+            read?: TWebServiceEndpointMethod
+            update?: TWebServiceEndpointMethod
+            delete?: TWebServiceEndpointMethod
         }
     }
 }
@@ -51,7 +36,7 @@ export class SoapWebService extends absWebServiceProvider {
 
     ConfigSource?: TConfigSourceWebService
     ConfigSourceOptions?: TConfigSourceWebServiceOptions
-    Client: Client | undefined
+    Client: Client | undefined 
 
     Headers: Record<string, string>[] = []
 
@@ -65,59 +50,39 @@ export class SoapWebService extends absWebServiceProvider {
         if (this.ConfigSourceOptions?.endpoints === undefined || this.ConfigSource?.host === undefined)
             throw new HttpErrorInternalServerError('SoapWebService: No urls defined in config')
 
-        //TODO to simplify
-        if (typeof this.ConfigSourceOptions.endpoints.collection == "object")
-            Object.entries(this.ConfigSourceOptions.endpoints.collection).forEach(([op, opConfig]) => {
-                const [endpointMethod] = Object.keys(opConfig)
-                const [endpointUrl] = Object.values(opConfig)
-                this.Endpoints.set(
-                    `collection:${op}`,
-                    {
-                        Method: endpointMethod,
-                        Url: endpointUrl,
-                        Keys: PlaceHolder.GetVarName(endpointUrl)
-                    })
-            })
-
-        //TODO to simplify
-        if (typeof this.ConfigSourceOptions.endpoints.item == "object")
-            Object.entries(this.ConfigSourceOptions.endpoints.item).forEach(([op, opConfig]) => {
-                const [endpointMethod] = Object.keys(opConfig)
-                const [endpointUrl] = Object.values(opConfig)
-                this.Endpoints.set(
-                    `item:${op}`,
-                    {
-                        Method: endpointMethod,
-                        Url: endpointUrl,
-                        Keys: PlaceHolder.GetVarName(endpointUrl)
-                    })
-            })
+        this.ProcessEndpoints('collection', this.ConfigSourceOptions.endpoints.collection)
+        this.ProcessEndpoints('item', this.ConfigSourceOptions.endpoints.item)
     }
 
     @Logger.LogFunction()
     async Init(): Promise<void> {
         if (!this.ConfigSourceOptions?.content)
             return
+        try {
 
-        this.Client = await createClientAsync(this.ConfigSource!.host)
+            this.Client = await createClientAsync(this.ConfigSource!.host)
 
-        if (!this.Client)
-            throw new HttpErrorInternalServerError(`SoapWebService.Init: Failed to create client`)
+            if (!this.Client)
+                throw new HttpErrorInternalServerError(`SoapWebService.Init: Failed to create client`)
 
-        // set content type
-        const [header] = Object.keys(HEADER[this.ConfigSourceOptions.content])
-        const [value] = Object.values(HEADER[this.ConfigSourceOptions.content])
+            // set content type
+            const [header] = Object.keys(HEADER[this.ConfigSourceOptions.content])
+            const [value] = Object.values(HEADER[this.ConfigSourceOptions.content])
 
-        if (typeof header == 'string' && typeof value == 'string')
-            this.Client.addHttpHeader(header, value)
+            if (typeof header == 'string' && typeof value == 'string')
+                this.Client.addHttpHeader(header, value)
+        } catch (error: any) {
+            const _message = error.errors?.at(1).message ?? error.errors?.at(0).message ?? error.message
+            Logger.Error(`SoapWebService.Init: ${_message}`)
+        }
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        if (typeof this.ConfigSourceOptions?.endpoints.login !== 'object' || !this.Client)
+        if (typeof this.ConfigSourceOptions?.endpoints.session !== 'object' || !this.Client)
             return
 
-        const { url, data, headers } = this.ConfigSourceOptions.endpoints.login
+        const { url, data, headers } = this.ConfigSourceOptions.endpoints.session
 
         if (!url || !data)
             return
@@ -126,25 +91,25 @@ export class SoapWebService extends absWebServiceProvider {
         const [endpointUrl = "/"] = Object.values(url)
 
         Logger.Debug(`${Logger.In} SoapWebService.Connect: ${StringHelper.Url(this.ConfigSource!.host, JsonHelper.Stringify(url))}`)
-        const wsLogin = await this.Client[endpointMethod.toLowerCase()](endpointUrl, data)
+        // const wsLogin = await this.Client[endpointMethod.toLowerCase()](endpointUrl, data)
 
-        if (!wsLogin)
-            throw new HttpErrorInternalServerError(`SoapWebService.Connect: Failed to connect`)
+        // if (!wsLogin)
+        //     throw new HttpErrorInternalServerError(`SoapWebService.Connect: Failed to connect`)
 
-        if (!headers)
-            return
+        // if (!headers)
+        //     return
 
-        for (const [headerName, headerValue] of Object.entries(headers)) {
-            const __headerNewValue = PlaceHolder.EvaluateJsCode(
-                headerValue,
-                new Sandbox({
-                    $response: {
-                        url: endpointUrl,
-                        body: wsLogin
-                    }
-                }))
-            this.Client.addHttpHeader(headerName, __headerNewValue)
-        }
+        // for (const [headerName, headerValue] of Object.entries(headers)) {
+        //     const __headerNewValue = PlaceHolder.EvaluateJsCode(
+        //         headerValue,
+        //         new Sandbox({
+        //             $response: {
+        //                 url: endpointUrl,
+        //                 body: wsLogin
+        //             }
+        //         }))
+        //     this.Client.addHttpHeader(headerName, __headerNewValue)
+        // }
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -190,7 +155,7 @@ export class SoapWebService extends absWebServiceProvider {
             if (!wsResp)
                 throw new HttpErrorInternalServerError(`SoapWebService.Read: Failed to read collection`)
 
-            return Readable.from(JsonHelper.Stringify(wsResp))
+            return Readable.from(wsResp.at(1))
 
         } catch (error: any) {
             throw new HttpErrorInternalServerError(error.message)
@@ -239,9 +204,5 @@ export class SoapWebService extends absWebServiceProvider {
         } catch (error: any) {
             throw new HttpErrorInternalServerError(error.message)
         }
-    }
-
-    GetKeyName(endpoint: string): string[] | undefined {
-        return this.Endpoints.get(endpoint)?.Keys
     }
 }
