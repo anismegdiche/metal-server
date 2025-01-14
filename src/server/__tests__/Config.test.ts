@@ -11,8 +11,9 @@ describe('Config', () => {
 
     describe('Validate', () => {
         it('should check the configuration', async () => {
+            const conf = Config.Configuration
             expect.assertions(1)
-            await expect(Config.Validate(Config.Configuration)).resolves.not.toThrow()
+            await expect(Config.Validate(conf)).resolves.not.toThrow()
         })
     })
 })
