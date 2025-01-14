@@ -102,4 +102,25 @@ export function HttpErrorLog(error: HttpError | Error): void {
     if (Logger.Level === VERBOSITY.DEBUG)
         logger(error.stack)
 }
+
+export function HttpErrorSwitch(status: number, message?: string): HttpError {
+    switch (status) {
+        case HTTP_STATUS_CODE.BAD_REQUEST:
+            return new HttpErrorBadRequest(message)
+        case HTTP_STATUS_CODE.NOT_FOUND:
+            return new HttpErrorNotFound(message)
+        case HTTP_STATUS_CODE.CONTENT_TOO_LARGE:
+            return new HttpErrorContentTooLarge(message)
+        case HTTP_STATUS_CODE.NOT_IMPLEMENTED:
+            return new HttpErrorNotImplemented(message)
+        case HTTP_STATUS_CODE.METHOD_NOT_ALLOWED:
+            return new HttpErrorMethodNotAllowed(message)
+        case HTTP_STATUS_CODE.UNAUTHORIZED:
+            return new HttpErrorUnauthorized(message)
+        case HTTP_STATUS_CODE.FORBIDDEN:
+            return new HttpErrorForbidden(message)
+        case HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR:
+        default:
+            return new HttpErrorInternalServerError(message)
+    }
 }
