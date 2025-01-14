@@ -38,4 +38,4 @@ export type TSchemaRequestInsert = Pick<TSchemaRequest,
     'schema' | 'entity' | 'source' | 'data'>
 
 export type TSchemaRequestListEntities = Pick<TSchemaRequest,
-    'schema' | 'entity' | 'source'>
+    'schema' | 'source'>
