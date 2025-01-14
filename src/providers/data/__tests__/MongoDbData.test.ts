@@ -1,10 +1,10 @@
 /* eslint-disable init-declarations */
 import { MongoClient } from 'mongodb'
 import { MongoDbData } from '../MongoDbData'
-import { TSchemaRequest, TSchemaRequestListEntities } from '../../../types/TSchemaRequest'
+import { TSchemaRequest } from '../../../types/TSchemaRequest'
 import { Cache } from '../../../server/Cache'
 import { DataTable } from '../../../types/DataTable'
-import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../../server/HttpErrors'
+import { HttpErrorNotFound } from '../../../server/HttpErrors'
 import { TConfigSource } from "../../../types/TConfig"
 import { DATA_PROVIDER } from "../../DataProvider"
 
