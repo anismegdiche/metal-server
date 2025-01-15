@@ -22,11 +22,11 @@ import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { Convert } from "../../lib/Convert"
 // Content
-import { CONTENT, ContentProvider, TContentConfig } from "../ContentProvider"
 import { absContentProvider } from "../absContentProvider"
+import { CONTENT, ContentProvider, TContentConfig } from "../ContentProvider"
 // Storage
-import { STORAGE, StorageProvider, TStorageConfig } from "../StorageProvider"
 import { absStorageProvider } from "../absStorageProvider"
+import { STORAGE, StorageProvider, TStorageConfig } from "../StorageProvider"
 import { TContext } from "../../@types/TContext"
 
 
@@ -53,9 +53,9 @@ export class FilesData extends absDataProvider {
     Connection?: absStorageProvider = undefined
 
     // FilesData
-    ContentHandler: Record<string, absContentProvider> = {}     // Contents set in confi file
+    ContentHandler: Record<string, absContentProvider> = {}     // Contents set in config
     File: Record<string, absContentProvider> = {}               // Files
-    Lock: Map<string, Mutex> = new Map<string, Mutex>()
+    Lock: Map<string, Mutex> = new Map<string, Mutex>()         // Locker for exclusive access
 
     constructor() {
         super()
@@ -234,8 +234,8 @@ export class FilesData extends absDataProvider {
 
             // clean cache
             Cache.Remove(schemaRequest)
-
             return HttpResponse.Created()
+
         } catch (error: any) {
             throw new HttpErrorInternalServerError(`${this.SourceName}: ${error.message}`)
         } finally {
@@ -332,7 +332,6 @@ export class FilesData extends absDataProvider {
 
             // clean cache
             Cache.Remove(schemaRequest)
-
             return HttpResponse.NoContent()
 
         } catch (error: any) {
