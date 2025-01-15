@@ -212,6 +212,8 @@ export class SqlServerData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
+        const {entity} = schemaRequest
+
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
             $context,
