@@ -12,19 +12,18 @@ import { TWebServiceDataOptions, TConfigSourceWebService } from "../data/WebServ
 import { Logger } from "../../utils/Logger"
 import { StringHelper } from "../../lib/StringHelper"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
-import { TConfigWebServiceOptions } from "../WebServiceProvider"
 
 
 //
 export class SoapWebService extends absWebServiceProvider {
 
-    DEFAULT: Partial<TConfigWebServiceOptions> = {
+    DEFAULT: Partial<TWebServiceDataOptions> = {
         endpoints: {}
     }
 
     ConfigSource?: TConfigSourceWebService
     ConfigSourceOptions?: TWebServiceDataOptions
-    Client: Client | undefined 
+    Client?: Client 
 
     Headers: Record<string, string>[] = []
 
@@ -46,8 +45,8 @@ export class SoapWebService extends absWebServiceProvider {
     async Init(): Promise<void> {
         if (!this.ConfigSourceOptions?.content)
             return
+        
         try {
-
             this.Client = await createClientAsync(this.ConfigSource!.host)
 
             if (!this.Client)

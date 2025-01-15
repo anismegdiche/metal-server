@@ -15,8 +15,8 @@ import { DATA_PROVIDER } from "../DataProvider"
 import { absContentProvider } from "../absContentProvider"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { Logger, VERBOSITY } from "../../utils/Logger"
-import { TConfigWebServiceOptions, WEBSERVICE, WebServiceProvider } from "../WebServiceProvider"
-import { absWebServiceProvider, ENDPOINT, TEndpoint } from "../absWebServiceProvider"
+import { WEBSERVICE, WebServiceProvider } from "../WebServiceProvider"
+import { absWebServiceProvider, ENDPOINT, TEndpoint, TWebServiceEndpointMethod } from "../absWebServiceProvider"
 import { TOptions } from "../../types/TOptions"
 import { RESPONSE } from "../../lib/Const"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
@@ -36,9 +36,20 @@ import { TUrl } from "../../TUrl"
 export type TWebServiceDataOptions = {
     type: WEBSERVICE
     content: CONTENT
+    endpoints: {
+        session?: TWebServiceEndpointMethod
+        collection?: {
+            read: TWebServiceEndpointMethod
+        },
+        item?: {
+            create?: TWebServiceEndpointMethod
+            read?: TWebServiceEndpointMethod
+            update?: TWebServiceEndpointMethod
+            delete?: TWebServiceEndpointMethod
+        }
+    }
 }
     & TContentConfig
-    & TConfigWebServiceOptions
 
 export type TConfigSourceWebService = {
     provider: DATA_PROVIDER.WEBSERVICE
@@ -356,7 +367,7 @@ export class WebServiceData extends absDataProvider {
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in WebService provider`)
-        
+
         const { entity } = schemaRequest
 
         this.SetContentHandler(entity)
@@ -377,7 +388,7 @@ export class WebServiceData extends absDataProvider {
             }
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)        
+        const options: TOptions = this.Options.Parse(schemaRequest, $context)
 
         const requestReadUrl = PlaceHolder.EvaluateJsCode(
             StringHelper.Url(
@@ -440,7 +451,7 @@ export class WebServiceData extends absDataProvider {
     //
     // WebServiceData
     //
-    
+
     SetContentHandler(entity: string) {
         if (!this.File.has(entity) && this.ContentHandler)
             this.File.set(entity, this.ContentHandler)

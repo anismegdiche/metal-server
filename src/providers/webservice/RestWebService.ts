@@ -7,26 +7,25 @@ import { Readable } from "stream"
 import axios, { AxiosResponse, AxiosInstance } from "axios"
 //
 import { absWebServiceProvider, ENDPOINT, HEADER, TWebServiceEndpointMethodConfig } from '../absWebServiceProvider'
-import { TWebServiceDataOptions, TConfigSourceWebService } from "../data/WebServiceData"
+import { TConfigSourceWebService, TWebServiceDataOptions } from "../data/WebServiceData"
 import { Logger } from "../../utils/Logger"
 import { StringHelper } from "../../lib/StringHelper"
 import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../server/HttpErrors"
 import { JsonHelper } from '../../lib/JsonHelper'
 import { PlaceHolder } from "../../utils/PlaceHolder"
 import { Sandbox } from "../../server/Sandbox"
-import { TConfigWebServiceOptions } from "../WebServiceProvider"
 
 
 //
 export class RestWebService extends absWebServiceProvider {
 
-    DEFAULT: Partial<TConfigWebServiceOptions> = {
+    DEFAULT: Partial<TWebServiceDataOptions> = {
         endpoints: {}
     }
 
     ConfigSource?: TConfigSourceWebService
     ConfigSourceOptions?: TWebServiceDataOptions
-    Client: AxiosInstance | undefined
+    Client?: AxiosInstance
 
     Headers: Record<string, string>[] = []
 

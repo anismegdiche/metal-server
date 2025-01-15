@@ -56,7 +56,7 @@ export abstract class absWebServiceProvider extends clsClonable {
     abstract DEFAULT: unknown
     abstract ConfigSource?: TConfigSourceWebService
     abstract ConfigSourceOptions?: TWebServiceDataOptions
-    abstract Client: unknown
+    abstract Client?: unknown
     // deepcode ignore CollectionUpdatedButNeverQueried: abstract class
     Endpoints = new Map<string, TEndpoint>()
 
