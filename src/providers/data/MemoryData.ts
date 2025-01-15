@@ -43,7 +43,7 @@ export class MemoryData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.MEMORY
-    Params: TMemoryDataConfig = <TMemoryDataConfig>{}
+    Config: TMemoryDataConfig = <TMemoryDataConfig>{}
     Connection?: DataBase = undefined
 
     constructor() {
@@ -51,12 +51,12 @@ export class MemoryData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug(`${Logger.Out} MemoryData.Init`)
         this.SourceName = source
-        this.Params = {
-            database: sourceParams.database ?? 'memory',
-            options: sourceParams.options
+        this.Config = {
+            database: sourceConfig.database ?? 'memory',
+            options: sourceConfig.options
         }
     }
 
@@ -71,13 +71,13 @@ export class MemoryData extends absDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        this.Connection = new DataBase(this.Params.database)
-        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
+        this.Connection = new DataBase(this.Config.database)
+        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
     }
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        Logger.Info(`${Logger.In} '${this.SourceName} (${this.Params.database})' disconnected`)
+        Logger.Info(`${Logger.In} '${this.SourceName} (${this.Config.database})' disconnected`)
         this.Connection = undefined
     }
 
@@ -229,7 +229,7 @@ export class MemoryData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { entity } = schemaRequest
-        const autoCreate: boolean = this.Params.options?.autocreate ?? false
+        const autoCreate: boolean = this.Config.options?.autocreate ?? false
 
         if (autoCreate &&
             !Object.keys(this.Connection.Tables).includes(entity)) {

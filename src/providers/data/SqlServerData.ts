@@ -41,7 +41,7 @@ export class SqlServerData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.MSSQL
-    Params: TSqlServerDataConfig = <TSqlServerDataConfig>{}
+    Config: TSqlServerDataConfig = <TSqlServerDataConfig>{}
     Connection?: ConnectionPool = undefined
 
     constructor() {
@@ -49,15 +49,15 @@ export class SqlServerData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug("SqlServerData.Init")
         this.SourceName = source
-        this.Params = {
-            user: sourceParams.user ?? 'sa',
-            password: sourceParams.password ?? '',
-            database: sourceParams.database ?? 'master',
-            server: sourceParams.host ?? 'localhost',
-            port: sourceParams.port ?? 1433,
+        this.Config = {
+            user: sourceConfig.user ?? 'sa',
+            password: sourceConfig.password ?? '',
+            database: sourceConfig.database ?? 'master',
+            server: sourceConfig.host ?? 'localhost',
+            port: sourceConfig.port ?? 1433,
             options: {
                 pool: {
                     max: 10,
@@ -68,7 +68,7 @@ export class SqlServerData extends absDataProvider {
                     encrypt: false,                     // true for azure
                     trustServerCertificate: true        // change to true for local dev / self-signed certs
                 },
-                ...sourceParams.options
+                ...sourceConfig.options
 
             }
         }
@@ -86,10 +86,10 @@ export class SqlServerData extends absDataProvider {
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         try {
-            this.Connection = await mssql.connect(this.Params)
-            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
+            this.Connection = await mssql.connect(this.Config)
+            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName} (${this.Params.database})'`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName} (${this.Config.database})'`)
             Logger.Error(JSON.stringify(error))
         }
     }

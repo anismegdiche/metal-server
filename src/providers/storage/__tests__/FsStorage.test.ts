@@ -9,7 +9,7 @@ import { HttpErrorNotFound } from "../../../server/HttpErrors"
 
 
 describe('FsStorage', () => {
-    const sourceParams = <TConfigSource>{
+    const sourceConfig = <TConfigSource>{
         provider: "files",
         options: {
             ...typia.random<TFsStorageConfig>(),
@@ -17,7 +17,7 @@ describe('FsStorage', () => {
         }
     }
     const fsStorage = new FsStorage()
-    fsStorage.SetConfig(sourceParams)
+    fsStorage.SetConfig(sourceConfig)
     fsStorage.Init()
 
     beforeEach(() => {

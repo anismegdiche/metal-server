@@ -27,7 +27,7 @@ export class PlanData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.PLAN
-    Params: TConfigSource = <TConfigSource>{}
+    Config: TConfigSource = <TConfigSource>{}
     Connection: undefined
 
     constructor() {
@@ -36,10 +36,10 @@ export class PlanData extends absDataProvider {
 
 
     @Logger.LogFunction()
-    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug("PlanData.Init")
         this.SourceName = source
-        this.Params = sourceParams
+        this.Config = sourceConfig
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -53,12 +53,12 @@ export class PlanData extends absDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
+        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
     }
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        Logger.Info(`${Logger.In} '${this.SourceName} (${this.Params.database})' disconnected`)
+        Logger.Info(`${Logger.In} '${this.SourceName} (${this.Config.database})' disconnected`)
     }
 
     @Logger.LogFunction()

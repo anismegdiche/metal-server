@@ -27,7 +27,7 @@ export class MySqlData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.MYSQL
-    Params: mysql.PoolOptions = <mysql.PoolOptions>{}
+    Config: mysql.PoolOptions = <mysql.PoolOptions>{}
     Connection?: Pool
 
     constructor() {
@@ -36,7 +36,7 @@ export class MySqlData extends absDataProvider {
 
     // CURRENT use DEFAULT and merge
     @Logger.LogFunction()
-    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug("MySqlData.Init")
         this.SourceName = source
 
@@ -49,15 +49,15 @@ export class MySqlData extends absDataProvider {
             queueLimit: 0,
             enableKeepAlive: true,
             keepAliveInitialDelay: 0,
-            ...sourceParams?.options
+            ...sourceConfig?.options
         }
 
-        this.Params = {
-            host: sourceParams?.host ?? 'localhost',
-            port: sourceParams?.port ?? 3306,
-            user: sourceParams?.user ?? 'root',
-            password: sourceParams?.password ?? '',
-            database: sourceParams?.database ?? 'mysql',
+        this.Config = {
+            host: sourceConfig?.host ?? 'localhost',
+            port: sourceConfig?.port ?? 3306,
+            user: sourceConfig?.user ?? 'root',
+            password: sourceConfig?.password ?? '',
+            database: sourceConfig?.database ?? 'mysql',
             ...options
         }
     }
@@ -84,17 +84,17 @@ export class MySqlData extends absDataProvider {
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         try {
-            this.Connection = mysql.createPool(this.Params)
+            this.Connection = mysql.createPool(this.Config)
 
             // Test connection
             await this.Connection.query('SELECT 1')
-            Logger.Info(`Connected to MySQL database '${this.Params.database}' at ${this.Params.host}:${this.Params.port}`)
+            Logger.Info(`Connected to MySQL database '${this.Config.database}' at ${this.Config.host}:${this.Config.port}`)
         } catch (error) {
             const errorMessage = error instanceof Error
                 ? error.message
                 : 'Unknown error'
 
-            Logger.Error(`Failed to connect to MySQL database '${this.Params.database}' at ${this.Params.host}:${this.Params.port}: ${errorMessage}`)
+            Logger.Error(`Failed to connect to MySQL database '${this.Config.database}' at ${this.Config.host}:${this.Config.port}: ${errorMessage}`)
             throw new HttpErrorInternalServerError(`Database connection failed: ${errorMessage}`)
         }
     }

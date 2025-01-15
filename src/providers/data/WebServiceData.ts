@@ -52,7 +52,7 @@ export class WebServiceData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.WEBSERVICE
-    Params: TConfigSourceWebService | undefined
+    Config: TConfigSourceWebService | undefined
     Connection?: absWebServiceProvider
 
     // WebServiceData
@@ -75,17 +75,17 @@ export class WebServiceData extends absDataProvider {
 
 
     @Logger.LogFunction(Logger.Debug, true)
-    Init(source: string, sourceParams: TConfigSource): void {
+    Init(source: string, sourceConfig: TConfigSource): void {
         this.SourceName = source
-        this.Params = _.merge(this.Params, sourceParams)
+        this.Config = _.merge(this.Config, sourceConfig)
         //
-        const { content, type: webservice } = this.Params.options
+        const { content, type: webservice } = this.Config.options
 
         if (content === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Content type is not defined`)
 
         this.Connection = WebServiceProvider.GetProvider(webservice)
-        this.Connection.SetConfig(this.Params)
+        this.Connection.SetConfig(this.Config)
 
         // init webservice
         if (this.Connection)
@@ -95,7 +95,7 @@ export class WebServiceData extends absDataProvider {
 
         // init content
         this.ContentHandler = ContentProvider.GetProvider(content)
-        this.ContentHandler.SetConfig(this.Params.options)
+        this.ContentHandler.SetConfig(this.Config.options)
     }
 
     @Logger.LogFunction()

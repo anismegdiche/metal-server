@@ -3,6 +3,7 @@
 //
 //
 //
+import typia from "typia"
 import { Mixin } from "ts-mixer"
 //
 import { clsClonable } from "../utils/clsClonable"
@@ -15,7 +16,6 @@ import { TConfigSource } from "../types/TConfig"
 import { DATA_PROVIDER } from "../providers/DataProvider"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { TOptions } from "../types/TOptions"
-import typia from "typia"
 import { HttpErrorBadRequest } from "../server/HttpErrors"
 import { DataTable } from "../types/DataTable"
 
@@ -29,7 +29,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
 
     abstract ProviderName: DATA_PROVIDER
     abstract SourceName?: string
-    abstract Params: unknown
+    abstract Config: unknown
     abstract Connection?: unknown
     Options: absDataProviderOptions = new DataProviderOptions()
 
@@ -37,7 +37,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
     abstract EscapeField(field: string): string
 
     // Connection
-    abstract Init(source: string, sourceParams: TConfigSource): void
+    abstract Init(source: string, sourceConfig: TConfigSource): void
     abstract Connect(): Promise<void>
     abstract Disconnect(): Promise<void>
 

@@ -144,7 +144,7 @@ export class MetalData extends absDataProvider {
     
     SourceName?: string
     ProviderName = DATA_PROVIDER.METAL
-    Params: TMetalDataConfig = <TMetalDataConfig>{}
+    Config: TMetalDataConfig = <TMetalDataConfig>{}
     Connection?: MetalClient = undefined
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -161,14 +161,14 @@ export class MetalData extends absDataProvider {
         super()
     }
 
-    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug("MetalData.Init")
         this.SourceName = source
-        this.Params = {
-            url: sourceParams.host ?? 'http://localhost:3000',
-            user: sourceParams.user ?? '',
-            password: sourceParams.password ?? '',
-            schema: sourceParams.database ?? ''
+        this.Config = {
+            url: sourceConfig.host ?? 'http://localhost:3000',
+            user: sourceConfig.user ?? '',
+            password: sourceConfig.password ?? '',
+            schema: sourceConfig.database ?? ''
         }
     }
     
@@ -182,7 +182,7 @@ export class MetalData extends absDataProvider {
         return field
     }
 
-    static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest | TSchemaRequestListEntities, $context?: Partial<TContext>): object {
+    static #ConvertSchemaRequestToJsonOptions(schemaRequest: TSchemaRequest | TSchemaRequestListEntities): object {
         // eslint-disable-next-line you-dont-need-lodash-underscore/omit
         return _.omit(schemaRequest, ['source', 'schema', 'entity'])
     }
@@ -212,13 +212,13 @@ export class MetalData extends absDataProvider {
     }
 
     async Connect(): Promise<void> {
-        this.Connection = new MetalClient(this.Params)
+        this.Connection = new MetalClient(this.Config)
 
-        this.Connection.Login(this.Params.user, this.Params.password)
+        this.Connection.Login(this.Config.user, this.Config.password)
             .then(() => {
-                this.Connection?.Get(`${this.Params.url}${this.Connection.API.server}/info`)
+                this.Connection?.Get(`${this.Config.url}${this.Connection.API.server}/info`)
                     .then((res: AxiosResponse) => {
-                        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.schema})'`)
+                        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.schema})'`)
                         const { data } = res
                         if (data?.version != SERVER.VERSION) {
                             Logger.Warn(`⚠️ WARNING ⚠️  The server version for '${this.SourceName}' (version: ${data?.version}) do not match with current Metal Server (version: ${SERVER.VERSION}). Please proceed with caution.`)
@@ -229,7 +229,7 @@ export class MetalData extends absDataProvider {
                     })
             })
             .catch((error: unknown) => {
-                Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName} (${this.Params.schema})'`)
+                Logger.Error(`${Logger.In} Failed to connect to '${this.SourceName} (${this.Config.schema})'`)
                 Logger.Error(error)
             })
     }
@@ -246,7 +246,7 @@ export class MetalData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
 
         const options = MetalData.#ConvertSchemaRequestToJsonOptions(schemaRequest)
-        const url = `${this.Params.url}${this.Connection.API.schema}/${this.Params.schema}/${schemaRequest.entity}`
+        const url = `${this.Config.url}${this.Connection.API.schema}/${this.Config.schema}/${schemaRequest.entity}`
 
         await this.Connection.Post(url, options)
             .catch(MetalData.#ThrowError)
@@ -261,7 +261,7 @@ export class MetalData extends absDataProvider {
 
         const options = MetalData.#ConvertSchemaRequestToJsonOptions(schemaRequest)
         const urlParams = MetalClient.ConvertToURLParams(options)
-        let url = `${this.Params.url}${this.Connection.API.schema}/${this.Params.schema}/${schemaRequest.entity}`
+        let url = `${this.Config.url}${this.Connection.API.schema}/${this.Config.schema}/${schemaRequest.entity}`
 
         if (urlParams.length > 0) {
             url += `?${urlParams}`
@@ -281,7 +281,7 @@ export class MetalData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
 
         const options = MetalData.#ConvertSchemaRequestToJsonOptions(schemaRequest)
-        const url = `${this.Params.url}${this.Connection.API.schema}/${this.Params.schema}/${schemaRequest.entity}`
+        const url = `${this.Config.url}${this.Connection.API.schema}/${this.Config.schema}/${schemaRequest.entity}`
 
         await this.Connection.Patch(url, options)
             .catch(MetalData.#ThrowError)
@@ -295,7 +295,7 @@ export class MetalData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to connect`)
 
         const options = MetalData.#ConvertSchemaRequestToJsonOptions(schemaRequest)
-        const url = `${this.Params.url}${this.Connection.API.schema}/${this.Params.schema}/${schemaRequest.entity}`
+        const url = `${this.Config.url}${this.Connection.API.schema}/${this.Config.schema}/${schemaRequest.entity}`
 
         await this.Connection.Delete(url, options)
             .catch(MetalData.#ThrowError)
@@ -318,7 +318,7 @@ export class MetalData extends absDataProvider {
 
         const options = MetalData.#ConvertSchemaRequestToJsonOptions(schemaRequest)
         const urlParams = MetalClient.ConvertToURLParams(options)
-        let url = `${this.Params.url}${this.Connection.API.schema}/${this.Params.schema}`
+        let url = `${this.Config.url}${this.Connection.API.schema}/${this.Config.schema}`
 
         if (urlParams.length > 0) {
             url += `?${urlParams}`

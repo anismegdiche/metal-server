@@ -19,21 +19,21 @@ export class Source {
     static Sources = new Map<string, absDataProvider>()
 
     @Logger.LogFunction()
-    static async Connect(source: string | null, sourceParams: TConfigSource): Promise<void> {
-        if (!Object.values(DATA_PROVIDER).includes(sourceParams.provider)) {
-            Logger.Error(`Source '${source}', Provider '${sourceParams.provider}' not found. The source will not be connected`)
+    static async Connect(source: string | null, sourceConfig: TConfigSource): Promise<void> {
+        if (!Object.values(DATA_PROVIDER).includes(sourceConfig.provider)) {
+            Logger.Error(`Source '${source}', Provider '${sourceConfig.provider}' not found. The source will not be connected`)
             return
         }
         try {
             if (source === null) {
                 // cache
-                Cache.CacheSource = DataProvider.GetProvider(sourceParams.provider)
-                Cache.CacheSource.Init(Cache.Schema, sourceParams)
+                Cache.CacheSource = DataProvider.GetProvider(sourceConfig.provider)
+                Cache.CacheSource.Init(Cache.Schema, sourceConfig)
                 Cache.CacheSource.Connect()
             } else {
                 // sources
-                Source.Sources.set(source, DataProvider.GetProvider(sourceParams.provider))
-                Source.Sources.get(source)!.Init(source, sourceParams)
+                Source.Sources.set(source, DataProvider.GetProvider(sourceConfig.provider))
+                Source.Sources.get(source)!.Init(source, sourceConfig)
                 Source.Sources.get(source)!.Connect()
             }
         } catch (error: any) {
@@ -46,8 +46,8 @@ export class Source {
         for (const _source in Config.Configuration.sources) {
             if (Object.hasOwn(Config.Configuration.sources, _source)) {
                 Logger.Info(`${Logger.Out} found source '${_source}'`)
-                const __sourceParams = Config.Configuration.sources[_source]
-                Source.Connect(_source, __sourceParams)
+                const __sourceConfig = Config.Configuration.sources[_source]
+                Source.Connect(_source, __sourceConfig)
             }
         }
     }

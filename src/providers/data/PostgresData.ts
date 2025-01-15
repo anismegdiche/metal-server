@@ -41,7 +41,7 @@ export class PostgresData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.POSTGRES
-    Params: TPostgresDataConfig = <TPostgresDataConfig>{}
+    Config: TPostgresDataConfig = <TPostgresDataConfig>{}
     Connection?: Pool = undefined
 
     constructor() {
@@ -49,16 +49,16 @@ export class PostgresData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug("PostgresData.Init")
         this.SourceName = source
-        this.Params = {
-            host: sourceParams.host ?? 'localhost',
-            port: sourceParams.port ?? 5432,
-            user: sourceParams.user ?? 'root',
-            password: sourceParams.password ?? '',
-            database: sourceParams.database ?? 'postgres',
-            options: sourceParams.options
+        this.Config = {
+            host: sourceConfig.host ?? 'localhost',
+            port: sourceConfig.port ?? 5432,
+            user: sourceConfig.user ?? 'root',
+            password: sourceConfig.password ?? '',
+            database: sourceConfig.database ?? 'postgres',
+            options: sourceConfig.options
         }
     }
 
@@ -81,7 +81,7 @@ export class PostgresData extends absDataProvider {
             host = 'localhost',
             port = 5432,
             options
-        } = this.Params ?? {}
+        } = this.Config ?? {}
 
         try {
             this.Connection = new Pool({

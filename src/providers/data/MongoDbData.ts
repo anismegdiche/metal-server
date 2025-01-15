@@ -156,7 +156,7 @@ export class MongoDbData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.MONGODB
-    Params: TMongoDbDataConfig = <TMongoDbDataConfig>{}
+    Config: TMongoDbDataConfig = <TMongoDbDataConfig>{}
     Connection?: MongoDb.MongoClient = undefined
 
     //TODO change MongoDbDataOptions to static
@@ -167,13 +167,13 @@ export class MongoDbData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug("MongoDbData.Init")
         this.SourceName = source
-        this.Params = {
-            uri: sourceParams.host ?? 'mongodb://localhost:27017/',
-            database: sourceParams.database,
-            options: sourceParams.options
+        this.Config = {
+            uri: sourceConfig.host ?? 'mongodb://localhost:27017/',
+            database: sourceConfig.database,
+            options: sourceConfig.options
         }
     }
 
@@ -189,17 +189,17 @@ export class MongoDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        this.Connection = new MongoDb.MongoClient(this.Params.uri, this.Params.options)
+        this.Connection = new MongoDb.MongoClient(this.Config.uri, this.Config.options)
         try {
             await this.Connection.connect()
             await this.Connection
-                .db(this.Params.database)
+                .db(this.Config.database)
                 .command({
                     ping: 1
                 })
-            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
+            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName}/${this.Params.database}'`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName}/${this.Config.database}'`)
             Logger.Error(error)
         }
     }
@@ -233,7 +233,7 @@ export class MongoDbData extends absDataProvider {
 
         await this.Connection.connect()
 
-        const rows = await this.Connection.db(this.Params.database)
+        const rows = await this.Connection.db(this.Config.database)
             .collection(schemaRequest.entity)
             .aggregate(aggregation)
             .toArray()
@@ -274,7 +274,7 @@ export class MongoDbData extends absDataProvider {
 
         await this.Connection.connect()
         await this.Connection
-            .db(this.Params.database)
+            .db(this.Config.database)
             .collection(schemaRequest.entity)
             .insertMany(options?.Data?.Rows)
 
@@ -304,7 +304,7 @@ export class MongoDbData extends absDataProvider {
         await this.Connection.connect()
 
         await this.Connection
-            .db(this.Params.database)
+            .db(this.Config.database)
             .collection(schemaRequest.entity)
             .updateMany(
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>,
@@ -334,7 +334,7 @@ export class MongoDbData extends absDataProvider {
         const options: TOptions = this.Options.Parse(schemaRequest, $context)
 
         await this.Connection
-            .db(this.Params.database)
+            .db(this.Config.database)
             .collection(schemaRequest.entity)
             .deleteMany(
                 (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>
@@ -362,7 +362,7 @@ export class MongoDbData extends absDataProvider {
 
         await this.Connection.connect()
 
-        const collections = await this.Connection.db(this.Params.database).listCollections().toArray()
+        const collections = await this.Connection.db(this.Config.database).listCollections().toArray()
 
         if (collections.length == 0)
             throw new HttpErrorNotFound(`${schema}: No entities found`)
@@ -371,7 +371,7 @@ export class MongoDbData extends absDataProvider {
             collections.map(async (item) => {
                 let size = -1
                 if (this.Connection !== undefined) {
-                    const collection = this.Connection.db(this.Params.database).collection(item.name)
+                    const collection = this.Connection.db(this.Config.database).collection(item.name)
                     size = await collection.countDocuments()
                 }
                 // eslint-disable-next-line you-dont-need-lodash-underscore/assign

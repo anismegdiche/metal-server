@@ -49,7 +49,7 @@ export class FilesData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.FILES
-    Params: TConfigSource = <TConfigSource>{}
+    Config: TConfigSource = <TConfigSource>{}
     Connection?: absStorageProvider = undefined
 
     // FilesData
@@ -62,20 +62,20 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceParams: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug(`${Logger.Out} FilesData.Init`)
         this.SourceName = source
-        this.Params = sourceParams
+        this.Config = sourceConfig
         const {
             storage = STORAGE.FILESYSTEM,
             content
-        } = this.Params.options as TFilesDataOptions
+        } = this.Config.options as TFilesDataOptions
 
         if (content === undefined)
             throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
 
         this.Connection = StorageProvider.GetProvider(storage)
-        this.Connection.SetConfig(this.Params)
+        this.Connection.SetConfig(this.Config)
 
         // init storage
         if (this.Connection)
