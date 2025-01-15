@@ -33,7 +33,7 @@ import { TUrl } from "../../TUrl"
 
 
 //
-export type TConfigSourceWebServiceOptions = {
+export type TWebServiceDataOptions = {
     type: WEBSERVICE
     content: CONTENT
 }
@@ -43,7 +43,7 @@ export type TConfigSourceWebServiceOptions = {
 export type TConfigSourceWebService = {
     provider: DATA_PROVIDER.WEBSERVICE
     host: TUrl
-    options: TConfigSourceWebServiceOptions
+    options: TWebServiceDataOptions
 }
 
 

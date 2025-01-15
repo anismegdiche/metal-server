@@ -8,7 +8,7 @@ import { createClientAsync, Client } from "soap"
 //
 import { absWebServiceProvider, ENDPOINT, HEADER } from "../absWebServiceProvider"
 import { JsonHelper } from '../../lib/JsonHelper'
-import { TConfigSourceWebServiceOptions, TConfigSourceWebService } from "../data/WebServiceData"
+import { TWebServiceDataOptions, TConfigSourceWebService } from "../data/WebServiceData"
 import { Logger } from "../../utils/Logger"
 import { StringHelper } from "../../lib/StringHelper"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
@@ -23,7 +23,7 @@ export class SoapWebService extends absWebServiceProvider {
     }
 
     ConfigSource?: TConfigSourceWebService
-    ConfigSourceOptions?: TConfigSourceWebServiceOptions
+    ConfigSourceOptions?: TWebServiceDataOptions
     Client: Client | undefined 
 
     Headers: Record<string, string>[] = []

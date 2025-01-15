@@ -10,7 +10,7 @@ import typia from "typia"
 //
 import { CONTENT } from "./ContentProvider"
 import { clsClonable } from "../utils/clsClonable"
-import { TConfigSourceWebServiceOptions, TConfigSourceWebService } from "./data/WebServiceData"
+import { TWebServiceDataOptions, TConfigSourceWebService } from "./data/WebServiceData"
 import { TJson } from "../types/TJson"
 import { PlaceHolder } from "../utils/PlaceHolder"
 
@@ -55,7 +55,7 @@ export abstract class absWebServiceProvider extends clsClonable {
 
     abstract DEFAULT: unknown
     abstract ConfigSource?: TConfigSourceWebService
-    abstract ConfigSourceOptions?: TConfigSourceWebServiceOptions
+    abstract ConfigSourceOptions?: TWebServiceDataOptions
     abstract Client: unknown
     // deepcode ignore CollectionUpdatedButNeverQueried: abstract class
     Endpoints = new Map<string, TEndpoint>()
