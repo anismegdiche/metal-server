@@ -30,6 +30,7 @@ import { PlaceHolder } from "../../utils/PlaceHolder"
 import { Sandbox } from "../../server/Sandbox"
 import { DataTable } from "../../types/DataTable"
 import { TContext } from "../../@types/TContext"
+import { TUrl } from "../../TUrl"
 
 
 //
@@ -42,7 +43,7 @@ export type TConfigSourceWebServiceOptions = {
 
 export type TConfigSourceWebService = {
     provider: DATA_PROVIDER.WEBSERVICE
-    host: string & tags.Format<"url">
+    host: TUrl
     options: TConfigSourceWebServiceOptions
 }
 
