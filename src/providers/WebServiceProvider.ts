@@ -5,8 +5,8 @@
 //
 import { HttpErrorNotFound } from "../server/HttpErrors"
 import { Factory } from "../utils/Factory"
-import { absWebServiceProvider } from "./absWebServiceProvider"
-import { RestWebService, TConfigSourceWebServiceRest } from "./webservice/RestWebService"
+import { absWebServiceProvider, TWebServiceEndpointMethod } from "./absWebServiceProvider"
+import { RestWebService } from "./webservice/RestWebService"
 import { SoapWebService } from "./webservice/SoapWebService"
 
 
@@ -16,7 +16,20 @@ export enum WEBSERVICE {
     SOAP = "soap"
 }
 
-export type TWebServiceConfig = TConfigSourceWebServiceRest
+export type TConfigWebServiceOptions = {
+    endpoints: {
+        session?: TWebServiceEndpointMethod
+        collection?: {
+            read: TWebServiceEndpointMethod
+        },
+        item?: {
+            create?: TWebServiceEndpointMethod
+            read?: TWebServiceEndpointMethod
+            update?: TWebServiceEndpointMethod
+            delete?: TWebServiceEndpointMethod
+        }
+    }
+}
 
 
 //

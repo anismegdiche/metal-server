@@ -2,9 +2,8 @@
 //
 //
 //
-//
 import _ from "lodash"
-import typia, { tags } from "typia"
+import typia from "typia"
 //
 import { TConfigSource } from "../../types/TConfig"
 import { TInternalResponse } from "../../types/TInternalResponse"
@@ -16,7 +15,7 @@ import { DATA_PROVIDER } from "../DataProvider"
 import { absContentProvider } from "../absContentProvider"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { Logger, VERBOSITY } from "../../utils/Logger"
-import { TWebServiceConfig, WEBSERVICE, WebServiceProvider } from "../WebServiceProvider"
+import { TConfigWebServiceOptions, WEBSERVICE, WebServiceProvider } from "../WebServiceProvider"
 import { absWebServiceProvider, ENDPOINT, TEndpoint } from "../absWebServiceProvider"
 import { TOptions } from "../../types/TOptions"
 import { RESPONSE } from "../../lib/Const"
@@ -39,7 +38,7 @@ export type TConfigSourceWebServiceOptions = {
     content: CONTENT
 }
     & TContentConfig
-    & TWebServiceConfig
+    & TConfigWebServiceOptions
 
 export type TConfigSourceWebService = {
     provider: DATA_PROVIDER.WEBSERVICE

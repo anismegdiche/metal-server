@@ -6,31 +6,19 @@
 import { Readable } from "stream"
 import { createClientAsync, Client } from "soap"
 //
-import { absWebServiceProvider, ENDPOINT, HEADER, TWebServiceEndpointMethod } from "../absWebServiceProvider"
+import { absWebServiceProvider, ENDPOINT, HEADER } from "../absWebServiceProvider"
 import { JsonHelper } from '../../lib/JsonHelper'
 import { TConfigSourceWebServiceOptions, TConfigSourceWebService } from "../data/WebServiceData"
 import { Logger } from "../../utils/Logger"
 import { StringHelper } from "../../lib/StringHelper"
 import { HttpErrorInternalServerError } from "../../server/HttpErrors"
+import { TConfigWebServiceOptions } from "../WebServiceProvider"
 
-export type TConfigSourceWebServiceSoap = {
-    endpoints: {
-        session?: TWebServiceEndpointMethod
-        collection?: {
-            read: TWebServiceEndpointMethod
-        },
-        item?: {
-            create?: TWebServiceEndpointMethod
-            read?: TWebServiceEndpointMethod
-            update?: TWebServiceEndpointMethod
-            delete?: TWebServiceEndpointMethod
-        }
-    }
-}
 
+//
 export class SoapWebService extends absWebServiceProvider {
 
-    DEFAULT: Partial<TConfigSourceWebServiceSoap> = {
+    DEFAULT: Partial<TConfigWebServiceOptions> = {
         endpoints: {}
     }
 

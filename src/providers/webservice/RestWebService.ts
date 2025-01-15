@@ -6,7 +6,7 @@
 import { Readable } from "stream"
 import axios, { AxiosResponse, AxiosInstance } from "axios"
 //
-import { absWebServiceProvider, ENDPOINT, HEADER, TWebServiceEndpointMethod, TWebServiceEndpointMethodConfig } from '../absWebServiceProvider'
+import { absWebServiceProvider, ENDPOINT, HEADER, TWebServiceEndpointMethodConfig } from '../absWebServiceProvider'
 import { TConfigSourceWebServiceOptions, TConfigSourceWebService } from "../data/WebServiceData"
 import { Logger } from "../../utils/Logger"
 import { StringHelper } from "../../lib/StringHelper"
@@ -14,30 +14,13 @@ import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../server/Http
 import { JsonHelper } from '../../lib/JsonHelper'
 import { PlaceHolder } from "../../utils/PlaceHolder"
 import { Sandbox } from "../../server/Sandbox"
-
-
-//
-// CURRENT merge with soap, move to absWebServiceProvider
-export type TConfigSourceWebServiceRest = {
-    endpoints: {
-        session?: TWebServiceEndpointMethod
-        collection?: {
-            read: TWebServiceEndpointMethod
-        },
-        item?: {
-            create?: TWebServiceEndpointMethod
-            read?: TWebServiceEndpointMethod
-            update?: TWebServiceEndpointMethod
-            delete?: TWebServiceEndpointMethod
-        }
-    }
-}
+import { TConfigWebServiceOptions } from "../WebServiceProvider"
 
 
 //
 export class RestWebService extends absWebServiceProvider {
 
-    DEFAULT: Partial<TConfigSourceWebServiceRest> = {
+    DEFAULT: Partial<TConfigWebServiceOptions> = {
         endpoints: {}
     }
 
