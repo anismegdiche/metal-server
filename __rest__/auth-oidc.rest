@@ -10,13 +10,18 @@ Content-Type: application/json
 
 
 @token={{login.response.body.token}}
-### 
+###
+
+/*
+
+*/
+###
 
 
 # @name list
 GET http://localhost:3000/schema/mem
 authorization: Bearer {{token}}
-### 
+###
 
 
 # @name select
