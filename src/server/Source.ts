@@ -33,7 +33,7 @@ export class Source {
             } else {
                 // sources
                 Source.Sources.set(source, DataProvider.GetProvider(sourceConfig.provider))
-                Source.Sources.get(source)!.Init(source, sourceConfig)
+                await Source.Sources.get(source)!.Init(source, sourceConfig)
                 Source.Sources.get(source)!.Connect()
             }
         } catch (error: any) {
