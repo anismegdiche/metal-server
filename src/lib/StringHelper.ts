@@ -5,6 +5,7 @@
 //
 
 import path from "node:path"
+import { JsonHelper } from "./JsonHelper"
 
 export class StringHelper {
     static Split(str: string, sep: string): string[] {
@@ -33,5 +34,17 @@ export class StringHelper {
             .join(...cleanSubPaths)
             .replace(/\\/g, '/')
             .replace(':/', '://')
+    }
+
+    static ToString<T>(value: T): string {
+        switch (typeof value) {
+            case 'string':
+                return value
+            case 'number':
+                return value.toString()
+            case 'object':
+            default:
+                return JsonHelper.Stringify(value)
+        }
     }
 }
