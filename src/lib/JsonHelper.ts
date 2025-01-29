@@ -3,7 +3,7 @@
 //
 //
 //
-import _ from "lodash"
+import _, { Dictionary } from "lodash"
 import { configure } from 'safe-stable-stringify'
 import * as chrono from 'chrono-node'
 
@@ -22,15 +22,14 @@ export class JsonHelper {
     static TryParse<T>(jsonString: string | undefined, defaultValue: T): T {
         if (!jsonString)
             return defaultValue
-        
+
         try {
             return JSON.parse(jsonString, (key, value) => {
                 if (typeof value === 'string') {
                     // case Date string
-                    const _parsedDate = chrono.parseDate(value)
+                    const _parsedDate = chrono.strict.parseDate(value)
                     if (_parsedDate !== null)
                         return _parsedDate
-                    //
                 }
                 return value
             })
@@ -93,9 +92,32 @@ export class JsonHelper {
         })
     }
 
-    static ToArray(obj: TJson) {
+    static ToArray(obj: TJson | undefined): TJson[] {
+        if (!obj)
+            return []
+
         return Object
             .entries(obj)
             .map(([k, v]) => ({ [k]: v }))
+    }
+
+    static PrefixKeys(obj: TJson, prefix: string = ''): TJson {
+        const result: TJson = {}
+
+        // eslint-disable-next-line you-dont-need-lodash-underscore/for-each
+        _.forEach(obj, (value, key) => {
+            const newKey = `${prefix}${key}`
+            // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
+            result[newKey] = _.isObject(value) && value !== null && !_.isArray(value)
+                ? JsonHelper.PrefixKeys(value as TJson, prefix)
+                : value
+        })
+
+        return result
+    }
+
+
+    static IsEmpty<T>(obj: Dictionary<T>): boolean {
+        return _.isEmpty(obj)
     }
 }
