@@ -30,6 +30,28 @@ export class Config {
     static Configuration: TConfig
     static ConfigFilePath = './config/config.yml'
 
+    // static readonly DEFAULT: Partial<TConfig> = {
+    //     server: {
+    //         port: 3000,
+    //         timezone: 'UTC',
+    //         verbosity: 'warn',
+    //         authentication: <Partial<TAuthentication>>{
+    //             provider: AUTH_PROVIDER.LOCAL
+    //         },
+    //         "request-limit": '10mb',
+    //         // v0.3
+    //         "response-limit": '10mb',
+    //         // v0.3
+    //         "response-chunk": false,
+    //         // v0.3
+    //         "response-rate": {
+    //             windowMs: 1 * 60 * 1000,
+    //             max: 600,
+    //             message: HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS
+    //         }
+    //     }
+    // }
+    
     static readonly DEFAULTS: TJson = {
         "server.port": 3000,
         "server.timezone": 'UTC',
@@ -47,6 +69,7 @@ export class Config {
         }
     }
 
+    // TODO remove
     static Flags: TJson = {
         EnableCache: false,               // Enable/disable cache
         // @deprecated: to remove
