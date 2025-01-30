@@ -26,7 +26,9 @@ describe("ColumnLetterToNumber", () => {
 jest.mock('../../../utils//Logger', () => ({
     Logger: {
         LogFunction: () => () => { },
-        Debug: jest.fn()
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
     }
 }))
 
