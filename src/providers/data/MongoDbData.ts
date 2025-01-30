@@ -28,6 +28,7 @@ import { absDataProviderOptions } from "../absDataProviderOptions"
 import { TContext } from "../../@types/TContext"
 import { PlaceHolder } from "../../utils/PlaceHolder"
 import { Sandbox } from "../../server/Sandbox"
+import { StringHelper } from '../../lib/StringHelper'
 
 
 //
@@ -61,58 +62,87 @@ export class MongoDbHelper {
     }
 
     @Logger.LogFunction()
-    static ConvertSqlQuery(sqlQuery: string) {
-        return this.WhereParser.parseSql(`WHERE ${sqlQuery}`)
+    static ConvertSqlQuery(sqlQuery: string | undefined) {
+        return (sqlQuery)
+            ? this.WhereParser.parseSql(`WHERE ${sqlQuery}`)
+            : {}
     }
 }
 
-class MongoDbDataOptions extends absDataProviderOptions {
+export class MongoDbDataOptions extends absDataProviderOptions {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetFilter(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
-        let filter: any = {}
-        if (schemaRequest["filter-expression"] || schemaRequest?.filter) {
 
-            if (schemaRequest["filter-expression"])
-                // deepcode ignore StaticAccessThis: <please specify a reason of ignoring this>
-                filter = MongoDbHelper.ConvertSqlQuery(schemaRequest["filter-expression"].replace(/%/igm, ".*"))
+        if (schemaRequest["filter-expression"]) {
+            let evalFilter = PlaceHolder.EvaluateJsCode<string>(
+                schemaRequest["filter-expression"],
+                new Sandbox($context)
+            ) ?? ''
 
-            if (schemaRequest?.filter)
-                filter = schemaRequest.filter
-
-            if (filter?._id)
-                filter._id = MongoDb.ObjectId.createFromHexString(filter._id)
+            evalFilter = evalFilter.replace(/%/g, ".*") // Convert SQL-style wildcards to regex
 
             options.Filter = <TJson>{
-                $match: PlaceHolder.EvaluateJsCode<TJson | TJson[]>(filter, new Sandbox($context))
+                $match: MongoDbHelper.ConvertSqlQuery(evalFilter)
+            }
+            return options
+        }
+
+        if (schemaRequest?.filter) {
+            let filter: any = {}
+            
+            filter = PlaceHolder.EvaluateJsCode<TJson>(schemaRequest.filter, new Sandbox($context))
+
+            for (const key in filter) {
+                if (key !== "_id" && typeof filter[key] === "string") {
+                    // Convert strings with wildcard patterns into MongoDB regex
+                    filter[key] = {
+                        $regex: filter[key].replace(/%/g, ".*"),
+                        $options: "i"
+                    }
+                }
+            }
+
+            if (filter?._id) {
+                filter._id = MongoDb.ObjectId.createFromHexString(filter._id)
+            }
+
+            options.Filter = <TJson>{
+                $match: filter
             }
         }
+
         return options
     }
+
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetFields(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
         if (schemaRequest?.fields) {
-            const _fields = PlaceHolder.EvaluateJsCode(
+            const _fields = PlaceHolder.EvaluateJsCode<string>(
                 schemaRequest.fields.trim(),
                 new Sandbox($context)
             ) ?? ''
 
             let _aFields: string[] | Record<string, unknown> = []
 
-            _aFields = _fields.includes(",")
-                ? _fields.split(",")
-                    .filter(__field => !(__field == undefined || __field.trim() == ""))
-                    .map(__field => __field.trim())
-                : [_fields.trim()]
+            if (StringHelper.IsEmpty(_fields)) {
+                _aFields = {}
+            } else {
+                _aFields = _fields.includes(",")
+                    ? _fields.split(",")
+                        .filter(__field => !(StringHelper.IsEmpty(__field.trim())))
+                        .map(__field => __field.trim())
+                    : [_fields.trim()]
 
-            if (_aFields.length > 0) {
-                _aFields = _aFields.reduce((__key, __value) => ({
-                    ...__key,
-                    [__value]: 1
-                }), {})
+                if (_aFields.length > 0) {
+                    _aFields = _aFields.reduce((__key, __value) => ({
+                        ...__key,
+                        [__value]: 1
+                    }), {})
+                }
             }
             options.Fields = {
                 $project: _aFields
@@ -125,7 +155,7 @@ class MongoDbDataOptions extends absDataProviderOptions {
     @Logger.LogFunction()
     GetSort(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
         if (schemaRequest?.sort) {
-            const _sort = PlaceHolder.EvaluateJsCode(
+            const _sort = PlaceHolder.EvaluateJsCode<string>(
                 schemaRequest.sort.trim(),
                 new Sandbox($context)
             ) ?? ''
@@ -213,7 +243,6 @@ export class MongoDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
-
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
@@ -234,7 +263,7 @@ export class MongoDbData extends absDataProvider {
         await this.Connection.connect()
 
         const rows = await this.Connection.db(this.Config.database)
-            .collection(schemaRequest.entity)
+            .collection(entity)
             .aggregate(aggregation)
             .toArray()
 
@@ -254,6 +283,7 @@ export class MongoDbData extends absDataProvider {
             data
         })
     }
+
 
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
@@ -303,15 +333,15 @@ export class MongoDbData extends absDataProvider {
 
         await this.Connection.connect()
 
+        const _mongoFilter: MongoDb.Filter<MongoDb.Document> = ((options?.Filter as TJson)?.$match) ?? {}
+        const _mongoUpdate: MongoDb.BSON.Document[] | MongoDb.UpdateFilter<MongoDb.BSON.Document> = {
+            $set: options?.Data?.Rows.at(0)
+        }
+
         await this.Connection
             .db(this.Config.database)
             .collection(schemaRequest.entity)
-            .updateMany(
-                (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>,
-                {
-                    $set: options?.Data?.Rows.at(0)
-                }
-            )
+            .updateMany(_mongoFilter, _mongoUpdate)
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -337,7 +367,7 @@ export class MongoDbData extends absDataProvider {
             .db(this.Config.database)
             .collection(schemaRequest.entity)
             .deleteMany(
-                (options?.Filter?.$match ?? {}) as MongoDb.Filter<MongoDb.Document>
+                ((options?.Filter as TJson)?.$match) as MongoDb.Filter<MongoDb.Document>
             )
 
         // clean cache
