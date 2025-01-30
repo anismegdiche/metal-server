@@ -14,17 +14,18 @@ import { StringHelper } from "../lib/StringHelper"
 import { HttpErrorInternalServerError } from "../server/HttpErrors"
 
 
+//
 export const enum SORT_ORDER {
     ASC = "asc",      // Ascending
     DESC = "desc"     // Descending
 }
 
 export const enum JOIN_TYPE {
-    LEFT = "left",            // Left Join
-    RIGHT = "right",          // Right Join
-    INNER = "inner",          // Inner Join
-    FULL_OUTER = "full-outer", // Full Outer Join
-    CROSS = "cross"           // Cross Join
+    LEFT = "left",               // Left Join
+    RIGHT = "right",             // Right Join
+    INNER = "inner",             // Inner Join
+    FULL_OUTER = "full-outer",   // Full Outer Join
+    CROSS = "cross"              // Cross Join
 }
 
 export const enum REMOVE_DUPLICATES_METHOD {
@@ -46,6 +47,8 @@ export const enum REMOVE_DUPLICATES_STRATEGY {
     CUSTOM = "custom"	 // Allows for a custom strategy defined by user logic.
 }
 
+
+//
 export type TRow = TJson
 export type TFields = TJson
 export type TMetaData = Record<string, unknown>
@@ -56,6 +59,8 @@ export type TSyncReport = {
     UpdatedRows: TRow[]
 }
 
+
+//
 export class DataTable {
     Name: string
     Fields: TFields = {}
@@ -87,6 +92,12 @@ export class DataTable {
             this.Rows = [...rows]
             this.SetFields()
         }
+        return this
+    }
+
+    @Logger.LogFunction()
+    Rename(name: string): this {
+        this.Name = name
         return this
     }
 
@@ -150,9 +161,8 @@ export class DataTable {
 
         try {
             const _result = alasql(sqlQuery, jsonData)
-            this.Rows = (typeof _result === 'object')
-                ? _result
-                : alasql.tables[this.Name].data
+            if (typeof _result === 'object' && Array.isArray(_result))
+                this.Rows = _result
 
         } catch (error: any) {
             Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
@@ -178,9 +188,8 @@ export class DataTable {
                     throw error
                 })
 
-            this.Rows = (typeof _result === 'object')
-                ? _result
-                : alasql.tables[this.Name].data
+            if (typeof _result === 'object' && Array.isArray(_result))
+                this.Rows = _result
 
         } catch (error: any) {
             Logger.Error(`DataTable.FreeSqlAsync: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
