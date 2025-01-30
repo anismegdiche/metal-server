@@ -44,29 +44,19 @@ export class Sandbox {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    SetContext(context: object): void {
-        // Create a new context
+    SetContext(context?: object): void {
         this.#Context = createContext(context)
-
-        // Add additional variables or functions to the context if needed
-        this.#Context.global = this.#Context
-
-        // Add console to the context if you want to allow console.log, etc.
-        this.#Context.console = console
+        this.AddSafeObjectsToContext()
     }
 
     @Logger.LogFunction()
     Reset(): void {
-        // Create a new context
-        this.#Context = createContext()
-
-        // Add console to the context if you want to allow console.log, etc.
-        this.#Context.console = console
+        this.SetContext()
     }
 
     // Evaluate dynamic code
     @Logger.LogFunction()
-    Evaluate(code: string): string | undefined {
+    Evaluate<T>(code: string): T | undefined {
         const _code = code.trim()
         try {
 
@@ -85,7 +75,9 @@ export class Sandbox {
         }
     }
 
-    static ContextMerge(context: Partial<TContext>, ...contexts: Partial<TContext>[]): Partial<TContext> {
-        return _.merge(context, ...contexts)
+    AddSafeObjectsToContext(): void {
+        this.#Context.JSON = JSON
+        this.#Context.Math = Math
+        this.#Context._ = _
     }
 }

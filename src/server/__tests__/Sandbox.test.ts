@@ -20,8 +20,6 @@ describe('Sandbox', () => {
         const sandbox = new Sandbox()
         const code = 'Math.abs(2 - 9)'
         const result = sandbox.Evaluate(code)
-
-
         expect(result).toStrictEqual(eval(code))
     })
 
@@ -168,5 +166,37 @@ describe('Sandbox', () => {
         const code = '$response.body.x'
         const result = sandbox.Evaluate(code)
         expect(result).toEqual(eval(code))
+    })
+
+    it('should return object in object', () => {
+        const $entity = "person"
+        const $item = {
+            name: "John",
+            age: 30
+        }
+
+        const sandbox = new Sandbox({
+            $entity,
+            $item
+        })
+
+        const code = '({ [ $entity ]: $item })'
+        const result = sandbox.Evaluate(code)
+        expect(result).toEqual({
+            person: {
+                name: "John",
+                age: 30
+            }
+        })
+    })
+
+    it('should be valid for added functions ', () => {
+        const sandbox = new Sandbox()
+        // Math
+        expect(sandbox.Evaluate("Math.abs(2 - 9)")).toEqual(7)
+        // JSON
+        expect(sandbox.Evaluate("JSON.stringify({ a: 1 })")).toEqual('{"a":1}')
+        // Lodash
+        expect(sandbox.Evaluate("_.sum([1, 2, 3])")).toEqual(6)
     })
 })
