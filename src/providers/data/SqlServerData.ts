@@ -5,12 +5,13 @@
 //
 import mssql, { ConnectionPool } from 'mssql'
 import typia from "typia"
+import _ from "lodash"
 //
 import { RESPONSE } from '../../lib/Const'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
-import { TOptions } from "../../types/TOptions"
+import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { DataTable } from "../../types/DataTable"
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
 import { Logger } from '../../utils/Logger'
@@ -22,7 +23,6 @@ import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
-import _ from "lodash"
 
 
 //
@@ -115,7 +115,7 @@ export class SqlServerData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
@@ -154,7 +154,7 @@ export class SqlServerData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
@@ -186,7 +186,7 @@ export class SqlServerData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
@@ -212,7 +212,7 @@ export class SqlServerData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        const {entity} = schemaRequest
+        const { entity } = schemaRequest
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
@@ -220,7 +220,7 @@ export class SqlServerData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Delete()

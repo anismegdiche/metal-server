@@ -15,7 +15,7 @@ import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
-import { TOptions } from "../types/TOptions"
+import { TOptionalParameter } from "../types/TOptionalParameter"
 import { TypeHelper } from "../lib/TypeHelper"
 import { Plan } from "./Plan"
 import { WarnError } from "./InternalError"
@@ -106,7 +106,7 @@ export class Step {
         //TODO missing options.cache
         //CURRENT missing $context
         if (!schema && !entity) {
-            const options: TOptions = Step.Options.Parse(<TSchemaRequestSelect>schemaRequest, $context)
+            const options: TOptionalParameter = Step.Options.Parse(<TSchemaRequestSelect>schemaRequest, $context)
 
             const sqlQueryHelper = new SqlQueryHelper()
                 .Select(options.Fields)
@@ -198,7 +198,7 @@ export class Step {
         // CURRENT missing $context
         // CURRENT escape entity
         if (!schema && !entity) {
-            const _options: TOptions = Step.Options.Parse(schemaRequest, $context)
+            const _options: TOptionalParameter = Step.Options.Parse(schemaRequest, $context)
             const _sqlQueryHelper = new SqlQueryHelper()
                 .Update(`\`${currentDataTable.Name}\``)
                 .Set(_options.Data?.Rows)
@@ -236,7 +236,7 @@ export class Step {
         // case no schema and no entity --> use current datatable
         // CURRENT missing $context
         if (!schema && !entity) {
-            const _options: TOptions = Step.Options.Parse(schemaRequest, $context)
+            const _options: TOptionalParameter = Step.Options.Parse(schemaRequest, $context)
             const _sqlQueryHelper = new SqlQueryHelper()
                 .Delete()
                 .From(`\`${currentDataTable.Name}\``)

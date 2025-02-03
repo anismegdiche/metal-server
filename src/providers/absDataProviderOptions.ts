@@ -6,7 +6,7 @@
 import typia from "typia"
 //
 import { TSchemaRequest } from '../types/TSchemaRequest'
-import { TOptions } from '../types/TOptions'
+import { TOptionalParameter } from '../types/TOptionalParameter'
 import { DataTable } from '../types/DataTable'
 import { JsonHelper } from "../lib/JsonHelper"
 import { Logger } from "../utils/Logger"
@@ -20,10 +20,12 @@ import { Sandbox } from "../server/Sandbox"
 //
 export abstract class absDataProviderOptions {
     @Logger.LogFunction()
-    Parse(schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
-        let options: TOptions = <TOptions>{}
+    Parse(schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
+        let options: TOptionalParameter = <TOptionalParameter>{}
         if (schemaRequest) {
-            options = this.GetFilter(options, schemaRequest, $context)
+            if (this.IsFilterNotEmpty(schemaRequest))
+                options = this.GetFilter(options, schemaRequest, $context)
+            
             options = this.GetFields(options, schemaRequest, $context)
             options = this.GetSort(options, schemaRequest, $context)
             options = this.GetData(options, schemaRequest, $context)
@@ -34,19 +36,22 @@ export abstract class absDataProviderOptions {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    GetFilter(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
-        let filter = {}
-        if (schemaRequest["filter-expression"] || schemaRequest?.filter) {
+    GetFilter(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
 
-            if (schemaRequest["filter-expression"])
-                filter = schemaRequest["filter-expression"]
-
-            if (schemaRequest?.filter)
-                filter = JsonHelper.ToArray(schemaRequest.filter)
-
-            options.Filter = PlaceHolder.EvaluateJsCode<TJson | undefined>(
-                filter,
+        if (schemaRequest["filter-expression"]) {
+            options.Filter = PlaceHolder.EvaluateJsCode(
+                schemaRequest["filter-expression"],
                 new Sandbox($context)
+            )
+            return options
+        }
+
+        if (schemaRequest?.filter) {
+            options.Filter = JsonHelper.ToArray(
+                PlaceHolder.EvaluateJsCode(
+                    schemaRequest.filter,
+                    new Sandbox($context)
+                )
             )
         }
         return options
@@ -54,7 +59,7 @@ export abstract class absDataProviderOptions {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    GetFields(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
+    GetFields(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         options.Fields = (schemaRequest?.fields === undefined)
             ? '*'
             : PlaceHolder.EvaluateJsCode(
@@ -67,7 +72,7 @@ export abstract class absDataProviderOptions {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    GetSort(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
+    GetSort(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         if (schemaRequest?.sort) {
             options.Sort = PlaceHolder.EvaluateJsCode(
                 schemaRequest.sort,
@@ -79,13 +84,13 @@ export abstract class absDataProviderOptions {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    GetData(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
+    GetData(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         if (schemaRequest?.data) {
             const _isCacheData = typia.is<TCacheData[]>(schemaRequest.data)
             // no evaluation for CacheData
             const _data = _isCacheData
                 ? schemaRequest.data as TJson[]
-                : PlaceHolder.EvaluateJsCode<TJson | TJson[]>(schemaRequest.data, new Sandbox($context))
+                : PlaceHolder.EvaluateJsCode<TJson[]>(schemaRequest.data, new Sandbox($context))
 
             options.Data = new DataTable(schemaRequest.entity, _data)
         }
@@ -94,13 +99,15 @@ export abstract class absDataProviderOptions {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction(Logger.Debug, true)
-    GetCache(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
+    GetCache(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         if (schemaRequest?.cache)
-            options.Cache = PlaceHolder.EvaluateJsCode(
-                schemaRequest.cache,
-                new Sandbox($context)
-            )
-
+            options.Cache = schemaRequest.cache
         return options
     }
+
+    // eslint-disable-next-line class-methods-use-this
+    IsFilterNotEmpty(schemaRequest: TSchemaRequest): boolean {
+        return schemaRequest["filter-expression"] !== undefined || Object.keys(schemaRequest?.filter || {}).length > 0
+
+    }    
 }

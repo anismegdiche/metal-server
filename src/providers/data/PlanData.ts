@@ -5,7 +5,7 @@
 //
 import { RESPONSE } from '../../lib/Const'
 import { TConfigSource } from "../../types/TConfig"
-import { TOptions } from "../../types/TOptions"
+import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
@@ -72,7 +72,7 @@ export class PlanData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)

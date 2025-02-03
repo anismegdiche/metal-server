@@ -15,7 +15,7 @@ import { absDataProviderOptions } from "./absDataProviderOptions"
 import { TConfigSource } from "../types/TConfig"
 import { DATA_PROVIDER } from "../providers/DataProvider"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
-import { TOptions } from "../types/TOptions"
+import { TOptionalParameter } from "../types/TOptionalParameter"
 import { HttpErrorBadRequest } from "../server/HttpErrors"
 import { DataTable } from "../types/DataTable"
 
@@ -37,7 +37,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
     abstract EscapeField(field: string): string
 
     // Connection
-    abstract Init(source: string, sourceConfig: TConfigSource): void
+    abstract Init(source: string, sourceConfig: TConfigSource): Promise<void>
     abstract Connect(): Promise<void>
     abstract Disconnect(): Promise<void>
 
@@ -48,20 +48,20 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
     //ROADMAP DeleteEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>>
 
     // Data
-    abstract Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>>
     abstract Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>>
+    abstract Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>>
     abstract Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>>
     abstract Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>>
 
     // eslint-disable-next-line class-methods-use-this
-    GetSqlQuery(sqlQueryHelper: SqlQueryHelper, options: TOptions): string | undefined {
+    GetSqlQuery(sqlQueryHelper: SqlQueryHelper, options: TOptionalParameter): string | undefined {
         return (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
             ? sqlQueryHelper.Query
             : undefined
     }
 
     // CURRENT to use in data providers 
-    SetSelectSqlQuery(entity: string, options: TOptions): SqlQueryHelper {
+    GenerateSqlSelect(entity: string, options: TOptionalParameter): SqlQueryHelper {
         return new SqlQueryHelper()
             .Select(options.Fields)
             .From(this.EscapeEntity(entity))
@@ -70,7 +70,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
     }
 
     // CURRENT to use in data providers 
-    SetInsertSqlQuery(schemaRequest: TSchemaRequest, options: TOptions): SqlQueryHelper {
+    GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryHelper {
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
@@ -81,7 +81,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
     }
 
     // CURRENT to use in data providers 
-    SetUpdateSqlQuery(schemaRequest: TSchemaRequest, options: TOptions): SqlQueryHelper {
+    GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryHelper {
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
@@ -92,7 +92,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
     }
 
     // CURRENT to use in data providers 
-    SetDeleteSqlQuery(schemaRequest: TSchemaRequest, options: TOptions): SqlQueryHelper {
+    GenerateSqlDelete(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryHelper {
         return new SqlQueryHelper()
             .Delete()
             .From(this.EscapeEntity(schemaRequest.entity))

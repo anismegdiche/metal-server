@@ -12,7 +12,7 @@ import { Logger, VERBOSITY } from "../../utils/Logger"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { Cache } from "../../server/Cache"
 import { DATA_PROVIDER } from "../../providers/DataProvider"
-import { TOptions } from "../../types/TOptions"
+import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
@@ -158,7 +158,7 @@ export class FilesData extends absDataProvider {
         // eslint-disable-next-line no-param-reassign
         $context = _.merge($context, this.GetContext(schemaRequest))
 
-        const options: TOptions = this.Options.Parse(schemaRequest,$context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest,$context)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
@@ -171,7 +171,7 @@ export class FilesData extends absDataProvider {
         const data = await this.File[entity].Get(sqlQuery, $context)
 
         if (Logger.Level == VERBOSITY.DEBUG)
-            data.SetMetaData("__CONTENT_DEBUG__", this.File[entity].GetConfig())
+            data.SetMetaData("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
 
         if (options?.Cache)
             await Cache.Set({
@@ -202,7 +202,7 @@ export class FilesData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest,$context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest,$context)
 
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
@@ -252,7 +252,7 @@ export class FilesData extends absDataProvider {
         // eslint-disable-next-line no-param-reassign
         $context = _.merge($context, this.GetContext(schemaRequest))
 
-        const options: TOptions = this.Options.Parse(schemaRequest,$context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest,$context)
 
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
@@ -302,7 +302,7 @@ export class FilesData extends absDataProvider {
         // eslint-disable-next-line no-param-reassign
         $context = _.merge($context, this.GetContext(schemaRequest))
         
-        const options: TOptions = this.Options.Parse(schemaRequest,$context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest,$context)
 
         const { entity } = schemaRequest
 

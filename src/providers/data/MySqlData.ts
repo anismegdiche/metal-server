@@ -9,7 +9,7 @@ import typia from "typia"
 import { RESPONSE } from '../../lib/Const'
 import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource } from "../../types/TConfig"
-import { TOptions } from "../../types/TOptions"
+import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { DataTable, TRow } from "../../types/DataTable"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
@@ -128,7 +128,7 @@ export class MySqlData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         const sqlQueryHelper = new SqlQueryHelper()
             .Select(options.Fields)
@@ -166,7 +166,7 @@ export class MySqlData extends absDataProvider {
                 this.GetContext(schemaRequest)
             )
 
-            const options: TOptions = this.Options.Parse(schemaRequest, $context)
+            const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
             if (!typia.is<DataTable>(options.Data))
                 throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
@@ -200,7 +200,7 @@ export class MySqlData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
@@ -228,7 +228,7 @@ export class MySqlData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         const { entity } = schemaRequest
 
