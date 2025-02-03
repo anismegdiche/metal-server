@@ -48,7 +48,7 @@ export class SqlQueryHelper {
     }
 
     @Logger.LogFunction()
-    Where(condition?: string | object) {
+    Where(condition?: string | object, leftEscape: string = '', rightEscape: string  = '') {
         // no filters
         if (condition === undefined)
             return this
@@ -64,13 +64,13 @@ export class SqlQueryHelper {
             const _cond = _
                 .chain(condition)
                 .map((__filter) => {
-                    const [__field] = Object.keys(__filter)
-                    const [__value] = Object.values(__filter)
+                    const [___field] = Object.keys(__filter)
+                    const [___value] = Object.values(__filter)
 
-                    if (!__field)
+                    if (!___field)
                         return ''
 
-                    return this.#WhereCondition(__field, __value)
+                    return this.#WhereCondition(`${leftEscape}${___field}${rightEscape}`, ___value)                  
                 })
                 .join(' AND ')
                 .value()
@@ -88,7 +88,7 @@ export class SqlQueryHelper {
                     if (!__field)
                         return ''
 
-                    return this.#WhereCondition(__field, __value)
+                    return this.#WhereCondition(`${leftEscape}${__field}${rightEscape}`, __value)
                 })
                 .join(' AND ')
                 .value()
@@ -200,6 +200,7 @@ export class SqlQueryHelper {
                     .mapValues((_value) => {
                         if (_value == null)
                             return
+                        
                         if (typeof _value === 'object') {
                             this.Data.push(_value)
                             return '?'
