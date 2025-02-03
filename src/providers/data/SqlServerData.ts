@@ -44,6 +44,23 @@ export class SqlServerData extends absDataProvider {
     Config: TSqlServerDataConfig = <TSqlServerDataConfig>{}
     Connection?: ConnectionPool = undefined
 
+    DEFAULT = {
+        server: 'localhost',
+        database: 'master',
+        user: 'sa',
+        password: '',
+        port: 1433,
+        options: {
+            encrypt: false,                     // true for azure
+            trustServerCertificate: true,       // change to true for local dev / self-signed certs
+            pool: {
+                max: 10,
+                min: 0,
+                idleTimeoutMillis: 30_000
+            }
+        }
+    }
+
     constructor() {
         super()
     }
@@ -52,26 +69,19 @@ export class SqlServerData extends absDataProvider {
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug("SqlServerData.Init")
         this.SourceName = source
-        this.Config = {
-            user: sourceConfig.user ?? 'sa',
-            password: sourceConfig.password ?? '',
-            database: sourceConfig.database ?? 'master',
-            server: sourceConfig.host ?? 'localhost',
-            port: sourceConfig.port ?? 1433,
-            options: {
-                pool: {
-                    max: 10,
-                    min: 0,
-                    idleTimeoutMillis: 30_000
-                },
-                options: {
-                    encrypt: false,                     // true for azure
-                    trustServerCertificate: true        // change to true for local dev / self-signed certs
-                },
-                ...sourceConfig.options
-
+        this.Config = _.merge(
+            this.DEFAULT,
+            {
+                user: sourceConfig.user,
+                password: sourceConfig.password,
+                database: sourceConfig.database,
+                server: sourceConfig.host,
+                port: sourceConfig.port
+            },
+            {
+                options: sourceConfig.options
             }
-        }
+        )
     }
 
     // eslint-disable-next-line class-methods-use-this
