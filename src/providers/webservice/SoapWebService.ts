@@ -3,29 +3,45 @@
 //
 //
 //
+import _ from "lodash"
 import { Readable } from "stream"
-import { createClientAsync, Client } from "soap"
+import { createClientAsync, Client, IOptions } from "soap"
+import typia from "typia"
 //
-import { absWebServiceProvider, ENDPOINT, HEADER } from "../absWebServiceProvider"
+import { absWebServiceProvider, ENDPOINT, HEADER, TEndpoint } from "../absWebServiceProvider"
 import { JsonHelper } from '../../lib/JsonHelper'
 import { TWebServiceDataOptions, TConfigSourceWebService } from "../data/WebServiceData"
 import { Logger } from "../../utils/Logger"
-import { StringHelper } from "../../lib/StringHelper"
-import { HttpErrorInternalServerError } from "../../server/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../server/HttpErrors"
+import { TContext } from "../../@types/TContext"
+import { Sandbox } from "../../server/Sandbox"
+import { PlaceHolder } from "../../utils/PlaceHolder"
+import { TUserCredentials } from "../absAuthProvider"
+import { CONTENT } from "../ContentProvider"
+import { TJson } from "../../types/TJson"
 
 
 //
 export class SoapWebService extends absWebServiceProvider {
 
     DEFAULT: Partial<TWebServiceDataOptions> = {
-        endpoints: {}
+        content: CONTENT.XML
     }
 
     ConfigSource?: TConfigSourceWebService
     ConfigSourceOptions?: TWebServiceDataOptions
-    Client?: Client 
+    Client?: Client
 
     Headers: Record<string, string>[] = []
+
+    // SOAP
+    SoapNamespace: {
+        Prefix: string
+        Uri: string
+    } = {
+            Prefix: 'web',
+            Uri: 'http://example.com/soap/namespace'
+        }
 
     constructor() {
         super()
@@ -33,70 +49,51 @@ export class SoapWebService extends absWebServiceProvider {
 
     SetConfig(configSource: TConfigSourceWebService): void {
         super.SetConfig(configSource)
-
-        if (this.ConfigSourceOptions?.endpoints === undefined || this.ConfigSource?.host === undefined)
-            throw new HttpErrorInternalServerError('SoapWebService: No urls defined in config')
-
-        this.ProcessEndpoints('collection', this.ConfigSourceOptions.endpoints.collection)
-        this.ProcessEndpoints('item', this.ConfigSourceOptions.endpoints.item)
     }
 
     @Logger.LogFunction()
     async Init(): Promise<void> {
-        if (!this.ConfigSourceOptions?.content)
-            return
-        
+
+        const endpoint = this.Endpoints.get(ENDPOINT.SESSION)
+
+        let soapOptions: IOptions = {}
+
+        if (typia.equals<TEndpoint>(endpoint)) {
+            const { Data } = this.Endpoints.get(ENDPOINT.SESSION)!
+            if (typia.is<TUserCredentials>(Data)) {
+                const { username, password } = Data
+                const auth = Buffer.from(`${username}:${password}`).toString('base64')
+                soapOptions = {
+                    wsdl_headers: {
+                        Authorization: `Basic ${auth}`
+                    }
+                }
+            }
+        }
+
         try {
-            this.Client = await createClientAsync(this.ConfigSource!.host)
+            this.Client = await createClientAsync(this.ConfigSource!.host, soapOptions)
 
             if (!this.Client)
                 throw new HttpErrorInternalServerError(`SoapWebService.Init: Failed to create client`)
 
             // set content type
-            const [header] = Object.keys(HEADER[this.ConfigSourceOptions.content])
-            const [value] = Object.values(HEADER[this.ConfigSourceOptions.content])
+            const [header] = Object.keys(HEADER[this.ConfigSourceOptions!.content])
+            const [value] = Object.values(HEADER[this.ConfigSourceOptions!.content])
 
             if (typeof header == 'string' && typeof value == 'string')
                 this.Client.addHttpHeader(header, value)
+
         } catch (error: any) {
             const _message = error.errors?.at(1).message ?? error.errors?.at(0).message ?? error.message
             Logger.Error(`SoapWebService.Init: ${_message}`)
         }
     }
 
+    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        if (typeof this.ConfigSourceOptions?.endpoints.session !== 'object' || !this.Client)
-            return
-
-        const { url, data, headers } = this.ConfigSourceOptions.endpoints.session
-
-        if (!url || !data)
-            return
-
-        const [endpointMethod = "POST"] = Object.keys(url)
-        const [endpointUrl = "/"] = Object.values(url)
-
-        Logger.Debug(`${Logger.In} SoapWebService.Connect: ${StringHelper.Url(this.ConfigSource!.host, JsonHelper.Stringify(url))}`)
-        // const wsLogin = await this.Client[endpointMethod.toLowerCase()](endpointUrl, data)
-
-        // if (!wsLogin)
-        //     throw new HttpErrorInternalServerError(`SoapWebService.Connect: Failed to connect`)
-
-        // if (!headers)
-        //     return
-
-        // for (const [headerName, headerValue] of Object.entries(headers)) {
-        //     const __headerNewValue = PlaceHolder.EvaluateJsCode(
-        //         headerValue,
-        //         new Sandbox({
-        //             $response: {
-        //                 url: endpointUrl,
-        //                 body: wsLogin
-        //             }
-        //         }))
-        //     this.Client.addHttpHeader(headerName, __headerNewValue)
-        // }
+        Logger.Debug(`${Logger.Out} SoapWebService connected`)
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -105,91 +102,75 @@ export class SoapWebService extends absWebServiceProvider {
         Logger.Debug(`${Logger.Out} SoapWebService disconnected`)
     }
 
-    @Logger.LogFunction()
-    async Create(endpoint: string, data: string): Promise<Readable> {
+    async RequestClient(endpointType: ENDPOINT, data?: TJson, $context?: Partial<TContext>): Promise<Readable> {
 
-        if (!this.Endpoints.has(ENDPOINT.ITEM_CREATE) || !this.Client)
-            throw new HttpErrorInternalServerError(`SoapWebService.Create: undefined endpoint for ${ENDPOINT.ITEM_CREATE}`)
+        if (!this.Client)
+            throw new HttpErrorInternalServerError(`SOAP:${endpointType}: Client is not initialized`)
+
+        if (!this.Endpoints.has(endpointType))
+            throw new HttpErrorInternalServerError(`${endpointType}: undefined endpoint for ${endpointType}`)
 
         try {
-            const { Method } = this.Endpoints.get(ENDPOINT.ITEM_CREATE)!
+            const { Method, Data, SessionHeaders, DataPath } = this.Endpoints.get(endpointType)!
 
-            Logger.Debug(`${Logger.In} SoapWebService.Create: ${StringHelper.Url(this.ConfigSource!.host, endpoint)}`)
-            const wsResp = await this.Client[Method.toLowerCase()](endpoint, data)
+            const _Method = PlaceHolder.EvaluateJsCode<string>(Method, new Sandbox($context))
+            const _Data = PlaceHolder.EvaluateJsCode<TJson>(Data ?? data, new Sandbox($context)) ?? {}
+            const _DataPath = PlaceHolder.EvaluateJsCode<string>(DataPath, new Sandbox($context))
+
+            Logger.Debug(`${Logger.In} ${endpointType}: ${this.ConfigSource!.host}, ${_Method}`)
+
+            const wsResp = await this.Client[`${_Method}Async`](_Data)
 
             if (!wsResp)
-                throw new HttpErrorInternalServerError(`SoapWebService.Create: Failed to create item`)
+                throw new HttpErrorInternalServerError(`${endpointType}: ${wsResp.statusText}`)
 
-            return Readable.from(JsonHelper.Stringify(wsResp))
+            // eslint-disable-next-line no-param-reassign
+            $context = _.merge(
+                $context,
+                <Partial<TContext>>{
+                    $request: {
+                        "data-path": _DataPath
+                    },
+                    $response: {
+                        url: this.ConfigSource!.host,
+                        host: this.ConfigSource!.host,
+                        body: wsResp.at(1)
+                    }
+                }
+            )
+
+            // set session headers after request
+            if (SessionHeaders) {
+                const _SessionHeaders = PlaceHolder.EvaluateJsCode(SessionHeaders, new Sandbox($context))
+                for (const [_headerName, _headerValue] of Object.entries(_SessionHeaders!)) {
+                    this.Client.addHttpHeader(_headerName, _headerValue)
+                }
+            }
+
+            return Readable.from(JsonHelper.Stringify(wsResp.at(1)))
+
         } catch (error: any) {
-            throw new HttpErrorInternalServerError(error.message)
+            throw HttpErrorSwitch(error.status, error.message)
         }
     }
 
     @Logger.LogFunction()
-    async Read(endpoint: string): Promise<Readable> {
-
-        if (!this.Endpoints.has(ENDPOINT.COLLECTION_READ) || !this.Client)
-            throw new HttpErrorInternalServerError(`SoapWebService.Read: undefined endpoint for ${ENDPOINT.COLLECTION_READ}`)
-
-        try {
-            const { Method } = this.Endpoints.get(ENDPOINT.COLLECTION_READ)!
-            const params = {}
-
-            Logger.Debug(`${Logger.In} SoapWebService.Read: ${StringHelper.Url(this.ConfigSource!.host, endpoint)}`)
-            const wsResp = await this.Client[`${Method}Async`](params)
-
-            if (!wsResp)
-                throw new HttpErrorInternalServerError(`SoapWebService.Read: Failed to read collection`)
-
-            return Readable.from(wsResp.at(1))
-
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(error.message)
-        }
+    async Read($context: Partial<TContext>): Promise<Readable> {
+        return this.RequestClient(ENDPOINT.COLLECTION_READ, undefined, $context)
     }
 
     @Logger.LogFunction()
-    async Update(endpoint: string, body: string): Promise<Readable> {
-
-        if (!this.Endpoints.has(ENDPOINT.ITEM_UPDATE) || !this.Client)
-            throw new HttpErrorInternalServerError(`SoapWebService.Update: undefined endpoint for ${ENDPOINT.ITEM_UPDATE}`)
-
-        try {
-            const { Method } = this.Endpoints.get(ENDPOINT.ITEM_UPDATE)!
-
-            Logger.Debug(`${Logger.In} SoapWebService.Update: ${StringHelper.Url(this.ConfigSource!.host, endpoint)}`)
-            const wsResp = await this.Client[Method.toLowerCase()](endpoint, body)
-
-            if (!wsResp)
-                throw new HttpErrorInternalServerError(`SoapWebService.Update: Failed to update item`)
-
-            return Readable.from(JsonHelper.Stringify(wsResp))
-
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(error.message)
-        }
+    async Create(data: TJson, $context: Partial<TContext>): Promise<Readable> {
+        return this.RequestClient(ENDPOINT.ITEM_CREATE, data, $context)
     }
 
     @Logger.LogFunction()
-    async Delete(endpoint: string): Promise<Readable> {
+    async Update(data: TJson, $context: Partial<TContext>): Promise<Readable> {
+        return this.RequestClient(ENDPOINT.ITEM_UPDATE, data, $context)
+    }
 
-        if (!this.Endpoints.has(ENDPOINT.ITEM_DELETE) || !this.Client)
-            throw new HttpErrorInternalServerError(`SoapWebService.Delete: undefined endpoint for ${ENDPOINT.ITEM_DELETE}`)
-
-        try {
-            const { Method } = this.Endpoints.get(ENDPOINT.ITEM_DELETE)!
-
-            Logger.Debug(`${Logger.In} SoapWebService.Delete: ${StringHelper.Url(this.ConfigSource!.host, endpoint)}`)
-            const wsResp = await this.Client[Method.toLowerCase()](endpoint)
-
-            if (!wsResp)
-                throw new HttpErrorInternalServerError(`SoapWebService.Delete: Failed to delete item`)
-
-            return Readable.from(JsonHelper.Stringify(wsResp))
-
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(error.message)
-        }
+    @Logger.LogFunction()
+    async Delete($context: Partial<TContext>): Promise<Readable> {
+        return this.RequestClient(ENDPOINT.ITEM_DELETE, undefined, $context)
     }
 }
