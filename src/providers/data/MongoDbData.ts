@@ -1,4 +1,4 @@
-
+/* eslint-disable @typescript-eslint/no-require-imports */
 //
 //
 //
@@ -6,16 +6,14 @@
 //
 import _ from 'lodash'
 import * as MongoDb from 'mongodb'
-import { SQLParser } from 'sql-in-mongodb'
 import typia from "typia"
 //
 import { RESPONSE } from '../../lib/Const'
 import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
-import { TOptions } from '../../types/TOptions'
+import { TOptionalParameter } from '../../types/TOptionalParameter'
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../types/TSchemaRequest"
-import { TJson } from "../../types/TJson"
-import { SORT_ORDER, DataTable } from "../../types/DataTable"
+import { DataTable } from "../../types/DataTable"
 import { Logger } from "../../utils/Logger"
 import { Cache } from '../../server/Cache'
 import { DATA_PROVIDER } from '../../providers/DataProvider'
@@ -24,11 +22,9 @@ import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
-import { absDataProviderOptions } from "../absDataProviderOptions"
 import { TContext } from "../../@types/TContext"
-import { PlaceHolder } from "../../utils/PlaceHolder"
-import { Sandbox } from "../../server/Sandbox"
-import { StringHelper } from '../../lib/StringHelper'
+import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
+import { MongoDbHelper } from "./MongoDbHelper"
 
 
 //
@@ -40,157 +36,12 @@ export type TMongoDbDataConfig = {
 
 
 //
-export class MongoDbHelper {
-
-    static readonly WhereParser = new SQLParser()
-
-    @Logger.LogFunction()
-    static ConvertSqlSort(key: any, value: string) {
-        const aSort = value.split(" ")
-
-        if (aSort.length != 2)
-            return {}
-
-        const [field, sqlSortDirection] = aSort
-
-        return {
-            ...key,
-            [field]: (sqlSortDirection.toLowerCase() == SORT_ORDER.ASC)
-                ? 1
-                : -1
-        }
-    }
-
-    @Logger.LogFunction()
-    static ConvertSqlQuery(sqlQuery: string | undefined) {
-        return (sqlQuery)
-            ? this.WhereParser.parseSql(`WHERE ${sqlQuery}`)
-            : {}
-    }
-}
-
-export class MongoDbDataOptions extends absDataProviderOptions {
-
-    // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
-    GetFilter(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
-
-        if (schemaRequest["filter-expression"]) {
-            let evalFilter = PlaceHolder.EvaluateJsCode<string>(
-                schemaRequest["filter-expression"],
-                new Sandbox($context)
-            ) ?? ''
-
-            evalFilter = evalFilter.replace(/%/g, ".*") // Convert SQL-style wildcards to regex
-
-            options.Filter = <TJson>{
-                $match: MongoDbHelper.ConvertSqlQuery(evalFilter)
-            }
-            return options
-        }
-
-        if (schemaRequest?.filter) {
-            let filter: any = {}
-            
-            filter = PlaceHolder.EvaluateJsCode<TJson>(schemaRequest.filter, new Sandbox($context))
-
-            for (const key in filter) {
-                if (key !== "_id" && typeof filter[key] === "string") {
-                    // Convert strings with wildcard patterns into MongoDB regex
-                    filter[key] = {
-                        $regex: filter[key].replace(/%/g, ".*"),
-                        $options: "i"
-                    }
-                }
-            }
-
-            if (filter?._id) {
-                filter._id = MongoDb.ObjectId.createFromHexString(filter._id)
-            }
-
-            options.Filter = <TJson>{
-                $match: filter
-            }
-        }
-
-        return options
-    }
-
-
-    // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
-    GetFields(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
-        if (schemaRequest?.fields) {
-            const _fields = PlaceHolder.EvaluateJsCode<string>(
-                schemaRequest.fields.trim(),
-                new Sandbox($context)
-            ) ?? ''
-
-            let _aFields: string[] | Record<string, unknown> = []
-
-            if (StringHelper.IsEmpty(_fields)) {
-                _aFields = {}
-            } else {
-                _aFields = _fields.includes(",")
-                    ? _fields.split(",")
-                        .filter(__field => !(StringHelper.IsEmpty(__field.trim())))
-                        .map(__field => __field.trim())
-                    : [_fields.trim()]
-
-                if (_aFields.length > 0) {
-                    _aFields = _aFields.reduce((__key, __value) => ({
-                        ...__key,
-                        [__value]: 1
-                    }), {})
-                }
-            }
-            options.Fields = {
-                $project: _aFields
-            }
-        }
-        return options
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
-    GetSort(options: TOptions, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): TOptions {
-        if (schemaRequest?.sort) {
-            const _sort = PlaceHolder.EvaluateJsCode<string>(
-                schemaRequest.sort.trim(),
-                new Sandbox($context)
-            ) ?? ''
-
-            // test if array
-            let _sortArray = _sort.includes(",")
-                ? _sort
-                    .split(",")
-                    .filter(__field => !(__field == undefined || __field.trim() == ""))
-                    .map(__field => __field.trim().replace(/\W+/igm, " "))
-                : [_sort.replace(/\W+/igm, " ")]
-
-            Logger.Debug(_sortArray)
-            if (_sortArray.length > 0)
-                _sortArray = _sortArray.reduce(MongoDbHelper.ConvertSqlSort, {})
-
-            Logger.Debug(_sortArray)
-            options.Sort = {
-                $sort: _sortArray
-            }
-        }
-        return options
-    }
-}
-
-
 export class MongoDbData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.MONGODB
     Config: TMongoDbDataConfig = <TMongoDbDataConfig>{}
     Connection?: MongoDb.MongoClient = undefined
-
-    //TODO change MongoDbDataOptions to static
-    Options: MongoDbDataOptions = new MongoDbDataOptions()
 
     constructor() {
         super()
@@ -254,17 +105,19 @@ export class MongoDbData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        //CURRENT E2E testing
-        // eslint-disable-next-line you-dont-need-lodash-underscore/omit, you-dont-need-lodash-underscore/values
-        const aggregation: MongoDb.Document[] = _.values(_.omit(options, "Cache")) as MongoDb.Document[]
+        const sqlQueryHelper = new SqlQueryHelper()
+            .Select(options.Fields)
+            .From(this.EscapeEntity(entity))
+            .Where(options.Filter)
+            .OrderBy(options.Sort)
 
-        await this.Connection.connect()
+        const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query)
 
         const rows = await this.Connection.db(this.Config.database)
             .collection(entity)
-            .aggregate(aggregation)
+            .aggregate(mongoParsedQuery.aggregate)
             .toArray()
 
         const data = new DataTable(entity)
@@ -297,12 +150,11 @@ export class MongoDbData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        await this.Connection.connect()
         await this.Connection
             .db(this.Config.database)
             .collection(schemaRequest.entity)
@@ -326,22 +178,29 @@ export class MongoDbData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         if (!typia.is<DataTable>(options.Data) || options.Data.Rows.length === 0)
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        await this.Connection.connect()
+        const sqlQueryHelper = new SqlQueryHelper()
+            .Select(options.Fields)
+            .From(schemaRequest.entity)
+            .Where(options.Filter)
+            .OrderBy(options.Sort)
 
-        const _mongoFilter: MongoDb.Filter<MongoDb.Document> = ((options?.Filter as TJson)?.$match) ?? {}
-        const _mongoUpdate: MongoDb.BSON.Document[] | MongoDb.UpdateFilter<MongoDb.BSON.Document> = {
+        const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query)
+
+        const mongoFilter: MongoDb.Filter<MongoDb.Document> = mongoParsedQuery.aggregate.$match ?? {}
+
+        const mongoUpdate: MongoDb.BSON.Document[] | MongoDb.UpdateFilter<MongoDb.BSON.Document> = {
             $set: options?.Data?.Rows.at(0)
         }
 
         await this.Connection
             .db(this.Config.database)
             .collection(schemaRequest.entity)
-            .updateMany(_mongoFilter, _mongoUpdate)
+            .updateMany(mongoFilter, mongoUpdate)
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -361,14 +220,22 @@ export class MongoDbData extends absDataProvider {
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptions = this.Options.Parse(schemaRequest, $context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+
+        const sqlQueryHelper = new SqlQueryHelper()
+            .Select(options.Fields)
+            .From(schemaRequest.entity)
+            .Where(options.Filter)
+            .OrderBy(options.Sort)
+
+        const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query)
+
+        const mongoFilter: MongoDb.Filter<MongoDb.Document> = mongoParsedQuery.aggregate.$match ?? {}
 
         await this.Connection
             .db(this.Config.database)
             .collection(schemaRequest.entity)
-            .deleteMany(
-                ((options?.Filter as TJson)?.$match) as MongoDb.Filter<MongoDb.Document>
-            )
+            .deleteMany(mongoFilter)
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -389,8 +256,6 @@ export class MongoDbData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { schema } = schemaRequest
-
-        await this.Connection.connect()
 
         const collections = await this.Connection.db(this.Config.database).listCollections().toArray()
 

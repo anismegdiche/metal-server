@@ -23,6 +23,7 @@ describe('MongoDbData', () => {
         collection: jest.fn().mockReturnThis(),
         insertMany: jest.fn(),
         aggregate: jest.fn().mockReturnThis(),
+        find: jest.fn().mockReturnThis(),
         toArray: jest.fn(),
         updateMany: jest.fn(),
         deleteMany: jest.fn(),
@@ -106,7 +107,7 @@ describe('MongoDbData', () => {
     })
 
     describe('Select', () => {
-        it('should successfully select data', async () => {
+        it('should successfully select data and use find()', async () => {
             const mockSelectRequest: TSchemaRequest = {
                 schema: 'test-schema',
                 entity: 'test-table',
@@ -122,7 +123,7 @@ describe('MongoDbData', () => {
 
             const response = await provider.Select(mockSelectRequest)
 
-            expect(mockClient.aggregate).toHaveBeenCalled()
+            expect(mockClient.find).toHaveBeenCalled()
             expect(response.StatusCode).toBe(200)
             expect(response.Body?.data).toBeDefined()
             expect(response.Body?.data.Rows).toHaveLength(1)
@@ -161,7 +162,11 @@ describe('MongoDbData', () => {
             const response = await provider.Update(mockUpdateRequest)
 
             expect(mockClient.updateMany).toHaveBeenCalledWith(
-                { id: 1 },
+                {
+                    id: {
+                        $eq: 1
+                    }
+                },
                 { $set: dt.Rows[0] }
             )
             expect(response.StatusCode).toBe(204)
@@ -212,7 +217,11 @@ describe('MongoDbData', () => {
             const response = await provider.Delete(mockDeleteRequest)
 
             expect(mockClient.deleteMany).toHaveBeenCalledWith(
-                { id: 1 }
+                {
+                    id: {
+                        $eq: 1
+                    }
+                }
             )
             expect(response.StatusCode).toBe(204)
             expect(Cache.Remove).toHaveBeenCalledWith(mockDeleteRequest)
@@ -232,7 +241,7 @@ describe('MongoDbData', () => {
                     {
                         name: {
                             $options: "i",
-                            $regex: "\\.\\*test\\.\\*"
+                            $regex: "test"
                         }
                     }, {
                         id: {
