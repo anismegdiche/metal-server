@@ -14,17 +14,16 @@ Content-Type: application/json
 ###
 
 # @name read
-GET http://localhost:3000/schema/soap-movies/movies
+GET http://localhost:3000/schema/soap-movies/movie
     # ?filter={"id":3,"userName": "User 3"}
     # &filter={"country":"France"}
     # ?cache=300
 authorization: Bearer {{token}}
-###
 
 
 ###
 # @name update
-PATCH  http://localhost:3000/schema/soap-movies/movies
+PATCH  http://localhost:3000/schema/soap-movies/movie
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -33,26 +32,32 @@ authorization: Bearer {{token}}
         "id": 1
     },
     "data": {
-        "title": "Fight Club",
-        "description": "An insomniac office worker and a devil-may-care soapmaker form an underground fight club that evolves into something much, much more."
+        "title": "Hellraiser",
+        "description": "Horror movie"
     }
 }
 
-# ###
-# # @name create
-# POST  http://localhost:3000/schema/soap-movies/movies
-# Content-Type: application/json
-# authorization: Bearer {{token}}
 
-# {
-#     "data": {
-#         "userName": "New User X",
-#         "password": "123456"
-#     }
-# }
+###
+# @name create
+POST  http://localhost:3000/schema/soap-movies/movie
+Content-Type: application/json
+authorization: Bearer {{token}}
 
-# ###
-# # @name delete
-# DELETE  http://localhost:3000/schema/soap-movies/movies
-# Content-Type: application/json
-# authorization: Bearer {{token}}
+{
+    "data": {
+        "title": "Die Hard",
+        "description": "Action movie",
+        "releaseDate": "2023-01-01T00:00:00"
+    }
+}
+
+###
+# @name delete
+DELETE  http://localhost:3000/schema/soap-movies/movie
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "filter-expression": "id > 2"
+}
