@@ -15,6 +15,9 @@ import { TConvertParams } from "../../lib/TypeHelper"
 import { absContentProvider } from "../absContentProvider"
 import { StringHelper } from "../../lib/StringHelper"
 import { TContext } from "../../@types/TContext"
+import { Sandbox } from "../../server/Sandbox"
+import { PlaceHolder } from "../../utils/PlaceHolder"
+import { TJson } from "../../types/TJson"
 
 
 export type TCsvContentConfig = {
@@ -62,24 +65,34 @@ export class CsvContent extends absContentProvider {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
-        const parsedCsv: any = Csv.parse<string>(
+        const evalParams = PlaceHolder.EvaluateJsCode<Csv.ParseConfig>(
+            this.Params,
+            new Sandbox($context)
+        )
+        // TODO to test
+        const parsedCsv = Csv.parse<TJson>(
             await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
             ),
-            this.Params as Csv.ParseConfig
+            evalParams
         )
-        return new DataTable(this.EntityName, parsedCsv?.data).FreeSqlAsync(sqlQuery)
+        return new DataTable(this.EntityName, parsedCsv.data).FreeSqlAsync(sqlQuery)
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Set(contentDataTable: DataTable): Promise<Readable> {
+    async Set(contentDataTable: DataTable, $context: Partial<TContext>): Promise<Readable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
+
+        const evalParams = PlaceHolder.EvaluateJsCode<TCsvContentParams>(
+            this.Params,
+            new Sandbox($context)
+        )
 
         const streamOut = Readable.from(
             Csv.unparse(
                 contentDataTable.Rows,
-                this.Params
+                evalParams
             )
         )
         this.Content.UploadFile(this.EntityName, streamOut)
