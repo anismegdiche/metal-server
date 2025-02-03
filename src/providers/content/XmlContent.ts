@@ -5,7 +5,7 @@
 //
 import { Readable } from "node:stream"
 import _ from "lodash"
-import { XMLParser, XMLBuilder, XmlBuilderOptions } from "fast-xml-parser"
+import { XMLParser, XMLBuilder, XmlBuilderOptions, X2jOptions } from "fast-xml-parser"
 //
 import { DataTable } from "../../types/DataTable"
 import { Logger } from "../../utils/Logger"
@@ -24,7 +24,8 @@ import { TContext } from "../../@types/TContext"
 export type TXmlContentConfig = {
     "xml-path"?: string                  // XML path, if undefined will return the whole XML
     "xml-ignore-attributes"?: boolean    // Ignore XML attributes, default is true
-    "xml-attribute-prefix"?: string      // Prefix for XML attributes, default is "@"
+    "xml-attribute-prefix"?: string      // Prefix for XML attributes, default is `@`
+    "xml-remove-ns-prefix"?: boolean     // remove namespace string from tag and attribute names, default `true`
 }
 
 
@@ -36,18 +37,20 @@ export class XmlContent extends absContentProvider {
     DEFAULT = {
         "xml-path": undefined,
         "xml-ignore-attributes": true,
-        "xml-attribute-prefix": "@"
+        "xml-attribute-prefix": "@",
+        "xml-remove-ns-prefix": true
     }
 
     // XML Content
-    ParserOptions: XmlBuilderOptions = {}
+    ParserOptions: X2jOptions = {}
 
     SetConfig(contentConfig: TContentConfig): void {
         super.SetConfig(contentConfig)
         this.Params = _.merge(this.DEFAULT, this.Config)
         this.ParserOptions = {
             attributeNamePrefix: this.Params["xml-attribute-prefix"],
-            ignoreAttributes: this.Params["xml-ignore-attributes"]
+            ignoreAttributes: this.Params["xml-ignore-attributes"],
+            removeNSPrefix: this.Params["xml-remove-ns-prefix"]
         }
     }
 
@@ -67,7 +70,7 @@ export class XmlContent extends absContentProvider {
             await ReadableHelper.ToString(this.Content.ReadFile(this.EntityName))
         )
 
-        const path = PlaceHolder.EvaluateJsCode(
+        const path = PlaceHolder.EvaluateJsCode<string>(
             $context?.$request?.["data-path"] ?? this.Params["xml-path"],
             new Sandbox($context)
         )
@@ -94,7 +97,7 @@ export class XmlContent extends absContentProvider {
             await ReadableHelper.ToString(this.Content.ReadFile(this.EntityName))
         )
 
-        const evalPath = PlaceHolder.EvaluateJsCode(
+        const evalPath = PlaceHolder.EvaluateJsCode<string>(
             jsonPath,
             new Sandbox($context)
         )
@@ -105,7 +108,7 @@ export class XmlContent extends absContentProvider {
             data.Rows
         )
 
-        const xmlBuilder = new XMLBuilder(this.ParserOptions)
+        const xmlBuilder = new XMLBuilder(this.ParserOptions as XmlBuilderOptions)
         const xmlString = xmlBuilder.build(xmlData)
 
         const streamOut = Readable.from(xmlString)

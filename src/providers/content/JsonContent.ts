@@ -60,8 +60,8 @@ export class JsonContent extends absContentProvider {
             ), {}
         )
 
-        const path = PlaceHolder.EvaluateJsCode(
-            $context?.$request?.["data-path"] ?? this.Params.path,
+        const path = PlaceHolder.EvaluateJsCode<string>(
+            ($context?.$request?.["data-path"] ?? this.Params.path) as string,
             new Sandbox($context)
         )
 
@@ -85,7 +85,7 @@ export class JsonContent extends absContentProvider {
             ), {}
         )
 
-        const path = PlaceHolder.EvaluateJsCode(
+        const path = PlaceHolder.EvaluateJsCode<string>(
             $context?.$request?.["data-path"] ?? this.Params.path,
             new Sandbox($context)
         )
