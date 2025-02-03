@@ -106,7 +106,7 @@ export class TensorFlowJs implements IAiEngine {
 
 		const tensor = Tf.tensor3d(imageData, [224, 224, 3])
 
-		const predictions = await (this.#Model as MobileNet.MobileNet).classify(tensor)
+		const predictions = await (this.#Model as MobileNet.MobileNet).classify(tensor as any)
 
 		Logger.Debug(JSON.stringify(predictions))
 		return {
