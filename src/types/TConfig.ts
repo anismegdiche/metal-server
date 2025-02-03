@@ -120,6 +120,7 @@ export type TConfig = {
             max?: number & tags.Type<"uint32">
             message?: string
         }
+        "response-chunk"?: boolean                      // v0.4
         cache?: TConfigSource
     }
     roles?: TConfigRoles
