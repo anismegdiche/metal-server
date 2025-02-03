@@ -120,4 +120,32 @@ export class JsonHelper {
     static IsEmpty<T>(obj: Dictionary<T>): boolean {
         return _.isEmpty(obj)
     }
+
+    static ReplaceStrings(obj: TJson, pattern: RegExp, replacement: string): TJson {
+        // eslint-disable-next-line you-dont-need-lodash-underscore/for-each
+        _.forEach(obj, (v, k) => {
+            // eslint-disable-next-line you-dont-need-lodash-underscore/is-string
+            if (_.isString(v)) {
+                obj[k] = v.replace(pattern, replacement)
+            }
+            if (JsonHelper.IsJson(v)) {
+                obj[k] = JsonHelper.ReplaceStrings(v as TJson, pattern, replacement)
+            }
+            if (Array.isArray(v)) {
+                obj[k] = v.map(vv => JsonHelper.ReplaceStrings(vv as TJson, pattern, replacement))
+            }
+        })
+        return obj
+    }
+
+    static IsJson(obj: unknown): boolean {
+        return typeof obj === 'object' &&
+            obj !== null &&
+            !Array.isArray(obj) &&
+            !(obj instanceof Date) &&
+            !(obj instanceof RegExp) &&
+            !(obj instanceof Map) &&
+            !(obj instanceof Set)
+    }
+
 }
