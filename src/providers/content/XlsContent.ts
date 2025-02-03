@@ -15,6 +15,8 @@ import { HttpErrorInternalServerError } from '../../server/HttpErrors'
 import { TConvertParams } from "../../lib/TypeHelper"
 import { absContentProvider } from "../absContentProvider"
 import { TContext } from "../../@types/TContext"
+import { PlaceHolder } from "../../utils/PlaceHolder"
+import { Sandbox } from "../../server/Sandbox"
 
 
 export type TXlsContentConfig = {
@@ -46,19 +48,27 @@ export function ColumnLetterToNumber(letter: string): number {
 //
 export class XlsContent extends absContentProvider {
 
-    Params: TXlsContentParams | undefined
+    Params: TXlsContentParams = {
+        parseDates: false,
+        default: null,
+        dateFormat: 'dd/mm/yyyy',
+        startingCell: 'A1'
+    }
 
     @Logger.LogFunction(Logger.Debug, true)
     async InitContent(entity: string, content: Readable): Promise<void> {
         this.EntityName = entity
         if (this.Config && typia.is<TXlsContentConfig>(this.Config)) {
-            this.Params = {
-                sheet: this.Config["xls-sheet"],
-                parseDates: this.Config["xls-parse-dates"] ?? false,
-                default: this.Config["xls-default"] ?? null,
-                dateFormat: this.Config["xls-date-format"] ?? 'dd/mm/yyyy',
-                startingCell: this.Config["xls-starting-cell"] ?? 'A1'
-            }
+            this.Params = _.merge(
+                this.Params,
+                {
+                    sheet: this.Config["xls-sheet"],
+                    parseDates: this.Config["xls-parse-dates"],
+                    default: this.Config["xls-default"],
+                    dateFormat: this.Config["xls-date-format"],
+                    startingCell: this.Config["xls-starting-cell"]
+                }
+            )
         }
         this.Content.UploadFile(entity, content)
     }
@@ -72,15 +82,20 @@ export class XlsContent extends absContentProvider {
         Logger.Debug('XlsContent.Get: reading stream')
         await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
 
+        const evalParams = PlaceHolder.EvaluateJsCode<TXlsContentParams>(
+            this.Params,
+            new Sandbox($context)
+        )
+
         Logger.Debug('XlsContent.Get: Converting')
-        const sheetName = this.Params.sheet ?? workbook.worksheets[0].name
+        const sheetName = evalParams!.sheet ?? workbook.worksheets[0].name
         const worksheet = workbook.getWorksheet(sheetName)
 
         if (worksheet == undefined)
             throw new HttpErrorInternalServerError(`Worksheet "${sheetName}" not found in workbook.`)
 
         const [startCol, startRow] = worksheet
-            .getCell(this.Params.startingCell!)
+            .getCell(evalParams!.startingCell!)
             .address
             .match(/[A-Z]+|\d+/g)!
 
@@ -98,10 +113,10 @@ export class XlsContent extends absContentProvider {
                     let cellValue = sheetRow.getCell(colIndex + index).value
 
                     // Handle date parsing if enabled
-                    if (this.Params!.parseDates && cellValue instanceof Date) {
+                    if (evalParams!.parseDates && cellValue instanceof Date) {
                         cellValue = new Intl.DateTimeFormat('en-US', { dateStyle: 'short' }).format(cellValue) // Adjust formatting as needed
-                    } else if (this.Params!.parseDates && typeof cellValue === 'string') {
-                        // Attempt to parse string as date if this.Params.parseDates is enabled
+                    } else if (evalParams!.parseDates && typeof cellValue === 'string') {
+                        // Attempt to parse string as date if evalParams.parseDates is enabled
                         const _parsedDate = new Date(cellValue)
                         if (!Number.isNaN(_parsedDate.getTime())) {
                             cellValue = _parsedDate // Store as Date object
@@ -109,7 +124,7 @@ export class XlsContent extends absContentProvider {
                     }
 
                     _row[field] = cellValue === null
-                        ? this.Params!.default
+                        ? evalParams!.default
                         : cellValue
 
                     return _row
@@ -130,13 +145,18 @@ export class XlsContent extends absContentProvider {
         const workbook = new ExcelJS.Workbook()
         await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
 
-        const sheetName = this.Params.sheet ?? workbook.worksheets[0].name
+        const evalParams = PlaceHolder.EvaluateJsCode<TXlsContentParams>(
+            this.Params,
+            new Sandbox($context)
+        )
+
+        const sheetName = evalParams?.sheet ?? workbook.worksheets[0].name
         let worksheet = workbook.getWorksheet(sheetName)
 
         if (!worksheet)
             worksheet = workbook.addWorksheet(sheetName)
 
-        const [startCol, startRow] = worksheet.getCell(this.Params.startingCell!).address.match(/[A-Z]+|\d+/g)!
+        const [startCol, startRow] = worksheet.getCell(evalParams?.startingCell as string).address.match(/[A-Z]+|\d+/g)!
         const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
         // Set headers
@@ -155,12 +175,12 @@ export class XlsContent extends absContentProvider {
 
                 // If raw data is specified, set directly; otherwise apply formatting or defaults
                 if (_valueToSet === null) {
-                    _valueToSet = this.Params!.default // Use default value for empty cells
+                    _valueToSet = evalParams!.default // Use default value for empty cells
                 }
 
                 // Handle date formatting if specified and "xls-parse-dates" is true
-                if (this.Params!.parseDates && _valueToSet instanceof Date) {
-                    worksheet.getCell(_rowIdx, _colIdx).numFmt = this.Params!.dateFormat as string // Apply date format
+                if (evalParams!.parseDates && _valueToSet instanceof Date) {
+                    worksheet.getCell(_rowIdx, _colIdx).numFmt = evalParams!.dateFormat as string // Apply date format
                 }
                 worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet     // Set other values directly
             })
@@ -168,7 +188,7 @@ export class XlsContent extends absContentProvider {
 
         const streamOut: Readable = new Readable()
         await workbook.xlsx.write(streamOut)
-        
+
         this.Content.UploadFile(this.EntityName, streamOut)
         return this.Content.ReadFile(this.EntityName)
     }
