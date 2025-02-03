@@ -7,7 +7,6 @@ import { Readable } from 'node:stream'
 import { DataTable } from "../types/DataTable"
 import { VirtualFileSystem } from "../utils/VirtualFileSystem"
 import { TContentConfig } from "./ContentProvider"
-import { TJson } from "../types/TJson"
 import { clsClonable } from "../utils/clsClonable"
 import { TContext } from "../@types/TContext"
 
@@ -22,10 +21,6 @@ export abstract class absContentProvider extends clsClonable {
 
     SetConfig(contentConfig: TContentConfig) {
         this.Config = contentConfig
-    }
-
-    GetConfig(): TJson {
-        return this.Config ?? {}
     }
 
     abstract InitContent(name: string, content: Readable): void
