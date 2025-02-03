@@ -29,7 +29,7 @@ export abstract class absDataProviderOptions {
             options = this.GetFields(options, schemaRequest, $context)
             options = this.GetSort(options, schemaRequest, $context)
             options = this.GetData(options, schemaRequest, $context)
-            options = this.GetCache(options, schemaRequest, $context)
+            options = this.GetCache(options, schemaRequest)
         }
         return options
     }
@@ -99,7 +99,7 @@ export abstract class absDataProviderOptions {
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction(Logger.Debug, true)
-    GetCache(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
+    GetCache(options: TOptionalParameter, schemaRequest: TSchemaRequest): Partial<TOptionalParameter> {
         if (schemaRequest?.cache)
             options.Cache = schemaRequest.cache
         return options
@@ -108,6 +108,5 @@ export abstract class absDataProviderOptions {
     // eslint-disable-next-line class-methods-use-this
     IsFilterNotEmpty(schemaRequest: TSchemaRequest): boolean {
         return schemaRequest["filter-expression"] !== undefined || Object.keys(schemaRequest?.filter || {}).length > 0
-
     }    
 }
