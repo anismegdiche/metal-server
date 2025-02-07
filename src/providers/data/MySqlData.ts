@@ -3,11 +3,11 @@
 //
 //
 //
+import _ from "lodash"
 import mysql, { Pool } from 'mysql2/promise'
 import typia from "typia"
 //
 import { RESPONSE } from '../../lib/Const'
-import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource } from "../../types/TConfig"
 import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { DataTable, TRow } from "../../types/DataTable"
@@ -21,7 +21,6 @@ import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
-import _ from "lodash"
 
 export class MySqlData extends absDataProvider {
 
@@ -30,35 +29,41 @@ export class MySqlData extends absDataProvider {
     Config: mysql.PoolOptions = <mysql.PoolOptions>{}
     Connection?: Pool
 
-    constructor() {
-        super()
-    }
-
-    // CURRENT use DEFAULT and merge
-    @Logger.LogFunction()
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
-        Logger.Debug("MySqlData.Init")
-        this.SourceName = source
-
-        // default MySql options
-        const options = {
+    DEFAULT = {
+        host: 'localhost',
+        port: 3306,
+        user: 'root',
+        password: '',
+        database: 'mysql',
+        options: {
             waitForConnections: true,
             connectionLimit: 10,
             maxIdle: 10,
             idleTimeout: 60000,
             queueLimit: 0,
             enableKeepAlive: true,
-            keepAliveInitialDelay: 0,
-            ...sourceConfig?.options
+            keepAliveInitialDelay: 0
         }
+    }
+
+    constructor() {
+        super()
+    }
+
+    @Logger.LogFunction()
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+        
+        Logger.Debug("MySqlData.Init")
+
+        this.SourceName = source
 
         this.Config = {
-            host: sourceConfig?.host ?? 'localhost',
-            port: sourceConfig?.port ?? 3306,
-            user: sourceConfig?.user ?? 'root',
-            password: sourceConfig?.password ?? '',
-            database: sourceConfig?.database ?? 'mysql',
-            ...options
+            host: sourceConfig?.host,
+            port: sourceConfig?.port,
+            user: sourceConfig?.user,
+            password: sourceConfig?.password,
+            database: sourceConfig?.database,
+            ..._.merge(this.DEFAULT.options, sourceConfig?.options)
         }
     }
 
@@ -152,20 +157,20 @@ export class MySqlData extends absDataProvider {
 
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        
+
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
         )
-        
+
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
-        
+
         const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
-        
+
         try {
             const connection = await this.ensureConnection()
             await connection.query(sqlQueryHelper.Query)
