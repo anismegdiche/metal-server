@@ -18,6 +18,7 @@ import { Sandbox } from "../../server/Sandbox"
 import { TContext } from "../../@types/TContext"
 import { CONTENT } from "../ContentProvider"
 import { TJson } from "../../types/TJson"
+import { HTTP_STATUS_CODE } from "../../lib/Const"
 
 
 //
@@ -65,22 +66,16 @@ export class RestWebService extends absWebServiceProvider {
             const { Method, Url, Data, SessionHeaders, DataPath } = this.Endpoints.get(endpointType)!
 
             const _Method = PlaceHolder.EvaluateJsCode<string>(Method, new Sandbox($context))
-            const _Url = PlaceHolder.EvaluateJsCode<string>(
-                StringHelper.Url(
-                    $context?.$entity,
-                    Url
-                ),
-                new Sandbox($context)
-            )
-            const _Data = PlaceHolder.EvaluateJsCode(Data, new Sandbox($context))
-            const _DataPath = PlaceHolder.EvaluateJsCode(DataPath, new Sandbox($context))
+            const _Url = PlaceHolder.EvaluateJsCode<string>(Url, new Sandbox($context))
+            const _Data = PlaceHolder.EvaluateJsCode<TJson>(Data, new Sandbox($context))
+            const _DataPath = PlaceHolder.EvaluateJsCode<string>(DataPath, new Sandbox($context))
 
             Logger.Debug(`${Logger.In} ${endpointType}: ${StringHelper.Url(this.ConfigSource!.host, Url)}`)
 
             const wsResp: AxiosResponse = await this.Client({
                 method: (_Method ?? Method).toLowerCase(),
                 url: _Url,
-                data: _Data ?? JsonHelper.Stringify(data)
+                data: JsonHelper.Stringify(_Data ?? data)
             })
 
             if (!httpStatusSuccess.includes(wsResp.status))
@@ -112,14 +107,23 @@ export class RestWebService extends absWebServiceProvider {
             return Readable.from(JsonHelper.Stringify(wsResp.data))
 
         } catch (error: any) {
-            throw HttpErrorSwitch(error.status, error.message)
+            throw HttpErrorSwitch(
+                error.status || HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, 
+                JsonHelper.Stringify(
+                    error.response.data.message || 
+                    error.response.data || 
+                    error.errors || 
+                    error.message || 
+                    "Unknown error"
+                )
+            )
         }
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         if (this.Endpoints.has(ENDPOINT.SESSION))
-            this.RequestClient(ENDPOINT.SESSION, [200])
+            await this.RequestClient(ENDPOINT.SESSION, [200])
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -146,5 +150,10 @@ export class RestWebService extends absWebServiceProvider {
     @Logger.LogFunction()
     async Delete($context: Partial<TContext>): Promise<Readable> {
         return this.RequestClient(ENDPOINT.ITEM_DELETE, [200, 204], undefined, $context)
+    }
+
+    @Logger.LogFunction()
+    async ListEntities($context: Partial<TContext>): Promise<Readable> {
+        return this.RequestClient(ENDPOINT.COLLECTION_LIST, [200], undefined, $context)
     }
 }
