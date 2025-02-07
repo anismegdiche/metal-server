@@ -24,7 +24,7 @@ export type TContext = {
     $request?: {
         "data-path"?: string    // requested JSON path, if undefined will return the whole JSON
     },
-    $item?: TJson
+    $row?: TJson
     $response?: {
         url?: string,
         host?: string,

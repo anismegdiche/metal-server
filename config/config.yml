@@ -32,13 +32,13 @@ sources:
         collection-read: 
           get: /${{ $entity }}
         item-read: 
-          get: /${{ $entity }}/${{ $item.id }}
+          get: /${{ $entity }}/${{ $row.id }}
         item-create: 
           post:
         item-update: 
-          put: /${{ $entity }}/${{ $item.id }}
+          put: /${{ $entity }}/${{ $row.id }}
         item-delete: 
-          delete: /${{ $entity }}/${{ $item.id }}
+          delete: /${{ $entity }}/${{ $row.id }}
       
   rest-dummyjson:    # https://dummyjson.com/docs
     provider: webservice
@@ -58,13 +58,13 @@ sources:
           get: /${{ $entity }}
           response: ${{ $entity }}
         item-read: 
-          get: /${{ $entity }}/${{ $item.id }}
+          get: /${{ $entity }}/${{ $row.id }}
         item-create: 
           post: /${{ $entity }}/add
         item-update: 
-          put: /${{ $entity }}/${{ $item.id }}
+          put: /${{ $entity }}/${{ $row.id }}
         item-delete: 
-          delete: /${{ $entity }}/${{ $item.id }}
+          delete: /${{ $entity }}/${{ $row.id }}
       
   rest-dog:    # https://dog.ceo/dog-api/documentation/
     provider: webservice

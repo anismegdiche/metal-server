@@ -222,7 +222,7 @@ export class WebServiceData extends absDataProvider {
             $context = _.merge(
                 $context,
                 {
-                    $item: row
+                    $row: row
                 }
             )
 
@@ -296,7 +296,7 @@ export class WebServiceData extends absDataProvider {
             $context = _.merge(
                 $context,
                 {
-                    $item: row
+                    $row: row
                 }
             )
 
@@ -359,7 +359,7 @@ export class WebServiceData extends absDataProvider {
             $context = _.merge(
                 $context,
                 {
-                    $item: row
+                    $row: row
                 }
             )
 
@@ -386,8 +386,8 @@ export class WebServiceData extends absDataProvider {
             return "*"
 
         const id: string[] = endpoint.Keys
-            .filter(v => v.startsWith('$item'))
-            .map(v => v.replace('$item.', ''))
+            .filter(v => v.startsWith('$row'))
+            .map(v => v.replace('$row.', ''))
 
         return (id && id.length > 0)
             ? id.at(0)!

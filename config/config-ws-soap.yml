@@ -45,15 +45,15 @@ sources:
         item-create:
           addMovie:
           data: 
-            ${{ $entity }}: ${{ $item }} 
+            ${{ $entity }}: ${{ $row }} 
         item-update:
           updateMovie:
           data: 
-            ${{ $entity }}: ${{ $item }}
+            ${{ $entity }}: ${{ $row }}
         item-delete:
           deleteMovie:
           data:
-            id: ${{ $item.id }}
+            id: ${{ $row.id }}
       
   soap-missions:    # https://www.crcind.com/csp/samples/SOAP.Demo.cls
     provider: webservice

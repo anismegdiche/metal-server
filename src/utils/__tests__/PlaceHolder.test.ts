@@ -20,9 +20,9 @@ describe('PlaceHolder', () => {
         })
 
         it('should handle variables in expressions', () => {
-            const input = '${{ $item.x + 2 }}'
+            const input = '${{ $row.x + 2 }}'
             const $context = {
-                $item: {
+                $row: {
                     x: 1
                 }
             }
@@ -37,9 +37,9 @@ describe('PlaceHolder', () => {
         })
 
         it('should handle conditional expressions', () => {
-            const input = '${{ $item.x > 0 ? true : false }}'
+            const input = '${{ $row.x > 0 ? true : false }}'
             const $context = {
-                $item: {
+                $row: {
                     x: 1
                 }
             }
@@ -48,9 +48,9 @@ describe('PlaceHolder', () => {
         })
 
         it('should handle nested expressions', () => {
-            const input = '${{ ($item.x > 0 ? true : false) && ($item.y > 0 ? true : false) }}'
+            const input = '${{ ($row.x > 0 ? true : false) && ($row.y > 0 ? true : false) }}'
             const $context = {
-                $item: {
+                $row: {
                     x: 1,
                     y: 2
                 }
@@ -111,7 +111,7 @@ describe('PlaceHolder', () => {
         it('should evaluate variables and return evaluated object', () => {
             const $context = {
                 $entity: "movies",
-                $item: {
+                $row: {
                     id: 1,
                     title: "Fight Club",
                     description: "An insomniac office worker and a devil-may-care soapmaker form an underground fight club that evolves into something much, much more.",
@@ -120,7 +120,7 @@ describe('PlaceHolder', () => {
             }
 
             const data: TJson = {
-                "${{ $entity }}": "${{ $item }}"
+                "${{ $entity }}": "${{ $row }}"
             }
 
             const result = PlaceHolder.EvaluateJsCode(data, new Sandbox($context))
@@ -210,9 +210,9 @@ describe('PlaceHolder', () => {
         })
 
         it('should return both code blocks when multiple code blocks exist', () => {
-            const input = '${{ $item.x.y $second.x7}}'
+            const input = '${{ $row.x.y $second.x7}}'
             const result = PlaceHolder.GetVarName(input)
-            expect(result).toStrictEqual(['$item.x.y', '$second.x7'])
+            expect(result).toStrictEqual(['$row.x.y', '$second.x7'])
         })
     })
 })

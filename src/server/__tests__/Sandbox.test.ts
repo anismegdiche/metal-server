@@ -170,17 +170,17 @@ describe('Sandbox', () => {
 
     it('should return object in object', () => {
         const $entity = "person"
-        const $item = {
+        const $row = {
             name: "John",
             age: 30
         }
 
         const sandbox = new Sandbox({
             $entity,
-            $item
+            $row
         })
 
-        const code = '({ [ $entity ]: $item })'
+        const code = '({ [ $entity ]: $row })'
         const result = sandbox.Evaluate(code)
         expect(result).toEqual({
             person: {
