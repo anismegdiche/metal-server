@@ -14,5 +14,9 @@
         "clearOnRun": "none"
     },
     "codescene.previewCodeHealthGate": true,
-    "codescene.enableAutoRefactor": true
+    "codescene.enableAutoRefactor": true,
+    "sonarlint.connectedMode.project": {
+        "connectionId": "anismegdiche",
+        "projectKey": "anismegdiche_metl-server"
+    }
 }
