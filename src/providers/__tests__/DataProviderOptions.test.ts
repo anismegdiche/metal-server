@@ -2,6 +2,7 @@
 
 import { DataTable } from "../../types/DataTable"
 import { TCacheData } from "../../types/TCacheData"
+import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { DataProviderOptions } from "../absDataProvider"
 
@@ -114,15 +115,16 @@ describe('DataProviderOptions', () => {
         expect(result.Cache).toBe(600)
     })
 
-    // FIXME: test to fix
     // Handle empty or undefined schemaRequest in Parse method
-    // it('should return empty options for undefined request', () => {
-    //   const provider = new DataProviderOptions();
+    it('should return empty options for undefined request', () => {
+        const provider = new DataProviderOptions()
 
-    //   const result = provider.Parse({undefined});
+        const result = provider.Parse({} as TSchemaRequest)
 
-    //   expect(result).toEqual({});
-    // });
+        expect(result).toEqual(<TOptionalParameter>{
+            Fields: '*'
+        })
+    })
 
     // Process TCacheData arrays without evaluation in GetData
     it('should process TCacheData arrays without evaluation', () => {
