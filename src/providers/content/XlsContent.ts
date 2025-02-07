@@ -74,7 +74,7 @@ export class XlsContent extends absContentProvider {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
+    async Get(sqlQuery: string | undefined, $context?: Partial<TContext>): Promise<DataTable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Xls: Params is not defined')
 
@@ -138,7 +138,7 @@ export class XlsContent extends absContentProvider {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
+    async Set(data: DataTable, $context?: Partial<TContext>): Promise<Readable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')
 

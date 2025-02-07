@@ -1,10 +1,10 @@
 /* eslint-disable init-declarations */
 import { Readable } from "node:stream"
-import { XlsContent, ColumnLetterToNumber, TXlsContentConfig } from '../XlsContent'
+import { XlsContent, ColumnLetterToNumber, TXlsContentConfig, TXlsContentParams } from '../XlsContent'
 import { DataTable } from "../../../types/DataTable"
-import { HttpErrorInternalServerError } from "../../../server/HttpErrors"
 import * as ExcelJS from 'exceljs'
 import typia from "typia"
+import { HttpErrorInternalServerError } from "../../../server/HttpErrors"
 
 
 describe("ColumnLetterToNumber", () => {
@@ -73,7 +73,7 @@ describe('XlsContent', () => {
 
 
     describe('Init', () => {
-        test('should initialize with default parameters', async () => {
+        it('should initialize with default parameters', async () => {
             const inputStream = createReadableStream(mockWorkbookBuffer)
             xlsContent.Config = {}
 
@@ -89,7 +89,7 @@ describe('XlsContent', () => {
             })
         })
 
-        test('should initialize with custom parameters', async () => {
+        it('should initialize with custom parameters', async () => {
             const inputStream = createReadableStream(mockWorkbookBuffer)
             xlsContent.Config = {
                 'xls-sheet': 'Sheet1',
@@ -121,12 +121,12 @@ describe('XlsContent', () => {
             await xlsContent.InitContent('testEntity', inputStream)
         })
 
-        test('should throw error if Params is not defined', async () => {
-            xlsContent.Params = undefined
+        it('should throw error if Params is not defined', async () => {
+            xlsContent.Params = undefined as unknown as TXlsContentParams
             await expect(xlsContent.Get(undefined,{})).rejects.toThrow(HttpErrorInternalServerError)
         })
 
-        test('should parse Excel data correctly', async () => {
+        it('should parse Excel data correctly', async () => {
             const result = await xlsContent.Get(undefined,{})
 
             expect(result).toBeInstanceOf(DataTable)
@@ -138,7 +138,7 @@ describe('XlsContent', () => {
             })
         })
 
-        test('should handle SQL queries', async () => {
+        it('should handle SQL queries', async () => {
             const result = await xlsContent.Get('SELECT * FROM testEntity WHERE Age > 25', {})
 
             expect(result).toBeInstanceOf(DataTable)
@@ -166,52 +166,24 @@ describe('XlsContent', () => {
             ])
         })
 
-        test('should throw error if Params is not defined', async () => {
-            xlsContent.Params = undefined
+        it('should throw error if Params is not defined', async () => {
+            xlsContent.Params = undefined as unknown as TXlsContentParams
             await expect(xlsContent.Set(mockDataTable,{})).rejects.toThrow(HttpErrorInternalServerError)
         })
 
-        // test('should write data to Excel correctly', async () => {
+        // FIXME test to fix
+        // it('should write data to Excel correctly', async () => {
+        //     mockDataTable = new DataTable('testEntity', [
+        //         {
+        //             name: 'John',
+        //             age: 30,
+        //             date: new Date('2024-01-01')
+        //         }
+        //     ])
         //     const result = await xlsContent.Set(mockDataTable)
 
         //     expect(result).toBeInstanceOf(Readable)
-
-        //     // Verify the file was uploaded to VFS
-        //     const savedFile = virtualFileSystem.ReadFile('testEntity')
-        //     expect(savedFile).toBeDefined()
-
-        //     // Read the saved file and verify its contents
-        //     const workbook = new ExcelJS.Workbook()
-        //     await workbook.xlsx.read(savedFile)
-        //     const worksheet = workbook.getWorksheet('Sheet1')
-
-        //     // Verify headers
-        //     const headers = worksheet!.getRow(1).values as string[]
-        //     expect(headers.slice(1)).toEqual(['name', 'age', 'date'])
-
-        //     // Verify data
-        //     const dataRow = worksheet!.getRow(2).values as any[]
-        //     expect(dataRow[1]).toBe('John')
-        //     expect(dataRow[2]).toBe(30)
-        //     expect(dataRow[3]).toBeInstanceOf(Date)
-        // })
-
-        // test('should create new worksheet if it doesn\'t exist', async () => {
-        //     xlsContent.Config = {
-        //         'xls-sheet': 'NewSheet',
-        //         'xls-starting-cell': 'A1'
-        //     }
-
-        //     const result = await xlsContent.Set(mockDataTable)
-        //     expect(result).toBeInstanceOf(Readable)
-
-        //     // Verify the new worksheet was created
-        //     const savedFile = virtualFileSystem.ReadFile('testEntity')
-        //     const workbook = new ExcelJS.Workbook()
-        //     await workbook.xlsx.read(savedFile)
-
-        //     const worksheet = workbook.getWorksheet('NewSheet')
-        //     expect(worksheet).toBeDefined()
+        //     expect(xlsContent.Content.Files['testEntity']).toBeDefined()
         // })
     })
 })
