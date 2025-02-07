@@ -15,13 +15,6 @@ users:
     password: myStr@ngpa$$w0rd
 
 sources:
-  metal-northwind:
-    provider: metal
-    host: http://localhost:3001
-    user: myapiuser
-    password: myStr@ngpa$$w0rd
-    database: northwind
-
   rest-fakerestapi:    # https://fakerestapi.azurewebsites.net/index.html
     provider: webservice
     host: https://fakerestapi.azurewebsites.net/api/v1/
@@ -77,9 +70,7 @@ sources:
           get: /${{ $entity }}/list/all
           response: message
 
-schemas:
-  metalws:
-    source: metal-northwind    
+schemas:  
   ws1:
     source: rest-fakerestapi
   ws2:

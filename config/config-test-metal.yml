@@ -2,33 +2,26 @@ version: "0.3"
 server:
   verbosity: debug
   port: 3000
-  authentication:
   request-limit: 100mb
+  authentication:
+    provider: local
+    default-role: all
+
+roles:
+  all: lacrud
 
 users:
-  myapiuser: myStr@ngpa$$w0rd
+  myapiuser:
+    password: myStr@ngpa$$w0rd
 
 sources:
-  metal-clubdata:
+  metal-northwind:
     provider: metal
     host: http://localhost:3001
     user: myapiuser
     password: myStr@ngpa$$w0rd
-    database: clubdata
+    database: northwind
 
 schemas:
   metalws:
-    source: metal-clubdata
-
-# schedules:
-#   start:
-#     cron: "@start"
-#     plan: plan1
-#     entity: start
-    
-plans:
-  plan1:
-    start:
-      - select:
-          schema: metalws
-          entity: members
+    source: metal-northwind

@@ -1,0 +1,37 @@
+version: "0.3"
+
+server:
+  port: 3000
+  verbosity: debug
+  timezone: UTC
+  request-limit: 100mb
+  authentication:
+    provider: oidc
+    issuer: http://localhost:8080/realms/metal
+    client-id: metal-server
+    client-secret: dOQoanZt02oGV4jTjGR4LVudwSJqbujT
+    default-role: none
+  cache:
+    provider: memory
+    database: cache
+    options:
+      autocreate: true
+
+roles:
+  all: lacrud
+  none:
+
+users:
+  myapiuser:
+    password: myStr@ngpa$$w0rd
+
+sources:
+  src-mem:
+    provider: memory
+    database: memory
+    options:
+      autocreate: true
+
+schemas:
+  mem:
+    source: src-mem
