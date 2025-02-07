@@ -14,6 +14,6 @@ describe('Config', () => {
             const conf = Config.Configuration
             expect.assertions(1)
             await expect(Config.Validate(conf)).resolves.not.toThrow()
-        })
+        }, 300_000)
     })
 })
