@@ -133,7 +133,7 @@ describe('CsvContent', () => {
             ])
 
             await csvContent.InitContent(name, content)
-            const updatedContent = await csvContent.Set(dataTable)
+            const updatedContent = await csvContent.Set(dataTable, {})
             const expectedContent = Readable.from('id,name\n3,Alice\n4,Bob')
 
             expect(updatedContent.read().toString()).toBe(expectedContent.read().toString())
