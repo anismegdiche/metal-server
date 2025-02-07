@@ -127,11 +127,7 @@ export class SqlServerData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const sqlServerResult = await this.Connection.query(sqlQueryHelper.Query)
 
@@ -169,12 +165,7 @@ export class SqlServerData extends absDataProvider {
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const { entity } = schemaRequest
-
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Insert(this.EscapeEntity(entity))
-            .Fields(options.Data.GetFieldNames())
-            .Values(options.Data.Rows)
+        const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
 
         await this.Connection.query(sqlQueryHelper.Query)
 
@@ -201,12 +192,7 @@ export class SqlServerData extends absDataProvider {
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const { entity } = schemaRequest
-
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Update(this.EscapeEntity(entity))
-            .Set(options.Data.Rows)
-            .Where(options.Filter)
+        const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
         await this.Connection.query(sqlQueryHelper.Query)
 
@@ -222,8 +208,6 @@ export class SqlServerData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        const { entity } = schemaRequest
-
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
             $context,
@@ -232,10 +216,7 @@ export class SqlServerData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Delete()
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter)
+        const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
         await this.Connection.query(sqlQueryHelper.Query)
 

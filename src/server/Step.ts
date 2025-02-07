@@ -10,8 +10,7 @@ import { Helper } from "../lib/Helper"
 import { Logger } from "../utils/Logger"
 import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TSortOrder, TRow, JOIN_TYPE } from "../types/DataTable"
 import { TJson } from "../types/TJson"
-import { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect } from "../types/TSchemaRequest"
-import { SqlQueryHelper } from "../lib/SqlQueryHelper"
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from "../types/TSchemaRequest"
 import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
@@ -23,11 +22,10 @@ import { JsonHelper } from "../lib/JsonHelper"
 import { TStepSync, TStepRemoveDuplicates, TStepSort, TStepRun, TStepSelect, TStepListEntities, TStepInsert } from "../types/TStep"
 import { HttpErrorInternalServerError } from "./HttpErrors"
 import { Config } from "./Config"
-import { absDataProviderOptions } from "../providers/absDataProviderOptions"
-import { DataProviderOptions } from "../providers/absDataProvider"
-import { clsContext } from "../utils/clsContext"
+import { MemoryData } from "../providers/data/MemoryData"
 
 
+//
 export enum STEP {
     DEBUG = "debug",
     SELECT = "select",
@@ -44,6 +42,8 @@ export enum STEP {
     LIST_ENTITIES = "list-entities"          // v0.3
 }
 
+
+//
 export type TStepArguments = {
     currentSchemaName: string
     currentPlanName: string
@@ -51,10 +51,11 @@ export type TStepArguments = {
     stepParams?: TSchemaRequest | TJson | string
 }
 
+
+//
 export class Step {
-    
-    static Options: absDataProviderOptions = new DataProviderOptions()
-    static GetContext = (schemaRequest: TSchemaRequest) => new clsContext().GetContext(schemaRequest)
+
+    static readonly DataProvider = new MemoryData()
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static ExecuteCaseMap: Record<string, Function> = {
@@ -71,7 +72,7 @@ export class Step {
         [STEP.ANONYMIZE]: async (stepArguments: TStepArguments) => await Step.Anonymize(stepArguments),
         [STEP.REMOVE_DUPLICATE]: async (stepArguments: TStepArguments) => await Step.RemoveDuplicates(stepArguments),
         [STEP.LIST_ENTITIES]: async (stepArguments: TStepArguments) => await Step.ListEntities(stepArguments)
-    }    
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static JoinCaseMap: Record<string, Function> = {
@@ -80,16 +81,16 @@ export class Step {
         [JOIN_TYPE.INNER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.InnerJoin(dtRight, leftField, rightField),
         [JOIN_TYPE.FULL_OUTER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.FullOuterJoin(dtRight, leftField, rightField),
         [JOIN_TYPE.CROSS]: async (dtLeft: DataTable, dtRight: DataTable) => dtLeft.CrossJoin(dtRight)
-    }    
+    }
 
     @Logger.LogFunction()
     static async Select(stepArguments: TStepArguments): Promise<DataTable> {
 
-        //CURRENT $context
+        // CURRENT $context
         const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams as TStepSelect
         const { schema, entity } = schemaRequest
-        const $context = Step.GetContext(schemaRequest as TSchemaRequest)
+        const $context = Step.DataProvider.GetContext(schemaRequest as TSchemaRequestSelect)
 
         // TODO recheck logic for schema=null
         if (entity) {
@@ -103,15 +104,16 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
-        //TODO missing options.cache
-        //CURRENT missing $context
+        // TODO missing options.cache
+        // CURRENT missing $context
         if (!schema && !entity) {
-            const options: TOptionalParameter = Step.Options.Parse(<TSchemaRequestSelect>schemaRequest, $context)
+            const options: TOptionalParameter = Step.DataProvider.Options.Parse(<TSchemaRequestSelect>schemaRequest, $context)
 
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Select(options.Fields)
-                .From(`\`${currentDataTable.Name}\``)
-                .Where(options.Filter)
+            const sqlQueryHelper = Step.DataProvider.GenerateSqlSelect(<TSchemaRequestSelect>{
+                entity: currentDataTable.Name
+            },
+                options
+            )
 
             const sqlQuery = (options.Fields != "*" || options.Filter != undefined || options.Sort != undefined || options.Data != undefined)
                 ? sqlQueryHelper.Query
@@ -145,7 +147,7 @@ export class Step {
 
         // TODO recheck logic for schema=null
         if (entity) {
-            const _schemaResponse = await Schema.Insert(<TSchemaRequestInsert>{
+            await Schema.Insert(<TSchemaRequestInsert>{
                 ...schemaRequest,
                 schema: schema ?? currentSchemaName,
                 data: data ?? currentDataTable.Rows
@@ -177,7 +179,7 @@ export class Step {
         const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schema, entity, data } = schemaRequest
-        const $context = Step.GetContext(schemaRequest as TSchemaRequestSelect)
+        const $context = Step.DataProvider.GetContext(schemaRequest as TSchemaRequestUpdate)
 
         if (!data) {
             Logger.Error(`Step.Update: no data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
@@ -196,13 +198,13 @@ export class Step {
 
         // case no schema and no entity --> use current datatable
         // CURRENT missing $context
-        // CURRENT escape entity
         if (!schema && !entity) {
-            const _options: TOptionalParameter = Step.Options.Parse(schemaRequest, $context)
-            const _sqlQueryHelper = new SqlQueryHelper()
-                .Update(`\`${currentDataTable.Name}\``)
-                .Set(_options.Data?.Rows)
-                .Where(_options.Filter)
+            const _options: TOptionalParameter = Step.DataProvider.Options.Parse(schemaRequest, $context)
+            const _sqlQueryHelper = Step.DataProvider.GenerateSqlUpdate(<TSchemaRequestUpdate>{
+                entity: currentDataTable.Name
+            },
+                _options
+            )
 
             await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query, _sqlQueryHelper.Data)
         }
@@ -221,11 +223,11 @@ export class Step {
         const { currentSchemaName, currentDataTable } = stepArguments
         const schemaRequest = stepArguments.stepParams
         const { schema, entity } = schemaRequest
-        const $context = Step.GetContext(schemaRequest as TSchemaRequestSelect)
+        const $context = Step.DataProvider.GetContext(schemaRequest as TSchemaRequestDelete)
 
         // TODO recheck logic for schema=null
         if (entity) {
-            const _schemaResponse = await Schema.Delete({
+            await Schema.Delete({
                 ...schemaRequest,
                 schema: schema ?? currentSchemaName
             })
@@ -236,11 +238,12 @@ export class Step {
         // case no schema and no entity --> use current datatable
         // CURRENT missing $context
         if (!schema && !entity) {
-            const _options: TOptionalParameter = Step.Options.Parse(schemaRequest, $context)
-            const _sqlQueryHelper = new SqlQueryHelper()
-                .Delete()
-                .From(`\`${currentDataTable.Name}\``)
-                .Where(_options.Filter)
+            const _options: TOptionalParameter = Step.DataProvider.Options.Parse(schemaRequest, $context)
+            const _sqlQueryHelper = Step.DataProvider.GenerateSqlDelete(<TSchemaRequestDelete>{
+                entity: currentDataTable.Name
+            },
+                _options
+            )
 
             await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query, _sqlQueryHelper.Data)
         }

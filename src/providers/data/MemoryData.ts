@@ -64,6 +64,7 @@ export class MemoryData extends absDataProvider {
     EscapeEntity(entity: string): string {
         return `\`${entity}\``
     }
+
     // eslint-disable-next-line class-methods-use-this
     EscapeField(field: string): string {
         return `\`${field}\``
@@ -98,15 +99,15 @@ export class MemoryData extends absDataProvider {
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
         // eslint-disable-next-line no-param-reassign
-        $context = _.merge($context, this.GetContext(schemaRequest))
+        $context = _.merge(
+            $context, 
+            this.GetContext(schemaRequest)
+        )
+        
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
@@ -148,7 +149,11 @@ export class MemoryData extends absDataProvider {
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
         // eslint-disable-next-line no-param-reassign
-        $context = _.merge($context, this.GetContext(schemaRequest))
+        $context = _.merge(
+            $context, 
+            this.GetContext(schemaRequest)
+        )
+        
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         if (!typia.is<DataTable>(options.Data))
@@ -174,16 +179,17 @@ export class MemoryData extends absDataProvider {
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
         // eslint-disable-next-line no-param-reassign
-        $context = _.merge($context, this.GetContext(schemaRequest))
+        $context = _.merge(
+            $context, 
+            this.GetContext(schemaRequest)
+        )
+        
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Update(this.EscapeEntity(entity))
-            .Set(options.Data.Rows)
-            .Where(options.Filter)
+        const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
         await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
@@ -206,13 +212,14 @@ export class MemoryData extends absDataProvider {
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
         // eslint-disable-next-line no-param-reassign
-        $context = _.merge($context, this.GetContext(schemaRequest))
+        $context = _.merge(
+            $context, 
+            this.GetContext(schemaRequest)
+        )
+        
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Delete()
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter)
+        const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
         await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 

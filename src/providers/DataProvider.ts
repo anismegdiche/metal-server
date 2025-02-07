@@ -9,7 +9,6 @@ import { absDataProvider } from "./absDataProvider"
 import { FilesData } from "./data/FilesData"
 import { MemoryData } from "./data/MemoryData"
 import { MetalData } from "./data/MetalData"
-import { MetalData_v2 } from "./data/MetalData_v2"
 import { MongoDbData } from "./data/MongoDbData"
 import { MySqlData } from "./data/MySqlData"
 import { PlanData } from "./data/PlanData"
@@ -21,7 +20,6 @@ import { WebServiceData } from "./data/WebServiceData"
 //
 export enum DATA_PROVIDER {
     METAL = "metal",
-    METAL2 = "metal2",
     PLAN = "plan",
     MEMORY = "memory",
     POSTGRES = "postgres",
@@ -50,7 +48,6 @@ export class DataProvider {
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.MONGODB, new MongoDbData())
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.MSSQL, new SqlServerData())
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.METAL, new MetalData())
-        DataProvider.#StorageFactory.Register(DATA_PROVIDER.METAL2, new MetalData_v2())
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.PLAN, new PlanData())
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.MEMORY, new MemoryData())
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.FILES, new FilesData())

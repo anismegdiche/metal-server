@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
+ 
 //
 //
 //
@@ -23,7 +23,6 @@ import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
-import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { MongoDbHelper } from "./MongoDbHelper"
 
 
@@ -107,11 +106,7 @@ export class MongoDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query)
 
@@ -183,15 +178,11 @@ export class MongoDbData extends absDataProvider {
         if (!typia.is<DataTable>(options.Data) || options.Data.Rows.length === 0)
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(schemaRequest.entity)
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query)
 
-        const mongoFilter: MongoDb.Filter<MongoDb.Document> = mongoParsedQuery.aggregate.$match ?? {}
+        const mongoFilter: MongoDb.Filter<MongoDb.Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
 
         const mongoUpdate: MongoDb.BSON.Document[] | MongoDb.UpdateFilter<MongoDb.BSON.Document> = {
             $set: options?.Data?.Rows.at(0)
@@ -222,15 +213,11 @@ export class MongoDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(schemaRequest.entity)
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query)
 
-        const mongoFilter: MongoDb.Filter<MongoDb.Document> = mongoParsedQuery.aggregate.$match ?? {}
+        const mongoFilter: MongoDb.Filter<MongoDb.Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
 
         await this.Connection
             .db(this.Config.database)

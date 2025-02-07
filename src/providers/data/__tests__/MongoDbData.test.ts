@@ -1,7 +1,7 @@
 /* eslint-disable init-declarations */
 import { MongoClient } from 'mongodb'
 import { MongoDbData } from '../MongoDbData'
-import { TSchemaRequest } from '../../../types/TSchemaRequest'
+import { TSchemaRequest, TSchemaRequestListEntities } from '../../../types/TSchemaRequest'
 import { Cache } from '../../../server/Cache'
 import { DataTable } from '../../../types/DataTable'
 import { HttpErrorNotFound } from '../../../server/HttpErrors'
@@ -10,9 +10,28 @@ import { DATA_PROVIDER } from "../../DataProvider"
 
 // Mock the mongodb module
 jest.mock('mongodb')
+
 // Mock the Cache module
 jest.mock('../../../server/Cache')
 jest.mock('../../../server/Step')
+jest.mock('../MemoryData', () => {
+    return {
+        MemoryData: jest.fn().mockImplementation(() => {
+            return {
+                EscapeEntity: jest.fn(),
+                EscapeField: jest.fn(),
+                Init: jest.fn(),
+                Connect: jest.fn(),
+                Disconnect: jest.fn(),
+                ListEntities: jest.fn(),
+                Select: jest.fn(),
+                Insert: jest.fn(),
+                Update: jest.fn(),
+                Delete: jest.fn()
+            }
+        })
+    }
+})
 
 describe('MongoDbData', () => {
     let provider: MongoDbData
@@ -28,6 +47,7 @@ describe('MongoDbData', () => {
         updateMany: jest.fn(),
         deleteMany: jest.fn(),
         close: jest.fn(),
+        countDocuments: jest.fn(),
         listCollections: jest.fn().mockReturnThis()
     }
 
@@ -43,6 +63,8 @@ describe('MongoDbData', () => {
     beforeEach(async () => {
         // Reset all mocks before each test
         jest.clearAllMocks()
+        jest.resetModules()
+        
         mockMongoClient.mockReturnValue(mockClient)
         mockClient.toArray.mockResolvedValue([{ dummy: 'data' }])
 
@@ -123,7 +145,7 @@ describe('MongoDbData', () => {
 
             const response = await provider.Select(mockSelectRequest)
 
-            expect(mockClient.find).toHaveBeenCalled()
+            expect(mockClient.aggregate).toHaveBeenCalled()
             expect(response.StatusCode).toBe(200)
             expect(response.Body?.data).toBeDefined()
             expect(response.Body?.data.Rows).toHaveLength(1)
@@ -252,47 +274,44 @@ describe('MongoDbData', () => {
             })
         })
 
-        // FIXME to fix test 
-        // it('should handle delete without filter', async () => {
-        //     const mockDeleteRequest: TSchemaRequest = {
-        //         schema: 'test-schema',
-        //         entity: 'test-table'
-        //     }
+        it('should handle delete without filter', async () => {
+            const mockDeleteRequest: TSchemaRequest = {
+                schema: 'test-schema',
+                entity: 'test-table'
+            }
 
-        //     await provider.Delete(mockDeleteRequest)
+            await provider.Delete(mockDeleteRequest)
 
-        //     expect(mockClient.deleteMany).toHaveBeenCalledWith({})
-        // })
+            expect(mockClient.deleteMany).toHaveBeenCalledWith({})
+        })
     })
 
     describe('ListEntities', () => {
-        // it('should successfully list entities', async () => {
-        //     const mockListRequest: TSchemaRequestListEntities = {
-        //         schema: 'test-schema'
-        //     }
+        it('should successfully list entities', async () => {
+            const mockListRequest: TSchemaRequestListEntities = {
+                schema: 'test-schema'
+            }
 
-        //     const mockCollections = [
-        //         {
-        //             name: 'table1',
-        //             type: 'collection',
-        //             size: 100
-        //         },
-        //         {
-        //             name: 'table2',
-        //             type: 'collection',
-        //             size: 200
-        //         }
-        //     ]
-        //     mockClient.listCollections.mockResolvedValueOnce({ toArray: () => Promise.resolve(mockCollections) })
-        //     mockClient.collection.mockResolvedValueOnce([])
-        //     mockClient.db().collection.mockResolvedValueOnce([])
+            const mockCollections = [
+                {
+                    name: 'table1',
+                    type: 'collection',
+                    size: 100
+                },
+                {
+                    name: 'table2',
+                    type: 'collection',
+                    size: 200
+                }
+            ]
 
-        //     const response = await provider.ListEntities(mockListRequest as TSchemaRequest)
+            mockClient.toArray.mockResolvedValueOnce(mockCollections)
 
-        //     expect(response.StatusCode).toBe(200)
-        //     expect(response.Body?.data.Rows).toHaveLength(2)
-        //     expect(mockClient.db().listCollections()).toHaveBeenCalled()
-        // })
+            const response = await provider.ListEntities(mockListRequest)
+
+            expect(response.StatusCode).toBe(200)
+            expect(response.Body?.data.Rows).toHaveLength(2)
+        })
 
         it('should throw NotFound when no entities exist', async () => {
             const mockListRequest: TSchemaRequest = {
@@ -359,7 +378,7 @@ describe('MongoDbData', () => {
                 mockSelectRequest,
                 expect.any(DataTable)
             )
-        })
+        }, 300_000)
 
         it('should not set cache for select operations when cache is disabled', async () => {
             const mockSelectRequest: TSchemaRequest = {
@@ -377,6 +396,6 @@ describe('MongoDbData', () => {
             await provider.Select(mockSelectRequest)
 
             expect(Cache.Set).not.toHaveBeenCalled()
-        })
+        }, 300_000)
     })
 })

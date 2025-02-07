@@ -19,7 +19,6 @@ import { WEBSERVICE, WebServiceProvider } from "../WebServiceProvider"
 import { absWebServiceProvider, ENDPOINT, TEndpoint, TWebServiceEndpoint } from "../absWebServiceProvider"
 import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { RESPONSE } from "../../lib/Const"
-import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { HttpResponse } from "../../server/HttpResponse"
 import { Cache } from "../../server/Cache"
 import { TJson } from "../../types/TJson"
@@ -38,6 +37,7 @@ export type TWebServiceDataOptions = {
         [ENDPOINT.COLLECTION_CREATE]?: TWebServiceEndpoint
         [ENDPOINT.COLLECTION_UPDATE]?: TWebServiceEndpoint
         [ENDPOINT.COLLECTION_DELETE]?: TWebServiceEndpoint
+        [ENDPOINT.COLLECTION_LIST]?: TWebServiceEndpoint
         [ENDPOINT.ITEM_READ]?: TWebServiceEndpoint
         [ENDPOINT.ITEM_CREATE]?: TWebServiceEndpoint
         [ENDPOINT.ITEM_UPDATE]?: TWebServiceEndpoint
@@ -159,11 +159,7 @@ export class WebServiceData extends absDataProvider {
             await this.Connection.Read($context)
         )
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter, '`', '`')
-            .OrderBy(options.Sort)
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
@@ -281,10 +277,7 @@ export class WebServiceData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(this.GetIdName(endpointUpdate))
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter, '`', '`')
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
@@ -355,10 +348,7 @@ export class WebServiceData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(this.GetIdName(endpointDelete))
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter, '`', '`')
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 

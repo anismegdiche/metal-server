@@ -10,9 +10,28 @@ import { DATA_PROVIDER } from "../../DataProvider"
 
 // Mock the mysql2/promise module
 jest.mock('mysql2/promise')
+
 // Mock the Cache module
 jest.mock('../../../server/Cache')
 jest.mock('../../../server/Step')
+jest.mock('../MemoryData', () => {
+    return {
+        MemoryData: jest.fn().mockImplementation(() => {
+            return {
+                EscapeEntity: jest.fn(),
+                EscapeField: jest.fn(),
+                Init: jest.fn(),
+                Connect: jest.fn(),
+                Disconnect: jest.fn(),
+                ListEntities: jest.fn(),
+                Select: jest.fn(),
+                Insert: jest.fn(),
+                Update: jest.fn(),
+                Delete: jest.fn()
+            }
+        })
+    }
+})
 
 describe('MySqlData', () => {
     let provider: MySqlData
@@ -44,6 +63,8 @@ describe('MySqlData', () => {
     beforeEach(async () => {
         // Reset all mocks before each test
         jest.clearAllMocks()
+        jest.resetModules()
+        
         mockCreatePool.mockReturnValue(mockPool)
         mockPool.query.mockResolvedValue([[{ dummy: 'data' }]])
 

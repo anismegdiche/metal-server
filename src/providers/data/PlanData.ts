@@ -74,11 +74,7 @@ export class PlanData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 

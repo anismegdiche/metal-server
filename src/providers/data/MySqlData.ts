@@ -120,8 +120,6 @@ export class MySqlData extends absDataProvider {
 
         const connection = await this.ensureConnection()
 
-        const { entity } = schemaRequest
-
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
             $context,
@@ -130,13 +128,10 @@ export class MySqlData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const [rows] = await connection.query(sqlQueryHelper.Query)
+
         const data = new DataTable(schemaRequest.entity)
 
         if (Array.isArray(rows) && rows.length > 0) {
@@ -157,27 +152,22 @@ export class MySqlData extends absDataProvider {
 
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        const connection = await this.ensureConnection()
+        
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
+        
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+        
+        const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
+        
         try {
-            // eslint-disable-next-line no-param-reassign
-            $context = _.merge(
-                $context,
-                this.GetContext(schemaRequest)
-            )
-
-            const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
-
-            if (!typia.is<DataTable>(options.Data))
-                throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
-
-            const { entity } = schemaRequest
-
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Insert(this.EscapeEntity(entity))
-                .Fields(options.Data.GetFieldNames(), '`')
-                .Values(options.Data.Rows)
-
+            const connection = await this.ensureConnection()
             await connection.query(sqlQueryHelper.Query)
             Cache.Remove(schemaRequest)
 
@@ -205,12 +195,7 @@ export class MySqlData extends absDataProvider {
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const { entity } = schemaRequest
-
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Update(this.EscapeEntity(entity))
-            .Set(options.Data.Rows)
-            .Where(options.Filter)
+        const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
         await connection.query(sqlQueryHelper.Query)
         Cache.Remove(schemaRequest)
@@ -230,12 +215,7 @@ export class MySqlData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const { entity } = schemaRequest
-
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Delete()
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter)
+        const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
         await connection.query(sqlQueryHelper.Query)
         Cache.Remove(schemaRequest)

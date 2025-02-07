@@ -60,42 +60,40 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
             : undefined
     }
 
-    // CURRENT to use in data providers 
-    GenerateSqlSelect(entity: string, options: TOptionalParameter): SqlQueryHelper {
-        return new SqlQueryHelper()
+    GenerateSqlSelect(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryHelper {
+        return new SqlQueryHelper(undefined, this.EscapeEntity, this.EscapeField)
             .Select(options.Fields)
-            .From(this.EscapeEntity(entity))
+            .From(schemaRequest.entity)
             .Where(options.Filter)
             .OrderBy(options.Sort)
     }
 
-    // CURRENT to use in data providers 
     GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryHelper {
-        if (!typia.is<DataTable>(options.Data))
+
+        if (!typia.is<DataTable>(options.Data) || options.Data.Rows.length === 0)
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        return new SqlQueryHelper()
-            .Insert(this.EscapeEntity(schemaRequest.entity))
-            .Fields(options.Data.GetFieldNames(), '"')
+        return new SqlQueryHelper(undefined, this.EscapeEntity, this.EscapeField)
+            .Insert(schemaRequest.entity)
+            .Fields(options.Data.GetFieldNames())
             .Values(options.Data.Rows)
     }
 
-    // CURRENT to use in data providers 
     GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryHelper {
-        if (!typia.is<DataTable>(options.Data))
+
+        if (!typia.is<DataTable>(options.Data) || options.Data.Rows.length === 0)
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        return new SqlQueryHelper()
-            .Update(this.EscapeEntity(schemaRequest.entity))
+        return new SqlQueryHelper(undefined, this.EscapeEntity, this.EscapeField)
+            .Update(schemaRequest.entity)
             .Set(options.Data.Rows)
             .Where(options.Filter)
     }
 
-    // CURRENT to use in data providers 
     GenerateSqlDelete(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryHelper {
-        return new SqlQueryHelper()
+        return new SqlQueryHelper(undefined, this.EscapeEntity, this.EscapeField)
             .Delete()
-            .From(this.EscapeEntity(schemaRequest.entity))
+            .From(schemaRequest.entity)
             .Where(options.Filter)
     }
 }

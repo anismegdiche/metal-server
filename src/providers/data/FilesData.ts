@@ -158,13 +158,9 @@ export class FilesData extends absDataProvider {
         // eslint-disable-next-line no-param-reassign
         $context = _.merge($context, this.GetContext(schemaRequest))
 
-        const options: TOptionalParameter = this.Options.Parse(schemaRequest,$context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(this.EscapeEntity(entity))
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
@@ -198,11 +194,11 @@ export class FilesData extends absDataProvider {
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
-            $context, 
+            $context,
             this.GetContext(schemaRequest)
         )
 
-        const options: TOptionalParameter = this.Options.Parse(schemaRequest,$context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
@@ -221,10 +217,7 @@ export class FilesData extends absDataProvider {
 
             const data = await this.File[entity].Get(undefined, $context)
 
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Insert(this.EscapeEntity(entity))
-                .Fields(options.Data.GetFieldNames(), '`')
-                .Values(options.Data.Rows)
+            const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
 
             await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
             await this.Connection.Write(
@@ -252,7 +245,7 @@ export class FilesData extends absDataProvider {
         // eslint-disable-next-line no-param-reassign
         $context = _.merge($context, this.GetContext(schemaRequest))
 
-        const options: TOptionalParameter = this.Options.Parse(schemaRequest,$context)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         if (!typia.is<DataTable>(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
@@ -270,10 +263,7 @@ export class FilesData extends absDataProvider {
 
             const data = await this.File[entity].Get(undefined, $context)
 
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Update(this.EscapeEntity(entity))
-                .Set(options.Data.Rows)
-                .Where(options.Filter)
+            const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
             await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 
@@ -301,8 +291,8 @@ export class FilesData extends absDataProvider {
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge($context, this.GetContext(schemaRequest))
-        
-        const options: TOptionalParameter = this.Options.Parse(schemaRequest,$context)
+
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         const { entity } = schemaRequest
 
@@ -318,10 +308,7 @@ export class FilesData extends absDataProvider {
 
             const data = await this.File[entity].Get(undefined, $context)
 
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Delete()
-                .From(this.EscapeEntity(entity))
-                .Where(options.Filter)
+            const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
             await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
 

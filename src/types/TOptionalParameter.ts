@@ -9,7 +9,7 @@ import { TJson } from "./TJson"
 
 //
 export type TOptionalParameter = {
-    Fields?: TJson | string
+    Fields?: string
     Filter?: TJson | TJson[] | string
     Sort?: TJson | string
     Data?: DataTable
