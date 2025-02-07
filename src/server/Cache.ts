@@ -55,14 +55,14 @@ export class Cache {
             return 0
 
         try {
-            const internalResponse = await Cache.CacheSource.Select(<TSchemaRequest>{
+            const intResp = await Cache.CacheSource.Select(<TSchemaRequest>{
                 ...Cache.#CacheSchemaRequest,
                 filter: {
                     hash
                 }
             })
 
-            const schemaResponse = internalResponse.Body
+            const schemaResponse = intResp.Body
 
             if (!schemaResponse)
                 throw new HttpErrorInternalServerError()

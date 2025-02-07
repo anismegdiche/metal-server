@@ -94,13 +94,13 @@ export class Step {
 
         // TODO recheck logic for schema=null
         if (entity) {
-            const _internalResponse = await Schema.Select(<TSchemaRequestSelect>{
+            const _intResp = await Schema.Select(<TSchemaRequestSelect>{
                 ...schemaRequest,
                 schema: schema ?? currentSchemaName
             })
 
-            if (_internalResponse.Body && TypeHelper.IsSchemaResponseData(_internalResponse.Body))
-                return _internalResponse.Body.data
+            if (_intResp.Body && TypeHelper.IsSchemaResponseData(_intResp.Body))
+                return _intResp.Body.data
         }
 
         // case no schema and no entity --> use current datatable
@@ -476,11 +476,11 @@ export class Step {
 
         // schema is defined
         if (schemaRequest?.schema) {
-            const _internalResponse = await Schema.ListEntities(<TSchemaRequest>schemaRequest)
+            const _intResp = await Schema.ListEntities(<TSchemaRequest>schemaRequest)
 
-            if (_internalResponse.Body && TypeHelper.IsSchemaResponseData(_internalResponse.Body)) {
+            if (_intResp.Body && TypeHelper.IsSchemaResponseData(_intResp.Body)) {
                 Logger.Debug(`${Logger.Out} Step.ListEntities: ${JsonHelper.Stringify(stepArguments.stepParams)}`)
-                return _internalResponse.Body.data
+                return _intResp.Body.data
             }
         }
 
@@ -495,13 +495,13 @@ export class Step {
     }
 
     static async #_Select(schema: string, entity: string): Promise<DataTable | undefined> {
-        const internalResponse = await Schema.Select({
+        const intResp = await Schema.Select({
             schema,
             entity
         })
 
-        if (internalResponse.Body && TypeHelper.IsSchemaResponseData(internalResponse.Body))
-            return internalResponse.Body.data
+        if (intResp.Body && TypeHelper.IsSchemaResponseData(intResp.Body))
+            return intResp.Body.data
 
         return undefined
     }

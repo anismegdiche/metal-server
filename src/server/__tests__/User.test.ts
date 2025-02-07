@@ -112,12 +112,12 @@ describe('User', () => {
 
     describe('LogOut', () => {
         it('should remove a user from the logged-in users list', async () => {
-            const intrespLogIn = await User.Authenticate({
+            const intRespLogIn = await User.Authenticate({
                 username: 'alice',
                 password: '123456789'
             })
-            const intrespLogOut = await User.LogOut(<TUserToken>intrespLogIn.Body?.token)
-            expect(intrespLogOut).toEqual({
+            const intRespLogOut = await User.LogOut(<TUserToken>intRespLogIn.Body?.token)
+            expect(intRespLogOut).toEqual({
                 StatusCode: HTTP_STATUS_CODE.NO_CONTENT
             })
         })

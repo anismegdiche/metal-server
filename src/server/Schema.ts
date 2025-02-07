@@ -195,20 +195,20 @@ export class Schema {
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                const _internalResponse = await Source.Sources.get(schemaRoute.routeName)!.Select(<TSchemaRequestSelect>{
+                const _intResp = await Source.Sources.get(schemaRoute.routeName)!.Select(<TSchemaRequestSelect>{
                     ...schemaRequest,
                     source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
                 })
 
-                if (!_internalResponse.Body)
-                    return _internalResponse
+                if (!_intResp.Body)
+                    return _intResp
 
                 // Anonymizer
-                if (isAnonymize && TypeHelper.IsSchemaResponseData(_internalResponse.Body)) {
-                    (_internalResponse.Body).data.Anonymize(fieldsToAnonymize)
+                if (isAnonymize && TypeHelper.IsSchemaResponseData(_intResp.Body)) {
+                    (_intResp.Body).data.Anonymize(fieldsToAnonymize)
                 }
-                return _internalResponse
+                return _intResp
             }
         })
     }
@@ -307,8 +307,8 @@ export class Schema {
 
         if (entitiesSources.has("*")) {
             const _source = (<TConfigSchemaEntity>entitiesSources.get("*")).source
-            const _internalResponse = await Source.Sources.get(_source)!.ListEntities(schemaRequest)
-            schemaResponse = <TSchemaResponse>_internalResponse.Body
+            const _intResp = await Source.Sources.get(_source)!.ListEntities(schemaRequest)
+            schemaResponse = <TSchemaResponse>_intResp.Body
             entitiesSources.delete("*")
         }
 
@@ -317,9 +317,9 @@ export class Schema {
             if (TypeHelper.IsSchemaResponseData(schemaResponse))
                 schemaResponse.data.DeleteRows(`name = '${entity}'`)
 
-            const _internalResponse = await Source.Sources.get(_source)!.ListEntities(schemaRequest)
+            const _intResp = await Source.Sources.get(_source)!.ListEntities(schemaRequest)
 
-            Schema.#MergeData(schemaResponse, <TSchemaResponse>_internalResponse.Body)
+            Schema.#MergeData(schemaResponse, <TSchemaResponse>_intResp.Body)
         }
         return HttpResponse.Ok(schemaResponse)
     }
