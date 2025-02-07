@@ -26,6 +26,7 @@ import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
 
 
+//
 export class Plan {
 
     @Logger.LogFunction()
@@ -129,7 +130,7 @@ export class Plan {
                 }
 
                 if (currentDataTable.MetaData[METADATA.PLAN_DEBUG] == 'error') {
-                    /* FIXME In case of cross entities, only errors in the final entity are returned.
+                    /* TODO In case of cross entities, only errors in the final entity are returned.
                     Console log is working fine.
                     */
                     const _planErrors: TJson = {}
