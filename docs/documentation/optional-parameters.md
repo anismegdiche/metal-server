@@ -1,0 +1,257 @@
+# Optional Parameters
+
+Optional Parameters are usefull for applying filtering, sorting or limit fields to return.
+They are the same whether they are used as query string for a GET Request or in the body for POST,PATCH and DELETE
+
+All parameters are described in the table below:
+
+| Option              | Usage                                | GET | POST | PATCH | DELETE |
+| ------------------- | ------------------------------------ | :-: | :--: | :---: | :----: |
+| `filter`            | simple filter                        | ✅  |  ❌  |  ✅   |   ✅   |
+| `filter-expression` | complex filter expression            | ✅  |  ❌  |  ✅   |   ✅   |
+| `fields`            | select fields to return              | ✅  |  ❌  |  ❌   |   ❌   |
+| `sort`              | sort data with a given order         | ✅  |  ❌  |  ❌   |   ❌   |
+| `cache`             | cache returned data for a given time | ✅  |  ❌  |  ❌   |   ❌   |
+| `data`              | data to send to server               | ❌  |  ✅  |  ✅   |   ❌   |
+
+::: warning ⚠️ IMPORTANT
+All parameters are passed to the data provider except for `cache` directive that is handled by Metal Server.
+:::
+
+
+## `filter`
+
+Simple filtering feature by providing fields and values:
+
+**Example**
+
+> To filter people with `name = John` and `location = USA`:
+>
+> **GET Request**
+>
+> ```http
+> GET /schema/my-schema/my-entity
+>     ?filter={"Name":"John","Location":"USA"}
+> ```
+>
+> **PATCH Request**
+>
+> ```http
+> PATCH /schema/my-schema/my-entity
+> Content-Type: application/json
+>
+> {
+> 	"filter": {
+> 		"Name": "John",
+> 		"Location": "USA"
+> 	}
+> }
+> ```
+>
+> **DELETE Request**
+>
+> ```http
+> DELETE /schema/my-schema/my-entity
+> Content-Type: application/json
+>
+> {
+> 	"filter": {
+> 		"Name": "John",
+> 		"Location": "USA"
+> 	}
+> }
+> ```
+
+::: tip ℹ️ TIP
+It is possible to use dynamic JS code in values.
+
+For more information, please refer to [Using dynamic JS code](#using-dynamic-js-code)
+:::
+
+## `filter-expression`
+
+Free expression for more complex data filtering expressed in SQL-like syntax.
+
+**Example**
+
+> **GET Request**
+>
+> ```http
+> GET /schema/my-schema/my-entity
+>     ?filter-expression="name LIKE '%ing' "
+> ```
+>
+> **PATCH Request**
+>
+> ```http
+> PATCH /schema/my-schema/my-entity
+> Content-Type: application/json
+>
+> {
+> 	"filter-expression": "name LIKE '%ing' "
+> }
+> ```
+>
+> **DELETE Request**
+>
+> ```http
+> DELETE /schema/my-schema/my-entity
+> Content-Type: application/json
+>
+> {
+> 	"filter-expression": "name LIKE '%ing' "
+> }
+> ```
+
+::: tip ℹ️ NOTE
+When employing the `LIKE` operator with the wildcard `%` in a GET method, remember to escape it using double `%%`.
+
+> **Example:**
+>
+> ```
+> filter-expression=name LIKE '%%ing'
+> ```
+>
+> :::
+
+::: tip ℹ️ TIP
+It is possible to use dynamic JS code in values.
+
+For more information, please refer to [Using dynamic JS code](#using-dynamic-js-code)
+:::
+
+## `fields`
+
+Select fields to return
+
+**Example**
+
+> ```http
+> GET /schema/my-schema/my-entity
+>     ?fields="name, country"
+> ```
+
+## `sort`
+
+sort data with given order.
+
+| Sorting Operator | Usage            | SQL like |
+| ---------------- | ---------------- | -------- |
+| `asc`            | Ascending order  | ASC      |
+| `desc`           | Descending order | DESC     |
+
+::: warning ⚠️ IMPORTANT
+The sorting will be executed in the backend server configured as data provider, except for schemas that relie on `plan` or `memory` data provider, in this case Metal will performs the sorting according to the passed parameter.
+:::
+
+**Example**
+
+> To sort data with `name` ascending then `email` descending:
+>
+> ```http
+> GET /schema/my-schema/my-entity
+>     ?sort={"name":"asc","email":"desc"}
+> ```
+
+## `cache`
+
+Instruct Metal to cache the data returned from the source for a given time in seconds before displaying it to the user end point, meanwhile users that hit again the same query will receive the cached data until it expires.
+
+**Example**
+
+> To cache returned data for 60 seconds:
+>
+> ```http
+> GET /schema/my-schema/my-entity
+>     ?cache=60
+> ```
+
+## `data`
+
+this paramater is used for inserting or updating data.
+
+### Inserting data
+
+`:data` accept whether a JSON object if it is a single row to insert or a JSON Array if many rows
+
+::: tip ℹ️ TIP
+It is possible to use dynamic JS code in values.
+
+For more information, please refer to [Using dynamic JS code](#using-dynamic-js-code)
+:::
+
+**Example: single row insert**
+
+> **Request**
+>
+> ```http
+> POST /schema/my-schema/my-entity
+> Content-Type: application/json
+>
+> {
+> 	"data":
+> 	{
+> 		"name":"Facebook",
+> 		"color": "blue"
+> 	}
+> }
+> ```
+>
+> **Response**
+>
+> ```http
+> HTTP/1.1 201 Created
+> ```
+
+**Example: multiple rows insert**
+
+> **Request**
+>
+> ```http
+> POST /schema/my-schema/my-entity
+> Content-Type: application/json
+>
+> {
+> 	"data": [
+> 		{ "name":"Facebook", "color": "blue" },
+> 		{ "name":"YouTube",  "color": "red"  }
+> 	]
+> }
+> ```
+>
+> **Response**
+>
+> ```http
+> HTTP/1.1 201 Created
+> ```
+
+### Updating data
+
+`:data` accept a JSON object of `key:value` where `key` is the field to modify and `value` is the new value
+
+**Example**
+
+> **Request**
+>
+> ```http
+> PATCH /schema/my-schema/my-entity
+> Content-Type: application/json
+>
+> {
+> 	"data":
+> 	{
+> 		"name":"Facebook",
+> 		"color": "blue"
+> 	}
+> }
+> ```
+>
+> **Response**
+>
+> ```http
+> HTTP/1.1 200 OK
+> Content-Type: application/json
+>
+> {
+> }
+> ```
