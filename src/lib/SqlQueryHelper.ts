@@ -13,42 +13,105 @@ import { HttpErrorInternalServerError } from "../server/HttpErrors"
 import typia from "typia"
 
 export class SqlQueryHelper {
+
     Query: string = ''
     Data: object[] = []
 
-    constructor(query?: string) {
+    // eslint-disable-next-line class-methods-use-this
+    FnEscapeEntity: (entity: string) => string = (entity: string) => entity
+
+    // eslint-disable-next-line class-methods-use-this
+    FnEscapeField: (field: string) => string = (field: string) => field
+
+    constructor(query?: string, fnEscapeEntity?: (entity: string) => string, fnEscapeField?: (field: string) => string) {
         if (query)
             this.SetQuery(query)
+
+        if (fnEscapeEntity)
+            this.FnEscapeEntity = fnEscapeEntity
+
+        if (fnEscapeField)
+            this.FnEscapeField = fnEscapeField
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    #WhereCondition(field: string, value: unknown): string {
+        // file deepcode ignore DuplicateCaseSwitch: simplicity
+        switch (true) {
+            case typia.is<string>(value):
+                return `${field} = '${value}'`
+
+            case typia.is<null>(value):
+                return `${field} = NULL`
+
+            case typia.is<undefined>(value):
+                throw new HttpErrorInternalServerError(`SqlQueryHelper.Where: undefined value for field '${field}'`)
+
+            case typia.is<number>(value):
+            case typia.is<bigint>(value):
+            case typia.is<boolean>(value):
+            default:
+                return `${field} = ${value}`
+        }
+    }
+
+    #EscapeFields(fields?: string[] | string): string {
+        if (!fields)
+            return ""
+
+        const cleanFields: string[] = []
+
+        switch (true) {
+            case Array.isArray(fields):
+                cleanFields.push(...fields)
+                break
+            // eslint-disable-next-line you-dont-need-lodash-underscore/is-string
+            case _.isString(fields) && fields.includes(','):
+                {
+                    const _aFields = fields.split(',')
+                    _aFields.forEach((__field) => {
+                        cleanFields.push(__field.trim())
+                    })
+                    break
+                }
+            default:
+                cleanFields.push(fields.trim())
+                break
+        }
+
+        if (cleanFields.length === 0)
+            return ""
+
+        return _.chain(cleanFields)
+            .map(this.FnEscapeField)
+            .join(',')
+            .value()
     }
 
     @Logger.LogFunction()
-    SetQuery(query: string) {
+    SetQuery(query: string): this {
         this.Query = query
         return this
     }
 
     @Logger.LogFunction()
-    Select(fields?: TJson | string) {
-        if (typeof fields === 'object') {
-            Logger.Error('SqlQueryHelper.Select: fields must be a string or undefined')
-            return this
-        }
+    Select(fields?: string): this {
 
-        this.Query = (fields === undefined)
-            ? "SELECT *"
-            : `SELECT ${fields}`
+        this.Query = (fields === undefined || fields === '*')
+            ? `SELECT *`
+            : `SELECT ${this.#EscapeFields(fields)}`
 
         return this
     }
 
     @Logger.LogFunction()
-    From(entity: string) {
-        this.Query = `${this.Query} FROM ${entity}`
+    From(entity: string): this {
+        this.Query = `${this.Query} FROM ${this.FnEscapeEntity(entity)}`
         return this
     }
 
     @Logger.LogFunction()
-    Where(condition?: string | object, leftEscape: string = '', rightEscape: string  = '') {
+    Where(condition?: string | object): this {
         // no filters
         if (condition === undefined)
             return this
@@ -70,7 +133,7 @@ export class SqlQueryHelper {
                     if (!___field)
                         return ''
 
-                    return this.#WhereCondition(`${leftEscape}${___field}${rightEscape}`, ___value)                  
+                    return this.#WhereCondition(this.FnEscapeField(___field), ___value)
                 })
                 .join(' AND ')
                 .value()
@@ -88,7 +151,7 @@ export class SqlQueryHelper {
                     if (!__field)
                         return ''
 
-                    return this.#WhereCondition(`${leftEscape}${__field}${rightEscape}`, __value)
+                    return this.#WhereCondition(this.FnEscapeField(__field), __value)
                 })
                 .join(' AND ')
                 .value()
@@ -99,41 +162,20 @@ export class SqlQueryHelper {
         return this
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    #WhereCondition(field: string, value: any): string {
-        // file deepcode ignore DuplicateCaseSwitch: simplicity
-        switch (true) {
-            case typia.is<string>(value):
-                return `${field} = '${value}'`
-
-            case typia.is<null>(value):
-                return `${field} = NULL`
-
-            case typia.is<undefined>(value):
-                throw new HttpErrorInternalServerError(`SqlQueryHelper.Where: undefined value for field '${field}'`)
-
-            case typia.is<number>(value):
-            case typia.is<bigint>(value):
-            case typia.is<boolean>(value):
-            default:
-                return `${field} = ${value}`
-        }
-    }
-
     @Logger.LogFunction()
-    Delete() {
+    Delete(): this {
         this.Query = 'DELETE'
         return this
     }
 
     @Logger.LogFunction()
-    Update(entity: string) {
-        this.Query = `UPDATE ${entity}`
+    Update(entity: string): this {
+        this.Query = `UPDATE ${this.FnEscapeEntity(entity)}`
         return this
     }
 
     @Logger.LogFunction()
-    Set(rows?: TRow[] | TRow) {
+    Set(rows?: TRow[] | TRow): this {
         if (rows === undefined)
             return this
 
@@ -172,27 +214,23 @@ export class SqlQueryHelper {
     }
 
     @Logger.LogFunction()
-    Insert(entity: string) {
-        this.Query = `INSERT INTO ${entity}`
+    Insert(entity: string): this {
+        this.Query = `INSERT INTO ${this.FnEscapeEntity(entity)}`
         return this
     }
 
     @Logger.LogFunction()
-    Fields(data?: string[] | string, sep: string = '') {
-        if (!data)
+    Fields(fields?: string[] | string): this {
+        if (!fields)
             return this
 
-        const joinString = `${sep},${sep}`
-
-        this.Query = Array.isArray(data)
-            ? `${this.Query}(${sep}${data.join(joinString)}${sep})`
-            : `${this.Query}(${data})`
+        this.Query = `${this.Query}(${this.#EscapeFields(fields)})`
 
         return this
     }
 
     @Logger.LogFunction()
-    Values(data: TRow[]): SqlQueryHelper {
+    Values(data: TRow[]): this {
         if (Array.isArray(data) && data.length > 0) {
             this.Query = `${this.Query} VALUES`
             data.forEach((_values, _index) => {
@@ -200,7 +238,7 @@ export class SqlQueryHelper {
                     .mapValues((_value) => {
                         if (_value == null)
                             return
-                        
+
                         if (typeof _value === 'object') {
                             this.Data.push(_value)
                             return '?'
@@ -225,7 +263,7 @@ export class SqlQueryHelper {
     }
 
     @Logger.LogFunction()
-    OrderBy(order?: TJson | string) {
+    OrderBy(order?: TJson | string): this {
         if (typeof order !== 'string' && order !== undefined) {
             Logger.Error('SqlQueryHelper.OrderBy: order must be a string or undefined')
             return this
