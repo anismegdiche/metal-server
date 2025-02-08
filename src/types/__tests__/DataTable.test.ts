@@ -5,6 +5,17 @@
 //
 import { DataTable, SORT_ORDER } from '../DataTable'
 
+
+// Mock the Logger decorator
+jest.mock('../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
+
 describe("DataTable", () => {
     let
         dt: DataTable = <DataTable>{},
@@ -138,7 +149,7 @@ describe("DataTable", () => {
             const fields = dt.GetFieldNames()
             expect(fields).toEqual(["name", "age"])
         })
-        
+
         it("should return emty array for empty Datatable", () => {
             const fields = new DataTable("empty").GetFieldNames()
             expect(fields).toEqual([])
@@ -1707,6 +1718,18 @@ describe("DataTable", () => {
             // Assertion
             expect(dataTable.Rows).toEqual([{ id: 1, name: 'Alice' }])
         })
+
+        it('should return same table gracefully', () => {
+            const data = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+            // Initialize the class object
+            const dt1 = new DataTable("myTable", data)
+
+            // Call the Filter method with a invalid condition
+            dt1.FilterRows('!id = *1 %')
+
+            // Assertion
+            expect(dt1.Rows).toEqual(data)
+        }, 300_000)
     })
 
     describe('Transpose', () => {
