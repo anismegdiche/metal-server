@@ -7,7 +7,6 @@ import { Pool } from 'pg'
 import typia from "typia"
 //
 import { RESPONSE } from '../../lib/Const'
-import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
 import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { DataTable } from "../../types/DataTable"

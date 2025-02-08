@@ -10,7 +10,6 @@ import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { Plan } from '../../server/Plan'
 import { DATA_PROVIDER } from '../../providers/DataProvider'
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../server/HttpErrors"

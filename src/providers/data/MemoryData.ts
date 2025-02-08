@@ -13,7 +13,6 @@ import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { DATA_PROVIDER } from '../../providers/DataProvider'
 import { DataBase } from '../../types/DataBase'
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
