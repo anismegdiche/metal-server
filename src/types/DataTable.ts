@@ -12,6 +12,7 @@ import { Logger } from '../utils/Logger'
 import { JsonHelper } from "../lib/JsonHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { HttpErrorInternalServerError } from "../server/HttpErrors"
+import { clsClonable } from "../utils/clsClonable"
 
 
 //
@@ -61,7 +62,7 @@ export type TSyncReport = {
 
 
 //
-export class DataTable {
+export class DataTable extends clsClonable {
     Name: string
     Fields: TFields = {}
     Rows: TRow[] = []
@@ -73,6 +74,7 @@ export class DataTable {
         fields: TJson | undefined = undefined,
         metaData: TJson | undefined = undefined
     ) {
+        super()
         this.Name = name ?? crypto.randomUUID()
         if (rows)
             this.Set(Array.isArray(rows)
