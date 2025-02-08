@@ -369,22 +369,14 @@ export class DataTable {
         return this
     }
 
-    //BUG it generates an error in case of invalid condition
     @Logger.LogFunction()
     FilterRows(condition: string | undefined): this {
         if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))
             return this
 
-        this.Rows = alasql(`
-            SELECT * 
-            FROM ?
-            WHERE ${condition}`,
-            [this.Rows]
-        )
-        return this
+        return this.FreeSql(`SELECT * FROM [${this.Name}] WHERE ${condition}`)
     }
 
-    //BUG it generates an error in case of invalid condition
     @Logger.LogFunction()
     DeleteRows(condition: string | undefined): this {
         if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))
