@@ -7,6 +7,7 @@ import express, { Express, NextFunction, Request, Response } from 'express'
 import { rateLimit } from 'express-rate-limit'
 import responseTime from 'response-time'
 import chokidar from 'chokidar'
+import helmet from "helmet"
 //
 import { TJson } from '../types/TJson'
 import { HTTP_STATUS_CODE, ROUTE, SERVER } from '../lib/Const'
@@ -49,6 +50,8 @@ export class Server {
         await Config.Init()
 
         Server.Port = Config.Get<number>("server.port") ?? Config.DEFAULTS["server.port"]
+
+        Server.App.use(helmet())
 
         Server.App.use(responseTime())
         Server.App.use(Logger.RequestMiddleware)
