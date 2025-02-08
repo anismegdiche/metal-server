@@ -140,9 +140,9 @@ export class SoapWebService extends absWebServiceProvider {
             )
 
             // set session headers after request
-            if (SessionHeaders) {
-                const _SessionHeaders = PlaceHolder.EvaluateJsCode(SessionHeaders, new Sandbox($context))
-                for (const [_headerName, _headerValue] of Object.entries(_SessionHeaders!)) {
+            const _SessionHeaders = PlaceHolder.EvaluateJsCode<TJson<string>>(SessionHeaders, new Sandbox($context))
+            if (_SessionHeaders) {
+                for (const [_headerName, _headerValue] of Object.entries(_SessionHeaders)) {
                     this.Client.addHttpHeader(_headerName, _headerValue)
                 }
             }
