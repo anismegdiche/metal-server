@@ -122,7 +122,7 @@ export class SoapWebService extends absWebServiceProvider {
             const wsResp = await this.Client[`${_Method}Async`](_Data)
 
             if (!wsResp)
-                throw new HttpErrorInternalServerError(`${endpointType}: ${wsResp.statusText}`)
+                throw new HttpErrorInternalServerError(`${endpointType}: ${wsResp?.statusText}`)
 
             // eslint-disable-next-line no-param-reassign
             $context = _.merge(
