@@ -7,6 +7,17 @@ import typia from "typia"
 import { HttpErrorInternalServerError } from "../../../server/HttpErrors"
 
 
+// Mock the Logger decorator
+jest.mock('../../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
+
+
 describe("ColumnLetterToNumber", () => {
     it("should convert a single letter column 'A' to 1", () => {
         expect(ColumnLetterToNumber('A')).toBe(1)
@@ -22,15 +33,6 @@ describe("ColumnLetterToNumber", () => {
 })
 
 
-// Mock the Logger decorator
-jest.mock('../../../utils//Logger', () => ({
-    Logger: {
-        LogFunction: () => () => { },
-        Debug: jest.fn(),
-        Warn: jest.fn(),
-        Error: jest.fn()
-    }
-}))
 
 // Helper function to create a readable stream from string/buffer
 function createReadableStream(data: string | Buffer): Readable {
