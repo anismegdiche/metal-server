@@ -487,7 +487,6 @@ sources:
 | `xml-ignore-attributes` | Boolean | `true`        | Ignore XML attributes, default `true`.                                |
 | `xml-attribute-prefix`  | String  | `@`           | Prefix for XML attributes, default `@`.                               |
 | `xml-remove-ns-prefix`  | Boolean | `true`        | Remove namespace string from tag and attribute names, default `true`. |
-| `xml-root`              | String  |               | Specify the root element to use, default first element.               |
 
 **Example:**
 
@@ -499,9 +498,8 @@ sources:
       content:
         "*.xml":
           type: xml
-          xml-path: "/root/data"
+          xml-path: data
           xml-ignore-attributes: false
           xml-attribute-prefix: "@"
           xml-remove-ns-prefix: true
-          xml-root: "root"
 ```
