@@ -24,8 +24,8 @@ sources:
       endpoints:
         collection-read: 
           get: /${{ $entity }}
-        item-read: 
-          get: /${{ $entity }}/${{ $row.id }}
+        # item-read: 
+        #   get: /${{ $entity }}/${{ $row.id }}
         item-create: 
           post:
         item-update: 
@@ -50,8 +50,8 @@ sources:
         collection-read: 
           get: /${{ $entity }}
           response: ${{ $entity }}
-        item-read: 
-          get: /${{ $entity }}/${{ $row.id }}
+        # item-read: 
+        #   get: /${{ $entity }}/${{ $row.id }}
         item-create: 
           post: /${{ $entity }}/add
         item-update: 

@@ -40,8 +40,8 @@ sources:
         collection-read:
           listMovies: 
           response: Envelope.Body.listMoviesResponse.${{ $entity }}s
-        item-read: 
-          getMovie:
+        # item-read: 
+        #   getMovie:
         item-create:
           addMovie:
           data: 
