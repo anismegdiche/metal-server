@@ -27,32 +27,41 @@ In this instance, the `filter-expression` incorporates JS code within the curly 
 
 This flexibility enables precise control and customization, showcasing the versatility that dynamic JS code brings to your Metal implementation.
 
-## Context
+## Context variables⚡
 
-| Variable  | Properties                      | Description                                                             |
-| --------- | ------------------------------- | ----------------------------------------------------------------------- |
-| $entity   | -                               | Requested entity                                                        |
-| $schema   | -                               | Requested schema                                                        |
-| --------- | ------------------------------- | -------------------------------------                                   |
-| $request  | data-path                       | Path of json data to find in response                                   |
-| --------- | ------------------------------- | -------------------------------------                                   |
-| $response | body                            | Returned reponse body                                                   |
-| --------- | ------------------------------- | -------------------------------------                                   |
-| $row      | (depends on row fields)         | Represents a single unit of data (e.g., a row, document, or file entry) |
+Context variables are placeholders that can be used within your dynamic JS code. They are denoted by the `$` character, followed by the variable name.
 
-### Config File
+### `$schema`⚡ <Badge type="info" text="^0.4" />
 
-| Config path                                           | Available context |
-| ----------------------------------------------------- | ----------------- |
-| `sources.*.options.endpoints.item.*.*.request`        | `$row`           |
-| `sources.*.options.endpoints.item.*.*.response`       | `$request`        |
-| `sources.*.options.endpoints.*.*.*.session-headers.*` | `$response`       |
-| `sources.*.options.json-path`                         |                   |
+The name of the schema being queried.
 
-### API Call
+### `$entity`⚡ <Badge type="info" text="^0.4" />
 
-| option              | Available context   |
-| ------------------- | ------------------- |
-| `filter`            |                     |
-| `filter-expression` | `$row`             |
-| `data`              | `$entity`,`$schema` |
+The name of the entity being queried.
+
+### `$request`⚡ <Badge type="info" text="^0.4" />
+
+The current request being processed (exclusive to web services data providers), containing the following properties:
+
+| Property    | Type   | Description                           |
+| ----------- | ------ | ------------------------------------- |
+| `method`    | string | The HTTP method used.                 |
+| `url`       | string | The URL of the request.               |
+| `headers`   | object | The request headers.                  |
+| `body`      | object | The request body.                     |
+| `data-path` | String | Path of json data to find in response |
+
+### `$response`⚡ <Badge type="info" text="^0.4" />
+
+The response object for web services (exclusive to web services data providers), containing the following properties:
+
+| Property | Type   | Description            |
+| -------- | ------ | ---------------------- |
+| `url`    | String | Requested URL          |
+| `host`   | String | Requested host         |
+| `body`   | Object | Returned response body |
+
+### `$row`⚡ <Badge type="info" text="^0.4" />
+
+The current row being processed (exclusive to web services data providers).
+These object contains returned fields of the row

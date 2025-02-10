@@ -19,7 +19,7 @@ Metal Server supports two types of authentication:
 ```yaml
 server:
   authentication:
-    type: local # [!code highlight] 
+    type: local # [!code highlight]
 ```
 
 - **OpenID Connect Authentication**: This type of authentication verifies the identity of users through an OpenID Connect provider, and can be used to assign users to specific roles, which determine what actions they can perform and what data they can access.
@@ -27,7 +27,7 @@ server:
 ```yaml
 server:
   authentication:
-    type: oidc # [!code highlight] 
+    type: oidc # [!code highlight]
 ```
 
 ## Local Authentication
@@ -147,20 +147,20 @@ users:
 - **User Management Issues**: Check the `users` section of the `config.yml` file for any errors or misconfigurations.
 - **Role-Based Access Control Issues**: Check the `roles` section of the `config.yml` file for any errors or misconfigurations.
 
-## OpenID Connect Authentication
+## OpenID Connect Authentication⚡
 
-### Configuration
+### Configuration⚡
 
 To configure OIDC authentication in Metal Server, you need to add the following informations to the `server.authentication` section of the `config.yml` file:
 
-| Parameter       | Required | Default              | Description                                                   | Metal version                     |
-| --------------- | -------- | -------------------- | ------------------------------------------------------------- | --------------------------------- |
-| `type`          | Y        |                      | Type of authentication. For OIDC, it should be set to `oidc`. | <Badge type="info" text="^0.4" /> |
-| `issuer`        | Y        |                      | The URL of the OIDC provider's issuer.                        | <Badge type="info" text="^0.4" /> |
-| `client-id`     | Y        |                      | The client ID of the OIDC application.                        | <Badge type="info" text="^0.4" /> |
-| `client-secret` | Y        |                      | The client secret of the OIDC application.                    | <Badge type="info" text="^0.4" /> |
-| `scope`         | N        | `roles`              | The scope of the OIDC authentication.                         | <Badge type="info" text="^0.4" /> |
-| `roles-path`    | N        | `realm_access.roles` | The path to the roles in the OIDC token.                      | <Badge type="info" text="^0.4" /> |
+| Parameter       | Required | Description                                                              | Metal version                     |
+| --------------- | -------- | ------------------------------------------------------------------------ | --------------------------------- |
+| `type`          | Y        | Type of authentication. For OIDC, it should be set to `oidc`.            | <Badge type="info" text="^0.4" /> |
+| `issuer`        | Y        | The URL of the OIDC provider's issuer.                                   | <Badge type="info" text="^0.4" /> |
+| `client-id`     | Y        | The client ID of the OIDC application.                                   | <Badge type="info" text="^0.4" /> |
+| `client-secret` | Y        | The client secret of the OIDC application.                               | <Badge type="info" text="^0.4" /> |
+| `scope`         | N        | The scope of the OIDC authentication. (default: `roles`)                 | <Badge type="info" text="^0.4" /> |
+| `roles-path`    | N        | The path to the roles in the OIDC token. (default: `realm_access.roles`) | <Badge type="info" text="^0.4" /> |
 
 **Example:**
 
@@ -169,23 +169,23 @@ KeyCloak integration example
 ```yaml
 server:
   authentication:
-    type: oidc                          # [!code highlight]   
-    issuer: http://localhost:8080/realms/metal  # [!code highlight]   
-    client-id: metal-server                  # [!code highlight] 
-    client-secret: dOQoanZt02oGV4jTjGR4LVudwSJqbujT # [!code highlight] 
-    scope: roles                                # [!code highlight] 
-    roles-path: realm_access.roles              # [!code highlight] 
+    type: oidc # [!code highlight]
+    issuer: http://localhost:8080/realms/metal # [!code highlight]
+    client-id: metal-server # [!code highlight]
+    client-secret: dOQoanZt02oGV4jTjGR4LVudwSJqbujT # [!code highlight]
+    scope: roles # [!code highlight]
+    roles-path: realm_access.roles # [!code highlight]
     default-role: guest # the role is already created in roles section  # [!code highlight]
 ```
 
 This code enables authentication with KeyCloak.
 
-### Role-Based Access Control
+### Role-Based Access Control⚡
 
-Roles are used to determine what actions a user can perform and what data they can access. 
+Roles are used to determine what actions a user can perform and what data they can access.
 Each role has a unique name and a set of permissions that define what actions can be performed.
 
-#### Creating Roles
+#### Creating Roles⚡
 
 To create a new role, you need to add the following code to the `roles` section of the `config.yml` file:
 
@@ -209,11 +209,11 @@ This code creates three new roles, `admin`, `all-rights`, and `guest`, with the 
 | `a`        | Administrate server  |
 | `l`        | List schema entities |
 
-### Assigning Roles to Users
+### Assigning Roles to Users⚡
 
 To assign a role to a user in OpenID Connect authentication, you need to create the same roles in the OpenID Connect provider and assign them to users. This ensures that the roles are properly synchronized between the OpenID Connect provider and Metal Server, allowing for seamless role-based access control.
 
-### Final configuration
+### Final configuration⚡
 
 The final configuration will be:
 
@@ -232,16 +232,15 @@ roles:
   admin: ar
   all-rights: crudla
   guest: r
-
 ```
 
-### Troubleshooting
+### Troubleshooting⚡
 
 - **Authentication Errors**: Check the `server.authentication` section of the `config.yml` file for any errors or misconfigurations.
 - **Role-Based Access Control Issues**: Check the `roles` section of the `config.yml` file for any errors or misconfigurations.
 
 ## Conclusion
 
-In this technical guide, we have explored the concept of authentication, users, and roles in Metal Server. We have seen how to configure authentication, create new users and roles, and assign roles to users. 
+In this technical guide, we have explored the concept of authentication, users, and roles in Metal Server. We have seen how to configure authentication, create new users and roles, and assign roles to users.
 
 By understanding these features, you can create a secure and controlled environment for your users to interact with your data.

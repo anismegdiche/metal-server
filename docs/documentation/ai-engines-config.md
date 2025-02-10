@@ -14,10 +14,10 @@ Tesseract.js supports over 100 languages, automatic text orientation, and script
 
 **Primary Parameters:**
 
-| Parameter | Type   | Default Value | Required | Description                                                                                                                                                         | Metal Version                        |
-| --------- | ------ | ------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `engine`  | String |               | Yes      | Set to `tesseractjs` for Tesseract.js                                                                                                                               | <Badge type="default" text="^0.1" /> |
-| `model`   | String | `eng`         | No       | Language to use for OCR (see Lang Code: [Tesseract OCR Data Files](https://tesseract-ocr.github.io/tessdoc/Data-Files#data-files-for-version-400-november-29-2016)) | <Badge type="default" text="^0.1" /> |
+| Parameter | Type   | Required | Description                                                                                                                                                                            | Metal Version                        |
+| --------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `engine`  | String | Y        | Set to `tesseractjs` for Tesseract.js                                                                                                                                                  | <Badge type="default" text="^0.1" /> |
+| `model`   | String | N        | Language to use for OCR, defaults to `eng` (see Lang Code: [Tesseract OCR Data Files](https://tesseract-ocr.github.io/tessdoc/Data-Files#data-files-for-version-400-november-29-2016)) | <Badge type="default" text="^0.1" /> |
 
 **Example Configuration:**
 
@@ -120,13 +120,14 @@ NLP.js is an open-source JavaScript library for natural language processing (NLP
 | `lang-guess` | For guessing the language | <Badge type="default" text="^0.1" /> |
 
 ### `sentiment`
+
 Sentiment analysis determines the sentiment expressed in a given text, typically categorizing sentiments as positive, negative, or neutral. This process is essential for understanding customer feedback, monitoring social media, and analyzing opinions and emotions in various applications.
 
 **Optional Parameters:**
 
-| Parameter | Type   | Default Value | Required | Description                                                                                                                                                                                         | Metal Version                        |
-| --------- | ------ | ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `lang`    | String | `en`          | No       | Defines the language of the text to be analyzed. For supported languages, see [NLP.js Sentiment Analysis Languages](https://github.com/axa-group/nlp.js/blob/master/docs/v3/sentiment-analysis.md). | <Badge type="default" text="^0.1" /> |
+| Parameter | Type   | Required | Description                                                                                                                                                                                                           | Metal Version                        |
+| --------- | ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `lang`    | String | No       | Defines the language of the text to be analyzed, defaults to `en`. For supported languages, see [NLP.js Sentiment Analysis Languages](https://github.com/axa-group/nlp.js/blob/master/docs/v3/sentiment-analysis.md). | <Badge type="default" text="^0.1" /> |
 
 **Example Configuration:**
 
@@ -162,13 +163,14 @@ ai-engines:
 | language    | String  | The language of the analyzed text                            |
 
 ### `lang-guess`
+
 Language guessing can identify the language of a given text. This feature is useful for applications requiring language detection before processing text, such as multilingual chatbots, content categorization, and automatic language selection. It ensures that the appropriate language models and processing techniques are applied, enhancing the accuracy and relevance of the application's responses.
 
 **Optional Parameters:**
 
-| Parameter | Type   | Default Value | Required | Description                                                                                                                                                                                     | Metal Version                        |
-| --------- | ------ | ------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `accept`  | String | `en`          | No       | Defines a list of languages to guess, separated by commas. For supported languages, see [NLP.js Language Support](https://github.com/axa-group/nlp.js/blob/master/docs/v3/language-support.md). | <Badge type="default" text="^0.1" /> |
+| Parameter | Type   | Required | Description                                                                                                                                                                                                       | Metal Version                        |
+| --------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `accept`  | String | No       | Defines a list of languages to guess, separated by commas, defaults to `en`. For supported languages, see [NLP.js Language Support](https://github.com/axa-group/nlp.js/blob/master/docs/v3/language-support.md). | <Badge type="default" text="^0.1" /> |
 
 **Example Configuration:**
 

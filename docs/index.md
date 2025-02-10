@@ -86,3 +86,45 @@ features:
     title: Streamlined ETL
     details: Apply data transformations dynamically at runtime or through scheduled jobs.
 ---
+<script setup>
+import FancySection from '.vitepress/theme/components/FancySection.vue'
+</script>
+
+
+
+
+
+The key is that Metal excels at decoupling your application logic from the specifics of data storage and access. Any architecture that benefits from this decoupling can potentially work well with Metal:
+
+
+<FancySection image="https://miro.medium.com/v2/resize:fit:2000/1*mGLO5IfhJv4o0NYOAZI60A.png">
+<h1>Hexagonal Architecture</h1> Metal focus on abstraction, unified interfaces, and separation of concerns, makes it a good fit for applications designed using hexagonal architecture. It can serve as a valuable component in isolating your core business logic from the complexities of data access and management.
+</FancySection>
+
+<FancySection image="https://upload.wikimedia.org/wikipedia/commons/a/ab/Microservice_Databases.png" reverse>
+<h1>Microservices Architecture</h1>
+Metal's ability to abstract database access and provide a unified API makes it suitable for microservices. Each microservice can use Metal to interact with its data store without needing to implement database-specific logic. Metal can also help with data integration between microservices.
+</FancySection>
+
+<FancySection image="/images/example.jpg">
+<h1>API Gateway Pattern</h1> 
+Metal can act as a backend-for-frontend (BFF) or API gateway, providing a unified API for client applications while handling the complexities of interacting with different databases and data sources. This simplifies the client-side development and allows for more flexibility in the backend.
+</FancySection>
+
+<FancySection image="/images/example2.jpg" reverse>
+<h1>Data Lake/Data Mesh Architecture</h1> 
+Metal's capability to merge schemas from multiple databases and data providers makes it useful in a data lake or data mesh environment. It can provide a unified view of data across different data sources, enabling data analysis and reporting.
+</FancySection>
+
+<FancySection image="/images/example.jpg">
+<h1>Layered Architecture</h1> 
+Metal fits well within a layered architecture, acting as a data access layer that abstracts the complexities of database interactions from the business logic layer.
+</FancySection>
+
+<FancySection image="/images/example2.jpg" reverse>
+<h1>Event-Driven Architecture</h1> 
+Metal can be integrated with an event-driven architecture by publishing events when data changes occur in the underlying databases. This allows other services to react to data changes in real-time.
+</FancySection>
+
+
+<Badge type="warning" text="✨" style="line-height:0.9rem;padding:1px;margin:1px"/>

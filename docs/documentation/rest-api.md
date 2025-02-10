@@ -536,18 +536,16 @@ If no filtering is supplied in the body with `filter` or `filter-expression`, AL
 :::
 
 **Endpoint**
+```http
+DELETE /schema/:schema/:entity
+Content-Type: application/json
 
-> DELETE `/schema`/**`:schema`**/**`:entity`**
->
-> Content-Type: application/json
->
-> {
->
->     `"filter"`: **`:filter`**
->
->     `"filter-expression"`: **`:filter-expression`**
->
-> }
+{
+    "filter": ":filter"
+    OR
+    "filter-expression": ":filter-expression"
+}
+```
 
 **Parameters**
 
