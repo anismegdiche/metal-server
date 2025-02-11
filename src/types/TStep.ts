@@ -52,17 +52,6 @@ export type TStepRun = {
 }
 
 export type TStepSync = {
-    // v0.2
-    source: {
-        schema: string
-        entity: string
-    }
-    destination: {
-        schema: string
-        entity: string
-    }
-    on: string
-} & {
     // v0.3
     from: {
         schema: string
@@ -73,7 +62,7 @@ export type TStepSync = {
         entity: string
     }
     id: string
-}
+} 
 
 export type TStepAnonymize = string
 

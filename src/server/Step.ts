@@ -369,70 +369,63 @@ export class Step {
     @Logger.LogFunction()
     static async Sync(stepArguments: TStepArguments): Promise<DataTable> {
 
-        const {
-            source, destination, on,
-            from, to, id
-        } = stepArguments.stepParams as TStepSync
+        const { from, to, id } = stepArguments.stepParams as TStepSync
 
-        const _from = source ?? from
-        const _to = destination ?? to
-        const _id = on ?? id
-
-        if (!_id) {
+        if (!id) {
             throw new HttpErrorInternalServerError("'on' or 'id' must be provided")
         }
 
-        if (!_from && !_to) {
+        if (!from && !to) {
             throw new HttpErrorInternalServerError("Either 'source' or 'from', and 'destination' or 'to' must be provided")
         }
 
-        const dtSource: DataTable = (_from)
-            ? (await Step.#_Select(_from.schema, _from.entity)) ?? new DataTable(_from.entity)
+        const dtSource: DataTable = (from)
+            ? (await Step.#_Select(from.schema, from.entity)) ?? new DataTable(from.entity)
             : stepArguments.currentDataTable
 
-        const dtDestination: DataTable = (_to)
-            ? (await Step.#_Select(_to.schema, _to.entity)) ?? new DataTable(_to.entity)
+        const dtDestination: DataTable = (to)
+            ? (await Step.#_Select(to.schema, to.entity)) ?? new DataTable(to.entity)
             : stepArguments.currentDataTable
 
 
-        const syncReport = dtSource.SyncReport(dtDestination, _id, {
+        const syncReport = dtSource.SyncReport(dtDestination, id, {
             keepOnlyUpdatedValues: true
         })
 
         // Apply transformations
         //// Delete
         // eslint-disable-next-line you-dont-need-lodash-underscore/map
-        _.map(syncReport.DeletedRows, _id)
+        _.map(syncReport.DeletedRows, id)
             .forEach((value: unknown) => Schema.Delete({
-                schema: _to.schema,
-                entity: _to.entity,
+                schema: to.schema,
+                entity: to.entity,
                 filter: {
-                    [_id]: value
+                    [id]: value
                 }
             }))
 
         //// Update
         syncReport.UpdatedRows.forEach((row: TRow) => Schema.Update({
-            schema: _to.schema,
-            entity: _to.entity,
+            schema: to.schema,
+            entity: to.entity,
             filter: {
-                [_id]: row[_id]
+                [id]: row[id]
             },
             // eslint-disable-next-line you-dont-need-lodash-underscore/omit
-            data: [_.omit(row, _id)]
+            data: [_.omit(row, id)]
         }))
 
         //// Insert
         if (syncReport.AddedRows.length > 0) {
             Schema.Insert({
-                schema: _to.schema,
-                entity: _to.entity,
+                schema: to.schema,
+                entity: to.entity,
                 data: syncReport.AddedRows
             })
         }
 
         // if no destination
-        if (!_to) {
+        if (!to) {
             stepArguments.currentDataTable.Rows = [
                 ...syncReport.DeletedRows,
                 ...syncReport.UpdatedRows,
