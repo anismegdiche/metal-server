@@ -102,7 +102,7 @@ export class XmlContent extends absContentProvider {
             new Sandbox($context)
         )
 
-        xmlData = JsonHelper.Set(
+        JsonHelper.Set(
             xmlData,
             evalPath,
             data.Rows

@@ -10,6 +10,7 @@ import * as chrono from 'chrono-node'
 //
 import { TJson } from "../types/TJson"
 import { Logger } from "../utils/Logger"
+import { StringHelper } from './StringHelper';
 
 const SafeStableStringify = configure({
     circularValue: undefined,
@@ -46,13 +47,17 @@ export class JsonHelper {
             : json as T
     }
 
-    static Set<T>(json: T, jsonPath: string | undefined, data: TJson[] | undefined): T {
+    static Set<T>(json: T, jsonPath?: string, data?: any): T {
         if (!data)
             return json
 
-        return jsonPath
-            ? _.set(json as [], jsonPath, data) as T
-            : data as T
+        if (StringHelper.IsEmpty(jsonPath))
+            return _.set(json as object, jsonPath!, data) as T
+        else {
+            // eslint-disable-next-line no-param-reassign
+            json = data as T
+            return json
+        }
     }
 
     static Stringify<T>(json: T): string {

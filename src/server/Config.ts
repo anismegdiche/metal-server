@@ -150,7 +150,7 @@ export class Config {
 
     @Logger.LogFunction()
     static Set<T>(path: string, value: T): void {
-        _.set(Config.Configuration, path, value)
+        JsonHelper.Set(Config.Configuration, path, value)
     }
 
     @Logger.LogFunction()

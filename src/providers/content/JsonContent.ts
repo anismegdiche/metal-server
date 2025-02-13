@@ -90,7 +90,7 @@ export class JsonContent extends absContentProvider {
             new Sandbox($context)
         )
 
-        json = JsonHelper.Set(json, path, data.Rows)
+        JsonHelper.Set(json, path, data.Rows)
 
         const streamOut = Readable.from(JSON.stringify(json))
         this.Content.UploadFile(this.EntityName, streamOut)
