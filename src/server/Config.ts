@@ -22,6 +22,7 @@ import { TypeHelper } from "../lib/TypeHelper"
 import { ConfigFileError } from "./HttpErrors"
 import { AUTH_PROVIDER, AuthProvider } from "../providers/AuthProvider"
 import { Roles } from "./Roles"
+import { JsonHelper } from "../lib/JsonHelper"
 
 export class Config {
 
@@ -51,7 +52,7 @@ export class Config {
     //         }
     //     }
     // }
-    
+
     static readonly DEFAULTS: TJson = {
         "server.port": 3000,
         "server.timezone": 'UTC',
@@ -143,9 +144,8 @@ export class Config {
     }
 
     @Logger.LogFunction()
-    static Get<T>(path: string, defaultValue: any = undefined): T {
-        // eslint-disable-next-line you-dont-need-lodash-underscore/get
-        return _.get(Config.Configuration, path, defaultValue)
+    static Get<T>(path: string, defaultValue?: any): T {
+        return JsonHelper.Get<T>(Config.Configuration, path, defaultValue)
     }
 
     @Logger.LogFunction()

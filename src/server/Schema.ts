@@ -20,6 +20,7 @@ import { HttpResponse } from "./HttpResponse"
 import { TUserTokenInfo } from "./User"
 import { PERMISSION, Roles } from "./Roles"
 import { Cache } from "./Cache"
+import { JsonHelper } from "../lib/JsonHelper"
 
 export type TSchemaRoute = {
     type: "source" | "nothing",
@@ -121,8 +122,8 @@ export class Schema {
 
         // schema.entities.*
         if (_.has(schemaConfig, `entities.${entity}`)) {
-            // eslint-disable-next-line you-dont-need-lodash-underscore/get
-            const _schemaEntityConfig = _.get(schemaConfig.entities, entity)
+            
+            const _schemaEntityConfig: TSchemaRequest = JsonHelper.Get(schemaConfig.entities, entity)
 
             if (_schemaEntityConfig === undefined) {
                 Logger.Warn(`Entity '${entity}' not found in schema '${schema}'`)
