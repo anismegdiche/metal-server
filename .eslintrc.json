@@ -13,7 +13,8 @@
 	],
 	"plugins": [
 		"@typescript-eslint",
-		"unused-imports"
+		"unused-imports",
+		"security"
 	],
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
