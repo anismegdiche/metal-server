@@ -6,11 +6,12 @@
 import _, { Dictionary } from "lodash"
 import { configure } from 'safe-stable-stringify'
 import * as chrono from 'chrono-node'
-
+import objectPath from 'object-path'
 //
 import { TJson } from "../types/TJson"
 import { Logger } from "../utils/Logger"
-import { StringHelper } from './StringHelper';
+import { StringHelper } from './StringHelper'
+import { HttpErrorInternalServerError } from "../server/HttpErrors"
 
 const SafeStableStringify = configure({
     circularValue: undefined,
@@ -40,24 +41,33 @@ export class JsonHelper {
         }
     }
 
-    static Get<T>(json: TJson, jsonPath?: string, defaultValue?: any): T {
-        return jsonPath
-            // eslint-disable-next-line you-dont-need-lodash-underscore/get
-            ? _.get(json, jsonPath, defaultValue) as T
-            : json as T
+    static Get<T>(json: TJson, jsonPath?: string, defaultValue?: T): T {
+        if (!jsonPath)
+            return json as T
+
+        const _jsonPath = jsonPath.replace(/\[(\d+)\]/g, '.$1')
+
+        // eslint-disable-next-line you-dont-need-lodash-underscore/get
+        const extractedData = objectPath.get(json, _jsonPath) ?? _.get(json, jsonPath)
+
+        return (extractedData)
+            ? extractedData as T
+            : defaultValue as T
     }
 
-    static Set<T>(json: T, jsonPath?: string, data?: any): T {
+    static Set<T extends object>(json: T, jsonPath?: string, data?: any): T {
         if (!data)
             return json
 
-        if (StringHelper.IsEmpty(jsonPath))
-            return _.set(json as object, jsonPath!, data) as T
-        else {
+        if (!StringHelper.IsEmpty(jsonPath)) 
+            return _.set(json, jsonPath!, data)
+
+        if (['object', 'undefined','null'].includes(typeof data)) {
             // eslint-disable-next-line no-param-reassign
             json = data as T
             return json
         }
+        throw new HttpErrorInternalServerError(`JsonHelper.Set Error: ${JsonHelper.Stringify(data)}`)
     }
 
     static Stringify<T>(json: T): string {
