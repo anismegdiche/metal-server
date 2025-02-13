@@ -1,25 +1,44 @@
 # Optional Parameters
 
 Optional Parameters are usefull for applying filtering, sorting or limit fields to return.
-They are the same whether they are used as query string for a GET Request or in the body for POST,PATCH and DELETE
+They are the same whether they are used as query string for a GET Request or in the body for POST,PATCH and DELETE or in the plan commands `select`,`delete`,`insert` and `update`.
 
 All parameters are described in the table below:
 
-| Option              | Usage                                | GET | POST | PATCH | DELETE |
-| ------------------- | ------------------------------------ | :-: | :--: | :---: | :----: |
-| `filter`            | simple filter                        | ✅  |  ❌  |  ✅   |   ✅   |
-| `filter-expression` | complex filter expression            | ✅  |  ❌  |  ✅   |   ✅   |
-| `fields`            | select fields to return              | ✅  |  ❌  |  ❌   |   ❌   |
-| `sort`              | sort data with a given order         | ✅  |  ❌  |  ❌   |   ❌   |
-| `cache`             | cache returned data for a given time | ✅  |  ❌  |  ❌   |   ❌   |
-| `data`              | data to send to server               | ❌  |  ✅  |  ✅   |   ❌   |
+| Parameter             | Usage                                | GET/select | POST/insert | PATCH/update | DELETE/delete | JS Context          | Metal version                     |
+| --------------------- | ------------------------------------ | :--------: | :---------: | :----------: | :-----------: | ------------------- | --------------------------------- |
+| ✨`filter`            | simple filter                        |     🟢     |     ⚪      |      🟢      |      🟢       | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
+| ✨`filter-expression` | complex filter expression            |     🟢     |     ⚪      |      🟢      |      🟢       | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
+| ✨`fields`            | select fields to return              |     🟢     |     ⚪      |      ⚪      |      ⚪       | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
+| ✨`sort`              | sort data with a given order         |     🟢     |     ⚪      |      ⚪      |      ⚪       | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
+| ✨`cache`             | cache returned data for a given time |     🟢     |     ⚪      |      ⚪      |      ⚪       | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
+| ✨`data`              | data to send to server               |     ⚪     |     🟢      |      🟢      |      ⚪       | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
 
-::: warning ⚠️ IMPORTANT
-All parameters are passed to the data provider except for `cache` directive that is handled by Metal Server.
-:::
+> ✨ Supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
+> 🟢 Available
+> ⚪ Not applicable
 
+## How Optional Parameters are handled by Data Providers:
 
-## `filter`
+| Data Provider                           | `filter` | `filter-expression` | `fields` | `sort` | `cache` |
+| --------------------------------------- | :------: | :-----------------: | :------: | :----: | :-----: |
+| Azure SQL Database/Microsoft SQL Server |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
+| Files                                   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
+| Memory                                  |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
+| Metal Server                            |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
+| MongoDB                                 |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
+| MySql                                   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
+| Plan                                    |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
+| PostgreSQL                              |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
+| WebService                              |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
+
+> 🔵 Handled natively by the data provider driver
+> 🟢 Handled by Metal Server
+> 🟡 Partially Handled
+
+## Parameters
+
+### `filter`
 
 Simple filtering feature by providing fields and values:
 
@@ -68,7 +87,7 @@ It is possible to use dynamic JS code in values.
 For more information, please refer to [Using dynamic JS code](#using-dynamic-js-code)
 :::
 
-## `filter-expression`
+### `filter-expression`
 
 Free expression for more complex data filtering expressed in SQL-like syntax.
 
@@ -120,7 +139,7 @@ It is possible to use dynamic JS code in values.
 For more information, please refer to [Using dynamic JS code](#using-dynamic-js-code)
 :::
 
-## `fields`
+### `fields`
 
 Select fields to return
 
@@ -131,7 +150,7 @@ Select fields to return
 >     ?fields="name, country"
 > ```
 
-## `sort`
+### `sort`
 
 sort data with given order.
 
@@ -153,7 +172,7 @@ The sorting will be executed in the backend server configured as data provider, 
 >     ?sort={"name":"asc","email":"desc"}
 > ```
 
-## `cache`
+### `cache`
 
 Instruct Metal to cache the data returned from the source for a given time in seconds before displaying it to the user end point, meanwhile users that hit again the same query will receive the cached data until it expires.
 
@@ -166,11 +185,11 @@ Instruct Metal to cache the data returned from the source for a given time in se
 >     ?cache=60
 > ```
 
-## `data`
+### `data`
 
 this paramater is used for inserting or updating data.
 
-### Inserting data
+#### Inserting data
 
 `:data` accept whether a JSON object if it is a single row to insert or a JSON Array if many rows
 
@@ -225,7 +244,7 @@ For more information, please refer to [Using dynamic JS code](#using-dynamic-js-
 > HTTP/1.1 201 Created
 > ```
 
-### Updating data
+#### Updating data
 
 `:data` accept a JSON object of `key:value` where `key` is the field to modify and `value` is the new value
 
