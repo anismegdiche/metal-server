@@ -1,3 +1,4 @@
+import { TJson } from "../../../types/TJson"
 import { MongoDbHelper } from "../MongoDbHelper"
 
 
@@ -262,6 +263,300 @@ describe('MongoDbHelper', () => {
             expect(result).toHaveProperty('query')
             expect(result).toHaveProperty('pipeline')
             // Further assertions can be added based on expected behavior
+        })
+    })
+
+    describe('ConvertSqlUpdateSet', () => {
+        it('should convert SQL SET clause to MongoDB $set object', () => {
+            const sqlSets = {
+                name: "'John'",
+                age: "30"
+            }
+
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    name: "John",
+                    age: 30
+                }
+            })
+        })
+
+        it('should handle empty SQL SET clause', () => {
+            const sqlSets: TJson<string> = {}
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({ $set: {} })
+        })
+
+        it('should handle SQL SET clause with multiple values', () => {
+            const sqlSets = {
+                name: "'John'",
+                age: 30
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    name: "John",
+                    age: 30
+                }
+            })
+        })
+
+        it('should handle SQL SET clause with special characters', () => {
+            const sqlSets = {
+                name: "'John Doe'",
+                email: "'johndoe@domain'"
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    name: "John Doe",
+                    email: "johndoe@domain"
+                }
+            })
+        })
+
+        // Converts single field update with simple value assignment
+        it('should convert single field update with simple value assignment', () => {
+            const sqlSets = { field1: 123 }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({ $set: { field1: 123 } })
+        })
+
+        // Converts multiple field updates into MongoDB $set object
+        it('should convert multiple field updates into MongoDB $set object', () => {
+            const sqlSets = {
+                field1: 123,
+                field2: "'abc'"
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    field1: 123,
+                    field2: 'abc'
+                }
+            })
+        })
+
+        // Handles numeric value assignments correctly
+        it('should handle numeric value assignments correctly', () => {
+            const sqlSets = {
+                intField: 123,
+                floatField: 45.67
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    intField: 123,
+                    floatField: 45.67
+                }
+            })
+        })
+
+        // Processes string literal assignments properly
+        it('should process string literal assignments properly', () => {
+            const sqlSets = {
+                field1: "'test'",
+                field2: "'value'"
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    field1: 'test',
+                    field2: 'value'
+                }
+            })
+        })
+
+        // Handles identifier references with $ prefix conversion
+        it('should handle identifier references with $ prefix conversion', () => {
+            const sqlSets = {
+                field: "ref"
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({ $set: { field: '$ref' } })
+        })
+
+        // Empty sqlSets array returns empty $set object
+        it('should return empty $set object for empty sqlSets array', () => {
+            const sqlSets = {}
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({ $set: {} })
+        })
+
+        // Handles whitespace variations in set statements
+        it('should handle whitespace variations in set statements', () => {
+            const sqlSets = {
+                field1: 123,
+                field2: 456
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    field1: 123,
+                    field2: 456
+                }
+            })
+        })
+
+        // Maintains field name case sensitivity
+        it('should maintain field name case sensitivity', () => {
+            const sqlSets = {
+                fieldName: 1,
+                FieldName: 2
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    fieldName: 1,
+                    FieldName: 2
+                }
+            })
+        })
+
+        // Handles null or undefined field values
+        it('should handle null or undefined field values', () => {
+            const sqlSets = {
+                field1: null,
+                field2: undefined
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    field1: null,
+                    field2: null
+                }
+            })
+        })
+
+        // Processes set statements with complex expressions
+        it('should process set statements with complex expressions', () => {
+            const sqlSets = {
+                field: "1 + 2 * 3"
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    field: {
+                        $add: [
+                            1,
+                            {
+                                $multiply: [
+                                    2,
+                                    3
+                                ]
+                            }
+                        ]
+                    }
+                }
+            })
+        })
+
+        // Processes string literal assignments properly
+        it('should process concat strings', () => {
+            const sqlSets = {
+                field1: "firstname + '_' + lastname"
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    field1: {
+                        $concat: [
+                            "$firstname",
+                            "_",
+                            "$lastname"
+                        ]
+                    }
+                }
+            })
+        })
+
+        // Processes string literal assignments properly
+        it('should process mixed types', () => {
+            const sqlSets = {
+                age: "age / 2"
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    age: {
+                        $divide: [
+                            "$age",
+                            2
+                        ]
+                    }
+                }
+            })
+        })
+
+        // Processes string literal assignments properly
+        it('should process multiple types', () => {
+            const sqlSets = {
+                field1: "'_' + firstname",
+                age: "age / 2"
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    field1: {
+                        $concat: [
+                            "_",
+                            "$firstname"
+                        ]
+                    },
+                    age: {
+                        $divide: [
+                            "$age",
+                            2
+                        ]
+                    }
+                }
+            })
+        })
+
+        // Processes arithmetic expressions in set values
+        it('should process arithmetic expressions in set values', () => {
+            const sqlSets = {
+                field1: 10 - 5,
+                field2: 2 * 3
+            }
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    field1: 5,
+                    field2: 6
+                }
+            })
+        })
+        it('UC', () => {
+            const sqlSets = {
+                index: " age / 2 + 123",
+                fullName: "name + ' ' + display_name"
+            }
+
+            const result = MongoDbHelper.ConvertSqlUpdateSet(sqlSets)
+            expect(result).toEqual({
+                $set: {
+                    index: {
+                        $add: [
+                            {
+                                $divide: [
+                                    "$age",
+                                    2
+                                ]
+                            },
+                            123
+                        ]
+                    },
+                    fullName: {
+                        $concat: [
+                            "$name",
+                            " ",
+                            "$display_name"
+                        ]
+                    }
+                }
+            })
         })
     })
 })

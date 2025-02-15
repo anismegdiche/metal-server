@@ -1,21 +1,35 @@
+/* eslint-disable  */
 //
 //
 //
 //
 //
 import _ from 'lodash'
+import tokenizer from 'sql-tokenizer'
+import typia from "typia"
 //
 import { TRow } from "../types/DataTable"
 import { TJson } from '../types/TJson'
 import { Logger } from '../utils/Logger'
 import { JsonHelper } from './JsonHelper'
 import { HttpErrorInternalServerError } from "../server/HttpErrors"
-import typia from "typia"
 
+
+//
+export type TSqlToken = {
+    token: string
+    type: 'string' | 'number' | 'variable' | 'operator' | 'par-open' | 'par-closed'
+}
+
+export const ESCAPE_FIELD_VALUE = "$>"
+
+//
 export class SqlQueryHelper {
 
     Query: string = ''
     Data: object[] = []
+
+    tokenize = tokenizer()
 
     // eslint-disable-next-line class-methods-use-this
     FnEscapeEntity: (entity: string) => string = (entity: string) => entity
@@ -90,7 +104,7 @@ export class SqlQueryHelper {
 
     @Logger.LogFunction()
     SetQuery(query: string): this {
-        this.Query = query
+        this.Query = String(query)
         return this
     }
 
@@ -187,14 +201,17 @@ export class SqlQueryHelper {
         const setValues = _.chain(fieldsValues)
             .mapValues((_value, _field) => {
                 let __formattedValue = ''
-                switch (typeof _value) {
-                    case 'string':
+                switch (true) {
+                    case typeof _value === 'string' && _value.startsWith(ESCAPE_FIELD_VALUE):
+                        __formattedValue = `${_value.slice(ESCAPE_FIELD_VALUE.length).trim()}`
+                        break
+                    case typeof _value === 'string':
                         __formattedValue = `'${_value}'`
                         break
-                    case 'number':
+                    case typeof _value === 'number':
                         __formattedValue = _value.toString()
                         break
-                    case 'object':
+                    case typeof _value === 'object':
                         __formattedValue = '?'
                         if (_value != null)
                             this.Data.push(_value)
@@ -273,5 +290,51 @@ export class SqlQueryHelper {
             this.Query = `${this.Query} ORDER BY ${order}`
 
         return this
+    }
+
+    #SanitizeTokenize(): string[] {
+        const query = this.Query.trim()
+        if (/^\d+(\.\d+)?$/.test(query)) {
+            return [this.Query]
+        }
+        return this.tokenize(this.Query)
+    }
+
+    Tokenize(): TSqlToken[] {
+        const tokens = _.chain(this.#SanitizeTokenize())
+            .map(_.trim)
+            .compact()
+            .map((token: string) => {
+                let tokenType = ''
+                switch (true) {
+                    case token === '(':
+                        tokenType = 'par-open'
+                        break
+                    case token === ')':
+                        tokenType = 'par-closed'
+                        break
+                    case ['+', '-', '*', '/'].includes(token):
+                        tokenType = "operator"
+                        break
+                    case token.startsWith("'") && token.endsWith("'"):
+                        tokenType = "string"
+                        break
+                    case !isNaN(parseInt(token)):
+                    case !isNaN(parseFloat(token)):
+                        tokenType = "number"
+                        break
+                    default:
+                        tokenType = "variable"
+                        break
+                }
+
+                return <TSqlToken>{
+                    token,
+                    type: tokenType
+                }
+            })
+            .value()
+
+        return tokens as any[]
     }
 }

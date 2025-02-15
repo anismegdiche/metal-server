@@ -61,6 +61,7 @@
     "response-time": "~2.3.3",
     "safe-stable-stringify": "~2.5.0",
     "soap": "~1.1.7",
+    "sql-tokenizer": "^0.2.1",
     "swagger-ui-express": "~5.0.1",
     "tesseract.js": "~5.1.1",
     "ts-mixer": "~6.0.4",

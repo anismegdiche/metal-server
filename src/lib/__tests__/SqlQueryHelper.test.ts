@@ -1,6 +1,6 @@
 
 
-import { SqlQueryHelper } from '../SqlQueryHelper'
+import { ESCAPE_FIELD_VALUE, SqlQueryHelper } from '../SqlQueryHelper'
 import { TRow } from '../../types/DataTable'
 import { JsonHelper } from "../JsonHelper"
 
@@ -83,6 +83,15 @@ describe('SqlQueryHelper', () => {
             age: 33
         }).Where("id = 1")
         expect(queryHelper.Query).toEqual("UPDATE users SET name='John',age=33 WHERE id = 1")
+    })
+
+    it("Update", () => {
+        const queryHelper = new SqlQueryHelper()
+        queryHelper.Update('users').Set({
+            name: `$> firstname + ' ' + lastname`,
+            age: `$>33 + 10`
+        }).Where("id = 1")
+        expect(queryHelper.Query).toEqual("UPDATE users SET name=firstname + ' ' + lastname,age=33 + 10 WHERE id = 1")
     })
 
     it("Fields string", () => {
