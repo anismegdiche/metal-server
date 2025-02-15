@@ -8,13 +8,14 @@ All parameters are described in the table below:
 | Parameter             | Usage                                | GET<br>select | POST<br>insert | PATCH<br>update | DELETE<br>delete | JS Context          | Metal version                     |
 | --------------------- | ------------------------------------ | :-----------: | :------------: | :-------------: | :--------------: | ------------------- | --------------------------------- |
 | ✨`cache`             | cache returned data for a given time |      🟢       |       -        |        -        |        -         | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
-| ✨`data`              | data to send to provider             |       -       |       🟢       |       🟢        |        -         | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
+| ✨❇️`data`            | data to send to provider             |       -       |       🟢       |       🟢        |        -         | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
 | ✨`fields`            | select fields to return              |      🟢       |       -        |        -        |        -         | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
 | ✨`filter`            | simple filter                        |      🟢       |       -        |       🟢        |        🟢        | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
 | ✨`filter-expression` | complex filter expression            |      🟢       |       -        |       🟢        |        🟢        | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
 | ✨`sort`              | sort data with a given order         |      🟢       |       -        |        -        |        -         | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
 
-> ✨ Supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
+> ✨ Supports Dynamic JS Code (see: [Dynamic JS](dynamic-coding#dynamic-js))
+> ❇️ : supports Field Value Escape (see: [Field Value Escape](dynamic-coding#field-value-escape))
 
 ## How Optional Parameters are handled by Data Providers{.new-feature}
 

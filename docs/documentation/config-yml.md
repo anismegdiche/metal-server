@@ -626,7 +626,7 @@ The parameters that can be configured inside `select` tag are :
 | ✨`sort`              | sort data, can be `asc` or `desc`. (see: [Optional Parameters](rest-api#optional-parameters))    | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 | `cache`               | time in seconds to cache data. (see: [Optional Parameters](rest-api#optional-parameters))        | N/A                 | <Badge type="default" text="^0.1" /> |
 
-> ✨ : supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
+> ✨ : supports Dynamic JS Code (see: [Dynamic Coding](dynamic-coding))
 
 **Example**
 
@@ -653,7 +653,7 @@ The parameters that can be configured inside `insert` tag are :
 | `entity` | name of entity in the `schema`                                                                  | N/A                 | <Badge type="default" text="^0.1" /> |
 | ✨`data` | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters)) | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 
-✨ : supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
+✨ : supports Dynamic JS Code (see: [Dynamic Coding](dynamic-coding))
 
 **Example**
 
@@ -687,7 +687,7 @@ The parameters that can be configured inside `delete` tag are :
 | ✨`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 | ✨`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 
-✨ : supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
+✨ : supports Dynamic JS Code (see: [Dynamic Coding](dynamic-coding))
 
 **Example**
 
@@ -714,9 +714,10 @@ The parameters that can be configured inside `update` tag are :
 | `entity`              | name of entity in the `schema`                                                                   | N/A                 | <Badge type="default" text="^0.1" /> |
 | ✨`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 | ✨`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| ✨`data`              | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters))  | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
+| ✨❇️`data`              | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters))  | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 
-> ✨ : supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
+> ✨ : supports Dynamic JS Code (see: [Dynamic JS](dynamic-coding#dynamic-js))
+> ❇️ : supports Field Value Escape (see: [Field Value Escape](dynamic-coding#field-value-escape))
 
 **Example**
 
@@ -775,7 +776,7 @@ The parameters that can be configured inside `join` tag are :
 | ✨`left-field`  | Left field for equality with `right-field`                           | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 | ✨`right-field` | Right field                                                          | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 
-> ✨ : supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
+> ✨ : supports Dynamic JS Code (see: [Dynamic Coding](dynamic-coding))
 
 The `type` parameter can be :
 
@@ -902,7 +903,7 @@ The parameters that can be configured inside `sync` tag are :
 | ✨`to.entity`   | name of destination entity in the `to.schema`                                                                   | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
 | ✨`id`          | field that exists in both source and destination entity. It will be used as unique identity for synchronization | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
 
-> ✨ : supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
+> ✨ : supports Dynamic JS Code (see: [Dynamic Coding](dynamic-coding))
 
 **Example**
 
