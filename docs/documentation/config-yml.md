@@ -653,7 +653,7 @@ The parameters that can be configured inside `insert` tag are :
 | `entity` | name of entity in the `schema`                                                                  | N/A                 | <Badge type="default" text="^0.1" /> |
 | ✨`data` | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters)) | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 
-> ✨ : supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
+✨ : supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
 
 **Example**
 
@@ -687,7 +687,7 @@ The parameters that can be configured inside `delete` tag are :
 | ✨`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 | ✨`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
 
-> ✨ : supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
+✨ : supports Dynamic JS Code (see: [Dynamic JS Code](dynamic-js))
 
 **Example**
 
