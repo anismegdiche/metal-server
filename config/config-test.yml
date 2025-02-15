@@ -147,7 +147,7 @@ plans:
       - newContext: false
       - set:
           var: startTimer
-          value: { { Date.now() } }
+          value: ${{ Date.now() }}
       - select:
           schema: mflix
           entity: movies
@@ -155,7 +155,7 @@ plans:
             year: 2001
       - set:
           var: time
-          value: { { Date.now() - startTimer } }
+          value: ${{ Date.now() - startTimer }}
       - set:
           var: count
           value: $ROWS.length
@@ -163,8 +163,8 @@ plans:
           filter:
             year: 2001
           data:
-            time: { { time } }
-            count: { { count } }
+            time: ${{ time }}
+            count: ${{ count }}
 
     aitest2:
       - debug:
@@ -226,7 +226,7 @@ plans:
       - update:
           filter-expression: "id < 10"
           data:
-            name: "AAA"
+            name: $> name + ' ' + display_name
             display_name: "BBB"
       - delete:
           filter-expression: "id >= 100"
