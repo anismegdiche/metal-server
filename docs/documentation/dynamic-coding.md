@@ -84,5 +84,5 @@ plans:
           filter-expression: "id < 10"
           data:
             display_name: $> first_name + ' ' + last_name # <-- escape field value
-            unique_id: $>  last_name + '-' + ${{ $utils.Uuid() }}  # <-- mixed usage
+            unique_id: $>  last_name + '-${{ $utils.newUuid() }}'  # <-- mixed usage
 ```
