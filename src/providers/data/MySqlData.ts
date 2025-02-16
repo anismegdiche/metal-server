@@ -135,7 +135,7 @@ export class MySqlData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
-        const [rows] = await connection.query(sqlQueryHelper.Query)
+        const [rows] = await connection.query(sqlQueryHelper.Query())
 
         const data = new DataTable(schemaRequest.entity)
 
@@ -173,7 +173,7 @@ export class MySqlData extends absDataProvider {
 
         try {
             const connection = await this.ensureConnection()
-            await connection.query(sqlQueryHelper.Query)
+            await connection.query(sqlQueryHelper.Query())
             Cache.Remove(schemaRequest)
 
             return HttpResponse.Created()
@@ -202,7 +202,7 @@ export class MySqlData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
-        await connection.query(sqlQueryHelper.Query)
+        await connection.query(sqlQueryHelper.Query())
         Cache.Remove(schemaRequest)
 
         return HttpResponse.NoContent()
@@ -222,7 +222,7 @@ export class MySqlData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
-        await connection.query(sqlQueryHelper.Query)
+        await connection.query(sqlQueryHelper.Query())
         Cache.Remove(schemaRequest)
 
         return HttpResponse.NoContent()

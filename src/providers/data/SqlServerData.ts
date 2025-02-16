@@ -128,7 +128,7 @@ export class SqlServerData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
-        const sqlServerResult = await this.Connection.query(sqlQueryHelper.Query)
+        const sqlServerResult = await this.Connection.query(sqlQueryHelper.Query())
 
         const data = new DataTable(schemaRequest.entity)
 
@@ -166,7 +166,7 @@ export class SqlServerData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
 
-        await this.Connection.query(sqlQueryHelper.Query)
+        await this.Connection.query(sqlQueryHelper.Query())
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -193,7 +193,7 @@ export class SqlServerData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
-        await this.Connection.query(sqlQueryHelper.Query)
+        await this.Connection.query(sqlQueryHelper.Query())
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -217,7 +217,7 @@ export class SqlServerData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
-        await this.Connection.query(sqlQueryHelper.Query)
+        await this.Connection.query(sqlQueryHelper.Query())
 
         // clean cache
         Cache.Remove(schemaRequest)

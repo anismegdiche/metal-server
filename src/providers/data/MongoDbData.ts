@@ -108,7 +108,7 @@ export class MongoDbData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
-        const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query)
+        const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query())
 
         const rows = await this.Connection.db(this.Config.database)
             .collection(entity)
@@ -180,7 +180,7 @@ export class MongoDbData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
-        const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query)
+        const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query())
 
         const mongoFilter: MongoDb.Filter<MongoDb.Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
 
@@ -215,7 +215,7 @@ export class MongoDbData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
-        const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query)
+        const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query())
 
         const mongoFilter: MongoDb.Filter<MongoDb.Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
 

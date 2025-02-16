@@ -56,7 +56,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
     // eslint-disable-next-line class-methods-use-this
     GetSqlQuery(sqlQueryHelper: SqlQueryHelper, options: TOptionalParameter): string | undefined {
         return (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
-            ? sqlQueryHelper.Query
+            ? sqlQueryHelper.Query()
             : undefined
     }
 

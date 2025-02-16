@@ -218,7 +218,7 @@ export class FilesData extends absDataProvider {
 
             const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
             await this.Connection.Write(
                 entity,
                 await this.File[entity].Set(data, $context)
@@ -264,7 +264,7 @@ export class FilesData extends absDataProvider {
 
             const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
 
             await this.Connection.Write(
                 entity,
@@ -309,7 +309,7 @@ export class FilesData extends absDataProvider {
 
             const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
 
             await this.Connection.Write(
                 entity,

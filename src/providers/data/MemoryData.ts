@@ -190,7 +190,7 @@ export class MemoryData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
-        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -220,7 +220,7 @@ export class MemoryData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
-        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
 
         // clean cache
         Cache.Remove(schemaRequest)
