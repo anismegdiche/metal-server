@@ -12,13 +12,13 @@ import { TRow } from "../types/DataTable"
 import { TJson } from '../types/TJson'
 import { Logger } from '../utils/Logger'
 import { JsonHelper } from './JsonHelper'
-import { HttpErrorInternalServerError } from "../server/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError } from "../server/HttpErrors"
 
 
 //
 export type TSqlToken = {
     token: string
-    type: 'string' | 'number' | 'variable' | 'operator' | 'par-open' | 'par-closed'
+    type: 'string' | 'number' | 'variable' | 'operator' | 'par-open' | 'par-closed' | 'seperator' | 'command'
 }
 
 export const ESCAPE_FIELD_VALUE = "$>"
@@ -26,7 +26,7 @@ export const ESCAPE_FIELD_VALUE = "$>"
 //
 export class SqlQueryHelper {
 
-    Query: string = ''
+    #Query: string = ''
     Data: object[] = []
 
     tokenize = tokenizer()
@@ -104,14 +104,21 @@ export class SqlQueryHelper {
 
     @Logger.LogFunction()
     SetQuery(query: string): this {
-        this.Query = String(query)
+        this.#Query = String(query)
         return this
+    }
+
+    Query(): string {
+        if (this.#DetectSQLInjection())
+            throw new HttpErrorBadRequest('SQL Injection detected')
+
+        return this.#Query
     }
 
     @Logger.LogFunction()
     Select(fields?: string): this {
 
-        this.Query = (fields === undefined || fields === '*')
+        this.#Query = (fields === undefined || fields === '*')
             ? `SELECT *`
             : `SELECT ${this.#EscapeFields(fields)}`
 
@@ -120,7 +127,7 @@ export class SqlQueryHelper {
 
     @Logger.LogFunction()
     From(entity: string): this {
-        this.Query = `${this.Query} FROM ${this.FnEscapeEntity(entity)}`
+        this.#Query = `${this.#Query} FROM ${this.FnEscapeEntity(entity)}`
         return this
     }
 
@@ -132,7 +139,7 @@ export class SqlQueryHelper {
 
         // filter-expression
         if (typeof condition === 'string' && condition.length > 0) {
-            this.Query = `${this.Query} WHERE ${condition}`
+            this.#Query = `${this.#Query} WHERE ${condition}`
             return this
         }
 
@@ -152,7 +159,7 @@ export class SqlQueryHelper {
                 .join(' AND ')
                 .value()
 
-            this.Query = `${this.Query} WHERE ${_cond}`
+            this.#Query = `${this.#Query} WHERE ${_cond}`
             return this
         }
 
@@ -170,7 +177,7 @@ export class SqlQueryHelper {
                 .join(' AND ')
                 .value()
 
-            this.Query = `${this.Query} WHERE ${_cond}`
+            this.#Query = `${this.#Query} WHERE ${_cond}`
             return this
         }
         return this
@@ -178,13 +185,13 @@ export class SqlQueryHelper {
 
     @Logger.LogFunction()
     Delete(): this {
-        this.Query = 'DELETE'
+        this.#Query = 'DELETE'
         return this
     }
 
     @Logger.LogFunction()
     Update(entity: string): this {
-        this.Query = `UPDATE ${this.FnEscapeEntity(entity)}`
+        this.#Query = `UPDATE ${this.FnEscapeEntity(entity)}`
         return this
     }
 
@@ -226,13 +233,13 @@ export class SqlQueryHelper {
             .join(',')
             .value()
 
-        this.Query = `${this.Query} SET ${setValues}`
+        this.#Query = `${this.#Query} SET ${setValues}`
         return this
     }
 
     @Logger.LogFunction()
     Insert(entity: string): this {
-        this.Query = `INSERT INTO ${this.FnEscapeEntity(entity)}`
+        this.#Query = `INSERT INTO ${this.FnEscapeEntity(entity)}`
         return this
     }
 
@@ -241,7 +248,7 @@ export class SqlQueryHelper {
         if (!fields)
             return this
 
-        this.Query = `${this.Query}(${this.#EscapeFields(fields)})`
+        this.#Query = `${this.#Query}(${this.#EscapeFields(fields)})`
 
         return this
     }
@@ -249,32 +256,36 @@ export class SqlQueryHelper {
     @Logger.LogFunction()
     Values(data: TRow[]): this {
         if (Array.isArray(data) && data.length > 0) {
-            this.Query = `${this.Query} VALUES`
+            this.#Query = `${this.#Query} VALUES`
             data.forEach((_values, _index) => {
                 const newValues = _.chain(_values)
                     .mapValues((_value) => {
-                        if (_value == null)
-                            return
-
-                        if (typeof _value === 'object') {
-                            this.Data.push(_value)
-                            return '?'
+                        switch (true) {
+                            case _value == null:
+                                return
+                            case !isNaN(parseInt(_value as string)):
+                            case !isNaN(parseFloat(_value as string)):
+                                return `${_value}`
+                            case typeof _value === 'object':
+                                this.Data.push(_value)
+                                return '?'
+                            default:
+                                return `'${_value}'`
                         }
-                        return `'${_value}'`
                     })
                     .values()
                     .join(',')
                     .value()
 
-                this.Query = `${this.Query} (${newValues})`
+                this.#Query = `${this.#Query} (${newValues})`
                 // multiple value join
                 if (_index < data.length - 1) {
-                    this.Query = `${this.Query}, `
+                    this.#Query = `${this.#Query}, `
                 }
             })
         } else {
             // eslint-disable-next-line you-dont-need-lodash-underscore/values
-            this.Query = `${this.Query} VALUES ('${_.values(data).join('\',\'')}')`
+            this.#Query = `${this.#Query} VALUES ('${_.values(data).join('\',\'')}')`
         }
         return this
     }
@@ -287,17 +298,17 @@ export class SqlQueryHelper {
         }
 
         if (typeof order === 'string')
-            this.Query = `${this.Query} ORDER BY ${order}`
+            this.#Query = `${this.#Query} ORDER BY ${order}`
 
         return this
     }
 
     #SanitizeTokenize(): string[] {
-        const query = this.Query.trim()
+        const query = this.#Query.trim()
         if (/^\d+(\.\d+)?$/.test(query)) {
-            return [this.Query]
+            return [this.#Query]
         }
-        return this.tokenize(this.Query)
+        return this.tokenize(this.#Query)
     }
 
     Tokenize(): TSqlToken[] {
@@ -307,13 +318,16 @@ export class SqlQueryHelper {
             .map((token: string) => {
                 let tokenType = ''
                 switch (true) {
+                    case ['SELECT', 'UPDATE', 'INSERT','DELETE','SET', 'FROM', 'WHERE', 'ORDER', 'BY'].includes(token.toUpperCase()):
+                        tokenType = "command"
+                        break
                     case token === '(':
                         tokenType = 'par-open'
                         break
                     case token === ')':
                         tokenType = 'par-closed'
                         break
-                    case ['+', '-', '*', '/'].includes(token):
+                    case ['+', '-', '*', '/', '='].includes(token):
                         tokenType = "operator"
                         break
                     case token.startsWith("'") && token.endsWith("'"):
@@ -322,6 +336,9 @@ export class SqlQueryHelper {
                     case !isNaN(parseInt(token)):
                     case !isNaN(parseFloat(token)):
                         tokenType = "number"
+                        break
+                    case token === ',':
+                        tokenType = "seperator"
                         break
                     default:
                         tokenType = "variable"
@@ -336,5 +353,60 @@ export class SqlQueryHelper {
             .value()
 
         return tokens as any[]
+    }
+
+    #DetectSQLInjection() {
+        const tokens = this.Tokenize()
+        const denyWords = [
+            "DROP",
+            "ALTER",
+            "EXEC",
+            "EXECUTE",
+            "DECLARE",
+            "CAST",
+            "CONVERT",
+            "UNION",
+            "TABLE",
+            "PROCEDURE",
+            "FUNCTION"
+        ]
+
+        if (tokens.some(token => denyWords.includes(token.token.toUpperCase())))
+            return true
+
+        for (let i = 0; i < tokens.length - 2; i++) {
+            if (
+                tokens[i].type === "number" &&
+                tokens[i + 1].type === "operator" && 
+                tokens[i + 1].token === "=" &&
+                tokens[i + 2].type === "number"
+            ) {
+                return true
+            }
+        }
+
+
+
+        const sqlInjectionPatterns = [
+            /(--|#|\/\*)/i, // Comments like --, #, /*
+            /(;|\|\|)/i, // SQL operators like OR, AND, ;
+        ]
+
+        // Detect all CRUD combinations in the same query
+        const mixedCrudPatterns = [
+            /\bSELECT\b.*\bINSERT\b|\bINSERT\b.*\bSELECT\b/i, // SELECT + INSERT
+            /\bSELECT\b.*\bUPDATE\b|\bUPDATE\b.*\bSELECT\b/i, // SELECT + UPDATE
+            /\bSELECT\b.*\bDELETE\b|\bDELETE\b.*\bSELECT\b/i, // SELECT + DELETE
+            /\bINSERT\b.*\bUPDATE\b|\bUPDATE\b.*\bINSERT\b/i, // INSERT + UPDATE
+            /\bINSERT\b.*\bDELETE\b|\bDELETE\b.*\bINSERT\b/i, // INSERT + DELETE
+            /\bUPDATE\b.*\bDELETE\b|\bDELETE\b.*\bUPDATE\b/i, // UPDATE + DELETE
+            // All four CRUD operations together
+            /\bSELECT\b.*\bINSERT\b.*\bUPDATE\b.*\bDELETE\b|\bDELETE\b.*\bUPDATE\b.*\bINSERT\b.*\bSELECT\b/i
+        ]
+
+        return (
+            sqlInjectionPatterns.some(pattern => pattern.test(this.#Query)) ||
+            mixedCrudPatterns.some(pattern => pattern.test(this.#Query))
+        )
     }
 }
