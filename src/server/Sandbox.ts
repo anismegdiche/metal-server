@@ -125,7 +125,7 @@ export class Sandbox {
             JSON,
             Math,
             _,
-            newUUID: () => typia.random<string & tags.Format<"uuid">>()
+            newUuid: () => typia.random<string & tags.Format<"uuid">>()
         }
     }
 }
