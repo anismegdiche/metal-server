@@ -9,11 +9,14 @@ It streamlines and modernizes CRUD operations and data transformation tasks acro
 
 ```mermaid
 graph TD
-M(<img src="/metal-logo-icon.png" width="80"/> Metal Server) -- TDS Protocol --> A[(Azure SQL <br>Database)]
+M(<img src="https://metal-docs-sh3b0.kinsta.page/metal-logo-icon.png" width="50"/> Metal Server) -- TDS Protocol --> A[(Azure SQL <br>Database)]
 M -- Wire Protocol --> B[(MongoDB)]
 M -- Message-based protocol --> C[(PostgreSQL)]
-M -- I/O --> F[Files]
+M -- I/O --> F[Files]@{ shape: notch-rect, label: "Files" }
+M -- HTTP --> W((Webservices))
 U((Application)) -- HTTP/HTTPS --> M
+
+style M fill:none,stroke:none
 ```
 
 As a conduit between applications and the underlying DBMS, Metal accommodates various database operations, presenting a uniform interface for developers to construct and maintain applications that seamlessly interact with data. By abstracting complexities associated with direct DBMS engagement, Metal empowers developers to focus on core functionality, fostering productivity and manageability.

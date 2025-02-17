@@ -4,7 +4,7 @@ description: "Metal:Middleware, ETL & AI at the same place. Empower your project
 
 # Configuration File Reference
 
-`config.yml` is the Metal configuration file, a YAML file used to configure sources, schemas, and plans. This document describes version 1 of the `config.yml` file format.
+`config.yml` is the Metal configuration file, a YAML file used to configure sources, schemas, and plans.
 
 **Example `config.yml`**
 
