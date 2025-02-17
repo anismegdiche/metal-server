@@ -1,24 +1,25 @@
 
-# <img src="metal-logo.png" style="height: 100px;"/><br><span style="font-size: 0.6em"> `version 0.3.7`</span>
+# <img src="metal-logo.png" style="height: 100px;"/><br><span style="font-size: 0.6em"> `version 0.4`</span>
 
 ## Overview
 
-Metal, abbreviated as **M**iddleware, **E**xtraction, **T**ransformation, **A**rtificial Intelligence and **L**oad, represents a cutting-edge technology that seamlessly integrates the capabilities of artificial intelligence with database middleware and ETL (Extraction, Transformation, Load) functionalities, ushering in a new era of enhanced performance. By infusing artificial intelligence, Metal elevates these functions, imbuing them with automation and intelligent decision-making capabilities.
+Metal (**M**iddleware, **E**xtraction, **T**ransformation, **A**rtificial Intelligence, and **L**oad) is an advanced technology that seamlessly merges artificial intelligence with database middleware and ETL functionalities, propelling enhanced performance and automating decision-making processes. 
 
-The central mission of Metal remains unchanged: to streamline and modernize CRUD operations and data transformation tasks across a spectrum of SQL and NoSQL databases. However, with the infusion of artificial intelligence, Metal transcends traditional boundaries, introducing a paradigm shift in data management and processing.
+It streamlines and modernizes CRUD operations and data transformation tasks across SQL and NoSQL databases, instigating a paradigm shift in data management and processing. Operating as an advanced middleware layer between the database system and HTTP requests, Metal manages communication with popular DBMS, particularly beneficial for systems like MS SQL Server and PostgreSQL that lack built-in REST APIs.
 
 ```mermaid
 graph TD
-M((Metal Server)) -- TDS Protocol --> A[(Azure SQL <br>Database)]
+M(<img src="https://metal-docs-sh3b0.kinsta.page/metal-logo-icon.png" width="50"/> Metal Server) -- TDS Protocol --> A[(Azure SQL <br>Database)]
 M -- Wire Protocol --> B[(MongoDB)]
 M -- Message-based protocol --> C[(PostgreSQL)]
-M -- I/O --> F[Files]
-U(Application) -- HTTP/HTTPS --> M
+M -- I/O --> F[Files]@{ shape: notch-rect, label: "Files" }
+M -- HTTP --> W((Webservices))
+U((Application)) -- HTTP/HTTPS --> M
+
+style M fill:none,stroke:none
 ```
 
-Serving as a sophisticated middleware layer between database systems and HTTP requests, Metal facilitates seamless communication with popular DBMS, crucial for systems lacking built-in REST APIs like MS SQL Server and PostgreSQL. Powered by AI, Metal's middleware functionalities dynamically optimize data flow and interaction patterns, enhancing adaptability and intuitiveness.
-
-Furthermore, Metal's AI-driven prowess extends to intricate data transformations and amalgamations, ensuring compatibility with diverse database providers without schema modifications. Its feature-rich toolkit not only accommodates a wide array of database operations but also presents a uniform interface, empowering developers to focus on core application functionality while navigating complex data management tasks efficiently. This convergence of middleware, ETL, and AI signifies a paradigm shift, fostering heightened intelligence and efficiency in data management and application development.
+As a conduit between applications and the underlying DBMS, Metal accommodates various database operations, presenting a uniform interface for developers to construct and maintain applications that seamlessly interact with data. By abstracting complexities associated with direct DBMS engagement, Metal empowers developers to focus on core functionality, fostering productivity and manageability.
 
 
 ## Features
@@ -45,6 +46,7 @@ These features collectively enhance the flexibility, security, and efficiency of
  * SQL Servers support (Azure SQL Database, Microsoft SQL Server, PostgreSQL)
  * NoSQL Servers support (MongoDB)
  * Files as tables abstraction (JSON,CSV)
+ * WebServices support (REST, SOAP)
  * Virtualize schema and deliver different schema names and user credentials
  * Merge schemas from multiple databases and tables, even from different data providers
  * Secure your schema with additional login processes and grant different rights per table
