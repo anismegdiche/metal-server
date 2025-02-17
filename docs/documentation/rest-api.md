@@ -340,11 +340,11 @@ Returns data from the entity of the schema provided in URL parameters. By defaul
 
 | Name                 | type        | Required | Description                                                                                      | Metal version                        |
 | -------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| `:fields`            | string      | N        | fields to keep, comma seperated. (see: [Optional Parameters](rest-api#optional-parameters))      | <Badge type="default" text="^0.1" /> |
-| `:filter`            | JSON object | N        | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | <Badge type="default" text="^0.1" /> |
-| `:filter-expression` | string      | N        | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | <Badge type="default" text="^0.1" /> |
-| `:sort`              | string      | N        | sort data, can be `asc` or `desc`. (see: [Optional Parameters](rest-api#optional-parameters))    | <Badge type="default" text="^0.1" /> |
-| `:cache`             | number      | N        | time in seconds to cache data. (see: [Optional Parameters](rest-api#optional-parameters))        | <Badge type="default" text="^0.1" /> |
+| `:fields`            | string      | N        | fields to keep, comma seperated. (see: [Optional Parameters](optional-parameters))      | <Badge type="default" text="^0.1" /> |
+| `:filter`            | JSON object | N        | condition `key:value` to filter data. (see: [Optional Parameters](optional-parameters)) | <Badge type="default" text="^0.1" /> |
+| `:filter-expression` | string      | N        | free form condition to filter data. (see: [Optional Parameters](optional-parameters))   | <Badge type="default" text="^0.1" /> |
+| `:sort`              | string      | N        | sort data, can be `asc` or `desc`. (see: [Optional Parameters](optional-parameters))    | <Badge type="default" text="^0.1" /> |
+| `:cache`             | number      | N        | time in seconds to cache data. (see: [Optional Parameters](optional-parameters))        | <Badge type="default" text="^0.1" /> |
 
 ::: tip ℹ️ NOTE
 For detailed description of `fields`, `filter`, `filter-expression`, `sort`, `cache` usage, please refer to [Optional Parameters](#optional-parameters)
@@ -404,7 +404,7 @@ Insert one or more objects in the entity of the schema provided in URL parameter
 | --------- | ---------- | -------- | ------------------------------------------------------------------------------------------------ |
 | `:schema` | string     | Y        | name of schema                                                                                   |
 | `:entity` | string     | Y        | name of entity in the `:schema`                                                                  |
-| `:data`   | JSON array | Y        | data to be inserted in the `:entity`. (see: [Optional Parameters](rest-api#optional-parameters)) |
+| `:data`   | JSON array | Y        | data to be inserted in the `:entity`. (see: [Optional Parameters](optional-parameters)) |
 
 ::: tip ℹ️ NOTE
 For detailed description of `data` usage, please refer to [Optional Parameters](#optional-parameters)
@@ -481,9 +481,9 @@ If no filtering is supplied in the body with `filter` or `filter-expression`, AL
 | -------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `:schema`            | String      | Y        | The name of the selected schema.                                                                                                |
 | `:entity`            | String      | Y        | The name of the entity in the selected schema.                                                                                  |
-| `:filter`            | JSON Object | N        | A condition in the format `field:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters))              |
-| `:filter-expression` | String      | N        | A free-form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))                                |
-| `:data`              | JSON Object | Y        | JSON data in the format `field:newvalue` to modify in the `:entity`. (see: [Optional Parameters](rest-api#optional-parameters)) |
+| `:filter`            | JSON Object | N        | A condition in the format `field:value` to filter data. (see: [Optional Parameters](optional-parameters))              |
+| `:filter-expression` | String      | N        | A free-form condition to filter data. (see: [Optional Parameters](optional-parameters))                                |
+| `:data`              | JSON Object | Y        | JSON data in the format `field:newvalue` to modify in the `:entity`. (see: [Optional Parameters](optional-parameters)) |
 
 ::: tip ℹ️ NOTE
 For detailed description of `data`, `filter` and `filter-expression` usage, please refer to [Optional Parameters](#optional-parameters)
@@ -553,8 +553,8 @@ Content-Type: application/json
 | -------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------ |
 | `:schema`            | string      | Y        | name of the selected schema                                                                      |
 | `:entity`            | string      | Y        | name of the entity in the selected schema                                                        |
-| `:filter`            | JSON object | N        | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) |
-| `:filter-expression` | string      | N        | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   |
+| `:filter`            | JSON object | N        | condition `key:value` to filter data. (see: [Optional Parameters](optional-parameters)) |
+| `:filter-expression` | string      | N        | free form condition to filter data. (see: [Optional Parameters](optional-parameters))   |
 
 ::: tip ℹ️ NOTE
 For detailed description of `filter` and `filter-expression` usage, please refer to [Optional Parameters](#optional-parameters)

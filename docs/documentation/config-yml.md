@@ -609,24 +609,24 @@ plans:
         schema: my-schema
 ```
 
-### ✨`select`⚡ <Badge type="default" text="^0.1" />
+### 📜`select`⚡ <Badge type="default" text="^0.1" />
 
 To select data from an entity.
 If schema is not provided, actual plan's entity data will be returned.
 
 The parameters that can be configured inside `select` tag are :
 
-| Name                  | Decription                                                                                       | JS Context          | Metal version                        |
-| --------------------- | ------------------------------------------------------------------------------------------------ | ------------------- | ------------------------------------ |
-| `schema`              | name of schema                                                                                   | N/A                 | <Badge type="default" text="^0.1" /> |
-| `entity`              | name of entity in the `schema`                                                                   | N/A                 | <Badge type="default" text="^0.1" /> |
-| ✨`fields`            | fields to keep, comma seperated. (see: [Optional Parameters](rest-api#optional-parameters))      | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| ✨`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| ✨`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| ✨`sort`              | sort data, can be `asc` or `desc`. (see: [Optional Parameters](rest-api#optional-parameters))    | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| `cache`               | time in seconds to cache data. (see: [Optional Parameters](rest-api#optional-parameters))        | N/A                 | <Badge type="default" text="^0.1" /> |
+| Name                  | Decription                                                                                       | JS Context                                                                                   | Metal version                        |
+| --------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `schema`              | name of schema                                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| `entity`              | name of entity in the `schema`                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| 📜`fields`            | fields to keep, comma seperated. (see: [Optional Parameters](rest-api#optional-parameters))      | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`sort`              | sort data, can be `asc` or `desc`. (see: [Optional Parameters](rest-api#optional-parameters))    | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| `cache`               | time in seconds to cache data. (see: [Optional Parameters](rest-api#optional-parameters))        | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
 
-> ✨ : supports Dynamic JS Code (see: [Dynamic Coding](dynamic-coding))
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
 **Example**
 
@@ -640,20 +640,20 @@ plans:
         fields: login, partner_id
 ```
 
-### ✨`insert`⚡ <Badge type="default" text="^0.1" />
+### 📜`insert`⚡ <Badge type="default" text="^0.1" />
 
 To insert data to an entity.
 If schema is not provided, actual plan's entity data will be modified
 
 The parameters that can be configured inside `insert` tag are :
 
-| Name     | Description                                                                                     | JS Context          | Metal version                        |
-| -------- | ----------------------------------------------------------------------------------------------- | ------------------- | ------------------------------------ |
-| `schema` | name of schema                                                                                  | N/A                 | <Badge type="default" text="^0.1" /> |
-| `entity` | name of entity in the `schema`                                                                  | N/A                 | <Badge type="default" text="^0.1" /> |
-| ✨`data` | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters)) | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
+| Name     | Description                                                                                     | JS Context                                                                                   | Metal version                        |
+| -------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `schema` | name of schema                                                                                  | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| `entity` | name of entity in the `schema`                                                                  | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| 📜`data` | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
 
-✨ : supports Dynamic JS Code (see: [Dynamic Coding](dynamic-coding))
+📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
 **Example**
 
@@ -673,21 +673,21 @@ plans:
               url: https://www.bing.com
 ```
 
-### ✨`delete`⚡ <Badge type="default" text="^0.1" />
+### 📜`delete`⚡ <Badge type="default" text="^0.1" />
 
 To delete data from an entity.
 If schema is not provided, actual plan's entity data will be modified
 
 The parameters that can be configured inside `delete` tag are :
 
-| Name                  | Description                                                                                      | JS Context          | Metal version                        |
-| --------------------- | ------------------------------------------------------------------------------------------------ | ------------------- | ------------------------------------ |
-| `schema`              | name of schema                                                                                   | N/A                 | <Badge type="default" text="^0.1" /> |
-| `entity`              | name of entity in the `schema`                                                                   | N/A                 | <Badge type="default" text="^0.1" /> |
-| ✨`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| ✨`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
+| Name                  | Description                                                                                      | JS Context                                                                                   | Metal version                        |
+| --------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `schema`              | name of schema                                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| `entity`              | name of entity in the `schema`                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
 
-✨ : supports Dynamic JS Code (see: [Dynamic Coding](dynamic-coding))
+📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
 **Example**
 
@@ -701,23 +701,24 @@ plans:
           filter-expression: "id >= 100"
 ```
 
-### ✨`update`⚡ <Badge type="default" text="^0.1" />
+### 📜`update`⚡ <Badge type="default" text="^0.1" />
 
 To update data of an entity.
 If schema is not provided, actual plan's entity data will be modified
 
 The parameters that can be configured inside `update` tag are :
 
-| Name                  | Description                                                                                      | JS Context          | Metal version                        |
-| --------------------- | ------------------------------------------------------------------------------------------------ | ------------------- | ------------------------------------ |
-| `schema`              | name of schema                                                                                   | N/A                 | <Badge type="default" text="^0.1" /> |
-| `entity`              | name of entity in the `schema`                                                                   | N/A                 | <Badge type="default" text="^0.1" /> |
-| ✨`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| ✨`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| ✨❇️`data`              | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters))  | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
+| Name                  | Description                                                                                      | JS Context                                                                                   | Metal version                        |
+| --------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `schema`              | name of schema                                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| `entity`              | name of entity in the `schema`                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜❇️`data`            | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters))  | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
 
-> ✨ : supports Dynamic JS Code (see: [Dynamic JS](dynamic-coding#dynamic-js))
-> ❇️ : supports Field Value Escape (see: [Field Value Escape](dynamic-coding#field-value-escape))
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
+>
+> ❇️: Supports Field Escape Engine (see: [Field Escape Engine](dynamic-expression-engine#field-escape-engine))
 
 **Example**
 
@@ -729,7 +730,7 @@ plans:
           schema: my-schema
           entity: users
           filter:
-            anonymize: true
+            is_anonymized: true
           data:
             name: "******"
 ```
@@ -762,21 +763,21 @@ plans:
       - break:
 ```
 
-### ✨`join`⚡ <Badge type="default" text="^0.1" />
+### 📜`join`⚡ <Badge type="default" text="^0.1" />
 
 To perform data joins (Left,Right,Inner,Full outer and Cross)
 
 The parameters that can be configured inside `join` tag are :
 
-| Name            | Description                                                          | JS Context          | Metal version                        |
-| --------------- | -------------------------------------------------------------------- | ------------------- | ------------------------------------ |
-| ✨`schema`      | name of schema. If not provided actual plan will be used as a schema | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| ✨`entity`      | name of entity in the `schema`                                       | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| `type`          | Join type can be `left`,`right`,`inner`,`full-outer`,`cross`         | N/A                 | <Badge type="default" text="^0.1" /> |
-| ✨`left-field`  | Left field for equality with `right-field`                           | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
-| ✨`right-field` | Right field                                                          | `$schema`,`$entity` | <Badge type="info" text="^0.4" />    |
+| Name            | Description                                                          | JS Context                                                                                   | Metal version                        |
+| --------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------ |
+| 📜`schema`      | name of schema. If not provided actual plan will be used as a schema | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`entity`      | name of entity in the `schema`                                       | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| `type`          | Join type can be `left`,`right`,`inner`,`full-outer`,`cross`         | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| 📜`left-field`  | Left field for equality with `right-field`                           | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`right-field` | Right field                                                          | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
 
-> ✨ : supports Dynamic JS Code (see: [Dynamic Coding](dynamic-coding))
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
 The `type` parameter can be :
 
@@ -889,21 +890,21 @@ plans:
             text: ocr_text
 ```
 
-### ✨`sync`⚡ <Badge type="default" text="^0.2" />
+### 📜`sync`⚡ <Badge type="default" text="^0.2" />
 
 To synchronize data from source to destination. This will performs Update, Insert and Delete operations on the destination entity to be the exact copy of the data source.
 
 The parameters that can be configured inside `sync` tag are :
 
-| Name            | Description                                                                                                     | JS Context          | Metal version                     |
-| --------------- | --------------------------------------------------------------------------------------------------------------- | ------------------- | --------------------------------- |
-| ✨`from.schema` | name of source schema. If not provided actual plan will be used as a schema                                     | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
-| ✨`from.entity` | name of source entity in the `from.schema`                                                                      | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
-| ✨`to.schema`   | name of destination schema. If not provided actual plan will be used as a schema                                | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
-| ✨`to.entity`   | name of destination entity in the `to.schema`                                                                   | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
-| ✨`id`          | field that exists in both source and destination entity. It will be used as unique identity for synchronization | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
+| Name            | Description                                                                                                     | JS Context                                                                                   | Metal version                     |
+| --------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------- |
+| 📜`from.schema` | name of source schema. If not provided actual plan will be used as a schema                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" /> |
+| 📜`from.entity` | name of source entity in the `from.schema`                                                                      | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" /> |
+| 📜`to.schema`   | name of destination schema. If not provided actual plan will be used as a schema                                | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" /> |
+| 📜`to.entity`   | name of destination entity in the `to.schema`                                                                   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" /> |
+| 📜`id`          | field that exists in both source and destination entity. It will be used as unique identity for synchronization | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" /> |
 
-> ✨ : supports Dynamic JS Code (see: [Dynamic Coding](dynamic-coding))
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
 **Example**
 

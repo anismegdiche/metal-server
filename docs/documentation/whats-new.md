@@ -33,7 +33,7 @@ features:
         <br><br><span class="VPBadge danger">Learn more...</span>
       link: /documentation/config-yml
 
-    - title: extended dynamic JS & context variables
+    - title: Dynamic Expression Engine
       details: |
         .
         <br><br><span class="VPBadge danger">Learn more...</span>

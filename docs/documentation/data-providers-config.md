@@ -437,7 +437,7 @@ List of managed content types:
 
 | Parameter      | Type   | Description                                                               |
 | -------------- | ------ | ------------------------------------------------------------------------- |
-| ✨ `json-path` | String | the JSON path of the Data Array in the JSON file (default: empty string). |
+| 📜 `json-path` | String | the JSON path of the Data Array in the JSON file (default: empty string). |
 
 **Example:**
 
@@ -582,9 +582,9 @@ The endpoint configuration includes the HTTP method to use, the relative URL to 
 
 | Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                 |
 | ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| ✨ _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity)                                                                      |
-| ✨ `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity)                                                                      |
-| ✨ `session-headers`         | Object | Headers to add after login is successful                                                                                                         | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity), [`$request`](dynamic-js#request),[`$response`](dynamic-js#response) |
+| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                      |
+| 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                      |
+| 📜 `session-headers`         | Object | Headers to add after login is successful                                                                                                         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$request`](dynamic-expression-engine#request),[`$response`](dynamic-expression-engine#response) |
 
 <u>**Method or Operation key**:</u>{#method}
 
@@ -617,9 +617,9 @@ This endpoint is used to read data from a collection. The endpoint configuration
 
 | Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                 |
 | ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| ✨ _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity)                                                                      |
-| ✨ `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity)                                                                      |
-| ✨ `response`                | String | response path to get data                                                                                                                        | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity), [`$request`](dynamic-js#request),[`$response`](dynamic-js#response) |
+| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                      |
+| 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                      |
+| 📜 `response`                | String | response path to get data                                                                                                                        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$request`](dynamic-expression-engine#request),[`$response`](dynamic-expression-engine#response) |
 
 **Example:**
 
@@ -631,7 +631,6 @@ rest-dog: # https://dog.ceo/dog-api/documentation/
   host: https://dog.ceo/api
   options:
     type: rest
-    content: json
     endpoints:
       collection-read: # [!code highlight]
         get: /breeds/list/all# [!code highlight]
@@ -644,8 +643,8 @@ This endpoint is used to create a new item. The endpoint configuration includes 
 
 | Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                      |
 | ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| ✨ _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity)                           |
-| ✨ `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity), [`$row`](dynamic-js#row) |
+| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                           |
+| 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$row`](dynamic-expression-engine#row) |
 
 **Example:**
 
@@ -657,7 +656,6 @@ rest-fakerestapi: # https://fakerestapi.azurewebsites.net/index.html
   host: https://fakerestapi.azurewebsites.net/api/v1/
   options:
     type: rest
-    content: json
     endpoints:
       item-create: # [!code highlight]
         post: / # [!code highlight]
@@ -669,8 +667,8 @@ This endpoint is used to update an existing item. The endpoint configuration inc
 
 | Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                      |
 | ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| ✨ _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity)                           |
-| ✨ `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity), [`$row`](dynamic-js#row) |
+| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                           |
+| 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$row`](dynamic-expression-engine#row) |
 
 **Example:**
 
@@ -682,7 +680,6 @@ rest-fakerestapi: # https://fakerestapi.azurewebsites.net/index.html
   host: https://fakerestapi.azurewebsites.net/api/v1/
   options:
     type: rest
-    content: json
     endpoints:
       item-update: # [!code highlight]
         put: /${{ $entity }}/${{ $row.id }} # [!code highlight]
@@ -694,8 +691,8 @@ This endpoint is used to delete an existing item. The endpoint configuration inc
 
 | Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                      |
 | ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| ✨ _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity)                           |
-| ✨ `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-js#schema), [`$entity`](dynamic-js#entity), [`$row`](dynamic-js#row) |
+| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                           |
+| 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$row`](dynamic-expression-engine#row) |
 
 **Example:**
 
@@ -707,7 +704,6 @@ rest-fakerestapi: # https://fakerestapi.azurewebsites.net/index.html
   host: https://fakerestapi.azurewebsites.net/api/v1/
   options:
     type: rest
-    content: json
     endpoints:
       item-delete: # [!code highlight]
         delete: /${{ $entity }}/${{ $row.id }} # [!code highlight]

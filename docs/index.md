@@ -127,4 +127,4 @@ Metal can be integrated with an event-driven architecture by publishing events w
 </FancySection>
 
 
-<Badge type="warning" text="✨" style="line-height:0.9rem;padding:1px;margin:1px"/>
+<Badge type="warning" text="📜" style="line-height:0.9rem;padding:1px;margin:1px"/>

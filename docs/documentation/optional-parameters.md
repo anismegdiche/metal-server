@@ -1,23 +1,23 @@
 # Optional Parameters
 
-Optional Parameters are usefull for applying filtering, sorting or limit fields to return.
-They are the same whether they are used as query string for a `GET` Request or in the body for `POST`,`PATCH` and `DELETE` or in the plan commands `select`,`delete`,`insert` and `update`.
+These parameters provide a flexible way to modify API requests or plan commands. Use them to apply filters, specify sorting options, or include additional data as needed. Their function remains consistent across both API requests and plan commands.
 
 All parameters are described in the table below:
 
-| Parameter             | Usage                                | GET<br>select | POST<br>insert | PATCH<br>update | DELETE<br>delete | JS Context          | Metal version                     |
-| --------------------- | ------------------------------------ | :-----------: | :------------: | :-------------: | :--------------: | ------------------- | --------------------------------- |
-| ✨`cache`             | cache returned data for a given time |      🟢       |       -        |        -        |        -         | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
-| ✨❇️`data`            | data to send to provider             |       -       |       🟢       |       🟢        |        -         | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
-| ✨`fields`            | select fields to return              |      🟢       |       -        |        -        |        -         | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
-| ✨`filter`            | simple filter                        |      🟢       |       -        |       🟢        |        🟢        | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
-| ✨`filter-expression` | complex filter expression            |      🟢       |       -        |       🟢        |        🟢        | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
-| ✨`sort`              | sort data with a given order         |      🟢       |       -        |        -        |        -         | `$schema`,`$entity` | <Badge type="info" text="^0.4" /> |
+| Parameter             | Usage                                | GET<br>select | POST<br>insert | PATCH<br>update | DELETE<br>delete | JS Context                                                                                   | Metal version                        |
+| --------------------- | ------------------------------------ | :-----------: | :------------: | :-------------: | :--------------: | -------------------------------------------------------------------------------------------- | ------------------------------------ |
+| 📜`filter`            | simple filter                        |      🟢       |       -        |       🟢        |        🟢        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`filter-expression` | complex filter expression            |      🟢       |       -        |       🟢        |        🟢        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`fields`            | select fields to return              |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`sort`              | sort data with a given order         |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| `cache`               | cache returned data for a given time |      🟢       |       -        |        -        |        -         | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| 📜❇️`data`            | data to send to provider             |       -       |       🟢       |       🟢        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
 
-> ✨ Supports Dynamic JS Code (see: [Dynamic JS](dynamic-coding#dynamic-js))
-> ❇️ : supports Field Value Escape (see: [Field Value Escape](dynamic-coding#field-value-escape))
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
+>
+> ❇️: supports Field Escape Engine (see: [Field Escape Engine](dynamic-expression-engine#field-escape-engine))
 
-## How Optional Parameters are handled by Data Providers{.new-feature}
+## How Optional Parameters are handled by Data Providers
 
 | Data Provider                           | `data` | `filter` | `filter-expression` | `fields` | `sort` | `cache` |
 | --------------------------------------- | :----: | :------: | :-----------------: | :------: | :----: | :-----: |
@@ -41,7 +41,9 @@ All parameters are described in the table below:
 
 ### `filter`
 
-Simple filtering feature by providing fields and values:
+Simple filtering feature by providing fields and values.
+
+Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
 
 **Example**
 
@@ -82,15 +84,12 @@ Simple filtering feature by providing fields and values:
 > }
 > ```
 
-::: tip ℹ️ TIP
-It is possible to use dynamic JS code in values.
-
-For more information, please refer to [Dynamic JS code](dynamic-js)
-:::
 
 ### `filter-expression`
 
 Free expression for more complex data filtering expressed in SQL-like syntax.
+
+Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
 
 **Example**
 
@@ -98,7 +97,7 @@ Free expression for more complex data filtering expressed in SQL-like syntax.
 >
 > ```http
 > GET /schema/my-schema/my-entity
->     ?filter-expression="name LIKE '%ing' "
+>     ?filter-expression=name LIKE '%%ing'
 > ```
 >
 > **PATCH Request**
@@ -132,17 +131,14 @@ When employing the `LIKE` operator with the wildcard `%` in a GET method, rememb
 > filter-expression=name LIKE '%%ing'
 > ```
 >
-> :::
-
-::: tip ℹ️ TIP
-It is possible to use dynamic JS code in values.
-
-For more information, please refer to [Dynamic JS code](dynamic-js)
 :::
+
 
 ### `fields`
 
-Select fields to return
+Select fields to return.
+
+Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
 
 **Example**
 
@@ -154,6 +150,8 @@ Select fields to return
 ### `sort`
 
 sort data with given order.
+
+Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
 
 | Sorting Operator | Usage            | SQL like |
 | ---------------- | ---------------- | -------- |
@@ -186,15 +184,12 @@ Instruct Metal to cache the data returned from the source for a given time in se
 
 this paramater is used for inserting or updating data.
 
+Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine) and Field Escape Engine only for updates (see: [Field Escape Engine](dynamic-expression-engine#field-escape-engine))
+
 #### Inserting data
 
 `:data` accept whether a JSON object if it is a single row to insert or a JSON Array if many rows
 
-::: tip ℹ️ TIP
-It is possible to use dynamic JS code in values.
-
-For more information, please refer to [Dynamic JS code](dynamic-js)
-:::
 
 **Example: single row insert**
 
