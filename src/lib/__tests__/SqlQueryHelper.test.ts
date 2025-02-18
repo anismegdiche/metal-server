@@ -1,6 +1,6 @@
 
 
-import { ESCAPE_FIELD_VALUE, SqlQueryHelper } from '../SqlQueryHelper'
+import { SqlQueryHelper } from '../SqlQueryHelper'
 import { TRow } from '../../types/DataTable'
 import { JsonHelper } from "../JsonHelper"
 import { HttpErrorBadRequest } from "../../server/HttpErrors"
