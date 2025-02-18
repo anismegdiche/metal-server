@@ -26,7 +26,7 @@ export type TScheduleConfig = {
 
 export class Schedule {
 
-    static Jobs: TSchedule[] = []
+    static Jobs: TSchedule[] = [] //NOSONAR
 
     @Logger.LogFunction()
     static async CreateAndStartAll() {

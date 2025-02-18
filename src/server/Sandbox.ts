@@ -16,7 +16,7 @@ import typia, { tags } from "typia"
 export class Sandbox {
 
     #Context = createContext()
-    #KeepState: boolean = false
+    #KeepState: boolean = false //NOSONAR
 
     constructor(context?: Partial<TContext>) {
         if (context) {
@@ -74,7 +74,7 @@ export class Sandbox {
             /(['"`])\s*(?:or|and)\s*=\s*\1/i,
 
             // Detecting manipulation of global object (global or globalThis)
-            /\b(global|globalThis)\s*\.\s*\w+\s*=/,  // Matches assignments to global object like global.hacked = true
+            /\b(global|globalThis)\s*\.\s*\w+\s*=/  // Matches assignments to global object like global.hacked = true
         ]
         
         return !maliciousPatterns.some(pattern => pattern.test(code))
