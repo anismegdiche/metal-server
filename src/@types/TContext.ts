@@ -3,6 +3,7 @@
 //
 //
 //
+import { TRow } from "../types/DataTable"
 import { TJson } from "../types/TJson"
 
 
@@ -29,5 +30,11 @@ export type TContext = {
         url?: string,
         host?: string,
         body?: TJson
+    },
+    $plan: {
+        name: string,
+        schema?: string,
+        entity: string,
+        data: TRow[]
     }
 }
