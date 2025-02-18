@@ -77,7 +77,7 @@ export class PlanData extends absDataProvider {
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const planData = await Plan.Process(schemaRequest, sqlQuery)
+        const planData = await Plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
 
         const data = new DataTable(schemaRequest.entity)
 

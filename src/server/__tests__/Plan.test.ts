@@ -21,7 +21,7 @@ describe('Process', () => {
         jest.spyOn(TypeHelper, 'IsSchemaRequest').mockReturnValue(true)
         jest.spyOn(Plan, 'ProcessSchemaRequest').mockResolvedValue(new DataTable())
 
-        const result = await Plan.Process(schemaRequest, sqlQuery)
+        const result = await Plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
 
         expect(result).toBeInstanceOf(DataTable)
         expect(Plan.ProcessSchemaRequest).toHaveBeenCalledWith(schemaRequest, sqlQuery)
@@ -43,7 +43,7 @@ describe('Process', () => {
         jest.spyOn(TypeHelper, 'IsSchemaRequest').mockReturnValue(true)
         jest.spyOn(Plan, 'ProcessSchemaRequest').mockResolvedValue(new DataTable())
 
-        const result = await Plan.Process(schemaRequest)
+        const result = await Plan.ProcessSchemaRequest(schemaRequest)
 
         expect(result).toBeInstanceOf(DataTable)
         expect(Plan.ProcessSchemaRequest).toHaveBeenCalledWith(schemaRequest, undefined)
@@ -59,7 +59,7 @@ describe('Process', () => {
         }
 
         // Act
-        const result = await Plan.Process(scheduleConfig)
+        const result = await Plan.ProcessScheduleConfig(scheduleConfig)
 
         // Assert
         expect(result).toBeInstanceOf(DataTable)
@@ -88,7 +88,7 @@ describe('Process', () => {
         const sqlQuery = 'SELECT * FROM TestTable'
 
         // Act
-        const result = await Plan.Process(schemaRequest, sqlQuery)
+        const result = await Plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
 
         // Assert
         expect(result).toBeInstanceOf(DataTable)
@@ -104,7 +104,7 @@ describe('Process', () => {
         const sqlQuery = 'SELECT * FROM TestTable'
 
         // Act
-        const result = await Plan.Process(schemaRequest, sqlQuery)
+        const result = await Plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
 
         // Assert
         expect(result).toBeInstanceOf(DataTable)

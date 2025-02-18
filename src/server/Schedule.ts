@@ -48,7 +48,7 @@ export class Schedule {
                         : _scheduleParams.cron,
                     () => {
                         Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: Running job '${_schedule}'`)
-                        Plan.Process(_scheduleParams)
+                        Plan.ProcessScheduleConfig(_scheduleParams)
                             .then(() => {
                                 Logger.Debug(`${Logger.Out} Schedule.CreateAndStartAll: job '${_schedule}' terminated`)
                             })

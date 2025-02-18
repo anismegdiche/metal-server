@@ -12,7 +12,6 @@ import { Config } from "./Config"
 import { TInternalResponse } from "../types/TInternalResponse"
 import { TJson } from "../types/TJson"
 import { TSchemaRequest } from "../types/TSchemaRequest"
-import { TypeHelper } from "../lib/TypeHelper"
 import { TScheduleConfig } from "./Schedule"
 import { Step, TStepArguments } from "./Step"
 import { DataTable, TRow } from "../types/DataTable"
@@ -25,17 +24,23 @@ import { StepCommand } from '../types/TConfig'
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
 import { TContext } from "../@types/TContext"
+import { MemoryData } from "../providers/data/MemoryData"
+import { absDataProvider } from "../providers/absDataProvider"
+import { Server } from "./Server"
 
 
 //
 export class Plan {
 
-    @Logger.LogFunction()
-    static async Process(schemaRequest: TSchemaRequest | TScheduleConfig, sqlQuery?: string): Promise<DataTable> {
-        return TypeHelper.IsSchemaRequest(schemaRequest)
-            ? await Plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
-            : await Plan.ProcessScheduleConfig(schemaRequest, sqlQuery)
+    static Name: string = ""
+
+    static Config: TJson = {
+        Semaphore: Server.Cpus
     }
+
+    // static DataBase: absDataProvider = new MemoryData()
+
+    // static Semaphore = new Semaphore(<number> Plan.Config.Semaphore)
 
     static async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery?: string) {
 
@@ -61,7 +66,7 @@ export class Plan {
         return currentDatatable
     }
 
-    static async ProcessScheduleConfig(schemaRequest: TScheduleConfig, sqlQuery: string | undefined) {
+    static async ProcessScheduleConfig(schemaRequest: TScheduleConfig, sqlQuery?: string) {
 
         const { plan, entity } = schemaRequest
 
@@ -98,6 +103,8 @@ export class Plan {
                 data: <TRow[]>[]
             }
         }
+
+        Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}': semaphore = ${Plan.Config.Semaphore}, $context = ${JsonHelper.Stringify($context)}`)
 
         for await (const [stepIndex, step] of Object.entries(steps)) {
             const _stepIndex = parseInt(stepIndex, 10) + 1
