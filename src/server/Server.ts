@@ -8,6 +8,7 @@ import { rateLimit } from 'express-rate-limit'
 import responseTime from 'response-time'
 import chokidar from 'chokidar'
 import helmet from "helmet"
+import os from 'node:os'
 //
 import { TJson } from '../types/TJson'
 import { HTTP_STATUS_CODE, ROUTE, SERVER } from '../lib/Const'
@@ -35,11 +36,15 @@ import { StorageProvider } from "../providers/StorageProvider"
 import { DataProvider } from "../providers/DataProvider"
 import { WebServiceProvider } from "../providers/WebServiceProvider"
 
+
+//
 export class Server {
 
     static readonly App: Express = express()
-    static Port: number
-    static CurrentPath: string
+    static Port: number  //NOSONAR
+    static CurrentPath: string  //NOSONAR
+
+    static readonly Cpus = os.cpus().length ?? 1
 
     @Logger.LogFunction()
     static async Init(): Promise<void> {
