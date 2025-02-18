@@ -15,7 +15,7 @@ import { TSchemaRequest } from "../types/TSchemaRequest"
 import { TypeHelper } from "../lib/TypeHelper"
 import { TScheduleConfig } from "./Schedule"
 import { Step, TStepArguments } from "./Step"
-import { DataTable } from "../types/DataTable"
+import { DataTable, TRow } from "../types/DataTable"
 import { Helper } from "../lib/Helper"
 import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
@@ -24,6 +24,7 @@ import { HttpErrorNotFound } from "./HttpErrors"
 import { StepCommand } from '../types/TConfig'
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
+import { TContext } from "../@types/TContext"
 
 
 //
@@ -88,6 +89,16 @@ export class Plan {
 
         let currentDataTable = new DataTable(currentEntityName)
 
+        let $context: Partial<TContext> = {}
+        $context = {
+            $plan: {
+                name: currentPlanName,
+                schema: currentSchemaName,
+                entity: currentEntityName,
+                data: <TRow[]>[]
+            }
+        }
+
         for await (const [stepIndex, step] of Object.entries(steps)) {
             const _stepIndex = parseInt(stepIndex, 10) + 1
             Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}': Step ${_stepIndex}, ${JsonHelper.Stringify(step)}`)
@@ -138,6 +149,15 @@ export class Plan {
                     Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${_stepIndex},${JsonHelper.Stringify(step)}' added error ${JsonHelper.Stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
                 }
             }
+            $context = _.merge(
+                $context,
+                {
+                    $plan: {
+                        data: currentDataTable.Rows
+                    }
+                }
+            )
+            Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}', step:${_stepIndex}: $context = ${JsonHelper.Stringify($context)}`)
         }
         return currentDataTable
     }
@@ -152,7 +172,7 @@ export class Plan {
         if (Config.Has(`plans.${plan}`) && _.has(configFileJson.plans, plan)) {
             Config.Set(`plans.${plan}`, configFileJson.plans[plan])
             return HttpResponse.Ok({
-                plan: plan,
+                plan,
                 message: `Plan reloaded`
             })
         }
