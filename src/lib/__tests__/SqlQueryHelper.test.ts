@@ -214,4 +214,9 @@ describe('SqlQueryHelper', () => {
         }).Where("id = 1")
         expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
     })
+
+    it("Sql injection test - should not throw error", () => {
+        const queryHelper = new SqlQueryHelper("SELECT * FROM users-table WHERE id = 1")
+        expect(queryHelper.Query()).toBe("SELECT * FROM users-table WHERE id = 1")
+    })
 })

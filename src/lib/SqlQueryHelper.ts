@@ -1,11 +1,9 @@
-/* eslint-disable  */
 //
 //
 //
 //
 //
 import _ from 'lodash'
-import tokenizer from 'sql-tokenizer'
 import typia from "typia"
 //
 import { TRow } from "../types/DataTable"
@@ -29,12 +27,11 @@ export class SqlQueryHelper {
     #Query: string = ''
     Data: object[] = []
 
-    tokenize = tokenizer()
 
-    // eslint-disable-next-line class-methods-use-this
+
     FnEscapeEntity: (entity: string) => string = (entity: string) => entity
 
-    // eslint-disable-next-line class-methods-use-this
+
     FnEscapeField: (field: string) => string = (field: string) => field
 
     constructor(query?: string, fnEscapeEntity?: (entity: string) => string, fnEscapeField?: (field: string) => string) {
@@ -48,7 +45,7 @@ export class SqlQueryHelper {
             this.FnEscapeField = fnEscapeField
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     #WhereCondition(field: string, value: unknown): string {
         // file deepcode ignore DuplicateCaseSwitch: simplicity
         switch (true) {
@@ -79,6 +76,7 @@ export class SqlQueryHelper {
             case Array.isArray(fields):
                 cleanFields.push(...fields)
                 break
+
             // eslint-disable-next-line you-dont-need-lodash-underscore/is-string
             case _.isString(fields) && fields.includes(','):
                 {
@@ -162,6 +160,7 @@ export class SqlQueryHelper {
             this.#Query = `${this.#Query} WHERE ${_cond}`
             return this
         }
+
 
         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         if (typeof condition === 'object' && _.keys(condition).length > 0) {
@@ -263,7 +262,7 @@ export class SqlQueryHelper {
                         switch (true) {
                             case _value == null:
                                 return
-                            case !isNaN(parseInt(_value as string)):
+                            case !isNaN(parseInt(_value as string, 10)):
                             case !isNaN(parseFloat(_value as string)):
                                 return `${_value}`
                             case typeof _value === 'object':
@@ -284,6 +283,7 @@ export class SqlQueryHelper {
                 }
             })
         } else {
+
             // eslint-disable-next-line you-dont-need-lodash-underscore/values
             this.#Query = `${this.#Query} VALUES ('${_.values(data).join('\',\'')}')`
         }
@@ -305,20 +305,60 @@ export class SqlQueryHelper {
 
     #SanitizeTokenize(): string[] {
         const query = this.#Query.trim()
-        if (/^\d+(\.\d+)?$/.test(query)) {
+        if ((/^\d+(\.\d+)?$/).test(query)) {
             return [this.#Query]
         }
-        return this.tokenize(this.#Query)
+
+        const tokens = _.chain(query.match(/(?:'[^']*'|[^' ]+)/g))
+            .map(_.trim)
+            .compact()
+            .value()
+
+        // eslint-disable-next-line you-dont-need-lodash-underscore/find-index
+        const wherePos = _.findIndex(tokens, (word) => word.toUpperCase() === "WHERE")
+        // eslint-disable-next-line you-dont-need-lodash-underscore/find-index
+        const setPos = _.findIndex(tokens, (word) => word.toUpperCase() === "SET")
+
+        const pos = (wherePos != -1 && setPos != -1)
+            ? Math.min(wherePos, setPos)
+            : Math.max(wherePos, setPos)
+
+        let beforeClause: string[] = []
+        let afterClause: string[] = []
+
+        if (pos !== -1) {
+            // eslint-disable-next-line you-dont-need-lodash-underscore/slice
+            beforeClause = _.slice(tokens, 0, pos)
+            // eslint-disable-next-line you-dont-need-lodash-underscore/slice
+            afterClause = _.slice(tokens, pos)
+        }
+
+        afterClause = _.chain(afterClause)
+            .map((token) => {
+                return (token.startsWith("'") && token.endsWith("'"))
+                    ? token
+                    : token.replace(/[+\-*/=]/g, match => ` ${match} `)
+            })
+            .map(token => {
+                return (token.startsWith("'") && token.endsWith("'"))
+                    ? token
+                    : token.split(' ')
+            })
+            .flatten()
+            .map(_.trim)
+            .compact()
+            .value()
+
+        // eslint-disable-next-line you-dont-need-lodash-underscore/concat
+        return _.concat(beforeClause, afterClause)
     }
 
     Tokenize(): TSqlToken[] {
         const tokens = _.chain(this.#SanitizeTokenize())
-            .map(_.trim)
-            .compact()
             .map((token: string) => {
                 let tokenType = ''
                 switch (true) {
-                    case ['SELECT', 'UPDATE', 'INSERT','DELETE','SET', 'FROM', 'WHERE', 'ORDER', 'BY'].includes(token.toUpperCase()):
+                    case ['SELECT', 'UPDATE', 'INSERT', 'DELETE', 'SET', 'FROM', 'WHERE', 'ORDER', 'BY'].includes(token.toUpperCase()):
                         tokenType = "command"
                         break
                     case token === '(':
@@ -333,7 +373,7 @@ export class SqlQueryHelper {
                     case token.startsWith("'") && token.endsWith("'"):
                         tokenType = "string"
                         break
-                    case !isNaN(parseInt(token)):
+                    case !isNaN(parseInt(token, 10)):
                     case !isNaN(parseFloat(token)):
                         tokenType = "number"
                         break
@@ -356,7 +396,6 @@ export class SqlQueryHelper {
     }
 
     #DetectSQLInjection() {
-        const tokens = this.Tokenize()
         const denyWords = [
             "DROP",
             "ALTER",
@@ -371,13 +410,14 @@ export class SqlQueryHelper {
             "FUNCTION"
         ]
 
+        const tokens = this.Tokenize()
         if (tokens.some(token => denyWords.includes(token.token.toUpperCase())))
             return true
 
-        for (let i = 0; i < tokens.length - 2; i++) {
+        for (let i = 0; i < tokens.length - 2; i += 1) {
             if (
                 tokens[i].type === "number" &&
-                tokens[i + 1].type === "operator" && 
+                tokens[i + 1].type === "operator" &&
                 tokens[i + 1].token === "=" &&
                 tokens[i + 2].type === "number"
             ) {
@@ -385,11 +425,9 @@ export class SqlQueryHelper {
             }
         }
 
-
-
         const sqlInjectionPatterns = [
             /(--|#|\/\*)/i, // Comments like --, #, /*
-            /(;|\|\|)/i, // SQL operators like OR, AND, ;
+            /(;|\|\|)/i // SQL operators like OR, AND, ;
         ]
 
         // Detect all CRUD combinations in the same query
