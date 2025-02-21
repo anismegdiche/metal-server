@@ -4,8 +4,7 @@
 //
 //
 
-// eslint-disable-next-line unused-imports/no-unused-vars
-class Semaphore {
+export class Semaphore {
     
     #Tasks: (() => void)[] = [];
     #Available: number
