@@ -331,26 +331,27 @@ export class SqlQueryHelper {
             beforeClause = _.slice(tokens, 0, pos)
             // eslint-disable-next-line you-dont-need-lodash-underscore/slice
             afterClause = _.slice(tokens, pos)
-        }
-
-        afterClause = _.chain(afterClause)
-            .map((token) => {
-                return (token.startsWith("'") && token.endsWith("'"))
+            
+            afterClause = _.chain(afterClause)
+                .map((token) => {
+                    return (token.startsWith("'") && token.endsWith("'"))
                     ? token
                     : token.replace(/[+\-*/=]/g, match => ` ${match} `)
-            })
-            .map(token => {
-                return (token.startsWith("'") && token.endsWith("'"))
+                })
+                .map(token => {
+                    return (token.startsWith("'") && token.endsWith("'"))
                     ? token
                     : token.split(' ')
-            })
-            .flatten()
-            .map(_.trim)
-            .compact()
-            .value()
-
-        // eslint-disable-next-line you-dont-need-lodash-underscore/concat
-        return _.concat(beforeClause, afterClause)
+                })
+                .flatten()
+                .map(_.trim)
+                .compact()
+                .value()
+            
+            // eslint-disable-next-line you-dont-need-lodash-underscore/concat
+            return _.concat(beforeClause, afterClause)
+        }
+        return tokens
     }
 
     Tokenize(): TSqlToken[] {
