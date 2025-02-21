@@ -14,7 +14,7 @@ Content-Type: application/json
 
 
 @plan=etl1
-@schema=sch-etl1
+@schema=etl1
 ###
 
 

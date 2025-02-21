@@ -8,12 +8,10 @@ server:
     default-role: all
   request-limit: 100mb
   cache:
-    provider: mongodb
-    host: mongodb://localhost:27017/
-    database: metal_cache
+    provider: memory
+    database: cache
     options:
-      connectTimeoutMS: 5000
-      serverSelectionTimeoutMS: 5000
+      autocreate: true
 
 roles:
   all: lacrud
@@ -103,7 +101,7 @@ schemas:
       users:
         source: mdb-mflix
         entity: users
-  sch-etl1:
+  etl1:
     source: plan-etl1
 
 ai-engines:
