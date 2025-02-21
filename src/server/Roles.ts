@@ -22,10 +22,12 @@ export enum PERMISSION {
     LIST = 'l'
 }
 
-export type TRolePermissions = null | (string
-    & tags.MinLength<1>
-    & tags.MaxLength<6>
-    & tags.Pattern<"^(?=[crudal]*$)(?!.*(.).*\x01)[crudal]+$">)
+export type TRolePermissions = null
+    | (string
+        & tags.MinLength<1>
+        & tags.MaxLength<6>
+        & tags.Pattern<"^(?=[crudal]*$)(?!.*(.).*\x01)[crudal]+$">
+    )
 
 
 //
