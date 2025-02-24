@@ -15,9 +15,9 @@
     "test": "jest",
     "test-client": "jest --testMatch \"**/client/__tests__/**/*.js\"",
     "_prod-ts": "ts-node ./src/index.ts",
-    "_lint": "eslint --fix src",
     "_typia-prepare": "ts-patch install",
-    "_changelog": "git --no-pager log --since=\"2024-11-14\" --oneline --pretty=format:\"- %s\" > HISTORY.md"
+    "dev-lint": "eslint --fix src",
+    "dev-changelog": "git --no-pager log --since=\"2024-11-14\" --oneline --pretty=format:\"- %s\" > HISTORY.md"
   },
   "dependencies": {
     "@azure/storage-blob": "~12.26.0",
