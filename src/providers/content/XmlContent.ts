@@ -55,7 +55,7 @@ export class XmlContent extends absContentProvider {
     }
 
     @Logger.LogFunction()
-    async InitContent(entity: string, content: Readable): Promise<void> {
+    InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
         this.Content.UploadFile(entity, content)
     }

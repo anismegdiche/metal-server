@@ -35,7 +35,7 @@ export class JsonContent extends absContentProvider {
     Params: TJsonContentParams | undefined
 
     @Logger.LogFunction()
-    async InitContent(entity: string, content: Readable): Promise<void> {
+    InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
         if (this.Config && typia.is<TJsonContentConfig>(this.Config)) {
             this.Params = {

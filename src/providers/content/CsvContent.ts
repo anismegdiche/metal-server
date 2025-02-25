@@ -44,7 +44,7 @@ export class CsvContent extends absContentProvider {
     Params: TCsvContentParams | undefined
 
     @Logger.LogFunction()
-    async InitContent(entity: string, content: Readable): Promise<void> {
+    InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
         if (this.Config && typia.is<TCsvContentConfig>(this.Config)) {
             this.Params = {

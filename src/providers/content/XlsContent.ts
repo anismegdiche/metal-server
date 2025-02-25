@@ -56,7 +56,7 @@ export class XlsContent extends absContentProvider {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
-    async InitContent(entity: string, content: Readable): Promise<void> {
+    InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
         if (this.Config && typia.is<TXlsContentConfig>(this.Config)) {
             this.Params = _.merge(
@@ -171,6 +171,7 @@ export class XlsContent extends absContentProvider {
                 const _rowIdx = parseInt(startRow, 10) + 1 + rowIndex
                 const _colIdx: number = colIndex + fieldIdx
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let _valueToSet: any = row[field]
 
                 // If raw data is specified, set directly; otherwise apply formatting or defaults
