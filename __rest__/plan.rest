@@ -29,7 +29,7 @@ authorization: Bearer {{token}}
 ###
 
 
-# @name get-plan-aitest
+# @name get-plan-src
 GET http://localhost:3000/schema/etl1/src
     # ?cache=300
 authorization: Bearer {{token}}
@@ -38,7 +38,7 @@ authorization: Bearer {{token}}
 
 # @name get-plan-aitest
 GET http://localhost:3000/schema/etl1/aitest
-    ?cache=300
+#    ?cache=300
 authorization: Bearer {{token}}
 ###
 
