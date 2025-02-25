@@ -108,7 +108,7 @@ export class Logger {
     static LogFunction(logger: Function = Logger.Debug, hideParameters: boolean = false): any {
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             const originalMethod = descriptor.value
-            descriptor.value = function (...originalArgs: any[]) {
+            descriptor.value = function(...originalArgs: any[]) {
                 const _filteredArgs = originalArgs.filter(arg => !typia.is<TUserTokenInfo>(arg))
                 const _argsString = (hideParameters || _filteredArgs.length == 0 || _filteredArgs.every(v => v === null) || _filteredArgs.every(v => v === undefined))
                     ? ''
