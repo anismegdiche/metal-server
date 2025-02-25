@@ -12,7 +12,7 @@ import { TContext } from "../@types/TContext"
 
 
 //
-export abstract class absContentProvider extends clsClonable {
+export abstract class absContentProvider extends clsClonable { //NOSONAR
 
     abstract Params: unknown            // TS transformed configuration
     EntityName: string = "DEFAULT"
