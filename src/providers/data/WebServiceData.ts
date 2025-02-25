@@ -138,7 +138,7 @@ export class WebServiceData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    @SynchronizerManager.Synchronized()
+    @SynchronizerManager.Synchronized(["schemaRequest"])
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (!this.Connection)

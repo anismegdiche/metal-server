@@ -61,10 +61,10 @@ export class PlanData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    @SynchronizerManager.Synchronized()
+    @SynchronizerManager.Synchronized(["schemaRequest"])
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schema, entity } = schemaRequest
+        const { schema, entity, source } = schemaRequest
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(

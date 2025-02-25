@@ -122,7 +122,6 @@ export class MySqlData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         const connection = await this.ensureConnection()
