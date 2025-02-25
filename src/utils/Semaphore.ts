@@ -1,12 +1,15 @@
+/* eslint-disable no-plusplus */
 //
 //
 //
 //
 //
 
+import { Logger } from "./Logger"
+
 export class Semaphore {
-    
-    #Tasks: (() => void)[] = [];
+
+    #Tasks: (() => void)[] = [] //NOSONAR
     #Available: number
 
     constructor(maxConcurrency: number) {
@@ -15,7 +18,8 @@ export class Semaphore {
 
     async Acquire(): Promise<void> {
         if (this.#Available > 0) {
-            this.#Available -= 1
+            this.#Available--
+            Logger.Debug(`Semaphore.Acquire: remaining ${this.#Available}`)
             return Promise.resolve()
         }
         return new Promise((resolve) => {
@@ -30,6 +34,7 @@ export class Semaphore {
                 nextTask()
             return
         }
-        this.#Available += 1
+        this.#Available++
+        Logger.Debug(`Semaphore.Release: remaining ${this.#Available}`)
     }
 }
