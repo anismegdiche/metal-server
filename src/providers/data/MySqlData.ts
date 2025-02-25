@@ -21,6 +21,7 @@ import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
+import { SynchronizerManager } from "../../utils/SynchronizerManager"
 
 export class MySqlData extends absDataProvider {
 
@@ -121,6 +122,7 @@ export class MySqlData extends absDataProvider {
     }
 
     @Logger.LogFunction()
+    @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         const connection = await this.ensureConnection()

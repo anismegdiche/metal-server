@@ -28,6 +28,7 @@ import { absStorageProvider } from "../absStorageProvider"
 import { STORAGE, StorageProvider, TStorageConfig } from "../StorageProvider"
 import { TContext } from "../../@types/TContext"
 import { Mutex } from "../../utils/Mutex"
+import { SynchronizerManager } from "../../utils/SynchronizerManager"
 
 
 //
@@ -141,6 +142,7 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
+    @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (!this.Connection)

@@ -22,6 +22,7 @@ import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
 import _ from "lodash"
+import { SynchronizerManager } from "../../utils/SynchronizerManager"
 
 
 //
@@ -117,6 +118,7 @@ export class PostgresData extends absDataProvider {
     }
 
     @Logger.LogFunction()
+    @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (!this.Connection)

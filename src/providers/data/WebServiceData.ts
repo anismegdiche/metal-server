@@ -25,6 +25,7 @@ import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
 import { TContext } from "../../@types/TContext"
 import { TUrl } from "../../@types/TUrl"
+import { SynchronizerManager } from "../../utils/SynchronizerManager"
 
 
 //
@@ -137,6 +138,7 @@ export class WebServiceData extends absDataProvider {
     }
 
     @Logger.LogFunction()
+    @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (!this.Connection)

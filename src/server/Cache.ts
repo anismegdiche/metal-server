@@ -23,6 +23,7 @@ import { TUserTokenInfo } from "./User"
 import { absDataProvider } from "../providers/absDataProvider"
 import { Schema } from "./Schema"
 import { TSchemaResponse } from "../types/TSchemaResponse"
+import { SynchronizerManager } from "../utils/SynchronizerManager"
 
 
 export class Cache {
@@ -125,6 +126,7 @@ export class Cache {
     }
 
     @Logger.LogFunction()
+    @SynchronizerManager.Synchronized()
     static async Set(schemaRequest: TSchemaRequest, datatable: DataTable): Promise<void> {
 
         if (!Cache.IsArgumentsValid(schemaRequest))
@@ -174,6 +176,7 @@ export class Cache {
     }
 
     @Logger.LogFunction()
+    @SynchronizerManager.Synchronized()
     static async Get(schemaRequest: TSchemaRequestSelect, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse> | undefined> {
 
         TypeHelper.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
@@ -269,6 +272,7 @@ export class Cache {
     }
 
     @Logger.LogFunction(Logger.Debug, true)
+    @SynchronizerManager.Synchronized()
     static async Remove(schemaRequest: TSchemaRequest): Promise<void> {
 
         if (!Cache.IsArgumentsValid(schemaRequest))
