@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 //
 //
 //
 //
+//
+import _ from "lodash"
 //
 import { JsonHelper } from "../lib/JsonHelper"
 import { Logger } from "./Logger"
@@ -14,7 +17,7 @@ export class SynchronizerManager {
 
     static #SyncMap: Map<string, Synchronizer> = new Map() //NOSONAR
 
-    static async Execute<T>(signature: string, fn: () => Promise<T>, ...args: any[]): Promise<T> {
+    static async Execute<T>(signature: string, fn: () => Promise<T>, ..._args: any[]): Promise<T> {
         let sync = SynchronizerManager.#SyncMap.get(signature)
 
         if (!sync) {
@@ -25,30 +28,42 @@ export class SynchronizerManager {
         return sync.Execute(fn)
     }
 
-    static Synchronized() {
+    static Synchronized(pick?: string[]) {
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             const originalMethod = descriptor.value
-            descriptor.value = async function (...args: any[]) {
-                const _filteredArgs = args
-                const _argsString = (_filteredArgs.length == 0 || _filteredArgs.every(v => v === null) || _filteredArgs.every(v => v === undefined))
-                    ? ''
-                    : `: ${JsonHelper.Stringify(_filteredArgs)}`
 
-                const signature = `${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`
+            descriptor.value = async function (...args: any[]) {
+                // Get parameter names using reflection
+                const _paramNames = SynchronizerManager.#GetParameterNames(originalMethod)
+                const _paramObject = Object.fromEntries(_paramNames.map((name, index) => [name, args[index]]))
+
+                const _filteredParams = _.chain(_paramObject)
+                    .omitBy(_.isNil || _.isEmpty)
+                    // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+                    .pick(pick ?? _.keys(_paramObject))
+                    .value()
+
+                const signature = `${target.name ?? this.constructor.name}.${propertyKey}, ${JsonHelper.Stringify(_filteredParams)}`
                 Logger.Debug(`SynchronizerManager: Function signature = ${signature}`)
 
                 const result = await SynchronizerManager.Execute(signature, originalMethod.bind(this, ...args))
 
-                // Check the result and decide whether to continue to the original method
                 if (result !== undefined) {
                     return result
                 }
 
-                // If result is undefined, continue to the original method
                 return originalMethod.apply(this, args)
             }
 
             return descriptor
         }
+    }
+
+    static #GetParameterNames(func: Function): string[] {
+        const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg
+        const ARGUMENT_NAMES = /([^\s,]+)/g
+        const fnStr = func.toString().replace(STRIP_COMMENTS, '')
+        const result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES)
+        return result || []
     }
 }
