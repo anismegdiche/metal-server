@@ -3,6 +3,8 @@
 //
 //
 //
+import _ from "lodash"
+//
 import { RESPONSE } from '../../lib/Const'
 import { TConfigSource } from "../../types/TConfig"
 import { TOptionalParameter } from "../../types/TOptionalParameter"
@@ -10,15 +12,15 @@ import { TSchemaResponse } from '../../types/TSchemaResponse'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { Plan } from '../../server/Plan'
 import { DATA_PROVIDER } from '../../providers/DataProvider'
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../server/HttpErrors"
-import { Config } from "../../server/Config"
 import { DataTable } from "../../types/DataTable"
 import { HttpResponse } from "../../server/HttpResponse"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
+import { Plans } from "../../server/Plans"
+import { Source } from "../../server/Source"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 
 
@@ -32,7 +34,6 @@ export class PlanData extends absDataProvider {
     constructor() {
         super()
     }
-
 
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
@@ -61,7 +62,7 @@ export class PlanData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    @SynchronizerManager.Synchronized(["schemaRequest"])
+    @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         const { schema, entity, source } = schemaRequest
@@ -78,7 +79,16 @@ export class PlanData extends absDataProvider {
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const planData = await Plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
+        if (!source || !Source.Sources.has(source))
+            throw new HttpErrorBadRequest(`${schema}: plan '${source}' is missing`)
+
+        const sourceConfig = Source.Sources.get(source)?.SourceConfig
+        const planName = sourceConfig?.database
+
+        if (!planName)
+            throw new HttpErrorBadRequest(`${schema}: plan '${source}' is missing`)
+
+        const planData = await Plans.Plans.get(planName)?.ProcessSchemaRequest(schemaRequest, sqlQuery)
 
         const data = new DataTable(schemaRequest.entity)
 
@@ -139,15 +149,26 @@ export class PlanData extends absDataProvider {
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schema } = schemaRequest
+        const { schema, source } = schemaRequest
 
-        const data = Object.keys(Config.Get('plans')).map(key => ({
-            name: key,
-            type: 'plan'
-        }))
+        if (!source || !Source.Sources.has(source))
+            throw new HttpErrorBadRequest(`${schema}: plan '${source}' is missing`)
 
-        if (data.length == 0)
+        const sourceConfig = Source.Sources.get(source)?.SourceConfig
+        const planName = sourceConfig?.database
+
+        if (!planName)
+            throw new HttpErrorBadRequest(`${schema}: plan '${source}' is missing`)
+
+        const planEntities = Plans.Plans.get(planName)?.Entities.keys().toArray()
+
+        if (!planEntities || planEntities.length == 0)
             throw new HttpErrorNotFound(`${schema}: No entities found`)
+
+        const data = planEntities.map(key => ({
+            name: key,
+            type: 'plan-entity'
+        }))
 
         return HttpResponse.Ok(<TSchemaResponse>{
             schema,

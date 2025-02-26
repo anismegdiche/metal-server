@@ -4,19 +4,19 @@
 //
 // 
 import _ from "lodash"
+import typia from "typia"
 //
 import { METADATA } from "../lib/Const"
 import { Helper } from "../lib/Helper"
 import { Logger } from "../utils/Logger"
 import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TSortOrder, TRow, JOIN_TYPE } from "../types/DataTable"
 import { TJson } from "../types/TJson"
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from "../types/TSchemaRequest"
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest';
 import { StringHelper } from "../lib/StringHelper"
 import { AiEngine } from "./AiEngine"
 import { Schema } from "./Schema"
 import { TOptionalParameter } from "../types/TOptionalParameter"
 import { TypeHelper } from "../lib/TypeHelper"
-import { Plan } from "./Plan"
 import { WarnError } from "./InternalError"
 import { JsonHelper } from "../lib/JsonHelper"
 import { TStepSync, TStepRemoveDuplicates, TStepSort, TStepRun, TStepListEntities } from "../types/TStep"
@@ -26,6 +26,7 @@ import { MemoryData } from "../providers/data/MemoryData"
 import { TContext } from "../@types/TContext"
 import { PlaceHolder } from "../utils/PlaceHolder"
 import { Sandbox } from "./Sandbox"
+import { Plans } from "./Plans"
 
 
 //
@@ -62,7 +63,7 @@ export class Step {
 
     static readonly DataProvider = new MemoryData()
 
-    static ExecuteCaseMap: Record<string, TFunctionStep> = {
+    static ExecuteCaseMap: Record<string, TFunctionStep> = { //NOSONAR
         [STEP.DEBUG]: Step.Debug,
         [STEP.SELECT]: Step.Select,
         [STEP.UPDATE]: Step.Update,
@@ -79,7 +80,7 @@ export class Step {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static JoinCaseMap: Record<string, Function> = {
+    static JoinCaseMap: Record<string, Function> = { //NOSONAR
         [JOIN_TYPE.LEFT]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.LeftJoin(dtRight, leftField, rightField),
         [JOIN_TYPE.RIGHT]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.RightJoin(dtRight, leftField, rightField),
         [JOIN_TYPE.INNER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.InnerJoin(dtRight, leftField, rightField),
@@ -90,7 +91,7 @@ export class Step {
     @Logger.LogFunction()
     static async Select(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
 
-        if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams))
+        if (!typia.is<Partial<TSchemaRequestSelect>>(stepArguments.stepParams))
             throw new HttpErrorInternalServerError(`Step.Select: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
@@ -143,19 +144,19 @@ export class Step {
     @Logger.LogFunction()
     static async Insert(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
 
-        if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams))
+        if (!typia.is<Partial<TSchemaRequestInsert>>(stepArguments.stepParams) || !stepArguments.stepParams.data)
             throw new HttpErrorInternalServerError(`Step.Insert: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
 
         const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestInsert>(stepParams, new Sandbox($context)) as TSchemaRequestInsert
-        
+
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(//NOSONAR
             $context,
             Step.DataProvider.GetContext($__schemaRequest)
         )
-        
+
         const { schema, entity, data } = $__schemaRequest
 
         if (!data && currentDataTable.Rows.length == 0)
@@ -187,7 +188,7 @@ export class Step {
     @Logger.LogFunction()
     static async Update(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
 
-        if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams))
+        if (!typia.is<Partial<TSchemaRequestUpdate>>(stepArguments.stepParams))
             throw new HttpErrorInternalServerError(`Step.Update: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
@@ -241,7 +242,7 @@ export class Step {
     @Logger.LogFunction()
     static async Delete(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
 
-        if (!TypeHelper.IsSchemaRequest(stepArguments.stepParams))
+        if (!typia.is<Partial<TSchemaRequestDelete>>(stepArguments.stepParams))
             throw new HttpErrorInternalServerError(`Step.Delete: Wrong argument passed ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
@@ -313,7 +314,7 @@ export class Step {
 
         dtRight = (schema)
             ? await Step.Select(requestToSchema)
-            : await Plan.ProcessSchemaRequest(requestToCurrentPlan)
+            : await Plans.Plans.get(currentPlanName)!.ProcessSchemaRequest(requestToCurrentPlan)
 
         return await this.JoinCaseMap[type](stepArguments.currentDataTable, dtRight, leftField, rightField) ??
             (Helper.CaseMapNotFound(type) && stepArguments.currentDataTable)

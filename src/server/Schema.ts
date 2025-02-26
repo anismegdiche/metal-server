@@ -9,7 +9,7 @@ import typia from "typia"
 import { Source } from "./Source"
 import { Logger } from '../utils/Logger'
 import { Config } from './Config'
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest'
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest'
 import { TSchemaResponse } from '../types/TSchemaResponse'
 import { HttpErrorBadRequest, HttpErrorNotFound } from './HttpErrors'
 import { TypeHelper } from '../lib/TypeHelper'
@@ -122,7 +122,7 @@ export class Schema {
 
         // schema.entities.*
         if (_.has(schemaConfig, `entities.${entity}`)) {
-            
+
             const _schemaEntityConfig: TSchemaRequest = JsonHelper.Get(schemaConfig.entities, entity)
 
             if (_schemaEntityConfig === undefined) {
@@ -182,6 +182,7 @@ export class Schema {
         Roles.CheckPermission(userToken, schemaConfig?.roles, PERMISSION.READ)
 
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
+
         // Anonymizer
         let isAnonymize = false
         let fieldsToAnonymize: string[] = []
@@ -196,7 +197,7 @@ export class Schema {
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                const _intResp = await Source.Sources.get(schemaRoute.routeName)!.Select(<TSchemaRequestSelect>{
+                const _intResp = await Source.Sources.get(schemaRoute.routeName)!.DataProvider.Select(<TSchemaRequestSelect>{
                     ...schemaRequest,
                     source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
@@ -232,7 +233,7 @@ export class Schema {
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                return await Source.Sources.get(schemaRoute.routeName)!.Delete(<TSchemaRequestDelete>{
+                return await Source.Sources.get(schemaRoute.routeName)!.DataProvider.Delete(<TSchemaRequestDelete>{
                     ...schemaRequest,
                     source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
@@ -259,7 +260,7 @@ export class Schema {
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                return await Source.Sources.get(schemaRoute.routeName)!.Update(<TSchemaRequestUpdate>{
+                return await Source.Sources.get(schemaRoute.routeName)!.DataProvider.Update(<TSchemaRequestUpdate>{
                     ...schemaRequest,
                     source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
@@ -286,7 +287,7 @@ export class Schema {
             entity: schemaRoute.entity,
             schemaRequest,
             CrudFunction: async () => {
-                return await Source.Sources.get(schemaRoute.routeName)!.Insert(<TSchemaRequestInsert>{
+                return await Source.Sources.get(schemaRoute.routeName)!.DataProvider.Insert(<TSchemaRequestInsert>{
                     ...schemaRequest,
                     source: schemaRoute.routeName,
                     entity: schemaRoute.entity ?? schemaRequest.entity
@@ -299,7 +300,7 @@ export class Schema {
     static async ListEntities(schemaRequest: TSchemaRequest, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
         const { schema } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
-    
+
         Roles.CheckPermission(userToken, schemaConfig?.roles, PERMISSION.LIST)
 
         const entitiesSources = Schema.GetEntitiesSources(schema)
@@ -308,7 +309,10 @@ export class Schema {
 
         if (entitiesSources.has("*")) {
             const _source = (<TConfigSchemaEntity>entitiesSources.get("*")).source
-            const _intResp = await Source.Sources.get(_source)!.ListEntities(schemaRequest)
+            const _intResp = await Source.Sources.get(_source)!.DataProvider.ListEntities(<TSchemaRequestListEntities>{
+                ...schemaRequest,
+                source: _source
+            })
             schemaResponse = <TSchemaResponse>_intResp.Body
             entitiesSources.delete("*")
         }
@@ -318,7 +322,10 @@ export class Schema {
             if (TypeHelper.IsSchemaResponseData(schemaResponse))
                 schemaResponse.data.DeleteRows(`name = '${entity}'`)
 
-            const _intResp = await Source.Sources.get(_source)!.ListEntities(schemaRequest)
+            const _intResp = await Source.Sources.get(_source)!.DataProvider.ListEntities(<TSchemaRequestListEntities>{
+                ...schemaRequest,
+                source: _source
+            })
 
             Schema.#MergeData(schemaResponse, <TSchemaResponse>_intResp.Body)
         }

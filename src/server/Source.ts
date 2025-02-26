@@ -13,10 +13,17 @@ import { HttpErrorLog } from "./HttpErrors"
 
 
 //
+export type TSource = {
+    SourceConfig: TConfigSource
+    DataProvider: absDataProvider
+}
+
+
+//
 export class Source {
 
     // sources
-    static Sources = new Map<string, absDataProvider>()
+    static Sources = new Map<string, TSource>() //NOSONAR
 
     @Logger.LogFunction()
     static async Connect(source: string | null, sourceConfig: TConfigSource): Promise<void> {
@@ -32,9 +39,12 @@ export class Source {
                 Cache.CacheSource.Connect()
             } else {
                 // sources
-                Source.Sources.set(source, DataProvider.GetProvider(sourceConfig.provider))
-                await Source.Sources.get(source)!.Init(source, sourceConfig)
-                Source.Sources.get(source)!.Connect()
+                Source.Sources.set(source, <TSource>{
+                    SourceConfig: sourceConfig,
+                    DataProvider: DataProvider.GetProvider(sourceConfig.provider)
+                })
+                await Source.Sources.get(source)!.DataProvider.Init(source, sourceConfig)
+                Source.Sources.get(source)!.DataProvider.Connect()
             }
         } catch (error: any) {
             HttpErrorLog(error)
@@ -54,7 +64,7 @@ export class Source {
     @Logger.LogFunction()
     static async Disconnect(source: string): Promise<void> {
         if (source !== undefined && Source.Sources.has(source)) {
-            await Source.Sources.get(source)!.Disconnect()
+            await Source.Sources.get(source)!.DataProvider.Disconnect()
             Source.Sources.delete(source)
         }
     }

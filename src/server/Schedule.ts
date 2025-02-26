@@ -10,13 +10,13 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchedule } from '../types/TSchedule'
 import { Logger } from '../utils/Logger'
 import { Config } from './Config'
-import { Plan } from './Plan'
 import { JsonHelper } from '../lib/JsonHelper'
 import { HttpResponse } from "./HttpResponse"
 import { HttpErrorNotFound } from "./HttpErrors"
 import { TJson } from "../types/TJson"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
+import { Plans } from "./Plans"
 
 export type TScheduleConfig = {
     plan: string
@@ -36,32 +36,41 @@ export class Schedule {
 
         const scheduleConfig: Array<[string, TScheduleConfig]> = Object.entries(Config.Configuration.schedules)
 
-        for (const [_schedule, _scheduleParams] of scheduleConfig) {
-            Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_schedule}'`)
+        for (const [_jobName, _scheduleParams] of scheduleConfig) {
+            Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_jobName}'`)
             const currentDate = new Date()
             currentDate.setSeconds(currentDate.getSeconds() + 1)
+
+            const _cron = (_scheduleParams.cron === '@start')
+                ? currentDate
+                : _scheduleParams.cron
+
+            const _plan = _scheduleParams.plan
+            const _timezone = Config.Configuration?.server?.timezone as string ?? Config.DEFAULTS['server.timezone']
+            const _cronJob = new CronJob(
+                _cron,
+                Schedule.Job.bind(this, _plan, _jobName, _scheduleParams),
+                null,
+                true,
+                _timezone
+            )
+
             this.Jobs.push(<TSchedule>{
-                schedule: _schedule,
-                cronJob: new CronJob(
-                    (_scheduleParams.cron === '@start')
-                        ? currentDate
-                        : _scheduleParams.cron,
-                    () => {
-                        Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: Running job '${_schedule}'`)
-                        Plan.ProcessScheduleConfig(_scheduleParams)
-                            .then(() => {
-                                Logger.Debug(`${Logger.Out} Schedule.CreateAndStartAll: job '${_schedule}' terminated`)
-                            })
-                            .catch((error) => {
-                                Logger.Error(`${Logger.Out} Schedule.CreateAndStartAll: Error has occured with '${_schedule}' : ${JsonHelper.Stringify(error)}`)
-                            })
-                    },
-                    null,
-                    true,
-                    Config.Configuration?.server?.timezone as string ?? Config.DEFAULTS['server.timezone']
-                )
+                schedule: _jobName,
+                cronJob: _cronJob
             })
         }
+    }
+
+    static Job(plan: string, jobName: string, scheduleParams: TScheduleConfig) {
+        Logger.Debug(`${Logger.In} Schedule.Job: Running job '${jobName}'`)
+        Plans.Plans.get(plan)?.ProcessScheduleConfig(scheduleParams)
+            .then(() => {
+                Logger.Debug(`${Logger.Out} Schedule.Job: job '${jobName}' terminated`)
+            })
+            .catch((error) => {
+                Logger.Error(`${Logger.Out} Schedule.Job: Error has occured with '${jobName}' : ${JsonHelper.Stringify(error)}`)
+            })
     }
 
     @Logger.LogFunction()

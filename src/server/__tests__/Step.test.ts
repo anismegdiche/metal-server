@@ -2,20 +2,20 @@
 
 import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../types/DataTable"
 import { Step } from "../Step"
-import { Plan } from "../Plan"
 import { StepCommand, TConfig } from "../../types/TConfig"
 import { Schema } from "../Schema"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import typia from "typia"
 import { Config } from "../Config"
 import { HttpResponse } from "../HttpResponse"
+import { Plans } from "../Plans"
 
 describe('Step', () => {
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         jest.clearAllMocks()
         Config.Configuration = typia.random<TConfig>()
-    }, 120000)
+    }, 120_000)
 
     describe('Select', () => {
         // Executes a valid 'select' step and returns a DataTable object.
@@ -30,11 +30,22 @@ describe('Step', () => {
                         entity: "users",
                         fields: "name, age",
                         filter: {
-                            age: { $gte: 18 }
+                            age: 18
                         }
                     }
                 }
             ]
+
+            Config.Configuration = {
+                ...Config.Configuration,
+                plans: {
+                    [plan]: {
+                        [entity]: steps
+                    }
+                }
+            }
+
+            Plans.Init()
 
             // Mock the DataTable object
             const dtWorking = new DataTable(entity)
@@ -54,7 +65,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
+            const result = await Plans.Plans.get(plan)!.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -83,11 +94,20 @@ describe('Step', () => {
                         entity: "invalid_entity",
                         fields: "name, age",
                         filter: {
-                            age: { $gte: 18 }
+                            age: 18
                         }
                     }
                 }
             ]
+
+            Config.Configuration = {
+                ...Config.Configuration,
+                plans: {
+                    [plan]: {
+                        [entity]: steps
+                    }
+                }
+            }
 
             // Mock the DataTable object
             const dtWorking = new DataTable(entity)
@@ -106,7 +126,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
+            const result = await Plans.Plans.get(plan)!.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -151,6 +171,17 @@ describe('Step', () => {
                 }
             ]
 
+            Config.Configuration = {
+                ...Config.Configuration,
+                plans: {
+                    [plan]: {
+                        [entity]: steps
+                    }
+                }
+            }
+
+            Plans.Init()
+
             // Mock the DataTable object
             const dtWorking = new DataTable(entity)
             dtWorking.Name = "users"
@@ -169,7 +200,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
+            const result = await Plans.Plans.get(plan)!.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -199,6 +230,17 @@ describe('Step', () => {
                 }
             ]
 
+            Config.Configuration = {
+                ...Config.Configuration,
+                plans: {
+                    [plan]: {
+                        [entity]: steps
+                    }
+                }
+            }
+
+            Plans.Init()
+
             // Mock the DataTable object
             const dtWorking = new DataTable(entity)
             dtWorking.AddRows({
@@ -216,7 +258,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
+            const result = await Plans.Plans.get(plan)!.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -254,6 +296,17 @@ describe('Step', () => {
                 }
             ]
 
+            Config.Configuration = {
+                ...Config.Configuration,
+                plans: {
+                    [plan]: {
+                        [entity]: steps
+                    }
+                }
+            }
+
+            Plans.Init()
+
             // Mock the DataTable object
             const dtWorking = new DataTable(entity)
             dtWorking.Name = "users"
@@ -272,7 +325,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
+            const result = await Plans.Plans.get(plan)!.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -306,6 +359,17 @@ describe('Step', () => {
                 }
             ]
 
+            Config.Configuration = {
+                ...Config.Configuration,
+                plans: {
+                    [plan]: {
+                        [entity]: steps
+                    }
+                }
+            }
+
+            Plans.Init()
+
             // Mock the DataTable object
             const dtWorking = new DataTable(entity)
             dtWorking.AddRows({
@@ -323,7 +387,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
+            const result = await Plans.Plans.get(plan)!.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -353,11 +417,22 @@ describe('Step', () => {
                     delete: {
                         entity: "users",
                         filter: {
-                            age: { $gte: 18 }
+                            age: 18
                         }
                     }
                 }
             ]
+
+            Config.Configuration = {
+                ...Config.Configuration,
+                plans: {
+                    [plan]: {
+                        [entity]: steps
+                    }
+                }
+            }
+
+            Plans.Init()
 
             // Mock the DataTable object
             const dtWorking = new DataTable(entity)
@@ -377,7 +452,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
+            const result = await Plans.Plans.get(plan)!.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -414,6 +489,17 @@ describe('Step', () => {
                 }
             ]
 
+            Config.Configuration = {
+                ...Config.Configuration,
+                plans: {
+                    [plan]: {
+                        [entity]: steps
+                    }
+                }
+            }
+
+            Plans.Init()
+
             // Mock the DataTable objects
             const dtWorking = new DataTable(entity)
             dtWorking.Name = "users"
@@ -446,7 +532,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
+            const result = await Plans.Plans.get(plan)!.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -478,6 +564,17 @@ describe('Step', () => {
                 }
             ]
 
+            Config.Configuration = {
+                ...Config.Configuration,
+                plans: {
+                    [plan]: {
+                        [entity]: steps
+                    }
+                }
+            }
+
+            Plans.Init()
+
             // Mock the DataTable object
             const dtWorking = new DataTable(entity)
             dtWorking.Name = "users"
@@ -496,7 +593,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
+            const result = await Plans.Plans.get(plan)!.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
@@ -528,6 +625,17 @@ describe('Step', () => {
                 }
             ]
 
+            Config.Configuration = {
+                ...Config.Configuration,
+                plans: {
+                    [plan]: {
+                        [entity]: steps
+                    }
+                }
+            }
+
+            Plans.Init()
+
             // Mock the DataTable object
             const dtWorking = new DataTable(entity)
             dtWorking.Name = "myEntity"
@@ -546,7 +654,7 @@ describe('Step', () => {
             }
 
             // Invoke the Step.Execute function
-            const result = await Plan.ExecuteSteps(schema, plan, entity, steps)
+            const result = await Plans.Plans.get(plan)!.ExecuteSteps(schema, plan, entity, steps)
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)

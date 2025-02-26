@@ -23,6 +23,7 @@ import { ConfigFileError } from "./HttpErrors"
 import { AUTH_PROVIDER, AuthProvider } from "../providers/AuthProvider"
 import { Roles } from "./Roles"
 import { JsonHelper } from "../lib/JsonHelper"
+import { Plans } from "./Plans"
 
 export class Config {
 
@@ -97,6 +98,7 @@ export class Config {
         Config.Has('ai-engines') && await AiEngine.Init()
         Config.Has('ai-engines') && await AiEngine.CreateAll()
         Config.Has('schedules') && Schedule.CreateAndStartAll()
+        Config.Has('plans') && Plans.Init()
         /* eslint-enable @typescript-eslint/no-unused-expressions, no-unused-expressions */
     }
 

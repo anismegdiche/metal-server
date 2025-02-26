@@ -35,6 +35,7 @@ export type TContext = {
         name: string,
         schema?: string,
         entity: string,
-        data: TRow[]
+        currentData: TRow[]
+        currentStep?: number
     }
 }
