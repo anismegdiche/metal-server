@@ -10,6 +10,7 @@ import _ from "lodash"
 import { JsonHelper } from "../lib/JsonHelper"
 import { Logger } from "./Logger"
 import { Synchronizer } from "./Synchronizer"
+import { DecoratorHelper } from "./DecoratorHelper"
 
 
 //
@@ -33,10 +34,7 @@ export class SynchronizerManager {
             const originalMethod = descriptor.value
 
             descriptor.value = async function (...args: any[]) {
-                // Get parameter names using reflection
-                const _paramNames = SynchronizerManager.#GetParameterNames(originalMethod)
-                const _paramObject = Object.fromEntries(_paramNames.map((name, index) => [name, args[index]]))
-
+                const _paramObject = DecoratorHelper.GetParameters(originalMethod, ...args)
                 const _filteredParams = _.chain(_paramObject)
                     .omitBy(_.isNil || _.isEmpty)
                     // eslint-disable-next-line you-dont-need-lodash-underscore/keys
@@ -57,13 +55,5 @@ export class SynchronizerManager {
 
             return descriptor
         }
-    }
-
-    static #GetParameterNames(func: Function): string[] {
-        const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg
-        const ARGUMENT_NAMES = /([^\s,]+)/g
-        const fnStr = func.toString().replace(STRIP_COMMENTS, '')
-        const result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES)
-        return result || []
     }
 }
