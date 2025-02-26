@@ -112,6 +112,7 @@ export class SqlServerData extends absDataProvider {
     }
 
     @Logger.LogFunction()
+    @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (!this.Connection)
