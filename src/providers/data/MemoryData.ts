@@ -42,7 +42,7 @@ export type TMemoryDataConfig = {
 export class MemoryData extends absDataProvider {
 
     SourceName?: string
-    ProviderName = DATA_PROVIDER.MEMORY
+    ProviderName = DATA_PROVIDER?.MEMORY
     Config: TMemoryDataConfig = <TMemoryDataConfig>{}
     Connection?: DataBase = undefined
 
