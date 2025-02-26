@@ -23,15 +23,20 @@ import { TUserTokenInfo } from "./User"
 import { absDataProvider } from "../providers/absDataProvider"
 import { Schema } from "./Schema"
 import { TSchemaResponse } from "../types/TSchemaResponse"
+import { Semaphore } from "../utils/Semaphore"
 import { SynchronizerManager } from "../utils/SynchronizerManager"
 
 
 export class Cache {
 
+    // TODO to review because it relies on source not schema
+    // TODO to change from config.yml
     static readonly Schema = "metal_cache"
     static readonly Table = "cache"
 
-    static CacheSource: absDataProvider
+    static CacheSource: absDataProvider //NOSONAR
+
+    static #__LOCK__: Semaphore = new Semaphore(1) //NOSONAR
 
     static readonly #CacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
         schema: Cache.Schema,
@@ -150,6 +155,7 @@ export class Cache {
             Logger.Debug(`${Logger.Out} Cache.Set: no cache found, creating Hash=${hash}`)
             datatable.SetMetaData(METADATA.CACHE, true)
             datatable.SetMetaData(METADATA.CACHE_EXPIRE, expires)
+            await Cache.#__LOCK__.Acquire()
             await Cache.CacheSource.Insert({
                 ...Cache.#CacheSchemaRequest,
                 data: <TCacheData[]>[
@@ -163,6 +169,7 @@ export class Cache {
                     }
                 ]
             })
+            Cache.#__LOCK__.Release()
             return
         }
 
@@ -172,7 +179,9 @@ export class Cache {
         }
 
         Logger.Debug(`Cache.Set: cache expired, updating Hash=${hash}`)
+        await Cache.#__LOCK__.Acquire()
         Cache.Update(hash, expires, datatable)
+        Cache.#__LOCK__.Release()
     }
 
     @Logger.LogFunction()
