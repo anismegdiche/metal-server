@@ -36,6 +36,10 @@ export class AuthProvider {
     static readonly #AuthFactory = new Factory<absAuthProvider>()
     static Provider: absAuthProvider
 
+    static DEFAULT: TAuthentication = {
+        provider: AUTH_PROVIDER.LOCAL
+    }
+
     static GetProvider(providerName: string): absAuthProvider {
         if (AuthProvider.#AuthFactory.Has(providerName))
             return AuthProvider.#AuthFactory.Get(providerName)!
