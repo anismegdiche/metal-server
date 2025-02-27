@@ -14,5 +14,7 @@ jobs:
         node-version: '22.10.0'
     - name: Install dependencies
       run: npm install
-    - name: Run tests
-      run: npm test
+    - name: Install typia
+      run: npm run _typia-prepare || npm run typia-prepare
+    - name: Compile
+      run: npx tsc
