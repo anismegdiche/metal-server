@@ -13,7 +13,7 @@ describe('TesseractJs', () => {
 
         it('should recognize the text in the image and return the result', async () => {
             const name = "my-ocr"
-            const image = 'https://tesseract.projectnaptha.com/img/eng_bw.png'
+            const image = 'http://www.pdfunit.com/en/documentation/java/images/ocr-1.png'
 
             const _tesseractJs = new TesseractJs(name, {
                 engine: AI_ENGINE.TESSERACT_JS,
@@ -23,7 +23,7 @@ describe('TesseractJs', () => {
 
             const ocrResult = <Tesseract.Page>(await _tesseractJs.Run(image))
 
-            const expectedResult = "Mild Splendour of the various-vested Night!\nMother of Wildly-working visions! haill\nI watch thy gliding, while with watery light\nThy weak eye glimmers through a ﬂeecy veil;\nAnd when thou lovest thy pale orb to shroud\nBehind the gather’d blackness lost on high;\nAnd when thou dartest from the wind-rent cloud\nThy placid lightning o’er the awaken’d sky.\n"
+            const expectedResult = "Cedric himself lmew nothing\nwhatever about it It had never been\neven mentioned to him. He knew that\nhis papa had been an Englishman,\nbecause his mamma had told him so;\nbut then his papa had died when he\nwas so little a boy that he could not\nremember very much about him,\nexcept that he was big, and had blue\neyes and a long mustache, and that it\nwas a splendid thing to be carried\naround the room on his shoulder.\n"
 
             expect(ocrResult.text).toEqual(expectedResult)
         }, TEST_TIMEOUT)
