@@ -34,7 +34,7 @@ describe('User', () => {
         }
         Config.Flags.EnableAuthentication = true
         Config.Configuration.users = users
-        Config.InitAuthentication()
+        Server.InitAuthentication()
     })
 
     describe('LoadUsers', () => {

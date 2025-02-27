@@ -69,7 +69,7 @@ describe('Step', () => {
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Name).toBe("users")
+            expect(result.Name).toBe("myEntity")
             expect(result.GetFieldNames()).toEqual(["name", "age"])
             expect(result.Rows).toEqual([
                 {
@@ -108,6 +108,8 @@ describe('Step', () => {
                     }
                 }
             }
+
+            Plans.Init()
 
             // Mock the DataTable object
             const dtWorking = new DataTable(entity)
@@ -204,7 +206,7 @@ describe('Step', () => {
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Name).toBe("users")
+            expect(result.Name).toBe("myEntity")
             expect(result.GetFieldNames()).toEqual(["name", "age"])
             expect(result.Rows).toEqual([
                 {
@@ -329,7 +331,7 @@ describe('Step', () => {
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Name).toBe("users")
+            expect(result.Name).toBe("myEntity")
             expect(result.GetFieldNames()).toEqual(["name", "age"])
             expect(result.Rows).toEqual([
                 {
@@ -456,7 +458,7 @@ describe('Step', () => {
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Name).toBe("users")
+            expect(result.Name).toBe("myEntity")
             expect(result.GetFieldNames()).toEqual(["name", "age"])
             expect(result.Rows).toEqual([
                 {
@@ -536,7 +538,7 @@ describe('Step', () => {
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Name).toBe("users")
+            expect(result.Name).toBe("myEntity")
             expect(result.GetFieldNames()).toEqual(["user_id", "name"])
             expect(result.Rows).toEqual([
                 {
@@ -597,7 +599,7 @@ describe('Step', () => {
 
             // Assertions
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Name).toBe("users")
+            expect(result.Name).toBe("myEntity")
             expect(result.GetFieldNames()).toEqual(["name", "age"])
             expect(result.Rows).toEqual([
                 {
