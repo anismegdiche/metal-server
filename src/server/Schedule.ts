@@ -29,6 +29,12 @@ export class Schedule {
     static Jobs: TSchedule[] = [] //NOSONAR
 
     @Logger.LogFunction()
+    static async Init() {
+        if (Config.Has('schedules'))
+            Schedule.CreateAndStartAll()
+    }
+
+    @Logger.LogFunction()
     static async CreateAndStartAll() {
         if (!Config.Configuration?.schedules) {
             return undefined
@@ -38,18 +44,17 @@ export class Schedule {
 
         for (const [_jobName, _scheduleParams] of scheduleConfig) {
             Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_jobName}'`)
-            const currentDate = new Date()
-            currentDate.setSeconds(currentDate.getSeconds() + 1)
 
+            const _currentDate = new Date()
+            _currentDate.setSeconds(_currentDate.getSeconds() + 1)
             const _cron = (_scheduleParams.cron === '@start')
-                ? currentDate
+                ? _currentDate
                 : _scheduleParams.cron
 
-            const _plan = _scheduleParams.plan
-            const _timezone = Config.Configuration?.server?.timezone as string ?? Config.DEFAULTS['server.timezone']
+            const _timezone = Config.Get<string>('server.timezone')
             const _cronJob = new CronJob(
                 _cron,
-                Schedule.Job.bind(this, _plan, _jobName, _scheduleParams),
+                Schedule.Job.bind(this, _jobName, _scheduleParams),
                 null,
                 true,
                 _timezone
@@ -62,11 +67,14 @@ export class Schedule {
         }
     }
 
-    static Job(plan: string, jobName: string, scheduleParams: TScheduleConfig) {
-        Logger.Debug(`${Logger.In} Schedule.Job: Running job '${jobName}'`)
+    static Job(jobName: string, scheduleParams: TScheduleConfig) {
+        Logger.Info(`${Logger.In} Schedule.Job: Running job '${jobName}'`)
+        
+        const { plan } = scheduleParams
+        
         Plans.Plans.get(plan)?.ProcessScheduleConfig(scheduleParams)
             .then(() => {
-                Logger.Debug(`${Logger.Out} Schedule.Job: job '${jobName}' terminated`)
+                Logger.Info(`${Logger.Out} Schedule.Job: job '${jobName}' terminated`)
             })
             .catch((error) => {
                 Logger.Error(`${Logger.Out} Schedule.Job: Error has occured with '${jobName}' : ${JsonHelper.Stringify(error)}`)
