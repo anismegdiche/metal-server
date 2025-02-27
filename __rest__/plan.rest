@@ -47,3 +47,11 @@ authorization: Bearer {{token}}
 GET http://localhost:3000/schema/etl1/aitest2
     ?cache=300
 authorization: Bearer {{token}}
+###
+
+
+# @name get-plan-aitest
+GET http://localhost:3000/schema/etl1/aitest
+    ?fields=img_to_text
+authorization: Bearer {{token}}
+###

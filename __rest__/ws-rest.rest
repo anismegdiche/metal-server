@@ -18,7 +18,7 @@ Content-Type: application/json
 GET http://localhost:3000/schema/ws1/Users
     # ?filter={"id":3,"userName": "User 3"}
     # &filter={"country":"France"}
-    ?cache=300
+    ?cache=5
 authorization: Bearer {{token}}
 
 
