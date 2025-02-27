@@ -8,7 +8,6 @@ import typia from "typia"
 //
 import { METADATA, RESPONSE } from '../lib/Const'
 import { TCacheData } from '../types/TCacheData'
-import { Source } from './Source'
 import { DataTable } from '../types/DataTable'
 import { TSchemaRequest, TSchemaRequestSelect } from '../types/TSchemaRequest'
 import { Logger } from '../utils/Logger'
@@ -17,7 +16,7 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from '../lib/TypeHelper'
 import { HttpResponse } from './HttpResponse'
 import { TJson } from "../types/TJson"
-import { HttpError, HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorLog } from "./HttpErrors"
+import { HttpError, HttpErrorBadRequest, HttpErrorLog } from "./HttpErrors"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
 import { absDataProvider } from "../providers/absDataProvider"
@@ -25,66 +24,97 @@ import { Schema } from "./Schema"
 import { TSchemaResponse } from "../types/TSchemaResponse"
 import { Semaphore } from "../utils/Semaphore"
 import { SynchronizerManager } from "../utils/SynchronizerManager"
+import { TConfigSource } from "../types/TConfig"
+import { DataProvider } from "../providers/DataProvider"
 
 
+//
 export class Cache {
 
-    // TODO to review because it relies on source not schema
-    // TODO to change from config.yml
-    static readonly Schema = "metal_cache"
-    static readonly Table = "cache"
+    static readonly DEFAULT = {
+        database: "metal_cache",
+        entity: "cache"
+    }
+
+    static Database = Cache.DEFAULT.database //NOSONAR
+    static Entity = Cache.DEFAULT.entity     //NOSONAR
 
     static CacheSource: absDataProvider //NOSONAR
+
+    static Config: TConfigSource
 
     static #__LOCK__: Semaphore = new Semaphore(1) //NOSONAR
 
     static readonly #CacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
-        schema: Cache.Schema,
-        entity: Cache.Table
+        schema: Cache.Database,
+        entity: Cache.Entity
+    }
+
+    static IsEnabled = false //NOSONAR
+
+    static Index = new Map<string, number>()
+
+    @Logger.LogFunction()
+    static Init(): void {
+        Cache.IsEnabled = Config.Has('server.cache')
+        if (!Cache.IsEnabled)
+            return
+
+        Cache.Config = Config.Get<TConfigSource>("server.cache")
+        Cache.Database = Cache.Config.database ?? Cache.DEFAULT.database
+        Cache.CacheSource = DataProvider.GetProvider(Cache.Config.provider)
+        Cache.CacheSource.Init(Cache.Database, Cache.Config)
     }
 
     @Logger.LogFunction()
     static async Connect(): Promise<void> {
-        if (Config.Flags.EnableCache)
-            Source.Connect(null, Config.Get("server.cache"))
+        if (!Cache.IsEnabled)
+            return
+
+        await Cache.CacheSource.Connect()
+        await Cache.GetHashList()
     }
 
     @Logger.LogFunction()
     static async Disconnect(): Promise<void> {
-        if (Config.Flags.EnableCache)
+        if (Cache.IsEnabled)
             await Cache.CacheSource.Disconnect()
     }
 
     @Logger.LogFunction()
-    static async IsExists(hash: string): Promise<number> {
-        if (!Config.Flags.EnableCache)
-            return 0
-
+    static async GetHashList(): Promise<void> {
         try {
             const intResp = await Cache.CacheSource.Select(<TSchemaRequest>{
                 ...Cache.#CacheSchemaRequest,
-                filter: {
-                    hash
-                }
+                fields: "hash,expires"
             })
 
             const schemaResponse = intResp.Body
 
-            if (!schemaResponse)
-                throw new HttpErrorInternalServerError()
+            Cache.Index = schemaResponse && TypeHelper.IsSchemaResponseData(schemaResponse)
+                ? new Map((schemaResponse.data.Rows as TCacheData[]).map(row => [row.hash, row.expires]))
+                : new Map()
 
-            if (TypeHelper.IsSchemaResponseData(schemaResponse) && schemaResponse.data.Rows.length > 0)
-                return (schemaResponse.data.Rows[0] as TCacheData).expires
-
-            return 0
         } catch {
-            return 0
+            Cache.Index = new Map()
         }
     }
 
     @Logger.LogFunction()
+    static async IsHashExists(hash: string): Promise<boolean> {
+        return Cache.Index.has(hash)
+    }
+
+    @Logger.LogFunction()
+    static async GetExpires(hash: string): Promise<number> {
+        return Cache.Index.get(hash) ?? 0
+    }
+
+    @Logger.LogFunction()
     static IsCacheValid(expires: number): boolean {
-        return expires !== undefined && Date.now() <= expires
+        const isValid = expires !== undefined && Date.now() <= expires
+        Logger.Debug(`${Logger.Out} Cache.IsCacheValid: ${isValid}`)
+        return isValid
     }
 
     @Logger.LogFunction(Logger.Debug, true)
@@ -97,7 +127,7 @@ export class Cache {
     }
 
     static IsSchemaCacheRequest(schemaRequest: TSchemaRequest): boolean {
-        if (schemaRequest.schema === Cache.Schema && schemaRequest.entity === Cache.Table) {
+        if (schemaRequest.schema === Cache.Database && schemaRequest.entity === Cache.Entity) {
             Logger.Debug(`${Logger.Out} bypassing: schema cache request`)
             return false
         }
@@ -105,7 +135,7 @@ export class Cache {
     }
 
     static IsConfigurationGood(schemaRequest: TSchemaRequest): boolean {
-        if (!Config.Flags.EnableCache && schemaRequest?.cache) {
+        if (!Cache.IsEnabled && schemaRequest?.cache) {
             Logger.Warn(`${Logger.Out} 'server.cache' is not configured, bypassing option 'cache'`)
             return false
         }
@@ -113,7 +143,7 @@ export class Cache {
     }
 
     static IsParametersDefined(schemaRequest: TSchemaRequest): boolean {
-        if (!Config.Flags.EnableCache)
+        if (!Cache.IsEnabled)
             return false
 
         if (this.CacheSource === undefined)
@@ -145,23 +175,22 @@ export class Cache {
         // calculate cache expiration time
         const now = new Date()
         now.setSeconds(now.getSeconds() + cache)
-        const expires = now.getTime()
+        const expiresNow = now.getTime()
 
-        // get cached data
         const hash = Cache.Hash(schemaRequest)
-        const cacheExpires = await Cache.IsExists(hash)
+        const isHashExists = await Cache.IsHashExists(hash)
 
-        if (cacheExpires == 0) {
+        if (!isHashExists) {
             Logger.Debug(`${Logger.Out} Cache.Set: no cache found, creating Hash=${hash}`)
             datatable.SetMetaData(METADATA.CACHE, true)
-            datatable.SetMetaData(METADATA.CACHE_EXPIRE, expires)
+            datatable.SetMetaData(METADATA.CACHE_EXPIRE, expiresNow)
             await Cache.#__LOCK__.Acquire()
             await Cache.CacheSource.Insert({
                 ...Cache.#CacheSchemaRequest,
                 data: <TCacheData[]>[
                     {
                         hash,
-                        expires,
+                        expires: expiresNow,
                         schema,
                         entity,
                         schemaRequest,
@@ -169,18 +198,22 @@ export class Cache {
                     }
                 ]
             })
+            Cache.Index.set(hash, expiresNow)
             Cache.#__LOCK__.Release()
             return
         }
 
-        if (Cache.IsCacheValid(cacheExpires)) {
+        const expires = await Cache.GetExpires(hash)
+
+        if (Cache.IsCacheValid(expires)) {
             Logger.Debug(`Cache.Set: cache is valid, bypassing Hash=${hash}`)
             return
         }
 
         Logger.Debug(`Cache.Set: cache expired, updating Hash=${hash}`)
         await Cache.#__LOCK__.Acquire()
-        Cache.Update(hash, expires, datatable)
+        Cache.Update(hash, expiresNow, datatable)
+        Cache.Index.set(hash, expiresNow)
         Cache.#__LOCK__.Release()
     }
 
@@ -199,12 +232,18 @@ export class Cache {
         if (!Cache.IsArgumentsValid(schemaRequest))
             return undefined
 
-        const cacheHash = Cache.Hash(schemaRequest)
+        const hash = Cache.Hash(schemaRequest)
+        const expires = await Cache.GetExpires(hash)
+
+        if (!Cache.IsCacheValid(expires)) {
+            Logger.Debug(`Cache is old, Hash=${hash}`)
+            return undefined
+        }
 
         const intResp = await Cache.CacheSource.Select(<TSchemaRequest>{
             ...Cache.#CacheSchemaRequest,
             filter: {
-                hash: cacheHash
+                hash
             }
         })
             .then()
@@ -215,17 +254,12 @@ export class Cache {
 
         // no data
         if (!intResp?.Body || intResp.Body.data.Rows.length === 0) {
-            Logger.Debug(`Cache.Get: Cache not found, Hash=${cacheHash}`)
+            Logger.Debug(`Cache.Get: Cache not found, Hash=${hash}`)
             return undefined
         }
 
         // return data
-        const { data, expires } = intResp.Body.data.Rows.at(0) as TCacheData
-
-        if (!Cache.IsCacheValid(expires)) {
-            Logger.Debug(`Cache is old, Hash=${cacheHash}`)
-            return undefined
-        }
+        const { data } = intResp.Body.data.Rows.at(0) as TCacheData
 
         return HttpResponse.Ok(<TSchemaResponse>{
             entity,
@@ -249,6 +283,7 @@ export class Cache {
                 }
             ]
         })
+        Cache.Index.set(hash, expires)
     }
 
     @Logger.LogFunction()
@@ -262,6 +297,8 @@ export class Cache {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         await Cache.CacheSource.Delete(Cache.#CacheSchemaRequest)
+        Cache.Index.clear()
+
         Logger.Debug(`${Logger.Out} Cache.Purge`)
         return HttpResponse.Ok({ message: 'Cache purged' })
     }
@@ -271,11 +308,19 @@ export class Cache {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const expiresNow = new Date().getTime()
+
         Logger.Debug(`Cache.Clean ${expiresNow}`)
         await Cache.CacheSource.Delete(<TSchemaRequest>{
             ...Cache.#CacheSchemaRequest,
             "filter-expression": `expires < ${expiresNow}`
         })
+
+        Cache.Index.forEach(async (expires, hash) => {
+            if (expires < expiresNow) {
+                Cache.Index.delete(hash)
+            }
+        })
+
         Logger.Debug(`${Logger.Out} Cache.Clean`)
         return HttpResponse.Ok({ message: 'Cache cleaned' })
     }
@@ -294,6 +339,9 @@ export class Cache {
             "filter-expression": `${Cache.CacheSource.EscapeField("schema")}= '${schema}' AND ${Cache.CacheSource.EscapeField("entity")}= '${entity}'`
         })
             .catch((error: HttpError | Error) => HttpErrorLog(error))
+
+        Cache.Index.delete(Cache.Hash(schemaRequest))
+
         Logger.Debug(`${Logger.Out} Cache.Removed`)
     }
 }
