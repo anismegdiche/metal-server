@@ -38,19 +38,22 @@ export class Plan {
     Entities = new Map<string, StepCommand[]>()     // Plan entities and associated steps
     DataBase: absDataProvider                       // Plan entities rendered data
     SemaphoreSize: number
-    #__LOCK__: Semaphore
+    #__LOCK__ =  new Map<string, Semaphore>()       // Plan Lock by entity
 
     constructor(name: string) {
         this.Name = name
         this.DataBase = new MemoryData()
         this.SemaphoreSize = 1                      // Force to have single thread of execution
-        this.#__LOCK__ = new Semaphore(this.SemaphoreSize)
+        // this.#__LOCK__ = new Semaphore(this.SemaphoreSize)
     }
 
     async Init() {
-        const entities = Config.Get<TJson<StepCommand[]>>(`plans.${this.Name}`, {})
+        const entities = Config.Get<TJson<StepCommand[]>>(`plans.${this.Name}`) ??  {}
         // eslint-disable-next-line you-dont-need-lodash-underscore/for-each
-        _.forEach(entities, (steps: StepCommand[], entity: string) => this.Entities.set(entity, steps))
+        _.forEach(entities, (steps: StepCommand[], entity: string) => {
+            this.Entities.set(entity, steps)
+            this.#__LOCK__.set(entity, new Semaphore(this.SemaphoreSize))
+        })
 
         this.DataBase = new MemoryData()
 
@@ -131,7 +134,7 @@ export class Plan {
 
         Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}': semaphore = ${this.SemaphoreSize}, $context = ${JsonHelper.Stringify($context)}`)
 
-        await this.#__LOCK__.Acquire()
+        await this.#__LOCK__.get(currentEntityName)!.Acquire()
 
         for await (const [stepIndex, step] of Object.entries(steps)) {
             $context = _.merge(
@@ -202,9 +205,9 @@ export class Plan {
             Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}', step ${$context.$plan!.currentStep}: $context = ${JsonHelper.Stringify($context)}`)
         }
 
-        this.#__LOCK__.Release()
+        this.#__LOCK__.get(currentEntityName)!.Release()
 
-        return currentDataTable
+        return currentDataTable.Rename(currentEntityName)
     }
 
     @Logger.LogFunction()
