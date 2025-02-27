@@ -4,7 +4,6 @@
 //
 //
 import { Logger } from '../utils/Logger'
-import { Cache } from './Cache'
 import { Config } from './Config'
 import { TConfigSource } from '../types/TConfig'
 import { absDataProvider } from "../providers/absDataProvider"
@@ -25,27 +24,28 @@ export class Source {
     // sources
     static Sources = new Map<string, TSource>() //NOSONAR
 
+    static async Init(): Promise<void> {
+        if (Config.Has('sources'))
+            await Source.ConnectAll()
+    }
+
     @Logger.LogFunction()
-    static async Connect(source: string | null, sourceConfig: TConfigSource): Promise<void> {
-        if (!Object.values(DATA_PROVIDER).includes(sourceConfig.provider)) {
-            Logger.Error(`Source '${source}', Provider '${sourceConfig.provider}' not found. The source will not be connected`)
+    static async Connect(source: string, sourceConfig: TConfigSource): Promise<void> {
+
+        const { provider } = sourceConfig
+
+        if (!Object.values(DATA_PROVIDER).includes(provider)) {
+            Logger.Error(`Source '${source}', Provider '${provider}' not found. The source will not be connected`)
             return
         }
         try {
-            if (source === null) {
-                // cache
-                Cache.CacheSource = DataProvider.GetProvider(sourceConfig.provider)
-                Cache.CacheSource.Init(Cache.Schema, sourceConfig)
-                Cache.CacheSource.Connect()
-            } else {
-                // sources
-                Source.Sources.set(source, <TSource>{
-                    SourceConfig: sourceConfig,
-                    DataProvider: DataProvider.GetProvider(sourceConfig.provider)
-                })
-                await Source.Sources.get(source)!.DataProvider.Init(source, sourceConfig)
-                Source.Sources.get(source)!.DataProvider.Connect()
-            }
+            Source.Sources.set(source, <TSource>{
+                SourceConfig: sourceConfig,
+                DataProvider: DataProvider.GetProvider(provider)
+            })
+            await Source.Sources.get(source)!.DataProvider.Init(source, sourceConfig)
+            Source.Sources.get(source)!.DataProvider.Connect()
+            
         } catch (error: any) {
             HttpErrorLog(error)
         }

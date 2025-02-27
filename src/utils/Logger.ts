@@ -31,10 +31,10 @@ const Colors: Record<string, Function> = {
     [VERBOSITY.ERROR.toUpperCase()]: chalk.red
 }
 
-export const DefaultLevel: LogLevel.LogLevelDesc = VERBOSITY.WARN
+export const LoggerDefaultLevel: LogLevel.LogLevelDesc = VERBOSITY.WARN
 
 Prefix.reg(LogLevel)
-LogLevel.setLevel(DefaultLevel)
+LogLevel.setLevel(LoggerDefaultLevel)
 
 Prefix.apply(LogLevel, {
     format(level: string, name: string | undefined, timestamp: Date) {
@@ -52,7 +52,7 @@ export class Logger {
 
     static readonly In = '->'
     static readonly Out = '<-'
-    static Level: LogLevel.LogLevelDesc = DefaultLevel
+    static Level: LogLevel.LogLevelDesc = LoggerDefaultLevel
 
     static readonly RequestMiddleware = morgan(
         ':remote-addr, :method :url, :status, :res[content-length], :response-time ms',
@@ -68,7 +68,7 @@ export class Logger {
         try {
             LogLevel.setLevel(Logger.Level)
         } catch (error: unknown) {
-            LogLevel.setLevel(DefaultLevel)
+            LogLevel.setLevel(LoggerDefaultLevel)
             Logger.Error(`Logger.SetLevel: Error while setting verbosity, resetting to default`)
             Logger.Error(error)
         }
@@ -106,6 +106,7 @@ export class Logger {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static LogFunction(logger: Function = Logger.Debug, hideParameters: boolean = false): any {
+        //CURRENT use Decorator helper
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             const originalMethod = descriptor.value
             descriptor.value = function(...originalArgs: any[]) {
