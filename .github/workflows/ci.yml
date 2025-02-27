@@ -8,10 +8,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      env:
+        NODE_NO_WARNINGS: 1
       with:
         ref: dev
     - name: Set up Node.js
       uses: actions/setup-node@v4
+      env:
+        NODE_NO_WARNINGS: 1
       with:
         node-version: '22.10.0'
     - name: Install dependencies
