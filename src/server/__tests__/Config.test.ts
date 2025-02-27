@@ -1,12 +1,17 @@
 
 import typia from "typia"
-import { TConfig } from "../../types/TConfig"
+import { TConfig, TConfigRoles } from "../../types/TConfig"
 import { Config } from '../Config'
 
 describe('Config', () => {
 
     beforeAll(async () => {
         Config.Configuration = typia.random<TConfig>()
+        Config.Configuration.roles = {
+            ...typia.random<TConfigRoles>(),
+            ...typia.random<TConfigRoles>(),
+            ...typia.random<TConfigRoles>()
+        }
     })
 
     describe('Validate', () => {
