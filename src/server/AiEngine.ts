@@ -1,4 +1,4 @@
- 
+
 //
 //
 //
@@ -191,8 +191,13 @@ export class AiEngine {
 
     @Logger.LogFunction()
     static async Init(): Promise<void> {
+        if (!Config.Has('ai-engines'))
+            return
+
         AiEngine.AiEngineConfigurations = Config.Get("ai-engines")
+        await AiEngine.CreateAll()
     }
+
 
     @Logger.LogFunction()
     static async CreateAll(): Promise<void> {
