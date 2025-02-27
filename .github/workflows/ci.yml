@@ -18,3 +18,5 @@ jobs:
       run: npm run _typia-prepare || npm run typia-prepare
     - name: Compile
       run: npx tsc
+    - name: run tests
+      run: npm test
