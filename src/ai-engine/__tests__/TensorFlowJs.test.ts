@@ -6,7 +6,6 @@ import { TensorFlowJs } from '../TensorFlowJs'
 const IMG_GUITAR =
 	'https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg'
 
-
 describe('TensorFlowJs', () => {
 	// eslint-disable-next-line init-declarations
 	let tfjs: IAiEngine
