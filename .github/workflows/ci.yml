@@ -7,13 +7,13 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
       env:
         NODE_NO_WARNINGS: 1
       with:
         ref: dev
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v2
       env:
         NODE_NO_WARNINGS: 1
       with:
