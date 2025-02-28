@@ -3,14 +3,12 @@
 //
 //
 //
-import typia from "typia"
-//
 import { TSchemaRequest } from '../types/TSchemaRequest'
 import { TOptionalParameter } from '../types/TOptionalParameter'
 import { DataTable } from '../types/DataTable'
 import { JsonHelper } from "../lib/JsonHelper"
 import { Logger } from "../utils/Logger"
-import { TCacheData } from "../types/TCacheData"
+import { Cache } from "../server/Cache"
 import { TJson } from "../types/TJson"
 import { TContext } from "../@types/TContext"
 import { PlaceHolder } from "../utils/PlaceHolder"
@@ -25,7 +23,7 @@ export abstract class absDataProviderOptions {
         if (schemaRequest) {
             if (this.IsFilterNotEmpty(schemaRequest))
                 options = this.GetFilter(options, schemaRequest, $context)
-            
+
             options = this.GetFields(options, schemaRequest, $context)
             options = this.GetSort(options, schemaRequest, $context)
             options = this.GetData(options, schemaRequest, $context)
@@ -85,14 +83,16 @@ export abstract class absDataProviderOptions {
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
     GetData(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
-        if (schemaRequest?.data) {
-            const _isCacheData = typia.is<TCacheData[]>(schemaRequest.data)
+        const { schema, entity, data} = schemaRequest
+        
+        if (data) {
+            const _isCacheData = (schema === Cache.Database && entity === Cache.Entity)
             // no evaluation for CacheData
             const _data = _isCacheData
                 ? schemaRequest.data as TJson[]
-                : PlaceHolder.EvaluateJsCode<TJson[]>(schemaRequest.data, new Sandbox($context))
+                : PlaceHolder.EvaluateJsCode<TJson[]>(data, new Sandbox($context))
 
-            options.Data = new DataTable(schemaRequest.entity, _data)
+            options.Data = new DataTable(entity, _data)
         }
         return options
     }
@@ -108,5 +108,5 @@ export abstract class absDataProviderOptions {
     // eslint-disable-next-line class-methods-use-this
     IsFilterNotEmpty(schemaRequest: TSchemaRequest): boolean {
         return schemaRequest["filter-expression"] !== undefined || Object.keys(schemaRequest?.filter || {}).length > 0
-    }    
+    }
 }

@@ -45,7 +45,7 @@ export class Cache {
 
     static #__LOCK__: Semaphore = new Semaphore(1) //NOSONAR
 
-    static readonly #CacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
+    static #CacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
         schema: Cache.Database,
         entity: Cache.Entity
     }
@@ -62,6 +62,10 @@ export class Cache {
 
         Cache.Config = Config.Get<TConfigSource>("server.cache")
         Cache.Database = Cache.Config.database ?? Cache.DEFAULT.database
+        Cache.#CacheSchemaRequest = <TSchemaRequest>{
+            schema: Cache.Database,
+            entity: Cache.Entity
+        }
         Cache.CacheSource = DataProvider.GetProvider(Cache.Config.provider)
         Cache.CacheSource.Init(Cache.Database, Cache.Config)
     }
