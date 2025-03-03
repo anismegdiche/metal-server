@@ -2,6 +2,17 @@ import { TypeHelper } from "../../lib/TypeHelper"
 import { DataTable } from "../../types/DataTable"
 import { Plan } from "../Plan"
 
+
+// Mock the Logger
+jest.mock('../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
+
 describe('Process', () => {
 
     // Process a valid TSchemaRequest and return a DataTable

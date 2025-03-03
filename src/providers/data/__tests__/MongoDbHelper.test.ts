@@ -1,6 +1,16 @@
 import { TJson } from "../../../types/TJson"
 import { MongoDbHelper } from "../MongoDbHelper"
 
+// Mock the Logger
+jest.mock('../../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
+
 
 describe('MongoDbHelper', () => {
     describe('ParseSqlQuery', () => {

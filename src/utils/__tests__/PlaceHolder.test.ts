@@ -4,6 +4,16 @@ import { Sandbox } from "../../server/Sandbox"
 import { TJson } from "../../types/TJson"
 import { PlaceHolder } from "../PlaceHolder"
 
+// Mock the Logger
+jest.mock('../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
+
 
 describe('PlaceHolder', () => {
     describe('EvaluateJsCode', () => {

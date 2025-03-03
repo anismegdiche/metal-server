@@ -9,6 +9,16 @@ import typia from "typia"
 jest.mock('basic-ftp')
 jest.mock('../../../lib/Convert')
 
+// Mock the Logger
+jest.mock('../../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
+
 const rndParams = typia.random<TConfigSource>()
 
 describe('FtpStorage', () => {

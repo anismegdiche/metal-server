@@ -2,6 +2,17 @@
 import { HttpErrorInternalServerError } from "../HttpErrors"
 import { Sandbox } from "../Sandbox"
 
+
+// Mock the Logger
+jest.mock('../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
+
 describe('Sandbox', () => {
     // Sandbox context is created successfully
     it('should create a Sandbox context successfully', () => {
