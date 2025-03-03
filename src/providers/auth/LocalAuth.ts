@@ -3,7 +3,7 @@
 //
 //
 //
-import Bcrypt from 'bcrypt'
+import bcrypt from "bcryptjs"
 import _ from "lodash"
 //
 import { Logger } from "../../utils/Logger"
@@ -28,7 +28,7 @@ export class LocalAuth extends absAuthProvider {
     #Users: TConfigUsers = {}
 
     #HashPassword(password: string): string {
-        return Bcrypt.hashSync(password, this.#SALT_ROUNDS)
+        return bcrypt.hashSync(password, this.#SALT_ROUNDS)
     }
 
     GetUsers() {
@@ -57,7 +57,7 @@ export class LocalAuth extends absAuthProvider {
             throw new HttpErrorUnauthorized("Invalid username or password")
         }
 
-        if (!Bcrypt.compareSync(password, this.#HashPassword(this.#Users[username].password.toString()))) {
+        if (!bcrypt.compareSync(password, this.#HashPassword(this.#Users[username].password.toString()))) {
             throw new HttpErrorUnauthorized("Invalid username or password")
         }
 
