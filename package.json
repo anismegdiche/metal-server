@@ -14,6 +14,7 @@
     "build": "tsc --watch",
     "test": "jest --testMatch \"**/__tests__/*.test.ts\"",
     "test-e2e": "jest --testMatch \"**/client/__tests__/**/*.js\"",
+    "test-docker": "docker compose run --rm metal npx jest --testMatch \"**/__tests__/*.test.ts\" --watchAll",
     "_prod-ts": "ts-node ./src/index.ts",
     "_typia-prepare": "ts-patch install",
     "dev-lint": "eslint --fix src",
