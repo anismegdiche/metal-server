@@ -33,6 +33,17 @@ jest.mock('../MemoryData', () => {
     }
 })
 
+// Mock the Logger
+jest.mock('../../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn(),
+        Info: jest.fn()
+    }
+}))
+
 describe('MySqlData', () => {
     let provider: MySqlData
     const mockPool = {
