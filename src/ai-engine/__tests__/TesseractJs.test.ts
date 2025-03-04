@@ -2,10 +2,9 @@ import { AI_ENGINE, TESSERACT_JS_MODEL } from '../../server/AiEngine'
 import { TesseractJs } from '../TesseractJs'
 
 
-const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => { })
-const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => { })
-const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => { })
-
+jest.spyOn(console, 'log').mockImplementation(() => { })
+jest.spyOn(console, 'warn').mockImplementation(() => { })
+jest.spyOn(console, 'error').mockImplementation(() => { })
 
 describe('TesseractJs', () => {
 
