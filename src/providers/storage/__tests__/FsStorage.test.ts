@@ -1,10 +1,8 @@
+import Fs from 'fs'
 import { Readable } from "node:stream"
 import { TConfigSource } from '../../../types/TConfig'
-import { FsStorage, TFsStorageConfig } from '../FsStorage'
-import Fs from 'fs'
+import { FsStorage } from '../FsStorage'
 import { ReadableHelper } from "../../../lib/ReadableHelper"
-import typia from "typia"
-import { TJsonContentConfig } from "../../content/JsonContent"
 import { HttpErrorNotFound } from "../../../server/HttpErrors"
 
 
@@ -12,8 +10,7 @@ describe('FsStorage', () => {
     const sourceConfig = <TConfigSource>{
         provider: "files",
         options: {
-            ...typia.random<TFsStorageConfig>(),
-            ...typia.random<TJsonContentConfig>()
+            folder: './'
         }
     }
     const fsStorage = new FsStorage()
