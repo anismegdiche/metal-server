@@ -32,7 +32,7 @@ describe('FsStorage', () => {
         it('should return true if the file exists', async () => {
             jest.spyOn(Fs, 'existsSync').mockReturnValue(true)
 
-            const result = await fsStorage.IsExist('test.txt')
+            const result = await fsStorage.IsExist('IsExist.txt')
 
             expect(result).toBe(true)
         })
@@ -40,7 +40,7 @@ describe('FsStorage', () => {
         it('should return false if the file does not exist', async () => {
             jest.spyOn(Fs, 'existsSync').mockReturnValue(false)
 
-            const result = await fsStorage.IsExist('test.txt')
+            const result = await fsStorage.IsExist('IsExist-ko.txt')
 
             expect(result).toBe(false)
         })
@@ -51,14 +51,14 @@ describe('FsStorage', () => {
             jest.spyOn(Fs.promises, 'readFile').mockResolvedValue('File content')
             jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(true)
 
-            const result = await fsStorage.Read('test.txt')
+            const result = await fsStorage.Read('Read.txt')
             expect(result).toBeInstanceOf(Readable)
             expect(ReadableHelper.ToString(result)).resolves.toBe('File content')
         })
 
         it('should return throw Not Found if the file does not exist', async () => {
             jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(false)
-            await fsStorage.Read('test.txt')
+            await fsStorage.Read('Read-ko.txt')
                 .catch(error => {
                     expect(error).toBeInstanceOf(HttpErrorNotFound)
                 })
@@ -71,10 +71,10 @@ describe('FsStorage', () => {
 
             const stream = Readable.from('File content')
 
-            await fsStorage.Write('test.txt', stream)
+            await fsStorage.Write('Write.txt', stream)
 
             expect(Fs.promises.writeFile).toHaveBeenCalledWith(
-                `${fsStorage.Params!.folder}test.txt`,
+                `${fsStorage.Params!.folder}Write.txt`,
                 stream,
                 'utf8'
             )
