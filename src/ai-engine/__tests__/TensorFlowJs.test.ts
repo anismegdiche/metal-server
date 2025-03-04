@@ -1,7 +1,12 @@
- 
+
 import _ from 'lodash'
 import { IAiEngine } from '../../types/IAiEngine'
 import { TensorFlowJs } from '../TensorFlowJs'
+
+const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => { })
+const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => { })
+const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => { })
+
 
 const IMG_GUITAR =
 	'https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg'

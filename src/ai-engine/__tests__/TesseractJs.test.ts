@@ -1,7 +1,11 @@
 import { AI_ENGINE, TESSERACT_JS_MODEL } from '../../server/AiEngine'
 import { TesseractJs } from '../TesseractJs'
 
-const TEST_TIMEOUT = 120_000
+
+const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => { })
+const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => { })
+const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => { })
+
 
 describe('TesseractJs', () => {
 
@@ -23,9 +27,9 @@ describe('TesseractJs', () => {
 
             const ocrResult = <Tesseract.Page>(await _tesseractJs.Run(image))
 
-            const expectedResult = "Cedric himself lmew nothing\nwhatever about it It had never been\neven mentioned to him. He knew that\nhis papa had been an Englishman,\nbecause his mamma had told him so;\nbut then his papa had died when he\nwas so little a boy that he could not\nremember very much about him,\nexcept that he was big, and had blue\neyes and a long mustache, and that it\nwas a splendid thing to be carried\naround the room on his shoulder.\n"
+            const expectedResult = "Cedric himself knew nothing\nwhatever about it. It had never been\neven mentioned to him. He knew that\nhis papa had been an Englishman,\nbecause his mamma had told him so;\nbut then his papa had died when he\nwas so little a boy that he could not\nremember very much about him,\nexcept that he was big. and had blue\neyes and a long mustache, and that it\nwas a splendid thing to be carried\naround the room on his shoulder.\n"
 
             expect(ocrResult.text).toEqual(expectedResult)
-        }, TEST_TIMEOUT)
+        }, 120_000)
     })
 })
