@@ -127,7 +127,7 @@ describe('FtpStorage', () => {
             const mockStream = new Readable()
 
             await ftpStorage.Write('existingfile.txt', mockStream)
-            expect(mockFtpClient.appendFrom).toHaveBeenCalledWith(mockStream, '\\existingfile.txt')
+            expect(mockFtpClient.appendFrom).toHaveBeenCalledWith(mockStream, '/existingfile.txt')
         })
 
         // it('should throw HttpErrorInternalServerError on write failure', async () => {

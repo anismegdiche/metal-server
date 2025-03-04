@@ -3,6 +3,7 @@
 //
 //
 //
+//
 import * as Ftp from "basic-ftp"
 import { PassThrough, Readable } from "node:stream"
 import path from "node:path"
@@ -15,6 +16,7 @@ import { absStorageProvider } from '../absStorageProvider';
 import { TConfigSource } from "../../types/TConfig"
 import { TFilesDataOptions } from "../data/FilesData"
 import { TIpPort } from "../../@types/TIpPort"
+import { StringHelper } from "../../lib/StringHelper"
 
 
 //
@@ -34,16 +36,17 @@ type TFtpStorageParams = Required<{
 
 //
 export class FtpStorage extends absStorageProvider {
-    ConfigSource?: TConfigSource | undefined
-    ConfigStorage?: TFilesDataOptions | undefined
 
-    Params: TFtpStorageParams | undefined
+    ConfigSource?: TConfigSource
+    ConfigStorage?: TFilesDataOptions
+
+    Params?: TFtpStorageParams
 
     // FTP
     FtpClient: Ftp.Client = new Ftp.Client()
 
     @Logger.LogFunction()
-    async Init(): Promise<void> {
+    Init(): void {
         if (!this.ConfigStorage)
             throw new HttpErrorInternalServerError('FtpStorage: No configuration defined')
 
@@ -116,7 +119,7 @@ export class FtpStorage extends absStorageProvider {
         if (!this.Params)
             throw new HttpErrorInternalServerError('FtpStorage: No params defined')
 
-        const _path = path.join(this.Params.folder, file)
+        const _path = StringHelper.Url(this.Params.folder, file)
         try {
             if (this.ConfigStorage?.autocreate && !(await this.IsExist(file)))
                 await this.FtpClient.uploadFrom(content, _path)
