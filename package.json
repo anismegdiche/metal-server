@@ -15,10 +15,10 @@
     "test": "jest --testMatch \"**/__tests__/*.test.ts\"",
     "test-e2e": "jest --testMatch \"**/client/__tests__/**/*.js\"",
     "test-docker": "docker compose run --rm metal npx jest --testMatch \"**/__tests__/*.test.ts\" --watchAll",
-    "_prod-ts": "ts-node ./src/index.ts",
-    "_typia-prepare": "ts-patch install",
+    "prepare": "ts-patch install",
     "dev-lint": "eslint --fix src",
-    "dev-changelog": "git --no-pager log --since=\"2024-11-14\" --oneline --pretty=format:\"- %s\" > HISTORY.md"
+    "dev-changelog": "git --no-pager log --since=\"2024-11-14\" --oneline --pretty=format:\"- %s\" > HISTORY.md",
+    "_prod-ts": "ts-node ./src/index.ts"
   },
   "dependencies": {
     "@azure/storage-blob": "~12.26.0",
