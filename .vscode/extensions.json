@@ -1,5 +1,6 @@
 {
     "recommendations": [
-        "skyramp.mocker-vscode"
+        "skyramp.mocker-vscode",
+        "snyk-security.snyk-vulnerability-scanner"
     ]
 }
