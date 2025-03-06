@@ -143,6 +143,22 @@ describe('PlaceHolder', () => {
                 }
             })
         })
+
+        it('should evaluate multiple time in same string', () => {
+            const $context = {
+                $entity: "myEntity",
+                $row: {
+                    id: 1,
+                    userName: "New User 3",
+                    password: "Password1"
+                }
+            }
+
+            const data =  "/${{ $entity }}/${{ $row.id }}"
+
+            const result = PlaceHolder.EvaluateJsCode(data, new Sandbox($context))
+            expect(result).toEqual("/myEntity/1")
+        })
     })
 
     describe('GetVarName', () => {

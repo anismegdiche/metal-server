@@ -11,7 +11,6 @@ import { TJson } from "../types/TJson"
 
 
 //
-// const RX_JS_CODE: RegExp = /\$\{\{([^}]+)}\}/m
 const RX_JS_CODE: RegExp = /\$\{\{(.*?)\}\}/m
 const RX_CONTEXT_VAR: RegExp = /\$[\w.]+/g
 
@@ -59,7 +58,7 @@ export class PlaceHolder {
     }
 
     static EvaluateJsCodeString(jsCode: string, sandBox: Sandbox): string {
-        return jsCode.replace(RX_JS_CODE, (_match, _code) => {
+        return jsCode.replace(/\$\{\{(.*?)\}\}/mg, (_match, _code) => {
             try {
                 // file deepcode ignore ImproperCodeSanitization: // TODO Review this
                 const result = sandBox.Evaluate(_code)
