@@ -46,7 +46,6 @@ export type TEndpoint = {
     Url: string
     Data: TJson | string
     SessionHeaders?: TJson<string>
-    Keys?: string[]
     DataPath?: string
 }
 
@@ -60,7 +59,7 @@ export type TWebServiceEndpoint = {
 
 
 //
-export abstract class absWebServiceProvider extends clsClonable {
+export abstract class absWebServiceProvider extends clsClonable { //NOSONAR
 
     abstract DEFAULT: unknown
     abstract ConfigSource?: TConfigSourceWebService
@@ -117,7 +116,6 @@ export abstract class absWebServiceProvider extends clsClonable {
                 Url: _Url,
                 Data: endpointConfig.data,
                 SessionHeaders: endpointConfig["session-headers"],
-                Keys: PlaceHolder.GetVarName(_Url),
                 DataPath: endpointConfig.response
             }
         )

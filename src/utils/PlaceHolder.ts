@@ -12,19 +12,10 @@ import { TJson } from "../types/TJson"
 
 //
 const RX_JS_CODE: RegExp = /\$\{\{(.*?)\}\}/m
-const RX_CONTEXT_VAR: RegExp = /\$[\w.]+/g
 
 
 //
 export class PlaceHolder {
-
-    static GetVarName(str: string): string[] | undefined {
-        if (StringHelper.IsEmpty(str))
-            return undefined
-
-        const matches = str.match(RX_CONTEXT_VAR)
-        return matches ?? undefined
-    }
 
     static EvaluateJsCode<T>(jsCode: any, sandBox: Sandbox): T | undefined {
         // case undefined

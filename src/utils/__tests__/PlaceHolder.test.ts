@@ -155,91 +155,10 @@ describe('PlaceHolder', () => {
                 }
             }
 
-            const data =  "/${{ $entity }}/${{ $row.id }}"
+            const data = "/${{ $entity }}/${{ $row.id }}"
 
             const result = PlaceHolder.EvaluateJsCode(data, new Sandbox($context))
             expect(result).toEqual("/myEntity/1")
-        })
-    })
-
-    describe('GetVarName', () => {
-        it('should return code inside ${{ }} delimiters when pattern matches', () => {
-            const input = '${{myCode}}'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toBeUndefined()
-        })
-
-        it('should return undefined when string does not match pattern', () => {
-            const input = '${{no match here}}'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toBeUndefined()
-        })
-
-        it('should extract code between delimiters correctly', () => {
-            const input = '${{prefix test.value suffix}}'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toBeUndefined()
-        })
-
-        it('should handle JS expressions between delimiters', () => {
-            const input = '${{x > 0 ? true : false}}'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toBeUndefined()
-        })
-
-        it('should preserve whitespace in extracted code', () => {
-            const input = '${{  spaced   content  }}'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toBeUndefined()
-        })
-
-        it('should return undefined for empty string input', () => {
-            const result = PlaceHolder.GetVarName('')
-            expect(result).toBeUndefined()
-        })
-
-        it('should return only first match when multiple matches exist', () => {
-            const input = '${{first}} ${{second}}'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toBeUndefined()
-        })
-
-        it('should return undefined for incomplete delimiters', () => {
-            const input = '${{incomplete'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toBeUndefined()
-        })
-
-        it('should handle nested delimiters correctly', () => {
-            const input = '${{outer $inner rest}}'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toStrictEqual(['$inner'])
-        })
-
-        it('should handle special characters in code block', () => {
-            const input = '${{!@#$%^&*()_+}}'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toBeUndefined()
-        })
-
-        it('should handle unicode characters correctly', () => {
-            const input = '${{こんにちは世界}}'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toBeUndefined()
-        })
-
-        it('should handle long input strings', () => {
-            const longCode = 'x'.repeat(1000)
-            const input = `\${{ ${longCode}
-    }}`
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toBeUndefined()
-        })
-
-        it('should return both code blocks when multiple code blocks exist', () => {
-            const input = '${{ $row.x.y $second.x7}}'
-            const result = PlaceHolder.GetVarName(input)
-            expect(result).toStrictEqual(['$row.x.y', '$second.x7'])
         })
     })
 })
