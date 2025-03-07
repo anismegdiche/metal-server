@@ -70,15 +70,15 @@ export class XmlContent extends absContentProvider {
             await ReadableHelper.ToString(this.Content.ReadFile(this.EntityName))
         )
 
-        const path = PlaceHolder.EvaluateJsCode<string>(
+        const $__path = PlaceHolder.EvaluateJsCode<string>(
             $context?.$request?.["data-path"] ?? this.Params["xml-path"],
             new Sandbox($context)
         )
 
-        const data = JsonHelper.Get<TJson[]>(xmlData, path)
+        const data = JsonHelper.Get<TJson[]>(xmlData, $__path)
 
         if (!data)
-            throw new HttpErrorInternalServerError(`Xml: Path ${path} not found`)
+            throw new HttpErrorInternalServerError(`Xml: Path ${$__path} not found`)
 
         return new DataTable(this.EntityName, Array.isArray(data)
             ? data
@@ -97,14 +97,14 @@ export class XmlContent extends absContentProvider {
             await ReadableHelper.ToString(this.Content.ReadFile(this.EntityName))
         )
 
-        const evalPath = PlaceHolder.EvaluateJsCode<string>(
+        const $__evalPath = PlaceHolder.EvaluateJsCode<string>(
             jsonPath,
             new Sandbox($context)
         )
 
         JsonHelper.Set(
             xmlData,
-            evalPath,
+            $__evalPath,
             data.Rows
         )
 

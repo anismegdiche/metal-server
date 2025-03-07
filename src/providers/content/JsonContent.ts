@@ -60,12 +60,12 @@ export class JsonContent extends absContentProvider {
             ), {}
         )
 
-        const path = PlaceHolder.EvaluateJsCode<string>(
+        const $__path = PlaceHolder.EvaluateJsCode<string>(
             ($context?.$request?.["data-path"] ?? this.Params.path) as string,
             new Sandbox($context)
         )
 
-        const data = JsonHelper.Get<TJson[]>(json, path)
+        const data = JsonHelper.Get<TJson[]>(json, $__path)
         
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
@@ -85,12 +85,12 @@ export class JsonContent extends absContentProvider {
             ), {}
         )
 
-        const path = PlaceHolder.EvaluateJsCode<string>(
+        const $__path = PlaceHolder.EvaluateJsCode<string>(
             $context?.$request?.["data-path"] ?? this.Params.path,
             new Sandbox($context)
         )
 
-        JsonHelper.Set(json, path, data.Rows)
+        JsonHelper.Set(json, $__path, data.Rows)
 
         const streamOut = Readable.from(JSON.stringify(json))
         this.Content.UploadFile(this.EntityName, streamOut)

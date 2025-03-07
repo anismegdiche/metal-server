@@ -113,13 +113,13 @@ export class SoapWebService extends absWebServiceProvider {
         try {
             const { Method, Data, SessionHeaders, DataPath } = this.Endpoints.get(endpointType)!
 
-            const _Method = PlaceHolder.EvaluateJsCode<string>(Method, new Sandbox($context))
-            const _Data = PlaceHolder.EvaluateJsCode<TJson>(Data ?? data, new Sandbox($context)) ?? {}
-            const _DataPath = PlaceHolder.EvaluateJsCode<string>(DataPath, new Sandbox($context))
+            const $__method = PlaceHolder.EvaluateJsCode<string>(Method, new Sandbox($context))
+            const $__data = PlaceHolder.EvaluateJsCode<TJson>(Data ?? data, new Sandbox($context)) ?? {}
+            const $__dataPath = PlaceHolder.EvaluateJsCode<string>(DataPath, new Sandbox($context))
 
-            Logger.Debug(`${Logger.In} ${endpointType}: ${this.ConfigSource!.host}, ${_Method}`)
+            Logger.Debug(`${Logger.In} ${endpointType}: ${this.ConfigSource!.host}, ${$__method}`)
 
-            const wsResp = await this.Client[`${_Method}Async`](_Data)
+            const wsResp = await this.Client[`${$__method}Async`]($__data)
 
             if (!wsResp)
                 throw new HttpErrorInternalServerError(`${endpointType}: ${wsResp?.statusText}`)
@@ -129,7 +129,7 @@ export class SoapWebService extends absWebServiceProvider {
                 $context,
                 <Partial<TContext>>{
                     $request: {
-                        "data-path": _DataPath
+                        "data-path": $__dataPath
                     },
                     $response: {
                         url: this.ConfigSource!.host,
@@ -140,9 +140,9 @@ export class SoapWebService extends absWebServiceProvider {
             )
 
             // set session headers after request
-            const _SessionHeaders = PlaceHolder.EvaluateJsCode<TJson<string>>(SessionHeaders, new Sandbox($context))
-            if (_SessionHeaders) {
-                for (const [_headerName, _headerValue] of Object.entries(_SessionHeaders)) {
+            const $__sessionHeaders = PlaceHolder.EvaluateJsCode<TJson<string>>(SessionHeaders, new Sandbox($context))
+            if ($__sessionHeaders) {
+                for (const [_headerName, _headerValue] of Object.entries($__sessionHeaders)) {
                     this.Client.addHttpHeader(_headerName, _headerValue)
                 }
             }

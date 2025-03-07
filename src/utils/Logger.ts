@@ -106,7 +106,7 @@ export class Logger {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static LogFunction(logger: Function = Logger.Debug, hideParameters: boolean = false): any {
-        //CURRENT use Decorator helper
+        //CURRENT log decorator: use Decorator helper
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             const originalMethod = descriptor.value
             descriptor.value = function(...originalArgs: any[]) {

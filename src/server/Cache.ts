@@ -27,7 +27,7 @@ import { SynchronizerManager } from "../utils/SynchronizerManager"
 import { TConfigSource } from "../types/TConfig"
 import { DataProvider } from "../providers/DataProvider"
 
-
+//CURRENT cache: check and add test for metadata
 //
 export class Cache {
 

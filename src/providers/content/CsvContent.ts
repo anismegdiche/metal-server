@@ -65,7 +65,7 @@ export class CsvContent extends absContentProvider {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
-        const evalParams = PlaceHolder.EvaluateJsCode<Csv.ParseConfig>(
+        const $__evalParams = PlaceHolder.EvaluateJsCode<Csv.ParseConfig>(
             this.Params,
             new Sandbox($context)
         )
@@ -74,7 +74,7 @@ export class CsvContent extends absContentProvider {
             await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
             ),
-            evalParams
+            $__evalParams
         )
         return new DataTable(this.EntityName, parsedCsv.data).FreeSqlAsync(sqlQuery)
     }
@@ -84,7 +84,7 @@ export class CsvContent extends absContentProvider {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
-        const evalParams = PlaceHolder.EvaluateJsCode<TCsvContentParams>(
+        const $__evalParams = PlaceHolder.EvaluateJsCode<TCsvContentParams>(
             this.Params,
             new Sandbox($context)
         )
@@ -92,7 +92,7 @@ export class CsvContent extends absContentProvider {
         const streamOut = Readable.from(
             Csv.unparse(
                 contentDataTable.Rows,
-                evalParams
+                $__evalParams
             )
         )
         this.Content.UploadFile(this.EntityName, streamOut)

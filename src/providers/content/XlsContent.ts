@@ -82,20 +82,20 @@ export class XlsContent extends absContentProvider {
         Logger.Debug('XlsContent.Get: reading stream')
         await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
 
-        const evalParams = PlaceHolder.EvaluateJsCode<TXlsContentParams>(
+        const $__evalParams = PlaceHolder.EvaluateJsCode<TXlsContentParams>(
             this.Params,
             new Sandbox($context)
         )
 
         Logger.Debug('XlsContent.Get: Converting')
-        const sheetName = evalParams!.sheet ?? workbook.worksheets[0].name
+        const sheetName = $__evalParams!.sheet ?? workbook.worksheets[0].name
         const worksheet = workbook.getWorksheet(sheetName)
 
         if (worksheet == undefined)
             throw new HttpErrorInternalServerError(`Worksheet "${sheetName}" not found in workbook.`)
 
         const [startCol, startRow] = worksheet
-            .getCell(evalParams!.startingCell!)
+            .getCell($__evalParams!.startingCell!)
             .address
             .match(/[A-Z]+|\d+/g)!
 
@@ -113,9 +113,9 @@ export class XlsContent extends absContentProvider {
                     let cellValue = sheetRow.getCell(colIndex + index).value
 
                     // Handle date parsing if enabled
-                    if (evalParams!.parseDates && cellValue instanceof Date) {
+                    if ($__evalParams!.parseDates && cellValue instanceof Date) {
                         cellValue = new Intl.DateTimeFormat('en-US', { dateStyle: 'short' }).format(cellValue) // Adjust formatting as needed
-                    } else if (evalParams!.parseDates && typeof cellValue === 'string') {
+                    } else if ($__evalParams!.parseDates && typeof cellValue === 'string') {
                         // Attempt to parse string as date if evalParams.parseDates is enabled
                         const _parsedDate = new Date(cellValue)
                         if (!Number.isNaN(_parsedDate.getTime())) {
@@ -124,7 +124,7 @@ export class XlsContent extends absContentProvider {
                     }
 
                     _row[field] = cellValue === null
-                        ? evalParams!.default
+                        ? $__evalParams!.default
                         : cellValue
 
                     return _row
@@ -145,18 +145,18 @@ export class XlsContent extends absContentProvider {
         const workbook = new ExcelJS.Workbook()
         await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
 
-        const evalParams = PlaceHolder.EvaluateJsCode<TXlsContentParams>(
+        const $__evalParams = PlaceHolder.EvaluateJsCode<TXlsContentParams>(
             this.Params,
             new Sandbox($context)
         )
 
-        const sheetName = evalParams?.sheet ?? workbook.worksheets[0].name
+        const sheetName = $__evalParams?.sheet ?? workbook.worksheets[0].name
         let worksheet = workbook.getWorksheet(sheetName)
 
         if (!worksheet)
             worksheet = workbook.addWorksheet(sheetName)
 
-        const [startCol, startRow] = worksheet.getCell(evalParams?.startingCell as string).address.match(/[A-Z]+|\d+/g)!
+        const [startCol, startRow] = worksheet.getCell($__evalParams?.startingCell as string).address.match(/[A-Z]+|\d+/g)!
         const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
         // Set headers
@@ -176,12 +176,12 @@ export class XlsContent extends absContentProvider {
 
                 // If raw data is specified, set directly; otherwise apply formatting or defaults
                 if (_valueToSet === null) {
-                    _valueToSet = evalParams!.default // Use default value for empty cells
+                    _valueToSet = $__evalParams!.default // Use default value for empty cells
                 }
 
                 // Handle date formatting if specified and "xls-parse-dates" is true
-                if (evalParams!.parseDates && _valueToSet instanceof Date) {
-                    worksheet.getCell(_rowIdx, _colIdx).numFmt = evalParams!.dateFormat as string // Apply date format
+                if ($__evalParams!.parseDates && _valueToSet instanceof Date) {
+                    worksheet.getCell(_rowIdx, _colIdx).numFmt = $__evalParams!.dateFormat as string // Apply date format
                 }
                 worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet     // Set other values directly
             })

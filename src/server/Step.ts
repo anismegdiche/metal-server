@@ -268,7 +268,7 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
-        // CURRENT missing $context
+        // CURRENT step delete: missing $context
         if (!schema && !entity) {
             const _options: TOptionalParameter = Step.DataProvider.Options.Parse($__schemaRequest, $context)
             const _sqlQueryHelper = Step.DataProvider.GenerateSqlDelete(<TSchemaRequestDelete>{

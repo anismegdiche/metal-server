@@ -65,17 +65,17 @@ export class RestWebService extends absWebServiceProvider {
         try {
             const { Method, Url, Data, SessionHeaders, DataPath } = this.Endpoints.get(endpointType)!
 
-            const _Method = PlaceHolder.EvaluateJsCode<string>(Method, new Sandbox($context))
-            const _Url = PlaceHolder.EvaluateJsCode<string>(Url, new Sandbox($context))
-            const _Data = PlaceHolder.EvaluateJsCode<TJson>(Data, new Sandbox($context))
-            const _DataPath = PlaceHolder.EvaluateJsCode<string>(DataPath, new Sandbox($context))
+            const $__method = PlaceHolder.EvaluateJsCode<string>(Method, new Sandbox($context))
+            const $__url = PlaceHolder.EvaluateJsCode<string>(Url, new Sandbox($context))
+            const $__data = PlaceHolder.EvaluateJsCode<TJson>(Data, new Sandbox($context))
+            const $__dataPath = PlaceHolder.EvaluateJsCode<string>(DataPath, new Sandbox($context))
 
             Logger.Debug(`${Logger.In} ${endpointType}: ${StringHelper.Url(this.ConfigSource!.host, Url)}`)
 
             const wsResp: AxiosResponse = await this.Client({
-                method: (_Method ?? Method).toLowerCase(),
-                url: _Url,
-                data: JsonHelper.Stringify(_Data ?? data)
+                method: ($__method ?? Method).toLowerCase(),
+                url: $__url,
+                data: JsonHelper.Stringify($__data ?? data)
             })
 
             if (!httpStatusSuccess.includes(wsResp.status))
@@ -86,7 +86,7 @@ export class RestWebService extends absWebServiceProvider {
                 $context,
                 {
                     $request: {
-                        "data-path": _DataPath
+                        "data-path": $__dataPath
                     },
                     $response: {
                         url: wsResp.config.url,
@@ -98,8 +98,8 @@ export class RestWebService extends absWebServiceProvider {
 
             // set session headers after request
             if (SessionHeaders) {
-                const _SessionHeaders = PlaceHolder.EvaluateJsCode(SessionHeaders, new Sandbox($context)) as Exclude<TJson<string>, undefined>
-                for (const [_headerName, _headerValue] of Object.entries(_SessionHeaders)) {
+                const $__sessionHeaders = PlaceHolder.EvaluateJsCode(SessionHeaders, new Sandbox($context)) as Exclude<TJson<string>, undefined>
+                for (const [_headerName, _headerValue] of Object.entries($__sessionHeaders)) {
                     this.Client.defaults.headers.common[_headerName] = _headerValue
                 }
             }
