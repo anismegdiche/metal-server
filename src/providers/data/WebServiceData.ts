@@ -381,18 +381,4 @@ export class WebServiceData extends absDataProvider {
         if (!this.File.has(entity) && this.ContentHandler)
             this.File.set(entity, this.ContentHandler)
     }
-
-    // eslint-disable-next-line class-methods-use-this
-    GetIdName(endpoint: TEndpoint): string {
-        if (!endpoint?.Keys)
-            return "*"
-
-        const id: string[] = endpoint.Keys
-            .filter(v => v.startsWith('$row'))
-            .map(v => v.replace('$row.', ''))
-
-        return (id && id.length > 0)
-            ? id.at(0)!
-            : "*"
-    }
 }    
