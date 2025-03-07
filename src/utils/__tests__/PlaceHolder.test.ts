@@ -150,6 +150,7 @@ describe('PlaceHolder', () => {
                 $row: {
                     id: 1,
                     userName: "New User 3",
+                    // file deepcode ignore NoHardcodedPasswords/test: testing
                     password: "Password1"
                 }
             }
