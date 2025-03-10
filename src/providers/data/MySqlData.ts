@@ -62,7 +62,7 @@ export class MySqlData extends absDataProvider {
             host: sourceConfig?.host,
             port: sourceConfig?.port,
             user: sourceConfig?.user,
-            password: sourceConfig?.password,
+            password: sourceConfig?.password?.toString(),
             database: sourceConfig?.database,
             ..._.merge(this.DEFAULT.options, sourceConfig?.options)
         }

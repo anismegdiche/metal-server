@@ -5,6 +5,7 @@
 //
 import { Pool } from 'pg'
 import typia from "typia"
+import _ from "lodash"
 //
 import { RESPONSE } from '../../lib/Const'
 import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
@@ -21,7 +22,6 @@ import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
-import _ from "lodash"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 
 
@@ -44,6 +44,13 @@ export class PostgresData extends absDataProvider {
     Config: TPostgresDataConfig = <TPostgresDataConfig>{}
     Connection?: Pool = undefined
 
+    DEFAULT: Partial<TPostgresDataConfig> = {
+        host: 'localhost',
+        port: 5432,
+        user: 'root',
+        database: 'postgres'
+    }
+
     constructor() {
         super()
     }
@@ -52,14 +59,7 @@ export class PostgresData extends absDataProvider {
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug("PostgresData.Init")
         this.SourceName = source
-        this.Config = {
-            host: sourceConfig.host ?? 'localhost',
-            port: sourceConfig.port ?? 5432,
-            user: sourceConfig.user ?? 'root',
-            password: sourceConfig.password ?? '',
-            database: sourceConfig.database ?? 'postgres',
-            options: sourceConfig.options
-        }
+        this.Config = _.merge(this.DEFAULT, sourceConfig as TPostgresDataConfig)
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -73,6 +73,7 @@ export class PostgresData extends absDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
+        //CURRENT manage default
         const source = this.SourceName
         const {
             user = 'root',

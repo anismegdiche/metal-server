@@ -44,7 +44,7 @@ export type TConfigSource = {
     host?: string
     port?: TIpPort
     user?: string
-    password?: string
+    password?: string | number
     database?: string
     options?: TConfigSourceOptions
 }

@@ -4,9 +4,10 @@
 //
 //
 import * as Fs from 'fs'
-import * as Yaml from 'js-yaml'   //TODO Use only one YAML lib
+import * as Yaml from 'js-yaml'   //CURRENT Use only one YAML lib
 import _ from 'lodash'
 import typia from "typia"
+import * as dotenv from 'dotenv'
 //
 import { TJson } from '../types/TJson'
 import { Logger } from '../utils/Logger'
@@ -23,6 +24,7 @@ export class Config {
     //TODO create a single default config and merge it with _.merge
     static Configuration: TConfig
     static ConfigFilePath = './config/config.yml'
+    static EnvFilePath = './config/.env'
 
     static readonly DEFAULT: Partial<TConfig> = {
         server: {
@@ -31,12 +33,9 @@ export class Config {
             verbosity: 'warn',
             authentication: AuthProvider?.DEFAULT,
             "request-limit": '10mb',
-            // v0.3
-            "response-limit": '10mb',
-            // v0.3
-            "response-chunk": false,
-            // v0.3
-            "response-rate": {
+            "response-limit": '10mb',     // v0.3
+            "response-chunk": false,      // v0.3
+            "response-rate": {            // v0.3
                 windowMs: 1 * 60 * 1000,
                 max: 600,
                 message: HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS
@@ -44,24 +43,24 @@ export class Config {
         }
     }
 
-    static readonly DEFAULTS: TJson = {
-        "server.port": 3000,
-        "server.timezone": 'UTC',
-        "server.verbosity": 'warn',
-        "server.request-limit": '10mb',
-        // v0.3
-        "server.response-limit": '10mb',
-        // v0.3
-        "server.response-chunk": false,
-        // v0.3
-        "server.response-rate": {
-            windowMs: 1 * 60 * 1000,
-            max: 600,
-            message: HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS
-        }
-    }
+    //XXX static readonly DEFAULTS: TJson = {
+    //XXX     "server.port": 3000,
+    //XXX     "server.timezone": 'UTC',
+    //XXX     "server.verbosity": 'warn',
+    //XXX     "server.request-limit": '10mb',
+    //XXX     //XXX v0.3
+    //XXX     "server.response-limit": '10mb',
+    //XXX     //XXX v0.3
+    //XXX     "server.response-chunk": false,
+    //XXX     //XXX v0.3
+    //XXX     "server.response-rate": {
+    //XXX         windowMs: 1 * 60 * 1000,
+    //XXX         max: 600,
+    //XXX         message: HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS
+    //XXX     }
+    //XXX }
 
-    // TODO remove
+    // CURRENT remove
     static Flags: TJson = {
         // @deprecated: to remove
         EnableAuthentication: false,      // Enable/disable authentication
@@ -76,8 +75,13 @@ export class Config {
 
     @Logger.LogFunction()
     static async Load(): Promise<TConfig> {
+        dotenv.config({ path: Config.EnvFilePath })
         const configFileRaw = Fs.readFileSync(Config.ConfigFilePath, 'utf8')
-        return await Yaml.load(configFileRaw) as TConfig
+        const configInterpol = configFileRaw.replace(/\$(?:{([^{}]*)})/g, (match, envVarName) => {
+            return process.env[envVarName] ?? match
+        })
+
+        return await Yaml.load(configInterpol) as TConfig
     }
 
     // @Logger.LogFunction(Logger.Debug, true)
