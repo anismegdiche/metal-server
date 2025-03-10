@@ -33,7 +33,6 @@ authorization: Bearer {{token}}
         "userName": "New User 3"
     }
 }
-
 ###
 # @name create
 POST  http://localhost:3000/schema/ws1/Users

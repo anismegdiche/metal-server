@@ -1,4 +1,4 @@
-version: "0.3"
+version: "0.4"
 server:
   verbosity: debug
   port: 3000
@@ -6,6 +6,11 @@ server:
   authentication:
     provider: local
     default-role: all
+  cache:
+    provider: memory
+    database: cache
+    options:
+      autocreate: true
 
 roles:
   all: lacrud
@@ -27,7 +32,7 @@ sources:
         # item-read: 
         #   get: /${{ $entity }}/${{ $row.id }}
         item-create: 
-          post:
+          post: /${{ $entity }}
         item-update: 
           put: /${{ $entity }}/${{ $row.id }}
         item-delete: 
