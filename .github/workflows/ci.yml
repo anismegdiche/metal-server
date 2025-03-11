@@ -1,16 +1,35 @@
-name: CI
+name: CI Pipeline
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - latest
+      - dev
+  pull_request:
+    branches:
+      - latest
+      - dev
 
 jobs:
-  build:
+  matrix-build-test:
     strategy:
       matrix:
         os:
-          #[ubuntu-latest, windows-latest]
-          [ubuntu-22, ubuntu-24, windows-latest, macos-latest]
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - ubuntu-latest
+
+          - windows-2019
+          - windows-2022
+          - windows-latest
+
+          - macos-13
+          - macos-14
+          - macos-15
+          - macos-latest
+        
         node:
-          ["22.13.0"]
+          - "22.13.0"
 
     runs-on: ${{ matrix.os }}
 
