@@ -43,23 +43,6 @@ export class Config {
         }
     }
 
-    //XXX static readonly DEFAULTS: TJson = {
-    //XXX     "server.port": 3000,
-    //XXX     "server.timezone": 'UTC',
-    //XXX     "server.verbosity": 'warn',
-    //XXX     "server.request-limit": '10mb',
-    //XXX     //XXX v0.3
-    //XXX     "server.response-limit": '10mb',
-    //XXX     //XXX v0.3
-    //XXX     "server.response-chunk": false,
-    //XXX     //XXX v0.3
-    //XXX     "server.response-rate": {
-    //XXX         windowMs: 1 * 60 * 1000,
-    //XXX         max: 600,
-    //XXX         message: HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS
-    //XXX     }
-    //XXX }
-
     // CURRENT remove
     static Flags: TJson = {
         // @deprecated: to remove
