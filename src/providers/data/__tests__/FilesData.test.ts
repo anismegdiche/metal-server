@@ -52,7 +52,7 @@ describe("FilesData", () => {
         (StorageProvider.GetProvider as jest.Mock).mockReturnValue(mockStorageProvider);
         (ContentProvider.GetProvider as jest.Mock).mockReturnValue(mockContentProvider);
 
-        // (Convert.PatternToRegex as jest.Mock).mockImplementation((pattern) => new RegExp(pattern))
+        (Convert.PatternToRegex as jest.Mock).mockImplementation((pattern: string) => new RegExp(pattern.replace("*", ".*")))
 
         // Create instance
         filesData = new FilesData()

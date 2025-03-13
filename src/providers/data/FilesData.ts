@@ -106,7 +106,7 @@ export class FilesData extends absDataProvider {
 
     SetContentHandler(entity: string) {
         if (!_.has(this.File, entity)) {
-            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entity))
+            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern)?.test(entity))
             if (handler)
                 this.File[entity] = this.ContentHandler[handler]
             else
