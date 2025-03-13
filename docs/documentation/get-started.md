@@ -13,7 +13,7 @@ It is strongly discouraged to deploy Metal As It Is in a production environment 
 
 Before diving into Metal Server, make sure your environment meets the following prerequisites:
 
-- [Node.js](https://nodejs.org/) 22.10.0
+- [Node.js](https://nodejs.org/) 22.13.0
 - [Git](https://git-scm.com/) 2.42 or newer
 
 ## Installation
@@ -36,10 +36,10 @@ Before diving into Metal Server, make sure your environment meets the following 
     npm install
     ```
 
-4. Prepare typia package using npm:
+4. Prepare dependencies using npm:
 
     ```bash
-    npm run _prepare-typia
+    npm run prepare
     ```
 
 5. Compile the scripts:
@@ -72,7 +72,7 @@ You should receive a response similar to the following:
 ```json
 {
     "server":"Metal",
-    "version":"0.2"
+    "version":"0.4"
 }
 ```
 
