@@ -2,7 +2,7 @@
 # Docker testing image for Metal
 ##
 
-FROM node:22.10.0
+FROM node:22.13.0-slim
 LABEL org.opencontainers.image.authors="Anis Megdiche <anis.megdiche@gmail.com>"
 
 RUN mkdir -p /app
