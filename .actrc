@@ -1,0 +1,3 @@
+-P ubuntu-latest=-self-hosted
+-P windows-latest=-self-hosted
+-P macos-latest=-self-hosted
