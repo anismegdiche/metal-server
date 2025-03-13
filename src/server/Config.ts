@@ -72,13 +72,13 @@ export class Config {
     //     // TODO check for used sources and plans in config
     //     const sourceConfig = {
     //         type: "string",
-    //         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+
     //         enum: _.keys(newConfig?.sources ?? [])
     //     }
 
     //     const planConfig = {
     //         type: "string",
-    //         // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+
     //         enum: _.keys(newConfig?.plans ?? [])
     //     }
     // }

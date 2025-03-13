@@ -28,7 +28,6 @@ export class SqlQueryHelper {
     Data: object[] = []
 
 
-
     FnEscapeEntity: (entity: string) => string = (entity: string) => entity
 
 
@@ -77,7 +76,7 @@ export class SqlQueryHelper {
                 cleanFields.push(...fields)
                 break
 
-            // eslint-disable-next-line you-dont-need-lodash-underscore/is-string
+
             case _.isString(fields) && fields.includes(','):
                 {
                     const _aFields = fields.split(',')
@@ -162,7 +161,6 @@ export class SqlQueryHelper {
         }
 
 
-        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
         if (typeof condition === 'object' && _.keys(condition).length > 0) {
             const _cond = _
                 .chain(condition)
@@ -284,7 +282,7 @@ export class SqlQueryHelper {
             })
         } else {
 
-            // eslint-disable-next-line you-dont-need-lodash-underscore/values
+
             this.#Query = `${this.#Query} VALUES ('${_.values(data).join('\',\'')}')`
         }
         return this
@@ -314,9 +312,9 @@ export class SqlQueryHelper {
             .compact()
             .value()
 
-        // eslint-disable-next-line you-dont-need-lodash-underscore/find-index
+
         const wherePos = _.findIndex(tokens, (word) => word.toUpperCase() === "WHERE")
-        // eslint-disable-next-line you-dont-need-lodash-underscore/find-index
+
         const setPos = _.findIndex(tokens, (word) => word.toUpperCase() === "SET")
 
         const pos = (wherePos != -1 && setPos != -1)
@@ -327,9 +325,9 @@ export class SqlQueryHelper {
         let afterClause: string[] = []
 
         if (pos !== -1) {
-            // eslint-disable-next-line you-dont-need-lodash-underscore/slice
+
             beforeClause = _.slice(tokens, 0, pos)
-            // eslint-disable-next-line you-dont-need-lodash-underscore/slice
+
             afterClause = _.slice(tokens, pos)
             
             afterClause = _.chain(afterClause)
@@ -348,7 +346,7 @@ export class SqlQueryHelper {
                 .compact()
                 .value()
             
-            // eslint-disable-next-line you-dont-need-lodash-underscore/concat
+
             return _.concat(beforeClause, afterClause)
         }
         return tokens

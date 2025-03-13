@@ -344,7 +344,7 @@ export class Schema {
             })
 
         if (schemaConfig?.entities)
-            // eslint-disable-next-line you-dont-need-lodash-underscore/for-each
+
             _.forEach(schemaConfig.entities, (entityConfig: TConfigSchemaEntity, entity: string) => {
                 entities.set(entity, {
                     source: entityConfig.source,

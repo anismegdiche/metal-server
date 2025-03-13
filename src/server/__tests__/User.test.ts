@@ -1,4 +1,4 @@
-/* eslint-disable you-dont-need-lodash-underscore/omit */
+
 import typia from "typia"
 import _ from "lodash"
 import { TUserToken, TUserTokenInfo, User } from '../User'

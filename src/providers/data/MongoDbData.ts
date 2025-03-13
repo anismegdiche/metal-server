@@ -258,7 +258,7 @@ export class MongoDbData extends absDataProvider {
                     const collection = this.Connection.db(this.Config.database).collection(item.name)
                     size = await collection.countDocuments()
                 }
-                // eslint-disable-next-line you-dont-need-lodash-underscore/assign
+
                 return _.assign(_.pick(item, ['name', 'type']), { size })
             })
         )

@@ -89,7 +89,7 @@ export class Convert {
                     // Push the initial part of the JSON response
                     // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push(
-                        // eslint-disable-next-line you-dont-need-lodash-underscore/omit
+
                         JSON.stringify(_.omit(resJson, "rows"))
                             .replace(/}$/, ',')) // Remove closing brace to continue streaming rows
 

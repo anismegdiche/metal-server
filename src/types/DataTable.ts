@@ -106,7 +106,7 @@ export class DataTable extends clsClonable {
     @Logger.LogFunction()
     SetFields(): this {
         const _cols: TJson = { ...this.Rows[0] }
-        // eslint-disable-next-line you-dont-need-lodash-underscore/reduce
+
         this.Fields = _.reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
             return _cols
@@ -328,7 +328,7 @@ export class DataTable extends clsClonable {
             UpdatedRows = UpdatedRows.map(updatedRow => {
                 const correspondingDestRow = filteredDestination.find(destRow => destRow[on] === updatedRow[on])
                 if (correspondingDestRow) {
-                    // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+
                     _.keys(updatedRow).forEach(prop => {
                         if (prop !== on && _.isEqual(updatedRow[prop], correspondingDestRow[prop])) {
                             delete updatedRow[prop]
@@ -491,7 +491,7 @@ export class DataTable extends clsClonable {
             : ["key", ..._.range(1, this.Rows.length + 1).map(i => `${NAME_PATTERN}${i}`)]
 
         // Transpose using lodash
-        // eslint-disable-next-line you-dont-need-lodash-underscore/map
+
         this.Rows = _.map(keys, (key) => {
             const rowValues = [key, ...this.Rows.map((row) => row[key])]
             return _.zipObject(columns, rowValues)

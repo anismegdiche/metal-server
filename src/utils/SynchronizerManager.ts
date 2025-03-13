@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+ 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 //
 //
@@ -37,7 +37,7 @@ export class SynchronizerManager {
                 const _paramObject = DecoratorHelper.GetParameters(originalMethod, ...args)
                 const _filteredParams = _.chain(_paramObject)
                     .omitBy(_.isNil || _.isEmpty)
-                    // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+
                     .pick(pick ?? _.keys(_paramObject))
                     .value()
 

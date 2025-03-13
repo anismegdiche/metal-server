@@ -49,7 +49,7 @@ export class Plan {
 
     async Init() {
         const entities = Config.Get<TJson<StepCommand[]>>(`plans.${this.Name}`) ??  {}
-        // eslint-disable-next-line you-dont-need-lodash-underscore/for-each
+
         _.forEach(entities, (steps: StepCommand[], entity: string) => {
             this.Entities.set(entity, steps)
             this.#__LOCK__.set(entity, new Semaphore(this.SemaphoreSize))
@@ -154,9 +154,9 @@ export class Plan {
             }
 
             try {
-                // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+
                 const __stepCommand: string = _.keys(<object>step)[0]
-                // eslint-disable-next-line you-dont-need-lodash-underscore/values
+
                 const __stepParams: TJson = _.values(<object>step)[0]
 
                 if (__stepCommand === 'break') {

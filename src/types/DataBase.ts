@@ -51,7 +51,7 @@ export class DataBase {
         if (dataTables === null)
             return undefined
 
-        // eslint-disable-next-line you-dont-need-lodash-underscore/uniq
+
         _.uniq(dataTables).forEach((_dt: string) => {
             sqlQueryModified = sqlQueryModified.replace(`{${_dt}}`, ` ? ${_dt}`)
             rows = [

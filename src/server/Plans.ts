@@ -19,7 +19,7 @@ export class Plans {
         if (!Config.Has('plans'))
             return
 
-        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+
         const plans = _.keys(Config.Get<TJson>("plans") ?? {})
 
         plans.forEach((plan: string) => {

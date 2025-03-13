@@ -11,7 +11,6 @@ import { CONTENT } from "./ContentProvider"
 import { clsClonable } from "../utils/clsClonable"
 import { TWebServiceDataOptions, TConfigSourceWebService } from "./data/WebServiceData"
 import { TJson } from "../types/TJson"
-import { PlaceHolder } from "../utils/PlaceHolder"
 import { HttpErrorInternalServerError } from "../server/HttpErrors"
 import { TContext } from "../@types/TContext"
 
@@ -100,7 +99,7 @@ export abstract class absWebServiceProvider extends clsClonable { //NOSONAR
 
         // get method from key
         const endpointMethod = Object.keys(
-            // eslint-disable-next-line you-dont-need-lodash-underscore/omit
+
             _.omit(endpointConfig, ["data", "response", "session-headers"])
         ).at(0)
 

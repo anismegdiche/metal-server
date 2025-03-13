@@ -340,9 +340,9 @@ export class Step {
         const stepParams = stepArguments.stepParams as TStepSort
         const { currentDataTable } = stepArguments
 
-        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+
         const fields = _.keys(stepParams)
-        // eslint-disable-next-line you-dont-need-lodash-underscore/values
+
         const orders: TSortOrder[] = _.values(stepParams)
 
         return currentDataTable.Sort(fields, orders)
@@ -373,7 +373,7 @@ export class Step {
                     return
                 }
                 // check if output is empty
-                // eslint-disable-next-line you-dont-need-lodash-underscore/is-nil
+
                 if (_.isNil(output) || _.isEmpty(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
@@ -383,7 +383,7 @@ export class Step {
                 }
 
                 // check if output is string
-                // eslint-disable-next-line you-dont-need-lodash-underscore/is-string
+
                 if (_.isString(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
@@ -435,7 +435,7 @@ export class Step {
 
         // Apply transformations
         //// Delete
-        // eslint-disable-next-line you-dont-need-lodash-underscore/map
+
         _.map(syncReport.DeletedRows, id)
             .forEach((value: unknown) => Schema.Delete({
                 schema: to.schema,
@@ -452,7 +452,7 @@ export class Step {
             filter: {
                 [id]: row[id]
             },
-            // eslint-disable-next-line you-dont-need-lodash-underscore/omit
+
             data: [_.omit(row, id)]
         }))
 
@@ -519,7 +519,7 @@ export class Step {
         }
 
         // no schema passed, return list of plan entities
-        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+
         const entitiesList = _.keys(Config.Get(`plans.${currentPlanName}`)).map(entity => ({
             name: entity,
             type: 'plan entity'

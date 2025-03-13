@@ -33,7 +33,7 @@ describe('TensorFlowJs', () => {
 	it('should run image classification successfully', async () => {
 		const result: any = await tfjs.Run(IMG_GUITAR)
 		const resultWOProbability = {
-			// eslint-disable-next-line you-dont-need-lodash-underscore/map, you-dont-need-lodash-underscore/omit
+
 			class: _.map(result.class, obj => _.omit(obj, 'probability'))
 		}
 

@@ -47,7 +47,7 @@ export class JsonHelper {
 
         const _jsonPath = jsonPath.replace(/\[(\d+)\]/g, '.$1')
 
-        // eslint-disable-next-line you-dont-need-lodash-underscore/get
+
         const extractedData = objectPath.get(json, _jsonPath) ?? _.get(json, jsonPath)
 
         return (extractedData)
@@ -100,7 +100,7 @@ export class JsonHelper {
             if (_.isObject(value)) {
                 JsonHelper.RemoveUselessKeys(value)
             }
-            // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
+
             if (["[Object]", "[Array]"].includes(value) || (_.isArray(value) && value.every(v => v === null))) {
                 delete obj[key]
             }
@@ -119,10 +119,10 @@ export class JsonHelper {
     static PrefixKeys(obj: TJson, prefix: string = ''): TJson {
         const result: TJson = {}
 
-        // eslint-disable-next-line you-dont-need-lodash-underscore/for-each
+
         _.forEach(obj, (value, key) => {
             const newKey = `${prefix}${key}`
-            // eslint-disable-next-line you-dont-need-lodash-underscore/is-array
+
             result[newKey] = _.isObject(value) && value !== null && !_.isArray(value)
                 ? JsonHelper.PrefixKeys(value as TJson, prefix)
                 : value
@@ -137,9 +137,9 @@ export class JsonHelper {
     }
 
     static ReplaceStrings(obj: TJson, pattern: RegExp, replacement: string): TJson {
-        // eslint-disable-next-line you-dont-need-lodash-underscore/for-each
+
         _.forEach(obj, (v, k) => {
-            // eslint-disable-next-line you-dont-need-lodash-underscore/is-string
+
             if (_.isString(v)) {
                 obj[k] = v.replace(pattern, replacement)
             }
