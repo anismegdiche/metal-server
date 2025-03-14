@@ -17,6 +17,6 @@
     "codescene.enableAutoRefactor": true,
     "sonarlint.connectedMode.project": {
         "connectionId": "anismegdiche",
-        "projectKey": "anismegdiche_metl-server"
+        "projectKey": "anismegdiche_metal-server"
     }
 }

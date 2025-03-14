@@ -1,4 +1,5 @@
 {
     "sonarCloudOrganization": "anismegdiche",
-    "projectKey": "anismegdiche_metl-server"
+    "projectKey": "anismegdiche_metal-server",
+    "region": "EU"
 }
