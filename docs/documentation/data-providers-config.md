@@ -31,9 +31,6 @@ Each configuration specifies the necessary parameters such as host, port, user c
 | `stream`                 | Boolean | Stream recordsets/rows instead of returning them all at once as an argument of callback. |
 | `parseJSON`              | Boolean | Parse JSON recordsets to JS objects.                                                     |
 | `arrayRowMode`           | String  | Return row results as an array instead of a keyed object.                                |
-| `pool.max`               | Integer | Maximum number of connections in the pool (default: 10).                                 |
-| `pool.min`               | Integer | Minimum number of connections in the pool (default: 0).                                  |
-| `pool.idleTimeoutMillis` | Integer | Number of milliseconds before closing an unused connection in the pool (default: 30000). |
 | `encrypt`                | Boolean | Use `true` for Azure.                                                                    |
 | `trustServerCertificate` | Boolean | Use `true` for local dev / self-signed certs.                                            |
 
@@ -53,10 +50,6 @@ sources:
       trustServerCertificate: true
       connectionTimeout: 15000
       requestTimeout: 15000
-      pool:
-        max: 10
-        min: 0
-        idleTimeoutMillis: 30000
 ```
 
 ## PostgreSQL <Badge type="default" text="^0.1" />

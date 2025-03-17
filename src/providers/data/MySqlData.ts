@@ -22,15 +22,27 @@ import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
+import { TIpPort } from "../../@types/TIpPort"
+
+
+//
+export type TMySqlDataConfig = {
+    host: string
+    port: TIpPort
+    user: string
+    password: string
+    database: string
+    options?: mysql.PoolOptions
+}
 
 export class MySqlData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.MYSQL
-    Config: mysql.PoolOptions = <mysql.PoolOptions>{}
+    Config: TMySqlDataConfig = <TMySqlDataConfig>{}
     Connection?: Pool
 
-    DEFAULT = {
+    DEFAULT: Partial<TMySqlDataConfig> = {
         host: 'localhost',
         port: 3306,
         user: 'root',
@@ -40,7 +52,7 @@ export class MySqlData extends absDataProvider {
             waitForConnections: true,
             connectionLimit: 10,
             maxIdle: 10,
-            idleTimeout: 60000,
+            idleTimeout: 60_000,
             queueLimit: 0,
             enableKeepAlive: true,
             keepAliveInitialDelay: 0
@@ -58,14 +70,7 @@ export class MySqlData extends absDataProvider {
 
         this.SourceName = source
 
-        this.Config = {
-            host: sourceConfig?.host,
-            port: sourceConfig?.port,
-            user: sourceConfig?.user,
-            password: sourceConfig?.password?.toString(),
-            database: sourceConfig?.database,
-            ..._.merge(this.DEFAULT.options, sourceConfig?.options)
-        }
+        this.Config = _.merge(this.DEFAULT, sourceConfig as TMySqlDataConfig)
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -77,7 +82,7 @@ export class MySqlData extends absDataProvider {
         return `\`${field}\``
     }
 
-    private async ensureConnection(): Promise<Pool> {
+    async #ensureConnection(): Promise<Pool> {
         if (!this.Connection)
             await this.Connect()
 
@@ -89,18 +94,27 @@ export class MySqlData extends absDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
+        const { host, port, user, password, database, options } = this.Config
+
         try {
-            this.Connection = mysql.createPool(this.Config)
+            this.Connection = mysql.createPool({
+                host,
+                port,
+                user,
+                password,
+                database,
+                ...options
+            })
 
             // Test connection
             await this.Connection.query('SELECT 1')
-            Logger.Info(`Connected to MySQL database '${this.Config.database}' at ${this.Config.host}:${this.Config.port}`)
+            Logger.Info(`Connected to MySQL database '${database}' at ${host}:${port}`)
         } catch (error) {
             const errorMessage = error instanceof Error
                 ? error.message
                 : 'Unknown error'
 
-            Logger.Error(`Failed to connect to MySQL database '${this.Config.database}' at ${this.Config.host}:${this.Config.port}: ${errorMessage}`)
+            Logger.Error(`Failed to connect to MySQL database '${database}' at ${host}:${port}: ${errorMessage}`)
             throw new HttpErrorInternalServerError(`Database connection failed: ${errorMessage}`)
         }
     }
@@ -125,7 +139,7 @@ export class MySqlData extends absDataProvider {
     @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const connection = await this.ensureConnection()
+        const connection = await this.#ensureConnection()
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
@@ -174,7 +188,7 @@ export class MySqlData extends absDataProvider {
         const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
 
         try {
-            const connection = await this.ensureConnection()
+            const connection = await this.#ensureConnection()
             await connection.query(sqlQueryHelper.Query())
             Cache.Remove(schemaRequest)
 
@@ -189,7 +203,7 @@ export class MySqlData extends absDataProvider {
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        const connection = await this.ensureConnection()
+        const connection = await this.#ensureConnection()
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
@@ -212,7 +226,7 @@ export class MySqlData extends absDataProvider {
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        const connection = await this.ensureConnection()
+        const connection = await this.#ensureConnection()
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
@@ -239,7 +253,7 @@ export class MySqlData extends absDataProvider {
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const connection = await this.ensureConnection()
+        const connection = await this.#ensureConnection()
 
         const sqlQuery = `
                 SELECT 

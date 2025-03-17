@@ -3,7 +3,7 @@
 //
 //
 //
-import mssql, { ConnectionPool } from 'mssql'
+import mssql, { ConnectionPool, IOptions } from 'mssql'
 import typia from "typia"
 import _ from "lodash"
 //
@@ -23,16 +23,18 @@ import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
+import { TIpPort } from "../../@types/TIpPort"
 
 
 //
 export type TSqlServerDataConfig = {
-    server: string,
-    port: number,
-    user: string,
-    password: string,
-    database: string,
-    options: TConfigSourceOptions
+    provider: DATA_PROVIDER.MSSQL
+    host: string
+    port: TIpPort
+    user: string
+    password: string
+    database: string
+    options: IOptions
 }
 
 
@@ -44,20 +46,20 @@ export class SqlServerData extends absDataProvider {
     Config: TSqlServerDataConfig = <TSqlServerDataConfig>{}
     Connection?: ConnectionPool = undefined
 
-    DEFAULT = {
-        server: 'localhost',
+    DEFAULT: Partial<TSqlServerDataConfig> = {
+        host: 'localhost',
         database: 'master',
         user: 'sa',
         password: '',
         port: 1433,
         options: {
             encrypt: false,                     // true for azure
-            trustServerCertificate: true,       // change to true for local dev / self-signed certs
-            pool: {
-                max: 10,
-                min: 0,
-                idleTimeoutMillis: 30_000
-            }
+            trustServerCertificate: true       // change to true for local dev / self-signed certs
+            // pool: {
+            //     max: 10,
+            //     min: 0,
+            //     idleTimeoutMillis: 30_000
+            // }
         }
     }
 
@@ -69,19 +71,7 @@ export class SqlServerData extends absDataProvider {
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug("SqlServerData.Init")
         this.SourceName = source
-        this.Config = _.merge(
-            this.DEFAULT,
-            {
-                user: sourceConfig.user,
-                password: sourceConfig.password,
-                database: sourceConfig.database,
-                server: sourceConfig.host,
-                port: sourceConfig.port
-            },
-            {
-                options: sourceConfig.options
-            }
-        )
+        this.Config = _.merge(this.DEFAULT, sourceConfig as TSqlServerDataConfig)
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -95,8 +85,16 @@ export class SqlServerData extends absDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
+        const { host: server, port, user, password, database, options } = this.Config
         try {
-            this.Connection = await mssql.connect(this.Config)
+            this.Connection = await mssql.connect({
+                server,
+                port,
+                user,
+                password,
+                database,
+                options
+            })
             Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
         } catch (error: unknown) {
             Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName} (${this.Config.database})'`)

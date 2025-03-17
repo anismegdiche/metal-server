@@ -23,15 +23,17 @@ import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
+import { TIpPort } from "../../@types/TIpPort"
 
 
 //
 export type TPostgresDataConfig = {
-    host: string,
-    port: number,
-    user: string,
-    password: string,
-    database: string,
+    provider: DATA_PROVIDER.POSTGRES
+    host: string
+    port: TIpPort
+    user: string
+    password: string
+    database: string
     options?: TConfigSourceOptions
 }
 
@@ -42,12 +44,13 @@ export class PostgresData extends absDataProvider {
     SourceName?: string
     ProviderName = DATA_PROVIDER.POSTGRES
     Config: TPostgresDataConfig = <TPostgresDataConfig>{}
-    Connection?: Pool = undefined
+    Connection?: Pool
 
     DEFAULT: Partial<TPostgresDataConfig> = {
         host: 'localhost',
         port: 5432,
         user: 'root',
+        password: '',
         database: 'postgres'
     }
 
@@ -73,16 +76,8 @@ export class PostgresData extends absDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        //CURRENT manage default
         const source = this.SourceName
-        const {
-            user = 'root',
-            password = '',
-            database = 'postgres',
-            host = 'localhost',
-            port = 5432,
-            options
-        } = this.Config ?? {}
+        const { host, port, user, password, database, options } = this.Config
 
         try {
             this.Connection = new Pool({

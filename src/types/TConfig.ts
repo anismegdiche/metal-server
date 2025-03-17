@@ -48,6 +48,9 @@ export type TConfigSource = {
     database?: string
     options?: TConfigSourceOptions
 }
+    // | TPostgresDataConfig
+    // | TSqlServerDataConfig
+    // | TMongoDbDataConfig
 
 // schemas.*.entities
 export type TConfigSchemaEntity = {

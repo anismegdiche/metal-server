@@ -1,4 +1,4 @@
- 
+
 //
 //
 //
@@ -29,9 +29,10 @@ import { SynchronizerManager } from "../../utils/SynchronizerManager"
 
 //
 export type TMongoDbDataConfig = {
-    uri: string,
+    provider: DATA_PROVIDER.MONGODB,
+    host: string,
     database?: string,
-    options?: TConfigSourceOptions
+    options?: MongoDb.MongoClientOptions
 }
 
 
@@ -43,6 +44,10 @@ export class MongoDbData extends absDataProvider {
     Config: TMongoDbDataConfig = <TMongoDbDataConfig>{}
     Connection?: MongoDb.MongoClient = undefined
 
+    DEFAULT: Partial<TMongoDbDataConfig> = {
+        host: 'mongodb://localhost:27017/'
+    }
+
     constructor() {
         super()
     }
@@ -51,11 +56,7 @@ export class MongoDbData extends absDataProvider {
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         Logger.Debug("MongoDbData.Init")
         this.SourceName = source
-        this.Config = {
-            uri: sourceConfig.host ?? 'mongodb://localhost:27017/',
-            database: sourceConfig.database,
-            options: sourceConfig.options
-        }
+        this.Config = _.merge(this.DEFAULT, sourceConfig as TMongoDbDataConfig)
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -70,7 +71,7 @@ export class MongoDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        this.Connection = new MongoDb.MongoClient(this.Config.uri, this.Config.options)
+        this.Connection = new MongoDb.MongoClient(this.Config.host, this.Config.options)
         try {
             await this.Connection.connect()
             await this.Connection
