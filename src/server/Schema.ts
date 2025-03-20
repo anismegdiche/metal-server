@@ -111,7 +111,7 @@ export class Schema {
         }
     }
 
-    //TODO rewrite with GetEntitiesSources
+    //FIXME rewrite with GetEntitiesSources
     @Logger.LogFunction()
     static GetRoute(schema: string, entity: string, schemaConfig: any): TSchemaRoute {
 

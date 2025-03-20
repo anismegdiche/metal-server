@@ -174,7 +174,7 @@ export class Server {
         throw new HttpErrorNotImplemented()
     }
 
-    //CURRENT server reload: not work to correct
+    //FIXME server reload: not work to correct
     @Logger.LogFunction()
     static async Reload(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)

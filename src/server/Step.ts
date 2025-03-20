@@ -106,7 +106,7 @@ export class Step {
 
         const { schema, entity } = $__schemaRequest
 
-        // TODO recheck logic for schema=null
+        // FIXME recheck logic for schema=null
         if (entity) {
             const _intResp = await Schema.Select(<TSchemaRequestSelect>{
                 ...$__schemaRequest,
@@ -118,7 +118,7 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
-        // TODO missing options.cache
+        // FIXME missing options.cache
         if (!schema && !entity) {
             const _options: TOptionalParameter = Step.DataProvider.Options.Parse($__schemaRequest, $context)
             const sqlQueryHelper = Step.DataProvider.GenerateSqlSelect(<TSchemaRequestSelect>{
@@ -162,7 +162,7 @@ export class Step {
         if (!data && currentDataTable.Rows.length == 0)
             throw new WarnError(`Step.Insert: No data to insert ${JsonHelper.Stringify(stepArguments.stepParams)}`)
 
-        // TODO recheck logic for schema=null
+        // FIXME recheck logic for schema=null
         if (entity) {
             await Schema.Insert(<TSchemaRequestInsert>{
                 ...$__schemaRequest,
@@ -214,7 +214,7 @@ export class Step {
             throw new HttpErrorInternalServerError(`No data to update ${JsonHelper.Stringify(stepArguments.stepParams)}`)
         }
 
-        // TODO recheck logic for schema=null
+        // FIXME recheck logic for schema=null
         if (entity) {
             await Schema.Update({
                 ...$__schemaRequest,
@@ -257,7 +257,7 @@ export class Step {
 
         const { schema, entity } = $__schemaRequest
 
-        // TODO recheck logic for schema=null
+        // FIXME recheck logic for schema=null
         if (entity) {
             await Schema.Delete({
                 ...$__schemaRequest,
@@ -268,7 +268,7 @@ export class Step {
         }
 
         // case no schema and no entity --> use current datatable
-        // CURRENT step delete: missing $context
+        // FIXME step delete: missing $context
         if (!schema && !entity) {
             const _options: TOptionalParameter = Step.DataProvider.Options.Parse($__schemaRequest, $context)
             const _sqlQueryHelper = Step.DataProvider.GenerateSqlDelete(<TSchemaRequestDelete>{
