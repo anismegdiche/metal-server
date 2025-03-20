@@ -54,7 +54,7 @@ export class PlaceHolder {
                 // file deepcode ignore ImproperCodeSanitization: // TODO Review this
                 const result = sandBox.Evaluate(_code)
                 if (result === undefined)
-                    throw new Error(`PlaceHolder.EvaluateJsCodeString_v2: Failed to evaluate code: ${_code}`)
+                    throw new Error(`PlaceHolder.EvaluateJsCodeString: Failed to evaluate code: ${_code}`)
                 return StringHelper.ToString(result)
             } catch (error: unknown) {
                 Logger.Error(error)
