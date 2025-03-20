@@ -4,7 +4,7 @@
 //
 //
 import * as Fs from 'fs'
-import * as Yaml from 'js-yaml'   //CURRENT Use only one YAML lib
+import * as Yaml from 'js-yaml'
 import _ from 'lodash'
 import typia from "typia"
 import * as dotenv from 'dotenv'
@@ -43,7 +43,7 @@ export class Config {
         }
     }
 
-    // CURRENT remove
+    // FIXME remove
     static Flags: TJson = {
         // @deprecated: to remove
         EnableAuthentication: false,      // Enable/disable authentication
