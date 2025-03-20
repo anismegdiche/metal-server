@@ -42,7 +42,7 @@ export class SynchronizerManager {
                     .value()
 
                 const signature = `${target.name ?? this.constructor.name}.${propertyKey}, ${JsonHelper.Stringify(_filteredParams)}`
-                Logger.Debug(`SynchronizerManager: Function signature = ${signature}`)
+                Logger.Debug(`${Logger.In} SynchronizerManager: Function signature = ${signature}`)
 
                 const result = await SynchronizerManager.Execute(signature, originalMethod.bind(this, ...args))
 
