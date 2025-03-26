@@ -215,10 +215,8 @@ export class Cache {
         }
 
         Logger.Debug(`Cache.Set: cache expired, updating Hash=${hash}`)
-        await Cache.#__LOCK__.Acquire()
         Cache.Update(hash, expiresNow, datatable)
         Cache.Index.set(hash, expiresNow)
-        Cache.#__LOCK__.Release()
     }
 
     @Logger.LogFunction()
