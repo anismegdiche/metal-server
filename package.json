@@ -3,7 +3,7 @@
     "node": "=22.13.0"
   },
   "name": "metal",
-  "version": "0.3.17",
+  "version": "0.3.18",
   "description": "Metal Server",
   "author": "Anis Megdiche",
   "license": "GPL-3.0-or-later",
@@ -103,7 +103,6 @@
     "fs-extra": "^11.3.0",
     "globals": "^16.0.0",
     "jest": "^29.7.0",
-    "jsdoc-to-markdown": "^9.1.1",
     "nodemon": "^3.1.9",
     "prettier": "3.5.3",
     "ts-jest": "^29.2.6",
