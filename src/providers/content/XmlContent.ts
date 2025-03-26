@@ -60,7 +60,7 @@ export class XmlContent extends absContentProvider {
         this.Content.UploadFile(entity, content)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
         if (!this.Params || !this.Content)
             throw new HttpErrorInternalServerError('XmlContent: something is missing in the configuration')
@@ -85,7 +85,7 @@ export class XmlContent extends absContentProvider {
             : [data]).FreeSqlAsync(sqlQuery)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         if (!this.Params || !this.Content)
             throw new HttpErrorInternalServerError('XmlContent: something is missing in the configuration')

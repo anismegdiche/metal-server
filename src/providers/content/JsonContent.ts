@@ -46,7 +46,7 @@ export class JsonContent extends absContentProvider {
         this.Content.UploadFile(entity, content)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')
@@ -66,11 +66,11 @@ export class JsonContent extends absContentProvider {
         )
 
         const data = JsonHelper.Get<TJson[]>(json, $__path)
-        
+
         return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')

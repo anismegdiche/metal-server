@@ -10,7 +10,7 @@ import { Logger } from "../utils/Logger"
 
 export class ReadableHelper {
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static async ToString(readable: Readable): Promise<string> {
         let result = ''
 
@@ -36,7 +36,7 @@ export class ReadableHelper {
         })
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static async ToBuffer(stream: Readable): Promise<Buffer> {
         const chunks: any[] = []
         return new Promise((resolve, reject) => {
@@ -46,21 +46,21 @@ export class ReadableHelper {
         })
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static ToWritable(readable: Readable): Writable {
         const writable = new PassThrough()
         readable.pipe(writable)
         return writable
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static FromWritable(writable: Writable): Readable {
         const readable = new PassThrough()
         writable.pipe(readable)
         return readable
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static Duplicate(original: Readable): [Readable, Readable] {
         const passThrough1 = new PassThrough()
         const passThrough2 = new PassThrough()

@@ -83,7 +83,7 @@ export class Config {
     //     }
     // }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static async Validate(newConfig: TConfig): Promise<void> {
         try {
             TypeHelper.Validate(typia.validateEquals<TConfig>(newConfig), new ConfigFileError("Configuration file errors found"))

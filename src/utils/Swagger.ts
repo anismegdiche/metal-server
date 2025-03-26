@@ -20,14 +20,14 @@ export class Swagger {
 
     static Spec: TJson
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static Load() {
         Swagger.Spec = Yaml.load(
             Fs.readFileSync(Swagger.OpenApiFilePath, 'utf8')
         ) as TJson
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static StartUi(app: Express) {
 
         app.use(ROUTE.SWAGGER_UI_PATH, swaggerUi.serve, swaggerUi.setup(Swagger.Spec))
@@ -41,7 +41,7 @@ export class Swagger {
         )
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static Validator(app: Express) {
         // // Remove existing middleware (if any)
         // app._router.stack = app._router.stack.filter((layer: any) => !layer.name.endsWith('Middleware'))

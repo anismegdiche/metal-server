@@ -55,7 +55,7 @@ export class XlsContent extends absContentProvider {
         startingCell: 'A1'
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
         if (this.Config && typia.is<TXlsContentConfig>(this.Config)) {
@@ -73,7 +73,7 @@ export class XlsContent extends absContentProvider {
         this.Content.UploadFile(entity, content)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context?: Partial<TContext>): Promise<DataTable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Xls: Params is not defined')
@@ -137,7 +137,7 @@ export class XlsContent extends absContentProvider {
         return await dataTable.FreeSqlAsync(sqlQuery)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     async Set(data: DataTable, $context?: Partial<TContext>): Promise<Readable> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('Json: Params is not defined')

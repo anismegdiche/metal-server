@@ -60,7 +60,7 @@ export class CsvContent extends absContentProvider {
         this.Content.UploadFile(entity, content)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
@@ -79,8 +79,8 @@ export class CsvContent extends absContentProvider {
         return new DataTable(this.EntityName, parsedCsv.data).FreeSqlAsync(sqlQuery)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
-    async Set(contentDataTable: DataTable, $context: Partial<TContext>): Promise<Readable> {
+    @Logger.LogFunction(true)
+    async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
@@ -91,7 +91,7 @@ export class CsvContent extends absContentProvider {
 
         const streamOut = Readable.from(
             Csv.unparse(
-                contentDataTable.Rows,
+                data.Rows,
                 $__evalParams
             )
         )

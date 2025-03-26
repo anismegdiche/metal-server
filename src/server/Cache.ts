@@ -121,7 +121,7 @@ export class Cache {
         return isValid
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static IsArgumentsValid(schemaRequest: TSchemaRequest): boolean {
         const isSchemaCacheRequest = Cache.IsSchemaCacheRequest(schemaRequest)
         const isConfigurationGood = Cache.IsConfigurationGood(schemaRequest)
@@ -327,7 +327,7 @@ export class Cache {
         return HttpResponse.Ok({ message: 'Cache cleaned' })
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction()
     @SynchronizerManager.Synchronized()
     static async Remove(schemaRequest: TSchemaRequest): Promise<void> {
 

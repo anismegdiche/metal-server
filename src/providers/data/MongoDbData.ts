@@ -9,7 +9,7 @@ import * as MongoDb from 'mongodb'
 import typia from "typia"
 //
 import { RESPONSE } from '../../lib/Const'
-import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
+import { TConfigSource } from "../../types/TConfig"
 import { TOptionalParameter } from '../../types/TOptionalParameter'
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../types/TSchemaRequest"

@@ -7,11 +7,11 @@ import chalk from 'chalk'
 import LogLevel from 'loglevel'
 import Prefix from 'loglevel-plugin-prefix'
 import morgan from "morgan"
-import typia from "typia"
 //
 import { SERVER } from '../lib/Const'
 import { JsonHelper } from "../lib/JsonHelper"
-import { TUserTokenInfo } from "../server/User"
+import { DecoratorHelper } from "./DecoratorHelper"
+import _ from "lodash"
 
 
 export enum VERBOSITY {
@@ -104,20 +104,28 @@ export class Logger {
         Logger.SetLevel()
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static LogFunction(logger: Function = Logger.Debug, hideParameters: boolean = false): any {
-        //FIXME log decorator: use Decorator helper
+
+    static LogFunction(hide: string[] | boolean = []): any {
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             const originalMethod = descriptor.value
-            descriptor.value = function(...originalArgs: any[]) {
-                const _filteredArgs = originalArgs.filter(arg => !typia.is<TUserTokenInfo>(arg))
-                const _argsString = (hideParameters || _filteredArgs.length == 0 || _filteredArgs.every(v => v === null) || _filteredArgs.every(v => v === undefined))
-                    ? ''
-                    : `: ${JsonHelper.Stringify(_filteredArgs)}`
+            descriptor.value = function (...args: any[]) {
+                const _paramObject = DecoratorHelper.GetParameters(originalMethod, ...args)
+                const _hide = typeof hide === 'boolean'
+                    ? _.keys(_paramObject)
+                    : hide
 
-                setImmediate(() => logger(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`))
+                const _filteredParams: Record<string, any> = _.chain(_paramObject)
+                    .omitBy(_.isNil || _.isEmpty)
+                    .omit(_hide)
+                    .value()
+
+                const _argsString = (_.isEmpty(_filteredParams))
+                    ? ''
+                    : ` ${JsonHelper.Stringify(_filteredParams)}`
+
+                setImmediate(() => Logger.Debug(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`))
                 // continue with original args
-                return originalMethod.apply(this, originalArgs)
+                return originalMethod.apply(this, args)
             }
             return descriptor
         }

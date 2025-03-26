@@ -8,7 +8,7 @@ import typia from "typia"
 import _ from "lodash"
 //
 import { RESPONSE } from '../../lib/Const'
-import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
+import { TConfigSource } from "../../types/TConfig"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { DataTable } from "../../types/DataTable"

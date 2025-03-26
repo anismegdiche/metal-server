@@ -98,7 +98,7 @@ export abstract class absDataProviderOptions {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     GetCache(options: TOptionalParameter, schemaRequest: TSchemaRequest): Partial<TOptionalParameter> {
         if (schemaRequest?.cache)
             options.Cache = schemaRequest.cache

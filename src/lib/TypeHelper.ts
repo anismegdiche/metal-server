@@ -18,28 +18,28 @@ export type TConvertParams<S extends string> =
 
 export class TypeHelper {
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static IsSchemaRequest(schemaRequest: any): schemaRequest is TSchemaRequest {
         return typia.is<TSchemaRequest>(schemaRequest)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static IsSchemaResponse(schemaResponse: any): schemaResponse is TSchemaResponse {
         return typia.is<TSchemaResponse>(schemaResponse)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static IsSchemaResponseData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponse {
         return typia.is<TSchemaResponse>(schemaResponse) &&
             typia.is<DataTable>(schemaResponse.data)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static IsDataTable(dataTable: unknown): dataTable is DataTable {
         return typia.is<DataTable>(dataTable)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static Validate(res: any, httpError: HttpError = new HttpErrorInternalServerError()) {
         if (res.success)
             return

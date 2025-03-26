@@ -81,7 +81,7 @@ export class WebServiceData extends absDataProvider {
     }
 
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(['sourceConfig'])
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         this.SourceName = source
         this.Config = _.merge(this.Config, sourceConfig)

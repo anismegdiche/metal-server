@@ -80,7 +80,7 @@ export class Sandbox {
         return !maliciousPatterns.some(pattern => pattern.test(code))
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     SetContext(context?: object): void {
         this.#Context = createContext(context)
         this.AddSafeObjectsToContext()

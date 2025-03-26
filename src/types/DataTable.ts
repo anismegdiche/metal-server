@@ -88,7 +88,7 @@ export class DataTable extends clsClonable {
             this.MetaData = metaData as TMetaData
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     Set(rows?: TJson[]): this {
         if (rows) {
             this.Rows = [...rows]
@@ -274,13 +274,13 @@ export class DataTable extends clsClonable {
         return this
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     SetMetaData(metadata: string, value: unknown): this {
         this.MetaData[metadata] = value
         return this
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     AddRows(newRows?: TJson | TJson[]): this {
         if (!newRows)
             return this
