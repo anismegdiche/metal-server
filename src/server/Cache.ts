@@ -27,7 +27,7 @@ import { SynchronizerManager } from "../utils/SynchronizerManager"
 import { TConfigSource } from "../types/TConfig"
 import { DataProvider } from "../providers/DataProvider"
 
-//FIXME cache: check and add test for metadata
+
 //
 export class Cache {
 
@@ -39,13 +39,13 @@ export class Cache {
     static Database = Cache.DEFAULT.database //NOSONAR
     static Entity = Cache.DEFAULT.entity     //NOSONAR
 
-    static CacheSource: absDataProvider //NOSONAR
+    static DataSource: absDataProvider //NOSONAR
 
-    static Config: TConfigSource
+    static DataSourceConfig: TConfigSource
 
     static #__LOCK__: Semaphore = new Semaphore(1) //NOSONAR
 
-    static #CacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
+    static #CacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{ //NOSNAR
         schema: Cache.Database,
         entity: Cache.Entity
     }
@@ -60,14 +60,14 @@ export class Cache {
         if (!Cache.IsEnabled)
             return
 
-        Cache.Config = Config.Get<TConfigSource>("server.cache")
-        Cache.Database = Cache.Config.database ?? Cache.DEFAULT.database
+        Cache.DataSourceConfig = Config.Get<TConfigSource>("server.cache")
+        Cache.Database = Cache.DataSourceConfig.database ?? Cache.DEFAULT.database
         Cache.#CacheSchemaRequest = <TSchemaRequest>{
             schema: Cache.Database,
             entity: Cache.Entity
         }
-        Cache.CacheSource = DataProvider.GetProvider(Cache.Config.provider)
-        Cache.CacheSource.Init(Cache.Database, Cache.Config)
+        Cache.DataSource = DataProvider.GetProvider(Cache.DataSourceConfig.provider)
+        Cache.DataSource.Init(Cache.Database, Cache.DataSourceConfig)
     }
 
     @Logger.LogFunction()
@@ -75,20 +75,20 @@ export class Cache {
         if (!Cache.IsEnabled)
             return
 
-        await Cache.CacheSource.Connect()
+        await Cache.DataSource.Connect()
         await Cache.GetHashList()
     }
 
     @Logger.LogFunction()
     static async Disconnect(): Promise<void> {
         if (Cache.IsEnabled)
-            await Cache.CacheSource.Disconnect()
+            await Cache.DataSource.Disconnect()
     }
 
     @Logger.LogFunction()
     static async GetHashList(): Promise<void> {
         try {
-            const intResp = await Cache.CacheSource.Select(<TSchemaRequest>{
+            const intResp = await Cache.DataSource.Select(<TSchemaRequest>{
                 ...Cache.#CacheSchemaRequest,
                 fields: "hash,expires"
             })
@@ -115,7 +115,7 @@ export class Cache {
     }
 
     @Logger.LogFunction()
-    static IsCacheValid(expires: number): boolean {
+    static IsCacheValid(expires?: number): boolean {
         const isValid = expires !== undefined && Date.now() <= expires
         Logger.Debug(`${Logger.Out} Cache.IsCacheValid: ${isValid}`)
         return isValid
@@ -150,7 +150,7 @@ export class Cache {
         if (!Cache.IsEnabled)
             return false
 
-        if (this.CacheSource === undefined)
+        if (this.DataSource === undefined)
             return false
 
         if (!schemaRequest?.cache)
@@ -189,7 +189,7 @@ export class Cache {
             datatable.SetMetaData(METADATA.CACHE, true)
             datatable.SetMetaData(METADATA.CACHE_EXPIRE, expiresNow)
             await Cache.#__LOCK__.Acquire()
-            await Cache.CacheSource.Insert({
+            await Cache.DataSource.Insert({
                 ...Cache.#CacheSchemaRequest,
                 data: <TCacheData[]>[
                     {
@@ -242,7 +242,7 @@ export class Cache {
             return undefined
         }
 
-        const intResp = await Cache.CacheSource.Select(<TSchemaRequest>{
+        const intResp = await Cache.DataSource.Select(<TSchemaRequest>{
             ...Cache.#CacheSchemaRequest,
             filter: {
                 hash
@@ -273,7 +273,7 @@ export class Cache {
     }
 
     static async Update(hash: string, expires: number, datatable: DataTable) {
-        Cache.CacheSource.Update(<TSchemaRequest>{
+        Cache.DataSource.Update(<TSchemaRequest>{
             ...Cache.#CacheSchemaRequest,
             filter: {
                 hash
@@ -291,14 +291,14 @@ export class Cache {
     @Logger.LogFunction()
     static async View(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
-        return await Cache.CacheSource.Select(Cache.#CacheSchemaRequest)
+        return await Cache.DataSource.Select(Cache.#CacheSchemaRequest)
     }
 
     @Logger.LogFunction()
     static async Purge(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
-        await Cache.CacheSource.Delete(Cache.#CacheSchemaRequest)
+        await Cache.DataSource.Delete(Cache.#CacheSchemaRequest)
         Cache.Index.clear()
 
         Logger.Debug(`${Logger.Out} Cache.Purge`)
@@ -312,7 +312,7 @@ export class Cache {
         const expiresNow = new Date().getTime()
 
         Logger.Debug(`Cache.Clean ${expiresNow}`)
-        await Cache.CacheSource.Delete(<TSchemaRequest>{
+        await Cache.DataSource.Delete(<TSchemaRequest>{
             ...Cache.#CacheSchemaRequest,
             "filter-expression": `expires < ${expiresNow}`
         })
@@ -336,9 +336,9 @@ export class Cache {
 
         const { schema, entity } = schemaRequest
 
-        Cache.CacheSource.Delete(<TSchemaRequest>{
+        Cache.DataSource.Delete(<TSchemaRequest>{
             ...Cache.#CacheSchemaRequest,
-            "filter-expression": `${Cache.CacheSource.EscapeField("schema")}= '${schema}' AND ${Cache.CacheSource.EscapeField("entity")}= '${entity}'`
+            "filter-expression": `${Cache.DataSource.EscapeField("schema")}= '${schema}' AND ${Cache.DataSource.EscapeField("entity")}= '${entity}'`
         })
             .catch((error: HttpError | Error) => HttpErrorLog(error))
 
