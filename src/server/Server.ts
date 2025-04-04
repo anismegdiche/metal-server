@@ -28,7 +28,7 @@ import { HttpErrorNotImplemented } from "./HttpErrors"
 import { Swagger } from '../utils/Swagger'
 import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"
-import { AUTH_PROVIDER, AuthProvider } from "../providers/AuthProvider"
+import { AUTH_PROVIDER, AuthProvider, TAuthentication } from "../providers/AuthProvider"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
 import { ContentProvider } from "../providers/ContentProvider"
@@ -108,7 +108,7 @@ export class Server {
         })
 
         // path: /user
-        if (Config.Flags.EnableAuthentication) {
+        if (Config.Get("server.authentication")) {
             Logger.Info(`Route: Enabling API, URL= ${ROUTE.USER_PATH}`)
             Server.App.use(`${ROUTE.USER_PATH}/`, Server.SetContentJson, UserRouter)
         }
@@ -228,14 +228,12 @@ export class Server {
 
     @Logger.LogFunction()
     static InitAuthentication(): void {
-        Config.Flags.EnableAuthentication = (Config.Configuration.server?.authentication !== undefined)
-
         const {
             provider = AUTH_PROVIDER.LOCAL
-        } = Config.Configuration.server?.authentication ?? {}
+        } = Config.Get<TAuthentication>("server.authentication") ?? {}
 
         AuthProvider.SetCurrent(provider)
-        if (Config.Flags.EnableAuthentication) {
+        if (Config.Get("server.authentication")) {
             AuthProvider.Provider.Init()
             Roles.Init()
         }
@@ -243,8 +241,6 @@ export class Server {
 
     @Logger.LogFunction()
     static InitResponse(): void {
-        Config.Flags.ResponseLimit = Convert.HumainSizeToBytes(Config.Get("server.response-limit"))
-        Config.Flags.EnableResponseChunk = Config.Get<boolean>('server.response-chunk')
-        Logger.Debug(`Server Response Limit set to ${Config.Flags.ResponseLimit}`)
+        Logger.Debug(`Server Response Limit set to ${Convert.HumainSizeToBytes(Config.Get("server.response-limit"))}`)
     }
 }

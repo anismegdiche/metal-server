@@ -32,7 +32,6 @@ describe('User', () => {
                 provider: AUTH_PROVIDER.LOCAL
             }
         }
-        Config.Flags.EnableAuthentication = true
         Config.Configuration.users = users
         Server.InitAuthentication()
     })

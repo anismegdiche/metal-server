@@ -17,6 +17,7 @@ import { TypeHelper } from "../lib/TypeHelper"
 import { ConfigFileError } from "./HttpErrors"
 import { JsonHelper } from "../lib/JsonHelper"
 import { AuthProvider } from "../providers/AuthProvider"
+import { Convert } from "../lib/Convert"
 
 export class Config {
 
@@ -43,17 +44,16 @@ export class Config {
         }
     }
 
-    // FIXME remove
-    static Flags: TJson = {
-        // @deprecated: to remove
-        EnableAuthentication: false,      // Enable/disable authentication
-        EnableResponseChunk: false,       // v0.3, Enable/disable response chunking
-        ResponseLimit: 10 * 1024 * 1024   // v0.3, Response body size limit
-    }
-
     @Logger.LogFunction()
     static async Init(): Promise<void> {
-        await Config.Validate(await Config.Load())
+        const configFileContent = await Config.Load()
+        const newConfig = await Config.Validate(configFileContent)
+
+        // Config.CheckRessourcesUsage(newConfig)
+        Config.Configuration = _.merge(
+            Config.DEFAULT,
+            newConfig
+        )
     }
 
     @Logger.LogFunction()
@@ -84,14 +84,13 @@ export class Config {
     // }
 
     @Logger.LogFunction(true)
-    static async Validate(newConfig: TConfig): Promise<void> {
+    static async Validate(newConfig: TConfig): Promise<TConfig> {
         try {
             TypeHelper.Validate(typia.validateEquals<TConfig>(newConfig), new ConfigFileError("Configuration file errors found"))
+            return newConfig
         } catch (error: any) {
             throw new Error(error.message)
         }
-        // Config.CheckRessourcesUsage(newConfig)
-        Config.Configuration = newConfig
     }
 
     // static GetErrors(schemaErrors: any): string[] {
@@ -106,13 +105,7 @@ export class Config {
 
     @Logger.LogFunction()
     static Get<T>(path: string): T {
-        return JsonHelper.Get<T>(
-            _.merge(
-                Config.DEFAULT,
-                Config.Configuration
-            ),
-            path
-        )
+        return JsonHelper.Get<T>(Config.Configuration, path)
     }
 
     @Logger.LogFunction()

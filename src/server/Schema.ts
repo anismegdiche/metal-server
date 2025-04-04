@@ -344,7 +344,6 @@ export class Schema {
             })
 
         if (schemaConfig?.entities)
-
             _.forEach(schemaConfig.entities, (entityConfig: TConfigSchemaEntity, entity: string) => {
                 entities.set(entity, {
                     source: entityConfig.source,

@@ -40,11 +40,10 @@ export class ServerResponse {
 
         const _schemaResponse = intRes.Body
         const _resSize = JsonHelper.Size(_schemaResponse)
-        //TODO check how to remove casting
-        const _resLimit = Config.Flags.ResponseLimit as number
-        // file deepcode ignore NoEffectExpression: debugging pupose
+
         Logger.Debug(`${Logger.Out} SchemaResponse.Select: response size = ${_resSize} bytes`)
-        if (_resSize > _resLimit)
+        
+        if (_resSize > Convert.HumainSizeToBytes(Config.Get("server.response-limit")))
             throw new HttpErrorContentTooLarge("Response body too large")
 
         return Convert.SchemaResponseToResponse(_schemaResponse, res)

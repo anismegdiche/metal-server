@@ -71,7 +71,7 @@ export class Convert {
             }
         }
 
-        if (Config.Flags.EnableResponseChunk && schemaResponse.status === HTTP_STATUS_CODE.OK) {
+        if (Config.Get<boolean>('server.response-chunk') && schemaResponse.status === HTTP_STATUS_CODE.OK) {
             Convert.#SchemaResponseToResponseChunkPrepare(schemaResponse, res, commonJsonResponse)
         } else {
             res.json(commonJsonResponse)
