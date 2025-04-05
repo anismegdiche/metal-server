@@ -212,19 +212,18 @@ describe('XmlContent', () => {
         })
     })
 
-    // it('should handle empty XML content', async () => {
-    //     const xmlContent = new XmlContent()
-    //     xmlContent.EntityName = 'users'
-    //     xmlContent.Content.UploadFile('users', Readable.from(''))
-    //     xmlContent.Params = { "xml-path": 'users.user' }
+    it('should throw error when XML content is empty', async () => {
+        const xmlContent = new XmlContent()
+        xmlContent.EntityName = 'users'
+        xmlContent.Content.UploadFile('users', Readable.from(''))
+        xmlContent.Params = { "xml-path": 'users.user' }
 
-    //     const result = await xmlContent.Get(undefined, {}))
+        await expect(xmlContent.Get(undefined, {}))
+            .rejects
+            .toThrow(HttpErrorInternalServerError)
+    })
 
-    //     expect(result).toBeInstanceOf(DataTable)
-    //     expect(result.Rows).toEqual([])
-    // })
-
-    it('should handle malformed XML content', async () => {
+    it('should throw error when XML content is malformed', async () => {
         const xmlContent = new XmlContent()
         xmlContent.EntityName = 'users'
         xmlContent.Content.UploadFile('users', Readable.from('<root> invalid xml </root>'))
@@ -257,25 +256,25 @@ describe('XmlContent', () => {
             .toThrow(HttpErrorInternalServerError)
     })
 
-    // it('should handle SQL queries with invalid syntax', async () => {
-    //     const xmlContent = new XmlContent()
-    //     xmlContent.EntityName = 'users'
-    //     xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
-    //     xmlContent.Params = { "xml-path": 'users.user' }
+    it('should handle SQL queries with invalid syntax', async () => {
+        const xmlContent = new XmlContent()
+        xmlContent.EntityName = 'users'
+        xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
+        xmlContent.Params = { "xml-path": 'users.user' }
 
-    //     await expect(xmlContent.Get('SELECT * FROM users WHERE'))
-    //         .rejects
-    //         .toThrow(HttpErrorInternalServerError)
-    // })
+        await expect(xmlContent.Get('SELECT * FROM users WHERE', {}))
+            .rejects
+            .toThrow()
+    })
 
-    // it('should handle SQL queries with invalid table name', async () => {
-    //     const xmlContent = new XmlContent()
-    //     xmlContent.EntityName = 'users'
-    //     xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
-    //     xmlContent.Params = { "xml-path": 'users.user' }
+    it('should handle SQL queries with invalid table name', async () => {
+        const xmlContent = new XmlContent()
+        xmlContent.EntityName = 'users'
+        xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
+        xmlContent.Params = { "xml-path": 'users.user' }
 
-    //     await expect(xmlContent.Get('SELECT * FROM invalid_table WHERE id = 1'))
-    //         .rejects
-    //         .toThrow(HttpErrorInternalServerError)
-    // })
+        await expect(xmlContent.Get('SELECT * FROM invalid_table WHERE id = 1', {}))
+            .rejects
+            .toThrow()
+    })
 })

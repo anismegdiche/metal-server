@@ -78,7 +78,7 @@ export class XmlContent extends absContentProvider {
         const data = JsonHelper.Get<TJson[]>(xmlData, $__path)
 
         if (!data)
-            throw new HttpErrorInternalServerError(`Xml: Path ${$__path} not found`)
+            throw new HttpErrorInternalServerError(`Xml: No data found at Path ${$__path}`)
 
         return new DataTable(this.EntityName, Array.isArray(data)
             ? data
