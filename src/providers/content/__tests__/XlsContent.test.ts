@@ -5,6 +5,7 @@ import { DataTable } from "../../../types/DataTable"
 import * as ExcelJS from 'exceljs'
 import typia from "typia"
 import { HttpErrorInternalServerError } from "../../../server/HttpErrors"
+import * as crc32 from 'crc-32'
 
 
 // Mock the Logger decorator
@@ -172,19 +173,103 @@ describe('XlsContent', () => {
             await expect(xlsContent.Set(mockDataTable,{})).rejects.toThrow(HttpErrorInternalServerError)
         })
 
-        // FIXME test to fix
-        // it('should write data to Excel correctly', async () => {
-        //     mockDataTable = new DataTable('testEntity', [
-        //         {
-        //             name: 'John',
-        //             age: 30,
-        //             date: new Date('2024-01-01')
-        //         }
-        //     ])
-        //     const result = await xlsContent.Set(mockDataTable)
+        it('should write data to Excel correctly', async () => {
+            mockDataTable = new DataTable('testEntity', [
+                {
+                    name: 'John',
+                    age: 30,
+                    date: new Date('2024-01-01')
+                }
+            ])
 
-        //     expect(result).toBeInstanceOf(Readable)
-        //     expect(xlsContent.Content.Files['testEntity']).toBeDefined()
-        // })
+            // Create a mock Excel file content
+            const mockExcelContent = new Readable({
+                read() {
+                    // Create a minimal valid ZIP structure with Excel-specific files
+                    let offset = 0
+                    const fileHeaders: Buffer[] = []
+                    const centralDirHeaders: Buffer[] = []
+
+                    // Function to create file header
+                    const createFileHeader = (filename: string, content: string) => {
+                        const data = Buffer.from(content)
+                        const filenameBuffer = Buffer.from(filename)
+                        
+                        // Calculate CRC-32 and file sizes
+                        const crc32Value = crc32.buf(data)
+                        const compressedSize = data.length
+                        const uncompressedSize = data.length
+                        
+                        // Local file header
+                        const localFileHeader = Buffer.concat([
+                            Buffer.from([0x50, 0x4B, 0x03, 0x04]), // Local file header signature
+                            Buffer.from([0x14, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), // Version, flags, method, timestamps
+                            Buffer.from([crc32Value, 0x00, 0x00, 0x00]), // CRC-32
+                            Buffer.from([compressedSize, 0x00, 0x00, 0x00]), // Compressed size
+                            Buffer.from([uncompressedSize, 0x00, 0x00, 0x00]), // Uncompressed size
+                            Buffer.from([filenameBuffer.length, 0x00, 0x00, 0x00]), // Filename length, extra field length
+                            filenameBuffer,
+                            data
+                        ])
+
+                        // Central directory header
+                        const centralDirHeader = Buffer.concat([
+                            Buffer.from([0x50, 0x4B, 0x01, 0x02]), // Central directory file header signature
+                            Buffer.from([0x14, 0x00, 0x14, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), // Version, flags, method, timestamps
+                            Buffer.from([crc32Value, 0x00, 0x00, 0x00]), // CRC-32
+                            Buffer.from([compressedSize, 0x00, 0x00, 0x00]), // Compressed size
+                            Buffer.from([uncompressedSize, 0x00, 0x00, 0x00]), // Uncompressed size
+                            Buffer.from([filenameBuffer.length, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), // Filename length, extra field length, comment length, disk number, internal attributes, external attributes
+                            Buffer.from([offset, 0x00, 0x00, 0x00]), // Relative offset of local header
+                            filenameBuffer
+                        ])
+
+                        fileHeaders.push(localFileHeader)
+                        centralDirHeaders.push(centralDirHeader)
+                        offset += localFileHeader.length
+                    }
+
+                    // Create all necessary Excel files
+                    createFileHeader('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+    <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+    <Default Extension="xml" ContentType="application/xml"/>
+    <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+</Types>`);
+                    createFileHeader('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+                    createFileHeader('xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+    <sheets>
+        <sheet name="Sheet1" sheetId="1" r:id="rId1"/>
+    </sheets>
+</workbook>`);
+                    createFileHeader('xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`);
+                    createFileHeader('xl/worksheets/sheet1.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetData/></worksheet>`);
+
+                    // Create end of central directory record
+                    const endOfCentralDir = Buffer.concat([
+                        Buffer.from([0x50, 0x4B, 0x05, 0x06]), // End of central directory signature
+                        Buffer.from([0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x05, 0x00]), // Number of this disk, disk where central directory starts, number of central directory records on this disk, total number of central directory records
+                        Buffer.from([centralDirHeaders.reduce((sum, header) => sum + header.length, 0), 0x00, 0x00, 0x00]), // Size of central directory
+                        Buffer.from([offset, 0x00, 0x00, 0x00]), // Offset of start of central directory
+                        Buffer.from([0x00, 0x00]) // ZIP file comment length
+                    ])
+
+                    // Push all parts in order
+                    fileHeaders.forEach(header => this.push(header))
+                    centralDirHeaders.forEach(header => this.push(header))
+                    this.push(endOfCentralDir)
+                    this.push(null)
+                }
+            })
+
+            // Initialize the content with the mock Excel file
+            xlsContent.Content.UploadFile('testEntity', mockExcelContent)
+            
+            const result = await xlsContent.Set(mockDataTable, {})
+
+            expect(result).toBeInstanceOf(Readable)
+            expect(xlsContent.Content.Files['testEntity']).toBeDefined()
+        })
     })
 })

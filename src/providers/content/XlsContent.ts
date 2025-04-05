@@ -143,21 +143,36 @@ export class XlsContent extends absContentProvider {
             throw new HttpErrorInternalServerError('Json: Params is not defined')
 
         const workbook = new ExcelJS.Workbook()
-        await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
+        
+        // Try to read the existing file, but create a new workbook if it fails
+        try {
+            await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
+        } catch (error) {
+            Logger.Warn('XlsContent.Set: Could not read existing file, creating new workbook')
+        }
 
         const $__evalParams = PlaceHolder.EvaluateJsCode<TXlsContentParams>(
             this.Params,
             new Sandbox($context)
         )
 
-        const sheetName = $__evalParams?.sheet ?? workbook.worksheets[0].name
+        const sheetName = $__evalParams?.sheet ?? workbook.worksheets[0]?.name ?? 'Sheet1'
         let worksheet = workbook.getWorksheet(sheetName)
 
-        if (!worksheet)
+        if (!worksheet) {
             worksheet = workbook.addWorksheet(sheetName)
+            worksheet.properties.defaultRowHeight = 15
+        }
 
         const [startCol, startRow] = worksheet.getCell($__evalParams?.startingCell as string).address.match(/[A-Z]+|\d+/g)!
         const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
+
+        // Clear existing data if any
+        worksheet.eachRow({ includeEmpty: true }, (row) => {
+            row.eachCell({ includeEmpty: true }, (cell) => {
+                cell.value = null
+            })
+        })
 
         // Set headers
         const fields = Object.keys(data.Rows[0])
@@ -171,26 +186,31 @@ export class XlsContent extends absContentProvider {
                 const _rowIdx = parseInt(startRow, 10) + 1 + rowIndex
                 const _colIdx: number = colIndex + fieldIdx
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let _valueToSet: any = row[field]
+                let _valueToSet = row[field]
 
-                // If raw data is specified, set directly; otherwise apply formatting or defaults
                 if (_valueToSet === null) {
-                    _valueToSet = $__evalParams!.default // Use default value for empty cells
+                    _valueToSet = $__evalParams!.default
                 }
 
-                // Handle date formatting if specified and "xls-parse-dates" is true
                 if ($__evalParams!.parseDates && _valueToSet instanceof Date) {
-                    worksheet.getCell(_rowIdx, _colIdx).numFmt = $__evalParams!.dateFormat as string // Apply date format
+                    worksheet.getCell(_rowIdx, _colIdx).numFmt = $__evalParams!.dateFormat as string
                 }
-                worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet     // Set other values directly
+                worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet as ExcelJS.ValueType
             })
         })
 
-        const streamOut: Readable = new Readable()
-        await workbook.xlsx.write(streamOut)
+        // Create a new buffer and stream
+        const buffer = await workbook.xlsx.writeBuffer()
+        const streamOut = new Readable()
+        
+        // Set the encoding to binary to prevent corruption
+        streamOut.setEncoding('binary')
+        streamOut.push(buffer)
+        streamOut.push(null)
 
+        // Upload the buffer to content
         this.Content.UploadFile(this.EntityName, streamOut)
-        return this.Content.ReadFile(this.EntityName)
+        
+        return streamOut
     }
 }
