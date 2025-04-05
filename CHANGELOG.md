@@ -1,32 +1,49 @@
 # Metal Changelog
 
-<!-- ## Version 0.4 - TBD
+## Version 0.4 - TBD, 2025
 
 ### Features
 
-### Enhancements
-
-### Bug Fixes
-
---- -->
-## Version 0.3.7 🎄✨ X-Mas Patch 🎅🎁 - December 15, 2024 ❄️🌟
-
-### Features
+- Data Provider: Added WebServices support (REST, SOAP)
+- Extended Javascript Expression engine
+- Added Context variables
+- Added Field Escape Engine
+- File Content: added support for XML files
 - Added OpenID Connect Provider for authentication
+- Introduced data chunking via response-chunk config
 
 ### Enhancements
-- Refactored Cache feature response, and logic.
-- Refactored DataProvider classes for better abstraction.
-- Refactored Schema class.
-- Improved structure and readability.
+
+- Refactored Cache feature response, and logic
+- Enhanced schema response concurrency
+- Refactored DataProvider classes for better abstraction
+- Refactored Schema class
+- Improved structure and readability
+- Aligned code with SOLID principles
+- Updated package scripts and CI steps
+- Enhanced end-to-end test coverage for providers
+- Improved filter/field handling in MongoDb provider
+- Enhanced sandbox for better context support and code safety
+- Packages optimization
+- Enhanced XLSX support
 
 ### Bug Fixes
-- Fixed server error handler HTTP status code issues.
+
+- Fixed server error handler HTTP status code issues
 - Fixed various logging functions
-- Fixed empty role handling.
-- Addressed bugs in CsvContent.Params.quoteChar functionality.
-- Corrected issues with FsStorage.
+- Fixed empty role handling
+- Addressed bugs in CsvContent.Params.quoteChar functionality
+- Corrected issues with FsStorage
 - Corrected config.yml file version 0.3 handling
+- Fixed Plan locking and initialization issues
+- Corrected evaluation bypass in CacheData
+- Fixed data source initialization order and errors
+- Corrected role pattern formatting to prevent duplication
+- Resolved error in PlaceHolder variable retrieval
+- Fixed test failures related to expected output and context usage
+- Addressed incorrect cache schema interception
+- Resolved mutex/semaphore bugs
+- Fixed config sample mismatches
 
 ---
 
