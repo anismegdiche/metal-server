@@ -103,9 +103,12 @@ export class SqlServerData extends absDataProvider {
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        if (this.Connection !== undefined) {
-            this.Connection.close()
-        }
+        if (this.Connection === undefined)
+            return
+
+        await this.Connection.close()
+        this.Connection = undefined
+        Logger.Info(`${Logger.Out} disconnected from '${this.SourceName} (${this.Config.database})'`)
     }
 
     @Logger.LogFunction()
