@@ -41,15 +41,6 @@ export class PlanData extends absDataProvider {
         this.Config = sourceConfig
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `\`${entity}\``
-    }
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `\`${field}\``
-    }
-
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
@@ -175,5 +166,15 @@ export class PlanData extends absDataProvider {
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data: new DataTable(undefined, data)
         })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
     }
 }

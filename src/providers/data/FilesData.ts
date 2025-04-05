@@ -93,31 +93,6 @@ export class FilesData extends absDataProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `\`${entity}\``
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `\`${field}\``
-    }
-
-    SetContentHandler(entity: string) {
-        if (!_.has(this.File, entity)) {
-            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern)?.test(entity))
-            if (handler)
-                this.File[entity] = this.ContentHandler[handler]
-            else
-                throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entity}`)
-        }
-    }
-
-    SetLock(entity: string) {
-        if (!this.Lock.has(entity))
-            this.Lock.set(entity, new Mutex())
-    }
-
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         try {
@@ -367,5 +342,30 @@ export class FilesData extends absDataProvider {
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
         })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
+    }
+
+    SetContentHandler(entity: string) {
+        if (!_.has(this.File, entity)) {
+            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern)?.test(entity))
+            if (handler)
+                this.File[entity] = this.ContentHandler[handler]
+            else
+                throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entity}`)
+        }
+    }
+
+    SetLock(entity: string) {
+        if (!this.Lock.has(entity))
+            this.Lock.set(entity, new Mutex())
     }
 }

@@ -69,25 +69,6 @@ export class MySqlData extends absDataProvider {
         this.Config = _.merge(this.DEFAULT, sourceConfig as TMySqlDataConfig)
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `\`${entity}\``
-    }
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `\`${field}\``
-    }
-
-    async #ensureConnection(): Promise<Pool> {
-        if (!this.Connection)
-            await this.Connect()
-
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError('Failed to establish database connection')
-
-        return this.Connection
-    }
-
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         const { host, port, user, password, database, options } = this.Config
@@ -273,5 +254,25 @@ export class MySqlData extends absDataProvider {
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
         })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
+    }
+
+    async #ensureConnection(): Promise<Pool> {
+        if (!this.Connection)
+            await this.Connect()
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError('Failed to establish database connection')
+
+        return this.Connection
     }
 }

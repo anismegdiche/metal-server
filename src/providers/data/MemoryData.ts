@@ -59,16 +59,6 @@ export class MemoryData extends absDataProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `\`${entity}\``
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `\`${field}\``
-    }
-
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         this.Connection = new DataBase(this.Config.database)
@@ -269,5 +259,15 @@ export class MemoryData extends absDataProvider {
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data: new DataTable(undefined, rows)
         })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
     }
 }

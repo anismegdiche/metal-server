@@ -64,15 +64,6 @@ export class PostgresData extends absDataProvider {
         this.Config = _.merge(this.DEFAULT, sourceConfig as TPostgresDataConfig)
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `"${entity}"`
-    }
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `"${field}"`
-    }
-
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         const source = this.SourceName
@@ -295,5 +286,15 @@ export class PostgresData extends absDataProvider {
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
         })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `"${entity}"`
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `"${field}"`
     }
 }

@@ -73,15 +73,6 @@ export class SqlServerData extends absDataProvider {
         this.Config = _.merge(this.DEFAULT, sourceConfig as TSqlServerDataConfig)
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `[${entity}]`.replace(/\./g, "].[")
-    }
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `[${field}]`
-    }
-
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         const { host: server, port, user, password, database, options } = this.Config
@@ -263,5 +254,15 @@ export class SqlServerData extends absDataProvider {
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data: new DataTable(undefined, sqlServerResult.recordset)
         })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `[${entity}]`.replace(/\./g, "].[")
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `[${field}]`
     }
 }

@@ -50,16 +50,7 @@ export class MetalData extends absDataProvider {
         this.Connection = new WebServiceData()
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return entity
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return field
-    }
-
+    @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         super.Init(source, sourceConfig)
         this.Config = _.merge(
@@ -134,6 +125,7 @@ export class MetalData extends absDataProvider {
         this.Connection.Init(this.SourceName!, webServiceConfig)
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
         if (!this.Connection)
             throw new HttpErrorInternalServerError("Connection not initialized")
@@ -146,6 +138,7 @@ export class MetalData extends absDataProvider {
         // }
     }
 
+    @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         if (!this.Connection)
             throw new HttpErrorInternalServerError("Connection not initialized")
@@ -153,6 +146,7 @@ export class MetalData extends absDataProvider {
         await this.Connection.Disconnect()
     }
 
+    @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>> {
         if (!this.Connection)
             throw new HttpErrorInternalServerError("Connection not initialized")
@@ -164,6 +158,7 @@ export class MetalData extends absDataProvider {
         return intResp
     }
 
+    @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>> {
         if (!this.Connection)
             throw new HttpErrorInternalServerError("Connection not initialized")
@@ -175,6 +170,7 @@ export class MetalData extends absDataProvider {
         return intResp
     }
 
+    @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>> {
         if (!this.Connection)
             throw new HttpErrorInternalServerError("Connection not initialized")
@@ -186,6 +182,7 @@ export class MetalData extends absDataProvider {
         return intResp
     }
 
+    @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>> {
         if (!this.Connection)
             throw new HttpErrorInternalServerError("Connection not initialized")
@@ -197,6 +194,7 @@ export class MetalData extends absDataProvider {
         return intResp
     }
 
+    @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
         if (!this.Connection)
             throw new HttpErrorInternalServerError("Connection not initialized")
@@ -209,7 +207,18 @@ export class MetalData extends absDataProvider {
     }
 
     // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
     async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return entity
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return field
     }
 }

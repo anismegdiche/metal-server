@@ -70,17 +70,6 @@ export class WebServiceData extends absDataProvider {
         super()
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return `\`${entity}\``
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return `\`${field}\``
-    }
-
-
     @Logger.LogFunction(['sourceConfig'])
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         super.Init(source, sourceConfig)
@@ -126,16 +115,6 @@ export class WebServiceData extends absDataProvider {
         } catch (error: any) {
             Logger.Error(`${this.SourceName}: Failed to disconnect in WebService provider: ${error.message}`)
         }
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    ListEntities(_schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        throw new HttpErrorNotImplemented()
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        throw new HttpErrorNotImplemented()
     }
 
     @Logger.LogFunction()
@@ -188,6 +167,7 @@ export class WebServiceData extends absDataProvider {
         })
     }
 
+    @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (!schemaRequest.data)
@@ -314,6 +294,18 @@ export class WebServiceData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
+    // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
+    ListEntities(_schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
+        throw new HttpErrorNotImplemented()
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    @Logger.LogFunction()
+    AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+        throw new HttpErrorNotImplemented()
+    }
+
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
@@ -372,6 +364,16 @@ export class WebServiceData extends absDataProvider {
         // clean cache
         Cache.Remove(schemaRequest)
         return HttpResponse.NoContent()
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
     }
 
     //

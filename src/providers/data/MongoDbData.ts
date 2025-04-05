@@ -58,16 +58,6 @@ export class MongoDbData extends absDataProvider {
         this.Config = _.merge(this.DEFAULT, sourceConfig as TMongoDbDataConfig)
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    EscapeEntity(entity: string): string {
-        return entity
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    EscapeField(field: string): string {
-        return field
-    }
-
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         this.Connection = new MongoDb.MongoClient(this.Config.host, this.Config.options)
@@ -269,5 +259,15 @@ export class MongoDbData extends absDataProvider {
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data: new DataTable(undefined, rows)
         })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return entity
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return field
     }
 }
