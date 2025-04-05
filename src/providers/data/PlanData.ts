@@ -37,8 +37,7 @@ export class PlanData extends absDataProvider {
 
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
-        Logger.Debug("PlanData.Init")
-        this.SourceName = source
+        super.Init(source, sourceConfig)
         this.Config = sourceConfig
     }
 

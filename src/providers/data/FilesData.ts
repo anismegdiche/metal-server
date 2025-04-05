@@ -64,8 +64,7 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
-        Logger.Debug(`${Logger.Out} FilesData.Init`)
-        this.SourceName = source
+        super.Init(source, sourceConfig)
         this.Config = sourceConfig
         const {
             storage = STORAGE.FILESYSTEM,

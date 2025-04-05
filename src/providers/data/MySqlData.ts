@@ -65,11 +65,7 @@ export class MySqlData extends absDataProvider {
 
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
-        
-        Logger.Debug("MySqlData.Init")
-
-        this.SourceName = source
-
+        super.Init(source, sourceConfig)
         this.Config = _.merge(this.DEFAULT, sourceConfig as TMySqlDataConfig)
     }
 

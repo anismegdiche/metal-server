@@ -61,9 +61,7 @@ export class MetalData extends absDataProvider {
     }
 
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
-        Logger.Debug("MetalData.Init")
-        this.SourceName = source
-
+        super.Init(source, sourceConfig)
         this.Config = _.merge(
             this.DEFAULT,
             sourceConfig,
@@ -133,7 +131,7 @@ export class MetalData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError("Connection not initialized")
 
-        this.Connection.Init(this.SourceName, webServiceConfig)
+        this.Connection.Init(this.SourceName!, webServiceConfig)
     }
 
     async Connect(): Promise<void> {

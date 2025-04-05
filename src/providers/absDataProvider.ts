@@ -16,8 +16,9 @@ import { TConfigSource } from "../types/TConfig"
 import { DATA_PROVIDER } from "../providers/DataProvider"
 import { SqlQueryHelper } from "../lib/SqlQueryHelper"
 import { TOptionalParameter } from "../types/TOptionalParameter"
-import { HttpErrorBadRequest } from "../server/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError } from "../server/HttpErrors"
 import { DataTable } from "../types/DataTable"
+import { StringHelper } from '../lib/StringHelper'
 
 
 //
@@ -33,11 +34,18 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
     abstract Connection?: unknown
     Options: absDataProviderOptions = new DataProviderOptions()
 
-    abstract EscapeEntity(entity: string): string
-    abstract EscapeField(field: string): string
+    // Init
+    Init(source: string, sourceConfig: TConfigSource): void {
+        if (StringHelper.IsEmpty(source))
+            throw new HttpErrorInternalServerError(`source name is missing`)
+
+        if (sourceConfig == undefined)
+            throw new HttpErrorInternalServerError(`source config is missing`)
+
+        this.SourceName = source
+    }
 
     // Connection
-    abstract Init(source: string, sourceConfig: TConfigSource): Promise<void>
     abstract Connect(): Promise<void>
     abstract Disconnect(): Promise<void>
 
@@ -52,6 +60,11 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
     abstract Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>>
     abstract Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>>
     abstract Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>>
+
+
+    // Utils
+    abstract EscapeEntity(entity: string): string
+    abstract EscapeField(field: string): string
 
     // eslint-disable-next-line class-methods-use-this
     GetSqlQuery(sqlQueryHelper: SqlQueryHelper, options: TOptionalParameter): string | undefined {

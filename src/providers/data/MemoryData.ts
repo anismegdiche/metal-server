@@ -52,8 +52,7 @@ export class MemoryData extends absDataProvider {
 
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
-        Logger.Debug(`${Logger.Out} MemoryData.Init`)
-        this.SourceName = source
+        super.Init(source, sourceConfig)
         this.Config = {
             database: sourceConfig.database ?? 'memory',
             options: sourceConfig.options

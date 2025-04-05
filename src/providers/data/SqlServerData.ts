@@ -69,8 +69,7 @@ export class SqlServerData extends absDataProvider {
 
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
-        Logger.Debug("SqlServerData.Init")
-        this.SourceName = source
+        super.Init(source, sourceConfig)
         this.Config = _.merge(this.DEFAULT, sourceConfig as TSqlServerDataConfig)
     }
 
