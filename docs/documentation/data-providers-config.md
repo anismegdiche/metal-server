@@ -306,6 +306,7 @@ List of managed storage types:
 | `az-blob` | Azure Blob Storage | <Badge type="default" text="^0.3" /> |
 | `fs`      | Local file system  | <Badge type="default" text="^0.3" /> |
 | `ftp`     | FTP server         | <Badge type="default" text="^0.3" /> |
+| `smb`     | SMB/CIFS           | <Badge type="info" text="^0.4" />    |
 
 #### `fs` (Filesystem) <Badge type="default" text="^0.3" />
 
