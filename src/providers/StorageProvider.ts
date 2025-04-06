@@ -9,16 +9,21 @@ import { absStorageProvider } from "./absStorageProvider"
 import { AzureBlobStorage, TAzureBlobStorageConfig } from "./storage/AzureBlobStorage"
 import { FsStorage, TFsStorageConfig } from "./storage/FsStorage"
 import { FtpStorage, TFtpStorageConfig } from "./storage/FtpStorage"
+import { SmbStorage, TSmbStorageConfig } from "./storage/SmbStorage"
 
 
 //
 export enum STORAGE {
     FILESYSTEM = "fs",
     AZURE_BLOB = "az-blob",
-    FTP = "ftp"
+    FTP = "ftp",
+    SMB = "smb"
 }
 
-export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig & TFtpStorageConfig
+export type TStorageConfig = TFsStorageConfig
+    & TAzureBlobStorageConfig
+    & TFtpStorageConfig
+    & TSmbStorageConfig
 
 
 //
@@ -37,5 +42,6 @@ export class StorageProvider {
         StorageProvider.#StorageFactory.Register(STORAGE.FILESYSTEM, new FsStorage())
         StorageProvider.#StorageFactory.Register(STORAGE.AZURE_BLOB, new AzureBlobStorage())
         StorageProvider.#StorageFactory.Register(STORAGE.FTP, new FtpStorage())
+        StorageProvider.#StorageFactory.Register(STORAGE.SMB, new SmbStorage())
     }
 }

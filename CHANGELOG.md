@@ -11,6 +11,8 @@
 - File Content: added support for XML files
 - Added OpenID Connect Provider for authentication
 - Introduced data chunking via response-chunk config
+- Storage Provider: added SMB storage support
+
 
 ### Enhancements
 

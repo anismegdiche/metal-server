@@ -7,13 +7,14 @@ import { Readable } from "node:stream"
 import Smb2 from "smb2"
 import path from "node:path"
 //
-import { CommonStorage } from "./CommonStorage"
-import { IStorage } from "../../types/IStorage"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { ReadableHelper } from "../../lib/ReadableHelper"
 import { TConvertParams } from "../../lib/TypeHelper"
+import { absStorageProvider } from "../absStorageProvider"
+import { TConfigSource } from "../../types/TConfig"
+import { TFilesDataOptions } from "../data/FilesData"
 
 export type TSmbStorageConfig = {
     "smb-share": string            // SMB share path, e.g., "\\server\share"
@@ -26,12 +27,14 @@ type TSmbStorageParams = Required<{
     [K in keyof TSmbStorageConfig as K extends `smb-${infer U}` ? TConvertParams<U> : K]: TSmbStorageConfig[K]
 }>
 
-export class SmbStorage extends CommonStorage implements IStorage {
+export class SmbStorage extends absStorageProvider {
+    ConfigSource?: TConfigSource
+    ConfigStorage?: TFilesDataOptions
 
-    Params: TSmbStorageParams | undefined
+    Params?: TSmbStorageParams
 
     // SMB
-    #SmbClient: Smb2 | undefined
+    SmbClient: Smb2 | undefined
 
     @Logger.LogFunction()
     GetFilePath(file: string): string {
@@ -43,6 +46,9 @@ export class SmbStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     Init(): void {
+        if (!this.ConfigStorage)
+            throw new HttpErrorInternalServerError('SmbStorage: No configuration defined')
+
         this.Params = <TSmbStorageParams>{
             share: this.ConfigStorage["smb-share"],
             domain: this.ConfigStorage["smb-domain"] ?? "",
@@ -51,13 +57,14 @@ export class SmbStorage extends CommonStorage implements IStorage {
         }
     }
 
+    @Logger.LogFunction()
     async Connect(): Promise<void> {
         if (!this.Params)
             throw new HttpErrorInternalServerError('SmbStorage: No params defined')
 
         try {
             // Initialize the SMB2 client
-            this.#SmbClient = new Smb2(this.Params as TSmbStorageParams)
+            this.SmbClient = new Smb2(this.Params as TSmbStorageParams)
         } catch (error: any) {
             Logger.Error(`Failed to connect to server '${this.Params.share}': ${error.message}`)
         }
@@ -65,18 +72,18 @@ export class SmbStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        if (this.#SmbClient) {
+        if (this.SmbClient) {
             await new Promise<void>((resolve) => {
-                this.#SmbClient!.close()
+                this.SmbClient!.close()
                 resolve()
             })
-            this.#SmbClient = undefined
+            this.SmbClient = undefined
         }
     }
 
     @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
-        if (this.#SmbClient === undefined) {
+        if (this.SmbClient === undefined) {
             throw new HttpErrorInternalServerError("SMB client not initialized")
         }
 
@@ -84,7 +91,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
 
         try {
             return await new Promise<boolean>((resolve, reject) => {
-                this.#SmbClient!.exists(filePath, (err, exists) => {
+                this.SmbClient!.exists(filePath, (err, exists) => {
                     if (err) {
                         reject(err)
                         return
@@ -99,7 +106,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async Read(file: string): Promise<Readable> {
-        if (this.#SmbClient === undefined) {
+        if (this.SmbClient === undefined) {
             throw new HttpErrorInternalServerError('SMB client not initialized')
         }
 
@@ -110,7 +117,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
         const filePath = this.GetFilePath(file)
 
         return new Promise<Readable>((resolve, reject) => {
-            this.#SmbClient!.readFile(filePath, (err: any, dataString) => {
+            this.SmbClient!.readFile(filePath, (err: any, dataString) => {
                 if (err) {
                     reject(new HttpErrorInternalServerError(`Failed to read file '${file}': ${err.message}`))
                     return
@@ -122,7 +129,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async Write(file: string, content: Readable): Promise<void> {
-        if (this.#SmbClient === undefined) {
+        if (this.SmbClient === undefined) {
             throw new HttpErrorInternalServerError('SMB client not initialized')
         }
 
@@ -132,7 +139,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
             const contentString = await ReadableHelper.ToString(content)
 
             return new Promise<void>((resolve, reject) => {
-                this.#SmbClient!.writeFile(filePath, contentString, (err: any) => {
+                this.SmbClient!.writeFile(filePath, contentString, (err: any) => {
                     if (err) {
                         reject(new HttpErrorInternalServerError(`Failed to write file '${file}': ${err.message}`))
                         return
@@ -151,7 +158,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
 
     @Logger.LogFunction()
     async List(): Promise<DataTable> {
-        if (this.#SmbClient === undefined) {
+        if (this.SmbClient === undefined) {
             throw new HttpErrorInternalServerError('SMB client not initialized')
         }
 
@@ -162,7 +169,7 @@ export class SmbStorage extends CommonStorage implements IStorage {
 
         try {
             const files = await new Promise<string[]>((resolve, reject) => {
-                this.#SmbClient!.readdir(share, (err: any, files) => {
+                this.SmbClient!.readdir(share, (err: any, files) => {
                     if (err) {
                         reject(new HttpErrorInternalServerError(`Failed to list files: ${err.message}`))
                         return
