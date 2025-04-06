@@ -32,12 +32,12 @@ schemas:
 
 Defines the version used for the configuration.
 Accepted values :
-`0.1`, `0.2`, `0.3`
+`0.3`, `0.4`
 
 **Example:**
 
 ```yaml
-version: "0.3"
+version: "0.4"
 ```
 
 ## `server` <Badge type="default" text="^0.1" />
@@ -90,13 +90,15 @@ Sets the console logging verbosity, which can be one of the following values:
 
 Default: `warn`
 
+::: warning ⚠️ IMPORTANT
+Using `debug` or `trace` can significantly reduce the performance of Metal server.
+:::
+
 ### `cache` <Badge type="default" text="^0.1" />
 
 Sets the Database server for storing cache objects. The configuration is the same as a source. (See: [sources](#sources))
 
-::: warning ⚠️ IMPORTANT
-This parameter must be configured if you plan to use the cache feature in Metal.
-:::
+This parameter must be configured if you plan to use the cache feature in Metal server.
 
 ### `timezone` <Badge type="default" text="^0.1" />
 
@@ -397,7 +399,7 @@ When declaring a schema, the parameters that can be configured inside are: `sour
 :::
 
 ::: warning ⚠️ IMPORTANT
-If there's no `schemas` declaration in `config.yml`, Metal will expose nothing to the API. In this case, you are planning to use Metal as a scheduled ETL tool (see: Use Case, CRON ETL).
+If there's no `schemas` declaration in `config.yml`, Metal server will not expose any data to the API, implying its use as a scheduled ETL tool (see: Use Case, CRON ETL).
 :::
 
 **Example:**
@@ -1005,11 +1007,11 @@ This section defines the scheduled execution of plans according to a Cron expres
 
 The parameters that can be configured inside schedule are :
 
-| Name     | Type   | Required | Description                                                     | Metal version                        |
-| -------- | ------ | -------- | --------------------------------------------------------------- | ------------------------------------ |
-| `plan`   | String | Y        | name of the plan                                                | <Badge type="default" text="^0.1" /> |
-| `entity` | String | Y        | name of the entity in the `plan`                                | <Badge type="default" text="^0.1" /> |
-| `cron`   | String | Y        | A cron expression string, or `@start` for once at Metal startup | <Badge type="default" text="^0.1" /> |
+| Name     | Type   | Required | Description                                                            | Metal version                        |
+| -------- | ------ | -------- | ---------------------------------------------------------------------- | ------------------------------------ |
+| `plan`   | String | Y        | name of the plan                                                       | <Badge type="default" text="^0.1" /> |
+| `entity` | String | Y        | name of the entity in the `plan`                                       | <Badge type="default" text="^0.1" /> |
+| `cron`   | String | Y        | A cron expression string, or `@start` for once at Metal server startup | <Badge type="default" text="^0.1" /> |
 
 **Example**
 
@@ -1022,7 +1024,7 @@ schedules:
 ```
 
 ::: tip ℹ️ TIP
-By using `@start` as a cron expression, you can start the job once at Metal startup.
+By using `@start` as a cron expression, you can start the job once at Metal server startup.
 
 Example:
 
