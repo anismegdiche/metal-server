@@ -30,8 +30,8 @@ type TAzureBlobStorageParams = Required<{
 
 //
 export class AzureBlobStorage extends absStorageProvider {
-    ConfigSource?: TConfigSource | undefined
-    ConfigStorage?: TFilesDataOptions | undefined
+    ConfigSource?: TConfigSource
+    ConfigStorage?: TFilesDataOptions
 
     Params: TAzureBlobStorageParams | undefined
 
@@ -67,7 +67,6 @@ export class AzureBlobStorage extends absStorageProvider {
             }
             this.#BlobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
             this.#ContainerClient = this.#BlobServiceClient.getContainerClient(container)
-            await this.#ContainerClient.createIfNotExists()
         } catch (error) {
             Logger.Error(`AzureBlobStorage Error: ${error}`)
         }
