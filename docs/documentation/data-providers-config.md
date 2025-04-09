@@ -301,12 +301,13 @@ sources:
 
 List of managed storage types:
 
-| Parameter | Description        | Metal version                        |
-| --------- | ------------------ | ------------------------------------ |
-| `az-blob` | Azure Blob Storage | <Badge type="default" text="^0.3" /> |
-| `fs`      | Local file system  | <Badge type="default" text="^0.3" /> |
-| `ftp`     | FTP server         | <Badge type="default" text="^0.3" /> |
-| `smb`     | SMB/CIFS           | <Badge type="info" text="^0.4" />    |
+| Parameter    | Description        | Metal version                        |
+| ------------ | ------------------ | ------------------------------------ |
+| `az-blob`    | Azure Blob Storage | <Badge type="default" text="^0.3" /> |
+| `fs`         | Local file system  | <Badge type="default" text="^0.3" /> |
+| `ftp`        | FTP server         | <Badge type="default" text="^0.3" /> |
+| `azure-file` | Azure File Share   | <Badge type="info" text="^0.4" />    |
+| `smb`        | SMB/CIFS           | <Badge type="info" text="^0.4" />    |
 
 #### `fs` (Filesystem) <Badge type="default" text="^0.3" />
 
@@ -329,33 +330,6 @@ sources:
     options:
       storage: fs
       fs-folder: ./data/
-      ...
-```
-
-#### `az-blob` (Azure Blob Storage) <Badge type="default" text="^0.3" />
-
-This refers to use a Azure Blob Storage
-
-**Optional Parameters:**
-
-| Parameter                   | Type   | Required | Description                                                                                 |
-| --------------------------- | ------ | -------- | ------------------------------------------------------------------------------------------- |
-| `storage`                   | String | Y        | Set to `az-blob` for Azure Blob Storage                                                     |
-| `az-blob-connection-string` | String | Y        | Azure Blob Connection String                                                                |
-| `az-blob-container`         | String | Y        | Azure Blob Container name                                                                   |
-| `az-blob-autocreate`        | String | N        | If set to `true` then the container will be created with the provided name, defult: `false` |
-
-**Example:**
-
-```yaml
-sources:
-  my-local-files:
-    provider: files
-    options:
-      storage: az-blob
-      az-blob-connection-string: UseDevelopmentStorage=true
-      az-blob-container: datacontainer1
-      az-blob-autocreate: true
       ...
 ```
 
@@ -391,6 +365,7 @@ sources:
       ftp-folder: /
       ...
 ```
+
 #### `smb` (SMB/CIFS)⚡ <Badge type="info" text="^0.4" />
 
 This refers to use a SMB/CIFS server
@@ -399,16 +374,17 @@ This refers to use a SMB/CIFS server
 
 | Parameter      | Type             | Required | Description                                                              |
 | -------------- | ---------------- | -------- | ------------------------------------------------------------------------ |
-| `storage`      | String           | Y        | Set to `smb` for SMB/CIFS server                                          |
+| `storage`      | String           | Y        | Set to `smb` for SMB/CIFS server                                         |
 | `autocreate`   | Boolean          | N        | if set to `true`, entity will be created automatically, default: `false` |
 | `smb-host`     | String           | Y        | SMB/CIFS server host                                                     |
-| `smb-port`     | Number (1-65535) | N        | SMB/CIFS server port , default: 445                                       |
+| `smb-port`     | Number (1-65535) | N        | SMB/CIFS server port , default: 445                                      |
 | `smb-user`     | String           | Y        | SMB/CIFS server username                                                 |
 | `smb-password` | String           | Y        | SMB/CIFS server password                                                 |
 | `smb-share`    | String           | Y        | SMB/CIFS share name                                                      |
 | `smb-folder`   | String           | N        | Remote folder on the SMB/CIFS server , default: `/`                      |
 
 **Example:**
+
 ```yaml
 sources:
   my-smb-files:
@@ -421,6 +397,61 @@ sources:
       smb-password: smb-pass
       smb-share: share
       smb-folder: /path/to/folder
+      ...
+```
+
+#### `az-blob` (Azure Blob Storage) <Badge type="default" text="^0.3" />
+
+This refers to use a Azure Blob Storage
+
+**Optional Parameters:**
+
+| Parameter                   | Type   | Required | Description                                                                                 |
+| --------------------------- | ------ | -------- | ------------------------------------------------------------------------------------------- |
+| `storage`                   | String | Y        | Set to `az-blob` for Azure Blob Storage                                                     |
+| `az-blob-connection-string` | String | Y        | Azure Blob Connection String                                                                |
+| `az-blob-container`         | String | Y        | Azure Blob Container name                                                                   |
+| `az-blob-autocreate`        | String | N        | If set to `true` then the container will be created with the provided name, defult: `false` |
+
+**Example:**
+
+```yaml
+sources:
+  my-local-files:
+    provider: files
+    options:
+      storage: az-blob
+      az-blob-connection-string: UseDevelopmentStorage=true
+      az-blob-container: datacontainer1
+      az-blob-autocreate: true
+      ...
+```
+
+#### `azure-file` (Azure File Share)⚡ <Badge type="info" text="^0.4" />
+
+This refers to use an Azure File Share storage.
+
+**Optional Parameters:**
+
+| Parameter                 | Type    | Required | Description                                                              |
+| ------------------------- | ------- | -------- | ------------------------------------------------------------------------ |
+| `storage`                 | String  | Y        | Set to `azure-file` for Azure File Share                                 |
+| `autocreate`              | Boolean | N        | if set to `true`, entity will be created automatically, default: `false` |
+| `azure-connection-string` | String  | Y        | Azure Storage connection string                                          |
+| `azure-share-name`        | String  | Y        | Azure File Share name                                                    |
+| `azure-directory`         | String  | N        | Remote directory in the share, default: `/`                              |
+
+**Example:**
+
+```yaml
+sources:
+  my-azure-files:
+    provider: files
+    options:
+      storage: azure-file
+      azure-connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
+      azure-share-name: myshare
+      azure-directory: /path/to/files
       ...
 ```
 
@@ -606,10 +637,10 @@ This endpoint is used to establish a connection with the webservice and obtain a
 
 The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request. Additionally, it can include headers to be added after a successful login session.
 
-| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                 |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                      |
-| 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                      |
+| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                             |
+| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                    |
+| 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                    |
 | 📜 `session-headers`         | Object | Headers to add after login is successful                                                                                                         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$request`](dynamic-expression-engine#request),[`$response`](dynamic-expression-engine#response) |
 
 <u>**Method or Operation key**:</u>{#method}
@@ -641,10 +672,10 @@ rest-dummyjson: # https://dummyjson.com/docs
 
 This endpoint is used to read data from a collection. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
-| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                 |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                      |
-| 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                      |
+| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                             |
+| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                    |
+| 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                    |
 | 📜 `response`                | String | response path to get data                                                                                                                        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$request`](dynamic-expression-engine#request),[`$response`](dynamic-expression-engine#response) |
 
 **Example:**
@@ -667,9 +698,9 @@ rest-dog: # https://dog.ceo/dog-api/documentation/
 
 This endpoint is used to create a new item. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
-| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                      |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                           |
+| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                   |
+| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                          |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$row`](dynamic-expression-engine#row) |
 
 **Example:**
@@ -691,9 +722,9 @@ rest-fakerestapi: # https://fakerestapi.azurewebsites.net/index.html
 
 This endpoint is used to update an existing item. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
-| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                      |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                           |
+| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                   |
+| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                          |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$row`](dynamic-expression-engine#row) |
 
 **Example:**
@@ -715,9 +746,9 @@ rest-fakerestapi: # https://fakerestapi.azurewebsites.net/index.html
 
 This endpoint is used to delete an existing item. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
-| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                      |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                           |
+| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                   |
+| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                          |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$row`](dynamic-expression-engine#row) |
 
 **Example:**

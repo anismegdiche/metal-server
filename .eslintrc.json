@@ -89,7 +89,7 @@
 			"consistent"
 		],
 		"function-paren-newline": "off",
-		"generator-star-spacing": "error",
+		"generator-star-spacing": "off",
 		"grouped-accessor-pairs": "error",
 		"guard-for-in": "error",
 		"id-denylist": "error",
