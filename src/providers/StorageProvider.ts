@@ -6,6 +6,7 @@
 import { HttpErrorNotFound } from "../server/HttpErrors"
 import { Factory } from "../utils/Factory"
 import { absStorageProvider } from "./absStorageProvider"
+import { AmazonS3Storage, TAmazonS3StorageConfig } from "./storage/AmazonS3Storage"
 import { AzureBlobStorage, TAzureBlobStorageConfig } from "./storage/AzureBlobStorage"
 import { AzureFileStorage, TAzureFileStorageConfig } from "./storage/AzureFileStorage"
 import { FsStorage, TFsStorageConfig } from "./storage/FsStorage"
@@ -19,7 +20,8 @@ export enum STORAGE {
     FTP = "ftp",
     SMB = "smb",
     AZURE_BLOB = "az-blob",
-    AZURE_FILE = "az-file"
+    AZURE_FILE = "az-file",
+    AMAZON_S3 = "s3"
 }
 
 export type TStorageConfig = TFsStorageConfig
@@ -27,6 +29,7 @@ export type TStorageConfig = TFsStorageConfig
     & TSmbStorageConfig
     & TAzureBlobStorageConfig
     & TAzureFileStorageConfig
+    & TAmazonS3StorageConfig
 
 
 //
@@ -47,5 +50,6 @@ export class StorageProvider {
         StorageProvider.#StorageFactory.Register(STORAGE.FTP, new FtpStorage())
         StorageProvider.#StorageFactory.Register(STORAGE.SMB, new SmbStorage())
         StorageProvider.#StorageFactory.Register(STORAGE.AZURE_FILE, new AzureFileStorage())
+        StorageProvider.#StorageFactory.Register(STORAGE.AMAZON_S3, new AmazonS3Storage())
     }
 }

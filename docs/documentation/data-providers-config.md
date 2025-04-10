@@ -235,9 +235,9 @@ The MySql data provider is used to connect to a MySql database. It supports vari
 | `waitForConnections`    | Boolean | N        | Determines the pool's action when no connections are available and the limit has been reached. If true, the pool will queue the connection request and call it when one becomes available. If false, the pool will immediately call back with an error. (Default: true) |
 | `connectionLimit`       | Number  | N        | The maximum number of connections to create at once. (Default: 10)                                                                                                                                                                                                      |
 | `maxIdle`               | Number  | N        | The maximum number of idle connections. (Default: same as `connectionLimit`)                                                                                                                                                                                            |
-| `idleTimeout`           | Number  | N        | The idle connections timeout, in milliseconds. (Default: 60000)                                                                                                                                                                                                         |
+| `idleTimeout`           | Number  | N        | The idle connections timeout, in milliseconds. (Default: 60000)                                                                                                                                                                                                        |
 | `queueLimit`            | Number  | N        | The maximum number of connection requests the pool will queue before returning an error from getConnection. If set to 0, there is no limit to the number of queued connection requests. (Default: 0)                                                                    |
-| `enableKeepAlive`       | Boolean | N        | Enable keep-alive on the socket. (Default: true)                                                                                                                                                                                                                        |
+| `enableKeepAlive`       | Boolean | N        | Enable keep-alive on the socket. (Default: true)                                                                                                                                                                                                                       |
 | `keepAliveInitialDelay` | Number  | N        | Sets the initial delay (in milliseconds) before sending the first TCP keepalive probe on an idle socket. (Default: 0)                                                                                                                                                   |
 
 **Example:**
@@ -308,6 +308,7 @@ List of managed storage types:
 | `ftp`        | FTP server         | <Badge type="default" text="^0.3" /> |
 | `azure-file` | Azure File Share   | <Badge type="info" text="^0.4" />    |
 | `smb`        | SMB/CIFS           | <Badge type="info" text="^0.4" />    |
+| `s3`         | Amazon S3          | <Badge type="info" text="^0.4" />    |
 
 #### `fs` (Filesystem) <Badge type="default" text="^0.3" />
 
@@ -452,6 +453,38 @@ sources:
       azure-connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
       azure-share-name: myshare
       azure-directory: /path/to/files
+      ...
+```
+
+#### `s3` (Amazon S3)⚡ <Badge type="info" text="^0.4" />
+
+This refers to use Amazon S3 storage
+
+**Required Parameters:**
+
+| Parameter              | Type    | Required | Description                                                                                          |
+| ---------------------- | ------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| `storage`             | String  | Y        | Set to `s3` for Amazon S3 storage                                                                   |
+| `autocreate`          | Boolean | N        | if set to `true`, entity will be created automatically, default: `false`                            |
+| `s3-access-key-id`    | String  | Y        | AWS access key ID for authentication                                                                 |
+| `s3-secret-access-key`| String  | Y        | AWS secret access key for authentication                                                             |
+| `s3-region`           | String  | Y        | AWS region where the S3 bucket is located                                                            |
+| `s3-bucket`           | String  | Y        | Name of the S3 bucket to store files in                                                              |
+| `s3-endpoint`         | String  | N        | Optional endpoint URL for S3-compatible services (default: AWS S3 endpoint)                         |
+
+**Example:**
+
+```yaml
+sources:
+  my-s3-files:
+    provider: files
+    options:
+      storage: s3
+      s3-access-key-id: your-access-key-id
+      s3-secret-access-key: your-secret-access-key
+      s3-region: us-east-1
+      s3-bucket: your-bucket-name
+      s3-endpoint: http://localhost:9000 # Optional for S3-compatible services
       ...
 ```
 
