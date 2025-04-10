@@ -12,6 +12,7 @@
 - Added OpenID Connect Provider for authentication
 - Introduced data chunking via response-chunk config
 - Storage Provider: added SMB storage support
+- Storage Provider: added Azure File Storage support
 
 
 ### Enhancements
