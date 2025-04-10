@@ -14,6 +14,7 @@
 - Storage Provider: added SMB storage support
 - Storage Provider: added Azure File Storage support
 - Storage Provider: added Amazon S3 storage support
+- Storage Provider: added Azure DataLake Gen2 storage support
 
 ### Enhancements
 

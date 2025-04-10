@@ -305,6 +305,7 @@ List of managed storage types:
 | ------------- | ---------------------------- | ------------------------------------ |
 | `az-blob`     | Azure Blob Storage           | <Badge type="default" text="^0.3" /> |
 | `az-file`     | Azure File Share             | <Badge type="info" text="^0.4" />    |
+| `az-datalake` | Azure Data Lake Storage Gen2 | <Badge type="info" text="^0.4" />    |
 | `fs`          | Local file system            | <Badge type="default" text="^0.3" /> |
 | `ftp`         | FTP server                   | <Badge type="default" text="^0.3" /> |
 | `smb`         | SMB/CIFS                     | <Badge type="info" text="^0.4" />    |
@@ -428,7 +429,7 @@ sources:
       ...
 ```
 
-#### `azure-file` (Azure File Share)⚡ <Badge type="info" text="^0.4" />
+#### `az-file` (Azure File Share)⚡ <Badge type="info" text="^0.4" />
 
 This refers to use an Azure File Share storage.
 
@@ -456,17 +457,33 @@ sources:
       ...
 ```
 
+#### `az-datalake` (Azure Data Lake Storage Gen2)⚡ <Badge type="info" text="^0.4" />
+
+This refers to use Azure Data Lake Storage Gen2
+
+**Required Parameters:**
+
+| Parameter                     | Type    | Required | Description                                                                            |
+| ----------------------------- | ------- | -------- | -------------------------------------------------------------------------------------- |
+| `storage`                     | String  | Y        | Set to `az-datalake` for Azure Data Lake Storage Gen2                                  |
+| `autocreate`                  | Boolean | N        | if set to `true`, entity will be created automatically, default: `false`               |
+| `az-datalake-storage-account` | String  | Y        | Azure storage account name for authentication                                          |
+| `az-datalake-storage-key`     | String  | Y        | Azure storage account key for authentication                                           |
+| `az-datalake-container-name`  | String  | Y        | Name of the container to store files in                                                |
+| `az-datalake-endpoint`        | String  | Y        | Azure endpoint (default: core.windows.net for Azure, can be different for Azure Stack) |
+
 **Example:**
 
 ```yaml
 sources:
-  my-azure-files:
+  my-az-datalake-files:
     provider: files
     options:
-      storage: azure-file
-      azure-connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
-      azure-share-name: myshare
-      azure-directory: /path/to/files
+      storage: az-datalake
+      az-datalake-storage-account: your-storage-account
+      az-datalake-storage-key: your-storage-key
+      az-datalake-container-name: your-container
+      az-datalake-endpoint: core.windows.net
       ...
 ```
 
@@ -476,15 +493,15 @@ This refers to use Amazon S3 storage
 
 **Required Parameters:**
 
-| Parameter              | Type    | Required | Description                                                                                          |
-| ---------------------- | ------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| `storage`             | String  | Y        | Set to `s3` for Amazon S3 storage                                                                   |
-| `autocreate`          | Boolean | N        | if set to `true`, entity will be created automatically, default: `false`                            |
-| `s3-access-key-id`    | String  | Y        | AWS access key ID for authentication                                                                 |
-| `s3-secret-access-key`| String  | Y        | AWS secret access key for authentication                                                             |
-| `s3-region`           | String  | Y        | AWS region where the S3 bucket is located                                                            |
-| `s3-bucket`           | String  | Y        | Name of the S3 bucket to store files in                                                              |
-| `s3-endpoint`         | String  | N        | Optional endpoint URL for S3-compatible services (default: AWS S3 endpoint)                         |
+| Parameter              | Type    | Required | Description                                                                 |
+| ---------------------- | ------- | -------- | --------------------------------------------------------------------------- |
+| `storage`              | String  | Y        | Set to `s3` for Amazon S3 storage                                           |
+| `autocreate`           | Boolean | N        | if set to `true`, entity will be created automatically, default: `false`    |
+| `s3-access-key-id`     | String  | Y        | AWS access key ID for authentication                                        |
+| `s3-secret-access-key` | String  | Y        | AWS secret access key for authentication                                    |
+| `s3-region`            | String  | Y        | AWS region where the S3 bucket is located                                   |
+| `s3-bucket`            | String  | Y        | Name of the S3 bucket to store files in                                     |
+| `s3-endpoint`          | String  | N        | Optional endpoint URL for S3-compatible services (default: AWS S3 endpoint) |
 
 **Example:**
 

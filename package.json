@@ -3,7 +3,7 @@
     "node": "=22.13.0"
   },
   "name": "metal",
-  "version": "0.3.19",
+  "version": "0.3.21",
   "description": "Metal Server",
   "author": "Anis Megdiche",
   "license": "GPL-3.0-or-later",
@@ -23,6 +23,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.782.0",
     "@azure/storage-blob": "^12.27.0",
+    "@azure/storage-file-datalake": "^12.26.0",
     "@azure/storage-file-share": "^12.27.0",
     "@synatic/noql": "^5.0.0",
     "@tensorflow-models/mobilenet": "^2.1.1",
