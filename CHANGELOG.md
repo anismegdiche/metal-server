@@ -13,7 +13,7 @@
 - Introduced data chunking via response-chunk config
 - Storage Provider: added SMB storage support
 - Storage Provider: added Azure File Storage support
-
+- Storage Provider: added Amazon S3 storage support
 
 ### Enhancements
 

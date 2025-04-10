@@ -235,9 +235,9 @@ The MySql data provider is used to connect to a MySql database. It supports vari
 | `waitForConnections`    | Boolean | N        | Determines the pool's action when no connections are available and the limit has been reached. If true, the pool will queue the connection request and call it when one becomes available. If false, the pool will immediately call back with an error. (Default: true) |
 | `connectionLimit`       | Number  | N        | The maximum number of connections to create at once. (Default: 10)                                                                                                                                                                                                      |
 | `maxIdle`               | Number  | N        | The maximum number of idle connections. (Default: same as `connectionLimit`)                                                                                                                                                                                            |
-| `idleTimeout`           | Number  | N        | The idle connections timeout, in milliseconds. (Default: 60000)                                                                                                                                                                                                        |
+| `idleTimeout`           | Number  | N        | The idle connections timeout, in milliseconds. (Default: 60000)                                                                                                                                                                                                         |
 | `queueLimit`            | Number  | N        | The maximum number of connection requests the pool will queue before returning an error from getConnection. If set to 0, there is no limit to the number of queued connection requests. (Default: 0)                                                                    |
-| `enableKeepAlive`       | Boolean | N        | Enable keep-alive on the socket. (Default: true)                                                                                                                                                                                                                       |
+| `enableKeepAlive`       | Boolean | N        | Enable keep-alive on the socket. (Default: true)                                                                                                                                                                                                                        |
 | `keepAliveInitialDelay` | Number  | N        | Sets the initial delay (in milliseconds) before sending the first TCP keepalive probe on an idle socket. (Default: 0)                                                                                                                                                   |
 
 **Example:**
@@ -301,14 +301,14 @@ sources:
 
 List of managed storage types:
 
-| Parameter    | Description        | Metal version                        |
-| ------------ | ------------------ | ------------------------------------ |
-| `az-blob`    | Azure Blob Storage | <Badge type="default" text="^0.3" /> |
-| `fs`         | Local file system  | <Badge type="default" text="^0.3" /> |
-| `ftp`        | FTP server         | <Badge type="default" text="^0.3" /> |
-| `azure-file` | Azure File Share   | <Badge type="info" text="^0.4" />    |
-| `smb`        | SMB/CIFS           | <Badge type="info" text="^0.4" />    |
-| `s3`         | Amazon S3          | <Badge type="info" text="^0.4" />    |
+| Parameter     | Description                  | Metal version                        |
+| ------------- | ---------------------------- | ------------------------------------ |
+| `az-blob`     | Azure Blob Storage           | <Badge type="default" text="^0.3" /> |
+| `az-file`     | Azure File Share             | <Badge type="info" text="^0.4" />    |
+| `fs`          | Local file system            | <Badge type="default" text="^0.3" /> |
+| `ftp`         | FTP server                   | <Badge type="default" text="^0.3" /> |
+| `smb`         | SMB/CIFS                     | <Badge type="info" text="^0.4" />    |
+| `s3`          | Amazon S3                    | <Badge type="info" text="^0.4" />    |
 
 #### `fs` (Filesystem) <Badge type="default" text="^0.3" />
 
@@ -434,13 +434,27 @@ This refers to use an Azure File Share storage.
 
 **Optional Parameters:**
 
-| Parameter                 | Type    | Required | Description                                                              |
-| ------------------------- | ------- | -------- | ------------------------------------------------------------------------ |
-| `storage`                 | String  | Y        | Set to `azure-file` for Azure File Share                                 |
-| `autocreate`              | Boolean | N        | if set to `true`, entity will be created automatically, default: `false` |
-| `azure-connection-string` | String  | Y        | Azure Storage connection string                                          |
-| `azure-share-name`        | String  | Y        | Azure File Share name                                                    |
-| `azure-directory`         | String  | N        | Remote directory in the share, default: `/`                              |
+| Parameter                   | Type    | Required | Description                                                              |
+| --------------------------- | ------- | -------- | ------------------------------------------------------------------------ |
+| `storage`                   | String  | Y        | Set to `az-file` for Azure File Share                                    |
+| `autocreate`                | Boolean | N        | if set to `true`, entity will be created automatically, default: `false` |
+| `az-file-connection-string` | String  | Y        | Azure Storage connection string                                          |
+| `az-file-share-name`        | String  | Y        | Azure File Share name                                                    |
+| `az-file-directory`         | String  | N        | Remote directory in the share, default: `/`                              |
+
+**Example:**
+
+```yaml
+sources:
+  my-az-files:
+    provider: files
+    options:
+      storage: az-file
+      az-file-connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
+      az-file-share-name: myshare
+      az-file-directory: /path/to/files
+      ...
+```
 
 **Example:**
 
