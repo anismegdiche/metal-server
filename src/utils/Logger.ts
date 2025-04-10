@@ -3,17 +3,18 @@
 //
 //
 //
-import chalk from 'chalk'
 import LogLevel from 'loglevel'
 import Prefix from 'loglevel-plugin-prefix'
 import morgan from "morgan"
+import chalk from 'chalk'
+import _ from "lodash"
 //
 import { SERVER } from '../lib/Const'
 import { JsonHelper } from "../lib/JsonHelper"
 import { DecoratorHelper } from "./DecoratorHelper"
-import _ from "lodash"
 
 
+//
 export enum VERBOSITY {
     TRACE = "trace",
     DEBUG = "debug",
@@ -22,13 +23,14 @@ export enum VERBOSITY {
     ERROR = "error"
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-const Colors: Record<string, Function> = {
-    [VERBOSITY.TRACE.toUpperCase()]: chalk.magenta,
-    [VERBOSITY.DEBUG.toUpperCase()]: chalk.green,
-    [VERBOSITY.INFO.toUpperCase()]: chalk.cyan,
-    [VERBOSITY.WARN.toUpperCase()]: chalk.yellow,
-    [VERBOSITY.ERROR.toUpperCase()]: chalk.red
+
+//
+const Colors: Record<string, (text: string) => string> = {
+    [VERBOSITY.TRACE.toUpperCase()]: (text: string) => chalk.magenta(text),
+    [VERBOSITY.DEBUG.toUpperCase()]: (text: string) => chalk.green(text),
+    [VERBOSITY.INFO.toUpperCase()]: (text: string) => chalk.cyan(text),
+    [VERBOSITY.WARN.toUpperCase()]: (text: string) => chalk.yellow(text),
+    [VERBOSITY.ERROR.toUpperCase()]: (text: string) => chalk.red(text)
 }
 
 export const LoggerDefaultLevel: LogLevel.LogLevelDesc = VERBOSITY.WARN
@@ -38,7 +40,7 @@ LogLevel.setLevel(LoggerDefaultLevel)
 
 Prefix.apply(LogLevel, {
     format(level: string, name: string | undefined, timestamp: Date) {
-        return `${chalk.gray(timestamp)} ${Colors[level]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${chalk.whiteBright(`${name}:`)}`
+        return `${chalk.gray(timestamp.toString())} ${Colors[level]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${chalk.whiteBright(`${name}:`)}`
     }
 })
 
