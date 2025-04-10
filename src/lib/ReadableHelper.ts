@@ -60,6 +60,13 @@ export class ReadableHelper {
         return readable
     }
 
+    
+    @Logger.LogFunction(true)
+    static async FromBuffer(buffer: Buffer): Promise<Readable> {
+        return Readable.from(buffer)
+    }
+
+
     @Logger.LogFunction(true)
     static Duplicate(original: Readable): [Readable, Readable] {
         const passThrough1 = new PassThrough()
