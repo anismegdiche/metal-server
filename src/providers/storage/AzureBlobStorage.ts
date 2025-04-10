@@ -79,15 +79,6 @@ export class AzureBlobStorage extends absStorageProvider {
     }
 
     @Logger.LogFunction()
-    async IsConnected(): Promise<boolean> {
-        if (!this.#ContainerClient) {
-            Logger.Error('AzureBlobStorage: Connection to Azure Blob Storage not established')
-            return false
-        }
-        return true
-    }
-
-    @Logger.LogFunction()
     async IsExist(file: string): Promise<boolean> {
         if (!this.#ContainerClient) {
             throw new HttpErrorInternalServerError('AzureBlobStorage: Connection to Azure Blob Storage not established')
