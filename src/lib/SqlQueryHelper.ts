@@ -307,7 +307,7 @@ export class SqlQueryHelper {
             return [this.#Query]
         }
 
-        const tokens = _.chain(query.match(/(?:'[^']*'|[^' ]+)/g))
+        const tokens = _.chain(query.match(/(?:'[^']*'|[^,\s]+|,)/g))
             .map(_.trim)
             .compact()
             .value()
@@ -329,23 +329,23 @@ export class SqlQueryHelper {
             beforeClause = _.slice(tokens, 0, pos)
 
             afterClause = _.slice(tokens, pos)
-            
+
             afterClause = _.chain(afterClause)
                 .map((token) => {
                     return (token.startsWith("'") && token.endsWith("'"))
-                    ? token
-                    : token.replace(/[+\-*/=]/g, match => ` ${match} `)
+                        ? token
+                        : token.replace(/[+\-*/=]/g, match => ` ${match} `)
                 })
                 .map(token => {
                     return (token.startsWith("'") && token.endsWith("'"))
-                    ? token
-                    : token.split(' ')
+                        ? token
+                        : token.split(' ')
                 })
                 .flatten()
                 .map(_.trim)
                 .compact()
                 .value()
-            
+
 
             return _.concat(beforeClause, afterClause)
         }
@@ -357,7 +357,7 @@ export class SqlQueryHelper {
             .map((token: string) => {
                 let tokenType = ''
                 switch (true) {
-                    case ['SELECT', 'UPDATE', 'INSERT', 'DELETE', 'SET', 'FROM', 'WHERE', 'ORDER', 'BY'].includes(token.toUpperCase()):
+                    case ['SELECT', 'UPDATE', 'INSERT', 'DELETE', 'SET', 'FROM', 'WHERE', 'ORDER', 'BY', 'LIKE'].includes(token.toUpperCase()):
                         tokenType = "command"
                         break
                     case token === '(':
