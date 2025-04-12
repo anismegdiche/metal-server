@@ -164,7 +164,7 @@ Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-exp
 >
 > ```http
 > GET /schema/my-schema/my-entity
->     ?sort={"name":"asc","email":"desc"}
+>     ?sort={"name": "asc","email": "desc"}
 > ```
 
 ### `cache`

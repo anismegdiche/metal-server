@@ -32,7 +32,7 @@ GET http://localhost:3000/schema/clubdata/members
     ?fields=firstname, surname
     # &filter-expression=customer_id LIKE 'A%'
     &filter={"surname": "Smith"}
-    &sort=firstname asc,surname desc
+    &sort={"firstname": "asc","surname": "desc"}
     &cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}

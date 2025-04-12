@@ -5,23 +5,14 @@
 //
 import { TRow } from "../types/DataTable"
 import { TJson } from "../types/TJson"
+import { TSchemaRequest } from "../types/TSchemaRequest"
 
 
 //
 export type TContext = {
     $entity?: string,           // requested entity name
     $schema?: string,           // requested schema name
-    $options: {
-        // from Config
-        anonymize?: string | string[]
-        // from Request Options
-        data?: TJson | TJson[]
-        fields?: string
-        filter?: TJson
-        "filter-expression"?: string
-        sort?: string
-        cache?: number
-    }
+    $options: Omit<TSchemaRequest, 'schema' | 'entity' | 'source'>
     $request?: {
         "data-path"?: string    // requested JSON path, if undefined will return the whole JSON
     },

@@ -3,6 +3,7 @@
 //
 //
 //
+import { TOrderBy } from "./DataTable"
 import { TJson } from "./TJson"
 
 export type TSchemaRequest = {
@@ -18,7 +19,7 @@ export type TSchemaRequest = {
     fields?: string
     filter?: TJson
     "filter-expression"?: string
-    sort?: string
+    sort?: TOrderBy
     cache?: number
 
     //

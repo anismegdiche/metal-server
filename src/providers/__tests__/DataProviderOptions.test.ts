@@ -1,6 +1,6 @@
 
 
-import { DataTable } from "../../types/DataTable"
+import { DataTable, SORT_ORDER } from "../../types/DataTable"
 import { TCacheData } from "../../types/TCacheData"
 import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { TSchemaRequest } from "../../types/TSchemaRequest"
@@ -48,14 +48,14 @@ describe('DataProviderOptions', () => {
             schema: 'test',
             entity: 'entity',
             fields: 'field1,field2',
-            sort: 'name asc',
+            sort: { 'name': SORT_ORDER.ASC },
             cache: 300
         }
 
         const result = providerOptions.Parse(request)
 
         expect(result.Fields).toBe('field1,field2')
-        expect(result.Sort).toBe('name asc')
+        expect(result.Sort).toEqual({ name: SORT_ORDER.ASC })
         expect(result.Cache).toBe(300)
     })
 
@@ -113,12 +113,12 @@ describe('DataProviderOptions', () => {
         const request: TSchemaRequest = {
             schema: 'test',
             entity: 'entity',
-            sort: 'name desc'
+            sort: { 'name': SORT_ORDER.DESC }
         }
 
         const result = provider.GetSort({}, request)
 
-        expect(result.Sort).toBe('name desc')
+        expect(result.Sort).toEqual({ name: SORT_ORDER.DESC })
     })
 
     // GetCache copies cache value from request to options when present
@@ -206,7 +206,7 @@ describe('DataProviderOptions', () => {
         const request: TSchemaRequest = {
             schema: 'test',
             entity: 'entity',
-            sort: ''
+            sort: undefined
         }
 
         const result = provider.GetSort({}, request)

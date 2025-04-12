@@ -48,6 +48,7 @@
 - Addressed incorrect cache schema interception
 - Resolved mutex/semaphore bugs
 - Fixed config sample mismatches
+- Fixed sort types mismatch
 
 ---
 

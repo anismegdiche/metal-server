@@ -21,7 +21,8 @@ describe("DataTable", () => {
         dt: DataTable = <DataTable>{},
         dtEmpty: DataTable = <DataTable>{},
         dtA: DataTable = <DataTable>{},
-        dtB: DataTable = <DataTable>{}
+        dtB: DataTable = <DataTable>{},
+        dtC: DataTable = <DataTable>{}
 
     beforeEach(() => {
         dt = new DataTable("table", [
@@ -67,6 +68,14 @@ describe("DataTable", () => {
                 id: 4,
                 city: 'London'
             }
+        ])
+
+        dtC = new DataTable('C', [
+            {  x: 3, y: 1 },
+            {  x: 1, y: 1 },
+            {  x: 2, y: 1 },
+            {  x: 4, y: 1 },
+            {  x: 2, y: 2 }
         ])
     })
 
@@ -268,7 +277,7 @@ describe("DataTable", () => {
 
     describe('Sort', () => {
         it('should sort the rows by the specified fields in ascending order', () => {
-            const sorted = dtA.Sort(['name'], [SORT_ORDER.ASC]).Rows
+            const sorted = dtA.Sort({ 'name': SORT_ORDER.ASC }).Rows
             expect(sorted).toEqual([
                 {
                     id: 1,
@@ -289,7 +298,7 @@ describe("DataTable", () => {
         })
 
         it('should sort the rows by the specified fields in descending order', () => {
-            const sorted = dtA.Sort(['age'], [SORT_ORDER.DESC]).Rows
+            const sorted = dtA.Sort({ 'age': SORT_ORDER.DESC }).Rows
             expect(sorted).toEqual([
                 {
                     id: 3,
@@ -306,6 +315,18 @@ describe("DataTable", () => {
                     name: 'Alice',
                     age: 30
                 }
+            ])
+        })
+
+        
+        it('should sort the rows by the specified fields in ascending order first, then descending order', () => {
+            const sorted = dtC.Sort({ 'x': SORT_ORDER.ASC, 'y': SORT_ORDER.DESC }).Rows
+            expect(sorted).toEqual([
+                {  x: 1, y: 1 },
+                {  x: 2, y: 2 },
+                {  x: 2, y: 1 },
+                {  x: 3, y: 1 },
+                {  x: 4, y: 1 }
             ])
         })
     })

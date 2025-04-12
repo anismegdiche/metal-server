@@ -822,7 +822,7 @@ This command accept a list of one or many entity's fields and sorting order :
 - `asc` for ascending
 - `desc` for descending
 
-If sorting order is not provided, ascending will be used
+If sorting order is not provided, ascending order will be used
 
 **Example**
 
@@ -835,7 +835,8 @@ plans:
           entity: contacts
           fields: id, name, display_name
       - sort:
-          id:
+          id: asc
+          name: desc
 ```
 
 ### `fields` <Badge type="default" text="^0.1" />

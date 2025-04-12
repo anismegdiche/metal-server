@@ -3,7 +3,7 @@
 //
 //
 //
-import _ from 'lodash'
+import _, { Many } from 'lodash'
 import alasql from 'alasql'
 import { createHash } from 'crypto'
 //
@@ -53,7 +53,8 @@ export const enum REMOVE_DUPLICATES_STRATEGY {
 export type TRow = TJson
 export type TFields = TJson
 export type TMetaData = Record<string, unknown>
-export type TSortOrder = boolean | SORT_ORDER
+// export type TSortOrder = boolean | SORT_ORDER
+export type TOrderBy = Record<string, SORT_ORDER | undefined>
 export type TSyncReport = {
     AddedRows: TRow[]
     DeletedRows: TRow[]
@@ -269,8 +270,10 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction()
-    Sort(fields: string[], orders: TSortOrder[]): this {
-        this.Rows = _.orderBy(this.Rows, fields, orders)
+    Sort(sorts: TOrderBy): this {
+        const fields = Object.keys(sorts)
+        const orders: string[] = _.map(Object.entries(sorts), (sort) => sort[1] ?? SORT_ORDER.ASC)
+        this.Rows = _.orderBy(this.Rows, fields, orders as Many<boolean | "asc" | "desc"> | undefined)
         return this
     }
 

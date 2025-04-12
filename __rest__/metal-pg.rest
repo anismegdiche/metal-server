@@ -23,7 +23,7 @@ GET http://localhost:3000/schema/metalws/members
     ?fields=firstname,surname,address
     &filter-expression=address LIKE '%oo%'
     # &filter={"firstname": "Darren"}
-    # &sort=contact_name asc,company_name desc
+    # &sort={"contact_name": "asc","company_name": "desc"}
     # &cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}

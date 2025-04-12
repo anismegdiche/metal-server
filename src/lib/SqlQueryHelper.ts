@@ -6,8 +6,7 @@
 import _ from 'lodash'
 import typia from "typia"
 //
-import { TRow } from "../types/DataTable"
-import { TJson } from '../types/TJson'
+import { TOrderBy, TRow } from "../types/DataTable"
 import { Logger } from '../utils/Logger'
 import { JsonHelper } from './JsonHelper'
 import { HttpErrorBadRequest, HttpErrorInternalServerError } from "../server/HttpErrors"
@@ -289,15 +288,12 @@ export class SqlQueryHelper {
     }
 
     @Logger.LogFunction()
-    OrderBy(order?: TJson | string): this {
-        if (typeof order !== 'string' && order !== undefined) {
-            Logger.Error('SqlQueryHelper.OrderBy: order must be a string or undefined')
+    OrderBy(order?: TOrderBy): this {
+        if (!order)
             return this
-        }
 
-        if (typeof order === 'string')
-            this.#Query = `${this.#Query} ORDER BY ${order}`
-
+        const _order = _.map(order, (value, key) => `${key} ${value!.toUpperCase()}`)
+        this.#Query = `${this.#Query} ORDER BY ${_order.join(', ')}`
         return this
     }
 
@@ -357,7 +353,7 @@ export class SqlQueryHelper {
             .map((token: string) => {
                 let tokenType = ''
                 switch (true) {
-                    case ['SELECT', 'UPDATE', 'INSERT', 'DELETE', 'SET', 'FROM', 'WHERE', 'ORDER', 'BY', 'LIKE'].includes(token.toUpperCase()):
+                    case ['SELECT', 'UPDATE', 'INSERT', 'DELETE', 'SET', 'FROM', 'WHERE', 'LIKE', 'ORDER', 'BY', 'ASC', 'DESC'].includes(token.toUpperCase()):
                         tokenType = "command"
                         break
                     case token === '(':

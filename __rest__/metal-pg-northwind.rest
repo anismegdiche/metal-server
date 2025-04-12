@@ -30,7 +30,7 @@ GET http://localhost:3000/schema/metalws/customers
     ?fields=customer_id,company_name,contact_name
     &filter-expression=postal_code LIKE '05%'
     # &filter={"firstname": "Darren"}
-    # &sort=contact_name asc,company_name desc
+    # &sort={"contact_name": "asc","company_name": "desc"}
     # &cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}

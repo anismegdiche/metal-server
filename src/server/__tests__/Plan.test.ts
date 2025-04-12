@@ -1,5 +1,6 @@
 import { TypeHelper } from "../../lib/TypeHelper"
 import { DataTable } from "../../types/DataTable"
+import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { Plan } from "../Plan"
 
 
@@ -61,7 +62,7 @@ describe('Process', () => {
     // Handle a valid SQL query with TSchemaRequest
     it('should handle valid SQL query with TSchemaRequest', async () => {
         // Arrange
-        const schemaRequest = {
+        const schemaRequest: TSchemaRequest = {
             anonymize: 'email',
             schema: 'TestSchema',
             entity: 'TestEntity',
@@ -74,7 +75,7 @@ describe('Process', () => {
             fields: 'id, name',
             filter: { id: 1 },
             "filter-expression": 'id = 1',
-            sort: 'name',
+            sort: { 'name': undefined },
             cache: 60,
             source: 'TestSource'
         }

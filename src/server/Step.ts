@@ -9,7 +9,7 @@ import typia from "typia"
 import { METADATA } from "../lib/Const"
 import { Helper } from "../lib/Helper"
 import { Logger } from "../utils/Logger"
-import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TSortOrder, TRow, JOIN_TYPE } from "../types/DataTable"
+import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TRow, JOIN_TYPE, TOrderBy } from "../types/DataTable"
 import { TJson } from "../types/TJson"
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest';
 import { StringHelper } from "../lib/StringHelper"
@@ -336,16 +336,9 @@ export class Step {
 
     @Logger.LogFunction()
     static async Sort(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
-
         const stepParams = stepArguments.stepParams as TStepSort
         const { currentDataTable } = stepArguments
-
-
-        const fields = _.keys(stepParams)
-
-        const orders: TSortOrder[] = _.values(stepParams)
-
-        return currentDataTable.Sort(fields, orders)
+        return currentDataTable.Sort(stepParams)
     }
 
     @Logger.LogFunction()

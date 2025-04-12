@@ -46,7 +46,7 @@ components:
       description: Fields to return
 
     sort:
-      type: string
+      type: object
       description: Sorting order
 
     cache:

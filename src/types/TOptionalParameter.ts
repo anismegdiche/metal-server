@@ -3,7 +3,7 @@
 //
 //
 //
-import { DataTable } from "./DataTable"
+import { DataTable, TOrderBy } from "./DataTable"
 import { TJson } from "./TJson"
 
 
@@ -11,7 +11,7 @@ import { TJson } from "./TJson"
 export type TOptionalParameter = {
     Fields?: string
     Filter?: TJson | TJson[] | string
-    Sort?: TJson | string
+    Sort?: TOrderBy
     Data?: DataTable
     Cache?: number
 }
