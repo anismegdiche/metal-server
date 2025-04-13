@@ -13,9 +13,11 @@ import { TJson } from '../types/TJson'
 import { TSchemaResponse } from '../types/TSchemaResponse'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TypeHelper } from './TypeHelper'
-import { HttpErrorInternalServerError } from '../server/HttpErrors'
+import { HttpErrorBadRequest, HttpErrorInternalServerError } from '../server/HttpErrors'
 import { Config } from "../server/Config"
 import { HTTP_STATUS_CODE } from "./Const"
+
+const RX_SORT = /^(\w+:(asc|desc))(,\w+:(asc|desc))*$/
 
 
 export class Convert {
@@ -28,14 +30,33 @@ export class Convert {
 
     static RequestToSchemaRequest(req: Request): TSchemaRequest {
         const { schema, entity } = req.params
+        const { sort } = req.query ?? {}        
 
-        // Merge body and query parameters into schemaRequest
-        return <TSchemaRequest>{
+        // eslint-disable-next-line no-undef-init
+        let _sort : TJson<string> | undefined = undefined
+
+        if (typeof sort === 'string') {
+            if (!RX_SORT.test(sort))
+                throw new HttpErrorBadRequest(`Invalid sort format: ${sort}`)
+            
+            _sort = sort
+                .split(',')
+                .reduce<TJson<string>>((acc, curr) => {
+                    const [key, value] = curr.split(':')
+                    acc[key] = value
+                    return acc
+                }, {})
+        }
+
+        const schemaResponse: TSchemaRequest = {
             schema,
             entity,
             ...req.body,
-            ...req.query
+            ...req.query,
+            sort: _sort ?? sort
         }
+
+        return schemaResponse
     }
 
     static InternalResponseToResponse(res: Response, intRes: TInternalResponse<any>): Response {

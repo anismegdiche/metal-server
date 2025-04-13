@@ -13,6 +13,10 @@ describe('RequestToSchemaRequest', () => {
                 schema: 'testSchema',
                 entity: 'testEntity'
             },
+            query: {
+                sort: { name: "asc" },
+                cache: '300'
+            },
             body: {
                 data: [
                     {
@@ -22,9 +26,7 @@ describe('RequestToSchemaRequest', () => {
                 ],
                 fields: 'id,name',
                 filter: { id: 1 },
-                "filter-expression": 'id = 1',
-                sort: 'name asc',
-                cache: '300'
+                "filter-expression": 'id = 1'
             }
         }
 
@@ -44,7 +46,7 @@ describe('RequestToSchemaRequest', () => {
             fields: 'id,name',
             filter: { id: 1 },
             "filter-expression": 'id = 1',
-            sort: 'name asc',
+            sort: { name: "asc" },
             cache: '300'
         })
     })
@@ -77,6 +79,10 @@ describe('RequestToSchemaRequest', () => {
                 schema: 'testSchema',
                 entity: 'testEntity'
             },
+            query: {
+                sort: 'name:asc',
+                cache: 300
+            },
             body: {
                 data: [
                     {
@@ -86,9 +92,7 @@ describe('RequestToSchemaRequest', () => {
                 ],
                 fields: 'id,name',
                 filter: { id: 1 },
-                "filter-expression": 'id = 1',
-                sort: 'name asc',
-                cache: 300
+                "filter-expression": 'id = 1'
             }
         }
 
@@ -110,7 +114,7 @@ describe('RequestToSchemaRequest', () => {
                 id: 1
             },
             "filter-expression": "id = 1",
-            sort: "name asc",
+            sort: { name: "asc" },
             cache: 300
         })
     })
@@ -123,6 +127,10 @@ describe('RequestToSchemaRequest', () => {
                 schema: 'testSchema',
                 entity: 'testEntity'
             },
+            query: {
+                sort: 'name:asc',
+                cache: 300
+            },
             body: {
                 data: [
                     {
@@ -132,9 +140,7 @@ describe('RequestToSchemaRequest', () => {
                 ],
                 fields: 'id,name',
                 filter: { id: 1 },
-                "filter-expression": 'id = 1',
-                sort: 'name asc',
-                cache: 300
+                "filter-expression": 'id = 1'
             }
         }
 
@@ -156,7 +162,7 @@ describe('RequestToSchemaRequest', () => {
                 id: 1
             },
             "filter-expression": "id = 1",
-            sort: "name asc",
+            sort: { name: "asc" },
             cache: 300
         })
     })
@@ -169,6 +175,10 @@ describe('RequestToSchemaRequest', () => {
                 schema: 'testSchema',
                 entity: 'testEntity'
             },
+            query: {
+                sort: 'name:asc',
+                cache: 300
+            },
             body: {
                 data: [
                     {
@@ -178,9 +188,7 @@ describe('RequestToSchemaRequest', () => {
                 ],
                 fields: 'id,name',
                 filter: { id: 1 },
-                "filter-expression": 'id = 1',
-                sort: 'name asc',
-                cache: 300
+                "filter-expression": 'id = 1'
             }
         }
 
@@ -200,7 +208,7 @@ describe('RequestToSchemaRequest', () => {
             fields: 'id,name',
             filter: { id: 1 },
             "filter-expression": 'id = 1',
-            sort: 'name asc',
+            sort: { name: "asc" },
             cache: 300
         })
     })
@@ -217,7 +225,7 @@ describe('RequestToSchemaRequest', () => {
                 fields: 'id',
                 filter: { id: 2 },
                 "filter-expression": 'id = 2',
-                sort: 'id desc',
+                sort: 'id:desc',
                 cache: 300
             }
         }
@@ -232,7 +240,7 @@ describe('RequestToSchemaRequest', () => {
             fields: 'id',
             filter: { id: 2 },
             "filter-expression": 'id = 2',
-            sort: 'id desc',
+            sort: { id: "desc" },
             cache: 300
         })
     })
