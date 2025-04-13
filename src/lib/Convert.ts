@@ -134,27 +134,4 @@ export class Convert {
         // Create and return the RegExp object
         return new RegExp(`^${rxPattern}$`) // Anchored to match the whole string
     }
-
-    static ReadStreamToReadable(readStream: ReadStream): Readable {
-        const readableStream = new Readable({
-            read() {
-                // No-op, because we're manually pushing data
-            }
-        })
-
-        // Pipe data from ReadStream into Readable
-        readStream.on('data', (chunk) => {
-            readableStream.push(chunk)  // Push data into the new Readable stream
-        })
-
-        readStream.on('end', () => {
-            readableStream.push(null)  // Signal the end of the stream
-        })
-
-        readStream.on('error', (err) => {
-            readableStream.emit('error', err)  // Forward any errors
-        })
-
-        return readableStream
-    }
 }

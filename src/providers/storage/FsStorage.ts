@@ -9,11 +9,11 @@ import { Readable } from "node:stream"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
-import { Convert } from "../../lib/Convert"
 import { TConvertParams } from "../../lib/TypeHelper"
 import { absStorageProvider } from '../absStorageProvider'
 import { TConfigSource } from "../../types/TConfig"
 import { TFilesDataOptions } from "../data/FilesData"
+import { ReadableHelper } from '../../lib/ReadableHelper'
 
 
 //
@@ -78,7 +78,7 @@ export class FsStorage extends absStorageProvider {
         }
 
         if (await this.IsExist(file))
-            return Convert.ReadStreamToReadable(Fs.createReadStream(filePath))
+            return ReadableHelper.FromReadStream(Fs.createReadStream(filePath))
 
         throw new HttpErrorNotFound(`File '${file}' does not exist`)
     }

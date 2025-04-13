@@ -4,6 +4,7 @@
 //
 //
 import { PassThrough, Readable, Writable } from 'node:stream'
+import { ReadStream } from 'node:fs'
 //
 import { Logger } from "../utils/Logger"
 
@@ -60,10 +61,33 @@ export class ReadableHelper {
         return readable
     }
 
-    
+
     @Logger.LogFunction(true)
     static async FromBuffer(buffer: Buffer): Promise<Readable> {
         return Readable.from(buffer)
+    }
+
+    static FromReadStream(readStream: ReadStream): Readable {
+        const readableStream = new Readable({
+            read() {
+                // No-op, because we're manually pushing data
+            }
+        })
+
+        // Pipe data from ReadStream into Readable
+        readStream.on('data', (chunk) => {
+            readableStream.push(chunk)  // Push data into the new Readable stream
+        })
+
+        readStream.on('end', () => {
+            readableStream.push(null)  // Signal the end of the stream
+        })
+
+        readStream.on('error', (err) => {
+            readableStream.emit('error', err)  // Forward any errors
+        })
+
+        return readableStream
     }
 
 
