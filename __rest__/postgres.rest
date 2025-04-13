@@ -96,5 +96,5 @@ Content-Type: application/json
 authorization: Bearer {{token}}
 
 {
-    "filerExpression": "customer_id like '%LLD'"
+    "filter-expression": "customer_id like '%LLD'"
 }

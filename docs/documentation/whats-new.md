@@ -9,6 +9,12 @@ hero:
 
 features:
       
+    - title: Cosmos DB Provider
+      details: |
+        .
+        <br><br><span class="VPBadge danger">Learn more...</span>
+      link: /documentation/config-yml
+      
     - title: OpenID Connect
       details: |
         .

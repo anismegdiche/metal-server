@@ -261,6 +261,45 @@ sources:
       keepAliveInitialDelay: 0
 ```
 
+## CosmosDB⚡ <Badge type="info" text="^0.4" />
+
+**Primary parameters:**
+
+| Parameter  | Type   | Required | Description                                                                                  |
+| ---------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
+| `provider` | String | Y        | Set to `cosmosdb` for Azure CosmosDB                                                         |
+| `host`     | String | Y        | The endpoint URL of your CosmosDB account (e.g., https://<your-account>.documents.azure.com) |
+| `database` | String | Y        | The name of the database to connect to                                                       |
+
+**Optional parameters:**
+
+| Parameter        | Type    | Default | Description                                            |
+| ---------------- | ------- | ------- | ------------------------------------------------------ |
+| `key`            | String  | Y       | The primary or secondary key for your CosmosDB account |
+| `partitionKey`   | String  | N       | The partition key path for the container               |
+| `maxRetries`     | Integer | 3       | Maximum number of retries for failed operations        |
+| `requestTimeout` | Integer | 60000   | Request timeout in milliseconds                        |
+| `connectionMode` | String  | Direct  | Connection mode (Direct or Gateway)                    |
+| `protocol`       | String  | Tcp     | Protocol to use (Tcp or Http)                          |
+| `retryAfter`     | Integer | 1000    | Time to wait between retries in milliseconds           |
+
+**Example:**
+
+```yaml
+sources:
+  my-cosmosdb:
+    provider: cosmosdb
+    host: https://mycosmos.documents.azure.com
+    database: mydatabase
+    options:
+    key: your-primary-key-here
+      partitionKey: /id
+      maxRetries: 3
+      requestTimeout: 60000
+      connectionMode: Direct
+      protocol: Tcp
+```
+
 ## Files <Badge type="default" text="^0.3" />
 
 Files is a unique data provider that offers a seamless experience akin to accessing tables while interacting with file-based data. This versatile tool accommodates various content types and storage options, catering to diverse user preferences and requirements.

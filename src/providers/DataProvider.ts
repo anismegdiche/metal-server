@@ -15,6 +15,7 @@ import { PlanData } from "./data/PlanData"
 import { PostgresData } from "./data/PostgresData"
 import { SqlServerData } from "./data/SqlServerData"
 import { WebServiceData } from "./data/WebServiceData"
+import { CosmosDbData } from "./data/CosmosDbData"
 
 
 //
@@ -27,7 +28,8 @@ export enum DATA_PROVIDER {
     MSSQL = "mssql",
     FILES = "files",
     MYSQL = "mysql",
-    WEBSERVICE = "webservice"
+    WEBSERVICE = "webservice",
+    COSMOSDB = "cosmosdb"
 }
 
 
@@ -53,5 +55,6 @@ export class DataProvider {
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.FILES, new FilesData())
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.MYSQL, new MySqlData())
         DataProvider.#StorageFactory.Register(DATA_PROVIDER.WEBSERVICE, new WebServiceData())
+        DataProvider.#StorageFactory.Register(DATA_PROVIDER.COSMOSDB, new CosmosDbData())
     }
 }

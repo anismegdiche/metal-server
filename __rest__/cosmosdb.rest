@@ -1,0 +1,129 @@
+# @name login
+POST  http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+###
+
+
+@token={{login.response.body.token}}
+###
+
+
+# @name list-entities
+GET http://localhost:3000/schema/cosmosdb
+Content-Type: application/json
+authorization: Bearer {{token}}
+###
+
+
+# @name select
+GET http://localhost:3000/schema/cosmosdb/SampleContainer
+Content-Type: application/json
+authorization: Bearer {{token}}
+###
+
+
+# @name select-filtered
+GET http://localhost:3000/schema/cosmosdb/SampleContainer
+    ?fields=categoryName, name
+    &filter-expression=name LIKE '%VTT%'
+    #&filter={"name": "Mountain-300 Black, 48"}
+    &sort={"name": "desc"}
+    # &cache=300
+Content-Type: application/json
+authorization: Bearer {{token}}
+###
+
+
+# @name insert-one
+POST http://localhost:3000/schema/cosmosdb/SampleContainer
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": {
+      "categoryId": "75BF1ACB-168D-469C-9AA3-1FD26BB4EA4C",
+      "categoryName": "Bikes, Touring Bikes",
+      "sku": "BK-T18Y-50",
+      "name": "Lux VTT",
+      "description": "The product called \"Touring-3000 Yellow, 50\"",
+      "price": 7420.35,
+      "tags": [
+        {
+          "id": "2E7252D2-B646-47FB-B5BB-836643578038",
+          "name": "Tag-130"
+        }
+      ]
+    }
+}
+###
+
+
+# @name insert-many
+POST http://localhost:3000/schema/cosmosdb/SampleContainer
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "data": [
+              {
+              "categoryId": "75BF1ACB-168D-469C-9AA3-1FD26BB4EA4C",
+              "categoryName": "Bikes, Touring Bikes",
+              "sku": "BK-T18Y-50",
+              "name": "Lux VTT",
+              "description": "The product called \"Touring-3000 Yellow, 50\"",
+              "price": 7420.35,
+              "tags": [
+                {
+                  "id": "2E7252D2-B646-47FB-B5BB-836643578038",
+                  "name": "Tag-130"
+                }
+              ]
+        },{
+      "categoryId": "75BF1ACB-168D-469C-9AA3-1FD26BB4EA4C",
+      "categoryName": "Bikes, Touring Bikes",
+      "sku": "BK-T18Y-50",
+      "name": "Lux VTT",
+      "description": "The product called \"Touring-3000 Yellow, 50\"",
+      "price": 7420.35,
+      "tags": [
+        {
+          "id": "2E7252D2-B646-47FB-B5BB-836643578038",
+          "name": "Tag-130"
+        }
+      ]
+    }
+    ]
+}
+###
+
+
+# @name delete
+DELETE http://localhost:3000/schema/cosmosdb/SampleContainer
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "filter-expression": "name like '%VTT'"
+}
+
+
+
+###
+
+
+# @name update
+PATCH http://localhost:3000/schema/cosmosdb/SampleContainer
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "filter-expression": "name like '%VTT'",
+    "data": {
+        "name": "VTT de Luxe"
+    }
+}

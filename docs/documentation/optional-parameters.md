@@ -30,6 +30,7 @@ All parameters are described in the table below:
 | Plan                                    |   -    |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
 | PostgreSQL                              |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
 | WebService                              |   🟡   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
+| Cosmos DB                               |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
 
 > 🔵 Handled natively by the data provider driver
 >
@@ -84,7 +85,6 @@ Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-exp
 > }
 > ```
 
-
 ### `filter-expression`
 
 Free expression for more complex data filtering expressed in SQL-like syntax.
@@ -131,8 +131,7 @@ When employing the `LIKE` operator with the wildcard `%` in a GET method, rememb
 > filter-expression=name LIKE '%%ing'
 > ```
 >
-:::
-
+> :::
 
 ### `fields`
 
@@ -189,7 +188,6 @@ Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-exp
 #### Inserting data
 
 `:data` accept whether a JSON object if it is a single row to insert or a JSON Array if many rows
-
 
 **Example: single row insert**
 

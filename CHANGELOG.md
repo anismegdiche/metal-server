@@ -15,6 +15,7 @@
 - Storage Provider: added Azure File Storage support
 - Storage Provider: added Amazon S3 storage support
 - Storage Provider: added Azure DataLake Gen2 storage support
+- Data Provider: added CosmosDB support
 
 ### Enhancements
 

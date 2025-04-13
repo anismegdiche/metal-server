@@ -7,35 +7,38 @@ import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { DataProviderOptions } from "../absDataProvider"
 
 // mock related classes
-jest.mock('../data/FilesData',() => ({
+jest.mock('../data/FilesData', () => ({
     FilesData: {}
 }))
-jest.mock('../data/MemoryData',() => ({
+jest.mock('../data/MemoryData', () => ({
     MemoryData: {}
 }))
-jest.mock('../data/WebServiceData',() => ({
+jest.mock('../data/WebServiceData', () => ({
     WebServiceData: {}
 }))
-jest.mock('../data/MetalData',() => ({
+jest.mock('../data/MetalData', () => ({
     MetalData: {}
 }))
-jest.mock('../data/MongoDbData',() => ({
+jest.mock('../data/MongoDbData', () => ({
     MongoDbData: {}
 }))
-jest.mock('../data/MySqlData',() => ({
+jest.mock('../data/MySqlData', () => ({
     MySqlData: {}
 }))
-jest.mock('../../server/Step',() => ({
+jest.mock('../../server/Step', () => ({
     Step: {}
 }))
-jest.mock('../data/PlanData',() => ({
+jest.mock('../data/PlanData', () => ({
     PlanData: {}
 }))
-jest.mock('../data/PostgresData',() => ({
+jest.mock('../data/PostgresData', () => ({
     PostgresData: {}
 }))
-jest.mock('../data/SqlServerData',() => ({
+jest.mock('../data/SqlServerData', () => ({
     SqlServerData: {}
+}))
+jest.mock('../data/CosmosDbData', () => ({
+    CosmosDbData: {}
 }))
 
 
