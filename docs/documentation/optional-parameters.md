@@ -131,7 +131,7 @@ When employing the `LIKE` operator with the wildcard `%` in a GET method, rememb
 > filter-expression=name LIKE '%%ing'
 > ```
 >
-> :::
+:::
 
 ### `fields`
 

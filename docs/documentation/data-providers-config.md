@@ -268,7 +268,7 @@ sources:
 | Parameter  | Type   | Required | Description                                                                                  |
 | ---------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
 | `provider` | String | Y        | Set to `cosmosdb` for Azure CosmosDB                                                         |
-| `host`     | String | Y        | The endpoint URL of your CosmosDB account (e.g., https://<your-account>.documents.azure.com) |
+| `host`     | String | Y        | The endpoint URL of your CosmosDB account (e.g., https://your-account.documents.azure.com) |
 | `database` | String | Y        | The name of the database to connect to                                                       |
 
 **Optional parameters:**

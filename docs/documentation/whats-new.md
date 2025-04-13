@@ -8,40 +8,78 @@ hero:
   tagline: TBD, 2025
 
 features:
-      
-    - title: Cosmos DB Provider
+
+    - title: Enterprise-Grade WebServices Integration
       details: |
-        .
-        <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /documentation/config-yml
-      
-    - title: OpenID Connect
-      details: |
-        .
+        Seamlessly integrate with your business systems through comprehensive REST and SOAP WebServices support. 
+        Metal now offers robust connectivity options for enterprise applications, enabling real-time data exchange 
+        and system interoperability across your organization.
         <br><br><span class="VPBadge danger">Learn more...</span>
       link: /documentation/config-yml
 
-    - title: XML Files handling
+    - title: Advanced Expression Engine
       details: |
-        .
+        Transform your data processing capabilities with our enhanced Javascript Expression engine. 
+        This powerful feature enables complex data transformations, conditional logic, and custom business rules 
+        directly within your data pipelines, reducing development time and improving data quality.
         <br><br><span class="VPBadge danger">Learn more...</span>
       link: /documentation/config-yml
 
-    - title: MySql Provider
+    - title: Context-Aware Data Processing
       details: |
-        .
+        Leverage our new Context Variables feature to create intelligent, context-aware data transformations. 
+        This capability allows you to dynamically adapt your data processing logic based on runtime conditions, 
+        environment variables, and business requirements, ensuring maximum flexibility and maintainability.
         <br><br><span class="VPBadge danger">Learn more...</span>
       link: /documentation/config-yml
 
-    - title: WebService Data rest / soap
+    - title: Enterprise Data Protection
       details: |
-        .
+        Safeguard your sensitive data with our Field Escape Engine. This advanced security feature ensures 
+        proper data sanitization and escaping across all data operations, preventing SQL injection, XSS attacks, 
+        and other security vulnerabilities in your data pipelines.
         <br><br><span class="VPBadge danger">Learn more...</span>
       link: /documentation/config-yml
 
-    - title: Dynamic Expression Engine
+    - title: XML Data Integration
       details: |
-        .
+        Expand your data integration capabilities with native XML file support. Metal now offers robust XML 
+        parsing, transformation, and validation capabilities, enabling seamless integration with legacy systems 
+        and enterprise applications that rely on XML data formats.
+        <br><br><span class="VPBadge danger">Learn more...</span>
+      link: /documentation/config-yml
+
+    - title: Enterprise Authentication
+      details: |
+        Secure your data pipelines with our new OpenID Connect Provider. This enterprise-grade authentication 
+        solution enables seamless integration with your organization's identity management systems, providing 
+        robust security and compliance while maintaining a frictionless user experience.
+        <br><br><span class="VPBadge danger">Learn more...</span>
+      link: /documentation/config-yml
+
+    - title: Scalable Data Processing
+      details: |
+        Optimize your data processing workflows with our new data chunking feature. This advanced capability 
+        enables efficient processing of large datasets by breaking them into manageable chunks, improving 
+        performance and resource utilization while maintaining data integrity.
+        <br><br><span class="VPBadge danger">Learn more...</span>
+      link: /documentation/config-yml
+
+    - title: Enterprise Storage Solutions
+      details: |
+        Expand your storage capabilities with support for multiple enterprise-grade storage providers:
+        - SMB storage for on-premises environments
+        - Azure File Storage for cloud scalability
+        - Amazon S3 for global reach
+        - Azure DataLake Gen2 for big data analytics
+        <br><br><span class="VPBadge danger">Learn more...</span>
+      link: /documentation/config-yml
+
+    - title: NoSQL Database Integration
+      details: |
+        Enhance your data architecture with native CosmosDB support. This powerful integration enables 
+        high-performance, globally distributed data processing capabilities, perfect for modern cloud-native 
+        applications and real-time data processing scenarios.
         <br><br><span class="VPBadge danger">Learn more...</span>
       link: /documentation/config-yml
 ---
