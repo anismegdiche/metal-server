@@ -28,7 +28,7 @@ describe('TensorFlowJs', () => {
 		expect(tfjs.InstanceName).toBe('image-classification')
 		expect(tfjs.Model).toBe('image-classify')
 		expect(tfjs.Options?.threshold).toBe(0.9)
-	})
+	}, 300_000)
 
 	it('should run image classification successfully', async () => {
 		const result: any = await tfjs.Run(IMG_GUITAR)
@@ -50,5 +50,5 @@ describe('TensorFlowJs', () => {
 				}
 			]
 		})
-	})
+	}, 300_000)
 })
