@@ -9,94 +9,93 @@ on:
       - dev
 
 jobs:
-  # matrix-build-and-test:
-  #   if: github.ref_name == 'dev'
-  #   strategy:
-  #     matrix:
-  #       os:
-  #         - ubuntu-22.04
-  #         - ubuntu-24.04
+  matrix-build-and-test:
+    if: github.ref_name == 'dev'
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+          - ubuntu-24.04
 
-  #         - windows-2019
-  #         - windows-2022
+          - windows-2019
+          - windows-2022
 
-  #         - macos-13
-  #         - macos-14
-  #         - macos-15
+          - macos-13
+          - macos-14
+          - macos-15
         
-  #       node:
-  #         - "22.13.0"
+        node:
+          - "22.13.0"
 
-  #   runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #       env:
-  #         NODE_NO_WARNINGS: 1
-  #       with:
-  #         ref: dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        env:
+          NODE_NO_WARNINGS: 1
+        with:
+          ref: dev
 
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v2
-  #       env:
-  #         NODE_NO_WARNINGS: 1
-  #       with:
-  #         node-version: ${{ matrix.node }}
-  #         cache: "npm"
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        env:
+          NODE_NO_WARNINGS: 1
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "npm"
 
-  #     - name: Install dependencies
-  #       run: npm install
+      - name: Install dependencies
+        run: npm install
 
-  #     - name: Prepare
-  #       run: npm run prepare
+      - name: Prepare
+        run: npm run prepare
 
-  #     - name: Compile
-  #       run: npx tsc
+      - name: Compile
+        run: npx tsc
 
-  #     - name: run tests
-  #       run: npm test
+      - name: run tests
+        run: npm test
   
   
-  # docker-image-build-and-test:
-  #   if: github.ref_name == 'dev'
+  docker-image-build-and-test:
+    if: github.ref_name == 'dev'
 
-  #   runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     
-  #   permissions:
-  #     contents: read  # Reduced permissions since we're not pushing
+    permissions:
+      contents: read  # Reduced permissions since we're not pushing
 
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-  #     - name: Build and test image
-  #       uses: docker/build-push-action@v4
-  #       with:
-  #         context: .
-  #         file: dockerfile
-  #         tags: metal-test:latest
-  #         cache-from: type=gha
-  #         cache-to: type=gha,mode=max
-  #         load: true  # Makes the image available locally
-  #         push: false  # Explicitly disable pushing
+      - name: Build and test image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: dockerfile
+          tags: metal-test:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true  # Makes the image available locally
+          push: false  # Explicitly disable pushing
 
-  #     - name: Run tests in container
-  #       run: |
-  #         docker run --rm \
-  #           metal-test:latest \
-  #           npm run test
+      - name: Run tests in container
+        run: |
+          docker run --rm \
+            metal-test:latest \
+            npm run test
 
   
   sync-docs:
-    # needs: 
-    #   - matrix-build-and-test
-    #   - docker-image-build-and-test
-    # if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-and-test.result == 'success'
-    if: github.ref_name == 'dev'
+    needs: 
+      - matrix-build-and-test
+      - docker-image-build-and-test
+    if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-and-test.result == 'success'
 
     runs-on: ubuntu-latest
 
@@ -113,35 +112,3 @@ jobs:
         with:
           GH_PAT: ${{ secrets.GH_PAT }}
           SKIP_PR: true
-
-      # - name: Checkout metal-server
-      #   uses: actions/checkout@v4
-      #   with:
-      #     path: metal-server
-      #     ref: dev
-
-      # - name: Checkout metl-docs
-      #   uses: actions/checkout@v4
-      #   with:
-      #     repository: anismegdiche/metl-docs
-      #     path: metl-docs
-      #     ref: dev
-      #     token: ${{ secrets.GITHUB_TOKEN }}  # Use the built-in GITHUB_TOKEN
-
-      # - name: Sync docs directory
-      #   run: |
-      #     echo "Syncing docs directory:"
-      #     echo "  metal-server/docs/ -> metl-docs/docs/"
-      #     rsync -avz metal-server/docs/ metl-docs/docs/
-          
-      #     if [[ -n $(git status --porcelain) ]]; then
-      #       echo "Changes detected. Committing changes:"
-      #       git config user.name "github-actions[bot]"
-      #       git config user.email "github-actions[bot]@users.noreply.github.com"
-      #       git add docs/
-      #       git commit -m "docs: sync from metal-server [skip ci]"
-      #       git push
-      #     else
-      #       echo "No changes to sync"
-      #     fi
-
