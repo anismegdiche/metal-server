@@ -88,10 +88,7 @@ jobs:
           push: false  # Explicitly disable pushing
 
       - name: Run tests in container
-        run: |
-          docker run --rm \
-            metal-test:latest \
-            npm run test
+        run: docker compose run --rm metal npx jest --testMatch \"**/__tests__/*.test.ts\"
 
   
   sync-docs:
