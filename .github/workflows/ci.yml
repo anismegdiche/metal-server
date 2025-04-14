@@ -9,7 +9,7 @@ on:
       - dev
 
 jobs:
-  matrix-build-test:
+  matrix-build-and-test:
     if: github.ref_name == 'dev'
     strategy:
       matrix:
@@ -91,14 +91,14 @@ jobs:
         run: |
           docker run --rm \
             metal-test:latest \
-            npm test
+            npm run test
 
   
   sync-docs:
     needs: 
-      - matrix-build-test
+      - matrix-build-and-test
       - docker-image-build-and-test
-    if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-test.result == 'success'
+    if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-and-test.result == 'success'
 
     runs-on: ubuntu-latest
 
