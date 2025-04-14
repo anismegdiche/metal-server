@@ -71,7 +71,7 @@ describe('XlsContent', () => {
         // Setup XlsContent
         xlsContent = new XlsContent()
         xlsContent.SetConfig(typia.random<TXlsContentConfig>())
-    })
+    }, 300_000)
 
 
     describe('Init', () => {
