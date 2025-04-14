@@ -1,4 +1,4 @@
 anismegdiche/metl-docs@dev:
-  - source: /docs/
-    dest: /docs/
+  - source: docs
+    dest: docs
     deleteOrphaned: false
