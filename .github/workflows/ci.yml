@@ -3,11 +3,9 @@ name: CI Pipeline
 on:
   push:
     branches:
-      - latest
       - dev
   pull_request:
     branches:
-      - latest
       - dev
 
 jobs:
@@ -89,9 +87,49 @@ jobs:
           load: true  # Makes the image available locally
           push: false  # Explicitly disable pushing
 
-      # - name: Run tests in container
-      #   run: |
-      #     docker run --rm \
-      #       metal-test:latest \
-      #       npm test
+      - name: Run tests in container
+        run: |
+          docker run --rm \
+            metal-test:latest \
+            npm test
+
+  
+  sync-docs:
+    needs: 
+      - matrix-build-test
+      - docker-image-build-and-test
+    if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-test.result == 'success'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout metal-server
+        uses: actions/checkout@v4
+        with:
+          path: metal-server
+          ref: dev
+
+      - name: Checkout metl-docs
+        uses: actions/checkout@v4
+        with:
+          repository: anismegdiche/metl-docs
+          path: metl-docs
+          ref: dev
+
+      - name: Sync docs directory
+        run: |
+          echo "Syncing docs directory:"
+          echo "  metal-server/docs/ -> metl-docs/docs/"
+          rsync -avz metal-server/docs/ metl-docs/docs/
+          
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Changes detected. Committing changes:"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add docs/
+            git commit -m "docs: sync from metal-server [skip ci]"
+            git push
+          else
+            echo "No changes to sync"
+          fi
 
