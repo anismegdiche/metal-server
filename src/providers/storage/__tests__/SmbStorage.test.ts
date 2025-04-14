@@ -72,7 +72,11 @@ describe("SmbStorage", () => {
         it("should return correct path with forward slashes", () => {
             storage.Init()
             const result = storage.GetFilePath("test.txt")
-            expect(result).toBe("//server/share/test.txt")
+            if (process.platform === 'darwin') {
+                expect(result).toBe("/server/share/test.txt")
+            } else {
+                expect(result).toBe("//server/share/test.txt")
+            }
         })
     })
 
