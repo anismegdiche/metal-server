@@ -16,16 +16,13 @@ jobs:
         os:
           - ubuntu-22.04
           - ubuntu-24.04
-          - ubuntu-latest
 
           - windows-2019
           - windows-2022
-          - windows-latest
 
           - macos-13
           - macos-14
           - macos-15
-          - macos-latest
         
         node:
           - "22.13.0"
@@ -95,42 +92,51 @@ jobs:
 
   
   sync-docs:
-    needs: 
-      - matrix-build-and-test
-      - docker-image-build-and-test
-    if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-and-test.result == 'success'
+    # needs: 
+    #   - matrix-build-and-test
+    #   - docker-image-build-and-test
+    # if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-and-test.result == 'success'
+    if: github.ref_name == 'dev'
 
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout metal-server
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: metal-server
-          ref: dev
 
-      - name: Checkout metl-docs
-        uses: actions/checkout@v4
+      - name: Run GitHub File Sync
+        uses: BetaHuhn/repo-file-sync-action@v1
         with:
-          repository: anismegdiche/metl-docs
-          path: metl-docs
-          ref: dev
-          token: ${{ secrets.GITHUB_TOKEN }}  # Use the built-in GITHUB_TOKEN
+          GH_PAT: ${{ secrets.GH_PAT }}
 
-      - name: Sync docs directory
-        run: |
-          echo "Syncing docs directory:"
-          echo "  metal-server/docs/ -> metl-docs/docs/"
-          rsync -avz metal-server/docs/ metl-docs/docs/
+      # - name: Checkout metal-server
+      #   uses: actions/checkout@v4
+      #   with:
+      #     path: metal-server
+      #     ref: dev
+
+      # - name: Checkout metl-docs
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: anismegdiche/metl-docs
+      #     path: metl-docs
+      #     ref: dev
+      #     token: ${{ secrets.GITHUB_TOKEN }}  # Use the built-in GITHUB_TOKEN
+
+      # - name: Sync docs directory
+      #   run: |
+      #     echo "Syncing docs directory:"
+      #     echo "  metal-server/docs/ -> metl-docs/docs/"
+      #     rsync -avz metal-server/docs/ metl-docs/docs/
           
-          if [[ -n $(git status --porcelain) ]]; then
-            echo "Changes detected. Committing changes:"
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add docs/
-            git commit -m "docs: sync from metal-server [skip ci]"
-            git push
-          else
-            echo "No changes to sync"
-          fi
+      #     if [[ -n $(git status --porcelain) ]]; then
+      #       echo "Changes detected. Committing changes:"
+      #       git config user.name "github-actions[bot]"
+      #       git config user.email "github-actions[bot]@users.noreply.github.com"
+      #       git add docs/
+      #       git commit -m "docs: sync from metal-server [skip ci]"
+      #       git push
+      #     else
+      #       echo "No changes to sync"
+      #     fi
 
