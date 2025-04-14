@@ -115,6 +115,7 @@ jobs:
           repository: anismegdiche/metl-docs
           path: metl-docs
           ref: dev
+          token: ${{ secrets.GITHUB_TOKEN }}  # Use the built-in GITHUB_TOKEN
 
       - name: Sync docs directory
         run: |
