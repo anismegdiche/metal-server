@@ -41,7 +41,11 @@ export class SmbStorage extends absStorageProvider {
         if (!this.Params)
             throw new HttpErrorInternalServerError('SmbStorage: No params defined')
 
-        return path.join(this.Params.share, file).replace(/\\/g, "/")
+        const filePath = path.join(this.Params.share, file).replace(/\\/g, "/")
+        if (this.Params.share.replace(/\\/g, "/").startsWith('//') && !filePath.startsWith('//')) {
+            return `/${filePath}`
+        }
+        return filePath
     }
 
     @Logger.LogFunction()
