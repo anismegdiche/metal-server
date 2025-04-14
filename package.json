@@ -16,6 +16,7 @@
     "test-e2e": "jest --testMatch \"**/client/__tests__/**/*.js\"",
     "test-docker": "docker compose run --rm metal npx jest --testMatch \"**/__tests__/*.test.ts\" --watchAll",
     "prepare": "ts-patch install",
+    "release": "semantic-release",
     "dev-lint": "eslint --fix src",
     "dev-changelog": "git --no-pager log --since=\"2024-12-15\" --oneline --pretty=format:\"- %s\" > HISTORY.md",
     "_prod-ts": "ts-node ./src/index.ts"
@@ -78,6 +79,11 @@
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.24.0",
     "@jest/globals": "^29.7.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/github": "^11.0.1",
+    "@semantic-release/npm": "^12.0.1",
+    "@semantic-release/release-notes-generator": "^14.0.3",
     "@types/cron": "^2.4.3",
     "@types/express": "^5.0.1",
     "@types/fs-extra": "^11.0.4",
@@ -110,6 +116,7 @@
     "jest": "^29.7.0",
     "nodemon": "^3.1.9",
     "prettier": "3.5.3",
+    "semantic-release": "^24.2.3",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
     "ts-patch": "^3.3.0",
@@ -123,5 +130,22 @@
       "build/**",
       "*.vscode*"
     ]
-  }
+  },
+  "release": {
+  "branches": ["latest"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    "@semantic-release/npm",
+    "@semantic-release/github",
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["package.json", "CHANGELOG.md"],
+        "message": "chore(release): ${nextRelease.version} [skip ci]"
+      }
+    ]
+  ]
+}
 }
