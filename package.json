@@ -3,7 +3,7 @@
     "node": "=22.13.0"
   },
   "name": "metal",
-  "version": "0.3.22",
+  "version": "1.0.0",
   "description": "Metal Server",
   "author": "Anis Megdiche",
   "license": "GPL-3.0-or-later",
