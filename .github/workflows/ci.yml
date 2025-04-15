@@ -123,6 +123,7 @@ jobs:
       - name: Run semantic-release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Uses GitHub Actions' built-in token
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }} 
         run: npx semantic-release
   
   sync-docs:
