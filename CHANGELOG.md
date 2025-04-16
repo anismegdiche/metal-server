@@ -1,10 +1,3 @@
-# [1.1.0](https://github.com/anismegdiche/metal-server/compare/v1.0.0...v1.1.0) (2025-04-16)
-
-
-### Features
-
-* add SVG icons for XLS and XML file formats ([ad7962e](https://github.com/anismegdiche/metal-server/commit/ad7962e493712d86b5c80e8c4ec27581c7c2af17))
-
 # 0.4.0 (2025-04-15)
 
 
