@@ -8,7 +8,7 @@ These configurations define the setups required for connecting to various Data p
 
 Each configuration specifies the necessary parameters such as host, port, user credentials, and additional options for optimal performance and security.
 
-## Azure SQL Database/Microsoft SQL Server <Badge type="default" text="^0.1" />
+## Azure SQL Database/Microsoft SQL Server <Badge type="default" text="v0.1+" />
 
 **Primary parameters:**
 
@@ -52,7 +52,7 @@ sources:
       requestTimeout: 15000
 ```
 
-## PostgreSQL <Badge type="default" text="^0.1" />
+## PostgreSQL <Badge type="default" text="v0.1+" />
 
 **Primary parameters:**
 
@@ -99,7 +99,7 @@ sources:
       allowExitOnIdle: true
 ```
 
-## Metal Server <Badge type="default" text="^0.2" />
+## Metal Server <Badge type="default" text="v0.2+" />
 
 This is used to connect to another instance of Metal Server via REST
 
@@ -125,7 +125,7 @@ sources:
     database: myschema
 ```
 
-## MongoDB <Badge type="default" text="^0.1" />
+## MongoDB <Badge type="default" text="v0.1+" />
 
 **Primary parameters:**
 
@@ -167,7 +167,7 @@ sources:
       connectTimeoutMS: 5000
 ```
 
-## Plan <Badge type="default" text="^0.2" />
+## Plan <Badge type="default" text="v0.2+" />
 
 Used to connect to a Metal ETL Plan
 
@@ -187,7 +187,7 @@ sources:
     database: my-plan
 ```
 
-## Memory <Badge type="default" text="^0.2" />
+## Memory <Badge type="default" text="v0.2+" />
 
 Non-persistant Memory Database
 
@@ -213,7 +213,7 @@ sources:
       autocreate: true
 ```
 
-## MySql <Badge type="info" text="^0.4" />
+## MySql <Badge type="info" text="v0.4+" />
 
 The MySql data provider is used to connect to a MySql database. It supports various parameters to customize the connection and data retrieval.
 
@@ -261,7 +261,7 @@ sources:
       keepAliveInitialDelay: 0
 ```
 
-## CosmosDB⚡ <Badge type="info" text="^0.4" />
+## CosmosDB <Badge type="info" text="v0.4+" />
 
 **Primary parameters:**
 
@@ -300,7 +300,7 @@ sources:
       protocol: Tcp
 ```
 
-## Files <Badge type="default" text="^0.3" />
+## Files <Badge type="default" text="v0.3+" />
 
 Files is a unique data provider that offers a seamless experience akin to accessing tables while interacting with file-based data. This versatile tool accommodates various content types and storage options, catering to diverse user preferences and requirements.
 
@@ -326,7 +326,7 @@ sources:
 | `content`    | Object  | Y        | Contains pattern of files and associated content type, including JSON, CSV, and XLS, with optional parameters for customizing the content type settings., see: [Content Types](#content-types) |
 | `autocreate` | Boolean | N        | if set to `true`, when interacting with entities that do not exist, files with same entity name will be created automatically (default: `false`)                                               |
 
-### `storage` <Badge type="default" text="^0.3" />
+### `storage` <Badge type="default" text="v0.3+" />
 
 Storage types can be set with the parameter `options.storage` as shown in the example below:
 
@@ -342,15 +342,15 @@ List of managed storage types:
 
 | Parameter     | Description                  | Metal version                        |
 | ------------- | ---------------------------- | ------------------------------------ |
-| `az-blob`     | Azure Blob Storage           | <Badge type="default" text="^0.3" /> |
-| `az-file`     | Azure File Share             | <Badge type="info" text="^0.4" />    |
-| `az-datalake` | Azure Data Lake Storage Gen2 | <Badge type="info" text="^0.4" />    |
-| `fs`          | Local file system            | <Badge type="default" text="^0.3" /> |
-| `ftp`         | FTP server                   | <Badge type="default" text="^0.3" /> |
-| `smb`         | SMB/CIFS                     | <Badge type="info" text="^0.4" />    |
-| `s3`          | Amazon S3                    | <Badge type="info" text="^0.4" />    |
+| `az-blob`     | Azure Blob Storage           | <Badge type="default" text="v0.3+" /> |
+| `az-file`     | Azure File Share             | <Badge type="info" text="v0.4+" />    |
+| `az-datalake` | Azure Data Lake Storage Gen2 | <Badge type="info" text="v0.4+" />    |
+| `fs`          | Local file system            | <Badge type="default" text="v0.3+" /> |
+| `ftp`         | FTP server                   | <Badge type="default" text="v0.3+" /> |
+| `smb`         | SMB/CIFS                     | <Badge type="info" text="v0.4+" />    |
+| `s3`          | Amazon S3                    | <Badge type="info" text="v0.4+" />    |
 
-#### `fs` (Filesystem) <Badge type="default" text="^0.3" />
+#### `fs` (Filesystem) <Badge type="default" text="v0.3+" />
 
 This refers to the local file system
 
@@ -374,7 +374,7 @@ sources:
       ...
 ```
 
-#### `ftp` (FTP Server) <Badge type="default" text="^0.3" />
+#### `ftp` (FTP Server) <Badge type="default" text="v0.3+" />
 
 This refers to use a FTP server
 
@@ -407,7 +407,7 @@ sources:
       ...
 ```
 
-#### `smb` (SMB/CIFS)⚡ <Badge type="info" text="^0.4" />
+#### `smb` (SMB/CIFS) <Badge type="info" text="v0.4+" />
 
 This refers to use a SMB/CIFS server
 
@@ -441,7 +441,7 @@ sources:
       ...
 ```
 
-#### `az-blob` (Azure Blob Storage) <Badge type="default" text="^0.3" />
+#### `az-blob` (Azure Blob Storage) <Badge type="default" text="v0.3+" />
 
 This refers to use a Azure Blob Storage
 
@@ -468,7 +468,7 @@ sources:
       ...
 ```
 
-#### `az-file` (Azure File Share)⚡ <Badge type="info" text="^0.4" />
+#### `az-file` (Azure File Share) <Badge type="info" text="v0.4+" />
 
 This refers to use an Azure File Share storage.
 
@@ -496,7 +496,7 @@ sources:
       ...
 ```
 
-#### `az-datalake` (Azure Data Lake Storage Gen2)⚡ <Badge type="info" text="^0.4" />
+#### `az-datalake` (Azure Data Lake Storage Gen2) <Badge type="info" text="v0.4+" />
 
 This refers to use Azure Data Lake Storage Gen2
 
@@ -526,7 +526,7 @@ sources:
       ...
 ```
 
-#### `s3` (Amazon S3)⚡ <Badge type="info" text="^0.4" />
+#### `s3` (Amazon S3) <Badge type="info" text="v0.4+" />
 
 This refers to use Amazon S3 storage
 
@@ -558,7 +558,7 @@ sources:
       ...
 ```
 
-### `content` <Badge type="default" text="^0.3" />
+### `content` <Badge type="default" text="v0.3+" />
 
 Content types can be set with the parameter `options.content` where you can associate a content type to a file pattern, as shown in the example below. This feature allows for flexible data processing and supports various file formats, including JSON, CSV, and XLS.
 
@@ -588,12 +588,12 @@ List of managed content types:
 
 | Parameter | Description              | Metal version                        |
 | --------- | ------------------------ | ------------------------------------ |
-| `json`    | JSON files               | <Badge type="default" text="^0.3" /> |
-| `csv`     | CSV files                | <Badge type="default" text="^0.3" /> |
-| `xls`     | XLSX files (Excel 2007+) | <Badge type="default" text="^0.3" /> |
-| `xml`     | XML files                | <Badge type="info" text="^0.4" />    |
+| `json`    | JSON files               | <Badge type="default" text="v0.3+" /> |
+| `csv`     | CSV files                | <Badge type="default" text="v0.3+" /> |
+| `xls`     | XLSX files (Excel 2007+) | <Badge type="default" text="v0.3+" /> |
+| `xml`     | XML files                | <Badge type="info" text="v0.4+" />    |
 
-#### `json` <Badge type="default" text="^0.3" />
+#### `json` <Badge type="default" text="v0.3+" />
 
 | Parameter      | Type   | Description                                                               |
 | -------------- | ------ | ------------------------------------------------------------------------- |
@@ -613,7 +613,7 @@ sources:
       ...
 ```
 
-#### `csv` <Badge type="default" text="^0.3" />
+#### `csv` <Badge type="default" text="v0.3+" />
 
 | Parameter        | Type            | Description                                                                                                                                                                                                                                          |
 | ---------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -640,7 +640,7 @@ sources:
       ...
 ```
 
-#### `xls` <Badge type="default" text="^0.3" />
+#### `xls` <Badge type="default" text="v0.3+" />
 
 ::: tip ℹ️ NOTE
 Only XLSX files created with Excel 2007 and later are supported.
@@ -669,7 +669,7 @@ sources:
     ...
 ```
 
-#### `xml`⚡ <Badge type="info" text="^0.4" />
+#### `xml` <Badge type="info" text="v0.4+" />
 
 | Parameter               | Type    | Description                                                           |
 | ----------------------- | ------- | --------------------------------------------------------------------- |
@@ -694,7 +694,7 @@ sources:
           xml-remove-ns-prefix: true
 ```
 
-## WebService⚡ <Badge type="info" text="^0.4" />
+## WebService <Badge type="info" text="v0.4+" />
 
 Used to connect to a WebService
 
@@ -712,16 +712,16 @@ Used to connect to a WebService
 | `type`      | String | Y        | Type of the webservice (see: [Web service types](#web-service-types)) |
 | `endpoints` | Object | Y        | List of Endpoints configuration for interacting with the websrvice    |
 
-### `type`⚡
+### `type`
 
 Defines the type of webservices:
 
 | Parameter | Description         | Metal version                     |
 | --------- | ------------------- | --------------------------------- |
-| `rest`    | RESTful web service | <Badge type="info" text="^0.4" /> |
-| `soap`    | SOAP web service    | <Badge type="info" text="^0.4" /> |
+| `rest`    | RESTful web service | <Badge type="info" text="v0.4+" /> |
+| `soap`    | SOAP web service    | <Badge type="info" text="v0.4+" /> |
 
-### `endpoints`⚡
+### `endpoints`
 
 this section contains the configuration for the endpoints of the webservice.
 Each endpoint is defined by a key (e.g. `session`) and an object that contains the configuration:
@@ -734,7 +734,7 @@ Each endpoint is defined by a key (e.g. `session`) and an object that contains t
 | `item-update`     | Object | N        | Endpoint configuration for item to update   |
 | `item-delete`     | Object | N        | Endpoint configuration for item to delete   |
 
-#### `session`⚡
+#### `session`
 
 This endpoint is used to establish a connection with the webservice and obtain any necessary authentication tokens or session IDs.
 
@@ -771,7 +771,7 @@ rest-dummyjson: # https://dummyjson.com/docs
           Authorization: "Bearer: ${{ $response.body.accessToken }}" # [!code highlight]
 ```
 
-#### `collection-read`⚡
+#### `collection-read`
 
 This endpoint is used to read data from a collection. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
@@ -797,7 +797,7 @@ rest-dog: # https://dog.ceo/dog-api/documentation/
         response: message# [!code highlight]
 ```
 
-#### `item-create`⚡
+#### `item-create`
 
 This endpoint is used to create a new item. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
@@ -821,7 +821,7 @@ rest-fakerestapi: # https://fakerestapi.azurewebsites.net/index.html
         post: / # [!code highlight]
 ```
 
-#### `item-update`⚡
+#### `item-update`
 
 This endpoint is used to update an existing item. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
@@ -845,7 +845,7 @@ rest-fakerestapi: # https://fakerestapi.azurewebsites.net/index.html
         put: /${{ $entity }}/${{ $row.id }} # [!code highlight]
 ```
 
-#### `item-delete`⚡
+#### `item-delete`
 
 This endpoint is used to delete an existing item. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 

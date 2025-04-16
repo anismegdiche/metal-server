@@ -12,49 +12,33 @@ hero:
     alt: Metal logo
   tagline: |
     Empower your projects with a free open-source data transformation solution.<br><center>
-    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; justify-items: center; align-items: center; text-align: center;">
+    <div class="technology">
+      <!-- Data -->
+      <img src="/public/azure-sql-database.png" title="Azure SQL Database" class="technology-logo">
+      <img src="/public/azure-cosmos-db.png" title="Azure Cosmos DB" class="technology-logo">
+      <img src="/public/mongodb.png" title="MongoDB" class="technology-logo">
+      <img src="/public/postgres.png" title="PostgreSQL" class="technology-logo">
+      <img src="/public/mysql.png" title="MySQL" class="technology-logo">
+      <img src="/public/sql-server.svg" title="SQL Server" class="technology-logo">
+      <img src="/public/swagger.svg"  title="Rest API" class="technology-logo">
+      <img src="/public/soap.png" title="SOAP" class="technology-logo">
 
-    <!-- Azure SQL Database -->
-    <img src="https://azure.microsoft.com/svghandler/sql-database/?width=600&height=315" title="Azure SQL Database" style="height:60px; filter:grayscale(100%);">
+      <!-- Storage -->
+      <img src="/public/s3.png" tiltle="Amazon S3" class="technology-logo">
+      <img src="/public/azure-blob-storage.svg" title="Azure Blob Storage" class="technology-logo">
+      <img src="/public/azure-file-storage.png" title="Azure File Storage" class="technology-logo">
+      <img src="/public/azure-datalake.svg" title="Azure Datalake Gen2" class="technology-logo">
+      <img src="/public/ftp.svg" tiltle="FTP" class="technology-logo">
+      <img src="/public/smb.png" tiltle="SMB" class="technology-logo">
 
-    <!-- MongoDB -->
-    <img src="https://www.mongodb.com/assets/images/global/leaf.png" title="MongoDB" style="height:60px; filter:grayscale(100%);">
+      <!-- Content -->
+      <img src="/public/xml.svg" title="XML" class="technology-logo">
+      <img src="/public/csv.svg" alt="Microsoft CSV Icon" class="technology-logo">
+      <img src="/public/json.png" title="JSON" class="technology-logo">
+      <img src="/public/xls.svg" alt="Microsoft Excel" class="technology-logo">
 
-    <!-- PostgreSQL -->
-    <img src="https://www.postgresql.org/media/img/about/press/elephant.png" title="PostgreSQL" style="height:60px; filter:grayscale(100%);">
-
-    <!-- MySQL -->
-    <img src="https://www.mysql.com/common/logos/logo-mysql-170x115.png" title="MySQL" style="height:60px; filter:grayscale(100%);">
-
-    <!-- SQL Server -->
-    <img src="https://www.svgrepo.com/download/303229/microsoft-sql-server-logo.svg" title="SQL Server" style="height:80px; filter:grayscale(100%);">
-
-    <!-- Rest API -->
-    <img src="https://static1.smartbear.co/swagger/media/assets/images/swagger_logo.svg"  title="Rest API" style="height:80px; filter:grayscale(100%);">
-
-    <!-- SOAP -->
-    <img src=https://xpertlab.com/wp-content/uploads/2020/12/icon-soap.png" title="SOAP" style="height:60px; filter:grayscale(100%);">
-
-    <!-- Azure Blob Storage -->
-    <img src="https://www.svgrepo.com/download/448272/azure-blob-storage.svg" title="Azure Blob Storage" style="height:60px; filter:grayscale(100%);">
-
-    <!-- XML -->
-    <img src="https://www.svgrepo.com/download/56785/xml.svg" title="XML" style="height:60px; filter:grayscale(100%);">
-
-    <!-- CSV -->
-    <img src="https://www.svgrepo.com/download/38911/csv.svg" alt="Microsoft CSV Icon" style="height:60px; filter:grayscale(100%);">
-
-    <!-- JSON -->
-    <img src="https://www.liblogo.com/img-logo/max/js8750je7e-json-logo-json-logo-icon-in-vector-logo.png" title="JSON" style="height:60px; filter:grayscale(100%);">
-
-    <!-- FTP -->
-    <img src="https://www.svgrepo.com/download/49250/ftp-upload.svg" tiltle="FTP" style="height:60px; filter:grayscale(100%);">
-    
-    <!-- Excel -->
-    <img src="https://www.svgrepo.com/download/44103/xls.svg" alt="Microsoft Excel" style="height:60px; filter:grayscale(100%);">
-    
-    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/OpenID_logo_2.svg" title="OpenID Connect" style="height:40px; filter:grayscale(100%);">
-
+      <!-- Auth -->
+      <img src="/public/openid.svg" title="OpenID Connect" class="technology-logo">
     </div>
   actions:
     - theme: brand
@@ -89,42 +73,34 @@ features:
 <script setup>
 import FancySection from '.vitepress/theme/components/FancySection.vue'
 </script>
+<br>
+<br>
+<h1 class="red" >Boost Your Application with Metal</h1>
+<p>
+Metal revolutionizes application development by seamlessly decoupling business logic from data infrastructure. This critical separation future-proofs your architecture, accelerates development cycles, and unlocks unparalleled flexibility – making it the ultimate choice for modern systems designed to scale and adapt.
+Here's how Metal supercharges key architectures:
+</p>
 
-
-
-
-
-The key is that Metal excels at decoupling your application logic from the specifics of data storage and access. Any architecture that benefits from this decoupling can potentially work well with Metal:
-
-
-<FancySection image="https://miro.medium.com/v2/resize:fit:2000/1*mGLO5IfhJv4o0NYOAZI60A.png">
-<h1>Hexagonal Architecture</h1> Metal focus on abstraction, unified interfaces, and separation of concerns, makes it a good fit for applications designed using hexagonal architecture. It can serve as a valuable component in isolating your core business logic from the complexities of data access and management.
+<FancySection image="/public/archi/hexagonal.png">
+<h2 class="index-h2">Hexagonal Architecture</h2> Metal focus on abstraction, unified interfaces, and separation of concerns, makes it a good fit for applications designed using hexagonal architecture. It can serve as a valuable component in isolating your core business logic from the complexities of data access and management.
 </FancySection>
 
-<FancySection image="https://upload.wikimedia.org/wikipedia/commons/a/ab/Microservice_Databases.png" reverse>
-<h1>Microservices Architecture</h1>
+<FancySection image="/public/archi/microservices.png" reverse>
+<h2 class="index-h2">Microservices Architecture</h2>
 Metal's ability to abstract database access and provide a unified API makes it suitable for microservices. Each microservice can use Metal to interact with its data store without needing to implement database-specific logic. Metal can also help with data integration between microservices.
 </FancySection>
 
-<FancySection image="/images/example.jpg">
-<h1>API Gateway Pattern</h1> 
+<FancySection image="/public/archi/api-gateway.webp">
+<h2 class="index-h2">API Gateway Pattern</h2> 
 Metal can act as a backend-for-frontend (BFF) or API gateway, providing a unified API for client applications while handling the complexities of interacting with different databases and data sources. This simplifies the client-side development and allows for more flexibility in the backend.
 </FancySection>
 
-<FancySection image="/images/example2.jpg" reverse>
-<h1>Data Lake/Data Mesh Architecture</h1> 
+<FancySection image="/public/archi/datalake.webp" reverse>
+<h2 class="index-h2">Data Lake/Data Mesh Architecture</h2> 
 Metal's capability to merge schemas from multiple databases and data providers makes it useful in a data lake or data mesh environment. It can provide a unified view of data across different data sources, enabling data analysis and reporting.
 </FancySection>
 
-<FancySection image="/images/example.jpg">
-<h1>Layered Architecture</h1> 
+<FancySection image="/public/archi/layered.png">
+<h2 class="index-h2">Layered Architecture</h2> 
 Metal fits well within a layered architecture, acting as a data access layer that abstracts the complexities of database interactions from the business logic layer.
 </FancySection>
-
-<FancySection image="/images/example2.jpg" reverse>
-<h1>Event-Driven Architecture</h1> 
-Metal can be integrated with an event-driven architecture by publishing events when data changes occur in the underlying databases. This allows other services to react to data changes in real-time.
-</FancySection>
-
-
-<Badge type="warning" text="📜" style="line-height:0.9rem;padding:1px;margin:1px"/>

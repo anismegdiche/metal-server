@@ -147,20 +147,20 @@ users:
 - **User Management Issues**: Check the `users` section of the `config.yml` file for any errors or misconfigurations.
 - **Role-Based Access Control Issues**: Check the `roles` section of the `config.yml` file for any errors or misconfigurations.
 
-## OpenID Connect Authentication⚡
+## OpenID Connect Authentication
 
-### Configuration⚡
+### Configuration
 
 To configure OIDC authentication in Metal Server, you need to add the following informations to the `server.authentication` section of the `config.yml` file:
 
 | Parameter       | Required | Description                                                              | Metal version                     |
 | --------------- | -------- | ------------------------------------------------------------------------ | --------------------------------- |
-| `type`          | Y        | Type of authentication. For OIDC, it should be set to `oidc`.            | <Badge type="info" text="^0.4" /> |
-| `issuer`        | Y        | The URL of the OIDC provider's issuer.                                   | <Badge type="info" text="^0.4" /> |
-| `client-id`     | Y        | The client ID of the OIDC application.                                   | <Badge type="info" text="^0.4" /> |
-| `client-secret` | Y        | The client secret of the OIDC application.                               | <Badge type="info" text="^0.4" /> |
-| `scope`         | N        | The scope of the OIDC authentication. (default: `roles`)                 | <Badge type="info" text="^0.4" /> |
-| `roles-path`    | N        | The path to the roles in the OIDC token. (default: `realm_access.roles`) | <Badge type="info" text="^0.4" /> |
+| `type`          | Y        | Type of authentication. For OIDC, it should be set to `oidc`.            | <Badge type="info" text="v0.4+" /> |
+| `issuer`        | Y        | The URL of the OIDC provider's issuer.                                   | <Badge type="info" text="v0.4+" /> |
+| `client-id`     | Y        | The client ID of the OIDC application.                                   | <Badge type="info" text="v0.4+" /> |
+| `client-secret` | Y        | The client secret of the OIDC application.                               | <Badge type="info" text="v0.4+" /> |
+| `scope`         | N        | The scope of the OIDC authentication. (default: `roles`)                 | <Badge type="info" text="v0.4+" /> |
+| `roles-path`    | N        | The path to the roles in the OIDC token. (default: `realm_access.roles`) | <Badge type="info" text="v0.4+" /> |
 
 **Example:**
 
@@ -180,12 +180,12 @@ server:
 
 This code enables authentication with KeyCloak.
 
-### Role-Based Access Control⚡
+### Role-Based Access Control
 
 Roles are used to determine what actions a user can perform and what data they can access.
 Each role has a unique name and a set of permissions that define what actions can be performed.
 
-#### Creating Roles⚡
+#### Creating Roles
 
 To create a new role, you need to add the following code to the `roles` section of the `config.yml` file:
 
@@ -209,11 +209,11 @@ This code creates three new roles, `admin`, `all-rights`, and `guest`, with the 
 | `a`        | Administrate server  |
 | `l`        | List schema entities |
 
-### Assigning Roles to Users⚡
+### Assigning Roles to Users
 
 To assign a role to a user in OpenID Connect authentication, you need to create the same roles in the OpenID Connect provider and assign them to users. This ensures that the roles are properly synchronized between the OpenID Connect provider and Metal Server, allowing for seamless role-based access control.
 
-### Final configuration⚡
+### Final configuration
 
 The final configuration will be:
 
@@ -234,7 +234,7 @@ roles:
   guest: r
 ```
 
-### Troubleshooting⚡
+### Troubleshooting
 
 - **Authentication Errors**: Check the `server.authentication` section of the `config.yml` file for any errors or misconfigurations.
 - **Role-Based Access Control Issues**: Check the `roles` section of the `config.yml` file for any errors or misconfigurations.

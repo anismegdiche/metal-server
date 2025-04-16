@@ -12,11 +12,11 @@ Metal offers a REST API specifically crafted to execute a range of functions:
 
 | Endpoint Starting | Usage              | Metal version                        |
 | ----------------- | ------------------ | ------------------------------------ |
-| `/user/`...       | User operations    | <Badge type="default" text="^0.1" /> |
-| `/server/`...     | Server operations  | <Badge type="default" text="^0.1" /> |
-| `/schema/`...     | Schemas operations | <Badge type="default" text="^0.1" /> |
-| `/plan/`...       | Plans operations   | <Badge type="default" text="^0.1" /> |
-| `/cache/`...      | Cache operations   | <Badge type="default" text="^0.1" /> |
+| `/user/`...       | User operations    | <Badge type="default" text="v0.1+" /> |
+| `/server/`...     | Server operations  | <Badge type="default" text="v0.1+" /> |
+| `/schema/`...     | Schemas operations | <Badge type="default" text="v0.1+" /> |
+| `/plan/`...       | Plans operations   | <Badge type="default" text="v0.1+" /> |
+| `/cache/`...      | Cache operations   | <Badge type="default" text="v0.1+" /> |
 
 ## `/user/`...
 
@@ -25,9 +25,9 @@ The table below describes available endpoints and methods to use for request :
 
 | Endpoint       | Method | Usage                                         | Metal version                        |
 | -------------- | ------ | --------------------------------------------- | ------------------------------------ |
-| `/user/login`  | POST   | Authenticate a Metal user                     | <Badge type="default" text="^0.1" /> |
-| `/user/logout` | POST   | Log out current Metal user                    | <Badge type="default" text="^0.1" /> |
-| `/user/info`   | GET    | Get informations about the current Metal user | <Badge type="default" text="^0.1" /> |
+| `/user/login`  | POST   | Authenticate a Metal user                     | <Badge type="default" text="v0.1+" /> |
+| `/user/logout` | POST   | Log out current Metal user                    | <Badge type="default" text="v0.1+" /> |
+| `/user/info`   | GET    | Get informations about the current Metal user | <Badge type="default" text="v0.1+" /> |
 
 ---
 
@@ -166,8 +166,8 @@ The table below describes available endpoints and methods to use for request :
 
 | Endpoint         | Method | Usage                                  | Metal version                        |
 | ---------------- | ------ | -------------------------------------- | ------------------------------------ |
-| `/server/info`   | GET    | Get informations about Metal server    | <Badge type="default" text="^0.1" /> |
-| `/server/reload` | POST   | Reload configuration file and apply it | <Badge type="default" text="^0.1" /> |
+| `/server/info`   | GET    | Get informations about Metal server    | <Badge type="default" text="v0.1+" /> |
+| `/server/reload` | POST   | Reload configuration file and apply it | <Badge type="default" text="v0.1+" /> |
 
 ---
 
@@ -257,8 +257,8 @@ The table below describes available endpoints and methods to use for request :
 
 | Endpoint                              | Method                   | Usage                                                                                     | Metal version                        |
 | ------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------- | ------------------------------------ |
-| `/schema`/**`:schema`**               | GET                      | Lists entities in the `:schema`                                                           | <Badge type="default" text="^0.3" />    |
-| `/schema`/**`:schema`**/**`:entity`** | GET, POST, PATCH, DELETE | Performs CRUD operations for one or many items in the `:entity` existing in the `:schema` | <Badge type="default" text="^0.1" /> |
+| `/schema`/**`:schema`**               | GET                      | Lists entities in the `:schema`                                                           | <Badge type="default" text="v0.3+" />    |
+| `/schema`/**`:schema`**/**`:entity`** | GET, POST, PATCH, DELETE | Performs CRUD operations for one or many items in the `:entity` existing in the `:schema` | <Badge type="default" text="v0.1+" /> |
 
 ### `/schema/:schema`
 
@@ -340,11 +340,11 @@ Returns data from the entity of the schema provided in URL parameters. By defaul
 
 | Name                 | type        | Required | Description                                                                                      | Metal version                        |
 | -------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| `:fields`            | string      | N        | fields to keep, comma seperated. (see: [Optional Parameters](optional-parameters))      | <Badge type="default" text="^0.1" /> |
-| `:filter`            | JSON object | N        | condition `key:value` to filter data. (see: [Optional Parameters](optional-parameters)) | <Badge type="default" text="^0.1" /> |
-| `:filter-expression` | string      | N        | free form condition to filter data. (see: [Optional Parameters](optional-parameters))   | <Badge type="default" text="^0.1" /> |
-| `:sort`              | string      | N        | sort data, can be `asc` or `desc`. (see: [Optional Parameters](optional-parameters))    | <Badge type="default" text="^0.1" /> |
-| `:cache`             | number      | N        | time in seconds to cache data. (see: [Optional Parameters](optional-parameters))        | <Badge type="default" text="^0.1" /> |
+| `:fields`            | string      | N        | fields to keep, comma seperated. (see: [Optional Parameters](optional-parameters))      | <Badge type="default" text="v0.1+" /> |
+| `:filter`            | JSON object | N        | condition `key:value` to filter data. (see: [Optional Parameters](optional-parameters)) | <Badge type="default" text="v0.1+" /> |
+| `:filter-expression` | string      | N        | free form condition to filter data. (see: [Optional Parameters](optional-parameters))   | <Badge type="default" text="v0.1+" /> |
+| `:sort`              | string      | N        | sort data, can be `asc` or `desc`. (see: [Optional Parameters](optional-parameters))    | <Badge type="default" text="v0.1+" /> |
+| `:cache`             | number      | N        | time in seconds to cache data. (see: [Optional Parameters](optional-parameters))        | <Badge type="default" text="v0.1+" /> |
 
 ::: tip ℹ️ NOTE
 For detailed description of `fields`, `filter`, `filter-expression`, `sort`, `cache` usage, please refer to [Optional Parameters](#optional-parameters)
@@ -602,7 +602,7 @@ The table below describes available endpoints and methods to use for request :
 
 | Endpoint                     | Method | Usage                                                                     | Metal version                        |
 | ---------------------------- | ------ | ------------------------------------------------------------------------- | ------------------------------------ |
-| `/plan`/**`:plan`**/`reload` | POST   | Reload the plan `:plan` definition as described in the configuration file | <Badge type="default" text="^0.1" /> |
+| `/plan`/**`:plan`**/`reload` | POST   | Reload the plan `:plan` definition as described in the configuration file | <Badge type="default" text="v0.1+" /> |
 
 ### `/plan`/**`:plan`**/`reload`
 
@@ -658,9 +658,9 @@ The table below provides an overview of the available endpoints and the correspo
 
 | Endpoint       | Method | Description                      | Metal version                        |
 | -------------- | ------ | -------------------------------- | ------------------------------------ |
-| `/cache/view`  | GET    | Retrieve and display cached data | <Badge type="default" text="^0.1" /> |
-| `/cache/clean` | POST   | Remove expired cached data       | <Badge type="default" text="^0.1" /> |
-| `/cache/purge` | POST   | Delete all cached data           | <Badge type="default" text="^0.1" /> |
+| `/cache/view`  | GET    | Retrieve and display cached data | <Badge type="default" text="v0.1+" /> |
+| `/cache/clean` | POST   | Remove expired cached data       | <Badge type="default" text="v0.1+" /> |
+| `/cache/purge` | POST   | Delete all cached data           | <Badge type="default" text="v0.1+" /> |
 
 ---
 

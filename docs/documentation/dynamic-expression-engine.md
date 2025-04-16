@@ -29,19 +29,19 @@ In this instance, the `filter-expression` incorporates JS code within the curly 
 
 This flexibility enables precise control and customization, showcasing the versatility that JS Expression Engine brings to your Metal implementation.
 
-### Context variables⚡
+### Context variables
 
 Context variables are placeholders that can be used within your JavaScript Expression Engine. They are denoted by the `$` character, followed by the variable name.
 
-#### `$schema`⚡ <Badge type="info" text="^0.4" />
+#### `$schema` <Badge type="info" text="v0.4+" />
 
 The name of the schema being queried.
 
-#### `$entity`⚡ <Badge type="info" text="^0.4" />
+#### `$entity` <Badge type="info" text="v0.4+" />
 
 The name of the entity being queried.
 
-#### `$request`⚡ <Badge type="info" text="^0.4" />
+#### `$request` <Badge type="info" text="v0.4+" />
 
 The current request being processed (exclusive to web services data providers), containing the following properties:
 
@@ -53,7 +53,7 @@ The current request being processed (exclusive to web services data providers), 
 | `body`      | object | The request body.                     |
 | `data-path` | String | Path of json data to find in response |
 
-#### `$response`⚡ <Badge type="info" text="^0.4" />
+#### `$response` <Badge type="info" text="v0.4+" />
 
 The response object for web services (exclusive to web services data providers), containing the following properties:
 
@@ -63,12 +63,12 @@ The response object for web services (exclusive to web services data providers),
 | `host`   | String | Requested host         |
 | `body`   | Object | Returned response body |
 
-#### `$row`⚡ <Badge type="info" text="^0.4" />
+#### `$row` <Badge type="info" text="v0.4+" />
 
 The current row being processed (exclusive to web services data providers).
 These object contains returned fields of the row
 
-#### `$utils`⚡ <Badge type="info" text="^0.4" />
+#### `$utils` <Badge type="info" text="v0.4+" />
 
 The `$utils` object, containing various utility functions and methods, including data manipulation, string operations, and more.
 
@@ -80,7 +80,7 @@ Implemented Utils:
 | `$utils.Math` | Math utility functions |
 | `$utils.newUuid()` | generates a new UUID |
 
-## Field Escape Engine⚡ <Badge type="info" text="^0.4" />
+## Field Escape Engine <Badge type="info" text="v0.4+" />
 
 To escape a field value and treat it as an expression, prefix it with `$>`. This is particularly useful when an update relies on existing fields.
 You can also mix JavaScript Expression Engine and field value escape.

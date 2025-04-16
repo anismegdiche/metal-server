@@ -5,7 +5,6 @@ layout: home
 
 hero:
   name: What's new in v0.4
-  tagline: TBD, 2025
 
 features:
 
@@ -15,7 +14,7 @@ features:
         Metal now offers robust connectivity options for enterprise applications, enabling real-time data exchange 
         and system interoperability across your organization.
         <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /documentation/config-yml
+      link: /documentation/data-providers-config#webservice
 
     - title: Advanced Expression Engine
       details: |
@@ -23,7 +22,7 @@ features:
         This powerful feature enables complex data transformations, conditional logic, and custom business rules 
         directly within your data pipelines, reducing development time and improving data quality.
         <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /documentation/config-yml
+      link: /documentation/dynamic-expression-engine
 
     - title: Context-Aware Data Processing
       details: |
@@ -31,15 +30,16 @@ features:
         This capability allows you to dynamically adapt your data processing logic based on runtime conditions, 
         environment variables, and business requirements, ensuring maximum flexibility and maintainability.
         <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /documentation/config-yml
+      link: /documentation/dynamic-expression-engine#context-variables
 
-    - title: Enterprise Data Protection
+    - title: More flexibility in data updates
       details: |
-        Safeguard your sensitive data with our Field Escape Engine. This advanced security feature ensures 
-        proper data sanitization and escaping across all data operations, preventing SQL injection, XSS attacks, 
-        and other security vulnerabilities in your data pipelines.
+        Unlock powerful, flexible data updates with our Field Escape Engine. 
+        Designed to simplify and supercharge your data workflows, 
+        this feature lets you seamlessly reference and manipulate existing row data for smarter, 
+        more efficient updates.
         <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /documentation/config-yml
+      link: /documentation/dynamic-expression-engine#field-escape-engine
 
     - title: XML Data Integration
       details: |
@@ -47,7 +47,7 @@ features:
         parsing, transformation, and validation capabilities, enabling seamless integration with legacy systems 
         and enterprise applications that rely on XML data formats.
         <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /documentation/config-yml
+      link: /documentation/data-providers-config#xml
 
     - title: Enterprise Authentication
       details: |
@@ -55,25 +55,17 @@ features:
         solution enables seamless integration with your organization's identity management systems, providing 
         robust security and compliance while maintaining a frictionless user experience.
         <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /documentation/config-yml
-
-    - title: Scalable Data Processing
-      details: |
-        Optimize your data processing workflows with our new data chunking feature. This advanced capability 
-        enables efficient processing of large datasets by breaking them into manageable chunks, improving 
-        performance and resource utilization while maintaining data integrity.
-        <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /documentation/config-yml
+      link: /guides/authentication#openid-connect-authentication
 
     - title: Enterprise Storage Solutions
       details: |
         Expand your storage capabilities with support for multiple enterprise-grade storage providers:
-        - SMB storage for on-premises environments
-        - Azure File Storage for cloud scalability
-        - Amazon S3 for global reach
-        - Azure DataLake Gen2 for big data analytics
+        <br>- SMB storage for on-premises environments
+        <br>- Azure File Storage for cloud scalability
+        <br>- Amazon S3 for global reach
+        <br>- Azure DataLake Gen2 for big data analytics
         <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /documentation/config-yml
+      link: /documentation/data-providers-config#storage
 
     - title: NoSQL Database Integration
       details: |
@@ -81,5 +73,5 @@ features:
         high-performance, globally distributed data processing capabilities, perfect for modern cloud-native 
         applications and real-time data processing scenarios.
         <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /documentation/config-yml
+      link: /documentation/data-providers-config#cosmosdb
 ---

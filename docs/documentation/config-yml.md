@@ -28,7 +28,7 @@ schemas:
     source: my-source
 ```
 
-## `version` <Badge type="default" text="^0.1"/>
+## `version` <Badge type="default" text="v0.1+"/>
 
 Defines the version used for the configuration.
 Accepted values :
@@ -40,7 +40,7 @@ Accepted values :
 version: "0.4"
 ```
 
-## `server` <Badge type="default" text="^0.1" />
+## `server` <Badge type="default" text="v0.1+" />
 
 Defines the configuration of the Metal server.
 
@@ -48,14 +48,14 @@ The parameters that can be configured inside the `server` section include:
 
 | Parameter        | Type    | Required | Decription                                    | Metal version                        |
 | ---------------- | ------- | -------- | --------------------------------------------- | ------------------------------------ |
-| `authentication` | Object  | Y        | Configure user authentication                 | <Badge type="default" text="^0.3" /> |
-| `port`           | Integer | N        | Server TCP port (default: `3000`)             | <Badge type="default" text="^0.1" /> |
-| `timezone`       | String  | N        | Timezone setting (default: `UTC`)             | <Badge type="default" text="^0.1" /> |
-| `verbosity`      | String  | N        | Logging level (default: `warn`)               | <Badge type="default" text="^0.1" /> |
-| `cache`          | Object  | N        | Cache configuration(see: [sources](#sources)) | <Badge type="default" text="^0.1" /> |
-| `request-limit`  | String  | N        | Define request limit (default: `10mb`)        | <Badge type="default" text="^0.1" /> |
-| `response-limit` | String  | N        | Define response limit (default: `10mb`)       | <Badge type="default" text="^0.3" /> |
-| `response-rate`  | Object  | N        | Define response rate limit                    | <Badge type="default" text="^0.3" /> |
+| `authentication` | Object  | Y        | Configure user authentication                 | <Badge type="default" text="v0.3+" /> |
+| `port`           | Integer | N        | Server TCP port (default: `3000`)             | <Badge type="default" text="v0.1+" /> |
+| `timezone`       | String  | N        | Timezone setting (default: `UTC`)             | <Badge type="default" text="v0.1+" /> |
+| `verbosity`      | String  | N        | Logging level (default: `warn`)               | <Badge type="default" text="v0.1+" /> |
+| `cache`          | Object  | N        | Cache configuration(see: [sources](#sources)) | <Badge type="default" text="v0.1+" /> |
+| `request-limit`  | String  | N        | Define request limit (default: `10mb`)        | <Badge type="default" text="v0.1+" /> |
+| `response-limit` | String  | N        | Define response limit (default: `10mb`)       | <Badge type="default" text="v0.3+" /> |
+| `response-rate`  | Object  | N        | Define response rate limit                    | <Badge type="default" text="v0.3+" /> |
 
 **Example:**
 
@@ -72,13 +72,13 @@ server:
       serverSelectionTimeoutMS: 5000
 ```
 
-### `port` <Badge type="default" text="^0.1" />
+### `port` <Badge type="default" text="v0.1+" />
 
 Defines the Metal server's TCP port for API exposure.
 
 Default: `3000`
 
-### `verbosity` <Badge type="default" text="^0.1" />
+### `verbosity` <Badge type="default" text="v0.1+" />
 
 Sets the console logging verbosity, which can be one of the following values:
 
@@ -94,13 +94,13 @@ Default: `warn`
 Using `debug` or `trace` can significantly reduce the performance of Metal server.
 :::
 
-### `cache` <Badge type="default" text="^0.1" />
+### `cache` <Badge type="default" text="v0.1+" />
 
 Sets the Database server for storing cache objects. The configuration is the same as a source. (See: [sources](#sources))
 
 This parameter must be configured if you plan to use the cache feature in Metal server.
 
-### `timezone` <Badge type="default" text="^0.1" />
+### `timezone` <Badge type="default" text="v0.1+" />
 
 Sets the server's timezone.
 
@@ -108,7 +108,7 @@ A list of acceptable timezone values can be found [here](https://en.wikipedia.or
 
 Default: `UTC`
 
-### `authentication`⚡ <Badge type="default" text="^0.3" />
+### `authentication` <Badge type="default" text="v0.3+" />
 
 Sets the authentication configuration for the Metal server.
 
@@ -116,16 +116,16 @@ The parameters that can be configured inside the `server` section include:
 
 | Parameter      | Type         | Required | Decription                                                                                                | Metal version                        |
 | -------------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `provider`     | Enum(String) | Y        | Authentication Provider, defaults to `local` (see: [Authentication providers](#authentication-providers)) | <Badge type="default" text="^0.3" /> |
-| `default-role` | String       | N        | Default role assigned to the user when is authenticated, defaults empty. (see: [roles](#roles))           | <Badge type="default" text="^0.3" /> |
-| `autocreate`   | String       | N        | Populate automatically `users` with the authenticated user if not exist, defaults to `false`              | <Badge type="default" text="^0.3" /> |
+| `provider`     | Enum(String) | Y        | Authentication Provider, defaults to `local` (see: [Authentication providers](#authentication-providers)) | <Badge type="default" text="v0.3+" /> |
+| `default-role` | String       | N        | Default role assigned to the user when is authenticated, defaults empty. (see: [roles](#roles))           | <Badge type="default" text="v0.3+" /> |
+| `autocreate`   | String       | N        | Populate automatically `users` with the authenticated user if not exist, defaults to `false`              | <Badge type="default" text="v0.3+" /> |
 
 **Authentication providers** :
 
 | Provider | Description                                                                      | Metal version                        |
 | -------- | -------------------------------------------------------------------------------- | ------------------------------------ |
-| `local`  | Enables local authentication through Metal server using declared [users](#users) | <Badge type="default" text="^0.3" /> |
-| `oidc`   | Enables OpenID Connect authentication with an external provider                  | <Badge type="info" text="^0.4" />    |
+| `local`  | Enables local authentication through Metal server using declared [users](#users) | <Badge type="default" text="v0.3+" /> |
+| `oidc`   | Enables OpenID Connect authentication with an external provider                  | <Badge type="info" text="v0.4+" />    |
 
 **Example:**
 
@@ -140,7 +140,7 @@ For more informations about authentication, roles and users, please refer to the
 
 :::
 
-### `request-limit` <Badge type="default" text="^0.1" />
+### `request-limit` <Badge type="default" text="v0.1+" />
 
 Controls the maximum request body size. If this is a number, then the value specifies the number of bytes; if it is a string, the value is passed to the bytes library for parsing.
 For supported values, see [here](https://www.npmjs.com/package/bytes).
@@ -149,7 +149,7 @@ When exeeded, an error PAYLOAD TOO LARGE(413) will occur.
 
 Default: `10mb`
 
-### `response-limit` <Badge type="default" text="^0.3" />
+### `response-limit` <Badge type="default" text="v0.3+" />
 
 Controls the maximum response body size. If this is a number, then the value specifies the number of bytes; if it is a string, the value is passed to the bytes library for parsing.
 For supported values, see [here](https://www.npmjs.com/package/bytes).
@@ -158,16 +158,16 @@ When exeeded, an error CONTENT TOO LARGE(413) will occur.
 
 Default: `10mb`
 
-### `response-rate` <Badge type="default" text="^0.3" />
+### `response-rate` <Badge type="default" text="v0.3+" />
 
 Controls the maximum request per window.
 The parameters that can be configured inside the `response-rate` section include:
 
 | Parameter  | Type    | Required | Description                                                                                                                                                                                                      | Metal version                        |
 | ---------- | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `windowMs` | Integer | Y        | The time window for rate limiting, in milliseconds. For example, `60000` milliseconds (60 seconds).                                                                                                              | <Badge type="default" text="^0.3" /> |
-| `max`      | Integer | Y        | The maximum number of requests allowed within the `windowMs` time window. For example, `600` requests.                                                                                                           | <Badge type="default" text="^0.3" /> |
-| `message`  | String  | N        | The message to be sent when the rate limit is exceeded. This can be a custom message indicating that the user has made too many requests. For example, "Too many requests from this IP, please try again later." | <Badge type="default" text="^0.3" /> |
+| `windowMs` | Integer | Y        | The time window for rate limiting, in milliseconds. For example, `60000` milliseconds (60 seconds).                                                                                                              | <Badge type="default" text="v0.3+" /> |
+| `max`      | Integer | Y        | The maximum number of requests allowed within the `windowMs` time window. For example, `600` requests.                                                                                                           | <Badge type="default" text="v0.3+" /> |
+| `message`  | String  | N        | The message to be sent when the rate limit is exceeded. This can be a custom message indicating that the user has made too many requests. For example, "Too many requests from this IP, please try again later." | <Badge type="default" text="v0.3+" /> |
 
 If exeeded, an error TOO MANY REQUEST(429) will occur.
 
@@ -177,18 +177,18 @@ Default:
 - max: `600`
 - message: `Too many requests from this IP, please try again later`
 
-## `roles` <Badge type="default" text="^0.3" />
+## `roles` <Badge type="default" text="v0.3+" />
 
 Sets the list of roles with associated permissions used when authentication is enabled with `server.authentication`. Each role is defined by a unique name and a string of permissions where each character represents a specific permission:
 
 | Permission | Description          | Metal version                        |
 | ---------- | -------------------- | ------------------------------------ |
-| `c`        | Create data          | <Badge type="default" text="^0.3" /> |
-| `r`        | Read data            | <Badge type="default" text="^0.3" /> |
-| `u`        | Update data          | <Badge type="default" text="^0.3" /> |
-| `d`        | Delete data          | <Badge type="default" text="^0.3" /> |
-| `a`        | Administrate server  | <Badge type="default" text="^0.3" /> |
-| `l`        | List schema entities | <Badge type="default" text="^0.3" /> |
+| `c`        | Create data          | <Badge type="default" text="v0.3+" /> |
+| `r`        | Read data            | <Badge type="default" text="v0.3+" /> |
+| `u`        | Update data          | <Badge type="default" text="v0.3+" /> |
+| `d`        | Delete data          | <Badge type="default" text="v0.3+" /> |
+| `a`        | Administrate server  | <Badge type="default" text="v0.3+" /> |
+| `l`        | List schema entities | <Badge type="default" text="v0.3+" /> |
 
 **Example:**
 
@@ -199,7 +199,7 @@ roles:
   guest: r
 ```
 
-## `users` <Badge type="default" text="^0.1" />
+## `users` <Badge type="default" text="v0.1+" />
 
 Declares a list of Metal users used when authentication is enabled with `server.authentication`.
 
@@ -211,7 +211,7 @@ users:
   guest: "654321"
 ```
 
-## `sources` <Badge type="default" text="^0.1" />
+## `sources` <Badge type="default" text="v0.1+" />
 
 This section contains all source declarations and configurations that are applied to each database server endpoint connection, much like a connection string used in development.
 
@@ -246,15 +246,15 @@ The parameters that can be configured inside a source include:
 
 | Parameter  | Type         | Required | Decription             | Metal version                        |
 | ---------- | ------------ | -------- | ---------------------- | ------------------------------------ |
-| `provider` | Enum(String) | Y        | Provider type          | <Badge type="default" text="^0.1" /> |
-| `database` | String       | Y        | Provider database      | <Badge type="default" text="^0.1" /> |
-| `host`     | String       | N        | Host server            | <Badge type="default" text="^0.1" /> |
-| `port`     | Integer      | N        | Host port              | <Badge type="default" text="^0.1" /> |
-| `user`     | String       | N        | Provider user          | <Badge type="default" text="^0.1" /> |
-| `password` | String       | N        | Provider user password | <Badge type="default" text="^0.1" /> |
-| `options`  | Object       | N        | Additional options     | <Badge type="default" text="^0.1" /> |
+| `provider` | Enum(String) | Y        | Provider type          | <Badge type="default" text="v0.1+" /> |
+| `database` | String       | Y        | Provider database      | <Badge type="default" text="v0.1+" /> |
+| `host`     | String       | N        | Host server            | <Badge type="default" text="v0.1+" /> |
+| `port`     | Integer      | N        | Host port              | <Badge type="default" text="v0.1+" /> |
+| `user`     | String       | N        | Provider user          | <Badge type="default" text="v0.1+" /> |
+| `password` | String       | N        | Provider user password | <Badge type="default" text="v0.1+" /> |
+| `options`  | Object       | N        | Additional options     | <Badge type="default" text="v0.1+" /> |
 
-### `provider` <Badge type="default" text="^0.1" />
+### `provider` <Badge type="default" text="v0.1+" />
 
 Defines the data provider type.
 
@@ -262,13 +262,13 @@ The table below describes the different values that can be configured in the `pr
 
 | Value      | DBMS Provider                             | Metal version                        |
 | ---------- | ----------------------------------------- | ------------------------------------ |
-| `postgres` | PostgreSQL                                | <Badge type="default" text="^0.1" /> |
-| `mssql`    | Azure Sql Database, Microsoft SQL Server  | <Badge type="default" text="^0.1" /> |
-| `mongodb`  | MongoDB                                   | <Badge type="default" text="^0.1" /> |
-| `plan`     | Connect to Metal Plan                     | <Badge type="default" text="^0.2" /> |
-| `files`    | Files as tables abstraction data provider | <Badge type="default" text="^0.2" /> |
-| `metal`    | Metal Server via REST                     | <Badge type="default" text="^0.2" /> |
-| `memory`   | Local Memory storage (Non-persistant)     | <Badge type="default" text="^0.2" /> |
+| `postgres` | PostgreSQL                                | <Badge type="default" text="v0.1+" /> |
+| `mssql`    | Azure Sql Database, Microsoft SQL Server  | <Badge type="default" text="v0.1+" /> |
+| `mongodb`  | MongoDB                                   | <Badge type="default" text="v0.1+" /> |
+| `plan`     | Connect to Metal Plan                     | <Badge type="default" text="v0.2+" /> |
+| `files`    | Files as tables abstraction data provider | <Badge type="default" text="v0.2+" /> |
+| `metal`    | Metal Server via REST                     | <Badge type="default" text="v0.2+" /> |
+| `memory`   | Local Memory storage (Non-persistant)     | <Badge type="default" text="v0.2+" /> |
 
 For more detailed information about how to configure a data provider, See: [Data Providers Configurations](./data-providers-config.md)
 
@@ -295,7 +295,7 @@ sources:
     provider: postgres
 ```
 
-### `host` <Badge type="default" text="^0.1" />
+### `host` <Badge type="default" text="v0.1+" />
 
 Defines the DBMS server host.
 
@@ -315,7 +315,7 @@ For MongoDB, the host must be provided in the URI form `mongodb://my-server:my-s
 MS SQL Server can be provided in the form `MY-SERVER\MY-INSTANCE`.
 :::
 
-### `port` <Badge type="default" text="^0.1" />
+### `port` <Badge type="default" text="v0.1+" />
 
 Defines the DBMS TCP port.
 
@@ -331,7 +331,7 @@ sources:
 This parameter is unnecessary for MongoDB.
 :::
 
-### `user` <Badge type="default" text="^0.1" />
+### `user` <Badge type="default" text="v0.1+" />
 
 Defines the user to connect to the DBMS server.
 
@@ -343,7 +343,7 @@ sources:
     user: root
 ```
 
-### `password` <Badge type="default" text="^0.1" />
+### `password` <Badge type="default" text="v0.1+" />
 
 Defines the DBMS user password.
 
@@ -355,7 +355,7 @@ sources:
     password: MySecretPassword
 ```
 
-### `database` <Badge type="default" text="^0.1" />
+### `database` <Badge type="default" text="v0.1+" />
 
 Defines the name of the database to connect to.
 
@@ -367,7 +367,7 @@ sources:
     database: mydatabase
 ```
 
-### `options` <Badge type="default" text="^0.1" />
+### `options` <Badge type="default" text="v0.1+" />
 
 This parameter defines optional parameters to be passed to the data provider.
 
@@ -388,7 +388,7 @@ sources:
 For more information about how to configure a data provider and its options, See: [Data Providers Configurations](./data-providers-config.md)
 :::
 
-## `schemas` <Badge type="default" text="^0.1" />
+## `schemas` <Badge type="default" text="v0.1+" />
 
 This section is used to declare virtual schemas.
 
@@ -423,11 +423,11 @@ The parameters that can be configured inside a source include:
 
 | Parameter   | Decription                        | Metal version                        |
 | ----------- | --------------------------------- | ------------------------------------ |
-| `source`    | Source to use                     | <Badge type="default" text="^0.1" /> |
-| `entities`  | Detailed entities configuration   | <Badge type="default" text="^0.1" /> |
-| `anonymize` | to anonymize data of given fields | <Badge type="default" text="^0.3" /> |
+| `source`    | Source to use                     | <Badge type="default" text="v0.1+" /> |
+| `entities`  | Detailed entities configuration   | <Badge type="default" text="v0.1+" /> |
+| `anonymize` | to anonymize data of given fields | <Badge type="default" text="v0.3+" /> |
 
-### `source` <Badge type="default" text="^0.1" />
+### `source` <Badge type="default" text="v0.1+" />
 
 Declare which source to use from the `sources` section. (See: [sources](#sources))
 
@@ -439,7 +439,7 @@ schemas:
     source: my-mssql-db
 ```
 
-### `entities` <Badge type="default" text="^0.1" />
+### `entities` <Badge type="default" text="v0.1+" />
 
 Used to declare each entity from sources. It is possible to declare entities from different sources. Only declared entities are visible.
 
@@ -482,7 +482,7 @@ schemas:
 
 :::
 
-### `anonymize` <Badge type="default" text="^0.3" />
+### `anonymize` <Badge type="default" text="v0.3+" />
 
 To anonymize data of given fields. It can be unique field or a list of fields seperated with comma.
 
@@ -503,7 +503,7 @@ schemas:
 When using `anonymize` in a schema and in a plan, data will be anonymized twice.
 :::
 
-## `ai-engines` <Badge type="default" text="^0.1" />
+## `ai-engines` <Badge type="default" text="v0.1+" />
 
 This section declares AI engine processors like Tesseract.js and NLP.js to be used in plans with the command `run` (see: [run](#run))
 
@@ -511,9 +511,9 @@ The parameters that can be configured inside an AI engine include:
 
 | Parameter | Decription                     | Metal version                        |
 | --------- | ------------------------------ | ------------------------------------ |
-| `engine`  | AI engine to use               | <Badge type="default" text="^0.1" /> |
-| `model`   | Model handled by the AI engine | <Badge type="default" text="^0.1" /> |
-| `options` | Additional options             | <Badge type="default" text="^0.1" /> |
+| `engine`  | AI engine to use               | <Badge type="default" text="v0.1+" /> |
+| `model`   | Model handled by the AI engine | <Badge type="default" text="v0.1+" /> |
+| `options` | Additional options             | <Badge type="default" text="v0.1+" /> |
 
 For more detailed information about how to configure an AI engine, See: [AI Engines Configurations](./ai-engines-config.md)
 
@@ -528,7 +528,7 @@ ai-engines:
       lang: en
 ```
 
-## `plans` <Badge type="default" text="^0.1" />
+## `plans` <Badge type="default" text="v0.1+" />
 
 This section is used to declare plans which are an ETL steps.
 It can be used on the fly by calling a schema conneted to a plan or by scheduling as a job.
@@ -575,22 +575,22 @@ The steps that can be configured inside a plan can be:
 
 | Step command        | Decription                                                                                       | Metal version                        |
 | ------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| `select`            | to select data from an entity. If schema is not provided, actual plan's entity data will be used | <Badge type="default" text="^0.1" /> |
-| `insert`            | to insert data to an entity. If schema is not provided, actual plan's entity data will be used   | <Badge type="default" text="^0.1" /> |
-| `delete`            | to delete data from an entity. If schema is not provided, actual plan's entity data will be used | <Badge type="default" text="^0.1" /> |
-| `update`            | to update data of an entity. If schema is not provided, actual plan's entity data will be used   | <Badge type="default" text="^0.1" /> |
-| `debug`             | to enable steps debug                                                                            | <Badge type="default" text="^0.1" /> |
-| `break`             | to stop plan execution at this step                                                              | <Badge type="default" text="^0.1" /> |
-| `join`              | to perform data joins (Left,Right,Inner,Full outer and Cross)                                    | <Badge type="default" text="^0.1" /> |
-| `sort`              | to sort actual data                                                                              | <Badge type="default" text="^0.1" /> |
-| `fields`            | fields to keep from actual data                                                                  | <Badge type="default" text="^0.1" /> |
-| `run`               | to run an AI Engine                                                                              | <Badge type="default" text="^0.1" /> |
-| `sync`              | to synchronize data from data source to a data destination                                       | <Badge type="default" text="^0.2" /> |
-| `anonymize`         | to anonymize data of given fields                                                                | <Badge type="default" text="^0.3" /> |
-| `remove-duplicates` | to remove duplicated rows                                                                        | <Badge type="default" text="^0.3" /> |
-| `list-entities`     | to list entities in a schema                                                                     | <Badge type="default" text="^0.3" /> |
+| `select`            | to select data from an entity. If schema is not provided, actual plan's entity data will be used | <Badge type="default" text="v0.1+" /> |
+| `insert`            | to insert data to an entity. If schema is not provided, actual plan's entity data will be used   | <Badge type="default" text="v0.1+" /> |
+| `delete`            | to delete data from an entity. If schema is not provided, actual plan's entity data will be used | <Badge type="default" text="v0.1+" /> |
+| `update`            | to update data of an entity. If schema is not provided, actual plan's entity data will be used   | <Badge type="default" text="v0.1+" /> |
+| `debug`             | to enable steps debug                                                                            | <Badge type="default" text="v0.1+" /> |
+| `break`             | to stop plan execution at this step                                                              | <Badge type="default" text="v0.1+" /> |
+| `join`              | to perform data joins (Left,Right,Inner,Full outer and Cross)                                    | <Badge type="default" text="v0.1+" /> |
+| `sort`              | to sort actual data                                                                              | <Badge type="default" text="v0.1+" /> |
+| `fields`            | fields to keep from actual data                                                                  | <Badge type="default" text="v0.1+" /> |
+| `run`               | to run an AI Engine                                                                              | <Badge type="default" text="v0.1+" /> |
+| `sync`              | to synchronize data from data source to a data destination                                       | <Badge type="default" text="v0.2+" /> |
+| `anonymize`         | to anonymize data of given fields                                                                | <Badge type="default" text="v0.3+" /> |
+| `remove-duplicates` | to remove duplicated rows                                                                        | <Badge type="default" text="v0.3+" /> |
+| `list-entities`     | to list entities in a schema                                                                     | <Badge type="default" text="v0.3+" /> |
 
-### `list-entities` <Badge type="default" text="^0.3" />
+### `list-entities` <Badge type="default" text="v0.3+" />
 
 To list entities in a schema.
 If schema is not provided, a list of actual plan's entities will be returned.
@@ -599,7 +599,7 @@ The parameters that can be configured inside `select` tag are :
 
 | Name     | Decription     | Metal version                        |
 | -------- | -------------- | ------------------------------------ |
-| `schema` | name of schema | <Badge type="default" text="^0.3" /> |
+| `schema` | name of schema | <Badge type="default" text="v0.3+" /> |
 
 **Example**
 
@@ -611,7 +611,7 @@ plans:
         schema: my-schema
 ```
 
-### 📜`select`⚡ <Badge type="default" text="^0.1" />
+### 📜`select` <Badge type="default" text="v0.1+" />
 
 To select data from an entity.
 If schema is not provided, actual plan's entity data will be returned.
@@ -620,13 +620,13 @@ The parameters that can be configured inside `select` tag are :
 
 | Name                  | Decription                                                                                       | JS Context                                                                                   | Metal version                        |
 | --------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `schema`              | name of schema                                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
-| `entity`              | name of entity in the `schema`                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
-| 📜`fields`            | fields to keep, comma seperated. (see: [Optional Parameters](rest-api#optional-parameters))      | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
-| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
-| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
-| 📜`sort`              | sort data, can be `asc` or `desc`. (see: [Optional Parameters](rest-api#optional-parameters))    | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
-| `cache`               | time in seconds to cache data. (see: [Optional Parameters](rest-api#optional-parameters))        | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
+| `schema`              | name of schema                                                                                   | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
+| `entity`              | name of entity in the `schema`                                                                   | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
+| 📜`fields`            | fields to keep, comma seperated. (see: [Optional Parameters](rest-api#optional-parameters))      | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| 📜`sort`              | sort data, can be `asc` or `desc`. (see: [Optional Parameters](rest-api#optional-parameters))    | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| `cache`               | time in seconds to cache data. (see: [Optional Parameters](rest-api#optional-parameters))        | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -642,7 +642,7 @@ plans:
         fields: login, partner_id
 ```
 
-### 📜`insert`⚡ <Badge type="default" text="^0.1" />
+### 📜`insert` <Badge type="default" text="v0.1+" />
 
 To insert data to an entity.
 If schema is not provided, actual plan's entity data will be modified
@@ -651,9 +651,9 @@ The parameters that can be configured inside `insert` tag are :
 
 | Name     | Description                                                                                     | JS Context                                                                                   | Metal version                        |
 | -------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `schema` | name of schema                                                                                  | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
-| `entity` | name of entity in the `schema`                                                                  | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
-| 📜`data` | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| `schema` | name of schema                                                                                  | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
+| `entity` | name of entity in the `schema`                                                                  | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
+| 📜`data` | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
 
 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -675,7 +675,7 @@ plans:
               url: https://www.bing.com
 ```
 
-### 📜`delete`⚡ <Badge type="default" text="^0.1" />
+### 📜`delete` <Badge type="default" text="v0.1+" />
 
 To delete data from an entity.
 If schema is not provided, actual plan's entity data will be modified
@@ -684,10 +684,10 @@ The parameters that can be configured inside `delete` tag are :
 
 | Name                  | Description                                                                                      | JS Context                                                                                   | Metal version                        |
 | --------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `schema`              | name of schema                                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
-| `entity`              | name of entity in the `schema`                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
-| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
-| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| `schema`              | name of schema                                                                                   | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
+| `entity`              | name of entity in the `schema`                                                                   | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
+| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
 
 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -703,7 +703,7 @@ plans:
           filter-expression: "id >= 100"
 ```
 
-### 📜`update`⚡ <Badge type="default" text="^0.1" />
+### 📜`update` <Badge type="default" text="v0.1+" />
 
 To update data of an entity.
 If schema is not provided, actual plan's entity data will be modified
@@ -712,11 +712,11 @@ The parameters that can be configured inside `update` tag are :
 
 | Name                  | Description                                                                                      | JS Context                                                                                   | Metal version                        |
 | --------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `schema`              | name of schema                                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
-| `entity`              | name of entity in the `schema`                                                                   | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
-| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
-| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
-| 📜❇️`data`            | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters))  | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| `schema`              | name of schema                                                                                   | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
+| `entity`              | name of entity in the `schema`                                                                   | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
+| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| 📜❇️`data`            | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters))  | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 >
@@ -737,7 +737,7 @@ plans:
             name: "******"
 ```
 
-### `debug` <Badge type="default" text="^0.1" />
+### `debug` <Badge type="default" text="v0.1+" />
 
 Enable plan steps debugging to be visible in the metadata of the JSON return.
 It can be one of the following values :
@@ -752,7 +752,7 @@ plans:
       - debug:
 ```
 
-### `break` <Badge type="default" text="^0.1" />
+### `break` <Badge type="default" text="v0.1+" />
 
 To stop execution of the plan at this step.
 
@@ -765,7 +765,7 @@ plans:
       - break:
 ```
 
-### 📜`join`⚡ <Badge type="default" text="^0.1" />
+### 📜`join` <Badge type="default" text="v0.1+" />
 
 To perform data joins (Left,Right,Inner,Full outer and Cross)
 
@@ -773,11 +773,11 @@ The parameters that can be configured inside `join` tag are :
 
 | Name            | Description                                                          | JS Context                                                                                   | Metal version                        |
 | --------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------ |
-| 📜`schema`      | name of schema. If not provided actual plan will be used as a schema | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
-| 📜`entity`      | name of entity in the `schema`                                       | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
-| `type`          | Join type can be `left`,`right`,`inner`,`full-outer`,`cross`         | N/A                                                                                          | <Badge type="default" text="^0.1" /> |
-| 📜`left-field`  | Left field for equality with `right-field`                           | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
-| 📜`right-field` | Right field                                                          | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" />    |
+| 📜`schema`      | name of schema. If not provided actual plan will be used as a schema | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| 📜`entity`      | name of entity in the `schema`                                       | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| `type`          | Join type can be `left`,`right`,`inner`,`full-outer`,`cross`         | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
+| 📜`left-field`  | Left field for equality with `right-field`                           | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| 📜`right-field` | Right field                                                          | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -785,11 +785,11 @@ The `type` parameter can be :
 
 | Value        | Description     | Metal version                        |
 | ------------ | --------------- | ------------------------------------ |
-| `left`       | Left Join       | <Badge type="default" text="^0.1" /> |
-| `right`      | Right Join      | <Badge type="default" text="^0.1" /> |
-| `inner`      | Inner Join      | <Badge type="default" text="^0.1" /> |
-| `full-outer` | Full Outer Join | <Badge type="default" text="^0.1" /> |
-| `cross`      | Cross Join      | <Badge type="default" text="^0.1" /> |
+| `left`       | Left Join       | <Badge type="default" text="v0.1+" /> |
+| `right`      | Right Join      | <Badge type="default" text="v0.1+" /> |
+| `inner`      | Inner Join      | <Badge type="default" text="v0.1+" /> |
+| `full-outer` | Full Outer Join | <Badge type="default" text="v0.1+" /> |
+| `cross`      | Cross Join      | <Badge type="default" text="v0.1+" /> |
 
 **Example**
 
@@ -813,7 +813,7 @@ plans:
           right-field: id
 ```
 
-### `sort` <Badge type="default" text="^0.1" />
+### `sort` <Badge type="default" text="v0.1+" />
 
 To sort actual plan's entity data
 
@@ -839,7 +839,7 @@ plans:
           name: desc
 ```
 
-### `fields` <Badge type="default" text="^0.1" />
+### `fields` <Badge type="default" text="v0.1+" />
 
 To keep fields from actual plan's entity data
 
@@ -862,7 +862,7 @@ plans:
       - fields: id, name, display_name
 ```
 
-### `run` <Badge type="default" text="^0.1" />
+### `run` <Badge type="default" text="v0.1+" />
 
 To run an AI Engine on actual plan's entity data.
 
@@ -870,9 +870,9 @@ The parameters that can be configured inside `run` tag are :
 
 | Name     | Description                                                                                                                                                                                                                                                     | Metal version                        |
 | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `ai`     | name of a declared AI Engine (see: [ai-engines](#ai-engines))                                                                                                                                                                                                   | <Badge type="default" text="^0.1" /> |
-| `input`  | input field to perform the processing                                                                                                                                                                                                                           | <Badge type="default" text="^0.1" /> |
-| `output` | Output result to be stored. If nothing is provided, the entire object will be stored in a field that has the AI Engine name. It accept a list of `key:value` where the `key` is a child of the result and the `value` is the renamed field in the plan's entity | <Badge type="default" text="^0.1" /> |
+| `ai`     | name of a declared AI Engine (see: [ai-engines](#ai-engines))                                                                                                                                                                                                   | <Badge type="default" text="v0.1+" /> |
+| `input`  | input field to perform the processing                                                                                                                                                                                                                           | <Badge type="default" text="v0.1+" /> |
+| `output` | Output result to be stored. If nothing is provided, the entire object will be stored in a field that has the AI Engine name. It accept a list of `key:value` where the `key` is a child of the result and the `value` is the renamed field in the plan's entity | <Badge type="default" text="v0.1+" /> |
 
 **Example**
 
@@ -893,7 +893,7 @@ plans:
             text: ocr_text
 ```
 
-### 📜`sync`⚡ <Badge type="default" text="^0.2" />
+### 📜`sync` <Badge type="default" text="v0.2+" />
 
 To synchronize data from source to destination. This will performs Update, Insert and Delete operations on the destination entity to be the exact copy of the data source.
 
@@ -901,11 +901,11 @@ The parameters that can be configured inside `sync` tag are :
 
 | Name            | Description                                                                                                     | JS Context                                                                                   | Metal version                     |
 | --------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------- |
-| 📜`from.schema` | name of source schema. If not provided actual plan will be used as a schema                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" /> |
-| 📜`from.entity` | name of source entity in the `from.schema`                                                                      | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" /> |
-| 📜`to.schema`   | name of destination schema. If not provided actual plan will be used as a schema                                | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" /> |
-| 📜`to.entity`   | name of destination entity in the `to.schema`                                                                   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" /> |
-| 📜`id`          | field that exists in both source and destination entity. It will be used as unique identity for synchronization | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="^0.4" /> |
+| 📜`from.schema` | name of source schema. If not provided actual plan will be used as a schema                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" /> |
+| 📜`from.entity` | name of source entity in the `from.schema`                                                                      | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" /> |
+| 📜`to.schema`   | name of destination schema. If not provided actual plan will be used as a schema                                | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" /> |
+| 📜`to.entity`   | name of destination entity in the `to.schema`                                                                   | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" /> |
+| 📜`id`          | field that exists in both source and destination entity. It will be used as unique identity for synchronization | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -925,7 +925,7 @@ plans:
           id: user_id
 ```
 
-### `anonymize` <Badge type="default" text="^0.3" />
+### `anonymize` <Badge type="default" text="v0.3+" />
 
 To anonymize data of given fields.
 
@@ -940,16 +940,16 @@ plans:
       - anonymize: contact_name, company_name
 ```
 
-### `remove-duplicates` <Badge type="default" text="^0.3" />
+### `remove-duplicates` <Badge type="default" text="v0.3+" />
 
 The `remove-duplicates` function is designed to remove duplicate rows from a dataset based on specified parameters. Here are the details:
 
 | Parameters  | Type          | Required | Description                                                            | Metal version                        |
 | ----------- | ------------- | -------- | ---------------------------------------------------------------------- | ------------------------------------ |
-| `keys`      | Array(String) | No       | List of key(s) used for comparison (default: empty)                    | <Badge type="default" text="^0.3" /> |
-| `method`    | String        | No       | Method of comparison (default: `hash`)                                 | <Badge type="default" text="^0.3" /> |
-| `strategy`  | String        | No       | Strategy to adopt when duplicates are found (default: `first`)         | <Badge type="default" text="^0.3" /> |
-| `condition` | String        | No       | Condition to apply according to the selected strategy (default: empty) | <Badge type="default" text="^0.3" /> |
+| `keys`      | Array(String) | No       | List of key(s) used for comparison (default: empty)                    | <Badge type="default" text="v0.3+" /> |
+| `method`    | String        | No       | Method of comparison (default: `hash`)                                 | <Badge type="default" text="v0.3+" /> |
+| `strategy`  | String        | No       | Strategy to adopt when duplicates are found (default: `first`)         | <Badge type="default" text="v0.3+" /> |
+| `condition` | String        | No       | Condition to apply according to the selected strategy (default: empty) | <Badge type="default" text="v0.3+" /> |
 
 **Parameters**
 
@@ -1002,7 +1002,7 @@ plans:
           strategy: first # <-  'first' for keeping the first found row
 ```
 
-## `schedules` <Badge type="default" text="^0.1" />
+## `schedules` <Badge type="default" text="v0.1+" />
 
 This section defines the scheduled execution of plans according to a Cron expression.
 
@@ -1010,9 +1010,9 @@ The parameters that can be configured inside schedule are :
 
 | Name     | Type   | Required | Description                                                            | Metal version                        |
 | -------- | ------ | -------- | ---------------------------------------------------------------------- | ------------------------------------ |
-| `plan`   | String | Y        | name of the plan                                                       | <Badge type="default" text="^0.1" /> |
-| `entity` | String | Y        | name of the entity in the `plan`                                       | <Badge type="default" text="^0.1" /> |
-| `cron`   | String | Y        | A cron expression string, or `@start` for once at Metal server startup | <Badge type="default" text="^0.1" /> |
+| `plan`   | String | Y        | name of the plan                                                       | <Badge type="default" text="v0.1+" /> |
+| `entity` | String | Y        | name of the entity in the `plan`                                       | <Badge type="default" text="v0.1+" /> |
+| `cron`   | String | Y        | A cron expression string, or `@start` for once at Metal server startup | <Badge type="default" text="v0.1+" /> |
 
 **Example**
 

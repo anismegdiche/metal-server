@@ -16,8 +16,8 @@ Tesseract.js supports over 100 languages, automatic text orientation, and script
 
 | Parameter | Type   | Required | Description                                                                                                                                                                            | Metal Version                        |
 | --------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `engine`  | String | Y        | Set to `tesseractjs` for Tesseract.js                                                                                                                                                  | <Badge type="default" text="^0.1" /> |
-| `model`   | String | N        | Language to use for OCR, defaults to `eng` (see Lang Code: [Tesseract OCR Data Files](https://tesseract-ocr.github.io/tessdoc/Data-Files#data-files-for-version-400-november-29-2016)) | <Badge type="default" text="^0.1" /> |
+| `engine`  | String | Y        | Set to `tesseractjs` for Tesseract.js                                                                                                                                                  | <Badge type="default" text="v0.1+" /> |
+| `model`   | String | N        | Language to use for OCR, defaults to `eng` (see Lang Code: [Tesseract OCR Data Files](https://tesseract-ocr.github.io/tessdoc/Data-Files#data-files-for-version-400-november-29-2016)) | <Badge type="default" text="v0.1+" /> |
 
 **Example Configuration:**
 
@@ -52,14 +52,14 @@ TensorFlow.js is an open-source JavaScript library that allows you to develop ma
 
 | Parameter | Type   | Required | Description                             | Metal Version                        |
 | --------- | ------ | -------- | --------------------------------------- | ------------------------------------ |
-| `engine`  | String | Yes      | Set to `tensorflowjs` for TensorFlow.js | <Badge type="default" text="^0.1" /> |
-| `model`   | String | Yes      | Model to use (see: Models table)        | <Badge type="default" text="^0.1" /> |
+| `engine`  | String | Yes      | Set to `tensorflowjs` for TensorFlow.js | <Badge type="default" text="v0.1+" /> |
+| `model`   | String | Yes      | Model to use (see: Models table)        | <Badge type="default" text="v0.1+" /> |
 
 **Models:**
 
 | Model Value      | Description       | Metal Version                        |
 | ---------------- | ----------------- | ------------------------------------ |
-| `image-classify` | To classify image | <Badge type="default" text="^0.1" /> |
+| `image-classify` | To classify image | <Badge type="default" text="v0.1+" /> |
 
 ### `image-classify`
 
@@ -109,15 +109,15 @@ NLP.js is an open-source JavaScript library for natural language processing (NLP
 
 | Parameter | Type   | Required | Description                      | Metal Version                        |
 | --------- | ------ | -------- | -------------------------------- | ------------------------------------ |
-| `engine`  | String | Yes      | Set to `nlpjs` for NLP.js        | <Badge type="default" text="^0.1" /> |
-| `model`   | String | Yes      | Model to use (see: Models table) | <Badge type="default" text="^0.1" /> |
+| `engine`  | String | Yes      | Set to `nlpjs` for NLP.js        | <Badge type="default" text="v0.1+" /> |
+| `model`   | String | Yes      | Model to use (see: Models table) | <Badge type="default" text="v0.1+" /> |
 
 **Models:**
 
 | Model Value  | Description               | Metal Version                        |
 | ------------ | ------------------------- | ------------------------------------ |
-| `sentiment`  | For sentiment analysis    | <Badge type="default" text="^0.1" /> |
-| `lang-guess` | For guessing the language | <Badge type="default" text="^0.1" /> |
+| `sentiment`  | For sentiment analysis    | <Badge type="default" text="v0.1+" /> |
+| `lang-guess` | For guessing the language | <Badge type="default" text="v0.1+" /> |
 
 ### `sentiment`
 
@@ -127,7 +127,7 @@ Sentiment analysis determines the sentiment expressed in a given text, typically
 
 | Parameter | Type   | Required | Description                                                                                                                                                                                                           | Metal Version                        |
 | --------- | ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `lang`    | String | No       | Defines the language of the text to be analyzed, defaults to `en`. For supported languages, see [NLP.js Sentiment Analysis Languages](https://github.com/axa-group/nlp.js/blob/master/docs/v3/sentiment-analysis.md). | <Badge type="default" text="^0.1" /> |
+| `lang`    | String | No       | Defines the language of the text to be analyzed, defaults to `en`. For supported languages, see [NLP.js Sentiment Analysis Languages](https://github.com/axa-group/nlp.js/blob/master/docs/v3/sentiment-analysis.md). | <Badge type="default" text="v0.1+" /> |
 
 **Example Configuration:**
 
@@ -170,7 +170,7 @@ Language guessing can identify the language of a given text. This feature is use
 
 | Parameter | Type   | Required | Description                                                                                                                                                                                                       | Metal Version                        |
 | --------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| `accept`  | String | No       | Defines a list of languages to guess, separated by commas, defaults to `en`. For supported languages, see [NLP.js Language Support](https://github.com/axa-group/nlp.js/blob/master/docs/v3/language-support.md). | <Badge type="default" text="^0.1" /> |
+| `accept`  | String | No       | Defines a list of languages to guess, separated by commas, defaults to `en`. For supported languages, see [NLP.js Language Support](https://github.com/axa-group/nlp.js/blob/master/docs/v3/language-support.md). | <Badge type="default" text="v0.1+" /> |
 
 **Example Configuration:**
 
