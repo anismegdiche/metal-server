@@ -163,8 +163,8 @@ jobs:
 
       - name: Force sync dev to latest (delete orphans)
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --local user.email "anis.megdiche@gmail.com"
+          git config --local user.name "Anis Megdiche"
           git fetch origin
           git checkout dev
           git push origin dev:latest --force
