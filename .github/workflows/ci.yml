@@ -43,7 +43,6 @@ jobs:
           NODE_NO_WARNINGS: 1
         with:
           node-version: ${{ matrix.node }}
-          cache: "npm"
 
       - name: Install dependencies
         run: npm install
@@ -115,14 +114,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "22.13.0"
-          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run semantic-release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Uses GitHub Actions' built-in token
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
   
   sync-docs:
@@ -158,14 +156,17 @@ jobs:
         uses: actions/checkout@v3
         env:
           NODE_NO_WARNINGS: 1
+          GH_PAT: ${{ secrets.GH_PAT }}
         with:
           ref: dev
 
       - name: Force sync dev to latest (delete orphans)
         run: |
-          git config --local user.email "anis.megdiche@gmail.com"
-          git config --local user.name "Anis Megdiche"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git fetch origin
           git checkout dev
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/anismegdiche/metal-server.git
           git push origin dev:latest --force
+
         
