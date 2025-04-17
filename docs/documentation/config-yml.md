@@ -9,7 +9,7 @@ description: "Metal:Middleware, ETL & AI at the same place. Empower your project
 **Example `config.yml`**
 
 ```yaml
-version: "0.3"
+version: "0.4"
 
 server:
   port: 3000
