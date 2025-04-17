@@ -145,4 +145,27 @@ jobs:
         with:
           GH_PAT: ${{ secrets.GH_PAT }}
           SKIP_PR: true
+  
+  deploy:
+    needs: 
+      - release
+    if: github.ref_name == 'dev' && needs.release.result == 'success'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        env:
+          NODE_NO_WARNINGS: 1
+        with:
+          ref: dev
+
+      - name: Force sync dev to latest (delete orphans)
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git fetch origin
+          git checkout dev
+          git push origin dev:latest --force
         
