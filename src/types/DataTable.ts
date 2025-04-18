@@ -3,7 +3,7 @@
 //
 //
 //
-import _ from 'lodash'
+import _, { Many } from 'lodash'
 import alasql from 'alasql'
 import { createHash } from 'crypto'
 //
@@ -12,25 +12,27 @@ import { Logger } from '../utils/Logger'
 import { JsonHelper } from "../lib/JsonHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { HttpErrorInternalServerError } from "../server/HttpErrors"
+import { clsClonable } from "../utils/clsClonable"
 
 
+//
 export const enum SORT_ORDER {
     ASC = "asc",      // Ascending
     DESC = "desc"     // Descending
 }
 
 export const enum JOIN_TYPE {
-    LEFT = "left",            // Left Join
-    RIGHT = "right",          // Right Join
-    INNER = "inner",          // Inner Join
-    FULL_OUTER = "full-outer", // Full Outer Join
-    CROSS = "cross"           // Cross Join
+    LEFT = "left",               // Left Join
+    RIGHT = "right",             // Right Join
+    INNER = "inner",             // Inner Join
+    FULL_OUTER = "full-outer",   // Full Outer Join
+    CROSS = "cross"              // Cross Join
 }
 
 export const enum REMOVE_DUPLICATES_METHOD {
     HASH = "hash",	            // Uses a hash function to generate unique values for each row based on specified key(s) for comparison.
     EXACT = "exact",	        // Performs an exact comparison of the specified key(s) to identify duplicates.
-    IGNORE_CASE = "ignorecase"	// Performs a case insensitive comparison of the specified key(s) to identify duplicates.
+    IGNORE_CASE = "ignorecase"	// Performs a case-insensitive comparison of the specified key(s) to identify duplicates.
     //   | "fuzzy"	            // Uses fuzzy matching techniques to identify duplicates based on similarity rather than exact match.
     //   | "script"	            // Executes a user-defined script to identify and handle duplicates.
     //   | "group"	            // Groups rows by specified key(s) and applies the deduplication strategy within each group.
@@ -46,23 +48,34 @@ export const enum REMOVE_DUPLICATES_STRATEGY {
     CUSTOM = "custom"	 // Allows for a custom strategy defined by user logic.
 }
 
+
+//
 export type TRow = TJson
 export type TFields = TJson
 export type TMetaData = Record<string, unknown>
-export type TSortOrder = boolean | SORT_ORDER
+// export type TSortOrder = boolean | SORT_ORDER
+export type TOrderBy = Record<string, SORT_ORDER | undefined>
 export type TSyncReport = {
     AddedRows: TRow[]
     DeletedRows: TRow[]
     UpdatedRows: TRow[]
 }
 
-export class DataTable {
+
+//
+export class DataTable extends clsClonable {
     Name: string
     Fields: TFields = {}
     Rows: TRow[] = []
     MetaData: TMetaData = {}
 
-    constructor(name: string | undefined = undefined, rows: TJson[] | undefined = undefined, fields: TJson | undefined = undefined, metaData: TJson | undefined = undefined) {
+    constructor(
+        name: string | undefined = undefined,
+        rows: TJson | TJson[] | undefined = undefined,
+        fields: TJson | undefined = undefined,
+        metaData: TJson | undefined = undefined
+    ) {
+        super()
         this.Name = name ?? crypto.randomUUID()
         if (rows)
             this.Set(Array.isArray(rows)
@@ -76,8 +89,8 @@ export class DataTable {
             this.MetaData = metaData as TMetaData
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
-    Set(rows: TJson[] | undefined = undefined): this {
+    @Logger.LogFunction(true)
+    Set(rows?: TJson[]): this {
         if (rows) {
             this.Rows = [...rows]
             this.SetFields()
@@ -86,9 +99,15 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
+    Rename(name: string): this {
+        this.Name = name
+        return this
+    }
+
+    @Logger.LogFunction()
     SetFields(): this {
         const _cols: TJson = { ...this.Rows[0] }
-        // eslint-disable-next-line you-dont-need-lodash-underscore/reduce
+
         this.Fields = _.reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
             return _cols
@@ -98,8 +117,7 @@ export class DataTable {
 
     @Logger.LogFunction()
     GetFieldNames(): string[] {
-        // eslint-disable-next-line you-dont-need-lodash-underscore/keys
-        return _.keys(this.Fields)
+        return Object.keys(this.Fields)
     }
 
     @Logger.LogFunction()
@@ -120,7 +138,7 @@ export class DataTable {
     UnPrefixAllfields(): this {
         if (this.Rows.length === 0)
             return this
-        
+
         for (const _row of this.Rows) {
             for (const [__col, __value] of Object.entries(_row)) {
                 const ___colNew = __col.includes('.')
@@ -136,7 +154,7 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
-    FreeSql(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): this {
+    FreeSql(sqlQuery: string | undefined, jsonData?: object[]): this {
         if (sqlQuery == undefined)
             return this
 
@@ -146,9 +164,8 @@ export class DataTable {
 
         try {
             const _result = alasql(sqlQuery, jsonData)
-            this.Rows = (typeof _result === 'object')
-                ? _result
-                : alasql.tables[this.Name].data
+            if (typeof _result === 'object' && Array.isArray(_result))
+                this.Rows = _result
 
         } catch (error: any) {
             Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
@@ -158,7 +175,7 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
-    async FreeSqlAsync(sqlQuery: string | undefined, jsonData: object[] | undefined = undefined): Promise<this> {
+    async FreeSqlAsync(sqlQuery: string | undefined, jsonData?: object[]): Promise<this> {
         if (sqlQuery == undefined)
             return this
 
@@ -168,17 +185,14 @@ export class DataTable {
 
         try {
             const _result = await alasql.promise(sqlQuery, jsonData)
-                .then((r: any) => {
-                    return r
-                })
+                .then((r: any) => r)
                 .catch((error: any) => {
                     Logger.Error(`DataTable.FreeSqlAsync: '${this.Name}' Error executing SQL query: '${sqlQuery}', Error: ${error}`)
                     throw error
                 })
 
-            this.Rows = (typeof _result === 'object')
-                ? _result
-                : alasql.tables[this.Name].data
+            if (typeof _result === 'object' && Array.isArray(_result))
+                this.Rows = _result
 
         } catch (error: any) {
             Logger.Error(`DataTable.FreeSqlAsync: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
@@ -256,19 +270,21 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
-    Sort(fields: string[], orders: TSortOrder[]): this {
-        this.Rows = _.orderBy(this.Rows, fields, orders)
+    Sort(sorts: TOrderBy): this {
+        const fields = Object.keys(sorts)
+        const orders: string[] = _.map(Object.entries(sorts), (sort) => sort[1] ?? SORT_ORDER.ASC)
+        this.Rows = _.orderBy(this.Rows, fields, orders as Many<boolean | "asc" | "desc"> | undefined)
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     SetMetaData(metadata: string, value: unknown): this {
         this.MetaData[metadata] = value
         return this
     }
 
-    @Logger.LogFunction()
-    AddRows(newRows: TJson | TJson[] | undefined = undefined): this {
+    @Logger.LogFunction(true)
+    AddRows(newRows?: TJson | TJson[]): this {
         if (!newRows)
             return this
 
@@ -280,7 +296,7 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
-    SyncReport(dtDestination: DataTable, on: string, flags: { keepOnlyUpdatedValues: boolean } | undefined = undefined): TSyncReport {
+    SyncReport(dtDestination: DataTable, on: string, flags?: { keepOnlyUpdatedValues: boolean }): TSyncReport {
         const sourceHasProperty = this.Rows.some(row => on in row)
 
         if (!sourceHasProperty) {
@@ -315,7 +331,7 @@ export class DataTable {
             UpdatedRows = UpdatedRows.map(updatedRow => {
                 const correspondingDestRow = filteredDestination.find(destRow => destRow[on] === updatedRow[on])
                 if (correspondingDestRow) {
-                    // eslint-disable-next-line you-dont-need-lodash-underscore/keys
+
                     _.keys(updatedRow).forEach(prop => {
                         if (prop !== on && _.isEqual(updatedRow[prop], correspondingDestRow[prop])) {
                             delete updatedRow[prop]
@@ -334,13 +350,14 @@ export class DataTable {
     }
 
     @Logger.LogFunction()
-    AnonymizeFields(fields: string | string[]): this {
+    Anonymize(fields: string | string[]): this {
+
         let _fields = (typeof fields === 'string')
             ? [fields]
             : fields
 
         if (_fields[0] == '*')
-            _fields = this.GetFieldNames()
+            _fields = this.GetFieldNames() ?? []
 
         this.Rows.forEach((_row, _idx) => {
             const _newRow = { ..._row }
@@ -357,22 +374,14 @@ export class DataTable {
         return this
     }
 
-    //FIXME: it generates an error in case of invalid condition
     @Logger.LogFunction()
     FilterRows(condition: string | undefined): this {
         if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))
             return this
 
-        this.Rows = alasql(`
-            SELECT * 
-            FROM ?
-            WHERE ${condition}`,
-            [this.Rows]
-        )
-        return this
+        return this.FreeSql(`SELECT * FROM [${this.Name}] WHERE ${condition}`)
     }
 
-    //FIXME: it generates an error in case of invalid condition
     @Logger.LogFunction()
     DeleteRows(condition: string | undefined): this {
         if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))
@@ -390,7 +399,7 @@ export class DataTable {
     ): this {
 
         // no fields passed
-        let _fields = (fields && fields.length > 0)
+        const _fields = (fields && fields.length > 0)
             ? fields
             : undefined
 
@@ -466,6 +475,30 @@ export class DataTable {
         })
         // set rows
         this.Rows = Array.from(_mapDeduplicated.values())
+        return this
+    }
+
+    @Logger.LogFunction()
+    Transpose(renamedColumns?: string[]): this {
+        if (_.isEmpty(this.Rows))
+            return this
+
+        const NAME_PATTERN = "field_"
+
+        // Get keys from the first object
+        const keys = Object.keys(this.Rows[0])
+
+        // Determine column names
+        const columns = (renamedColumns && renamedColumns.length > 0)
+            ? [...renamedColumns, ..._.range(renamedColumns.length, keys.length).map(i => `${NAME_PATTERN}${i + 1}`)]
+            : ["key", ..._.range(1, this.Rows.length + 1).map(i => `${NAME_PATTERN}${i}`)]
+
+        // Transpose using lodash
+
+        this.Rows = _.map(keys, (key) => {
+            const rowValues = [key, ...this.Rows.map((row) => row[key])]
+            return _.zipObject(columns, rowValues)
+        })
         return this
     }
 }

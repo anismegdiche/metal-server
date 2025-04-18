@@ -3,71 +3,129 @@
 //
 //
 //
+import _ from "lodash"
 import { createContext, Script } from 'vm'
 //
 import { Logger } from '../utils/Logger'
 import { HttpErrorInternalServerError } from "./HttpErrors"
+import { TContext } from "../@types/TContext"
+import typia, { tags } from "typia"
 
+
+//
 export class Sandbox {
-    #Context: any
-    #KeepState: boolean = false
 
-    constructor(resetState: boolean = false) {
-        this.#KeepState = resetState
-        this.Reset()
-    }
+    #Context = createContext()
+    #KeepState: boolean = false //NOSONAR
 
-    @Logger.LogFunction()
-    Reset() {
-        // Create a context
-        this.#Context = createContext()
-
-        // Add additional variables or functions to the context if needed
-        this.#Context.global = this.#Context
-
-        // Add console to the context if you want to allow console.log, etc.
-        this.#Context.console = console
-    }
-
-    // Evaluate dynamic code
-    @Logger.LogFunction()
-    Evaluate(code: string): string | undefined {
-        try {
-            // Perform additional validation if necessary
-            if (!Sandbox.#IsValidCode(code))
-                throw new HttpErrorInternalServerError('Invalid code')
-
-            if (!this.#KeepState)
-                this.Reset()
-
-            // Execute the code within the context
-            const script = new Script(code)
-            return script.runInContext(this.#Context)
-        } catch (error: any) {
-            // Handle errors or log them
-            Logger.Error(`Error evaluating code: ${code}, ${error?.message}`)
-            return undefined
+    constructor(context?: Partial<TContext>) {
+        if (context) {
+            this.SetContext(context) // Set the context
+            this.#KeepState = true
         }
     }
 
     // Example validation function
     static #IsValidCode(code: string): boolean {
         const maliciousPatterns = [
-            /require\(["']child_process["']\)/, // Detecting child_process module usage
-            /(\.|document)\s*\.\s*(cookie|write|writeln)\s*=/, // Detecting potential DOM manipulation
-            /\b(fetch|XMLHttpRequest|http\s*\.\s*request)\b/, // Detecting potential network requests
-            /\bexec\s*\(/, // Detecting exec function usage
-            /\beval\s*\(/, // Detecting eval function usage
-            /\b\.prototype\s*/, // Detecting manipulation of *.prototype
-            /\bprocess\s*/, // Detecting manipulation of *.prototype
-            /\b(?:setTimeout|setInterval)\s*\(/, // Detecting potential code execution delays
-            /(\bfunction\s*\w*\s*\(|\(\)\s*=>\s*\{)/, // Detecting function declarations
-            /\b(?:import|export)\b/, // Detecting import/export statements
-            /while\s*\(\s*true\s*\)\s*\{\s*\}/, // Detecting infinite loops
-            /\b(?:fork|spawn)\s*\(/, // Detecting child process spawning
-            /\b(?:sql|query)\b/i, // Detecting potential SQL keywords
-            /(['"`])\s*(?:or|and)\s*=\s*\1/i // Detecting potential SQL injection patterns
+            // Detecting the use of child_process module
+            /require\(["']child_process["']\)/,
+
+            // Detecting attempt to require any module (to prevent loading internal modules)
+            /require\(["'].*["']\)/,  // Matches any require statement (use cautiously)
+
+            // Detecting potential DOM manipulation (cookie, write, writeln)
+            /(\.|document)\s*\.\s*(cookie|write|writeln)\s*=/,
+
+            // Detecting network requests via fetch or XMLHttpRequest
+            /\b(fetch|XMLHttpRequest|http\s*\.\s*request)\b/,
+
+            // Detecting exec function usage
+            /\bexec\s*\(/,
+
+            // Detecting eval function usage
+            /\beval\s*\(/,
+
+            // Detecting manipulation of *.prototype
+            /\b\.prototype\s*/,
+
+            // Detecting potential access to process object
+            /\bprocess\s*/,
+
+            // Detecting potential code execution delays using setTimeout/setInterval
+            /\b(?:setTimeout|setInterval)\s*\(/,
+
+            // Detecting function declarations (both regular functions and arrow functions)
+            /(\bfunction\s*\w*\s*\(|\(\)\s*=>\s*\{)/,
+
+            // Detecting import/export statements (ES6 modules)
+            /\b(?:import|export)\b/,
+
+            // Detecting infinite loops
+            /while\s*\(\s*true\s*\)\s*\{\s*\}/,
+
+            // Detecting child process spawning (fork or spawn)
+            /\b(?:fork|spawn)\s*\(/,
+
+            // Detecting potential SQL keywords (to prevent SQL injection)
+            /\b(?:sql|query)\b/i,
+
+            // Detecting potential SQL injection patterns (common SQL operators like OR, AND)
+            /(['"`])\s*(?:or|and)\s*=\s*\1/i,
+
+            // Detecting manipulation of global object (global or globalThis)
+            /\b(global|globalThis)\s*\.\s*\w+\s*=/  // Matches assignments to global object like global.hacked = true
         ]
+        
         return !maliciousPatterns.some(pattern => pattern.test(code))
+    }
+
+    @Logger.LogFunction(true)
+    SetContext(context?: object): void {
+        this.#Context = createContext(context)
+        this.AddSafeObjectsToContext()
+    }
+
+    @Logger.LogFunction()
+    Reset(): void {
+        this.SetContext()
+    }
+
+    // Evaluate dynamic code
+    @Logger.LogFunction()
+    Evaluate<T>(code: string): T | undefined {
+        const _code = code.trim()
+        let isSuspicious = false
+        try {
+
+            if (!Sandbox.#IsValidCode(_code)) {
+                isSuspicious = true
+                throw new HttpErrorInternalServerError('Invalid code')
+            }
+            if (!this.#KeepState)
+                this.Reset()
+
+            const script = new Script(_code)
+            return script.runInContext(this.#Context)
+
+        } catch (error: any) {
+            Logger.Error(`Error evaluating code: ${_code}, ${error?.message}`)
+            if (isSuspicious)
+                throw error
+            return undefined
+        }
+    }
+
+    AddSafeObjectsToContext(): void {
+        this.#Context.JSON = JSON
+        this.#Context.Math = Math
+        this.#Context._ = _
+
+        this.#Context.$utils = {
+            JSON,
+            Math,
+            _,
+            newUuid: () => typia.random<string & tags.Format<"uuid">>()
+        }
     }
 }

@@ -14,7 +14,7 @@ Content-Type: application/json
 
 
 @plan=etl1
-@schema=sch-etl1
+@schema=etl1
 ###
 
 
@@ -29,7 +29,7 @@ authorization: Bearer {{token}}
 ###
 
 
-# @name get-plan-aitest
+# @name get-plan-src
 GET http://localhost:3000/schema/etl1/src
     # ?cache=300
 authorization: Bearer {{token}}
@@ -38,7 +38,7 @@ authorization: Bearer {{token}}
 
 # @name get-plan-aitest
 GET http://localhost:3000/schema/etl1/aitest
-    ?cache=300
+#    ?cache=300
 authorization: Bearer {{token}}
 ###
 
@@ -47,3 +47,11 @@ authorization: Bearer {{token}}
 GET http://localhost:3000/schema/etl1/aitest2
     ?cache=300
 authorization: Bearer {{token}}
+###
+
+
+# @name get-plan-aitest
+GET http://localhost:3000/schema/etl1/aitest
+    ?fields=img_to_text
+authorization: Bearer {{token}}
+###

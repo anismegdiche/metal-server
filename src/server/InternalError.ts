@@ -5,6 +5,7 @@
 //
 import { VERBOSITY } from "../utils/Logger"
 
+//TODO: refactor and remove
 export class InternalError extends Error {
     verbosity: VERBOSITY
 
@@ -15,16 +16,10 @@ export class InternalError extends Error {
     }
 }
 
+//TODO: refactor and remove
 export class WarnError extends InternalError {
     constructor(message?: string) {
         super(VERBOSITY.WARN, message ?? "Warning")
-        this.name = "WarnError"
-    }
-}
-
-export class ErrorError extends InternalError {
-    constructor(message?: string) {
-        super(VERBOSITY.ERROR, message ?? "Warning")
         this.name = "WarnError"
     }
 }

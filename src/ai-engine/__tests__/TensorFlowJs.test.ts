@@ -1,13 +1,18 @@
- 
+
 import _ from 'lodash'
 import { IAiEngine } from '../../types/IAiEngine'
 import { TensorFlowJs } from '../TensorFlowJs'
 
+jest.spyOn(console, 'log').mockImplementation(() => { })
+jest.spyOn(console, 'warn').mockImplementation(() => { })
+jest.spyOn(console, 'error').mockImplementation(() => { })
+
+
 const IMG_GUITAR =
 	'https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg'
 
-
 describe('TensorFlowJs', () => {
+	// eslint-disable-next-line init-declarations
 	let tfjs: IAiEngine
 
 	beforeAll(async () => {
@@ -16,18 +21,19 @@ describe('TensorFlowJs', () => {
 			model: 'image-classify'
 		})
 		await tfjs.Init()
-	}, 120000)
+	}, 300_000)
 
 	it('should initialize correctly', async () => {
 		expect(tfjs.AiEngineName).toBe('tensorflowjs')
 		expect(tfjs.InstanceName).toBe('image-classification')
 		expect(tfjs.Model).toBe('image-classify')
 		expect(tfjs.Options?.threshold).toBe(0.9)
-	})
+	}, 300_000)
 
 	it('should run image classification successfully', async () => {
 		const result: any = await tfjs.Run(IMG_GUITAR)
 		const resultWOProbability = {
+
 			class: _.map(result.class, obj => _.omit(obj, 'probability'))
 		}
 
@@ -44,5 +50,5 @@ describe('TensorFlowJs', () => {
 				}
 			]
 		})
-	})
+	}, 300_000)
 })

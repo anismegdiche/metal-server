@@ -1,4 +1,4 @@
-version: "0.3"
+version: "0.4"
 
 server:
   port: 3000
@@ -8,11 +8,6 @@ server:
   authentication:
     provider: local
     default-role: all
-  cache:
-    provider: memory
-    database: cache
-    options:
-      autocreate: true
 
 roles:
   all: lacrud
@@ -27,33 +22,7 @@ sources:
     database: memory
     options:
       autocreate: true
-  src-fs:
-    provider: files
-    options:
-      storage: fs
-      fs-folder: ./data/
-      content:
-        "homes*.csv":
-          type: csv
-          csv-delimiter: ", "
-          csv-newline: "\n"
-          csv-header: true
-          csv-quote: "\""
-        "industry*.csv":
-          type: csv
-          csv-delimiter: ","
-          csv-newline: "\r\n"
-          csv-header: true
-          csv-quote: "\""
-        "ref*.xlsx":
-          type: xls
-          xls-sheet: Feuil1
-        "sample*.xlsx":
-          type: xls
-          xls-starting-cell: E6
 
 schemas:
   mem:
     source: src-mem
-  fs:
-    source: src-fs

@@ -9,6 +9,16 @@ import typia from "typia"
 jest.mock('basic-ftp')
 jest.mock('../../../lib/Convert')
 
+// Mock the Logger
+jest.mock('../../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
+
 const rndParams = typia.random<TConfigSource>()
 
 describe('FtpStorage', () => {
@@ -20,7 +30,8 @@ describe('FtpStorage', () => {
     beforeEach(() => {
         mockFtpClient = new Ftp.Client() as jest.Mocked<Ftp.Client>;
         (Ftp.Client as jest.Mock).mockReturnValue(mockFtpClient)
-        ftpStorage = new FtpStorage({
+        ftpStorage = new FtpStorage()
+        ftpStorage.SetConfig({
             ...rndParams,
             options: {
                 "ftp-host": 'localhost',
@@ -45,7 +56,7 @@ describe('FtpStorage', () => {
     describe('Init', () => {
         it('should initialize the FTP client with given options', async () => {
             await ftpStorage.Init()
-            expect(ftpStorage.ConfigStorage["ftp-host"]).toBe('localhost')
+            expect(ftpStorage.ConfigStorage?.["ftp-host"]).toBe('localhost')
         })
     })
 
@@ -116,7 +127,7 @@ describe('FtpStorage', () => {
             const mockStream = new Readable()
 
             await ftpStorage.Write('existingfile.txt', mockStream)
-            expect(mockFtpClient.appendFrom).toHaveBeenCalledWith(mockStream, '\\existingfile.txt')
+            expect(mockFtpClient.appendFrom).toHaveBeenCalledWith(mockStream, '/existingfile.txt')
         })
 
         // it('should throw HttpErrorInternalServerError on write failure', async () => {

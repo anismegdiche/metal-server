@@ -9,6 +9,13 @@ import { Logger } from "../../utils/Logger"
 import { absAuthProvider, TUserCredentials } from "../absAuthProvider"
 import { TUserTokenInfo } from "../../server/User"
 import { TConfigUsers } from "../../types/TConfig"
+import { AUTH_PROVIDER } from "../AuthProvider"
+
+
+//
+export type TDemoAuthConfig = {
+    provider: AUTH_PROVIDER.DEMO
+}
 
 
 //

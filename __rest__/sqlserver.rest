@@ -29,7 +29,7 @@ authorization: Bearer {{token}}
 GET http://localhost:3000/schema/hr/countries
     ?filter-expression=country_name LIKE '*a'
     &fields=country_id,country_name
-    &sort=country_id asc,country_name desc
+    &sort={"country_id": "asc","country_name": "desc"}
 authorization: Bearer {{token}}
 ###
 

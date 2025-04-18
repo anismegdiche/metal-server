@@ -49,7 +49,7 @@ export class User {
         }
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static async Authenticate(userCredentials: TUserCredentials): Promise<TInternalResponse<TJson>> {
 
         const userTokenInfo = await AuthProvider.Provider.Authenticate(userCredentials)
@@ -77,7 +77,7 @@ export class User {
         return HttpResponse.Ok({ token: userToken })
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static async LogOut(userToken: TUserToken): Promise<TInternalResponse<undefined>> {
         const decoded = this.#DecodeToken(userToken)
         if (userToken) {
@@ -87,12 +87,12 @@ export class User {
         return HttpResponse.NoContent()
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static async GetUserInfo(userToken: TUserToken): Promise<TInternalResponse<TUserTokenInfo>> {
         return HttpResponse.Ok(this.#DecodeToken(userToken))
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
+    @Logger.LogFunction(true)
     static IsAuthenticated(userToken: TUserToken): TUserTokenInfo | undefined {
         if (userToken === undefined)
             return undefined

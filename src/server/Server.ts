@@ -7,10 +7,12 @@ import express, { Express, NextFunction, Request, Response } from 'express'
 import { rateLimit } from 'express-rate-limit'
 import responseTime from 'response-time'
 import chokidar from 'chokidar'
+import helmet from "helmet"
+import os from 'node:os'
 //
 import { TJson } from '../types/TJson'
 import { HTTP_STATUS_CODE, ROUTE, SERVER } from '../lib/Const'
-import { Logger } from '../utils/Logger'
+import { LoggerDefaultLevel, Logger } from '../utils/Logger'
 import { Config } from './Config'
 import { Source } from './Source'
 import { Cache } from '../server/Cache'
@@ -21,42 +23,74 @@ import { SchemaRouter } from '../routes/SchemaRouter'
 import { PlanRouter } from '../routes/PlanRouter'
 import { CacheRouter } from '../routes/CacheRouter'
 import { ScheduleRouter } from '../routes/ScheduleRouter'
-import { Sandbox } from './Sandbox'
 import { JsonHelper } from '../lib/JsonHelper'
-import { HttpErrorForbidden, HttpErrorNotImplemented } from "./HttpErrors"
+import { HttpErrorNotImplemented } from "./HttpErrors"
 import { Swagger } from '../utils/Swagger'
 import { TInternalResponse } from "../types/TInternalResponse"
 import { HttpResponse } from "./HttpResponse"
-import { AuthProvider } from "../providers/AuthProvider"
+import { AUTH_PROVIDER, AuthProvider, TAuthentication } from "../providers/AuthProvider"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
+import { ContentProvider } from "../providers/ContentProvider"
+import { StorageProvider } from "../providers/StorageProvider"
+import { DataProvider } from "../providers/DataProvider"
+import { WebServiceProvider } from "../providers/WebServiceProvider"
+import { AiEngine } from "./AiEngine"
+import { Plans } from "./Plans"
+import { Convert } from "../lib/Convert"
 
+
+//
 export class Server {
 
     static readonly App: Express = express()
-    static readonly Sandbox: Sandbox = new Sandbox()
-    static Port: number
-    static CurrentPath: string
+    static Port: number  //NOSONAR
+    static CurrentPath: string  //NOSONAR
+
+    static readonly Cpus = os.cpus().length ?? 1
 
     @Logger.LogFunction()
     static async Init(): Promise<void> {
-        // Load Core
-        Server.CoreLoad()
 
-        // Init config
+        // core
+        Server.RegisterProviders()
+        
+        // config
         await Config.Init()
 
-        Server.Port = Config.Get<number>("server.port") ?? Config.DEFAULTS["server.port"]
+        // sources
+        await Source.Init()
+        
+        // cache
+        Cache.Init()
+        await Cache.Connect()
+        
+        await AiEngine.Init()
+        
+        // plans
+        Plans.Init()
+        Schedule.Init()
+
+
+        Server.InitLogging()
+        Server.InitAuthentication()
+
+        Server.InitResponse()
+        Server.InitApi()
+        Server.StartWatcher()
+    }
+
+    static InitApi() {
+        Server.Port = Config.Get<number>("server.port")
+
+        Server.App.use(helmet())
 
         Server.App.use(responseTime())
         Server.App.use(Logger.RequestMiddleware)
-        Server.App.use(rateLimit({
-            ...(Config.DEFAULTS['server.response-rate'] as object),
-            ...Config.Get<object>("server.response-rate")
-        }))
+        Server.App.use(rateLimit(Config.Get<object>("server.response-rate")))
 
         Server.App.use(express.json({
-            limit: Config.Get<string | number>("server.request-limit") ?? Config.DEFAULTS['server.request-limit']
+            limit: Config.Get<string | number>("server.request-limit")
         }))
 
         Server.App.use((req: Request, res: Response, next: NextFunction) => {
@@ -74,7 +108,7 @@ export class Server {
         })
 
         // path: /user
-        if (Config.Flags.EnableAuthentication) {
+        if (Config.Get("server.authentication")) {
             Logger.Info(`Route: Enabling API, URL= ${ROUTE.USER_PATH}`)
             Server.App.use(`${ROUTE.USER_PATH}/`, Server.SetContentJson, UserRouter)
         }
@@ -92,7 +126,7 @@ export class Server {
         Server.App.use(`${ROUTE.PLAN_PATH}/`, Server.SetContentJson, PlanRouter)
 
         // path: /cache
-        if (Config.Flags.EnableCache) {
+        if (Cache.IsEnabled) {
             Logger.Info(`Route: Enabling API, URL= ${ROUTE.CACHE_PATH}`)
             Server.App.use(`${ROUTE.CACHE_PATH}/`, Server.SetContentJson, CacheRouter)
         }
@@ -102,18 +136,16 @@ export class Server {
         Server.App.use(`${ROUTE.SCHEDULE_PATH}/`, Server.SetContentJson, ScheduleRouter)
 
         // path: /api-docs
-        Logger.Info(`Route: Enabling API, URL= ${ROUTE.SWAGGER_UI_PATH}`)
+        Logger.Info(`Route: Enabling Swagger UI, URL= ${ROUTE.SWAGGER_UI_PATH}`)
 
         // error handler
-        Server.App.use((err: any, req: Request, res: Response, next: NextFunction) => {
+        Server.App.use((err: any, req: Request, res: Response, _next: NextFunction) => {
             // format error
-            res.status(err.status || 500).json({
+            res.status(err.Status || err.status || 500).json({
                 message: err.message,
                 errors: err.errors
             })
         })
-
-        Server.StartWatcher()
     }
 
     @Logger.LogFunction()
@@ -142,10 +174,10 @@ export class Server {
         throw new HttpErrorNotImplemented()
     }
 
+    //FIXME server reload: not work to correct
     @Logger.LogFunction()
-    static async Reload(userToken: TUserTokenInfo | undefined = undefined): Promise<TInternalResponse<TJson>> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
+    static async Reload(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
+        Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         Schedule.StopAll()
         await Cache.Disconnect()
@@ -164,7 +196,6 @@ export class Server {
         })
     }
 
-    // @Logger.LogFunction()
     static SetContentJson(req: Request, res: Response, next: NextFunction) {
         res.setHeader('Content-Type', 'application/json; charset=utf-8')
         next()
@@ -179,16 +210,37 @@ export class Server {
             Server.Reload()
                 .catch((err: Error) => Logger.Error(err.message))
         })
-
-        // // OpenApi
-        // chokidar.watch(Swagger.OpenApiFilePath).on('change', () => {
-        //     Logger.Info('OpenAPI specification changed. Reloading...')
-        //     Swagger.Load()
-        //     Swagger.Validator(Server.App)
-        // })
     }
 
-    static CoreLoad() {
+    static RegisterProviders() {
         AuthProvider.RegisterProviders()
+        StorageProvider.RegisterProviders()
+        WebServiceProvider.RegisterProviders()
+        ContentProvider.RegisterProviders()
+        DataProvider.RegisterProviders()
+    }
+
+    @Logger.LogFunction()
+    static InitLogging(): void {
+        const verbosity = Config.Configuration.server?.verbosity ?? LoggerDefaultLevel
+        Logger.SetLevel(verbosity)
+    }
+
+    @Logger.LogFunction()
+    static InitAuthentication(): void {
+        const {
+            provider = AUTH_PROVIDER.LOCAL
+        } = Config.Get<TAuthentication>("server.authentication") ?? {}
+
+        AuthProvider.SetCurrent(provider)
+        if (Config.Get("server.authentication")) {
+            AuthProvider.Provider.Init()
+            Roles.Init()
+        }
+    }
+
+    @Logger.LogFunction()
+    static InitResponse(): void {
+        Logger.Debug(`Server Response Limit set to ${Convert.HumainSizeToBytes(Config.Get("server.response-limit"))}`)
     }
 }

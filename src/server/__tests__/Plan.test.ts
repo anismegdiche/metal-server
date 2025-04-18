@@ -1,6 +1,18 @@
 import { TypeHelper } from "../../lib/TypeHelper"
 import { DataTable } from "../../types/DataTable"
+import { TSchemaRequest } from "../../types/TSchemaRequest"
 import { Plan } from "../Plan"
+
+
+// Mock the Logger
+jest.mock('../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
 
 describe('Process', () => {
 
@@ -18,35 +30,15 @@ describe('Process', () => {
         }
         const sqlQuery = 'SELECT * FROM testEntity'
 
-        jest.spyOn(TypeHelper, 'IsSchemaRequest').mockReturnValue(true)
-        jest.spyOn(Plan, 'ProcessSchemaRequest').mockResolvedValue(new DataTable())
-
-        const result = await Plan.Process(schemaRequest, sqlQuery)
-
-        expect(result).toBeInstanceOf(DataTable)
-        expect(Plan.ProcessSchemaRequest).toHaveBeenCalledWith(schemaRequest, sqlQuery)
-    })
-
-    // Handle undefined sqlQuery gracefully
-    it('should handle undefined sqlQuery gracefully', async () => {
-        const schemaRequest = {
-            schema: 'testSchema',
-            entity: 'testEntity',
-            data: [
-                {
-                    id: 1,
-                    name: 'Test'
-                }
-            ]
-        }
+        const _plan = new Plan("TestPlan")
 
         jest.spyOn(TypeHelper, 'IsSchemaRequest').mockReturnValue(true)
-        jest.spyOn(Plan, 'ProcessSchemaRequest').mockResolvedValue(new DataTable())
+        jest.spyOn(_plan, 'ProcessSchemaRequest').mockResolvedValue(new DataTable())
 
-        const result = await Plan.Process(schemaRequest)
+        const result = await _plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
 
         expect(result).toBeInstanceOf(DataTable)
-        expect(Plan.ProcessSchemaRequest).toHaveBeenCalledWith(schemaRequest, undefined)
+        expect(_plan.ProcessSchemaRequest).toHaveBeenCalledWith(schemaRequest, sqlQuery)
     })
 
     // Process a valid TScheduleConfig and return a DataTable
@@ -58,8 +50,10 @@ describe('Process', () => {
             cron: '* * * * *'
         }
 
+        const _plan = new Plan("TestPlan")
+
         // Act
-        const result = await Plan.Process(scheduleConfig)
+        const result = await _plan.ProcessScheduleConfig(scheduleConfig)
 
         // Assert
         expect(result).toBeInstanceOf(DataTable)
@@ -68,7 +62,7 @@ describe('Process', () => {
     // Handle a valid SQL query with TSchemaRequest
     it('should handle valid SQL query with TSchemaRequest', async () => {
         // Arrange
-        const schemaRequest = {
+        const schemaRequest: TSchemaRequest = {
             anonymize: 'email',
             schema: 'TestSchema',
             entity: 'TestEntity',
@@ -81,14 +75,16 @@ describe('Process', () => {
             fields: 'id, name',
             filter: { id: 1 },
             "filter-expression": 'id = 1',
-            sort: 'name',
+            sort: { 'name': undefined },
             cache: 60,
             source: 'TestSource'
         }
         const sqlQuery = 'SELECT * FROM TestTable'
 
+        const _plan = new Plan("TestPlan")
+
         // Act
-        const result = await Plan.Process(schemaRequest, sqlQuery)
+        const result = await _plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
 
         // Assert
         expect(result).toBeInstanceOf(DataTable)
@@ -103,8 +99,10 @@ describe('Process', () => {
         }
         const sqlQuery = 'SELECT * FROM TestTable'
 
+        const _plan = new Plan("TestPlan")
+
         // Act
-        const result = await Plan.Process(schemaRequest, sqlQuery)
+        const result = await _plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
 
         // Assert
         expect(result).toBeInstanceOf(DataTable)

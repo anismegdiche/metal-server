@@ -3,132 +3,125 @@
 //
 //
 //
-import mssql, { ConnectionPool } from 'mssql'
+import mssql, { ConnectionPool, IOptions } from 'mssql'
+import typia from "typia"
+import _ from "lodash"
 //
 import { RESPONSE } from '../../lib/Const'
-import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import { TConfigSource, TConfigSourceOptions } from "../../types/TConfig"
+import { TConfigSource } from "../../types/TConfig"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
-import { TOptions } from "../../types/TOptions"
+import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { DataTable } from "../../types/DataTable"
-import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
 import { Logger } from '../../utils/Logger'
 import { Cache } from '../../server/Cache'
-import {DATA_PROVIDER} from '../../server/Source'
-import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { DATA_PROVIDER } from '../../providers/DataProvider'
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
+import { TContext } from "../../@types/TContext"
+import { SynchronizerManager } from "../../utils/SynchronizerManager"
+import { TIpPort } from "../../@types/TIpPort"
 
 
 //
 export type TSqlServerDataConfig = {
-    server: string,
-    port: number,
-    user: string,
-    password: string,
-    database: string,
-    options: TConfigSourceOptions
+    provider: DATA_PROVIDER.MSSQL
+    host: string
+    port: TIpPort
+    user: string
+    password: string
+    database: string
+    options: IOptions
 }
 
 
 //
 export class SqlServerData extends absDataProvider {
+
+    SourceName?: string
     ProviderName = DATA_PROVIDER.MSSQL
-    Params: TSqlServerDataConfig = <TSqlServerDataConfig>{}
+    Config: TSqlServerDataConfig = <TSqlServerDataConfig>{}
     Connection?: ConnectionPool = undefined
 
-    constructor(source: string, sourceParams: TConfigSource) {
-        super(source, sourceParams)
-        this.Params = {
-            user: sourceParams.user ?? 'sa',
-            password: sourceParams.password ?? '',
-            database: sourceParams.database ?? 'master',
-            server: sourceParams.host ?? 'localhost',
-            port: sourceParams.port ?? 1433,
-            options: {
-                pool: {
-                    max: 10,
-                    min: 0,
-                    idleTimeoutMillis: 30_000
-                },
-                options: {
-                    encrypt: false,                     // true for azure
-                    trustServerCertificate: true        // change to true for local dev / self-signed certs
-                },
-                ...sourceParams.options
-
-            }
+    DEFAULT: Partial<TSqlServerDataConfig> = {
+        host: 'localhost',
+        database: 'master',
+        user: 'sa',
+        password: '',
+        port: 1433,
+        options: {
+            encrypt: false,                     // true for azure
+            trustServerCertificate: true       // change to true for local dev / self-signed certs
+            // pool: {
+            //     max: 10,
+            //     min: 0,
+            //     idleTimeoutMillis: 30_000
+            // }
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+    constructor() {
+        super()
+    }
+
     @Logger.LogFunction()
-    async Init(): Promise<void> {
-        Logger.Debug("SqlServerData.Init")
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+        super.Init(source, sourceConfig)
+        this.Config = _.merge(this.DEFAULT, sourceConfig as TSqlServerDataConfig)
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
+        const { host: server, port, user, password, database, options } = this.Config
         try {
-            this.Connection = await mssql.connect(this.Params)
-            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
+            this.Connection = await mssql.connect({
+                server,
+                port,
+                user,
+                password,
+                database,
+                options
+            })
+            Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
         } catch (error: unknown) {
-            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName} (${this.Params.database})'`)
+            Logger.Error(`${Logger.Out} Failed to connect to '${this.SourceName} (${this.Config.database})'`)
             Logger.Error(JSON.stringify(error))
         }
     }
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        if (this.Connection !== undefined) {
-            this.Connection.close()
-        }
-    }
-
-    @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
         if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+            return
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Insert(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
-            .Fields(options.Data.GetFieldNames())
-            .Values(options.Data.Rows)
-
-        await this.Connection.query(sqlQueryHelper.Query)
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.Created()
+        await this.Connection.close()
+        this.Connection = undefined
+        Logger.Info(`${Logger.Out} disconnected from '${this.SourceName} (${this.Config.database})'`)
     }
 
     @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    @SynchronizerManager.Synchronized()
+    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
-        let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity
-        }
-
-        if (this.Connection === undefined) {
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-        }
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        const { schema, entity } = schemaRequest
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
 
-        const sqlServerResult = await this.Connection.query(sqlQueryHelper.Query)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+
+        const sqlServerResult = await this.Connection.query(sqlQueryHelper.Query())
 
         const data = new DataTable(schemaRequest.entity)
 
@@ -139,7 +132,8 @@ export class SqlServerData extends absDataProvider {
         }
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            ...schemaResponse,
+            schema,
+            entity,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
@@ -147,24 +141,52 @@ export class SqlServerData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
-        let schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity
-        }
-
-        if (this.Connection === undefined)
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
-            .Set(options.Data.Rows)
-            .Where(options.Filter)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        await this.Connection.query(sqlQueryHelper.Query)
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
+
+        await this.Connection.query(sqlQueryHelper.Query())
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.Created()
+    }
+
+    @Logger.LogFunction()
+    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
+
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
+
+        await this.Connection.query(sqlQueryHelper.Query())
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -173,24 +195,22 @@ export class SqlServerData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
-        const schemaResponse = <TSchemaResponse>{
-            schema: schemaRequest.schema,
-            entity: schemaRequest.entity
-        }
-
-        if (this.Connection === undefined)
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Delete()
-            .From(`[${schemaRequest.entity}]`.replace(/\./g, "].["))
-            .Where(options.Filter)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        await this.Connection.query(sqlQueryHelper.Query)
+        const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
+
+        await this.Connection.query(sqlQueryHelper.Query())
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -198,19 +218,19 @@ export class SqlServerData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-    // @Logger.LogFunction()
     // eslint-disable-next-line class-methods-use-this
-    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    @Logger.LogFunction()
+    async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { schema } = schemaRequest
-
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const sqlQuery = `
             SELECT t.name AS name, 
@@ -234,5 +254,15 @@ export class SqlServerData extends absDataProvider {
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data: new DataTable(undefined, sqlServerResult.recordset)
         })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `[${entity}]`.replace(/\./g, "].[")
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `[${field}]`
     }
 }

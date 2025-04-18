@@ -3,7 +3,7 @@
 //
 //
 //
-import { JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, SORT_ORDER } from "./DataTable"
+import { JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, SORT_ORDER, TOrderBy } from "./DataTable"
 import { TJson } from "./TJson"
 import { TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "./TSchemaRequest"
 
@@ -39,11 +39,9 @@ export type TStepJoin = {
     "right-field": string
 }
 
-export type TStepFields = string
+export type TStepFields = string //NOSONAR
 
-export type TStepSort = {
-    [field: string]: SORT_ORDER
-}
+export type TStepSort = TOrderBy
 
 export type TStepRun = {
     ai: string
@@ -52,17 +50,6 @@ export type TStepRun = {
 }
 
 export type TStepSync = {
-    // v0.2
-    source: {
-        schema: string
-        entity: string
-    }
-    destination: {
-        schema: string
-        entity: string
-    }
-    on: string
-} & {
     // v0.3
     from: {
         schema: string
@@ -73,7 +60,7 @@ export type TStepSync = {
         entity: string
     }
     id: string
-}
+} 
 
 export type TStepAnonymize = string
 

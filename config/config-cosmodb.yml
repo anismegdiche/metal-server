@@ -1,0 +1,34 @@
+version: "0.4"
+server:
+  port: 3000
+  verbosity: debug
+  timezone: UTC
+  authentication:
+    provider: local
+    default-role: all
+  request-limit: 100mb
+  cache:
+    provider: memory
+    database: cache
+    options:
+      autocreate: true
+
+roles:
+  all: lacrud
+
+users:
+  myapiuser:
+    password: myStr@ngpa$$w0rd
+
+sources:
+  cosmosdb: # https://localhost:8081/_explorer/index.html
+    provider: cosmosdb
+    host: https://localhost:8081/
+    database: SampleDB
+    options:
+      key: C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==
+      autocreate: true
+
+schemas:
+  cosmosdb:
+    source: cosmosdb

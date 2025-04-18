@@ -1,8 +1,10 @@
 .vs
 .idea/*
+.vagrant/*
 /test/*
 /node_modules/*
 /build/*
 /data/*
-/config/config*
+/coverage/*
 *.traineddata
+.qodo

@@ -3,22 +3,26 @@
 //
 //
 //
+import typia from "typia"
+import _ from "lodash"
+//
 import { RESPONSE } from '../../lib/Const'
 import { TConfigSource } from "../../types/TConfig"
-import { TOptions } from "../../types/TOptions"
+import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
-import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
-import { DATA_PROVIDER } from '../../server/Source'
+import { DATA_PROVIDER } from '../../providers/DataProvider'
 import { DataBase } from '../../types/DataBase'
-import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
+import { TContext } from "../../@types/TContext"
+import { SynchronizerManager } from "../../utils/SynchronizerManager"
 
 
 //
@@ -36,62 +40,43 @@ export type TMemoryDataConfig = {
 
 //
 export class MemoryData extends absDataProvider {
-    ProviderName = DATA_PROVIDER.MEMORY
-    Params: TMemoryDataConfig = <TMemoryDataConfig>{}
+
+    SourceName?: string
+    ProviderName = DATA_PROVIDER?.MEMORY
+    Config: TMemoryDataConfig = <TMemoryDataConfig>{}
     Connection?: DataBase = undefined
 
-    constructor(source: string, sourceParams: TConfigSource) {
-        super(source, sourceParams)
-        this.Params = {
-            database: sourceParams.database ?? 'memory',
-            options: sourceParams.options
-        }
+    constructor() {
+        super()
     }
 
-    // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    async Init(): Promise<void> {
-        Logger.Debug(`${Logger.Out} MemoryData.Init`)
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+        super.Init(source, sourceConfig)
+        this.Config = {
+            database: sourceConfig.database ?? 'memory',
+            options: sourceConfig.options
+        }
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        this.Connection = new DataBase(this.Params.database)
-        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Params.database})'`)
+        this.Connection = new DataBase(this.Config.database)
+        Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
     }
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        Logger.Info(`${Logger.In} '${this.SourceName} (${this.Params.database})' disconnected`)
+        Logger.Info(`${Logger.In} '${this.SourceName} (${this.Config.database})' disconnected`)
         this.Connection = undefined
     }
 
-
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    @SynchronizerManager.Synchronized()
+    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const { schema, entity } = schemaRequest
-
-        if (this.Connection === undefined)
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        await this.AddEntity(schemaRequest)
-
-        if (this.Connection.Tables[entity] === undefined)
-            throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
-
-        const options: TOptions = this.Options.Parse(schemaRequest)
-
-        this.Connection.Tables[entity].AddRows(options.Data.Rows)
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.Created()
-    }
-
-    @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
 
         const { schema, entity } = schemaRequest
 
@@ -100,26 +85,21 @@ export class MemoryData extends absDataProvider {
             entity
         }
 
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        // removed: in case of autocreate and select, entity should not be created
-        //await this.AddEntity(schemaRequest)
-
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context, 
+            this.GetContext(schemaRequest)
+        )
+        
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(`\`${entity}\``)
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQuery = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
-            ? sqlQueryHelper.Query
-            : undefined
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+
+        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
         const data = new DataTable(entity)
 
@@ -146,27 +126,62 @@ export class MemoryData extends absDataProvider {
 
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { schema, entity } = schemaRequest
 
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        // removed: in case of autocreate and select, entity should not be created
-        //await this.AddEntity(schemaRequest)
+        await this.AddEntity(schemaRequest)
 
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context, 
+            this.GetContext(schemaRequest)
+        )
+        
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Update(`\`${entity}\``)
-            .Set(options.Data.Rows)
-            .Where(options.Filter)
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schema}: data is missing`)
 
-        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        this.Connection.Tables[entity].AddRows(options.Data.Rows)
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.Created()
+    }
+
+    @Logger.LogFunction()
+    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+
+        const { schema, entity } = schemaRequest
+
+        if (this.Connection.Tables[entity] === undefined)
+            throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context, 
+            this.GetContext(schemaRequest)
+        )
+        
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
+
+        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -176,27 +191,27 @@ export class MemoryData extends absDataProvider {
 
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
-        const { schema, entity } = schemaRequest
-
-        if (this.Connection === undefined)
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
-        // removed: in case of autocreate and select, entity should not be created
-        //await this.AddEntity(schemaRequest)
+        const { schema, entity } = schemaRequest
 
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
-        const options: TOptions = this.Options.Parse(schemaRequest)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context, 
+            this.GetContext(schemaRequest)
+        )
+        
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Delete()
-            .From(`\`${entity}\``)
-            .Where(options.Filter)
+        const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
-        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -207,11 +222,11 @@ export class MemoryData extends absDataProvider {
     @Logger.LogFunction()
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 
-        if (this.Connection === undefined)
+        if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { entity } = schemaRequest
-        const autoCreate: boolean = this.Params.options?.autocreate ?? false
+        const autoCreate: boolean = this.Config.options?.autocreate ?? false
 
         if (autoCreate &&
             !Object.keys(this.Connection.Tables).includes(entity)) {
@@ -222,12 +237,12 @@ export class MemoryData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const { schema } = schemaRequest
-
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
 
         const rows = Object.keys(this.Connection.Tables).map(entity => ({
             name: entity,
@@ -244,5 +259,15 @@ export class MemoryData extends absDataProvider {
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data: new DataTable(undefined, rows)
         })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
     }
 }

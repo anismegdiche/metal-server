@@ -4,6 +4,7 @@
 //
 //
 import * as Csv from 'papaparse'
+import typia from "typia"
 //
 import { DataTable } from "../../types/DataTable"
 import { Logger } from "../../utils/Logger"
@@ -11,8 +12,12 @@ import { HttpErrorInternalServerError } from "../../server/HttpErrors"
 import { Readable } from "node:stream"
 import { ReadableHelper } from "../../lib/ReadableHelper"
 import { TConvertParams } from "../../lib/TypeHelper"
-import { ACContentProvider } from "../ACContentProvider"
+import { absContentProvider } from "../absContentProvider"
 import { StringHelper } from "../../lib/StringHelper"
+import { TContext } from "../../@types/TContext"
+import { Sandbox } from "../../server/Sandbox"
+import { PlaceHolder } from "../../utils/PlaceHolder"
+import { TJson } from "../../types/TJson"
 
 
 export type TCsvContentConfig = {
@@ -34,14 +39,14 @@ type TCsvContentParams = Omit<Required<{
 >
 
 
-export class CsvContent extends ACContentProvider {
+export class CsvContent extends absContentProvider {
 
     Params: TCsvContentParams | undefined
 
     @Logger.LogFunction()
-    async Init(entity: string, content: Readable): Promise<void> {
+    InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config) {
+        if (this.Config && typia.is<TCsvContentConfig>(this.Config)) {
             this.Params = {
                 delimiter: this.Config["csv-delimiter"] ?? ',',
                 newline: this.Config["csv-newline"] ?? '\n',
@@ -55,29 +60,39 @@ export class CsvContent extends ACContentProvider {
         this.Content.UploadFile(entity, content)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
-    async Get(sqlQuery: string | undefined = undefined): Promise<DataTable> {
+    @Logger.LogFunction(['$context'])
+    async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
-        const parsedCsv: any = Csv.parse<string>(
+        const $__evalParams = PlaceHolder.EvaluateJsCode<Csv.ParseConfig>(
+            this.Params,
+            new Sandbox($context)
+        )
+        // TODO to test
+        const parsedCsv = Csv.parse<TJson>(
             await ReadableHelper.ToString(
                 this.Content.ReadFile(this.EntityName)
             ),
-            this.Params as Csv.ParseConfig
+            $__evalParams
         )
-        return new DataTable(this.EntityName, parsedCsv?.data).FreeSqlAsync(sqlQuery)
+        return new DataTable(this.EntityName, parsedCsv.data).FreeSqlAsync(sqlQuery)
     }
 
-    @Logger.LogFunction(Logger.Debug, true)
-    async Set(contentDataTable: DataTable): Promise<Readable> {
+    @Logger.LogFunction(true)
+    async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         if (!this.Content)
             throw new HttpErrorInternalServerError('Content is not defined')
 
+        const $__evalParams = PlaceHolder.EvaluateJsCode<TCsvContentParams>(
+            this.Params,
+            new Sandbox($context)
+        )
+
         const streamOut = Readable.from(
             Csv.unparse(
-                contentDataTable.Rows,
-                this.Params
+                data.Rows,
+                $__evalParams
             )
         )
         this.Content.UploadFile(this.EntityName, streamOut)

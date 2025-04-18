@@ -1,0 +1,73 @@
+version: "0.4"
+
+server:
+  port: 3000
+  verbosity: debug
+  timezone: UTC
+  request-limit: 100mb
+  authentication:
+    provider: local
+    default-role: all
+  cache:
+    provider: memory
+    database: cache
+    options:
+      autocreate: true
+
+roles:
+  all: lacrud
+  none:
+
+users:
+  myapiuser:
+    password: myStr@ngpa$$w0rd
+
+sources:
+  src-mem:
+    provider: memory
+    database: memory
+    options:
+      autocreate: true
+      
+  soap-movies:    # http://localhost:8080/ws/movies.wsdl
+    provider: webservice
+    host: http://localhost:8080/ws/movies.wsdl
+    options:
+      type: soap
+      content: xml
+      # XXX xml-path: SOAP-ENV:Envelope.SOAP-ENV:Body.ns2:${{ $endpoint.name }}Response.ns2:${{ $entity }}
+      endpoints:
+        collection-read:
+          listMovies: 
+          response: Envelope.Body.listMoviesResponse.${{ $entity }}s
+        # item-read: 
+        #   getMovie:
+        item-create:
+          addMovie:
+          data: 
+            ${{ $entity }}: ${{ $row }} 
+        item-update:
+          updateMovie:
+          data: 
+            ${{ $entity }}: ${{ $row }}
+        item-delete:
+          deleteMovie:
+          data:
+            id: ${{ $row.id }}
+      
+  soap-missions:    # https://www.crcind.com/csp/samples/SOAP.Demo.cls
+    provider: webservice
+    host: https://www.crcind.com/csp/samples/SOAP.Demo.CLS?WSDL=1
+    options:
+      type: soap
+      content: xml
+      endpoints:
+        collection-read:
+          GetListByName: 
+          response: Envelope.Body.GetListByNameResponse.GetListByNameResult.PersonIdentification
+
+schemas:
+  soap-movies:
+    source: soap-movies
+  soap-missions:
+    source: soap-missions

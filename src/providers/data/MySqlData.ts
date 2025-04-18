@@ -3,82 +3,95 @@
 //
 //
 //
+import _ from "lodash"
 import mysql, { Pool } from 'mysql2/promise'
+import typia from "typia"
 //
 import { RESPONSE } from '../../lib/Const'
-import { SqlQueryHelper } from '../../lib/SqlQueryHelper'
 import { TConfigSource } from "../../types/TConfig"
-import { TOptions } from "../../types/TOptions"
+import { TOptionalParameter } from "../../types/TOptionalParameter"
 import { DataTable, TRow } from "../../types/DataTable"
 import { TSchemaResponse } from '../../types/TSchemaResponse'
-import { TSchemaRequest } from '../../types/TSchemaRequest'
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../types/TSchemaRequest'
 import { Cache } from '../../server/Cache'
 import { Logger } from '../../utils/Logger'
-import { DATA_PROVIDER } from '../../server/Source'
-import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { DATA_PROVIDER } from '../../providers/DataProvider'
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
+import { TContext } from "../../@types/TContext"
+import { SynchronizerManager } from "../../utils/SynchronizerManager"
+import { TIpPort } from "../../@types/TIpPort"
+
+
+//
+export type TMySqlDataConfig = {
+    host: string
+    port: TIpPort
+    user: string
+    password: string
+    database: string
+    options?: mysql.PoolOptions
+}
 
 export class MySqlData extends absDataProvider {
+
+    SourceName?: string
     ProviderName = DATA_PROVIDER.MYSQL
-    Params: mysql.PoolOptions = <mysql.PoolOptions>{}
+    Config: TMySqlDataConfig = <TMySqlDataConfig>{}
     Connection?: Pool
 
-    constructor(source: string, sourceParams: TConfigSource) {
-        super(source, sourceParams)
-
-        // default MySql options
-        const options = {
+    DEFAULT: Partial<TMySqlDataConfig> = {
+        host: 'localhost',
+        port: 3306,
+        user: 'root',
+        password: '',
+        database: 'mysql',
+        options: {
             waitForConnections: true,
             connectionLimit: 10,
             maxIdle: 10,
-            idleTimeout: 60000,
+            idleTimeout: 60_000,
             queueLimit: 0,
             enableKeepAlive: true,
-            keepAliveInitialDelay: 0,
-            ...sourceParams?.options
-        }
-
-        this.Params = {
-            host: sourceParams?.host ?? 'localhost',
-            port: sourceParams?.port ?? 3306,
-            user: sourceParams?.user ?? 'root',
-            password: sourceParams?.password ?? '',
-            database: sourceParams?.database ?? 'mysql',
-            ...options
+            keepAliveInitialDelay: 0
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+    constructor() {
+        super()
+    }
+
     @Logger.LogFunction()
-    async Init(): Promise<void> {
-        Logger.Debug("MySqlData.Init")
-    }
-
-    private async ensureConnection(): Promise<Pool> {
-        if (!this.Connection)
-            await this.Connect()
-
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError('Failed to establish database connection')
-
-        return this.Connection
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+        super.Init(source, sourceConfig)
+        this.Config = _.merge(this.DEFAULT, sourceConfig as TMySqlDataConfig)
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
+        const { host, port, user, password, database, options } = this.Config
+
         try {
-            this.Connection = mysql.createPool(this.Params)
+            this.Connection = mysql.createPool({
+                host,
+                port,
+                user,
+                password,
+                database,
+                ...options
+            })
 
             // Test connection
-            const [result] = await this.Connection.query('SELECT 1')
-            Logger.Info(`Connected to MySQL database '${this.Params.database}' at ${this.Params.host}:${this.Params.port}`)
+            await this.Connection.query('SELECT 1')
+            Logger.Info(`Connected to MySQL database '${database}' at ${host}:${port}`)
         } catch (error) {
             const errorMessage = error instanceof Error
                 ? error.message
                 : 'Unknown error'
-            Logger.Error(`Failed to connect to MySQL database '${this.Params.database}' at ${this.Params.host}:${this.Params.port}: ${errorMessage}`)
+
+            Logger.Error(`Failed to connect to MySQL database '${database}' at ${host}:${port}: ${errorMessage}`)
             throw new HttpErrorInternalServerError(`Database connection failed: ${errorMessage}`)
         }
     }
@@ -100,17 +113,60 @@ export class MySqlData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        const connection = await this.ensureConnection()
+    @SynchronizerManager.Synchronized()
+    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
+
+        const connection = await this.#ensureConnection()
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
+
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+
+        const [rows] = await connection.query(sqlQueryHelper.Query())
+
+        const data = new DataTable(schemaRequest.entity)
+
+        if (Array.isArray(rows) && rows.length > 0) {
+            data.AddRows(<TRow[]>rows)
+            if (options?.Cache) {
+                Cache.Set(schemaRequest, data)
+            }
+        }
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schema: schemaRequest.schema,
+            entity: schemaRequest.entity,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        })
+    }
+
+    @Logger.LogFunction()
+    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
+
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
 
         try {
-            const options: TOptions = this.Options.Parse(schemaRequest)
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Insert(`\`${schemaRequest.entity}\``)
-                .Fields(options.Data.GetFieldNames(), '`')
-                .Values(options.Data.Rows)
-
-            await connection.query(sqlQueryHelper.Query)
+            const connection = await this.#ensureConnection()
+            await connection.query(sqlQueryHelper.Query())
             Cache.Remove(schemaRequest)
 
             return HttpResponse.Created()
@@ -123,102 +179,60 @@ export class MySqlData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
-        const connection = await this.ensureConnection()
+    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+        const connection = await this.#ensureConnection()
 
-        try {
-            const options: TOptions = this.Options.Parse(schemaRequest)
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Select(options.Fields)
-                .From(`\`${schemaRequest.entity}\``)
-                .Where(options.Filter)
-                .OrderBy(options.Sort)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
 
-            const [rows] = await connection.query(sqlQueryHelper.Query)
-            const data = new DataTable(schemaRequest.entity)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-            if (Array.isArray(rows) && rows.length > 0) {
-                data.AddRows(<TRow[]>rows)
-                if (options?.Cache) {
-                    Cache.Set(schemaRequest, data)
-                }
-            }
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-            return HttpResponse.Ok(<TSchemaResponse>{
-                schema: schemaRequest.schema,
-                entity: schemaRequest.entity,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data
-            })
-        } catch (error) {
-            const errorMessage = error instanceof Error
-                ? error.message
-                : 'Unknown error'
-            throw new HttpErrorInternalServerError(`Select operation failed: ${errorMessage}`)
-        }
+        const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
+
+        await connection.query(sqlQueryHelper.Query())
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
     }
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        const connection = await this.ensureConnection()
+    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+        const connection = await this.#ensureConnection()
 
-        try {
-            const options: TOptions = this.Options.Parse(schemaRequest)
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Update(`\`${schemaRequest.entity}\``)
-                .Set(options.Data.Rows)
-                .Where(options.Filter)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
 
-            await connection.query(sqlQueryHelper.Query)
-            Cache.Remove(schemaRequest)
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-            return HttpResponse.NoContent()
-        } catch (error) {
-            const errorMessage = error instanceof Error
-                ? error.message
-                : 'Unknown error'
-            throw new HttpErrorInternalServerError(`Update operation failed: ${errorMessage}`)
-        }
-    }
+        const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
-    @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        const connection = await this.ensureConnection()
+        await connection.query(sqlQueryHelper.Query())
+        Cache.Remove(schemaRequest)
 
-        try {
-            const options: TOptions = this.Options.Parse(schemaRequest)
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Delete()
-                .From(`\`${schemaRequest.entity}\``)
-                .Where(options.Filter)
-
-            await connection.query(sqlQueryHelper.Query)
-            Cache.Remove(schemaRequest)
-
-            return HttpResponse.NoContent()
-        } catch (error) {
-            const errorMessage = error instanceof Error
-                ? error.message
-                : 'Unknown error'
-            throw new HttpErrorInternalServerError(`Delete operation failed: ${errorMessage}`)
-        }
+        return HttpResponse.NoContent()
     }
 
     // eslint-disable-next-line class-methods-use-this
     @Logger.LogFunction()
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented('AddEntity operation is not implemented')
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
-        const connection = await this.ensureConnection()
+    async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 
-        try {
-            const options: TOptions = this.Options.Parse(schemaRequest)
-            const sqlQuery = `
+        const connection = await this.#ensureConnection()
+
+        const sqlQuery = `
                 SELECT 
                     TABLE_NAME AS name, 
                     'table' AS type, 
@@ -226,31 +240,39 @@ export class MySqlData extends absDataProvider {
                 FROM information_schema.tables 
                 WHERE table_schema = ?`
 
-            const [rows] = await connection.query(sqlQuery, [schemaRequest.schema])
+        const [rows] = await connection.query(sqlQuery, [schemaRequest.schema])
 
-            if (!Array.isArray(rows) || rows.length === 0) {
-                throw new HttpErrorNotFound(`No entities found in schema '${schemaRequest.schema}'`)
-            }
-
-            const data = new DataTable(undefined, rows as TRow[])
-            if (options?.Cache) {
-                Cache.Set(schemaRequest, data)
-            }
-
-            return HttpResponse.Ok(<TSchemaResponse>{
-                schema: schemaRequest.schema,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data
-            })
-        } catch (error) {
-            if (error instanceof HttpErrorNotFound) {
-                throw error
-            }
-            const errorMessage = error instanceof Error
-                ? error.message
-                : 'Unknown error'
-            throw new HttpErrorInternalServerError(`ListEntities operation failed: ${errorMessage}`)
+        if (!Array.isArray(rows) || rows.length === 0) {
+            throw new HttpErrorNotFound(`No entities found in schema '${schemaRequest.schema}'`)
         }
+
+        const data = new DataTable(undefined, rows as TRow[])
+
+        return HttpResponse.Ok(<TSchemaResponse>{
+            schema: schemaRequest.schema,
+            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
+            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            data
+        })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+    
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
+    }
+
+    async #ensureConnection(): Promise<Pool> {
+        if (!this.Connection)
+            await this.Connect()
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError('Failed to establish database connection')
+
+        return this.Connection
     }
 }

@@ -1,0 +1,35 @@
+version: "0.4"
+
+server:
+  port: 3000
+  verbosity: debug
+  timezone: UTC
+  request-limit: 100mb
+  authentication:
+    provider: local
+    default-role: all
+
+roles:
+  all: lacrud
+
+users:
+  ${DEFAULT_USER}:
+    password: ${DEFAULT_PASS}
+
+sources:
+  src-mem:
+    provider: memory
+    database: memory
+    options:
+      autocreate: true
+  pg-northwind:
+    provider: postgres
+    host: ${PG_HOST}
+    port: ${PG_PORT}
+    user: ${PG_USER}
+    password: ${PG_PASS}
+    database: ${PG_DB}
+
+schemas:
+  mem:
+    source: src-mem

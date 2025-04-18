@@ -5,7 +5,7 @@
 //
 import { tags } from "typia"
 //
-import { DATA_PROVIDER } from "../server/Source"
+import { DATA_PROVIDER } from "../providers/DataProvider"
 import { AI_ENGINE } from "../server/AiEngine"
 import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "./TStep"
 import { STEP } from "../server/Step"
@@ -13,6 +13,7 @@ import { TJson } from "./TJson"
 import { TAuthentication } from "../providers/AuthProvider"
 import { TRolePermissions } from "../server/Roles"
 import { LogLevelDesc } from "loglevel"
+import { TIpPort } from "../@types/TIpPort"
 
 
 // roles
@@ -41,12 +42,15 @@ export type TConfigSourceOptions = {
 export type TConfigSource = {
     provider: DATA_PROVIDER
     host?: string
-    port?: number & tags.Minimum<1> & tags.Maximum<65_535>
+    port?: TIpPort
     user?: string
-    password?: string
+    password?: string | number
     database?: string
     options?: TConfigSourceOptions
 }
+    // | TPostgresDataConfig
+    // | TSqlServerDataConfig
+    // | TMongoDbDataConfig
 
 // schemas.*.entities
 export type TConfigSchemaEntity = {
@@ -106,19 +110,20 @@ export type StepCommand =
 //
 
 export type TConfig = {
-    version: "0.3"
+    version: "0.3" | "0.4"
     server?: {
-        port?: number & tags.Minimum<1> & tags.Maximum<65_535>
+        port?: TIpPort
         verbosity?: LogLevelDesc
         timezone?: string
         authentication: TAuthentication                 // v0.3
         "request-limit"?: string                        // v0.3
         "response-limit"?: string                       // v0.3
         "response-rate"?: {                             // v0.3
-            windowMs?: number
-            max?: number
+            windowMs?: number & tags.Type<"uint32">
+            max?: number & tags.Type<"uint32">
             message?: string
         }
+        "response-chunk"?: boolean                      // v0.4
         cache?: TConfigSource
     }
     roles?: TConfigRoles

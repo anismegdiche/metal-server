@@ -4,52 +4,34 @@
 //
 //
 import _ from "lodash"
-import { Mutex } from "async-mutex"
+import typia from "typia"
 //
 import { absDataProvider } from "../absDataProvider"
 import { RESPONSE } from "../../lib/Const"
-import { Helper } from "../../lib/Helper"
-import { Logger } from "../../utils/Logger"
-import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
+import { Logger, VERBOSITY } from "../../utils/Logger"
 import { Cache } from "../../server/Cache"
-import { DATA_PROVIDER } from "../../server/Source"
-import { TOptions } from "../../types/TOptions"
-import { TSchemaRequest } from "../../types/TSchemaRequest"
+import { DATA_PROVIDER } from "../../providers/DataProvider"
+import { TOptionalParameter } from "../../types/TOptionalParameter"
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../types/TSchemaRequest"
 import { TSchemaResponse } from "../../types/TSchemaResponse"
 import { TConfigSource } from "../../types/TConfig"
-import { IStorage } from "../../types/IStorage"
-import { IContent } from "../../types/IContent"
-import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { Convert } from "../../lib/Convert"
-// Storage
-import { AzureBlobStorage, TAzureBlobStorageConfig } from '../storage/AzureBlobStorage'
-import { FsStorage, TFsStorageConfig } from '../storage/FsStorage'
-import { FtpStorage, TFtpStorageConfig } from "../storage/FtpStorage"
 // Content
-import { JsonContent, TJsonContentConfig } from "../content/JsonContent"
-import { CsvContent, TCsvContentConfig } from '../content/CsvContent'
-import { TXlsContentConfig, XlsContent } from "../content/XlsContent"
+import { absContentProvider } from "../absContentProvider"
+import { CONTENT, ContentProvider, TContentConfig } from "../ContentProvider"
+// Storage
+import { absStorageProvider } from "../absStorageProvider"
+import { STORAGE, StorageProvider, TStorageConfig } from "../StorageProvider"
+import { TContext } from "../../@types/TContext"
+import { Mutex } from "../../utils/Mutex"
+import { SynchronizerManager } from "../../utils/SynchronizerManager"
 
 
-export enum STORAGE {
-    FILESYSTEM = "fs",
-    AZURE_BLOB = "az-blob",
-    FTP = "ftp"
-}
-
-export enum CONTENT {
-    JSON = "json",
-    CSV = "csv",
-    XLS = "xls"
-}
-
-export type TStorageConfig = TFsStorageConfig & TAzureBlobStorageConfig & TFtpStorageConfig
-
-export type TContentConfig = TJsonContentConfig & TCsvContentConfig & TXlsContentConfig
-
+//
 export type TFilesDataOptions = {
     // Common
     storage?: STORAGE
@@ -62,60 +44,38 @@ export type TFilesDataOptions = {
 }
     & TStorageConfig
 
+
+//
 export class FilesData extends absDataProvider {
+
+    SourceName?: string
     ProviderName = DATA_PROVIDER.FILES
-    Params: TConfigSource = <TConfigSource>{}
-    Connection?: IStorage = undefined
+    Config: TConfigSource = <TConfigSource>{}
+    Connection?: absStorageProvider = undefined
 
     // FilesData
-    ContentHandler: Record<string, IContent> = {}
-    File: Record<string, IContent> = {}
-    Lock: Map<string, Mutex> = new Map<string, Mutex>()
+    ContentHandler: Record<string, absContentProvider> = {}     // Contents set in config
+    File: Record<string, absContentProvider> = {}               // Files
+    Lock: Map<string, Mutex> = new Map<string, Mutex>()         // Locker for exclusive access
 
-    constructor(source: string, sourceParams: TConfigSource) {
-        super(source, sourceParams)
-        this.Params = sourceParams
-    }
-
-    static readonly #NewStorageCaseMap: Record<STORAGE, (storageParams: TConfigSource) => IStorage> = {
-        [STORAGE.FILESYSTEM]: (storageParams: TConfigSource) => new FsStorage(storageParams),
-        [STORAGE.AZURE_BLOB]: (storageParams: TConfigSource) => new AzureBlobStorage(storageParams),
-        [STORAGE.FTP]: (storageParams: TConfigSource) => new FtpStorage(storageParams)
-    }
-
-    static readonly #NewContentCaseMap: Record<CONTENT, (contentConfig: TContentConfig) => IContent> = {
-        [CONTENT.JSON]: (contentConfig: TContentConfig) => new JsonContent(contentConfig),
-        [CONTENT.CSV]: (contentConfig: TContentConfig) => new CsvContent(contentConfig),
-        [CONTENT.XLS]: (contentConfig: TContentConfig) => new XlsContent(contentConfig)
-    }
-
-    #SetHandler(entity: string) {
-        if (!_.has(this.File, entity)) {
-            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern).test(entity))
-            if (handler)
-                this.File[entity] = this.ContentHandler[handler]
-            else
-                throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entity}`)
-        }
-    }
-
-    #SetLock(entity: string) {
-        if (!this.Lock.has(entity))
-            this.Lock.set(entity, new Mutex())
+    constructor() {
+        super()
     }
 
     @Logger.LogFunction()
-    async Init(): Promise<void> {
-        Logger.Debug(`${Logger.Out} FilesData.Init`)
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+        super.Init(source, sourceConfig)
+        this.Config = sourceConfig
         const {
             storage = STORAGE.FILESYSTEM,
             content
-        } = this.Params.options as TFilesDataOptions
+        } = this.Config.options as TFilesDataOptions
 
         if (content === undefined)
             throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
 
-        this.Connection = FilesData.#NewStorageCaseMap[storage](this.Params) ?? Helper.CaseMapNotFound(storage)
+        this.Connection = StorageProvider.GetProvider(storage)
+        this.Connection.SetConfig(this.Config)
 
         // init storage
         if (this.Connection)
@@ -125,10 +85,10 @@ export class FilesData extends absDataProvider {
 
         // init content
         for (const filePattern in content) {
-            if (Object.prototype.hasOwnProperty.call(content, filePattern)) {
+            if (Object.hasOwn(content, filePattern)) {
                 const { type } = content[filePattern]
-                this.ContentHandler[filePattern] =
-                    FilesData.#NewContentCaseMap[type](content[filePattern])
+                this.ContentHandler[filePattern] = ContentProvider.GetProvider(type)
+                this.ContentHandler[filePattern].SetConfig(content[filePattern])
             }
         }
     }
@@ -156,78 +116,34 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entity } = schemaRequest
+    @SynchronizerManager.Synchronized()
+    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.#SetHandler(entity)
-        this.#SetLock(entity)
-        const release = await this.Lock.get(entity)!.acquire()
-        try {
-            this.File[entity].Init(
-                entity,
-                await this.Connection.Read(entity)
-            )
-
-            const data = await this.File[entity].Get()
-
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Insert(`\`${entity}\``)
-                .Fields(options.Data.GetFieldNames(), '`')
-                .Values(options.Data.Rows)
-
-            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-            await this.Connection.Write(
-                entity,
-                await this.File[entity].Set(data)
-            )
-
-            // clean cache
-            Cache.Remove(schemaRequest)
-
-            return HttpResponse.Created()
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(`${this.SourceName}: ${error.message}`)
-        } finally {
-            release()
-        }
-    }
-
-    @Logger.LogFunction()
-    async Select(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
-        const options: TOptions = this.Options.Parse(schemaRequest)
         const { schema, entity } = schemaRequest
 
-        const schemaResponse = <TSchemaResponse>{
-            schema,
-            entity
-        }
+        this.SetContentHandler(entity)
 
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
-
-        this.#SetHandler(entity)
-
-        this.File[entity].Init(
+        this.File[entity].InitContent(
             entity,
             await this.Connection.Read(entity)
         )
 
-        const sqlQueryHelper = new SqlQueryHelper()
-            .Select(options.Fields)
-            .From(`\`${entity}\``)
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge($context, this.GetContext(schemaRequest))
 
-        const sqlQuery = (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
-            ? sqlQueryHelper.Query
-            : undefined
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const data = await this.File[entity].Get(sqlQuery)
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+
+        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
+
+        const data = await this.File[entity].Get(sqlQuery, $context)
+
+        if (Logger.Level == VERBOSITY.DEBUG)
+            data.SetMetaData("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
 
         if (options?.Cache)
             await Cache.Set({
@@ -238,7 +154,8 @@ export class FilesData extends absDataProvider {
             )
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            ...schemaResponse,
+            schema,
+            entity,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
@@ -246,88 +163,144 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entity } = schemaRequest
+    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.#SetHandler(entity)
-        this.#SetLock(entity)
-        const release = await this.Lock.get(entity)!.acquire()
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
+
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        const { entity } = schemaRequest
+
+        this.SetContentHandler(entity)
+        this.SetLock(entity)
+        await this.Lock.get(entity)!.Acquire()
+
         try {
-            this.File[entity].Init(
+            this.File[entity].InitContent(
                 entity,
                 await this.Connection.Read(entity)
             )
 
-            const data = await this.File[entity].Get()
+            const data = await this.File[entity].Get(undefined, $context)
 
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Update(`\`${entity}\``)
-                .Set(options.Data.Rows)
-                .Where(options.Filter)
+            const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
-
+            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
             await this.Connection.Write(
                 entity,
-                await this.File[entity].Set(data)
+                await this.File[entity].Set(data, $context)
             )
 
             // clean cache
             Cache.Remove(schemaRequest)
-            return HttpResponse.NoContent()
+            return HttpResponse.Created()
 
         } catch (error: any) {
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${entity} in storage provider: ${error.message}`)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: ${error.message}`)
         } finally {
-            release()
+            this.Lock.get(entity)!.Release()
         }
     }
 
     @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-
-        const options: TOptions = this.Options.Parse(schemaRequest)
-        const { entity } = schemaRequest
-
+    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         if (!this.Connection)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
 
-        this.#SetHandler(entity)
-        this.#SetLock(entity)
-        const release = await this.Lock.get(entity)!.acquire()
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge($context, this.GetContext(schemaRequest))
+
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+
+        if (!typia.is<DataTable>(options.Data))
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        const { entity } = schemaRequest
+
+        this.SetContentHandler(entity)
+        this.SetLock(entity)
+        await this.Lock.get(entity)!.Acquire()
         try {
-            this.File[entity].Init(
+            this.File[entity].InitContent(
                 entity,
                 await this.Connection.Read(entity)
             )
 
-            const data = await this.File[entity].Get()
+            const data = await this.File[entity].Get(undefined, $context)
 
-            const sqlQueryHelper = new SqlQueryHelper()
-                .Delete()
-                .From(`\`${entity}\``)
-                .Where(options.Filter)
+            const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query, sqlQueryHelper.Data)
+            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
 
             await this.Connection.Write(
                 entity,
-                await this.File[entity].Set(data)
+                await this.File[entity].Set(data, $context)
             )
 
             // clean cache
             Cache.Remove(schemaRequest)
-
             return HttpResponse.NoContent()
+
         } catch (error: any) {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${entity} in storage provider: ${error.message}`)
         } finally {
-            release()
+            this.Lock.get(entity)!.Release()
+        }
+    }
+
+    @Logger.LogFunction()
+    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+
+        if (!this.Connection)
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+
+        // eslint-disable-next-line no-param-reassign
+        $context = _.merge($context, this.GetContext(schemaRequest))
+
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+
+        const { entity } = schemaRequest
+
+        this.SetContentHandler(entity)
+        this.SetLock(entity)
+        await this.Lock.get(entity)!.Acquire()
+
+        try {
+            this.File[entity].InitContent(
+                entity,
+                await this.Connection.Read(entity)
+            )
+
+            const data = await this.File[entity].Get(undefined, $context)
+
+            const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
+
+            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
+
+            await this.Connection.Write(
+                entity,
+                await this.File[entity].Set(data, $context)
+            )
+
+            // clean cache
+            Cache.Remove(schemaRequest)
+            return HttpResponse.NoContent()
+
+        } catch (error: any) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${entity} in storage provider: ${error.message}`)
+        } finally {
+            this.Lock.get(entity)!.Release()
         }
     }
 
@@ -339,7 +312,7 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>> {
+    async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 
         const { schema } = schemaRequest
 
@@ -356,8 +329,9 @@ export class FilesData extends absDataProvider {
         if (this.Connection) {
             data = await this.Connection.List()
             data.Rows = data.Rows.filter(row => rxFilePatterns.test(row.name as string))
-        } else
+        } else {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+        }
 
         if (data.Rows.length == 0)
             throw new HttpErrorNotFound(`${schema}: No entities found`)
@@ -368,5 +342,30 @@ export class FilesData extends absDataProvider {
             ...RESPONSE.SELECT.SUCCESS.STATUS,
             data
         })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeEntity(entity: string): string {
+        return `\`${entity}\``
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    EscapeField(field: string): string {
+        return `\`${field}\``
+    }
+
+    SetContentHandler(entity: string) {
+        if (!_.has(this.File, entity)) {
+            const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern)?.test(entity))
+            if (handler)
+                this.File[entity] = this.ContentHandler[handler]
+            else
+                throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entity}`)
+        }
+    }
+
+    SetLock(entity: string) {
+        if (!this.Lock.has(entity))
+            this.Lock.set(entity, new Mutex())
     }
 }

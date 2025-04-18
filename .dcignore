@@ -1,0 +1,4 @@
+# Exclude all files except those in a specific folder
+*
+!/src/
+!/src/*.ts

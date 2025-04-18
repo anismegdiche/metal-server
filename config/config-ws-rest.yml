@@ -1,0 +1,84 @@
+version: "0.4"
+server:
+  verbosity: debug
+  port: 3000
+  request-limit: 100mb
+  authentication:
+    provider: local
+    default-role: all
+  cache:
+    provider: memory
+    database: cache
+    options:
+      autocreate: true
+
+roles:
+  all: lacrud
+
+users:
+  myapiuser:
+    password: myStr@ngpa$$w0rd
+
+sources:
+  rest-fakerestapi:    # https://fakerestapi.azurewebsites.net/index.html
+    provider: webservice
+    host: https://fakerestapi.azurewebsites.net/api/v1/
+    options:
+      type: rest
+      content: json
+      endpoints:
+        collection-read: 
+          get: /${{ $entity }}
+        # item-read: 
+        #   get: /${{ $entity }}/${{ $row.id }}
+        item-create: 
+          post: /${{ $entity }}
+        item-update: 
+          put: /${{ $entity }}/${{ $row.id }}
+        item-delete: 
+          delete: /${{ $entity }}/${{ $row.id }}
+      
+  rest-dummyjson:    # https://dummyjson.com/docs
+    provider: webservice
+    host: https://dummyjson.com/
+    options:
+      type: rest
+      content: json
+      endpoints:
+        session: 
+          post: /user/login
+          data:
+            username: emilys
+            password: emilyspass
+          session-headers:
+            Authorization: "Bearer: ${{ $response.body.accessToken }}"
+        collection-read: 
+          get: /${{ $entity }}
+          response: ${{ $entity }}
+        # item-read: 
+        #   get: /${{ $entity }}/${{ $row.id }}
+        item-create: 
+          post: /${{ $entity }}/add
+        item-update: 
+          put: /${{ $entity }}/${{ $row.id }}
+        item-delete: 
+          delete: /${{ $entity }}/${{ $row.id }}
+      
+  rest-dog:    # https://dog.ceo/dog-api/documentation/
+    provider: webservice
+    host: https://dog.ceo/api
+    options:
+      type: rest
+      content: json
+      endpoints:
+        collection-read: 
+          get: /${{ $entity }}/list/all
+          response: message
+
+schemas:  
+  ws1:
+    source: rest-fakerestapi
+  ws2:
+    source: rest-dummyjson
+  ws3:
+    source: rest-dog

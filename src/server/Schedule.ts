@@ -10,13 +10,13 @@ import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchedule } from '../types/TSchedule'
 import { Logger } from '../utils/Logger'
 import { Config } from './Config'
-import { Plan } from './Plan'
 import { JsonHelper } from '../lib/JsonHelper'
 import { HttpResponse } from "./HttpResponse"
-import { HttpErrorForbidden, HttpErrorNotFound } from "./HttpErrors"
+import { HttpErrorNotFound } from "./HttpErrors"
 import { TJson } from "../types/TJson"
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
+import { Plans } from "./Plans"
 
 export type TScheduleConfig = {
     plan: string
@@ -26,7 +26,13 @@ export type TScheduleConfig = {
 
 export class Schedule {
 
-    static Jobs: TSchedule[] = []
+    static Jobs: TSchedule[] = [] //NOSONAR
+
+    @Logger.LogFunction()
+    static async Init() {
+        if (Config.Has('schedules'))
+            Schedule.CreateAndStartAll()
+    }
 
     @Logger.LogFunction()
     static async CreateAndStartAll() {
@@ -36,38 +42,48 @@ export class Schedule {
 
         const scheduleConfig: Array<[string, TScheduleConfig]> = Object.entries(Config.Configuration.schedules)
 
-        for (const [_schedule, _scheduleParams] of scheduleConfig) {
-            Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_schedule}'`)
-            const currentDate = new Date()
-            currentDate.setSeconds(currentDate.getSeconds() + 1)
+        for (const [_jobName, _scheduleParams] of scheduleConfig) {
+            Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_jobName}'`)
+
+            const _currentDate = new Date()
+            _currentDate.setSeconds(_currentDate.getSeconds() + 1)
+            const _cron = (_scheduleParams.cron === '@start')
+                ? _currentDate
+                : _scheduleParams.cron
+
+            const _timezone = Config.Get<string>('server.timezone')
+            const _cronJob = new CronJob(
+                _cron,
+                Schedule.Job.bind(this, _jobName, _scheduleParams),
+                null,
+                true,
+                _timezone
+            )
+
             this.Jobs.push(<TSchedule>{
-                schedule: _schedule,
-                cronJob: new CronJob(
-                    (_scheduleParams.cron === '@start')
-                        ? currentDate
-                        : _scheduleParams.cron,
-                    () => {
-                        Logger.Debug(`${Logger.In} Schedule.CreateAndStartAll: Running job '${_schedule}'`)
-                        Plan.Process(_scheduleParams)
-                            .then(() => {
-                                Logger.Debug(`${Logger.Out} Schedule.CreateAndStartAll: job '${_schedule}' terminated`)
-                            })
-                            .catch((error) => {
-                                Logger.Error(`${Logger.Out} Schedule.CreateAndStartAll: Error has occured with '${_schedule}' : ${JsonHelper.Stringify(error)}`)
-                            })
-                    },
-                    null,
-                    true,
-                    Config.Configuration?.server?.timezone as string ?? Config.DEFAULTS['server.timezone']
-                )
+                schedule: _jobName,
+                cronJob: _cronJob
             })
         }
     }
 
+    static Job(jobName: string, scheduleParams: TScheduleConfig) {
+        Logger.Info(`${Logger.In} Schedule.Job: Running job '${jobName}'`)
+        
+        const { plan } = scheduleParams
+        
+        Plans.Plans.get(plan)?.ProcessScheduleConfig(scheduleParams)
+            .then(() => {
+                Logger.Info(`${Logger.Out} Schedule.Job: job '${jobName}' terminated`)
+            })
+            .catch((error) => {
+                Logger.Error(`${Logger.Out} Schedule.Job: Error has occured with '${jobName}' : ${JsonHelper.Stringify(error)}`)
+            })
+    }
+
     @Logger.LogFunction()
-    static Start(jobName: string, userToken: TUserTokenInfo | undefined = undefined): TInternalResponse<TJson> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
+    static Start(jobName: string, userToken?: TUserTokenInfo): TInternalResponse<TJson> {
+        Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (jobKey) {
@@ -78,9 +94,8 @@ export class Schedule {
     }
 
     @Logger.LogFunction()
-    static Stop(jobName: string, userToken: TUserTokenInfo | undefined = undefined): TInternalResponse<TJson> {
-        if (!Roles.HasPermission(userToken, undefined, PERMISSION.ADMIN))
-            throw new HttpErrorForbidden('Permission denied')
+    static Stop(jobName: string, userToken?: TUserTokenInfo): TInternalResponse<TJson> {
+        Roles.CheckPermission(userToken, undefined, PERMISSION.ADMIN)
 
         const jobKey = _.findKey(this.Jobs, ["name", jobName])
         if (jobKey) {

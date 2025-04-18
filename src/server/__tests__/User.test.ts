@@ -1,14 +1,13 @@
-import { expect, describe, beforeAll, it } from '@jest/globals'
 
+import typia from "typia"
+import _ from "lodash"
 import { TUserToken, TUserTokenInfo, User } from '../User'
 import { Config } from '../Config'
 import { HttpErrorUnauthorized } from "../HttpErrors"
 import { HTTP_STATUS_CODE } from "../../lib/Const"
 import { TConfig, TConfigUsers } from "../../types/TConfig"
-import typia from "typia"
 import { AUTH_PROVIDER, AuthProvider } from "../../providers/AuthProvider"
 import { Server } from "../Server"
-import _ from "lodash"
 
 
 const users: TConfigUsers = {
@@ -24,7 +23,7 @@ const users: TConfigUsers = {
 
 describe('User', () => {
     beforeAll(() => {
-        Server.CoreLoad()
+        Server.RegisterProviders()
         // Set up test data
         Config.Configuration = typia.random<TConfig>()
         Config.Configuration.server = {
@@ -33,9 +32,8 @@ describe('User', () => {
                 provider: AUTH_PROVIDER.LOCAL
             }
         }
-        Config.Flags.EnableAuthentication = true
         Config.Configuration.users = users
-        Config.InitAuthentication()
+        Server.InitAuthentication()
     })
 
     describe('LoadUsers', () => {
@@ -52,7 +50,6 @@ describe('User', () => {
             })
         })
     })
-
 
     describe('LogIn', () => {
         it('should return a token for a valid username and password', async () => {
@@ -94,7 +91,6 @@ describe('User', () => {
                 password: '123456789'
             })
             const _IRGetInfo = await User.GetUserInfo(<TUserToken>respLogin.Body?.token)
-            // eslint-disable-next-line you-dont-need-lodash-underscore/omit
             expect(_.omit(_IRGetInfo, 'Body.exp', 'Body.iat')).toEqual({
                 StatusCode: 200,
                 Body: <TUserTokenInfo>{
@@ -115,12 +111,12 @@ describe('User', () => {
 
     describe('LogOut', () => {
         it('should remove a user from the logged-in users list', async () => {
-            const intrespLogIn = await User.Authenticate({
+            const intRespLogIn = await User.Authenticate({
                 username: 'alice',
                 password: '123456789'
             })
-            const intrespLogOut = await User.LogOut(<TUserToken>intrespLogIn.Body?.token)
-            expect(intrespLogOut).toEqual({
+            const intRespLogOut = await User.LogOut(<TUserToken>intRespLogIn.Body?.token)
+            expect(intRespLogOut).toEqual({
                 StatusCode: HTTP_STATUS_CODE.NO_CONTENT
             })
         })

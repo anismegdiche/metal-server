@@ -1,0 +1,47 @@
+@issuer=https://oidctest.wsweet.org
+
+
+# @name discover
+GET {{issuer}}/.well-known/openid-configuration
+
+###
+@username=dwo
+@password=dwo
+@client_id=5tVhz98PMAmmbYNIZNO4iwcNZyvJsvs8
+@client_secret=NwPzKJIyPjhLfkH9EZgchp3ZatiBO_IlqTdH5yWdnZ4s6xgZDlP64hsMu9bomLC0
+
+
+###
+# @name login
+POST {{issuer}}/oauth2/
+Accept: application/json
+Content-Type: application/x-www-form-urlencoded
+
+user=dwho&password=dwho
+
+
+###
+@token={{login.response.body.id}}
+
+###
+
+# @name user_info
+GET {{issuer}}/oauth2/userinfo
+authorization: Bearer {{token}}
+
+###
+@sub={{user_info.response.body.sub}}
+###
+
+# @name user-role
+GET {{issuer}}/api/v2/users/{{sub}}/roles
+Accept: application/json
+authorization: Bearer {{token}}
+
+
+###
+POST https://oidctest.wsweet.org/oauth2/
+Accept: application/json
+Content-Type: application/x-www-form-urlencoded
+
+user=dwho&password=dwho

@@ -1,0 +1,18 @@
+##
+# Docker testing image for Metal
+##
+
+FROM node:22.13.0-slim
+LABEL org.opencontainers.image.authors="Anis Megdiche <anis.megdiche@gmail.com>"
+
+RUN mkdir -p /app
+WORKDIR /app
+
+COPY src /app/src
+COPY package.json /app
+COPY tsconfig.json /app
+COPY *.md /app
+COPY jest* /app
+
+RUN npm install
+RUN npm run prepare

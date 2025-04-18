@@ -5,12 +5,24 @@
 //
 import { DataTable, SORT_ORDER } from '../DataTable'
 
+
+// Mock the Logger decorator
+jest.mock('../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
+
 describe("DataTable", () => {
     let
         dt: DataTable = <DataTable>{},
         dtEmpty: DataTable = <DataTable>{},
         dtA: DataTable = <DataTable>{},
-        dtB: DataTable = <DataTable>{}
+        dtB: DataTable = <DataTable>{},
+        dtC: DataTable = <DataTable>{}
 
     beforeEach(() => {
         dt = new DataTable("table", [
@@ -56,6 +68,14 @@ describe("DataTable", () => {
                 id: 4,
                 city: 'London'
             }
+        ])
+
+        dtC = new DataTable('C', [
+            {  x: 3, y: 1 },
+            {  x: 1, y: 1 },
+            {  x: 2, y: 1 },
+            {  x: 4, y: 1 },
+            {  x: 2, y: 2 }
         ])
     })
 
@@ -137,6 +157,11 @@ describe("DataTable", () => {
         it("should return an array of field names", () => {
             const fields = dt.GetFieldNames()
             expect(fields).toEqual(["name", "age"])
+        })
+
+        it("should return emty array for empty Datatable", () => {
+            const fields = new DataTable("empty").GetFieldNames()
+            expect(fields).toEqual([])
         })
     })
 
@@ -252,7 +277,7 @@ describe("DataTable", () => {
 
     describe('Sort', () => {
         it('should sort the rows by the specified fields in ascending order', () => {
-            const sorted = dtA.Sort(['name'], [SORT_ORDER.ASC]).Rows
+            const sorted = dtA.Sort({ 'name': SORT_ORDER.ASC }).Rows
             expect(sorted).toEqual([
                 {
                     id: 1,
@@ -273,7 +298,7 @@ describe("DataTable", () => {
         })
 
         it('should sort the rows by the specified fields in descending order', () => {
-            const sorted = dtA.Sort(['age'], [SORT_ORDER.DESC]).Rows
+            const sorted = dtA.Sort({ 'age': SORT_ORDER.DESC }).Rows
             expect(sorted).toEqual([
                 {
                     id: 3,
@@ -290,6 +315,18 @@ describe("DataTable", () => {
                     name: 'Alice',
                     age: 30
                 }
+            ])
+        })
+
+        
+        it('should sort the rows by the specified fields in ascending order first, then descending order', () => {
+            const sorted = dtC.Sort({ 'x': SORT_ORDER.ASC, 'y': SORT_ORDER.DESC }).Rows
+            expect(sorted).toEqual([
+                {  x: 1, y: 1 },
+                {  x: 2, y: 2 },
+                {  x: 2, y: 1 },
+                {  x: 3, y: 1 },
+                {  x: 4, y: 1 }
             ])
         })
     })
@@ -560,7 +597,7 @@ describe("DataTable", () => {
             // Act
             try {
                 result = await myDataTable.FreeSqlAsync(sqlQuery)
-            } catch (error) {
+            } catch {
                 //
             }
             // Assert
@@ -594,7 +631,7 @@ describe("DataTable", () => {
             // Act
             try {
                 result = await myDataTable.FreeSqlAsync(sqlQuery)
-            } catch (error) {
+            } catch {
                 //
             }
             // Assert
@@ -1303,7 +1340,7 @@ describe("DataTable", () => {
                 }
             ])
             const fieldsToAnonymize = ['email']
-            dataTable.AnonymizeFields(fieldsToAnonymize)
+            dataTable.Anonymize(fieldsToAnonymize)
             dataTable.Rows.forEach(row => {
                 expect(row.email).toMatch(/^[a-f0-9]{32}$/)
             })
@@ -1314,7 +1351,7 @@ describe("DataTable", () => {
             const dataTable = new DataTable("myTable")
             dataTable.Set([])
             const fieldsToAnonymize = ['email']
-            dataTable.AnonymizeFields(fieldsToAnonymize)
+            dataTable.Anonymize(fieldsToAnonymize)
             expect(dataTable.Rows).toEqual([])
         })
 
@@ -1322,7 +1359,7 @@ describe("DataTable", () => {
         it('should return DataTable instance after anonymization when fields are provided', () => {
             const dataTable = new DataTable("myTable")
             const fields = ['email', 'phone']
-            const result = dataTable.AnonymizeFields(fields)
+            const result = dataTable.Anonymize(fields)
             expect(result).toBeInstanceOf(DataTable)
         })
 
@@ -1339,7 +1376,7 @@ describe("DataTable", () => {
                 }
             ])
             const fields = ['name', 'email']
-            dataTable.AnonymizeFields(fields)
+            dataTable.Anonymize(fields)
             expect(dataTable.Rows[0].name).not.toBe('Alice')
             expect(dataTable.Rows[0].email).not.toBe('alice@example.com')
             expect(dataTable.Rows[1].name).not.toBe('Bob')
@@ -1359,7 +1396,7 @@ describe("DataTable", () => {
                 }
             ])
             const fields = ['name', 'email']
-            dataTable.AnonymizeFields(fields)
+            dataTable.Anonymize(fields)
             expect(dataTable.Rows[0].name).not.toBe('Alice')
             expect(dataTable.Rows[0].email).not.toBe('alice@example.com')
             expect(dataTable.Rows[1].name).not.toBe('Bob')
@@ -1380,7 +1417,7 @@ describe("DataTable", () => {
             ]
             dataTable.Set(rows)
 
-            expect(dataTable.AnonymizeFields([]).Rows).toEqual(rows)
+            expect(dataTable.Anonymize([]).Rows).toEqual(rows)
         })
 
         // Anonymizes fields when some rows lack the specified fields
@@ -1400,7 +1437,7 @@ describe("DataTable", () => {
                     age: '34173cb38f07f89ddbebc2ac9128303f'
                 }, { name: 'Bob' }
             ]
-            expect(dataTable.AnonymizeFields(['age']).Rows).toEqual(expectedRows)
+            expect(dataTable.Anonymize(['age']).Rows).toEqual(expectedRows)
         })
 
         // Processes all fields in the DataTable
@@ -1416,7 +1453,7 @@ describe("DataTable", () => {
                 }
             ])
             const fields = '*'
-            dataTable.AnonymizeFields(fields)
+            dataTable.Anonymize(fields)
             expect(dataTable.Rows).toEqual([
                 {
                     name: "64489c85dc2fe0787b85cd87214b3810",
@@ -1702,6 +1739,152 @@ describe("DataTable", () => {
             // Assertion
             expect(dataTable.Rows).toEqual([{ id: 1, name: 'Alice' }])
         })
+
+        it('should return same table gracefully', () => {
+            const data = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+            // Initialize the class object
+            const dt1 = new DataTable("myTable", data)
+
+            // Call the Filter method with a invalid condition
+            dt1.FilterRows('!id = *1 %')
+
+            // Assertion
+            expect(dt1.Rows).toEqual(data)
+        }, 300_000)
     })
+
+    describe('Transpose', () => {
+
+        // Transpose empty table returns the same table
+        it('should return same table when input is empty', () => {
+            const table = new DataTable()
+            table.Rows = []
+            const result = table.Transpose()
+            expect(result.Rows).toEqual([])
+        })
+
+        // Transpose table with single row and multiple columns
+        it('should correctly transpose single row with multiple columns', () => {
+            const table = new DataTable()
+            table.Rows = [{ a: 1, b: 2, c: 3 }]
+            const result = table.Transpose()
+            expect(result.Rows).toEqual([
+                { key: 'a', field_1: 1 },
+                { key: 'b', field_1: 2 },
+                { key: 'c', field_1: 3 }
+            ])
+        })
+
+        // Transpose table with multiple rows and columns
+        it('should correctly transpose multiple rows and columns', () => {
+            const table = new DataTable()
+            table.Rows = [
+                { a: 1, b: 2 },
+                { a: 3, b: 4 }
+            ]
+            const result = table.Transpose()
+            expect(result.Rows).toEqual([
+                { key: 'a', field_1: 1, field_2: 3 },
+                { key: 'b', field_1: 2, field_2: 4 }
+            ])
+        })
+
+        // Transpose with renamed columns provided matches column count
+        it('should use provided column names when count matches', () => {
+            const table = new DataTable()
+            table.Rows = [{ a: 1, b: 2 }]
+            const result = table.Transpose(['col1', 'val1'])
+            expect(result.Rows).toEqual([
+                { col1: 'a', val1: 1 },
+                { col1: 'b', val1: 2 }
+            ])
+        })
+
+        // Transpose with no renamed columns uses default naming pattern
+        it('should use default naming pattern when no column names provided', () => {
+            const table = new DataTable()
+            table.Rows = [{ a: 1, b: 2 }]
+            const result = table.Transpose()
+            expect(result.Rows).toEqual([
+                { key: 'a', field_1: 1 },
+                { key: 'b', field_1: 2 }
+            ])
+        })
+
+        // Transpose with renamed columns array shorter than number of columns
+        it('should use default pattern for remaining columns when renamed array is short', () => {
+            const table = new DataTable()
+            table.Rows = [{ a: 1, b: 2, c: 3 }]
+            const result = table.Transpose(['col1'])
+            expect(result.Rows).toEqual([
+                { col1: 'a', field_2: 1 },
+                { col1: 'b', field_2: 2 },
+                { col1: 'c', field_2: 3 }
+            ])
+        })
+
+        // Transpose with renamed columns array longer than number of columns
+        it('should ignore extra renamed columns when array is too long', () => {
+            const table = new DataTable()
+            table.Rows = [{ a: 1 }]
+            const result = table.Transpose(['col1', 'col2', 'col3'])
+            expect(result.Rows).toEqual([{ col1: 'a', col2: 1 }])
+        })
+
+        // Transpose table with single column
+        it('should correctly transpose table with single column', () => {
+            const table = new DataTable()
+            table.Rows = [{ a: 1 }, { a: 2 }]
+            const result = table.Transpose()
+            expect(result.Rows).toEqual([{ key: 'a', field_1: 1, field_2: 2 }])
+        })
+
+        // Transpose table with null/undefined values in cells
+        it('should handle null and undefined values correctly', () => {
+            const table = new DataTable()
+            table.Rows = [{ a: null, b: undefined }]
+            const result = table.Transpose()
+            expect(result.Rows).toEqual([
+                { key: 'a', field_1: null },
+                { key: 'b', field_1: undefined }
+            ])
+        })
+
+        // Transpose table with special characters in column names
+        it('should handle special characters in column names', () => {
+            const table = new DataTable()
+            table.Rows = [{ '@#$': 1, '!@#': 2 }]
+            const result = table.Transpose()
+            expect(result.Rows).toEqual([
+                { key: '@#$', field_1: 1 },
+                { key: '!@#', field_1: 2 }
+            ])
+        })
+
+        // Verify column naming pattern follows "field_N" format
+        it('should follow field_N naming pattern for auto-generated columns', () => {
+            const table = new DataTable()
+            table.Rows = [{ a: 1, b: 2 }, { a: 3, b: 4 }]
+            const result = table.Transpose()
+            expect(Object.keys(result.Rows[0])).toEqual(['key', 'field_1', 'field_2'])
+        })
+
+        // Check if original data is preserved after transpose
+        it('should preserve all original data values after transpose', () => {
+            const table = new DataTable()
+            const originalData = [{ a: 1, b: 2 }, { a: 3, b: 4 }]
+            table.Rows = originalData
+            const result = table.Transpose()
+            const allValues = result.Rows.flatMap(row => Object.values(row))
+            expect(allValues).toContain('a')
+            expect(allValues).toContain('b')
+            expect(allValues).toContain(1)
+            expect(allValues).toContain(2)
+            expect(allValues).toContain(3)
+            expect(allValues).toContain(4)
+        })
+    })
+
+    ///////
 })
 

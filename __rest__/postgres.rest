@@ -13,7 +13,6 @@ Content-Type: application/json
 ###
 
 
-# DONE
 # @name list-entities
 GET http://localhost:3000/schema/clubdata
 Content-Type: application/json
@@ -21,7 +20,6 @@ authorization: Bearer {{token}}
 ###
 
 
-# DONE
 # @name select
 GET http://localhost:3000/schema/clubdata/members
 Content-Type: application/json
@@ -29,13 +27,12 @@ authorization: Bearer {{token}}
 ###
 
 
-# DONE
 # @name select-filtered
 GET http://localhost:3000/schema/clubdata/members
     ?fields=firstname, surname
     # &filter-expression=customer_id LIKE 'A%'
     &filter={"surname": "Smith"}
-    &sort=firstname asc,surname desc
+    &sort={"firstname": "asc","surname": "desc"}
     &cache=300
 Content-Type: application/json
 authorization: Bearer {{token}}
@@ -99,5 +96,5 @@ Content-Type: application/json
 authorization: Bearer {{token}}
 
 {
-    "filerExpression": "customer_id like '%LLD'"
+    "filter-expression": "customer_id like '%LLD'"
 }

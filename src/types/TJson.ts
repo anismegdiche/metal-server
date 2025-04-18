@@ -3,4 +3,6 @@
 //
 //
 //
-export type TJson = Record<string, unknown>
+
+
+export type TJson<T = unknown> = Record<string, T>

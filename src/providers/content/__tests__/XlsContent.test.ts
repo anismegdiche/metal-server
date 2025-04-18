@@ -1,11 +1,22 @@
 /* eslint-disable init-declarations */
 import { Readable } from "node:stream"
-import { XlsContent, ColumnLetterToNumber } from '../XlsContent'
+import { XlsContent, ColumnLetterToNumber, TXlsContentConfig, TXlsContentParams } from '../XlsContent'
 import { DataTable } from "../../../types/DataTable"
-import { HttpErrorInternalServerError } from "../../../server/HttpErrors"
 import * as ExcelJS from 'exceljs'
 import typia from "typia"
-import { TContentConfig } from "../../data/FilesData"
+import { HttpErrorInternalServerError } from "../../../server/HttpErrors"
+import * as crc32 from 'crc-32'
+
+
+// Mock the Logger decorator
+jest.mock('../../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => () => { },
+        Debug: jest.fn(),
+        Warn: jest.fn(),
+        Error: jest.fn()
+    }
+}))
 
 
 describe("ColumnLetterToNumber", () => {
@@ -22,14 +33,6 @@ describe("ColumnLetterToNumber", () => {
     })
 })
 
-
-// Mock the Logger decorator
-jest.mock('../../../utils//Logger', () => ({
-    Logger: {
-        LogFunction: () => () => { },
-        Debug: jest.fn()
-    }
-}))
 
 // Helper function to create a readable stream from string/buffer
 function createReadableStream(data: string | Buffer): Readable {
@@ -49,7 +52,7 @@ async function createMockWorkbook(data: any[][]): Promise<Buffer> {
     data.forEach(row => worksheet.addRow(row))
 
     const buffer = await workbook.xlsx.writeBuffer()
-    return buffer as Buffer
+    return buffer as unknown as Buffer<ArrayBufferLike>
 }
 
 describe('XlsContent', () => {
@@ -66,16 +69,17 @@ describe('XlsContent', () => {
         mockWorkbookBuffer = await createMockWorkbook(mockData)
 
         // Setup XlsContent
-        xlsContent = new XlsContent(typia.random<TContentConfig>())
-    })
+        xlsContent = new XlsContent()
+        xlsContent.SetConfig(typia.random<TXlsContentConfig>())
+    }, 300_000)
 
 
     describe('Init', () => {
-        test('should initialize with default parameters', async () => {
+        it('should initialize with default parameters', async () => {
             const inputStream = createReadableStream(mockWorkbookBuffer)
             xlsContent.Config = {}
 
-            await xlsContent.Init('testEntity', inputStream)
+            await xlsContent.InitContent('testEntity', inputStream)
 
             expect(xlsContent.EntityName).toBe('testEntity')
             expect(xlsContent.Params).toEqual({
@@ -87,7 +91,7 @@ describe('XlsContent', () => {
             })
         })
 
-        test('should initialize with custom parameters', async () => {
+        it('should initialize with custom parameters', async () => {
             const inputStream = createReadableStream(mockWorkbookBuffer)
             xlsContent.Config = {
                 'xls-sheet': 'Sheet1',
@@ -97,7 +101,7 @@ describe('XlsContent', () => {
                 'xls-starting-cell': 'B2'
             }
 
-            await xlsContent.Init('testEntity', inputStream)
+            await xlsContent.InitContent('testEntity', inputStream)
 
             expect(xlsContent.Params).toEqual({
                 sheet: 'Sheet1',
@@ -116,16 +120,16 @@ describe('XlsContent', () => {
                 'xls-sheet': 'Sheet1',
                 'xls-starting-cell': 'A1'
             }
-            await xlsContent.Init('testEntity', inputStream)
+            await xlsContent.InitContent('testEntity', inputStream)
         })
 
-        test('should throw error if Params is not defined', async () => {
-            xlsContent.Params = undefined
-            await expect(xlsContent.Get()).rejects.toThrow(HttpErrorInternalServerError)
+        it('should throw error if Params is not defined', async () => {
+            xlsContent.Params = undefined as unknown as TXlsContentParams
+            await expect(xlsContent.Get(undefined,{})).rejects.toThrow(HttpErrorInternalServerError)
         })
 
-        test('should parse Excel data correctly', async () => {
-            const result = await xlsContent.Get()
+        it('should parse Excel data correctly', async () => {
+            const result = await xlsContent.Get(undefined,{})
 
             expect(result).toBeInstanceOf(DataTable)
             expect(result.Rows).toHaveLength(2) // Only one data row since first row is header
@@ -136,8 +140,8 @@ describe('XlsContent', () => {
             })
         })
 
-        test('should handle SQL queries', async () => {
-            const result = await xlsContent.Get('SELECT * FROM testEntity WHERE Age > 25')
+        it('should handle SQL queries', async () => {
+            const result = await xlsContent.Get('SELECT * FROM testEntity WHERE Age > 25', {})
 
             expect(result).toBeInstanceOf(DataTable)
             expect(result.Rows.length).toBeGreaterThanOrEqual(0)
@@ -153,7 +157,7 @@ describe('XlsContent', () => {
                 'xls-sheet': 'Sheet1',
                 'xls-starting-cell': 'A1'
             }
-            await xlsContent.Init('testEntity', inputStream)
+            await xlsContent.InitContent('testEntity', inputStream)
 
             mockDataTable = new DataTable('testEntity', [
                 {
@@ -164,52 +168,108 @@ describe('XlsContent', () => {
             ])
         })
 
-        test('should throw error if Params is not defined', async () => {
-            xlsContent.Params = undefined
-            await expect(xlsContent.Set(mockDataTable)).rejects.toThrow(HttpErrorInternalServerError)
+        it('should throw error if Params is not defined', async () => {
+            xlsContent.Params = undefined as unknown as TXlsContentParams
+            await expect(xlsContent.Set(mockDataTable,{})).rejects.toThrow(HttpErrorInternalServerError)
         })
 
-        // test('should write data to Excel correctly', async () => {
-        //     const result = await xlsContent.Set(mockDataTable)
+        it('should write data to Excel correctly', async () => {
+            mockDataTable = new DataTable('testEntity', [
+                {
+                    name: 'John',
+                    age: 30,
+                    date: new Date('2024-01-01')
+                }
+            ])
 
-        //     expect(result).toBeInstanceOf(Readable)
+            // Create a mock Excel file content
+            const mockExcelContent = new Readable({
+                read() {
+                    // Create a minimal valid ZIP structure with Excel-specific files
+                    let offset = 0
+                    const fileHeaders: Buffer[] = []
+                    const centralDirHeaders: Buffer[] = []
 
-        //     // Verify the file was uploaded to VFS
-        //     const savedFile = virtualFileSystem.ReadFile('testEntity')
-        //     expect(savedFile).toBeDefined()
+                    // Function to create file header
+                    const createFileHeader = (filename: string, content: string) => {
+                        const data = Buffer.from(content)
+                        const filenameBuffer = Buffer.from(filename)
+                        
+                        // Calculate CRC-32 and file sizes
+                        const crc32Value = crc32.buf(data)
+                        const compressedSize = data.length
+                        const uncompressedSize = data.length
+                        
+                        // Local file header
+                        const localFileHeader = Buffer.concat([
+                            Buffer.from([0x50, 0x4B, 0x03, 0x04]), // Local file header signature
+                            Buffer.from([0x14, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), // Version, flags, method, timestamps
+                            Buffer.from([crc32Value, 0x00, 0x00, 0x00]), // CRC-32
+                            Buffer.from([compressedSize, 0x00, 0x00, 0x00]), // Compressed size
+                            Buffer.from([uncompressedSize, 0x00, 0x00, 0x00]), // Uncompressed size
+                            Buffer.from([filenameBuffer.length, 0x00, 0x00, 0x00]), // Filename length, extra field length
+                            filenameBuffer,
+                            data
+                        ])
 
-        //     // Read the saved file and verify its contents
-        //     const workbook = new ExcelJS.Workbook()
-        //     await workbook.xlsx.read(savedFile)
-        //     const worksheet = workbook.getWorksheet('Sheet1')
+                        // Central directory header
+                        const centralDirHeader = Buffer.concat([
+                            Buffer.from([0x50, 0x4B, 0x01, 0x02]), // Central directory file header signature
+                            Buffer.from([0x14, 0x00, 0x14, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), // Version, flags, method, timestamps
+                            Buffer.from([crc32Value, 0x00, 0x00, 0x00]), // CRC-32
+                            Buffer.from([compressedSize, 0x00, 0x00, 0x00]), // Compressed size
+                            Buffer.from([uncompressedSize, 0x00, 0x00, 0x00]), // Uncompressed size
+                            Buffer.from([filenameBuffer.length, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), // Filename length, extra field length, comment length, disk number, internal attributes, external attributes
+                            Buffer.from([offset, 0x00, 0x00, 0x00]), // Relative offset of local header
+                            filenameBuffer
+                        ])
 
-        //     // Verify headers
-        //     const headers = worksheet!.getRow(1).values as string[]
-        //     expect(headers.slice(1)).toEqual(['name', 'age', 'date'])
+                        fileHeaders.push(localFileHeader)
+                        centralDirHeaders.push(centralDirHeader)
+                        offset += localFileHeader.length
+                    }
 
-        //     // Verify data
-        //     const dataRow = worksheet!.getRow(2).values as any[]
-        //     expect(dataRow[1]).toBe('John')
-        //     expect(dataRow[2]).toBe(30)
-        //     expect(dataRow[3]).toBeInstanceOf(Date)
-        // })
+                    // Create all necessary Excel files
+                    createFileHeader('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+    <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+    <Default Extension="xml" ContentType="application/xml"/>
+    <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+</Types>`);
+                    createFileHeader('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+                    createFileHeader('xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+    <sheets>
+        <sheet name="Sheet1" sheetId="1" r:id="rId1"/>
+    </sheets>
+</workbook>`);
+                    createFileHeader('xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`);
+                    createFileHeader('xl/worksheets/sheet1.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetData/></worksheet>`);
 
-        // test('should create new worksheet if it doesn\'t exist', async () => {
-        //     xlsContent.Config = {
-        //         'xls-sheet': 'NewSheet',
-        //         'xls-starting-cell': 'A1'
-        //     }
+                    // Create end of central directory record
+                    const endOfCentralDir = Buffer.concat([
+                        Buffer.from([0x50, 0x4B, 0x05, 0x06]), // End of central directory signature
+                        Buffer.from([0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x05, 0x00]), // Number of this disk, disk where central directory starts, number of central directory records on this disk, total number of central directory records
+                        Buffer.from([centralDirHeaders.reduce((sum, header) => sum + header.length, 0), 0x00, 0x00, 0x00]), // Size of central directory
+                        Buffer.from([offset, 0x00, 0x00, 0x00]), // Offset of start of central directory
+                        Buffer.from([0x00, 0x00]) // ZIP file comment length
+                    ])
 
-        //     const result = await xlsContent.Set(mockDataTable)
-        //     expect(result).toBeInstanceOf(Readable)
+                    // Push all parts in order
+                    fileHeaders.forEach(header => this.push(header))
+                    centralDirHeaders.forEach(header => this.push(header))
+                    this.push(endOfCentralDir)
+                    this.push(null)
+                }
+            })
 
-        //     // Verify the new worksheet was created
-        //     const savedFile = virtualFileSystem.ReadFile('testEntity')
-        //     const workbook = new ExcelJS.Workbook()
-        //     await workbook.xlsx.read(savedFile)
+            // Initialize the content with the mock Excel file
+            xlsContent.Content.UploadFile('testEntity', mockExcelContent)
+            
+            const result = await xlsContent.Set(mockDataTable, {})
 
-        //     const worksheet = workbook.getWorksheet('NewSheet')
-        //     expect(worksheet).toBeDefined()
-        // })
+            expect(result).toBeInstanceOf(Readable)
+            expect(xlsContent.Content.Files['testEntity']).toBeDefined()
+        })
     })
 })

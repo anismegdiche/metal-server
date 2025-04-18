@@ -7,12 +7,17 @@ import { Request, Response } from 'express'
 import typia from "typia"
 //
 import { HTTP_STATUS_CODE } from '../lib/Const'
-import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented, HttpErrorUnauthorized, HttpErrorInternalServerError } from '../server/HttpErrors'
+import { HttpErrorBadRequest, HttpError, HttpErrorNotImplemented, HttpErrorUnauthorized, HttpErrorInternalServerError, HttpErrorLog, HttpErrorContentTooLarge } from '../server/HttpErrors'
 import { Server } from '../server/Server'
-import { TJson } from "../types/TJson"
 import { Convert } from "../lib/Convert"
+import { TInternalResponse } from "../types/TInternalResponse"
+import { TSchemaResponse } from "../types/TSchemaResponse"
+import { JsonHelper } from "../lib/JsonHelper"
+import { Config } from "../server/Config"
+import { Logger } from "../utils/Logger"
 
 
+//
 export class ServerResponse {
 
     static async GetInfo(req: Request, res: Response): Promise<void> {
@@ -29,12 +34,19 @@ export class ServerResponse {
 
     }
 
-    static Response(res: Response, body: TJson, status: HTTP_STATUS_CODE = HTTP_STATUS_CODE.OK): void {
-        try {
-            res.status(status).json(body).end()
-        } catch (error: unknown) {
-            ServerResponse.ResponseError(res, error as Error)
-        }
+    static Response(res: Response, intRes: TInternalResponse<TSchemaResponse | undefined>): Response {
+        if (!intRes.Body)
+            throw new HttpErrorInternalServerError()
+
+        const _schemaResponse = intRes.Body
+        const _resSize = JsonHelper.Size(_schemaResponse)
+
+        Logger.Debug(`${Logger.Out} SchemaResponse.Select: response size = ${_resSize} bytes`)
+        
+        if (_resSize > Convert.HumainSizeToBytes(Config.Get("server.response-limit")))
+            throw new HttpErrorContentTooLarge("Response body too large")
+
+        return Convert.SchemaResponseToResponse(_schemaResponse, res)
     }
 
     static ResponseError(res: Response, error: HttpError | Error) {
@@ -42,10 +54,10 @@ export class ServerResponse {
             ? error.Status
             : HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR
 
+        HttpErrorLog(error)
         res
             .status(status)
             .json({
-                // message: 'Something Went Wrong',
                 error: error.message,
                 stack: (status == HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR)
                     ? (error?.stack?.split('\n') ?? "")
@@ -63,11 +75,7 @@ export class ServerResponse {
     }
 
     static CheckRequest(req: Request) {
-        try {
-            if (!req.__METAL_CURRENT_USER)
-                throw new HttpErrorUnauthorized()
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(error.message)
-        }
+        if (!req.__METAL_CURRENT_USER)
+            throw new HttpErrorUnauthorized()
     }
 }

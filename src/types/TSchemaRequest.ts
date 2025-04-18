@@ -3,6 +3,7 @@
 //
 //
 //
+import { TOrderBy } from "./DataTable"
 import { TJson } from "./TJson"
 
 export type TSchemaRequest = {
@@ -18,7 +19,7 @@ export type TSchemaRequest = {
     fields?: string
     filter?: TJson
     "filter-expression"?: string
-    sort?: string
+    sort?: TOrderBy
     cache?: number
 
     //
@@ -38,4 +39,4 @@ export type TSchemaRequestInsert = Pick<TSchemaRequest,
     'schema' | 'entity' | 'source' | 'data'>
 
 export type TSchemaRequestListEntities = Pick<TSchemaRequest,
-    'schema' | 'entity' | 'source'>
+    'schema' | 'source'>

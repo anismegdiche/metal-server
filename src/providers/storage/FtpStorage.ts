@@ -1,22 +1,32 @@
-import { tags } from "typia"
+//
+//
+//
+//
+//
+//
 import * as Ftp from "basic-ftp"
 import { PassThrough, Readable } from "node:stream"
+import path from "node:path"
 //
-import { CommonStorage } from "./CommonStorage"
-import { IStorage } from "../../types/IStorage"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../server/HttpErrors"
 import { DataTable } from "../../types/DataTable"
 import { TConvertParams } from "../../lib/TypeHelper"
-import path from "node:path"
+import { absStorageProvider } from '../absStorageProvider';
+import { TConfigSource } from "../../types/TConfig"
+import { TFilesDataOptions } from "../data/FilesData"
+import { TIpPort } from "../../@types/TIpPort"
+import { StringHelper } from "../../lib/StringHelper"
 
+
+//
 export type TFtpStorageConfig = {
-    "ftp-host": string                                            // FTP server host
-    "ftp-port"?: number & tags.Minimum<1> & tags.Maximum<65_535>  // FTP server port
-    "ftp-user": string                                            // FTP server username
-    "ftp-password": string                                        // FTP server password
-    "ftp-secure"?: boolean                                        // Enable secure FTP connection (default: false)
-    "ftp-folder"?: string                                         // Remote folder on the FTP server (default: '/')
+    "ftp-host": string                    // FTP server host
+    "ftp-port"?: TIpPort                  // FTP server port
+    "ftp-user": string                    // FTP server username
+    "ftp-password": string                // FTP server password
+    "ftp-secure"?: boolean                // Enable secure FTP connection (default: false)
+    "ftp-folder"?: string                 // Remote folder on the FTP server (default: '/')
 }
 
 type TFtpStorageParams = Required<{
@@ -24,15 +34,22 @@ type TFtpStorageParams = Required<{
 }>
 
 
-export class FtpStorage extends CommonStorage implements IStorage {
+//
+export class FtpStorage extends absStorageProvider {
 
-    Params: TFtpStorageParams | undefined
+    ConfigSource?: TConfigSource
+    ConfigStorage?: TFilesDataOptions
+
+    Params?: TFtpStorageParams
 
     // FTP
     FtpClient: Ftp.Client = new Ftp.Client()
 
     @Logger.LogFunction()
-    async Init(): Promise<void> {
+    Init(): void {
+        if (!this.ConfigStorage)
+            throw new HttpErrorInternalServerError('FtpStorage: No configuration defined')
+
         this.Params = <TFtpStorageParams>{
             host: this.ConfigStorage["ftp-host"],
             port: this.ConfigStorage["ftp-port"] ?? 21,
@@ -102,9 +119,9 @@ export class FtpStorage extends CommonStorage implements IStorage {
         if (!this.Params)
             throw new HttpErrorInternalServerError('FtpStorage: No params defined')
 
-        const _path = path.join(this.Params.folder, file)
+        const _path = StringHelper.Url(this.Params.folder, file)
         try {
-            if (this.ConfigStorage.autocreate && !(await this.IsExist(file)))
+            if (this.ConfigStorage?.autocreate && !(await this.IsExist(file)))
                 await this.FtpClient.uploadFrom(content, _path)
             else
                 await this.FtpClient.appendFrom(content, _path)

@@ -1,0 +1,6 @@
+services:
+  metal:
+    build: .
+    command: npm run test
+    volumes:
+      - ./src:/app/src:ro

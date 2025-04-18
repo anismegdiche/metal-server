@@ -12,17 +12,17 @@ export const SERVER = {
     VERSION: Package.Json.version as string,
     BANNER: '<h1>\\m/ Metal Server</h1>',
     CONSOLE_BANNER: `\x1b[31m
-               ,,,,,
-             ▓▓▓▓▓▓▓▓▓
-        ,    ▓▓▓▓▓▓▓▓▓    ,   \x1b[0m   ▄▄▄      ▄▄               ██▌             ██▌\x1b[31m
-       ╓▓⌐   █╜¬╚▓▀"╙▓    ▓▄  \x1b[0m  ▐███     ████              ██▌             ██▌\x1b[31m
-       ▓▓⌐   ▌   ╠   ▐    ▓▓  \x1b[0m  █████   ▐████    ▄█████▄  █████  ▄████▄██▌ ██▌\x1b[31m
-      ▐▓▓⌐   ▌   ╠   ▐    ▓▓▌ \x1b[0m  ██▀██▌ ▐██▀██▌ ▄██▀   ▀██  ██▌ ▄██▀  ▀▀██▌ ██▌\x1b[31m
-      ▐▓▓█w╓▄█▄wα█Wwg█▓╖╥▓▓▓▌ \x1b[0m ▐██ ▐██▄██▌ ███ ██████████▌ ██▌ ██▌     ██▌ ██▌\x1b[31m
-       ▓▓▓▓▓▓▌       ▐▓▓▓▓▓█  \x1b[0m ██▌  ▐████  ▐██-▀██▄   ▄▄▄  ██▌ ▀██▄   ▄██▌ ██▌\x1b[31m
-        ▀▓▓▓▓█▄▄╦╥   ▐▓▓▓▓▀   \x1b[0m▐██    ███    ██▌ ▀▀█████▀   ██▌  ▀▀████▀██▌ ██▌\x1b[31m
-          ▀▓▓▓▓▓▓▓   ▐▓▓▀ 
-             ╚▀▀▀▀   ▀        \x1b[0m M i d d l e w a r e     -     E T L    -    A I \x1b[31m
+               ▄▄▄▄▄
+             █████████
+        ▄    █████████    ▄   \x1b[0m   ▄▄▄      ▄▄               ██▌             ██▌\x1b[31m
+       ▄█    █▀ ▀█▀ ▀█    █▄  \x1b[0m  ▐███     ████              ██▌             ██▌\x1b[31m
+       ██    ▌   █   ▐    ██  \x1b[0m  █████   ▐████    ▄█████▄  █████  ▄████▄██▌ ██▌\x1b[31m
+      ▐██    ▌   █   ▐    ██▌ \x1b[0m  ██▀██▌ ▐██▀██▌ ▄██▀   ▀██  ██▌ ▄██▀  ▀▀██▌ ██▌\x1b[31m
+      ▐███▄▄▄█▄▄▄█▄▄▄██▄▄▄██▌ \x1b[0m ▐██ ▐██▄██▌ ███ ██████████▌ ██▌ ██▌     ██▌ ██▌\x1b[31m
+       ██████▌       ▐██████  \x1b[0m ██▌  ▐████  ▐██ ▀██▄   ▄▄▄  ██▌ ▀██▄   ▄██▌ ██▌\x1b[31m
+        ▀█████▄▄▄▄   ▐████▀   \x1b[0m▐██    ███    ██▌ ▀▀█████▀   ██▌  ▀▀████▀██▌ ██▌\x1b[31m
+          ▀███████   ▐██▀ 
+             ▀▀▀▀▀   ▀        \x1b[0m M i d d l e w a r e     -     E T L    -    A I \x1b[31m
 `
 }
 
@@ -68,12 +68,12 @@ export enum HTTP_STATUS_MESSAGE {
     CONTENT_TOO_LARGE = 'Content Too Large'
 }
 
-export enum VALIDATION_ERROR_MESSAGE {
-    MUST_BE_NUMBER = 'must be a number',
-    MUST_BE_JSON = 'must be a JSON object',
-    MUST_BE_JSON_ARRAY_OR_OBJECT = 'must be a JSON array or a JSON object',
-    MUST_BE_STRING = 'must be a string'
-}
+//XXX export enum VALIDATION_ERROR_MESSAGE {
+//XXX     MUST_BE_NUMBER = 'must be a number',
+//XXX     MUST_BE_JSON = 'must be a JSON object',
+//XXX     MUST_BE_JSON_ARRAY_OR_OBJECT = 'must be a JSON array or a JSON object',
+//XXX     MUST_BE_STRING = 'must be a string'
+//XXX }
 
 export const RESPONSE = {
     SELECT: {

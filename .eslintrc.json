@@ -7,13 +7,14 @@
 	},
 	"extends": [
 		"eslint:recommended",
-        "plugin:@typescript-eslint/eslint-recommended",
+		"plugin:@typescript-eslint/eslint-recommended",
 		"plugin:@typescript-eslint/recommended",
 		"plugin:you-dont-need-lodash-underscore/compatible"
 	],
 	"plugins": [
 		"@typescript-eslint",
-		"unused-imports"
+		"unused-imports",
+		"security"
 	],
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
@@ -88,7 +89,7 @@
 			"consistent"
 		],
 		"function-paren-newline": "off",
-		"generator-star-spacing": "error",
+		"generator-star-spacing": "off",
 		"grouped-accessor-pairs": "error",
 		"guard-for-in": "error",
 		"id-denylist": "error",
@@ -171,7 +172,7 @@
 		"no-multi-assign": "error",
 		"no-multi-spaces": "off",
 		"no-multi-str": "error",
-		"no-multiple-empty-lines": "error",
+		"no-multiple-empty-lines": "warn",
 		"no-negated-condition": "error",
 		"no-nested-ternary": "error",
 		"no-new": "error",
@@ -294,14 +295,14 @@
 		"no-unused-vars": "off",
 		"@typescript-eslint/no-unused-vars": "off",
 		"unused-imports/no-unused-imports": "warn",
-        "unused-imports/no-unused-vars": [
-            "warn",
-            {
-                "vars": "all",
-                "varsIgnorePattern": "^_",
-                "args": "after-used",
-                "argsIgnorePattern": "^_"
-            }
-        ]
+		"unused-imports/no-unused-vars": [
+			"warn",
+			{
+				"vars": "all",
+				"varsIgnorePattern": "^_",
+				"args": "after-used",
+				"argsIgnorePattern": "^_"
+			}
+		]
 	}
 }

@@ -1,25 +1,25 @@
-import { Readable } from "node:stream"
-import { TConfigSource } from '../../../types/TConfig'
-import { FsStorage, TFsStorageConfig } from '../FsStorage'
 import Fs from 'fs'
-import { ReadableHelper } from "../../../lib/ReadableHelper"
-import typia from "typia"
-import { TJsonContentConfig } from "../../content/JsonContent"
+import { Readable } from 'node:stream'
+import { TConfigSource } from '../../../types/TConfig'
+import { FsStorage } from '../FsStorage'
+import { ReadableHelper } from '../../../lib/ReadableHelper'
+import { HttpErrorNotFound, HttpErrorInternalServerError } from '../../../server/HttpErrors'
+import { ReadStream } from "node:fs"
 
 
 describe('FsStorage', () => {
-    const sourceParams = <TConfigSource>{
-        provider: "files",
+    const sourceConfig = <TConfigSource>{
+        provider: 'files',
         options: {
-            ...typia.random<TFsStorageConfig>(),
-            ...typia.random<TJsonContentConfig>()
+            folder: './'
         }
     }
-    const fsStorage = new FsStorage(sourceParams)
+    const fsStorage = new FsStorage()
+    fsStorage.SetConfig(sourceConfig)
     fsStorage.Init()
 
     beforeEach(() => {
-        //
+        jest.restoreAllMocks()
     })
 
     afterEach(() => {
@@ -30,7 +30,7 @@ describe('FsStorage', () => {
         it('should return true if the file exists', async () => {
             jest.spyOn(Fs, 'existsSync').mockReturnValue(true)
 
-            const result = await fsStorage.IsExist('test.txt')
+            const result = await fsStorage.IsExist('IsExist.txt')
 
             expect(result).toBe(true)
         })
@@ -38,7 +38,7 @@ describe('FsStorage', () => {
         it('should return false if the file does not exist', async () => {
             jest.spyOn(Fs, 'existsSync').mockReturnValue(false)
 
-            const result = await fsStorage.IsExist('test.txt')
+            const result = await fsStorage.IsExist('IsExist-ko.txt')
 
             expect(result).toBe(false)
         })
@@ -46,21 +46,18 @@ describe('FsStorage', () => {
 
     describe('Read', () => {
         it('should return the content of the file if it exists', async () => {
-            jest.spyOn(Fs.promises, 'readFile').mockResolvedValue('File content')
+            jest.spyOn(Fs, 'createReadStream').mockReturnValue(Readable.from('File content', { encoding: 'utf8' }) as ReadStream)
             jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(true)
 
-            const result = await fsStorage.Read('test.txt')
-            expect(result).toBeInstanceOf(Readable)
-            expect(ReadableHelper.ToString(result)).resolves.toBe('File content')
+            const result = await fsStorage.Read('Read.txt')
+            const content = await ReadableHelper.ToString(result)
+            expect(content).toBe('File content')
         })
 
-        it('should return throw Not Found if the file does not exist', async () => {
+        it('should throw Not Found if the file does not exist', async () => {
             jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(false)
-            try {
-                await fsStorage.Read('test.txt')
-            } catch (error: any) {
-                expect(error?.name).toBe('HttpErrorNotFound')
-            }
+
+            await expect(fsStorage.Read('Read-ko.txt')).rejects.toBeInstanceOf(HttpErrorNotFound)
         })
     })
 
@@ -70,14 +67,44 @@ describe('FsStorage', () => {
 
             const stream = Readable.from('File content')
 
-            await fsStorage.Write('test.txt', stream)
+            await fsStorage.Write('Write.txt', stream)
 
             expect(Fs.promises.writeFile).toHaveBeenCalledWith(
-                `${fsStorage.Params!.folder}test.txt`,
+                `${fsStorage.Params!.folder}Write.txt`,
                 stream,
                 'utf8'
             )
         })
+    })
 
+    describe('Additional Tests', () => {
+        it('should read existing file', async () => {
+            fsStorage.Params = {
+                folder: '/test/',
+                autocreate: false
+            }
+            jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(true)
+            jest.spyOn(Fs, 'createReadStream').mockReturnValue(Readable.from('', { encoding: 'utf8' }) as ReadStream)
+
+            const result = await fsStorage.Read('existingFile.txt')
+
+            expect(result).toBeInstanceOf(Readable)
+            expect(Fs.createReadStream).toHaveBeenCalledWith('/test/existingFile.txt')
+        })
+
+        it('should throw error if no params defined', async () => {
+            fsStorage.Params = undefined
+            await expect(fsStorage.Read('file.txt')).rejects.toBeInstanceOf(HttpErrorInternalServerError)
+        })
+
+        it('should throw not found error if file does not exist and no autocreate', async () => {
+            fsStorage.Params = {
+                folder: '/test/',
+                autocreate: false
+            }
+            jest.spyOn(fsStorage, 'IsExist').mockResolvedValue(false)
+
+            await expect(fsStorage.Read('nonExistentFile.txt')).rejects.toBeInstanceOf(HttpErrorNotFound)
+        })
     })
 })

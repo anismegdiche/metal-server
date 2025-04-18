@@ -4,10 +4,10 @@
 //
 //
 
-import { Logger } from "../utils/Logger"
+import path from "node:path"
+import { JsonHelper } from "./JsonHelper"
 
 export class StringHelper {
-    @Logger.LogFunction()
     static Split(str: string, sep: string): string[] {
         return (str.includes(sep))
             ? str.split(sep)
@@ -16,14 +16,35 @@ export class StringHelper {
             : [str]
     }
 
-    @Logger.LogFunction()
     static FixObjectMissingQuotes(str: string): string {
         const stringFixed = str.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
         return stringFixed.replace(/:\s*([^"{[,\s][^,\s}]*)/g, ':"$1"')
     }
 
-    @Logger.LogFunction()
     static IsEmpty(str: string | undefined | null): boolean {
-        return  str == undefined || str == null || str == '' || str.trim() == ''
+        return str == undefined || str == null || str == '' || str.trim() == ''
+    }
+
+    static Url(...subPaths: Array<string | undefined>) {
+        const cleanSubPaths = subPaths.filter((path: string | undefined) => !StringHelper.IsEmpty(path)) as string[]
+        if (cleanSubPaths.length == 0)
+            return ''
+
+        return path
+            .join(...cleanSubPaths)
+            .replace(/\\/g, '/')
+            .replace(':/', '://')
+    }
+
+    static ToString<T>(value: T): string {
+        switch (typeof value) {
+            case 'string':
+                return value
+            case 'number':
+                return value.toString()
+            case 'object':
+            default:
+                return JsonHelper.Stringify(value)
+        }
     }
 }

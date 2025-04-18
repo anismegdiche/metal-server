@@ -6,12 +6,9 @@
 import { Request, Response } from 'express'
 //
 import { Convert } from '../lib/Convert'
-import { Logger } from '../utils/Logger'
 import { ServerResponse } from './ServerResponse'
 import { Schema } from '../server/Schema'
-import { HttpErrorContentTooLarge, HttpError, HttpErrorInternalServerError } from '../server/HttpErrors'
-import { Config } from '../server/Config'
-import { JsonHelper } from '../lib/JsonHelper'
+import { HttpError, HttpErrorInternalServerError } from '../server/HttpErrors'
 import { HTTP_STATUS_CODE } from "../lib/Const"
 
 export class SchemaResponse {
@@ -21,21 +18,7 @@ export class SchemaResponse {
         ServerResponse.CheckRequest(req)
         
         Schema.Select(schemaRequest,req.__METAL_CURRENT_USER)
-            .then(intRes => {
-                if (!intRes.Body)
-                    throw new HttpErrorInternalServerError()
-
-                const _schemaResponse = intRes.Body
-                const _resSize = JsonHelper.Size(_schemaResponse)
-                //TODO: check how to remove casting
-                const _resLimit = Config.Flags.ResponseLimit as number
-                // file deepcode ignore NoEffectExpression: debugging pupose
-                Logger.Debug(`${Logger.Out} SchemaResponse.Select: response size = ${_resSize} bytes`)
-                if (_resSize > _resLimit)
-                    throw new HttpErrorContentTooLarge("Response body too large")
-
-                return Convert.SchemaResponseToResponse(_schemaResponse, res)
-            })
+            .then(intRes => ServerResponse.Response(res, intRes))
             .catch((error: HttpError) => ServerResponse.ResponseError(res, error))
     }
 

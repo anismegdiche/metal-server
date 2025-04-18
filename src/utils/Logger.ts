@@ -3,15 +3,20 @@
 //
 //
 //
-import chalk from 'chalk'
 import LogLevel from 'loglevel'
 import Prefix from 'loglevel-plugin-prefix'
 import morgan from "morgan"
+import { magenta, green, cyan, yellow, red, gray, whiteBright, bold } from 'colorette'
+import _ from "lodash"
+import assert from 'node:assert'
 //
 import { SERVER } from '../lib/Const'
 import { JsonHelper } from "../lib/JsonHelper"
+import { DecoratorHelper } from "./DecoratorHelper"
+import { HttpErrorInternalServerError } from '../server/HttpErrors'
 
 
+//
 export enum VERBOSITY {
     TRACE = "trace",
     DEBUG = "debug",
@@ -20,29 +25,30 @@ export enum VERBOSITY {
     ERROR = "error"
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-const Colors: Record<string, Function> = {
-    [VERBOSITY.TRACE.toUpperCase()]: chalk.magenta,
-    [VERBOSITY.DEBUG.toUpperCase()]: chalk.green,
-    [VERBOSITY.INFO.toUpperCase()]: chalk.cyan,
-    [VERBOSITY.WARN.toUpperCase()]: chalk.yellow,
-    [VERBOSITY.ERROR.toUpperCase()]: chalk.red
+
+//
+const Colors: Record<string, (text: string) => string> = {
+    [VERBOSITY.TRACE.toUpperCase()]: (text: string) => magenta(text),
+    [VERBOSITY.DEBUG.toUpperCase()]: (text: string) => green(text),
+    [VERBOSITY.INFO.toUpperCase()]: (text: string) => cyan(text),
+    [VERBOSITY.WARN.toUpperCase()]: (text: string) => yellow(text),
+    [VERBOSITY.ERROR.toUpperCase()]: (text: string) => red(text)
 }
 
-export const DefaultLevel: LogLevel.LogLevelDesc = VERBOSITY.WARN
+export const LoggerDefaultLevel: LogLevel.LogLevelDesc = VERBOSITY.WARN
 
 Prefix.reg(LogLevel)
-LogLevel.setLevel(DefaultLevel)
+LogLevel.setLevel(LoggerDefaultLevel)
 
 Prefix.apply(LogLevel, {
     format(level: string, name: string | undefined, timestamp: Date) {
-        return `${chalk.gray(timestamp)} ${Colors[level]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${chalk.whiteBright(`${name}:`)}`
+        return `${gray(timestamp.toString())} ${Colors[level]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${whiteBright(`${name}:`)}`
     }
 })
 
 Prefix.apply(LogLevel.getLogger('critical'), {
     format(level: string, name: string | undefined, timestamp: Date) {
-        return chalk.red.bold(`${timestamp} ${(level.padEnd(5)).slice(-5)} [${SERVER.NAME}] ${name}:`)
+        return red(bold(`${timestamp} ${(level.padEnd(5)).slice(-5)} [${SERVER.NAME}] ${name}:`))
     }
 })
 
@@ -50,7 +56,7 @@ export class Logger {
 
     static readonly In = '->'
     static readonly Out = '<-'
-    static Level: LogLevel.LogLevelDesc = DefaultLevel
+    static Level: LogLevel.LogLevelDesc = LoggerDefaultLevel //NOSONAR
 
     static readonly RequestMiddleware = morgan(
         ':remote-addr, :method :url, :status, :res[content-length], :response-time ms',
@@ -66,7 +72,7 @@ export class Logger {
         try {
             LogLevel.setLevel(Logger.Level)
         } catch (error: unknown) {
-            LogLevel.setLevel(DefaultLevel)
+            LogLevel.setLevel(LoggerDefaultLevel)
             Logger.Error(`Logger.SetLevel: Error while setting verbosity, resetting to default`)
             Logger.Error(error)
         }
@@ -102,19 +108,54 @@ export class Logger {
         Logger.SetLevel()
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static LogFunction(logger: Function = Logger.Debug, hideParameters: boolean = false): any {
+
+    static LogFunction(hide: string[] | boolean = []): any {
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             const originalMethod = descriptor.value
             descriptor.value = function (...args: any[]) {
-                const _argsString = (hideParameters || args.length == 0 || args.every(v => v === null) || args.every(v => v === undefined))
-                    ? ''
-                    : `: ${JsonHelper.Stringify(args)}`
+                const _paramObject = DecoratorHelper.GetParameters(originalMethod, ...args)
+                const _hide = typeof hide === 'boolean'
+                    ? _.keys(_paramObject)
+                    : hide
 
-                logger(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`)
+                const _filteredParams: Record<string, any> = _.chain(_paramObject)
+                    .omitBy(_.isNil || _.isEmpty)
+                    .omit(_hide)
+                    .value()
+
+                const _argsString = (_.isEmpty(_filteredParams))
+                    ? ''
+                    : ` ${JsonHelper.Stringify(_filteredParams)}`
+
+                setImmediate(() => Logger.Debug(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`))
+                // continue with original args
                 return originalMethod.apply(this, args)
             }
             return descriptor
+        }
+    }
+
+    static Assert(condition: boolean, message: string): void;
+    static Assert<T>(value: unknown, condition: boolean, message: string): asserts value is T;
+    static Assert(valueOrCondition: unknown | boolean, conditionOrMessage: boolean | string, messageOrUndefined?: string): void;
+    static Assert<T>(valueOrCondition: unknown | boolean, conditionOrMessage: boolean | string, messageOrUndefined?: string): void {
+        let condition: boolean;
+        let message: string;
+
+        if (typeof valueOrCondition === 'boolean' && typeof conditionOrMessage === 'string') {
+            // First overload
+            condition = valueOrCondition;
+            message = conditionOrMessage;
+        } else {
+            // Second overload
+            condition = conditionOrMessage as boolean;
+            message = messageOrUndefined as string;
+        }
+
+        try {
+            assert(condition, message);
+        } catch (error) {
+            throw new HttpErrorInternalServerError(message);
         }
     }
 }

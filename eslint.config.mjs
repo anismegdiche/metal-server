@@ -27,8 +27,7 @@ export default [
     }, ...compat.extends(
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended",
-        "plugin:you-dont-need-lodash-underscore/compatible"
+        "plugin:@typescript-eslint/recommended"
     ), {
         plugins: {
             "@typescript-eslint": typescriptEslint,

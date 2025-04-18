@@ -1,0 +1,294 @@
+- refactor: update configuration access methods and remove Config.Flags
+- tests: added Cache tests
+- refactor: rename CacheSource to DataSource and update related logic for clarity
+- chore: remove @types/yamljs dependency from package.json and package-lock.json
+- chore: bump version to 0.3.18 and remove jsdoc-to-markdown dependency
+- refactor: update Logger.LogFunction usage to remove unnecessary parameters
+- refactor: simplify cache update logic by removing unnecessary locking mechanism
+- chore: update dependencies in package.json for improved stability and performance
+- chore: add .nvmrc file for Node.js version management
+- cleanup
+- refactor: remove yamljs dependency and streamline YAML usage in Config and Swagger classes
+- feat: implement Queue class for managing asynchronous tasks
+- fix: update error message in PlaceHolder class for clarity
+- refactor: enhance logging format in Synchronizer and SynchronizerManager for improved clarity
+- refactor: update data provider configurations to include provider defaults and streamline connection setup
+- cleanup
+- cleanup
+- chore: update SonarLint project key and add region configuration
+- chore: update version to 0.3.17 and upgrade dependencies in package.json and package-lock.json
+- refactor: remove unused ESLint disable comments across multiple files
+- chore: update dependencies and ESLint configuration
+- chore: update package version from 0.3.15 to 0.3.16 in package-lock.json
+- fix: handle potential null in pattern matching and improve regex mock implementation
+- chore: add Vagrantfile to configure multi-platform development environments
+- chore: add .dcignore to exclude all files except those in the /src/ folder
+- chore: add .actrc file to configure self-hosted runners for CI
+- chore: update .gitignore to include .vagrant and .qodo files
+- ci: update workflow to conditionally run jobs on 'dev' branch
+- chore: update Dockerfile to use Node.js 22.13.0-slim
+- docs: update Node.js version and refine installation instructions
+- test: add comprehensive tests for MemoryData operations
+- chore: added FileData tests
+- cleanup
+- ci: enhance CI workflow with expanded OS matrix and branch specifications
+- fix config samples
+- env config sample
+- feat: add configuration file and .env support; update package versions
+- cleanup
+- ci: update Ubuntu version in CI workflow matrix to 22.04
+- chore: update Node.js engine version to 22.13.0 in package.json
+- ci: update workflow to simplify OS and Node.js version matrix
+- ci: reduce node version matrix and remove unused OS options
+- ci: simplify node version matrix in CI workflow
+- chore: update @types/node, @typescript-eslint/eslint-plugin, fs-extra, and typescript to latest versions
+- chore: update package.json to add @jest/globals and remove unused dependencies
+- refactor: remove GetVarName method and clean up PlaceHolder tests
+- refactor: remove unused GetIdName method from WebServiceData class
+- chore: update dependencies in package.json to latest versions
+- chore: update tesseract.js to version 6.0.0 in package.json and package-lock.json
+- test: add comment to ignore hardcoded password warning in PlaceHolder test
+- fix: update regex for JS code evaluation and add test for multiple evaluations in a string
+- cleanup
+- cleanup snyk ext
+- test: enhance FsStorage tests with additional cases and improve readability
+- refactor: reorganize imports in Convert.ts for consistency and clarity
+- ci: simplify preparation step in CI workflow by consolidating typia installation
+- refactor: streamline Dockerfile and package.json scripts for improved clarity and efficiency
+- ci: update CI workflow to include macOS and improve OS matrix formatting; refactor console spies in tests
+- test: simplify FsStorage test configuration and remove unused imports
+- added docker env testing
+- test: update file names in FsStorage tests for clarity
+- cleanup
+- test: add console spies for logging in TensorFlowJs and fixed TesseractJs tests expects
+- refactor: update FtpStorage to use StringHelper for path construction and improve parameter definitions
+- test: enhance mocking for data providers and Logger in unit tests
+- test: mock Logger in multiple test files for consistent logging behavior
+- refactor: replace bcrypt with bcryptjs for password hashing
+- chore: update CI workflow to support multiple OS environments
+- fix: Cache schema request interception in options.data
+- chore: update CI workflow to use self-hosted runner and upgrade checkout action to v3
+- chore: downgrade GitHub Actions to v2 for checkout and setup-node
+- update tests
+- chore: suppress Node.js warnings in CI workflow
+- refactor: SOLID alignment
+- feat: add initialization method for schedules and improve job logging
+- fix: add check for 'plans' configuration before initializing Plans
+- fix: update Plan class to use entity-specific locks and improve initialization logic
+- fix: add check for 'ai-engines' configuration before initialization
+- refactor: streamline Cache class structure and improve cache management logic
+- fix: update expected DataTable name in tests and correct authentication initialization
+- fix: update role permissions pattern to prevent duplicate characters
+- cleanup
+- feat: enhance Config tests with role randomization
+- fix: update test scripts to match new test file structure
+- test: update TesseractJs test image and expected result
+- chore: update CI workflow to use latest actions and specify branch reference
+- feat: add test execution step to CI workflow
+- feat: update CI workflow to install typia and compile TypeScript
+- feat: add CI workflow for automated testing and builds
+- feat: add default authentication provider configuration
+- chore: update package version to 0.3.15 and remove dotenv dependency
+- fix: update ProviderName initialization to handle optional DATA_PROVIDER
+- feat: introduce Plans class for plan management and update Config to initialize plans
+- feat: added Lock for Cache
+- feat: Synchronized across data provider classes
+- feat: add DecoratorHelper for parameter extraction and updated SynchronizerManager
+- cleanup
+- feat: update SynchronizerManager to use parameter filtering in Select methods across data provider classes
+- feat: enhance SynchronizerManager with parameter filtering in Synchronized decorator
+- chore: bump version to 0.3.15 in package.json
+- feat: integrate SynchronizerManager for Select method synchronization in data provider classes
+- refactor: change InitContent method to synchronous in CsvContent, JsonContent, XlsContent, and XmlContent classes
+- cleanup
+- feat: enhance Semaphore class with logging for Acquire and Release methods
+- fix plan.rest
+- feat: add Synchronizer and SynchronizerManager classes for managing concurrent executions
+- update packages.json
+- fix: config samples, update schema references from 'sch-etl1' to 'etl1' and change cache provider to memory
+- fix: SqlQueryHelper Tokenize
+- clean up
+- fix: Mutex and Semaphore classes usage
+- chore: update package version to 0.3.14 and updated SQL tokenizer
+- refactor: removed Process method to ProcessSchemaRequest for clarity
+- refactor: remove unused import from SqlQueryHelper test
+- feat: add CPU core count retrieval to server class
+- context in plan
+- context in plans
+- cleanup
+- docs: update dynamic expression engine documentation for clarity and consistency
+- readme update
+- docs update
+- docs update
+- fix: rename newUUID to newUuid for consistency
+- fix: update SqlQueryHelper method calls to use function syntax
+- test: enhance SqlQueryHelper tests with SQL injection scenarios and query method updates
+- docs update
+- chore: bump version to 0.3.13
+- docs update
+- feat: add fields value escape functionality
+- docs updated
+- fixed config samples
+- feat: enhance Sandbox class with improved code validation and utility functions
+- feat: add object-path dependency and enhance JsonHelper methods for improved JSON handling
+- refactor: simplify JsonHelper.Set method and improve usage across content providers
+- refactor: enhance JsonHelper.Get usage for improved default value handling
+- chore: add eslint-plugin-security to enhance code security checks
+- docs update
+- refactor: removed v0.2 from Sync method parameters
+- config samples update
+- docs update
+- docs: update data providers configuration to simplify XML path and remove unused root element
+- chore: update package versions and add helmet middleware for security
+- clean up
+- fix: ensure session headers are only processed if evaluated successfully in SoapWebService
+- fix: handle potential null value for wsResp in SoapWebService
+- refactor: extend DataTable class from clsClonable for enhanced functionality
+- test: add Logger mock and enhance DataTable tests with additional assertions
+- refactor: update FilterRows method to use FreeSql for improved query handling
+- test: update Logger mock implementation in XlsContent tests
+- refactor: rename internalResponse variables to improve code clarity
+- added docs
+- refactor: replace '$item' with '$row' in configuration and context files
+- refactor: simplify MySqlData configuration by merging default options
+- refactor: streamline SQL query generation in data providers
+- refactor: rename 'files' property to 'Files' in VirtualFileSystem class
+- chore: bump version to 0.3.12
+- chore: remove config files from .gitignore
+- dev env update
+- clean up
+- test: increase timeout for Config validation test
+- clean up
+- fix: enhance HttpErrorSwitch to handle undefined status and improve error logging
+- feat: enhance RestWebService with improved error handling and add ListEntities method
+- test: update CsvContent test to include optional context parameter in Set method
+- clean up
+- refactor: update Get and Set methods to accept optional context parameter and improve test descriptions
+- test: improve DataProviderOptions tests for handling undefined schema requests
+- feat: extend TContext type with additional options for data handling and filtering
+- test: refactor SqlQueryHelper tests for clarity and consistency
+- config samples update
+- test: enhance end-to-end tests for Postgres data operations in Northwind schema
+- feat: add REST API definitions for user login and customer management in Northwind schema
+- feat: simplify GetCache method by removing unnecessary context parameter
+- feat: enhance XlsContent to support type-safe parameter evaluation and default configuration
+- feat: integrate type-safe parameter evaluation in CsvContent for improved CSV parsing and serialization
+- [WIP] MetalData v2
+- feat: enhance JsonContent and XmlContent to support type-safe path evaluation and add new configuration options
+- refactor: remove commented-out code in TContext type definition
+- feat: add default configuration for SqlServerData and merge with sourceConfig
+- refactor: rename TOptions to TOptionalParameter and update references
+- feat: enhance Where method to support customizable escape characters
+- feat: add optional response-chunk property to TConfig type
+- fix: cast tensor type for MobileNet classification
+- clean up
+- WS Data provider enhancement for more compliancy with connectors
+- SOAP service refactor
+- Rest service refactor
+- Enhanced MongoDb Provider and tests
+- feat: add ReplaceStrings method to JsonHelper for string replacement in JSON objects
+- fixed end 2 end tests
+- fixed ws-soap rest tests
+- refactor: clean up DataTable class by removing redundant code and adding Rename method
+- refactor: comment out unused default configuration in Config class and mark for removal
+- refactor: improve user permissions handling in Roles class by ensuring empty roles return an empty array
+- refactor: enhance Sandbox class to improve context handling and add safe global objects
+- refactor: update package.json to use tilde versioning and adjust node engine requirement
+- refactor: remove unused regex constants from Const.ts
+- test: extend mocked Logger in XlsContent tests to include Warn and Error methods
+- refactor: improve EvaluateJsCode methods for better handling of JavaScript code and context variables
+- refactor: enhance MongoDbDataOptions methods for improved filter and field handling
+- test: add unit tests for MongoDbDataOptions methods
+- refactor: rename TUrl.ts to @types/TUrl.ts for better organization
+- rest tests
+- fix: await initialization of source provider in Source class
+- refactor: remove unnecessary eslint disable comments in User tests
+- feat: add ToString method to StringHelper for flexible value conversion
+- test: enhance DataProviderOptions tests for improved coverage and clarity
+- refactor: remove unnecessary whitespace in TJson type definition
+- feat: add PrefixKeys method to JsonHelper for key prefixing in objects
+- refactor: streamline web service configuration types and improve type consistency
+- refactor: rename TConfigSourceWebServiceOptions to TWebServiceDataOptions for consistency across web service providers
+- refactor: reorder imports and improve comments for clarity in FilesData
+- refactor: rename Params to Config for consistency across data provider classes
+- refactor web service configuration types for improved clarity and consistency
+- add entity extraction from schemaRequest in SqlServerData
+- add TUrl type for URL formatting and update WebServiceData to use TUrl
+- - Dynamic JS extension & Context - Refactor SOAP
+- remove unused import from FtpStorage file
+- refactor Config test to use a variable for configuration validation
+- remove unused imports from MongoDbData test file
+- refactor TSchemaRequestListEntities type to remove 'entity' field
+- add clsContext class with GetContext method for schema request handling
+- add HttpErrorSwitch function for centralized HTTP error handling
+- add TIpPort type for improved FTP and configuration port validation
+- refactor DataTable class to rename AnonymizeFields method to Anonymize and update related tests for consistency
+- refactor TContext and content providers to support optional request parameters and improve data path handling
+- update TryParse method to handle undefined jsonString and return default value
+- refactor PlaceHolder to support generic evaluation and improved error handling
+- make Set and Fields methods accept optional parameters
+- refactor DataProviderOptions tests for improved clarity and organization
+- increase timeout for TensorFlowJs initialization test
+- update ContextMerge method to return Partial<TContext> instead of TContext
+- refactor test structure for improved organization
+- remove obsolete cache test files
+- cleanup
+- WebService tests
+- DataProviderOptions tests
+- MySqlData tests
+- cleanup
+- rest tests
+- cleanup
+- cleanup
+- fix HttpErrorLog
+- `Added DataTable Transpose method and corresponding tests`
+- bypass evalutae JS for CacheData
+- cleanup
+- cleanup
+- Cache refactor to be used in plans
+- added context
+- SoapWebService
+- refactor context
+- bump 0.3.10
+- `Update RestWebService to use array destructuring for header and value assignment`
+- `Refactor condition mapping in SqlQueryHelper class`
+- added XML to ContentProvider
+- XmlContent
+- `Refactor webservice endpoints to use TUrlMethod type`
+- `Added StringHelper import and IsEmpty check to PlaceHolder.GetVarName method`
+- `Update config.yml and RestWebService.ts to change 'body' to 'data' in login endpoint configuration`
+- `feat: update ws.rest, config.yml and RestWebService.ts for new webservice sources`
+- `Update ws.rest file to reflect changes in API endpoints and request bodies for carts`
+- `Replace lodash with clsClonable in various providers`
+- `Update RX regular expressions in Const.ts and remove unused import in absWebServiceProvider.ts`
+- `Removed Lock and Mutex functionality and replaced synchronous Connection.Connect() with asynchronous await Connection.Connect()`
+- cleanup SqlServerData
+- lint
+- lint
+- fixed axios instance cloning
+- `Added axios import and modified RestWebService to use axios client`
+- cleanup
+- updated testing config
+- `Refactor Sandbox class: trim code input in Evaluate method`
+- `Refactor WebServiceData to use new Endpoints and validate them`
+- `Update Const.ts and PlaceHolder.ts with regex pattern updates`
+- update testing config
+- update packages
+- `Update Sandbox class: add debug logging to SetContext method`
+- `Update DataTable#SetMetaData to log at debug level with verbose output`
+- `Update JsonContent.ts: Replace TODO with FIXME`
+- `Refactor Sandbox usage in JsonContent and RestWebService to pass context directly to Sandbox constructor`
+- `feat: updated RestWebService class with new features and improvements`
+- `Added Sandbox and PlaceHolder imports and usage to JsonContent.ts`
+- `Update TJson type to allow generic type parameter`
+- `Refactor Sandbox class: add SetContext method and modify Reset method`
+- `Update createMockWorkbook function to return buffer as unknown as Buffer<ArrayBufferLike>`
+- packages update
+- WebServiceData & RestWebService
+- config and tests for rest provider
+- `Added WebServiceProvider registration to Server class`
+- `Update package.json: change "dev" script to use _prod-ts instead of prod-ts`
+- `Added WebServiceData provider and updated GetSqlQuery method in absDataProvider to use it`
+- `Refactor StringHelper class: update IsEmpty method and URL method`
+- `Update JsonContent provider to correctly handle undefined "json-path" configuration`
+- `feat: updated SqlQueryHelper.ts with new functionality and error handling`
