@@ -16,7 +16,10 @@
     "test-e2e": "jest --testMatch \"**/client/__tests__/**/*.js\"",
     "test-docker": "docker compose run --rm metal npx jest --testMatch \"**/__tests__/*.test.ts\" --watchAll",
     "prepare": "ts-patch install",
-    "release": "semantic-release",
+    "release": "standard-version",
+    "release:dry": "standard-version --dry-run --skip.commit --skip.tag",
+    "release:minor": "standard-version --release-as minor",
+    "release:major": "standard-version --release-as major",
     "dev-lint": "eslint --fix src",
     "dev-changelog": "git --no-pager log --since=\"2024-12-15\" --oneline --pretty=format:\"- %s\" > HISTORY.md",
     "_prod-ts": "ts-node ./src/index.ts"
