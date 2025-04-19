@@ -1,0 +1,17 @@
+{ 
+    "header": "# Metal Changelog",
+    "types": [
+        { "type": "feat", "section": "✨ Features" },
+        { "type": "fix", "section": "🪲 Bug Fixes" },
+        { "type": "docs", "section": "📄 Documentation" },
+        { "type": "style", "section": "💎 Code Style" },
+        { "type": "test", "section": "🧪 Tests" },
+        { "type": "perf", "section": "📈 Performance" },
+        { "type": "build", "section": "🏗️ Build" },
+        { "type": "ci", "section": "👷 CI" }
+    ],
+    "skip": {
+    "chore": true,
+    "refactor": true
+  }
+}

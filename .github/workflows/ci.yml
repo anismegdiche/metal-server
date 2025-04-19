@@ -88,45 +88,12 @@ jobs:
           docker run --rm \
             metal-test:latest \
             npm run test
-
-  release:
+  
+  sync-docs:
     needs:
       - matrix-build-and-test
       - docker-image-build-and-test
     if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-and-test.result == 'success'
-
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: write  # Required to push tags and update changelog
-      issues: write     # Optional: if you want semantic-release to comment on issues
-      pull-requests: write  # Optional: if you want comments on PRs
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        env:
-          NODE_NO_WARNINGS: 1
-        with:
-          ref: dev
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "22.13.0"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run semantic-release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
-  
-  sync-docs:
-    needs: 
-      - release
-    if: github.ref_name == 'dev' && needs.release.result == 'success'
 
     runs-on: ubuntu-latest
 
@@ -145,9 +112,10 @@ jobs:
           SKIP_PR: true
   
   deploy:
-    needs: 
-      - release
-    if: github.ref_name == 'dev' && needs.release.result == 'success'
+    needs:
+      - matrix-build-and-test
+      - docker-image-build-and-test
+    if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-and-test.result == 'success'
 
     runs-on: ubuntu-latest
 
