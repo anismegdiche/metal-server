@@ -51,7 +51,7 @@ export class MetalData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    Init(source: string, sourceConfig: TConfigSource): void {
         super.Init(source, sourceConfig)
         this.Config = _.merge(
             this.DEFAULT,

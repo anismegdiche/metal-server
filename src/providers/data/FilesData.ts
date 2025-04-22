@@ -63,7 +63,7 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    Init(source: string, sourceConfig: TConfigSource): void {
         super.Init(source, sourceConfig)
         this.Config = sourceConfig
         const {
