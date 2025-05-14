@@ -347,7 +347,6 @@ List of managed storage types:
 | `az-datalake` | Azure Data Lake Storage Gen2 | <Badge type="info" text="v0.4+" />    |
 | `fs`          | Local file system            | <Badge type="default" text="v0.3+" /> |
 | `ftp`         | FTP server                   | <Badge type="default" text="v0.3+" /> |
-| `smb`         | SMB/CIFS                     | <Badge type="info" text="v0.4+" />    |
 | `s3`          | Amazon S3                    | <Badge type="info" text="v0.4+" />    |
 
 #### `fs` (Filesystem) <Badge type="default" text="v0.3+" />
@@ -404,40 +403,6 @@ sources:
       ftp-user: ftp-user
       ftp-password: ftppass
       ftp-folder: /
-      ...
-```
-
-#### `smb` (SMB/CIFS) <Badge type="info" text="v0.4+" />
-
-This refers to use a SMB/CIFS server
-
-**Optional Parameters:**
-
-| Parameter      | Type             | Required | Description                                                              |
-| -------------- | ---------------- | -------- | ------------------------------------------------------------------------ |
-| `storage`      | String           | Y        | Set to `smb` for SMB/CIFS server                                         |
-| `autocreate`   | Boolean          | N        | if set to `true`, entity will be created automatically, default: `false` |
-| `smb-host`     | String           | Y        | SMB/CIFS server host                                                     |
-| `smb-port`     | Number (1-65535) | N        | SMB/CIFS server port , default: 445                                      |
-| `smb-user`     | String           | Y        | SMB/CIFS server username                                                 |
-| `smb-password` | String           | Y        | SMB/CIFS server password                                                 |
-| `smb-share`    | String           | Y        | SMB/CIFS share name                                                      |
-| `smb-folder`   | String           | N        | Remote folder on the SMB/CIFS server , default: `/`                      |
-
-**Example:**
-
-```yaml
-sources:
-  my-smb-files:
-    provider: files
-    options:
-      storage: smb
-      smb-host: smb.server.com
-      smb-port: 445
-      smb-user: smb-user
-      smb-password: smb-pass
-      smb-share: share
-      smb-folder: /path/to/folder
       ...
 ```
 

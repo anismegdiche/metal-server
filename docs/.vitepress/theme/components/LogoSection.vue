@@ -17,7 +17,6 @@
         <img src="/logo/azure-file-storage.png" title="Azure File Storage" class="technology-logo">
         <img src="/logo/azure-datalake.svg" title="Azure Datalake Gen2" class="technology-logo">
         <img src="/logo/ftp.svg" tiltle="FTP" class="technology-logo">
-        <img src="/logo/smb.png" tiltle="SMB" class="technology-logo">
 
         <!-- Content -->
         <img src="/logo/xml.svg" title="XML" class="technology-logo">
