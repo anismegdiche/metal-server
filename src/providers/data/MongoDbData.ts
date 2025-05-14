@@ -25,6 +25,7 @@ import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
 import { MongoDbHelper } from "./MongoDbHelper"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
+import { Assert } from '../../utils/Assert'
 
 
 //
@@ -230,9 +231,7 @@ export class MongoDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+        Assert<MongoDbData>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection not initialized`)
 
         const { schema } = schemaRequest
 

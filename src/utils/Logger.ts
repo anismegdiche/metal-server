@@ -8,12 +8,10 @@ import Prefix from 'loglevel-plugin-prefix'
 import morgan from "morgan"
 import { magenta, green, cyan, yellow, red, gray, whiteBright, bold } from 'colorette'
 import _ from "lodash"
-import assert from 'node:assert'
 //
 import { SERVER } from '../lib/Const'
 import { JsonHelper } from "../lib/JsonHelper"
 import { DecoratorHelper } from "./DecoratorHelper"
-import { HttpErrorInternalServerError } from '../server/HttpErrors'
 
 
 //
@@ -133,29 +131,5 @@ export class Logger {
             }
             return descriptor
         }
-    }
-
-    static Assert(condition: boolean, message: string): void;
-    static Assert<T>(value: unknown, condition: boolean, message: string): asserts value is T;
-    static Assert(valueOrCondition: unknown | boolean, conditionOrMessage: boolean | string, messageOrUndefined?: string): void;
-    static Assert<T>(valueOrCondition: unknown | boolean, conditionOrMessage: boolean | string, messageOrUndefined?: string): void {
-        let condition: boolean;
-        let message: string;
-
-        if (typeof valueOrCondition === 'boolean' && typeof conditionOrMessage === 'string') {
-            // First overload
-            condition = valueOrCondition;
-            message = conditionOrMessage;
-        } else {
-            // Second overload
-            condition = conditionOrMessage as boolean;
-            message = messageOrUndefined as string;
-        }
-
-        try {
-            assert(condition, message);
-        } catch (error) {
-            throw new HttpErrorInternalServerError(message);
-        }
-    }
+    }    
 }

@@ -24,6 +24,7 @@ import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 import { TIpPort } from "../../@types/TIpPort"
+import { Assert } from '../../utils/Assert'
 
 
 //
@@ -227,11 +228,9 @@ export class PostgresData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
+        Assert<Pool>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection is undefined`)
 
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        const { schema } = schemaRequest
+        const { schema, source } = schemaRequest
 
         // Refresh analyze
         let sqlQuery = `
@@ -278,7 +277,7 @@ export class PostgresData extends absDataProvider {
         if (result?.rows.length == 0)
             throw new HttpErrorNotFound(`${schema}: No entities found`)
 
-        const data = new DataTable(undefined, result.rows)
+        const data = new DataTable(source, result.rows)
 
         return HttpResponse.Ok(<TSchemaResponse>{
             schema,

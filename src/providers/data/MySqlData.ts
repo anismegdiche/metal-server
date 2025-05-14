@@ -23,6 +23,7 @@ import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 import { TIpPort } from "../../@types/TIpPort"
+import { Assert } from "../../utils/Assert"
 
 
 //
@@ -266,12 +267,10 @@ export class MySqlData extends absDataProvider {
         return `\`${field}\``
     }
 
-    async #ensureConnection(): Promise<Pool> {
-        if (!this.Connection)
-            await this.Connect()
+    async #EnsureConnection(): Promise<Pool> {
+        Assert<mysql.Pool>(this.Connection, this.Connection !== undefined, 'Failed to establish database connection')
 
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError('Failed to establish database connection')
+            await this.Connect()
 
         return this.Connection
     }

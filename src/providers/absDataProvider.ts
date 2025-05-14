@@ -19,9 +19,7 @@ import { TOptionalParameter } from "../types/TOptionalParameter"
 import { HttpErrorBadRequest, HttpErrorInternalServerError } from "../server/HttpErrors"
 import { DataTable } from "../types/DataTable"
 import { StringHelper } from '../lib/StringHelper'
-
-
-//
+import { Assert } from "../utils/Assert"
 export class DataProviderOptions extends absDataProviderOptions { }
 
 
@@ -35,13 +33,9 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) {
     Options: absDataProviderOptions = new DataProviderOptions()
 
     // Init
-    Init(source: string, sourceConfig: TConfigSource): void {
-        if (StringHelper.IsEmpty(source))
-            throw new HttpErrorInternalServerError(`source name is missing`)
-
-        if (sourceConfig == undefined)
-            throw new HttpErrorInternalServerError(`source config is missing`)
-
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+        Assert(!StringHelper.IsEmpty(source), `${source}: source name is missing`)
+        Assert(sourceConfig != undefined, `${source}: source config is missing`)
         this.SourceName = source
     }
 

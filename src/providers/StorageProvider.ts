@@ -4,6 +4,7 @@
 //
 //
 import { HttpErrorNotFound } from "../server/HttpErrors"
+import { Assert } from "../utils/Assert"
 import { Factory } from "../utils/Factory"
 import { absStorageProvider } from "./absStorageProvider"
 import { AmazonS3Storage, TAmazonS3StorageConfig } from "./storage/AmazonS3Storage"
@@ -37,7 +38,10 @@ export class StorageProvider {
 
     static readonly #StorageFactory = new Factory<absStorageProvider>()
 
-    static GetProvider(providerName: string): absStorageProvider {
+    static GetProvider(providerName?: string): absStorageProvider {
+        Assert<string>(providerName, providerName !== undefined, 'StorageProvider.GetProvider: providerName is required')
+        Assert(Object.values(STORAGE).includes(providerName as STORAGE), 'StorageProvider.GetProvider: providerName is invalid')
+
         if (StorageProvider.#StorageFactory.Has(providerName))
             return StorageProvider.#StorageFactory.Get(providerName)!.Clone()
         else

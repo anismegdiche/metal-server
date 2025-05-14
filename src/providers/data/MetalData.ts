@@ -19,6 +19,7 @@ import { CONTENT } from "../ContentProvider"
 import { TUrl } from "../../@types/TUrl"
 import { ENDPOINT } from "../absWebServiceProvider"
 import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../server/HttpErrors"
+import { Assert } from "../../utils/Assert"
 
 
 //
@@ -51,8 +52,8 @@ export class MetalData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    Init(source: string, sourceConfig: TConfigSource): void {
-        super.Init(source, sourceConfig)
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+        await super.Init(source, sourceConfig)
         this.Config = _.merge(
             this.DEFAULT,
             sourceConfig,
@@ -196,12 +197,10 @@ export class MetalData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError("Connection not initialized")
+        Assert<WebServiceData>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection not initialized`)
 
         const intResp = await this.Connection.ListEntities(schemaRequest)
-        if (!intResp)
-            throw new HttpErrorInternalServerError("ListEntities failed")
+        Assert<TInternalResponse<TSchemaResponse>>(intResp, intResp !== undefined, "ListEntities failed")
 
         return intResp
     }

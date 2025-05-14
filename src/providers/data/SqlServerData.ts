@@ -24,6 +24,7 @@ import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 import { TIpPort } from "../../@types/TIpPort"
+import { Assert } from '../../utils/Assert'
 
 
 //
@@ -226,11 +227,9 @@ export class SqlServerData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
+        Assert<ConnectionPool>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection is not initialized`)
 
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
-
-        const { schema } = schemaRequest
+        const { schema, source } = schemaRequest
 
         const sqlQuery = `
             SELECT t.name AS name, 

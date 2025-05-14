@@ -23,6 +23,8 @@ import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
 import { TContext } from "../../@types/TContext"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
+import { Assert } from "../../utils/Assert"
+import { absStorageProvider } from "../absStorageProvider"
 
 
 //
@@ -61,10 +63,10 @@ export class MemoryData extends absDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        this.Connection = new DataBase(this.Config.database)
+        Assert<string>(this.SourceName, this.SourceName !== undefined, 'SourceName is required')
+        this.Connection = new DataBase(this.SourceName)
         Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
     }
-
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         Logger.Info(`${Logger.In} '${this.SourceName} (${this.Config.database})' disconnected`)
@@ -238,9 +240,7 @@ export class MemoryData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(JsonHelper.Stringify(schemaRequest))
+        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         const { schema } = schemaRequest
 

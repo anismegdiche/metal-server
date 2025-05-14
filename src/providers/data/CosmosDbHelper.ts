@@ -8,24 +8,22 @@ import _ from "lodash"
 import { SqlQueryHelper } from "../../lib/SqlQueryHelper"
 import { StringHelper } from "../../lib/StringHelper"
 import { Logger } from "../../utils/Logger"
-import { CosmosDbData } from "./CosmosDbData"
+import { Assert } from "../../utils/Assert"
 
 
 //
 export class CosmosDbHelper {
 
-    // eslint-disable-next-line class-methods-use-this
     static EscapeEntity(entity: string): string {
         return 'c'
     }
 
-    // eslint-disable-next-line class-methods-use-this
     static EscapeField(field: string): string {
         return `c.${field}`
     }
 
     static ParseSqlQuery(sqlQuery: string | undefined): string {
-        Logger.Assert<string>(sqlQuery, !StringHelper.IsEmpty(sqlQuery), `${Logger.Out} Empty SQL Query: ${sqlQuery}`)
+        Assert<string>(sqlQuery, !StringHelper.IsEmpty(sqlQuery), `${Logger.Out} Empty SQL Query: ${sqlQuery}`)
         const sqlHelper = new SqlQueryHelper(sqlQuery)
         let sqlTokens = sqlHelper.Tokenize()
         sqlTokens = _.map(sqlTokens, (token) => {

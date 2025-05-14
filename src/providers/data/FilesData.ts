@@ -29,17 +29,20 @@ import { STORAGE, StorageProvider, TStorageConfig } from "../StorageProvider"
 import { TContext } from "../../@types/TContext"
 import { Mutex } from "../../utils/Mutex"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
+import { Assert } from "../../utils/Assert"
 
 
 //
+type TFilesDataOptionsContent = {
+    [pattern: string]: {
+        type: CONTENT
+    } & TContentConfig
+}
+
 export type TFilesDataOptions = {
     // Common
     storage?: STORAGE
-    content?: {
-        [pattern: string]: {
-            type: CONTENT
-        } & TContentConfig
-    }
+    content?: TFilesDataOptionsContent
     autocreate?: boolean
 }
     & TStorageConfig
@@ -63,16 +66,15 @@ export class FilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    Init(source: string, sourceConfig: TConfigSource): void {
-        super.Init(source, sourceConfig)
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+        await super.Init(source, sourceConfig)
         this.Config = sourceConfig
         const {
             storage = STORAGE.FILESYSTEM,
             content
         } = this.Config.options as TFilesDataOptions
 
-        if (content === undefined)
-            throw new HttpErrorNotImplemented(`${this.SourceName}: Content type is not defined`)
+        Assert<TFilesDataOptionsContent>(content, typia.is<TFilesDataOptionsContent>(content), `${this.SourceName}: Content type is not defined`)
 
         this.Connection = StorageProvider.GetProvider(storage)
         this.Connection.SetConfig(this.Config)
@@ -118,9 +120,7 @@ export class FilesData extends absDataProvider {
     @Logger.LogFunction()
     @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
-
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         const { schema, entity } = schemaRequest
 
@@ -164,9 +164,7 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
@@ -214,9 +212,7 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge($context, this.GetContext(schemaRequest))
@@ -261,9 +257,7 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in storage provider`)
+        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge($context, this.GetContext(schemaRequest))
@@ -313,6 +307,7 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
+        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         const { schema } = schemaRequest
 
