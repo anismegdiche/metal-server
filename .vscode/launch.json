@@ -27,6 +27,18 @@
             "program": "${file}", // Starts debugging the currently open file
             "cwd": "${workspaceFolder}", // Sets the working directory
             "console": "integratedTerminal", // Optional: Sets the console to VS Code's integrated terminal
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "Attach to ts-node in Docker",
+            "address": "localhost",
+            "port": 9229,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         }
     ]
 }

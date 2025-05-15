@@ -10,7 +10,9 @@
   "main": "./build/index.js",
   "scripts": {
     "prod": "node ./build/index.js",
-    "dev": "nodemon --exec \"npm run _prod-ts\" --watch src/",
+        "prod-ts": "ts-node ./src/index.ts",
+        "dev": "nodemon --exec \"npm run dev-ts\" --watch src/**/*",
+        "dev-ts": "ts-node-dev --inspect=0.0.0.0:9229 ./src/index.ts",
     "build": "tsc --watch",
     "test": "jest --testMatch \"**/__tests__/*.test.ts\"",
     "test-e2e": "jest --testMatch \"**/client/__tests__/**/*.js\"",

@@ -1,6 +1,18 @@
 services:
-  metal:
-    build: .
+  metal-test:
+    build:
+      context: .
+      dockerfile: .docker/metal-test/dockerfile
     command: npm run test
     volumes:
       - ./src:/app/src:ro
+  metal-dev:
+    build:
+      context: .
+      dockerfile: .docker/metal-dev/dockerfile      
+    command: npm run dev-ts
+    ports:
+      - "3000:3000"
+      - "9229:9229"
+    volumes:
+      - .:/app

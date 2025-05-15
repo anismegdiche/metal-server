@@ -1,0 +1,13 @@
+## Docker testing image for Metal
+FROM node:22.13.0-slim
+LABEL org.opencontainers.image.authors="Anis Megdiche <anis.megdiche@gmail.com>"
+
+# Update packages
+RUN apt-get update && apt-get upgrade -y
+
+# Create the app directory
+RUN mkdir -p /app
+WORKDIR /app
+
+# Start your app (you can change this to whatever you use to start the container)
+CMD ["npm", "run", "dev"]

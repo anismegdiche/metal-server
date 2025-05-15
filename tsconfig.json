@@ -13,6 +13,8 @@
         "experimentalDecorators": true,
         "removeComments": false,
         "resolveJsonModule": false, // DO NOT CHANGE
+        "inlineSourceMap": false,
+        "inlineSources": true,
         "plugins": [
             {
                 "transform": "typia/lib/transform"
