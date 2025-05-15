@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable init-declarations */
-import { SqlServerData, TSqlServerDataConfig } from "../../../providers/data/SqlServerData"
+import { SqlServerData } from "../../../providers/data/SqlServerData"
 import { TConfigSource } from "../../../types/TConfig"
 import { TSchemaRequestSelect, TSchemaRequestInsert, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../../types/TSchemaRequest"
 import { HttpErrorInternalServerError, HttpErrorBadRequest, HttpErrorNotFound } from "../../../server/HttpErrors"
@@ -8,7 +8,7 @@ import { TIpPort } from "../../../@types/TIpPort"
 import { DATA_PROVIDER } from "../../../providers/DataProvider"
 import { TJson } from "../../../types/TJson"
 import { HTTP_STATUS_CODE } from "../../../lib/Const"
-import {Cache} from '../../../server/Cache'
+import { Cache } from '../../../server/Cache'
 import { Logger } from "../../../utils/Logger"
 import mssql from 'mssql'
 
@@ -56,7 +56,7 @@ const mockConfig: TConfigSource = {
 
 describe('SqlServerData', () => {
     let sqlServerData: SqlServerData
-    
+
     const mockSchemaRequest: TSchemaRequestSelect = {
         schema: 'test_schema',
         entity: 'test_entity'
@@ -131,10 +131,10 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
-            
+
             expect(sqlServerData.Connection).toBeDefined()
             expect(sqlServerData.Connection).toBe(mockConnection)
             expect(mssql.connect).toHaveBeenCalledWith({
@@ -151,12 +151,12 @@ describe('SqlServerData', () => {
             const mockError = new HttpErrorInternalServerError('Connection failed')
             const mockConnect = jest.fn().mockRejectedValue(mockError)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             const sqlServerData = new SqlServerData()
             await sqlServerData.Init('test', mockConfig)
-            
+
             await sqlServerData.Connect()
-            
+
             expect(sqlServerData.Connection).toBeUndefined()
             expect(Logger.Error).toHaveBeenCalled()
         })
@@ -167,8 +167,8 @@ describe('SqlServerData', () => {
                 host: 'custom-host',
                 database: 'custom-db',
                 options: {
-                    encrypt: false, 
-                    trustServerCertificate: true 
+                    encrypt: false,
+                    trustServerCertificate: true
                 }
             }
             const mockConnection = {
@@ -176,10 +176,10 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', customConfig)
             await sqlServerData.Connect()
-            
+
             expect(sqlServerData.Connection).toBeDefined()
             expect(sqlServerData.Connection).toBe(mockConnection)
             expect(mssql.connect).toHaveBeenCalledWith({
@@ -196,10 +196,10 @@ describe('SqlServerData', () => {
             const mockError = new HttpErrorInternalServerError('Connection failed')
             const mockConnect = jest.fn().mockRejectedValue(mockError)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
-            
+
             expect(sqlServerData.Connection).toBeUndefined()
             expect(Logger.Error).toHaveBeenCalled()
         })
@@ -212,11 +212,11 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
             await sqlServerData.Disconnect()
-            
+
             expect(mockConnection.close).toHaveBeenCalled()
             expect(sqlServerData.Connection).toBeUndefined()
         })
@@ -231,14 +231,19 @@ describe('SqlServerData', () => {
     describe('Select', () => {
         it('should handle select operation successfully', async () => {
             const mockQuery = jest.fn().mockResolvedValue({
-                recordset: [{ id: 1, name: 'test' }]
+                recordset: [
+                    {
+                        id: 1,
+                        name: 'test'
+                    }
+                ]
             })
             const mockConnection = {
                 query: mockQuery
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -261,7 +266,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -296,7 +301,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -312,14 +317,19 @@ describe('SqlServerData', () => {
 
         it('should handle caching correctly', async () => {
             const mockQuery = jest.fn().mockResolvedValue({
-                recordset: [{ id: 1, name: 'test' }]
+                recordset: [
+                    {
+                        id: 1,
+                        name: 'test'
+                    }
+                ]
             })
             const mockConnection = {
                 query: mockQuery
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -343,7 +353,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -366,7 +376,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -399,7 +409,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -422,7 +432,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -446,7 +456,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -481,7 +491,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -505,7 +515,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -540,7 +550,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -558,14 +568,20 @@ describe('SqlServerData', () => {
     describe('ListEntities', () => {
         it('should list entities successfully', async () => {
             const mockQuery = jest.fn().mockResolvedValue({
-                recordset: [{ name: 'test_table', type: 'table', size: 1 }]
+                recordset: [
+                    {
+                        name: 'test_table',
+                        type: 'table',
+                        size: 1
+                    }
+                ]
             })
             const mockConnection = {
                 query: mockQuery
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -587,7 +603,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
@@ -618,7 +634,7 @@ describe('SqlServerData', () => {
             }
             const mockConnect = jest.fn().mockResolvedValue(mockConnection)
             jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
-            
+
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 

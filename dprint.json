@@ -1,0 +1,34 @@
+{
+    "$schema": "https://dprint.dev/schemas/v0.json",
+    "indentWidth": 4,
+    "useTabs": false,
+    "includes": [
+        "**/*.{ts,js,json,md}"
+    ],
+    "typescript": {
+        "quoteStyle": "alwaysSingle",
+        "lineWidth": 900,
+        "semiColons": "asi",
+        "trailingCommas": "never",
+        "bracePosition": "sameLine",
+        "arrowFunction.useParentheses": "preferNone"
+    },
+    "json": {
+        "indentWidth": 4
+    },
+    "markdown": {
+        "textWrap": "preserve"
+    },
+    "excludes": [
+        "node_modules/**",
+        "dist/**",
+        "build/**",
+        "**/__tests__/**",
+        "src/server/Roles.ts"
+    ],
+    "plugins": [
+        "https://plugins.dprint.dev/typescript-0.94.0.wasm",
+        "https://plugins.dprint.dev/json-0.20.0.wasm",
+        "https://plugins.dprint.dev/markdown-0.18.0.wasm"
+    ]
+}

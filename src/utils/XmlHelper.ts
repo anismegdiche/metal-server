@@ -1,8 +1,4 @@
-
-
 export class XmlHelper {
-
-
     static GetNodeByPath(xmlData: any, path: string): any {
         // Traverse the XML object to find the target node by path
         const segments = path.split('.')

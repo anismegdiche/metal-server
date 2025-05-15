@@ -3,8 +3,7 @@
 //
 //
 //
-import { tags } from "typia"
-
+import { tags } from 'typia'
 
 //
-export type TUrl = string & tags.Format<"url">
+export type TUrl = string & tags.Format<'url'>
