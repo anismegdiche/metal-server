@@ -9,5 +9,14 @@ RUN apt-get update && apt-get upgrade -y
 RUN mkdir -p /app
 WORKDIR /app
 
+COPY src /app/src
+COPY package.json /app
+COPY tsconfig.json /app
+COPY *.md /app
+COPY jest* /app
+
+RUN npm install
+RUN npm run prepare
+
 # Start your app (you can change this to whatever you use to start the container)
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "test"]
