@@ -6,8 +6,8 @@
 import typia from "typia"
 import { Mixin } from "ts-mixer"
 //
-import { clsClonable } from "../utils/clsClonable"
-import { clsContext } from "../utils/clsContext"
+import { clsClonable } from "../utils/base/clsClonable"
+import { clsContext } from "../utils/base/clsContext"
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../types/TSchemaRequest'
 import { TInternalResponse } from '../types/TInternalResponse'
 import { TSchemaResponse } from "../types/TSchemaResponse"

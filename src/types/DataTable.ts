@@ -12,7 +12,7 @@ import { Logger } from '../utils/Logger'
 import { JsonHelper } from "../lib/JsonHelper"
 import { StringHelper } from "../lib/StringHelper"
 import { HttpErrorInternalServerError } from "../server/HttpErrors"
-import { clsClonable } from "../utils/clsClonable"
+import { clsClonable } from "../utils/base/clsClonable"
 
 
 //

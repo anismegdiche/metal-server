@@ -5,6 +5,7 @@
 //
 import { Readable } from 'node:stream'
 //
+import { clsClonable } from "../utils/base/clsClonable"
 import { DataTable } from "../types/DataTable"
 import { TConfigSource } from "../types/TConfig"
 import { TFilesDataOptions } from "./data/FilesData"

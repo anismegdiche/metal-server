@@ -8,7 +8,7 @@ import _ from "lodash"
 import { Readable } from "node:stream"
 //
 import { CONTENT } from "./ContentProvider"
-import { clsClonable } from "../utils/clsClonable"
+import { clsClonable } from "../utils/base/clsClonable"
 import { TWebServiceDataOptions, TConfigSourceWebService } from "./data/WebServiceData"
 import { TJson } from "../types/TJson"
 import { HttpErrorInternalServerError } from "../server/HttpErrors"

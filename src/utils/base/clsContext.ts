@@ -3,8 +3,8 @@
 //
 //
 //
-import { TContext } from "../@types/TContext"
-import { TSchemaRequest } from "../types/TSchemaRequest"
+import { TContext } from "../../types/TContext"
+import { TSchemaRequest } from "../../types/TSchemaRequest"
 
 
 //
