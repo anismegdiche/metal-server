@@ -4,7 +4,6 @@
 //
 //
 import _, { Dictionary } from "lodash"
-import { configure } from 'safe-stable-stringify'
 import * as chrono from 'chrono-node'
 import objectPath from 'object-path'
 //
@@ -12,13 +11,10 @@ import { TJson } from "../types/TJson"
 import { Logger } from "../utils/Logger"
 import { StringHelper } from './StringHelper'
 import { HttpErrorInternalServerError } from "../server/HttpErrors"
-
-const SafeStableStringify = configure({
-    circularValue: undefined,
-    maximumDepth: 5
-})
+import { Stringify } from "../utils/JsonUtils/Stringify"
 
 
+//
 export class JsonHelper {
 
     static TryParse<T>(jsonString: string | undefined, defaultValue: T): T {
@@ -71,12 +67,7 @@ export class JsonHelper {
     }
 
     static Stringify<T>(json: T): string {
-        try {
-            return JSON.stringify(json)
-            // eslint-disable-next-line unused-imports/no-unused-vars
-        } catch (error) {
-            return SafeStableStringify(json) ?? ""
-        }
+        return Stringify(json)
     }
 
     static SafeCopy<T>(json: T): T {

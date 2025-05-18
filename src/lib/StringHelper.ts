@@ -5,7 +5,7 @@
 //
 
 import path from "node:path"
-import { JsonHelper } from "./JsonHelper"
+import { Stringify } from "../utils/JsonUtils/Stringify"
 
 export class StringHelper {
     static Split(str: string, sep: string): string[] {
@@ -44,7 +44,7 @@ export class StringHelper {
                 return value.toString()
             case 'object':
             default:
-                return JsonHelper.Stringify(value)
+                return Stringify(value)
         }
     }
 }
