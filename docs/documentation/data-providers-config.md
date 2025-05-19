@@ -193,9 +193,10 @@ Non-persistant Memory Database
 
 **Primary parameters:**
 
-| Parameter  | Type   | Required | Description                                 |
-| ---------- | ------ | -------- | ------------------------------------------- |
-| `provider` | String | Y        | Set to `memory` for In memory data provider |
+| Parameter  | Type   | Required | Description                                                                           |
+| ---------- | ------ | -------- | ------------------------------------------------------------------------------------- |
+| `provider` | String | Y        | Set to `memory` for In memory data provider                                           |
+| `database` | String | N        | Name of the database to connect to. If not set, will use source name as database name |
 
 **Optional parameters:**
 
@@ -265,11 +266,11 @@ sources:
 
 **Primary parameters:**
 
-| Parameter  | Type   | Required | Description                                                                                  |
-| ---------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
-| `provider` | String | Y        | Set to `cosmosdb` for Azure CosmosDB                                                         |
+| Parameter  | Type   | Required | Description                                                                                |
+| ---------- | ------ | -------- | ------------------------------------------------------------------------------------------ |
+| `provider` | String | Y        | Set to `cosmosdb` for Azure CosmosDB                                                       |
 | `host`     | String | Y        | The endpoint URL of your CosmosDB account (e.g., https://your-account.documents.azure.com) |
-| `database` | String | Y        | The name of the database to connect to                                                       |
+| `database` | String | Y        | The name of the database to connect to                                                     |
 
 **Optional parameters:**
 
@@ -340,8 +341,8 @@ sources:
 
 List of managed storage types:
 
-| Parameter     | Description                  | Metal version                        |
-| ------------- | ---------------------------- | ------------------------------------ |
+| Parameter     | Description                  | Metal version                         |
+| ------------- | ---------------------------- | ------------------------------------- |
 | `az-blob`     | Azure Blob Storage           | <Badge type="default" text="v0.3+" /> |
 | `az-file`     | Azure File Share             | <Badge type="info" text="v0.4+" />    |
 | `az-datalake` | Azure Data Lake Storage Gen2 | <Badge type="info" text="v0.4+" />    |
