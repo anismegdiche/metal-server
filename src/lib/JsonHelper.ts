@@ -154,4 +154,7 @@ export class JsonHelper {
             !(obj instanceof Set)
     }
 
+    static RemoveUndefined<T>(obj: T): T {
+        return _.pickBy(obj as object, v => v !== undefined) as T
+    }
 }
