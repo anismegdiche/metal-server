@@ -15,7 +15,7 @@ import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../server/Http
 import { JsonHelper } from '../../lib/JsonHelper'
 import { PlaceHolder } from "../../utils/PlaceHolder"
 import { Sandbox } from "../../server/Sandbox"
-import { TContext } from "../../@types/TContext"
+import { TContext } from "../../types/TContext"
 import { CONTENT } from "../ContentProvider"
 import { TJson } from "../../types/TJson"
 import { HTTP_STATUS_CODE } from "../../lib/Const"

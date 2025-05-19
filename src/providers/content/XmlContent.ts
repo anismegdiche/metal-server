@@ -17,7 +17,7 @@ import { Sandbox } from "../../server/Sandbox"
 import { JsonHelper } from "../../lib/JsonHelper"
 import { TJson } from "../../types/TJson"
 import { TContentConfig } from "../ContentProvider"
-import { TContext } from "../../@types/TContext"
+import { TContext } from "../../types/TContext"
 
 
 //

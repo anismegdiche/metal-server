@@ -13,7 +13,7 @@ import { JsonHelper } from '../../lib/JsonHelper'
 import { TWebServiceDataOptions, TConfigSourceWebService } from "../data/WebServiceData"
 import { Logger } from "../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../server/HttpErrors"
-import { TContext } from "../../@types/TContext"
+import { TContext } from "../../types/TContext"
 import { Sandbox } from "../../server/Sandbox"
 import { PlaceHolder } from "../../utils/PlaceHolder"
 import { TUserCredentials } from "../absAuthProvider"

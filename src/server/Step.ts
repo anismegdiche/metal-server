@@ -23,7 +23,7 @@ import { TStepSync, TStepRemoveDuplicates, TStepSort, TStepRun, TStepListEntitie
 import { HttpErrorInternalServerError } from "./HttpErrors"
 import { Config } from "./Config"
 import { MemoryData } from "../providers/data/MemoryData"
-import { TContext } from "../@types/TContext"
+import { TContext } from "../types/TContext"
 import { PlaceHolder } from "../utils/PlaceHolder"
 import { Sandbox } from "./Sandbox"
 import { Plans } from "./Plans"

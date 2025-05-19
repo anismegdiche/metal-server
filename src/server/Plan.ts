@@ -23,7 +23,7 @@ import { HttpErrorNotFound } from "./HttpErrors"
 import { StepCommand, TConfigSource } from '../types/TConfig'
 import { PERMISSION, Roles } from "./Roles"
 import { TUserTokenInfo } from "./User"
-import { TContext } from "../@types/TContext"
+import { TContext } from "../types/TContext"
 import { MemoryData } from "../providers/data/MemoryData"
 import { absDataProvider } from "../providers/absDataProvider"
 import { DATA_PROVIDER } from "../providers/DataProvider"

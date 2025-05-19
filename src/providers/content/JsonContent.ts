@@ -16,7 +16,7 @@ import { TConvertParams } from "../../lib/TypeHelper"
 import { absContentProvider } from "../absContentProvider"
 import { Sandbox } from "../../server/Sandbox"
 import { PlaceHolder } from "../../utils/PlaceHolder"
-import { TContext } from "../../@types/TContext"
+import { TContext } from "../../types/TContext"
 
 
 //

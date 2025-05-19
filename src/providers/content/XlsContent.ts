@@ -14,7 +14,7 @@ import { TJson } from '../../types/TJson'
 import { HttpErrorInternalServerError } from '../../server/HttpErrors'
 import { TConvertParams } from "../../lib/TypeHelper"
 import { absContentProvider } from "../absContentProvider"
-import { TContext } from "../../@types/TContext"
+import { TContext } from "../../types/TContext"
 import { PlaceHolder } from "../../utils/PlaceHolder"
 import { Sandbox } from "../../server/Sandbox"
 

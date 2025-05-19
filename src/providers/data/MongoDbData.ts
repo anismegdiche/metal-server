@@ -22,7 +22,7 @@ import { JsonHelper } from "../../lib/JsonHelper"
 import { TInternalResponse } from "../../types/TInternalResponse"
 import { HttpResponse } from "../../server/HttpResponse"
 import { absDataProvider } from "../absDataProvider"
-import { TContext } from "../../@types/TContext"
+import { TContext } from "../../types/TContext"
 import { MongoDbHelper } from "./MongoDbHelper"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 import { Assert } from '../../utils/Assert'

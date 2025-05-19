@@ -8,7 +8,7 @@ import { createContext, Script } from 'vm'
 //
 import { Logger } from '../utils/Logger'
 import { HttpErrorInternalServerError } from "./HttpErrors"
-import { TContext } from "../@types/TContext"
+import { TContext } from "../types/TContext"
 import typia, { tags } from "typia"
 
 

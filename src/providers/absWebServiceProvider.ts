@@ -12,7 +12,7 @@ import { clsClonable } from "../utils/base/clsClonable"
 import { TWebServiceDataOptions, TConfigSourceWebService } from "./data/WebServiceData"
 import { TJson } from "../types/TJson"
 import { HttpErrorInternalServerError } from "../server/HttpErrors"
-import { TContext } from "../@types/TContext"
+import { TContext } from "../types/TContext"
 
 
 //

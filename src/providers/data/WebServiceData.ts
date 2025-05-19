@@ -23,8 +23,8 @@ import { HttpResponse } from "../../server/HttpResponse"
 import { Cache } from "../../server/Cache"
 import { TJson } from "../../types/TJson"
 import { DataTable } from "../../types/DataTable"
-import { TContext } from "../../@types/TContext"
-import { TUrl } from "../../@types/TUrl"
+import { TContext } from "../../types/TContext"
+import { TUrl } from "../../types/TUrl"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 
 

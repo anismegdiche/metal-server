@@ -20,6 +20,7 @@ import { HttpErrorBadRequest, HttpErrorInternalServerError } from "../server/Htt
 import { DataTable } from "../types/DataTable"
 import { StringHelper } from '../lib/StringHelper'
 import { Assert } from "../utils/Assert"
+import { TIpPort } from "../types/TIpPort"
 export class DataProviderOptions extends absDataProviderOptions { }
 
 

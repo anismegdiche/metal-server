@@ -8,7 +8,7 @@ import { DataTable } from "../types/DataTable"
 import { VirtualFileSystem } from "../utils/VirtualFileSystem"
 import { TContentConfig } from "./ContentProvider"
 import { clsClonable } from "../utils/base/clsClonable"
-import { TContext } from "../@types/TContext"
+import { TContext } from "../types/TContext"
 
 
 //

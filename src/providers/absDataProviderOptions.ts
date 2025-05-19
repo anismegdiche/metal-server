@@ -10,7 +10,7 @@ import { JsonHelper } from "../lib/JsonHelper"
 import { Logger } from "../utils/Logger"
 import { Cache } from "../server/Cache"
 import { TJson } from "../types/TJson"
-import { TContext } from "../@types/TContext"
+import { TContext } from "../types/TContext"
 import { PlaceHolder } from "../utils/PlaceHolder"
 import { Sandbox } from "../server/Sandbox"
 
