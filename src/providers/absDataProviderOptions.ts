@@ -8,11 +8,11 @@ import { TOptionalParameter } from '../types/TOptionalParameter'
 import { DataTable } from '../types/DataTable'
 import { JsonHelper } from "../lib/JsonHelper"
 import { Logger } from "../utils/Logger"
-import { Cache } from "../server/Cache"
 import { TJson } from "../types/TJson"
 import { TContext } from "../types/TContext"
 import { PlaceHolder } from "../utils/PlaceHolder"
 import { Sandbox } from "../server/Sandbox"
+import { Global } from '../Global'
 
 
 //
@@ -86,7 +86,7 @@ export abstract class absDataProviderOptions {
         const { schema, entity, data} = schemaRequest
         
         if (data) {
-            const _isCacheData = (schema === Cache.Database && entity === Cache.Entity)
+            const _isCacheData = (schema === Global.Cache.Database && entity === Global.Cache.Entity)
             // no evaluation for CacheData
             const _data = _isCacheData
                 ? schemaRequest.data as TJson[]

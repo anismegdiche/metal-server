@@ -24,7 +24,7 @@ import { Schema } from "./Schema"
 import { TSchemaResponse } from "../types/TSchemaResponse"
 import { Semaphore } from "../utils/Semaphore"
 import { SynchronizerManager } from "../utils/SynchronizerManager"
-import { TConfigSource } from "../types/TConfig"
+import { Global } from '../Global'
 import { DataProvider } from "../providers/DataProvider"
 
 
@@ -66,8 +66,12 @@ export class Cache {
             schema: Cache.Database,
             entity: Cache.Entity
         }
-        Cache.DataSource = DataProvider.GetProvider(Cache.DataSourceConfig.provider)
-        Cache.DataSource.Init(Cache.Database, Cache.DataSourceConfig)
+        await Cache.DataSource.Init(Cache.Database, Cache.DataSourceConfig)
+        // update Config
+        Global.Cache = {
+            Database: Cache.Database,
+            Entity: Cache.Entity
+        }
     }
 
     @Logger.LogFunction()
