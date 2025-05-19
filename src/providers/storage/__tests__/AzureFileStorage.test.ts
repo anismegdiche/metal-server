@@ -56,7 +56,7 @@ describe("AzureFileStorage", () => {
             options: {
                 "az-file-connection-string": "test-connection-string",
                 "az-file-share-name": "test-share",
-                "az-file-directory": "/",
+                "az-file-folder": "/",
                 autocreate: true
             }
         } as TConfigSource)
@@ -114,7 +114,7 @@ describe("AzureFileStorage", () => {
             expect(storage.ShareName).toBe("test-share")
         })
 
-        it("should set default value for directory if missing", () => {
+        it("should set default value for folder if missing", () => {
             const invalidConfig: TConfigSource & TAzureFileStorageConfig = {
                 ...rndParams,
                 options: {
@@ -146,7 +146,7 @@ describe("AzureFileStorage", () => {
                 options: {
                     "az-file-connection-string": "test",
                     "az-file-share-name": "test-share",
-                    "az-file-directory": "/",
+                    "az-file-folder": "/",
                     autocreate: true
                 }
             } as TConfigSource)
@@ -273,8 +273,8 @@ describe("AzureFileStorage", () => {
                 ])
             })
 
-            it("should handle empty directory correctly", async () => {
-                (mockDirectoryClient.listFilesAndDirectories as jest.Mock).mockImplementation(function* () {})
+            it("should handle empty folder correctly", async () => {
+                (mockDirectoryClient.listFilesAndDirectories as jest.Mock).mockImplementation(function* () { })
 
                 const result = await storage.List()
                 expect(result).toBeInstanceOf(DataTable)

@@ -24,7 +24,7 @@ Before diving into Metal Server, make sure your environment meets the following 
     git clone https://github.com/anismegdiche/metal-server.git
     ```
 
-2. Navigate to the project directory:
+2. Navigate to the project folder:
 
     ```bash
     cd metal-server

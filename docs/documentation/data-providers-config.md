@@ -446,7 +446,7 @@ This refers to use an Azure File Share storage.
 | `autocreate`                | Boolean | N        | if set to `true`, entity will be created automatically, default: `false` |
 | `az-file-connection-string` | String  | Y        | Azure Storage connection string                                          |
 | `az-file-share-name`        | String  | Y        | Azure File Share name                                                    |
-| `az-file-directory`         | String  | N        | Remote directory in the share, default: `/`                              |
+| `az-file-folder`            | String  | N        | Remote folder in the share, default: `/`                                 |
 
 **Example:**
 
@@ -458,7 +458,7 @@ sources:
       storage: az-file
       az-file-connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
       az-file-share-name: myshare
-      az-file-directory: /path/to/files
+      az-file-folder: /path/to/files
       ...
 ```
 
@@ -552,8 +552,8 @@ sources:
 
 List of managed content types:
 
-| Parameter | Description              | Metal version                        |
-| --------- | ------------------------ | ------------------------------------ |
+| Parameter | Description              | Metal version                         |
+| --------- | ------------------------ | ------------------------------------- |
 | `json`    | JSON files               | <Badge type="default" text="v0.3+" /> |
 | `csv`     | CSV files                | <Badge type="default" text="v0.3+" /> |
 | `xls`     | XLSX files (Excel 2007+) | <Badge type="default" text="v0.3+" /> |
@@ -682,8 +682,8 @@ Used to connect to a WebService
 
 Defines the type of webservices:
 
-| Parameter | Description         | Metal version                     |
-| --------- | ------------------- | --------------------------------- |
+| Parameter | Description         | Metal version                      |
+| --------- | ------------------- | ---------------------------------- |
 | `rest`    | RESTful web service | <Badge type="info" text="v0.4+" /> |
 | `soap`    | SOAP web service    | <Badge type="info" text="v0.4+" /> |
 

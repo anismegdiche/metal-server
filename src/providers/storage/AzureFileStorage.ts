@@ -19,7 +19,7 @@ import { ReadableHelper } from "../../lib/ReadableHelper"
 export type TAzureFileStorageConfig = {
     "az-file-connection-string"?: string
     "az-file-share-name"?: string
-    "az-file-directory"?: string
+    "az-file-folder"?: string
 }
 
 type TAzureFileStorageParams = Required<{
@@ -48,7 +48,7 @@ export class AzureFileStorage extends absStorageProvider {
 
         const connectionString = this.ConfigStorage["az-file-connection-string"]
         const shareName = this.ConfigStorage["az-file-share-name"]
-        const directory = this.ConfigStorage["az-file-directory"]
+        const folder = this.ConfigStorage["az-file-folder"]
 
         this.ConnectionString = connectionString?.toString()
         this.ShareName = shareName?.toString()

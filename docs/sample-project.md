@@ -76,7 +76,7 @@ Follow these steps to install the sample project:
    git clone https://github.com/anismegdiche/metal-sample-project.git
    ```
 
-2. Navigate to the project directory:
+2. Navigate to the project folder:
 
    ```bash
    cd metal-sample-project
