@@ -10,8 +10,8 @@ import { magenta, green, cyan, yellow, red, gray, whiteBright, bold } from 'colo
 import _ from "lodash"
 //
 import { SERVER } from '../lib/Const'
-import { JsonHelper } from "../lib/JsonHelper"
 import { DecoratorHelper } from "./DecoratorHelper"
+import { Stringify } from './JsonUtils/Stringify'
 
 
 //
@@ -123,7 +123,7 @@ export class Logger {
 
                 const _argsString = (_.isEmpty(_filteredParams))
                     ? ''
-                    : ` ${JsonHelper.Stringify(_filteredParams)}`
+                    : ` ${Stringify(_filteredParams)}`
 
                 setImmediate(() => Logger.Debug(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`))
                 // continue with original args
