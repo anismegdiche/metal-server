@@ -47,8 +47,7 @@ export default [
             ecmaVersion: "latest",
             sourceType: "commonjs"
         },
-
-        "rules": {
+        rules: {
             "accessor-pairs": "error",
             "array-bracket-newline": "error",
             "array-bracket-spacing": [
@@ -325,7 +324,8 @@ export default [
                     "args": "after-used",
                     "argsIgnorePattern": "^_"
                 }
-            ]
+            ],
+            "import/no-cycle": [2, { "maxDepth": "∞" }]
         }
     }
 ]
