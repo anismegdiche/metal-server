@@ -101,4 +101,32 @@ export class ReadableHelper {
 
         return [passThrough1, passThrough2]
     }
+
+    @Logger.LogFunction(true)
+    static async ToBase64(readable: Readable): Promise<string> {
+        const chunks: Buffer[] = []
+        for await (const chunk of readable) {
+            chunks.push(Buffer.isBuffer(chunk)
+                ? chunk
+                : Buffer.from(chunk))
+        }
+        return Buffer.concat(chunks).toString('base64')
+    }
+
+
+    @Logger.LogFunction(true)
+    static FromReadableStream(stream: NodeJS.ReadableStream): Readable {
+        const readable = new Readable()
+        readable._read = () => { }
+
+        stream.on('data', (chunk) => {
+            readable.push(chunk)
+        })
+
+        stream.on('end', () => {
+            readable.push(null)
+        })
+
+        return readable
+    }
 }
