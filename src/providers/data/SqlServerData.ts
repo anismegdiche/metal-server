@@ -249,9 +249,9 @@ export class SqlServerData extends absDataProvider {
 
         return HttpResponse.Ok(<TSchemaResponse>{
             schema,
-            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-            ...RESPONSE.SELECT.SUCCESS.STATUS,
-            data: new DataTable(undefined, sqlServerResult.recordset)
+            ...RESPONSE.LIST_ENTITIES.SUCCESS.MESSAGE,
+            ...RESPONSE.LIST_ENTITIES.SUCCESS.STATUS,
+            data: new DataTable(source, sqlServerResult.recordset)
         })
     }
 

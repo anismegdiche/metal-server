@@ -180,6 +180,32 @@ export const RESPONSE = {
             }
         }
     },
+    LIST_ENTITIES: {
+        SUCCESS: {
+            STATUS: {
+                status: HTTP_STATUS_CODE.OK
+            },
+            MESSAGE: {
+                result: HTTP_STATUS_MESSAGE.OK
+            }
+        },
+        BAD_REQUEST: {
+            STATUS: {
+                status: HTTP_STATUS_CODE.BAD_REQUEST
+            },
+            MESSAGE: {
+                result: HTTP_STATUS_MESSAGE.BAD_REQUEST
+            }
+        },
+        NOT_FOUND: {
+            STATUS: {
+                status: HTTP_STATUS_CODE.NOT_FOUND
+            },
+            MESSAGE: {
+                result: HTTP_STATUS_MESSAGE.NOT_FOUND
+            }
+        }
+    },
     SERVER: {
         INTERNAL_SERVER_ERROR: {
             STATUS: {

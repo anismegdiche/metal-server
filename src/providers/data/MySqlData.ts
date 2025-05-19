@@ -231,7 +231,9 @@ export class MySqlData extends absDataProvider {
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 
-        const connection = await this.#ensureConnection()
+        const connection = await this.#EnsureConnection()
+
+        const {schema} = schemaRequest
 
         const sqlQuery = `
                 SELECT 
@@ -241,18 +243,18 @@ export class MySqlData extends absDataProvider {
                 FROM information_schema.tables 
                 WHERE table_schema = ?`
 
-        const [rows] = await connection.query(sqlQuery, [schemaRequest.schema])
+        const [rows] = await connection.query(sqlQuery, [schema])
 
         if (!Array.isArray(rows) || rows.length === 0) {
-            throw new HttpErrorNotFound(`No entities found in schema '${schemaRequest.schema}'`)
+            throw new HttpErrorNotFound(`No entities found in schema '${schema}'`)
         }
 
         const data = new DataTable(undefined, rows as TRow[])
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            schema: schemaRequest.schema,
-            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            schema,
+            ...RESPONSE.LIST_ENTITIES.SUCCESS.MESSAGE,
+            ...RESPONSE.LIST_ENTITIES.SUCCESS.STATUS,
             data
         })
     }

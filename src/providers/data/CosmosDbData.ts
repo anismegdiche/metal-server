@@ -386,9 +386,9 @@ export class CosmosDbData extends absDataProvider {
 
             return HttpResponse.Ok(<TSchemaResponse>{
                 schema,
-                ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-                ...RESPONSE.SELECT.SUCCESS.STATUS,
-                data: new DataTable(undefined, rows)
+                ...RESPONSE.LIST_ENTITIES.SUCCESS.MESSAGE,
+                ...RESPONSE.LIST_ENTITIES.SUCCESS.STATUS,
+                data: new DataTable(schema, rows)
             })
 
         } catch (error: any) {

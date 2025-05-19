@@ -254,8 +254,8 @@ export class MemoryData extends absDataProvider {
 
         return HttpResponse.Ok(<TSchemaResponse>{
             schema,
-            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-            ...RESPONSE.SELECT.SUCCESS.STATUS,
+            ...RESPONSE.LIST_ENTITIES.SUCCESS.MESSAGE,
+            ...RESPONSE.LIST_ENTITIES.SUCCESS.STATUS,
             data: new DataTable(undefined, rows)
         })
     }
