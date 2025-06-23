@@ -2,7 +2,7 @@
 //
 //
 
-import { TUserTokenInfo } from "../../server/User"
+import { TUserTokenInfo } from "../../modules/auth"
 
 export { }
 
