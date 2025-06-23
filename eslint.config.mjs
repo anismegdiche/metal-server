@@ -227,7 +227,7 @@ export default [
             "no-unneeded-ternary": "error",
             "no-unreachable-loop": "error",
             "no-unused-expressions": "error",
-            "no-unused-private-class-members": "error",
+            "no-unused-private-class-members": "warn",
             "no-use-before-define": "error",
             "no-useless-call": "error",
             "no-useless-computed-key": "error",
