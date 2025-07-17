@@ -1,0 +1,157 @@
+services:
+
+  text-emotion-detection:
+    build: ./services/text/emotion-detection
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5101:5000"
+    volumes:
+      - ./services/text/emotion-detection:/app
+
+  text-feature-extraction:
+    build: ./services/text/feature-extraction
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5102:5000"
+    volumes:
+      - ./services/text/feature-extraction:/app
+
+  text-fill-mask:
+    build: ./services/text/fill-mask
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5103:5000"
+    volumes:
+      - ./services/text/fill-mask:/app
+
+  text-keyword-extraction:
+    build: ./services/text/keyword-extraction
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5104:5000"
+    volumes:
+      - ./services/text/keyword-extraction:/app
+
+  text-language-detection:
+    build: ./services/text/language-detection
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5105:5000"
+    volumes:
+      - ./services/text/language-detection:/app
+
+  text-paraphrase-detection:
+    build: ./services/text/paraphrase-detection
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5106:5000"
+    volumes:
+      - ./services/text/paraphrase-detection:/app
+
+  text-question-answering:
+    build: ./services/text/question-answering
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5107:5000"
+    volumes:
+      - ./services/text/question-answering:/app
+
+  text-sentence-similarity:
+    build: ./services/text/sentence-similarity
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5108:5000"
+    volumes:
+      - ./services/text/sentence-similarity:/app
+
+  text-sentiment-analysis:
+    build: ./services/text/sentiment-analysis
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5109:5000"
+    volumes:
+      - ./services/text/sentiment-analysis:/app
+
+  text-summarization:
+    build: ./services/text/summarization
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5110:5000"
+    volumes:
+      - ./services/text/summarization:/app
+
+  text-text2text-generation:
+    build: ./services/text/text2text-generation
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5111:5000"
+    volumes:
+      - ./services/text/text2text-generation:/app
+
+  text-text-generation:
+    build: ./services/text/text-generation
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5112:5000"
+    volumes:
+      - ./services/text/text-generation:/app
+
+  text-token-classification:
+    build: ./services/text/token-classification
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5113:5000"
+    volumes:
+      - ./services/text/token-classification:/app
+
+  text-toxicity-detection:
+    build: ./services/text/toxicity-detection
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5114:5000"
+    volumes:
+      - ./services/text/toxicity-detection:/app
+
+  text-translation:
+    build: ./services/text/translation
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5115:5000"
+    volumes:
+      - ./services/text/translation:/app
+
+  text-zero-shot-classification:
+    build: ./services/text/zero-shot-classification
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5116:5000"
+    volumes:
+      - ./services/text/zero-shot-classification:/app
+  ocr:
+    build: ./services/ocr
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5201:5000"
+    volumes:
+      - ./services/ocr:/app
+#
+#
+#
+
+  hf-image:
+    build: ./services/huggingface-image
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5002:5000"
+    volumes:
+      - ./services/huggingface-image:/app
+      # - ./services/huggingface/models:/root/.cache/huggingface/hub
+
+  hf-audio:
+    build: ./services/huggingface-audio
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5003:5000"
+    volumes:
+      - ./services/huggingface-audio:/app
+      # - ./services/huggingface/models:/root/.cache/huggingface/hub
