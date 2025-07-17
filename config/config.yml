@@ -1,13 +1,23 @@
-version: "0.4"
+version: "0.5"
 
 server:
   port: 3000
   verbosity: debug
   timezone: UTC
   request-limit: 100mb
+  response-limit: 100mb
   authentication:
     provider: local
     default-role: all
+  cache:
+    provider: memory
+    database: cache
+    options:
+      autocreate: true
+  ai-engines:
+    # docker-url:
+    engines-url: http://localhost:5000
+  
 
 roles:
   all: lacrud
@@ -17,12 +27,63 @@ users:
     password: myStr@ngpa$$w0rd
 
 sources:
-  src-mem:
-    provider: memory
-    database: memory
+  src-fs:
+    provider: folder
     options:
-      autocreate: true
+      storage: fs
+      fs-folder: ./data/
+  src-myplan:
+    provider: plan
+    database: myplan
 
 schemas:
-  mem:
-    source: src-mem
+  fs:
+    source: src-fs
+  myplan:
+    source: src-myplan
+    
+
+schedules:
+  "ocr":
+    plan: myplan
+    entity: myentity
+    cron: "*/1 * * * *"
+  "ocr2":
+    plan: myplan
+    entity: myentity
+    cron: "@start"
+
+plans:
+  myplan:
+    myentity:
+      - select:
+          schema: fs
+          entity: img
+
+      - run:
+          ai: ocr
+          task: image-to-string
+          params:
+            lang: en_XX
+          input: content
+          output:
+            text: ocr_text
+
+      - run:
+          ai: text
+          task: text-emotion-detection
+          input: ocr_text
+          output:
+
+      - run:
+          ai: text
+          task: translation
+          params:
+            src_lang: en_XX
+            tgt_lang: ar_AR
+          input: ocr_text
+          output:
+            translation_text: translated_text
+
+      - fields: name, mimeType, type, size, createdAt, modifiedAt, path, ocr_text, translated_text
+    
