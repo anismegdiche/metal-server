@@ -97,3 +97,24 @@ async def run_qa(request: Union[QuestionAnsweringRequest, Dict[str, Any]]) -> Qu
         )
 
 app.include_router(router)
+
+# ------------------------
+# CLI Entry Point
+# ------------------------
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="Question answering service utility")
+    parser.add_argument("--load-pipe", action="store_true", help="Load the question-answering pipeline and exit")
+    args = parser.parse_args()
+    
+    if args.load_pipe:
+        try:
+            load_qa_pipeline()
+            print("Pipeline loaded successfully.")
+            sys.exit(0)
+        except Exception as e:
+            print(f"Failed to load pipeline: {str(e)}")
+            sys.exit(1)

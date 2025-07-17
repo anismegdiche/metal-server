@@ -104,3 +104,24 @@ async def run_fill_mask(request: Union[FillMaskRequest, Dict[str, Any]]) -> Fill
         )
 
 app.include_router(router)
+
+# ------------------------
+# CLI Entry Point
+# ------------------------
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="Fill-mask service utility")
+    parser.add_argument("--load-pipe", action="store_true", help="Load the fill-mask pipeline and exit")
+    args = parser.parse_args()
+    
+    if args.load_pipe:
+        try:
+            load_fill_mask_model()
+            print("Pipeline loaded successfully.")
+            sys.exit(0)
+        except Exception as e:
+            print(f"Failed to load pipeline: {str(e)}")
+            sys.exit(1)

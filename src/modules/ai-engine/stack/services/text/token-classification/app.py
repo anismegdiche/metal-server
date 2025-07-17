@@ -93,3 +93,24 @@ async def run_token_classification(request: Union[TokenClassificationRequest, Di
         )
 
 app.include_router(router)
+
+# ------------------------
+# CLI Entry Point
+# ------------------------
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="Token classification service utility")
+    parser.add_argument("--load-pipe", action="store_true", help="Load the token-classification pipeline and exit")
+    args = parser.parse_args()
+    
+    if args.load_pipe:
+        try:
+            load_token_classification_pipeline()
+            print("Pipeline loaded successfully.")
+            sys.exit(0)
+        except Exception as e:
+            print(f"Failed to load pipeline: {str(e)}")
+            sys.exit(1)

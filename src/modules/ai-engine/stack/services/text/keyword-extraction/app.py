@@ -110,3 +110,24 @@ async def run_keyword_extraction(request: Union[KeywordExtractionRequest, Dict[s
         )
 
 app.include_router(router)
+
+# ------------------------
+# CLI Entry Point
+# ------------------------
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="Keyword extraction service utility")
+    parser.add_argument("--load-pipe", action="store_true", help="Load the keyword extraction pipeline and exit")
+    args = parser.parse_args()
+    
+    if args.load_pipe:
+        try:
+            load_keyword_extraction_pipeline()
+            print("Pipeline loaded successfully.")
+            sys.exit(0)
+        except Exception as e:
+            print(f"Failed to load pipeline: {str(e)}")
+            sys.exit(1)

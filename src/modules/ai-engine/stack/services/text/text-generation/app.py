@@ -88,3 +88,24 @@ async def run_text_generation(request: Union[TextGenerationRequest, Dict[str, An
         )
 
 app.include_router(router)
+
+# ------------------------
+# CLI Entry Point
+# ------------------------
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="Text generation service utility")
+    parser.add_argument("--load-pipe", action="store_true", help="Load the text-generation pipeline and exit")
+    args = parser.parse_args()
+    
+    if args.load_pipe:
+        try:
+            load_text_generation_pipeline()
+            print("Pipeline loaded successfully.")
+            sys.exit(0)
+        except Exception as e:
+            print(f"Failed to load pipeline: {str(e)}")
+            sys.exit(1)

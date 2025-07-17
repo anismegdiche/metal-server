@@ -83,3 +83,24 @@ async def run_paraphrase_detection(request: Union[ParaphraseDetectionRequest, Di
         )
 
 app.include_router(router)
+
+# ------------------------
+# CLI Entry Point
+# ------------------------
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="Paraphrase detection service utility")
+    parser.add_argument("--load-pipe", action="store_true", help="Load the paraphrase detection pipeline and exit")
+    args = parser.parse_args()
+    
+    if args.load_pipe:
+        try:
+            load_sentence_transformer()
+            print("Pipeline loaded successfully.")
+            sys.exit(0)
+        except Exception as e:
+            print(f"Failed to load pipeline: {str(e)}")
+            sys.exit(1)
