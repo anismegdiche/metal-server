@@ -36,7 +36,7 @@ export class AiDocker {
         MaxInstances: 5,
         CpuScaleUp: 70,
         CpuScaleDown: 30,
-        ScaleInterval: 5_000 // 30 seconds
+        ScaleInterval: 15_000 // 30 seconds
     }
 
     static TRAEFIK: TAiDockerService = {

@@ -24,7 +24,7 @@ import { ConfigManager } from './ConfigManager'
 import { ConfigStore } from './ConfigStore'
 import { ServerEndpoint } from './ServerEndpoint'
 import { ServerRuntime } from './ServerRuntime'
-import { AiEngine2 } from '../ai-engine/AiEngine2'
+import { AiEngine } from '../ai-engine/AiEngine'
 //
 
 
@@ -56,7 +56,7 @@ export class ServerCore {
         await Cache.Init(DataProvider.GetProvider)
         await Cache.Connect()
 
-        await AiEngine2.Init()
+        await AiEngine.Init()
 
         // plans
         Plans.Init()
@@ -76,7 +76,7 @@ export class ServerCore {
         WebServiceProvider.RegisterProviders()
         ContentProvider.RegisterProviders()
         DataProvider.RegisterProviders()
-        AiEngine2.RegisterProviders()
+        AiEngine.RegisterProviders()
     }
 
     @Logger.LogFunction()

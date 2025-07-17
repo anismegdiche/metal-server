@@ -1,64 +1,117 @@
+//
+//
+//
+import _ from "lodash";
+//
+import { TJson } from "../../types/TJson";
+import { Factory } from "../../utils/Factory";
+import { ConfigManager } from "../core/ConfigManager";
+import { HttpErrorInternalServerError } from "../errors/HttpErrors";
+import { AI_ENGINE } from "./@consts";
+import { TConfigAiEngine } from "./@types";
+import { IAiEngine } from "./base/IAiEngine";
+import { OCR_TASK } from "./consts/OCR";
+import { TEXT_TASK } from "./consts/TEXT";
+import { Ocr } from "./engine/Ocr";
+import { Text } from "./engine/Text";
+import { AiDocker } from "./stack/AiDocker";
+
 
 //
-//
-//
-import { Logger } from '../../utils/Logger'
-import { ConfigManager } from '../core/ConfigManager'
-import { Helper } from '../../utils/Helper'
-import { IAiEngine } from './base/IAiEngine'
-// AI Engines
-import { TesseractJs } from './providers/TesseractJs'
-import { TensorFlowJs } from './providers/TensorFlowJs'
-import { NlpJs } from './providers/NlpJs'
-import { AI_ENGINE } from './@consts'
-import { TConfigAiEngineDefault, TConfigAiEngineTesseractJs, TConfigAiEngineTensorFlowJs, TConfigAiEngineNlpJs } from './@types'
-
+type PlanStep = { run?: { ai: string; task: string } };
+type PlanEntity = PlanStep[];
+type Plan = Record<string, PlanEntity[]>;
 
 //
 export class AiEngine {
 
-    static AiEngineConfigurations: Record<string, TConfigAiEngineDefault> = {}
-    static AiEngine: Record<string, IAiEngine> = {}
+    static readonly #AiEngineFactory = new Factory<IAiEngine>()
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static #NewAiEngineTypeCaseMap: Record<AI_ENGINE, Function> = {
-        [AI_ENGINE.TESSERACT_JS]: (aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineTesseractJs) => new TesseractJs(aiEngineInstanceName, AiEngineConfig),
-        [AI_ENGINE.TENSORFLOW_JS]: (aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineTensorFlowJs) => new TensorFlowJs(aiEngineInstanceName, AiEngineConfig),
-        [AI_ENGINE.NLP_JS]: (aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineNlpJs) => new NlpJs(aiEngineInstanceName, AiEngineConfig)
-    }
+    static #AiEnginesConfig: TJson<TConfigAiEngine>
+    static AiEnginesInstance: Map<string, IAiEngine> = new Map()
 
-    @Logger.LogFunction()
-    static async Init(): Promise<void> {
-        if (!ConfigManager.Has('ai-engines'))
-            return
-
-        AiEngine.AiEngineConfigurations = ConfigManager.Get("ai-engines")
-        await AiEngine.CreateAll()
-    }
-
-
-    @Logger.LogFunction()
-    static async CreateAll(): Promise<void> {
-        await Promise.all(
-            Object.entries(AiEngine.AiEngineConfigurations).map(async ([aiEngineInstanceName, aiEngineParams]) => {
-                await AiEngine.Create(aiEngineInstanceName, aiEngineParams)
-            })
-        )
-    }
-
-    @Logger.LogFunction()
-    static async Create(aiEngineInstanceName: string, AiEngineConfig: TConfigAiEngineDefault): Promise<void> {
-        if (!(AiEngineConfig.engine in AiEngine.#NewAiEngineTypeCaseMap)) {
-            Logger.Error(`Unknown engine type: ${AiEngineConfig.engine}`)
-            return
+    static BuildAiEnginesList(): TJson<TConfigAiEngine> {
+        if (!ConfigManager.Has('plans')) {
+            return {};
         }
-        AiEngine.AiEngine[aiEngineInstanceName] = AiEngine.#NewAiEngineTypeCaseMap[AiEngineConfig.engine](aiEngineInstanceName, AiEngineConfig) ?? Helper.CaseMapNotFound(AiEngineConfig.engine)
-        await AiEngine.AiEngine[aiEngineInstanceName].Init()
-        Logger.Debug(`${Logger.Out} AI Engine '${aiEngineInstanceName}' created`)
+
+        const plans = ConfigManager.Get("plans") as Plan;
+
+        interface AiTask {
+            ai: string;
+            task: string;
+        }
+
+        const aiTasks = _(Object.values(plans))
+            .flatMap(plan => _
+                .flatMap(plan, entity => entity
+                    .map(step => step.run)
+                    .filter((run): run is NonNullable<typeof run> => Boolean(run))
+                    .map(({ ai, task }): AiTask => ({
+                        ai,
+                        task
+                    }))
+                ))
+            .filter(Boolean) // Remove nulls
+            .uniqWith(_.isEqual) // Remove duplicates using deep comparison
+            .value();
+
+        const list = aiTasks.reduce((acc, aiTask) => {
+            acc[`${aiTask.ai}-${aiTask.task}`] = {
+                engine: `${aiTask.ai}-${aiTask.task}`
+            } as TConfigAiEngine
+            return acc
+        }, {} as TJson<TConfigAiEngine>)
+        return list
     }
 
-    @Logger.LogFunction()
-    static async Run(aiEngineInstanceName: string, input: string) {
-        return await AiEngine.AiEngine[aiEngineInstanceName].Run(input)
+    static GetProvider(providerName: string): IAiEngine {
+        if (AiEngine.#AiEngineFactory.Has(providerName))
+            return AiEngine.#AiEngineFactory.Get(providerName)!.Clone()
+        else
+            throw new HttpErrorInternalServerError(`AI Engine Provider '${providerName}' not found`)
+    }
+
+    static RegisterProviders() {
+        // OCR
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.OCR}-${OCR_TASK.IMAGE_TO_STRING}`, new Ocr())
+        // TEXT
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.FILL_MASK}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.KEYWORD_EXTRACTION}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.LANGUAGE_DETECTION}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.PARAPHRASE_DETECTION}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.QUESTION_ANSWERING}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.SENTENCE_SIMILARITY}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.SENTIMENT_ANALYSIS}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.SUMMARIZATION}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT2TEXT_GENERATION}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT_GENERATION}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TRANSLATION}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TOKEN_CLASSIFICATION}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TOXICITY_DETECTION}`, new Text())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.ZERO_SHOT_CLASSIFICATION}`, new Text())        
+    }
+
+    static async Init() {
+        if (!ConfigManager.Has('plans'))
+            return
+
+        await AiDocker.Init()
+
+        AiEngine.#AiEnginesConfig = AiEngine.BuildAiEnginesList()
+        await AiEngine.CreateAll()
+
+    }
+
+    static async CreateAll() {
+        for (const [aiName, aiConfig] of Object.entries(AiEngine.#AiEnginesConfig)) {
+            if (!AiEngine.#AiEngineFactory.Has(aiConfig.engine))
+                throw new HttpErrorInternalServerError(`AI Engine Provider '${aiConfig.engine}' not found`)
+
+            AiEngine.AiEnginesInstance.set(aiName, AiEngine.GetProvider(aiConfig.engine))
+            // eslint-disable-next-line no-await-in-loop
+            await AiEngine.AiEnginesInstance.get(aiName)?.Init(aiName, aiConfig)
+        }
     }
 }

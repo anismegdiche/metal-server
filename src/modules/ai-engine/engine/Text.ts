@@ -9,19 +9,19 @@ import { Logger } from '../../../utils/Logger'
 import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from '../../../utils/Utils'
 import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
-import { AI_ENGINE2 } from '../@consts'
+import { AI_ENGINE } from '../@consts'
 import { TAiRunArguments, TAiRunOutput, TConfigAiEngine } from '../@types'
 import { absAiEngine } from '../base/absAiEngine'
-import { IAiEngine2 } from '../base/IAiEngine2'
+import { IAiEngine } from '../base/IAiEngine'
 import { LANG_ISO } from "../consts/LANG"
 import { TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO, TEXT_TASK } from "../consts/TEXT"
 import { AiDocker, TAiDockerService } from '../stack/AiDocker'
 import { TStepRunAiTextEmotionDetectionParams, TStepRunAiTextFillMaskParams, TStepRunAiTextKeywordExtractionParams, TStepRunAiTextParams, TStepRunAiTextParaphraseDetectionParams, TStepRunAiTextQuestionAnsweringParams, TStepRunAiTextSentenceSimilarityParams, TStepRunAiTextSentimentAnalysisParams, TStepRunAiTextSummarizationParams, TStepRunAiTextTextGenerationParams, TStepRunAiTextTokenClassificationParams, TStepRunAiTextToxicityDetectionParams, TStepRunAiTextTranslationParams, TStepRunAiTextZeroShotClassificationParams } from '../types/TStepRunAiTextParam'
 import { LangUtils } from '../../../utils/LangUtils'
 
-export class Text extends absAiEngine implements IAiEngine2 {
+export class Text extends absAiEngine implements IAiEngine {
 
-    AiEngineName = AI_ENGINE2.TEXT
+    AiEngineName = AI_ENGINE.TEXT
     InstanceName: string
     InstanceConfig: TConfigAiEngine | null = null
     InstanceApiUrl: string = "http://localhost:5000"
@@ -49,21 +49,21 @@ export class Text extends absAiEngine implements IAiEngine2 {
         this.InstanceApiUrl = aiConfig.url || "http://localhost:5000"
 
         this.AiDockerService = {
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`]: AiDocker.TEXT_EMOTION_DETECTION,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.FILL_MASK}`]: AiDocker.TEXT_FILL_MASK,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.KEYWORD_EXTRACTION}`]: AiDocker.TEXT_KEYWORD_EXTRACTION,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.LANGUAGE_DETECTION}`]: AiDocker.TEXT_LANGUAGE_DETECTION,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.PARAPHRASE_DETECTION}`]: AiDocker.TEXT_PARAPHRASE_DETECTION,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.QUESTION_ANSWERING}`]: AiDocker.TEXT_QUESTION_ANSWERING,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.SENTENCE_SIMILARITY}`]: AiDocker.TEXT_SENTENCE_SIMILARITY,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.SENTIMENT_ANALYSIS}`]: AiDocker.TEXT_SENTIMENT_ANALYSIS,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.SUMMARIZATION}`]: AiDocker.TEXT_SUMMARIZATION,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.TEXT2TEXT_GENERATION}`]: AiDocker.TEXT_TEXT2TEXT_GENERATION,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.TEXT_GENERATION}`]: AiDocker.TEXT_TEXT_GENERATION,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.TOKEN_CLASSIFICATION}`]: AiDocker.TEXT_TOKEN_CLASSIFICATION,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.TOXICITY_DETECTION}`]: AiDocker.TEXT_TOXICITY_DETECTION,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.ZERO_SHOT_CLASSIFICATION}`]: AiDocker.TEXT_ZERO_SHOT_CLASSIFICATION,
-            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.TRANSLATION}`]: AiDocker.TEXT_TRANSLATION
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`]: AiDocker.TEXT_EMOTION_DETECTION,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.FILL_MASK}`]: AiDocker.TEXT_FILL_MASK,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.KEYWORD_EXTRACTION}`]: AiDocker.TEXT_KEYWORD_EXTRACTION,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.LANGUAGE_DETECTION}`]: AiDocker.TEXT_LANGUAGE_DETECTION,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.PARAPHRASE_DETECTION}`]: AiDocker.TEXT_PARAPHRASE_DETECTION,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.QUESTION_ANSWERING}`]: AiDocker.TEXT_QUESTION_ANSWERING,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.SENTENCE_SIMILARITY}`]: AiDocker.TEXT_SENTENCE_SIMILARITY,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.SENTIMENT_ANALYSIS}`]: AiDocker.TEXT_SENTIMENT_ANALYSIS,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.SUMMARIZATION}`]: AiDocker.TEXT_SUMMARIZATION,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT2TEXT_GENERATION}`]: AiDocker.TEXT_TEXT2TEXT_GENERATION,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT_GENERATION}`]: AiDocker.TEXT_TEXT_GENERATION,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.TOKEN_CLASSIFICATION}`]: AiDocker.TEXT_TOKEN_CLASSIFICATION,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.TOXICITY_DETECTION}`]: AiDocker.TEXT_TOXICITY_DETECTION,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.ZERO_SHOT_CLASSIFICATION}`]: AiDocker.TEXT_ZERO_SHOT_CLASSIFICATION,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.TRANSLATION}`]: AiDocker.TEXT_TRANSLATION
         }
 
         this.RunTask = {

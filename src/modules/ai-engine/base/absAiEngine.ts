@@ -4,12 +4,12 @@ import axios from 'axios'
 import { clsClonable } from '../../../utils/base/clsClonable'
 import { Logger } from '../../../utils/Logger'
 import { StringUtils } from '../../../utils/StringUtils'
-import { AI_ENGINE2 } from '../@consts'
+import { AI_ENGINE } from '../@consts'
 import { TAiRunOutput, TAiRunArguments, TConfigAiEngine } from '../@types'
-import { IAiEngine2 } from './IAiEngine2'
+import { IAiEngine } from './IAiEngine'
 
-export abstract class absAiEngine extends clsClonable implements IAiEngine2 {
-    abstract AiEngineName: AI_ENGINE2
+export abstract class absAiEngine extends clsClonable implements IAiEngine {
+    abstract AiEngineName: AI_ENGINE
     abstract InstanceName: string
     abstract InstanceApiUrl: string
     abstract InstanceConfig: TConfigAiEngine | null

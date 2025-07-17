@@ -29,7 +29,7 @@ import { TStepArguments } from "./types/TStepArguments"
 import { STEP } from "./@consts"
 import { TFunctionStep } from "./types/TFunctionStep"
 import { ConfigManager } from "../core/ConfigManager"
-import { AiEngine2 } from "../ai-engine/AiEngine2"
+import { AiEngine } from "../ai-engine/AiEngine"
 import { TAiRunArguments } from "../ai-engine/@types"
 
 
@@ -338,7 +338,7 @@ export class Step {
             promises.push((async () => {
 
                 const __data = _rowData[input]
-                const __result = <Record<string, any>>(await AiEngine2.AiEnginesInstance.get(`${ai}-${task}`)?.Run(
+                const __result = <Record<string, any>>(await AiEngine.AiEnginesInstance.get(`${ai}-${task}`)?.Run(
                     {
                         data: __data,
                         ...stepArguments.stepParams as TStepRun

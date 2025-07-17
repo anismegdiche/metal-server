@@ -138,20 +138,20 @@ services:
 #
 #
 
-  hf-image:
-    build: ./services/huggingface-image
-    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
-    ports:
-      - "5002:5000"
-    volumes:
-      - ./services/huggingface-image:/app
-      # - ./services/huggingface/models:/root/.cache/huggingface/hub
+  # hf-image:
+  #   build: ./services/huggingface-image
+  #   command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+  #   ports:
+  #     - "5002:5000"
+  #   volumes:
+  #     - ./services/huggingface-image:/app
+  #     # - ./services/huggingface/models:/root/.cache/huggingface/hub
 
-  hf-audio:
-    build: ./services/huggingface-audio
-    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
-    ports:
-      - "5003:5000"
-    volumes:
-      - ./services/huggingface-audio:/app
-      # - ./services/huggingface/models:/root/.cache/huggingface/hub
+  # hf-audio:
+  #   build: ./services/huggingface-audio
+  #   command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+  #   ports:
+  #     - "5003:5000"
+  #   volumes:
+  #     - ./services/huggingface-audio:/app
+  #     # - ./services/huggingface/models:/root/.cache/huggingface/hub

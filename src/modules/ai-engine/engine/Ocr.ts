@@ -8,19 +8,19 @@ import { Logger } from '../../../utils/Logger'
 import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from '../../../utils/Utils'
 import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
-import { AI_ENGINE2 } from '../@consts'
+import { AI_ENGINE } from '../@consts'
 import { TAiRunArguments, TAiRunOutput, TConfigAiEngine } from '../@types'
 import { absAiEngine } from '../base/absAiEngine'
-import { IAiEngine2 } from '../base/IAiEngine2'
+import { IAiEngine } from '../base/IAiEngine'
 import { OCR_LANG, OCR_LANG_ISO, OCR_TASK } from "../consts/OCR"
 import { AiDocker } from '../stack/AiDocker'
 import { TStepRunAiOcrParams } from "../types/TStepRunAiOcrParams"
 import { LangUtils } from '../../../utils/LangUtils'
 import { Assert } from '../../../utils/Assert'
 
-export class Ocr extends absAiEngine implements IAiEngine2 {
+export class Ocr extends absAiEngine implements IAiEngine {
 
-    AiEngineName = AI_ENGINE2.OCR
+    AiEngineName = AI_ENGINE.OCR
     InstanceName: string
     InstanceConfig: TConfigAiEngine | null = null
     InstanceApiUrl: string = "http://localhost:5000"
