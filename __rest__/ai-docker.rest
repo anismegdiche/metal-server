@@ -1,0 +1,689 @@
+# @name huggingface
+# Base URL
+@baseUrl = http://localhost:5000/huggingface
+@textUrl = http://localhost:5001/huggingface/text
+
+# Common variables
+@car1 = car1.jpg
+@photo1 = photo2.jpeg
+@audioFile = harvard.wav 
+#@audioFile = angry-man.wav 
+@videoFile = globe.mp4
+
+### Health Check
+GET {{textUrl}}/health
+
+### List All Tasks
+GET {{textUrl}}/tasks
+
+### 1. TEXT TASKS
+
+### @name sentiment-analysis
+POST {{textUrl}}/sentiment-analysis
+Content-Type: application/json
+
+{
+    "input_data": "I love using this service!",
+    "params": {
+        "top_k": null
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "label": "POSITIVE",
+#       "score": 0.9995409250259399
+#     },
+#     {
+#       "label": "NEGATIVE",
+#       "score": 0.0004590719472616911
+#     }
+#   ]
+# }
+
+### @name text-generation
+POST {{textUrl}}/text-generation
+Content-Type: application/json
+
+{
+    "input_data": "Once upon a time in a land far away,",
+    "params": {
+        "max_length": 50,
+        "do_sample": true,
+        "temperature": 0.9
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "generated_text": "Once upon a time in a land far away, the world is still a little overgrown and desolate. Its mountains range from the north to the east and west, but all its land is covered with vegetation. This is, however, how the earth"
+#     }
+#   ]
+# }
+
+### @name question-answering
+POST {{textUrl}}/question-answering
+Content-Type: application/json
+
+{
+    "input_data": {
+        "question": "What is the capital of France?",
+        "context": "Paris is the capital of France. It is known for its beautiful architecture and rich history."
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "answer": "Paris",
+#       "score": 0.9995409250259399,
+#       "start": 0,
+#       "end": 5
+#     }
+#   ]
+# }
+
+### @name summarization
+POST {{textUrl}}/summarization
+Content-Type: application/json
+
+{
+    "input_data": "Artificial intelligence is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals.",
+    "params": {
+        "max_length": 20,
+        "min_length": 10
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "summary_text": "Artificial intelligence is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals."
+#     }
+#   ]
+# }
+
+### @name fill-mask
+POST {{textUrl}}/fill-mask
+Content-Type: application/json
+
+{
+    "input_data": "The capital of France is [MASK].",
+    "params": {
+        "top_k": 1
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "score": 0.41678863763809204,
+#       "token": 3000,
+#       "token_str": "paris",
+#       "sequence": "the capital of france is paris."
+#     }
+#   ]
+# }
+
+### @name translation
+POST {{textUrl}}/translation
+Content-Type: application/json
+
+{
+    "input_data": "Hello, how are you?",
+    "params": {
+        "src_lang": "en_XX",
+        "tgt_lang": "ar_AR"
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "translation_text": "مرحباً، كيف حالك؟"
+#     }
+#   ]
+# }
+
+### @name zero-shot-classification
+POST {{textUrl}}/zero-shot-classification
+Content-Type: application/json
+
+{
+    "input_data": "I have a problem with my order",
+    "params": {
+        "candidate_labels": ["refund", "technical support", "billing"]
+    }
+}
+
+# Response
+# {
+#   "result": {
+#     "sequence": "I have a problem with my order",
+#     "labels": [
+#       "billing",
+#       "refund",
+#       "technical support"
+#     ],
+#     "scores": [
+#       0.4180431663990021,
+#       0.3394615352153778,
+#       0.24249528348445892
+#     ]
+#   }
+# }
+
+### @name token-classification
+POST {{textUrl}}/token-classification
+Content-Type: application/json
+
+{
+    "input_data": "My name is John and I work at Google in New York.",
+    "params": {
+        "grouped_entities": true
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "entity_group": "PER",
+#       "score": 0.9986351132392883,
+#       "word": "John",
+#       "start": 11,
+#       "end": 15
+#     },
+#     {
+#       "entity_group": "ORG",
+#       "score": 0.9988879561424255,
+#       "word": "Google",
+#       "start": 30,
+#       "end": 36
+#     },
+#     {
+#       "entity_group": "LOC",
+#       "score": 0.9990233182907104,
+#       "word": "New York",
+#       "start": 40,
+#       "end": 48
+#     }
+#   ]
+# }
+
+### @name text2text-generation
+POST {{textUrl}}/text2text-generation
+Content-Type: application/json
+
+{
+    "input_data": "question: What is 42 ? context: 42 is the answer to life, the universe and everything",
+    "model": "google/flan-t5-base"
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "generated_text": "the answer to life, the universe and everything"
+#     }
+#   ]
+# }
+
+### 2. IMAGE PIPELINES
+
+### @name image-classification
+POST {{baseUrl}}/image/image-classification
+Content-Type: multipart/form-data; boundary=image
+
+--image
+Content-Disposition: form-data; name="file"; filename="{{car1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{car1}}
+--image--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "label": "sports car, sport car",
+#       "score": 0.9760120511054993
+#     },
+#     {
+#       "label": "car wheel",
+#       "score": 0.006963498890399933
+#     },
+#     {
+#       "label": "racer, race car, racing car",
+#       "score": 0.005621954798698425
+#     },
+#     {
+#       "label": "convertible",
+#       "score": 0.005296570248901844
+#     },
+#     {
+#       "label": "grille, radiator grille",
+#       "score": 0.004549334291368723
+#     }
+#   ]
+# }
+
+### @name object-detection
+POST {{baseUrl}}/image/object-detection
+Content-Type: multipart/form-data; boundary=image
+
+--image
+Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{photo1}}
+--image--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "score": 0.5985567569732666,
+#       "label": "person",
+#       "box": {
+#         "xmin": 586,
+#         "ymin": 605,
+#         "xmax": 595,
+#         "ymax": 630
+#       }
+#     },
+#     {
+#       "score": 0.7274488210678101,
+#       "label": "person",
+#       "box": {
+#         "xmin": 579,
+#         "ymin": 605,
+#         "xmax": 588,
+#         "ymax": 631
+#       }
+#     },
+#     {
+#       "score": 0.9967041611671448,
+#       "label": "person",
+#       "box": {
+#         "xmin": 685,
+#         "ymin": 567,
+#         "xmax": 715,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.8523221015930176,
+#       "label": "person",
+#       "box": {
+#         "xmin": 618,
+#         "ymin": 599,
+#         "xmax": 633,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.8438708782196045,
+#       "label": "person",
+#       "box": {
+#         "xmin": 423,
+#         "ymin": 607,
+#         "xmax": 431,
+#         "ymax": 621
+#       }
+#     },
+#     {
+#       "score": 0.8876106142997742,
+#       "label": "person",
+#       "box": {
+#         "xmin": 599,
+#         "ymin": 608,
+#         "xmax": 609,
+#         "ymax": 636
+#       }
+#     },
+#     {
+#       "score": 0.8845556378364563,
+#       "label": "person",
+#       "box": {
+#         "xmin": 258,
+#         "ymin": 588,
+#         "xmax": 283,
+#         "ymax": 616
+#       }
+#     },
+#     {
+#       "score": 0.8956975340843201,
+#       "label": "person",
+#       "box": {
+#         "xmin": 593,
+#         "ymin": 607,
+#         "xmax": 602,
+#         "ymax": 635
+#       }
+#     },
+#     {
+#       "score": 0.5499304533004761,
+#       "label": "person",
+#       "box": {
+#         "xmin": 582,
+#         "ymin": 605,
+#         "xmax": 590,
+#         "ymax": 630
+#       }
+#     },
+#     {
+#       "score": 0.6102403998374939,
+#       "label": "person",
+#       "box": {
+#         "xmin": 625,
+#         "ymin": 601,
+#         "xmax": 640,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.5102829933166504,
+#       "label": "person",
+#       "box": {
+#         "xmin": 620,
+#         "ymin": 607,
+#         "xmax": 632,
+#         "ymax": 638
+#       }
+#     },
+#     {
+#       "score": 0.986751914024353,
+#       "label": "person",
+#       "box": {
+#         "xmin": 788,
+#         "ymin": 600,
+#         "xmax": 810,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.8868704438209534,
+#       "label": "person",
+#       "box": {
+#         "xmin": 587,
+#         "ymin": 607,
+#         "xmax": 596,
+#         "ymax": 634
+#       }
+#     },
+#     {
+#       "score": 0.992962658405304,
+#       "label": "person",
+#       "box": {
+#         "xmin": 618,
+#         "ymin": 585,
+#         "xmax": 638,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.9931454658508301,
+#       "label": "person",
+#       "box": {
+#         "xmin": 636,
+#         "ymin": 579,
+#         "xmax": 662,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.8589348793029785,
+#       "label": "person",
+#       "box": {
+#         "xmin": 599,
+#         "ymin": 607,
+#         "xmax": 609,
+#         "ymax": 635
+#       }
+#     },
+#     {
+#       "score": 0.9008470773696899,
+#       "label": "person",
+#       "box": {
+#         "xmin": 606,
+#         "ymin": 607,
+#         "xmax": 617,
+#         "ymax": 637
+#       }
+#     },
+#     {
+#       "score": 0.5793288946151733,
+#       "label": "person",
+#       "box": {
+#         "xmin": 593,
+#         "ymin": 608,
+#         "xmax": 602,
+#         "ymax": 634
+#       }
+#     }
+#   ]
+# }
+
+# ### @name depth-estimation
+# POST {{baseUrl}}/image/depth-estimation
+# Content-Type: multipart/form-data; boundary=image
+
+# --image
+# Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+# Content-Type: image/jpeg
+
+# < ../data/pic/{{photo1}}
+# --image--
+
+# ### @name image-to-image
+# POST {{baseUrl}}/image/image-to-image
+# Content-Type: multipart/form-data; boundary=image
+
+# --image
+# Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+# Content-Type: image/jpeg
+
+# < ../data/pic/{{photo1}}
+# --image--
+
+### 3. AUDIO PIPELINES
+
+### @name audio-classification
+POST {{baseUrl}}/audio/audio-classification
+Content-Type: multipart/form-data; boundary=audio
+
+--audio
+Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+Content-Type: audio/wav
+
+< ../data/audio/{{audioFile}}
+--audio--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "score": 0.5449946522712708,
+#       "label": "neu"
+#     },
+#     {
+#       "score": 0.2422640025615692,
+#       "label": "hap"
+#     },
+#     {
+#       "score": 0.17592455446720123,
+#       "label": "ang"
+#     },
+#     {
+#       "score": 0.03681683912873268,
+#       "label": "sad"
+#     }
+#   ]
+# }
+
+### @name automatic-speech-recognition
+POST {{baseUrl}}/audio/automatic-speech-recognition
+Content-Type: multipart/form-data; boundary=audio
+
+--audio
+Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+Content-Type: audio/wav
+
+< ../data/audio/{{audioFile}}
+--audio--
+
+# Response
+# {
+#   "result": {
+#     "text": " The stale smell of old beer lingers. It takes heat to bring out the odor. A cold dip restores health and zest. A salt pickle tastes fine with ham. Tacos al pastor are my favorite. A zestful food is the hot cross bun."
+#   }
+# }
+
+# ### @name audio-to-audio
+# POST {{baseUrl}}/audio/audio-to-audio
+# Content-Type: multipart/form-data; boundary={{audioFile}}
+
+# --audio
+# Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+# Content-Type: audio/wav
+
+# < ../data/audio/{{audioFile}}
+# --audio--
+
+### 6. VIDEO PIPELINES
+
+### @name video-classification
+POST {{baseUrl}}/video/video-classification
+Content-Type: multipart/form-data; boundary=video
+
+--video
+Content-Disposition: form-data; name="file"; filename="{{videoFile}}"
+Content-Type: video/mp4
+
+< ../data/vid/{{videoFile}}
+--video--
+
+### 5. MULTIMODAL PIPELINES
+
+### @name image-to-text
+POST {{baseUrl}}/multimodal/image-to-text
+Content-Type: multipart/form-data; boundary=multimodal
+
+--multimodal
+Content-Disposition: form-data; name="file"; filename="{{car1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{car1}}
+--multimodal--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "generated_text": "a red car is parked in a parking lot "
+#     }
+#   ]
+# }
+
+### @name visual-question-answering
+POST {{baseUrl}}/multimodal/visual-question-answering?question=What is in this image?
+Content-Type: multipart/form-data; boundary=multimodal
+
+--multimodal
+Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{photo1}}
+--multimodal--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "score": 0.30865567922592163,
+#       "answer": "tower"
+#     },
+#     {
+#       "score": 0.08369802683591843,
+#       "answer": "building"
+#     },
+#     {
+#       "score": 0.04040795937180519,
+#       "answer": "lights"
+#     },
+#     {
+#       "score": 0.019324542954564095,
+#       "answer": "light"
+#     },
+#     {
+#       "score": 0.016649145632982254,
+#       "answer": "person"
+#     }
+#   ]
+# }
+
+### @name text-to-speech
+POST {{baseUrl}}/multimodal/text-to-speech
+Content-Type: application/json
+
+{
+    "input_data": "Hello, this is a test of text to speech conversion.",
+    "params": {
+        "max_length": 1000
+    }
+}
+
+### @name document-question-answering
+POST {{baseUrl}}/multimodal/document-question-answering
+Content-Type: multipart/form-data; boundary=multimodal
+
+--multimodal
+Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{photo1}}
+--multimodal
+Content-Disposition: form-data; name="input_data"
+
+{"question": "What is this document about?"}
+--multimodal--
+
+### 5. STRUCTURED PIPELINES
+
+### @name table-question-answering
+POST {{baseUrl}}/structured/table-question-answering
+Content-Type: application/json
+
+{
+    "input_data": {
+        "query": "What is the total revenue?",
+        "table": [
+            ["Year", "Revenue", "Expenses"],
+            ["2020", "$100,000", "$80,000"],
+            ["2021", "$120,000", "$90,000"]
+        ]
+    },
+    "params": {}
+}
+
+### 6. FEATURE EXTRACTION
+
+### @name feature-extraction
+POST {{baseUrl}}/text/feature-extraction
+Content-Type: application/json
+
+{
+    "input_data": "This is a test sentence for feature extraction.",
+    "params": {
+        "return_tensors": false
+    }
+}

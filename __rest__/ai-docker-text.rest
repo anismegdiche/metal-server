@@ -1,0 +1,438 @@
+# @name huggingface
+# Base URL
+@apiUrl = http://localhost
+
+###
+
+### @name emotion-detection
+POST {{apiUrl}}:5101/text-emotion-detection/run
+Content-Type: application/json
+
+{
+    "input_data": "I'm not confident with this project!",
+    "params": {
+        "top_k": 10
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     [
+#       {
+#         "label": "joy",
+#         "score": "0.9658117294311523"
+#       },
+#       {
+#         "label": "surprise",
+#         "score": "0.02311941795051098"
+#       },
+#       {
+#         "label": "neutral",
+#         "score": "0.006501524709165096"
+#       },
+#       {
+#         "label": "anger",
+#         "score": "0.0017172531224787235"
+#       },
+#       {
+#         "label": "sadness",
+#         "score": "0.0012625681702047586"
+#       },
+#       {
+#         "label": "fear",
+#         "score": "0.001110117882490158"
+#       },
+#       {
+#         "label": "disgust",
+#         "score": "0.0004773985710926354"
+#       }
+#     ]
+#   ]
+# }
+
+//XXX
+### @name feature-extraction
+POST {{apiUrl}}:5102/text-feature-extraction/run
+Content-Type: application/json
+
+{
+    "input_data": "This is a test sentence for feature extraction.",
+    "params": {
+        "return_tensors": false
+    }
+}
+
+### @name fill-mask
+POST {{apiUrl}}:5103/text-fill-mask/run
+Content-Type: application/json
+
+{
+    "input_data": "The capital of France is [MASK].",
+    "params": {
+        "top_k": 1
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "score": 0.41678863763809204,
+#       "token": 3000,
+#       "token_str": "paris",
+#       "sequence": "the capital of france is paris."
+#     }
+#   ]
+# }
+
+### @name keyword-extraction
+POST {{apiUrl}}:5104/text-keyword-extraction/run
+Content-Type: application/json
+
+{
+    "input_data": "Title: The Importance of Testing\r\rTesting plays a critical role in many aspects of life, from education and technology to medicine and product development. At its core, testing is a method of evaluating performance, reliability, or understanding. It helps ensure that systems, individuals, or products meet specific standards and function as intended.\r\rIn education, testing allows teachers to assess students’ knowledge and identify areas that need improvement. It provides feedback for both learners and educators, helping to guide instruction and learning strategies.\r\rIn technology, testing is essential for building reliable software and hardware. Before a product is released, it undergoes various stages of testing—such as unit testing, integration testing, and user acceptance testing—to catch bugs and improve performance.\r\rIn the medical field, testing is crucial for diagnosing diseases, monitoring patient health, and determining the effectiveness of treatments. Accurate testing can save lives and prevent the spread of illnesses.\r\rOverall, testing is not just about finding faults—it's about improvement, validation, and progress. Whether in classrooms, laboratories, or development teams, testing helps us move forward with confidence.",
+    "params": {
+        "top_k": 10
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     "education",
+#     "integration testing",
+#     "medical field",
+#     "product development",
+#     "unit testing",
+#     "user acceptance testing"
+#   ]
+# }
+
+### @name language-detection
+POST {{apiUrl}}:5105/text-language-detection/run
+Content-Type: application/json
+
+{
+    "input_data": "Hallo, wie geht es dir?"
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "label": "de",
+#       "score": "0.9953383207321167"
+#     }
+#   ]
+# }
+
+### @name paraphrase-detection
+POST {{apiUrl}}:5106/text-paraphrase-detection/run
+Content-Type: application/json
+
+{
+    "input_data": {
+        "source_sentence": "The quick brown fox jumps over the lazy dog",
+        "target_sentence": "A fast brown fox leaps over a sleepy dog"
+    }
+}
+
+# Response
+# {
+#   "result": {
+#     "source_sentence": "The quick brown fox jumps over the lazy dog",
+#     "target_sentence": "A fast brown fox leaps over a sleepy dog",
+#     "similarity_score": 0.8476852774620056,
+#     "is_paraphrase": true,
+#     "threshold": 0.75
+#   }
+# }
+
+### @name question-answering
+POST {{apiUrl}}:5107/text-question-answering/run
+Content-Type: application/json
+
+{
+    "input_data": {
+        "question": "What is the capital of France?",
+        "context": "Paris is the capital of France. It is known for its beautiful architecture and rich history."
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "answer": "Paris",
+#       "score": 0.9995409250259399,
+#       "start": 0,
+#       "end": 5
+#     }
+#   ]
+# }
+
+### @name sentence-similarity
+POST {{apiUrl}}:5108/text-sentence-similarity/run
+Content-Type: application/json
+
+{
+    "input_data": {
+        "source_sentence": "That is a happy person",
+        "sentences": [
+            "That is a happy dog",
+            "That is a very happy person",
+            "Today is a sunny day"
+        ]
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "sentence1": "That is a happy person",
+#       "sentence2": "That is a very happy person",
+#       "similarity": "0.942915141582489",
+#       "rank": "1"
+#     },
+#     {
+#       "sentence1": "That is a happy person",
+#       "sentence2": "That is a happy dog",
+#       "similarity": "0.6945775151252747",
+#       "rank": "2"
+#     },
+#     {
+#       "sentence1": "That is a happy person",
+#       "sentence2": "Today is a sunny day",
+#       "similarity": "0.2568761706352234",
+#       "rank": "3"
+#     }
+#   ]
+# }
+
+### @name sentiment-analysis
+POST {{apiUrl}}:5109/text-sentiment-analysis/run
+Content-Type: application/json
+
+{
+    "input_data": "I love using this service!",
+    "params": {
+        "top_k": null
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "label": "POSITIVE",
+#       "score": 0.9995409250259399
+#     },
+#     {
+#       "label": "NEGATIVE",
+#       "score": 0.0004590719472616911
+#     }
+#   ]
+# }
+
+### @name summarization
+POST {{apiUrl}}:5110/text-summarization/run
+Content-Type: application/json
+
+{
+    "input_data": "Artificial intelligence is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals.",
+    "params": {
+        "max_length": 20,
+        "min_length": 10
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "summary_text": "Artificial intelligence is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals."
+#     }
+#   ]
+# }
+
+### @name text2text-generation
+POST {{apiUrl}}:5111/text-text2text-generation/run
+Content-Type: application/json
+
+{
+    "input_data": "question: What is 42 ? context: 42 is the answer to life, the universe and everything",
+    "model": "google/flan-t5-base"
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "generated_text": "the answer to life, the universe and everything"
+#     }
+#   ]
+# }
+
+### @name text-generation
+POST {{apiUrl}}:5112/text-text-generation/run
+Content-Type: application/json
+
+{
+    "input_data": "Once upon a time in a land far away,",
+    "params": {
+        "max_length": 50,
+        "do_sample": true,
+        "temperature": 0.9
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "generated_text": "Once upon a time in a land far away, the world is still a little overgrown and desolate. Its mountains range from the north to the east and west, but all its land is covered with vegetation. This is, however, how the earth"
+#     }
+#   ]
+# }
+
+### @name token-classification
+POST {{apiUrl}}:5113/text-token-classification/run
+Content-Type: application/json
+
+{
+    "input_data": "My name is John and I work at Google in New York.",
+    "params": {
+        "grouped_entities": true
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "entity_group": "PER",
+#       "score": 0.9986351132392883,
+#       "word": "John",
+#       "start": 11,
+#       "end": 15
+#     },
+#     {
+#       "entity_group": "ORG",
+#       "score": 0.9988879561424255,
+#       "word": "Google",
+#       "start": 30,
+#       "end": 36
+#     },
+#     {
+#       "entity_group": "LOC",
+#       "score": 0.9990233182907104,
+#       "word": "New York",
+#       "start": 40,
+#       "end": 48
+#     }
+#   ]
+# }
+
+### @name toxicity-detection
+POST {{apiUrl}}:5114/text-toxicity-detection/run
+Content-Type: application/json
+
+{
+    "input_data": "you bastard, i hate you so much!are you fucked up! i will kill you",
+    "params": {
+        "top_k": 10
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     [
+#       {
+#         "label": "toxic",
+#         "score": "0.9961523413658142"
+#       },
+#       {
+#         "label": "obscene",
+#         "score": "0.9740362763404846"
+#       },
+#       {
+#         "label": "insult",
+#         "score": "0.9055920839309692"
+#       },
+#       {
+#         "label": "threat",
+#         "score": "0.7695426940917969"
+#       },
+#       {
+#         "label": "severe_toxic",
+#         "score": "0.7240217924118042"
+#       },
+#       {
+#         "label": "identity_hate",
+#         "score": "0.08210677653551102"
+#       }
+#     ]
+#   ]
+# }
+
+### @name translation
+POST {{apiUrl}}:5115/text-translation/run
+Content-Type: application/json
+
+{
+    "input_data": "Hello, how are you?",
+    "params": {
+        "src_lang": "en_XX",
+        "tgt_lang": "ar_AR"
+    }
+}
+
+# Response
+# {
+#   "result": [
+#     {
+#       "translation_text": "مرحباً، كيف حالك؟"
+#     }
+#   ]
+# }
+
+### @name zero-shot-classification
+POST {{apiUrl}}:5116/text-zero-shot-classification/run
+Content-Type: application/json
+
+{
+    "input_data": "I have a problem with my order",
+    "params": {
+        "candidate_labels": ["refund", "technical support", "billing"]
+    }
+}
+
+# Response
+# {
+#   "result": {
+#     "sequence": "I have a problem with my order",
+#     "labels": [
+#       "billing",
+#       "refund",
+#       "technical support"
+#     ],
+#     "scores": [
+#       0.4180431663990021,
+#       0.3394615352153778,
+#       0.24249528348445892
+#     ]
+#   }
+# }
+
+### To ignore
+# //XXX
+# ### @name ner
+# POST {{baseUrl}}/text/ner
+# Content-Type: application/json
+
+# {
+#     "input_data": "My name is John and I work at Google in New York."
+# }

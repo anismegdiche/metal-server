@@ -1,0 +1,275 @@
+# @name huggingface
+# Base URL
+@apiUrl = http://localhost:5002/huggingface/image
+
+# Common variables
+@car1 = car1.jpg
+@photo1 = photo2.jpeg
+@audioFile = harvard.wav 
+#@audioFile = angry-man.wav 
+@videoFile = globe.mp4
+
+### Health Check
+GET {{apiUrl}}/health
+
+### List All Tasks
+GET {{apiUrl}}/tasks
+
+### 2. IMAGE PIPELINES
+
+### @name image-classification
+POST {{apiUrl}}/image-classification
+Content-Type: multipart/form-data; boundary=image
+
+--image
+Content-Disposition: form-data; name="file"; filename="{{car1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{car1}}
+--image--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "label": "sports car, sport car",
+#       "score": 0.9760120511054993
+#     },
+#     {
+#       "label": "car wheel",
+#       "score": 0.006963498890399933
+#     },
+#     {
+#       "label": "racer, race car, racing car",
+#       "score": 0.005621954798698425
+#     },
+#     {
+#       "label": "convertible",
+#       "score": 0.005296570248901844
+#     },
+#     {
+#       "label": "grille, radiator grille",
+#       "score": 0.004549334291368723
+#     }
+#   ]
+# }
+
+### @name object-detection
+POST {{apiUrl}}/object-detection
+Content-Type: multipart/form-data; boundary=image
+
+--image
+Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{photo1}}
+--image--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "score": 0.5985567569732666,
+#       "label": "person",
+#       "box": {
+#         "xmin": 586,
+#         "ymin": 605,
+#         "xmax": 595,
+#         "ymax": 630
+#       }
+#     },
+#     {
+#       "score": 0.7274488210678101,
+#       "label": "person",
+#       "box": {
+#         "xmin": 579,
+#         "ymin": 605,
+#         "xmax": 588,
+#         "ymax": 631
+#       }
+#     },
+#     {
+#       "score": 0.9967041611671448,
+#       "label": "person",
+#       "box": {
+#         "xmin": 685,
+#         "ymin": 567,
+#         "xmax": 715,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.8523221015930176,
+#       "label": "person",
+#       "box": {
+#         "xmin": 618,
+#         "ymin": 599,
+#         "xmax": 633,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.8438708782196045,
+#       "label": "person",
+#       "box": {
+#         "xmin": 423,
+#         "ymin": 607,
+#         "xmax": 431,
+#         "ymax": 621
+#       }
+#     },
+#     {
+#       "score": 0.8876106142997742,
+#       "label": "person",
+#       "box": {
+#         "xmin": 599,
+#         "ymin": 608,
+#         "xmax": 609,
+#         "ymax": 636
+#       }
+#     },
+#     {
+#       "score": 0.8845556378364563,
+#       "label": "person",
+#       "box": {
+#         "xmin": 258,
+#         "ymin": 588,
+#         "xmax": 283,
+#         "ymax": 616
+#       }
+#     },
+#     {
+#       "score": 0.8956975340843201,
+#       "label": "person",
+#       "box": {
+#         "xmin": 593,
+#         "ymin": 607,
+#         "xmax": 602,
+#         "ymax": 635
+#       }
+#     },
+#     {
+#       "score": 0.5499304533004761,
+#       "label": "person",
+#       "box": {
+#         "xmin": 582,
+#         "ymin": 605,
+#         "xmax": 590,
+#         "ymax": 630
+#       }
+#     },
+#     {
+#       "score": 0.6102403998374939,
+#       "label": "person",
+#       "box": {
+#         "xmin": 625,
+#         "ymin": 601,
+#         "xmax": 640,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.5102829933166504,
+#       "label": "person",
+#       "box": {
+#         "xmin": 620,
+#         "ymin": 607,
+#         "xmax": 632,
+#         "ymax": 638
+#       }
+#     },
+#     {
+#       "score": 0.986751914024353,
+#       "label": "person",
+#       "box": {
+#         "xmin": 788,
+#         "ymin": 600,
+#         "xmax": 810,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.8868704438209534,
+#       "label": "person",
+#       "box": {
+#         "xmin": 587,
+#         "ymin": 607,
+#         "xmax": 596,
+#         "ymax": 634
+#       }
+#     },
+#     {
+#       "score": 0.992962658405304,
+#       "label": "person",
+#       "box": {
+#         "xmin": 618,
+#         "ymin": 585,
+#         "xmax": 638,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.9931454658508301,
+#       "label": "person",
+#       "box": {
+#         "xmin": 636,
+#         "ymin": 579,
+#         "xmax": 662,
+#         "ymax": 639
+#       }
+#     },
+#     {
+#       "score": 0.8589348793029785,
+#       "label": "person",
+#       "box": {
+#         "xmin": 599,
+#         "ymin": 607,
+#         "xmax": 609,
+#         "ymax": 635
+#       }
+#     },
+#     {
+#       "score": 0.9008470773696899,
+#       "label": "person",
+#       "box": {
+#         "xmin": 606,
+#         "ymin": 607,
+#         "xmax": 617,
+#         "ymax": 637
+#       }
+#     },
+#     {
+#       "score": 0.5793288946151733,
+#       "label": "person",
+#       "box": {
+#         "xmin": 593,
+#         "ymin": 608,
+#         "xmax": 602,
+#         "ymax": 634
+#       }
+#     }
+#   ]
+# }
+
+# ### @name depth-estimation
+# POST {{baseUrl}}/image/depth-estimation
+# Content-Type: multipart/form-data; boundary=image
+
+# --image
+# Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+# Content-Type: image/jpeg
+
+# < ../data/pic/{{photo1}}
+# --image--
+
+# ### @name image-to-image
+# POST {{baseUrl}}/image/image-to-image
+# Content-Type: multipart/form-data; boundary=image
+
+# --image
+# Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+# Content-Type: image/jpeg
+
+# < ../data/pic/{{photo1}}
+# --image--
+

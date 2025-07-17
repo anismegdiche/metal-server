@@ -1,0 +1,158 @@
+# @name huggingface
+# Base URL
+@apiUrl = http://localhost:5003/huggingface/audio
+
+# Common variables
+@car1 = car1.jpg
+@photo1 = photo2.jpeg
+@audioFile = harvard.wav 
+#@audioFile = angry-man.wav 
+@videoFile = globe.mp4
+
+### Health Check
+GET {{apiUrl}}/health
+
+### List All Tasks
+GET {{apiUrl}}/tasks
+
+### AUDIO PIPELINES
+
+### @name audio-classification
+POST {{apiUrl}}/audio-classification
+Content-Type: multipart/form-data; boundary=audio
+
+--audio
+Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+Content-Type: audio/wav
+
+< ../data/audio/{{audioFile}}
+--audio--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "score": 0.5449946522712708,
+#       "label": "neu"
+#     },
+#     {
+#       "score": 0.2422640025615692,
+#       "label": "hap"
+#     },
+#     {
+#       "score": 0.17592455446720123,
+#       "label": "ang"
+#     },
+#     {
+#       "score": 0.03681683912873268,
+#       "label": "sad"
+#     }
+#   ]
+# }
+
+### @name automatic-speech-recognition
+POST {{apiUrl}}/automatic-speech-recognition
+Content-Type: multipart/form-data; boundary=audio
+
+--audio
+Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+Content-Type: audio/wav
+
+< ../data/audio/{{audioFile}}
+--audio--
+
+# Response
+# {
+#   "result": {
+#     "text": " The stale smell of old beer lingers. It takes heat to bring out the odor. A cold dip restores health and zest. A salt pickle tastes fine with ham. Tacos al pastor are my favorite. A zestful food is the hot cross bun."
+#   }
+# }
+
+### @name tts
+POST {{apiUrl}}/text-to-speech
+text: Hello, this is a test of the text-to-speech system.
+Content-Type: application/json
+
+{
+  "text": "Hello, this is a test of the text-to-speech system.",
+  "voice_preset": "v2/en_speaker_6"
+}
+
+# Response will contain base64-encoded audio data
+# {
+#   "result": {
+#     "audio": "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQ...",
+#     "sampling_rate": 24000,
+#     "format": "wav"
+#   }
+# }
+
+### @name source-separation
+POST {{apiUrl}}/audio-source-separation
+Content-Type: multipart/form-data; boundary=sep
+
+--sep
+Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+Content-Type: audio/wav
+
+< ../data/audio/{{audioFile}}
+--sep--
+
+# Response will contain separated audio sources
+# {
+#   "result": {
+#     "vocals": "base64_encoded_audio",
+#     "drums": "base64_encoded_audio",
+#     "bass": "base64_encoded_audio",
+#     "other": "base64_encoded_audio"
+#   }
+# }
+
+### @name speech-enhancement
+POST {{apiUrl}}/speech-enhancement
+Content-Type: multipart/form-data; boundary=enhance
+
+--enhance
+Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+Content-Type: audio/wav
+
+< ../data/audio/{{audioFile}}
+--enhance--
+
+# Response contains enhanced audio
+# {
+#   "result": {
+#     "enhanced_audio": "base64_encoded_audio",
+#     "sampling_rate": 16000
+#   }
+# }
+
+### @name audio-super-resolution
+POST {{apiUrl}}/audio-super-resolution
+Content-Type: multipart/form-data; boundary=superres
+
+--superres
+Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+Content-Type: audio/wav
+
+< ../data/audio/{{audioFile}}
+--superres--
+
+# Response contains upsampled audio
+# {
+#   "result": {
+#     "upsampled_audio": "base64_encoded_audio",
+#     "original_sr": 8000,
+#     "upsampled_sr": 16000
+#   }
+# }
+# ### @name audio-to-audio
+# POST {{baseUrl}}/audio-to-audio
+# Content-Type: multipart/form-data; boundary={{audioFile}}
+
+# --audio
+# Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+# Content-Type: audio/wav
+
+# < ../data/audio/{{audioFile}}
+# --audio--

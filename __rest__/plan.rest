@@ -55,3 +55,10 @@ GET http://localhost:3000/schema/etl1/aitest
     ?fields=img_to_text
 authorization: Bearer {{token}}
 ###
+
+
+
+# @name ai-test
+GET http://localhost:3000/schema/myplan/myentity
+authorization: Bearer {{token}}
+###
