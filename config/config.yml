@@ -71,7 +71,9 @@ plans:
 
       - run:
           ai: text
-          task: text-emotion-detection
+          task: emotion-detection
+          params:
+            top_k: 10
           input: ocr_text
           output:
 
