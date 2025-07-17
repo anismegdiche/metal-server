@@ -8,3 +8,4 @@
 /coverage/*
 *.traineddata
 .qodo
+__pycache__
