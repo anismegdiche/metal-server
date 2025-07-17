@@ -19,8 +19,6 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 })
 
-//XXX const config = JSON.parse(Fs.readFileSync('../.eslintrc.json', 'utf8'))
-
 export default [
     {
         ignores: ["node_modules/**/*", "build/**/*", "**/.vscode"]
