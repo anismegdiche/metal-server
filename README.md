@@ -1,5 +1,6 @@
 
-# <img src="metal-logo.png" style="height: 100px;"/><br><span style="font-size: 0.6em"> `version 0.4`</span>
+# <img src="metal-logo.png" style="height: 100px;"/>
+[![GitHub version](https://badge.fury.io/gh/anismegdiche%2Fmetal-server.svg?icon=si%3Agithub&icon_color=%23ffffff)](https://badge.fury.io/gh/anismegdiche%2Fmetal-server)
 
 ## Overview
 

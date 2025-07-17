@@ -9,7 +9,7 @@ import alasql from 'alasql'
 import { DataTable, TRow } from './DataTable'
 import { TJson } from './TJson'
 import { Logger } from '../utils/Logger'
-import { HttpErrorInternalServerError } from "../server/HttpErrors"
+import { HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
 
 
 export class DataBase {

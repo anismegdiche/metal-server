@@ -1,0 +1,673 @@
+//
+//
+//
+import axios from 'axios'
+import _ from "lodash"
+//
+import { Assert } from '../../../utils/Assert'
+import { Logger } from '../../../utils/Logger'
+import { StringUtils } from "../../../utils/StringUtils"
+import { Utils } from '../../../utils/Utils'
+import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
+import { AI_ENGINE2 } from '../@consts'
+import { TAiRunArguments, TAiRunOutput, TConfigAiEngine } from '../@types'
+import { absAiEngine } from '../base/absAiEngine'
+import { IAiEngine2 } from '../base/IAiEngine2'
+import { LANG_ISO } from "../consts/LANG"
+import { TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO, TEXT_TASK } from "../consts/TEXT"
+import { AiDocker, TAiDockerService } from '../stack/AiDocker'
+import { TStepRunAiTextEmotionDetectionParams, TStepRunAiTextFillMaskParams, TStepRunAiTextKeywordExtractionParams, TStepRunAiTextParams, TStepRunAiTextParaphraseDetectionParams, TStepRunAiTextQuestionAnsweringParams, TStepRunAiTextSentenceSimilarityParams, TStepRunAiTextSentimentAnalysisParams, TStepRunAiTextSummarizationParams, TStepRunAiTextTextGenerationParams, TStepRunAiTextTokenClassificationParams, TStepRunAiTextToxicityDetectionParams, TStepRunAiTextTranslationParams, TStepRunAiTextZeroShotClassificationParams } from '../types/TStepRunAiTextParam'
+import { LangUtils } from '../../../utils/LangUtils'
+
+export class Text extends absAiEngine implements IAiEngine2 {
+
+    AiEngineName = AI_ENGINE2.TEXT
+    InstanceName: string
+    InstanceConfig: TConfigAiEngine | null = null
+    InstanceApiUrl: string = "http://localhost:5000"
+
+    AiDockerService: Record<string, TAiDockerService> = {}
+    RunTask: Record<string, (args: TAiRunArguments) => Promise<TAiRunOutput>> = {}
+
+    DEFAULT: TStepRunAiTextParams = {
+        task: TEXT_TASK.TRANSLATION,
+        params: {
+            src_lang: LANG_ISO.en_XX,
+            tgt_lang: LANG_ISO.fr_XX
+        }
+    }
+
+    constructor() {
+        super()
+        this.InstanceName = ""
+    }
+
+    @Logger.LogFunction()
+    async Init(aiName: string, aiConfig: TConfigAiEngine): Promise<void> {
+        this.InstanceName = aiName
+        this.InstanceConfig = aiConfig
+        this.InstanceApiUrl = aiConfig.url || "http://localhost:5000"
+
+        this.AiDockerService = {
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`]: AiDocker.TEXT_EMOTION_DETECTION,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.FILL_MASK}`]: AiDocker.TEXT_FILL_MASK,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.KEYWORD_EXTRACTION}`]: AiDocker.TEXT_KEYWORD_EXTRACTION,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.LANGUAGE_DETECTION}`]: AiDocker.TEXT_LANGUAGE_DETECTION,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.PARAPHRASE_DETECTION}`]: AiDocker.TEXT_PARAPHRASE_DETECTION,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.QUESTION_ANSWERING}`]: AiDocker.TEXT_QUESTION_ANSWERING,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.SENTENCE_SIMILARITY}`]: AiDocker.TEXT_SENTENCE_SIMILARITY,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.SENTIMENT_ANALYSIS}`]: AiDocker.TEXT_SENTIMENT_ANALYSIS,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.SUMMARIZATION}`]: AiDocker.TEXT_SUMMARIZATION,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.TEXT2TEXT_GENERATION}`]: AiDocker.TEXT_TEXT2TEXT_GENERATION,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.TEXT_GENERATION}`]: AiDocker.TEXT_TEXT_GENERATION,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.TOKEN_CLASSIFICATION}`]: AiDocker.TEXT_TOKEN_CLASSIFICATION,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.TOXICITY_DETECTION}`]: AiDocker.TEXT_TOXICITY_DETECTION,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.ZERO_SHOT_CLASSIFICATION}`]: AiDocker.TEXT_ZERO_SHOT_CLASSIFICATION,
+            [`${AI_ENGINE2.TEXT}-${TEXT_TASK.TRANSLATION}`]: AiDocker.TEXT_TRANSLATION
+        }
+
+        this.RunTask = {
+            [TEXT_TASK.TRANSLATION]: async (args: TAiRunArguments) => await this.Translation(args),
+            [TEXT_TASK.EMOTION_DETECTION]: async (args: TAiRunArguments) => await this.EmotionDetection(args),
+            [TEXT_TASK.FILL_MASK]: async (args: TAiRunArguments) => await this.FillMask(args),
+            [TEXT_TASK.KEYWORD_EXTRACTION]: async (args: TAiRunArguments) => await this.KeywordExtraction(args),
+            [TEXT_TASK.LANGUAGE_DETECTION]: async (args: TAiRunArguments) => await this.LanguageDetection(args),
+            [TEXT_TASK.PARAPHRASE_DETECTION]: async (args: TAiRunArguments) => await this.ParaphraseDetection(args),
+            [TEXT_TASK.QUESTION_ANSWERING]: async (args: TAiRunArguments) => await this.QuestionAnswering(args),
+            [TEXT_TASK.SENTENCE_SIMILARITY]: async (args: TAiRunArguments) => await this.SentenceSimilarity(args),
+            [TEXT_TASK.SENTIMENT_ANALYSIS]: async (args: TAiRunArguments) => await this.SentimentAnalysis(args),
+            [TEXT_TASK.SUMMARIZATION]: async (args: TAiRunArguments) => await this.Summarization(args),
+            [TEXT_TASK.TEXT2TEXT_GENERATION]: async (args: TAiRunArguments) => await this.Text2TextGeneration(args),
+            [TEXT_TASK.TEXT_GENERATION]: async (args: TAiRunArguments) => await this.TextGeneration(args),
+            [TEXT_TASK.TOKEN_CLASSIFICATION]: async (args: TAiRunArguments) => await this.TokenClassification(args),
+            [TEXT_TASK.TOXICITY_DETECTION]: async (args: TAiRunArguments) => await this.ToxicityDetection(args),
+            [TEXT_TASK.ZERO_SHOT_CLASSIFICATION]: async (args: TAiRunArguments) => await this.ZeroShotClassification(args)
+        }
+
+        await AiDocker.StartService({
+            InstanceName: aiName,
+            ...this.AiDockerService[this.InstanceName]
+        })
+
+        Logger.Debug(`Successfully initialized Text instance: ${this.InstanceName}`)
+    }
+
+    @Logger.LogFunction(true)
+    async Run(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const _args: TStepRunAiTextParams = _.merge(this.DEFAULT, args)
+        const { task } = _args
+
+        if (Object.values(TEXT_TASK).includes(task)) {
+            await Utils.Wait(async () => await this.IsHealthy())
+            return await this.RunTask[task](args)
+        }
+
+        throw new HttpErrorInternalServerError(`Invalid model: ${task}`)
+    }
+
+    @Logger.LogFunction(true)
+    async Translation(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextTranslationParams;
+        Assert(data, 'data is required')
+        Assert(params, 'params is required')
+        Assert(params.src_lang, 'params.src_lang is required')
+        Assert(params.tgt_lang, 'params.tgt_lang is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data,
+                    params
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result[0];
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Translation request failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async EmotionDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextEmotionDetectionParams;
+
+        Assert(data, 'data is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data,
+                    params
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result[0];
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Emotion detection failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async FillMask(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextFillMaskParams;
+
+        Assert(data, 'data is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data,
+                    params
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result[0];
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Fill mask failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async KeywordExtraction(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextKeywordExtractionParams;
+
+        Assert(data, 'data is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data,
+                    params
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Keyword extraction failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async LanguageDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+
+        Assert(data, 'data is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            const result = response.data.result[0]
+
+            return {
+                label: LangUtils.Convert(result.label, TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO),
+                score: result.score
+            };
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Language detection failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async ParaphraseDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextParaphraseDetectionParams;
+
+        Assert(data, 'data is required')
+        Assert(params, 'params is required')
+        Assert(params.target, 'params.target is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: {
+                        source_sentence: data,
+                        target_sentence: params.target
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Paraphrase detection failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async QuestionAnswering(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextQuestionAnsweringParams;
+
+        Assert(data, 'data is required')
+        Assert(params, 'params is required')
+        Assert(params.context, 'params.context is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: {
+                        question: data,
+                        context: params.context
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result[0];
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Question answering failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async SentenceSimilarity(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextSentenceSimilarityParams;
+
+        Assert(data, 'data is required')
+        Assert(params, 'params is required')
+        Assert(params.sentences, 'params.sentences is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: {
+                        source_sentence: data,
+                        sentences: params.sentences
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Sentence similarity failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async SentimentAnalysis(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextSentimentAnalysisParams;
+
+        Assert(data, 'data is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data,
+                    params
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Sentiment analysis failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async Summarization(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextSummarizationParams;
+
+        Assert(data, 'data is required')
+        Assert(params, 'params is required')
+        Assert(params.max_length, 'params.max_length is required')
+        Assert(params.min_length, 'params.min_length is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data,
+                    params
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result[0];
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Summarization failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async Text2TextGeneration(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+
+        Assert(data, 'data is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result[0];
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Text2Text generation failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async TextGeneration(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextTextGenerationParams;
+
+        Assert(data, 'data is required')
+        Assert(params, 'params is required')
+        Assert(params?.max_length, 'params.max_length is required')
+        Assert(params?.do_sample, 'params.do_sample is required')
+        Assert(params?.temperature, 'params.temperature is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data,
+                    params
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result[0];
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Text generation failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async TokenClassification(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextTokenClassificationParams;
+
+        Assert(data, 'data is required')
+        Assert(params, 'params is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data,
+                    params
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Token classification failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async ToxicityDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextToxicityDetectionParams;
+
+        Assert(data, 'data is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data,
+                    params
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result[0];
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Toxicity detection failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+
+    @Logger.LogFunction(true)
+    async ZeroShotClassification(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextZeroShotClassificationParams;
+
+        Assert(data, 'data is required')
+        Assert(params, 'params is required')
+        Assert(params.candidate_labels, 'params.candidate_labels is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        try {
+            const response = await axios.post(
+                _url,
+                {
+                    input_data: data,
+                    params
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            return response.data.result;
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                throw new Error(`Zero-shot classification failed: ${error.response?.data?.message ?? error.message}`);
+            }
+            throw error;
+        }
+    }
+}

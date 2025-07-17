@@ -1,0 +1,112 @@
+//
+//
+//
+import typia from "typia"
+import { Mixin } from "ts-mixer"
+//
+import { clsClonable } from "../../../utils/base/clsClonable"
+import { clsContext } from "../../../utils/base/clsContext"
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import { TInternalResponse } from '../../schema/types/TInternalResponse'
+import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import { absDataProviderOptions } from "./absDataProviderOptions"
+import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
+import { TOptionalParameter } from "../types/TOptionalParameter"
+import { HttpErrorBadRequest } from "../../errors/HttpErrors"
+import { DataTable } from "../../../types/DataTable"
+import { StringUtils } from '../../../utils/StringUtils'
+import { Assert } from "../../../utils/Assert"
+import { DATA_PROVIDER } from "../@consts"
+import { TConfigSource } from "../types/TConfigSource"
+import { IDataProviderOptions } from "./IDataProviderOptions"
+import { IDataProvider } from "./IDataProvider"
+
+
+export class DataProviderOptions extends absDataProviderOptions implements IDataProviderOptions { }
+
+
+//
+export abstract class absDataProvider extends Mixin(clsClonable, clsContext) implements IDataProvider {// NOSONAR
+
+    abstract ProviderName: DATA_PROVIDER
+    abstract SourceName?: string
+    abstract Config: unknown
+    abstract Connection?: unknown
+    Options: IDataProviderOptions = new DataProviderOptions()
+
+    protected constructor() {
+        super()
+    }
+
+    // Init
+    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+        Assert(!StringUtils.IsEmpty(source), `${source}: source name is missing`)
+        Assert(sourceConfig != undefined, `${source}: source config is missing`)
+        this.SourceName = source
+    }
+
+    // Connection
+    abstract Connect(): Promise<void>
+    abstract Disconnect(): Promise<void>
+
+    // Entities
+    abstract ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>>
+    abstract AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>>
+    //ROADMAP RenameEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>>
+    //ROADMAP DeleteEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>>
+
+    // Data
+    abstract Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>>
+    abstract Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>>
+    abstract Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>>
+    abstract Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>>
+
+
+    // Utils
+    abstract EscapeEntity(entity: string): string
+    abstract EscapeField(field: string): string
+
+    // eslint-disable-next-line class-methods-use-this
+    GetSqlQuery(sqlQueryHelper: SqlQueryUtils, options: TOptionalParameter): string | undefined {
+        return (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
+            ? sqlQueryHelper.Query()
+            : undefined
+    }
+
+    GenerateSqlSelect(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+        return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+            .Select(options.Fields)
+            .From(schemaRequest.entity)
+            .Where(options.Filter)
+            .OrderBy(options.Sort)
+    }
+
+    GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+
+        if (!typia.is<DataTable>(options.Data) || options.Data.Rows.length === 0)
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+            .Insert(schemaRequest.entity)
+            .Fields(options.Data.GetFieldNames())
+            .Values(options.Data.Rows)
+    }
+
+    GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+
+        if (!typia.is<DataTable>(options.Data) || options.Data.Rows.length === 0)
+            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+
+        return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+            .Update(schemaRequest.entity)
+            .Set(options.Data.Rows)
+            .Where(options.Filter)
+    }
+
+    GenerateSqlDelete(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+        return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+            .Delete()
+            .From(schemaRequest.entity)
+            .Where(options.Filter)
+    }
+}

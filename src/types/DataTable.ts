@@ -9,9 +9,9 @@ import { createHash } from 'crypto'
 //
 import { TJson } from './TJson'
 import { Logger } from '../utils/Logger'
-import { JsonHelper } from "../lib/JsonHelper"
-import { StringHelper } from "../lib/StringHelper"
-import { HttpErrorInternalServerError } from "../server/HttpErrors"
+import { JsonUtils } from "../utils/JsonUtils"
+import { StringUtils } from "../utils/StringUtils"
+import { HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
 import { clsClonable } from "../utils/base/clsClonable"
 
 
@@ -376,7 +376,7 @@ export class DataTable extends clsClonable {
 
     @Logger.LogFunction()
     FilterRows(condition: string | undefined): this {
-        if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))
+        if (this.Rows.length === 0 || StringUtils.IsEmpty(condition))
             return this
 
         return this.FreeSql(`SELECT * FROM [${this.Name}] WHERE ${condition}`)
@@ -384,7 +384,7 @@ export class DataTable extends clsClonable {
 
     @Logger.LogFunction()
     DeleteRows(condition: string | undefined): this {
-        if (this.Rows.length === 0 || StringHelper.IsEmpty(condition))
+        if (this.Rows.length === 0 || StringUtils.IsEmpty(condition))
             return this
 
         return this.FreeSql(`DELETE FROM [${this.Name}] WHERE ${condition}`)
@@ -414,14 +414,14 @@ export class DataTable extends clsClonable {
 
             switch (method) {
                 case REMOVE_DUPLICATES_METHOD.HASH:
-                    __currentHash = createHash('sha256').update(JsonHelper.Stringify(__rowString)).digest('base64')
+                    __currentHash = createHash('sha256').update(JsonUtils.Stringify(__rowString)).digest('base64')
                     break
                 case REMOVE_DUPLICATES_METHOD.IGNORE_CASE:
-                    __currentHash = JsonHelper.Stringify(__rowString).toLowerCase()
+                    __currentHash = JsonUtils.Stringify(__rowString).toLowerCase()
                     break
                 case REMOVE_DUPLICATES_METHOD.EXACT:
                 default:
-                    __currentHash = JsonHelper.Stringify(__rowString)
+                    __currentHash = JsonUtils.Stringify(__rowString)
                     break
             }
 

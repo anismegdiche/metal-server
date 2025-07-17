@@ -1,0 +1,54 @@
+
+import _ from 'lodash'
+import { IAiEngine } from '../base/IAiEngine'
+import { TensorFlowJs } from '../providers/TensorFlowJs'
+
+jest.spyOn(console, 'log').mockImplementation(() => { })
+jest.spyOn(console, 'warn').mockImplementation(() => { })
+jest.spyOn(console, 'error').mockImplementation(() => { })
+
+
+const IMG_GUITAR =
+	'https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg'
+
+describe('TensorFlowJs', () => {
+	// eslint-disable-next-line init-declarations
+	let tfjs: IAiEngine
+
+	beforeAll(async () => {
+		jest.clearAllMocks()
+		tfjs = new TensorFlowJs('image-classification', {
+			model: 'image-classify'
+		})
+		await tfjs.Init()
+	}, 300_000)
+
+	it('should initialize correctly', async () => {
+		expect(tfjs.AiEngineName).toBe('tensorflowjs')
+		expect(tfjs.InstanceName).toBe('image-classification')
+		expect(tfjs.Model).toBe('image-classify')
+		expect(tfjs.Options?.threshold).toBe(0.9)
+	}, 300_000)
+
+	it('should run image classification successfully', async () => {
+		const result: any = await tfjs.Run(IMG_GUITAR)
+		const resultWOProbability = {
+
+			class: _.map(result.class, obj => _.omit(obj, 'probability'))
+		}
+
+		expect(resultWOProbability).toEqual({
+			class: [
+				{
+					className: 'screw'
+				},
+				{
+					className: 'acoustic guitar'
+				},
+				{
+					className: 'electric guitar'
+				}
+			]
+		})
+	}, 300_000)
+})

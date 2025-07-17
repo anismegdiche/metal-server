@@ -1,6 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 
-import { Sandbox } from "../../server/Sandbox"
+import { Sandbox } from "../../modules/sandbox/Sandbox"
 import { TJson } from "../../types/TJson"
 import { PlaceHolder } from "../PlaceHolder"
 

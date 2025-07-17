@@ -1,4 +1,4 @@
-import { HttpErrorInternalServerError } from '../../server/HttpErrors'
+import { HttpErrorInternalServerError } from '../../modules/errors/HttpErrors'
 import { Assert } from '../Assert'
 
 

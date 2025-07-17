@@ -60,7 +60,6 @@ features:
     - title: Enterprise Storage Solutions
       details: |
         Expand your storage capabilities with support for multiple enterprise-grade storage providers:
-        <br>- SMB storage for on-premises environments
         <br>- Azure File Storage for cloud scalability
         <br>- Amazon S3 for global reach
         <br>- Azure DataLake Gen2 for big data analytics

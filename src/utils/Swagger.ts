@@ -1,15 +1,13 @@
 //
 //
 //
-//
-//
 import { Express, Response, Request, NextFunction } from 'express'
 import swaggerUi from 'swagger-ui-express'
 import * as Yaml from 'js-yaml'
 import * as Fs from 'fs'
 import * as OpenApiValidator from 'express-openapi-validator'
 //
-import { ROUTE } from "../lib/Const"
+import { ROUTE } from "../modules/core/@consts"
 import { TJson } from "../types/TJson"
 import { Logger } from "./Logger"
 // import { Package } from "./Package"

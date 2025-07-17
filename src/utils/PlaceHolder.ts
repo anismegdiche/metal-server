@@ -1,11 +1,9 @@
 //
 //
 //
-//
-//
-import { JsonHelper } from "../lib/JsonHelper"
-import { StringHelper } from "../lib/StringHelper"
-import { Sandbox } from "../server/Sandbox"
+import { JsonUtils } from "./JsonUtils"
+import { StringUtils } from "./StringUtils"
+import { Sandbox } from "../modules/sandbox/Sandbox"
 import { Logger } from "./Logger"
 import { TJson } from "../types/TJson"
 
@@ -25,7 +23,7 @@ export class PlaceHolder {
         // case no js code
         const _jsCodeString = (typeof jsCode === 'string')
             ? jsCode
-            : JsonHelper.Stringify(jsCode)
+            : JsonUtils.Stringify(jsCode)
 
         if (RX_JS_CODE.exec(_jsCodeString) === null)
             return jsCode
@@ -55,7 +53,7 @@ export class PlaceHolder {
                 const result = sandBox.Evaluate(_code)
                 if (result === undefined)
                     throw new Error(`PlaceHolder.EvaluateJsCodeString: Failed to evaluate code: ${_code}`)
-                return StringHelper.ToString(result)
+                return StringUtils.ToString(result)
             } catch (error: unknown) {
                 Logger.Error(error)
                 return _match // Preserve original placeholder if an error occurs

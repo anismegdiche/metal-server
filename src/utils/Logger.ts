@@ -1,16 +1,14 @@
 //
 //
 //
-//
-//
 import LogLevel from 'loglevel'
 import Prefix from 'loglevel-plugin-prefix'
 import morgan from "morgan"
 import { magenta, green, cyan, yellow, red, gray, whiteBright, bold } from 'colorette'
 import _ from "lodash"
 //
-import { SERVER } from '../lib/Const'
-import { DecoratorHelper } from "./DecoratorHelper"
+import { SERVER } from '../modules/core/@consts'
+import { DecoratorUtils } from "./DecoratorUtils"
 import { Stringify } from './JsonUtils/Stringify'
 
 
@@ -111,7 +109,7 @@ export class Logger {
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             const originalMethod = descriptor.value
             descriptor.value = function (...args: any[]) {
-                const _paramObject = DecoratorHelper.GetParameters(originalMethod, ...args)
+                const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args)
                 const _hide = typeof hide === 'boolean'
                     ? _.keys(_paramObject)
                     : hide

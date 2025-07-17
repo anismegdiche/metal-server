@@ -3,9 +3,10 @@
 //  Metal Server
 //
 //
-import { Server } from './server/Server'
+import { ServerCore } from './modules/core/ServerCore'
+import { ServerEndpoint } from './modules/core/ServerEndpoint'
 import { Logger } from './utils/Logger'
 
-Server.Init()
-    .then(Server.Start)
+ServerCore.Init()
+    .then(ServerEndpoint.Start)
     .catch(error => Logger.Error(error))

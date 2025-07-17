@@ -3,14 +3,12 @@
 //
 //
 //
-//
-//
 import _ from "lodash"
 //
-import { JsonHelper } from "../lib/JsonHelper"
+import { JsonUtils } from "./JsonUtils"
 import { Logger } from "./Logger"
 import { Synchronizer } from "./Synchronizer"
-import { DecoratorHelper } from "./DecoratorHelper"
+import { DecoratorUtils } from "./DecoratorUtils"
 
 
 //
@@ -34,14 +32,14 @@ export class SynchronizerManager {
             const originalMethod = descriptor.value
 
             descriptor.value = async function (...args: any[]) {
-                const _paramObject = DecoratorHelper.GetParameters(originalMethod, ...args)
+                const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args)
                 const _filteredParams = _.chain(_paramObject)
                     .omitBy(_.isNil || _.isEmpty)
 
                     .pick(pick ?? _.keys(_paramObject))
                     .value()
 
-                const signature = `${target.name ?? this.constructor.name}.${propertyKey}, ${JsonHelper.Stringify(_filteredParams)}`
+                const signature = `${target.name ?? this.constructor.name}.${propertyKey}, ${JsonUtils.Stringify(_filteredParams)}`
                 Logger.Debug(`${Logger.In} SynchronizerManager: Function signature = ${signature}`)
 
                 const result = await SynchronizerManager.Execute(signature, originalMethod.bind(this, ...args))

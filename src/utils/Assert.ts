@@ -4,7 +4,7 @@
 //
 //
 import assert from "assert";
-import { HttpErrorInternalServerError } from "../server/HttpErrors";
+import { HttpErrorInternalServerError } from "../modules/errors/HttpErrors";
 
 
 //
