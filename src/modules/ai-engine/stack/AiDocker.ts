@@ -490,9 +490,14 @@ export class AiDocker {
 
     static async AutoScale() {
         for (const service of AiDocker.Instances.values()) {
+
             const containers = await AiDocker.ListActiveContainers(service)
 
+            if (containers.length === 0)
+                continue
+
             const avgCpu = await AiDocker.GetAverageCpuUsage(service)
+
             Logger.Debug(`AutoScale: ${service.InstanceName ?? service.Name}, Containers: ${containers.length}, Avg CPU: ${avgCpu.toFixed(0)}%`)
 
             if (avgCpu > AiDocker.ServiceInstance.CpuScaleUp && containers.length < AiDocker.ServiceInstance.MaxInstances) {
