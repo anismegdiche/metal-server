@@ -5,6 +5,7 @@ import axios from 'axios'
 import _ from "lodash"
 //
 import { Assert } from '../../../utils/Assert'
+import { LangUtils } from '../../../utils/LangUtils'
 import { Logger } from '../../../utils/Logger'
 import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from '../../../utils/Utils'
@@ -17,8 +18,17 @@ import { LANG_ISO } from "../consts/LANG"
 import { TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO, TEXT_TASK } from "../consts/TEXT"
 import { AiDocker, TAiDockerService } from '../stack/AiDocker'
 import { TStepRunAiTextEmotionDetectionParams, TStepRunAiTextFillMaskParams, TStepRunAiTextKeywordExtractionParams, TStepRunAiTextParams, TStepRunAiTextParaphraseDetectionParams, TStepRunAiTextQuestionAnsweringParams, TStepRunAiTextSentenceSimilarityParams, TStepRunAiTextSentimentAnalysisParams, TStepRunAiTextSummarizationParams, TStepRunAiTextTextGenerationParams, TStepRunAiTextTokenClassificationParams, TStepRunAiTextToxicityDetectionParams, TStepRunAiTextTranslationParams, TStepRunAiTextZeroShotClassificationParams } from '../types/TStepRunAiTextParam'
-import { LangUtils } from '../../../utils/LangUtils'
 
+
+//
+const TEXT_DEFAULT_HEADERS = {
+    headers: {
+        'Content-Type': 'application/json'
+    }
+}
+
+
+//
 export class Text extends absAiEngine implements IAiEngine {
 
     AiEngineName = AI_ENGINE.TEXT
@@ -122,26 +132,18 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data,
-                    params
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result[0];
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Translation request failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Translation request failed: ${error.response?.data?.message ?? error.message}`);
+            })
+        return response.data.result[0];
     }
 
     @Logger.LogFunction(true)
@@ -158,26 +160,19 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data,
-                    params
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result[0];
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Emotion detection failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Emotion detection failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result[0];
     }
 
     @Logger.LogFunction(true)
@@ -194,26 +189,19 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data,
-                    params
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result[0];
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Fill mask failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Fill mask failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result[0];
     }
 
     @Logger.LogFunction(true)
@@ -230,26 +218,19 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data,
-                    params
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result;
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Keyword extraction failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Keyword extraction failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result;
     }
 
     @Logger.LogFunction(true)
@@ -265,30 +246,23 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            const result = response.data.result[0]
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Language detection failed: ${error.response?.data?.message ?? error.message}`);
+            })
 
-            return {
-                label: LangUtils.Convert(result.label, TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO),
-                score: result.score
-            };
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Language detection failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const result = response.data.result[0]
+
+        return {
+            label: LangUtils.Convert(result.label, TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO),
+            score: result.score
+        };
     }
 
     @Logger.LogFunction(true)
@@ -307,28 +281,21 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: {
-                        source_sentence: data,
-                        target_sentence: params.target
-                    }
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: {
+                    source_sentence: data,
+                    target_sentence: params.target
                 }
-            );
-            return response.data.result;
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Paraphrase detection failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Paraphrase detection failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result;
     }
 
     @Logger.LogFunction(true)
@@ -347,28 +314,21 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: {
-                        question: data,
-                        context: params.context
-                    }
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: {
+                    question: data,
+                    context: params.context
                 }
-            );
-            return response.data.result[0];
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Question answering failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Question answering failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result[0];
     }
 
     @Logger.LogFunction(true)
@@ -387,28 +347,21 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: {
-                        source_sentence: data,
-                        sentences: params.sentences
-                    }
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: {
+                    source_sentence: data,
+                    sentences: params.sentences
                 }
-            );
-            return response.data.result;
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Sentence similarity failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Sentence similarity failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result;
     }
 
     @Logger.LogFunction(true)
@@ -425,26 +378,19 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data,
-                    params
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result;
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Sentiment analysis failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Sentiment analysis failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result;
     }
 
     @Logger.LogFunction(true)
@@ -464,26 +410,19 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data,
-                    params
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result[0];
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Summarization failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Summarization failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result[0];
     }
 
     @Logger.LogFunction(true)
@@ -499,25 +438,18 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result[0];
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Text2Text generation failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Text2Text generation failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result[0];
     }
 
     @Logger.LogFunction(true)
@@ -538,26 +470,19 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data,
-                    params
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result[0];
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Text generation failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Text generation failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result[0];
     }
 
     @Logger.LogFunction(true)
@@ -575,26 +500,19 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data,
-                    params
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result;
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Token classification failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Token classification failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result;
     }
 
     @Logger.LogFunction(true)
@@ -611,26 +529,19 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data,
-                    params
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result[0];
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Toxicity detection failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Toxicity detection failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result[0];
     }
 
     @Logger.LogFunction(true)
@@ -649,25 +560,18 @@ export class Text extends absAiEngine implements IAiEngine {
             'run'
         );
 
-        try {
-            const response = await axios.post(
-                _url,
-                {
-                    input_data: data,
-                    params
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            return response.data.result;
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                throw new Error(`Zero-shot classification failed: ${error.response?.data?.message ?? error.message}`);
-            }
-            throw error;
-        }
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Zero-shot classification failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result;
     }
 }
