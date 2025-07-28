@@ -27,13 +27,10 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
             this.InstanceName,
             'health'
         )
-        let _isHealthy = false
-        try {
-            const response = await axios.get(_url)
-            _isHealthy = response.status === 200
-        } catch {
-            _isHealthy = false
-        }
+
+        const _isHealthy = await axios.get(_url)
+            .then(response => response.status === 200)
+            .catch(() => false)
 
         Logger.Debug(`Health check for ${this.InstanceName} at ${_url}: ${_isHealthy
             ? 'OK 🟢'
