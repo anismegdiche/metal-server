@@ -36,8 +36,8 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
         }
 
         Logger.Debug(`Health check for ${this.InstanceName} at ${_url}: ${_isHealthy
-            ? 'OK'
-            : 'KO'}`)
+            ? 'OK 🟢'
+            : 'KO 🔴'}`)
 
         return _isHealthy
     }
