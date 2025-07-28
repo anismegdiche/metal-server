@@ -103,8 +103,7 @@ export class AiDocker {
         },
         InternalUrl: '/text-feature-extraction'
     }
-    
-    
+
     static TEXT_FILL_MASK: TAiDockerService = {
         Name: 'text_fill_mask',
         Port: 5000,
@@ -170,7 +169,7 @@ export class AiDocker {
         },
         InternalUrl: '/text-summarization'
     }
-    
+
     static TEXT_TEXT_GENERATION: TAiDockerService = {
         Name: 'text_text_generation',
         Port: 5000,
@@ -374,13 +373,25 @@ export class AiDocker {
                     }
                 ) as NodeJS.ReadableStream
 
+                let _streamData: string = ""
+
                 stream.on('data', (data: Buffer) => {
-                    const _data = data.toString()
-                    const aLog = AiDocker.#ConvertStreamToLog(_data)
-                    aLog.forEach((item) => Logger.Debug(`(🔨) Building '${service.ImageName}' image... ${item}`))
+                    const __data = data.toString()
+                    _streamData = _streamData + __data
+
+                    if (__data.endsWith('}')) {
+                        const ___aLog   = AiDocker.#ConvertStreamToLog(_streamData)
+                        ___aLog.forEach((item) => Logger.Debug(`(🔨) Building '${service.ImageName}' image... ${item}`))
+                        _streamData = ""
+                    }
                 })
 
                 stream.on('end', () => {
+                    if (_streamData.length > 0) {
+                        const ___aLog   = AiDocker.#ConvertStreamToLog(_streamData)
+                        ___aLog.forEach((item) => Logger.Debug(`(🔨) Building '${service.ImageName}' image... ${item}`))
+                        _streamData = ""
+                    }
                     Logger.Debug(`(🔨) Built '${service.ImageName}' image`)
                     resolve()
                 })
@@ -498,14 +509,14 @@ export class AiDocker {
 
             const avgCpu = await AiDocker.GetAverageCpuUsage(service)
 
-            Logger.Debug(`AutoScale: ${service.InstanceName ?? service.Name}, Containers: ${containers.length}, Avg CPU: ${avgCpu.toFixed(0)}%`)
+            Logger.Debug(`AutoScale: '${service.InstanceName ?? service.Name}', Containers: ${containers.length}, Avg CPU: ${avgCpu.toFixed(0)}%`)
 
             if (avgCpu > AiDocker.ServiceInstance.CpuScaleUp && containers.length < AiDocker.ServiceInstance.MaxInstances) {
                 await AiDocker.ScaleUp(service)
             } else if (avgCpu < AiDocker.ServiceInstance.CpuScaleDown && containers.length > AiDocker.ServiceInstance.MinInstances) {
                 await AiDocker.ScaleDown(service)
             } else {
-                Logger.Debug(`No scaling action needed for ${service.InstanceName ?? service.Name}`)
+                Logger.Debug(`AutoScale: No scaling needed for '${service.InstanceName ?? service.Name}'`)
             }
         }
     }
@@ -513,29 +524,29 @@ export class AiDocker {
     static async ScaleUp(service: TAiDockerService) {
         const containers = await AiDocker.ListActiveContainers(service)
         if (containers.length >= AiDocker.ServiceInstance.MaxInstances) {
-            Logger.Debug(`Max ${service.InstanceName ?? service.Name} containers reached: ${AiDocker.ServiceInstance.MaxInstances}`)
+            Logger.Debug(`Max '${service.InstanceName ?? service.Name}' containers reached: ${AiDocker.ServiceInstance.MaxInstances}`)
             return
         }
 
-        Logger.Debug(`Scaling up ${service.InstanceName ?? service.Name} service...`)
+        Logger.Debug(`Scaling up '${service.InstanceName ?? service.Name}' service...`)
         await AiDocker.CreateServiceContainer(service)
     }
 
     static async ScaleDown(service: TAiDockerService) {
         const containers = await AiDocker.ListActiveContainers(service)
         if (containers.length <= AiDocker.ServiceInstance.MinInstances) {
-            Logger.Debug(`Min ${service.InstanceName ?? service.Name} containers reached: ${AiDocker.ServiceInstance.MinInstances}`)
+            Logger.Debug(`Min '${service.InstanceName ?? service.Name}' containers reached: ${AiDocker.ServiceInstance.MinInstances}`)
             return
         }
 
-        Logger.Debug(`Scaling down ${service.InstanceName ?? service.Name} service...`)
+        Logger.Debug(`Scaling down '${service.InstanceName ?? service.Name}' service...`)
 
         // Remove oldest scaled container
         const toRemove = containers[0]
         const container = AiDocker.docker.getContainer(toRemove.Id)
         await container.stop()
         await container.remove()
-        Logger.Debug(`Removed ${service.InstanceName ?? service.Name} container: ${toRemove.Names[0]}`)
+        Logger.Debug(`Removed '${service.InstanceName ?? service.Name}' container: ${toRemove.Names[0]}`)
     }
 
     static async GetAverageCpuUsage(service: TAiDockerService): Promise<number> {
@@ -584,52 +595,52 @@ export class AiDocker {
         if (!service.InternalUrl) {
             return
         }
-    
+
         const internalUrl = StringUtils.Url(
             'http://localhost:' + service.Port,
             service.InternalUrl,
             '/health'
         )
-    
+
         const containers = await AiDocker.ListActiveContainers(service)
         if (containers.length === 0) {
             return
         }
-    
+
         for (const container of containers) {
             const containerId = container.Id;
-    
+
             while (true) {
                 try {
                     // Get container instance
                     const container = AiDocker.docker.getContainer(containerId);
-    
+
                     // First, let's try a simpler approach - just test if curl can reach the URL
                     const execOptions: Docker.ExecCreateOptions = {
                         Cmd: ['sh', '-c', `curl -s -w '%{http_code}' -o /dev/null ${internalUrl} || echo "CURL_FAILED"`],
                         AttachStdout: true,
                         AttachStderr: true
                     };
-    
+
                     const execInstance = await container.exec(execOptions);
-                    
+
                     // Try using inspect to get the result after execution
                     const streamPromise = execInstance.start({ hijack: false, stdin: false });
                     const stream = await streamPromise;
-                    
+
                     let output = '';
-                    
+
                     // Handle the stream data
                     stream.on('data', (chunk: Buffer) => {
                         output += chunk.toString();
                     });
-                    
+
                     // Wait for completion
                     await new Promise((resolve, reject) => {
                         stream.on('end', resolve);
                         stream.on('error', reject);
                     });
-    
+
                     // Clean up the output - remove Docker stream headers if present
                     let cleanOutput = output;
                     if (output.includes('200') || output.includes('404') || output.includes('500')) {
@@ -639,16 +650,16 @@ export class AiDocker {
                             cleanOutput = statusMatch[0];
                         }
                     }
-                    
+
                     if (cleanOutput.includes('CURL_FAILED')) {
                         Logger.Warn(`curl command failed in container ${containerId}`);
                         await new Promise(resolve => setTimeout(resolve, interval)); // wait before retry
                         continue;
                     }
-    
+
                     const statusCode = parseInt(cleanOutput.trim());
                     Logger.Debug(`Parsed status code: ${statusCode}`);
-                    
+
                     if (statusCode === 200) {
                         Logger.Debug(`Success: ${internalUrl} is available in container ${containerId}`);
                         break;
@@ -657,7 +668,7 @@ export class AiDocker {
                     } else {
                         Logger.Debug(`Invalid status code received: ${statusCode}, raw: '${cleanOutput}'`);
                     }
-                    
+
                 } catch (error) {
                     Logger.Debug(`Error testing service in container ${containerId}: ${error instanceof Error ? error.message : String(error)}`);
                 }
