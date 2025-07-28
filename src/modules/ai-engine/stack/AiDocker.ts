@@ -573,7 +573,7 @@ export class AiDocker {
                             || (second.cpu_stats.cpu_usage.percpu_usage?.length ?? 1)
                         return (cpuDelta / 1e9 / elapsedSeconds) * 100 / cpuCores
                     } catch (error) {
-                        Logger.Error(`Error getting CPU stats for container ${containerInfo.Id}: ${error instanceof Error ? error.message : String(error)}`)
+                        Logger.Error(`Error getting CPU stats for container '${service.Name}/${containerInfo.Id}': ${error instanceof Error ? error.message : String(error)}`)
                         return NaN
                     }
                 })
@@ -587,7 +587,7 @@ export class AiDocker {
             return totalCpuUsage / validUsages.length
         } catch (error) {
             Logger.Error(`Error getting average CPU usage for service ${service.Name}: ${error instanceof Error ? error.message : String(error)}`)
-            throw error
+            return 0
         }
     }
 
