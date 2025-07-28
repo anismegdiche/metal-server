@@ -329,14 +329,14 @@ export class AiDocker {
                             Logger.Error(`Error in pull progress for ${image}: ${err.message}`)
                             return reject(err)
                         }
-                        Logger.Debug(` - ${image} pull finished`)
+                        Logger.Debug(`(📦) Pulling ${image}...`)
                         resolve()
                     },
                     (event: any) => {
                         if (event.status === 'Downloading') {
-                            Logger.Debug(` - ${image} pull progress: ${event.progress}`)
+                            Logger.Debug(`(📦) Pulling ${image}... ${event.progress}`)
                         } else {
-                            Logger.Debug(` - ${image} pull status: ${event.status}`)
+                            Logger.Debug(`(📦) Pulling ${image}... ${event.status}`)
                         }
                     }
                 )
@@ -377,20 +377,20 @@ export class AiDocker {
                 stream.on('data', (data: Buffer) => {
                     const _data = data.toString()
                     const aLog = AiDocker.#ConvertStreamToLog(_data)
-                    aLog.forEach((item) => Logger.Debug(`BuildServiceImage: Building image ${service.ImageName} >>> ${item}`))
+                    aLog.forEach((item) => Logger.Debug(`(🔨) Building '${service.ImageName}' image... ${item}`))
                 })
 
                 stream.on('end', () => {
-                    Logger.Debug(`BuildServiceImage: Built ${service.ImageName} image`)
+                    Logger.Debug(`(🔨) Built '${service.ImageName}' image`)
                     resolve()
                 })
 
                 stream.on('error', (err: Error) => {
-                    Logger.Error(`BuildServiceImage: Error building ${service.ImageName} image: ${err}`)
+                    Logger.Error(`(🔨) ❌ Error building '${service.ImageName}' image: ${err}`)
                     reject(err)
                 })
             } catch (err) {
-                Logger.Error(`BuildServiceImage: Failed to building ${service.ImageName} image: ${err}`)
+                Logger.Error(`(🔨) ❌ Failed to build '${service.ImageName}' image: ${err}`)
                 reject(err)
             }
         })
