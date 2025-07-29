@@ -4,19 +4,20 @@
 import axios from 'axios'
 import _ from "lodash"
 //
+import { Assert } from '../../../utils/Assert'
+import { LangUtils } from '../../../utils/LangUtils'
 import { Logger } from '../../../utils/Logger'
 import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from '../../../utils/Utils'
 import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
 import { AI_ENGINE } from '../@consts'
 import { TAiRunArguments, TAiRunOutput, TConfigAiEngine } from '../@types'
+import { AiDocker } from '../AiDocker'
 import { absAiEngine } from '../base/absAiEngine'
 import { IAiEngine } from '../base/IAiEngine'
 import { OCR_LANG, OCR_LANG_ISO, OCR_TASK } from "../consts/OCR"
-import { AiDocker } from '../stack/AiDocker'
+import { OcrDockerService as SERVICE_OCR } from '../docker-services/OcrDockerService'
 import { TStepRunAiOcrParams } from "../types/TStepRunAiOcrParams"
-import { LangUtils } from '../../../utils/LangUtils'
-import { Assert } from '../../../utils/Assert'
 
 export class Ocr extends absAiEngine implements IAiEngine {
 
@@ -51,7 +52,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
 
         await AiDocker.StartService({
             InstanceName: aiName,
-            ...AiDocker.OCR
+            ...SERVICE_OCR
         })
         Logger.Debug(`Successfully initialized Ocr instance: ${this.InstanceName}`)
     }

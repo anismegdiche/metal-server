@@ -9,12 +9,12 @@ import { ConfigManager } from "../core/ConfigManager";
 import { HttpErrorInternalServerError } from "../errors/HttpErrors";
 import { AI_ENGINE } from "./@consts";
 import { TConfigAiEngine } from "./@types";
+import { AiDocker } from "./AiDocker";
 import { IAiEngine } from "./base/IAiEngine";
 import { OCR_TASK } from "./consts/OCR";
 import { TEXT_TASK } from "./consts/TEXT";
 import { Ocr } from "./engine/Ocr";
 import { Text } from "./engine/Text";
-import { AiDocker } from "./stack/AiDocker";
 
 
 //
