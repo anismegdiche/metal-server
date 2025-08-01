@@ -1,5 +1,9 @@
 services:
 
+  #
+  # Text
+  #
+
   text-emotion-detection:
     build: ./services/text/emotion-detection
     command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
@@ -127,6 +131,11 @@ services:
       - "5116:5000"
     volumes:
       - ./services/text/zero-shot-classification:/app
+
+  #
+  # Ocr
+  #
+    
   ocr:
     build: ./services/ocr
     command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
