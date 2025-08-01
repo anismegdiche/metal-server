@@ -1,24 +1,30 @@
-# @name huggingface
-# Base URL
-@apiUrl = http://localhost:5002/huggingface/image
 
+# Base URL
+@apiUrl = http://localhost
+
+# @name image-apis
 # Common variables
 @car1 = car1.jpg
-@photo1 = photo2.jpeg
-@audioFile = harvard.wav 
-#@audioFile = angry-man.wav 
-@videoFile = globe.mp4
+@photo1 = photo1.jpeg
+@photo2 = photo2.jpeg
+@city1 = city1.jpg
 
-### Health Check
-GET {{apiUrl}}/health
 
-### List All Tasks
-GET {{apiUrl}}/tasks
+# //XXX to remove from catalogue
+# ### @name depth-estimation
+# POST {{apiUrl}}:5301/image-depth-estimation/run
+# Content-Type: multipart/form-data; boundary=image
 
-### 2. IMAGE PIPELINES
+# --image
+# Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+# Content-Type: image/jpeg
+
+# < ../data/pic/{{photo1}}
+# --image--
+
 
 ### @name image-classification
-POST {{apiUrl}}/image-classification
+POST {{apiUrl}}:5302/image-image-classification/run
 Content-Type: multipart/form-data; boundary=image
 
 --image
@@ -26,6 +32,212 @@ Content-Disposition: form-data; name="file"; filename="{{car1}}"
 Content-Type: image/jpeg
 
 < ../data/pic/{{car1}}
+--image--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "label": "sports car, sport car",
+#       "score": 0.9760120511054993
+#     },
+#     {
+#       "label": "car wheel",
+#       "score": 0.0069635119289159775
+#     },
+#     {
+#       "label": "racer, race car, racing car",
+#       "score": 0.005621959920972586
+#     },
+#     {
+#       "label": "convertible",
+#       "score": 0.0052965302020311356
+#     },
+#     {
+#       "label": "grille, radiator grille",
+#       "score": 0.004549334291368723
+#     }
+#   ]
+# }
+
+
+### @name image-segmentation
+POST {{apiUrl}}:5303/image-image-segmentation/run
+Content-Type: multipart/form-data; boundary=image
+
+--image
+Content-Disposition: form-data; name="file"; filename="{{city1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{city1}}
+--image--
+
+# Response
+# {
+#   "masks": [
+#     {
+#       "score": null,
+#       "label": "sidewalk",
+#       "mask": "<base64>"
+#     },
+#     {
+#       "score": null,
+#       "label": "person",
+#       "mask": "<base64>"
+#     },
+#     {
+#       "score": null,
+#       "label": "earth",
+#       "mask": "<base64>"
+#     },
+#     {
+#       "score": null,
+#       "label": "path",
+#       "mask": "<base64>"
+#     },
+#     {
+#       "score": null,
+#       "label": "streetlight",
+#       "mask": "<base64>"
+#     }
+#   ],
+#   "model": "nvidia/segformer-b0-finetuned-ade-512-512"
+# }
+
+### @name object-detection
+POST {{apiUrl}}:5305/image-object-detection/run
+Content-Type: multipart/form-data; boundary=image
+
+--image
+Content-Disposition: form-data; name="file"; filename="{{city1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{city1}}
+--image--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "score": 0.9995905756950378,
+#       "label": "person",
+#       "box": {
+#         "xmin": 2243,
+#         "ymin": 761,
+#         "xmax": 2529,
+#         "ymax": 1656
+#       }
+#     },
+#     {
+#       "score": 0.9221118092536926,
+#       "label": "sports ball",
+#       "box": {
+#         "xmin": 677,
+#         "ymin": 636,
+#         "xmax": 738,
+#         "ymax": 699
+#       }
+#     },
+#     {
+#       "score": 0.9524379968643188,
+#       "label": "sports ball",
+#       "box": {
+#         "xmin": 928,
+#         "ymin": 581,
+#         "xmax": 999,
+#         "ymax": 661
+#       }
+#     },
+#     {
+#       "score": 0.9995604157447815,
+#       "label": "person",
+#       "box": {
+#         "xmin": 608,
+#         "ymin": 856,
+#         "xmax": 1017,
+#         "ymax": 1479
+#       }
+#     },
+#     {
+#       "score": 0.9947951436042786,
+#       "label": "person",
+#       "box": {
+#         "xmin": 1287,
+#         "ymin": 622,
+#         "xmax": 1699,
+#         "ymax": 1832
+#       }
+#     },
+#     {
+#       "score": 0.731742799282074,
+#       "label": "sports ball",
+#       "box": {
+#         "xmin": 605,
+#         "ymin": 632,
+#         "xmax": 668,
+#         "ymax": 704
+#       }
+#     },
+#     {
+#       "score": 0.5397851467132568,
+#       "label": "handbag",
+#       "box": {
+#         "xmin": 2407,
+#         "ymin": 1134,
+#         "xmax": 2465,
+#         "ymax": 1284
+#       }
+#     },
+#     {
+#       "score": 0.9984428286552429,
+#       "label": "person",
+#       "box": {
+#         "xmin": 1720,
+#         "ymin": 826,
+#         "xmax": 1926,
+#         "ymax": 1442
+#       }
+#     }
+#   ]
+# }
+
+### @name image-to-text
+POST {{apiUrl}}:5304/image-image-to-text/run
+Content-Type: multipart/form-data; boundary=image
+
+--image
+Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{photo1}}
+--image--
+
+# Response
+# {
+#   "result": [
+#     {
+#       "generated_text": "a person is holding a laptop computer and a camera "
+#     }
+#   ]
+# }
+
+
+### @name visual-question-answering
+POST {{apiUrl}}:5306/image-visual-question-answering/run
+Content-Type: multipart/form-data; boundary=image
+
+--image
+Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+Content-Type: image/jpeg
+
+< ../data/pic/{{photo1}}
+
+--image
+Content-Disposition: form-data; name="request"
+
+{
+  "question": "What is in this image?"
+}
 --image--
 
 # Response
@@ -53,223 +265,3 @@ Content-Type: image/jpeg
 #     }
 #   ]
 # }
-
-### @name object-detection
-POST {{apiUrl}}/object-detection
-Content-Type: multipart/form-data; boundary=image
-
---image
-Content-Disposition: form-data; name="file"; filename="{{photo1}}"
-Content-Type: image/jpeg
-
-< ../data/pic/{{photo1}}
---image--
-
-# Response
-# {
-#   "result": [
-#     {
-#       "score": 0.5985567569732666,
-#       "label": "person",
-#       "box": {
-#         "xmin": 586,
-#         "ymin": 605,
-#         "xmax": 595,
-#         "ymax": 630
-#       }
-#     },
-#     {
-#       "score": 0.7274488210678101,
-#       "label": "person",
-#       "box": {
-#         "xmin": 579,
-#         "ymin": 605,
-#         "xmax": 588,
-#         "ymax": 631
-#       }
-#     },
-#     {
-#       "score": 0.9967041611671448,
-#       "label": "person",
-#       "box": {
-#         "xmin": 685,
-#         "ymin": 567,
-#         "xmax": 715,
-#         "ymax": 639
-#       }
-#     },
-#     {
-#       "score": 0.8523221015930176,
-#       "label": "person",
-#       "box": {
-#         "xmin": 618,
-#         "ymin": 599,
-#         "xmax": 633,
-#         "ymax": 639
-#       }
-#     },
-#     {
-#       "score": 0.8438708782196045,
-#       "label": "person",
-#       "box": {
-#         "xmin": 423,
-#         "ymin": 607,
-#         "xmax": 431,
-#         "ymax": 621
-#       }
-#     },
-#     {
-#       "score": 0.8876106142997742,
-#       "label": "person",
-#       "box": {
-#         "xmin": 599,
-#         "ymin": 608,
-#         "xmax": 609,
-#         "ymax": 636
-#       }
-#     },
-#     {
-#       "score": 0.8845556378364563,
-#       "label": "person",
-#       "box": {
-#         "xmin": 258,
-#         "ymin": 588,
-#         "xmax": 283,
-#         "ymax": 616
-#       }
-#     },
-#     {
-#       "score": 0.8956975340843201,
-#       "label": "person",
-#       "box": {
-#         "xmin": 593,
-#         "ymin": 607,
-#         "xmax": 602,
-#         "ymax": 635
-#       }
-#     },
-#     {
-#       "score": 0.5499304533004761,
-#       "label": "person",
-#       "box": {
-#         "xmin": 582,
-#         "ymin": 605,
-#         "xmax": 590,
-#         "ymax": 630
-#       }
-#     },
-#     {
-#       "score": 0.6102403998374939,
-#       "label": "person",
-#       "box": {
-#         "xmin": 625,
-#         "ymin": 601,
-#         "xmax": 640,
-#         "ymax": 639
-#       }
-#     },
-#     {
-#       "score": 0.5102829933166504,
-#       "label": "person",
-#       "box": {
-#         "xmin": 620,
-#         "ymin": 607,
-#         "xmax": 632,
-#         "ymax": 638
-#       }
-#     },
-#     {
-#       "score": 0.986751914024353,
-#       "label": "person",
-#       "box": {
-#         "xmin": 788,
-#         "ymin": 600,
-#         "xmax": 810,
-#         "ymax": 639
-#       }
-#     },
-#     {
-#       "score": 0.8868704438209534,
-#       "label": "person",
-#       "box": {
-#         "xmin": 587,
-#         "ymin": 607,
-#         "xmax": 596,
-#         "ymax": 634
-#       }
-#     },
-#     {
-#       "score": 0.992962658405304,
-#       "label": "person",
-#       "box": {
-#         "xmin": 618,
-#         "ymin": 585,
-#         "xmax": 638,
-#         "ymax": 639
-#       }
-#     },
-#     {
-#       "score": 0.9931454658508301,
-#       "label": "person",
-#       "box": {
-#         "xmin": 636,
-#         "ymin": 579,
-#         "xmax": 662,
-#         "ymax": 639
-#       }
-#     },
-#     {
-#       "score": 0.8589348793029785,
-#       "label": "person",
-#       "box": {
-#         "xmin": 599,
-#         "ymin": 607,
-#         "xmax": 609,
-#         "ymax": 635
-#       }
-#     },
-#     {
-#       "score": 0.9008470773696899,
-#       "label": "person",
-#       "box": {
-#         "xmin": 606,
-#         "ymin": 607,
-#         "xmax": 617,
-#         "ymax": 637
-#       }
-#     },
-#     {
-#       "score": 0.5793288946151733,
-#       "label": "person",
-#       "box": {
-#         "xmin": 593,
-#         "ymin": 608,
-#         "xmax": 602,
-#         "ymax": 634
-#       }
-#     }
-#   ]
-# }
-
-# ### @name depth-estimation
-# POST {{baseUrl}}/image/depth-estimation
-# Content-Type: multipart/form-data; boundary=image
-
-# --image
-# Content-Disposition: form-data; name="file"; filename="{{photo1}}"
-# Content-Type: image/jpeg
-
-# < ../data/pic/{{photo1}}
-# --image--
-
-# ### @name image-to-image
-# POST {{baseUrl}}/image/image-to-image
-# Content-Type: multipart/form-data; boundary=image
-
-# --image
-# Content-Disposition: form-data; name="file"; filename="{{photo1}}"
-# Content-Type: image/jpeg
-
-# < ../data/pic/{{photo1}}
-# --image--
-

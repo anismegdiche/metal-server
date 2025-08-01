@@ -143,6 +143,74 @@ services:
       - "5201:5000"
     volumes:
       - ./services/ocr:/app
+
+  #
+  # Image
+  #
+
+  # image-depth-estimation:
+  #   build: ./services/image/depth-estimation
+  #   command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+  #   ports:
+  #     - "5301:5000"
+  #   volumes:
+  #     - ./services/image/depth-estimation:/app
+
+  image-image-classification:
+    build: ./services/image/image-classification
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5302:5000"
+    volumes:
+      - ./services/image/image-classification:/app
+
+  image-image-segmentation:
+    build: ./services/image/image-segmentation
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5303:5000"
+    volumes:
+      - ./services/image/image-segmentation:/app
+
+  image-image-to-text:
+    build: ./services/image/image-to-text
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5304:5000"
+    volumes:
+      - ./services/image/image-to-text:/app
+
+  image-object-detection:
+    build: ./services/image/object-detection
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5305:5000"
+    volumes:
+      - ./services/image/object-detection:/app
+
+  image-visual-question-answering:
+    build: ./services/image/visual-question-answering
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5306:5000"
+    volumes:
+      - ./services/image/visual-question-answering:/app
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #
 #
