@@ -4,10 +4,10 @@ HuggingFace Visual Question Answering Service
 This module provides a FastAPI-based service for running HuggingFace visual question answering.
 """
 
-from fastapi import FastAPI, HTTPException, status, APIRouter, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, status, APIRouter
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, Any, Union, List, Optional
 import logging
 from transformers import pipeline
@@ -16,6 +16,8 @@ import io
 import json
 import torch
 import numpy as np
+import base64
+from io import BytesIO
 
 logging.basicConfig(
     level=logging.INFO,
@@ -46,13 +48,19 @@ class VisualQuestionAnsweringRequest(BaseModel):
     """Request model for visual question answering.
     
     Attributes:
-        question: The question to ask about the image
+        input_data: Base64-encoded image data (required)
+        params: Dictionary containing the question and optional parameters
         model: Optional model name to override the default model
-        parameters: Optional dictionary of task-specific parameters
     """
-    question: str
+    input_data: str = Field(
+        ...,
+        description="Base64-encoded image data. Must be a valid image format (JPEG, PNG, etc.)"
+    )
+    params: Dict[str, Any] = Field(
+        ...,
+        description="Parameters including the question to ask about the image"
+    )
     model: Optional[str] = None
-    parameters: Optional[Dict[str, Any]] = None
 
 class VisualQuestionAnsweringResponse(BaseModel):
     """Response model for visual question answering results.
@@ -88,37 +96,34 @@ async def health() -> str:
 
 @router.post("/run", response_model=VisualQuestionAnsweringResponse)
 async def run(
-    file: UploadFile = File(..., description="Image file to process"),
-    request: str = Form(..., description="JSON string containing question and parameters")
+    request: VisualQuestionAnsweringRequest
 ) -> VisualQuestionAnsweringResponse:
-    """Run visual question answering on the uploaded image.
+    """Run visual question answering on the provided image data.
     
     Args:
-        file: The image file to process
-        request: JSON string containing the question and optional parameters
+        request: Request containing base64-encoded image data and question parameters
     """
     try:
-        # Parse the request JSON
-        request_data = json.loads(request)
-        question = request_data.get("question")
+        # Validate the question
+        question = request.params.get("question")
         if not question:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Question is required in the request"
+                detail="Question is required in the request parameters"
             )
             
-        # Read and validate the image
-        contents = await file.read()
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        # Decode base64 image
+        image_data = base64.b64decode(request.input_data)
+        image = Image.open(BytesIO(image_data)).convert("RGB")
         
-        # Load the pipeline
+        # Get the pipeline
         qa_pipeline = load_pipeline()
         
         # Run the visual question answering
         result = qa_pipeline(
             image=image,
             question=question,
-            **(request_data.get("parameters") or {})
+            **(request.params.get("parameters") or {})
         )
         
         # Convert any non-serializable types
@@ -126,11 +131,7 @@ async def run(
         
         return VisualQuestionAnsweringResponse(result=result)
         
-    except json.JSONDecodeError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid JSON in request"
-        )
+
     except Exception as e:
         logger.error(f"Error processing visual question answering: {str(e)}")
         raise HTTPException(

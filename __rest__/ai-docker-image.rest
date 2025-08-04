@@ -16,7 +16,7 @@
 # Content-Type: multipart/form-data; boundary=image
 
 # --image
-# Content-Disposition: form-data; name="file"; filename="{{photo1}}"
+# Content-Disposition: form-data; name="input_data"; filename="{{photo1}}"
 # Content-Type: image/jpeg
 
 # < ../data/pic/{{photo1}}
@@ -25,37 +25,37 @@
 
 ### @name image-classification
 POST {{apiUrl}}:5302/image-image-classification/run
-Content-Type: multipart/form-data; boundary=image
+Content-Type: application/json
 
---image
-Content-Disposition: form-data; name="file"; filename="{{car1}}"
-Content-Type: image/jpeg
+< ../data/b64/photo1.jpeg.b64
 
-< ../data/pic/{{car1}}
---image--
+# Request
+# {
+#   "input_data": "<base64>"
+# }
 
 # Response
 # {
 #   "result": [
 #     {
-#       "label": "sports car, sport car",
-#       "score": 0.9760120511054993
+#       "label": "reflex camera",
+#       "score": 0.20496124029159546
 #     },
 #     {
-#       "label": "car wheel",
-#       "score": 0.0069635119289159775
+#       "label": "notebook, notebook computer",
+#       "score": 0.12176289409399033
 #     },
 #     {
-#       "label": "racer, race car, racing car",
-#       "score": 0.005621959920972586
+#       "label": "desktop computer",
+#       "score": 0.10481187701225281
 #     },
 #     {
-#       "label": "convertible",
-#       "score": 0.0052965302020311356
+#       "label": "Polaroid camera, Polaroid Land camera",
+#       "score": 0.055222440510988235
 #     },
 #     {
-#       "label": "grille, radiator grille",
-#       "score": 0.004549334291368723
+#       "label": "screen, CRT screen",
+#       "score": 0.0461791455745697
 #     }
 #   ]
 # }
@@ -63,154 +63,68 @@ Content-Type: image/jpeg
 
 ### @name image-segmentation
 POST {{apiUrl}}:5303/image-image-segmentation/run
-Content-Type: multipart/form-data; boundary=image
+Content-Type: application/json
 
---image
-Content-Disposition: form-data; name="file"; filename="{{city1}}"
-Content-Type: image/jpeg
+< ../data/b64/photo1.jpeg.b64
 
-< ../data/pic/{{city1}}
---image--
+# Request
+# {
+#   "input_data": "<base64>"
+# }
 
 # Response
 # {
 #   "masks": [
 #     {
 #       "score": null,
-#       "label": "sidewalk",
+#       "label": "wall",
 #       "mask": "<base64>"
 #     },
 #     {
 #       "score": null,
-#       "label": "person",
+#       "label": "chair",
 #       "mask": "<base64>"
 #     },
 #     {
 #       "score": null,
-#       "label": "earth",
+#       "label": "car",
 #       "mask": "<base64>"
 #     },
 #     {
 #       "score": null,
-#       "label": "path",
+#       "label": "desk",
 #       "mask": "<base64>"
 #     },
 #     {
 #       "score": null,
-#       "label": "streetlight",
+#       "label": "box",
+#       "mask": "<base64>"
+#     },
+#     {
+#       "score": null,
+#       "label": "signboard",
+#       "mask": "<base64>"
+#     },
+#     {
+#       "score": null,
+#       "label": "computer",
 #       "mask": "<base64>"
 #     }
 #   ],
 #   "model": "nvidia/segformer-b0-finetuned-ade-512-512"
 # }
 
-### @name object-detection
-POST {{apiUrl}}:5305/image-object-detection/run
-Content-Type: multipart/form-data; boundary=image
-
---image
-Content-Disposition: form-data; name="file"; filename="{{city1}}"
-Content-Type: image/jpeg
-
-< ../data/pic/{{city1}}
---image--
-
-# Response
-# {
-#   "result": [
-#     {
-#       "score": 0.9995905756950378,
-#       "label": "person",
-#       "box": {
-#         "xmin": 2243,
-#         "ymin": 761,
-#         "xmax": 2529,
-#         "ymax": 1656
-#       }
-#     },
-#     {
-#       "score": 0.9221118092536926,
-#       "label": "sports ball",
-#       "box": {
-#         "xmin": 677,
-#         "ymin": 636,
-#         "xmax": 738,
-#         "ymax": 699
-#       }
-#     },
-#     {
-#       "score": 0.9524379968643188,
-#       "label": "sports ball",
-#       "box": {
-#         "xmin": 928,
-#         "ymin": 581,
-#         "xmax": 999,
-#         "ymax": 661
-#       }
-#     },
-#     {
-#       "score": 0.9995604157447815,
-#       "label": "person",
-#       "box": {
-#         "xmin": 608,
-#         "ymin": 856,
-#         "xmax": 1017,
-#         "ymax": 1479
-#       }
-#     },
-#     {
-#       "score": 0.9947951436042786,
-#       "label": "person",
-#       "box": {
-#         "xmin": 1287,
-#         "ymin": 622,
-#         "xmax": 1699,
-#         "ymax": 1832
-#       }
-#     },
-#     {
-#       "score": 0.731742799282074,
-#       "label": "sports ball",
-#       "box": {
-#         "xmin": 605,
-#         "ymin": 632,
-#         "xmax": 668,
-#         "ymax": 704
-#       }
-#     },
-#     {
-#       "score": 0.5397851467132568,
-#       "label": "handbag",
-#       "box": {
-#         "xmin": 2407,
-#         "ymin": 1134,
-#         "xmax": 2465,
-#         "ymax": 1284
-#       }
-#     },
-#     {
-#       "score": 0.9984428286552429,
-#       "label": "person",
-#       "box": {
-#         "xmin": 1720,
-#         "ymin": 826,
-#         "xmax": 1926,
-#         "ymax": 1442
-#       }
-#     }
-#   ]
-# }
 
 ### @name image-to-text
 POST {{apiUrl}}:5304/image-image-to-text/run
-Content-Type: multipart/form-data; boundary=image
+Content-Type: application/json
 
---image
-Content-Disposition: form-data; name="file"; filename="{{photo1}}"
-Content-Type: image/jpeg
+< ../data/b64/photo1.jpeg.b64
 
-< ../data/pic/{{photo1}}
---image--
+# Request
+# {
+#   "input_data": "<base64>"
+# }
 
 # Response
 # {
@@ -222,46 +136,110 @@ Content-Type: image/jpeg
 # }
 
 
-### @name visual-question-answering
-POST {{apiUrl}}:5306/image-visual-question-answering/run
-Content-Type: multipart/form-data; boundary=image
+### @name object-detection
+POST {{apiUrl}}:5305/image-object-detection/run
+Content-Type: application/json
 
---image
-Content-Disposition: form-data; name="file"; filename="{{photo1}}"
-Content-Type: image/jpeg
+< ../data/b64/photo1.jpeg.b64
 
-< ../data/pic/{{photo1}}
-
---image
-Content-Disposition: form-data; name="request"
-
-{
-  "question": "What is in this image?"
-}
---image--
+# Request
+# {
+#   "input_data": "<base64>"
+# }
 
 # Response
 # {
 #   "result": [
 #     {
-#       "label": "sports car, sport car",
-#       "score": 0.9760120511054993
+#       "score": 0.9758986234664917,
+#       "label": "person",
+#       "box": {
+#         "xmin": 849,
+#         "ymin": 298,
+#         "xmax": 1343,
+#         "ymax": 998
+#       }
 #     },
 #     {
-#       "label": "car wheel",
-#       "score": 0.006963498890399933
+#       "score": 0.7706025838851929,
+#       "label": "person",
+#       "box": {
+#         "xmin": 851,
+#         "ymin": 299,
+#         "xmax": 1343,
+#         "ymax": 899
+#       }
 #     },
 #     {
-#       "label": "racer, race car, racing car",
-#       "score": 0.005621954798698425
+#       "score": 0.9996515512466431,
+#       "label": "laptop",
+#       "box": {
+#         "xmin": 312,
+#         "ymin": 118,
+#         "xmax": 1223,
+#         "ymax": 857
+#       }
 #     },
 #     {
-#       "label": "convertible",
-#       "score": 0.005296570248901844
+#       "score": 0.9554157853126526,
+#       "label": "dining table",
+#       "box": {
+#         "xmin": 0,
+#         "ymin": 194,
+#         "xmax": 1343,
+#         "ymax": 994
+#       }
 #     },
 #     {
-#       "label": "grille, radiator grille",
-#       "score": 0.004549334291368723
+#       "score": 0.5615569353103638,
+#       "label": "keyboard",
+#       "box": {
+#         "xmin": 404,
+#         "ymin": 611,
+#         "xmax": 1185,
+#         "ymax": 755
+#       }
+#     }
+#   ]
+# }
+
+
+### @name visual-question-answering
+POST {{apiUrl}}:5306/image-visual-question-answering/run
+Content-Type: application/json
+
+< ../data/b64/city1.jpg.b64
+
+# Request
+# {
+#   "params": {
+#     "question": "How many people?"
+#   },
+#   "input_data": "<base64>"
+# }
+
+# Response
+# {
+#   "result": [
+#     {
+#       "score": 0.585539698600769,
+#       "answer": "4"
+#     },
+#     {
+#       "score": 0.4101852476596832,
+#       "answer": "3"
+#     },
+#     {
+#       "score": 0.2669353485107422,
+#       "answer": "5"
+#     },
+#     {
+#       "score": 0.04362616688013077,
+#       "answer": "6"
+#     },
+#     {
+#       "score": 0.005054139532148838,
+#       "answer": "7"
 #     }
 #   ]
 # }

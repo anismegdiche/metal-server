@@ -4,10 +4,10 @@ HuggingFace Image Segmentation Service
 This module provides a FastAPI-based service for running HuggingFace image segmentation.
 """
 
-from fastapi import FastAPI, HTTPException, status, APIRouter, UploadFile, File
+from fastapi import FastAPI, HTTPException, status, APIRouter
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, Any, Union, List, Optional
 import logging
 from transformers import SegformerImageProcessor, SegformerForSemanticSegmentation
@@ -47,9 +47,14 @@ class ImageSegmentationRequest(BaseModel):
     """Request model for image segmentation.
     
     Attributes:
+        input_data: Base64-encoded image data (required)
         model: Optional model name to override the default model
         parameters: Optional dictionary of task-specific parameters
     """
+    input_data: str = Field(
+        ...,
+        description="Base64-encoded image data. Must be a valid image format (JPEG, PNG, etc.)"
+    )
     model: Optional[str] = None
     parameters: Optional[Dict[str, Any]] = None
 
@@ -94,6 +99,42 @@ def process_item(item: Any) -> Any:
         return item.cpu().numpy().tolist()
     return item
 
+def process_image(image_data: bytes) -> Image.Image:
+    """Process image data into a PIL Image.
+    
+    Args:
+        image_data: Raw image data bytes or base64 string
+        
+    Returns:
+        PIL.Image: The processed image
+    """
+    try:
+        # Ensure we're working with raw bytes
+        if hasattr(image_data, 'read'):  # If it's a file-like object
+            image_data = image_data.read()
+        
+        # Convert to bytes if it's a string (base64)
+        if isinstance(image_data, str):
+            if "," in image_data:
+                # Handle data URL format: data:image/...;base64,...
+                image_data = image_data.split(",", 1)[1]
+            image_data = base64.b64decode(image_data)
+            
+        # Create a BytesIO object and open the image
+        image = Image.open(io.BytesIO(image_data))
+        
+        # Convert to RGB if needed
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+            
+        return image
+    except Exception as e:
+        logger.error(f"Error processing image: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid image data: {str(e)}"
+        )
+
 def load_pipeline() -> Any:
     """Load and cache the SegFormer model and processor.
     
@@ -131,19 +172,25 @@ async def health() -> str:
 
 @router.post("/run", response_model=ImageSegmentationResponse)
 async def run(
-    file: UploadFile = File(..., description="Image file to process"),
-    request: Optional[ImageSegmentationRequest] = None
+    request: ImageSegmentationRequest
 ) -> ImageSegmentationResponse:
-    """Run image segmentation on the uploaded image.
+    """Run image segmentation on base64-encoded image data.
     
     Args:
-        file: The image file to process
-        request: Optional parameters including model and processing parameters
+        request: Request containing base64-encoded image data and optional parameters
     """
     try:
-        # Read and validate the image
-        contents = await file.read()
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        # Handle base64 input
+        try:
+            image = process_image(request.input_data)
+        except HTTPException as e:
+            raise e
+        except Exception as e:
+            logger.error(f"Error processing base64 image: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid base64 image data: {str(e)}"
+            )
         
         # Load the model and processor
         model_data = load_pipeline()
@@ -203,11 +250,13 @@ async def run(
             model=model_data.get('model_name', 'unknown')
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error processing image segmentation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error processing image segmentation"
+            detail=f"Error processing image segmentation: {str(e)}"
         )
 
 app.include_router(router)

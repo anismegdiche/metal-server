@@ -4,10 +4,10 @@ HuggingFace Image to Text Service
 This module provides a FastAPI-based service for running HuggingFace image-to-text tasks.
 """
 
-from fastapi import FastAPI, HTTPException, status, APIRouter, UploadFile, File
+from fastapi import FastAPI, HTTPException, status, APIRouter
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, Any, Union, List, Optional
 import logging
 from transformers import pipeline
@@ -15,6 +15,8 @@ from PIL import Image
 import io
 import torch
 import numpy as np
+import base64
+from io import BytesIO
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,9 +47,14 @@ class ImageToTextRequest(BaseModel):
     """Request model for image-to-text tasks.
     
     Attributes:
+        input_data: Base64-encoded image data (required)
         model: Optional model name to override the default model
         parameters: Optional dictionary of task-specific parameters
     """
+    input_data: str = Field(
+        ...,
+        description="Base64-encoded image data. Must be a valid image format (JPEG, PNG, etc.)"
+    )
     model: Optional[str] = None
     parameters: Optional[Dict[str, Any]] = None
 
@@ -85,28 +92,23 @@ async def health() -> str:
 
 @router.post("/run", response_model=ImageToTextResponse)
 async def run(
-    file: UploadFile = File(..., description="Image file to process"),
-    request: Optional[ImageToTextRequest] = None
+    request: ImageToTextRequest
 ) -> ImageToTextResponse:
-    """Run image-to-text on the uploaded image.
+    """Run image-to-text on the provided image data.
     
     Args:
-        file: The image file to process
-        request: Optional parameters including model and processing parameters
+        request: Request containing base64-encoded image data and optional parameters
     """
     try:
-        # Read and validate the image
-        contents = await file.read()
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        # Decode base64 image
+        image_data = base64.b64decode(request.input_data)
+        image = Image.open(BytesIO(image_data)).convert("RGB")
         
-        # Load the pipeline
-        model = load_pipeline()
+        # Get the pipeline and run inference
+        pipe = load_pipeline()
+        result = pipe(image, **({} if request.parameters is None else request.parameters))
         
-        # Get parameters from request or use defaults
-        params = (request.parameters if request else None) or {}
-        
-        # Process the image
-        result = model(image, **params)
+        # Process the result
         processed_result = process_item(result)
         
         return ImageToTextResponse(result=processed_result)

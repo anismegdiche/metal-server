@@ -4,17 +4,16 @@ HuggingFace Image Classification Service
 This module provides a FastAPI-based service for running HuggingFace image classification.
 """
 
-from fastapi import FastAPI, HTTPException, status, APIRouter, UploadFile, File
+from fastapi import FastAPI, HTTPException, status, APIRouter
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Dict, Any, Union, List, Optional
+from pydantic import BaseModel, Field
+from typing import Dict, Any, List, Optional
 import logging
 from transformers import pipeline
 from PIL import Image
 import io
-import torch
-import numpy as np
+import base64
 
 logging.basicConfig(
     level=logging.INFO,
@@ -45,9 +44,14 @@ class ImageClassificationRequest(BaseModel):
     """Request model for image classification.
     
     Attributes:
+        input_data: Base64-encoded image data (required)
         model: Optional model name to override the default model
         parameters: Optional dictionary of task-specific parameters
     """
+    input_data: str = Field(
+        ...,
+        description="Base64-encoded image data. Must be a valid image format (JPEG, PNG, etc.)"
+    )
     model: Optional[str] = None
     parameters: Optional[Dict[str, Any]] = None
 
@@ -83,21 +87,64 @@ async def health() -> str:
     """Health check endpoint."""
     return "healthy"
 
-@router.post("/run", response_model=ImageClassificationResponse)
-async def run(
-    file: UploadFile = File(..., description="Image file to classify"),
-    request: Optional[ImageClassificationRequest] = None
-) -> ImageClassificationResponse:
-    """Run image classification on the uploaded image.
+def process_image(image_data: bytes) -> Image.Image:
+    """Process image data into a PIL Image.
     
     Args:
-        file: The image file to classify
-        request: Optional parameters including model and processing parameters
+        image_data: Raw image data bytes
+        
+    Returns:
+        PIL.Image: The processed image
     """
     try:
-        # Read and validate the image
-        contents = await file.read()
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        # Ensure we're working with raw bytes
+        if hasattr(image_data, 'read'):  # If it's a file-like object
+            image_data = image_data.read()
+        
+        # Convert to bytes if it's a string
+        if isinstance(image_data, str):
+            image_data = image_data.encode('latin-1')
+            
+        # Create a BytesIO object and open the image
+        image = Image.open(io.BytesIO(image_data))
+        
+        # Convert to RGB if needed
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+            
+        return image
+    except Exception as e:
+        logger.error(f"Error processing image: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid image data: {str(e)}"
+        )
+
+@router.post("/run", response_model=ImageClassificationResponse)
+async def run(
+    request: ImageClassificationRequest
+) -> ImageClassificationResponse:
+    """Run image classification on base64-encoded image data.
+    
+    Args:
+        request: Request containing base64-encoded image data and optional parameters
+    """
+    try:
+        # Handle base64 input
+        try:
+            if "," in request.input_data:
+                # Handle data URL format: data:image/...;base64,...
+                image_data = request.input_data.split(",", 1)[1]
+            else:
+                image_data = request.input_data
+            contents = base64.b64decode(image_data)
+            image = process_image(contents)
+        except Exception as e:
+            logger.error(f"Error decoding base64 image: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid base64 image data: {str(e)}"
+            )
         
         # Load the pipeline
         model = load_pipeline()
