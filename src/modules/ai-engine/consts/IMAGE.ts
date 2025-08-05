@@ -8,7 +8,7 @@
  * Available image processing tasks
  */
 export enum IMAGE_TASK {
-    DEPTH_ESTIMATION = "depth-estimation",
+    // DEPTH_ESTIMATION = "depth-estimation",
     IMAGE_CLASSIFICATION = "image-classification",
     IMAGE_SEGMENTATION = "image-segmentation",
     IMAGE_TO_TEXT = "image-to-text",
