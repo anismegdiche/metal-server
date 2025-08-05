@@ -270,6 +270,15 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction()
+    RemoveFields(fields: string[]): this {
+        if (this.Rows.length === 0 || fields.length === 0)
+            return this
+
+        this.Rows = _.map(this.Rows, (row) => _.omit(row, fields))
+        return this.SetFields()
+    }
+
+    @Logger.LogFunction()
     Sort(sorts: TOrderBy): this {
         const fields = Object.keys(sorts)
         const orders: string[] = _.map(Object.entries(sorts), (sort) => sort[1] ?? SORT_ORDER.ASC)
