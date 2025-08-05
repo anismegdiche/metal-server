@@ -163,15 +163,25 @@ export class AiDocker {
                 let _streamData: string = ""
 
                 stream.on('data', (data: Buffer) => {
-                    const __data = data.toString()
-                    _streamData += __data
-
-                    if (__data.endsWith('}')) {
-                        const ___aLog = AiDocker.#ConvertStreamToLog(_streamData)
-                        ___aLog.forEach((item) => Logger.Debug(`(🔨) Building '${service.ImageName}' image... ${item}`))
-                        _streamData = ""
+                    const __data = data.toString();
+                    _streamData += __data;
+                
+                    let parts = _streamData.split('}');
+                    
+                    // Last part may be incomplete, keep it in buffer
+                    _streamData = parts.pop() || '';
+                
+                    for (const part of parts) {
+                        const complete = `${part}}`;
+                        try {
+                            const ___aLog = AiDocker.#ConvertStreamToLog(complete);
+                            ___aLog.forEach((item) => Logger.Debug(`(🔨) Building '${service.ImageName}' image... ${item}`));
+                        } catch (err) {
+                            Logger.Warn(`(⚠️) Failed to parse log part: ${complete}`);
+                        }
                     }
-                })
+                });
+                
 
                 stream.on('end', () => {
                     if (_streamData.length > 0) {
