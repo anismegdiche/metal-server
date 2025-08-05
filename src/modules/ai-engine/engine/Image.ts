@@ -17,7 +17,7 @@ import { IAiEngine } from '../base/IAiEngine'
 import { IMAGE_TASK } from "../consts/IMAGE"
 import { ImageImageClassificationDockerService, ImageImageSegmentationDockerService, ImageImageToTextDockerService, ImageObjectDetectionDockerService, ImageVisualQuestionAnsweringDockerService } from '../docker-services/ImageDockerService'
 import { TAiDockerService } from '../types/TAiDockerService'
-import { TStepRunAiImageParams, TStepRunAiImageVisualQuestionAnsweringParams } from '../types/TStepRunAiImageParam'
+import { TStepRunAiImageImageClassificationParams, TStepRunAiImageImageSegmentationParams, TStepRunAiImageImageToTextParams, TStepRunAiImageObjectDetectionParams, TStepRunAiImageParams, TStepRunAiImageVisualQuestionAnsweringParams } from '../types/TStepRunAiImageParam'
 
 //
 const IMAGE_DEFAULT_HEADERS = {
@@ -92,9 +92,10 @@ export class Image extends absAiEngine implements IAiEngine {
         throw new HttpErrorInternalServerError(`Invalid image task: ${task}`)
     }
 
-    async #ProcessImageTask(args: TAiRunArguments): Promise<TAiRunOutput> {
+    @Logger.LogFunction(true)
+    async ImageClassification(args: TAiRunArguments): Promise<TAiRunOutput> {
         const { data } = args;
-        const { params } = args as TStepRunAiImageParams;
+        const { params } = args as TStepRunAiImageImageClassificationParams;
         
         Assert(data, 'data is required')
 
@@ -118,28 +119,37 @@ export class Image extends absAiEngine implements IAiEngine {
         return response.data.result[0]
     }
 
-    // @Logger.LogFunction(true)
-    // async DepthEstimation(args: TAiRunArguments): Promise<TAiRunOutput> {
-    //     Assert(args?.data, 'data is required')
-    //     return await this.#ProcessImageTask(args)
-    // }
-
-    @Logger.LogFunction(true)
-    async ImageClassification(args: TAiRunArguments): Promise<TAiRunOutput> {
-        Assert(args?.data, 'data is required')
-        return await this.#ProcessImageTask(args)
-    }
-
     @Logger.LogFunction(true)
     async ImageSegmentation(args: TAiRunArguments): Promise<TAiRunOutput> {
-        Assert(args?.data, 'data is required')
-        return await this.#ProcessImageTask(args)
+        const { data } = args;
+        const { params } = args as TStepRunAiImageImageSegmentationParams;
+        
+        Assert(data, 'data is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        )
+
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            IMAGE_DEFAULT_HEADERS
+        ).catch(error => {
+            throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
+        })
+
+        return response.data.result[0]
     }
 
     @Logger.LogFunction(true)
     async ImageToText(args: TAiRunArguments): Promise<TAiRunOutput> {
         const { data } = args;
-        const { params } = args as TStepRunAiImageParams;
+        const { params } = args as TStepRunAiImageImageToTextParams;
         
         Assert(data, 'data is required')
 
@@ -160,20 +170,61 @@ export class Image extends absAiEngine implements IAiEngine {
             throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
         })
 
-        return response.data.result[0]
+        return response.data.result[0].trim()
     }
 
     @Logger.LogFunction(true)
     async ObjectDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
-        Assert(args?.data, 'data is required')
-        return await this.#ProcessImageTask(args)
+        const { data } = args;
+        const { params } = args as TStepRunAiImageObjectDetectionParams;
+        
+        Assert(data, 'data is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        )
+
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            IMAGE_DEFAULT_HEADERS
+        ).catch(error => {
+            throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
+        })
+
+        return response.data.result
     }
 
     @Logger.LogFunction(true)
     async VisualQuestionAnswering(args: TAiRunArguments): Promise<TAiRunOutput> {
-        const { params } = args as TStepRunAiImageVisualQuestionAnsweringParams
-        Assert(args?.data, 'data is required')
+        const { data } = args;
+        const { params } = args as TStepRunAiImageVisualQuestionAnsweringParams;
+        
+        Assert(data, 'data is required')
         Assert(params?.question, 'params.question is required')
-        return await this.#ProcessImageTask(args)
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        )
+
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            IMAGE_DEFAULT_HEADERS
+        ).catch(error => {
+            throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
+        })
+
+        return response.data.result[0]
     }
 }
