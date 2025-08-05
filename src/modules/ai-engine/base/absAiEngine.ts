@@ -7,6 +7,7 @@ import { StringUtils } from '../../../utils/StringUtils'
 import { AI_ENGINE } from '../@consts'
 import { TAiRunOutput, TAiRunArguments, TConfigAiEngine } from '../@types'
 import { IAiEngine } from './IAiEngine'
+import { SynchronizerManager } from '../../../utils/SynchronizerManager'
 
 export abstract class absAiEngine extends clsClonable implements IAiEngine {
     abstract AiEngineName: AI_ENGINE
@@ -20,7 +21,8 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
 
     abstract Init(aiName: string, aiConfig: TConfigAiEngine): Promise<void | null>
     abstract Run(params: TAiRunArguments): Promise<TAiRunOutput>
-
+    
+    @SynchronizerManager.Synchronized()
     async IsHealthy(): Promise<boolean> {
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
