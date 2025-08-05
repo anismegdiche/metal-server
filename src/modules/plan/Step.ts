@@ -4,33 +4,35 @@
 import _ from "lodash"
 import typia from "typia"
 //
-import { METADATA } from "../core/@consts"
-import { Helper } from "../../utils/Helper"
-import { Logger } from "../../utils/Logger"
-import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TRow, JOIN_TYPE } from "../../types/DataTable"
+import { DataTable, JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TRow } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../schema/types/TSchemaRequest';
-import { StringUtils } from "../../utils/StringUtils"
-import { Schema } from "../schema/Schema"
-import { TOptionalParameter } from "../source/types/TOptionalParameter"
-import { TypeUtils } from "../../utils/TypeUtils"
-import { WarnError } from "../errors/InternalError"
+import { Assert } from "../../utils/Assert"
+import { Helper } from "../../utils/Helper"
 import { JsonUtils } from "../../utils/JsonUtils"
-import { TStepSync, TStepRemoveDuplicates, TStepSort, TStepRun, TStepListEntities } from "./types/TStep"
-import { HttpErrorInternalServerError } from "../errors/HttpErrors"
-import { MemoryData } from "../source/providers/MemoryData"
-import { TContext } from "../sandbox/types/TContext"
+import { Logger } from "../../utils/Logger"
 import { PlaceHolder } from "../../utils/PlaceHolder"
-import { Sandbox } from "../sandbox/Sandbox"
-import { Plans } from "./Plans"
-import { TDataListEntity } from "../source/types/TDataListEntity"
-import { DATA_ENTITY } from "../source/@consts"
-import { TStepArguments } from "./types/TStepArguments"
-import { STEP } from "./@consts"
-import { TFunctionStep } from "./types/TFunctionStep"
-import { ConfigManager } from "../core/ConfigManager"
-import { AiEngine } from "../ai-engine/AiEngine"
+import { StringUtils } from "../../utils/StringUtils"
+import { TypeUtils } from "../../utils/TypeUtils"
 import { TAiRunArguments } from "../ai-engine/@types"
+import { AiEngine } from "../ai-engine/AiEngine"
+import { IAiEngine } from "../ai-engine/base/IAiEngine"
+import { METADATA } from "../core/@consts"
+import { ConfigManager } from "../core/ConfigManager"
+import { HttpErrorInternalServerError } from "../errors/HttpErrors"
+import { WarnError } from "../errors/InternalError"
+import { Sandbox } from "../sandbox/Sandbox"
+import { TContext } from "../sandbox/types/TContext"
+import { Schema } from "../schema/Schema"
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../schema/types/TSchemaRequest'
+import { DATA_ENTITY } from "../source/@consts"
+import { MemoryData } from "../source/providers/MemoryData"
+import { TDataListEntity } from "../source/types/TDataListEntity"
+import { TOptionalParameter } from "../source/types/TOptionalParameter"
+import { STEP } from "./@consts"
+import { Plans } from "./Plans"
+import { TFunctionStep } from "./types/TFunctionStep"
+import { TStepListEntities, TStepRemoveDuplicates, TStepRun, TStepSort, TStepSync } from "./types/TStep"
+import { TStepArguments } from "./types/TStepArguments"
 
 
 //
@@ -332,13 +334,20 @@ export class Step {
     static async Run(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
 
         const { ai, task, input, output } = stepArguments.stepParams as TStepRun
+
+        const ai_task = `${ai}-${task}`
+
+        const ai_engine = AiEngine.AiEnginesInstance.get(ai_task)
+
+        Assert<IAiEngine>(ai_engine, ai_engine !== undefined, `AI Engine ${ai_task} not found`)
+
         const promises = []
 
         for await (const [_rowIndex, _rowData] of stepArguments.currentDataTable.Rows.entries()) {
             promises.push((async () => {
 
                 const __data = _rowData[input]
-                const __result = <Record<string, any>>(await AiEngine.AiEnginesInstance.get(`${ai}-${task}`)?.Run(
+                const __result = <Record<string, any>>(await ai_engine.Run(
                     {
                         data: __data,
                         ...stepArguments.stepParams as TStepRun
@@ -355,7 +364,7 @@ export class Step {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
                     }
-                    stepArguments.currentDataTable.Rows[_rowIndex][ai] = JsonUtils.SafeCopy(__result)
+                    stepArguments.currentDataTable.Rows[_rowIndex][ai_task] = JsonUtils.SafeCopy(__result)
                     return
                 }
 
