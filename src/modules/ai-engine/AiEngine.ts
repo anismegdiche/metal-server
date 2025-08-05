@@ -11,8 +11,10 @@ import { AI_ENGINE } from "./@consts";
 import { TConfigAiEngine } from "./@types";
 import { AiDocker } from "./AiDocker";
 import { IAiEngine } from "./base/IAiEngine";
+import { IMAGE_TASK } from "./consts/IMAGE";
 import { OCR_TASK } from "./consts/OCR";
 import { TEXT_TASK } from "./consts/TEXT";
+import { Image } from "./engine/Image";
 import { Ocr } from "./engine/Ocr";
 import { Text } from "./engine/Text";
 
@@ -90,7 +92,14 @@ export class AiEngine {
         AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TRANSLATION}`, new Text())
         AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TOKEN_CLASSIFICATION}`, new Text())
         AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TOXICITY_DETECTION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.ZERO_SHOT_CLASSIFICATION}`, new Text())        
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.ZERO_SHOT_CLASSIFICATION}`, new Text())       
+        // IMAGE
+        // AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.DEPTH_ESTIMATION}`, new Image())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_CLASSIFICATION}`, new Image())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_SEGMENTATION}`, new Image())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_TO_TEXT}`, new Image())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.OBJECT_DETECTION}`, new Image())
+        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.VISUAL_QUESTION_ANSWERING}`, new Image()) 
     }
 
     static async Init() {

@@ -11,7 +11,7 @@ export const OcrDockerService: TAiDockerService = {
     Port: 5000,
     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_ocr:v1.0`,
     ImageContext: {
-        context: `${__dirname}/services/ocr`,
+        context: `${process.cwd()}/.docker/ai-engines/services/ocr`,
         src: ['.', './requirements.txt']
     },
     InternalUrl: '/ocr'
