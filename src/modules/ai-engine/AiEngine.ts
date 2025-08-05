@@ -75,31 +75,12 @@ export class AiEngine {
     }
 
     static RegisterProviders() {
-        // OCR
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.OCR}-${OCR_TASK.IMAGE_TO_STRING}`, new Ocr())
-        // TEXT
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.FILL_MASK}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.KEYWORD_EXTRACTION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.LANGUAGE_DETECTION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.PARAPHRASE_DETECTION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.QUESTION_ANSWERING}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.SENTENCE_SIMILARITY}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.SENTIMENT_ANALYSIS}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.SUMMARIZATION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT2TEXT_GENERATION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT_GENERATION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TRANSLATION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TOKEN_CLASSIFICATION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.TOXICITY_DETECTION}`, new Text())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${TEXT_TASK.ZERO_SHOT_CLASSIFICATION}`, new Text())       
-        // IMAGE
-        // AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.DEPTH_ESTIMATION}`, new Image())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_CLASSIFICATION}`, new Image())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_SEGMENTATION}`, new Image())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_TO_TEXT}`, new Image())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.OBJECT_DETECTION}`, new Image())
-        AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${IMAGE_TASK.VISUAL_QUESTION_ANSWERING}`, new Image()) 
+        for (const task of Object.values(OCR_TASK))
+            AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.OCR}-${task}`, new Ocr())
+        for (const task of Object.values(TEXT_TASK)) 
+            AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${task}`, new Text())
+        for (const task of Object.values(IMAGE_TASK)) 
+            AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${task}`, new Image())
     }
 
     static async Init() {
