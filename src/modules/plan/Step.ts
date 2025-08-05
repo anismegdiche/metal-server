@@ -298,7 +298,6 @@ export class Step {
             (Helper.CaseMapNotFound(type) && stepArguments.currentDataTable)
     }
 
-
     @Logger.LogFunction()
     static async Fields(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
         const stepParams: string = stepArguments.stepParams as string
@@ -359,8 +358,8 @@ export class Step {
                 if (!__result) {
                     return
                 }
+                
                 // check if output is empty
-
                 if (_.isNil(output) || _.isEmpty(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
@@ -368,9 +367,8 @@ export class Step {
                     stepArguments.currentDataTable.Rows[_rowIndex][ai_task] = JsonUtils.SafeCopy(__result)
                     return
                 }
-
+                
                 // check if output is string
-
                 if (_.isString(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData

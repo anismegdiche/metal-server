@@ -30,6 +30,7 @@ import { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
 import { ConfigManager } from "../core/ConfigManager"
 import { StepCommand } from "../core/types/TConfig"
+import { STEP_STATUS } from "./@consts"
 
 
 //
@@ -123,62 +124,100 @@ export class Plan {
 
         let currentDataTable = new DataTable(currentEntityName)
 
-        let $context: Partial<TContext> = {}
-        $context = {
+        let $context: Partial<TContext> = {
             $plan: {
                 name: currentPlanName,
                 schema: currentSchemaName,
                 entity: currentEntityName,
-                currentData: <TRow[]>[]
+                $current: {
+                    stepIndex: NaN,
+                    stepCommand: undefined,
+                    data: <TRow[]>[],
+                    status: STEP_STATUS.PENDING
+                }
             }
         }
 
-        // Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}': semaphore = ${this.SemaphoreSize}, $context = ${JsonUtils.Stringify($context)}`)
-
-        await this.#__LOCK__.get(currentEntityName)!.Acquire()
+        await this.#__LOCK__.get($context.$plan!.entity)!.Acquire()
 
         for await (const [stepIndex, step] of Object.entries(steps)) {
             $context = _.merge(
                 $context,
-                {
+                <Partial<TContext>>{
                     $plan: {
-                        step: parseInt(stepIndex, 10) + 1
+                        $current: {
+                            stepIndex: parseInt(stepIndex, 10) + 1,
+                            status: STEP_STATUS.RUNNING
+                        }
                     }
                 }
             )
 
-            Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}', step ${$context.$plan!.currentStep}: ${JsonUtils.Stringify(step)}`)
-
             if (step === null) {
-                Logger.Error(`Plan.ExecuteSteps '${currentPlanName}': error have been encountered in step ${$context.$plan!.currentStep}, ${JsonUtils.Stringify(step)}`)
+                Logger.Error(`Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}, ${JsonUtils.Stringify(step)}`)
+                $context = _.merge(
+                    $context,
+                    <Partial<TContext>>{
+                        $plan: {
+                            $current: {
+                                status: STEP_STATUS.FAILED
+                            }
+                        }
+                    }
+                )
                 break
             }
 
+            Logger.Debug(`Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(step)}`)
+
             try {
 
-                const __stepCommand: string = _.keys(<object>step)[0]
+                const __stepCommand: string = _.keys(step)[0]
 
                 const __stepParams: TJson = _.values(<object>step)[0]
 
                 if (__stepCommand === 'break') {
-                    Logger.Info(`Plan.ExecuteSteps '${currentPlanName}': user break at step '${$context.$plan!.currentStep}', ${JsonUtils.Stringify(step)}`)
+                    Logger.Info(`Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': user break at step '${$context.$plan!.$current.stepIndex}', ${JsonUtils.Stringify(step)}`)
+                    $context = _.merge(
+                        $context,
+                        <Partial<TContext>>{
+                            $plan: {
+                                $current: {
+                                    status: STEP_STATUS.COMPLETED
+                                }
+                            }
+                        }
+                    )
                     return currentDataTable
                 }
 
-                const _stepArguments: TStepArguments = {
-                    currentSchemaName: currentSchemaName as string,
-                    currentPlanName,
+                const __stepArguments: TStepArguments = {
+                    currentSchemaName: $context.$plan!.schema!,
+                    currentPlanName: $context.$plan!.name!,
                     currentDataTable,
                     stepParams: __stepParams
                 }
 
                 const executeStep = Step.ExecuteCaseMap[__stepCommand] ?? Helper.CaseMapNotFound(__stepCommand)
+
                 if (executeStep !== undefined) {
-                    currentDataTable = await executeStep(_stepArguments)
+                    currentDataTable = await executeStep(__stepArguments)
                 }
+                
+                $context = _.merge(
+                    $context,
+                    <Partial<TContext>>{
+                        $plan: {
+                            $current: {
+                                status: STEP_STATUS.COMPLETED
+                            }
+                        }
+                    }
+                )
+                
             } catch (error: unknown) {
                 const _error = error as Error
-                const _errorMessage = `Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${$context.$plan!.currentStep},${JsonUtils.Stringify(step)}' is ignored because of error ${JsonUtils.Stringify(_error?.message)}`
+                const _errorMessage = `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify(step)}' is ignored because of error ${JsonUtils.Stringify(_error?.message)}`
 
                 if (typia.is<WarnError>(error)) {
                     Logger.Warn(_errorMessage)
@@ -190,25 +229,29 @@ export class Plan {
                     /* TODO In case of cross entities, only errors in the final entity are returned.
                     Console log is working fine.
                     */
-                    const _planErrors: TJson = {}
-                    _planErrors[`entity(${currentEntityName}), step(${stepIndex})`] = step
-                    Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}', Entity '${currentEntityName}': step '${$context.$plan!.currentStep},${JsonUtils.Stringify(step)}' added error ${JsonUtils.Stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
+                    const _planErrors: TJson = {
+                        [`entity(${$context.$plan!.entity}), step(${stepIndex})`]: step
+                    }
+                    
+                    Logger.Debug(`Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify(step)}' added error ${JsonUtils.Stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
                 }
             }
             $context = _.merge(
                 $context,
-                {
+                <Partial<TContext>>{
                     $plan: {
-                        data: currentDataTable.Rows
+                        $current: {
+                            data: currentDataTable.Rows,
+                            status: STEP_STATUS.FAILED
+                        }
                     }
                 }
             )
-            // Logger.Debug(`Plan.ExecuteSteps '${currentPlanName}', step ${$context.$plan!.currentStep}: $context = ${JsonUtils.Stringify($context)}`)
         }
 
-        this.#__LOCK__.get(currentEntityName)!.Release()
+        this.#__LOCK__.get($context.$plan!.entity)!.Release()
 
-        return currentDataTable.Rename(currentEntityName)
+        return currentDataTable.Rename($context.$plan!.entity)
     }
 
     @Logger.LogFunction()

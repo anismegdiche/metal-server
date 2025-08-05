@@ -16,3 +16,12 @@ export enum STEP {
     REMOVE_DUPLICATE = "remove-duplicates",// v0.3
     LIST_ENTITIES = "list-entities", // v0.3
     REMOVE_FIELDS = "remove-fields" // v0.5
+}
+
+
+export enum STEP_STATUS {
+    PENDING = "pending",
+    RUNNING = "running",
+    COMPLETED = "completed",
+    FAILED = "failed"
+}
