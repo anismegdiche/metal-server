@@ -78,3 +78,5 @@ export type TStepRemoveDuplicates = {
 export type TStepListEntities = Omit<TSchemaRequestListEntities, 'schema' | 'entity' | 'source'> & {
     schema?: string
 }
+
+export type TStepRemoveFields = string[]

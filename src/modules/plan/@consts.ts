@@ -14,5 +14,5 @@ export enum STEP {
     SYNC = "sync",// v0.2
     ANONYMIZE = "anonymize",// v0.3        
     REMOVE_DUPLICATE = "remove-duplicates",// v0.3
-    LIST_ENTITIES = "list-entities" // v0.3
-}
+    LIST_ENTITIES = "list-entities", // v0.3
+    REMOVE_FIELDS = "remove-fields" // v0.5

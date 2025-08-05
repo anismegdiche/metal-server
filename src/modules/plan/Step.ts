@@ -53,7 +53,8 @@ export class Step {
         [STEP.SYNC]: Step.Sync,
         [STEP.ANONYMIZE]: Step.Anonymize,
         [STEP.REMOVE_DUPLICATE]: Step.RemoveDuplicates,
-        [STEP.LIST_ENTITIES]: Step.ListEntities
+        [STEP.LIST_ENTITIES]: Step.ListEntities,
+        [STEP.REMOVE_FIELDS]: Step.RemoveFields
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -514,6 +515,12 @@ export class Step {
             }))
         Logger.Debug(`${Logger.Out} Step.ListEntities: ${JsonUtils.Stringify(stepArguments.stepParams)}`)
         return new DataTable(currentDataTable.Name, entitiesList)
+    }
+
+    @Logger.LogFunction()
+    static async RemoveFields(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
+        Assert<string[]>(stepArguments.stepParams, stepArguments.stepParams instanceof Array, "remove-fields: must be an array")
+        return stepArguments.currentDataTable.RemoveFields(stepArguments.stepParams)
     }
 
     static async #_Select(schema: string, entity: string): Promise<DataTable | undefined> {

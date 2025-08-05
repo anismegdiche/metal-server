@@ -5,7 +5,7 @@ import { tags } from "typia"
 import { LogLevelDesc } from "loglevel"
 //
 import { TIpPort } from "../../../types/TIpPort"
-import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "../../plan/types/TStep"
+import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRemoveFields, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "../../plan/types/TStep"
 import { STEP } from "../../plan/@consts"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { TConfigUsers } from "./TConfigUsers"
@@ -59,6 +59,7 @@ type Sync = { [STEP.SYNC]: TStepSync }
 type Anonymize = { [STEP.ANONYMIZE]: TStepAnonymize }
 type RemoveDuplicates = { [STEP.REMOVE_DUPLICATE]: TStepRemoveDuplicates }
 type ListEntities = { [STEP.LIST_ENTITIES]: TStepListEntities }
+type RemoveFields = { [STEP.REMOVE_FIELDS]: TStepRemoveFields }
 
 export type StepCommand =
     | Debug
@@ -74,6 +75,7 @@ export type StepCommand =
     | Anonymize
     | RemoveDuplicates
     | ListEntities
+    | RemoveFields
 
 //
 
