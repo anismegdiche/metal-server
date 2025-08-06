@@ -96,7 +96,7 @@ export class Image extends absAiEngine implements IAiEngine {
     async ImageClassification(args: TAiRunArguments): Promise<TAiRunOutput> {
         const { data } = args;
         const { params } = args as TStepRunAiImageImageClassificationParams;
-        
+
         Assert(data, 'data is required')
 
         const _url = StringUtils.Url(
@@ -116,14 +116,14 @@ export class Image extends absAiEngine implements IAiEngine {
             throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
         })
 
-        return response.data.result[0]
+        return response.data.result
     }
 
     @Logger.LogFunction(true)
     async ImageSegmentation(args: TAiRunArguments): Promise<TAiRunOutput> {
         const { data } = args;
         const { params } = args as TStepRunAiImageImageSegmentationParams;
-        
+
         Assert(data, 'data is required')
 
         const _url = StringUtils.Url(
@@ -143,14 +143,14 @@ export class Image extends absAiEngine implements IAiEngine {
             throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
         })
 
-        return response.data.result[0]
+        return response.data?.masks
     }
 
     @Logger.LogFunction(true)
     async ImageToText(args: TAiRunArguments): Promise<TAiRunOutput> {
         const { data } = args;
         const { params } = args as TStepRunAiImageImageToTextParams;
-        
+
         Assert(data, 'data is required')
 
         const _url = StringUtils.Url(
@@ -170,14 +170,19 @@ export class Image extends absAiEngine implements IAiEngine {
             throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
         })
 
-        return response.data.result[0].trim()
+        return _.mapValues(
+            response.data.result[0],
+            value => (_.isString(value)
+                ? _.trim(value)
+                : value)
+        )
     }
 
     @Logger.LogFunction(true)
     async ObjectDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
         const { data } = args;
         const { params } = args as TStepRunAiImageObjectDetectionParams;
-        
+
         Assert(data, 'data is required')
 
         const _url = StringUtils.Url(
@@ -204,7 +209,7 @@ export class Image extends absAiEngine implements IAiEngine {
     async VisualQuestionAnswering(args: TAiRunArguments): Promise<TAiRunOutput> {
         const { data } = args;
         const { params } = args as TStepRunAiImageVisualQuestionAnsweringParams;
-        
+
         Assert(data, 'data is required')
         Assert(params?.question, 'params.question is required')
 
@@ -225,6 +230,6 @@ export class Image extends absAiEngine implements IAiEngine {
             throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
         })
 
-        return response.data.result[0]
+        return response.data.result
     }
 }
