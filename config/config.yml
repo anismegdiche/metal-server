@@ -62,6 +62,18 @@ plans:
 
       - run:
           ai: image
+          task: image-classification
+          input: content
+          output:
+
+      - run:
+          ai: image
+          task: image-segmentation
+          input: content
+          output:
+
+      - run:
+          ai: image
           task: image-to-text
           input: content
           output:
@@ -73,23 +85,13 @@ plans:
           input: content
           output:
 
-      # - run:
-      #     ai: text
-      #     task: emotion-detection
-      #     params:
-      #       top_k: 10
-      #     input: ocr_text
-      #     output:
+      - run:
+          ai: image
+          task: visual-question-answering
+          params:
+            question: How many people are in the image?
+          input: content
+          output:
 
-      # - run:
-      #     ai: text
-      #     task: translation
-      #     params:
-      #       src_lang: en_XX
-      #       tgt_lang: ar_AR
-      #     input: ocr_text
-      #     output:
-      #       translation_text: translated_text
-
-      - fields: name, mimeType, type, size, createdAt, modifiedAt, path, description
+      - remove-fields: [content]
     
