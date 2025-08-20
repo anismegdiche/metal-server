@@ -306,14 +306,14 @@ export class AiDocker {
 
             const avgCpu = await AiDocker.GetAverageCpuUsage(service)
 
-            Logger.Debug(`AutoScale: '${service.InstanceName ?? service.Name}', Containers: ${containers.length}, Avg CPU: ${avgCpu.toFixed(0)}%`)
+            Logger.Debug(`${Logger.In} AutoScale: '${service.InstanceName ?? service.Name}', Containers: ${containers.length}, Avg CPU: ${avgCpu.toFixed(0)}%`)
 
             if (avgCpu > AiDocker.ServiceInstance.CpuScaleUp && containers.length < AiDocker.ServiceInstance.MaxInstances) {
                 await AiDocker.ScaleUp(service)
             } else if (avgCpu < AiDocker.ServiceInstance.CpuScaleDown && containers.length > AiDocker.ServiceInstance.MinInstances) {
                 await AiDocker.ScaleDown(service)
             } else {
-                Logger.Debug(`AutoScale: No scaling needed for '${service.InstanceName ?? service.Name}'`)
+                Logger.Debug(`${Logger.Out} AutoScale: No scaling needed for '${service.InstanceName ?? service.Name}'`)
             }
         }
     }
