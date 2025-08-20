@@ -17,6 +17,8 @@ import { TEXT_TASK } from "./consts/TEXT";
 import { Image } from "./engine/Image";
 import { Ocr } from "./engine/Ocr";
 import { Text } from "./engine/Text";
+import { AUDIO_TASK } from "./consts/AUDIO";
+import { Audio } from "./engine/Audio";
 
 
 //
@@ -81,6 +83,8 @@ export class AiEngine {
             AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.TEXT}-${task}`, new Text())
         for (const task of Object.values(IMAGE_TASK)) 
             AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.IMAGE}-${task}`, new Image())
+        for (const task of Object.values(AUDIO_TASK)) 
+            AiEngine.#AiEngineFactory.Register(`${AI_ENGINE.AUDIO}-${task}`, new Audio())
     }
 
     static async Init() {
