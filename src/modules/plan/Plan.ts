@@ -168,7 +168,7 @@ export class Plan {
                 break
             }
 
-            Logger.Debug(`Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(step)}`)
+            Logger.Debug(`${Logger.In} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(step)}`)
 
             try {
 
@@ -177,7 +177,7 @@ export class Plan {
                 const __stepParams: TJson = _.values(<object>step)[0]
 
                 if (__stepCommand === 'break') {
-                    Logger.Info(`Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': user break at step '${$context.$plan!.$current.stepIndex}', ${JsonUtils.Stringify(step)}`)
+                    Logger.Info(`${Logger.Out} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': user break at step '${$context.$plan!.$current.stepIndex}', ${JsonUtils.Stringify(step)}`)
                     $context = _.merge(
                         $context,
                         <Partial<TContext>>{
@@ -233,7 +233,7 @@ export class Plan {
                         [`entity(${$context.$plan!.entity}), step(${stepIndex})`]: step
                     }
                     
-                    Logger.Debug(`Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify(step)}' added error ${JsonUtils.Stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
+                    Logger.Debug(`${Logger.Out} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify(step)}' added error ${JsonUtils.Stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
                 }
             }
             $context = _.merge(

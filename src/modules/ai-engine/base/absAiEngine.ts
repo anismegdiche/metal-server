@@ -34,9 +34,9 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
             .then(response => response.status === 200)
             .catch(() => false)
 
-        Logger.Debug(`Health check for ${this.InstanceName} at ${_url}: ${_isHealthy
-            ? 'OK 🟢'
-            : 'KO 🔴'}`)
+        Logger.Info(`${Logger.Out} '${this.InstanceName}': Health check at ${_url}, ${_isHealthy
+            ? 'Ok 🟢'
+            : 'Ko 🔴'}`)
 
         return _isHealthy
     }
