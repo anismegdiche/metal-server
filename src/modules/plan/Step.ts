@@ -333,10 +333,15 @@ export class Step {
     @Logger.LogFunction(true)
     static async Run(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
 
-        const { ai, task, input, output } = stepArguments.stepParams as TStepRun
+        const _stepParams = _.merge(
+            {
+                output: null
+            },
+            stepArguments.stepParams
+        ) as TStepRun
 
+        const { ai, task, input, output } = _stepParams
         const ai_task = `${ai}-${task}`
-
         const ai_engine = AiEngine.AiEnginesInstance.get(ai_task)
 
         Assert<IAiEngine>(ai_engine, ai_engine !== undefined, `AI Engine ${ai_task} not found`)
@@ -358,7 +363,7 @@ export class Step {
                 if (!__result) {
                     return
                 }
-                
+
                 // check if output is empty
                 if (_.isNil(output) || _.isEmpty(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
@@ -367,7 +372,7 @@ export class Step {
                     stepArguments.currentDataTable.Rows[_rowIndex][ai_task] = JsonUtils.SafeCopy(__result)
                     return
                 }
-                
+
                 // check if output is string
                 if (_.isString(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {

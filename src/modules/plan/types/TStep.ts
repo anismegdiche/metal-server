@@ -45,7 +45,7 @@ export type TStepSort = TOrderBy
 export type TStepRun = {
     ai: string                          // ai engine name
     input: string                       // input field name
-    output: string | TJson | null       // output
+    output?: string | TJson | null      // output
 } & TStepRunAiParams
 
 export type TStepSync = {
