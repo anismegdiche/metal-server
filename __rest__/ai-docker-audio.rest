@@ -1,13 +1,10 @@
 # @name huggingface
 # Base URL
-@apiUrl = http://localhost:5003/huggingface/audio
+@apiUrl = http://localhost
 
 # Common variables
-@car1 = car1.jpg
-@photo1 = photo2.jpeg
-@audioFile = harvard.wav 
-#@audioFile = angry-man.wav 
-@videoFile = globe.mp4
+@harvard = harvard.wav 
+@angry = angry-man.wav 
 
 ### Health Check
 GET {{apiUrl}}/health
@@ -18,15 +15,10 @@ GET {{apiUrl}}/tasks
 ### AUDIO PIPELINES
 
 ### @name audio-classification
-POST {{apiUrl}}/audio-classification
-Content-Type: multipart/form-data; boundary=audio
+POST {{apiUrl}}:5401/audio-audio-classification/run
+Content-Type: application/json
 
---audio
-Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
-Content-Type: audio/wav
-
-< ../data/audio/{{audioFile}}
---audio--
+< ../data/audio_b64/angry-man.wav.b64
 
 # Response
 # {
@@ -51,15 +43,10 @@ Content-Type: audio/wav
 # }
 
 ### @name automatic-speech-recognition
-POST {{apiUrl}}/automatic-speech-recognition
-Content-Type: multipart/form-data; boundary=audio
+POST {{apiUrl}}:5402/audio-automatic-speech-recognition/run
+Content-Type: application/json
 
---audio
-Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
-Content-Type: audio/wav
-
-< ../data/audio/{{audioFile}}
---audio--
+< ../data/audio_b64/harvard.wav.b64
 
 # Response
 # {
@@ -68,91 +55,91 @@ Content-Type: audio/wav
 #   }
 # }
 
-### @name tts
-POST {{apiUrl}}/text-to-speech
-text: Hello, this is a test of the text-to-speech system.
-Content-Type: application/json
+# ### @name tts
+# POST {{apiUrl}}/text-to-speech
+# text: Hello, this is a test of the text-to-speech system.
+# Content-Type: application/json
 
-{
-  "text": "Hello, this is a test of the text-to-speech system.",
-  "voice_preset": "v2/en_speaker_6"
-}
-
-# Response will contain base64-encoded audio data
 # {
-#   "result": {
-#     "audio": "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQ...",
-#     "sampling_rate": 24000,
-#     "format": "wav"
-#   }
+#   "text": "Hello, this is a test of the text-to-speech system.",
+#   "voice_preset": "v2/en_speaker_6"
 # }
 
-### @name source-separation
-POST {{apiUrl}}/audio-source-separation
-Content-Type: multipart/form-data; boundary=sep
+# # Response will contain base64-encoded audio data
+# # {
+# #   "result": {
+# #     "audio": "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQ...",
+# #     "sampling_rate": 24000,
+# #     "format": "wav"
+# #   }
+# # }
 
---sep
-Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
-Content-Type: audio/wav
+# ### @name source-separation
+# POST {{apiUrl}}/audio-source-separation
+# Content-Type: multipart/form-data; boundary=sep
 
-< ../data/audio/{{audioFile}}
---sep--
-
-# Response will contain separated audio sources
-# {
-#   "result": {
-#     "vocals": "base64_encoded_audio",
-#     "drums": "base64_encoded_audio",
-#     "bass": "base64_encoded_audio",
-#     "other": "base64_encoded_audio"
-#   }
-# }
-
-### @name speech-enhancement
-POST {{apiUrl}}/speech-enhancement
-Content-Type: multipart/form-data; boundary=enhance
-
---enhance
-Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
-Content-Type: audio/wav
-
-< ../data/audio/{{audioFile}}
---enhance--
-
-# Response contains enhanced audio
-# {
-#   "result": {
-#     "enhanced_audio": "base64_encoded_audio",
-#     "sampling_rate": 16000
-#   }
-# }
-
-### @name audio-super-resolution
-POST {{apiUrl}}/audio-super-resolution
-Content-Type: multipart/form-data; boundary=superres
-
---superres
-Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
-Content-Type: audio/wav
-
-< ../data/audio/{{audioFile}}
---superres--
-
-# Response contains upsampled audio
-# {
-#   "result": {
-#     "upsampled_audio": "base64_encoded_audio",
-#     "original_sr": 8000,
-#     "upsampled_sr": 16000
-#   }
-# }
-# ### @name audio-to-audio
-# POST {{baseUrl}}/audio-to-audio
-# Content-Type: multipart/form-data; boundary={{audioFile}}
-
-# --audio
+# --sep
 # Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
 # Content-Type: audio/wav
 
 # < ../data/audio/{{audioFile}}
-# --audio--
+# --sep--
+
+# # Response will contain separated audio sources
+# # {
+# #   "result": {
+# #     "vocals": "base64_encoded_audio",
+# #     "drums": "base64_encoded_audio",
+# #     "bass": "base64_encoded_audio",
+# #     "other": "base64_encoded_audio"
+# #   }
+# # }
+
+# ### @name speech-enhancement
+# POST {{apiUrl}}/speech-enhancement
+# Content-Type: multipart/form-data; boundary=enhance
+
+# --enhance
+# Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+# Content-Type: audio/wav
+
+# < ../data/audio/{{audioFile}}
+# --enhance--
+
+# # Response contains enhanced audio
+# # {
+# #   "result": {
+# #     "enhanced_audio": "base64_encoded_audio",
+# #     "sampling_rate": 16000
+# #   }
+# # }
+
+# ### @name audio-super-resolution
+# POST {{apiUrl}}/audio-super-resolution
+# Content-Type: multipart/form-data; boundary=superres
+
+# --superres
+# Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+# Content-Type: audio/wav
+
+# < ../data/audio/{{audioFile}}
+# --superres--
+
+# # Response contains upsampled audio
+# # {
+# #   "result": {
+# #     "upsampled_audio": "base64_encoded_audio",
+# #     "original_sr": 8000,
+# #     "upsampled_sr": 16000
+# #   }
+# # }
+# # ### @name audio-to-audio
+# # POST {{baseUrl}}/audio-to-audio
+# # Content-Type: multipart/form-data; boundary={{audioFile}}
+
+# # --audio
+# # Content-Disposition: form-data; name="file"; filename="{{audioFile}}"
+# # Content-Type: audio/wav
+
+# # < ../data/audio/{{audioFile}}
+# # --audio--

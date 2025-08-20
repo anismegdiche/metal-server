@@ -196,39 +196,33 @@ services:
     volumes:
       - ./services/image/visual-question-answering:/app
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #
-#
+# Audio
 #
 
-  # hf-image:
-  #   build: ./services/huggingface-image
-  #   command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
-  #   ports:
-  #     - "5002:5000"
-  #   volumes:
-  #     - ./services/huggingface-image:/app
-  #     # - ./services/huggingface/models:/root/.cache/huggingface/hub
+  audio-audio-classification:
+    build: ./services/audio/audio-classification
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5401:5000"
+    volumes:
+      - ./services/audio/audio-classification:/app
 
-  # hf-audio:
-  #   build: ./services/huggingface-audio
-  #   command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
-  #   ports:
-  #     - "5003:5000"
-  #   volumes:
-  #     - ./services/huggingface-audio:/app
-  #     # - ./services/huggingface/models:/root/.cache/huggingface/hub
+  audio-automatic-speech-recognition:
+    build: ./services/audio/automatic-speech-recognition
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5402:5000"
+    volumes:
+      - ./services/audio/automatic-speech-recognition:/app
+
+
+  
+
+  hf-audio:
+    build: ./services/huggingface-audio
+    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./services/huggingface-audio:/app
