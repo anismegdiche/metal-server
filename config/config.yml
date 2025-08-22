@@ -58,40 +58,18 @@ plans:
     myentity:
       - select:
           schema: fs
-          entity: pic
+          entity: audio
 
       - run:
-          ai: image
-          task: image-classification
+          ai: audio
+          task: audio-classification
           input: content
-          output:
 
       - run:
-          ai: image
-          task: image-segmentation
+          ai: audio
+          task: automatic-speech-recognition
           input: content
-          output:
-
-      - run:
-          ai: image
-          task: image-to-text
-          input: content
-          output:
-            generated_text: description
-
-      - run:
-          ai: image
-          task: object-detection
-          input: content
-          output:
-
-      - run:
-          ai: image
-          task: visual-question-answering
-          params:
-            question: How many people are in the image?
-          input: content
-          output:
+          output: text
 
       - remove-fields: [content]
     
