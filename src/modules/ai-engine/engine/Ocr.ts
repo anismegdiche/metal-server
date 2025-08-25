@@ -20,11 +20,7 @@ import { OcrDockerService as SERVICE_OCR } from '../docker-services/OcrDockerSer
 import { TStepRunAiOcrParams } from "../types/TStepRunAiOcrParams"
 
 export class Ocr extends absAiEngine implements IAiEngine {
-
     AiEngineName = AI_ENGINE.OCR
-    InstanceName: string
-    InstanceConfig: TConfigAiEngine | null = null
-    InstanceApiUrl: string = "http://localhost:5000"
 
     RunTask: Record<string, (args: TAiRunArguments) => Promise<TAiRunOutput>> = {}
 
@@ -37,14 +33,11 @@ export class Ocr extends absAiEngine implements IAiEngine {
 
     constructor() {
         super()
-        this.InstanceName = ""
     }
 
     @Logger.LogFunction()
     async Init(aiName: string, aiConfig: TConfigAiEngine): Promise<void> {
-        this.InstanceName = aiName
-        this.InstanceConfig = aiConfig
-        this.InstanceApiUrl = aiConfig.url || "http://localhost:5000"
+        await super.Init(aiName, aiConfig)
 
         this.RunTask = {
             [OCR_TASK.IMAGE_TO_STRING]: async (args: TAiRunArguments) => await this.ImageToString(args)

@@ -7,7 +7,9 @@
 //
 //
 //
-import Docker from 'dockerode'
+import Docker, { DockerOptions } from 'dockerode'
+import fs from "fs";
+
 //
 import { JsonUtils } from '../../utils/JsonUtils'
 import { Logger } from '../../utils/Logger'
@@ -15,6 +17,7 @@ import { StringUtils } from '../../utils/StringUtils'
 import { DOCKER } from './consts/DOCKER'
 import { TraefikDockerService } from './docker-services/TraefikDockerService'
 import { TAiDockerService } from './types/TAiDockerService'
+import { ConfigManager } from '../core/ConfigManager'
 
 
 //
@@ -23,7 +26,6 @@ export class AiDocker {
     static docker: Docker = new Docker();
     static AutoScaleWorker: NodeJS.Timeout
     static Instances: Map<string, TAiDockerService> = new Map()
-    static DockerSocket = undefined  //{ socketPath: '/var/run/docker.sock' }
 
     static ServiceInstance = {
         MinInstances: 1,
@@ -34,7 +36,18 @@ export class AiDocker {
     }
 
     constructor() {
-        AiDocker.docker = new Docker(AiDocker.DockerSocket)
+        const _dockerOptions = ConfigManager.Get<DockerOptions>("server.ai-engines.params")
+
+        if (_dockerOptions?.ca instanceof String)
+            _dockerOptions.ca = fs.readFileSync(_dockerOptions.ca as string)
+
+        if (_dockerOptions?.cert instanceof String)
+            _dockerOptions.cert = fs.readFileSync(_dockerOptions.cert as string)
+
+        if (_dockerOptions?.key instanceof String)
+            _dockerOptions.key = fs.readFileSync(_dockerOptions.key as string)
+
+        AiDocker.docker = new Docker(_dockerOptions)
     }
 
     static async Init() {

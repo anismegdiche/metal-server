@@ -34,9 +34,6 @@ const TEXT_DEFAULT_HEADERS = {
 export class Text extends absAiEngine implements IAiEngine {
 
     AiEngineName = AI_ENGINE.TEXT
-    InstanceName: string
-    InstanceConfig: TConfigAiEngine | null = null
-    InstanceApiUrl: string = "http://localhost:5000"
 
     AiDockerService: Record<string, TAiDockerService> = {}
     RunTask: Record<string, (args: TAiRunArguments) => Promise<TAiRunOutput>> = {}
@@ -51,14 +48,11 @@ export class Text extends absAiEngine implements IAiEngine {
 
     constructor() {
         super()
-        this.InstanceName = ""
     }
 
     @Logger.LogFunction()
     async Init(aiName: string, aiConfig: TConfigAiEngine): Promise<void> {
-        this.InstanceName = aiName
-        this.InstanceConfig = aiConfig
-        this.InstanceApiUrl = aiConfig.url || "http://localhost:5000"
+        await super.Init(aiName, aiConfig)
 
         this.AiDockerService = {
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`]: TextEmotionDetectionDockerService,

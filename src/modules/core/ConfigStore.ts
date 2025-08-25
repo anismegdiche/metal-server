@@ -24,12 +24,17 @@ export class ConfigStore implements IConfigStore {
                 provider: AUTH_PROVIDER.LOCAL
             },
             "request-limit": '10mb',
-            "response-limit": '10mb',     // v0.3
-            "response-chunk": false,      // v0.3
-            "response-rate": {            // v0.3
+            "response-limit": '10mb',
+            "response-rate": {
                 windowMs: 1 * 60 * 1000,
                 max: 600,
-                message: HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS 
+                message: HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS
+            },
+            "response-chunk": false,
+            "ai-engines": {
+                provider: "docker",
+                params: undefined, //{ socketPath: '/var/run/docker.sock' }
+                "engines-url": "http://localhost:5000"
             }
         }
     }

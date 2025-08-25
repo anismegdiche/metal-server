@@ -41,7 +41,6 @@ export class JsonUtils {
 
         const _jsonPath = jsonPath.replace(/\[(\d+)\]/g, '.$1')
 
-
         const extractedData = objectPath.get(json, _jsonPath) ?? _.get(json, jsonPath)
 
         return (extractedData)

@@ -1,25 +1,35 @@
-
-
+//
+//
+//
 import axios from 'axios'
+//
 import { clsClonable } from '../../../utils/base/clsClonable'
 import { Logger } from '../../../utils/Logger'
 import { StringUtils } from '../../../utils/StringUtils'
-import { AI_ENGINE } from '../@consts'
-import { TAiRunOutput, TAiRunArguments, TConfigAiEngine } from '../@types'
-import { IAiEngine } from './IAiEngine'
 import { SynchronizerManager } from '../../../utils/SynchronizerManager'
+import { ConfigManager } from '../../core/ConfigManager'
+import { AI_ENGINE } from '../@consts'
+import { TAiRunArguments, TAiRunOutput, TConfigAiEngine } from '../@types'
+import { IAiEngine } from './IAiEngine'
 
+
+//
 export abstract class absAiEngine extends clsClonable implements IAiEngine {
     abstract AiEngineName: AI_ENGINE
-    abstract InstanceName: string
-    abstract InstanceApiUrl: string
-    abstract InstanceConfig: TConfigAiEngine | null
+    InstanceName!: string
+    InstanceApiUrl!: string
+    InstanceConfig!: TConfigAiEngine
 
     constructor() {
         super()
     }
 
-    abstract Init(aiName: string, aiConfig: TConfigAiEngine): Promise<void | null>
+    async Init(aiName: string, aiConfig: TConfigAiEngine): Promise<void> {
+        this.InstanceName = aiName
+        this.InstanceConfig = aiConfig
+        this.InstanceApiUrl = aiConfig.url || ConfigManager.Get<string>("server.ai-engines.engines-url")
+    }
+    
     abstract Run(params: TAiRunArguments): Promise<TAiRunOutput>
     
     @SynchronizerManager.Synchronized()

@@ -1,18 +1,19 @@
 //
 //
 //
-import { tags } from "typia"
+import { DockerOptions } from "dockerode"
 import { LogLevelDesc } from "loglevel"
+import { tags } from "typia"
 //
 import { TIpPort } from "../../../types/TIpPort"
-import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRemoveFields, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "../../plan/types/TStep"
-import { STEP } from "../../plan/@consts"
-import { TConfigSource } from "../../source/types/TConfigSource"
-import { TConfigUsers } from "./TConfigUsers"
+import { TUrl } from "../../../types/TUrl"
+import { TConfigAiEngine } from "../../ai-engine/@types"
 import { TRolePermissions } from "../../auth/@types"
 import { TAuthentication } from "../../auth/types/TAuthentication"
-import { TConfigAiEngine } from "../../ai-engine/@types"
-import { TUrl } from "../../../types/TUrl"
+import { STEP } from "../../plan/@consts"
+import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRemoveFields, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "../../plan/types/TStep"
+import { TConfigSource } from "../../source/types/TConfigSource"
+import { TConfigUsers } from "./TConfigUsers"
 
 
 // roles
@@ -85,6 +86,7 @@ export type TConfig = {
         port?: TIpPort
         verbosity?: LogLevelDesc
         timezone?: string
+        cache?: TConfigSource
         authentication: TAuthentication                 // v0.3
         "request-limit"?: string                        // v0.3
         "response-limit"?: string                       // v0.3
@@ -94,10 +96,10 @@ export type TConfig = {
             message?: string
         }
         "response-chunk"?: boolean                      // v0.4
-        cache?: TConfigSource
         "ai-engines"?: {                                // v0.5
-            "docker-url"?: TUrl
-            "engines-url": TUrl
+            provider?: "docker"                         // v0.5
+            params?: DockerOptions                      // v0.5
+            "engines-url"?: TUrl                        // v0.5
         }
     }
     roles?: TConfigRoles
