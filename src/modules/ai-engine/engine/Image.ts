@@ -76,7 +76,7 @@ export class Image extends absAiEngine implements IAiEngine {
             ...this.AiDockerService[this.InstanceName]
         })
 
-        Logger.Debug(`Successfully initialized Image instance: ${this.InstanceName}`)
+        Logger.Debug(`${Logger.Out} Successfully initialized Image instance '${this.InstanceName}'`)
     }
 
     @Logger.LogFunction(true)

@@ -101,7 +101,7 @@ export class Text extends absAiEngine implements IAiEngine {
             ...this.AiDockerService[this.InstanceName]
         })
 
-        Logger.Debug(`Successfully initialized Text instance: ${this.InstanceName}`)
+        Logger.Debug(`${Logger.Out} Successfully initialized Text instance '${this.InstanceName}'`)
     }
 
     @Logger.LogFunction(true)

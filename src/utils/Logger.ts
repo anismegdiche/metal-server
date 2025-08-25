@@ -50,8 +50,8 @@ Prefix.apply(LogLevel.getLogger('critical'), {
 
 export class Logger {
 
-    static readonly In = '->'
-    static readonly Out = '<-'
+    static readonly In = magenta('▶')
+    static readonly Out = yellow('◀')
     static Level: LogLevel.LogLevelDesc = LoggerDefaultLevel //NOSONAR
 
     static readonly RequestMiddleware = morgan(

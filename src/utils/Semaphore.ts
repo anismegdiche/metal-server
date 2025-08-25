@@ -33,6 +33,6 @@ export class Semaphore {
             return
         }
         this.#Available++
-        Logger.Debug(`Semaphore.Release: remaining ${this.#Available}`)
+        Logger.Debug(`${Logger.Out} Semaphore.Release: remaining ${this.#Available}`)
     }
 }

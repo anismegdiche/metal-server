@@ -54,7 +54,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
             InstanceName: aiName,
             ...SERVICE_OCR
         })
-        Logger.Debug(`Successfully initialized Ocr instance: ${this.InstanceName}`)
+        Logger.Debug(`${Logger.Out} Successfully initialized Ocr instance '${this.InstanceName}'`)
     }
 
     @Logger.LogFunction(true)

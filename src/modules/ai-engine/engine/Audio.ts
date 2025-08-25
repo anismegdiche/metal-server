@@ -68,7 +68,7 @@ export class Audio extends absAiEngine implements IAiEngine {
             ...this.AiDockerService[this.InstanceName]
         })
 
-        Logger.Debug(`Successfully initialized Audio instance: ${this.InstanceName}`)
+        Logger.Debug(`${Logger.Out} Successfully initialized Audio instance '${this.InstanceName}'`)
     }
 
     @Logger.LogFunction(true)

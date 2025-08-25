@@ -39,15 +39,15 @@ export class AiDocker {
 
     static async Init() {
         try {
-            Logger.Info('Starting AI Engine stack manager...')
+            Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
             await AiDocker.CleanStack()
             await AiDocker.CreateNetwork().catch(Logger.Debug)
             await AiDocker.StartTraefik().catch(Logger.Debug)
 
             AiDocker.StartScaler()
-            Logger.Info('AI Engine stack manager started')
+            Logger.Info(`${Logger.Out} AI Engine stack manager started`)
         } catch (error) {
-            Logger.Error(`Error in Init: ${JSON.stringify(error)}`)
+            Logger.Error(`${Logger.Out} Error in Init: ${JSON.stringify(error)}`)
             throw error
         }
     }
@@ -68,7 +68,7 @@ export class AiDocker {
     }
 
     static async CleanStack() {
-        Logger.Info(`Cleaning ${DOCKER.AI_ENGINE_PREFIX} stack...`)
+        Logger.Info(`${Logger.In} Cleaning ${DOCKER.AI_ENGINE_PREFIX} stack...`)
         const containers = await AiDocker.docker.listContainers({
             all: true,
             filters: {
@@ -77,13 +77,14 @@ export class AiDocker {
         })
 
         for (const container of containers) {
-            Logger.Info(`Stopping container: ${container.Names[0]}`)
+            Logger.Info(`${Logger.In} Stopping container '${container.Names[0]}'...`)
             const c = AiDocker.docker.getContainer(container.Id)
             await c.stop().catch((e) => Logger.Debug(e.message))
             await c.remove().catch((e) => Logger.Debug(e.message))
+            Logger.Info(`${Logger.Out} Stopped container '${container.Names[0]}'`)
         }
 
-        Logger.Info(`${DOCKER.AI_ENGINE_PREFIX} stack cleaned`)
+        Logger.Info(`${Logger.Out} ${DOCKER.AI_ENGINE_PREFIX} stack cleaned`)
     }
 
     static async CreateNetwork() {
@@ -113,14 +114,14 @@ export class AiDocker {
                             Logger.Error(`Error in pull progress for ${image}: ${err.message}`)
                             return reject(err)
                         }
-                        Logger.Debug(`(📦) Pulling ${image}...`)
+                        Logger.Debug(`${Logger.Out} 📦 Pulling ${image}...`)
                         resolve()
                     },
                     (event: any) => {
                         if (event.status === 'Downloading') {
-                            Logger.Debug(`(📦) Pulling ${image}... ${event.progress}`)
+                            Logger.Debug(`${Logger.Out} 📦 Pulling ${image}... ${event.progress}`)
                         } else {
-                            Logger.Debug(`(📦) Pulling ${image}... ${event.status}`)
+                            Logger.Debug(`${Logger.Out} 📦 Pulling ${image}... ${event.status}`)
                         }
                     }
                 )
@@ -175,9 +176,9 @@ export class AiDocker {
                         const complete = `${part}}`;
                         try {
                             const ___aLog = AiDocker.#ConvertStreamToLog(complete);
-                            ___aLog.forEach((item) => Logger.Debug(`(🔨) Building '${service.ImageName}' image... ${item}`));
+                            ___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image... ${item}`));
                         } catch (err) {
-                            Logger.Warn(`(⚠️) Failed to parse log part: ${complete}`);
+                            Logger.Warn(`${Logger.Out} ⚠️ Failed to parse log part: ${complete}`);
                         }
                     }
                 });
@@ -186,19 +187,19 @@ export class AiDocker {
                 stream.on('end', () => {
                     if (_streamData.length > 0) {
                         const ___aLog = AiDocker.#ConvertStreamToLog(_streamData)
-                        ___aLog.forEach((item) => Logger.Debug(`(🔨) Building '${service.ImageName}' image... ${item}`))
+                        ___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image: ${item}`))
                         _streamData = ""
                     }
-                    Logger.Debug(`(🔨) Built '${service.ImageName}' image`)
+                    Logger.Debug(`${Logger.Out} 🔨 Built '${service.ImageName}' image`)
                     resolve()
                 })
 
                 stream.on('error', (err: Error) => {
-                    Logger.Error(`(🔨) ❌ Error building '${service.ImageName}' image: ${err}`)
+                    Logger.Error(`${Logger.Out} 🔨 ❌ Error building '${service.ImageName}' image: ${err}`)
                     reject(err)
                 })
             } catch (err) {
-                Logger.Error(`(🔨) ❌ Failed to build '${service.ImageName}' image: ${err}`)
+                Logger.Error(`${Logger.Out} 🔨 ❌ Failed to build '${service.ImageName}' image: ${err}`)
                 reject(err)
             }
         })
@@ -233,7 +234,7 @@ export class AiDocker {
         })
 
         await container.start()
-        Logger.Debug(`Started new ${serviceName} container: ${containerName}`)
+        Logger.Debug(`${Logger.Out} Started new '${serviceName}' container '${containerName}'`)
     }
 
     static async StartTraefik() {
@@ -243,11 +244,11 @@ export class AiDocker {
                 filters: { name: [TraefikDockerService.Name] }
             })
             if (containers.length > 0) {
-                Logger.Debug('Traefik container already running')
+                Logger.Debug(`${Logger.Out} Traefik container already running`)
                 return
             }
-            Logger.Debug('Starting Traefik container...')
-            Logger.Debug(` - ${TraefikDockerService.ImageName} pull started`)
+            Logger.Debug(`${Logger.Out} Starting Traefik container`)
+            Logger.Debug(`${Logger.Out} '${TraefikDockerService.ImageName}' pull started`)
 
             await AiDocker.PullImage(TraefikDockerService.ImageName).catch(Logger.Error)
 
