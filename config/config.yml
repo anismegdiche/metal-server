@@ -35,12 +35,27 @@ sources:
   src-myplan:
     provider: plan
     database: myplan
+  src-csv:
+    provider: files
+    options:
+      storage: fs
+      fs-folder: ./data/
+      autocreate: true
+      content:
+        '*.csv':
+          type: csv
+          csv-delimiter: ";"
+          csv-newline: "\n"
+          csv-header: true
+          csv-quote: "\""
 
 schemas:
   fs:
     source: src-fs
   myplan:
     source: src-myplan
+  csv:
+    source: src-csv
     
 
 schedules:
@@ -72,4 +87,8 @@ plans:
           output: text
 
       - remove-fields: [content]
+
+      - insert:
+          schema: csv
+          entity: csv.csv
     

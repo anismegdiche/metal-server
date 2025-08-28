@@ -42,7 +42,7 @@ export class SqlQueryUtils {
     }
 
 
-    #WhereCondition(field: string, value: unknown): string {
+    #whereCondition(field: string, value: unknown): string {
         // file deepcode ignore DuplicateCaseSwitch: simplicity
         switch (true) {
             case typia.is<string>(value):
@@ -62,7 +62,7 @@ export class SqlQueryUtils {
         }
     }
 
-    #EscapeFields(fields?: string[] | string): string {
+    #escapeFields(fields?: string[] | string): string {
         if (!fields)
             return ""
 
@@ -92,210 +92,32 @@ export class SqlQueryUtils {
 
         return _.chain(cleanFields)
             .map(this.FnEscapeField)
-            .join(',')
+            .join(', ')
             .value()
+            .trim()
     }
 
-    @Logger.LogFunction()
-    SetQuery(query: string): this {
-        this.#Query = String(query)
-        return this
-    }
-
-    Query(): string {
-        if (this.#DetectSQLInjection())
-            throw new HttpErrorBadRequest('SQL Injection detected')
-
-        return this.#Query
-    }
-
-    @Logger.LogFunction()
-    Select(fields?: string): this {
-
-        this.#Query = (fields === undefined || fields === '*')
-            ? `SELECT *`
-            : `SELECT ${this.#EscapeFields(fields)}`
-
-        return this
-    }
-
-    @Logger.LogFunction()
-    From(entity: string): this {
-        this.#Query = `${this.#Query} FROM ${this.FnEscapeEntity(entity)}`
-        return this
-    }
-
-    @Logger.LogFunction()
-    Where(condition?: string | object): this {
-        // no filters
-        if (condition === undefined)
-            return this
-
-        // filter-expression
-        if (typeof condition === 'string' && condition.length > 0) {
-            this.#Query = `${this.#Query} WHERE ${condition}`
-            return this
+    #formatValue(_value: any): string | undefined {
+        switch (true) {
+            case _value == null:
+                return undefined
+            case typeof _value === 'string' && _value.startsWith(ESCAPE_FIELD_VALUE):
+                return _value.slice(ESCAPE_FIELD_VALUE.length).trim()
+            case typeof _value === 'string':
+                return `'${_value.replace(/'/g, "''")}'`
+            case typeof _value === 'number':
+            case !isNaN(parseInt(_value as string, 10)):
+            case !isNaN(parseFloat(_value as string)):
+                return _value.toString()
+            case typeof _value === 'object':
+                this.Data.push(_value)
+                return '?'
+            default:
+                return `'${JsonUtils.Stringify(_value).replace(/'/g, "''")}'`
         }
-
-        // filter
-        if (Array.isArray(condition) && condition.length > 0) {
-            const _cond = _
-                .chain(condition)
-                .map((__filter) => {
-                    const [___field] = Object.keys(__filter)
-                    const [___value] = Object.values(__filter)
-
-                    if (!___field)
-                        return ''
-
-                    return this.#WhereCondition(this.FnEscapeField(___field), ___value)
-                })
-                .join(' AND ')
-                .value()
-
-            this.#Query = `${this.#Query} WHERE ${_cond}`
-            return this
-        }
-
-
-        if (typeof condition === 'object' && _.keys(condition).length > 0) {
-            const _cond = _
-                .chain(condition)
-                .map((__value, __field) => {
-
-                    if (!__field)
-                        return ''
-
-                    return this.#WhereCondition(this.FnEscapeField(__field), __value)
-                })
-                .join(' AND ')
-                .value()
-
-            this.#Query = `${this.#Query} WHERE ${_cond}`
-            return this
-        }
-        return this
     }
 
-    @Logger.LogFunction()
-    Delete(): this {
-        this.#Query = 'DELETE'
-        return this
-    }
-
-    @Logger.LogFunction()
-    Update(entity: string): this {
-        this.#Query = `UPDATE ${this.FnEscapeEntity(entity)}`
-        return this
-    }
-
-    @Logger.LogFunction()
-    Set(rows?: TRow[] | TRow): this {
-        if (rows === undefined)
-            return this
-
-        let fieldsValues: TRow = {}
-        fieldsValues = (Array.isArray(rows))
-            ? rows[0]
-            : rows
-
-        const setValues = _.chain(fieldsValues)
-            .mapValues((_value, _field) => {
-                let __formattedValue = ''
-                switch (true) {
-                    case typeof _value === 'string' && _value.startsWith(ESCAPE_FIELD_VALUE):
-                        __formattedValue = `${_value.slice(ESCAPE_FIELD_VALUE.length).trim()}`
-                        break
-                    case typeof _value === 'string':
-                        __formattedValue = `'${_value}'`
-                        break
-                    case typeof _value === 'number':
-                        __formattedValue = _value.toString()
-                        break
-                    case typeof _value === 'object':
-                        __formattedValue = '?'
-                        if (_value != null)
-                            this.Data.push(_value)
-                        break
-                    default:
-                        __formattedValue = `'${JsonUtils.Stringify(_value)}'`
-                        break
-                }
-                return `${_field}=${__formattedValue}`
-            })
-            .values()
-            .join(',')
-            .value()
-
-        this.#Query = `${this.#Query} SET ${setValues}`
-        return this
-    }
-
-    @Logger.LogFunction()
-    Insert(entity: string): this {
-        this.#Query = `INSERT INTO ${this.FnEscapeEntity(entity)}`
-        return this
-    }
-
-    @Logger.LogFunction()
-    Fields(fields?: string[] | string): this {
-        if (!fields)
-            return this
-
-        this.#Query = `${this.#Query}(${this.#EscapeFields(fields)})`
-
-        return this
-    }
-
-    @Logger.LogFunction()
-    Values(data: TRow[]): this {
-        if (Array.isArray(data) && data.length > 0) {
-            this.#Query = `${this.#Query} VALUES`
-            data.forEach((_values, _index) => {
-                const newValues = _.chain(_values)
-                    .mapValues((_value) => {
-                        switch (true) {
-                            case _value == null:
-                                return
-                            case !isNaN(parseInt(_value as string, 10)):
-                            case !isNaN(parseFloat(_value as string)):
-                                return `${_value}`
-                            case typeof _value === 'object':
-                                this.Data.push(_value)
-                                return '?'
-                            default:
-                                return `'${_value}'`
-                        }
-                    })
-                    .values()
-                    .join(',')
-                    .value()
-
-                this.#Query = `${this.#Query} (${newValues})`
-                // multiple value join
-                if (_index < data.length - 1) {
-                    this.#Query = `${this.#Query}, `
-                }
-            })
-        } else {
-
-
-            this.#Query = `${this.#Query} VALUES ('${_.values(data).join('\',\'')}')`
-        }
-        return this
-    }
-
-    @Logger.LogFunction()
-    OrderBy(order?: TOrderBy): this {
-        if (!order)
-            return this
-
-        const _order = _.map(order, (value, key) => `${key} ${value!.toUpperCase()}`)
-        this.#Query = `${this.#Query} ORDER BY ${_order.join(', ')}`
-        return this
-    }
-
-    #SanitizeTokenize(): string[] {
+    #sanitizeTokenize(): string[] {
         const query = this.#Query.trim()
         if ((/^\d+(\.\d+)?$/).test(query)) {
             return [this.#Query]
@@ -346,49 +168,7 @@ export class SqlQueryUtils {
         return tokens
     }
 
-    Tokenize(): TSqlToken[] {
-        const tokens = _.chain(this.#SanitizeTokenize())
-            .map((token: string) => {
-                let tokenType = ''
-                switch (true) {
-                    case ['SELECT', 'UPDATE', 'INSERT', 'DELETE', 'SET', 'FROM', 'WHERE', 'LIKE', 'ORDER', 'BY', 'ASC', 'DESC'].includes(token.toUpperCase()):
-                        tokenType = "command"
-                        break
-                    case token === '(':
-                        tokenType = 'par-open'
-                        break
-                    case token === ')':
-                        tokenType = 'par-closed'
-                        break
-                    case ['+', '-', '*', '/', '='].includes(token):
-                        tokenType = "operator"
-                        break
-                    case token.startsWith("'") && token.endsWith("'"):
-                        tokenType = "string"
-                        break
-                    case !isNaN(parseInt(token, 10)):
-                    case !isNaN(parseFloat(token)):
-                        tokenType = "number"
-                        break
-                    case token === ',':
-                        tokenType = "seperator"
-                        break
-                    default:
-                        tokenType = "variable"
-                        break
-                }
-
-                return <TSqlToken>{
-                    token,
-                    type: tokenType
-                }
-            })
-            .value()
-
-        return tokens as any[]
-    }
-
-    #DetectSQLInjection() {
+    #detectSQLInjection() {
         const denyWords = [
             "DROP",
             "ALTER",
@@ -439,5 +219,222 @@ export class SqlQueryUtils {
             sqlInjectionPatterns.some(pattern => pattern.test(this.#Query)) ||
             mixedCrudPatterns.some(pattern => pattern.test(this.#Query))
         )
+    }
+
+    @Logger.LogFunction()
+    SetQuery(query: string): this {
+        this.#Query = String(query)
+        return this
+    }
+
+    Query(): string {
+        if (this.#detectSQLInjection())
+            throw new HttpErrorBadRequest('SQL Injection detected')
+
+        return this.#Query
+    }
+
+    @Logger.LogFunction()
+    Select(fields?: string): this {
+
+        this.#Query = (fields === undefined || fields === '*')
+            ? `SELECT *`
+            : `SELECT ${this.#escapeFields(fields)}`
+
+        return this
+    }
+
+    @Logger.LogFunction()
+    From(entity: string): this {
+        this.#Query = `${this.#Query} FROM ${this.FnEscapeEntity(entity)}`
+        return this
+    }
+
+    @Logger.LogFunction()
+    Where(condition?: string | object): this {
+        // no filters
+        if (condition === undefined)
+            return this
+
+        // filter-expression
+        if (typeof condition === 'string' && condition.length > 0) {
+            this.#Query = `${this.#Query} WHERE ${condition}`
+            return this
+        }
+
+        // filter
+        if (Array.isArray(condition) && condition.length > 0) {
+            const _cond = _
+                .chain(condition)
+                .map((__filter) => {
+                    const [___field] = Object.keys(__filter)
+                    const [___value] = Object.values(__filter)
+
+                    if (!___field)
+                        return ''
+
+                    return this.#whereCondition(this.FnEscapeField(___field), ___value)
+                })
+                .join(' AND ')
+                .value()
+
+            this.#Query = `${this.#Query} WHERE ${_cond}`
+            return this
+        }
+
+
+        if (typeof condition === 'object' && _.keys(condition).length > 0) {
+            const _cond = _
+                .chain(condition)
+                .map((__value, __field) => {
+
+                    if (!__field)
+                        return ''
+
+                    return this.#whereCondition(this.FnEscapeField(__field), __value)
+                })
+                .join(' AND ')
+                .value()
+
+            this.#Query = `${this.#Query} WHERE ${_cond}`
+            return this
+        }
+        return this
+    }
+
+    @Logger.LogFunction()
+    Delete(): this {
+        this.#Query = 'DELETE'
+        return this
+    }
+
+    @Logger.LogFunction()
+    Update(entity: string): this {
+        this.#Query = `UPDATE ${this.FnEscapeEntity(entity)}`
+        return this
+    }
+
+    @Logger.LogFunction()
+    Set(rows?: TRow[] | TRow): this {
+        if (rows === undefined)
+            return this
+
+        let fieldsValues: TRow = {}
+        fieldsValues = (Array.isArray(rows))
+            ? rows[0]
+            : rows
+
+        const setValues = _.chain(fieldsValues)
+            .mapValues((_value, _field) => {
+                const formattedValue = this.#formatValue(_value)
+                return formattedValue === undefined
+                    ? ''
+                    : `${_field} = ${formattedValue}`
+            })
+            .values()
+            .filter(Boolean)
+            .join(', ')
+            .value()
+
+        if (setValues) {
+            this.#Query = `${this.#Query} SET ${setValues}`.trim()
+        }
+        return this
+    }
+
+    @Logger.LogFunction()
+    Insert(entity: string): this {
+        this.#Query = `INSERT INTO ${this.FnEscapeEntity(entity)}`
+        return this
+    }
+
+    @Logger.LogFunction()
+    Fields(fields?: string[] | string): this {
+        if (!fields)
+            return this
+
+        this.#Query = `${this.#Query}(${this.#escapeFields(fields)})`
+
+        return this
+    }
+
+    @Logger.LogFunction()
+    Values(data: TRow[]): this {
+        if (Array.isArray(data) && data.length > 0) {
+            this.#Query = `${this.#Query} VALUES`
+            data.forEach((_values, _index) => {
+                const newValues = _.chain(_values)
+                    .mapValues((_value) => this.#formatValue(_value))
+                    .values()
+                    .filter((val): val is string => val !== undefined)
+                    .join(', ')
+                    .value()
+
+                this.#Query = `${this.#Query} (${newValues.trim()})`
+                // multiple value join
+                if (_index < data.length - 1) {
+                    this.#Query = `${this.#Query}, `
+                }
+            })
+        } else if (data && typeof data === 'object') {
+            const values = _.values(data)
+                .map(val => this.#formatValue(val))
+                .filter((val): val is string => val !== undefined)
+                .join(',')
+            this.#Query = `${this.#Query} VALUES (${values})`
+        }
+        return this
+    }
+
+    @Logger.LogFunction()
+    OrderBy(order?: TOrderBy): this {
+        if (!order)
+            return this
+
+        const _order = _.map(order, (value, key) => `${key} ${value!.toUpperCase()}`)
+        this.#Query = `${this.#Query} ORDER BY ${_order.join(', ')}`
+        return this
+    }
+
+    Tokenize(): TSqlToken[] {
+        const tokens = _.chain(this.#sanitizeTokenize())
+            .map((token: string) => {
+                let tokenType = ''
+                switch (true) {
+                    case ['SELECT', 'UPDATE', 'INSERT', 'DELETE', 'SET', 'FROM', 'WHERE', 'LIKE', 'ORDER', 'BY', 'ASC', 'DESC'].includes(token.toUpperCase()):
+                        tokenType = "command"
+                        break
+                    case token === '(':
+                        tokenType = 'par-open'
+                        break
+                    case token === ')':
+                        tokenType = 'par-closed'
+                        break
+                    case ['+', '-', '*', '/', '='].includes(token):
+                        tokenType = "operator"
+                        break
+                    case token.startsWith("'") && token.endsWith("'"):
+                        tokenType = "string"
+                        break
+                    case !isNaN(parseInt(token, 10)):
+                    case !isNaN(parseFloat(token)):
+                        tokenType = "number"
+                        break
+                    case token === ',':
+                        tokenType = "seperator"
+                        break
+                    default:
+                        tokenType = "variable"
+                        break
+                }
+
+                return <TSqlToken>{
+                    token,
+                    type: tokenType
+                }
+            })
+            .value()
+
+        return tokens as any[]
     }
 }

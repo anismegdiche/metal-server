@@ -4,21 +4,24 @@
 import * as Csv from 'papaparse'
 import typia from "typia"
 //
-import { DataTable } from "../../../types/DataTable"
-import { Logger } from "../../../utils/Logger"
-import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { Readable } from "node:stream"
-import { ReadableUtils } from "../../../utils/ReadableUtils"
-import { absContentProvider } from "../base/absContentProvider"
-import { StringUtils } from "../../../utils/StringUtils"
-import { TContext } from "../../sandbox/types/TContext"
-import { Sandbox } from "../../sandbox/Sandbox"
+//
+import { DataTable } from "../../../types/DataTable"
+import { TJson } from '../../../types/TJson'
+import { Assert } from '../../../utils/Assert'
+import { JsonUtils } from '../../../utils/JsonUtils'
+import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
-import { TJson } from "../../../types/TJson"
+import { ReadableUtils } from "../../../utils/ReadableUtils"
+import { StringUtils } from "../../../utils/StringUtils"
+import { Sandbox } from "../../sandbox/Sandbox"
+import { TContext } from "../../sandbox/types/TContext"
+import { absContentProvider } from "../base/absContentProvider"
 import { TCsvContentConfig } from '../types/TCsvContentConfig'
 import { TCsvContentParams } from '../types/TCsvContentParams'
 
 
+//
 export class CsvContent extends absContentProvider {
 
     Params: TCsvContentParams | undefined
@@ -42,8 +45,8 @@ export class CsvContent extends absContentProvider {
 
     @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
-        if (!this.Content)
-            throw new HttpErrorInternalServerError('Content is not defined')
+
+        Assert(this.Content, 'Content is not defined')
 
         const $__evalParams = PlaceHolder.EvaluateJsCode<Csv.ParseConfig>(
             this.Params,
@@ -61,17 +64,28 @@ export class CsvContent extends absContentProvider {
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
-        if (!this.Content)
-            throw new HttpErrorInternalServerError('Content is not defined')
+        
+        Assert(this.Content, 'Content is not defined')
 
         const $__evalParams = PlaceHolder.EvaluateJsCode<TCsvContentParams>(
             this.Params,
             new Sandbox($context)
         )
 
+        //flattern nested objects in data.Rows
+        const _dataFlatten = data.Rows.map((row) => Object.fromEntries(
+            Object.entries(row).map(([k, v]) => [
+                k,
+                // and is not date
+                typeof v === "object" && v !== null && !Date.parse(v.toString()) 
+                    ? JsonUtils.Stringify(v)
+                    : v
+            ])
+        ));
+
         const streamOut = Readable.from(
             Csv.unparse(
-                data.Rows,
+                _dataFlatten,
                 $__evalParams
             )
         )

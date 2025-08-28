@@ -5,27 +5,150 @@ import { TRow } from '../../types/DataTable'
 import { JsonUtils } from "../JsonUtils"
 import { HttpErrorBadRequest } from "../../modules/errors/HttpErrors"
 
-
 function mockEscapeField(field: string) {
     return `\`${field}\``
 }
 
-describe('SqlQueryHelper', () => {
+describe('SqlQueryUtils', () => {
+    describe('Value Formatting', () => {
+        it('should handle null/undefined values', () => {
+            const query = new SqlQueryUtils()
+                .Update('users')
+                .Set({
+                    id: 1,
+                    name: null,
+                    age: undefined
+                })
+                .Where({ id: 1 })
+                .Query()
+            expect(query).toContain('id = 1')
+            expect(query).not.toContain('name=')
+            expect(query).not.toContain('age=')
+        })
 
-    it("Values", () => {
-        const queryHelper = new SqlQueryUtils()
-        const data: TRow[] = [
-            {
-                id: 1,
-                name: 'John'
-            },
-            {
-                id: 2,
-                name: 'Jane'
-            }
-        ]
-        queryHelper.Insert('users').Fields('id, name').Values(data)
-        expect(queryHelper.Query()).toEqual("INSERT INTO users(id,name) VALUES (1,'John'),  (2,'Jane')")
+        it('should handle string values with single quotes', () => {
+            const query = new SqlQueryUtils()
+                .Update('users')
+                .Set({
+                    id: 1,
+                    name: "O'Reilly"
+                })
+                .Query()
+            expect(query).toContain("name = 'O''Reilly'")
+        })
+
+        it('should handle numeric values', () => {
+            const query = new SqlQueryUtils()
+                .Update('products')
+                .Set({
+                    id: 1,
+                    price: 9.99,
+                    quantity: '10'
+                })
+                .Query()
+                
+            expect(query).toBe("UPDATE products SET id = 1, price = 9.99, quantity = '10'")
+        })
+
+        it('should handle object values with parameter binding', () => {
+            const date = new Date()
+            const query = new SqlQueryUtils()
+                .Update('events')
+                .Set({
+                    id: 1,
+                    data: {
+                        date,
+                        type: 'test'
+                    }
+                })
+                .Query()
+
+            expect(query).toBe('UPDATE events SET id = 1, data = ?')
+        })
+
+        it('should handle escaped field values', () => {
+            const query = new SqlQueryUtils()
+                .Update('users')
+                .Set({
+                    id: 1,
+                    lastLogin: '$>NOW()'
+                })
+                .Query()
+            expect(query).toContain('lastLogin = NOW()')
+        })
+    })
+
+    describe('INSERT operations', () => {
+        it('should handle multiple rows with values', () => {
+            const query = new SqlQueryUtils()
+                .Insert('users')
+                .Fields('id, name, active')
+                .Values([
+                    {
+                        id: 1,
+                        name: 'John',
+                        active: true
+                    },
+                    {
+                        id: 2,
+                        name: 'Jane',
+                        active: false
+                    }
+                ])
+                .Query()
+
+            expect(query).toBe("INSERT INTO users(id, name, active) VALUES (1, 'John', 'true'),  (2, 'Jane', 'false')")
+        })
+
+        it('should handle single row insert', () => {
+            const query = new SqlQueryUtils()
+                .Insert('users')
+                .Fields('id, name')
+                .Values([
+                    {
+                        id: 1,
+                        name: 'John'
+                    }
+                ])
+                .Query()
+
+            expect(query).toBe("INSERT INTO users(id, name) VALUES (1, 'John')")
+        })
+    })
+
+    describe('UPDATE operations', () => {
+        it('should handle simple updates', () => {
+            const query = new SqlQueryUtils()
+                .Update('users')
+                .Set({
+                    name: 'John',
+                    age: 30
+                })
+                .Where({ id: 1 })
+                .Query()
+
+            expect(query).toBe("UPDATE users SET name = 'John', age = 30 WHERE id = 1")
+        })
+
+        it('should handle complex updates with mixed types', () => {
+            const query = new SqlQueryUtils()
+                .Update('products')
+                .Set({
+                    id: 1,
+                    name: 'Laptop',
+                    price: 999.99,
+                    specs: {
+                        ram: '16GB',
+                        storage: '1TB'
+                    },
+                    updatedAt: '$>CURRENT_TIMESTAMP'
+                })
+                .Query()
+
+            expect(query).toContain("name = 'Laptop'")
+            expect(query).toContain("price = 999.99")
+            expect(query).toContain("updatedAt = CURRENT_TIMESTAMP")
+        })
     })
 
     it("Set", () => {
@@ -83,7 +206,7 @@ describe('SqlQueryHelper', () => {
             name: 'John',
             age: 33
         }).Where("id = 1")
-        expect(queryHelper.Query()).toEqual("UPDATE users SET name='John',age=33 WHERE id = 1")
+        expect(queryHelper.Query()).toEqual("UPDATE users SET name = 'John', age = 33 WHERE id = 1")
     })
 
     it("Update with field value escape", () => {
@@ -92,7 +215,7 @@ describe('SqlQueryHelper', () => {
             name: `$> firstname + ' ' + lastname`,
             age: `$>33 + 10`
         }).Where("id = 1")
-        expect(queryHelper.Query()).toEqual("UPDATE users SET name=firstname + ' ' + lastname,age=33 + 10 WHERE id = 1")
+        expect(queryHelper.Query()).toEqual("UPDATE users SET name = firstname + ' ' + lastname, age = 33 + 10 WHERE id = 1")
     })
 
     it("Fields string", () => {
@@ -103,7 +226,7 @@ describe('SqlQueryHelper', () => {
                 name: 'John'
             }
         ])
-        expect(queryHelper.Query()).toBe("INSERT INTO users(name) VALUES (1,'John')")
+        expect(queryHelper.Query()).toBe("INSERT INTO users(name) VALUES (1, 'John')")
     })
 
     it("Fields string with escape", () => {
@@ -114,7 +237,7 @@ describe('SqlQueryHelper', () => {
                 name: 'John'
             }
         ])
-        expect(queryHelper.Query()).toBe("INSERT INTO users(`name`) VALUES (1,'John')")
+        expect(queryHelper.Query()).toBe("INSERT INTO users(`name`) VALUES (1, 'John')")
     })
 
     it("Fields array", () => {
@@ -125,7 +248,7 @@ describe('SqlQueryHelper', () => {
                 name: 'John'
             }
         ])
-        expect(queryHelper.Query()).toBe("INSERT INTO users(id,name) VALUES (1,'John')")
+        expect(queryHelper.Query()).toBe("INSERT INTO users(id, name) VALUES (1, 'John')")
     })
 
     it("Fields array with escape", () => {
@@ -136,7 +259,7 @@ describe('SqlQueryHelper', () => {
                 name: 'John'
             }
         ])
-        expect(queryHelper.Query()).toBe("INSERT INTO users(`id`,`name`) VALUES (1,'John')")
+        expect(queryHelper.Query()).toBe("INSERT INTO users(`id`, `name`) VALUES (1, 'John')")
     })
 
     it("Sql injection test - Where string", () => {
