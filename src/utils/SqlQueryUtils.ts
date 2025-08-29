@@ -2,7 +2,6 @@
 //
 //
 import _ from 'lodash'
-import typia from "typia"
 //
 import { TOrderBy, TRow } from "../types/DataTable"
 import { Logger } from './Logger'
@@ -45,18 +44,18 @@ export class SqlQueryUtils {
     #whereCondition(field: string, value: unknown): string {
         // file deepcode ignore DuplicateCaseSwitch: simplicity
         switch (true) {
-            case typia.is<string>(value):
+            case typeof value === 'string':
                 return `${field} = '${value}'`
 
-            case typia.is<null>(value):
+            case value === null:
                 return `${field} = NULL`
 
-            case typia.is<undefined>(value):
+            case value === undefined:
                 throw new HttpErrorInternalServerError(`SqlQueryHelper.Where: undefined value for field '${field}'`)
 
-            case typia.is<number>(value):
-            case typia.is<bigint>(value):
-            case typia.is<boolean>(value):
+            case typeof value === 'number':
+            case typeof value === 'bigint':
+            case typeof value === 'boolean':
             default:
                 return `${field} = ${value}`
         }
