@@ -4,6 +4,7 @@
 import { X2jOptions, XMLBuilder, XmlBuilderOptions, XMLParser } from "fast-xml-parser"
 import _ from "lodash"
 import { Readable } from "node:stream"
+import typia from "typia"
 //
 import { DataTable } from "../../../types/DataTable"
 import { TJson } from "../../../types/TJson"
@@ -16,6 +17,8 @@ import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import { TContext } from "../../sandbox/types/TContext"
 //
+import { Assert } from "../../../utils/Assert"
+import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { TContentConfig } from "../@types"
 import { absContentProvider } from "../base/absContentProvider"
 import { TXmlContentConfig } from "../types/TXmlContentConfig"
@@ -54,8 +57,13 @@ export class XmlContent extends absContentProvider {
 
     @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
-        if (!this.Params || !this.Content)
-            throw new HttpErrorInternalServerError('XmlContent: something is missing in the configuration')
+        Assert.Var<TXmlContentConfig>(this.Params, 
+            typia.is<TXmlContentConfig>(this.Params),
+            'Params is not defined')
+
+        Assert.Var<VirtualFileSystem>(this.Content, 
+            typia.is<VirtualFileSystem>(this.Content),
+            'Content is not defined')
 
         const xmlParser = new XMLParser(this.ParserOptions)
         const xmlData = xmlParser.parse(
@@ -79,8 +87,13 @@ export class XmlContent extends absContentProvider {
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
-        if (!this.Params || !this.Content)
-            throw new HttpErrorInternalServerError('XmlContent: something is missing in the configuration')
+        Assert.Var<TXmlContentConfig>(this.Params, 
+            typia.is<TXmlContentConfig>(this.Params),
+            'Params is not defined')
+
+        Assert.Var<VirtualFileSystem>(this.Content, 
+            typia.is<VirtualFileSystem>(this.Content),
+            'Content is not defined')
 
         const { "xml-path": jsonPath  } = this.Params
 

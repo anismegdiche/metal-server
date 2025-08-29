@@ -68,7 +68,7 @@ export class MemoryData extends absDataProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Assert<string>(this.SourceName, this.SourceName !== undefined, 'SourceName is required')
+        Assert.Var<string>(this.SourceName, this.SourceName !== undefined, 'SourceName is required')
         this.Connection = new DataBase(this.Config.database ?? this.SourceName)
         Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
     }
@@ -243,7 +243,7 @@ export class MemoryData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         const { schema } = schemaRequest
 

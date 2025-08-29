@@ -225,7 +225,7 @@ export class SqlServerData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<ConnectionPool>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection is not initialized`)
+        Assert.Var<ConnectionPool>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection is not initialized`)
 
         const { schema, source } = schemaRequest
 

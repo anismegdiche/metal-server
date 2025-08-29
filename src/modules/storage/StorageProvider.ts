@@ -20,8 +20,8 @@ export class StorageProvider {
     static readonly #StorageFactory = new Factory<absStorageProvider>()
 
     static GetProvider(providerName?: string): absStorageProvider {
-        Assert<string>(providerName, providerName !== undefined, 'StorageProvider.GetProvider: providerName is required')
-        Assert(Object.values(STORAGE).includes(providerName as STORAGE), 'StorageProvider.GetProvider: providerName is invalid')
+        Assert.Var<string>(providerName, providerName !== undefined, 'StorageProvider.GetProvider: providerName is required')
+        Assert.Condition(Object.values(STORAGE).includes(providerName as STORAGE), 'StorageProvider.GetProvider: providerName is invalid')
 
         if (StorageProvider.#StorageFactory.Has(providerName))
             return StorageProvider.#StorageFactory.Get(providerName)!.Clone()

@@ -16,6 +16,8 @@ import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
 import { TXlsContentConfig } from '../types/TXlsContentConfig'
 import { TXlsContentParams } from '../types/TXlsContentParams'
+import { Assert } from '../../../utils/Assert'
+import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
 
 
 // Convert column letter (e.g., 'A', 'B', 'AA') to a column number
@@ -61,8 +63,13 @@ export class XlsContent extends absContentProvider {
 
     @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context?: Partial<TContext>): Promise<DataTable> {
-        if (!this.Params)
-            throw new HttpErrorInternalServerError('Xls: Params is not defined')
+        Assert.Var<TXlsContentParams>(this.Params, 
+            typia.is<TXlsContentParams>(this.Params),
+            'Params is not defined')
+
+        Assert.Var<VirtualFileSystem>(this.Content, 
+            typia.is<VirtualFileSystem>(this.Content),
+            'Content is not defined')
 
         const workbook = new ExcelJS.Workbook()
         Logger.Debug('XlsContent.Get: reading stream')
@@ -125,8 +132,13 @@ export class XlsContent extends absContentProvider {
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context?: Partial<TContext>): Promise<Readable> {
-        if (!this.Params)
-            throw new HttpErrorInternalServerError('Json: Params is not defined')
+        Assert.Var<TXlsContentParams>(this.Params, 
+            typia.is<TXlsContentParams>(this.Params),
+            'Params is not defined')
+
+        Assert.Var<VirtualFileSystem>(this.Content, 
+            typia.is<VirtualFileSystem>(this.Content),
+            'Content is not defined')
 
         const workbook = new ExcelJS.Workbook()
         

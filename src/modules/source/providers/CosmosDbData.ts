@@ -72,9 +72,9 @@ export class CosmosDbData extends absDataProvider {
         this.Config = _.merge(this.DEFAULT, sourceConfig as TCosmosDbDataConfig)
         this.Config.options.endpoint = this.Config.host
 
-        Assert(!StringUtils.IsEmpty(this.Config.options.endpoint), `${Logger.Out} ${this.SourceName}: Cosmos DB endpoint is required`)
-        Assert(!StringUtils.IsEmpty(this.Config.options.key), `${Logger.Out} ${this.SourceName}: Cosmos DB key is required`)
-        Assert(!StringUtils.IsEmpty(this.Config.database), `${Logger.Out} ${this.SourceName}: Cosmos DB database is required`)
+        Assert.Condition(!StringUtils.IsEmpty(this.Config.options.endpoint), `${Logger.Out} ${this.SourceName}: Cosmos DB endpoint is required`)
+        Assert.Condition(!StringUtils.IsEmpty(this.Config.options.key), `${Logger.Out} ${this.SourceName}: Cosmos DB key is required`)
+        Assert.Condition(!StringUtils.IsEmpty(this.Config.database), `${Logger.Out} ${this.SourceName}: Cosmos DB database is required`)
     }
 
     @Logger.LogFunction()
@@ -115,7 +115,7 @@ export class CosmosDbData extends absDataProvider {
     @Logger.LogFunction()
     @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<Database>(this.Database, this.Database !== undefined, `${Logger.Out} ${this.SourceName}: Database not connected`)
+        Assert.Var<Database>(this.Database, this.Database !== undefined, `${Logger.Out} ${this.SourceName}: Database not connected`)
         const { schema, entity } = schemaRequest
 
         // eslint-disable-next-line no-param-reassign
@@ -349,7 +349,7 @@ export class CosmosDbData extends absDataProvider {
     @Logger.LogFunction()
     @SynchronizerManager.Synchronized()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<Database>(this.Database, this.Database !== undefined, `${Logger.Out} ${this.SourceName}: Database not connected`)
+        Assert.Var<Database>(this.Database, this.Database !== undefined, `${Logger.Out} ${this.SourceName}: Database not connected`)
 
         const { schema } = schemaRequest
 
@@ -420,7 +420,7 @@ export class CosmosDbData extends absDataProvider {
     }
 
     async GetContainer(schemaRequest: TSchemaRequest): Promise<Container> {
-        Assert<Database>(this.Database, this.Database !== undefined, `${Logger.Out} ${this.SourceName}: Database not connected`)
+        Assert.Var<Database>(this.Database, this.Database !== undefined, `${Logger.Out} ${this.SourceName}: Database not connected`)
 
         try {
             const { Body } = await this.ListEntities(schemaRequest)

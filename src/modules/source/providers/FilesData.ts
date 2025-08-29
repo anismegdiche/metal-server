@@ -59,7 +59,7 @@ export class FilesData extends absDataProvider {
             content
         } = this.Config.options as TFilesDataOptions
 
-        Assert<TFilesDataOptionsContent>(content, typia.is<TFilesDataOptionsContent>(content), `${this.SourceName}: Content type is not defined`)
+        Assert.Var<TFilesDataOptionsContent>(content, typia.is<TFilesDataOptionsContent>(content), `${this.SourceName}: Content type is not defined`)
 
         this.Connection = StorageProvider.GetProvider(storage)
         this.Connection.SetConfig(this.Config)
@@ -105,7 +105,7 @@ export class FilesData extends absDataProvider {
     @Logger.LogFunction()
     @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         const { schema, entity } = schemaRequest
 
@@ -149,7 +149,7 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge(
@@ -197,7 +197,7 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge($context, this.GetContext(schemaRequest))
@@ -242,7 +242,7 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         // eslint-disable-next-line no-param-reassign
         $context = _.merge($context, this.GetContext(schemaRequest))
@@ -292,7 +292,7 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         const { schema } = schemaRequest
 

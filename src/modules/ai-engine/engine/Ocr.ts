@@ -70,14 +70,13 @@ export class Ocr extends absAiEngine implements IAiEngine {
         const { data } = args
         const { task, params } = args as TStepRunAiOcrParams
         
-        Assert(params, 'params is required')
-        Assert<string>(params?.lang, !StringUtils.IsEmpty(params?.lang), 'params.lang is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
             this.InstanceName,
             task,
-            `?lang=${LangUtils.Convert(params.lang, OCR_LANG_ISO, OCR_LANG)}`
+            `?lang=${LangUtils.Convert(params?.lang, OCR_LANG_ISO, OCR_LANG)}`
         )
 
         try {

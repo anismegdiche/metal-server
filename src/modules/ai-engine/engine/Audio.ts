@@ -83,7 +83,7 @@ export class Audio extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiAudioParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -137,7 +137,7 @@ export class Audio extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiAudioParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,

@@ -8,7 +8,6 @@ import { DataTable } from "../../../types/DataTable"
 import { TJson } from "../../../types/TJson"
 import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from "../../../utils/Logger"
-import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { absContentProvider } from "../base/absContentProvider"
 import { Sandbox } from "../../sandbox/Sandbox"
@@ -16,6 +15,8 @@ import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { TContext } from "../../sandbox/types/TContext"
 import { TJsonContentConfig } from "../types/TJsonContentConfig"
 import { TJsonContentParams } from "../types/TJsonContentParams"
+import { Assert } from "../../../utils/Assert"
+import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 
 
 //
@@ -37,11 +38,13 @@ export class JsonContent extends absContentProvider {
 
     @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
-        if (!this.Params)
-            throw new HttpErrorInternalServerError('Json: Params is not defined')
+        Assert.Var<TJsonContentParams>(this.Params, 
+            typia.is<TJsonContentParams>(this.Params),
+            'Params is not defined')
 
-        if (!this.Content)
-            throw new HttpErrorInternalServerError('Json: Content is not defined')
+        Assert.Var<VirtualFileSystem>(this.Content, 
+            typia.is<VirtualFileSystem>(this.Content),
+            'Content is not defined')
 
         const json = JsonUtils.TryParse(
             await ReadableUtils.ToString(
@@ -61,11 +64,13 @@ export class JsonContent extends absContentProvider {
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
-        if (!this.Params)
-            throw new HttpErrorInternalServerError('Json: Params is not defined')
+        Assert.Var<TJsonContentParams>(this.Params, 
+            typia.is<TJsonContentParams>(this.Params),
+            'Params is not defined')
 
-        if (!this.Content)
-            throw new HttpErrorInternalServerError('Content is not defined')
+        Assert.Var<VirtualFileSystem>(this.Content, 
+            typia.is<VirtualFileSystem>(this.Content),
+            'Content is not defined')
 
         //TODO when content = "", data has empty json object {}
         let json = JsonUtils.TryParse(

@@ -21,7 +21,7 @@ export class CosmosDbHelper {
     }
 
     static ParseSqlQuery(sqlQuery: string | undefined): string {
-        Assert<string>(sqlQuery, !StringUtils.IsEmpty(sqlQuery), `${Logger.Out} Empty SQL Query: ${sqlQuery}`)
+        Assert.Var<string>(sqlQuery, !StringUtils.IsEmpty(sqlQuery), `${Logger.Out} Empty SQL Query: ${sqlQuery}`)
         const sqlHelper = new SqlQueryUtils(sqlQuery)
         let sqlTokens = sqlHelper.Tokenize()
         sqlTokens = _.map(sqlTokens, (token) => {

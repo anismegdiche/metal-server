@@ -92,8 +92,8 @@ export class FolderData extends absDataProvider {
 
     @Logger.LogFunction()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage connection not set`)
-        Assert<string>(schemaRequest.entity, schemaRequest.entity !== undefined, `${this.SourceName}: Folder name is required`)
+        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage connection not set`)
+        Assert.Var<string>(schemaRequest.entity, schemaRequest.entity !== undefined, `${this.SourceName}: Folder name is required`)
 
         const { schema, entity } = schemaRequest
 
@@ -242,7 +242,7 @@ export class FolderData extends absDataProvider {
     }
 
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
 
         const { schema } = schemaRequest
 

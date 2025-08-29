@@ -344,7 +344,7 @@ export class Step {
         const ai_task = `${ai}-${task}`
         const ai_engine = AiEngine.AiEnginesInstance.get(ai_task)
 
-        Assert<IAiEngine>(ai_engine, ai_engine !== undefined, `AI Engine ${ai_task} not found`)
+        Assert.Var<IAiEngine>(ai_engine, ai_engine !== undefined, `AI Engine ${ai_task} not found`)
 
         const promises = []
 
@@ -522,7 +522,7 @@ export class Step {
 
     @Logger.LogFunction()
     static async RemoveFields(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
-        Assert<string[]>(stepArguments.stepParams, stepArguments.stepParams instanceof Array, "remove-fields: must be an array")
+        Assert.Var<string[]>(stepArguments.stepParams, stepArguments.stepParams instanceof Array, "remove-fields: must be an array")
         return stepArguments.currentDataTable.RemoveFields(stepArguments.stepParams)
     }
 

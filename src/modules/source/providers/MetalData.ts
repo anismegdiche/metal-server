@@ -194,10 +194,10 @@ export class MetalData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<WebServiceData>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection not initialized`)
+        Assert.Var<WebServiceData>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection not initialized`)
 
         const intResp = await this.Connection.ListEntities(schemaRequest)
-        Assert<TInternalResponse<TSchemaResponse>>(intResp, intResp !== undefined, "ListEntities failed")
+        Assert.Var<TInternalResponse<TSchemaResponse>>(intResp, intResp !== undefined, "ListEntities failed")
 
         return intResp
     }

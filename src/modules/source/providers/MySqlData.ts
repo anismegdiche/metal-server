@@ -268,7 +268,7 @@ export class MySqlData extends absDataProvider {
     }
 
     async #EnsureConnection(): Promise<Pool> {
-        Assert<mysql.Pool>(this.Connection, this.Connection !== undefined, 'Failed to establish database connection')
+        Assert.Var<mysql.Pool>(this.Connection, this.Connection !== undefined, 'Failed to establish database connection')
 
         await this.Connect()
 

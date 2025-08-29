@@ -19,6 +19,7 @@ import { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
 import { TCsvContentConfig } from '../types/TCsvContentConfig'
 import { TCsvContentParams } from '../types/TCsvContentParams'
+import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
 
 
 //
@@ -46,7 +47,9 @@ export class CsvContent extends absContentProvider {
     @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
 
-        Assert(this.Content, 'Content is not defined')
+        Assert.Var<VirtualFileSystem>(this.Content, 
+            typia.is<VirtualFileSystem>(this.Content),
+            'Content is not defined')
 
         const $__evalParams = PlaceHolder.EvaluateJsCode<Csv.ParseConfig>(
             this.Params,
@@ -65,7 +68,9 @@ export class CsvContent extends absContentProvider {
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         
-        Assert(this.Content, 'Content is not defined')
+        Assert.Var<VirtualFileSystem>(this.Content, 
+            typia.is<VirtualFileSystem>(this.Content),
+            'Content is not defined')
 
         const $__evalParams = PlaceHolder.EvaluateJsCode<TCsvContentParams>(
             this.Params,

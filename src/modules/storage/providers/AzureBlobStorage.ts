@@ -47,7 +47,7 @@ export class AzureBlobStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     Init(): void {
-        Assert<TAzureBlobStorageParams>(this.ConfigStorage, this.ConfigStorage !== undefined, 'AzureBlobStorage: No config storage defined')
+        Assert.Var<TAzureBlobStorageParams>(this.ConfigStorage, this.ConfigStorage !== undefined, 'AzureBlobStorage: No config storage defined')
 
         this.Params = _.merge(
             this.DEFAULT,
@@ -61,9 +61,9 @@ export class AzureBlobStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Assert<TAzureBlobStorageParams>(this.Params, this.Params !== undefined, 'AzureBlobStorage: No params defined')
-        Assert<string>(this.Params.connectionString, this.Params.connectionString !== undefined, 'AzureBlobStorage: No connection string defined')
-        Assert<string>(this.Params.container, this.Params.container !== undefined, 'AzureBlobStorage: No container defined')
+        Assert.Var<TAzureBlobStorageParams>(this.Params, this.Params !== undefined, 'AzureBlobStorage: No params defined')
+        Assert.Var<string>(this.Params.connectionString, this.Params.connectionString !== undefined, 'AzureBlobStorage: No connection string defined')
+        Assert.Var<string>(this.Params.container, this.Params.container !== undefined, 'AzureBlobStorage: No container defined')
 
         const { connectionString, container } = this.Params
         this.#BlobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
@@ -78,7 +78,7 @@ export class AzureBlobStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileIsExist(file: string): Promise<boolean> {
-        Assert<ContainerClient>(this.#ContainerClient, this.#ContainerClient !== undefined, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
+        Assert.Var<ContainerClient>(this.#ContainerClient, this.#ContainerClient !== undefined, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
 
         const blobClient = this.#ContainerClient.getBlockBlobClient(file)
         return await blobClient.exists()
@@ -86,17 +86,17 @@ export class AzureBlobStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileRead(file: string): Promise<Readable> {
-        Assert<ContainerClient>(this.#ContainerClient, this.#ContainerClient !== undefined, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
+        Assert.Var<ContainerClient>(this.#ContainerClient, this.#ContainerClient !== undefined, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
 
         const blobClient = this.#ContainerClient.getBlockBlobClient(file)
-        Assert(await blobClient.exists(), `File '${file}' does not exist`)
+        Assert.Condition(await blobClient.exists(), `File '${file}' does not exist`)
 
         return Readable.from(await blobClient.downloadToBuffer(0))
     }
 
     @Logger.LogFunction(['content'])
     async FileWrite(file: string, content: Readable): Promise<void> {
-        Assert<ContainerClient>(this.#ContainerClient, this.#ContainerClient !== undefined, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
+        Assert.Var<ContainerClient>(this.#ContainerClient, this.#ContainerClient !== undefined, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
 
         const blobClient = this.#ContainerClient.getBlockBlobClient(file)
         await blobClient.uploadStream(content)
@@ -104,7 +104,7 @@ export class AzureBlobStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileList(dir: string): Promise<DataTable> {
-        Assert<ContainerClient>(this.#ContainerClient, this.#ContainerClient !== undefined, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
+        Assert.Var<ContainerClient>(this.#ContainerClient, this.#ContainerClient !== undefined, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
 
         const prefix = dir.endsWith('/')
             ? dir
@@ -140,7 +140,7 @@ export class AzureBlobStorage extends absStorageProvider {
     
     @Logger.LogFunction()
     async FolderList(dir: string = ""): Promise<DataTable> {
-        Assert<ContainerClient>(this.#ContainerClient, this.#ContainerClient !== undefined, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
+        Assert.Var<ContainerClient>(this.#ContainerClient, this.#ContainerClient !== undefined, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
 
         const prefix = dir.endsWith('/')
 ? dir

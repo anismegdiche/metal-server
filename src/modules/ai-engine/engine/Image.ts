@@ -91,7 +91,7 @@ export class Image extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiImageImageClassificationParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -118,7 +118,7 @@ export class Image extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiImageImageSegmentationParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -145,7 +145,7 @@ export class Image extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiImageImageToTextParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -177,7 +177,7 @@ export class Image extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiImageObjectDetectionParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -204,8 +204,8 @@ export class Image extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiImageVisualQuestionAnsweringParams;
 
-        Assert(data, 'data is required')
-        Assert(params?.question, 'params.question is required')
+        Assert.Var(data, 'data is required')
+        Assert.Var(params.question, 'params.question is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,

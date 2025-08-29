@@ -230,7 +230,7 @@ export class MongoDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<MongoDbData>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection not initialized`)
+        Assert.Var<MongoDbData>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection not initialized`)
 
         const { schema } = schemaRequest
 

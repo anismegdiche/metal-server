@@ -20,6 +20,7 @@ import { TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO, TEXT_TASK } from 
 import { TextEmotionDetectionDockerService, TextFillMaskDockerService, TextKeywordExtractionDockerService, TextLanguageDetectionDockerService, TextParaphraseDetectionDockerService, TextQuestionAnsweringDockerService, TextSentenceSimilarityDockerService, TextSentimentAnalysisDockerService, TextSummarizationDockerService, TextText2TextGenerationDockerService, TextTextGenerationDockerService, TextTokenClassificationDockerService, TextToxicityDetectionDockerService, TextTranslationDockerService, TextZeroShotClassificationDockerService } from '../docker-services/TextDockerService'
 import { TAiDockerService } from '../types/TAiDockerService'
 import { TStepRunAiTextEmotionDetectionParams, TStepRunAiTextFillMaskParams, TStepRunAiTextKeywordExtractionParams, TStepRunAiTextParams, TStepRunAiTextParaphraseDetectionParams, TStepRunAiTextQuestionAnsweringParams, TStepRunAiTextSentenceSimilarityParams, TStepRunAiTextSentimentAnalysisParams, TStepRunAiTextSummarizationParams, TStepRunAiTextTextGenerationParams, TStepRunAiTextTokenClassificationParams, TStepRunAiTextToxicityDetectionParams, TStepRunAiTextTranslationParams, TStepRunAiTextZeroShotClassificationParams } from '../types/TStepRunAiTextParam'
+import typia from 'typia'
 
 
 //
@@ -117,10 +118,11 @@ export class Text extends absAiEngine implements IAiEngine {
 
         const { data } = args;
         const { params } = args as TStepRunAiTextTranslationParams;
-        Assert(data, 'data is required')
-        Assert(params, 'params is required')
-        Assert(params.src_lang, 'params.src_lang is required')
-        Assert(params.tgt_lang, 'params.tgt_lang is required')
+
+        Assert.Var(data, 'data is required')
+        Assert.Var(params, 'params is required')
+        Assert.Var(params.src_lang, 'params.src_lang is required')
+        Assert.Var(params.tgt_lang, 'params.tgt_lang is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -148,7 +150,7 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextEmotionDetectionParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -177,7 +179,7 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextFillMaskParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -206,7 +208,7 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextKeywordExtractionParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -234,7 +236,7 @@ export class Text extends absAiEngine implements IAiEngine {
 
         const { data } = args;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -267,9 +269,9 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextParaphraseDetectionParams;
 
-        Assert(data, 'data is required')
-        Assert(params, 'params is required')
-        Assert(params.target, 'params.target is required')
+        Assert.Var(data, 'data is required')
+        Assert.Var(params, 'params is required')
+        Assert.Var(params.target, 'params.target is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -300,9 +302,9 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextQuestionAnsweringParams;
 
-        Assert(data, 'data is required')
-        Assert(params, 'params is required')
-        Assert(params.context, 'params.context is required')
+        Assert.Var(data, 'data is required')
+        Assert.Var(params, 'params is required')
+        Assert.Var(params.context, 'params.context is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -333,9 +335,9 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextSentenceSimilarityParams;
 
-        Assert(data, 'data is required')
-        Assert(params, 'params is required')
-        Assert(params.sentences, 'params.sentences is required')
+        Assert.Var(data, 'data is required')
+        Assert.Var(params, 'params is required')
+        Assert.Var(params.sentences, 'params.sentences is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -366,7 +368,7 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextSentimentAnalysisParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -395,10 +397,10 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextSummarizationParams;
 
-        Assert(data, 'data is required')
-        Assert(params, 'params is required')
-        Assert(params.max_length, 'params.max_length is required')
-        Assert(params.min_length, 'params.min_length is required')
+        Assert.Var(data, 'data is required')
+        Assert.Var(params, 'params is required')
+        Assert.Var(params.max_length, 'params.max_length is required')
+        Assert.Var(params.min_length, 'params.min_length is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -426,7 +428,7 @@ export class Text extends absAiEngine implements IAiEngine {
 
         const { data } = args;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -454,11 +456,9 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextTextGenerationParams;
 
-        Assert(data, 'data is required')
-        Assert(params, 'params is required')
-        Assert(params?.max_length, 'params.max_length is required')
-        Assert(params?.do_sample, 'params.do_sample is required')
-        Assert(params?.temperature, 'params.temperature is required')
+        Assert.Var(data, 'data is required')
+        Assert.Var<TStepRunAiTextTextGenerationParams>(
+            params, typia.is<TStepRunAiTextTextGenerationParams>(params), 'params is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -487,8 +487,7 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextTokenClassificationParams;
 
-        Assert(data, 'data is required')
-        Assert(params, 'params is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -517,7 +516,7 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextToxicityDetectionParams;
 
-        Assert(data, 'data is required')
+        Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -546,9 +545,9 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextZeroShotClassificationParams;
 
-        Assert(data, 'data is required')
-        Assert(params, 'params is required')
-        Assert(params.candidate_labels, 'params.candidate_labels is required')
+        Assert.Var(data, 'data is required')
+        Assert.Var(params, 'params is required')
+        Assert.Var(params.candidate_labels, 'params.candidate_labels is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,

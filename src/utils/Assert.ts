@@ -1,35 +1,32 @@
 //
 //
 //
-//
-//
-import assert from "assert";
-import { HttpErrorInternalServerError } from "../modules/errors/HttpErrors";
+import { HttpError, HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
 
 
 //
-export function Assert(condition: boolean, message: string): void;
-export function Assert<T>(value: unknown, condition: boolean, message: string): asserts value is T;
-export function Assert(valueOrCondition: unknown | boolean, conditionOrMessage: boolean | string, messageOrUndefined?: string): void;
-export function Assert<T>(valueOrCondition: unknown | boolean, conditionOrMessage: boolean | string, messageOrUndefined?: string): void {
-    // eslint-disable-next-line init-declarations
-    let condition: boolean;
-    // eslint-disable-next-line init-declarations
-    let message: string;
-
-    if (typeof valueOrCondition === 'boolean' && typeof conditionOrMessage === 'string') {
-        // First overload
-        condition = valueOrCondition;
-        message = conditionOrMessage;
-    } else {
-        // Second overload
-        condition = conditionOrMessage as boolean;
-        message = messageOrUndefined as string;
+export class Assert {
+    static Condition(condition: boolean, message: string, httpError: HttpError = new HttpErrorInternalServerError()): void {
+        if (!condition) {
+            httpError.message = message
+            throw httpError
+        }
     }
 
-    try {
-        assert(condition, message);
-    } catch (error) {
-        throw new HttpErrorInternalServerError(message);
+    static Var<T>(variable: unknown, message: string, httpError?: HttpError): asserts variable is T
+    static Var<T>(variable: unknown, condition: boolean, message: string, httpError?: HttpError): asserts variable is T
+    static Var<T>(variable: unknown, conditionOrMessage: boolean | string, messageOrError?: string | HttpError, httpError: HttpError = new HttpErrorInternalServerError()): asserts variable is T {
+        if (typeof conditionOrMessage === "string") {
+            // Overload: Var(variable, message) - condition defaults to undefined check
+            if (variable === undefined) {
+                httpError.message = conditionOrMessage
+                throw httpError
+            }
+        } else if (!conditionOrMessage) {
+            // Overload: Var(variable, condition, message)
+            httpError.message = messageOrError as string
+            throw httpError
+        }
     }
 }
+

@@ -227,7 +227,7 @@ export class PostgresData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert<Pool>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection is undefined`)
+        Assert.Var<Pool>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection is undefined`)
 
         const { schema, source } = schemaRequest
 

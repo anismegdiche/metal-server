@@ -40,8 +40,8 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
 
     // Init
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
-        Assert(!StringUtils.IsEmpty(source), `${source}: source name is missing`)
-        Assert(sourceConfig != undefined, `${source}: source config is missing`)
+        Assert.Condition(!StringUtils.IsEmpty(source), `${source}: source name is missing`)
+        Assert.Condition(sourceConfig != undefined, `${source}: source config is missing`)
         this.SourceName = source
     }
 
