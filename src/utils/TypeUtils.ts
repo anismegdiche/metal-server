@@ -44,7 +44,7 @@ export class TypeUtils {
 
         const renamedErrors = res.errors.map((error: any) => {
             const _ret = `${error.path.replace('$input.', '')} expected to be ${error.expected}`
-            return TypeUtils.TranslateFriendlyErrors(_ret)
+            return TypeUtils.#translateFriendlyErrors(_ret)
         })
 
         Logger.Error(`${httpError.Name}:\r\n - ${renamedErrors.join('\r\n - ')}`)
@@ -54,7 +54,7 @@ export class TypeUtils {
         throw httpError
     }
 
-    static TranslateFriendlyErrors(txt: string) {
+    static #translateFriendlyErrors(txt: string) {
         return txt
             .replace("TJson", "JSON")
             .replace("$input expected to be TConfig", "Configuration file is empty")

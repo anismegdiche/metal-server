@@ -402,7 +402,7 @@ describe('Cache', () => {
             };
 
             // Mock TypeHelper.Validate not to throw
-            (TypeUtils.Validate as jest.Mock).mockImplementation(() => true);
+            // (TypeUtils.Validate as jest.Mock).mockImplementation(() => true);
 
             // Mock Roles.CheckPermission not to throw
             (require('../Roles').Roles.CheckPermission as jest.Mock).mockImplementation(() => true)

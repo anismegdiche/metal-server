@@ -173,11 +173,14 @@ export class Schema {
 
     @Logger.LogFunction()
     static async Select(schemaRequest: TSchemaRequestSelect, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
+        
         // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
         Assert.Var<Function>(Schema.fnCacheGet, Schema.fnCacheGet !== undefined, 'Schema.fnCacheGet is not initialized')
-
-        TypeUtils.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
-            new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
+        Assert.Var<TSchemaRequestSelect>(schemaRequest, 
+            typia.is<TSchemaRequestSelect>(schemaRequest),
+             `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
+             new HttpErrorBadRequest()
+            )
 
         const cachedData = await Schema.fnCacheGet(schemaRequest, userToken)
             .then()
@@ -228,8 +231,11 @@ export class Schema {
     @Logger.LogFunction()
     static async Delete(schemaRequest: TSchemaRequestDelete, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
-        TypeUtils.Validate(typia.validateEquals<TSchemaRequestDelete>(schemaRequest),
-            new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
+        Assert.Var<TSchemaRequestDelete>(schemaRequest, 
+            typia.is<TSchemaRequestDelete>(schemaRequest),
+             `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
+             new HttpErrorBadRequest()
+            )
 
         const { schema, entity } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
@@ -255,8 +261,11 @@ export class Schema {
     @Logger.LogFunction()
     static async Update(schemaRequest: TSchemaRequestUpdate, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
-        TypeUtils.Validate(typia.validateEquals<TSchemaRequestUpdate>(schemaRequest),
-            new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
+        Assert.Var<TSchemaRequestUpdate>(schemaRequest, 
+            typia.is<TSchemaRequestUpdate>(schemaRequest),
+             `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
+             new HttpErrorBadRequest()
+            )
 
         const { schema, entity } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
@@ -282,8 +291,11 @@ export class Schema {
     @Logger.LogFunction()
     static async Insert(schemaRequest: TSchemaRequestInsert, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
-        TypeUtils.Validate(typia.validateEquals<TSchemaRequestInsert>(schemaRequest),
-            new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
+        Assert.Var<TSchemaRequestInsert>(schemaRequest, 
+            typia.is<TSchemaRequestInsert>(schemaRequest),
+             `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
+             new HttpErrorBadRequest()
+            )
 
         const { schema, entity } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)

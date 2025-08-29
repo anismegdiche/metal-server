@@ -38,6 +38,7 @@ import { TConfigSource } from "../source/types/TConfigSource"
 
 // Cache types
 import { TCacheData } from './types/TCacheData'
+import { Assert } from '../../utils/Assert'
 
 // Exports
 export class Cache {
@@ -240,8 +241,11 @@ export class Cache {
     @SynchronizerManager.Synchronized()
     static async Get(schemaRequest: TSchemaRequestSelect, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse> | undefined> {
 
-        TypeUtils.Validate(typia.validateEquals<TSchemaRequestSelect>(schemaRequest),
-            new HttpErrorBadRequest(`Bad arguments passed: ${JSON.stringify(schemaRequest)}`))
+        Assert.Var<TSchemaRequestSelect>(schemaRequest, 
+            typia.is<TSchemaRequestSelect>(schemaRequest),
+             `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
+             new HttpErrorBadRequest()
+            )
 
         const { schema, entity } = schemaRequest
 
