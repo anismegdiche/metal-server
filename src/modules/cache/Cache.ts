@@ -1,6 +1,5 @@
 // External dependencies
 import * as Sha512 from 'js-sha512'
-import typia from "typia"
 
 // Types and interfaces
 import { DataTable } from '../../types/DataTable'
@@ -113,7 +112,7 @@ export class Cache {
 
             const schemaResponse = intResp.Body
 
-            Cache.Index = schemaResponse && TypeUtils.IsSchemaResponseData(schemaResponse)
+            Cache.Index = schemaResponse && TypeUtils.IsSchemaResponseWithData(schemaResponse)
                 ? new Map((schemaResponse.data.Rows as TCacheData[]).map(row => [row.hash, row.expires]))
                 : new Map()
 
@@ -242,7 +241,7 @@ export class Cache {
     static async Get(schemaRequest: TSchemaRequestSelect, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse> | undefined> {
 
         Assert.Var<TSchemaRequestSelect>(schemaRequest, 
-            typia.is<TSchemaRequestSelect>(schemaRequest),
+            TypeUtils.IsSchemaRequestSelect(schemaRequest),
              `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
              new HttpErrorBadRequest()
             )

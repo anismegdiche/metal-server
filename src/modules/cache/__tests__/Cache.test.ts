@@ -32,7 +32,7 @@ jest.mock('../../../utils/SynchronizerManager', () => ({
 jest.mock('../../../utils/TypeUtils', () => ({
     TypeHelper: {
         Validate: jest.fn(),
-        IsSchemaResponseData: jest.fn()
+        IsSchemaResponseWithData: jest.fn()
     }
 }))
 jest.mock('../Roles')
@@ -106,7 +106,7 @@ describe('Cache', () => {
             }
 
             mockProvider.Select.mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseData').mockReturnValue(true)
+            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
 
             // Act
             await Cache.GetHashList()
@@ -137,7 +137,7 @@ describe('Cache', () => {
             }
 
             mockProvider.Select.mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseData').mockReturnValue(true)
+            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
 
             // Act
             await Cache.GetHashList()
@@ -148,8 +148,8 @@ describe('Cache', () => {
             expect(Cache.Index.get('def456')).toBe(9876543210)
         })
 
-        // Properly handles valid schema response data through TypeHelper.IsSchemaResponseData check
-        it('should use TypeHelper.IsSchemaResponseData to validate schema response', async () => {
+        // Properly handles valid schema response data through TypeHelper.IsSchemaResponseWithData check
+        it('should use TypeHelper.IsSchemaResponseWithData to validate schema response', async () => {
             const mockRows = [{ hash: 'hash1', expires: 1000 }]
             const dataTable = new DataTable("test", mockRows)
 
@@ -164,13 +164,13 @@ describe('Cache', () => {
             }
 
             mockProvider.Select.mockResolvedValue(mockResponse)
-            const isSchemaResponseDataSpy = jest.spyOn(TypeUtils, 'IsSchemaResponseData').mockReturnValue(true)
+            const isSchemaResponseWithDataSpy = jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
 
             // Act
             await Cache.GetHashList()
 
             // Assert
-            expect(isSchemaResponseDataSpy).toHaveBeenCalledWith(mockResponse.Body)
+            expect(isSchemaResponseWithDataSpy).toHaveBeenCalledWith(mockResponse.Body)
             expect(Cache.Index.size).toBe(1)
         })
 
@@ -190,7 +190,7 @@ describe('Cache', () => {
             }
 
             const selectSpy = jest.spyOn(Cache.DataSource, 'Select').mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseData').mockReturnValue(true)
+            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
 
             // Act
             await Cache.GetHashList()
@@ -220,8 +220,8 @@ describe('Cache', () => {
             expect(Cache.Index instanceof Map).toBe(true)
         })
 
-        // Handles case where TypeHelper.IsSchemaResponseData returns false
-        it('should set Cache.Index to empty Map when TypeHelper.IsSchemaResponseData returns false', async () => {
+        // Handles case where TypeHelper.IsSchemaResponseWithData returns false
+        it('should set Cache.Index to empty Map when TypeHelper.IsSchemaResponseWithData returns false', async () => {
             const dataTable = new DataTable("test", [{ hash: 'hash1', expires: 1000 }])
 
             const mockResponse: TInternalResponse<TSchemaResponse> = {
@@ -235,7 +235,7 @@ describe('Cache', () => {
             }
 
             jest.spyOn(Cache.DataSource, 'Select').mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseData').mockReturnValue(false)
+            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(false)
 
             // Set initial state to verify it changes
             Cache.Index = new Map([['existing', 123]])
@@ -265,7 +265,7 @@ describe('Cache', () => {
             }
 
             const selectSpy = jest.spyOn(Cache.DataSource, 'Select').mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseData').mockReturnValue(true)
+            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
 
             // Act
             await Cache.GetHashList()
@@ -303,7 +303,7 @@ describe('Cache', () => {
             }
 
             mockProvider.Select.mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseData').mockReturnValue(true)
+            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
 
             await Cache.Connect()
 

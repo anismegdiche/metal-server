@@ -4,11 +4,9 @@
 import _ from "lodash"
 import { Readable } from "stream"
 import { createClientAsync, Client, IOptions } from "soap"
-import typia from "typia"
 //
 import { absWebServiceProvider } from "../base/absWebServiceProvider"
 import {  ENDPOINT, HEADER } from "../@consts"
-import {  TEndpoint } from "../@types"
 import { JsonUtils } from '../../../utils/JsonUtils'
 import { TWebServiceDataOptions, TConfigSourceWebService } from "../../source/providers/WebServiceData"
 import { Logger } from "../../../utils/Logger"
@@ -18,7 +16,7 @@ import { Sandbox } from "../../sandbox/Sandbox"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { CONTENT } from "../../content/@consts"
 import { TJson } from "../../../types/TJson"
-import { TUserCredentials } from "../../auth/@types"
+import { Validator } from "../../../utils/Validator"
 
 
 //
@@ -58,9 +56,9 @@ export class SoapWebService extends absWebServiceProvider {
 
         let soapOptions: IOptions = {}
 
-        if (typia.equals<TEndpoint>(endpoint)) {
+        if (Validator.TEndpoint(endpoint)) {
             const { Data } = this.Endpoints.get(ENDPOINT.SESSION)!
-            if (typia.is<TUserCredentials>(Data)) {
+            if (Validator.TUserCredentials(Data)) {
                 const { username, password } = Data
                 const auth = Buffer.from(`${username}:${password}`).toString('base64')
                 soapOptions = {

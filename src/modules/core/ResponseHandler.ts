@@ -36,7 +36,7 @@ export class ResponseHandler {
 
         res.status(status)
 
-        if (TypeUtils.IsSchemaResponseData(schemaResponse)) {
+        if (TypeUtils.IsSchemaResponseWithData(schemaResponse)) {
             commonJsonResponse = {
                 ...commonJsonResponse,
                 metadata: schemaResponse.data.MetaData,
@@ -59,7 +59,7 @@ export class ResponseHandler {
         const readable = new Readable({
             objectMode: true,
             read() {
-                if (TypeUtils.IsSchemaResponseData(schemaResponse)) {
+                if (TypeUtils.IsSchemaResponseWithData(schemaResponse)) {
                     // Push the initial part of the JSON response
                     // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push(

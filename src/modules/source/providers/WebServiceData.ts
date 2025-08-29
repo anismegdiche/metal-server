@@ -18,7 +18,6 @@ import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import { Cache } from "../../cache/Cache"
 import { TJson } from "../../../types/TJson"
-import { DataTable } from "../../../types/DataTable"
 import { TContext } from "../../sandbox/types/TContext"
 import { TUrl } from "../../../types/TUrl"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
@@ -30,6 +29,7 @@ import { WEBSERVICE, ENDPOINT } from "../../webservice/@consts"
 import { TWebServiceEndpoint, TEndpoint } from "../../webservice/@types"
 import { absWebServiceProvider } from "../../webservice/base/absWebServiceProvider"
 import { WebServiceProvider } from "../../webservice/WebServiceProvider"
+import { DataTable } from "../../../types/DataTable"
 
 
 //
@@ -200,7 +200,7 @@ export class WebServiceData extends absDataProvider {
             }
         )
 
-        if (!typia.is<DataTable>(options.Data))
+        if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         await Promise.all(options.Data.Rows.map((row: TJson) => {

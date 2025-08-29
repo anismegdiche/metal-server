@@ -2,7 +2,6 @@
 //
 //
 import { Pool } from 'pg'
-import typia from "typia"
 import _ from "lodash"
 //
 import { RESPONSE } from '../../core/@consts'
@@ -24,6 +23,7 @@ import { TContext } from "../../sandbox/types/TContext"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { TIpPort } from "../../../types/TIpPort"
 import { Assert } from '../../../utils/Assert'
+import { TypeUtils } from '../../../utils/TypeUtils'
 
 
 //
@@ -155,7 +155,7 @@ export class PostgresData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!typia.is<DataTable>(options.Data))
+        if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
@@ -182,7 +182,7 @@ export class PostgresData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!typia.is<DataTable>(options.Data))
+        if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)

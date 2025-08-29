@@ -91,7 +91,7 @@ export class Step {
                 schema: schema ?? currentSchemaName
             })
 
-            if (_intResp.Body && TypeUtils.IsSchemaResponseData(_intResp.Body))
+            if (_intResp.Body && TypeUtils.IsSchemaResponseWithData(_intResp.Body))
                 return _intResp.Body.data
         }
 
@@ -502,7 +502,7 @@ export class Step {
         if (schemaRequest?.schema) {
             const _intResp = await Schema.ListEntities(<TSchemaRequest>schemaRequest)
 
-            if (_intResp.Body && TypeUtils.IsSchemaResponseData(_intResp.Body)) {
+            if (_intResp.Body && TypeUtils.IsSchemaResponseWithData(_intResp.Body)) {
                 Logger.Debug(`${Logger.Out} Step.ListEntities: ${JsonUtils.Stringify(stepArguments.stepParams)}`)
                 return _intResp.Body.data
             }
@@ -532,7 +532,7 @@ export class Step {
             entity
         })
 
-        if (intResp.Body && TypeUtils.IsSchemaResponseData(intResp.Body))
+        if (intResp.Body && TypeUtils.IsSchemaResponseWithData(intResp.Body))
             return intResp.Body.data
 
         return undefined

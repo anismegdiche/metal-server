@@ -43,7 +43,7 @@ export class JsonContent extends absContentProvider {
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content, 
-            typia.is<VirtualFileSystem>(this.Content),
+            VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
         const json = JsonUtils.TryParse(
@@ -69,7 +69,7 @@ export class JsonContent extends absContentProvider {
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content, 
-            typia.is<VirtualFileSystem>(this.Content),
+            VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
         //TODO when content = "", data has empty json object {}

@@ -2,7 +2,6 @@
 //
 //
 import _ from 'lodash'
-import typia from "typia"
 //
 import { Source } from "../source/Source"
 import { Logger } from '../../utils/Logger'
@@ -21,6 +20,7 @@ import { TUserTokenInfo } from "../auth/@types"
 import { Assert } from '../../utils/Assert'
 import { JsonUtils } from "../../utils/JsonUtils"
 import { TJson } from '../../types/TJson'
+import { Validator } from '../../utils/Validator'
 
 export type TSchemaRoute = {
     type: "source" | "nothing",
@@ -177,7 +177,7 @@ export class Schema {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
         Assert.Var<Function>(Schema.fnCacheGet, Schema.fnCacheGet !== undefined, 'Schema.fnCacheGet is not initialized')
         Assert.Var<TSchemaRequestSelect>(schemaRequest, 
-            typia.is<TSchemaRequestSelect>(schemaRequest),
+            TypeUtils.IsSchemaRequestSelect(schemaRequest),
              `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
              new HttpErrorBadRequest()
             )
@@ -220,7 +220,7 @@ export class Schema {
                     return _intResp
 
                 // Anonymizer
-                if (isAnonymize && TypeUtils.IsSchemaResponseData(_intResp.Body)) {
+                if (isAnonymize && TypeUtils.IsSchemaResponseWithData(_intResp.Body)) {
                     (_intResp.Body).data.Anonymize(fieldsToAnonymize)
                 }
                 return _intResp
@@ -232,7 +232,7 @@ export class Schema {
     static async Delete(schemaRequest: TSchemaRequestDelete, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         Assert.Var<TSchemaRequestDelete>(schemaRequest, 
-            typia.is<TSchemaRequestDelete>(schemaRequest),
+            Validator.SchemaRequestDelete(schemaRequest),
              `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
              new HttpErrorBadRequest()
             )
@@ -262,7 +262,7 @@ export class Schema {
     static async Update(schemaRequest: TSchemaRequestUpdate, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         Assert.Var<TSchemaRequestUpdate>(schemaRequest, 
-            typia.is<TSchemaRequestUpdate>(schemaRequest),
+            Validator.SchemaRequestUpdate(schemaRequest),
              `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
              new HttpErrorBadRequest()
             )
@@ -292,7 +292,7 @@ export class Schema {
     static async Insert(schemaRequest: TSchemaRequestInsert, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         Assert.Var<TSchemaRequestInsert>(schemaRequest, 
-            typia.is<TSchemaRequestInsert>(schemaRequest),
+            Validator.SchemaRequestInsert(schemaRequest),
              `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
              new HttpErrorBadRequest()
             )
@@ -341,7 +341,7 @@ export class Schema {
 
         for await (const [entity, entitySource] of entitiesSources) {
             const _source = (<TConfigSchemaEntity>entitySource).source
-            if (TypeUtils.IsSchemaResponseData(schemaResponse))
+            if (TypeUtils.IsSchemaResponseWithData(schemaResponse))
                 schemaResponse.data.DeleteRows(`name = '${entity}'`)
 
             const _intResp = await Source.Sources.get(_source)!.DataProvider.ListEntities(<TSchemaRequestListEntities>{

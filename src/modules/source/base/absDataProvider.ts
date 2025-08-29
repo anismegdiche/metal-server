@@ -1,7 +1,6 @@
 //
 //
 //
-import typia from "typia"
 import { Mixin } from "ts-mixer"
 //
 import { clsClonable } from "../../../utils/base/clsClonable"
@@ -13,13 +12,13 @@ import { absDataProviderOptions } from "./absDataProviderOptions"
 import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 import { TOptionalParameter } from "../types/TOptionalParameter"
 import { HttpErrorBadRequest } from "../../errors/HttpErrors"
-import { DataTable } from "../../../types/DataTable"
 import { StringUtils } from '../../../utils/StringUtils'
 import { Assert } from "../../../utils/Assert"
 import { DATA_PROVIDER } from "../@consts"
 import { TConfigSource } from "../types/TConfigSource"
 import { IDataProviderOptions } from "./IDataProviderOptions"
 import { IDataProvider } from "./IDataProvider"
+import { DataTable } from "../../../types/DataTable"
 
 
 export class DataProviderOptions extends absDataProviderOptions implements IDataProviderOptions { }
@@ -83,8 +82,8 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
 
     GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
 
-        if (!typia.is<DataTable>(options.Data) || options.Data.Rows.length === 0)
-            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+        Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
+        Assert.Condition(options.Data.Rows.length === 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
 
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
             .Insert(schemaRequest.entity)
@@ -94,8 +93,8 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
 
     GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
 
-        if (!typia.is<DataTable>(options.Data) || options.Data.Rows.length === 0)
-            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+        Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
+        Assert.Condition(options.Data.Rows.length === 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
 
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
             .Update(schemaRequest.entity)

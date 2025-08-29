@@ -2,19 +2,36 @@
 //
 //
 import { Readable } from 'node:stream'
+import { Logger } from './Logger';
+import { Validator } from './Validator';
 
-
+//
 export class VirtualFileSystem {
+    
+    // static
+    
+    @Logger.LogFunction(true)
+    static Is(vfs: unknown): vfs is VirtualFileSystem {
+        return Validator.VirtualFileSystem(vfs)
+    }
+    
+    // dynamic
+
     Files: { [key: string]: Readable } = {};
 
-    // Upload a Readable stream to the VFS
-    public UploadFile(filePath: string, stream: Readable): void {
+    @Logger.LogFunction(true)
+    UploadFile(filePath: string, stream: Readable): void {
         // Store the stream in the VFS
         this.Files[filePath] = stream
     }
 
-    // Read a file from the VFS as a Readable stream
-    public ReadFile(filePath: string): Readable {
+    @Logger.LogFunction(true)
+    ReadFile(filePath: string): Readable {
         return this.Files[filePath] // Return the stored stream or null if not found
+    }
+
+    @Logger.LogFunction(true)
+    DeleteFile(filePath: string): void {
+        delete this.Files[filePath]
     }
 }

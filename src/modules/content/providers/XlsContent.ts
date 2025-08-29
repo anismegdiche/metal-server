@@ -68,7 +68,7 @@ export class XlsContent extends absContentProvider {
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content, 
-            typia.is<VirtualFileSystem>(this.Content),
+            VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
         const workbook = new ExcelJS.Workbook()
@@ -137,7 +137,7 @@ export class XlsContent extends absContentProvider {
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content, 
-            typia.is<VirtualFileSystem>(this.Content),
+            VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
         const workbook = new ExcelJS.Workbook()

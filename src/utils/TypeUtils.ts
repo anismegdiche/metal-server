@@ -1,13 +1,12 @@
 //
 //
 //
-import typia from "typia"
 //
 import { HttpError, HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
-import { DataTable } from "../types/DataTable"
-import { TSchemaRequest } from "../modules/schema/types/TSchemaRequest"
+import { TSchemaRequest, TSchemaRequestSelect } from "../modules/schema/types/TSchemaRequest"
 import { TSchemaResponse } from "../modules/schema/types/TSchemaResponse"
 import { Logger } from "./Logger"
+import { Validator } from "./Validator"
 
 
 //
@@ -17,24 +16,23 @@ export type TConvertParams<S extends string> =
 export class TypeUtils {
 
     @Logger.LogFunction(true)
-    static IsSchemaRequest(schemaRequest: any): schemaRequest is TSchemaRequest {
-        return typia.is<TSchemaRequest>(schemaRequest)
+    static IsSchemaRequest(schemaRequest: unknown): schemaRequest is TSchemaRequest {
+        return Validator.SchemaRequest(schemaRequest);
+    }
+
+    static IsSchemaRequestSelect(schemaRequest: unknown): schemaRequest is TSchemaRequestSelect {
+        return Validator.SchemaRequestSelect(schemaRequest);
     }
 
     @Logger.LogFunction(true)
-    static IsSchemaResponse(schemaResponse: any): schemaResponse is TSchemaResponse {
-        return typia.is<TSchemaResponse>(schemaResponse)
+    static IsSchemaResponse(schemaResponse: unknown): schemaResponse is TSchemaResponse {
+        return Validator.SchemaResponse(schemaResponse);
     }
 
     @Logger.LogFunction(true)
-    static IsSchemaResponseData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponse {
-        return typia.is<TSchemaResponse>(schemaResponse) &&
-            typia.is<DataTable>(schemaResponse.data)
-    }
-
-    @Logger.LogFunction(true)
-    static IsDataTable(dataTable: unknown): dataTable is DataTable {
-        return typia.is<DataTable>(dataTable)
+    static IsSchemaResponseWithData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponse {
+        return Validator.SchemaResponse(schemaResponse) &&
+            Validator.DataTable(schemaResponse.data);
     }
 
     @Logger.LogFunction(true)

@@ -13,6 +13,7 @@ import { JsonUtils } from "../utils/JsonUtils"
 import { StringUtils } from "../utils/StringUtils"
 import { HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
 import { clsClonable } from "../utils/base/clsClonable"
+import { Validator } from "../utils/Validator"
 
 
 //
@@ -64,6 +65,16 @@ export type TSyncReport = {
 
 //
 export class DataTable extends clsClonable {
+    
+    // static
+    
+    @Logger.LogFunction(true)
+    static Is(dataTable: unknown): dataTable is DataTable {
+        return Validator.DataTable(dataTable)
+    }
+    
+    // dynamic
+
     Name: string
     Fields: TFields = {}
     Rows: TRow[] = []

@@ -48,7 +48,7 @@ export class CsvContent extends absContentProvider {
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
 
         Assert.Var<VirtualFileSystem>(this.Content, 
-            typia.is<VirtualFileSystem>(this.Content),
+            VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
         const $__evalParams = PlaceHolder.EvaluateJsCode<Csv.ParseConfig>(
@@ -69,7 +69,7 @@ export class CsvContent extends absContentProvider {
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         
         Assert.Var<VirtualFileSystem>(this.Content, 
-            typia.is<VirtualFileSystem>(this.Content),
+            VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
         const $__evalParams = PlaceHolder.EvaluateJsCode<TCsvContentParams>(

@@ -62,7 +62,7 @@ export class XmlContent extends absContentProvider {
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content, 
-            typia.is<VirtualFileSystem>(this.Content),
+            VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
         const xmlParser = new XMLParser(this.ParserOptions)
@@ -92,7 +92,7 @@ export class XmlContent extends absContentProvider {
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content, 
-            typia.is<VirtualFileSystem>(this.Content),
+            VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
         const { "xml-path": jsonPath  } = this.Params

@@ -2,7 +2,6 @@
 //
 //
 import _ from "lodash"
-import typia from "typia"
 import { CosmosClient, Container, Database, SqlQuerySpec, OperationInput, ConnectionMode, CosmosClientOptions } from "@azure/cosmos"
 //
 import { absDataProvider } from "../base/absDataProvider"
@@ -165,7 +164,7 @@ export class CosmosDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!typia.is<DataTable>(options.Data) || !options.Data.Rows || options.Data.Rows.length === 0) {
+        if (!DataTable.Is(options.Data) || !options.Data.Rows || options.Data.Rows.length === 0) {
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
         }
 
@@ -216,7 +215,7 @@ export class CosmosDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!typia.is<DataTable>(options.Data) || !options.Data.Rows || options.Data.Rows.length === 0) {
+        if (!DataTable.Is(options.Data) || !options.Data.Rows || options.Data.Rows.length === 0) {
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
         }
 

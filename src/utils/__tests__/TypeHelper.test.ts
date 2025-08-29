@@ -32,7 +32,7 @@ describe('TypeHelper', () => {
                     MetaData: {}
                 }
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return false for invalid TSchemaResponse object (wrong data property values)', () => {
@@ -58,7 +58,7 @@ describe('TypeHelper', () => {
                     MetaData: {}
                 }
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return false for invalid TSchemaResponse object (missing Fields property)', () => {
@@ -79,7 +79,7 @@ describe('TypeHelper', () => {
                     MetaData: {}
                 }
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return false for invalid TSchemaResponse object (missing Rows property)', () => {
@@ -98,7 +98,7 @@ describe('TypeHelper', () => {
                     MetaData: {}
                 }
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return true for valid TSchemaRequest object', () => {
@@ -155,7 +155,7 @@ describe('TypeHelper', () => {
                     MetaData: {}
                 }
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return false for invalid TSchemaResponse object (wrong data property values)', () => {
@@ -181,7 +181,7 @@ describe('TypeHelper', () => {
                     MetaData: {}
                 }
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return false for invalid TSchemaResponse object (missing Fields property)', () => {
@@ -202,7 +202,7 @@ describe('TypeHelper', () => {
                     MetaData: {}
                 }
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return false for invalid TSchemaResponse object (missing Rows property)', () => {
@@ -221,7 +221,7 @@ describe('TypeHelper', () => {
                     MetaData: {}
                 }
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return false for invalid TSchemaResponse object (empty Fields property)', () => {
@@ -243,7 +243,7 @@ describe('TypeHelper', () => {
                     MetaData: {}
                 }
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return false for invalid TSchemaResponse object (empty Rows property)', () => {
@@ -263,11 +263,11 @@ describe('TypeHelper', () => {
                     MetaData: {}
                 }
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
         it('should return true for valid TSchemaResponse object', () => {
             const schemaResponse: TSchemaResponse = typia.random<TSchemaResponse>()
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(true)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(true)
         })
 
         it('should return false for invalid TSchemaResponse object (missing properties)', () => {
@@ -275,7 +275,7 @@ describe('TypeHelper', () => {
                 schema: 'test-schema',
                 entity: 'test-entity'
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return false for invalid TSchemaResponse object (wrong property types)', () => {
@@ -286,13 +286,13 @@ describe('TypeHelper', () => {
                 status: '200',
                 data: 'not an object'
             }
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('should return false for missing data in TSchemaResponse object', () => {
             const schemaResponse: any = typia.random<TSchemaResponse>()
             delete schemaResponse.data
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(false)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
 
         it('UC 1', () => {
@@ -335,7 +335,7 @@ describe('TypeHelper', () => {
             }
             expect(typia.equals<TSchemaResponse>(schemaResponse)).toBe(true)
             expect(typia.equals<DataTable>(schemaResponse.data)).toBe(true)
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(true)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(true)
         })
 
         it('UC 2', () => {
@@ -362,7 +362,7 @@ describe('TypeHelper', () => {
             }
             expect(typia.equals<TSchemaResponse>(schemaResponse)).toBe(true)
             expect(typia.equals<DataTable>(schemaResponse.data)).toBe(true)
-            expect(TypeUtils.IsSchemaResponseData(schemaResponse)).toBe(true)
+            expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(true)
         })
     })
 })

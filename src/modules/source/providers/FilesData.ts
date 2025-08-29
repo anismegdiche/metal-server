@@ -31,6 +31,7 @@ import { ContentProvider } from "../../content/ContentProvider"
 import { STORAGE } from "../../storage/@consts"
 import { absStorageProvider } from "../../storage/base/absStorageProvider"
 import { StorageProvider } from "../../storage/StorageProvider"
+import { TypeUtils } from "../../../utils/TypeUtils"
 
 
 //
@@ -159,7 +160,7 @@ export class FilesData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!typia.is<DataTable>(options.Data))
+        if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         const { entity } = schemaRequest
@@ -204,7 +205,7 @@ export class FilesData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!typia.is<DataTable>(options.Data))
+        if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         const { entity } = schemaRequest

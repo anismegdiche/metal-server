@@ -4,7 +4,6 @@
 //
 import _ from 'lodash'
 import * as MongoDb from 'mongodb'
-import typia from "typia"
 //
 import { RESPONSE } from '../../core/@consts'
 import { TOptionalParameter } from '../types/TOptionalParameter'
@@ -25,6 +24,7 @@ import { TContext } from "../../sandbox/types/TContext"
 import { MongoDbHelper } from "./MongoDbHelper"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Assert } from '../../../utils/Assert'
+import { TypeUtils } from '../../../utils/TypeUtils'
 
 
 //
@@ -139,7 +139,7 @@ export class MongoDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!typia.is<DataTable>(options.Data))
+        if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         await this.Connection
@@ -167,7 +167,7 @@ export class MongoDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!typia.is<DataTable>(options.Data) || options.Data.Rows.length === 0)
+        if (!DataTable.Is(options.Data) || options.Data.Rows.length === 0)
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)

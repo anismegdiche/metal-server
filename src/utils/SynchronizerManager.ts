@@ -35,12 +35,11 @@ export class SynchronizerManager {
                 const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args)
                 const _filteredParams = _.chain(_paramObject)
                     .omitBy(_.isNil || _.isEmpty)
-
                     .pick(pick ?? _.keys(_paramObject))
                     .value()
 
                 const signature = `${target.name ?? this.constructor.name}.${propertyKey}, ${JsonUtils.Stringify(_filteredParams)}`
-                Logger.Debug(`${Logger.In} SynchronizerManager: Function signature = ${signature}`)
+                Logger.Debug(`${Logger.In} SynchronizerManager: syncing ${target.name ?? this.constructor.name}.${propertyKey}`)
 
                 const result = await SynchronizerManager.Execute(signature, originalMethod.bind(this, ...args))
 
