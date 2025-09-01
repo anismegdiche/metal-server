@@ -83,7 +83,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
     GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
 
         Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
-        Assert.Condition(options.Data.Rows.length === 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
+        Assert.Condition(options.Data.Rows.length > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
 
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
             .Insert(schemaRequest.entity)
@@ -94,7 +94,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
     GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
 
         Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
-        Assert.Condition(options.Data.Rows.length === 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
+        Assert.Condition(options.Data.Rows.length > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
 
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
             .Update(schemaRequest.entity)
