@@ -25,7 +25,8 @@
         "lint": "eslint --fix src",
         "pretty": "dprint fmt src/**",
         "check": "npm run lint && npm run pretty",
-        "dev-changelog": "git --no-pager log --since=\"2024-12-15\" --oneline --pretty=format:\"- %s\" > HISTORY.md"
+        "dev-changelog": "git --no-pager log --since=\"2024-12-15\" --oneline --pretty=format:\"- %s\" > HISTORY.md",
+        "dev-dep-circular": "madge --circular --image graph.svg .\\src\\index.ts"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.812.0",
@@ -35,8 +36,6 @@
         "@azure/storage-file-share": "^12.27.0",
         "@loxjs/url-join": "^1.0.2",
         "@synatic/noql": "^5.0.1",
-        "@tensorflow-models/mobilenet": "^2.1.1",
-        "@tensorflow/tfjs": "^4.22.0",
         "alasql": "^4.6.6",
         "axios": "^1.9.0",
         "basic-ftp": "^5.0.5",
@@ -70,7 +69,6 @@
         "morgan": "^1.10.0",
         "mssql": "^11.0.1",
         "mysql2": "^3.14.1",
-        "node-nlp": "^4.27.0",
         "object-path": "^0.11.8",
         "openid-client": "^5.7.1",
         "papaparse": "^5.5.2",
@@ -79,7 +77,6 @@
         "safe-stable-stringify": "^2.5.0",
         "soap": "^1.1.11",
         "swagger-ui-express": "^5.0.1",
-        "tesseract.js": "^6.0.1",
         "ts-mixer": "^6.0.4",
         "typia": "^9.7.1"
     },
