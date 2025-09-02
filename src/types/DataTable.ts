@@ -164,7 +164,7 @@ export class DataTable extends clsClonable {
         return this.SetFields()
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     FreeSql(sqlQuery: string | undefined, jsonData?: object[]): this {
         if (sqlQuery == undefined)
             return this
@@ -185,7 +185,7 @@ export class DataTable extends clsClonable {
         return this.SetFields()
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     async FreeSqlAsync(sqlQuery: string | undefined, jsonData?: object[]): Promise<this> {
         if (sqlQuery == undefined)
             return this

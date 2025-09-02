@@ -20,27 +20,28 @@ export const ESCAPE_FIELD_VALUE = "$>"
 //
 export class SqlQueryUtils {
 
-    #Query: string = ''
+    #query: string = ''
     Data: object[] = []
 
+    // eslint-disable-next-line class-methods-use-this
+    #fnEscapeEntity: (entity: string) => string = (entity: string) => entity
 
-    FnEscapeEntity: (entity: string) => string = (entity: string) => entity
-
-
-    FnEscapeField: (field: string) => string = (field: string) => field
+    // eslint-disable-next-line class-methods-use-this
+    #fnEscapeField: (field: string) => string = (field: string) => field
 
     constructor(query?: string, fnEscapeEntity?: (entity: string) => string, fnEscapeField?: (field: string) => string) {
         if (query)
             this.SetQuery(query)
 
         if (fnEscapeEntity)
-            this.FnEscapeEntity = fnEscapeEntity
+            this.#fnEscapeEntity = fnEscapeEntity
 
         if (fnEscapeField)
-            this.FnEscapeField = fnEscapeField
+            this.#fnEscapeField = fnEscapeField
     }
 
 
+    // eslint-disable-next-line class-methods-use-this
     #whereCondition(field: string, value: unknown): string {
         // file deepcode ignore DuplicateCaseSwitch: simplicity
         switch (true) {
@@ -90,7 +91,7 @@ export class SqlQueryUtils {
             return ""
 
         return _.chain(cleanFields)
-            .map(this.FnEscapeField)
+            .map(this.#fnEscapeField)
             .join(', ')
             .value()
             .trim()
@@ -117,9 +118,9 @@ export class SqlQueryUtils {
     }
 
     #sanitizeTokenize(): string[] {
-        const query = this.#Query.trim()
+        const query = this.#query.trim()
         if ((/^\d+(\.\d+)?$/).test(query)) {
-            return [this.#Query]
+            return [this.#query]
         }
 
         const tokens = _.chain(query.match(/(?:'[^']*'|[^,\s]+|,)/g))
@@ -215,14 +216,14 @@ export class SqlQueryUtils {
         ]
 
         return (
-            sqlInjectionPatterns.some(pattern => pattern.test(this.#Query)) ||
-            mixedCrudPatterns.some(pattern => pattern.test(this.#Query))
+            sqlInjectionPatterns.some(pattern => pattern.test(this.#query)) ||
+            mixedCrudPatterns.some(pattern => pattern.test(this.#query))
         )
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     SetQuery(query: string): this {
-        this.#Query = String(query)
+        this.#query = String(query)
         return this
     }
 
@@ -230,26 +231,26 @@ export class SqlQueryUtils {
         if (this.#detectSQLInjection())
             throw new HttpErrorBadRequest('SQL Injection detected')
 
-        return this.#Query
+        return this.#query
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     Select(fields?: string): this {
 
-        this.#Query = (fields === undefined || fields === '*')
+        this.#query = (fields === undefined || fields === '*')
             ? `SELECT *`
             : `SELECT ${this.#escapeFields(fields)}`
 
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     From(entity: string): this {
-        this.#Query = `${this.#Query} FROM ${this.FnEscapeEntity(entity)}`
+        this.#query = `${this.#query} FROM ${this.#fnEscapeEntity(entity)}`
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     Where(condition?: string | object): this {
         // no filters
         if (condition === undefined)
@@ -257,7 +258,7 @@ export class SqlQueryUtils {
 
         // filter-expression
         if (typeof condition === 'string' && condition.length > 0) {
-            this.#Query = `${this.#Query} WHERE ${condition}`
+            this.#query = `${this.#query} WHERE ${condition}`
             return this
         }
 
@@ -272,12 +273,12 @@ export class SqlQueryUtils {
                     if (!___field)
                         return ''
 
-                    return this.#whereCondition(this.FnEscapeField(___field), ___value)
+                    return this.#whereCondition(this.#fnEscapeField(___field), ___value)
                 })
                 .join(' AND ')
                 .value()
 
-            this.#Query = `${this.#Query} WHERE ${_cond}`
+            this.#query = `${this.#query} WHERE ${_cond}`
             return this
         }
 
@@ -290,30 +291,30 @@ export class SqlQueryUtils {
                     if (!__field)
                         return ''
 
-                    return this.#whereCondition(this.FnEscapeField(__field), __value)
+                    return this.#whereCondition(this.#fnEscapeField(__field), __value)
                 })
                 .join(' AND ')
                 .value()
 
-            this.#Query = `${this.#Query} WHERE ${_cond}`
+            this.#query = `${this.#query} WHERE ${_cond}`
             return this
         }
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     Delete(): this {
-        this.#Query = 'DELETE'
+        this.#query = 'DELETE'
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     Update(entity: string): this {
-        this.#Query = `UPDATE ${this.FnEscapeEntity(entity)}`
+        this.#query = `UPDATE ${this.#fnEscapeEntity(entity)}`
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     Set(rows?: TRow[] | TRow): this {
         if (rows === undefined)
             return this
@@ -336,31 +337,31 @@ export class SqlQueryUtils {
             .value()
 
         if (setValues) {
-            this.#Query = `${this.#Query} SET ${setValues}`.trim()
+            this.#query = `${this.#query} SET ${setValues}`.trim()
         }
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     Insert(entity: string): this {
-        this.#Query = `INSERT INTO ${this.FnEscapeEntity(entity)}`
+        this.#query = `INSERT INTO ${this.#fnEscapeEntity(entity)}`
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     Fields(fields?: string[] | string): this {
         if (!fields)
             return this
 
-        this.#Query = `${this.#Query}(${this.#escapeFields(fields)})`
+        this.#query = `${this.#query}(${this.#escapeFields(fields)})`
 
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     Values(data: TRow[]): this {
         if (Array.isArray(data) && data.length > 0) {
-            this.#Query = `${this.#Query} VALUES`
+            this.#query = `${this.#query} VALUES`
             data.forEach((_values, _index) => {
                 const newValues = _.chain(_values)
                     .mapValues((_value) => this.#formatValue(_value))
@@ -369,10 +370,10 @@ export class SqlQueryUtils {
                     .join(', ')
                     .value()
 
-                this.#Query = `${this.#Query} (${newValues.trim()})`
+                this.#query = `${this.#query} (${newValues.trim()})`
                 // multiple value join
                 if (_index < data.length - 1) {
-                    this.#Query = `${this.#Query}, `
+                    this.#query = `${this.#query}, `
                 }
             })
         } else if (data && typeof data === 'object') {
@@ -380,18 +381,18 @@ export class SqlQueryUtils {
                 .map(val => this.#formatValue(val))
                 .filter((val): val is string => val !== undefined)
                 .join(',')
-            this.#Query = `${this.#Query} VALUES (${values})`
+            this.#query = `${this.#query} VALUES (${values})`
         }
         return this
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     OrderBy(order?: TOrderBy): this {
         if (!order)
             return this
 
         const _order = _.map(order, (value, key) => `${key} ${value!.toUpperCase()}`)
-        this.#Query = `${this.#Query} ORDER BY ${_order.join(', ')}`
+        this.#query = `${this.#query} ORDER BY ${_order.join(', ')}`
         return this
     }
 

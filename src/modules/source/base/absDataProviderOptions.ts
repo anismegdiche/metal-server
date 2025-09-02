@@ -16,7 +16,7 @@ import { IDataProviderOptions } from './IDataProviderOptions'
 
 //
 export abstract class absDataProviderOptions implements IDataProviderOptions {
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     Parse(schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         let options: TOptionalParameter = <TOptionalParameter>{}
         if (schemaRequest) {
@@ -32,7 +32,7 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     GetFilter(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
 
         if (schemaRequest["filter-expression"]) {
@@ -55,7 +55,7 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     GetFields(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         options.Fields = (schemaRequest?.fields === undefined)
             ? '*'
@@ -68,7 +68,7 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     GetSort(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         if (schemaRequest?.sort) {
             options.Sort = PlaceHolder.EvaluateJsCode(
@@ -80,7 +80,7 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
     }
 
     // eslint-disable-next-line class-methods-use-this
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     GetData(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         const { schema, entity, data } = schemaRequest
 
