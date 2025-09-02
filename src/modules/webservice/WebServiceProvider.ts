@@ -5,24 +5,56 @@ import { HttpErrorNotFound } from "../errors/HttpErrors"
 import { Factory } from "../../utils/Factory"
 import { WEBSERVICE } from "./@consts"
 import { IWebServiceProvider } from "./base/IWebServiceProvider"
-import { RestWebService } from "./providers/RestWebService"
-import { SoapWebService } from "./providers/SoapWebService"
 
+type ProviderLoader = () => Promise<{ new(): IWebServiceProvider }>;
 
-//
+type ProviderMap = {
+    [key in WEBSERVICE]: ProviderLoader;
+};
+
 export class WebServiceProvider {
+    static readonly #webServiceFactory = new Factory<Promise<IWebServiceProvider>>();
+    static readonly #loadingPromises = new Map<WEBSERVICE, Promise<IWebServiceProvider>>();
+    static readonly #providerMap: ProviderMap = {
+        [WEBSERVICE.REST]: () => import('./providers/RestWebService').then(m => m.RestWebService),
+        [WEBSERVICE.SOAP]: () => import('./providers/SoapWebService').then(m => m.SoapWebService)
+    };
 
-    static readonly #WebServiceFactory = new Factory<IWebServiceProvider>()
+    static async GetProvider(providerName: WEBSERVICE): Promise<IWebServiceProvider> {
+        // If already loaded, return from factory
+        if (WebServiceProvider.#webServiceFactory.Has(providerName)) {
+            const provider = await WebServiceProvider.#webServiceFactory.Get(providerName);
+            return provider!.Clone();
+        }
 
-    static GetProvider(providerName: string): IWebServiceProvider {
-        if (WebServiceProvider.#WebServiceFactory.Has(providerName))
-            return WebServiceProvider.#WebServiceFactory.Get(providerName)!.Clone()
-        else
-            throw new HttpErrorNotFound(`WebService Provider '${providerName}' not found`)
-    }
+        // If already loading, return the existing promise
+        const existingPromise = WebServiceProvider.#loadingPromises.get(providerName);
+        if (existingPromise) {
+            const provider = await existingPromise;
+            return provider.Clone();
+        }
 
-    static RegisterProviders() {
-        WebServiceProvider.#WebServiceFactory.Register(WEBSERVICE.REST, new RestWebService())
-        WebServiceProvider.#WebServiceFactory.Register(WEBSERVICE.SOAP, new SoapWebService())
+        // Get the provider loader from the map
+        const providerLoader = WebServiceProvider.#providerMap[providerName];
+        if (!providerLoader) {
+            throw new HttpErrorNotFound(`WebService Provider '${providerName}' not found`);
+        }
+
+        // Create a loading promise
+        const loadPromise = (async () => {
+            try {
+                const ProviderClass = await providerLoader();
+                const provider = new ProviderClass();
+                await WebServiceProvider.#webServiceFactory.Register(providerName, Promise.resolve(provider));
+                return provider;
+            } finally {
+                WebServiceProvider.#loadingPromises.delete(providerName);
+            }
+        })();
+
+        // Store the loading promise to prevent duplicate loads
+        WebServiceProvider.#loadingPromises.set(providerName, loadPromise);
+        const provider = await loadPromise;
+        return provider.Clone();
     }
 }

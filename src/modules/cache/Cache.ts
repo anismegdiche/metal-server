@@ -1,3 +1,5 @@
+//
+//
 // External dependencies
 import * as Sha512 from 'js-sha512'
 
@@ -78,7 +80,7 @@ export class Cache {
             schema: Cache.Database,
             entity: Cache.Entity
         }
-        Cache.DataSource = fnDataProvider_GetProvider(Cache.DataSourceConfig.provider)
+        Cache.DataSource = await fnDataProvider_GetProvider(Cache.DataSourceConfig.provider)
         await Cache.DataSource.Init(Cache.Database, Cache.DataSourceConfig)
         // update Config
         Global.Cache = {
@@ -350,7 +352,7 @@ export class Cache {
         return HttpResponse.Ok({ message: 'Cache cleaned' })
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     @SynchronizerManager.Synchronized()
     static async Remove(schemaRequest: TSchemaRequest): Promise<void> {
 

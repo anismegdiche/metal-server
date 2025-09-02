@@ -101,7 +101,7 @@ export class Schema {
         Schema.fnCacheGet = fnCacheGet
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async IsExists(schemaRequest: TSchemaRequest): Promise<void> {
 
         const { schema } = schemaRequest
@@ -120,7 +120,7 @@ export class Schema {
     }
 
     //FIXME rewrite with GetEntitiesSources
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static GetRoute(schema: string, entity: string, schemaConfig: any): TSchemaRoute {
 
         const nothingToDoSchemaRoute: TSchemaRoute = {
@@ -171,7 +171,7 @@ export class Schema {
         return nothingToDoSchemaRoute
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async Select(schemaRequest: TSchemaRequestSelect, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
         
         // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -228,7 +228,7 @@ export class Schema {
         })
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async Delete(schemaRequest: TSchemaRequestDelete, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         Assert.Var<TSchemaRequestDelete>(schemaRequest, 
@@ -258,7 +258,7 @@ export class Schema {
         })
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async Update(schemaRequest: TSchemaRequestUpdate, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         Assert.Var<TSchemaRequestUpdate>(schemaRequest, 
@@ -288,7 +288,7 @@ export class Schema {
         })
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async Insert(schemaRequest: TSchemaRequestInsert, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         Assert.Var<TSchemaRequestInsert>(schemaRequest, 
@@ -318,7 +318,7 @@ export class Schema {
         })
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async ListEntities(schemaRequest: TSchemaRequest, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
         const { schema } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)

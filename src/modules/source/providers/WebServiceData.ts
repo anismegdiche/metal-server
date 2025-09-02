@@ -85,7 +85,7 @@ export class WebServiceData extends absDataProvider {
         if (content === undefined)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Content type is not defined`)
 
-        this.Connection = WebServiceProvider.GetProvider(webservice)
+        this.Connection = await WebServiceProvider.GetProvider(webservice)
         this.Connection.SetConfig(this.Config)
 
         // init webservice
@@ -95,7 +95,8 @@ export class WebServiceData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize webservice provider`)
 
         // init content
-        this.ContentHandler = ContentProvider.GetProvider(content)
+        
+        this.ContentHandler = await ContentProvider.GetProvider(content)
         this.ContentHandler.SetConfig(this.Config.options)
     }
 

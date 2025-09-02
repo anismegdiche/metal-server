@@ -31,7 +31,6 @@ import { ContentProvider } from "../../content/ContentProvider"
 import { STORAGE } from "../../storage/@consts"
 import { absStorageProvider } from "../../storage/base/absStorageProvider"
 import { StorageProvider } from "../../storage/StorageProvider"
-import { TypeUtils } from "../../../utils/TypeUtils"
 
 
 //
@@ -62,7 +61,7 @@ export class FilesData extends absDataProvider {
 
         Assert.Var<TFilesDataOptionsContent>(content, typia.is<TFilesDataOptionsContent>(content), `${this.SourceName}: Content type is not defined`)
 
-        this.Connection = StorageProvider.GetProvider(storage)
+        this.Connection = await StorageProvider.GetProvider(storage)
         this.Connection.SetConfig(this.Config)
 
         // init storage
@@ -75,7 +74,8 @@ export class FilesData extends absDataProvider {
         for (const filePattern in content) {
             if (Object.hasOwn(content, filePattern)) {
                 const { type } = content[filePattern]
-                this.ContentHandler[filePattern] = ContentProvider.GetProvider(type)
+                // eslint-disable-next-line no-await-in-loop
+                this.ContentHandler[filePattern] = await ContentProvider.GetProvider(type)
                 this.ContentHandler[filePattern].SetConfig(content[filePattern])
             }
         }

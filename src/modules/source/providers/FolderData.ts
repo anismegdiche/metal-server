@@ -68,7 +68,7 @@ export class FolderData extends absDataProvider {
 
         const { storage } = this.Config.options
 
-        this.Connection = StorageProvider.GetProvider(storage)
+        this.Connection = await StorageProvider.GetProvider(storage as STORAGE)
         this.Connection.SetConfig(this.Config)
 
         // init storage

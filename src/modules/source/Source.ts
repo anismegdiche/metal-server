@@ -34,7 +34,7 @@ export class Source {
         try {
             Source.Sources.set(source, <TSource>{
                 SourceConfig: sourceConfig,
-                DataProvider: DataProvider.GetProvider(provider)
+                DataProvider: await DataProvider.GetProvider(provider)
             })
             await Source.Sources.get(source)!.DataProvider.Init(source, sourceConfig)
             Source.Sources.get(source)!.DataProvider.Connect()

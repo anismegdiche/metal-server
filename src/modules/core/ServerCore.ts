@@ -12,14 +12,11 @@ import { AuthProvider } from '../auth/AuthProvider'
 import { Roles } from '../auth/Roles'
 import { TAuthentication } from '../auth/types/TAuthentication'
 import { Cache } from '../cache/Cache'
-import { ContentProvider } from '../content/ContentProvider'
 import { Plans } from '../plan/Plans'
 import { Schedule } from '../plan/Schedule'
 import { Schema } from '../schema/Schema'
 import { DataProvider } from '../source/DataProvider'
 import { Source } from '../source/Source'
-import { StorageProvider } from '../storage/StorageProvider'
-import { WebServiceProvider } from '../webservice/WebServiceProvider'
 import { ConfigManager } from './ConfigManager'
 import { ConfigStore } from './ConfigStore'
 import { ServerEndpoint } from './ServerEndpoint'
@@ -40,7 +37,7 @@ export class ServerCore {
     static async Init(): Promise<void> {
 
         // core
-        ServerCore.RegisterProviders()
+        // ServerCore.RegisterProviders()
 
         // config
         await ConfigManager.Init(new ConfigStore())
@@ -56,6 +53,7 @@ export class ServerCore {
         await Cache.Init(DataProvider.GetProvider)
         await Cache.Connect()
 
+        // AI
         await AiEngine.Init()
 
         // plans
@@ -63,21 +61,21 @@ export class ServerCore {
         Schedule.Init()
 
 
-        ServerCore.InitAuthentication()
+        await ServerCore.InitAuthentication()
 
         ServerCore.InitResponse()
         ServerEndpoint.InitApi()
         ServerRuntime.StartWatcher()
     }
 
-    static RegisterProviders() {
-        AuthProvider.RegisterProviders()
-        StorageProvider.RegisterProviders()
-        WebServiceProvider.RegisterProviders()
-        ContentProvider.RegisterProviders()
-        DataProvider.RegisterProviders()
-        AiEngine.RegisterProviders()
-    }
+    // static RegisterProviders() {
+    //     AuthProvider.RegisterProviders()
+    //     StorageProvider.RegisterProviders()
+    //     WebServiceProvider.RegisterProviders()
+    //     ContentProvider.RegisterProviders()
+    //     DataProvider.RegisterProviders()
+    //     AiEngine.RegisterProviders()
+    // }
 
     @Logger.LogFunction()
     static InitLogging(): void {
@@ -86,9 +84,9 @@ export class ServerCore {
     }
 
     @Logger.LogFunction()
-    static InitAuthentication(): void {
+    static async InitAuthentication(): Promise<void> {
         const authentication = ConfigManager.Get<TAuthentication>("server.authentication")
-        AuthProvider.SetCurrent(authentication.provider)
+        await AuthProvider.SetCurrent(authentication.provider)
         AuthProvider.Provider.Init()
         Roles.Init()
     }
