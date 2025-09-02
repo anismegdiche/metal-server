@@ -1,11 +1,9 @@
 //
 //
 //
-//
-//
 import _, { Many } from 'lodash'
 import alasql from 'alasql'
-import { createHash } from 'crypto'
+import { createHash } from 'node:crypto'
 //
 import { TJson } from './TJson'
 import { Logger } from '../utils/Logger'
@@ -384,7 +382,7 @@ export class DataTable extends clsClonable {
             _fields.forEach(__field => {
                 if (__field in _newRow) {
                     // deepcode ignore InsecureHash: used for data anonymization
-                    _newRow[__field] = createHash('md5')
+                    _newRow[__field] = createHash("blake2s256", { outputLength: 16 })
                         .update(_.toString(_newRow[__field]))
                         .digest('hex')
                 }
