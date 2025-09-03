@@ -1,18 +1,20 @@
 //
 //
 //
-import { Readable } from 'node:stream'
+import typia from 'typia';
+//
+import { Readable } from 'node:stream';
 import { Logger } from './Logger';
-import { Validator } from './Validator';
 
 //
 export class VirtualFileSystem {
     
     // static
+    static readonly #virtualFileSystem = typia.createIs<VirtualFileSystem>();
     
     @Logger.LogFunction(true)
     static Is(vfs: unknown): vfs is VirtualFileSystem {
-        return Validator.VirtualFileSystem(vfs)
+        return VirtualFileSystem.#virtualFileSystem(vfs)
     }
     
     // dynamic

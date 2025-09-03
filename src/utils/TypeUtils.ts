@@ -5,6 +5,7 @@
 import { HttpError, HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
 import { TSchemaRequest, TSchemaRequestSelect } from "../modules/schema/types/TSchemaRequest"
 import { TSchemaResponse } from "../modules/schema/types/TSchemaResponse"
+import { DataTable } from "../types/DataTable"
 import { Logger } from "./Logger"
 import { Validator } from "./Validator"
 
@@ -31,8 +32,7 @@ export class TypeUtils {
 
     @Logger.LogFunction(true)
     static IsSchemaResponseWithData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponse {
-        return Validator.SchemaResponse(schemaResponse) &&
-            Validator.DataTable(schemaResponse.data);
+        return Validator.SchemaResponse(schemaResponse) && DataTable.Is(schemaResponse.data);
     }
 
     @Logger.LogFunction(true)

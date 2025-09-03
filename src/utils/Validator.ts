@@ -6,15 +6,12 @@ import typia from "typia"
 import { TUserCredentials } from "../modules/auth/@types"
 import { TSchemaRequest, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestInsert, TSchemaRequestDelete } from "../modules/schema/types/TSchemaRequest"
 import { TSchemaResponse } from "../modules/schema/types/TSchemaResponse"
-import { DataTable } from "../types/DataTable"
-import { VirtualFileSystem } from "./VirtualFileSystem"
 import { TEndpoint } from "../modules/webservice/@types"
 
 
 //
 export class Validator {
-    // Pre-compiled validators for better performance
-    static readonly DataTable = typia.createIs<DataTable>();
+    // Pre-compiled validators for better performance    
 
     static readonly SchemaRequest = typia.createIs<TSchemaRequest>();
     static readonly SchemaRequestSelect = typia.createIs<TSchemaRequestSelect>();
@@ -23,8 +20,6 @@ export class Validator {
     static readonly SchemaRequestDelete = typia.createIs<TSchemaRequestDelete>();
 
     static readonly SchemaResponse = typia.createIs<TSchemaResponse>();
-
-    static readonly VirtualFileSystem = typia.createIs<VirtualFileSystem>();
 
     static readonly TUserCredentials = typia.createIs<TUserCredentials>();
 

@@ -1,17 +1,17 @@
 //
 //
 //
-import _, { Many } from 'lodash'
 import alasql from 'alasql'
+import _, { Many } from 'lodash'
 import { createHash } from 'node:crypto'
+import typia from 'typia/lib/module'
 //
-import { TJson } from './TJson'
-import { Logger } from '../utils/Logger'
-import { JsonUtils } from "../utils/JsonUtils"
-import { StringUtils } from "../utils/StringUtils"
 import { HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
 import { clsClonable } from "../utils/base/clsClonable"
-import { Validator } from "../utils/Validator"
+import { JsonUtils } from "../utils/JsonUtils"
+import { Logger } from '../utils/Logger'
+import { StringUtils } from "../utils/StringUtils"
+import { TJson } from './TJson'
 
 
 //
@@ -65,10 +65,11 @@ export type TSyncReport = {
 export class DataTable extends clsClonable {
     
     // static
+    static readonly DataTable = typia.createIs<DataTable>();
     
     @Logger.LogFunction(true)
     static Is(dataTable: unknown): dataTable is DataTable {
-        return Validator.DataTable(dataTable)
+        return DataTable.DataTable(dataTable)
     }
     
     // dynamic
