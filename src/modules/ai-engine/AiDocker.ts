@@ -1,9 +1,4 @@
-/* eslint-disable max-depth */
-/* eslint-disable no-promise-executor-return */
-/* eslint-disable no-continue */
 /* eslint-disable no-async-promise-executor */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-plusplus */
 //
 //
 //
@@ -122,7 +117,7 @@ export class AiDocker {
                 }
 
                 AiDocker.docker.modem.followProgress(stream,
-                    (err: any, output: any) => {
+                    (err: any, _output: unknown) => {
                         if (err) {
                             Logger.Error(`Error in pull progress for ${image}: ${err.message}`)
                             return reject(err)
@@ -154,7 +149,7 @@ export class AiDocker {
                     return parsed && typeof parsed.stream === 'string'
                         ? parsed.stream
                         : ''
-                } catch (e) {
+                } catch {
                     return ''
                 }
             })
@@ -180,7 +175,7 @@ export class AiDocker {
                     const __data = data.toString();
                     _streamData += __data;
                 
-                    let parts = _streamData.split('}');
+                    const parts = _streamData.split('}');
                     
                     // Last part may be incomplete, keep it in buffer
                     _streamData = parts.pop() || '';
@@ -190,7 +185,7 @@ export class AiDocker {
                         try {
                             const ___aLog = AiDocker.#ConvertStreamToLog(complete);
                             ___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image... ${item}`));
-                        } catch (err) {
+                        } catch {
                             Logger.Warn(`${Logger.Out} ⚠️ Failed to parse log part: ${complete}`);
                         }
                     }
