@@ -2,7 +2,7 @@
 //
 //
 //
-import { DataLakeServiceClient, DataLakeFileSystemClient } from '@azure/storage-file-datalake'
+// Lazy-loaded @azure/storage-file-datalake module
 import { Readable } from 'stream'
 import _ from 'lodash'
 //
@@ -40,7 +40,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
 
     Params: TAzureDataLakeStorageParams | undefined
 
-    #FileSystemClient: DataLakeFileSystemClient | undefined
+    #FileSystemClient: import('@azure/storage-file-datalake').DataLakeFileSystemClient | undefined
 
     DEFAULT = {}
 
@@ -54,6 +54,14 @@ export class AzureDataLakeStorage extends absStorageProvider {
         })
     }
 
+    private static _azureStorageFileDatalake: typeof import('@azure/storage-file-datalake');
+    private static async _loadAzureStorageFileDatalake(): Promise<typeof import('@azure/storage-file-datalake')> {
+        if (!this._azureStorageFileDatalake) {
+            this._azureStorageFileDatalake = await import('@azure/storage-file-datalake');
+        }
+        return this._azureStorageFileDatalake;
+    }
+
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         Assert.Var<TAzureDataLakeStorageParams>(this.Params, this.Params !== undefined, 'AzureDataLakeStorage: No params defined')
@@ -64,8 +72,9 @@ export class AzureDataLakeStorage extends absStorageProvider {
         const { storageAccount, containerName, storageKey } = this.Params
 
         try {
+            const azureStorageFileDatalake = await AzureDataLakeStorage._loadAzureStorageFileDatalake();
             const connectionString = `DefaultEndpointsProtocol=https;AccountName=${storageAccount};AccountKey=${storageKey};EndpointSuffix=core.windows.net`
-            const serviceClient = DataLakeServiceClient.fromConnectionString(connectionString)
+            const serviceClient = azureStorageFileDatalake.DataLakeServiceClient.fromConnectionString(connectionString)
             this.#FileSystemClient = serviceClient.getFileSystemClient(containerName)
 
             // Create the container if it doesn't exist
@@ -86,7 +95,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileIsExist(file: string): Promise<boolean> {
-        Assert.Var<DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
+        Assert.Var<import('@azure/storage-file-datalake').DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
 
         try {
             const fileClient = this.#FileSystemClient.getFileClient(file)
@@ -103,7 +112,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileRead(file: string): Promise<Readable> {
-        Assert.Var<DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
+        Assert.Var<import('@azure/storage-file-datalake').DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
 
         try {
             const fileClient = this.#FileSystemClient.getFileClient(file)
@@ -122,7 +131,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
 
     @Logger.LogFunction(['content'])
     async FileWrite(file: string, content: Readable): Promise<void> {
-        Assert.Var<DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
+        Assert.Var<import('@azure/storage-file-datalake').DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
 
         try {
             const buffer = await ReadableUtils.ToBuffer(content)
@@ -144,7 +153,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileList(dir?: string): Promise<DataTable> {
-        Assert.Var<DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
+        Assert.Var<import('@azure/storage-file-datalake').DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
 
         try {
             const files: TStorageFile[] = []
@@ -173,7 +182,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderList(): Promise<DataTable> {
-        Assert.Var<DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
+        Assert.Var<import('@azure/storage-file-datalake').DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
 
         const folders: TStorageFile[] = []
         for await (const item of this.#FileSystemClient.listPaths()) {

@@ -3,7 +3,7 @@
 //
 import _ from "lodash"
 import { Readable } from "stream"
-import { createClientAsync, Client, IOptions } from "soap"
+// Lazy-loaded soap module
 //
 import { absWebServiceProvider } from "../base/absWebServiceProvider"
 import {  ENDPOINT, HEADER } from "../@consts"
@@ -28,7 +28,7 @@ export class SoapWebService extends absWebServiceProvider {
 
     ConfigSource?: TConfigSourceWebService
     ConfigSourceOptions?: TWebServiceDataOptions
-    Client?: Client
+    Client?: import('soap').Client
 
     Headers: Record<string, string>[] = []
 
@@ -40,6 +40,14 @@ export class SoapWebService extends absWebServiceProvider {
             Prefix: 'web',
             Uri: 'http://example.com/soap/namespace'
         }
+
+    private static _soapModule: typeof import('soap');
+    private static async _loadSoapModule(): Promise<typeof import('soap')> {
+        if (!this._soapModule) {
+            this._soapModule = await import('soap');
+        }
+        return this._soapModule;
+    }
 
     constructor() {
         super()
@@ -54,7 +62,7 @@ export class SoapWebService extends absWebServiceProvider {
 
         const endpoint = this.Endpoints.get(ENDPOINT.SESSION)
 
-        let soapOptions: IOptions = {}
+        let soapOptions: import('soap').IOptions = {}
 
         if (Validator.TEndpoint(endpoint)) {
             const { Data } = this.Endpoints.get(ENDPOINT.SESSION)!
@@ -70,7 +78,8 @@ export class SoapWebService extends absWebServiceProvider {
         }
 
         try {
-            this.Client = await createClientAsync(this.ConfigSource!.host, soapOptions)
+            const soap = await SoapWebService._loadSoapModule();
+            this.Client = await soap.createClientAsync(this.ConfigSource!.host, soapOptions)
 
             if (!this.Client)
                 throw new HttpErrorInternalServerError(`SoapWebService.Init: Failed to create client`)

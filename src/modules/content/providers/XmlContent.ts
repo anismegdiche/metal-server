@@ -1,7 +1,7 @@
 //
 //
 //
-import { X2jOptions, XMLBuilder, XmlBuilderOptions, XMLParser } from "fast-xml-parser"
+// Lazy-loaded module
 import _ from "lodash"
 import { Readable } from "node:stream"
 import typia from "typia"
@@ -26,6 +26,13 @@ import { TXmlContentConfig } from "../types/TXmlContentConfig"
 
 //
 export class XmlContent extends absContentProvider {
+    private static _fastXmlParserModule: typeof import('fast-xml-parser');
+    private static async _loadFastXmlParserModule(): Promise<typeof import('fast-xml-parser')> {
+        if (!this._fastXmlParserModule) {
+            this._fastXmlParserModule = await import('fast-xml-parser');
+        }
+        return this._fastXmlParserModule;
+    }
 
     Params: TXmlContentConfig | undefined
 
@@ -37,7 +44,7 @@ export class XmlContent extends absContentProvider {
     }
 
     // XML Content
-    ParserOptions: X2jOptions = {}
+    ParserOptions: import('fast-xml-parser').X2jOptions = {}
 
     SetConfig(contentConfig: TContentConfig): void {
         super.SetConfig(contentConfig)
@@ -65,7 +72,8 @@ export class XmlContent extends absContentProvider {
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
-        const xmlParser = new XMLParser(this.ParserOptions)
+        const fastXmlParser = await XmlContent._loadFastXmlParserModule();
+        const xmlParser = new fastXmlParser.XMLParser(this.ParserOptions);
         const xmlData = xmlParser.parse(
             await ReadableUtils.ToString(this.Content.ReadFile(this.EntityName))
         )
@@ -97,7 +105,8 @@ export class XmlContent extends absContentProvider {
 
         const { "xml-path": jsonPath  } = this.Params
 
-        const xmlParser = new XMLParser(this.ParserOptions)
+        const fastXmlParser = await XmlContent._loadFastXmlParserModule();
+        const xmlParser = new fastXmlParser.XMLParser(this.ParserOptions);
         let xmlData = xmlParser.parse(
             await ReadableUtils.ToString(this.Content.ReadFile(this.EntityName))
         )
@@ -113,7 +122,7 @@ export class XmlContent extends absContentProvider {
             data.Rows
         )
 
-        const xmlBuilder = new XMLBuilder(this.ParserOptions as XmlBuilderOptions)
+        const xmlBuilder = new fastXmlParser.XMLBuilder(this.ParserOptions as import('fast-xml-parser').XmlBuilderOptions);
         const xmlString = xmlBuilder.build(xmlData)
 
         const streamOut = Readable.from(xmlString)

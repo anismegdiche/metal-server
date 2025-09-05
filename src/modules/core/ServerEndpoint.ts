@@ -24,7 +24,7 @@ import { JsonUtils } from '../../utils/JsonUtils'
 //
 export class ServerEndpoint {
     static readonly Api: Express = express()
-    static Port: number  //NOSONAR
+    static Port: number
 
     static InitApi() {
         ServerEndpoint.Port = ConfigManager.Get<number>("server.port")
@@ -45,8 +45,11 @@ export class ServerEndpoint {
         })
 
         Swagger.Load()
-        Swagger.StartUi(ServerEndpoint.Api)
-        Swagger.Validator(ServerEndpoint.Api)
+            .then(() => {
+                Swagger.StartUi(ServerEndpoint.Api)
+                Swagger.Validator(ServerEndpoint.Api)
+            })
+            .catch(error => Logger.Error(error))
 
         // path: /
         ServerEndpoint.Api.get('/', (req: Request, res: Response) => {

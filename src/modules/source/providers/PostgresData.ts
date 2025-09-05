@@ -1,7 +1,7 @@
 //
 //
 //
-import { Pool } from 'pg'
+// Lazy-loaded pg module
 import _ from "lodash"
 //
 import { RESPONSE } from '../../core/@consts'
@@ -23,7 +23,6 @@ import { TContext } from "../../sandbox/types/TContext"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { TIpPort } from "../../../types/TIpPort"
 import { Assert } from '../../../utils/Assert'
-import { TypeUtils } from '../../../utils/TypeUtils'
 
 
 //
@@ -40,11 +39,18 @@ export type TPostgresDataConfig = {
 
 //
 export class PostgresData extends absDataProvider {
+    private static _pg: typeof import('pg');
+    private static async _loadPg(): Promise<typeof import('pg')> {
+        if (!this._pg) {
+            this._pg = await import('pg');
+        }
+        return this._pg;
+    }
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.POSTGRES
     Config: TPostgresDataConfig = <TPostgresDataConfig>{}
-    Connection?: Pool
+    Connection?: import('pg').Pool
 
     DEFAULT: Partial<TPostgresDataConfig> = {
         host: 'localhost',
@@ -70,7 +76,8 @@ export class PostgresData extends absDataProvider {
         const { host, port, user, password, database, options } = this.Config
 
         try {
-            this.Connection = new Pool({
+            const pg = await PostgresData._loadPg();
+            this.Connection = new pg.Pool({
                 user,
                 password,
                 database,
@@ -227,7 +234,7 @@ export class PostgresData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert.Var<Pool>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection is undefined`)
+        Assert.Var<import('pg').Pool>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection is undefined`)
 
         const { schema, source } = schemaRequest
 

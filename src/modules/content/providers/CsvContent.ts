@@ -1,8 +1,8 @@
 //
 //
 //
-import * as Csv from 'papaparse'
-import typia from "typia"
+// Lazy-loaded module
+import { is as TypiaIs } from "typia"
 //
 import { Readable } from "node:stream"
 //
@@ -24,13 +24,20 @@ import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
 
 //
 export class CsvContent extends absContentProvider {
+    private static _papaParseModule: typeof import('papaparse');
+    private static async _loadPapaParseModule(): Promise<typeof import('papaparse')> {
+        if (!this._papaParseModule) {
+            this._papaParseModule = await import('papaparse');
+        }
+        return this._papaParseModule;
+    }
 
     Params: TCsvContentParams | undefined
 
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && typia.is<TCsvContentConfig>(this.Config)) {
+        if (this.Config && TypiaIs<TCsvContentConfig>(this.Config)) {
             this.Params = {
                 delimiter: this.Config["csv-delimiter"] ?? ',',
                 newline: this.Config["csv-newline"] ?? '\n',
@@ -47,16 +54,18 @@ export class CsvContent extends absContentProvider {
     @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
 
-        Assert.Var<VirtualFileSystem>(this.Content, 
+        Assert.Var<VirtualFileSystem>(this.Content,
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
-        const $__evalParams = PlaceHolder.EvaluateJsCode<Csv.ParseConfig>(
+        const $__evalParams = PlaceHolder.EvaluateJsCode<import('papaparse').ParseConfig>(
             this.Params,
             new Sandbox($context)
         )
+
+        const papaparse = await CsvContent._loadPapaParseModule();
         // TODO to test
-        const parsedCsv = Csv.parse<TJson>(
+        const parsedCsv = papaparse.parse<TJson>(
             await ReadableUtils.ToString(
                 this.Content.ReadFile(this.EntityName)
             ),
@@ -67,8 +76,8 @@ export class CsvContent extends absContentProvider {
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
-        
-        Assert.Var<VirtualFileSystem>(this.Content, 
+
+        Assert.Var<VirtualFileSystem>(this.Content,
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
@@ -82,14 +91,15 @@ export class CsvContent extends absContentProvider {
             Object.entries(row).map(([k, v]) => [
                 k,
                 // and is not date
-                typeof v === "object" && v !== null && !Date.parse(v.toString()) 
+                typeof v === "object" && v !== null && !Date.parse(v.toString())
                     ? JsonUtils.Stringify(v)
                     : v
             ])
         ));
 
+        const papaparse = await CsvContent._loadPapaParseModule();
         const streamOut = Readable.from(
-            Csv.unparse(
+            papaparse.unparse(
                 _dataFlatten,
                 $__evalParams
             )

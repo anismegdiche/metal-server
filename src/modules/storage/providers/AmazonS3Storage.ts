@@ -1,7 +1,7 @@
 //
 //
 //
-import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3'
+// Lazy-loaded @aws-sdk/client-s3 module
 import { Readable } from "node:stream"
 import { loadEsm } from 'load-esm'
 
@@ -22,7 +22,7 @@ import { Assert } from '../../../utils/Assert'
 
 
 //
- 
+
 export const FileTypeFromBuffer = (async () => {
     try {
         const { fileTypeFromBuffer } = await loadEsm<typeof import('file-type')>('file-type')
@@ -56,7 +56,7 @@ export class AmazonS3Storage extends absStorageProvider {
 
     Params: TAmazonS3StorageParams | undefined
 
-    #S3Client: S3Client | undefined
+    #S3Client: import('@aws-sdk/client-s3').S3Client | undefined
 
     DEFAULT = {}
 
@@ -72,6 +72,14 @@ export class AmazonS3Storage extends absStorageProvider {
         })
     }
 
+    private static _s3Module: typeof import('@aws-sdk/client-s3');
+    private static async _loadS3Module(): Promise<typeof import('@aws-sdk/client-s3')> {
+        if (!this._s3Module) {
+            this._s3Module = await import('@aws-sdk/client-s3');
+        }
+        return this._s3Module;
+    }
+
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         Assert.Var<TAmazonS3StorageParams>(this.Params, this.Params !== undefined, 'AmazonS3Storage: No params defined')
@@ -85,6 +93,7 @@ export class AmazonS3Storage extends absStorageProvider {
                 return
             }
 
+            const s3 = await AmazonS3Storage._loadS3Module();
             const clientConfig = {
                 credentials: {
                     accessKeyId,
@@ -94,7 +103,7 @@ export class AmazonS3Storage extends absStorageProvider {
                 endpoint: endpoint || undefined
             }
 
-            this.#S3Client = new S3Client(clientConfig)
+            this.#S3Client = new s3.S3Client(clientConfig)
         } catch (error) {
             Logger.Error(`AmazonS3Storage Error: ${error}`)
         }
@@ -109,15 +118,16 @@ export class AmazonS3Storage extends absStorageProvider {
     async FileIsExist(file: string): Promise<boolean> {
         Assert.Var<TAmazonS3StorageParams>(this.Params, this.Params !== undefined, 'AmazonS3Storage: No params defined')
         Assert.Var<string>(this.Params.bucket, this.Params?.bucket !== undefined, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<S3Client>(this.#S3Client, this.#S3Client !== undefined, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this.#S3Client, this.#S3Client !== undefined, 'AmazonS3Storage: Connection to S3 not established')
 
         try {
-            const command = new GetObjectCommand({
+            const s3 = await AmazonS3Storage._loadS3Module();
+            const command = new s3.GetObjectCommand({
                 Bucket: this.Params.bucket,
                 Key: file
             })
 
-            await this.#S3Client.send(command)
+            await this.#S3Client!.send(command)
             return true
         } catch (error: any) {
             // Only return false if it's a NoSuchKey error
@@ -133,15 +143,16 @@ export class AmazonS3Storage extends absStorageProvider {
     async FileRead(file: string): Promise<Readable> {
         Assert.Var<TAmazonS3StorageParams>(this.Params, this.Params !== undefined, 'AmazonS3Storage: No params defined')
         Assert.Var<string>(this.Params.bucket, this.Params?.bucket !== undefined, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<S3Client>(this.#S3Client, this.#S3Client !== undefined, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this.#S3Client, this.#S3Client !== undefined, 'AmazonS3Storage: Connection to S3 not established')
 
         try {
-            const command = new GetObjectCommand({
+            const s3 = await AmazonS3Storage._loadS3Module();
+            const command = new s3.GetObjectCommand({
                 Bucket: this.Params.bucket,
                 Key: file
             })
 
-            const response = await this.#S3Client.send(command)
+            const response = await this.#S3Client!.send(command)
 
             if (!response.Body)
                 throw new HttpErrorNotFound(`File '${file}' does not exist`)
@@ -160,43 +171,57 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction(['content'])
     async FileWrite(file: string, content: Readable): Promise<void> {
-        // Your existing assertions
-        Assert.Var<TAmazonS3StorageParams>(this.Params, this.Params !== undefined, 'AmazonS3Storage: No params defined')
-        Assert.Var<string>(this.Params.bucket, this.Params?.bucket !== undefined, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<S3Client>(this.#S3Client, this.#S3Client !== undefined, 'AmazonS3Storage: Connection to S3 not established')
+        // 1. Validate parameters and connection
+        Assert.Var<TAmazonS3StorageParams>(this.Params, this.Params !== undefined, 'AmazonS3Storage: No params defined');
+        Assert.Var<string>(this.Params.bucket, this.Params?.bucket !== undefined, 'AmazonS3Storage: No bucket defined');
+
+        // 2. Load S3 module and validate client
+        const s3Module = await AmazonS3Storage._loadS3Module();
+        type S3Client = InstanceType<typeof s3Module.S3Client>;
+
+        if (!this.#S3Client) {
+            throw new Error('AmazonS3Storage: Connection to S3 not established');
+        }
 
         try {
-            // 1. Get initial content type from extension
-            let contentType = this.GetMimeType(file)
+            // 3. Get initial content type from extension
+            let contentType = this.GetMimeType(file);
 
-            // 2. Hybrid detection (first chunk + extension)
+            // 4. Hybrid detection (first chunk + extension)
             const firstChunk = await new Promise<Buffer>((resolve, reject) => {
                 content.once('data', (chunk) => {
-                    resolve(Buffer.isBuffer(chunk)
+                    const bufferChunk = Buffer.isBuffer(chunk)
                         ? chunk
-                        : Buffer.from(chunk))
-                    content.unshift(chunk) // Reinsert chunk for streaming
-                })
-                content.once('error', reject)
-            })
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-            Assert.Var<Function>(FileTypeFromBuffer, FileTypeFromBuffer !== undefined, 'AmazonS3Storage: file-type module not loaded')
-            
-            // 3. Magic number detection
-            const fileType = await FileTypeFromBuffer(firstChunk)
-            if (fileType?.mime) {
-                contentType = fileType.mime
+                        : Buffer.from(chunk);
+                    content.unshift(chunk); // Reinsert chunk for streaming
+                    resolve(bufferChunk);
+                });
+                content.once('error', reject);
+            });
+
+            // 5. Magic number detection
+            if (!FileTypeFromBuffer) {
+                throw new Error('AmazonS3Storage: file-type module not loaded');
             }
 
-            // 4. Stream upload
-            const command = new PutObjectCommand({
+            const fileTypeFromBufferFn = await FileTypeFromBuffer;
+            const fileType = fileTypeFromBufferFn
+                ? await fileTypeFromBufferFn(firstChunk)
+                : undefined;
+
+            if (fileType?.mime) {
+                contentType = fileType.mime;
+            }
+
+            // 6. Stream upload
+            const command = new s3Module.PutObjectCommand({
                 Bucket: this.Params.bucket,
                 Key: file,
                 Body: content,
                 ContentType: contentType
-            })
+            });
 
-            await this.#S3Client.send(command)
+            await (this.#S3Client as S3Client).send(command);
             Logger.Debug(`File '${file}' uploaded successfully`)
         } catch (error: any) {
             throw new HttpErrorInternalServerError(`Error writing file: ${error.message}`)
@@ -207,66 +232,64 @@ export class AmazonS3Storage extends absStorageProvider {
     async FileList(dir?: string): Promise<DataTable> {
         Assert.Var<TAmazonS3StorageParams>(this.Params, this.Params !== undefined, 'AmazonS3Storage: No params defined')
         Assert.Var<string>(this.Params.bucket, this.Params?.bucket !== undefined, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<S3Client>(this.#S3Client, this.#S3Client !== undefined, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this.#S3Client, this.#S3Client !== undefined, 'AmazonS3Storage: Connection to S3 not established')
 
-        try {
-            const prefix = dir
-                ? `${dir.replace(/^\/+/, '').replace(/\/+$/, '')}/`
-                : ''
-    
-            const command = new ListObjectsV2Command({
-                Bucket: this.Params.bucket,
-                Delimiter: '/',
-                Prefix: prefix
-            })
-    
-            const response = await this.#S3Client.send(command)
-    
-            if (!response.Contents) {
-                return new DataTable(undefined)
-            }
-    
-            const files = response.Contents
-                .filter(file => file.Key && file.Key !== prefix) // Skip folder itself
-                .filter(file => {
-                    // Ensure it's a direct child, not nested
-                    const relative = file.Key!.slice(prefix.length)
-                    return !relative.includes('/')
-                })
-                .map(file => JsonUtils.RemoveUndefined(
-                    <TStorageFile>{
-                        name: file.Key?.split('/').pop() ?? file.Key ?? '',
-                        mimeType: this.GetMimeType(file.Key),
-                        type: DATA_ENTITY.FILE,
-                        size: file?.Size,
-                        modifiedAt: file?.LastModified,
-                        path: file.Key
-                    })
-                )
-    
-            return new DataTable(undefined, files)
-        } catch (error:unknown) {
-            throw new HttpErrorInternalServerError(`Error listing files: ${(error as Error)?.message}`)
+        const s3 = await AmazonS3Storage._loadS3Module();
+        const prefix = dir
+            ? `${dir.replace(/^\/+/, '').replace(/\/+$/, '')}/`
+            : ''
+
+        const command = new s3.ListObjectsV2Command({
+            Bucket: this.Params.bucket,
+            Prefix: prefix,
+            Delimiter: '/'
+        })
+
+        const response = await this.#S3Client!.send(command)
+
+        if (!response.Contents) {
+            return new DataTable(undefined)
         }
+
+        const files = response.Contents
+            .filter(file => file.Key && file.Key !== prefix) // Skip folder itself
+            .filter(file => {
+                // Ensure it's a direct child, not nested
+                const relative = file.Key!.slice(prefix.length)
+                return !relative.includes('/')
+            })
+            .map(file => JsonUtils.RemoveUndefined(
+                <TStorageFile>{
+                    name: file.Key?.split('/').pop() ?? file.Key ?? '',
+                    mimeType: this.GetMimeType(file.Key),
+                    type: DATA_ENTITY.FILE,
+                    size: file?.Size,
+                    modifiedAt: file?.LastModified,
+                    path: file.Key
+                })
+            )
+
+        return new DataTable(undefined, files)
     }
 
     @Logger.LogFunction()
     async FolderList(dir?: string): Promise<DataTable> {
         Assert.Var<TAmazonS3StorageParams>(this.Params, this.Params !== undefined, 'AmazonS3Storage: No params defined')
         Assert.Var<string>(this.Params.bucket, this.Params?.bucket !== undefined, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<S3Client>(this.#S3Client, this.#S3Client !== undefined, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this.#S3Client, this.#S3Client !== undefined, 'AmazonS3Storage: Connection to S3 not established')
 
+        const s3 = await AmazonS3Storage._loadS3Module();
         const prefix = dir
             ? `${dir.replace(/^\/+/, '').replace(/\/+$/, '')}/`
             : ''
 
-        const command = new ListObjectsV2Command({
+        const command = new s3.ListObjectsV2Command({
             Bucket: this.Params.bucket,
-            Delimiter: '/',
-            Prefix: prefix
+            Prefix: prefix,
+            Delimiter: '/'
         })
 
-        const response = await this.#S3Client.send(command)
+        const response = await this.#S3Client!.send(command)
 
         if (!response.CommonPrefixes) {
             return new DataTable(undefined)

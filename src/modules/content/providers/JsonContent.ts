@@ -2,7 +2,7 @@
 //
 //
 import { Readable } from "node:stream"
-import typia from "typia"
+import { is as TypiaIs } from "typia"
 //
 import { DataTable } from "../../../types/DataTable"
 import { TJson } from "../../../types/TJson"
@@ -27,7 +27,7 @@ export class JsonContent extends absContentProvider {
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && typia.is<TJsonContentConfig>(this.Config)) {
+        if (this.Config && TypiaIs<TJsonContentConfig>(this.Config)) {
             this.Params = {
                 path: this.Config["json-path"]
             }
@@ -39,7 +39,7 @@ export class JsonContent extends absContentProvider {
     @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
         Assert.Var<TJsonContentParams>(this.Params, 
-            typia.is<TJsonContentParams>(this.Params),
+            TypiaIs<TJsonContentParams>(this.Params),
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content, 
@@ -65,7 +65,7 @@ export class JsonContent extends absContentProvider {
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         Assert.Var<TJsonContentParams>(this.Params, 
-            typia.is<TJsonContentParams>(this.Params),
+            TypiaIs<TJsonContentParams>(this.Params),
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content, 
@@ -73,7 +73,7 @@ export class JsonContent extends absContentProvider {
             'Content is not defined')
 
         //TODO when content = "", data has empty json object {}
-        let json = JsonUtils.TryParse(
+        const json = JsonUtils.TryParse(
             await ReadableUtils.ToString(
                 this.Content.ReadFile(this.EntityName)
             ), {}

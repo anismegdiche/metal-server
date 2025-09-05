@@ -2,7 +2,7 @@
 //
 //
 import { Readable } from 'node:stream'
-import * as ExcelJS from 'exceljs'
+// Lazy-loaded module
 import _ from 'lodash'
 import typia from "typia"
 //
@@ -24,11 +24,11 @@ import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
 export function ColumnLetterToNumber(letter: string): number {
     let column = 0
     const { length } = letter
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < length; i++) {
-        // eslint-disable-next-line prefer-exponentiation-operator
+     
+    for (let i = 0; i < length; i++) {         
         column += (letter.charCodeAt(i) - 64) * Math.pow(26, length - i - 1)
     }
+    
     return column
 }
 
@@ -61,6 +61,14 @@ export class XlsContent extends absContentProvider {
         this.Content.UploadFile(entity, content)
     }
 
+    private static _excelJsModule: typeof import('exceljs');
+    private static async _loadExcelJsModule(): Promise<typeof import('exceljs')> {
+        if (!this._excelJsModule) {
+            this._excelJsModule = await import('exceljs');
+        }
+        return this._excelJsModule;
+    }
+
     @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context?: Partial<TContext>): Promise<DataTable> {
         Assert.Var<TXlsContentParams>(this.Params, 
@@ -71,6 +79,7 @@ export class XlsContent extends absContentProvider {
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
+        const ExcelJS = await XlsContent._loadExcelJsModule();
         const workbook = new ExcelJS.Workbook()
         Logger.Debug('XlsContent.Get: reading stream')
         await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
@@ -140,12 +149,13 @@ export class XlsContent extends absContentProvider {
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
+        const ExcelJS = await XlsContent._loadExcelJsModule();
         const workbook = new ExcelJS.Workbook()
         
         // Try to read the existing file, but create a new workbook if it fails
         try {
             await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
-        } catch (error) {
+        } catch {
             Logger.Warn('XlsContent.Set: Could not read existing file, creating new workbook')
         }
 
@@ -193,7 +203,7 @@ export class XlsContent extends absContentProvider {
                 if ($__evalParams!.parseDates && _valueToSet instanceof Date) {
                     worksheet.getCell(_rowIdx, _colIdx).numFmt = $__evalParams!.dateFormat as string
                 }
-                worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet as ExcelJS.ValueType
+                worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet as import('exceljs').ValueType
             })
         })
 

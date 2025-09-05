@@ -3,7 +3,7 @@
 //
 //
 import _ from 'lodash'
-import * as MongoDb from 'mongodb'
+import type { MongoClientOptions, Document as MongoDocument } from 'mongodb';
 //
 import { RESPONSE } from '../../core/@consts'
 import { TOptionalParameter } from '../types/TOptionalParameter'
@@ -24,25 +24,54 @@ import { TContext } from "../../sandbox/types/TContext"
 import { MongoDbHelper } from "./MongoDbHelper"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Assert } from '../../../utils/Assert'
-import { TypeUtils } from '../../../utils/TypeUtils'
 
+
+// Define the MongoDB types that we'll use
+type MongoDbTypes = {
+    MongoClient: typeof import('mongodb').MongoClient;
+    Filter: <T = any>(filter: object) => object;
+    UpdateFilter: <T = any>(update: object) => object;
+};
+
+type Document = MongoDocument;
+type Filter<T> = object;
+type UpdateFilter<T> = object;
 
 //
 export type TMongoDbDataConfig = {
     provider: DATA_PROVIDER.MONGODB,
     host: string,
     database?: string,
-    options?: MongoDb.MongoClientOptions
+    options?: MongoClientOptions
 }
 
 
 //
 export class MongoDbData extends absDataProvider {
+    private static _mongoDb: MongoDbTypes | null = null;
+    
+    private static async _loadMongoDb(): Promise<MongoDbTypes> {
+        if (!this._mongoDb) {
+            const mongo = await import('mongodb');
+            this._mongoDb = {
+                MongoClient: mongo.MongoClient,
+                Filter: (filter: object) => filter,
+                UpdateFilter: (update: object) => update
+            };
+        }
+        return this._mongoDb;
+    }
+
+    // Helper method to get the MongoDB client with proper typing
+    private async getMongoClient() {
+        const MongoDb = await MongoDbData._loadMongoDb();
+        return new MongoDb.MongoClient(this.Config.host, this.Config.options);
+    }
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.MONGODB
     Config: TMongoDbDataConfig = <TMongoDbDataConfig>{}
-    Connection?: MongoDb.MongoClient = undefined
+    Connection?: import('mongodb').MongoClient = undefined
 
     DEFAULT: Partial<TMongoDbDataConfig> = {
         host: 'mongodb://localhost:27017/'
@@ -56,10 +85,13 @@ export class MongoDbData extends absDataProvider {
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         await super.Init(source, sourceConfig)
         this.Config = _.merge(this.DEFAULT, sourceConfig as TMongoDbDataConfig)
+        // Just load the module to ensure it's available
+        await MongoDbData._loadMongoDb();
     }
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
+        const MongoDb = await MongoDbData._loadMongoDb();
         this.Connection = new MongoDb.MongoClient(this.Config.host, this.Config.options)
         try {
             await this.Connection.connect()
@@ -85,8 +117,12 @@ export class MongoDbData extends absDataProvider {
     @Logger.LogFunction()
     @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
-        if (this.Connection === undefined)
-            throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
+        if (this.Connection === undefined) {
+            await this.Connect();
+            if (this.Connection === undefined) {
+                throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest));
+            }
+        }
 
         const { schema, entity } = schemaRequest
 
@@ -174,9 +210,9 @@ export class MongoDbData extends absDataProvider {
 
         const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query())
 
-        const mongoFilter: MongoDb.Filter<MongoDb.Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
+        const mongoFilter: Filter<Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
 
-        const mongoUpdate: MongoDb.BSON.Document[] | MongoDb.UpdateFilter<MongoDb.BSON.Document> = {
+        const mongoUpdate: UpdateFilter<Document> = {
             $set: options?.Data?.Rows.at(0)
         }
 
@@ -209,7 +245,7 @@ export class MongoDbData extends absDataProvider {
 
         const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query())
 
-        const mongoFilter: MongoDb.Filter<MongoDb.Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
+        const mongoFilter: Filter<Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
 
         await this.Connection
             .db(this.Config.database)
