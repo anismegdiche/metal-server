@@ -1,14 +1,23 @@
 //
 //
 //
-import _, { Dictionary } from "lodash"
+// eslint-disable-next-line lodash/import-scope
+import type { Dictionary } from 'lodash'
+import forEach from 'lodash/forEach'
+import forOwn from 'lodash/forOwn'
+import get from 'lodash/get'
+import isEmpty from 'lodash/isEmpty'
+import isObject from 'lodash/isObject'
+import isString from 'lodash/isString'
+import pickBy from 'lodash/pickBy'
+import set from 'lodash/set'
+//
 import * as chrono from 'chrono-node'
 import objectPath from 'object-path'
 //
 import { TJson } from "../types/TJson"
 import { Logger } from "./Logger"
 import { StringUtils } from './StringUtils'
-import { HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
 import { Stringify } from "./JsonUtils/Stringify"
 
 
@@ -30,7 +39,7 @@ export class JsonUtils {
                 return value
             })
         } catch (error) {
-            Logger.Error(`JsonHelper.TryParse Error: ${JsonUtils.Stringify(error)}`)
+            Logger.Error(`JsonUtils.TryParse Error: ${JsonUtils.Stringify(error)}`)
             return defaultValue
         }
     }
@@ -41,7 +50,7 @@ export class JsonUtils {
 
         const _jsonPath = jsonPath.replace(/\[(\d+)\]/g, '.$1')
 
-        const extractedData = objectPath.get(json, _jsonPath) ?? _.get(json, jsonPath)
+        const extractedData = objectPath.get(json, _jsonPath) ?? get(json, jsonPath)
 
         return (extractedData)
             ? extractedData as T
@@ -49,18 +58,19 @@ export class JsonUtils {
     }
 
     static Set<T extends object>(json: T, jsonPath?: string, data?: any): T {
-        if (!data)
-            return json
+        switch (true) {
+            case typeof data === "string" && !StringUtils.IsEmpty(jsonPath):
+                return set(json, jsonPath!, data)
 
-        if (!StringUtils.IsEmpty(jsonPath))
-            return _.set(json, jsonPath!, data)
+            case data === null:
+            case typeof data === "object":
+                json = data as T
+                return json
 
-        if (['object', 'undefined','null'].includes(typeof data)) {
-            // eslint-disable-next-line no-param-reassign
-            json = data as T
-            return json
+            case data === undefined:
+            default:
+                return json
         }
-        throw new HttpErrorInternalServerError(`JsonHelper.Set Error: ${JsonUtils.Stringify(data)}`)
     }
 
     static Stringify<T>(json: T): string {
@@ -84,12 +94,12 @@ export class JsonUtils {
     }
 
     static RemoveUselessKeys(obj: any): void {
-        _.forOwn(obj, (value, key) => {
-            if (_.isObject(value)) {
+        forOwn(obj, (value, key) => {
+            if (isObject(value)) {
                 JsonUtils.RemoveUselessKeys(value)
             }
 
-            if (["[Object]", "[Array]"].includes(value) || (_.isArray(value) && value.every(v => v === null))) {
+            if (["[Object]", "[Array]"].includes(value) || (Array.isArray(value) && value.every(v => v === null))) {
                 delete obj[key]
             }
         })
@@ -108,10 +118,10 @@ export class JsonUtils {
         const result: TJson = {}
 
 
-        _.forEach(obj, (value, key) => {
+        forEach(obj, (value, key) => {
             const newKey = `${prefix}${key}`
 
-            result[newKey] = _.isObject(value) && value !== null && !_.isArray(value)
+            result[newKey] = isObject(value) && value !== null && !Array.isArray(value)
                 ? JsonUtils.PrefixKeys(value as TJson, prefix)
                 : value
         })
@@ -121,21 +131,23 @@ export class JsonUtils {
 
 
     static IsEmpty<T>(obj: Dictionary<T>): boolean {
-        return _.isEmpty(obj)
+        return isEmpty(obj)
     }
 
     static ReplaceStrings(obj: TJson, pattern: RegExp, replacement: string): TJson {
-
-        _.forEach(obj, (v, k) => {
-
-            if (_.isString(v)) {
-                obj[k] = v.replace(pattern, replacement)
-            }
-            if (JsonUtils.IsJson(v)) {
-                obj[k] = JsonUtils.ReplaceStrings(v as TJson, pattern, replacement)
-            }
-            if (Array.isArray(v)) {
-                obj[k] = v.map(vv => JsonUtils.ReplaceStrings(vv as TJson, pattern, replacement))
+        forEach(obj, (v, k) => {
+            switch (true) {
+                case isString(v):
+                    obj[k] = v.replace(pattern, replacement)
+                    break
+                case JsonUtils.IsJson(v):
+                    obj[k] = JsonUtils.ReplaceStrings(v as TJson, pattern, replacement)
+                    break
+                case Array.isArray(v):
+                    obj[k] = v.map(_v => JsonUtils.ReplaceStrings(_v as TJson, pattern, replacement))
+                    break
+                default:
+                    break
             }
         })
         return obj
@@ -152,6 +164,6 @@ export class JsonUtils {
     }
 
     static RemoveUndefined<T>(obj: T): T {
-        return _.pickBy(obj as object, v => v !== undefined) as T
+        return pickBy(obj as object, v => v !== undefined) as T
     }
 }
