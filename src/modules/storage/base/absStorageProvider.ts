@@ -1,13 +1,13 @@
 //
 //
 //
-import { Readable } from 'node:stream'
 import { lookup } from 'mime-types'
+import { Readable } from 'node:stream'
 //
-import { clsClonable } from "../../../utils/base/clsClonable"
 import { DataTable } from "../../../types/DataTable"
-import { TConfigSource } from "../../source/types/TConfigSource"
+import { clsClonable } from "../../../utils/base/clsClonable"
 import { TFilesDataOptions } from "../../source/providers/TFilesDataOptions"
+import { TConfigSource } from "../../source/types/TConfigSource"
 
 
 //
@@ -30,7 +30,7 @@ export abstract class absStorageProvider extends clsClonable {
     abstract FileWrite(file: string, content: Readable): Promise<void>
     abstract FileList(dir?: string): Promise<DataTable>
     abstract FolderList(): Promise<DataTable>
-
+     
     GetMimeType(file?: string): string {
         if (!file) 
             return 'application/x-unknown'
