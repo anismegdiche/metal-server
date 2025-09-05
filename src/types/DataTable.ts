@@ -2,11 +2,26 @@
 //
 //
 import alasql from 'alasql'
-import _, { Many } from 'lodash'
-import { createHash } from 'node:crypto'
-import typia from 'typia/lib/module'
+// lodash
+// eslint-disable-next-line lodash/import-scope
+import type { Many } from 'lodash'
+import differenceBy from 'lodash/differenceBy'
+import differenceWith from 'lodash/differenceWith'
+import isEmpty from 'lodash/isEmpty'
+import isEqual from 'lodash/isEqual'
+import maxBy from 'lodash/maxBy'
+import minBy from 'lodash/minBy'
+import omit from 'lodash/omit'
+import orderBy from 'lodash/orderBy'
+import pick from 'lodash/pick'
+import range from 'lodash/range'
+import reduce from 'lodash/reduce'
+import zipObject from 'lodash/zipObject'
+import toString from 'lodash/toString'
 //
-import { HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
+import { createHash } from 'node:crypto'
+import { createIs } from 'typia'
+//
 import { clsClonable } from "../utils/base/clsClonable"
 import { JsonUtils } from "../utils/JsonUtils"
 import { Logger } from '../utils/Logger'
@@ -63,15 +78,15 @@ export type TSyncReport = {
 
 //
 export class DataTable extends clsClonable {
-    
+
     // static
-    static readonly DataTable = typia.createIs<DataTable>();
-    
+    static readonly DataTableType = createIs<DataTable>();
+
     @Logger.LogFunction(true)
     static Is(dataTable: unknown): dataTable is DataTable {
-        return DataTable.DataTable(dataTable)
+        return DataTable.DataTableType(dataTable)
     }
-    
+
     // dynamic
 
     Name: string
@@ -118,7 +133,7 @@ export class DataTable extends clsClonable {
     SetFields(): this {
         const _cols: TJson = { ...this.Rows[0] }
 
-        this.Fields = _.reduce(_cols, (result, value, key) => {
+        this.Fields = reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
             return _cols
         }, <TFields>{})
@@ -177,7 +192,7 @@ export class DataTable extends clsClonable {
             if (typeof _result === 'object' && Array.isArray(_result))
                 this.Rows = _result
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
             throw error
         }
@@ -195,8 +210,8 @@ export class DataTable extends clsClonable {
 
         try {
             const _result = await alasql.promise(sqlQuery, jsonData)
-                .then((r: any) => r)
-                .catch((error: any) => {
+                .then((r: unknown) => r)
+                .catch((error: unknown) => {
                     Logger.Error(`DataTable.FreeSqlAsync: '${this.Name}' Error executing SQL query: '${sqlQuery}', Error: ${error}`)
                     throw error
                 })
@@ -204,7 +219,7 @@ export class DataTable extends clsClonable {
             if (typeof _result === 'object' && Array.isArray(_result))
                 this.Rows = _result
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             Logger.Error(`DataTable.FreeSqlAsync: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
             throw error
         }
@@ -284,15 +299,15 @@ export class DataTable extends clsClonable {
         if (this.Rows.length === 0 || fields.length === 0)
             return this
 
-        this.Rows = _.map(this.Rows, (row) => _.omit(row, fields))
+        this.Rows = this.Rows.map((row) => omit(row, fields))
         return this.SetFields()
     }
 
     @Logger.LogFunction()
     Sort(sorts: TOrderBy): this {
         const fields = Object.keys(sorts)
-        const orders: string[] = _.map(Object.entries(sorts), (sort) => sort[1] ?? SORT_ORDER.ASC)
-        this.Rows = _.orderBy(this.Rows, fields, orders as Many<boolean | "asc" | "desc"> | undefined)
+        const orders: string[] = Object.entries(sorts).map((sort) => sort[1] ?? SORT_ORDER.ASC)
+        this.Rows = orderBy(this.Rows, fields, orders as Many<boolean | "asc" | "desc"> | undefined)
         return this
     }
 
@@ -319,7 +334,7 @@ export class DataTable extends clsClonable {
         const sourceHasProperty = this.Rows.some(row => on in row)
 
         if (!sourceHasProperty) {
-            throw new HttpErrorInternalServerError(`DataTable.SyncReport: '${this.Name}' has no property '${on}'`)
+            throw new Error(`DataTable.SyncReport: '${this.Name}' has no property '${on}'`)
         }
 
         const emptySyncReport = <TSyncReport>{
@@ -329,17 +344,17 @@ export class DataTable extends clsClonable {
         }
 
         // Remove rows from source and destination that are equal
-        const filteredSource: TRow[] = _.differenceWith(this.Rows, dtDestination.Rows, _.isEqual)
-        const filteredDestination: TRow[] = _.differenceWith(dtDestination.Rows, this.Rows, _.isEqual)
+        const filteredSource: TRow[] = differenceWith(this.Rows, dtDestination.Rows, isEqual)
+        const filteredDestination: TRow[] = differenceWith(dtDestination.Rows, this.Rows, isEqual)
 
         // Remove rows from destination that are not in source
-        const DeletedRows: TRow[] = filteredDestination.filter(row => !filteredSource.some((srcRow: TRow) => _.isEqual(srcRow[on], row[on])))
+        const DeletedRows: TRow[] = filteredDestination.filter(row => !filteredSource.some((srcRow: TRow) => isEqual(srcRow[on], row[on])))
 
         // Keep rows from source that are not in destination
-        const AddedRows: TRow[] = filteredSource.filter(row => !filteredDestination.some((destRow: TRow) => _.isEqual(destRow[on], row[on])))
+        const AddedRows: TRow[] = filteredSource.filter(row => !filteredDestination.some((destRow: TRow) => isEqual(destRow[on], row[on])))
 
         // Keep rows from source that are in destination but have changed
-        let UpdatedRows: TRow[] = _.differenceBy(filteredSource, AddedRows, on)
+        let UpdatedRows: TRow[] = differenceBy(filteredSource, AddedRows, on)
 
         if (DeletedRows.length == 0 && UpdatedRows.length == 0 && AddedRows.length == 0) {
             return emptySyncReport
@@ -351,8 +366,8 @@ export class DataTable extends clsClonable {
                 const correspondingDestRow = filteredDestination.find(destRow => destRow[on] === updatedRow[on])
                 if (correspondingDestRow) {
 
-                    _.keys(updatedRow).forEach(prop => {
-                        if (prop !== on && _.isEqual(updatedRow[prop], correspondingDestRow[prop])) {
+                    Object.keys(updatedRow).forEach(prop => {
+                        if (prop !== on && isEqual(updatedRow[prop], correspondingDestRow[prop])) {
                             delete updatedRow[prop]
                         }
                     })
@@ -384,7 +399,7 @@ export class DataTable extends clsClonable {
                 if (__field in _newRow) {
                     // deepcode ignore InsecureHash: used for data anonymization
                     _newRow[__field] = createHash("blake2s256", { outputLength: 16 })
-                        .update(_.toString(_newRow[__field]))
+                        .update(toString(_newRow[__field]))
                         .digest('hex')
                 }
             })
@@ -428,7 +443,7 @@ export class DataTable extends clsClonable {
             let __currentHash: string = ""
 
             const __rowString = (_fields)
-                ? _.pick(row, _fields)
+                ? pick(row, _fields)
                 : row
 
             switch (method) {
@@ -455,7 +470,7 @@ export class DataTable extends clsClonable {
                     case REMOVE_DUPLICATES_STRATEGY.LOWEST:
                         _mapDeduplicated.set(
                             __currentHash,
-                            <TRow>_.minBy(
+                            <TRow>minBy(
                                 [_mapDeduplicated.get(__currentHash), row],
                                 condition
                             )
@@ -464,7 +479,7 @@ export class DataTable extends clsClonable {
                     case REMOVE_DUPLICATES_STRATEGY.HIGHEST:
                         _mapDeduplicated.set(
                             __currentHash,
-                            <TRow>_.maxBy(
+                            <TRow>maxBy(
                                 [_mapDeduplicated.get(__currentHash), row],
                                 condition
                             )
@@ -499,7 +514,7 @@ export class DataTable extends clsClonable {
 
     @Logger.LogFunction()
     Transpose(renamedColumns?: string[]): this {
-        if (_.isEmpty(this.Rows))
+        if (isEmpty(this.Rows))
             return this
 
         const NAME_PATTERN = "field_"
@@ -509,14 +524,14 @@ export class DataTable extends clsClonable {
 
         // Determine column names
         const columns = (renamedColumns && renamedColumns.length > 0)
-            ? [...renamedColumns, ..._.range(renamedColumns.length, keys.length).map(i => `${NAME_PATTERN}${i + 1}`)]
-            : ["key", ..._.range(1, this.Rows.length + 1).map(i => `${NAME_PATTERN}${i}`)]
+            ? [...renamedColumns, ...range(renamedColumns.length, keys.length).map(i => `${NAME_PATTERN}${i + 1}`)]
+            : ["key", ...range(1, this.Rows.length + 1).map(i => `${NAME_PATTERN}${i}`)]
 
         // Transpose using lodash
 
-        this.Rows = _.map(keys, (key) => {
+        this.Rows = keys.map((key) => {
             const rowValues = [key, ...this.Rows.map((row) => row[key])]
-            return _.zipObject(columns, rowValues)
+            return zipObject(columns, rowValues)
         })
         return this
     }
