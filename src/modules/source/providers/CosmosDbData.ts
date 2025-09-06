@@ -1,29 +1,28 @@
 //
 //
 //
-import _ from "lodash"
-import { CosmosClient, Container, Database, SqlQuerySpec, OperationInput, ConnectionMode, CosmosClientOptions } from "@azure/cosmos"
+import { ConnectionMode, Container, CosmosClient, CosmosClientOptions, Database, OperationInput, SqlQuerySpec } from "@azure/cosmos"
+import merge from "lodash/merge"
 //
+import { DataTable } from "../../../types/DataTable"
+import { Assert } from "../../../utils/Assert"
+import { Logger } from "../../../utils/Logger"
+import { StringUtils } from "../../../utils/StringUtils"
+import { SynchronizerManager } from "../../../utils/SynchronizerManager"
+import { Cache } from "../../cache/Cache"
+import { RESPONSE } from "../../core/@consts"
+import { HttpResponse } from "../../core/HttpResponse"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import { TContext } from "../../sandbox/types/TContext"
+import { TInternalResponse } from '../../schema/types/TInternalResponse'
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import { DATA_ENTITY, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
 import { TConfigSource } from "../types/TConfigSource"
 import { TDataListEntity } from "../types/TDataListEntity"
-import { DATA_ENTITY , DATA_PROVIDER } from "../@consts"
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestUpdate, TSchemaRequestSelect, TSchemaRequestListEntities } from '../../schema/types/TSchemaRequest'
-import { TInternalResponse } from '../../schema/types/TInternalResponse'
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { HttpErrorInternalServerError, HttpErrorBadRequest, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import { TOptionalParameter } from "../types/TOptionalParameter"
-import { DataTable } from "../../../types/DataTable"
-import { Logger } from "../../../utils/Logger"
-import { TContext } from "../../sandbox/types/TContext"
-import { SynchronizerManager } from "../../../utils/SynchronizerManager"
-import { Cache } from "../../cache/Cache"
-import { HttpResponse } from "../../core/HttpResponse"
-import { RESPONSE } from "../../core/@consts"
-import { StringUtils } from "../../../utils/StringUtils"
 import { CosmosDbHelper } from "./CosmosDbHelper"
-import { Assert } from "../../../utils/Assert"
-import { TStorageFile } from "../../storage/@types"
 
 
 //
@@ -57,6 +56,12 @@ export class CosmosDbData extends absDataProvider {
         }
     }
 
+    #getPartitionKey(item: any, path?: string): any {
+        if (!path) return undefined
+        const key = path.replace(/^\//, '')
+        return item[key]
+    }
+
     // Cosmos DB client
     private Client?: CosmosClient
     private Database?: Database
@@ -68,7 +73,7 @@ export class CosmosDbData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = _.merge(this.DEFAULT, sourceConfig as TCosmosDbDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as TCosmosDbDataConfig)
         this.Config.options.endpoint = this.Config.host
 
         Assert.Condition(!StringUtils.IsEmpty(this.Config.options.endpoint), `${Logger.Out} ${this.SourceName}: Cosmos DB endpoint is required`)
@@ -115,10 +120,10 @@ export class CosmosDbData extends absDataProvider {
     @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
         Assert.Var<Database>(this.Database, this.Database !== undefined, `${Logger.Out} ${this.SourceName}: Database not connected`)
+        
         const { schema, entity } = schemaRequest
-
-        // eslint-disable-next-line no-param-reassign
-        $context = _.merge(
+         
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -154,10 +159,10 @@ export class CosmosDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+        
         const { entity } = schemaRequest
-
-        // eslint-disable-next-line no-param-reassign
-        $context = _.merge(
+         
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -189,7 +194,7 @@ export class CosmosDbData extends absDataProvider {
             const chunkSize = 100
             for (let i = 0; i < operations.length; i += chunkSize) {
                 const chunk = operations.slice(i, i + chunkSize) as OperationInput[]
-                // eslint-disable-next-line no-await-in-loop
+                 
                 await container.items.bulk(chunk)
             }
 
@@ -205,10 +210,10 @@ export class CosmosDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+        
         const { entity, schema } = schemaRequest
-
-        // eslint-disable-next-line no-param-reassign
-        $context = _.merge(
+         
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -246,7 +251,7 @@ export class CosmosDbData extends absDataProvider {
 
             await Promise.all(itemsToUpdate.map(async (item) => {
                 try {
-                    const partitionKeyValue = item._partitionKey ?? item.partitionKey ?? this.GetPartitionKey(item, partitionKeyPath)
+                    const partitionKeyValue = item._partitionKey ?? item.partitionKey ?? this.#getPartitionKey(item, partitionKeyPath)
                     if (partitionKeyValue === undefined) {
                         throw new Error(`Missing partition key value '${partitionKeyPath}' on item ${item.id}`)
                     }
@@ -280,10 +285,10 @@ export class CosmosDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+        
         const { entity, schema } = schemaRequest
-
-        // eslint-disable-next-line no-param-reassign
-        $context = _.merge(
+         
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -313,7 +318,7 @@ export class CosmosDbData extends absDataProvider {
 
             await Promise.all(itemsToDelete.map(async (item) => {
                 try {
-                    const partitionKeyValue = item._partitionKey ?? item.partitionKey ?? this.GetPartitionKey(item, partitionKeyPath)
+                    const partitionKeyValue = item._partitionKey ?? item.partitionKey ?? this.#getPartitionKey(item, partitionKeyPath)
                     if (partitionKeyValue === undefined) {
                         throw new Error(`Missing partition key value '${partitionKeyPath}' on item ${item.id}`)
                     }
@@ -408,12 +413,12 @@ export class CosmosDbData extends absDataProvider {
         throw new HttpErrorNotImplemented()
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     EscapeEntity(entity: string): string {
         return CosmosDbHelper.EscapeEntity(entity)
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     EscapeField(field: string): string {
         return CosmosDbHelper.EscapeField(field)
     }
@@ -423,7 +428,15 @@ export class CosmosDbData extends absDataProvider {
 
         try {
             const { Body } = await this.ListEntities(schemaRequest)
-            const containerDetails: TDataListEntity = Body?.data.FilterRows(`name = "${schemaRequest.entity}"`).Rows[0] as TStorageFile
+
+            Assert.Var<DataTable>(Body?.data, `${Logger.Out} ${this.SourceName}: No data found`)
+
+            const containerDetails =
+                (await Body.data
+                    .FilterRows(`name = "${schemaRequest.entity}"`))
+                    .Rows[0]
+
+            Assert.Var<TDataListEntity>(containerDetails, `${Logger.Out} ${this.SourceName}: Container not found`)
 
             const { container } = await this.Database.containers.createIfNotExists({
                 id: containerDetails.name,
@@ -435,11 +448,5 @@ export class CosmosDbData extends absDataProvider {
             Logger.Error(`Failed to get or create container '${schemaRequest.entity}': ${error}`)
             throw new HttpErrorInternalServerError(`Failed to get or create container: ${error}`)
         }
-    }
-
-    GetPartitionKey(item: any, path?: string): any {
-        if (!path) return undefined
-        const key = path.replace(/^\//, '')
-        return item[key]
     }
 }

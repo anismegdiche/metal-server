@@ -22,6 +22,8 @@ import { JsonUtils } from "../../utils/JsonUtils"
 import { TJson } from '../../types/TJson'
 import { Validator } from '../../utils/Validator'
 
+
+//
 export type TSchemaRoute = {
     type: "source" | "nothing",
     routeName: string
@@ -41,6 +43,8 @@ export type TEntitiesMap = Map<string, {
     database?: string
 }>
 
+
+//
 export class Schema {
 
     sort?: string
@@ -342,7 +346,7 @@ export class Schema {
         for await (const [entity, entitySource] of entitiesSources) {
             const _source = (<TConfigSchemaEntity>entitySource).source
             if (TypeUtils.IsSchemaResponseWithData(schemaResponse))
-                schemaResponse.data.DeleteRows(`name = '${entity}'`)
+                await schemaResponse.data.DeleteRows(`name = '${entity}'`)
 
             const _intResp = await Source.Sources.get(_source)!.DataProvider.ListEntities(<TSchemaRequestListEntities>{
                 ...schemaRequest,

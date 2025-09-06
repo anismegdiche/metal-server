@@ -409,28 +409,28 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction()
-    FilterRows(condition: string | undefined): this {
+    async FilterRows(condition: string | undefined): Promise<this> {
         if (this.Rows.length === 0 || StringUtils.IsEmpty(condition))
             return this
 
-        return this.FreeSql(`SELECT * FROM [${this.Name}] WHERE ${condition}`)
+        return await this.FreeSqlAsync(`SELECT * FROM [${this.Name}] WHERE ${condition}`)
     }
 
     @Logger.LogFunction()
-    DeleteRows(condition: string | undefined): this {
+    async DeleteRows(condition: string | undefined): Promise<this> {
         if (this.Rows.length === 0 || StringUtils.IsEmpty(condition))
             return this
 
-        return this.FreeSql(`DELETE FROM [${this.Name}] WHERE ${condition}`)
+        return await this.FreeSqlAsync(`DELETE FROM [${this.Name}] WHERE ${condition}`)
     }
 
     @Logger.LogFunction()
-    RemoveDuplicates(
+    async RemoveDuplicates(
         fields: string[] | undefined,
         method: string,
         strategy: string = REMOVE_DUPLICATES_STRATEGY.FIRST,
         condition: string | undefined = undefined
-    ): this {
+    ): Promise<this> {
 
         // no fields passed
         const _fields = (fields && fields.length > 0)
@@ -439,7 +439,7 @@ export class DataTable extends clsClonable {
 
         const _mapDeduplicated: Map<string, TRow> = new Map()
 
-        this.Rows.forEach((row: TRow) => {
+        await this.Rows.forEach(async (row: TRow) => {
             let __currentHash: string = ""
 
             const __rowString = (_fields)
@@ -494,7 +494,7 @@ export class DataTable extends clsClonable {
                         if (__dtDuplicates.Rows.length > 0)
                             _mapDeduplicated.set(
                                 __currentHash,
-                                __dtDuplicates.FilterRows(condition).Rows[0]
+                                (await __dtDuplicates.FilterRows(condition)).Rows[0]
                             )
                         break
                     case REMOVE_DUPLICATES_STRATEGY.FIRST:

@@ -1,8 +1,14 @@
 //
 //
 // 
-import _ from "lodash"
 import typia from "typia"
+import isEmpty from "lodash/isEmpty"
+import isNil from "lodash/isNil"
+import isString from "lodash/isString"
+import keys from "lodash/keys"
+import map from "lodash/map"
+import merge from "lodash/merge"
+import omit from "lodash/omit"
 //
 import { DataTable, JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TRow } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
@@ -75,9 +81,8 @@ export class Step {
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
 
         const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestSelect>(stepParams, new Sandbox($context)) as TSchemaRequestSelect
-
-        // eslint-disable-next-line no-param-reassign
-        $context = _.merge(
+         
+        $context = merge(
             $context,
             Step.DataProvider.GetContext($__schemaRequest)
         )
@@ -128,9 +133,8 @@ export class Step {
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
 
         const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestInsert>(stepParams, new Sandbox($context)) as TSchemaRequestInsert
-
-        // eslint-disable-next-line no-param-reassign
-        $context = _.merge(//NOSONAR
+         
+        $context = merge(//NOSONAR
             $context,
             Step.DataProvider.GetContext($__schemaRequest)
         )
@@ -172,17 +176,15 @@ export class Step {
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
 
         const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestUpdate>(stepParams, new Sandbox($context)) as TSchemaRequestUpdate
-
-        // eslint-disable-next-line no-param-reassign
-        $context = _.merge(
+         
+        $context = merge(
             $context,
             Step.DataProvider.GetContext($__schemaRequest)
         )
 
         const { schema, entity, data } = $__schemaRequest
-
-        // eslint-disable-next-line no-param-reassign
-        $context = _.merge(
+         
+        $context = merge(
             $context,
             Step.DataProvider.GetContext($__schemaRequest)
         )
@@ -226,9 +228,8 @@ export class Step {
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
 
         const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestDelete>(stepParams, new Sandbox($context)) as TSchemaRequestDelete
-
-        // eslint-disable-next-line no-param-reassign
-        $context = _.merge(
+         
+        $context = merge(
             $context,
             Step.DataProvider.GetContext($__schemaRequest)
         )
@@ -333,7 +334,7 @@ export class Step {
     @Logger.LogFunction(true)
     static async Run(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
 
-        const _stepParams = _.merge(
+        const _stepParams = merge(
             {
                 output: null
             },
@@ -365,7 +366,7 @@ export class Step {
                 }
 
                 // check if output is empty
-                if (_.isNil(output) || _.isEmpty(output)) {
+                if (isNil(output) || isEmpty(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
                     }
@@ -374,7 +375,7 @@ export class Step {
                 }
 
                 // check if output is string
-                if (_.isString(output)) {
+                if (isString(output)) {
                     stepArguments.currentDataTable.Rows[_rowIndex] = {
                         ..._rowData
                     }
@@ -426,7 +427,7 @@ export class Step {
         // Apply transformations
         //// Delete
 
-        _.map(syncReport.DeletedRows, id)
+        map(syncReport.DeletedRows, id)
             .forEach((value: unknown) => Schema.Delete({
                 schema: to.schema,
                 entity: to.entity,
@@ -443,7 +444,7 @@ export class Step {
                 [id]: row[id]
             },
 
-            data: [_.omit(row, id)]
+            data: [omit(row, id)]
         }))
 
         //// Insert
@@ -486,7 +487,7 @@ export class Step {
 
         const { currentDataTable } = stepArguments
 
-        currentDataTable.RemoveDuplicates(keys, method, strategy, condition)
+        await currentDataTable.RemoveDuplicates(keys, method, strategy, condition)
 
         Logger.Debug(`${Logger.Out} Step.RemoveDuplicates: ${JsonUtils.Stringify(stepArguments.stepParams)}`)
         return currentDataTable
@@ -510,12 +511,12 @@ export class Step {
 
         // no schema passed, return list of plan entities
 
-        const entitiesList: TDataListEntity[] = _
-            .keys(ConfigManager.Get(`plans.${currentPlanName}`))
-            .map(entity => (<TDataListEntity>{
+        const entitiesList: TDataListEntity[] = keys(ConfigManager.Get(`plans.${currentPlanName}`))
+            .map((entity: string) => (<TDataListEntity>{
                 name: entity,
                 type: DATA_ENTITY.PLAN_ENTITY
             }))
+
         Logger.Debug(`${Logger.Out} Step.ListEntities: ${JsonUtils.Stringify(stepArguments.stepParams)}`)
         return new DataTable(currentDataTable.Name, entitiesList)
     }
