@@ -48,7 +48,6 @@ export class AiDocker {
     static async Init() {
         try {
             Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
-            await AiDocker.CleanStack()
             await AiDocker.CreateNetwork().catch(Logger.Debug)
             await AiDocker.StartTraefik().catch(Logger.Debug)
 
@@ -92,7 +91,7 @@ export class AiDocker {
             Logger.Info(`${Logger.Out} Stopped container '${container.Names[0]}'`)
         }
 
-        Logger.Info(`${Logger.Out} ${DOCKER.AI_ENGINE_PREFIX} stack cleaned`)
+        Logger.Info(`${Logger.Out} '${DOCKER.AI_ENGINE_PREFIX}' stack cleaned`)
     }
 
     static async CreateNetwork() {
