@@ -74,7 +74,7 @@ export class FilesData extends absDataProvider {
         for (const filePattern in content) {
             if (Object.hasOwn(content, filePattern)) {
                 const { type } = content[filePattern]
-                // eslint-disable-next-line no-await-in-loop
+                 
                 this.ContentHandler[filePattern] = await ContentProvider.GetProvider(type)
                 this.ContentHandler[filePattern].SetConfig(content[filePattern])
             }
@@ -106,18 +106,18 @@ export class FilesData extends absDataProvider {
     @Logger.LogFunction()
     @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage provider is not defined`)
 
         const { schema, entity } = schemaRequest
 
-        this.SetContentHandler(entity)
+        this.setContentHandler(entity)
 
         this.File[entity].InitContent(
             entity,
             await this.Connection.FileRead(entity)
         )
 
-        // eslint-disable-next-line no-param-reassign
+         
         $context = _.merge($context, this.GetContext(schemaRequest))
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
@@ -150,9 +150,9 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
-
-        // eslint-disable-next-line no-param-reassign
+        
+        Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage provider is not defined`)
+         
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -160,13 +160,15 @@ export class FilesData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!DataTable.Is(options.Data))
-            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+        Assert.Var<DataTable>(options.Data, 
+            `${this.SourceName}: Data is not defined`,
+            new HttpErrorBadRequest()
+        )
 
         const { entity } = schemaRequest
 
-        this.SetContentHandler(entity)
-        this.SetLock(entity)
+        this.setContentHandler(entity)
+        this.setLock(entity)
         await this.Lock.get(entity)!.Acquire()
 
         try {
@@ -198,9 +200,9 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
-
-        // eslint-disable-next-line no-param-reassign
+        
+        Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage provider is not defined`)
+         
         $context = _.merge($context, this.GetContext(schemaRequest))
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
@@ -210,8 +212,8 @@ export class FilesData extends absDataProvider {
 
         const { entity } = schemaRequest
 
-        this.SetContentHandler(entity)
-        this.SetLock(entity)
+        this.setContentHandler(entity)
+        this.setLock(entity)
         await this.Lock.get(entity)!.Acquire()
         try {
             this.File[entity].InitContent(
@@ -243,17 +245,17 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage provider is not defined`)
 
-        // eslint-disable-next-line no-param-reassign
+         
         $context = _.merge($context, this.GetContext(schemaRequest))
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
         const { entity } = schemaRequest
 
-        this.SetContentHandler(entity)
-        this.SetLock(entity)
+        this.setContentHandler(entity)
+        this.setLock(entity)
         await this.Lock.get(entity)!.Acquire()
 
         try {
@@ -284,7 +286,7 @@ export class FilesData extends absDataProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     @Logger.LogFunction()
     // eslint-disable-next-line unused-imports/no-unused-vars
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
@@ -293,7 +295,7 @@ export class FilesData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage provider is not defined`)
 
         const { schema } = schemaRequest
 
@@ -304,10 +306,7 @@ export class FilesData extends absDataProvider {
                     .replace(/\//g, '')
                 ).join('|')})`)
 
-        // eslint-disable-next-line init-declarations
-        let data: DataTable
-
-        data = await this.Connection.FileList()
+        const data: DataTable = await this.Connection.FileList()
         data.Rows = data.Rows.filter(row => rxFilePatterns.test(row.name as string))
 
         if (data.Rows.length == 0)
@@ -321,17 +320,17 @@ export class FilesData extends absDataProvider {
         })
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     EscapeEntity(entity: string): string {
         return `\`${entity}\``
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     EscapeField(field: string): string {
         return `\`${field}\``
     }
 
-    SetContentHandler(entity: string) {
+    setContentHandler(entity: string) {
         if (!_.has(this.File, entity)) {
             const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern)?.test(entity))
             if (handler)
@@ -341,7 +340,7 @@ export class FilesData extends absDataProvider {
         }
     }
 
-    SetLock(entity: string) {
+    setLock(entity: string) {
         if (!this.Lock.has(entity))
             this.Lock.set(entity, new Mutex())
     }
