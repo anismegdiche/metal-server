@@ -55,4 +55,23 @@ export class StringUtils {
                 return String(value);
         }
     }
+
+    static IsBase64(str: unknown): boolean {
+        // simple test
+        if (typeof str !== 'string') {
+            return false;
+        }
+
+        // Check length is multiple of 4
+        if (str.length % 4 !== 0) {
+            return false;
+        }
+
+        // Check for valid padding
+        if (!/^[A-Za-z0-9+/]*={0,2}$/.test(str)) {
+            return false;
+        }
+
+        return true
+    }
 }
