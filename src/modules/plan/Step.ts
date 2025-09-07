@@ -127,8 +127,10 @@ export class Step {
     @Logger.LogFunction()
     static async Insert(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
 
-        if (!typia.is<Partial<TSchemaRequestInsert>>(stepArguments.stepParams))
-            throw new HttpErrorInternalServerError(`Step.Insert: Wrong argument passed ${JsonUtils.Stringify(stepArguments.stepParams)}`)
+        Assert.Var<TSchemaRequestInsert>(
+            stepArguments.stepParams, 
+            `Step.Insert: Wrong argument passed ${JsonUtils.Stringify(stepArguments.stepParams)}`
+        )
 
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
 
