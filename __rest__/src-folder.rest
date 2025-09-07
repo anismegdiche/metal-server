@@ -19,11 +19,21 @@ authorization: Bearer {{token}}
 ###
 
 # @name select
-GET http://localhost:3000/schema/fs/pdf
-    # ?fields=city,country
-    # &filter={"country":"France"}
-    # &cache=300
+GET http://localhost:3000/schema/fs/csv
 authorization: Bearer {{token}}
+
+###
+
+# @name delete
+DELETE http://localhost:3000/schema/fs/csv
+Content-Type: application/json
+authorization: Bearer {{token}}
+
+{
+    "filter-expression": {
+        "name" : "csv.csv"
+    }
+}
 ###
 
 # @name by
