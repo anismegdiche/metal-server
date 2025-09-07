@@ -1,4 +1,4 @@
- 
+
 //
 //
 //
@@ -37,7 +37,7 @@ const engineLoaders: Record<string, ProviderLoader> = {
 export class AiEngine {
     static readonly #aiEngineFactory = new Factory<IAiEngine>();
     static readonly #loadingPromises = new Map<string, Promise<IAiEngine>>();
-    
+
     static #aiEnginesConfig: TJson<TConfigAiEngine> = {};
     static AiEnginesInstance: Map<string, IAiEngine> = new Map();
 
@@ -122,6 +122,11 @@ export class AiEngine {
             return;
         }
 
+        if (Object.keys(AiEngine.BuildAiEnginesList()).length == 0) {
+            return;
+        }
+
+
         await AiDocker.Init();
         AiEngine.#aiEnginesConfig = AiEngine.BuildAiEnginesList();
         AiEngine.CreateAll()
@@ -132,28 +137,28 @@ export class AiEngine {
      */
     static async CreateAll() {
         const entries = Object.entries(AiEngine.#aiEnginesConfig);
-        
+
         // Process all providers in parallel
         const results = await Promise.allSettled(
             entries.map(async ([aiName, aiConfig]) => {
                 try {
                     // Get the provider asynchronously (will load it if not already loaded)
                     const provider = await AiEngine.GetProvider(aiConfig.engine);
-                    
+
                     // Store the instance and initialize it
                     AiEngine.AiEnginesInstance.set(aiName, provider);
                     await provider.Init(aiName, aiConfig);
-                    return { 
-                        aiName, 
-                        success: true 
+                    return {
+                        aiName,
+                        success: true
                     };
                 } catch (error) {
-                    return { 
-                        aiName, 
-                        success: false, 
-                        error: error instanceof Error 
-                            ? error.message 
-                            : String(error) 
+                    return {
+                        aiName,
+                        success: false,
+                        error: error instanceof Error
+                            ? error.message
+                            : String(error)
                     };
                 }
             })
@@ -164,8 +169,8 @@ export class AiEngine {
             .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
             .map((result, index) => ({
                 aiName: entries[index]?.[0] || 'unknown',
-                error: result.reason instanceof Error 
-                    ? result.reason.message 
+                error: result.reason instanceof Error
+                    ? result.reason.message
                     : String(result.reason)
             }));
 
