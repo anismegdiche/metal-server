@@ -70,15 +70,6 @@ export class ServerCore {
         ServerRuntime.StartWatcher()
     }
 
-    // static RegisterProviders() {
-    //     AuthProvider.RegisterProviders()
-    //     StorageProvider.RegisterProviders()
-    //     WebServiceProvider.RegisterProviders()
-    //     ContentProvider.RegisterProviders()
-    //     DataProvider.RegisterProviders()
-    //     AiEngine.RegisterProviders()
-    // }
-
     @Logger.LogFunction()
     static InitLogging(): void {
         const verbosity = ConfigManager.Get<LogLevelDesc>("server.verbosity")
