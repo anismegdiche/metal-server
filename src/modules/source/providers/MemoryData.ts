@@ -11,7 +11,7 @@ import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import { Cache } from '../../cache/Cache'
 import { Logger } from '../../../utils/Logger'
-import { DATA_ENTITY , DATA_PROVIDER } from "../@consts"
+import { DATA_ENTITY, DATA_PROVIDER } from "../@consts"
 import { DataBase } from '../../../types/DataBase'
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
@@ -23,7 +23,6 @@ import { TContext } from "../../sandbox/types/TContext"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Assert } from "../../../utils/Assert"
 import { absStorageProvider } from "../../storage/base/absStorageProvider"
-import { TypeUtils } from "../../../utils/TypeUtils"
 
 
 //
@@ -96,7 +95,7 @@ export class MemoryData extends absDataProvider {
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -144,7 +143,7 @@ export class MemoryData extends absDataProvider {
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -174,7 +173,7 @@ export class MemoryData extends absDataProvider {
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -206,7 +205,6 @@ export class MemoryData extends absDataProvider {
         if (this.Connection.Tables[entity] === undefined)
             throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
 
-        // eslint-disable-next-line no-param-reassign
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -264,12 +262,10 @@ export class MemoryData extends absDataProvider {
         })
     }
 
-    // eslint-disable-next-line class-methods-use-this
     EscapeEntity(entity: string): string {
         return `\`${entity}\``
     }
 
-    // eslint-disable-next-line class-methods-use-this
     EscapeField(field: string): string {
         return `\`${field}\``
     }
