@@ -2,13 +2,15 @@
 //
 //
 //
-import _ from "lodash"
+import chain from "lodash/chain"
+import intersection from "lodash/intersection"
 //
-import { TConfigRoles } from "../core/types/TConfig"
-import { ConfigManager } from "../core/ConfigManager"
-import { TUserTokenInfo } from "./@types"
-import { HttpErrorForbidden } from "../errors/HttpErrors"
+import { Assert } from "../../utils/Assert"
 import { StringUtils } from "../../utils/StringUtils"
+import { ConfigManager } from "../core/ConfigManager"
+import { TConfigRoles } from "../core/types/TConfig"
+import { HttpErrorForbidden } from "../errors/HttpErrors"
+import { TUserTokenInfo } from "./@types"
 
 
 //
@@ -26,15 +28,14 @@ export class Roles {
         if (!userToken)
             return true
 
-        let { roles = [] } = userToken
+        const { roles = [] } = userToken
 
         if (roles.length === 0)
             return true
 
-        const rolesIntersection = _.intersection(roles, schemaRoles ?? roles)
+        const rolesIntersection = intersection(roles, schemaRoles ?? roles)
 
-        const userPermissions = _
-            .chain(rolesIntersection.map(role => {
+        const userPermissions = chain(rolesIntersection.map(role => {
                 if (!StringUtils.IsEmpty(Roles.#ServerRoles[role])) {
                     return Roles.#ServerRoles[role]!.split('')
                 }
@@ -51,7 +52,10 @@ export class Roles {
     }
 
     static CheckPermission(userToken: TUserTokenInfo | undefined, schemaRoles: string[] | undefined, permission: string): void {
-        if (!Roles.HasPermission(userToken, schemaRoles, permission))
-            throw new HttpErrorForbidden('Permission denied')
+        Assert.Condition(
+            Roles.HasPermission(userToken, schemaRoles, permission),
+            'Permission denied',
+            new HttpErrorForbidden()
+        )
     }
 }
