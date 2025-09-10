@@ -1,35 +1,40 @@
 //
 //
 //
-import _ from 'lodash'
+// lodash
+import merge from 'lodash/merge'
+import { Readable } from 'node:stream'
 //
-import { absDataProvider } from '../base/absDataProvider'
-import { DATA_PROVIDER } from "../@consts"
-import { TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestInsert, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequest } from '../../schema/types/TSchemaRequest'
-import { TInternalResponse } from '../../schema/types/TInternalResponse'
-import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
-import { TRow } from '../../../types/DataTable'
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from '../../errors/HttpErrors'
-import { TConfigSource } from "../types/TConfigSource"
-import { Logger, VERBOSITY } from '../../../utils/Logger'
-import { ReadableUtils } from '../../../utils/ReadableUtils'
-import { HttpResponse } from '../../core/HttpResponse'
-import { RESPONSE } from '../../core/@consts'
-import { TContext } from '../../sandbox/types/TContext'
-import { TOptionalParameter } from '../types/TOptionalParameter'
-import { Cache } from "../../cache/Cache"
+import { DataTable, TRow } from '../../../types/DataTable'
 import { Assert } from '../../../utils/Assert'
+import { Logger, VERBOSITY } from '../../../utils/Logger'
+import { Mutex } from '../../../utils/Mutex'
+import { ReadableUtils } from '../../../utils/ReadableUtils'
+import { StringUtils } from '../../../utils/StringUtils'
+import { Cache } from "../../cache/Cache"
+import { RESPONSE } from '../../core/@consts'
+import { HttpResponse } from '../../core/HttpResponse'
+import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorInternalServerError, HttpErrorNotImplemented } from '../../errors/HttpErrors'
+import { TContext } from '../../sandbox/types/TContext'
+import { TInternalResponse } from '../../schema/types/TInternalResponse'
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { STORAGE } from '../../storage/@consts'
 import { TStorageFile } from '../../storage/@types'
 import { absStorageProvider } from '../../storage/base/absStorageProvider'
 import { StorageProvider } from '../../storage/StorageProvider'
 import { TStorageConfig } from '../../storage/types/TStorageConfig'
+import { DATA_PROVIDER } from "../@consts"
+import { absDataProvider } from '../base/absDataProvider'
+import { TConfigSource } from "../types/TConfigSource"
+import { TOptionalParameter } from '../types/TOptionalParameter'
 
 
 //
 export type TFolderDataOptions = {
     storage?: STORAGE
     autocreate?: boolean
+    "allow-delete"?: boolean
     "folder-pattern": string
     "files-pattern": string
 } & TStorageConfig
@@ -43,15 +48,19 @@ export type TFolderDataConfig = {
 //
 export class FolderData extends absDataProvider {
 
-    ProviderName = DATA_PROVIDER.FOLDER
     SourceName?: string
+    ProviderName = DATA_PROVIDER.FOLDER
     Config: TFolderDataConfig = <TFolderDataConfig>{}
-    Connection?: absStorageProvider = undefined
+    Connection?: absStorageProvider
+
+    // FolderData
+    Lock: Map<string, Mutex> = new Map<string, Mutex>()
 
     DEFAULT: Partial<TFolderDataConfig> = {
         options: {
             storage: STORAGE.FILESYSTEM,
-            autocreate: false,
+            autocreate: true,
+            "allow-delete": false,
             "folder-pattern": "*.*",
             "files-pattern": "*.*"
         } as TFolderDataOptions
@@ -61,10 +70,15 @@ export class FolderData extends absDataProvider {
         super()
     }
 
-    @Logger.LogFunction()
+    setLock(fileName: string) {
+        if (!this.Lock.has(fileName))
+            this.Lock.set(fileName, new Mutex())
+    }
+
+    @Logger.LogFunction(true)
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = _.merge(this.DEFAULT, sourceConfig as TFolderDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as TFolderDataConfig)
 
         const { storage } = this.Config.options
 
@@ -78,27 +92,32 @@ export class FolderData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize storage provider`)
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     async Connect(): Promise<void> {
         if (this.Connection)
             await this.Connection.Connect()
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     async Disconnect(): Promise<void> {
         if (this.Connection)
             await this.Connection.Disconnect()
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage connection not set`)
-        Assert.Var<string>(schemaRequest.entity, schemaRequest.entity !== undefined, `${this.SourceName}: Folder name is required`)
 
-        const { schema, entity } = schemaRequest
+        Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage connection not set`)
+        Assert.Var<string>(schemaRequest.entity, `${this.SourceName}: Folder name is required`)
 
-        // eslint-disable-next-line no-param-reassign
-        $context = _.merge($context, this.GetContext(schemaRequest))
+        const { schema, entity: dirName } = schemaRequest
+
+        const schemaResponse = <TSchemaResponse>{
+            schema,
+            entity: dirName
+        }
+
+        $context = merge($context, this.GetContext(schemaRequest))
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
@@ -106,147 +125,214 @@ export class FolderData extends absDataProvider {
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const data = (await this.Connection.FileList(entity)).FreeSql(sqlQuery)
+        const files = await (await this.Connection.FolderListFiles(dirName))
+            .FreeSqlAsync(sqlQuery)
 
-        await Promise.all(data.Rows.map(async (row: TRow) => {
-            const _file = row as TStorageFile
-            row.content = await ReadableUtils.ToBase64(
-                await this.Connection!.FileRead(_file.path)
-            )
-        }))
+        // read files content
+        await Promise.all(
+            files.Rows.map(
+                async (row: TRow) => {
+                    const __file = row as TStorageFile
+                    row.content = await ReadableUtils.ToBase64(
+                        await this.Connection!.FileRead(dirName, __file.name)
+                    )
+                }))
 
         if (Logger.Level == VERBOSITY.DEBUG)
-            data.SetMetaData("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
+            files.SetMetaData("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
 
         if (options?.Cache)
             await Cache.Set({
                 ...schemaRequest,
                 source: this.SourceName
             },
-                data
+                files
             )
 
         return HttpResponse.Ok(<TSchemaResponse>{
-            schema,
-            entity,
+            ...schemaResponse,
             ...RESPONSE.SELECT.SUCCESS.MESSAGE,
             ...RESPONSE.SELECT.SUCCESS.STATUS,
-            data
+            data: files
         })
     }
 
-    @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>> {
-        try {
-            if (!this.Connection)
-                throw new HttpErrorInternalServerError('Storage connection not set')
+    @Logger.LogFunction(true)
+    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
-            const dirName = schemaRequest.entity
-            if (!dirName)
-                throw new HttpErrorBadRequest('Folder name is required')
+        Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage provider is not defined`)
 
-            const row = Array.isArray(schemaRequest.data)
-                ? schemaRequest.data[0]
-                : schemaRequest.data
-            if (!row?.name || !row?.extension || !row?.content)
-                throw new HttpErrorBadRequest('Missing file fields')
+        $context = merge(
+            $context,
+            this.GetContext(schemaRequest)
+        )
 
-            if (typeof row.content !== 'string')
-                throw new HttpErrorBadRequest('File content must be a base64 string')
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-            if (typeof this.Connection.FileWrite !== 'function')
-                throw new HttpErrorNotImplemented('Write not implemented for this storage provider')
+        Assert.Var<DataTable>(options.Data, `${this.SourceName}: Data is not defined`, new HttpErrorBadRequest())
 
-            // Compose the file path
-            const filePath = `${dirName}/${row.name}.${row.extension}`
-            const buffer = Buffer.from(row.content, 'base64')
-            const { Readable } = await import('stream')
-            const stream = Readable.from(buffer)
-            await this.Connection.FileWrite(filePath, stream)
+        const dirName = schemaRequest.entity
 
-            return {
-                StatusCode: 200
-            }
-        } catch (err: any) {
-            throw new HttpErrorInternalServerError(err.message)
-        }
+        if (this.Config.options.autocreate && !(await this.Connection.FolderIsExist(dirName)))
+            await this.Connection.FolderCreate(dirName)
+
+        await Promise.all(
+            options.Data.Rows.map(
+                async (row: TRow) => {
+                    const __file = row as TStorageFile
+
+                    Assert.Var<string>(__file.name, 'File name is required', new HttpErrorBadRequest())
+                    Assert.Var<string>(__file.content, 'File content is required', new HttpErrorBadRequest())
+                    Assert.Condition(StringUtils.IsBase64(__file.content), 'File content is not a valid base64 string', new HttpErrorBadRequest())
+
+                    this.setLock(__file.path)
+                    await this.Lock.get(__file.path)!.Acquire()
+                    await this.Connection!.FileWrite(dirName, __file.name, Readable.from(Buffer.from(__file.content, 'base64')))
+                    this.Lock.get(__file.path)!.Release()
+
+                }))
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.Created()
     }
 
-    async Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>> {
-        try {
-            if (!this.Connection)
-                throw new HttpErrorInternalServerError('Storage connection not set')
+    @Logger.LogFunction(true)
+    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
-            const dirName = schemaRequest.entity
+        Assert.Var<absStorageProvider>(this.Connection, 'Storage connection not set')
+        // should accept only name or content or both in data
 
-            if (!dirName)
-                throw new HttpErrorBadRequest('Folder name is required')
+        const dirName = schemaRequest.entity
+        Assert.Var<string>(dirName, 'Folder name is required', new HttpErrorBadRequest())
 
-            const row = Array.isArray(schemaRequest.data)
-                ? schemaRequest.data[0]
-                : schemaRequest.data
+        if (this.Config.options.autocreate && !(await this.Connection.FolderIsExist(dirName)))
+            await this.Connection.FolderCreate(dirName)
 
-            if (!row?.name || !row?.extension || !row?.content)
-                throw new HttpErrorBadRequest('Missing file fields')
+        $context = merge($context, this.GetContext(schemaRequest))
 
-            if (typeof row.content !== 'string')
-                throw new HttpErrorBadRequest('File content must be a base64 string')
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+        Assert.Var<DataTable>(options.Data, `${this.SourceName}: data is not defined`, new HttpErrorBadRequest())
 
-            if (typeof this.Connection.FileWrite !== 'function')
-                throw new HttpErrorNotImplemented('Write not implemented for this storage provider')
+        const updateData = options.Data.Rows[0]
 
-            const filePath = `${dirName}/${row.name}.${row.extension}`
-            const buffer = Buffer.from(row.content, 'base64')
-            const { Readable } = await import('stream')
-            const stream = Readable.from(buffer)
+        const selectQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+        const selectQuery = this.GetSqlQuery(selectQueryHelper, options)
 
-            await this.Connection.FileWrite(filePath, stream)
+        const files = (await this.Connection.FolderListFiles(dirName))
+            .SelectFields(['name', 'path'])
+            .Rename(dirName)
 
-            return {
-                StatusCode: 200
-            }
-        } catch (err: any) {
-            throw new HttpErrorInternalServerError(err.message)
-        }
+        const filesFiltered = await files.FreeSqlAsync(selectQuery)
+        
+        // add old name
+        await filesFiltered.FreeSqlAsync(`
+            UPDATE ${dirName}
+            SET old_name = name
+        `)
+
+        const updateQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
+        const updateQuery = this.GetSqlQuery(updateQueryHelper, options)
+
+        await filesFiltered.FreeSqlAsync(updateQuery)
+
+        // update files
+        await Promise.all(
+            filesFiltered.Rows.map(
+                async (row: TRow) => {
+                    const { 
+                        name: newFileName, 
+                        old_name: oldFileName 
+                    } = row as TStorageFile
+
+                    Assert.Var<string>(newFileName, 'File name is required')
+                    Assert.Var<string>(oldFileName, 'File old name is required')
+
+                    const __lock = dirName + '/' + oldFileName
+                    this.setLock(__lock)
+                    await this.Lock.get(__lock)!.Acquire()
+
+                    // update file content
+                    const __fileContent = await ReadableUtils.ToBase64(
+                        await this.Connection!.FileRead(dirName, oldFileName)
+                    )
+
+                    if (updateData.content && updateData.content !== __fileContent) {
+                        const ___content = updateData.content ?? __fileContent
+
+                        Assert.Var<string>(___content, StringUtils.IsBase64(___content), 'content is not a valid base64 string', new HttpErrorBadRequest())
+
+                        await this.Connection!.FileWrite(dirName, oldFileName, Readable.from(Buffer.from(___content, 'base64')))
+                    }
+                    
+                    // rename file
+                    if (oldFileName !== newFileName)
+                        await this.Connection!.FileRename(dirName, oldFileName, newFileName)
+
+                    this.Lock.get(__lock)!.Release()
+                })
+        )
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
     }
 
-    async Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>> {
-        try {
-            if (!this.Connection)
-                throw new HttpErrorInternalServerError('Storage connection not set')
+    @Logger.LogFunction(true)
+    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+        Assert.Condition(
+            (this.Config.options?.["allow-delete"] as boolean) === true,
+            `${this.SourceName}: "allow-delete" option is required to delete files`,
+            new HttpErrorForbidden()
+        )
 
-            const dirName = schemaRequest.entity
+        Assert.Var<absStorageProvider>(this.Connection, 'Storage connection not set')
 
-            if (!dirName)
-                throw new HttpErrorBadRequest('Folder name is required')
+        const { entity: dirName } = schemaRequest
+        Assert.Var<string>(dirName, 'Folder name is required')
 
-            const { name, extension } = schemaRequest.filter || {}
+        $context = merge($context, this.GetContext(schemaRequest))
 
-            if (!name || !extension)
-                throw new HttpErrorBadRequest('Missing file name or extension in filter')
+        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-            if (typeof (this.Connection as any).DeleteFile !== 'function')
-                throw new HttpErrorNotImplemented('DeleteFile not implemented for this storage provider')
+        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
-            await (this.Connection as any).DeleteFile(dirName, `${name}.${extension}`)
-            return {
-                StatusCode: 200
-            }
-        } catch (err: any) {
-            throw new HttpErrorInternalServerError(err.message)
-        }
+        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
+
+        const files = (await this.Connection.FolderListFiles(dirName))
+            .Rename(dirName)
+
+        const filesFiltered = await files.FreeSqlAsync(sqlQuery)
+
+        await Promise.all(
+            filesFiltered.Rows.map(async (row: TRow) => {
+                const { name: fileName } = row as TStorageFile
+                Assert.Var<absStorageProvider>(this.Connection, 'Storage connection not set')
+                Assert.Var<string>(fileName, 'File name is required')
+                await this.Connection.FileDelete(dirName, fileName)
+            })
+        )
+
+        // clean cache
+        Cache.Remove(schemaRequest)
+
+        return HttpResponse.NoContent()
     }
 
-    AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    @Logger.LogFunction(true)
+    AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
+    @Logger.LogFunction(true)
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert.Var<absStorageProvider>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Storage provider is not defined`)
+        Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage provider is not defined`)
 
         const { schema } = schemaRequest
 
-        const data = await this.Connection.FolderList()
+        const data = await this.Connection.FolderListFolders()
         return HttpResponse.Ok(<TSchemaResponse>{
             schema,
             ...RESPONSE.LIST_ENTITIES.SUCCESS.MESSAGE,

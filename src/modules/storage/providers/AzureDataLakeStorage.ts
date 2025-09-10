@@ -1,24 +1,24 @@
-/* eslint-disable no-continue */
 //
 //
 //
 // Lazy-loaded @azure/storage-file-datalake module
-import { Readable } from 'stream'
-import _ from 'lodash'
+import { DataLakeFileSystemClient } from '@azure/storage-file-datalake'
+import merge from 'lodash/merge'
+import { Readable } from 'node:stream'
 //
-import { Logger } from '../../../utils/Logger'
 import { HttpErrorInternalServerError } from '../../../modules/errors/HttpErrors'
 import { DataTable } from '../../../types/DataTable'
-import { absStorageProvider } from '../base/absStorageProvider'
-import { TStorageFile } from '../@types'
-import { TConfigSource } from "../../source/types/TConfigSource"
-import { TFilesDataOptions } from "../../source/providers/TFilesDataOptions"
+import { Assert } from '../../../utils/Assert'
+import { JsonUtils } from '../../../utils/JsonUtils'
+import { Logger } from '../../../utils/Logger'
 import { ReadableUtils } from '../../../utils/ReadableUtils'
+import { StringUtils } from '../../../utils/StringUtils'
 import { TConvertParams } from '../../../utils/TypeUtils'
 import { DATA_ENTITY } from "../../source/@consts"
-import { JsonUtils } from '../../../utils/JsonUtils'
-import { Assert } from '../../../utils/Assert'
-import { StringUtils } from '../../../utils/StringUtils'
+import { TFilesDataOptions } from "../../source/providers/TFilesDataOptions"
+import { TConfigSource } from "../../source/types/TConfigSource"
+import { TStorageFile } from '../@types'
+import { absStorageProvider } from '../base/absStorageProvider'
 
 
 //
@@ -35,26 +35,16 @@ type TAzureDataLakeStorageParams = Required<{
 
 //
 export class AzureDataLakeStorage extends absStorageProvider {
+
     ConfigSource?: TConfigSource
     ConfigStorage?: TFilesDataOptions
+    Params?: TAzureDataLakeStorageParams
 
-    Params: TAzureDataLakeStorageParams | undefined
-
-    #FileSystemClient: import('@azure/storage-file-datalake').DataLakeFileSystemClient | undefined
-
+    private _fileSystemClient: DataLakeFileSystemClient | undefined
+    private static _azureStorageFileDatalake: typeof import('@azure/storage-file-datalake');
+    
     DEFAULT = {}
 
-    @Logger.LogFunction()
-    Init(): void {
-        Assert.Var<TAzureDataLakeStorageConfig>(this.ConfigStorage, this.ConfigStorage !== undefined, 'AzureDataLakeStorage: No configuration defined')
-        this.Params = _.merge(this.DEFAULT, <TAzureDataLakeStorageParams>{
-            storageAccount: this.ConfigStorage['az-datalake-storage-account'],
-            containerName: this.ConfigStorage['az-datalake-container-name'],
-            storageKey: this.ConfigStorage['az-datalake-storage-key']
-        })
-    }
-
-    private static _azureStorageFileDatalake: typeof import('@azure/storage-file-datalake');
     private static async _loadAzureStorageFileDatalake(): Promise<typeof import('@azure/storage-file-datalake')> {
         if (!this._azureStorageFileDatalake) {
             this._azureStorageFileDatalake = await import('@azure/storage-file-datalake');
@@ -62,9 +52,25 @@ export class AzureDataLakeStorage extends absStorageProvider {
         return this._azureStorageFileDatalake;
     }
 
+    // -----------------------------
+    // Init
+    // -----------------------------
+    @Logger.LogFunction()
+    Init(): void {
+        Assert.Var<TAzureDataLakeStorageConfig>(this.ConfigStorage, 'AzureDataLakeStorage: No configuration defined')
+        this.Params = merge(this.DEFAULT, <TAzureDataLakeStorageParams>{
+            storageAccount: this.ConfigStorage['az-datalake-storage-account'],
+            containerName: this.ConfigStorage['az-datalake-container-name'],
+            storageKey: this.ConfigStorage['az-datalake-storage-key']
+        })
+    }
+
+    // -----------------------------
+    // Connect / Disconnect
+    // -----------------------------
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Assert.Var<TAzureDataLakeStorageParams>(this.Params, this.Params !== undefined, 'AzureDataLakeStorage: No params defined')
+        Assert.Var<TAzureDataLakeStorageParams>(this.Params, 'AzureDataLakeStorage: No params defined')
         Assert.Var<string>(this.Params.storageAccount, !StringUtils.IsEmpty(this.Params.storageAccount), 'AzureDataLakeStorage: No storage account defined')
         Assert.Var<string>(this.Params.containerName, !StringUtils.IsEmpty(this.Params.containerName), 'AzureDataLakeStorage: No container name defined')
         Assert.Var<string>(this.Params.storageKey, !StringUtils.IsEmpty(this.Params.storageKey), 'AzureDataLakeStorage: No storage key defined')
@@ -75,119 +81,51 @@ export class AzureDataLakeStorage extends absStorageProvider {
             const azureStorageFileDatalake = await AzureDataLakeStorage._loadAzureStorageFileDatalake();
             const connectionString = `DefaultEndpointsProtocol=https;AccountName=${storageAccount};AccountKey=${storageKey};EndpointSuffix=core.windows.net`
             const serviceClient = azureStorageFileDatalake.DataLakeServiceClient.fromConnectionString(connectionString)
-            this.#FileSystemClient = serviceClient.getFileSystemClient(containerName)
+            this._fileSystemClient = serviceClient.getFileSystemClient(containerName)
 
             // Create the container if it doesn't exist
-            await this.#FileSystemClient.createIfNotExists()
+            await this._fileSystemClient.createIfNotExists()
         } catch (error) {
             const errorMessage = error instanceof Error
                 ? error.message
                 : String(error)
-
             throw new HttpErrorInternalServerError(`Failed to connect to Azure Data Lake Storage: ${errorMessage}`)
         }
     }
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
-        this.#FileSystemClient = undefined
+        this._fileSystemClient = undefined
+    }
+
+    // -----------------------------
+    // Folder Operations
+    // -----------------------------
+    @Logger.LogFunction()
+    async FolderIsExist(dirName: string): Promise<boolean> {
+        Assert.Var<DataLakeFileSystemClient>(this._fileSystemClient, 'AzureDataLakeStorage: Connection to storage not established')
+        Assert.Var<string>(dirName, 'Directory name is required')
+
+        const directoryClient = this._fileSystemClient.getDirectoryClient(dirName)
+        return await directoryClient.exists()
     }
 
     @Logger.LogFunction()
-    async FileIsExist(file: string): Promise<boolean> {
-        Assert.Var<import('@azure/storage-file-datalake').DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
+    async FolderCreate(dirName: string): Promise<void> {
+        Assert.Var<DataLakeFileSystemClient>(this._fileSystemClient, 'AzureDataLakeStorage: Connection to storage not established')
+        Assert.Var<string>(dirName, 'Directory name is required')
 
-        try {
-            const fileClient = this.#FileSystemClient.getFileClient(file)
-            await fileClient.getProperties()
-            return true
-        } catch (error) {
-            if (error instanceof Error && 'code' in error && error.code === 'ResourceNotFound') {
-                return false
-            }
-
-            throw new HttpErrorInternalServerError(`Failed to check file existence: ${String(error)}`)
-        }
+        const directoryClient = this._fileSystemClient.getDirectoryClient(dirName)
+        await directoryClient.create()
     }
 
     @Logger.LogFunction()
-    async FileRead(file: string): Promise<Readable> {
-        Assert.Var<import('@azure/storage-file-datalake').DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
-
-        try {
-            const fileClient = this.#FileSystemClient.getFileClient(file)
-            const response = await fileClient.read()
-
-            // Return the readable stream directly
-            return response.readableStreamBody as Readable
-        } catch (error) {
-            const errorMessage = error instanceof Error
-                ? error.message
-                : String(error)
-
-            throw new HttpErrorInternalServerError(`Failed to read file: ${errorMessage}`)
-        }
-    }
-
-    @Logger.LogFunction(['content'])
-    async FileWrite(file: string, content: Readable): Promise<void> {
-        Assert.Var<import('@azure/storage-file-datalake').DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
-
-        try {
-            const buffer = await ReadableUtils.ToBuffer(content)
-
-            const fileClient = this.#FileSystemClient.getFileClient(file)
-
-            await fileClient.create()
-            await fileClient.append(buffer, 0, buffer.length)
-            await fileClient.flush(buffer.length)
-
-            Logger.Debug(`File '${file}' uploaded successfully`)
-        } catch (error) {
-            const errorMessage = error instanceof Error
-                ? error.message
-                : String(error)
-            throw new HttpErrorInternalServerError(`Failed to write file: ${errorMessage}`)
-        }
-    }
-
-    @Logger.LogFunction()
-    async FileList(dir?: string): Promise<DataTable> {
-        Assert.Var<import('@azure/storage-file-datalake').DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
-
-        try {
-            const files: TStorageFile[] = []
-
-            for await (const item of this.#FileSystemClient.listPaths({ path: dir })) {
-                if (!item.name || item.isDirectory)
-                    continue
-
-                files.push(JsonUtils.RemoveUndefined(
-                    <TStorageFile>{
-                        name: item.name.split('/').pop(),
-                        mimeType: this.GetMimeType(item.name),
-                        type: DATA_ENTITY.FILE,
-                        size: item?.contentLength,
-                        createdAt: item?.createdOn,
-                        modifiedAt: item?.lastModified,
-                        path: item.name
-                    }))
-            }
-            return new DataTable(undefined, files)
-
-        } catch (error: unknown) {
-            throw new HttpErrorInternalServerError(`Failed to list files: ${(error as Error).message}`)
-        }
-    }
-
-    @Logger.LogFunction()
-    async FolderList(): Promise<DataTable> {
-        Assert.Var<import('@azure/storage-file-datalake').DataLakeFileSystemClient>(this.#FileSystemClient, this.#FileSystemClient !== undefined, 'AzureDataLakeStorage: Connection to storage not established')
+    async FolderListFolders(): Promise<DataTable> {
+        Assert.Var<DataLakeFileSystemClient>(this._fileSystemClient, 'AzureDataLakeStorage: Connection to storage not established')
 
         const folders: TStorageFile[] = []
-        for await (const item of this.#FileSystemClient.listPaths()) {
-            if (!item.name || !item.isDirectory)
-                continue
+        for await (const item of this._fileSystemClient.listPaths()) {
+            if (!item.name || !item.isDirectory) continue
 
             folders.push(JsonUtils.RemoveUndefined(
                 <TStorageFile>{
@@ -197,5 +135,90 @@ export class AzureDataLakeStorage extends absStorageProvider {
             ))
         }
         return new DataTable(undefined, folders)
+    }
+
+    @Logger.LogFunction()
+    async FolderListFiles(dirName?: string): Promise<DataTable> {
+        Assert.Var<DataLakeFileSystemClient>(this._fileSystemClient, 'AzureDataLakeStorage: Connection to storage not established')
+
+        const files: TStorageFile[] = []
+        for await (const item of this._fileSystemClient.listPaths({ path: dirName })) {
+            if (!item.name || item.isDirectory) continue
+
+            files.push(JsonUtils.RemoveUndefined(
+                <TStorageFile>{
+                    name: item.name.split('/').pop(),
+                    parent: dirName,
+                    mimeType: this.GetMimeType(item.name),
+                    type: DATA_ENTITY.FILE,
+                    size: item?.contentLength,
+                    createdAt: item?.createdOn,
+                    modifiedAt: item?.lastModified,
+                    path: item.name
+                }))
+        }
+        return new DataTable(dirName, files)
+    }
+
+    // -----------------------------
+    // File Operations
+    // -----------------------------
+    @Logger.LogFunction()
+    async FileIsExist(dirName: string, fileName: string): Promise<boolean> {
+        Assert.Var<DataLakeFileSystemClient>(this._fileSystemClient, 'AzureDataLakeStorage: Connection to storage not established')
+
+        try {
+            const fileClient = this._fileSystemClient.getFileClient(StringUtils.Path(dirName, fileName))
+            await fileClient.getProperties()
+            return true
+        } catch (error) {
+            if (error instanceof Error && 'code' in error && error.code === 'ResourceNotFound') {
+                return false
+            }
+            throw new HttpErrorInternalServerError(`Failed to check file existence: ${String(error)}`)
+        }
+    }
+
+    @Logger.LogFunction()
+    async FileRead(dirName: string, fileName: string): Promise<Readable> {
+        Assert.Var<DataLakeFileSystemClient>(this._fileSystemClient, 'AzureDataLakeStorage: Connection to storage not established')
+
+        const fileClient = this._fileSystemClient.getFileClient(StringUtils.Path(dirName, fileName))
+        const response = await fileClient.read()
+
+        return response.readableStreamBody as Readable
+    }
+
+    @Logger.LogFunction(['content'])
+    async FileWrite(dirName: string, fileName: string, content: Readable): Promise<void> {
+        Assert.Var<DataLakeFileSystemClient>(this._fileSystemClient, 'AzureDataLakeStorage: Connection to storage not established')
+
+        const buffer = await ReadableUtils.ToBuffer(content)
+        const fileClient = this._fileSystemClient.getFileClient(StringUtils.Path(dirName, fileName))
+
+        await fileClient.create()
+        await fileClient.append(buffer, 0, buffer.length)
+        await fileClient.flush(buffer.length)
+
+        Logger.Debug(`File '${fileName}' uploaded successfully`)
+    }
+
+    @Logger.LogFunction()
+    async FileRename(dirName: string, oldFileName: string, newFileName: string): Promise<void> {
+        Assert.Var<DataLakeFileSystemClient>(this._fileSystemClient, 'AzureDataLakeStorage: Connection to storage not established')
+        Assert.Var<string>(oldFileName, 'Old file name is required')
+        Assert.Var<string>(newFileName, 'New file name is required')
+
+        await this.FileWrite(dirName, newFileName, await this.FileRead(dirName, oldFileName))
+        await this.FileDelete(dirName, oldFileName)
+    }
+
+    @Logger.LogFunction()
+    async FileDelete(dirName: string, fileName: string): Promise<void> {
+        Assert.Var<DataLakeFileSystemClient>(this._fileSystemClient, 'AzureDataLakeStorage: Connection to storage not established')
+        Assert.Var<string>(fileName, 'File name is required')
+
+        const fileClient = this._fileSystemClient.getFileClient(StringUtils.Path(dirName, fileName))
+        await fileClient.delete()
     }
 }
