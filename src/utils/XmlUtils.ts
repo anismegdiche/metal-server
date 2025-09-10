@@ -1,8 +1,14 @@
+//
+//
+//
+
+
+//
 export class XmlUtils {
-    static GetNodeByPath(xmlData: any, path: string): any {
+    static GetNodeByPath(xml: any, path: string): any {
         // Traverse the XML object to find the target node by path
         const segments = path.split('.')
-        let currentNode = xmlData
+        let currentNode = xml
 
         for (const segment of segments) {
             if (currentNode && segment in currentNode) {
@@ -15,12 +21,11 @@ export class XmlUtils {
         return currentNode
     }
 
-    static SetNodeByPath(xmlData: any, path: string, newData: any): any {
+    static SetNodeByPath(xml: any, xmlPath: string, newData: any): any {
         // Traverse the XML object to set the target node by path
-        const segments = path.split('.')
-        let currentNode = xmlData
+        const segments = xmlPath.split('.')
+        let currentNode = xml
 
-        // eslint-disable-next-line no-plusplus
         for (let i = 0; i < segments.length - 1; i++) {
             const segment = segments[i]
             if (!(segment in currentNode)) {
@@ -32,6 +37,6 @@ export class XmlUtils {
         const targetSegment = segments[segments.length - 1]
         currentNode[targetSegment] = newData
 
-        return xmlData
+        return xml
     }
 }
