@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-regexp */
 /* eslint-disable @typescript-eslint/no-explicit-any */
  
 import { FilesData } from "../providers/FilesData"
@@ -169,31 +170,31 @@ describe("FilesData", () => {
         })
 
         it("should set content handler based on pattern match", () => {
-            filesData.setContentHandler("test.json")
+            filesData._setContentHandler("test.json")
             expect(filesData.File["test.json"]).toBe(mockContentProvider)
         })
 
         it("should reuse existing content handler if already set", () => {
             filesData.File["test.json"] = mockContentProvider
-            filesData.setContentHandler("test.json")
+            filesData._setContentHandler("test.json")
             expect(filesData.File["test.json"]).toBe(mockContentProvider)
         })
 
         it("should throw error when no matching handler is found", () => {
-            expect(() => filesData.setContentHandler("test.xml")).toThrow(HttpErrorNotImplemented)
+            expect(() => filesData._setContentHandler("test.xml")).toThrow(HttpErrorNotImplemented)
         })
     })
 
     describe("SetLock", () => {
         it("should create new mutex if not exists", () => {
-            filesData.setLock("test.json")
+            filesData._setLock("test.json")
             expect(filesData.Lock.has("test.json")).toBe(true)
         })
 
         it("should not create new mutex if already exists", () => {
             const mockMutex = { mock: true }
             filesData.Lock.set("test.json", mockMutex as any)
-            filesData.setLock("test.json")
+            filesData._setLock("test.json")
             expect(filesData.Lock.get("test.json")).toBe(mockMutex)
         })
     })
