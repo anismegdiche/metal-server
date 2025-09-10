@@ -1,11 +1,10 @@
 //
 //
-//
 import LogLevel from 'loglevel'
 import Prefix from 'loglevel-plugin-prefix'
 import morgan from "morgan"
 import { magenta, green, cyan, yellow, red, gray, whiteBright, bold } from 'colorette'
-import _ from "lodash"
+import _ from 'lodash'
 //
 import { SERVER } from '../modules/core/@consts'
 import { DecoratorUtils } from "./DecoratorUtils"
@@ -23,7 +22,7 @@ export enum VERBOSITY {
 
 
 //
-const Colors: Record<string, (text: string) => string> = {
+const _colors: Record<string, (text: string) => string> = {
     [VERBOSITY.TRACE.toUpperCase()]: (text: string) => magenta(text),
     [VERBOSITY.DEBUG.toUpperCase()]: (text: string) => green(text),
     [VERBOSITY.INFO.toUpperCase()]: (text: string) => cyan(text),
@@ -34,11 +33,12 @@ const Colors: Record<string, (text: string) => string> = {
 export const LoggerDefaultLevel: LogLevel.LogLevelDesc = VERBOSITY.WARN
 
 Prefix.reg(LogLevel)
+
 LogLevel.setLevel(LoggerDefaultLevel)
 
 Prefix.apply(LogLevel, {
     format(level: string, name: string | undefined, timestamp: Date) {
-        return `${gray(timestamp.toString())} ${Colors[level]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${whiteBright(`${name}:`)}`
+        return `${gray(timestamp.toString())} ${_colors[level]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${whiteBright(`${name}:`)}`
     }
 })
 
@@ -47,6 +47,34 @@ Prefix.apply(LogLevel.getLogger('critical'), {
         return red(bold(`${timestamp} ${(level.padEnd(5)).slice(-5)} [${SERVER.NAME}] ${name}:`))
     }
 })
+
+
+// Queue for non-blocking, in-order logging
+const _logQueue: (() => void)[] = [];
+
+let _processing = false;
+
+function _enqueueLog(fn: () => void) {
+    _logQueue.push(fn);
+    if (!_processing) _processQueue();
+}
+
+function _processQueue() {
+    if (_logQueue.length === 0) {
+        _processing = false;
+        return;
+    }
+    _processing = true;
+    const fn = _logQueue.shift()!;
+    setImmediate(() => {
+        try {
+            fn();
+        } finally {
+            _processQueue();
+        }
+    });
+}
+
 
 export class Logger {
 
@@ -78,24 +106,25 @@ export class Logger {
         LogLevel.enableAll()
     }
 
+    // Non-blocking queued log methods
     static Trace(msg: any): void {
-        setImmediate(() => LogLevel.trace(msg))
+        _enqueueLog(() => LogLevel.trace(msg))
     }
 
     static Debug(msg: any): void {
-        setImmediate(() => LogLevel.debug(msg))
+        _enqueueLog(() => LogLevel.debug(msg))
     }
 
     static Info(msg: any): void {
-        LogLevel.info(msg)
+        _enqueueLog(() => LogLevel.info(msg))
     }
 
     static Warn(msg: any): void {
-        LogLevel.warn(msg)
+        _enqueueLog(() => LogLevel.warn(msg))
     }
 
     static Error(msg: any): void {
-        LogLevel.error(msg)
+        _enqueueLog(() => LogLevel.error(msg))
     }
 
     static Message(msg: any): void {
@@ -111,11 +140,11 @@ export class Logger {
             descriptor.value = function (...args: any[]) {
                 const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args)
                 const _hide = typeof hide === 'boolean'
-                    ? _.keys(_paramObject)
+                    ? Object.keys(_paramObject)
                     : hide
 
                 const _filteredParams: Record<string, any> = _.chain(_paramObject)
-                    .omitBy(_.isNil || _.isEmpty)
+                    .omitBy(v => _.isNil(v) || _.isEmpty(v))
                     .omit(_hide)
                     .value()
 
@@ -123,11 +152,11 @@ export class Logger {
                     ? ''
                     : ` ${Stringify(_filteredParams)}`
 
-                setImmediate(() => Logger.Debug(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`))
+                Logger.Debug(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`)
                 // continue with original args
                 return originalMethod.apply(this, args)
             }
             return descriptor
         }
-    }    
+    }
 }
