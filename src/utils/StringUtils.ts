@@ -1,14 +1,13 @@
-
-
 //
 //
 //
-
+import path from "node:path"
 import { Stringify } from "./JsonUtils/Stringify"
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const urlJoin = require("@loxjs/url-join")
 
 
+//
 export class StringUtils {
     static Split(str: string, sep: string): string[] {
         return (str.includes(sep))
@@ -34,6 +33,14 @@ export class StringUtils {
 
         return urlJoin(...cleanSubPaths)
             .replace(/\\/g, '/')
+    }
+
+    static Path(...subPaths: Array<string | undefined>) {
+        const cleanSubPaths = subPaths.filter((path: string | undefined) => !StringUtils.IsEmpty(path)) as string[]
+        if (cleanSubPaths.length == 0)
+            return ''
+
+        return path.posix.join(...cleanSubPaths)
     }
 
     static ToString<T>(value: T): string {
