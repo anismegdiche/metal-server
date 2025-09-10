@@ -2,8 +2,7 @@
 //
 //
 //
-import chain from "lodash/chain"
-import intersection from "lodash/intersection"
+import _ from "lodash"
 //
 import { Assert } from "../../utils/Assert"
 import { StringUtils } from "../../utils/StringUtils"
@@ -33,14 +32,14 @@ export class Roles {
         if (roles.length === 0)
             return true
 
-        const rolesIntersection = intersection(roles, schemaRoles ?? roles)
+        const rolesIntersection = _.intersection(roles, schemaRoles ?? roles)
 
-        const userPermissions = chain(rolesIntersection.map(role => {
-                if (!StringUtils.IsEmpty(Roles.#ServerRoles[role])) {
-                    return Roles.#ServerRoles[role]!.split('')
-                }
-                return []
-            }))
+        const userPermissions = _.chain(rolesIntersection.map(role => {
+            if (!StringUtils.IsEmpty(Roles.#ServerRoles[role])) {
+                return Roles.#ServerRoles[role]!.split('')
+            }
+            return []
+        }))
             .flatten()
             .uniq()
             .value()
