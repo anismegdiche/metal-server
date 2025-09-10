@@ -6,28 +6,28 @@ import merge from "lodash/merge"
 import typia from "typia"
 //
 import { DataTable } from "../../../types/DataTable"
+import { Assert } from "../../../utils/Assert"
 import { Convert } from "../../../utils/Convert"
 import { Logger, VERBOSITY } from "../../../utils/Logger"
+import { Mutex } from "../../../utils/Mutex"
+import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Cache } from "../../cache/Cache"
+import { IContentProvider } from "../../content/base/IContentProvider"
+import { ContentProvider } from "../../content/ContentProvider"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import { TContext } from "../../sandbox/types/TContext"
 import { TInternalResponse } from "../../schema/types/TInternalResponse"
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
 import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import { STORAGE } from "../../storage/@consts"
+import { absStorageProvider } from "../../storage/base/absStorageProvider"
+import { StorageProvider } from "../../storage/StorageProvider"
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
 import { TConfigSource } from "../types/TConfigSource"
 import { TOptionalParameter } from "../types/TOptionalParameter"
-import { Assert } from "../../../utils/Assert"
-import { Mutex } from "../../../utils/Mutex"
-import { SynchronizerManager } from "../../../utils/SynchronizerManager"
-import { IContentProvider } from "../../content/base/IContentProvider"
-import { ContentProvider } from "../../content/ContentProvider"
-import { TContext } from "../../sandbox/types/TContext"
-import { STORAGE } from "../../storage/@consts"
-import { absStorageProvider } from "../../storage/base/absStorageProvider"
-import { StorageProvider } from "../../storage/StorageProvider"
 import { TFilesDataOptions } from "./TFilesDataOptions"
 import { TFilesDataOptionsContent } from "./TFilesDataOptionsContent"
 
@@ -177,7 +177,7 @@ export class FilesData extends absDataProvider {
             new HttpErrorBadRequest()
         )
 
-        const { schema: dirName, entity: fileName } = schemaRequest
+        const { entity: fileName } = schemaRequest
 
         this._setContentHandler(fileName)
         this._setLock(fileName)
@@ -222,7 +222,7 @@ export class FilesData extends absDataProvider {
 
         Assert.Var<DataTable>(options.Data, `${this.SourceName}: Data is not defined`, new HttpErrorBadRequest())
 
-        const { schema: dirName, entity: fileName } = schemaRequest
+        const { entity: fileName } = schemaRequest
 
         this._setContentHandler(fileName)
         this._setLock(fileName)
@@ -266,7 +266,7 @@ export class FilesData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const { schema: dirName, entity: fileName } = schemaRequest
+        const { entity: fileName } = schemaRequest
 
         this._setContentHandler(fileName)
         this._setLock(fileName)
