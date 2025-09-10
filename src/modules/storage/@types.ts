@@ -13,6 +13,9 @@ export type TStorageFile = TDataListEntity & {
     modifiedAt: Date
     path: string
     content?: string
+    parent: string
+    // FolderData dynamique usage
+    old_name?: string
 }
 
 export type TStorageFolder = TDataListEntity & {
