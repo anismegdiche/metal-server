@@ -148,7 +148,6 @@ export class AzureDataLakeStorage extends absStorageProvider {
             files.push(JsonUtils.RemoveUndefined(
                 <TStorageFile>{
                     name: item.name.split('/').pop(),
-                    parent: dirName,
                     mimeType: this.GetMimeType(item.name),
                     type: DATA_ENTITY.FILE,
                     size: item?.contentLength,

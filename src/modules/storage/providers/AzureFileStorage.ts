@@ -145,7 +145,6 @@ export class AzureFileStorage extends absStorageProvider {
             if (item.kind === "file") {
                 result.push(JsonUtils.RemoveUndefined(<TStorageFile>{
                     name: item.name,
-                    parent: dirName,
                     mimeType: this.GetMimeType(item.name),
                     type: DATA_ENTITY.FILE,
                     size: item.properties?.contentLength,

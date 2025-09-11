@@ -1,3 +1,7 @@
+//
+//
+//
+
 
 //
 export enum DATA_PROVIDER {
@@ -11,8 +15,9 @@ export enum DATA_PROVIDER {
     MYSQL = "mysql",
     WEBSERVICE = "webservice",
     COSMOSDB = "cosmosdb",
-    FOLDER = "folder"
+    FOLDERS = "folders"
 }
+
 export enum DATA_ENTITY {
     TABLE = "table",
     VIEW = "view",

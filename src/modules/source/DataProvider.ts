@@ -27,7 +27,7 @@ export class DataProvider {
         [DATA_PROVIDER.MYSQL]: () => import('./providers/MySqlData').then(m => m.MySqlData),
         [DATA_PROVIDER.WEBSERVICE]: () => import('./providers/WebServiceData').then(m => m.WebServiceData),
         [DATA_PROVIDER.COSMOSDB]: () => import('./providers/CosmosDbData').then(m => m.CosmosDbData),
-        [DATA_PROVIDER.FOLDER]: () => import('./providers/FolderData').then(m => m.FolderData)
+        [DATA_PROVIDER.FOLDERS]: () => import('./providers/FolderData').then(m => m.FolderData)
     };
 
     /**

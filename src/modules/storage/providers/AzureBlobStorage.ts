@@ -155,7 +155,6 @@ export class AzureBlobStorage extends absStorageProvider {
             result.push(JsonUtils.RemoveUndefined(
                 <TStorageFile>{
                     name: blob.name.slice(prefix.length),
-                    parent: dirName,
                     mimeType: this.GetMimeType(blob.name),
                     type: DATA_ENTITY.FILE,
                     size: blob.properties.contentLength,

@@ -143,7 +143,6 @@ export class FtpStorage extends absStorageProvider {
             .filter(file => !file.isDirectory)
             .map(file => JsonUtils.RemoveUndefined(<TStorageFile>{
                 name: file.name,
-                parent: dirName,
                 mimeType: this.GetMimeType(file.name),
                 type: DATA_ENTITY.FILE,
                 size: file.size,

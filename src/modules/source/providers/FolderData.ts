@@ -31,6 +31,11 @@ import { TOptionalParameter } from '../types/TOptionalParameter'
 
 
 //
+const FLD_CONTENT = "content"
+const FLD_OLD_NAME = "old_name"
+
+
+//
 export type TFolderDataOptions = {
     storage?: STORAGE
     autocreate?: boolean
@@ -40,7 +45,7 @@ export type TFolderDataOptions = {
 } & TStorageConfig
 
 export type TFolderDataConfig = {
-    provider: DATA_PROVIDER.FOLDER
+    provider: DATA_PROVIDER.FOLDERS
     options: TFolderDataOptions
 }
 
@@ -49,7 +54,7 @@ export type TFolderDataConfig = {
 export class FolderData extends absDataProvider {
 
     SourceName?: string
-    ProviderName = DATA_PROVIDER.FOLDER
+    ProviderName = DATA_PROVIDER.FOLDERS
     Config: TFolderDataConfig = <TFolderDataConfig>{}
     Connection?: absStorageProvider
 
@@ -128,15 +133,17 @@ export class FolderData extends absDataProvider {
         const files = await (await this.Connection.FolderListFiles(dirName))
             .FreeSqlAsync(sqlQuery)
 
-        // read files content
-        await Promise.all(
-            files.Rows.map(
-                async (row: TRow) => {
-                    const __file = row as TStorageFile
-                    row.content = await ReadableUtils.ToBase64(
-                        await this.Connection!.FileRead(dirName, __file.name)
-                    )
-                }))
+        if (options.Fields?.includes(FLD_CONTENT)) {
+            // read files content
+            await Promise.all(
+                files.Rows.map(
+                    async (row: TRow) => {
+                        const __file = row as TStorageFile
+                        row.content = await ReadableUtils.ToBase64(
+                            await this.Connection!.FileRead(dirName, __file.name)
+                        )
+                    }))
+        }
 
         if (Logger.Level == VERBOSITY.DEBUG)
             files.SetMetaData("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
@@ -225,11 +232,11 @@ export class FolderData extends absDataProvider {
             .Rename(dirName)
 
         const filesFiltered = await files.FreeSqlAsync(selectQuery)
-        
+
         // add old name
         await filesFiltered.FreeSqlAsync(`
             UPDATE ${dirName}
-            SET old_name = name
+            SET ${FLD_OLD_NAME} = name
         `)
 
         const updateQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
@@ -241,10 +248,12 @@ export class FolderData extends absDataProvider {
         await Promise.all(
             filesFiltered.Rows.map(
                 async (row: TRow) => {
-                    const { 
-                        name: newFileName, 
-                        old_name: oldFileName 
-                    } = row as TStorageFile
+                    const {
+                        name: newFileName,
+                        [FLD_OLD_NAME]: oldFileName
+                    } = row as TStorageFile & {
+                        [FLD_OLD_NAME]: string
+                    }
 
                     Assert.Var<string>(newFileName, 'File name is required')
                     Assert.Var<string>(oldFileName, 'File old name is required')
@@ -265,7 +274,7 @@ export class FolderData extends absDataProvider {
 
                         await this.Connection!.FileWrite(dirName, oldFileName, Readable.from(Buffer.from(___content, 'base64')))
                     }
-                    
+
                     // rename file
                     if (oldFileName !== newFileName)
                         await this.Connection!.FileRename(dirName, oldFileName, newFileName)

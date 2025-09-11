@@ -96,7 +96,6 @@ export class FsStorage extends absStorageProvider {
                     return JsonUtils.RemoveUndefined(
                         <TStorageFile>{
                             name: file.name,
-                            parent: dirName,
                             mimeType: this.GetMimeType(file.name),
                             type: DATA_ENTITY.FILE,
                             size: stats.size,
