@@ -23,10 +23,10 @@ export class SqlQueryUtils {
     #query: string = ''
     Data: object[] = []
 
-    // eslint-disable-next-line class-methods-use-this
+     
     #fnEscapeEntity: (entity: string) => string = (entity: string) => entity
 
-    // eslint-disable-next-line class-methods-use-this
+     
     #fnEscapeField: (field: string) => string = (field: string) => field
 
     constructor(query?: string, fnEscapeEntity?: (entity: string) => string, fnEscapeField?: (field: string) => string) {
@@ -41,7 +41,7 @@ export class SqlQueryUtils {
     }
 
 
-    // eslint-disable-next-line class-methods-use-this
+     
     #whereCondition(field: string, value: unknown): string {
         // file deepcode ignore DuplicateCaseSwitch: simplicity
         switch (true) {
@@ -264,8 +264,7 @@ export class SqlQueryUtils {
 
         // filter
         if (Array.isArray(condition) && condition.length > 0) {
-            const _cond = _
-                .chain(condition)
+            const _cond = _.chain(condition)
                 .map((__filter) => {
                     const [___field] = Object.keys(__filter)
                     const [___value] = Object.values(__filter)
@@ -284,8 +283,7 @@ export class SqlQueryUtils {
 
 
         if (typeof condition === 'object' && _.keys(condition).length > 0) {
-            const _cond = _
-                .chain(condition)
+            const _cond = _.chain(condition)
                 .map((__value, __field) => {
 
                     if (!__field)
