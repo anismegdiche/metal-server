@@ -78,26 +78,26 @@ export class ConfigManager {
 
     @Logger.LogFunction()
     static Save(): void {
-        Assert.Var<IConfigStore>(ConfigManager.configStore, ConfigManager.configStore !== undefined, "ConfigStore is not initialized")
+        Assert.Var<IConfigStore>(ConfigManager.configStore, "ConfigStore is not initialized")
         const configFileRaw = Yaml.dump(ConfigManager.configStore.Configuration)
         Fs.writeFileSync(ConfigManager.ConfigFilePath, configFileRaw)
     }
 
     @Logger.LogFunction()
     static Has(path: string): boolean {
-        Assert.Var<IConfigStore>(ConfigManager.configStore, ConfigManager.configStore !== undefined, "ConfigStore is not initialized")
+        Assert.Var<IConfigStore>(ConfigManager.configStore, "ConfigStore is not initialized")
         return _.has(ConfigManager.configStore.Configuration, path)
     }
 
     @Logger.LogFunction()
     static Get<T>(path: string): T {
-        Assert.Var<IConfigStore>(ConfigManager.configStore, ConfigManager.configStore !== undefined, "ConfigStore is not initialized")
+        Assert.Var<IConfigStore>(ConfigManager.configStore, "ConfigStore is not initialized")
         return JsonUtils.Get<T>(ConfigManager.configStore.Configuration, path)
     }
 
     @Logger.LogFunction()
     static Set<T>(path: string, value: T): void {
-        Assert.Var<IConfigStore>(ConfigManager.configStore, ConfigManager.configStore !== undefined, "ConfigStore is not initialized")
+        Assert.Var<IConfigStore>(ConfigManager.configStore, "ConfigStore is not initialized")
         JsonUtils.Set(ConfigManager.configStore.Configuration, path, value)
     }
 }
