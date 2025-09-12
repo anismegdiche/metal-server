@@ -1,4 +1,5 @@
-/* eslint-disable init-declarations */
+/* eslint-disable no-import-assign */
+ 
 import { AmazonS3Storage, FileTypeFromBuffer } from '../providers/AmazonS3Storage'
 import { S3Client } from '@aws-sdk/client-s3'
 import { Readable } from 'node:stream'
@@ -47,7 +48,7 @@ describe('AmazonS3Storage', () => {
     let storage: AmazonS3Storage
     const mockConfig: TConfigSource = {
         ...rndParams,
-        provider: DATA_PROVIDER.FILES,
+        provider: DATA_PROVIDER.STORAGE,
         host: 's3.amazonaws.com',
         options: {
             "s3-access-key-id": 'test-key',
@@ -109,7 +110,7 @@ describe('AmazonS3Storage', () => {
             (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
 
             await storage.Connect()
-            const exists = await storage.FileIsExist('test.txt')
+            const exists = await storage.FileIsExist('','test.txt')
             expect(exists).toBe(true)
             expect(mockS3Client.send).toHaveBeenCalledWith(mockCommand)
         })
@@ -136,7 +137,7 @@ describe('AmazonS3Storage', () => {
             (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
 
             await storage.Connect()
-            const exists = await storage.FileIsExist('nonexistent.txt')
+            const exists = await storage.FileIsExist('','nonexistent.txt')
             expect(exists).toBe(false)
             expect(mockS3Client.send).toHaveBeenCalledWith(mockCommand)
         })
@@ -163,7 +164,7 @@ describe('AmazonS3Storage', () => {
             (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
 
             await storage.Connect()
-            const stream = await storage.FileRead('test.txt')
+            const stream = await storage.FileRead('','test.txt')
 
             const chunks: string[] = []
             for await (const chunk of stream) {
@@ -200,7 +201,7 @@ describe('AmazonS3Storage', () => {
             (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
 
             await storage.Connect()
-            await expect(storage.FileRead('nonexistent.txt'))
+            await expect(storage.FileRead('','nonexistent.txt'))
                 .rejects.toThrow(HttpErrorNotFound)
         })
     })
@@ -225,7 +226,7 @@ describe('AmazonS3Storage', () => {
             content.push('test content')
             content.push(null)
 
-            await storage.FileWrite('test.txt', content)
+            await storage.FileWrite('','test.txt', content)
             expect(mockS3Client.send).toHaveBeenCalledWith(
                 expect.objectContaining({
                     Bucket: 'test-bucket',
@@ -268,7 +269,7 @@ describe('AmazonS3Storage', () => {
             (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
 
             await storage.Connect()
-            const result = await storage.FileList()
+            const result = await storage.FolderListFiles()
 
             expect(result.Rows).toEqual([
                 {
@@ -303,7 +304,7 @@ describe('AmazonS3Storage', () => {
             (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
 
             await storage.Connect()
-            await expect(storage.FileList()).rejects.toThrow(HttpErrorInternalServerError)
+            await expect(storage.FolderListFiles()).rejects.toThrow(HttpErrorInternalServerError)
         })
     })
 })

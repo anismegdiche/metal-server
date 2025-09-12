@@ -1,5 +1,5 @@
-/* eslint-disable object-property-newline */
-/* eslint-disable init-declarations */
+ 
+ 
 
 import typia from "typia"
 import { Readable } from "stream"
@@ -109,8 +109,8 @@ describe("AzureFileStorage", () => {
         })
 
         it("should properly parse and store configuration", () => {
-            expect(storage.ConnectionString).toBe("test-connection-string")
-            expect(storage.ShareName).toBe("test-share")
+            expect(storage._connectionString).toBe("test-connection-string")
+            expect(storage._shareName).toBe("test-share")
         })
 
         it("should set default value for folder if missing", () => {
@@ -124,7 +124,7 @@ describe("AzureFileStorage", () => {
             const storage = new AzureFileStorage()
 
             storage.SetConfig(invalidConfig)
-            expect(storage.Folder).toBe("/")
+            expect(storage._folder).toBe("/")
         })
     })
 
@@ -150,7 +150,7 @@ describe("AzureFileStorage", () => {
                 }
             } as TConfigSource)
 
-            newStorage.ConnectionString = undefined
+            newStorage._connectionString = undefined
 
             try {
                 await newStorage.Connect()
@@ -163,14 +163,14 @@ describe("AzureFileStorage", () => {
     describe("File operations", () => {
         describe("IsExist", () => {
             it("should return true for existing file", async () => {
-                const exists = await storage.FileIsExist("test.txt")
+                const exists = await storage.FileIsExist('', 'test.txt')
                 expect(exists).toBe(true)
             })
 
             it("should return false for non-existing file", async () => {
                 (mockFileClient.exists as jest.Mock).mockResolvedValueOnce(false)
 
-                const exists = await storage.FileIsExist("nonexistent.txt")
+                const exists = await storage.FileIsExist('', 'nonexistent.txt')
                 expect(exists).toBe(false)
             })
         })
@@ -182,7 +182,7 @@ describe("AzureFileStorage", () => {
                     contentLength: 11
                 })
 
-                const stream = await storage.FileRead("test.txt")
+                const stream = await storage.FileRead('', 'test.txt')
                 const chunks = []
                 for await (const chunk of stream) {
                     chunks.push(chunk)
@@ -203,12 +203,12 @@ describe("AzureFileStorage", () => {
                 } as unknown as ShareDirectoryClient
 
                 // Replace the ShareClient with a mock that returns our mock directory
-                storage.ShareClient = {
+                storage._shareClient = {
                     getDirectoryClient: jest.fn().mockReturnValue(mockDirectoryClient)
                 } as any
 
                 // Now call the method and assert the error
-                await expect(storage.FileRead("nonexistent.txt")).rejects.toThrow(HttpErrorInternalServerError)
+                await expect(storage.FileRead('', 'nonexistent.txt')).rejects.toThrow(HttpErrorInternalServerError)
             })
 
         })
@@ -219,7 +219,7 @@ describe("AzureFileStorage", () => {
                 (ReadableHelperModule.ReadableUtils.ToBuffer as jest.Mock).mockResolvedValue(Buffer.from("test content"))
 
                 const content = Readable.from(Buffer.from("test content"))
-                await storage.FileWrite("test.txt", content)
+                await storage.FileWrite('', 'test.txt', content)
 
                 expect(mockFileClient.create).toHaveBeenCalled()
                 expect(mockFileClient.uploadRange).toHaveBeenCalled()
@@ -230,7 +230,7 @@ describe("AzureFileStorage", () => {
                 (mockFileClient.create as jest.Mock).mockRejectedValueOnce(new HttpErrorInternalServerError())
 
                 const content = Readable.from(Buffer.from("test content"))
-                await expect(storage.FileWrite("test.txt", content)).rejects.toThrow()
+                await expect(storage.FileWrite('', 'test.txt', content)).rejects.toThrow()
             })
         })
 
@@ -262,7 +262,7 @@ describe("AzureFileStorage", () => {
                     }
                 })
 
-                const result = await storage.FileList()
+                const result = await storage.FolderListFiles()
                 expect(result).toBeInstanceOf(DataTable)
                 expect(result.Rows).toEqual([
                     {
@@ -280,7 +280,7 @@ describe("AzureFileStorage", () => {
             it("should handle empty folder correctly", async () => {
                 (mockDirectoryClient.listFilesAndDirectories as jest.Mock).mockImplementation(function* () { })
 
-                const result = await storage.FileList()
+                const result = await storage.FolderListFiles()
                 expect(result).toBeInstanceOf(DataTable)
                 expect(result.Rows).toEqual([])
             })

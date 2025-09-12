@@ -22,9 +22,9 @@ jest.mock('../../../utils/Logger', () => ({
 const rndParams = typia.random<TConfigSource>()
 
 describe('FtpStorage', () => {
-    // eslint-disable-next-line init-declarations
+     
     let ftpStorage: FtpStorage
-    // eslint-disable-next-line init-declarations
+     
     let mockFtpClient: jest.Mocked<Ftp.Client>
 
     beforeEach(() => {
@@ -85,13 +85,13 @@ describe('FtpStorage', () => {
     describe('IsExist', () => {
         it('should return true if the file exists', async () => {
             mockFtpClient.size.mockResolvedValue(1024)
-            const exists = await ftpStorage.FileIsExist('test.txt')
+            const exists = await ftpStorage.FileIsExist('', 'test.txt')
             expect(exists).toBe(true)
         })
 
         it('should return false if the file does not exist', async () => {
             mockFtpClient.size.mockRejectedValue(new Error('File not found'))
-            const exists = await ftpStorage.FileIsExist('test.txt')
+            const exists = await ftpStorage.FileIsExist('', 'test.txt')
             expect(exists).toBe(false)
         })
     })
@@ -102,14 +102,14 @@ describe('FtpStorage', () => {
 
             mockFtpClient.downloadTo.mockResolvedValue({} as Ftp.FTPResponse)
 
-            const result = await ftpStorage.FileRead('test.txt')
+            const result = await ftpStorage.FileRead('', 'test.txt')
             expect(result).toBeInstanceOf(Readable)
             expect(mockFtpClient.downloadTo).toHaveBeenCalled()
         })
 
         it('should throw HttpErrorNotFound if file does not exist', async () => {
             jest.spyOn(ftpStorage, 'FileIsExist').mockResolvedValue(false)
-            await expect(ftpStorage.FileRead('nonexistent.txt')).rejects.toThrow(HttpErrorNotFound)
+            await expect(ftpStorage.FileRead('', 'nonexistent.txt')).rejects.toThrow(HttpErrorNotFound)
         })
     })
 
@@ -126,7 +126,7 @@ describe('FtpStorage', () => {
             jest.spyOn(ftpStorage, 'FileIsExist').mockResolvedValue(true)
             const mockStream = new Readable()
 
-            await ftpStorage.FileWrite('existingfile.txt', mockStream)
+            await ftpStorage.FileWrite('', 'existingfile.txt', mockStream)
             expect(mockFtpClient.appendFrom).toHaveBeenCalledWith(mockStream, '/existingfile.txt')
         })
 
@@ -159,7 +159,7 @@ describe('FtpStorage', () => {
                     isDirectory: true
                 }
             ])
-            const result = await ftpStorage.FileList()
+            const result = await ftpStorage.FolderListFiles()
 
             expect(result).toBeInstanceOf(DataTable)
             expect(result.Rows).toEqual([
@@ -177,7 +177,7 @@ describe('FtpStorage', () => {
 
         it('should throw HttpErrorInternalServerError on list failure', async () => {
             mockFtpClient.list.mockRejectedValue(new Error('List failed'))
-            await expect(ftpStorage.FileList()).rejects.toThrow(HttpErrorInternalServerError)
+            await expect(ftpStorage.FolderListFiles()).rejects.toThrow(HttpErrorInternalServerError)
         })
     })
 

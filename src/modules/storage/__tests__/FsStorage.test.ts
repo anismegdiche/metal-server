@@ -5,13 +5,14 @@ import { FsStorage } from '../providers/FsStorage'
 import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { HttpErrorNotFound, HttpErrorInternalServerError } from '../../../modules/errors/HttpErrors'
 import { ReadStream } from "node:fs"
+import { DATA_PROVIDER } from "../../source/@consts"
 
 
 describe('FsStorage', () => {
     const sourceConfig = <TConfigSource>{
-        provider: 'files',
+        provider: DATA_PROVIDER.STORAGE,
         options: {
-            folder: './'
+            "fs-folder": './'
         }
     }
     const fsStorage = new FsStorage()
@@ -30,7 +31,7 @@ describe('FsStorage', () => {
         it('should return true if the file exists', async () => {
             jest.spyOn(Fs, 'existsSync').mockReturnValue(true)
 
-            const result = await fsStorage.FileIsExist('IsExist.txt')
+            const result = await fsStorage.FileIsExist('', 'IsExist.txt')
 
             expect(result).toBe(true)
         })
@@ -38,7 +39,7 @@ describe('FsStorage', () => {
         it('should return false if the file does not exist', async () => {
             jest.spyOn(Fs, 'existsSync').mockReturnValue(false)
 
-            const result = await fsStorage.FileIsExist('IsExist-ko.txt')
+            const result = await fsStorage.FileIsExist('', 'IsExist-ko.txt')
 
             expect(result).toBe(false)
         })
@@ -49,7 +50,7 @@ describe('FsStorage', () => {
             jest.spyOn(Fs, 'createReadStream').mockReturnValue(Readable.from('File content', { encoding: 'utf8' }) as ReadStream)
             jest.spyOn(fsStorage, 'FileIsExist').mockResolvedValue(true)
 
-            const result = await fsStorage.FileRead('Read.txt')
+            const result = await fsStorage.FileRead('', 'Read.txt')
             const content = await ReadableUtils.ToString(result)
             expect(content).toBe('File content')
         })
@@ -57,7 +58,7 @@ describe('FsStorage', () => {
         it('should throw Not Found if the file does not exist', async () => {
             jest.spyOn(fsStorage, 'FileIsExist').mockResolvedValue(false)
 
-            await expect(fsStorage.FileRead('Read-ko.txt')).rejects.toBeInstanceOf(HttpErrorNotFound)
+            await expect(fsStorage.FileRead('', 'Read-ko.txt')).rejects.toBeInstanceOf(HttpErrorNotFound)
         })
     })
 
@@ -67,7 +68,7 @@ describe('FsStorage', () => {
 
             const stream = Readable.from('File content')
 
-            await fsStorage.FileWrite('Write.txt', stream)
+            await fsStorage.FileWrite('', 'Write.txt', stream)
 
             expect(Fs.promises.writeFile).toHaveBeenCalledWith(
                 `${fsStorage.Params!.folder}Write.txt`,
@@ -86,7 +87,7 @@ describe('FsStorage', () => {
             jest.spyOn(fsStorage, 'FileIsExist').mockResolvedValue(true)
             jest.spyOn(Fs, 'createReadStream').mockReturnValue(Readable.from('', { encoding: 'utf8' }) as ReadStream)
 
-            const result = await fsStorage.FileRead('existingFile.txt')
+            const result = await fsStorage.FileRead('', 'existingFile.txt')
 
             expect(result).toBeInstanceOf(Readable)
             expect(Fs.createReadStream).toHaveBeenCalledWith('/test/existingFile.txt')
@@ -94,7 +95,7 @@ describe('FsStorage', () => {
 
         it('should throw error if no params defined', async () => {
             fsStorage.Params = undefined
-            await expect(fsStorage.FileRead('file.txt')).rejects.toBeInstanceOf(HttpErrorInternalServerError)
+            await expect(fsStorage.FileRead('', 'file.txt')).rejects.toBeInstanceOf(HttpErrorInternalServerError)
         })
 
         it('should throw not found error if file does not exist and no autocreate', async () => {
@@ -104,7 +105,7 @@ describe('FsStorage', () => {
             }
             jest.spyOn(fsStorage, 'FileIsExist').mockResolvedValue(false)
 
-            await expect(fsStorage.FileRead('nonExistentFile.txt')).rejects.toBeInstanceOf(HttpErrorNotFound)
+            await expect(fsStorage.FileRead('', 'nonExistentFile.txt')).rejects.toBeInstanceOf(HttpErrorNotFound)
         })
     })
 })

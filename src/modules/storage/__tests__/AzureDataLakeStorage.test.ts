@@ -83,7 +83,7 @@ describe('AzureDataLakeStorage', () => {
 
             // Test that internal state is set up correctly
             // This indirectly tests that connection was successful
-            await expect(storage.FileIsExist('test.txt')).resolves.not.toThrow()
+            await expect(storage.FileIsExist('', 'test.txt')).resolves.not.toThrow()
         })
 
         it('should throw error if Connect is called without initializing Params', async () => {
@@ -125,13 +125,13 @@ describe('AzureDataLakeStorage', () => {
 
             // Verify connection works before disconnect
             mockFileClient.getProperties.mockResolvedValue({} as any)
-            await expect(storage.FileIsExist('test.txt')).resolves.toBe(true)
+            await expect(storage.FileIsExist('', 'test.txt')).resolves.toBe(true)
 
             // Disconnect
             await storage.Disconnect()
 
             // Verify operations fail after disconnect
-            await expect(storage.FileIsExist('test.txt')).rejects.toThrow(
+            await expect(storage.FileIsExist('', 'test.txt')).rejects.toThrow(
                 'AzureDataLakeStorage: Connection to storage not established'
             )
         })
@@ -143,7 +143,7 @@ describe('AzureDataLakeStorage', () => {
             await storage.Connect()
             mockFileClient.getProperties.mockResolvedValue({} as any)
 
-            const exists = await storage.FileIsExist('test.txt')
+            const exists = await storage.FileIsExist('', 'test.txt')
 
             expect(exists).toBe(true)
         })
@@ -156,7 +156,7 @@ describe('AzureDataLakeStorage', () => {
             (error as any).code = 'ResourceNotFound'
             mockFileClient.getProperties.mockRejectedValue(error)
 
-            const exists = await storage.FileIsExist('nonexistent.txt')
+            const exists = await storage.FileIsExist('', 'nonexistent.txt')
 
             expect(exists).toBe(false)
         })
@@ -166,7 +166,7 @@ describe('AzureDataLakeStorage', () => {
             await storage.Connect()
             mockFileClient.getProperties.mockRejectedValue(new Error('Unknown error'))
 
-            const promise = storage.FileIsExist('test.txt')
+            const promise = storage.FileIsExist('', 'test.txt')
 
             await expect(promise).rejects.toThrow(HttpErrorInternalServerError)
             await expect(promise).rejects.toThrow('Failed to check file existence: Error: Unknown error')
@@ -182,7 +182,7 @@ describe('AzureDataLakeStorage', () => {
                 readableStreamBody: mockReadable
             } as any)
 
-            const result = await storage.FileRead('test.txt')
+            const result = await storage.FileRead('', 'test.txt')
 
             // Verify the stream is returned correctly
             expect(result).toBe(mockReadable)
@@ -193,7 +193,7 @@ describe('AzureDataLakeStorage', () => {
             await storage.Connect()
             mockFileClient.read.mockRejectedValue(new Error('Read failed'))
 
-            const promise = storage.FileRead('test.txt')
+            const promise = storage.FileRead('', 'test.txt')
 
             await expect(promise).rejects.toThrow(HttpErrorInternalServerError)
             await expect(promise).rejects.toThrow('Failed to read file: Read failed')
@@ -215,7 +215,7 @@ describe('AzureDataLakeStorage', () => {
             mockFileClient.flush.mockResolvedValue({} as any)
 
             // Test the full write operation completes without error
-            await expect(storage.FileWrite('test.txt', mockContent)).resolves.not.toThrow()
+            await expect(storage.FileWrite('', 'test.txt', mockContent)).resolves.not.toThrow()
         })
 
         it('should handle errors in buffer conversion', async () => {
@@ -225,7 +225,7 @@ describe('AzureDataLakeStorage', () => {
 
             (ReadableUtils.ToBuffer as jest.Mock).mockRejectedValue(new Error('Buffer conversion failed'))
 
-            const promise = storage.FileWrite('test.txt', mockContent)
+            const promise = storage.FileWrite('', 'test.txt', mockContent)
 
             await expect(promise).rejects.toThrow(HttpErrorInternalServerError)
             await expect(promise).rejects.toThrow('Failed to write file: Buffer conversion failed')
@@ -239,7 +239,7 @@ describe('AzureDataLakeStorage', () => {
             (ReadableUtils.ToBuffer as jest.Mock).mockResolvedValue(Buffer.from('test'))
             mockFileClient.create.mockRejectedValue(new Error('Create failed'))
 
-            const promise = storage.FileWrite('test.txt', mockContent)
+            const promise = storage.FileWrite('', 'test.txt', mockContent)
 
             await expect(promise).rejects.toThrow(HttpErrorInternalServerError)
             await expect(promise).rejects.toThrow('Failed to write file: Create failed')
@@ -285,7 +285,7 @@ describe('AzureDataLakeStorage', () => {
                 })
             } as any);
 
-            const result = await storage.FileList()
+            const result = await storage.FolderListFiles()
 
             // Verify data transformation logic
             expect(result).toBeInstanceOf(DataTable)
@@ -324,7 +324,7 @@ describe('AzureDataLakeStorage', () => {
                 })
             } as any);
 
-            const result = await storage.FileList()
+            const result = await storage.FolderListFiles()
 
             // Verify empty result
             expect(result.Rows).toEqual([])
@@ -338,7 +338,7 @@ describe('AzureDataLakeStorage', () => {
                 throw new Error('List failed')
             })
 
-            const promise = storage.FileList()
+            const promise = storage.FolderListFiles()
 
             await expect(promise).rejects.toThrow(HttpErrorInternalServerError)
             await expect(promise).rejects.toThrow('Failed to list files: List failed')
