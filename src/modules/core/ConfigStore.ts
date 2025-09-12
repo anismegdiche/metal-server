@@ -1,7 +1,7 @@
 //
 //
 //
-import _ from 'lodash'
+import merge from 'lodash/merge'
 //
 import { LoggerDefaultLevel } from '../../utils/Logger'
 import { AUTH_PROVIDER } from "../auth/@consts"
@@ -40,7 +40,7 @@ export class ConfigStore implements IConfigStore {
     }
 
     Init(newConfig: TConfig) {
-        this.Configuration = _.merge(
+        this.Configuration = merge(
             this.Configuration,
             newConfig
         )
