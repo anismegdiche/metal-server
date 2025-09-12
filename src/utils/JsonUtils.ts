@@ -17,7 +17,6 @@ import objectPath from 'object-path'
 //
 import { TJson } from "../types/TJson"
 import { Logger } from "./Logger"
-import { StringUtils } from './StringUtils'
 import { Stringify } from "./JsonUtils/Stringify"
 
 
@@ -58,19 +57,12 @@ export class JsonUtils {
     }
 
     static Set<T extends object>(json: T, jsonPath?: string, data?: any): T {
-        switch (true) {
-            case typeof data === "string" && !StringUtils.IsEmpty(jsonPath):
-                return set(json, jsonPath!, data)
-
-            case data === null:
-            case typeof data === "object":
-                json = data as T
-                return json
-
-            case data === undefined:
-            default:
-                return json
+        if (jsonPath) {
+            json = set(json, jsonPath!, data)
+        } else {
+            json = data as T
         }
+        return json
     }
 
     static Stringify<T>(json: T): string {

@@ -5,7 +5,7 @@ import { HttpErrorInternalServerError } from "../../modules/errors/HttpErrors"
 import { TJson } from "../../types/TJson"
 import { JsonUtils } from "../JsonUtils"
 
-describe('JsonHelper', () => {
+describe('JsonUtils', () => {
 
     describe('ToArray', () => {
 
@@ -341,7 +341,7 @@ describe('JsonHelper', () => {
         })
 
         // Setting data with empty jsonPath updates root object property
-        it('should throw errro if path empty and data is not object', () => {
+        it('should throw error if path empty and data is not object', () => {
             const json = { prop: 'old' }
             try {
                 JsonUtils.Set(json, '', 'new')
@@ -370,7 +370,7 @@ describe('JsonHelper', () => {
         })
 
         // Setting data with undefined jsonPath returns original json
-        it('should throw errro if path undefined and data is not object', () => {
+        it('should throw error if path undefined and data is not object', () => {
             const json = { prop: 'old' }
             try {
                 JsonUtils.Set(json, undefined, 'new')
@@ -387,7 +387,7 @@ describe('JsonHelper', () => {
         })
 
         // Setting data with null jsonPath returns original json
-        it('should throw errro if path null and data is not object', () => {
+        it('should throw error if path null and data is not object', () => {
             const json = { prop: 'old' }
             try {
                 JsonUtils.Set(json, null as any, 'new')
