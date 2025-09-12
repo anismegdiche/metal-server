@@ -223,7 +223,7 @@ You should receive the following response:
 			"phone": "(5) 555-3932",
 			"fax": null
 		},
-		...
+		…
 	]
 }
 ```

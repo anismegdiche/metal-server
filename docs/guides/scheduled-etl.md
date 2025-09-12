@@ -122,7 +122,7 @@ Now, add the plan **move-data** to set the transfer:
 
 ```yaml
 plans:
-  fake-data: ...
+  fake-data: …
   move-data:
     mflix_log:
       - update:
@@ -411,7 +411,7 @@ You should receive the following response that shows moved rows from the **mflix
       "ts": "1701347925017",
       "message": "This is a fake message 0.8778324449131703"
     },
-    ...
+    …
   ]
 }
 ```

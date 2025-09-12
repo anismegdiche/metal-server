@@ -4,14 +4,14 @@ These parameters provide a flexible way to modify API requests or plan commands.
 
 All parameters are described in the table below:
 
-| Parameter             | Usage                                | GET<br>select | POST<br>insert | PATCH<br>update | DELETE<br>delete | JS Context                                                                                   | Metal version                        |
-| --------------------- | ------------------------------------ | :-----------: | :------------: | :-------------: | :--------------: | -------------------------------------------------------------------------------------------- | ------------------------------------ |
-| 📜`filter`            | simple filter                        |      🟢       |       -        |       🟢        |        🟢        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
-| 📜`filter-expression` | complex filter expression            |      🟢       |       -        |       🟢        |        🟢        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
-| 📜`fields`            | select fields to return              |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
-| 📜`sort`              | sort data with a given order         |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| Parameter             | Usage                                | GET<br>select | POST<br>insert | PATCH<br>update | DELETE<br>delete | JS Context                                                                                   | Metal version                         |
+| --------------------- | ------------------------------------ | :-----------: | :------------: | :-------------: | :--------------: | -------------------------------------------------------------------------------------------- | ------------------------------------- |
+| 📜`filter`            | simple filter                        |      🟢       |       -        |       🟢        |        🟢        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
+| 📜`filter-expression` | complex filter expression            |      🟢       |       -        |       🟢        |        🟢        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
+| 📜`fields`            | select fields to return              |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
+| 📜`sort`              | sort data with a given order         |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
 | `cache`               | cache returned data for a given time |      🟢       |       -        |        -        |        -         | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
-| 📜❇️`data`            | data to send to provider             |       -       |       🟢       |       🟢        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.4+" />    |
+| 📜❇️`data`            | data to send to provider             |       -       |       🟢       |       🟢        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 >
@@ -22,7 +22,7 @@ All parameters are described in the table below:
 | Data Provider                           | `data` | `filter` | `filter-expression` | `fields` | `sort` | `cache` |
 | --------------------------------------- | :----: | :------: | :-----------------: | :------: | :----: | :-----: |
 | Azure SQL Database/Microsoft SQL Server |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
-| Files                                   |   🟢   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
+| Storage                                 |   🟢   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
 | Memory                                  |   🟢   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
 | Metal Server                            |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |
 | MongoDB                                 |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
@@ -131,7 +131,7 @@ When employing the `LIKE` operator with the wildcard `%` in a GET method, rememb
 > filter-expression=name LIKE '%%ing'
 > ```
 >
-:::
+> :::
 
 ### `fields`
 

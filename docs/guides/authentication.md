@@ -155,12 +155,12 @@ To configure OIDC authentication in Metal Server, you need to add the following 
 
 | Parameter       | Required | Description                                                              | Metal version                     |
 | --------------- | -------- | ------------------------------------------------------------------------ | --------------------------------- |
-| `type`          | Y        | Type of authentication. For OIDC, it should be set to `oidc`.            | <Badge type="info" text="v0.4+" /> |
-| `issuer`        | Y        | The URL of the OIDC provider's issuer.                                   | <Badge type="info" text="v0.4+" /> |
-| `client-id`     | Y        | The client ID of the OIDC application.                                   | <Badge type="info" text="v0.4+" /> |
-| `client-secret` | Y        | The client secret of the OIDC application.                               | <Badge type="info" text="v0.4+" /> |
-| `scope`         | N        | The scope of the OIDC authentication. (default: `roles`)                 | <Badge type="info" text="v0.4+" /> |
-| `roles-path`    | N        | The path to the roles in the OIDC token. (default: `realm_access.roles`) | <Badge type="info" text="v0.4+" /> |
+| `type`          | Y        | Type of authentication. For OIDC, it should be set to `oidc`.            | <Badge type="default" text="v0.4+" /> |
+| `issuer`        | Y        | The URL of the OIDC provider's issuer.                                   | <Badge type="default" text="v0.4+" /> |
+| `client-id`     | Y        | The client ID of the OIDC application.                                   | <Badge type="default" text="v0.4+" /> |
+| `client-secret` | Y        | The client secret of the OIDC application.                               | <Badge type="default" text="v0.4+" /> |
+| `scope`         | N        | The scope of the OIDC authentication. (default: `roles`)                 | <Badge type="default" text="v0.4+" /> |
+| `roles-path`    | N        | The path to the roles in the OIDC token. (default: `realm_access.roles`) | <Badge type="default" text="v0.4+" /> |
 
 **Example:**
 

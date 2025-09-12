@@ -74,14 +74,15 @@ Include a sources section with the source `az-csv-data` to connect to the Azure 
 ```yaml
 sources:
   az-csv-data:
-    provider: files
+    provider: storage
     options:
-      storage: az-blob
+      mode: files
+      storage-type: az-blob
       az-blob-connection-string: UseDevelopmentStorage=true
       az-blob-container: datacontainer1
       content:
         '*.csv':
-          contentType: csv
+          content-type: csv
 ```
 
 In this configuration:
@@ -119,14 +120,15 @@ users:
 
 sources:
   az-csv-data:
-    provider: files
+    provider: storage
     options:
-      storage: az-blob
+      mode: files
+      storage-type: az-blob
       az-blob-connection-string: UseDevelopmentStorage=true
       az-blob-container: datacontainer1
       content:
         '*.csv':
-          contentType: csv
+          content-type: csv
 
 schemas:
   azcsv:
@@ -208,7 +210,7 @@ You should receive the following response:
       "Code": " NJ",
       "ZipCode": "08075"
     },
-    ...
+    …
   ]
 }
 ```
@@ -277,7 +279,7 @@ You should receive the following response:
       "ZipCode": "08075",
       "Country": "USA"  <--------------------- Added field
     },
-    ...
+    …
   ]
 }
 ```

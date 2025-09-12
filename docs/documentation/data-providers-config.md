@@ -214,7 +214,7 @@ sources:
       autocreate: true
 ```
 
-## MySql <Badge type="info" text="v0.4+" />
+## MySql <Badge type="default" text="v0.4+" />
 
 The MySql data provider is used to connect to a MySql database. It supports various parameters to customize the connection and data retrieval.
 
@@ -262,7 +262,7 @@ sources:
       keepAliveInitialDelay: 0
 ```
 
-## CosmosDB <Badge type="info" text="v0.4+" />
+## CosmosDB <Badge type="default" text="v0.4+" />
 
 **Primary parameters:**
 
@@ -301,28 +301,111 @@ sources:
       protocol: Tcp
 ```
 
-## Files <Badge type="default" text="v0.3+" />
+## ~~[REMOVED] Files~~ <Badge type="info" text="v0.5+" />
 
-Files is a unique data provider that offers a seamless experience akin to accessing tables while interacting with file-based data. This versatile tool accommodates various content types and storage options, catering to diverse user preferences and requirements.
+::: warning
+This feature has been replaced in v0.5 by [Storage data Provider](data-providers-config.md#storage).
+:::
+
+## Storage <Badge type="info" text="v0.5+" />
+
+The Storage data provider allows you to manage file-based data or folders content as data.
+It provides a flexible solution to handle various content types and storage options.
+
+when using parameter `options.mode` you can switch between 2 modes :
+
+- `files`: to work with files as data
+- `folders`: to work with folders as data
 
 **Example:**
+
+Working with Filesystem storage with CSV content as data:
 
 ```yaml
 sources:
   my-files:
-    provider: files
+    provider: storage
+    options:
+      mode: files
+      storage-type: fs
+      fs-folder: ./data/
+      content:
+        "*.csv":
+          content-type: csv
+          csv-delimiter: ","
+          csv-newline: "\n"
+          csv-header: true
+          csv-quote: '"'
 ```
 
 **Primary parameters:**
 
-| Parameter  | Type   | Required | Description                            |
-| ---------- | ------ | -------- | -------------------------------------- |
-| `provider` | String | Y        | Set to `files` for Files data provider |
+| Parameter  | Type   | Required | Description                              |
+| ---------- | ------ | -------- | ---------------------------------------- |
+| `provider` | String | Y        | Set to `storage` for Files data provider |
+
+### `mode`
+
+mode can be set using `options.mode`
+
+#### `folders`
+
+The `folders` mode enables treating folders as data, returning subfolders as entities and contained files as entity data.
+
+**Optional parameters:**
+
+| Parameter      | Type    | Required | Description                                                                                                                                      |
+| -------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mode`         | String  | Y        | Set to `folders` to work with folders as data                                                                                                    |
+| `storage`      | String  | Y        | The storage where the files are stored, see: [Storage Types](#storage-types)                                                                     |
+| `autocreate`   | Boolean | N        | if set to `true`, when interacting with entities that do not exist, files with same entity name will be created automatically (default: `false`) |
+| `allow-delete` | Boolean | N        | if set to `true`, allow deleting entities (default: `false`)                                                                                     |
+
+Data returned from folders mode are:
+
+| Property     | Type     | Description                                                                                              |
+| ------------ | -------- | -------------------------------------------------------------------------------------------------------- |
+| `name`       | `string` | The name of the file.                                                                                    |
+| `mimeType`   | `string` | The mime type of the file.                                                                               |
+| `type`       | `string` | The type of the file.                                                                                    |
+| `size`       | `number` | The size of the file in bytes.                                                                           |
+| `createdAt`  | `date`   | The creation date of the file. (ISO 8601 format)                                                         |
+| `modifiedAt` | `date`   | The modification date of the file. (ISO 8601 format)                                                     |
+| `path`       | `string` | The path of the file.                                                                                    |
+| `content`    | `string` | The Base64 content of the file. By default it is not returned unless you specify it explicitly in fields |
+
+::: note
+
+When you perform Insert and Update, only fields `name` and `content` can be modified.
+
+:::
+
+**Example:**
+
+Working with Filesystem storage:
+
+```yaml
+sources:
+  src-fs:
+    provider: storage
+    options:
+      mode: folders
+      storage-type: fs
+      fs-folder: ./data/
+      allow-delete: true
+```
+
+#### `files`
+
+The `files` mode enables treating files as data. Files content is returned as data.
+Files can be in various formats such as JSON, CSV, XLS, etc.
+Each file can have its own associated content type with optional parameters for customizing the content type settings.
 
 **Optional parameters:**
 
 | Parameter    | Type    | Required | Description                                                                                                                                                                                    |
 | ------------ | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mode`       | String  | Y        | Set to `files` to work with files as data                                                                                                                                                      |
 | `storage`    | String  | Y        | The storage where the files are stored, see: [Storage Types](#storage-types)                                                                                                                   |
 | `content`    | Object  | Y        | Contains pattern of files and associated content type, including JSON, CSV, and XLS, with optional parameters for customizing the content type settings., see: [Content Types](#content-types) |
 | `autocreate` | Boolean | N        | if set to `true`, when interacting with entities that do not exist, files with same entity name will be created automatically (default: `false`)                                               |
@@ -334,9 +417,11 @@ Storage types can be set with the parameter `options.storage` as shown in the ex
 ```yaml
 sources:
   my-files:
-    provider: files
+    provider: storage
     options:
-      storage: fs
+      storage-type: fs
+      fs-folder: ./data/
+      …
 ```
 
 List of managed storage types:
@@ -344,11 +429,11 @@ List of managed storage types:
 | Parameter     | Description                  | Metal version                         |
 | ------------- | ---------------------------- | ------------------------------------- |
 | `az-blob`     | Azure Blob Storage           | <Badge type="default" text="v0.3+" /> |
-| `az-file`     | Azure File Share             | <Badge type="info" text="v0.4+" />    |
-| `az-datalake` | Azure Data Lake Storage Gen2 | <Badge type="info" text="v0.4+" />    |
+| `az-file`     | Azure File Share             | <Badge type="default" text="v0.4+" /> |
+| `az-datalake` | Azure Data Lake Storage Gen2 | <Badge type="default" text="v0.4+" /> |
 | `fs`          | Local file system            | <Badge type="default" text="v0.3+" /> |
 | `ftp`         | FTP server                   | <Badge type="default" text="v0.3+" /> |
-| `s3`          | Amazon S3                    | <Badge type="info" text="v0.4+" />    |
+| `s3`          | Amazon S3                    | <Badge type="default" text="v0.4+" /> |
 
 #### `fs` (Filesystem) <Badge type="default" text="v0.3+" />
 
@@ -367,11 +452,11 @@ This refers to the local file system
 ```yaml
 sources:
   my-local-files:
-    provider: files
+    provider: storage
     options:
-      storage: fs
+      storage-type: fs
       fs-folder: ./data/
-      ...
+      …
 ```
 
 #### `ftp` (FTP Server) <Badge type="default" text="v0.3+" />
@@ -396,15 +481,15 @@ This refers to use a FTP server
 ```yaml
 sources:
   my-ftp-files:
-    provider: files
+    provider: storage
     options:
-      storage: ftp
+      storage-type: ftp
       ftp-host: ftp.server.com
       ftp-port: 21
       ftp-user: ftp-user
       ftp-password: ftppass
       ftp-folder: /
-      ...
+      …
 ```
 
 #### `az-blob` (Azure Blob Storage) <Badge type="default" text="v0.3+" />
@@ -424,17 +509,17 @@ This refers to use a Azure Blob Storage
 
 ```yaml
 sources:
-  my-local-files:
-    provider: files
+  my-az-blob-files:
+    provider: storage
     options:
-      storage: az-blob
+      storage-type: az-blob
       az-blob-connection-string: UseDevelopmentStorage=true
       az-blob-container: datacontainer1
       az-blob-autocreate: true
-      ...
+      …
 ```
 
-#### `az-file` (Azure File Share) <Badge type="info" text="v0.4+" />
+#### `az-file` (Azure File Share) <Badge type="default" text="v0.4+" />
 
 This refers to use an Azure File Share storage.
 
@@ -452,17 +537,17 @@ This refers to use an Azure File Share storage.
 
 ```yaml
 sources:
-  my-az-files:
-    provider: files
+  my-az-file-files:
+    provider: storage
     options:
-      storage: az-file
+      storage-type: az-file
       az-file-connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
       az-file-share-name: myshare
       az-file-folder: /path/to/files
-      ...
+      …
 ```
 
-#### `az-datalake` (Azure Data Lake Storage Gen2) <Badge type="info" text="v0.4+" />
+#### `az-datalake` (Azure Data Lake Storage Gen2) <Badge type="default" text="v0.4+" />
 
 This refers to use Azure Data Lake Storage Gen2
 
@@ -482,17 +567,17 @@ This refers to use Azure Data Lake Storage Gen2
 ```yaml
 sources:
   my-az-datalake-files:
-    provider: files
+    provider: storage
     options:
-      storage: az-datalake
+      storage-type: az-datalake
       az-datalake-storage-account: your-storage-account
       az-datalake-storage-key: your-storage-key
       az-datalake-container-name: your-container
       az-datalake-endpoint: core.windows.net
-      ...
+      …
 ```
 
-#### `s3` (Amazon S3) <Badge type="info" text="v0.4+" />
+#### `s3` (Amazon S3) <Badge type="default" text="v0.4+" />
 
 This refers to use Amazon S3 storage
 
@@ -513,16 +598,22 @@ This refers to use Amazon S3 storage
 ```yaml
 sources:
   my-s3-files:
-    provider: files
+    provider: storage
     options:
-      storage: s3
+      storage-type: s3
       s3-access-key-id: your-access-key-id
       s3-secret-access-key: your-secret-access-key
       s3-region: us-east-1
       s3-bucket: your-bucket-name
       s3-endpoint: http://localhost:9000 # Optional for S3-compatible services
-      ...
+      …
 ```
+
+#### ~~[Removed] `smb` (SMB/CIFS)~~ <Badge type="info" text="v0.5+" />
+
+::: warning
+This feature has been removed in v0.5.
+:::
 
 ### `content` <Badge type="default" text="v0.3+" />
 
@@ -535,19 +626,21 @@ It acts also as a filter to determine the list of files to process (see: [REST A
 ```yaml
 sources:
   my-files:
-    provider: files
+    provider: storage
     options:
+      mode: files
       content:
         "*.json":
-          type: json
+          content-type: json
         "*.csv":
-          type: csv
+          content-type: csv
         "sample_*.xlsx":
-          type: xls
+          content-type: xls
           xls-sheet: Sheet2
         "my-other-files_*.xlsx":
-          type: xls
+          content-type: xls
           xls-sheet: Sheet1
+      …
 ```
 
 List of managed content types:
@@ -557,7 +650,7 @@ List of managed content types:
 | `json`    | JSON files               | <Badge type="default" text="v0.3+" /> |
 | `csv`     | CSV files                | <Badge type="default" text="v0.3+" /> |
 | `xls`     | XLSX files (Excel 2007+) | <Badge type="default" text="v0.3+" /> |
-| `xml`     | XML files                | <Badge type="info" text="v0.4+" />    |
+| `xml`     | XML files                | <Badge type="default" text="v0.4+" /> |
 
 #### `json` <Badge type="default" text="v0.3+" />
 
@@ -565,18 +658,21 @@ List of managed content types:
 | -------------- | ------ | ------------------------------------------------------------------------- |
 | 📜 `json-path` | String | the JSON path of the Data Array in the JSON file (default: empty string). |
 
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
+
 **Example:**
 
 ```yaml
 sources:
   my-json-files:
-    provider: files
+    provider: storage
     options:
+      mode: files
       content:
         "*.json":
-          type: json
+          content-type: json
           json-path: rows
-      ...
+      …
 ```
 
 #### `csv` <Badge type="default" text="v0.3+" />
@@ -594,16 +690,17 @@ sources:
 ```yaml
 sources:
   my-csv-files:
-    provider: files
+    provider: storage
     options:
+      mode: files
       content:
         "*.csv":
-          type: csv
+          content-type: csv
           csv-delimiter: ","
           csv-newline: "\n"
           csv-header: true
           csv-quote: "\""
-      ...
+      …
 ```
 
 #### `xls` <Badge type="default" text="v0.3+" />
@@ -625,17 +722,18 @@ Only XLSX files created with Excel 2007 and later are supported.
 ```yaml
 sources:
   my-xls-files:
-    provider: files
+    provider: storage
     options:
+      mode: files
       content:
         "*.xlsx":
-          type: xls
+          content-type: xls
           xls-sheet: Sheet1
           xls-starting-cell: E6
-    ...
+      …
 ```
 
-#### `xml` <Badge type="info" text="v0.4+" />
+#### `xml` <Badge type="default" text="v0.4+" />
 
 | Parameter               | Type    | Description                                                           |
 | ----------------------- | ------- | --------------------------------------------------------------------- |
@@ -649,18 +747,19 @@ sources:
 ```yaml
 sources:
   my-xml-files:
-    provider: files
+    provider: storage
     options:
+      mode: files
       content:
         "*.xml":
-          type: xml
+          content-type: xml
           xml-path: data
           xml-ignore-attributes: false
           xml-attribute-prefix: "@"
           xml-remove-ns-prefix: true
 ```
 
-## WebService <Badge type="info" text="v0.4+" />
+## WebService <Badge type="default" text="v0.4+" />
 
 Used to connect to a WebService
 
@@ -682,10 +781,10 @@ Used to connect to a WebService
 
 Defines the type of webservices:
 
-| Parameter | Description         | Metal version                      |
-| --------- | ------------------- | ---------------------------------- |
-| `rest`    | RESTful web service | <Badge type="info" text="v0.4+" /> |
-| `soap`    | SOAP web service    | <Badge type="info" text="v0.4+" /> |
+| Parameter | Description         | Metal version                         |
+| --------- | ------------------- | ------------------------------------- |
+| `rest`    | RESTful web service | <Badge type="default" text="v0.4+" /> |
+| `soap`    | SOAP web service    | <Badge type="default" text="v0.4+" /> |
 
 ### `endpoints`
 
@@ -711,6 +810,8 @@ The endpoint configuration includes the HTTP method to use, the relative URL to 
 | 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                    |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                    |
 | 📜 `session-headers`         | Object | Headers to add after login is successful                                                                                                         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$request`](dynamic-expression-engine#request),[`$response`](dynamic-expression-engine#response) |
+
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
 <u>**Method or Operation key**:</u>{#method}
 
@@ -747,6 +848,8 @@ This endpoint is used to read data from a collection. The endpoint configuration
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                    |
 | 📜 `response`                | String | response path to get data                                                                                                                        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$request`](dynamic-expression-engine#request),[`$response`](dynamic-expression-engine#response) |
 
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
+
 **Example:**
 
 In this example we get a RESTful GET request a list of all dog breeds from [Dog.ceo](https://dog.ceo/dog-api/documentation/) and return data in response.body.message
@@ -772,6 +875,8 @@ This endpoint is used to create a new item. The endpoint configuration includes 
 | 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                          |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$row`](dynamic-expression-engine#row) |
 
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
+
 **Example:**
 
 In this example we create item in a RESTful POST
@@ -796,6 +901,8 @@ This endpoint is used to update an existing item. The endpoint configuration inc
 | 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                          |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$row`](dynamic-expression-engine#row) |
 
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
+
 **Example:**
 
 In this example we update item in a RESTful PUT using JS Context variables `$schema` and `$row` to build the URL
@@ -819,6 +926,8 @@ This endpoint is used to delete an existing item. The endpoint configuration inc
 | ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                          |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity), [`$row`](dynamic-expression-engine#row) |
+
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
 **Example:**
 

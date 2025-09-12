@@ -283,7 +283,7 @@ You should receive the following response:
       "recommendedby": null,
       "joindate": "2012-07-02T12:08:23.000Z"
     },
-    ...
+    …
   ]
 }
 ```
@@ -338,7 +338,7 @@ You should receive the following response:
       "initialoutlay": "4000",
       "monthlymaintenance": "50"
     },
-    ...
+    …
   ]
 }
 ```
@@ -389,7 +389,7 @@ You should receive the following response:
       "starttime": "2012-07-03T18:00:00.000Z",
       "slots": 2
     },
-    ...
+    …
   ]
 }
 ```

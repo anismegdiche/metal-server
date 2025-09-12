@@ -12,13 +12,13 @@ Metal offers a REST API specifically crafted to execute a range of functions:
 
 | Endpoint Starting | Usage              | Metal version                        |
 | ----------------- | ------------------ | ------------------------------------ |
-| `/user/`...       | User operations    | <Badge type="default" text="v0.1+" /> |
-| `/server/`...     | Server operations  | <Badge type="default" text="v0.1+" /> |
-| `/schema/`...     | Schemas operations | <Badge type="default" text="v0.1+" /> |
-| `/plan/`...       | Plans operations   | <Badge type="default" text="v0.1+" /> |
-| `/cache/`...      | Cache operations   | <Badge type="default" text="v0.1+" /> |
+| `/user/`…       | User operations    | <Badge type="default" text="v0.1+" /> |
+| `/server/`…     | Server operations  | <Badge type="default" text="v0.1+" /> |
+| `/schema/`…     | Schemas operations | <Badge type="default" text="v0.1+" /> |
+| `/plan/`…       | Plans operations   | <Badge type="default" text="v0.1+" /> |
+| `/cache/`…      | Cache operations   | <Badge type="default" text="v0.1+" /> |
 
-## `/user/`...
+## `/user/`…
 
 This endpoint serves as the entry point for User operations.
 The table below describes available endpoints and methods to use for request :
@@ -159,7 +159,7 @@ This feature provides access to detailed information about the currently logged-
 
 ---
 
-## `/server/`...
+## `/server/`…
 
 This endpoint serves as the entry point for Server operations.
 The table below describes available endpoints and methods to use for request :
@@ -250,7 +250,7 @@ When reloading, all connections will be reset.
 | 403       | Forbidden                    |
 | 500       | Something Went Wrong         |
 
-## `/schema`/...
+## `/schema`/…
 
 This endpoint serves as the entry point for Entities operations.
 The table below describes available endpoints and methods to use for request :
@@ -595,7 +595,7 @@ For detailed description of `filter` and `filter-expression` usage, please refer
 
 ---
 
-## `/plan/`...
+## `/plan/`…
 
 This endpoint serves as the entry point for Plans operations.
 The table below describes available endpoints and methods to use for request :
@@ -651,7 +651,7 @@ Reload the plan `:plan` definition as described in the configuration file.
 
 ---
 
-## `/cache/`...
+## `/cache/`…
 
 This endpoint serves as the entry point for Cache operations.
 The table below provides an overview of the available endpoints and the corresponding methods to be used for each request:

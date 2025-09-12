@@ -201,7 +201,7 @@ You should receive the following response:
       "country_name": "Belgium",
       "region_id": 1
     },
-    ...
+    …
   ]
 }
 ```
@@ -258,7 +258,7 @@ You should receive the following response:
       "state_province": "Washington",
       "country_id": "US"
     },
-    ...
+    …
   ]
 }
 ```
