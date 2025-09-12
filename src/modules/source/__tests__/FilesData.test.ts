@@ -1,7 +1,7 @@
 /* eslint-disable security/detect-non-literal-regexp */
 /* eslint-disable @typescript-eslint/no-explicit-any */
  
-import { FilesData } from "../providers/FilesData"
+import { StorageFilesData } from "../providers/StorageFilesData"
 import { Logger } from "../../../utils/Logger"
 import { Cache } from "../../cache/Cache"
 import { DATA_PROVIDER } from "../@consts"
@@ -27,7 +27,7 @@ jest.mock("../../../utils/Convert")
 jest.mock("../../core/HttpResponse")
 
 describe("FilesData", () => {
-    let filesData: FilesData
+    let filesData: StorageFilesData
     let mockStorageProvider: any
     let mockContentProvider: any
 
@@ -58,12 +58,12 @@ describe("FilesData", () => {
         (Convert.PatternToRegex as jest.Mock).mockImplementation((pattern: string) => new RegExp(pattern.replace("*", ".*")))
 
         // Create instance
-        filesData = new FilesData()
+        filesData = new StorageFilesData()
     })
 
     describe("constructor", () => {
         it("should initialize with default values", () => {
-            expect(filesData.ProviderName).toBe(DATA_PROVIDER.FILES)
+            expect(filesData.ProviderName).toBe(DATA_PROVIDER.STORAGE)
             expect(filesData.Config).toEqual({})
             expect(filesData.Connection).toBeUndefined()
             expect(filesData.ContentHandler).toEqual({})
@@ -74,7 +74,7 @@ describe("FilesData", () => {
 
     describe("Init", () => {
         const sourceConfig: TConfigSource = {
-            provider: DATA_PROVIDER?.FILES,
+            provider: DATA_PROVIDER?.STORAGE,
             options: {
                 storage: STORAGE.FILESYSTEM,
                 content: {
