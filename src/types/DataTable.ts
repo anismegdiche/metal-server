@@ -62,6 +62,9 @@ export const enum REMOVE_DUPLICATES_STRATEGY {
     CUSTOM = "custom"	 // Allows for a custom strategy defined by user logic.
 }
 
+const HASH_ALGO = 'sha256'
+const HASH_DIGEST = 'base64'
+
 
 //
 export type TRow = TJson
@@ -398,9 +401,10 @@ export class DataTable extends clsClonable {
             _fields.forEach(__field => {
                 if (__field in _newRow) {
                     // deepcode ignore InsecureHash: used for data anonymization
-                    _newRow[__field] = createHash("blake2s256", { outputLength: 16 })
+                    _newRow[__field] = createHash(HASH_ALGO)
                         .update(toString(_newRow[__field]))
-                        .digest('hex')
+                        .digest(HASH_DIGEST)
+                        //.substring(0, 32) // Get first 32 chars (16 bytes) to match previous output length
                 }
             })
             this.Rows[_idx] = _newRow
@@ -414,6 +418,15 @@ export class DataTable extends clsClonable {
             return this
 
         return await this.FreeSqlAsync(`SELECT * FROM [${this.Name}] WHERE ${condition}`)
+            .then((result: DataTable | undefined) => {
+                if (result)
+                    this.Rows = result.Rows
+                return this
+            })
+            .catch(() => {
+                Logger.Error(`DataTable.FilterRows: '${this.Name}' Error executing SQL query: '${condition}'`)
+                return this
+            })
     }
 
     @Logger.LogFunction()
@@ -439,7 +452,7 @@ export class DataTable extends clsClonable {
 
         const _mapDeduplicated: Map<string, TRow> = new Map()
 
-        await this.Rows.forEach(async (row: TRow) => {
+        this.Rows.forEach(async (row: TRow) => {
             let __currentHash: string = ""
 
             const __rowString = (_fields)
@@ -448,7 +461,7 @@ export class DataTable extends clsClonable {
 
             switch (method) {
                 case REMOVE_DUPLICATES_METHOD.HASH:
-                    __currentHash = createHash('sha256').update(JsonUtils.Stringify(__rowString)).digest('base64')
+                    __currentHash = createHash(HASH_ALGO).update(JsonUtils.Stringify(__rowString)).digest(HASH_DIGEST)
                     break
                 case REMOVE_DUPLICATES_METHOD.IGNORE_CASE:
                     __currentHash = JsonUtils.Stringify(__rowString).toLowerCase()

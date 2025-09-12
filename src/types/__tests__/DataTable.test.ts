@@ -1,7 +1,3 @@
-/* eslint-disable object-property-newline */
-/* eslint-disable max-lines-per-function */
-//
-//
 //
 import { DataTable, SORT_ORDER } from '../DataTable'
 
@@ -71,11 +67,11 @@ describe("DataTable", () => {
         ])
 
         dtC = new DataTable('C', [
-            {  x: 3, y: 1 },
-            {  x: 1, y: 1 },
-            {  x: 2, y: 1 },
-            {  x: 4, y: 1 },
-            {  x: 2, y: 2 }
+            { x: 3, y: 1 },
+            { x: 1, y: 1 },
+            { x: 2, y: 1 },
+            { x: 4, y: 1 },
+            { x: 2, y: 2 }
         ])
     })
 
@@ -318,15 +314,15 @@ describe("DataTable", () => {
             ])
         })
 
-        
+
         it('should sort the rows by the specified fields in ascending order first, then descending order', () => {
             const sorted = dtC.Sort({ 'x': SORT_ORDER.ASC, 'y': SORT_ORDER.DESC }).Rows
             expect(sorted).toEqual([
-                {  x: 1, y: 1 },
-                {  x: 2, y: 2 },
-                {  x: 2, y: 1 },
-                {  x: 3, y: 1 },
-                {  x: 4, y: 1 }
+                { x: 1, y: 1 },
+                { x: 2, y: 2 },
+                { x: 2, y: 1 },
+                { x: 3, y: 1 },
+                { x: 4, y: 1 }
             ])
         })
     })
@@ -591,7 +587,7 @@ describe("DataTable", () => {
             const myDataTable = new DataTable("myTable")
             const sqlQuery = "INVALID QUERY"
 
-            // eslint-disable-next-line init-declarations
+
             let result: DataTable | undefined
 
             // Act
@@ -625,7 +621,7 @@ describe("DataTable", () => {
             const myDataTable = new DataTable("myTable")
             const sqlQuery = "SELECT * FROM nonExistentTable"
 
-            // eslint-disable-next-line init-declarations
+
             let result: DataTable | undefined
 
             // Act
@@ -1342,7 +1338,7 @@ describe("DataTable", () => {
             const fieldsToAnonymize = ['email']
             dataTable.Anonymize(fieldsToAnonymize)
             dataTable.Rows.forEach(row => {
-                expect(row.email).toMatch(/^[a-f0-9]{32}$/)
+                expect(row.email).toMatch(/^[A-Za-z0-9+/]*={0,2}$/)
             })
         })
 
@@ -1434,7 +1430,7 @@ describe("DataTable", () => {
             const expectedRows = [
                 {
                     name: 'Alice',
-                    age: '34173cb38f07f89ddbebc2ac9128303f'
+                    age: 'YktgxYydi/tv8YhsL9YF0q3rbqTaV2BoIBtsaVjOk/Q='
                 }, { name: 'Bob' }
             ]
             expect(dataTable.Anonymize(['age']).Rows).toEqual(expectedRows)
@@ -1456,13 +1452,13 @@ describe("DataTable", () => {
             dataTable.Anonymize(fields)
             expect(dataTable.Rows).toEqual([
                 {
-                    name: "64489c85dc2fe0787b85cd87214b3810",
-                    email: "c160f8cc69a4f0bf2b0362752353d060"
+                    email: "/42YGfwOEr8NJIkuRZh+JJoo3Og2qFytYOKOqqjG2XY=", 
+                    name: "O8UQYpc8RY1aby2NZKAjJGNUrX4GSx5OAJ7IoGmaMEM="
                 },
                 {
-                    name: "2fc1c0beb992cd7096975cfebf9d5c3b",
-                    email: "4b9bb80620f03eb3719e0a061c14283d"
-                }
+                    email: "X/hgvxGQWWxxiKuFHbaR8PMWnEU5Nunh66L5pH96ABg=",
+                    name: "zZ+x4UjM2EQuWqdJBMxzv2+1TR1U0zO9WWqpu0u06WE="
+                },
             ])
         })
     })
@@ -1681,72 +1677,72 @@ describe("DataTable", () => {
     describe('FilterRows', () => {
 
         // Filters rows based on a valid SQL condition
-        it('should filter rows based on a valid SQL condition', () => {
+        it('should filter rows based on a valid SQL condition', async () => {
             const dataTable = new DataTable("myTable")
             dataTable.Rows = [
                 { id: 1, name: 'Alice' },
                 { id: 2, name: 'Bob' }
             ]
             const condition = "name = 'Alice'"
-            dataTable.FilterRows(condition)
+            await dataTable.FilterRows(condition)
             expect(dataTable.Rows).toEqual([{ id: 1, name: 'Alice' }])
         })
 
         // Handles empty Rows array without errors
-        it('should handle empty Rows array without errors', () => {
+        it('should handle empty Rows array without errors', async () => {
             const dataTable = new DataTable("myTable")
             dataTable.Rows = []
             const condition = "name = 'Alice'"
-            expect(() => dataTable.FilterRows(condition)).not.toThrow()
+            expect(async () => await dataTable.FilterRows(condition)).not.toThrow()
             expect(dataTable.Rows).toEqual([])
         })
 
         // Returns the DataTable instance after filtering
-        it('should return DataTable instance after filtering when condition is valid', () => {
+        it('should return DataTable instance after filtering when condition is valid', async () => {
             // Initialize DataTable object
             const dataTable = new DataTable("myTable")
             dataTable.Rows = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
 
             // Call the Filter method
-            const result = dataTable.FilterRows('id = 1')
+            const result = await dataTable.FilterRows('id = 1')
 
             // Assertions
             expect(result).toBe(dataTable)
         })
 
         // Executes the SQL query using alasql
-        it('should execute SQL query using alasql when condition is valid', () => {
+        it('should execute SQL query using alasql when condition is valid', async () => {
             // Initialize DataTable object
             const dataTable = new DataTable("myTable")
             dataTable.Rows = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
 
             // Call the Filter method
-            const result = dataTable.FilterRows('id = 1')
+            const result = await dataTable.FilterRows('id = 1')
 
             // Assertions
             expect(result).toBe(dataTable)
         })
 
         // Handles non-empty Rows array correctly
-        it('should return the filtered Rows when Rows array is non-empty', () => {
+        it('should return the filtered Rows when Rows array is non-empty', async () => {
             // Initialize the class object
             const dataTable = new DataTable("myTable")
             dataTable.Rows = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
 
             // Call the Filter method with a valid condition
-            dataTable.FilterRows('id = 1')
+            await dataTable.FilterRows('id = 1')
 
             // Assertion
             expect(dataTable.Rows).toEqual([{ id: 1, name: 'Alice' }])
         })
 
-        it('should return same table gracefully', () => {
+        it('should return same table gracefully', async () => {
             const data = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
             // Initialize the class object
             const dt1 = new DataTable("myTable", data)
 
             // Call the Filter method with a invalid condition
-            dt1.FilterRows('!id = *1 %')
+            await dt1.FilterRows('!id = *1 %')
 
             // Assertion
             expect(dt1.Rows).toEqual(data)
