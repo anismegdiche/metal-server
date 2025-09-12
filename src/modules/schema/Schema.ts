@@ -225,7 +225,7 @@ export class Schema {
 
                 // Anonymizer
                 if (isAnonymize && TypeUtils.IsSchemaResponseWithData(_intResp.Body)) {
-                    (_intResp.Body).data.Anonymize(fieldsToAnonymize)
+                    await (_intResp.Body).data.Anonymize(fieldsToAnonymize)
                 }
                 return _intResp
             }

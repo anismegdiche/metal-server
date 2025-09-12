@@ -474,7 +474,7 @@ export class Step {
     static async Anonymize(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
         const stepParams: string = stepArguments.stepParams as string
         const fieldsToAnonymize = StringUtils.Split(stepParams, ",")
-        return stepArguments.currentDataTable.Anonymize(fieldsToAnonymize)
+        return await stepArguments.currentDataTable.Anonymize(fieldsToAnonymize)
     }
 
     @Logger.LogFunction()

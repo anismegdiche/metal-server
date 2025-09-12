@@ -1323,7 +1323,7 @@ describe("DataTable", () => {
     describe('AnonymizeFields', () => {
 
         // Anonymizes specified fields in all rows
-        it('should anonymize specified fields in all rows', () => {
+        it('should anonymize specified fields in all rows', async () => {
             const dataTable = new DataTable("myTable")
             dataTable.Set([
                 {
@@ -1336,31 +1336,31 @@ describe("DataTable", () => {
                 }
             ])
             const fieldsToAnonymize = ['email']
-            dataTable.Anonymize(fieldsToAnonymize)
+            await dataTable.Anonymize(fieldsToAnonymize)
             dataTable.Rows.forEach(row => {
                 expect(row.email).toMatch(/^[A-Za-z0-9+/]*={0,2}$/)
             })
         })
 
         // Anonymizes fields when no rows are present
-        it('should handle anonymization when no rows are present', () => {
+        it('should handle anonymization when no rows are present', async () => {
             const dataTable = new DataTable("myTable")
             dataTable.Set([])
             const fieldsToAnonymize = ['email']
-            dataTable.Anonymize(fieldsToAnonymize)
+            await dataTable.Anonymize(fieldsToAnonymize)
             expect(dataTable.Rows).toEqual([])
         })
 
         // Returns the DataTable instance after anonymization
-        it('should return DataTable instance after anonymization when fields are provided', () => {
+        it('should return DataTable instance after anonymization when fields are provided', async () => {
             const dataTable = new DataTable("myTable")
             const fields = ['email', 'phone']
-            const result = dataTable.Anonymize(fields)
+            const result = await dataTable.Anonymize(fields)
             expect(result).toBeInstanceOf(DataTable)
         })
 
         // Handles multiple fields for anonymization
-        it('should anonymize specified fields for all rows when multiple fields are provided', () => {
+        it('should anonymize specified fields for all rows when multiple fields are provided', async () => {
             const dataTable = new DataTable("myTable")
             dataTable.Set([
                 {
@@ -1372,7 +1372,7 @@ describe("DataTable", () => {
                 }
             ])
             const fields = ['name', 'email']
-            dataTable.Anonymize(fields)
+            await dataTable.Anonymize(fields)
             expect(dataTable.Rows[0].name).not.toBe('Alice')
             expect(dataTable.Rows[0].email).not.toBe('alice@example.com')
             expect(dataTable.Rows[1].name).not.toBe('Bob')
@@ -1380,7 +1380,7 @@ describe("DataTable", () => {
         })
 
         // Processes all rows in the DataTable
-        it('should anonymize specified fields for all rows when processing all rows', () => {
+        it('should anonymize specified fields for all rows when processing all rows', async () => {
             const dataTable = new DataTable("myTable")
             dataTable.Set([
                 {
@@ -1392,7 +1392,7 @@ describe("DataTable", () => {
                 }
             ])
             const fields = ['name', 'email']
-            dataTable.Anonymize(fields)
+            await dataTable.Anonymize(fields)
             expect(dataTable.Rows[0].name).not.toBe('Alice')
             expect(dataTable.Rows[0].email).not.toBe('alice@example.com')
             expect(dataTable.Rows[1].name).not.toBe('Bob')
@@ -1400,7 +1400,7 @@ describe("DataTable", () => {
         })
 
         // Handles empty fields array without errors
-        it('should handle empty fields array without errors when calling AnonymizeFields', () => {
+        it('should handle empty fields array without errors when calling AnonymizeFields', async () => {
             const dataTable = new DataTable("myTable")
             const rows = [
                 {
@@ -1413,11 +1413,11 @@ describe("DataTable", () => {
             ]
             dataTable.Set(rows)
 
-            expect(dataTable.Anonymize([]).Rows).toEqual(rows)
+            expect((await dataTable.Anonymize([])).Rows).toEqual(rows)
         })
 
         // Anonymizes fields when some rows lack the specified fields
-        it('should anonymize fields when some rows lack the specified fields when calling AnonymizeFields', () => {
+        it('should anonymize fields when some rows lack the specified fields when calling AnonymizeFields', async () => {
             const dataTable = new DataTable("myTable")
             const rows = [
                 {
@@ -1433,11 +1433,11 @@ describe("DataTable", () => {
                     age: 'YktgxYydi/tv8YhsL9YF0q3rbqTaV2BoIBtsaVjOk/Q='
                 }, { name: 'Bob' }
             ]
-            expect(dataTable.Anonymize(['age']).Rows).toEqual(expectedRows)
+            expect((await dataTable.Anonymize(['age'])).Rows).toEqual(expectedRows)
         })
 
         // Processes all fields in the DataTable
-        it('should anonymize all fields for all rows', () => {
+        it('should anonymize all fields for all rows', async () => {
             const dataTable = new DataTable("myTable")
             dataTable.Set([
                 {
@@ -1449,7 +1449,7 @@ describe("DataTable", () => {
                 }
             ])
             const fields = '*'
-            dataTable.Anonymize(fields)
+            await dataTable.Anonymize(fields)
             expect(dataTable.Rows).toEqual([
                 {
                     email: "/42YGfwOEr8NJIkuRZh+JJoo3Og2qFytYOKOqqjG2XY=", 

@@ -387,7 +387,7 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction()
-    Anonymize(fields: string | string[]): this {
+    async Anonymize(fields: string | string[]): Promise<this> {
 
         let _fields = (typeof fields === 'string')
             ? [fields]
@@ -396,9 +396,9 @@ export class DataTable extends clsClonable {
         if (_fields[0] == '*')
             _fields = this.GetFieldNames() ?? []
 
-        this.Rows.forEach((_row, _idx) => {
+        const rowsPromises = this.Rows.map(async (_row, _idx) => {
             const _newRow = { ..._row }
-            _fields.forEach(__field => {
+            await Promise.all(_fields.map(async __field => {
                 if (__field in _newRow) {
                     // deepcode ignore InsecureHash: used for data anonymization
                     _newRow[__field] = createHash(HASH_ALGO)
@@ -406,8 +406,13 @@ export class DataTable extends clsClonable {
                         .digest(HASH_DIGEST)
                         //.substring(0, 32) // Get first 32 chars (16 bytes) to match previous output length
                 }
-            })
-            this.Rows[_idx] = _newRow
+            }))
+            return { index: _idx, row: _newRow }
+        })
+        const rows = await Promise.all(rowsPromises)
+        this.Rows = rows.map(({ index, row }) => {
+            this.Rows[index] = row
+            return row
         })
         return this
     }
