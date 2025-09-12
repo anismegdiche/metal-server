@@ -36,10 +36,10 @@ export class AzureFileStorage extends absStorageProvider {
 
     // Azure File
     private _shareServiceClient?: import('@azure/storage-file-share').ShareServiceClient
-    private _shareClient?: import('@azure/storage-file-share').ShareClient
-    private _sonnectionString?: string
-    private _shareName?: string
-    private _folder?: string
+    _shareClient?: import('@azure/storage-file-share').ShareClient
+    _connectionString?: string
+    _shareName?: string
+    _folder?: string
     private static _azureStorageFileShare: typeof import('@azure/storage-file-share');
 
     private static async _loadAzureStorageFileShare(): Promise<typeof import('@azure/storage-file-share')> {
@@ -60,11 +60,11 @@ export class AzureFileStorage extends absStorageProvider {
         const shareName = this.ConfigStorage["az-file-share-name"]
         const folder = this.ConfigStorage["az-file-folder"]
 
-        this._sonnectionString = connectionString?.toString()
+        this._connectionString = connectionString?.toString()
         this._shareName = shareName?.toString()
         this._folder = folder?.toString() ?? "/"
 
-        Assert.Var<string>(this._sonnectionString, 'AzureFileStorage: No connection string defined')
+        Assert.Var<string>(this._connectionString, 'AzureFileStorage: No connection string defined')
         Assert.Var<string>(this._shareName, 'AzureFileStorage: No share name defined')
         Assert.Var<string>(this._folder, 'AzureFileStorage: No folder path defined')
     }
@@ -74,12 +74,12 @@ export class AzureFileStorage extends absStorageProvider {
     // -----------------------------
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Assert.Var<string>(this._sonnectionString, 'AzureFileStorage: No connection string defined')
+        Assert.Var<string>(this._connectionString, 'AzureFileStorage: No connection string defined')
         Assert.Var<string>(this._shareName, 'AzureFileStorage: No share name defined')
 
         try {
             const azureStorageFileShare = await AzureFileStorage._loadAzureStorageFileShare();
-            this._shareServiceClient = azureStorageFileShare.ShareServiceClient.fromConnectionString(this._sonnectionString)
+            this._shareServiceClient = azureStorageFileShare.ShareServiceClient.fromConnectionString(this._connectionString)
             this._shareClient = this._shareServiceClient.getShareClient(this._shareName)
         } catch (error: unknown) {
             throw new HttpErrorInternalServerError(`AzureFileStorage: Connection failed - ${error instanceof Error ? error.message : 'Unknown error'}`)
