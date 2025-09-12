@@ -20,6 +20,7 @@ authorization: Bearer {{token}}
 
 # @name select
 GET http://localhost:3000/schema/fs/csv
+    ?fields=*,content
 authorization: Bearer {{token}}
 
 ###
