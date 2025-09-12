@@ -1,4 +1,4 @@
-version: "0.4"
+version: "0.5"
 
 server:
   port: 3000
@@ -25,39 +25,39 @@ sources:
   src-fs:
     provider: files
     options:
-      storage: fs
+      storage-type: fs
       fs-folder: ./data/
       content:
         "homes*.csv":
-          type: csv
+          content-type: csv
           csv-delimiter: ", "
           csv-newline: "\n"
           csv-header: true
           csv-quote: "\""
         "industry*.csv":
-          type: csv
+          content-type: csv
           csv-delimiter: ","
           csv-newline: "\r\n"
           csv-header: true
           csv-quote: "\""
         "ref*.xlsx":
-          type: xls
+          content-type: xls
           xls-sheet: Feuil1
         "sample*.xlsx":
-          type: xls
+          content-type: xls
           xls-starting-cell: E6
   src-az-blob:
     provider: files
     options:
-      storage: az-blob
+      storage-type: az-blob
       az-blob-connection-string: UseDevelopmentStorage=true
       az-blob-container: datacontainer1
       content:
         "*.json":
-          type: json
+          content-type: json
           json-path: rows
         "*.csv":
-          type: csv
+          content-type: csv
           csv-delimiter: ','
           csv-newline: "\n"
           csv-header: true

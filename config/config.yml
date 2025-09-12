@@ -28,22 +28,25 @@ users:
 
 sources:
   src-fs:
-    provider: folder
+    provider: storage
     options:
-      storage: fs
+      mode: folders
+      storage-type: fs
       fs-folder: ./data/
-  src-myplan:
-    provider: plan
-    database: myplan
+      allow-delete: true
+  # src-myplan:
+  #   provider: plan
+  #   database: myplan
   src-csv:
-    provider: files
+    provider: storage
     options:
-      storage: fs
+      mode: files
+      storage-type: fs
       fs-folder: ./data/
       autocreate: true
       content:
         '*.csv':
-          type: csv
+          content-type: csv
           csv-delimiter: ";"
           csv-newline: "\n"
           csv-header: true
@@ -73,22 +76,55 @@ plans:
     myentity:
       - select:
           schema: fs
-          entity: audio
+          entity: csv
+          fields: '*, content'
 
-      - run:
-          ai: audio
-          task: audio-classification
-          input: content
+      - insert:
+          schema: fs
+          entity: csv3
 
-      - run:
-          ai: audio
-          task: automatic-speech-recognition
-          input: content
-          output: text
+      - update:
+          schema: fs
+          entity: csv3
+          filter:
+            name: csv.csv
+          data:
+            name: $> '2_' + name
+            content: SGVsbG8=
+
+      - delete:
+          schema: fs
+          entity: csv3
+          filter-expression: name NOT LIKE 'c%' AND name NOT LIKE '2_%'
+
+      - select:
+          schema: fs
+          entity: csv3
 
       - remove-fields: [content]
 
       - insert:
           schema: csv
           entity: csv.csv
+
+      # - select:
+      #     schema: fs
+      #     entity: audio
+
+      # - run:
+      #     ai: audio
+      #     task: audio-classification
+      #     input: content
+
+      # - run:
+      #     ai: audio
+      #     task: automatic-speech-recognition
+      #     input: content
+      #     output: text
+
+      # - remove-fields: [content]
+
+      # - insert:
+      #     schema: csv
+      #     entity: csv.csv
     

@@ -1,4 +1,4 @@
-version: "0.4"
+version: "0.5"
 server:
   port: 3000
   verbosity: debug
@@ -63,15 +63,15 @@ sources:
     provider: files
     database: ./data/
     options:
-      storage: fs
-      type: json
+      storage-type: fs
+      content-type: json
       json-path: rows
   fs-csv-data:
     provider: files
     database: ./data/
     options:
-      storage: fs
-      type: csv
+      storage-type: fs
+      content-type: csv
       csv-delimiter: ","
       csv-newline: "\n"
       csv-header: true
@@ -81,8 +81,8 @@ sources:
     host: UseDevelopmentStorage=true
     database: datacontainer1
     options:
-      storage: azureBlob
-      type: json
+      storage-type: azureBlob
+      content-type: json
 
 schemas:
   json:
@@ -218,7 +218,7 @@ plans:
           schema: demo
           entity: res_partner
           fields: id, name, display_name
-      - addField:
+      - add-field:
           name: quality
           type: integer
       - sort:

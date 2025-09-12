@@ -30,7 +30,7 @@ sources:
   src-fs:
     provider: folder
     options:
-      storage: fs
+      storage-type: fs
       fs-folder: ./data/
   src-myplan:
     provider: plan
