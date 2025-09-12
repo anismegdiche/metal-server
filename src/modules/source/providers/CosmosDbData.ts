@@ -17,7 +17,7 @@ import { TContext } from "../../sandbox/types/TContext"
 import { TInternalResponse } from '../../schema/types/TInternalResponse'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { DATA_ENTITY, DATA_PROVIDER } from "../@consts"
+import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
 import { TConfigSource } from "../types/TConfigSource"
 import { TDataListEntity } from "../types/TDataListEntity"
@@ -383,7 +383,7 @@ export class CosmosDbData extends absDataProvider {
 
                     return <TDataListEntity>{
                         name: container.id,
-                        type: DATA_ENTITY.CONTAINER,
+                        type: DATA_ENTITY_TYPE.CONTAINER,
                         size,
                         meta: {
                             partitionKey: container.partitionKey

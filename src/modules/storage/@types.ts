@@ -2,13 +2,13 @@
 //
 //
 import { TDataListEntity } from "../source/types/TDataListEntity";
-import { DATA_ENTITY } from "../source/@consts";
+import { DATA_ENTITY_TYPE } from "../source/@consts";
 
 
 //
 export type TStorageFile = TDataListEntity & {
     mimeType: string
-    type: DATA_ENTITY.FILE
+    type: DATA_ENTITY_TYPE.FILE
     createdAt: Date
     modifiedAt: Date
     path: string
@@ -16,6 +16,6 @@ export type TStorageFile = TDataListEntity & {
 }
 
 export type TStorageFolder = TDataListEntity & {
-    type: DATA_ENTITY.FOLDER
+    type: DATA_ENTITY_TYPE.FOLDER
 }
 

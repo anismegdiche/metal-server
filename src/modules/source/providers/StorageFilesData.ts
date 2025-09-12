@@ -28,15 +28,15 @@ import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
 import { TConfigSource } from "../types/TConfigSource"
 import { TOptionalParameter } from "../types/TOptionalParameter"
-import { TFilesDataOptions } from "./TFilesDataOptions"
-import { TFilesDataOptionsContent } from "./TFilesDataOptionsContent"
+import { TStorageFilesDataOptions } from "../types/TStorageFilesDataOptions"
+import { TStorageFilesDataOptionsContent } from "../types/TStorageFilesDataOptionsContent"
 
 
 //
-export class FilesData extends absDataProvider {
+export class StorageFilesData extends absDataProvider {
 
     SourceName?: string
-    ProviderName = DATA_PROVIDER.FILES
+    ProviderName = DATA_PROVIDER.STORAGE
     Config: TConfigSource = <TConfigSource>{}
     Connection?: absStorageProvider = undefined
 
@@ -69,11 +69,11 @@ export class FilesData extends absDataProvider {
         await super.Init(source, sourceConfig)
         this.Config = sourceConfig
         const {
-            storage = STORAGE.FILESYSTEM,
+            "storage-type": storage = STORAGE.FILESYSTEM,
             content
-        } = this.Config.options as TFilesDataOptions
+        } = this.Config.options as TStorageFilesDataOptions
 
-        Assert.Var<TFilesDataOptionsContent>(content, typia.is<TFilesDataOptionsContent>(content), `${this.SourceName}: Content type is not defined`)
+        Assert.Var<TStorageFilesDataOptionsContent>(content, typia.is<TStorageFilesDataOptionsContent>(content), `${this.SourceName}: Content type is not defined`)
 
         this.Connection = await StorageProvider.GetProvider(storage)
         this.Connection.SetConfig(this.Config)
@@ -85,7 +85,7 @@ export class FilesData extends absDataProvider {
         // init content
         for (const filePattern in content) {
             if (Object.hasOwn(content, filePattern)) {
-                const { type } = content[filePattern]
+                const { "content-type": type } = content[filePattern]
 
                 this.ContentHandler[filePattern] = await ContentProvider.GetProvider(type)
                 this.ContentHandler[filePattern].SetConfig(content[filePattern])

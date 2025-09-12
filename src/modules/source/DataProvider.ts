@@ -6,12 +6,16 @@ import { Factory } from "../../utils/Factory"
 import { IDataProvider } from "./base/IDataProvider"
 import { DATA_PROVIDER } from "./@consts"
 
+
+//
 type ProviderLoader = () => Promise<{ new(): IDataProvider }>;
 
 type ProviderMap = {
     [key in DATA_PROVIDER]: ProviderLoader;
 };
 
+
+//
 export class DataProvider {
     static readonly #dataFactory = new Factory<IDataProvider>();
     static readonly #loadingPromises = new Map<DATA_PROVIDER, Promise<IDataProvider>>();
@@ -23,11 +27,10 @@ export class DataProvider {
         [DATA_PROVIDER.METAL]: () => import('./providers/MetalData').then(m => m.MetalData),
         [DATA_PROVIDER.PLAN]: () => import('./providers/PlanData').then(m => m.PlanData),
         [DATA_PROVIDER.MEMORY]: () => import('./providers/MemoryData').then(m => m.MemoryData),
-        [DATA_PROVIDER.FILES]: () => import('./providers/FilesData').then(m => m.FilesData),
         [DATA_PROVIDER.MYSQL]: () => import('./providers/MySqlData').then(m => m.MySqlData),
         [DATA_PROVIDER.WEBSERVICE]: () => import('./providers/WebServiceData').then(m => m.WebServiceData),
         [DATA_PROVIDER.COSMOSDB]: () => import('./providers/CosmosDbData').then(m => m.CosmosDbData),
-        [DATA_PROVIDER.FOLDERS]: () => import('./providers/FolderData').then(m => m.FolderData)
+        [DATA_PROVIDER.STORAGE]: () => import('./providers/StorageData').then(m => m.StorageData)
     };
 
     /**

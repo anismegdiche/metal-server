@@ -5,8 +5,8 @@ import { CONTENT } from "../../content/@consts";
 import { TContentConfig } from "../../content/@types";
 
 
-export type TFilesDataOptionsContent = {
+export type TStorageFilesDataOptionsContent = {
     [pattern: string]: {
-        type: CONTENT;
+        "content-type": CONTENT;
     } & TContentConfig;
 };

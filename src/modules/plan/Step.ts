@@ -30,7 +30,7 @@ import { Sandbox } from "../sandbox/Sandbox"
 import { TContext } from "../sandbox/types/TContext"
 import { Schema } from "../schema/Schema"
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from '../schema/types/TSchemaRequest'
-import { DATA_ENTITY } from "../source/@consts"
+import { DATA_ENTITY_TYPE } from "../source/@consts"
 import { MemoryData } from "../source/providers/MemoryData"
 import { TDataListEntity } from "../source/types/TDataListEntity"
 import { TOptionalParameter } from "../source/types/TOptionalParameter"
@@ -516,7 +516,7 @@ export class Step {
         const entitiesList: TDataListEntity[] = keys(ConfigManager.Get(`plans.${currentPlanName}`))
             .map((entity: string) => (<TDataListEntity>{
                 name: entity,
-                type: DATA_ENTITY.PLAN_ENTITY
+                type: DATA_ENTITY_TYPE.PLAN_ENTITY
             }))
 
         Logger.Debug(`${Logger.Out} Step.ListEntities: ${JsonUtils.Stringify(stepArguments.stepParams)}`)

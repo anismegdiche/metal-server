@@ -13,8 +13,8 @@ import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { StringUtils } from '../../../utils/StringUtils'
 import { TConvertParams } from "../../../utils/TypeUtils"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
-import { DATA_ENTITY } from "../../source/@consts"
-import { TFilesDataOptions } from "../../source/providers/TFilesDataOptions"
+import { DATA_ENTITY_TYPE } from "../../source/@consts"
+import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
@@ -34,7 +34,7 @@ type TFsStorageParams = Required<{
 //
 export class FsStorage extends absStorageProvider {
     ConfigSource?: TConfigSource | undefined
-    ConfigStorage?: TFilesDataOptions | undefined
+    ConfigStorage?: TStorageFilesDataOptions | undefined
 
     Params: TFsStorageParams | undefined
 
@@ -97,7 +97,7 @@ export class FsStorage extends absStorageProvider {
                         <TStorageFile>{
                             name: file.name,
                             mimeType: this.GetMimeType(file.name),
-                            type: DATA_ENTITY.FILE,
+                            type: DATA_ENTITY_TYPE.FILE,
                             size: stats.size,
                             createdAt: stats.birthtime,
                             modifiedAt: stats.mtime,
@@ -122,7 +122,7 @@ export class FsStorage extends absStorageProvider {
                     return JsonUtils.RemoveUndefined(
                         <TStorageFolder>{
                             name: folder.name,
-                            type: DATA_ENTITY.FOLDER
+                            type: DATA_ENTITY_TYPE.FOLDER
                         })
                 }))
             .catch((error) => {

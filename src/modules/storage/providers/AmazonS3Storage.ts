@@ -13,8 +13,8 @@ import { Logger } from '../../../utils/Logger'
 import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { StringUtils } from '../../../utils/StringUtils'
 import { TConvertParams } from "../../../utils/TypeUtils"
-import { DATA_ENTITY } from "../../source/@consts"
-import { TFilesDataOptions } from "../../source/providers/TFilesDataOptions"
+import { DATA_ENTITY_TYPE } from "../../source/@consts"
+import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { TStorageFile } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
@@ -51,7 +51,7 @@ type TAmazonS3StorageParams = Required<{
 export class AmazonS3Storage extends absStorageProvider {
 
     ConfigSource?: TConfigSource
-    ConfigStorage?: TFilesDataOptions
+    ConfigStorage?: TStorageFilesDataOptions
     Params?: TAmazonS3StorageParams
 
     private _s3Client: import('@aws-sdk/client-s3').S3Client | undefined
@@ -187,7 +187,7 @@ export class AmazonS3Storage extends absStorageProvider {
                 <TStorageFile>{
                     name: file.Key?.split('/').pop() ?? file.Key ?? '',
                     mimeType: this.GetMimeType(file.Key),
-                    type: DATA_ENTITY.FILE,
+                    type: DATA_ENTITY_TYPE.FILE,
                     size: file?.Size,
                     modifiedAt: file?.LastModified,
                     path: file.Key
@@ -225,7 +225,7 @@ export class AmazonS3Storage extends absStorageProvider {
                 return JsonUtils.RemoveUndefined(
                     <TStorageFile>{
                         name: folderName,
-                        type: DATA_ENTITY.FOLDER
+                        type: DATA_ENTITY_TYPE.FOLDER
                     }
                 )
             })

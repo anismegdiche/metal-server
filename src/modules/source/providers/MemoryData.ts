@@ -11,7 +11,7 @@ import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import { Cache } from '../../cache/Cache'
 import { Logger } from '../../../utils/Logger'
-import { DATA_ENTITY, DATA_PROVIDER } from "../@consts"
+import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { DataBase } from '../../../types/DataBase'
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
@@ -247,7 +247,7 @@ export class MemoryData extends absDataProvider {
 
         const rows = Object.keys(this.Connection.Tables).map(entity => (<TDataListEntity>{
             name: entity,
-            type: DATA_ENTITY.DATATABLE,
+            type: DATA_ENTITY_TYPE.DATATABLE,
             size: this.Connection?.Tables[entity].Rows.length
         }))
 

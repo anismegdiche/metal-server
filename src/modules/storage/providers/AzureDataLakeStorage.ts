@@ -14,8 +14,8 @@ import { Logger } from '../../../utils/Logger'
 import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { StringUtils } from '../../../utils/StringUtils'
 import { TConvertParams } from '../../../utils/TypeUtils'
-import { DATA_ENTITY } from "../../source/@consts"
-import { TFilesDataOptions } from "../../source/providers/TFilesDataOptions"
+import { DATA_ENTITY_TYPE } from "../../source/@consts"
+import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { TStorageFile } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
@@ -37,7 +37,7 @@ type TAzureDataLakeStorageParams = Required<{
 export class AzureDataLakeStorage extends absStorageProvider {
 
     ConfigSource?: TConfigSource
-    ConfigStorage?: TFilesDataOptions
+    ConfigStorage?: TStorageFilesDataOptions
     Params?: TAzureDataLakeStorageParams
 
     private _fileSystemClient: DataLakeFileSystemClient | undefined
@@ -130,7 +130,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
             folders.push(JsonUtils.RemoveUndefined(
                 <TStorageFile>{
                     name: item.name.split('/').pop() ?? '',
-                    type: DATA_ENTITY.FOLDER
+                    type: DATA_ENTITY_TYPE.FOLDER
                 }
             ))
         }
@@ -149,7 +149,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
                 <TStorageFile>{
                     name: item.name.split('/').pop(),
                     mimeType: this.GetMimeType(item.name),
-                    type: DATA_ENTITY.FILE,
+                    type: DATA_ENTITY_TYPE.FILE,
                     size: item?.contentLength,
                     createdAt: item?.createdOn,
                     modifiedAt: item?.lastModified,

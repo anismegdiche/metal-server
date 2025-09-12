@@ -11,14 +11,15 @@ export enum DATA_PROVIDER {
     POSTGRES = "postgres",
     MONGODB = "mongodb",
     MSSQL = "mssql",
-    FILES = "files",
+    // FILES = "files",
     MYSQL = "mysql",
     WEBSERVICE = "webservice",
     COSMOSDB = "cosmosdb",
-    FOLDERS = "folders"
+    // FOLDERS = "folders",
+    STORAGE = "storage"
 }
 
-export enum DATA_ENTITY {
+export enum DATA_ENTITY_TYPE {
     TABLE = "table",
     VIEW = "view",
     FILE = "file",

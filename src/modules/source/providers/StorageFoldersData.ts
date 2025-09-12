@@ -36,39 +36,39 @@ const FLD_OLD_NAME = "old_name"
 
 
 //
-export type TFolderDataOptions = {
+export type TStorageFoldersDataOptions = {
     storage?: STORAGE
     autocreate?: boolean
     "allow-delete"?: boolean
-    "folder-pattern": string
+    "folders-pattern": string
     "files-pattern": string
 } & TStorageConfig
 
-export type TFolderDataConfig = {
-    provider: DATA_PROVIDER.FOLDERS
-    options: TFolderDataOptions
+export type TStorageFoldersDataConfig = {
+    provider: DATA_PROVIDER.STORAGE
+    options: TStorageFoldersDataOptions
 }
 
 
 //
-export class FolderData extends absDataProvider {
+export class StorageFoldersData extends absDataProvider {
 
     SourceName?: string
-    ProviderName = DATA_PROVIDER.FOLDERS
-    Config: TFolderDataConfig = <TFolderDataConfig>{}
+    ProviderName = DATA_PROVIDER.STORAGE
+    Config: TStorageFoldersDataConfig = <TStorageFoldersDataConfig>{}
     Connection?: absStorageProvider
 
     // FolderData
     Lock: Map<string, Mutex> = new Map<string, Mutex>()
 
-    DEFAULT: Partial<TFolderDataConfig> = {
+    DEFAULT: Partial<TStorageFoldersDataConfig> = {
         options: {
             storage: STORAGE.FILESYSTEM,
             autocreate: true,
             "allow-delete": false,
-            "folder-pattern": "*.*",
+            "folders-pattern": "*.*",
             "files-pattern": "*.*"
-        } as TFolderDataOptions
+        } as TStorageFoldersDataOptions
     }
 
     constructor() {
@@ -83,7 +83,7 @@ export class FolderData extends absDataProvider {
     @Logger.LogFunction(true)
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = merge(this.DEFAULT, sourceConfig as TFolderDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as TStorageFoldersDataConfig)
 
         const { storage } = this.Config.options
 

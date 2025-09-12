@@ -11,7 +11,7 @@ import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import { Cache } from '../../cache/Cache'
 import { Logger } from '../../../utils/Logger'
-import { DATA_ENTITY , DATA_PROVIDER } from "../@consts"
+import { DATA_ENTITY_TYPE , DATA_PROVIDER } from "../@consts"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
 import { HttpResponse } from "../../core/HttpResponse"
@@ -157,7 +157,7 @@ export class PlanData extends absDataProvider {
         const data: TDataListEntity[] = planEntities
             .map(key => (<TDataListEntity>{
                 name: key,
-                type: DATA_ENTITY.PLAN_ENTITY
+                type: DATA_ENTITY_TYPE.PLAN_ENTITY
             }))
 
         return HttpResponse.Ok(<TSchemaResponse>{

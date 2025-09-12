@@ -9,8 +9,8 @@ import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from '../../../utils/Logger'
 import { StringUtils } from "../../../utils/StringUtils"
 import { TConvertParams } from "../../../utils/TypeUtils"
-import { DATA_ENTITY } from "../../source/@consts"
-import { TFilesDataOptions } from "../../source/providers/TFilesDataOptions"
+import { DATA_ENTITY_TYPE } from "../../source/@consts"
+import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
@@ -30,7 +30,7 @@ type TAzureBlobStorageParams = Required<{
 export class AzureBlobStorage extends absStorageProvider {
 
     ConfigSource?: TConfigSource
-    ConfigStorage?: TFilesDataOptions
+    ConfigStorage?: TStorageFilesDataOptions
     Params: TAzureBlobStorageParams | undefined
 
     // Azure Blob
@@ -132,7 +132,7 @@ export class AzureBlobStorage extends absStorageProvider {
                 result.push(JsonUtils.RemoveUndefined(
                     <TStorageFolder>{
                         name: folderName,
-                        type: DATA_ENTITY.FOLDER
+                        type: DATA_ENTITY_TYPE.FOLDER
                     }
                 ))
             }
@@ -156,7 +156,7 @@ export class AzureBlobStorage extends absStorageProvider {
                 <TStorageFile>{
                     name: blob.name.slice(prefix.length),
                     mimeType: this.GetMimeType(blob.name),
-                    type: DATA_ENTITY.FILE,
+                    type: DATA_ENTITY_TYPE.FILE,
                     size: blob.properties.contentLength,
                     createdAt: blob.properties.createdOn,
                     modifiedAt: blob.properties.lastModified,

@@ -12,8 +12,8 @@ import { Logger } from "../../../utils/Logger"
 import { StringUtils } from "../../../utils/StringUtils"
 import { TConvertParams } from "../../../utils/TypeUtils"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
-import { DATA_ENTITY } from "../../source/@consts"
-import { TFilesDataOptions } from "../../source/providers/TFilesDataOptions"
+import { DATA_ENTITY_TYPE } from "../../source/@consts"
+import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
@@ -36,7 +36,7 @@ type TFtpStorageParams = Required<{
 export class FtpStorage extends absStorageProvider {
 
     ConfigSource?: TConfigSource
-    ConfigStorage?: TFilesDataOptions
+    ConfigStorage?: TStorageFilesDataOptions
     Params?: TFtpStorageParams
 
     #FtpClient: Ftp.Client = new Ftp.Client()
@@ -126,7 +126,7 @@ export class FtpStorage extends absStorageProvider {
             .filter(file => file.isDirectory)
             .map(file => JsonUtils.RemoveUndefined(<TStorageFolder>{
                 name: file.name,
-                type: DATA_ENTITY.FOLDER
+                type: DATA_ENTITY_TYPE.FOLDER
             }))
 
         return new DataTable(undefined, folders)
@@ -144,7 +144,7 @@ export class FtpStorage extends absStorageProvider {
             .map(file => JsonUtils.RemoveUndefined(<TStorageFile>{
                 name: file.name,
                 mimeType: this.GetMimeType(file.name),
-                type: DATA_ENTITY.FILE,
+                type: DATA_ENTITY_TYPE.FILE,
                 size: file.size,
                 createdAt: file.rawModifiedAt ? new Date(file.rawModifiedAt) : undefined,
                 modifiedAt: file.rawModifiedAt ? new Date(file.rawModifiedAt) : undefined,

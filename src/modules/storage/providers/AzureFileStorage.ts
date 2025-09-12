@@ -7,11 +7,11 @@ import { TConfigSource } from "../../source/types/TConfigSource"
 import { DataTable } from "../../../types/DataTable"
 import { absStorageProvider } from "../base/absStorageProvider"
 import { TStorageFolder, TStorageFile } from '../@types'
-import { TFilesDataOptions } from "../../source/providers/TFilesDataOptions"
+import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
 import { TConvertParams } from "../../../utils/TypeUtils"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { Logger } from "../../../utils/Logger"
-import { DATA_ENTITY } from "../../source/@consts"
+import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { Assert } from "../../../utils/Assert"
 import { StringUtils } from "../../../utils/StringUtils"
@@ -31,7 +31,7 @@ type TAzureFileStorageParams = Required<{
 export class AzureFileStorage extends absStorageProvider {
 
     ConfigSource?: TConfigSource
-    ConfigStorage?: TFilesDataOptions
+    ConfigStorage?: TStorageFilesDataOptions
     Params?: TAzureFileStorageParams
 
     // Azure File
@@ -125,7 +125,7 @@ export class AzureFileStorage extends absStorageProvider {
             if (_folder.kind === "directory") {
                 folders.push(JsonUtils.RemoveUndefined(<TStorageFolder>{
                     name: _folder.name,
-                    type: DATA_ENTITY.FOLDER
+                    type: DATA_ENTITY_TYPE.FOLDER
                 }))
             }
         }
@@ -146,7 +146,7 @@ export class AzureFileStorage extends absStorageProvider {
                 result.push(JsonUtils.RemoveUndefined(<TStorageFile>{
                     name: item.name,
                     mimeType: this.GetMimeType(item.name),
-                    type: DATA_ENTITY.FILE,
+                    type: DATA_ENTITY_TYPE.FILE,
                     size: item.properties?.contentLength,
                     createdAt: item.properties?.creationTime,
                     modifiedAt: item.properties?.lastModified,

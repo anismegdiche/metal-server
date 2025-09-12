@@ -1,4 +1,4 @@
-import { DATA_ENTITY } from "../@consts";
+import { DATA_ENTITY_TYPE } from "../@consts";
 
 // | TPostgresDataConfig
 // | TSqlServerDataConfig
@@ -6,7 +6,7 @@ import { DATA_ENTITY } from "../@consts";
 //
 export type TDataListEntity = {
     name: string;
-    type: DATA_ENTITY;
+    type: DATA_ENTITY_TYPE;
     size?: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     meta?: Record<string, any>;
