@@ -55,7 +55,7 @@ export class FtpStorage extends absStorageProvider {
     // -----------------------------
     @Logger.LogFunction()
     Init(): void {
-        Assert.Var<TFtpStorageParams>(this.ConfigStorage, this.ConfigStorage !== undefined, 'FtpStorage: No config storage defined')
+        Assert.Var<TFtpStorageParams>(this.ConfigStorage, 'FtpStorage: No config storage defined')
 
         this.Params = merge(this.DEFAULT, <TFtpStorageParams>{
             host: this.ConfigStorage["ftp-host"],
