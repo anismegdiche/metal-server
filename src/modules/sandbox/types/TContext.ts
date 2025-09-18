@@ -6,7 +6,7 @@
 import { TRow } from '../../../types/DataTable'
 import { TJson } from '../../../types/TJson'
 import { STEP_STATUS } from '../../plan/@consts'
-import { TStepRun } from '../../plan/types/TStep'
+import { TStepArgsRun } from '../../plan/types/TStepArgs'
 import { TSchemaRequest } from '../../schema/types/TSchemaRequest'
 
 //
@@ -29,7 +29,7 @@ export type TContext = {
         entity: string
         $current:{
             stepIndex?: number
-            stepCommand?: TStepRun
+            stepCommand?: TStepArgsRun
             data?: TRow[]
             status?: STEP_STATUS
         }

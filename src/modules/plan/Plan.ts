@@ -34,7 +34,7 @@ import { TConfigSource } from "../source/types/TConfigSource"
 import { STEP_STATUS } from "./@consts"
 import { Step } from "./Step"
 import { TScheduleConfig } from './types/TScheduleConfig'
-import { TStepArguments } from "./types/TStepArguments"
+import { TStep } from "./types/TStep"
 
 
 //
@@ -179,11 +179,11 @@ export class Plan {
                 const __stepCommand: string = keys(step)[0]
                 const __stepParams: TJson = values(<object>step)[0]
 
-                const __stepArguments: TStepArguments = {
+                const __stepArguments: TStep = {
                     currentSchemaName: $context.$plan!.schema!,
                     currentPlanName: $context.$plan!.name!,
-                    currentDataTable,
-                    stepParams: __stepParams
+                    currentDataTable: currentDataTable,
+                    stepArgs: __stepParams
                 }
 
                 const executeStep = Step.ExecuteCaseMap[__stepCommand] ?? Helper.CaseMapNotFound(__stepCommand)

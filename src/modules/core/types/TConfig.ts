@@ -11,7 +11,7 @@ import { TConfigAiEngine } from "../../ai-engine/@types"
 import { TRolePermissions } from "../../auth/@types"
 import { TAuthentication } from "../../auth/types/TAuthentication"
 import { STEP } from "../../plan/@consts"
-import { TStepAnonymize, TStepBreak, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRemoveFields, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "../../plan/types/TStep"
+import { TStepArgsAnonymize, TStepArgsBreak, TStepArgsDebug, TStepArgsDelete, TStepArgsFields, TStepArgsInsert, TStepArgsJoin, TStepArgsListEntities, TStepArgsRemoveDuplicates, TStepArgsRemoveFields, TStepArgsRun, TStepArgsSelect, TStepArgsSort, TStepArgsSync, TStepArgsUpdate } from "../../plan/types/TStepArgs"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { TConfigUsers } from "./TConfigUsers"
 
@@ -47,21 +47,21 @@ export type TConfigSchema = ({
 // plans..*
 // step commands friendly renaming
 
-type Debug = { [STEP.DEBUG]: TStepDebug }
-type Select = { [STEP.SELECT]: TStepSelect }
-type Update = { [STEP.UPDATE]: TStepUpdate }
-type Delete = { [STEP.DELETE]: TStepDelete }
-type Insert = { [STEP.INSERT]: TStepInsert }
-type Join = { [STEP.JOIN]: TStepJoin }
-type Fields = { [STEP.FIELDS]: TStepFields }
-type Sort = { [STEP.SORT]: TStepSort }
-type Run = { [STEP.RUN]: TStepRun }
-type Sync = { [STEP.SYNC]: TStepSync }
-type Anonymize = { [STEP.ANONYMIZE]: TStepAnonymize }
-type RemoveDuplicates = { [STEP.REMOVE_DUPLICATE]: TStepRemoveDuplicates }
-type ListEntities = { [STEP.LIST_ENTITIES]: TStepListEntities }
-type RemoveFields = { [STEP.REMOVE_FIELDS]: TStepRemoveFields }
-type Break = { [STEP.BREAK]: TStepBreak }
+type Debug = { [STEP.DEBUG]: TStepArgsDebug }
+type Select = { [STEP.SELECT]: TStepArgsSelect }
+type Update = { [STEP.UPDATE]: TStepArgsUpdate }
+type Delete = { [STEP.DELETE]: TStepArgsDelete }
+type Insert = { [STEP.INSERT]: TStepArgsInsert }
+type Join = { [STEP.JOIN]: TStepArgsJoin }
+type Fields = { [STEP.FIELDS]: TStepArgsFields }
+type Sort = { [STEP.SORT]: TStepArgsSort }
+type Run = { [STEP.RUN]: TStepArgsRun }
+type Sync = { [STEP.SYNC]: TStepArgsSync }
+type Anonymize = { [STEP.ANONYMIZE]: TStepArgsAnonymize }
+type RemoveDuplicates = { [STEP.REMOVE_DUPLICATE]: TStepArgsRemoveDuplicates }
+type ListEntities = { [STEP.LIST_ENTITIES]: TStepArgsListEntities }
+type RemoveFields = { [STEP.REMOVE_FIELDS]: TStepArgsRemoveFields }
+type Break = { [STEP.BREAK]: TStepArgsBreak }
 
 export type StepCommand =
     | Debug
