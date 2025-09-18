@@ -38,7 +38,7 @@ export type TStepJoin = {
     "right-field": string
 }
 
-export type TStepFields = string //NOSONAR
+export type TStepFields = string | string[]
 
 export type TStepSort = TOrderBy
 
@@ -61,7 +61,7 @@ export type TStepSync = {
     id: string
 } 
 
-export type TStepAnonymize = string
+export type TStepAnonymize = string[]
 
 export type TStepRemoveDuplicates = {
     keys?: string[]
@@ -80,3 +80,5 @@ export type TStepListEntities = Omit<TSchemaRequestListEntities, 'schema' | 'ent
 }
 
 export type TStepRemoveFields = string[]
+
+export type TStepBreak = null

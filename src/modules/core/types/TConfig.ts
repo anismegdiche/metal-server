@@ -11,7 +11,7 @@ import { TConfigAiEngine } from "../../ai-engine/@types"
 import { TRolePermissions } from "../../auth/@types"
 import { TAuthentication } from "../../auth/types/TAuthentication"
 import { STEP } from "../../plan/@consts"
-import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRemoveFields, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "../../plan/types/TStep"
+import { TStepAnonymize, TStepBreak, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRemoveFields, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "../../plan/types/TStep"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { TConfigUsers } from "./TConfigUsers"
 
@@ -61,6 +61,7 @@ type Anonymize = { [STEP.ANONYMIZE]: TStepAnonymize }
 type RemoveDuplicates = { [STEP.REMOVE_DUPLICATE]: TStepRemoveDuplicates }
 type ListEntities = { [STEP.LIST_ENTITIES]: TStepListEntities }
 type RemoveFields = { [STEP.REMOVE_FIELDS]: TStepRemoveFields }
+type Break = { [STEP.BREAK]: TStepBreak }
 
 export type StepCommand =
     | Debug
@@ -77,6 +78,7 @@ export type StepCommand =
     | RemoveDuplicates
     | ListEntities
     | RemoveFields
+    | Break
 
 //
 

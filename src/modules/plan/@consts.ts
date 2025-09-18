@@ -15,7 +15,8 @@ export enum STEP {
     ANONYMIZE = "anonymize",// v0.3        
     REMOVE_DUPLICATE = "remove-duplicates",// v0.3
     LIST_ENTITIES = "list-entities", // v0.3
-    REMOVE_FIELDS = "remove-fields" // v0.5
+    REMOVE_FIELDS = "remove-fields", // v0.5
+    BREAK = "break" // v0.5
 }
 
 

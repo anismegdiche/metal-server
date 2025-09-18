@@ -1,7 +1,6 @@
 //
 //
 // 
-import typia from "typia"
 import isEmpty from "lodash/isEmpty"
 import isNil from "lodash/isNil"
 import isString from "lodash/isString"
@@ -36,17 +35,21 @@ import { TDataListEntity } from "../source/types/TDataListEntity"
 import { TOptionalParameter } from "../source/types/TOptionalParameter"
 import { STEP } from "./@consts"
 import { Plans } from "./Plans"
-import { TFunctionStep } from "./types/TFunctionStep"
-import { TStepListEntities, TStepRemoveDuplicates, TStepRun, TStepSort, TStepSync } from "./types/TStep"
+import { TStepAnonymize, TStepDebug, TStepDelete, TStepFields, TStepInsert, TStepJoin, TStepListEntities, TStepRemoveDuplicates, TStepRemoveFields, TStepRun, TStepSelect, TStepSort, TStepSync, TStepUpdate } from "./types/TStep"
 import { TStepArguments } from "./types/TStepArguments"
+
+
+//
+export type TFunctionStep = (stepArguments: TStepArguments, $context?: Partial<TContext>) => Promise<DataTable | void>;
+export type TFunctionJoin = (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => Promise<DataTable>;
 
 
 //
 export class Step {
 
-    static readonly DataProvider = new MemoryData()
+    private static readonly _dataProvider = new MemoryData()
 
-    static ExecuteCaseMap: Record<string, TFunctionStep> = { //NOSONAR
+    static ExecuteCaseMap: Record<string, TFunctionStep> = {
         [STEP.DEBUG]: Step.Debug,
         [STEP.SELECT]: Step.Select,
         [STEP.UPDATE]: Step.Update,
@@ -60,11 +63,11 @@ export class Step {
         [STEP.ANONYMIZE]: Step.Anonymize,
         [STEP.REMOVE_DUPLICATE]: Step.RemoveDuplicates,
         [STEP.LIST_ENTITIES]: Step.ListEntities,
-        [STEP.REMOVE_FIELDS]: Step.RemoveFields
+        [STEP.REMOVE_FIELDS]: Step.RemoveFields,
+        [STEP.BREAK]: Step.Break
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    static JoinCaseMap: Record<string, Function> = { //NOSONAR
+    private static _joinCaseMap: Record<string, TFunctionJoin> = {
         [JOIN_TYPE.LEFT]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.LeftJoin(dtRight, leftField, rightField),
         [JOIN_TYPE.RIGHT]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.RightJoin(dtRight, leftField, rightField),
         [JOIN_TYPE.INNER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.InnerJoin(dtRight, leftField, rightField),
@@ -75,16 +78,16 @@ export class Step {
     @Logger.LogFunction()
     static async Select(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
 
-        if (!typia.is<Partial<TSchemaRequestSelect>>(stepArguments.stepParams))
-            throw new HttpErrorInternalServerError(`Step.Select: Wrong argument passed ${JsonUtils.Stringify(stepArguments.stepParams)}`)
+        Assert.Var<TStepSelect>(stepArguments.stepParams,
+            `Step.Select: Wrong argument passed ${JsonUtils.Stringify(stepArguments.stepParams)}`)
 
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
 
         const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestSelect>(stepParams, new Sandbox($context)) as TSchemaRequestSelect
-         
+
         $context = merge(
             $context,
-            Step.DataProvider.GetContext($__schemaRequest)
+            Step._dataProvider.GetContext($__schemaRequest)
         )
 
         const { schema, entity } = $__schemaRequest
@@ -103,8 +106,8 @@ export class Step {
         // case no schema and no entity --> use current datatable
         // FIXME missing options.cache
         if (!schema && !entity) {
-            const _options: TOptionalParameter = Step.DataProvider.Options.Parse($__schemaRequest, $context)
-            const sqlQueryHelper = Step.DataProvider.GenerateSqlSelect(<TSchemaRequestSelect>{
+            const _options: TOptionalParameter = Step._dataProvider.Options.Parse($__schemaRequest, $context)
+            const sqlQueryHelper = Step._dataProvider.GenerateSqlSelect(<TSchemaRequestSelect>{
                 entity: currentDataTable.Name
             },
                 _options
@@ -124,21 +127,33 @@ export class Step {
         return currentDataTable
     }
 
+    private static async _select(schema: string, entity: string): Promise<DataTable | undefined> {
+        const intResp = await Schema.Select({
+            schema,
+            entity
+        })
+
+        if (intResp.Body && TypeUtils.IsSchemaResponseWithData(intResp.Body))
+            return intResp.Body.data
+
+        return undefined
+    }
+
     @Logger.LogFunction()
     static async Insert(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
 
-        Assert.Var<TSchemaRequestInsert>(
-            stepArguments.stepParams, 
+        Assert.Var<TStepInsert>(
+            stepArguments.stepParams,
             `Step.Insert: Wrong argument passed ${JsonUtils.Stringify(stepArguments.stepParams)}`
         )
 
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
 
         const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestInsert>(stepParams, new Sandbox($context)) as TSchemaRequestInsert
-         
-        $context = merge(//NOSONAR
+
+        $context = merge(
             $context,
-            Step.DataProvider.GetContext($__schemaRequest)
+            Step._dataProvider.GetContext($__schemaRequest)
         )
 
         const { schema, entity, data } = $__schemaRequest
@@ -172,23 +187,25 @@ export class Step {
     @Logger.LogFunction()
     static async Update(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
 
-        if (!typia.is<Partial<TSchemaRequestUpdate>>(stepArguments.stepParams))
-            throw new HttpErrorInternalServerError(`Step.Update: Wrong argument passed ${JsonUtils.Stringify(stepArguments.stepParams)}`)
+        Assert.Var<TStepUpdate>(
+            stepArguments.stepParams,
+            `Step.Update: Wrong argument passed ${JsonUtils.Stringify(stepArguments.stepParams)}`
+        )
 
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
 
         const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestUpdate>(stepParams, new Sandbox($context)) as TSchemaRequestUpdate
-         
+
         $context = merge(
             $context,
-            Step.DataProvider.GetContext($__schemaRequest)
+            Step._dataProvider.GetContext($__schemaRequest)
         )
 
         const { schema, entity, data } = $__schemaRequest
-         
+
         $context = merge(
             $context,
-            Step.DataProvider.GetContext($__schemaRequest)
+            Step._dataProvider.GetContext($__schemaRequest)
         )
 
         if (!data) {
@@ -208,8 +225,8 @@ export class Step {
 
         // case no schema and no entity --> use current datatable
         if (!schema && !entity) {
-            const _options: TOptionalParameter = Step.DataProvider.Options.Parse($__schemaRequest, $context)
-            const _sqlQueryHelper = Step.DataProvider.GenerateSqlUpdate(<TSchemaRequestUpdate>{
+            const _options: TOptionalParameter = Step._dataProvider.Options.Parse($__schemaRequest, $context)
+            const _sqlQueryHelper = Step._dataProvider.GenerateSqlUpdate(<TSchemaRequestUpdate>{
                 entity: currentDataTable.Name
             },
                 _options
@@ -224,16 +241,18 @@ export class Step {
     @Logger.LogFunction()
     static async Delete(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
 
-        if (!typia.is<Partial<TSchemaRequestDelete>>(stepArguments.stepParams))
-            throw new HttpErrorInternalServerError(`Step.Delete: Wrong argument passed ${JsonUtils.Stringify(stepArguments.stepParams)}`)
+        Assert.Var<TStepDelete>(
+            stepArguments.stepParams,
+            `Step.Delete: Wrong argument passed ${JsonUtils.Stringify(stepArguments.stepParams)}`
+        )
 
         const { currentSchemaName, currentDataTable, stepParams } = stepArguments
 
         const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestDelete>(stepParams, new Sandbox($context)) as TSchemaRequestDelete
-         
+
         $context = merge(
             $context,
-            Step.DataProvider.GetContext($__schemaRequest)
+            Step._dataProvider.GetContext($__schemaRequest)
         )
 
         const { schema, entity } = $__schemaRequest
@@ -251,8 +270,8 @@ export class Step {
         // case no schema and no entity --> use current datatable
         // FIXME step delete: missing $context
         if (!schema && !entity) {
-            const _options: TOptionalParameter = Step.DataProvider.Options.Parse($__schemaRequest, $context)
-            const _sqlQueryHelper = Step.DataProvider.GenerateSqlDelete(<TSchemaRequestDelete>{
+            const _options: TOptionalParameter = Step._dataProvider.Options.Parse($__schemaRequest, $context)
+            const _sqlQueryHelper = Step._dataProvider.GenerateSqlDelete(<TSchemaRequestDelete>{
                 entity: currentDataTable.Name
             },
                 _options
@@ -266,6 +285,11 @@ export class Step {
 
     @Logger.LogFunction()
     static async Join(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
+
+        Assert.Var<TStepJoin>(
+            stepArguments.stepParams,
+            `Step.Join: Wrong argument passed ${JsonUtils.Stringify(stepArguments.stepParams)}`
+        )
 
         const { currentPlanName, currentDataTable, stepParams } = stepArguments
 
@@ -297,33 +321,41 @@ export class Step {
             ? await Step.Select(requestToSchema)
             : await Plans.Plans.get(currentPlanName)!.ProcessSchemaRequest(requestToCurrentPlan)
 
-        return await this.JoinCaseMap[type](stepArguments.currentDataTable, dtRight, leftField, rightField) ??
+        return await this._joinCaseMap[type](stepArguments.currentDataTable, dtRight, leftField, rightField) ??
             (Helper.CaseMapNotFound(type) && stepArguments.currentDataTable)
     }
 
     @Logger.LogFunction()
     static async Fields(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
-        const stepParams: string = stepArguments.stepParams as string
-        if (stepParams == "*")
+        Assert.Var<TStepFields>(stepArguments.stepParams, "Step.Fields: Wrong argument passed")
+
+        const params = stepArguments.stepParams
+
+        if (params == "*")
             return stepArguments.currentDataTable
 
-        if (StringUtils.IsEmpty(stepParams))
-            throw new HttpErrorInternalServerError("fields: cannot be empty")
-
-        const fields = StringUtils.Split(stepParams, ",")
-        return stepArguments.currentDataTable.SelectFields(fields)
+        if (Array.isArray(params)) {
+            return stepArguments.currentDataTable.SelectFields(params)
+        } else {
+            Assert.Condition(!StringUtils.IsEmpty(params), "Step.Fields: cannot be empty")
+            return stepArguments.currentDataTable.SelectFields(StringUtils.Split(params, ","))
+        }
     }
 
     @Logger.LogFunction()
     static async Sort(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
-        const stepParams = stepArguments.stepParams as TStepSort
+        Assert.Var<TStepSort>(stepArguments.stepParams, "Step.Sort: Wrong argument passed")
+
+        const params = stepArguments.stepParams
         const { currentDataTable } = stepArguments
-        return currentDataTable.Sort(stepParams)
+        return currentDataTable.Sort(params)
     }
 
     @Logger.LogFunction()
     static async Debug(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
-        const debug = stepArguments.stepParams as string ?? "error"
+        Assert.Var<TStepDebug>(stepArguments.stepParams, "Step.Debug: Wrong argument passed")
+
+        const debug = stepArguments.stepParams
         stepArguments.currentDataTable.SetMetaData(METADATA.PLAN_DEBUG, debug)
 
         if (stepArguments.currentDataTable.MetaData[METADATA.PLAN_ERRORS] == undefined) {
@@ -335,6 +367,8 @@ export class Step {
 
     @Logger.LogFunction(true)
     static async Run(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
+
+        Assert.Var<TStepRun>(stepArguments.stepParams, "Step.Run: Wrong argument passed")
 
         const _stepParams = merge(
             {
@@ -401,24 +435,23 @@ export class Step {
     @Logger.LogFunction()
     static async Sync(stepArguments: TStepArguments, $context?: Partial<TContext>): Promise<DataTable> {
 
-        const stepParams = stepArguments.stepParams as TStepSync
+        Assert.Var<TStepSync>(stepArguments.stepParams, "Step.Sync: Wrong argument passed")
+
+        const stepParams = stepArguments.stepParams
 
         const $__stepParams = PlaceHolder.EvaluateJsCode<TStepSync>(stepParams, new Sandbox($context)) as TStepSync
 
         const { from, to, id } = $__stepParams
 
-        if (!id)
-            throw new HttpErrorInternalServerError("'id' must be provided")
-
-        if (!from && !to)
-            throw new HttpErrorInternalServerError("Either 'from' and 'to' must be provided")
+        Assert.Var<string>(id, "'id' must be provided")
+        Assert.Condition(from !== undefined || to !== undefined, "Either 'from' and 'to' must be provided")
 
         const dtSource: DataTable = (from)
-            ? (await Step.#_Select(from.schema, from.entity)) ?? new DataTable(from.entity)
+            ? (await Step._select(from.schema, from.entity)) ?? new DataTable(from.entity)
             : stepArguments.currentDataTable
 
         const dtDestination: DataTable = (to)
-            ? (await Step.#_Select(to.schema, to.entity)) ?? new DataTable(to.entity)
+            ? (await Step._select(to.schema, to.entity)) ?? new DataTable(to.entity)
             : stepArguments.currentDataTable
 
 
@@ -470,15 +503,18 @@ export class Step {
         return stepArguments.currentDataTable.SetFields()
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async Anonymize(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
-        const stepParams: string = stepArguments.stepParams as string
-        const fieldsToAnonymize = StringUtils.Split(stepParams, ",")
-        return await stepArguments.currentDataTable.Anonymize(fieldsToAnonymize)
+        Assert.Var<TStepAnonymize>(stepArguments.stepParams, "Step.Anonymize: Wrong argument passed")
+
+        const fields = stepArguments.stepParams
+        return await stepArguments.currentDataTable.Anonymize(fields)
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async RemoveDuplicates(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
+
+        Assert.Var<TStepRemoveDuplicates>(stepArguments.stepParams, "Step.RemoveDuplicates: Wrong argument passed")
 
         const {
             keys = undefined,
@@ -495,11 +531,13 @@ export class Step {
         return currentDataTable
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async ListEntities(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
 
+        Assert.Var<TStepListEntities>(stepArguments.stepParams, "Step.ListEntities: Wrong argument passed")
+
         const { currentDataTable, currentPlanName } = stepArguments
-        const schemaRequest = stepArguments.stepParams as TStepListEntities
+        const schemaRequest = stepArguments.stepParams
 
         // schema is defined
         if (schemaRequest?.schema) {
@@ -523,21 +561,14 @@ export class Step {
         return new DataTable(currentDataTable.Name, entitiesList)
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async RemoveFields(stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<string[]>(stepArguments.stepParams, stepArguments.stepParams instanceof Array, "remove-fields: must be an array")
+        Assert.Var<TStepRemoveFields>(stepArguments.stepParams, stepArguments.stepParams instanceof Array, "remove-fields: must be an array")
         return stepArguments.currentDataTable.RemoveFields(stepArguments.stepParams)
     }
 
-    static async #_Select(schema: string, entity: string): Promise<DataTable | undefined> {
-        const intResp = await Schema.Select({
-            schema,
-            entity
-        })
-
-        if (intResp.Body && TypeUtils.IsSchemaResponseWithData(intResp.Body))
-            return intResp.Body.data
-
-        return undefined
+    @Logger.LogFunction(true)
+    static async Break(_stepArguments: TStepArguments, _$context?: Partial<TContext>): Promise<undefined> {
+        throw new Error("__BREAK__")
     }
 }

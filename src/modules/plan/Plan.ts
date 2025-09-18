@@ -1,36 +1,40 @@
 //
 //
 //
-import _ from "lodash"
+import forEach from "lodash/forEach"
+import has from "lodash/has"
+import keys from "lodash/keys"
+import merge from "lodash/merge"
+import values from "lodash/values"
 import typia from "typia"
 //
-import { METADATA } from "../core/@consts"
-import { Logger } from "../../utils/Logger"
-import { TInternalResponse } from "../schema/types/TInternalResponse"
-import { TJson } from "../../types/TJson"
-import { TSchemaRequest } from "../schema/types/TSchemaRequest"
-import { TScheduleConfig } from './types/TScheduleConfig'
-import { Step } from "./Step"
-import { TStepArguments } from "./types/TStepArguments"
 import { DataTable, TRow } from "../../types/DataTable"
+import { TJson } from "../../types/TJson"
 import { Helper } from "../../utils/Helper"
-import { WarnError } from "../errors/InternalError"
 import { JsonUtils } from "../../utils/JsonUtils"
-import { HttpResponse } from "../core/HttpResponse"
-import { HttpErrorNotFound } from "../errors/HttpErrors"
-import { IDataProvider } from '../source/base/IDataProvider'
-import { TConfigSource } from "../source/types/TConfigSource"
-import { TContext } from "../sandbox/types/TContext"
-import { MemoryData } from "../source/providers/MemoryData"
-import { DATA_PROVIDER } from "../source/@consts"
+import { Logger } from "../../utils/Logger"
 import { Semaphore } from "../../utils/Semaphore"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 import { AUTH_PERMISSION } from "../auth/@consts"
 import { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
+import { METADATA } from "../core/@consts"
 import { ConfigManager } from "../core/ConfigManager"
+import { HttpResponse } from "../core/HttpResponse"
 import { StepCommand } from "../core/types/TConfig"
+import { HttpErrorNotFound } from "../errors/HttpErrors"
+import { WarnError } from "../errors/InternalError"
+import { TContext } from "../sandbox/types/TContext"
+import { TInternalResponse } from "../schema/types/TInternalResponse"
+import { TSchemaRequest } from "../schema/types/TSchemaRequest"
+import { DATA_PROVIDER } from "../source/@consts"
+import { IDataProvider } from '../source/base/IDataProvider'
+import { MemoryData } from "../source/providers/MemoryData"
+import { TConfigSource } from "../source/types/TConfigSource"
 import { STEP_STATUS } from "./@consts"
+import { Step } from "./Step"
+import { TScheduleConfig } from './types/TScheduleConfig'
+import { TStepArguments } from "./types/TStepArguments"
 
 
 //
@@ -52,7 +56,7 @@ export class Plan {
     async Init() {
         const entities = ConfigManager.Get<TJson<StepCommand[]>>(`plans.${this.Name}`) ?? {}
 
-        _.forEach(entities, (steps: StepCommand[], entity: string) => {
+        forEach(entities, (steps: StepCommand[], entity: string) => {
             this.Entities.set(entity, steps)
             this.#__LOCK__.set(entity, new Semaphore(this.SemaphoreSize))
         })
@@ -141,7 +145,7 @@ export class Plan {
         await this.#__LOCK__.get($context.$plan!.entity)!.Acquire()
 
         for await (const [stepIndex, step] of Object.entries(steps)) {
-            $context = _.merge(
+            $context = merge(
                 $context,
                 <Partial<TContext>>{
                     $plan: {
@@ -155,7 +159,7 @@ export class Plan {
 
             if (step === null) {
                 Logger.Error(`Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}, ${JsonUtils.Stringify(step)}`)
-                $context = _.merge(
+                $context = merge(
                     $context,
                     <Partial<TContext>>{
                         $plan: {
@@ -172,24 +176,8 @@ export class Plan {
 
             try {
 
-                const __stepCommand: string = _.keys(step)[0]
-
-                const __stepParams: TJson = _.values(<object>step)[0]
-
-                if (__stepCommand === 'break') {
-                    Logger.Info(`${Logger.Out} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': user break at step '${$context.$plan!.$current.stepIndex}', ${JsonUtils.Stringify(step)}`)
-                    $context = _.merge(
-                        $context,
-                        <Partial<TContext>>{
-                            $plan: {
-                                $current: {
-                                    status: STEP_STATUS.COMPLETED
-                                }
-                            }
-                        }
-                    )
-                    return currentDataTable
-                }
+                const __stepCommand: string = keys(step)[0]
+                const __stepParams: TJson = values(<object>step)[0]
 
                 const __stepArguments: TStepArguments = {
                     currentSchemaName: $context.$plan!.schema!,
@@ -200,11 +188,14 @@ export class Plan {
 
                 const executeStep = Step.ExecuteCaseMap[__stepCommand] ?? Helper.CaseMapNotFound(__stepCommand)
 
-                if (executeStep !== undefined) {
-                    currentDataTable = await executeStep(__stepArguments)
+                if (executeStep) {
+                    const stepReturn = await executeStep(__stepArguments)
+                    if (stepReturn) {
+                        currentDataTable = stepReturn
+                    }
                 }
                 
-                $context = _.merge(
+                $context = merge(
                     $context,
                     <Partial<TContext>>{
                         $plan: {
@@ -217,6 +208,22 @@ export class Plan {
                 
             } catch (error: unknown) {
                 const _error = error as Error
+
+                if (_error.message === "__BREAK__") {
+                    Logger.Info(`${Logger.Out} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': user break at step '${$context.$plan!.$current.stepIndex}', ${JsonUtils.Stringify(step)}`)
+                    $context = merge(
+                        $context,
+                        <Partial<TContext>>{
+                            $plan: {
+                                $current: {
+                                    status: STEP_STATUS.COMPLETED
+                                }
+                            }
+                        }
+                    )
+                    return currentDataTable
+                }
+                
                 const _errorMessage = `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify(step)}' is ignored because of error ${JsonUtils.Stringify(_error?.message)}`
 
                 if (typia.is<WarnError>(error)) {
@@ -236,7 +243,7 @@ export class Plan {
                     Logger.Debug(`${Logger.Out} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify(step)}' added error ${JsonUtils.Stringify((<TJson[]>currentDataTable.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
                 }
             }
-            $context = _.merge(
+            $context = merge(
                 $context,
                 <Partial<TContext>>{
                     $plan: {
@@ -261,7 +268,7 @@ export class Plan {
         const configFileJson = await ConfigManager.Load()
 
         // check if plan exist
-        if (ConfigManager.Has(`plans.${plan}`) && _.has(configFileJson.plans, plan)) {
+        if (ConfigManager.Has(`plans.${plan}`) && has(configFileJson.plans, plan)) {
             ConfigManager.Set(`plans.${plan}`, configFileJson.plans[plan])
             await this.Init()
             return HttpResponse.Ok({
