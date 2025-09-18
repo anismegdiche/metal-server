@@ -1,28 +1,46 @@
 // Roles.test.ts
 import { Roles } from "../Roles"
-import { AUTH_PERMISSION } from "../@consts"
+import { AUTH_PERMISSION, AUTH_PROVIDER } from "../@consts"
 import { TUserTokenInfo } from "../@types"
 import { HttpErrorForbidden } from "../../errors/HttpErrors"
+import { TConfig } from "../../core/types/TConfig"
 
-jest.mock("../../core/ConfigStore", () => ({
-    ConfigStore: {
-        Configuration: {
-            roles: {
-                admin: "crudal",
-                user: "r",
-                none: null
-            },
-            server: {
-                authentication: {
-                    "default-role": "none"
-                }
-            }
-        }
+// Minimal test configuration that matches TConfig
+const config: Partial<TConfig> = {
+    roles: {
+        admin: "crudal",
+        user: "r",
+        none: null
+    },
+    server: {
+        authentication: {
+            provider: AUTH_PROVIDER.LOCAL,
+            "default-role": "none"
+        },
     }
-}))
+}
+
+// Mock ConfigManager.Get with specific path handling
+const mockConfigManager = {
+    Get: jest.fn((path: string) => {
+        // Direct path resolution for known test paths
+        if (path === 'roles') 
+            return config.roles;
+        if (path === 'server.authentication.default-role') 
+            return config.server?.authentication?.['default-role'];
+        return undefined;
+    })
+};
+
+jest.mock("../../core/ConfigManager", () => ({
+    ConfigManager: mockConfigManager
+}));
 
 describe("Roles", () => {
     beforeEach(() => {
+        // Reset all mocks before each test
+        jest.clearAllMocks()
+        // Initialize Roles
         Roles.Init()
     })
 
