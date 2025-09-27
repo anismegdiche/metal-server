@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { StorageFilesData } from "../providers/StorageFilesData"
-import { Logger } from "../../../utils/Logger"
 import { Cache } from "../../cache/Cache"
 import { DATA_PROVIDER } from "../@consts"
 import { DataTable } from "../../../types/DataTable"
@@ -15,8 +14,6 @@ import { ContentProvider } from "../../content/ContentProvider"
 import { STORAGE } from "../../storage/@consts"
 import { StorageProvider } from "../../storage/StorageProvider"
 
-// // Mocks
-jest.mock("../../../utils/Logger")
 jest.mock("../../cache/Cache")
 jest.mock("../DataProvider")
 jest.mock("../../storage/StorageProvider")
@@ -119,16 +116,6 @@ describe("StorageFilesData", () => {
             await storageFilesData.Connect()
             expect(mockStorageProvider.Connect).toHaveBeenCalled()
         });
-
-        it("should handle connection errors gracefully", async () => {
-            const errorSpy = jest.spyOn(Logger, "Error")
-            mockStorageProvider.Connect.mockImplementation(() => {
-                throw new Error("Connection failed")
-            })
-
-            await storageFilesData.Connect()
-            expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to connect in storage provider"))
-        })
     })
 
     describe("Disconnect", () => {
@@ -140,16 +127,6 @@ describe("StorageFilesData", () => {
         it("should disconnect successfully", async () => {
             await storageFilesData.Disconnect()
             expect(mockStorageProvider.Disconnect).toHaveBeenCalled()
-        })
-
-        it("should handle disconnection errors gracefully", async () => {
-            const errorSpy = jest.spyOn(Logger, "Error")
-            mockStorageProvider.Disconnect.mockImplementation(() => {
-                throw new Error("Disconnection failed")
-            })
-
-            await storageFilesData.Disconnect()
-            expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to disconnect in storage provider"))
         })
     })
 

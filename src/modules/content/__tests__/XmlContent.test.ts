@@ -6,6 +6,24 @@ import { DataTable } from "../../../types/DataTable"
 import { XmlContent } from "../providers/XmlContent"
 import { TContentConfig } from "../@types"
 
+// Mock dependencies
+jest.mock('../../../utils/Logger', () => ({
+    Logger: {
+        SetLevel: () => () => { },
+        EnableAll: () => () => { },
+        DisableAll: () => () => { },
+        Log: () => () => { },
+        Error: () => () => { },
+        Warn: () => () => { },
+        Debug: () => () => { },
+        Info: () => () => { },
+        Message: () => () => { },
+        LogFunction: () => () => { },
+        Level : "error",
+        Out: 'OUT'
+    }
+}))
+
 const xmlUsers = `<?xml version="1.0" encoding="UTF-8"?>
 <users>
     <user>
@@ -263,8 +281,7 @@ describe('XmlContent', () => {
         xmlContent.Params = { "xml-path": 'users.user' }
 
         await expect(xmlContent.Get('SELECT * FROM users WHERE', {}))
-            .rejects
-            .toThrow()
+            .rejects.toThrow()
     })
 
     it('should handle SQL queries with invalid table name', async () => {

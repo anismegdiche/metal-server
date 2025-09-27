@@ -5,14 +5,30 @@ import { DataLakeServiceClient, DataLakeFileSystemClient, DataLakeFileClient } f
 import { AzureDataLakeStorage } from '../providers/AzureDataLakeStorage'
 import { HttpErrorInternalServerError } from '../../../modules/errors/HttpErrors'
 import { ReadableUtils } from '../../../utils/ReadableUtils'
-import { Logger } from '../../../utils/Logger'
 import { DataTable } from '../../../types/DataTable'
 import { TConfigSource } from "../../source/types/TConfigSource"
 
 // Mock dependencies
 jest.mock('@azure/storage-file-datalake')
 jest.mock('../../../utils/ReadableUtils')
-jest.mock('../../../utils/Logger')
+
+// Mock dependencies
+jest.mock('../../../utils/Logger', () => ({
+    Logger: {
+        SetLevel: () => () => { },
+        EnableAll: () => () => { },
+        DisableAll: () => () => { },
+        Log: () => () => { },
+        Error: () => () => { },
+        Warn: () => () => { },
+        Debug: () => () => { },
+        Info: () => () => { },
+        Message: () => () => { },
+        LogFunction: () => () => { },
+        Level : "error",
+        Out: 'OUT'
+    }
+}))
 
 const rndParams = typia.random<TConfigSource>()
 

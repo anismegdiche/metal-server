@@ -1,4 +1,4 @@
-/* eslint-disable no-template-curly-in-string */
+ 
 
 import { Sandbox } from "../../modules/sandbox/Sandbox"
 import { TJson } from "../../types/TJson"
@@ -7,10 +7,18 @@ import { PlaceHolder } from "../PlaceHolder"
 // Mock the Logger
 jest.mock('../../utils/Logger', () => ({
     Logger: {
+        SetLevel: () => () => { },
+        EnableAll: () => () => { },
+        DisableAll: () => () => { },
+        Log: () => () => { },
+        Error: () => () => { },
+        Warn: () => () => { },
+        Debug: () => () => { },
+        Info: () => () => { },
+        Message: () => () => { },
         LogFunction: () => () => { },
-        Debug: jest.fn(),
-        Warn: jest.fn(),
-        Error: jest.fn()
+        Level : "error",
+        Out: 'OUT'
     }
 }))
 

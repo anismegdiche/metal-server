@@ -9,10 +9,18 @@ import { TStep } from "../types/TStep"
 // Mock the Logger
 jest.mock('../../../utils/Logger', () => ({
     Logger: {
+        SetLevel: () => () => { },
+        EnableAll: () => () => { },
+        DisableAll: () => () => { },
+        Log: () => () => { },
+        Error: () => () => { },
+        Warn: () => () => { },
+        Debug: () => () => { },
+        Info: () => () => { },
+        Message: () => () => { },
         LogFunction: () => () => { },
-        Debug: jest.fn(),
-        Warn: jest.fn(),
-        Error: jest.fn()
+        Level : "error",
+        Out: 'OUT'
     }
 }))
 

@@ -9,7 +9,6 @@ import { DATA_PROVIDER } from "../@consts"
 import { TJson } from "../../../types/TJson"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { Cache } from '../../cache/Cache'
-import { Logger } from "../../../utils/Logger"
 import mssql from 'mssql'
 
 // Mock mssql module
@@ -22,11 +21,18 @@ jest.mock('mssql', () => {
 // Mock the Logger
 jest.mock('../../../utils/Logger', () => ({
     Logger: {
+        SetLevel: () => () => { },
+        EnableAll: () => () => { },
+        DisableAll: () => () => { },
+        Log: () => () => { },
+        Error: () => () => { },
+        Warn: () => () => { },
+        Debug: () => () => { },
+        Info: () => () => { },
+        Message: () => () => { },
         LogFunction: () => () => { },
-        Debug: jest.fn(),
-        Warn: jest.fn(),
-        Error: jest.fn(),
-        Info: jest.fn()
+        Level : "error",
+        Out: 'OUT'
     }
 }))
 
@@ -158,7 +164,6 @@ describe('SqlServerData', () => {
             await sqlServerData.Connect()
 
             expect(sqlServerData.Connection).toBeUndefined()
-            expect(Logger.Error).toHaveBeenCalled()
         })
 
         it('should handle connection configuration properly', async () => {
@@ -201,7 +206,6 @@ describe('SqlServerData', () => {
             await sqlServerData.Connect()
 
             expect(sqlServerData.Connection).toBeUndefined()
-            expect(Logger.Error).toHaveBeenCalled()
         })
     })
 

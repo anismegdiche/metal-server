@@ -10,6 +10,24 @@ import { MemoryData } from "../providers/MemoryData"
 import { TConfigSource } from "../types/TConfigSource"
 import { Cache } from "../../cache/Cache"
 
+// Mock dependencies
+jest.mock('../../../utils/Logger', () => ({
+    Logger: {
+        SetLevel: () => () => { },
+        EnableAll: () => () => { },
+        DisableAll: () => () => { },
+        Log: () => () => { },
+        Error: () => () => { },
+        Warn: () => () => { },
+        Debug: () => () => { },
+        Info: () => () => { },
+        Message: () => () => { },
+        LogFunction: () => () => { },
+        Level : "error",
+        Out: 'OUT'
+    }
+}))
+
 describe('MemoryData', () => {
 
     // Initializing with valid source and config creates a properly configured instance

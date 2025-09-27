@@ -1,5 +1,5 @@
-/* eslint-disable func-style */
-/* eslint-disable init-declarations */
+ 
+ 
 import { Readable } from "node:stream"
 import * as ExcelJS from 'exceljs'
 import * as crc32 from 'crc-32'
@@ -14,10 +14,18 @@ import { TXlsContentParams } from "../types/TXlsContentParams"
 // Mock the Logger decorator
 jest.mock('../../../utils/Logger', () => ({
     Logger: {
+        SetLevel: () => () => { },
+        EnableAll: () => () => { },
+        DisableAll: () => () => { },
+        Log: () => () => { },
+        Error: () => () => { },
+        Warn: () => () => { },
+        Debug: () => () => { },
+        Info: () => () => { },
+        Message: () => () => { },
         LogFunction: () => () => { },
-        Debug: jest.fn(),
-        Warn: jest.fn(),
-        Error: jest.fn()
+        Level : "error",
+        Out: 'OUT'
     }
 }))
 

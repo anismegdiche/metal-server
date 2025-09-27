@@ -11,16 +11,22 @@ import { TCacheData } from "../types/TCacheData"
 import { TInternalResponse } from "../../schema/types/TInternalResponse"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { ConfigManager } from '../../core/ConfigManager'
-import { Logger } from '../../../utils/Logger'
 import { Roles } from '../../auth/Roles'
 
 // Mock dependencies
 jest.mock('../../../utils/Logger', () => ({
     Logger: {
-        LogFunction: jest.fn().mockImplementation(() => (_: any, __: any, descriptor: any) => descriptor),
-        Debug: jest.fn(),
-        Warn: jest.fn(),
-        Error: jest.fn(),
+        SetLevel: () => () => { },
+        EnableAll: () => () => { },
+        DisableAll: () => () => { },
+        Log: () => () => { },
+        Error: () => () => { },
+        Warn: () => () => { },
+        Debug: () => () => { },
+        Info: () => () => { },
+        Message: () => () => { },
+        LogFunction: () => () => { },
+        Level : "error",
         Out: 'OUT'
     }
 }))

@@ -22,10 +22,18 @@ jest.mock('@aws-sdk/client-s3', () => {
 // Mock the Logger decorator
 jest.mock('../../../utils/Logger', () => ({
     Logger: {
-        LogFunction: () => () => { },
-        Debug: () => () => { },
+        SetLevel: () => () => { },
+        EnableAll: () => () => { },
+        DisableAll: () => () => { },
+        Log: () => () => { },
+        Error: () => () => { },
         Warn: () => () => { },
-        Error: () => () => { }
+        Debug: () => () => { },
+        Info: () => () => { },
+        Message: () => () => { },
+        LogFunction: () => () => { },
+        Level : "error",
+        Out: 'OUT'
     }
 }))
 

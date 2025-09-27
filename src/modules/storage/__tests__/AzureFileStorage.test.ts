@@ -5,9 +5,25 @@ import { DataTable } from "../../../types/DataTable"
 import { AzureFileStorage, TAzureFileStorageConfig } from "../providers/AzureFileStorage"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { ShareServiceClient, ShareDirectoryClient, ShareFileClient } from "@azure/storage-file-share"
-
-
 import { ReadableUtils } from "../../../utils/ReadableUtils"
+
+// Mock dependencies
+jest.mock('../../../utils/Logger', () => ({
+    Logger: {
+        SetLevel: () => () => { },
+        EnableAll: () => () => { },
+        DisableAll: () => () => { },
+        Log: () => () => { },
+        Error: () => () => { },
+        Warn: () => () => { },
+        Debug: () => () => { },
+        Info: () => () => { },
+        Message: () => () => { },
+        LogFunction: () => () => { },
+        Level : "error",
+        Out: 'OUT'
+    }
+}))
 
 const rndParams = typia.random<TConfigSource>()
 
