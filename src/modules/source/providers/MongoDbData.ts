@@ -29,13 +29,13 @@ import { Assert } from '../../../utils/Assert'
 // Define the MongoDB types that we'll use
 type MongoDbTypes = {
     MongoClient: typeof import('mongodb').MongoClient;
-    Filter: <T = any>(filter: object) => object;
-    UpdateFilter: <T = any>(update: object) => object;
+    Filter: <_T = any>(filter: object) => object;
+    UpdateFilter: <_T = any>(update: object) => object;
 };
 
 type Document = MongoDocument;
-type Filter<T> = object;
-type UpdateFilter<T> = object;
+type Filter<_T> = object;
+type UpdateFilter<_T> = object;
 
 //
 export type TMongoDbDataConfig = {
@@ -60,12 +60,6 @@ export class MongoDbData extends absDataProvider {
             };
         }
         return this._mongoDb;
-    }
-
-    // Helper method to get the MongoDB client with proper typing
-    private async getMongoClient() {
-        const MongoDb = await MongoDbData._loadMongoDb();
-        return new MongoDb.MongoClient(this.Config.host, this.Config.options);
     }
 
     SourceName?: string
@@ -126,7 +120,7 @@ export class MongoDbData extends absDataProvider {
 
         const { schema, entity } = schemaRequest
 
-        // eslint-disable-next-line no-param-reassign
+         
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -167,7 +161,7 @@ export class MongoDbData extends absDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        // eslint-disable-next-line no-param-reassign
+         
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -195,7 +189,7 @@ export class MongoDbData extends absDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        // eslint-disable-next-line no-param-reassign
+         
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -233,7 +227,7 @@ export class MongoDbData extends absDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        // eslint-disable-next-line no-param-reassign
+         
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -258,7 +252,7 @@ export class MongoDbData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     @Logger.LogFunction()
     async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
@@ -295,12 +289,12 @@ export class MongoDbData extends absDataProvider {
         })
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     EscapeEntity(entity: string): string {
         return entity
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     EscapeField(field: string): string {
         return field
     }

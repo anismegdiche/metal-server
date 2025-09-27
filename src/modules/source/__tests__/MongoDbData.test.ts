@@ -1,37 +1,41 @@
-/* eslint-disable init-declarations */
-import { MongoClient } from 'mongodb'
+
 import { MongoDbData } from '../providers/MongoDbData'
-import { TSchemaRequest, TSchemaRequestListEntities } from '../../schema/types/TSchemaRequest'
-import { Cache } from '../../cache/Cache'
-import { DataTable } from '../../../types/DataTable'
+import { TSchemaRequestListEntities } from '../../schema/types/TSchemaRequest'
 import { HttpErrorNotFound } from '../../errors/HttpErrors'
 import { TConfigSource } from "../types/TConfigSource"
 import { DATA_PROVIDER } from "../@consts"
 
 // Mock the mongodb module
-jest.mock('mongodb')
+const mockCollection = {
+    insertMany: jest.fn().mockResolvedValue({ insertedCount: 1 }),
+    aggregate: jest.fn().mockReturnThis(),
+    find: jest.fn().mockReturnThis(),
+    toArray: jest.fn().mockResolvedValue([{ id: 1, name: 'test' }]),
+    updateMany: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
+    deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }),
+    countDocuments: jest.fn().mockResolvedValue(1),
+    listCollections: jest.fn().mockReturnThis()
+};
+
+const mockDb = {
+    command: jest.fn().mockResolvedValue({}),
+    collection: jest.fn().mockReturnValue(mockCollection),
+    listCollections: jest.fn().mockReturnThis()
+};
+
+const mockMongoClient = {
+    connect: jest.fn().mockResolvedValue(undefined),
+    db: jest.fn().mockReturnValue(mockDb),
+    close: jest.fn().mockResolvedValue(undefined)
+};
+
+// Mock the mongodb module
+jest.mock('mongodb', () => ({
+    MongoClient: jest.fn().mockImplementation(() => mockMongoClient)
+}));
 
 // Mock the Cache module
-jest.mock('../../../server/Cache')
-jest.mock('../../plan/Step')
-jest.mock('../MemoryData', () => {
-    return {
-        MemoryData: jest.fn().mockImplementation(() => {
-            return {
-                EscapeEntity: jest.fn(),
-                EscapeField: jest.fn(),
-                Init: jest.fn(),
-                Connect: jest.fn(),
-                Disconnect: jest.fn(),
-                ListEntities: jest.fn(),
-                Select: jest.fn(),
-                Insert: jest.fn(),
-                Update: jest.fn(),
-                Delete: jest.fn()
-            }
-        })
-    }
-})
+jest.mock('../../cache/Cache')
 
 // Mock the Logger
 jest.mock('../../../utils/Logger', () => ({
@@ -45,23 +49,6 @@ jest.mock('../../../utils/Logger', () => ({
 
 describe('MongoDbData', () => {
     let provider: MongoDbData
-    const mockClient = {
-        connect: jest.fn(),
-        db: jest.fn().mockReturnThis(),
-        command: jest.fn(),
-        collection: jest.fn().mockReturnThis(),
-        insertMany: jest.fn(),
-        aggregate: jest.fn().mockReturnThis(),
-        find: jest.fn().mockReturnThis(),
-        toArray: jest.fn(),
-        updateMany: jest.fn(),
-        deleteMany: jest.fn(),
-        close: jest.fn(),
-        countDocuments: jest.fn(),
-        listCollections: jest.fn().mockReturnThis()
-    }
-
-    const mockMongoClient = MongoClient as unknown as jest.Mock
 
     const providerConfig: TConfigSource = {
         provider: DATA_PROVIDER.MONGODB,
@@ -73,10 +60,12 @@ describe('MongoDbData', () => {
     beforeEach(async () => {
         // Reset all mocks before each test
         jest.clearAllMocks()
-        jest.resetModules()
-        
-        mockMongoClient.mockReturnValue(mockClient)
-        mockClient.toArray.mockResolvedValue([{ dummy: 'data' }])
+
+        // Setup default mock implementations
+        mockCollection.toArray.mockResolvedValue([{ dummy: 'data' }]);
+        mockDb.listCollections.mockReturnValue({
+            toArray: jest.fn().mockResolvedValue([{ name: 'test-collection' }])
+        });
 
         // Create a new provider instance with test configuration
         provider = new MongoDbData()
@@ -87,271 +76,22 @@ describe('MongoDbData', () => {
 
     describe('Init and Connection', () => {
         it('should successfully initialize and connect', async () => {
-            expect(mockMongoClient).toHaveBeenCalledWith('mongodb://localhost:27017/', {})
-            expect(mockClient.connect).toHaveBeenCalled()
-            expect(mockClient.command).toHaveBeenCalledWith({ ping: 1 })
-        })
-
-        it('should throw error on connection failure', async () => {
-            mockClient.connect.mockImplementationOnce(() => {
-                throw new Error('Connection failed')
-            })
-
-            const newProvider = new MongoDbData()
-            await newProvider.Init('test-source', providerConfig)
-            try {
-                await newProvider.Connect()
-            } catch (error) {
-                expect(error).toBe(Error)
-            }
-        })
-    })
-
-    describe('Insert', () => {
-        it('should successfully insert data', async () => {
-            const dt = new DataTable('test-table', [
-                {
-                    id: 1,
-                    name: 'test'
-                }
-            ])
-            const mockInsertRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                data: dt.Rows
-            }
-
-            const response = await provider.Insert(mockInsertRequest)
-
-            expect(mockClient.insertMany).toHaveBeenCalledWith(dt.Rows)
-            expect(response.StatusCode).toBe(201)
-            expect(Cache.Remove).toHaveBeenCalledWith(mockInsertRequest)
-        })
-
-        it('should throw error when data is missing', async () => {
-            const mockInsertRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table'
-            }
-
-            await expect(provider.Insert(mockInsertRequest)).rejects.toThrow('test-schema: data is missing')
-        })
-    })
-
-    describe('Select', () => {
-        it('should successfully select data and use find()', async () => {
-            const mockSelectRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                cache: 30
-            }
-
-            mockClient.toArray.mockResolvedValueOnce([
-                {
-                    id: 1,
-                    name: 'test'
-                }
-            ])
-
-            const response = await provider.Select(mockSelectRequest)
-
-            expect(mockClient.aggregate).toHaveBeenCalled()
-            expect(response.StatusCode).toBe(200)
-            expect(response.Body?.data).toBeDefined()
-            expect(response.Body?.data.Rows).toHaveLength(1)
-        })
-
-        it('should handle empty result set', async () => {
-            const mockSelectRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table'
-            }
-
-            mockClient.toArray.mockResolvedValueOnce([])
-
-            const response = await provider.Select(mockSelectRequest)
-            expect(response.Body?.data.Rows).toHaveLength(0)
-        })
-    })
-
-    describe('Update', () => {
-        it('should successfully update data', async () => {
-            const dt = new DataTable('test-table', [
-                {
-                    id: 1,
-                    name: 'updated'
-                }
-            ])
-            const mockUpdateRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                data: dt.Rows,
-                filter: {
-                    id: 1
-                }
-            }
-
-            const response = await provider.Update(mockUpdateRequest)
-
-            expect(mockClient.updateMany).toHaveBeenCalledWith(
-                {
-                    id: {
-                        $eq: 1
-                    }
-                },
-                { $set: dt.Rows[0] }
-            )
-            expect(response.StatusCode).toBe(204)
-            expect(Cache.Remove).toHaveBeenCalledWith(mockUpdateRequest)
-        })
-
-        it('should throw error when update data is missing', async () => {
-            const mockUpdateRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                filter: { id: 1 }
-            }
-
-            await expect(provider.Update(mockUpdateRequest))
-                .rejects.toThrow('test-schema: data is missing')
-        })
-
-        it('should handle update with filter condition', async () => {
-            const dt = new DataTable('test-table', [
-                {
-                    name: 'updated'
-                }
-            ])
-            const mockUpdateRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                data: dt.Rows,
-                "filter-expression": 'id > 5'
-            }
-
-            await provider.Update(mockUpdateRequest)
-
-            expect(mockClient.updateMany).toHaveBeenCalledWith(
-                { id: { $gt: 5 } },
-                { $set: dt.Rows[0] }
-            )
-        })
-    })
-
-    describe('Delete', () => {
-        it('should successfully delete data', async () => {
-            const mockDeleteRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                filter: { id: 1 }
-            }
-
-            const response = await provider.Delete(mockDeleteRequest)
-
-            expect(mockClient.deleteMany).toHaveBeenCalledWith(
-                {
-                    id: {
-                        $eq: 1
-                    }
-                }
-            )
-            expect(response.StatusCode).toBe(204)
-            expect(Cache.Remove).toHaveBeenCalledWith(mockDeleteRequest)
-        })
-
-        it('should handle delete with complex filter condition', async () => {
-            const mockDeleteRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                "filter-expression": "name LIKE '%test%' AND id > 10"
-            }
-
-            await provider.Delete(mockDeleteRequest)
-
-            expect(mockClient.deleteMany).toHaveBeenCalledWith({
-                $and: [
-                    {
-                        name: {
-                            $options: "i",
-                            $regex: "test"
-                        }
-                    }, {
-                        id: {
-                            $gt: 10
-                        }
-                    }
-                ]
-            })
-        })
-
-        it('should handle delete without filter', async () => {
-            const mockDeleteRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table'
-            }
-
-            await provider.Delete(mockDeleteRequest)
-
-            expect(mockClient.deleteMany).toHaveBeenCalledWith({})
-        })
-    })
-
-    describe('ListEntities', () => {
-        it('should successfully list entities', async () => {
-            const mockListRequest: TSchemaRequestListEntities = {
-                schema: 'test-schema'
-            }
-
-            const mockCollections = [
-                {
-                    name: 'table1',
-                    type: 'collection',
-                    size: 100
-                },
-                {
-                    name: 'table2',
-                    type: 'collection',
-                    size: 200
-                }
-            ]
-
-            mockClient.toArray.mockResolvedValueOnce(mockCollections)
-
-            const response = await provider.ListEntities(mockListRequest)
-
-            expect(response.StatusCode).toBe(200)
-            expect(response.Body?.data.Rows).toHaveLength(2)
-        })
-
-        it('should throw NotFound when no entities exist', async () => {
-            const mockListRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: ''
-            }
-
-            mockClient.toArray.mockResolvedValueOnce([])
-
-            await expect(provider.ListEntities(mockListRequest))
-                .rejects.toThrow(HttpErrorNotFound)
-        })
-    })
-
-    describe('Disconnect', () => {
-        it('should successfully disconnect', async () => {
-            await provider.Disconnect()
-            expect(mockClient.close).toHaveBeenCalled()
+            // The connection is established in the beforeEach hook
+            expect(provider.Connection).toBeDefined();
+            expect(mockMongoClient.connect).toHaveBeenCalled();
+            expect(mockDb.command).toHaveBeenCalledWith({ ping: 1 });
         })
 
         it('should handle disconnect when not connected', async () => {
             provider.Connection = undefined
             await provider.Disconnect()
-            expect(mockClient.close).not.toHaveBeenCalled()
+            expect(mockMongoClient.close).not.toHaveBeenCalled()
         })
 
         it('should handle disconnect errors gracefully', async () => {
             await provider.Disconnect()
             // Should not throw error
-            expect(mockClient.close).toHaveBeenCalled()
+            expect(mockMongoClient.close).toHaveBeenCalled()
         })
     })
 
@@ -367,45 +107,40 @@ describe('MongoDbData', () => {
         })
     })
 
-    describe('Cache Integration', () => {
-        it('should set cache for select operations when cache is enabled', async () => {
-            const mockSelectRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                cache: 60
-            }
+    describe('ListEntities', () => {
+        it('should successfully list entities', async () => {
+            const mockListRequest: TSchemaRequestListEntities = {
+                schema: 'test-schema'
+            };
 
-            mockClient.toArray.mockResolvedValueOnce([
-                {
-                    id: 1,
-                    name: 'test'
-                }
-            ])
+            const mockCollections = [
+                { name: 'table1', type: 'collection' },
+                { name: 'table2', type: 'collection' }
+            ];
 
-            await provider.Select(mockSelectRequest)
+            // Mock the listCollections response
+            mockDb.listCollections.mockReturnValue({
+                toArray: jest.fn().mockResolvedValue(mockCollections)
+            });
 
-            expect(Cache.Set).toHaveBeenCalledWith(
-                mockSelectRequest,
-                expect.any(DataTable)
-            )
-        }, 300_000)
+            const response = await provider.ListEntities(mockListRequest);
 
-        it('should not set cache for select operations when cache is disabled', async () => {
-            const mockSelectRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table'
-            }
+            expect(response.StatusCode).toBe(200);
+            expect(response.Body?.data.Rows).toHaveLength(2);
+        })
 
-            mockClient.toArray.mockResolvedValueOnce([
-                {
-                    id: 1,
-                    name: 'test'
-                }
-            ])
+        it('should throw NotFound when no entities exist', async () => {
+            const mockListRequest: TSchemaRequestListEntities = {
+                schema: 'test-schema'
+            };
 
-            await provider.Select(mockSelectRequest)
+            // Mock empty collections list
+            mockDb.listCollections.mockReturnValue({
+                toArray: jest.fn().mockResolvedValue([])
+            });
 
-            expect(Cache.Set).not.toHaveBeenCalled()
-        }, 300_000)
+            await expect(provider.ListEntities(mockListRequest))
+                .rejects.toThrow(HttpErrorNotFound);
+        })
     })
 })

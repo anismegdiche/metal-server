@@ -5,7 +5,6 @@ import _ from "lodash"
 //
 import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 import { StringUtils } from "../../../utils/StringUtils"
-import { Logger } from "../../../utils/Logger"
 import { Assert } from "../../../utils/Assert"
 
 
@@ -21,7 +20,7 @@ export class CosmosDbHelper {
     }
 
     static ParseSqlQuery(sqlQuery: string | undefined): string {
-        Assert.Var<string>(sqlQuery, !StringUtils.IsEmpty(sqlQuery), `${Logger.Out} Empty SQL Query: ${sqlQuery}`)
+        Assert.Var<string>(sqlQuery, !StringUtils.IsEmpty(sqlQuery), `Empty SQL Query: ${sqlQuery}`)
         const sqlHelper = new SqlQueryUtils(sqlQuery)
         let sqlTokens = sqlHelper.Tokenize()
         sqlTokens = _.map(sqlTokens, (token) => {

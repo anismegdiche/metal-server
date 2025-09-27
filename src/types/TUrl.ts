@@ -50,7 +50,7 @@ type ExtendedUrl = tags.TagBase<{
             const ipv4Match = url.hostname.match(ipv4Regex);
             if (ipv4Match) {
               // Validate each octet is between 0-255
-              return ipv4Match.slice(1).every(octet => {
+              return ipv4Match.slice(1).every((octet) => {
                 const num = parseInt(octet, 10);
                 return num >= 0 && num <= 255;
               });

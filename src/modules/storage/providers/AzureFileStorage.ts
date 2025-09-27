@@ -183,6 +183,9 @@ export class AzureFileStorage extends absStorageProvider {
         const directoryClient = this._shareClient.getDirectoryClient(StringUtils.Path(this._folder, dirName))
         const fileClient = directoryClient.getFileClient(fileName)
         const downloadResponse = await fileClient.download()
+            .catch((error) => {
+                throw new HttpErrorInternalServerError(`AzureFileStorage: Failed to download file - ${error}`)
+            })
         return downloadResponse.readableStreamBody as Readable
     }
 

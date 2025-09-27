@@ -170,7 +170,7 @@ describe('FtpStorage', () => {
                     size: 1000,
                     createdAt: expect.any(Date),
                     modifiedAt: expect.any(Date),
-                    path: '\\file1.txt'
+                    path: '/file1.txt'
                 }
             ])
         })

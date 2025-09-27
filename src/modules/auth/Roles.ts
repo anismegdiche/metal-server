@@ -1,7 +1,6 @@
 //
 //
 //
-//
 import _ from "lodash"
 //
 import { Assert } from "../../utils/Assert"
@@ -15,11 +14,11 @@ import { TUserTokenInfo } from "./@types"
 //
 export class Roles {
 
-    static #ServerRoles: TConfigRoles
+    static _serverRoles: TConfigRoles
     static UserDefaultRole?: string
 
     static Init(): void {
-        Roles.#ServerRoles = ConfigManager.Get<TConfigRoles>("roles") ?? {}
+        Roles._serverRoles = ConfigManager.Get<TConfigRoles>("roles") ?? {}
         Roles.UserDefaultRole = ConfigManager.Get("server.authentication.default-role")
     }
 
@@ -35,8 +34,8 @@ export class Roles {
         const rolesIntersection = _.intersection(roles, schemaRoles ?? roles)
 
         const userPermissions = _.chain(rolesIntersection.map(role => {
-            if (!StringUtils.IsEmpty(Roles.#ServerRoles[role])) {
-                return Roles.#ServerRoles[role]!.split('')
+            if (!StringUtils.IsEmpty(Roles._serverRoles[role])) {
+                return Roles._serverRoles[role]!.split('')
             }
             return []
         }))

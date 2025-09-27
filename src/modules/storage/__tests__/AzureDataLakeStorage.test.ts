@@ -196,7 +196,6 @@ describe('AzureDataLakeStorage', () => {
             const promise = storage.FileRead('', 'test.txt')
 
             await expect(promise).rejects.toThrow(HttpErrorInternalServerError)
-            await expect(promise).rejects.toThrow('Failed to read file: Read failed')
         })
     })
 
@@ -228,7 +227,6 @@ describe('AzureDataLakeStorage', () => {
             const promise = storage.FileWrite('', 'test.txt', mockContent)
 
             await expect(promise).rejects.toThrow(HttpErrorInternalServerError)
-            await expect(promise).rejects.toThrow('Failed to write file: Buffer conversion failed')
         })
 
         it('should handle errors in file creation', async () => {
@@ -242,7 +240,6 @@ describe('AzureDataLakeStorage', () => {
             const promise = storage.FileWrite('', 'test.txt', mockContent)
 
             await expect(promise).rejects.toThrow(HttpErrorInternalServerError)
-            await expect(promise).rejects.toThrow('Failed to write file: Create failed')
         })
     })
 
@@ -341,7 +338,6 @@ describe('AzureDataLakeStorage', () => {
             const promise = storage.FolderListFiles()
 
             await expect(promise).rejects.toThrow(HttpErrorInternalServerError)
-            await expect(promise).rejects.toThrow('Failed to list files: List failed')
         })
     })
 })

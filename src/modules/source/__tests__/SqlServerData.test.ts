@@ -1,5 +1,5 @@
-/* eslint-disable no-console */
-/* eslint-disable init-declarations */
+ 
+ 
 import { SqlServerData } from "../providers/SqlServerData"
 import { TConfigSource } from "../types/TConfigSource"
 import { TSchemaRequestSelect, TSchemaRequestInsert, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
@@ -34,7 +34,7 @@ jest.mock('../../../utils/Logger', () => ({
 console.warn = jest.fn()
 
 // Mock Cache
-jest.mock('../../../server/Cache', () => ({
+jest.mock('../../cache/Cache', () => ({
     Cache: {
         Set: jest.fn(),
         Remove: jest.fn(() => Promise.resolve())

@@ -9,26 +9,40 @@ import { TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities,
 
 export type TStepArgsDebug = string | null
 
-export type TStepArgsSelect = Omit<TSchemaRequestSelect, 'schema' | 'entity' | 'source'> & {
-    schema?: string
-    entity?: string
-}
+export type TStepArgsSelect = Omit<TSchemaRequestSelect, 'schema' | 'entity' | 'source'> & ({
+    schema: string
+    entity: string
+} | {
+    entity: string
+} | {
+    schema: undefined
+    entity: undefined
+})
 
-export type TStepArgsUpdate = Omit<TSchemaRequestUpdate, 'schema' | 'entity' | 'source'> & {
-    schema?: string
-    entity?: string
-}
+export type TStepArgsUpdate = Omit<TSchemaRequestUpdate, 'schema' | 'entity' | 'source'> & ({
+    schema: string
+    entity: string
+} | {
+    schema: undefined
+    entity: undefined
+})
 
-export type TStepArgsDelete = Omit<TSchemaRequestDelete, 'schema' | 'entity' | 'source'> & {
-    schema?: string
-    entity?: string
-}
+export type TStepArgsDelete = Omit<TSchemaRequestDelete, 'schema' | 'entity' | 'source'> & ({
+    schema: string
+    entity: string
+} | {
+    schema: undefined
+    entity: undefined
+})
 
 
-export type TStepArgsInsert = Omit<TSchemaRequestInsert, 'schema' | 'entity' | 'source'> & {
-    schema?: string
-    entity?: string
-}
+export type TStepArgsInsert = Omit<TSchemaRequestInsert, 'schema' | 'entity' | 'source'> & ({
+    schema: string
+    entity: string
+} | {
+    schema: undefined
+    entity: undefined
+})
 
 export type TStepArgsJoin = {
     type: JOIN_TYPE

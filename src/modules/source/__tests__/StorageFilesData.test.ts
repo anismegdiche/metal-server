@@ -1,6 +1,6 @@
 /* eslint-disable security/detect-non-literal-regexp */
 /* eslint-disable @typescript-eslint/no-explicit-any */
- 
+
 import { StorageFilesData } from "../providers/StorageFilesData"
 import { Logger } from "../../../utils/Logger"
 import { Cache } from "../../cache/Cache"
@@ -15,19 +15,19 @@ import { ContentProvider } from "../../content/ContentProvider"
 import { STORAGE } from "../../storage/@consts"
 import { StorageProvider } from "../../storage/StorageProvider"
 
-// Mocks
+// // Mocks
 jest.mock("../../../utils/Logger")
-jest.mock("../../../server/Cache")
-jest.mock("../../../providers/DataProvider")
-jest.mock("../../StorageProvider")
-jest.mock("../../ContentProvider")
+jest.mock("../../cache/Cache")
+jest.mock("../DataProvider")
+jest.mock("../../storage/StorageProvider")
+jest.mock("../../content/ContentProvider")
 jest.mock("../../../utils/Mutex")
 jest.mock("../../../utils/SynchronizerManager")
 jest.mock("../../../utils/Convert")
 jest.mock("../../core/HttpResponse")
 
-describe("FilesData", () => {
-    let filesData: StorageFilesData
+describe("StorageFilesData", () => {
+    let storageFilesData: StorageFilesData
     let mockStorageProvider: any
     let mockContentProvider: any
 
@@ -42,7 +42,7 @@ describe("FilesData", () => {
             Disconnect: jest.fn(),
             FileRead: jest.fn(),
             FileWrite: jest.fn(),
-            FileList: jest.fn()
+            FolderListFiles: jest.fn().mockResolvedValue(new DataTable("list", [{ name: 'test.json' }]))
         }
 
         mockContentProvider = {
@@ -58,65 +58,67 @@ describe("FilesData", () => {
         (Convert.PatternToRegex as jest.Mock).mockImplementation((pattern: string) => new RegExp(pattern.replace("*", ".*")))
 
         // Create instance
-        filesData = new StorageFilesData()
+        storageFilesData = new StorageFilesData()
     })
 
     describe("constructor", () => {
         it("should initialize with default values", () => {
-            expect(filesData.ProviderName).toBe(DATA_PROVIDER.STORAGE)
-            expect(filesData.Config).toEqual({})
-            expect(filesData.Connection).toBeUndefined()
-            expect(filesData.ContentHandler).toEqual({})
-            expect(filesData.File).toEqual({})
-            expect(filesData.Lock instanceof Map).toBe(true)
-        })
-    })
+            expect(storageFilesData.ProviderName).toBe(DATA_PROVIDER.STORAGE)
+            expect(storageFilesData.Config).toEqual({})
+            expect(storageFilesData.Connection).toBeUndefined()
+            expect(storageFilesData.ContentHandler).toEqual({})
+            expect(storageFilesData.File).toEqual({})
+            expect(storageFilesData.Lock instanceof Map).toBe(true)
+        });
+    });
 
     describe("Init", () => {
         const sourceConfig: TConfigSource = {
-            provider: DATA_PROVIDER?.STORAGE,
+            provider: DATA_PROVIDER.STORAGE,
             options: {
                 storage: STORAGE.FILESYSTEM,
                 content: {
                     "*.json": {
-                        type: CONTENT.JSON
+                        "content-type": CONTENT.JSON
                     }
                 }
             }
-        }
+        } as TConfigSource;
 
         it("should initialize correctly with valid config", async () => {
-            await filesData.Init("testSource", sourceConfig)
+            await storageFilesData.Init("testSource", sourceConfig);
 
-            expect(filesData.SourceName).toBe("testSource")
-            expect(filesData.Config).toBe(sourceConfig)
-            expect(StorageProvider.GetProvider).toHaveBeenCalledWith(STORAGE.FILESYSTEM)
-            expect(mockStorageProvider.SetConfig).toHaveBeenCalledWith(sourceConfig)
-            expect(mockStorageProvider.Init).toHaveBeenCalled()
-            expect(ContentProvider.GetProvider).toHaveBeenCalledWith(CONTENT.JSON)
-        })
+            expect(storageFilesData.SourceName).toBe("testSource");
+            expect(storageFilesData.Config).toEqual(sourceConfig);
+            expect(StorageProvider.GetProvider).toHaveBeenCalledWith(STORAGE.FILESYSTEM);
+            expect(mockStorageProvider.SetConfig).toHaveBeenCalledWith(sourceConfig);
+            expect(mockStorageProvider.Init).toHaveBeenCalled();
+            expect(ContentProvider.GetProvider).toHaveBeenCalledWith(CONTENT.JSON);
+        });
 
         it("should throw error when content is undefined", async () => {
-            const invalidConfig: any = { options: { storage: STORAGE.FILESYSTEM } }
-            await expect(filesData.Init("testSource", invalidConfig)).rejects.toThrow(HttpErrorInternalServerError)
-        })
+            const invalidConfig: any = { options: { storage: STORAGE.FILESYSTEM } };
+            await expect(storageFilesData.Init("testSource", invalidConfig))
+                .rejects.toThrow(HttpErrorInternalServerError);
+        });
 
         it("should throw error when connection init fails", async () => {
-            (StorageProvider.GetProvider as jest.Mock).mockReturnValue(null)
-            await expect(filesData.Init("testSource", sourceConfig)).rejects.toThrow(TypeError)
-        })
-    })
+            (StorageProvider.GetProvider as jest.Mock).mockReturnValueOnce(null);
+            await expect(storageFilesData.Init("testSource", sourceConfig))
+                .rejects.toThrow(TypeError);
+        });
+    });
 
     describe("Connect", () => {
-        beforeEach(async () => {
-            filesData.Connection = mockStorageProvider
-            filesData.ContentHandler = { "*.json": mockContentProvider }
-        })
+        beforeEach(() => {
+            storageFilesData.Connection = mockStorageProvider;
+            storageFilesData.ContentHandler = { "*.json": mockContentProvider };
+        });
 
         it("should connect successfully", async () => {
-            await filesData.Connect()
+            await storageFilesData.Connect()
             expect(mockStorageProvider.Connect).toHaveBeenCalled()
-        })
+        });
 
         it("should handle connection errors gracefully", async () => {
             const errorSpy = jest.spyOn(Logger, "Error")
@@ -124,19 +126,19 @@ describe("FilesData", () => {
                 throw new Error("Connection failed")
             })
 
-            await filesData.Connect()
+            await storageFilesData.Connect()
             expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to connect in storage provider"))
         })
     })
 
     describe("Disconnect", () => {
         beforeEach(() => {
-            filesData.Connection = mockStorageProvider
-            filesData.ContentHandler = { "*.json": mockContentProvider }
-        })
+            storageFilesData.Connection = mockStorageProvider;
+            storageFilesData.ContentHandler = { "*.json": mockContentProvider };
+        });
 
         it("should disconnect successfully", async () => {
-            await filesData.Disconnect()
+            await storageFilesData.Disconnect()
             expect(mockStorageProvider.Disconnect).toHaveBeenCalled()
         })
 
@@ -146,56 +148,58 @@ describe("FilesData", () => {
                 throw new Error("Disconnection failed")
             })
 
-            await filesData.Disconnect()
+            await storageFilesData.Disconnect()
             expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to disconnect in storage provider"))
         })
     })
 
     describe("EscapeEntity and EscapeField", () => {
         it("should escape entity correctly", () => {
-            expect(filesData.EscapeEntity("test")).toBe("`test`")
-        })
+            const result = storageFilesData.EscapeEntity("test");
+            expect(result).toBe("`test`");
+        });
 
         it("should escape field correctly", () => {
-            expect(filesData.EscapeField("field")).toBe("`field`")
-        })
-    })
+            const result = storageFilesData.EscapeField("field");
+            expect(result).toBe("`field`");
+        });
+    });
 
     describe("SetContentHandler", () => {
         beforeEach(() => {
-            filesData.ContentHandler = {
+            storageFilesData.ContentHandler = {
                 "*.json": mockContentProvider,
                 "users/*": mockContentProvider
             }
         })
 
         it("should set content handler based on pattern match", () => {
-            filesData._setContentHandler("test.json")
-            expect(filesData.File["test.json"]).toBe(mockContentProvider)
+            storageFilesData._setContentHandler("test.json")
+            expect(storageFilesData.File["test.json"]).toBe(mockContentProvider)
         })
 
         it("should reuse existing content handler if already set", () => {
-            filesData.File["test.json"] = mockContentProvider
-            filesData._setContentHandler("test.json")
-            expect(filesData.File["test.json"]).toBe(mockContentProvider)
+            storageFilesData.File["test.json"] = mockContentProvider
+            storageFilesData._setContentHandler("test.json")
+            expect(storageFilesData.File["test.json"]).toBe(mockContentProvider)
         })
 
         it("should throw error when no matching handler is found", () => {
-            expect(() => filesData._setContentHandler("test.xml")).toThrow(HttpErrorNotImplemented)
+            expect(() => storageFilesData._setContentHandler("test.xml")).toThrow(HttpErrorNotImplemented)
         })
     })
 
     describe("SetLock", () => {
         it("should create new mutex if not exists", () => {
-            filesData._setLock("test.json")
-            expect(filesData.Lock.has("test.json")).toBe(true)
+            storageFilesData._setLock("test.json")
+            expect(storageFilesData.Lock.has("test.json")).toBe(true)
         })
 
         it("should not create new mutex if already exists", () => {
             const mockMutex = { mock: true }
-            filesData.Lock.set("test.json", mockMutex as any)
-            filesData._setLock("test.json")
-            expect(filesData.Lock.get("test.json")).toBe(mockMutex)
+            storageFilesData.Lock.set("test.json", mockMutex as any)
+            storageFilesData._setLock("test.json")
+            expect(storageFilesData.Lock.get("test.json")).toBe(mockMutex)
         })
     })
 
@@ -206,8 +210,8 @@ describe("FilesData", () => {
         }
 
         beforeEach(async () => {
-            filesData.Connection = mockStorageProvider
-            filesData.ContentHandler = {
+            storageFilesData.Connection = mockStorageProvider
+            storageFilesData.ContentHandler = {
                 "*.json": mockContentProvider
             }
 
@@ -217,10 +221,10 @@ describe("FilesData", () => {
             const mockDataTable = new DataTable()
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
 
-            filesData.GenerateSqlSelect = jest.fn().mockReturnValue({ Query: () => "SELECT * FROM test" })
-            filesData.GetSqlQuery = jest.fn().mockReturnValue("SELECT * FROM test")
-            filesData.GetContext = jest.fn().mockReturnValue({})
-            filesData.Options = {
+            storageFilesData.GenerateSqlSelect = jest.fn().mockReturnValue({ Query: () => "SELECT * FROM test" })
+            storageFilesData.GetSqlQuery = jest.fn().mockReturnValue("SELECT * FROM test")
+            storageFilesData.GetContext = jest.fn().mockReturnValue({})
+            storageFilesData.Options = {
                 Parse: jest.fn().mockReturnValue({})
             } as any;
 
@@ -228,10 +232,10 @@ describe("FilesData", () => {
         })
 
         it("should select successfully", async () => {
-            const result = await filesData.Select(mockSchemaRequest as any)
+            const result = await storageFilesData.Select(mockSchemaRequest as any)
 
-            expect(filesData.GenerateSqlSelect).toHaveBeenCalled()
-            expect(filesData.GetSqlQuery).toHaveBeenCalled()
+            expect(storageFilesData.GenerateSqlSelect).toHaveBeenCalled()
+            expect(storageFilesData.GetSqlQuery).toHaveBeenCalled()
             expect(mockContentProvider.InitContent).toHaveBeenCalledWith("test.json", "test data")
             expect(mockContentProvider.Get).toHaveBeenCalledWith("SELECT * FROM test", expect.anything())
             expect(HttpResponse.Ok).toHaveBeenCalledWith(expect.objectContaining({
@@ -242,17 +246,17 @@ describe("FilesData", () => {
         })
 
         it("should cache results when cache option is enabled", async () => {
-            filesData.Options.Parse = jest.fn().mockReturnValue({ Cache: true })
+            storageFilesData.Options.Parse = jest.fn().mockReturnValue({ Cache: true })
 
-            await filesData.Select(mockSchemaRequest as any)
+            await storageFilesData.Select(mockSchemaRequest as any)
 
             expect(Cache.Set).toHaveBeenCalled()
         })
 
         it("should throw error when connection is not available", async () => {
-            filesData.Connection = undefined
+            storageFilesData.Connection = undefined
 
-            await expect(filesData.Select(mockSchemaRequest as any)).rejects.toThrow(HttpErrorInternalServerError)
+            await expect(storageFilesData.Select(mockSchemaRequest as any)).rejects.toThrow(HttpErrorInternalServerError)
         })
     })
 
@@ -263,8 +267,8 @@ describe("FilesData", () => {
         }
 
         beforeEach(() => {
-            filesData.Connection = mockStorageProvider
-            filesData.ContentHandler = {
+            storageFilesData.Connection = mockStorageProvider
+            storageFilesData.ContentHandler = {
                 "*.json": mockContentProvider
             }
 
@@ -277,12 +281,12 @@ describe("FilesData", () => {
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
             mockContentProvider.Set.mockResolvedValue("updated data")
 
-            filesData.GenerateSqlInsert = jest.fn().mockReturnValue({
+            storageFilesData.GenerateSqlInsert = jest.fn().mockReturnValue({
                 Query: () => "INSERT INTO test",
                 Data: {}
             })
-            filesData.GetContext = jest.fn().mockReturnValue({})
-            filesData.Options = {
+            storageFilesData.GetContext = jest.fn().mockReturnValue({})
+            storageFilesData.Options = {
                 Parse: jest.fn().mockReturnValue({ Data: new DataTable() })
             } as any;
 
@@ -290,28 +294,28 @@ describe("FilesData", () => {
         })
 
         it("should insert successfully", async () => {
-            const result = await filesData.Insert(mockSchemaRequest as any)
+            const result = await storageFilesData.Insert(mockSchemaRequest as any)
 
-            expect(filesData.GenerateSqlInsert).toHaveBeenCalled()
+            expect(storageFilesData.GenerateSqlInsert).toHaveBeenCalled()
             expect(mockContentProvider.InitContent).toHaveBeenCalledWith("test.json", "test data")
             expect(mockContentProvider.Get).toHaveBeenCalled()
             expect(mockContentProvider.Set).toHaveBeenCalled()
-            expect(mockStorageProvider.FileWrite).toHaveBeenCalledWith("test.json", "updated data")
+            expect(mockStorageProvider.FileWrite).toHaveBeenCalledWith(expect.any(String), "test.json", "updated data")
             expect(Cache.Remove).toHaveBeenCalled()
             expect(HttpResponse.Created).toHaveBeenCalled()
             expect(result).toEqual({ status: 201 })
         })
 
         it("should throw error when connection is not available", async () => {
-            filesData.Connection = undefined
+            storageFilesData.Connection = undefined
 
-            await expect(filesData.Insert(mockSchemaRequest as any)).rejects.toThrow(HttpErrorInternalServerError)
+            await expect(storageFilesData.Insert(mockSchemaRequest as any)).rejects.toThrow(HttpErrorInternalServerError)
         })
 
         it("should throw error when data is missing", async () => {
-            filesData.Options.Parse = jest.fn().mockReturnValue({})
+            storageFilesData.Options.Parse = jest.fn().mockReturnValue({})
 
-            await expect(filesData.Insert(mockSchemaRequest as any)).rejects.toThrow(HttpErrorBadRequest)
+            await expect(storageFilesData.Insert(mockSchemaRequest as any)).rejects.toThrow(HttpErrorBadRequest)
         })
     })
 
@@ -322,8 +326,8 @@ describe("FilesData", () => {
         }
 
         beforeEach(() => {
-            filesData.Connection = mockStorageProvider
-            filesData.ContentHandler = {
+            storageFilesData.Connection = mockStorageProvider
+            storageFilesData.ContentHandler = {
                 "*.json": mockContentProvider
             }
 
@@ -336,12 +340,12 @@ describe("FilesData", () => {
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
             mockContentProvider.Set.mockResolvedValue("updated data")
 
-            filesData.GenerateSqlUpdate = jest.fn().mockReturnValue({
+            storageFilesData.GenerateSqlUpdate = jest.fn().mockReturnValue({
                 Query: () => "UPDATE test",
                 Data: {}
             })
-            filesData.GetContext = jest.fn().mockReturnValue({})
-            filesData.Options = {
+            storageFilesData.GetContext = jest.fn().mockReturnValue({})
+            storageFilesData.Options = {
                 Parse: jest.fn().mockReturnValue({ Data: new DataTable() })
             } as any;
 
@@ -349,22 +353,22 @@ describe("FilesData", () => {
         })
 
         it("should update successfully", async () => {
-            const result = await filesData.Update(mockSchemaRequest as any)
+            const result = await storageFilesData.Update(mockSchemaRequest as any)
 
-            expect(filesData.GenerateSqlUpdate).toHaveBeenCalled()
+            expect(storageFilesData.GenerateSqlUpdate).toHaveBeenCalled()
             expect(mockContentProvider.InitContent).toHaveBeenCalledWith("test.json", "test data")
             expect(mockContentProvider.Get).toHaveBeenCalled()
             expect(mockContentProvider.Set).toHaveBeenCalled()
-            expect(mockStorageProvider.FileWrite).toHaveBeenCalledWith("test.json", "updated data")
+            expect(mockStorageProvider.FileWrite).toHaveBeenCalledWith(expect.any(String), "test.json", "updated data")
             expect(Cache.Remove).toHaveBeenCalled()
             expect(HttpResponse.NoContent).toHaveBeenCalled()
             expect(result).toEqual({ status: 204 })
         })
 
         it("should throw error when data is missing", async () => {
-            filesData.Options.Parse = jest.fn().mockReturnValue({})
+            storageFilesData.Options.Parse = jest.fn().mockReturnValue({})
 
-            await expect(filesData.Update(mockSchemaRequest as any)).rejects.toThrow(HttpErrorBadRequest)
+            await expect(storageFilesData.Update(mockSchemaRequest as any)).rejects.toThrow(HttpErrorBadRequest)
         })
     })
 
@@ -375,8 +379,8 @@ describe("FilesData", () => {
         }
 
         beforeEach(() => {
-            filesData.Connection = mockStorageProvider
-            filesData.ContentHandler = {
+            storageFilesData.Connection = mockStorageProvider
+            storageFilesData.ContentHandler = {
                 "*.json": mockContentProvider
             }
 
@@ -389,12 +393,12 @@ describe("FilesData", () => {
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
             mockContentProvider.Set.mockResolvedValue("updated data")
 
-            filesData.GenerateSqlDelete = jest.fn().mockReturnValue({
+            storageFilesData.GenerateSqlDelete = jest.fn().mockReturnValue({
                 Query: () => "DELETE FROM test",
                 Data: {}
             })
-            filesData.GetContext = jest.fn().mockReturnValue({})
-            filesData.Options = {
+            storageFilesData.GetContext = jest.fn().mockReturnValue({})
+            storageFilesData.Options = {
                 Parse: jest.fn().mockReturnValue({})
             } as any;
 
@@ -402,13 +406,13 @@ describe("FilesData", () => {
         })
 
         it("should delete successfully", async () => {
-            const result = await filesData.Delete(mockSchemaRequest as any)
+            const result = await storageFilesData.Delete(mockSchemaRequest as any)
 
-            expect(filesData.GenerateSqlDelete).toHaveBeenCalled()
+            expect(storageFilesData.GenerateSqlDelete).toHaveBeenCalled()
             expect(mockContentProvider.InitContent).toHaveBeenCalledWith("test.json", "test data")
             expect(mockContentProvider.Get).toHaveBeenCalled()
             expect(mockContentProvider.Set).toHaveBeenCalled()
-            expect(mockStorageProvider.FileWrite).toHaveBeenCalledWith("test.json", "updated data")
+            expect(mockStorageProvider.FileWrite).toHaveBeenCalledWith(expect.any(String), "test.json", "updated data")
             expect(Cache.Remove).toHaveBeenCalled()
             expect(HttpResponse.NoContent).toHaveBeenCalled()
             expect(result).toEqual({ status: 204 })
@@ -417,7 +421,7 @@ describe("FilesData", () => {
 
     describe("AddEntity", () => {
         it("should throw not implemented error", async () => {
-            await expect(filesData.AddEntity({} as any)).rejects.toThrow(HttpErrorNotImplemented)
+            await expect(storageFilesData.AddEntity({} as any)).rejects.toThrow(HttpErrorNotImplemented)
         })
     })
 
@@ -427,46 +431,61 @@ describe("FilesData", () => {
         }
 
         beforeEach(() => {
-            filesData.Connection = mockStorageProvider
-            filesData.ContentHandler = {
+            storageFilesData.Connection = mockStorageProvider
+            storageFilesData.ContentHandler = {
                 "*.json": mockContentProvider,
                 "users/*": mockContentProvider
             }
 
             // Setup mock implementations
-            const mockDataTable = new DataTable()
-            mockDataTable.Rows = [
+            const mockFiles = [
                 { name: "test.json" },
                 { name: "users/user1" },
                 { name: "ignore.txt" }
-            ]
-            mockStorageProvider.FileList.mockResolvedValue(mockDataTable);
+            ];
+
+            // Create a mock DataTable with filter method
+            const mockDataTable = {
+                Rows: mockFiles,
+                filter: jest.fn().mockImplementation((predicate) => {
+                    return {
+                        Rows: mockFiles.filter(predicate)
+                    };
+                })
+            };
+
+            mockStorageProvider.FolderListFiles.mockResolvedValue(mockDataTable);
 
             (HttpResponse.Ok as jest.Mock).mockReturnValue({ status: 200 })
         })
 
         it("should list entities successfully", async () => {
-            const result = await filesData.ListEntities(mockSchemaRequest as any)
+            const result = await storageFilesData.ListEntities(mockSchemaRequest as any)
 
-            expect(mockStorageProvider.FileList).toHaveBeenCalled()
-            expect(HttpResponse.Ok).toHaveBeenCalledWith(expect.objectContaining({
-                schema: "testSchema"
-            }))
+            expect(mockStorageProvider.FolderListFiles).toHaveBeenCalled()
             expect(result).toEqual({ status: 200 })
         })
 
         it("should filter entities based on content handler patterns", async () => {
-            await filesData.ListEntities(mockSchemaRequest as any)
+            await storageFilesData.ListEntities(mockSchemaRequest as any);
 
             // Verify that the data was filtered
-            const dataArg = (HttpResponse.Ok as jest.Mock).mock.calls[0][0]
-            expect(dataArg.data.Rows.length).toBeLessThan(3) // Should have filtered out ignore.txt
+            const dataArg = (HttpResponse.Ok as jest.Mock).mock.calls[0][0];
+            const filteredRows = dataArg.data.Rows;
+
+            // Should only include files matching the content handler patterns (*.json and users/*)
+            expect(filteredRows).toHaveLength(2);
+            expect(filteredRows).toEqual(expect.arrayContaining([
+                expect.objectContaining({ name: "test.json" }),
+                expect.objectContaining({ name: "users/user1" })
+            ]));
+            expect(filteredRows).not.toContainEqual(expect.objectContaining({ name: "ignore.txt" }));
         })
 
         it("should throw error when connection is not available", async () => {
-            filesData.Connection = undefined
+            storageFilesData.Connection = undefined
 
-            await expect(filesData.ListEntities(mockSchemaRequest as any)).rejects.toThrow(HttpErrorInternalServerError)
+            await expect(storageFilesData.ListEntities(mockSchemaRequest as any)).rejects.toThrow(HttpErrorInternalServerError)
         })
     })
 })

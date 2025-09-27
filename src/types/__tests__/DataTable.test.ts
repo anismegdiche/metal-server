@@ -1,5 +1,5 @@
 //
-import { DataTable, SORT_ORDER } from '../DataTable'
+import { DataTable, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, SORT_ORDER } from '../DataTable'
 
 
 // Mock the Logger decorator
@@ -1320,7 +1320,7 @@ describe("DataTable", () => {
         })
     })
 
-    describe('AnonymizeFields', () => {
+    describe('Anonymize', () => {
 
         // Anonymizes specified fields in all rows
         it('should anonymize specified fields in all rows', async () => {
@@ -1430,7 +1430,7 @@ describe("DataTable", () => {
             const expectedRows = [
                 {
                     name: 'Alice',
-                    age: 'YktgxYydi/tv8YhsL9YF0q3rbqTaV2BoIBtsaVjOk/Q='
+                    age: 'F2mdKMiTK6Wq34bDP1jIKrF9dNPtu/EJu8QgFJLNIsw='
                 }, { name: 'Bob' }
             ]
             expect((await dataTable.Anonymize(['age'])).Rows).toEqual(expectedRows)
@@ -1452,13 +1452,13 @@ describe("DataTable", () => {
             await dataTable.Anonymize(fields)
             expect(dataTable.Rows).toEqual([
                 {
-                    email: "/42YGfwOEr8NJIkuRZh+JJoo3Og2qFytYOKOqqjG2XY=", 
-                    name: "O8UQYpc8RY1aby2NZKAjJGNUrX4GSx5OAJ7IoGmaMEM="
+                    "email": "JKujUcPGJxgTM5IlypKLP7HKRd/8opG4tFp2wuvl644=",
+                    "name": "lsuciPTQkJ1xx+/Pi9+xAZlgr/iAp7Cz4/+3ZHKqI4g=",
                 },
                 {
-                    email: "X/hgvxGQWWxxiKuFHbaR8PMWnEU5Nunh66L5pH96ABg=",
-                    name: "zZ+x4UjM2EQuWqdJBMxzv2+1TR1U0zO9WWqpu0u06WE="
-                },
+                    "email": "bcr/lBtGgyStO61XSOcHUAPI5dNFXLgyRUSMewrYUs8=",
+                    "name": "RMcdMMmopXifCoQPDlxg6rTQUXyqDhbAckNcEGqla3M=",
+                }
             ])
         })
     })
@@ -1486,7 +1486,7 @@ describe("DataTable", () => {
 
         // Removes duplicate rows based on specified fields using hash method
         it('should remove duplicate rows based on specified fields using hash method', () => {
-            dtDuplicates.RemoveDuplicates(['id', 'name'], 'hash', 'first')
+            dtDuplicates.RemoveDuplicates(['id', 'name'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST)
             expect(dtDuplicates.Rows).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 1, name: 'alice', age: 30 },
@@ -1499,13 +1499,13 @@ describe("DataTable", () => {
         // Handles empty rows array gracefully
         it('should handle empty rows array gracefully', () => {
             dtDuplicates.Set([])
-            dtDuplicates.RemoveDuplicates(['name', 'age'], 'hash', 'first', '')
+            dtDuplicates.RemoveDuplicates(['name', 'age'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST, '')
             expect(dtDuplicates.Rows).toEqual([])
         })
 
         it('should remove duplicate rows based on specified fields using exact method', () => {
             // Call the method
-            dtDuplicates.RemoveDuplicates(['id', 'name'], 'exact')
+            dtDuplicates.RemoveDuplicates(['id', 'name'], REMOVE_DUPLICATES_METHOD.EXACT)
 
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
@@ -1517,9 +1517,9 @@ describe("DataTable", () => {
             ])
         })
 
-        // Keeps the first occurrence of duplicate rows when strategy is 'first'
+        // Keeps the first occurrence of duplicate rows when strategy is REMOVE_DUPLICATES_STRATEGY.FIRST
         it('should keep the first occurrence of duplicate rows when strategy is last', () => {
-            dtDuplicates.RemoveDuplicates(['id', 'name'], 'exact', 'last')
+            dtDuplicates.RemoveDuplicates(['id', 'name'], REMOVE_DUPLICATES_METHOD.EXACT, REMOVE_DUPLICATES_STRATEGY.LAST)
 
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
@@ -1533,7 +1533,7 @@ describe("DataTable", () => {
 
         // Replaces the first occurrence with the last occurrence when strategy is 'last'
         it('should replace first occurrence with last occurrence when strategy is last', () => {
-            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'last')
+            dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.LAST)
 
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
@@ -1546,7 +1546,7 @@ describe("DataTable", () => {
 
         // Replaces the first occurrence with the row having maximum condition value when strategy is 'highest'
         it('should replace first occurrence with row having maximum condition value when strategy is max', () => {
-            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'highest', 'value')
+            dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.HIGHEST, 'value')
 
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
@@ -1559,7 +1559,7 @@ describe("DataTable", () => {
 
         // Replaces the first occurrence with the row having minimum condition value when strategy is 'lowest'
         it('should replace first occurrence with row having minimum condition value when strategy is min', () => {
-            dtDuplicates.RemoveDuplicates(['name'], 'hash', 'lowest', 'age')
+            dtDuplicates.RemoveDuplicates(['name'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.LOWEST, 'age')
 
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
@@ -1573,7 +1573,7 @@ describe("DataTable", () => {
 
         // Handles empty fields array gracefully
         it('should handle empty fields array gracefully when calling RemoveDuplicates', () => {
-            dtDuplicates.RemoveDuplicates([], 'hash', 'first')
+            dtDuplicates.RemoveDuplicates([], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST)
 
             // Assert that Rows remain unchanged
             expect(dtDuplicates.Rows).toEqual([
@@ -1591,7 +1591,7 @@ describe("DataTable", () => {
 
         // Handles invalid JSON structure in rows
         it('should handle invalid JSON structure in rows when calling RemoveDuplicates', () => {
-            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'first', '')
+            dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST, '')
 
             // Assert that Rows remain unchanged
             expect(dtDuplicates.Rows).toEqual([
@@ -1604,7 +1604,7 @@ describe("DataTable", () => {
 
         // Handles invalid condition path in rows
         it('should handle invalid condition path in rows when calling RemoveDuplicates', () => {
-            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'first', 'invalidField')
+            dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST, 'invalidField')
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
@@ -1616,7 +1616,7 @@ describe("DataTable", () => {
 
         // Handles rows with missing fields specified in the fields array
         it('should handle rows with missing fields specified in the fields array when calling RemoveDuplicates', () => {
-            dtDuplicates.RemoveDuplicates(['id', 'name'], 'hash', 'first')
+            dtDuplicates.RemoveDuplicates(['id', 'name'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST)
 
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
@@ -1630,7 +1630,7 @@ describe("DataTable", () => {
 
         // Handles rows with null or undefined values in specified fields
         it('should handle rows with null or undefined values in specified fields when calling RemoveDuplicates method', () => {
-            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'first')
+            dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST)
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
@@ -1642,7 +1642,7 @@ describe("DataTable", () => {
 
         // Handles rows with non-string values in specified fields
         it('should handle rows with non-string values in specified fields when calling RemoveDuplicates method and condition', () => {
-            dtDuplicates.RemoveDuplicates(['id'], 'hash', 'highest', 'age')
+            dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.HIGHEST, 'age')
             // Assertion
             expect(dtDuplicates.Rows).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
@@ -1653,7 +1653,7 @@ describe("DataTable", () => {
         })
 
         it('should remove duplicate rows based on specified fields using ignorecase method', () => {
-            dtDuplicates.RemoveDuplicates(['id', 'name'], 'ignorecase', 'lowest', 'age')
+            dtDuplicates.RemoveDuplicates(['id', 'name'], REMOVE_DUPLICATES_METHOD.IGNORE_CASE, REMOVE_DUPLICATES_STRATEGY.LOWEST, 'age')
             expect(dtDuplicates.Rows).toEqual([
                 { id: 1, name: 'Alice', age: 15, value: null },
                 { id: 2, name: 'Bob', age: true, value: 15 },

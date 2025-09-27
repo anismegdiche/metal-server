@@ -17,9 +17,8 @@ import pick from 'lodash/pick'
 import range from 'lodash/range'
 import reduce from 'lodash/reduce'
 import zipObject from 'lodash/zipObject'
-import toString from 'lodash/toString'
 //
-import { createHash } from 'node:crypto'
+import { createHash, createHmac } from 'node:crypto'
 import { createIs } from 'typia'
 //
 import { clsClonable } from "../utils/base/clsClonable"
@@ -31,8 +30,8 @@ import { TJson } from './TJson'
 
 //
 export const enum SORT_ORDER {
-    ASC = "asc",      // Ascending
-    DESC = "desc"     // Descending
+    ASC = "asc",                 // Ascending
+    DESC = "desc"                // Descending
 }
 
 export const enum JOIN_TYPE {
@@ -44,38 +43,64 @@ export const enum JOIN_TYPE {
 }
 
 export const enum REMOVE_DUPLICATES_METHOD {
-    HASH = "hash",	            // Uses a hash function to generate unique values for each row based on specified key(s) for comparison.
-    EXACT = "exact",	        // Performs an exact comparison of the specified key(s) to identify duplicates.
-    IGNORE_CASE = "ignorecase"	// Performs a case-insensitive comparison of the specified key(s) to identify duplicates.
-    //   | "fuzzy"	            // Uses fuzzy matching techniques to identify duplicates based on similarity rather than exact match.
-    //   | "script"	            // Executes a user-defined script to identify and handle duplicates.
-    //   | "group"	            // Groups rows by specified key(s) and applies the deduplication strategy within each group.
-    //   | "distinct"           // Removes duplicates by comparing all fields, not just specified key(s).
-    //   | "custom"	            // Allows for a custom method defined by user logic or an external script.
+    HASH = "hash",	             // Uses a hash function to generate unique values for each row based on specified key(s) for comparison.
+    EXACT = "exact",	         // Performs an exact comparison of the specified key(s) to identify duplicates.
+    IGNORE_CASE = "ignorecase"	 // Performs a case-insensitive comparison of the specified key(s) to identify duplicates.
+    //   | "fuzzy"	             // Uses fuzzy matching techniques to identify duplicates based on similarity rather than exact match.
+    //   | "script"	             // Executes a user-defined script to identify and handle duplicates.
+    //   | "group"	             // Groups rows by specified key(s) and applies the deduplication strategy within each group.
+    //   | "distinct"            // Removes duplicates by comparing all fields, not just specified key(s).
+    //   | "custom"	             // Allows for a custom method defined by user logic or an external script.
 }
 
 export const enum REMOVE_DUPLICATES_STRATEGY {
-    FIRST = "first",	 // Keeps the first occurrence of each duplicate row based on the specified key(s).
-    LAST = "last",	     // Keeps the last occurrence of each duplicate row based on the specified key(s).
-    HIGHEST = "highest", // Keeps the duplicate row with the highest value in a specified field.
-    LOWEST = "lowest",	 // Keeps the duplicate row with the lowest value in a specified field.
-    CUSTOM = "custom"	 // Allows for a custom strategy defined by user logic.
+    FIRST = "first",	         // Keeps the first occurrence of each duplicate row based on the specified key(s).
+    LAST = "last",	             // Keeps the last occurrence of each duplicate row based on the specified key(s).
+    HIGHEST = "highest",         // Keeps the duplicate row with the highest value in a specified field.
+    LOWEST = "lowest",	         // Keeps the duplicate row with the lowest value in a specified field.
+    CUSTOM = "custom"	         // Allows for a custom strategy defined by user logic.
 }
 
 const HASH_ALGO = 'sha256'
 const HASH_DIGEST = 'base64'
-
+const HASH_PEPPER = process.env.HASH_PEPPER || "m3t4l-m!l!t!4";
 
 //
 export type TRow = TJson
 export type TFields = TJson
 export type TMetaData = Record<string, unknown>
-// export type TSortOrder = boolean | SORT_ORDER
 export type TOrderBy = Record<string, SORT_ORDER | undefined>
 export type TSyncReport = {
     AddedRows: TRow[]
     DeletedRows: TRow[]
     UpdatedRows: TRow[]
+}
+
+function pseudonymize(value: string): string {
+    return createHmac(HASH_ALGO, HASH_PEPPER)
+        .update(value)
+        .digest(HASH_DIGEST);
+}
+
+function anonymize(value: string): string {
+    // True anonymization: irreversible and unlinkable
+    // Options: random UUID, null, category, or aggregation
+    return createHash(HASH_ALGO)
+        .update(value + Math.random().toString()) // make it non-deterministic
+        .digest(HASH_DIGEST);
+}
+
+function normalizeValue(val: unknown): string {
+    if (val === null || val === undefined) return "";
+    if (val instanceof Date) return val.toISOString();
+    if (typeof val === "object") {
+        try {
+            return JSON.stringify(val);
+        } catch {
+            return String(val);
+        }
+    }
+    return String(val);
 }
 
 
@@ -98,23 +123,23 @@ export class DataTable extends clsClonable {
     MetaData: TMetaData = {}
 
     constructor(
-        name: string | undefined = undefined,
-        rows: TJson | TJson[] | undefined = undefined,
-        fields: TJson | undefined = undefined,
-        metaData: TJson | undefined = undefined
+        name?: string,
+        rows?: TRow | TRow[] | TJson | TJson[],
+        metaData?: TMetaData | TJson
     ) {
         super()
         this.Name = name ?? crypto.randomUUID()
-        if (rows)
+        if (rows) {
             this.Set(Array.isArray(rows)
                 ? rows
                 : [rows])
+        } else {
+            this.Rows = []
+        }
 
-        if (fields)
-            this.Fields = fields
-
-        if (metaData)
-            this.MetaData = metaData as TMetaData
+        this.MetaData = metaData
+            ? metaData
+            : {};
     }
 
     @Logger.LogFunction(true)
@@ -387,35 +412,45 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction()
-    async Anonymize(fields: string | string[]): Promise<this> {
+    async Anonymize(
+        fields: string | string[],
+        pseudo = true
+    ): Promise<this> {
+        // Normalize fields: string → split by comma, trim; array → flatten
+        let _fields: string[] =
+            typeof fields === "string"
+                ? fields.split(",").map((f) => f.trim()).filter(Boolean)
+                : fields.map((f) => f.trim());
 
-        let _fields = (typeof fields === 'string')
-            ? [fields]
-            : fields
+        // Wildcard: anonymize all fields
+        if (_fields.length === 1 && _fields[0] === "*") {
+            _fields = this.GetFieldNames() ?? [];
+        }
 
-        if (_fields[0] == '*')
-            _fields = this.GetFieldNames() ?? []
+        const rowsPromises = this.Rows.map(async (__row, __idx) => {
+            const ___newRow = { ...__row };
+            await Promise.all(
+                _fields.map(async (__field) => {
+                    if (__field in ___newRow) {
+                        const val = normalizeValue(___newRow[__field]);
+                        ___newRow[__field] = pseudo ? pseudonymize(val) : anonymize(val);
+                    }
+                })
+            );
+            return { index: __idx, row: ___newRow };
+        });
 
-        const rowsPromises = this.Rows.map(async (_row, _idx) => {
-            const _newRow = { ..._row }
-            await Promise.all(_fields.map(async __field => {
-                if (__field in _newRow) {
-                    // deepcode ignore InsecureHash: used for data anonymization
-                    _newRow[__field] = createHash(HASH_ALGO)
-                        .update(toString(_newRow[__field]))
-                        .digest(HASH_DIGEST)
-                        //.substring(0, 32) // Get first 32 chars (16 bytes) to match previous output length
-                }
-            }))
-            return { index: _idx, row: _newRow }
-        })
-        const rows = await Promise.all(rowsPromises)
-        this.Rows = rows.map(({ index, row }) => {
-            this.Rows[index] = row
-            return row
-        })
-        return this
+        const rows = await Promise.all(rowsPromises);
+
+        this.Rows = rows.map(({ index: _index, row: _row }) => {
+            this.Rows[_index] = _row;
+            return _row;
+        });
+
+        return this;
     }
+
+
 
     @Logger.LogFunction()
     async FilterRows(condition: string | undefined): Promise<this> {
@@ -444,8 +479,8 @@ export class DataTable extends clsClonable {
 
     @Logger.LogFunction()
     async RemoveDuplicates(
-        fields: string[] | undefined,
-        method: string,
+        fields: string[] | undefined = undefined,
+        method: string = REMOVE_DUPLICATES_METHOD.HASH,
         strategy: string = REMOVE_DUPLICATES_STRATEGY.FIRST,
         condition: string | undefined = undefined
     ): Promise<this> {

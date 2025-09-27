@@ -122,6 +122,10 @@ export class FtpStorage extends absStorageProvider {
         Assert.Var<string>(this.Params.folder, 'FtpStorage: No folder defined')
 
         const list = await this.#FtpClient.list(this.Params.folder)
+            .catch((error) => {
+                throw new HttpErrorInternalServerError(`Failed to list folders: ${(error as Error)?.message}`)
+            })
+
         const folders: TStorageFolder[] = list
             .filter(file => file.isDirectory)
             .map(file => JsonUtils.RemoveUndefined(<TStorageFolder>{
@@ -138,6 +142,9 @@ export class FtpStorage extends absStorageProvider {
 
         const targetDir = dirName ? StringUtils.Path(this.Params.folder, dirName) : this.Params.folder
         const list = await this.#FtpClient.list(targetDir)
+            .catch((error) => {
+                throw new HttpErrorInternalServerError(`Failed to list files: ${(error as Error)?.message}`)
+            })
 
         const result: TRow[] = list
             .filter(file => !file.isDirectory)

@@ -18,6 +18,7 @@ import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOp
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { TStorageFile } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
+import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../errors/HttpErrors'
 
 
 //
@@ -171,6 +172,9 @@ export class AmazonS3Storage extends absStorageProvider {
         })
 
         const response = await this._s3Client.send(command)
+            .catch(() => {
+                throw new HttpErrorInternalServerError('AmazonS3Storage: Error listing folder')
+            })
 
         if (!response.Contents) {
             return new DataTable(dirName)
@@ -271,6 +275,10 @@ export class AmazonS3Storage extends absStorageProvider {
         })
 
         const response = await this._s3Client.send(command)
+            .catch(() => {
+                throw new HttpErrorNotFound('AmazonS3Storage: File not found')
+            })
+
         Assert.Var<NodeJS.ReadableStream>(response.Body, 'AmazonS3Storage: No body defined')
 
         return ReadableUtils.FromReadableStream(response.Body as NodeJS.ReadableStream)

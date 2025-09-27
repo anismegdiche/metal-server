@@ -19,19 +19,19 @@ export class User {
 
     static readonly #JWT_EXPIRATION_TIME = 60 * 60          // 1 hour
     static readonly #JWT_SECRET_LENGTH = 64                 // Length of the JWT secret
-    static readonly #Tokens: Map<string, Secret> = new Map()
+    static readonly _tokens: Map<string, Secret> = new Map()
 
-    static #GenerateJwtSecret(): Secret {
+    static _generateJwtSecret(): Secret {
         const bytes = randomBytes(this.#JWT_SECRET_LENGTH)
         return bytes.toString('hex') as Secret
     }
 
-    static #DecodeToken(userToken: TUserToken): TUserTokenInfo {
+    static _decodeToken(userToken: TUserToken): TUserTokenInfo {
         if (userToken === undefined)
             throw new HttpErrorUnauthorized()
 
         try {
-            const _decoded = jwt.verify(userToken, this.#Tokens.get(userToken) as Secret)
+            const _decoded = jwt.verify(userToken, this._tokens.get(userToken) as Secret)
             return _decoded as TUserTokenInfo
         } catch (error: unknown) {
             throw new HttpErrorUnauthorized((<JsonWebTokenError>error).message)
@@ -51,7 +51,7 @@ export class User {
             userTokenInfo.roles.push(Roles.UserDefaultRole)
 
         // Generate a JWT Secret
-        const userSecret = this.#GenerateJwtSecret()
+        const userSecret = this._generateJwtSecret()
 
         // Generate a JWT token and return it
         const userToken = jwt.sign(
@@ -62,15 +62,15 @@ export class User {
             }
         )
 
-        this.#Tokens.set(userToken, userSecret)
+        this._tokens.set(userToken, userSecret)
         return HttpResponse.Ok({ token: userToken })
     }
 
     @Logger.LogFunction(true)
     static async LogOut(userToken: TUserToken): Promise<TInternalResponse<undefined>> {
-        const decoded = this.#DecodeToken(userToken)
+        const decoded = this._decodeToken(userToken)
         if (userToken) {
-            this.#Tokens.delete(userToken)
+            this._tokens.delete(userToken)
             await AuthProvider.Provider.LogOut(decoded.user)
         }
         return HttpResponse.NoContent()
@@ -78,7 +78,7 @@ export class User {
 
     @Logger.LogFunction(true)
     static async GetUserInfo(userToken: TUserToken): Promise<TInternalResponse<TUserTokenInfo>> {
-        return HttpResponse.Ok(this.#DecodeToken(userToken))
+        return HttpResponse.Ok(this._decodeToken(userToken))
     }
 
     @Logger.LogFunction(true)
@@ -86,7 +86,7 @@ export class User {
         if (userToken === undefined)
             return undefined
 
-        return this.#DecodeToken(userToken)
+        return this._decodeToken(userToken)
     }
 
     // @Logger.LogFunction(Logger.Debug, true)

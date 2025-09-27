@@ -1,6 +1,3 @@
- 
- 
-
 import typia from "typia"
 import { Readable } from "stream"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
@@ -8,13 +5,9 @@ import { DataTable } from "../../../types/DataTable"
 import { AzureFileStorage, TAzureFileStorageConfig } from "../providers/AzureFileStorage"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { ShareServiceClient, ShareDirectoryClient, ShareFileClient } from "@azure/storage-file-share"
-import * as ReadableHelperModule from "../../../utils/ReadableUtils"
 
-jest.mock("../../../utils/ReadableUtils", () => ({
-    ReadableHelper: {
-        ToBuffer: jest.fn()
-    }
-}))
+
+import { ReadableUtils } from "../../../utils/ReadableUtils"
 
 const rndParams = typia.random<TConfigSource>()
 
@@ -24,8 +17,10 @@ describe("AzureFileStorage", () => {
     let mockDirectoryClient: Partial<ShareDirectoryClient>
 
     beforeEach(async () => {
-        // Reset all mocks
         jest.clearAllMocks()
+
+    // Spy on ReadableUtils.ToBuffer
+    jest.spyOn(ReadableUtils, 'ToBuffer').mockResolvedValue(Buffer.from("test content"))
 
         // Mock the file client
         mockFileClient = {
@@ -43,7 +38,8 @@ describe("AzureFileStorage", () => {
             getFileClient: jest.fn().mockReturnValue(mockFileClient),
             listFilesAndDirectories: jest.fn().mockImplementation(function* () {
                 // Empty generator by default
-            })
+            }),
+            createIfNotExists: jest.fn().mockResolvedValue({})
         }
 
         // Create new storage instance
@@ -62,7 +58,7 @@ describe("AzureFileStorage", () => {
 
         // Mock the ShareServiceClient
         const mockShareServiceClient = {
-            getShareClient: jest.fn().mockImplementation((shareName: string) => {
+            getShareClient: jest.fn().mockImplementation((_shareName: string) => {
                 return {
                     getDirectoryClient: jest.fn().mockReturnValue(mockDirectoryClient)
                 }
@@ -215,9 +211,6 @@ describe("AzureFileStorage", () => {
 
         describe("Write", () => {
             it("should create and upload file successfully", async () => {
-                // Mock ToBuffer helper
-                (ReadableHelperModule.ReadableUtils.ToBuffer as jest.Mock).mockResolvedValue(Buffer.from("test content"))
-
                 const content = Readable.from(Buffer.from("test content"))
                 await storage.FileWrite('', 'test.txt', content)
 
@@ -226,7 +219,6 @@ describe("AzureFileStorage", () => {
             })
 
             it("should throw error if upload fails", async () => {
-                (ReadableHelperModule.ReadableUtils.ToBuffer as jest.Mock).mockResolvedValue(Buffer.from("test content"));
                 (mockFileClient.create as jest.Mock).mockRejectedValueOnce(new HttpErrorInternalServerError())
 
                 const content = Readable.from(Buffer.from("test content"))

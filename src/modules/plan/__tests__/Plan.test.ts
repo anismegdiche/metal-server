@@ -2,6 +2,8 @@ import { TypeUtils } from "../../../utils/TypeUtils"
 import { DataTable } from "../../../types/DataTable"
 import { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 import { Plan } from "../Plan"
+import { ConfigManager } from "../../core/ConfigManager"
+import { TStep } from "../types/TStep"
 
 
 // Mock the Logger
@@ -50,13 +52,22 @@ describe('Process', () => {
             cron: '* * * * *'
         }
 
+        const steps: TStep[] = []
+
         const _plan = new Plan("TestPlan")
+        _plan.Entities.set("TestEntity", [])
+
+        jest.spyOn(_plan, 'ExecuteSteps').mockResolvedValue(new DataTable())
+        jest.spyOn(ConfigManager, 'Get').mockReturnValueOnce(steps)
 
         // Act
         const result = await _plan.ProcessScheduleConfig(scheduleConfig)
 
+        // expect ExecuteSteps to have been called
+        expect(_plan.ExecuteSteps).toHaveBeenCalledWith(undefined,scheduleConfig.plan,scheduleConfig.entity,steps)
+
         // Assert
-        expect(result).toBeInstanceOf(DataTable)
+        expect(result).toEqual(undefined)
     })
 
     // Handle a valid SQL query with TSchemaRequest
@@ -79,9 +90,10 @@ describe('Process', () => {
             cache: 60,
             source: 'TestSource'
         }
-        const sqlQuery = 'SELECT * FROM TestTable'
+        const sqlQuery = 'SELECT * FROM TestEntity'
 
         const _plan = new Plan("TestPlan")
+        _plan.Entities.set("TestEntity", [])
 
         // Act
         const result = await _plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
@@ -94,12 +106,14 @@ describe('Process', () => {
     it('should handle a valid SQL query with TScheduleConfig', async () => {
         // Arrange
         const schemaRequest = {
-            schema: 'TestSchema',
-            entity: 'TestEntity'
+            schema: 'TestPlan',
+            entity: 'TestEntity',
+            source: 'TestSource'
         }
-        const sqlQuery = 'SELECT * FROM TestTable'
+        const sqlQuery = 'SELECT * FROM TestEntity'
 
         const _plan = new Plan("TestPlan")
+        _plan.Entities.set("TestEntity", [])
 
         // Act
         const result = await _plan.ProcessSchemaRequest(schemaRequest, sqlQuery)

@@ -70,8 +70,8 @@ describe('FsStorage', () => {
 
             await fsStorage.FileWrite('', 'Write.txt', stream)
 
-            expect(Fs.promises.writeFile).toHaveBeenCalledWith(
-                `${fsStorage.Params!.folder}Write.txt`,
+            expect(await Fs.promises.writeFile).toHaveBeenCalledWith(
+                'Write.txt',
                 stream,
                 'utf8'
             )

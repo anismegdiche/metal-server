@@ -20,7 +20,6 @@ import { TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO, TEXT_TASK } from 
 import { TextEmotionDetectionDockerService, TextFillMaskDockerService, TextKeywordExtractionDockerService, TextLanguageDetectionDockerService, TextParaphraseDetectionDockerService, TextQuestionAnsweringDockerService, TextSentenceSimilarityDockerService, TextSentimentAnalysisDockerService, TextSummarizationDockerService, TextText2TextGenerationDockerService, TextTextGenerationDockerService, TextTokenClassificationDockerService, TextToxicityDetectionDockerService, TextTranslationDockerService, TextZeroShotClassificationDockerService } from '../docker-services/TextDockerService'
 import { TAiDockerService } from '../types/TAiDockerService'
 import { TStepRunAiTextEmotionDetectionParams, TStepRunAiTextFillMaskParams, TStepRunAiTextKeywordExtractionParams, TStepRunAiTextParams, TStepRunAiTextParaphraseDetectionParams, TStepRunAiTextQuestionAnsweringParams, TStepRunAiTextSentenceSimilarityParams, TStepRunAiTextSentimentAnalysisParams, TStepRunAiTextSummarizationParams, TStepRunAiTextTextGenerationParams, TStepRunAiTextTokenClassificationParams, TStepRunAiTextToxicityDetectionParams, TStepRunAiTextTranslationParams, TStepRunAiTextZeroShotClassificationParams } from '../types/TStepRunAiTextParam'
-import typia from 'typia'
 
 
 //
@@ -74,7 +73,6 @@ export class Text extends absAiEngine implements IAiEngine {
         }
 
         this.RunTask = {
-            [TEXT_TASK.TRANSLATION]: async (args: TAiRunArguments) => await this.Translation(args),
             [TEXT_TASK.EMOTION_DETECTION]: async (args: TAiRunArguments) => await this.EmotionDetection(args),
             [TEXT_TASK.FILL_MASK]: async (args: TAiRunArguments) => await this.FillMask(args),
             [TEXT_TASK.KEYWORD_EXTRACTION]: async (args: TAiRunArguments) => await this.KeywordExtraction(args),
@@ -88,6 +86,7 @@ export class Text extends absAiEngine implements IAiEngine {
             [TEXT_TASK.TEXT_GENERATION]: async (args: TAiRunArguments) => await this.TextGeneration(args),
             [TEXT_TASK.TOKEN_CLASSIFICATION]: async (args: TAiRunArguments) => await this.TokenClassification(args),
             [TEXT_TASK.TOXICITY_DETECTION]: async (args: TAiRunArguments) => await this.ToxicityDetection(args),
+            [TEXT_TASK.TRANSLATION]: async (args: TAiRunArguments) => await this.Translation(args),
             [TEXT_TASK.ZERO_SHOT_CLASSIFICATION]: async (args: TAiRunArguments) => await this.ZeroShotClassification(args)
         }
 
@@ -111,37 +110,6 @@ export class Text extends absAiEngine implements IAiEngine {
         }
 
         throw new HttpErrorInternalServerError(`Invalid model: ${task}`)
-    }
-
-    @Logger.LogFunction(true)
-    async Translation(args: TAiRunArguments): Promise<TAiRunOutput> {
-
-        const { data } = args;
-        const { params } = args as TStepRunAiTextTranslationParams;
-
-        Assert.Var(data, 'data is required')
-        Assert.Var(params, 'params is required')
-        Assert.Var(params.src_lang, 'params.src_lang is required')
-        Assert.Var(params.tgt_lang, 'params.tgt_lang is required')
-
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
-
-        const response = await axios.post(
-            _url,
-            {
-                input_data: data,
-                params
-            },
-            TEXT_DEFAULT_HEADERS
-        )
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Translation request failed: ${error.response?.data?.message ?? error.message}`);
-            })
-        return response.data.result[0];
     }
 
     @Logger.LogFunction(true)
@@ -170,7 +138,14 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Emotion detection failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0];
+        const result = response.data.result[0];
+
+        const mapped = result.reduce((acc: any, item: any) => {
+            acc[item.label] = parseFloat(item.score);
+            return acc;
+        }, {});
+
+        return mapped
     }
 
     @Logger.LogFunction(true)
@@ -199,7 +174,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Fill mask failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0];
+        return response.data.result[0]
     }
 
     @Logger.LogFunction(true)
@@ -228,7 +203,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Keyword extraction failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result;
+        return response.data.result
     }
 
     @Logger.LogFunction(true)
@@ -259,8 +234,8 @@ export class Text extends absAiEngine implements IAiEngine {
 
         return {
             label: LangUtils.Convert(result.label, TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO),
-            score: result.score
-        };
+            score: parseFloat(result.score)
+        }
     }
 
     @Logger.LogFunction(true)
@@ -293,7 +268,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Paraphrase detection failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result;
+        return response.data.result
     }
 
     @Logger.LogFunction(true)
@@ -326,7 +301,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Question answering failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0];
+        return response.data.result[0]
     }
 
     @Logger.LogFunction(true)
@@ -359,7 +334,13 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Sentence similarity failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result;
+        const result = response.data.result.map((item: any) => {
+            item.similarity = parseFloat(item.similarity);
+            item.rank = parseInt(item.rank);
+            return item
+        });
+
+        return result
     }
 
     @Logger.LogFunction(true)
@@ -388,7 +369,13 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Sentiment analysis failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result;
+        const result = response.data.result[0]
+
+        result.map((item: any) => {
+            item.score = parseFloat(item.score)
+        })
+
+        return result
     }
 
     @Logger.LogFunction(true)
@@ -420,7 +407,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Summarization failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0];
+        return response.data.result[0].summary_text
     }
 
     @Logger.LogFunction(true)
@@ -447,7 +434,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Text2Text generation failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0];
+        return response.data.result[0].generated_text
     }
 
     @Logger.LogFunction(true)
@@ -457,8 +444,11 @@ export class Text extends absAiEngine implements IAiEngine {
         const { params } = args as TStepRunAiTextTextGenerationParams;
 
         Assert.Var(data, 'data is required')
-        Assert.Var<TStepRunAiTextTextGenerationParams>(
-            params, typia.is<TStepRunAiTextTextGenerationParams>(params), 'params is required')
+
+        // if (params) {
+        //     Assert.Var<TStepRunAiTextTextGenerationParams>(
+        //         params, typia.is<TStepRunAiTextTextGenerationParams>(params), 'params are not valid')
+        // }
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
@@ -478,7 +468,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Text generation failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0];
+        return response.data.result[0].generated_text
     }
 
     @Logger.LogFunction(true)
@@ -507,7 +497,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Token classification failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result;
+        return response.data.result
     }
 
     @Logger.LogFunction(true)
@@ -536,7 +526,45 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Toxicity detection failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0];
+        const result = response.data.result[0];
+
+        result.map((item: any) => {
+            item.score = parseFloat(item.score);
+        });
+
+        return result
+    }
+
+    @Logger.LogFunction(true)
+    async Translation(args: TAiRunArguments): Promise<TAiRunOutput> {
+
+        const { data } = args;
+        const { params } = args as TStepRunAiTextTranslationParams;
+
+        Assert.Var(data, 'data is required')
+        Assert.Var(params, 'params is required')
+        Assert.Var(params.src_lang, 'params.src_lang is required')
+        Assert.Var(params.tgt_lang, 'params.tgt_lang is required')
+
+        const _url = StringUtils.Url(
+            this.InstanceApiUrl,
+            this.InstanceName,
+            'run'
+        );
+
+        const response = await axios.post(
+            _url,
+            {
+                input_data: data,
+                params
+            },
+            TEXT_DEFAULT_HEADERS
+        )
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Translation request failed: ${error.response?.data?.message ?? error.message}`);
+            })
+
+        return response.data.result[0].translation_text
     }
 
     @Logger.LogFunction(true)
@@ -567,6 +595,6 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Zero-shot classification failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result;
+        return response.data.result
     }
 }

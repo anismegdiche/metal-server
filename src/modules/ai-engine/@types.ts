@@ -35,4 +35,4 @@ export type TAiRunArguments = {
     data: string // Buffer<ArrayBufferLike>
 } & TStepRunAiParams
 
-export type TAiRunOutput = void | object | undefined
+export type TAiRunOutput = void | object | string | undefined

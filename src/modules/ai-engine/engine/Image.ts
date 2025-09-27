@@ -164,12 +164,9 @@ export class Image extends absAiEngine implements IAiEngine {
             throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
         })
 
-        return _.mapValues(
-            response.data.result[0],
-            value => (_.isString(value)
-                ? _.trim(value)
-                : value)
-        )
+        const result: string = response.data.result[0].generated_text
+
+        return result.trim()
     }
 
     @Logger.LogFunction(true)

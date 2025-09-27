@@ -2,42 +2,17 @@ import { CosmosDbHelper } from "../providers/CosmosDbHelper";
 
 
 // mock related classes
-jest.mock('../FilesData', () => ({
-    FilesData: {}
-}))
-jest.mock('../MemoryData', () => ({
-    MemoryData: {}
-}))
-jest.mock('../WebServiceData', () => ({
-    WebServiceData: {}
-}))
-jest.mock('../MetalData', () => ({
-    MetalData: {}
-}))
-jest.mock('../MongoDbData', () => ({
-    MongoDbData: {}
-}))
-jest.mock('../MySqlData', () => ({
-    MySqlData: {}
-}))
-jest.mock('../../plan/Step', () => ({
-    Step: {}
-}))
-jest.mock('../PlanData', () => ({
-    PlanData: {}
-}))
-jest.mock('../PostgresData', () => ({
-    PostgresData: {}
-}))
-jest.mock('../SqlServerData', () => ({
-    SqlServerData: {}
-}))
-jest.mock('../CosmosDbData', () => ({
-    CosmosDbData: {}
-}))
-jest.mock('../FolderData', () => ({
-    FolderData: {}
-}))
+jest.mock('../providers/StorageData', () => ({ StorageData: {} }))
+jest.mock('../providers/MemoryData', () => ({ MemoryData: {} }))
+jest.mock('../providers/WebServiceData', () => ({ WebServiceData: {} }))
+jest.mock('../providers/MetalData', () => ({ MetalData: {} }))
+jest.mock('../providers/MongoDbData', () => ({ MongoDbData: {} }))
+jest.mock('../providers/MySqlData', () => ({ MySqlData: {} }))
+jest.mock('../../plan/Step', () => ({ Step: {} }))
+jest.mock('../providers/PlanData', () => ({ PlanData: {} }))
+jest.mock('../providers/PostgresData', () => ({ PostgresData: {} }))
+jest.mock('../providers/SqlServerData', () => ({ SqlServerData: {} }))
+jest.mock('../providers/CosmosDbData', () => ({ CosmosDbData: {} }))
 
 describe('CosmoDbHelper', () => {
     describe('ParseSqlQuery', () => {

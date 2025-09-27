@@ -1,19 +1,19 @@
 //
 //
 //
+import * as dotenv from 'dotenv'
 import * as Fs from 'fs'
 import * as Yaml from 'js-yaml'
+import has from 'lodash/has'
 import typia from "typia"
-import * as dotenv from 'dotenv'
-import _ from 'lodash'
 //
+import { Assert } from '../../utils/Assert'
+import { JsonUtils } from '../../utils/JsonUtils'
 import { Logger } from '../../utils/Logger'
-import { TConfig } from "./types/TConfig"
 import { TypeUtils } from "../../utils/TypeUtils"
 import { ConfigFileError } from "../errors/HttpErrors"
-import { JsonUtils } from '../../utils/JsonUtils'
 import { IConfigStore } from './base/IConfigStore'
-import { Assert } from '../../utils/Assert'
+import { TConfig } from "./types/TConfig"
 
 
 //
@@ -86,7 +86,7 @@ export class ConfigManager {
     @Logger.LogFunction()
     static Has(path: string): boolean {
         Assert.Var<IConfigStore>(ConfigManager.configStore, "ConfigStore is not initialized")
-        return _.has(ConfigManager.configStore.Configuration, path)
+        return has(ConfigManager.configStore.Configuration, path)
     }
 
     @Logger.LogFunction()

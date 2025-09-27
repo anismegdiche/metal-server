@@ -115,13 +115,13 @@ export class Audio extends absAiEngine implements IAiEngine {
             ang: "angry"
         };
 
-        const _result = response.data.result.reduce((obj: { [x: string]: any }, item: { label: string; score: number }) => {
+        const result = response.data.result.reduce((obj: { [x: string]: any }, item: { label: string; score: number }) => {
             const fullName:string = labelMap[item.label as string] || item.label; // fallback to acronym if not found
             obj[fullName] = item.score;
             return obj;
         }, {});
 
-        return _result
+        return result
 
         // response :
         // {

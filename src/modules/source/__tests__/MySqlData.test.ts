@@ -1,4 +1,4 @@
-/* eslint-disable init-declarations */
+ 
 import mysql from 'mysql2/promise'
 import { MySqlData } from '../providers/MySqlData'
 import { TSchemaRequest } from '../../schema/types/TSchemaRequest'
@@ -12,9 +12,9 @@ import { DATA_PROVIDER } from "../@consts"
 jest.mock('mysql2/promise')
 
 // Mock the Cache module
-jest.mock('../../../server/Cache')
+jest.mock('../../cache/Cache')
 jest.mock('../../plan/Step')
-jest.mock('../MemoryData', () => {
+jest.mock('../providers/MemoryData', () => {
     return {
         MemoryData: jest.fn().mockImplementation(() => {
             return {

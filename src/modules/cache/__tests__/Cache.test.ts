@@ -11,31 +11,33 @@ import { TCacheData } from "../types/TCacheData"
 import { TInternalResponse } from "../../schema/types/TInternalResponse"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { ConfigManager } from '../../core/ConfigManager'
+import { Logger } from '../../../utils/Logger'
+import { Roles } from '../../auth/Roles'
 
 // Mock dependencies
-jest.mock('../Config')
-jest.mock('../../providers/DataProvider')
 jest.mock('../../../utils/Logger', () => ({
     Logger: {
         LogFunction: jest.fn().mockImplementation(() => (_: any, __: any, descriptor: any) => descriptor),
         Debug: jest.fn(),
         Warn: jest.fn(),
         Error: jest.fn(),
-        Out: 'OUT:'
+        Out: 'OUT'
     }
 }))
+
 jest.mock('../../../utils/SynchronizerManager', () => ({
     SynchronizerManager: {
         Synchronized: jest.fn().mockImplementation(() => (_: any, __: any, descriptor: any) => descriptor)
     }
 }))
 jest.mock('../../../utils/TypeUtils', () => ({
-    TypeHelper: {
+    TypeUtils: {
         Validate: jest.fn(),
-        IsSchemaResponseWithData: jest.fn()
+        IsSchemaResponseWithData: jest.fn(),
+        IsSchemaRequestSelect: jest.fn()
     }
 }))
-jest.mock('../Roles')
+jest.mock('../../auth/Roles')
 jest.mock('js-sha512')
 
 describe('Cache', () => {
@@ -59,15 +61,15 @@ describe('Cache', () => {
             EscapeField: jest.fn(field => `"${field}"`)
         } as unknown as jest.Mocked<absDataProvider>;
 
-        (DataProvider.GetProvider as jest.Mock).mockReturnValue(mockProvider)
+        jest.spyOn(DataProvider, 'GetProvider').mockResolvedValue(mockProvider)
 
         mockDataTable = {
             SetMetaData: jest.fn()
         } as unknown as DataTable;
 
         // Mock Config
-        (ConfigManager.Has as jest.Mock).mockReturnValue(true);
-        (ConfigManager.Get as jest.Mock).mockReturnValue({
+        jest.spyOn(ConfigManager, 'Has').mockReturnValue(true);
+        jest.spyOn(ConfigManager, 'Get').mockReturnValue({
             database: 'test_cache_db',
             provider: 'test_provider'
         });
@@ -405,7 +407,7 @@ describe('Cache', () => {
             // (TypeUtils.Validate as jest.Mock).mockImplementation(() => true);
 
             // Mock Roles.CheckPermission not to throw
-            (require('../Roles').Roles.CheckPermission as jest.Mock).mockImplementation(() => true)
+            jest.spyOn(Roles, 'CheckPermission').mockImplementation(() => true)
         })
 
         it('should return cached data when valid cache exists', async () => {
@@ -438,6 +440,8 @@ describe('Cache', () => {
             }
 
             mockProvider.Select.mockResolvedValue(mockResponse)
+
+            jest.spyOn(TypeUtils, 'IsSchemaRequestSelect').mockReturnValue(true)
 
             const result = await Cache.Get(mockSchemaRequest)
 

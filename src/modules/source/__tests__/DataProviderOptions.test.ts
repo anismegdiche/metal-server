@@ -7,7 +7,6 @@ import { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 import { DataProviderOptions } from "../base/absDataProvider"
 
 // mock related classes
-jest.mock('../../source/providers/FilesData', () => ({ FilesData: {} }))
 jest.mock('../../source/providers/MemoryData', () => ({ MemoryData: {} }))
 jest.mock('../../source/providers/WebServiceData', () => ({ WebServiceData: {} }))
 jest.mock('../../source/providers/MetalData', () => ({ MetalData: {} }))
@@ -17,7 +16,7 @@ jest.mock('../../source/providers/PlanData', () => ({ PlanData: {} }))
 jest.mock('../../source/providers/PostgresData', () => ({ PostgresData: {} }))
 jest.mock('../../source/providers/SqlServerData', () => ({ SqlServerData: {} }))
 jest.mock('../../source/providers/CosmosDbData', () => ({ CosmosDbData: {} }))
-jest.mock('../../source/providers/FolderData', () => ({ FolderData: {} }))
+jest.mock('../../source/providers/StorageData', () => ({ StorageData: {} }))
 jest.mock('../../plan/Step', () => ({ Step: {} }))
 
 

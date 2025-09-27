@@ -1,9 +1,9 @@
-// Roles.test.ts
 import { Roles } from "../Roles"
 import { AUTH_PERMISSION, AUTH_PROVIDER } from "../@consts"
 import { TUserTokenInfo } from "../@types"
 import { HttpErrorForbidden } from "../../errors/HttpErrors"
-import { TConfig } from "../../core/types/TConfig"
+import { TConfig, TConfigRoles } from "../../core/types/TConfig"
+import { ConfigManager } from "../../core/ConfigManager"
 
 // Minimal test configuration that matches TConfig
 const config: Partial<TConfig> = {
@@ -20,21 +20,16 @@ const config: Partial<TConfig> = {
     }
 }
 
-// Mock ConfigManager.Get with specific path handling
-const mockConfigManager = {
-    Get: jest.fn((path: string) => {
-        // Direct path resolution for known test paths
-        if (path === 'roles') 
-            return config.roles;
-        if (path === 'server.authentication.default-role') 
-            return config.server?.authentication?.['default-role'];
-        return undefined;
-    })
-};
+jest.spyOn(ConfigManager, 'Get').mockImplementation((path: string) => {
+    if (path === 'server.authentication.default-role') {
+        return config.server?.authentication?.["default-role"] as string
+    } else if (path === 'roles') {
+        return config.roles as TConfigRoles
+    }
+    return undefined
+})
 
-jest.mock("../../core/ConfigManager", () => ({
-    ConfigManager: mockConfigManager
-}));
+
 
 describe("Roles", () => {
     beforeEach(() => {
@@ -66,7 +61,7 @@ describe("Roles", () => {
         it("should return false if no intersection of roles with schemaRoles", () => {
             const userToken = {
                 user: "test",
-roles: ["guest"]
+                roles: ["guest"]
             }
             expect(Roles.HasPermission(userToken, ["admin"], AUTH_PERMISSION.ADMIN)).toBe(false)
         })

@@ -1,26 +1,26 @@
 //
 //
 //
-import _ from 'lodash'
+import forEach from "lodash/forEach"
+import has from "lodash/has"
 //
-import { Source } from "../source/Source"
-import { Logger } from '../../utils/Logger'
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from './types/TSchemaRequest'
-import { TSchemaResponse } from './types/TSchemaResponse'
-import { HttpErrorBadRequest, HttpErrorNotFound } from '../errors/HttpErrors'
-import { TypeUtils } from '../../utils/TypeUtils'
-import { StringUtils } from '../../utils/StringUtils'
-import { ConfigManager } from '../core/ConfigManager'
-import { TConfigSchema, TConfigSchemaEntity } from '../core/types/TConfig'
-import { TInternalResponse } from "./types/TInternalResponse"
-import { HttpResponse } from "../core/HttpResponse"
-import { AUTH_PERMISSION } from "../auth/@consts"
-import { Roles } from "../auth/Roles"
-import { TUserTokenInfo } from "../auth/@types"
+import { TJson } from '../../types/TJson'
 import { Assert } from '../../utils/Assert'
 import { JsonUtils } from "../../utils/JsonUtils"
-import { TJson } from '../../types/TJson'
+import { Logger } from '../../utils/Logger'
+import { TypeUtils } from '../../utils/TypeUtils'
 import { Validator } from '../../utils/Validator'
+import { AUTH_PERMISSION } from "../auth/@consts"
+import { TUserTokenInfo } from "../auth/@types"
+import { Roles } from "../auth/Roles"
+import { ConfigManager } from '../core/ConfigManager'
+import { HttpResponse } from "../core/HttpResponse"
+import { TConfigSchema, TConfigSchemaEntity } from '../core/types/TConfig'
+import { HttpErrorBadRequest, HttpErrorNotFound } from '../errors/HttpErrors'
+import { Source } from "../source/Source"
+import { TInternalResponse } from "./types/TInternalResponse"
+import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from './types/TSchemaRequest'
+import { TSchemaResponse } from './types/TSchemaResponse'
 
 
 //
@@ -133,7 +133,7 @@ export class Schema {
         }
 
         // schema.entities.*
-        if (_.has(schemaConfig, `entities.${entity}`)) {
+        if (has(schemaConfig, `entities.${entity}`)) {
 
             const _schemaEntityConfig: TSchemaRequest = JsonUtils.Get(schemaConfig.entities, entity)
 
@@ -186,28 +186,24 @@ export class Schema {
              new HttpErrorBadRequest()
             )
 
+        // check roles
+        const { schema, entity } = schemaRequest
+        const schemaConfig = Schema.GetSchemaConfig(schema)
+
+        Roles.CheckPermission(userToken, schemaConfig?.roles, AUTH_PERMISSION.READ)
+
+
+        // check ofr cache before return
         const cachedData = await Schema.fnCacheGet(schemaRequest, userToken)
             .then()
             .catch(undefined)
 
         if (cachedData)
             return cachedData
-
-        const { schema, entity } = schemaRequest
-        const schemaConfig = Schema.GetSchemaConfig(schema)
-
-        Roles.CheckPermission(userToken, schemaConfig?.roles, AUTH_PERMISSION.READ)
-
-        const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
-
-        // Anonymizer
-        let isAnonymize = false
-        let fieldsToAnonymize: string[] = []
-        if (schemaConfig?.anonymize) {
-            isAnonymize = true
-            fieldsToAnonymize = StringUtils.Split(schemaConfig.anonymize, ",")
-        }
+        
+        
         //
+        const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
         return await Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
             source: schemaRoute.routeName,
@@ -224,8 +220,8 @@ export class Schema {
                     return _intResp
 
                 // Anonymizer
-                if (isAnonymize && TypeUtils.IsSchemaResponseWithData(_intResp.Body)) {
-                    await (_intResp.Body).data.Anonymize(fieldsToAnonymize)
+                if (schemaConfig?.anonymize && TypeUtils.IsSchemaResponseWithData(_intResp.Body)) {
+                    await (_intResp.Body).data.Anonymize(schemaConfig.anonymize)
                 }
                 return _intResp
             }
@@ -323,7 +319,7 @@ export class Schema {
     }
 
     @Logger.LogFunction(true)
-    static async ListEntities(schemaRequest: TSchemaRequest, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
+    static async ListEntities(schemaRequest: TSchemaRequestListEntities, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
         const { schema } = schemaRequest
         const schemaConfig = Schema.GetSchemaConfig(schema)
 
@@ -370,7 +366,7 @@ export class Schema {
             })
 
         if (schemaConfig?.entities)
-            _.forEach(schemaConfig.entities, (entityConfig: TConfigSchemaEntity, entity: string) => {
+            forEach(schemaConfig.entities, (entityConfig: TConfigSchemaEntity, entity: string) => {
                 entities.set(entity, {
                     source: entityConfig.source,
                     database: ConfigManager.Get<string | undefined>(`sources.${entityConfig.source}.database`)
