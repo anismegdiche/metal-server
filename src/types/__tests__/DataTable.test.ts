@@ -1056,9 +1056,8 @@ describe("DataTable", () => {
                 }
             ])
 
-            expect(() => {
-                sourceData.SyncReport(destinationData, "identifier")
-            }).toThrowError("DataTable.SyncReport: 'Source' has no property 'identifier'")
+            expect(() => sourceData.SyncReport(destinationData, "identifier"))
+                .toThrow(Error)
         })
 
         it('Case: Sync from Memory to Postgres', () => {

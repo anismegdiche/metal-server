@@ -265,7 +265,7 @@ describe('SqlQueryUtils', () => {
     it("Sql injection test - Where string", () => {
         const queryHelper = new SqlQueryUtils()
         queryHelper.Select('*').From('users').Where("id = 1 OR 1=1")
-        expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
+        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
     })
 
     it("Safe Sql Where string", () => {
@@ -277,12 +277,12 @@ describe('SqlQueryUtils', () => {
     it("Sql injection test - Where string with semicolon", () => {
         const queryHelper = new SqlQueryUtils()
         queryHelper.Select('*').From('users').Where("id = 1; DROP TABLE users")
-        expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
+        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
     })
 
     it("Sql injection test - passed query", () => {
         const queryHelper = new SqlQueryUtils("SELECT * FROM users WHERE id = 1 OR 1=1")
-        expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
+        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
     })
 
     it("Sql injection test - Update", () => {
@@ -291,19 +291,19 @@ describe('SqlQueryUtils', () => {
             name: "John; DROP TABLE users",
             age: 33
         }).Where("id = 1")
-        expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
+        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
     })
 
     it("Sql injection test - Where string with comment", () => {
         const queryHelper = new SqlQueryUtils()
         queryHelper.Select('*').From('users').Where("id = 1 OR 1=1 --")
-        expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
+        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
     })
 
     it("Sql injection test - Where string with union", () => {
         const queryHelper = new SqlQueryUtils()
         queryHelper.Select('*').From('users').Where("id = 1 UNION SELECT * FROM users")
-        expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
+        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
     })
 
     it("Sql injection test - Where json with comment", () => {
@@ -312,12 +312,12 @@ describe('SqlQueryUtils', () => {
             id: "1 OR 1=1 --",
             name: 'John'
         })
-        expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
+        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
     })
 
     it("Sql injection test - Where array of json with union", () => {
         const queryHelper = new SqlQueryUtils("SELECT * FROM users WHERE id = 1 UNION SELECT * FROM users AND name = 'John'")
-        expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
+        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
     })
 
     it("Sql injection test - Update with comment", () => {
@@ -326,7 +326,7 @@ describe('SqlQueryUtils', () => {
             name: "John --",
             age: 33
         }).Where("id = 1")
-        expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
+        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
     })
 
     it("Sql injection test - Update with union", () => {
@@ -335,7 +335,7 @@ describe('SqlQueryUtils', () => {
             name: "John UNION SELECT * FROM users",
             age: 33
         }).Where("id = 1")
-        expect(() => queryHelper.Query()).toThrowError(HttpErrorBadRequest)
+        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
     })
 
     it("Sql injection test - should not throw error", () => {
