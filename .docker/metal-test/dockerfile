@@ -1,5 +1,5 @@
 ## Docker testing image for Metal
-FROM node:22.13.0-slim
+FROM node:24.9.0-slim
 LABEL org.opencontainers.image.authors="Anis Megdiche <anis.megdiche@gmail.com>"
 
 # Update packages
