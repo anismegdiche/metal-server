@@ -3,7 +3,7 @@
 //
 //
 //
-import { TRow } from '../../../types/DataTable'
+import { DataTable } from '../../../types/DataTable'
 import { TJson } from '../../../types/TJson'
 import { STEP, STEP_STATUS } from '../../plan/@consts'
 import { TStepArgs } from '../../plan/types/TStepArgs'
@@ -31,7 +31,7 @@ export type TContext = {
             stepIndex?: number
             stepCommand?: STEP
             stepArgs?: TStepArgs
-            data?: TRow[]
+            data?: DataTable
             status?: STEP_STATUS
         }
     }

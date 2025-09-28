@@ -8,7 +8,7 @@ import merge from "lodash/merge"
 import values from "lodash/values"
 import typia from "typia"
 //
-import { DataTable, TRow } from "../../types/DataTable"
+import { DataTable } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
 import { Helper } from "../../utils/Helper"
 import { JsonUtils } from "../../utils/JsonUtils"
@@ -21,13 +21,13 @@ import { METADATA } from "../core/@consts"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import { StepCommand } from "../core/types/TConfig"
-import { HttpErrorBadRequest, HttpErrorNotFound } from "../errors/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
 import { WarnError } from "../errors/InternalError"
 import { TContext } from "../sandbox/types/TContext"
 import { TInternalResponse } from "../schema/types/TInternalResponse"
 import { TSchemaRequest } from "../schema/types/TSchemaRequest"
-import { STEP_STATUS } from "./@consts"
-import { Step } from "./Step"
+import { STEP, STEP_STATUS } from "./@consts"
+import { Step, TFunctionStep } from "./Step"
 import { TScheduleConfig } from './types/TScheduleConfig'
 import { TStep } from "./types/TStep"
 import { DataBase } from "../../types/DataBase"
@@ -113,8 +113,11 @@ export class Plan {
                 schema: currentSchemaName,
                 entity: currentEntityName,
                 $current: {
-                    data: <TRow[]>[],
-                    status: STEP_STATUS.PENDING
+                    data: this._dataBase.Tables[currentEntityName],
+                    status: STEP_STATUS.PENDING,
+                    stepIndex: undefined,
+                    stepCommand: undefined,
+                    stepArgs: undefined
                 }
             }
         }
@@ -124,22 +127,30 @@ export class Plan {
         try {
             for await (const [_stepIndex, _step] of Object.entries(steps)) {
                 Assert.Condition(_step !== null, `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`, new HttpErrorBadRequest())
-                
+
                 Logger.Debug(`${Logger.In} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(_step)}`)
 
-                $context = merge(
-                    $context,
-                    <Partial<TContext>>{
-                        $plan: {
-                            $current: {
-                                stepIndex: parseInt(_stepIndex, 10) + 1,
-                                stepCommand: keys(_step)[0],
-                                stepArgs: values(<TStepArgs>_step)[0],
-                                status: STEP_STATUS.RUNNING
-                            }
-                        }
-                    }
-                )
+                // $context = merge(
+                //     $context,
+                //     <Partial<TContext>>{
+                //         $plan: {
+                //             $current: {
+                //                 stepIndex: parseInt(_stepIndex, 10) + 1,
+                //                 stepCommand: keys(_step)[0],
+                //                 stepArgs: values(<TStepArgs>_step)[0],
+                //                 status: STEP_STATUS.RUNNING
+                //             }
+                //         }
+                //     }
+                // )
+
+                $context.$plan!.$current = {
+                    ...$context.$plan!.$current,
+                    stepIndex: parseInt(_stepIndex, 10) + 1,
+                    stepCommand: keys(_step)[0] as STEP,
+                    stepArgs: values(<TStepArgs>_step)[0],
+                    status: STEP_STATUS.RUNNING
+                }
 
                 // const __stepCommand: string = keys(_step)[0]
                 // const __stepArgs: TStepArgs = values(<object>_step)[0]
@@ -152,11 +163,13 @@ export class Plan {
 
                 const executeStep = Step.ExecuteCaseMap[$context.$plan!.$current.stepCommand!] ?? Helper.CaseMapNotFound($context.$plan!.$current.stepCommand!)
 
-                if (executeStep) {
-                    const ___stepReturn = await executeStep(__stepArguments)
-                    if (___stepReturn) {
-                        this._dataBase.Tables[currentEntityName] = ___stepReturn
-                    }
+                Assert.Var<TFunctionStep>(
+                    executeStep,
+                    `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`, new HttpErrorInternalServerError())
+
+                const __stepReturn = await executeStep(__stepArguments)
+                if (__stepReturn) {
+                    this._dataBase.Tables[currentEntityName] = __stepReturn
                 }
 
                 $context = merge(
@@ -214,7 +227,7 @@ export class Plan {
                         <Partial<TContext>>{
                             $plan: {
                                 $current: {
-                                    data: this._dataBase.Tables[currentEntityName].Rows,
+                                    data: this._dataBase.Tables[currentEntityName],
                                     status: STEP_STATUS.FAILED
                                 }
                             }

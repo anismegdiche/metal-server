@@ -261,7 +261,6 @@ export class StorageFilesData extends absDataProvider {
     async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
         Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage provider is not defined`)
 
-
         $context = merge($context, this.GetContext(schemaRequest))
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
