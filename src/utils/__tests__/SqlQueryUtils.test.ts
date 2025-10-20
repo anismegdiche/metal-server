@@ -46,7 +46,7 @@ describe('SqlQueryUtils', () => {
                     quantity: '10'
                 })
                 .Query()
-                
+
             expect(query).toBe("UPDATE products SET id = 1, price = 9.99, quantity = '10'")
         })
 
@@ -262,84 +262,232 @@ describe('SqlQueryUtils', () => {
         expect(queryHelper.Query()).toBe("INSERT INTO users(`id`, `name`) VALUES (1, 'John')")
     })
 
-    it("Sql injection test - Where string", () => {
-        const queryHelper = new SqlQueryUtils()
-        queryHelper.Select('*').From('users').Where("id = 1 OR 1=1")
-        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
-    })
+    describe("Sql injection test", () => {
 
-    it("Safe Sql Where string", () => {
-        const queryHelper = new SqlQueryUtils()
-        queryHelper.Select('*').From('users').Where("id = '1 OR 1=1'")
-        expect(queryHelper.Query()).toBe("SELECT * FROM users WHERE id = '1 OR 1=1'")
-    })
-
-    it("Sql injection test - Where string with semicolon", () => {
-        const queryHelper = new SqlQueryUtils()
-        queryHelper.Select('*').From('users').Where("id = 1; DROP TABLE users")
-        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
-    })
-
-    it("Sql injection test - passed query", () => {
-        const queryHelper = new SqlQueryUtils("SELECT * FROM users WHERE id = 1 OR 1=1")
-        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
-    })
-
-    it("Sql injection test - Update", () => {
-        const queryHelper = new SqlQueryUtils()
-        queryHelper.Update('users').Set({
-            name: "John; DROP TABLE users",
-            age: 33
-        }).Where("id = 1")
-        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
-    })
-
-    it("Sql injection test - Where string with comment", () => {
-        const queryHelper = new SqlQueryUtils()
-        queryHelper.Select('*').From('users').Where("id = 1 OR 1=1 --")
-        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
-    })
-
-    it("Sql injection test - Where string with union", () => {
-        const queryHelper = new SqlQueryUtils()
-        queryHelper.Select('*').From('users').Where("id = 1 UNION SELECT * FROM users")
-        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
-    })
-
-    it("Sql injection test - Where json with comment", () => {
-        const queryHelper = new SqlQueryUtils()
-        queryHelper.Select('*').From('users').Where({
-            id: "1 OR 1=1 --",
-            name: 'John'
+        it("should throw error for 1=1", () => {
+            const queryHelper = new SqlQueryUtils()
+            queryHelper.Select('*').From('users').Where("id = 1 OR 1=1")
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
         })
-        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
-    })
 
-    it("Sql injection test - Where array of json with union", () => {
-        const queryHelper = new SqlQueryUtils("SELECT * FROM users WHERE id = 1 UNION SELECT * FROM users AND name = 'John'")
-        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
-    })
+        it("should not throw an error", () => {
+            const queryHelper = new SqlQueryUtils()
+            queryHelper.Select('*').From('users').Where("id = '1 OR 1=1'")
+            expect(() => queryHelper.Query()).not.toThrow(HttpErrorBadRequest)
+        })
 
-    it("Sql injection test - Update with comment", () => {
-        const queryHelper = new SqlQueryUtils()
-        queryHelper.Update('users').Set({
-            name: "John --",
-            age: 33
-        }).Where("id = 1")
-        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
-    })
+        it("should throw error for semi-colon", () => {
+            const queryHelper = new SqlQueryUtils()
+            queryHelper.Select('*').From('users').Where("id = 1; DROP TABLE users")
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
+        })
 
-    it("Sql injection test - Update with union", () => {
-        const queryHelper = new SqlQueryUtils()
-        queryHelper.Update('users').Set({
-            name: "John UNION SELECT * FROM users",
-            age: 33
-        }).Where("id = 1")
-        expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
-    })
+        it("should throw error for 1=1", () => {
+            const queryHelper = new SqlQueryUtils("SELECT * FROM users WHERE id = 1 OR 1=1")
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
+        })
 
-    it("Sql injection test - should not throw error", () => {
-        const queryHelper = new SqlQueryUtils("SELECT * FROM users-table WHERE id = 1")
-        expect(queryHelper.Query()).toBe("SELECT * FROM users-table WHERE id = 1")
+        it("should not throw error for semi-colon inside string", () => {
+            const queryHelper = new SqlQueryUtils()
+            queryHelper.Update('users').Set({
+                name: "John; DROP TABLE users",
+                age: 33
+            }).Where("id = 1")
+            expect(() => queryHelper.Query()).not.toThrow(HttpErrorBadRequest)
+        })
+
+        it("should throw error for comment", () => {
+            const queryHelper = new SqlQueryUtils()
+            queryHelper.Select('*').From('users').Where("id = 1 OR 1=1 --")
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
+        })
+
+        it("should throw error for union", () => {
+            const queryHelper = new SqlQueryUtils()
+            queryHelper.Select('*').From('users').Where("id = 1 UNION SELECT * FROM users")
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
+        })
+
+        it("should not throw error for comment inside string", () => {
+            const queryHelper = new SqlQueryUtils()
+            queryHelper.Select('*').From('users').Where({
+                id: "1 OR 1=1 --",
+                name: 'John'
+            })
+            expect(() => queryHelper.Query()).not.toThrow(HttpErrorBadRequest)
+        })
+
+        it("should throw error for union", () => {
+            const queryHelper = new SqlQueryUtils("SELECT * FROM users WHERE id = 1 UNION SELECT * FROM users AND name = 'John'")
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
+        })
+
+        it("should not throw error for comment inside string", () => {
+            const queryHelper = new SqlQueryUtils()
+            queryHelper.Update('users').Set({
+                name: "John --",
+                age: 33
+            }).Where("id = 1")
+            expect(() => queryHelper.Query()).not.toThrow(HttpErrorBadRequest)
+        })
+
+        it("should throw error for union", () => {
+            const queryHelper = new SqlQueryUtils()
+            queryHelper.Update('users').Set({
+                name: "John UNION SELECT * FROM users",
+                age: 33
+            }).Where("id = 1")
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
+        })
+
+        it("should not throw error", () => {
+            const queryHelper = new SqlQueryUtils("SELECT * FROM users-table WHERE id = 1")
+            expect(queryHelper.Query()).toBe("SELECT * FROM users-table WHERE id = 1")
+        })
+
+        it("should not throw error for deny characters inside string", () => {
+            const queryHelper = new SqlQueryUtils("SELECT * FROM users WHERE name = 'John; | AND OR | DROP TABLE users'")
+            expect(() => queryHelper.Query()).not.toThrow(HttpErrorBadRequest)
+        })
+
+        it("should throw error for deny characters inside string and deny words", () => {
+            const queryHelper = new SqlQueryUtils("SELECT * FROM users WHERE name = 'John; | AND OR | DROP TABLE users'; SELECT * FROM users;;; -- Comments")
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest)
+        })
+
+        it("should throw for tautology OR 1=1", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = '' OR '1'='1'`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for stacked DROP after terminator", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = ''; DROP TABLE users; --`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for embedded DROP with quotes", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "'; DROP TABLE users; --"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for OR 1=1 with comment", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "' OR 1=1 --"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for unterminated comment style payload", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "' OR '1'='1' /*"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for UNION SELECT exfiltration", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "' UNION SELECT username, password FROM users --"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for stacked sleep (time-based) attempt", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM products WHERE id = 1; SELECT pg_sleep(5);`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for pipe concatenation with subquery", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "' || (SELECT password FROM secrets WHERE id=1) || '"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for comment-obfuscated OR", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "'/**/OR/**/1=1--"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for percent-encoded UNION", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "'%75%6e%69%6f%6e%20select%20%2a%20from%20users%20--"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should not throw for string containing semicolon (if deny inside string)", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = 'He said: "Use this; not that."'`);
+            expect(() => queryHelper.Query()).not.toThrow(HttpErrorBadRequest);
+        });
+
+        it("should not throw for dash sequences inside string (if deny inside string)", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE note = 'Range 10-20 -- note this is a string'`);
+            expect(() => queryHelper.Query()).not.toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for subquery returning multiple rows", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT (SELECT id FROM users) AS x FROM dual;`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for UNION column mismatch", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT id, name FROM users UNION SELECT id FROM users;`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for division by zero", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT 1 / 0;`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for invalid cast", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT CAST('notanumber' AS INTEGER);`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for stacked UPDATE after terminator", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "'; UPDATE users SET admin=1 WHERE id=1; --"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for xp_cmdshell execution attempt", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "'; EXEC xp_cmdshell('dir'); --"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for rename table attempt", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "'; RENAME TABLE users TO users_bak; --"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for mixed terminator + select + comment", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "'value'); SELECT 1; /*"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for comment-only payload", () => {
+            const queryHelper = new SqlQueryUtils(`-- Comment only`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for OR 1=1 with semicolon and comment", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "' OR 1=1; --"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for OR 1=1 with LIMIT and comment", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "' OR '1'='1' LIMIT 1; --"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        it("should throw for INSERT into admin_log attempt", () => {
+            const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = "'; INSERT INTO admin_log (msg) VALUES ('hacked'); --"`);
+            expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        });
+
+        // it("should throw for duplicate columns in INSERT", () => {
+        //     const queryHelper = new SqlQueryUtils(`INSERT INTO tb (a,a) VALUES (1,2)`);
+        //     expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        // });
+
+        // it("should throw for unterminated string in INSERT", () => {
+        //     const queryHelper = new SqlQueryUtils(`INSERT INTO tbl (col) VALUES ('unterminated string`);
+        //     expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        // });
+
+        // it("should throw for escaped-quote trick inside string", () => {
+        //     const queryHelper = new SqlQueryUtils(`SELECT * FROM users WHERE name = 'a'' OR ''1''=''1'`);
+        //     expect(() => queryHelper.Query()).toThrow(HttpErrorBadRequest);
+        // });
     })
 })

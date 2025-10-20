@@ -21,7 +21,7 @@ export class DataBase {
     }
 
     @Logger.LogFunction()
-    AddTable(entity: string, rows?: TJson[]) {
+    AddTable(entity: string, rows?: TRow[] | TJson[]) {
         Assert.Var(entity, "undefined DataTable name")
         if (this.Tables[entity] === undefined)
             this.Tables[entity] = new DataTable(entity, rows)
@@ -30,12 +30,12 @@ export class DataBase {
     }
 
     @Logger.LogFunction()
-    SetTable(entity: string, rows?: TJson[]) {
+    SetTable(entity: string, rows?: TRow[] | TJson[]) {
         Assert.Var(entity, "undefined DataTable name")
         if (this.Tables[entity] === undefined)
             this.AddTable(entity, rows)
         else
-            this.Tables[entity].Set(rows)
+            this.Tables[entity].SetRows(rows)
     }
 
     @Logger.LogFunction()
@@ -57,7 +57,7 @@ export class DataBase {
                 sqlQueryModified = sqlQueryModified.replace(`{${_dt}}`, ` ? ${_dt}`)
                 rows = [
                     ...rows,
-                    this.Tables[_dt].Rows
+                    this.Tables[_dt].Rows()
                 ]
             })
 

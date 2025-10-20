@@ -23,7 +23,7 @@ import { Stringify } from "./JsonUtils/Stringify"
 //
 export class JsonUtils {
 
-    static TryParse<T>(jsonString: string | undefined, defaultValue: T): T {
+    static TryParse<T>(jsonString: string | undefined, defaultValue: T, silent: boolean = false): T {
         if (!jsonString)
             return defaultValue
 
@@ -38,7 +38,9 @@ export class JsonUtils {
                 return value
             })
         } catch (error) {
-            Logger.Error(`JsonUtils.TryParse Error: ${JsonUtils.Stringify(error)}`)
+            if (!silent)
+                Logger.Error(`JsonUtils.TryParse Error: ${JsonUtils.Stringify(error)}`)
+
             return defaultValue
         }
     }

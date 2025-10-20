@@ -15,20 +15,24 @@ describe('TypeHelper', () => {
                 entity: 'test-entity',
                 result: 'success',
                 status: '200',
-                data: {
+                data: <unknown>{
                     Name: 123,
-                    Fields: {
-                        name: 'string',
-                        email: 'string',
-                        country: 'string'
-                    },
-                    Rows: [
-                        {
-                            name: 'John Doe',
-                            email: 'j.doe@nowhere.com',
-                            country: 'France'
+                    GetFields: () => {
+                        return {
+                            name: 'string',
+                            email: 'string',
+                            country: 'string'
                         }
-                    ],
+                    },
+                    GetRows: () => {
+                        return [
+                            {
+                                name: 'John Doe',
+                                email: 'j.doe@nowhere.com',
+                                country: 'France'
+                            }
+                        ]
+                    },
                     MetaData: {}
                 }
             }
@@ -41,20 +45,24 @@ describe('TypeHelper', () => {
                 entity: 'test-entity',
                 result: 'success',
                 status: '200',
-                data: {
+                data: <unknown>{
                     Name: 'users',
-                    Fields: {
-                        name: 'number',
-                        email: 'string',
-                        country: 'string'
-                    },
-                    Rows: [
-                        {
-                            name: 'John Doe',
-                            email: 'j.doe@nowhere.com',
-                            country: 'France'
+                    GetFields: () => {
+                        return {
+                            name: 'number',
+                            email: 'string',
+                            country: 'string'
                         }
-                    ],
+                    },
+                    GetRows: () => {
+                        return [
+                            {
+                                name: 'John Doe',
+                                email: 'j.doe@nowhere.com',
+                                country: 'France'
+                            }
+                        ]
+                    },
                     MetaData: {}
                 }
             }
@@ -67,15 +75,17 @@ describe('TypeHelper', () => {
                 entity: 'test-entity',
                 result: 'success',
                 status: '200',
-                data: {
+                data: <unknown>{
                     Name: 'users',
-                    Rows: [
-                        {
-                            name: 'John Doe',
-                            email: 'j.doe@nowhere.com',
-                            country: 'France'
-                        }
-                    ],
+                    GetRows: () => {
+                        return [
+                            {
+                                name: 'John Doe',
+                                email: 'j.doe@nowhere.com',
+                                country: 'France'
+                            }
+                        ]
+                    },
                     MetaData: {}
                 }
             }
@@ -140,18 +150,22 @@ describe('TypeHelper', () => {
                 status: '200',
                 data: {
                     Name: 'users',
-                    Fields: {
-                        name: 'number',
-                        email: 'string',
-                        country: 'string'
-                    },
-                    Rows: [
-                        {
-                            name: 'John Doe',
-                            email: 'j.doe@nowhere.com',
-                            country: 'France'
+                    GetFields: () => {
+                        return {
+                            name: 'number',
+                            email: 'string',
+                            country: 'string'
                         }
-                    ],
+                    },
+                    GetRows: () => {
+                        return [
+                            {
+                                name: 'John Doe',
+                                email: 'j.doe@nowhere.com',
+                                country: 'France'
+                            }
+                        ]
+                    },
                     MetaData: {}
                 }
             }
@@ -166,18 +180,22 @@ describe('TypeHelper', () => {
                 status: '200',
                 data: {
                     Name: 123,
-                    Fields: {
-                        name: 'string',
-                        email: 'string',
-                        country: 'string'
-                    },
-                    Rows: [
-                        {
-                            name: 'John Doe',
-                            email: 'j.doe@nowhere.com',
-                            country: 'France'
+                    GetFields: () => {
+                        return {
+                            name: 'string',
+                            email: 'string',
+                            country: 'string'
                         }
-                    ],
+                    },
+                    GetRows: () => {
+                        return [
+                            {
+                                name: 'John Doe',
+                                email: 'j.doe@nowhere.com',
+                                country: 'France'
+                            }
+                        ]
+                    },
                     MetaData: {}
                 }
             }
@@ -192,13 +210,15 @@ describe('TypeHelper', () => {
                 status: '200',
                 data: {
                     Name: 'users',
-                    Rows: [
-                        {
-                            name: 'John Doe',
-                            email: 'j.doe@nowhere.com',
-                            country: 'France'
-                        }
-                    ],
+                    GetRows: () => {
+                        return [
+                            {
+                                name: 'John Doe',
+                                email: 'j.doe@nowhere.com',
+                                country: 'France'
+                            }
+                        ]
+                    },
                     MetaData: {}
                 }
             }
@@ -232,14 +252,18 @@ describe('TypeHelper', () => {
                 status: '200',
                 data: {
                     Name: 'users',
-                    Fields: {},
-                    Rows: [
-                        {
-                            name: 'John Doe',
-                            email: 'j.doe@nowhere.com',
-                            country: 'France'
-                        }
-                    ],
+                    GetFields: () => {
+                        return {}
+                    },
+                    GetRows: () => {
+                        return [
+                            {
+                                name: 'John Doe',
+                                email: 'j.doe@nowhere.com',
+                                country: 'France'
+                            }
+                        ]
+                    },
                     MetaData: {}
                 }
             }
@@ -254,19 +278,23 @@ describe('TypeHelper', () => {
                 status: '200',
                 data: {
                     Name: 'users',
-                    Fields: {
-                        name: 'string',
-                        email: 'string',
-                        country: 'string'
+                    GetFields: () => {
+                        return {
+                            name: 'string',
+                            email: 'string',
+                            country: 'string'
+                        }
                     },
-                    Rows: [],
+                    GetRows: () => {
+                        return []
+                    },
                     MetaData: {}
                 }
             }
             expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(false)
         })
         it('should return true for valid TSchemaResponse object', () => {
-            const schemaResponse: TSchemaResponse = typia.random<TSchemaResponse>()
+            const schemaResponse: TSchemaResponse = typia.random<TSchemaResponse>() as unknown as TSchemaResponse
             expect(TypeUtils.IsSchemaResponseWithData(schemaResponse)).toBe(true)
         })
 
@@ -302,33 +330,37 @@ describe('TypeHelper', () => {
                 status: 200,
                 data: {
                     Name: "users",
-                    Fields: {
-                        name: "string",
-                        email: "string",
-                        country: "string"
-                    },
-                    Rows: [
-                        {
-                            name: "John Doe",
-                            email: "j.doe@nowhere.com",
-                            country: "France"
-                        },
-                        {
-                            name: "Mary Jane",
-                            email: "mary@somewhere.com",
-                            country: "USA"
-                        },
-                        {
-                            name: "John Doe",
-                            email: "j.doe@nowhere.com",
-                            country: "France"
-                        },
-                        {
-                            name: "Mary Jane",
-                            email: "mary@somewhere.com",
-                            country: "USA"
+                    GetFields: () => {
+                        return {
+                            name: "string",
+                            email: "string",
+                            country: "string"
                         }
-                    ],
+                    },
+                    GetRows: () => {
+                        return [
+                            {
+                                name: "John Doe",
+                                email: "j.doe@nowhere.com",
+                                country: "France"
+                            },
+                            {
+                                name: "Mary Jane",
+                                email: "mary@somewhere.com",
+                                country: "USA"
+                            },
+                            {
+                                name: "John Doe",
+                                email: "j.doe@nowhere.com",
+                                country: "France"
+                            },
+                            {
+                                name: "Mary Jane",
+                                email: "mary@somewhere.com",
+                                country: "USA"
+                            }
+                        ]
+                    },
                     MetaData: {
                     }
                 }
@@ -344,18 +376,22 @@ describe('TypeHelper', () => {
                 status: 200,
                 data: {
                     Name: "mem-entities",
-                    Fields: {
-                        name: "string",
-                        type: "string",
-                        size: "number"
-                    },
-                    Rows: [
-                        {
-                            name: "users",
-                            type: "datatable",
-                            size: 2
+                    GetFields: () => {
+                        return {
+                            name: "string",
+                            type: "string",
+                            size: "number"
                         }
-                    ],
+                    },
+                    GetRows: () => {
+                        return [
+                            {
+                                name: "users",
+                                type: "datatable",
+                                size: 2
+                            }
+                        ]
+                    },
                     MetaData: {
                     }
                 }

@@ -2,6 +2,7 @@
 //
 //
 import alasql from 'alasql'
+import { disposable, free, protect } from 'disposable-class'
 // lodash
 // eslint-disable-next-line lodash/import-scope
 import type { Many } from 'lodash'
@@ -18,7 +19,7 @@ import range from 'lodash/range'
 import reduce from 'lodash/reduce'
 import zipObject from 'lodash/zipObject'
 //
-import { createHash, createHmac } from 'node:crypto'
+import { createHash, createHmac, randomUUID } from 'node:crypto'
 import { createIs } from 'typia'
 //
 import { clsClonable } from "../utils/base/clsClonable"
@@ -26,6 +27,7 @@ import { JsonUtils } from "../utils/JsonUtils"
 import { Logger } from '../utils/Logger'
 import { StringUtils } from "../utils/StringUtils"
 import { TJson } from './TJson'
+import { TAny } from './TAny'
 
 
 //
@@ -63,7 +65,7 @@ export const enum REMOVE_DUPLICATES_STRATEGY {
 
 const HASH_ALGO = 'sha256'
 const HASH_DIGEST = 'base64'
-const HASH_PEPPER = process.env.HASH_PEPPER || "m3t4l-m!l!t!4";
+const HASH_PEPPER = process.env.HASH_PEPPER || "m3t4l-m!l!t!4"
 
 //
 export type TRow = TJson
@@ -79,32 +81,33 @@ export type TSyncReport = {
 function pseudonymize(value: string): string {
     return createHmac(HASH_ALGO, HASH_PEPPER)
         .update(value)
-        .digest(HASH_DIGEST);
+        .digest(HASH_DIGEST)
 }
 
 function anonymize(value: string): string {
     // True anonymization: irreversible and unlinkable
     // Options: random UUID, null, category, or aggregation
     return createHash(HASH_ALGO)
-        .update(value + Math.random().toString()) // make it non-deterministic
-        .digest(HASH_DIGEST);
+        .update(value + randomUUID()) // make it non-deterministic and cryptographically secure
+        .digest(HASH_DIGEST)
 }
 
 function normalizeValue(val: unknown): string {
-    if (val === null || val === undefined) return "";
-    if (val instanceof Date) return val.toISOString();
+    if (val === null || val === undefined) return ""
+    if (val instanceof Date) return val.toISOString()
     if (typeof val === "object") {
         try {
-            return JSON.stringify(val);
+            return JSON.stringify(val)
         } catch {
-            return String(val);
+            return String(val)
         }
     }
-    return String(val);
+    return String(val)
 }
 
 
 //
+@disposable
 export class DataTable extends clsClonable {
 
     // static
@@ -116,10 +119,13 @@ export class DataTable extends clsClonable {
     }
 
     // dynamic
-
+    @free()
     Name: string
-    Fields: TFields = {}
-    Rows: TRow[] = []
+    @free()
+    private _fields: TFields = {}
+    @free()
+    private _rows: TRow[] = []
+    @free()
     MetaData: TMetaData = {}
 
     constructor(
@@ -128,57 +134,104 @@ export class DataTable extends clsClonable {
         metaData?: TMetaData | TJson
     ) {
         super()
-        this.Name = name ?? crypto.randomUUID()
+        this.Name = name ?? randomUUID()
         if (rows) {
-            this.Set(Array.isArray(rows)
+            this.SetRows(Array.isArray(rows)
                 ? rows
                 : [rows])
         } else {
-            this.Rows = []
+            this.SetRows([])
         }
 
-        this.MetaData = metaData
-            ? metaData
-            : {};
+        this.MetaData = metaData ?? {}
     }
 
-    @Logger.LogFunction(true)
-    Set(rows?: TJson[]): this {
-        if (rows) {
-            this.Rows = [...rows]
-            this.SetFields()
-        }
-        return this
+    public dispose(): void {
+        // with decorator you do not have to call super.dispose();
+        // the decorator does it automatically
+
+        this.Name = ""
+        this.MetaData = {}
+        this.SetFields({})
+        this.SetRows([])
     }
 
     @Logger.LogFunction()
+    @protect()
     Rename(name: string): this {
         this.Name = name
         return this
     }
 
-    @Logger.LogFunction()
-    SetFields(): this {
-        const _cols: TJson = { ...this.Rows[0] }
+    @Logger.LogFunction(true)
+    Rows(): TRow[] {
+        return this._rows
+    }
 
-        this.Fields = reduce(_cols, (result, value, key) => {
+    @Logger.LogFunction()
+    @protect()
+    Fields(): TFields {
+        return this._fields
+    }
+
+    @Logger.LogFunction()
+    GetFieldsName(): string[] {
+        return Object.keys(this.Fields())
+    }
+
+    @Logger.LogFunction(true)
+    @protect()
+    SetRows(rowOrRows?: TJson | TJson[], index?: number): this {
+        // Case: no row, do nothing
+        if (rowOrRows === undefined)
+            return this
+
+        if (Array.isArray(rowOrRows)) {
+            // Case: full array replacement
+            this._rows = [...rowOrRows]
+        } else {
+            // Case: single row insert/replace
+            if (index === undefined) {
+                this._rows.push(rowOrRows)
+            } else {
+                this._rows[index] = rowOrRows
+            }
+        }
+        this.SetFields()
+        return this
+    }
+
+    @Logger.LogFunction()
+    @protect()
+    SetFields(fields?: TFields): this {
+        if (fields) {
+            this._fields = fields
+            return this
+        }
+
+        const _cols: TJson = { ...this.Rows()[0] }
+
+        this._fields = reduce(_cols, (result, value, key) => {
             _cols[key] = typeof (value)
             return _cols
         }, <TFields>{})
         return this
     }
 
-    @Logger.LogFunction()
-    GetFieldNames(): string[] {
-        return Object.keys(this.Fields)
+    @Logger.LogFunction(true)
+    @protect()
+    SetMetaData(metadata: string, value: unknown): this {
+        this.MetaData[metadata] = value
+        return this
     }
 
     @Logger.LogFunction()
+    @protect()
     PrefixAllFields(prefix: string): this {
-        if (this.Rows.length === 0)
+        if (this.Rows().length === 0)
             return this
 
-        for (const __row of this.Rows) {
+        for (const __row of this.Rows()) {
             for (const [___col, ___value] of Object.entries(__row)) {
                 __row[`${prefix}.${___col}`] = ___value
                 delete __row[___col]
@@ -188,11 +241,12 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction()
+    @protect()
     UnPrefixAllfields(): this {
-        if (this.Rows.length === 0)
+        if (this.Rows().length === 0)
             return this
 
-        for (const _row of this.Rows) {
+        for (const _row of this.Rows()) {
             for (const [__col, __value] of Object.entries(_row)) {
                 const ___colNew = __col.includes('.')
                     ? __col.split('.')[1]
@@ -207,18 +261,22 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction(true)
-    FreeSql(sqlQuery: string | undefined, jsonData?: object[]): this {
+    @protect()
+    FreeSql(sqlQuery: string | undefined, queryParams?: TAny[]): this {
         if (sqlQuery == undefined)
             return this
 
         alasql.options.errorlog = true
         alasql(`CREATE TABLE IF NOT EXISTS [${this.Name}]`)
-        alasql.tables[this.Name].data = this.Rows
+        alasql.tables[this.Name].data = this.Rows()
 
         try {
-            const _result = alasql(sqlQuery, jsonData)
+            const _result = alasql(sqlQuery, queryParams)
+            if (!_result || _result === null)
+                throw new Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
+
             if (typeof _result === 'object' && Array.isArray(_result))
-                this.Rows = _result
+                this.SetRows(_result)
 
         } catch (error: unknown) {
             Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
@@ -228,16 +286,17 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction(true)
-    async FreeSqlAsync(sqlQuery: string | undefined, jsonData?: object[]): Promise<this> {
+    @protect({ async: true })
+    async FreeSqlAsync(sqlQuery: string | undefined, queryParams?: TAny[]): Promise<this> {
         if (sqlQuery == undefined)
             return this
 
         alasql.options.errorlog = true
         alasql(`CREATE TABLE IF NOT EXISTS [${this.Name}]`)
-        alasql.tables[this.Name].data = this.Rows
+        alasql.tables[this.Name].data = this.Rows()
 
         try {
-            const _result = await alasql.promise(sqlQuery, jsonData)
+            const _result = await alasql.promise(sqlQuery, queryParams)
                 .then((r: unknown) => r)
                 .catch((error: unknown) => {
                     Logger.Error(`DataTable.FreeSqlAsync: '${this.Name}' Error executing SQL query: '${sqlQuery}', Error: ${error}`)
@@ -245,7 +304,7 @@ export class DataTable extends clsClonable {
                 })
 
             if (typeof _result === 'object' && Array.isArray(_result))
-                this.Rows = _result
+                this.SetRows(_result)
 
         } catch (error: unknown) {
             Logger.Error(`DataTable.FreeSqlAsync: '${this.Name}' Error executing SQL query: '${sqlQuery}'`)
@@ -256,110 +315,123 @@ export class DataTable extends clsClonable {
 
 
     @Logger.LogFunction()
+    @protect()
     LeftJoin(dtB: this, leftField: string, rightField: string): this {
-        this.Rows = alasql(`
+        this.SetRows(
+            alasql(`
             SELECT * FROM ? [${this.Name}] 
             LEFT JOIN ? [${dtB.Name}] 
             ON [${this.Name}].[${leftField}] = [${dtB.Name}].[${rightField}]`,
-            [this.Rows, dtB.Rows]
+                [this.Rows(), dtB.Rows()]
+            )
         )
         return this.SetFields()
     }
 
     @Logger.LogFunction()
+    @protect()
     InnerJoin(dtB: this, leftField: string, rightField: string): this {
-        this.Rows = alasql(`
+        this.SetRows(
+            alasql(`
             SELECT * FROM ? [${this.Name}] 
             INNER JOIN ? [${dtB.Name}] 
             ON [${this.Name}].[${leftField}] = [${dtB.Name}].[${rightField}]`,
-            [this.Rows, dtB.Rows]
+                [this.Rows(), dtB.Rows()]
+            )
         )
         return this.SetFields()
     }
 
     @Logger.LogFunction()
+    @protect()
     RightJoin(dtB: this, leftField: string, rightField: string): this {
-        this.Rows = alasql(`
+        this.SetRows(
+            alasql(`
             SELECT * FROM ? [${this.Name}] 
             RIGHT JOIN ? [${dtB.Name}] 
             ON [${this.Name}].[${leftField}] = [${dtB.Name}].[${rightField}]`,
-            [this.Rows, dtB.Rows]
+                [this.Rows(), dtB.Rows()]
+            )
         )
         return this.SetFields()
     }
 
     @Logger.LogFunction()
+    @protect()
     FullOuterJoin(dtB: this, leftField: string, rightField: string): this {
-        this.Rows = alasql(`
+        this.SetRows(alasql(`
             SELECT * FROM ? [${this.Name}] 
             FULL OUTER JOIN ? [${dtB.Name}] 
             ON [${this.Name}].[${leftField}] = [${dtB.Name}].[${rightField}]`,
-            [this.Rows, dtB.Rows]
+            [this.Rows(), dtB.Rows()]
+        )
         )
         return this.SetFields()
     }
 
     @Logger.LogFunction()
+    @protect()
     CrossJoin(dtB: this): this {
-        this.Rows = alasql(`
+        this.SetRows(alasql(`
             SELECT * FROM ? [${this.Name}] 
             CROSS JOIN ? [${dtB.Name}]`,
-            [this.Rows, dtB.Rows]
+            [this.Rows(), dtB.Rows()]
+        )
         )
         return this.SetFields()
     }
 
     @Logger.LogFunction()
+    @protect()
     SelectFields(fields: string[]): this {
-        if (this.Rows.length === 0 || fields.length === 0)
+        if (this.Rows().length === 0 || fields.length === 0)
             return this
 
-        this.Rows = alasql(`
+        this.SetRows(alasql(`
             SELECT [${fields.join('],[')}] 
             FROM ? [${this.Name}]`,
-            [this.Rows]
+            [this.Rows()]
+        )
         )
         return this.SetFields()
     }
 
     @Logger.LogFunction()
+    @protect()
     RemoveFields(fields: string[]): this {
-        if (this.Rows.length === 0 || fields.length === 0)
+        if (this.Rows().length === 0 || fields.length === 0)
             return this
 
-        this.Rows = this.Rows.map((row) => omit(row, fields))
+        this.SetRows(this.Rows().map((row) => omit(row, fields)))
         return this.SetFields()
     }
 
     @Logger.LogFunction()
+    @protect()
     Sort(sorts: TOrderBy): this {
         const fields = Object.keys(sorts)
         const orders: string[] = Object.entries(sorts).map((sort) => sort[1] ?? SORT_ORDER.ASC)
-        this.Rows = orderBy(this.Rows, fields, orders as Many<boolean | "asc" | "desc"> | undefined)
+        this.SetRows(orderBy(this.Rows(), fields, orders as Many<boolean | "asc" | "desc"> | undefined))
         return this
     }
 
-    @Logger.LogFunction(true)
-    SetMetaData(metadata: string, value: unknown): this {
-        this.MetaData[metadata] = value
-        return this
-    }
-
-    @Logger.LogFunction(true)
+    @Logger.LogFunction()
+    @protect()
     AddRows(newRows?: TJson | TJson[]): this {
         if (!newRows)
             return this
 
-        this.Rows = Array.isArray(newRows)
-            ? [...this.Rows, ...newRows]
-            : [...this.Rows, newRows]
+        this.SetRows(Array.isArray(newRows)
+            ? [...this.Rows(), ...newRows]
+            : [...this.Rows(), newRows]
+        )
 
         return this.SetFields()
     }
 
     @Logger.LogFunction()
     SyncReport(dtDestination: DataTable, on: string, flags?: { keepOnlyUpdatedValues: boolean }): TSyncReport {
-        const sourceHasProperty = this.Rows.some(row => on in row)
+        const sourceHasProperty = this.Rows().some(row => on in row)
 
         if (!sourceHasProperty) {
             throw new Error(`DataTable.SyncReport: '${this.Name}' has no property '${on}'`)
@@ -372,8 +444,8 @@ export class DataTable extends clsClonable {
         }
 
         // Remove rows from source and destination that are equal
-        const filteredSource: TRow[] = differenceWith(this.Rows, dtDestination.Rows, isEqual)
-        const filteredDestination: TRow[] = differenceWith(dtDestination.Rows, this.Rows, isEqual)
+        const filteredSource: TRow[] = differenceWith(this.Rows(), dtDestination.Rows(), isEqual)
+        const filteredDestination: TRow[] = differenceWith(dtDestination.Rows(), this.Rows(), isEqual)
 
         // Remove rows from destination that are not in source
         const DeletedRows: TRow[] = filteredDestination.filter(row => !filteredSource.some((srcRow: TRow) => isEqual(srcRow[on], row[on])))
@@ -412,6 +484,7 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction()
+    @protect({ async: true })
     async Anonymize(
         fields: string | string[],
         pseudo = true
@@ -420,47 +493,47 @@ export class DataTable extends clsClonable {
         let _fields: string[] =
             typeof fields === "string"
                 ? fields.split(",").map((f) => f.trim()).filter(Boolean)
-                : fields.map((f) => f.trim());
+                : fields.map((f) => f.trim())
 
         // Wildcard: anonymize all fields
         if (_fields.length === 1 && _fields[0] === "*") {
-            _fields = this.GetFieldNames() ?? [];
+            _fields = this.GetFieldsName() ?? []
         }
 
-        const rowsPromises = this.Rows.map(async (__row, __idx) => {
-            const ___newRow = { ...__row };
+        const rowsPromises = this.Rows().map(async (__row, __idx) => {
+            const ___newRow = { ...__row }
             await Promise.all(
                 _fields.map(async (__field) => {
                     if (__field in ___newRow) {
-                        const val = normalizeValue(___newRow[__field]);
-                        ___newRow[__field] = pseudo ? pseudonymize(val) : anonymize(val);
+                        const val = normalizeValue(___newRow[__field])
+                        ___newRow[__field] = pseudo ? pseudonymize(val) : anonymize(val)
                     }
                 })
-            );
-            return { index: __idx, row: ___newRow };
-        });
+            )
+            return { index: __idx, row: ___newRow }
+        })
 
-        const rows = await Promise.all(rowsPromises);
+        const rows = await Promise.all(rowsPromises)
 
-        this.Rows = rows.map(({ index: _index, row: _row }) => {
-            this.Rows[_index] = _row;
-            return _row;
-        });
+        rows.forEach(({ index: _index, row: _row }) => {
+            this.SetRows(_row, _index)
+        })
 
-        return this;
+        return this
     }
 
 
 
     @Logger.LogFunction()
+    @protect({ async: true })
     async FilterRows(condition: string | undefined): Promise<this> {
-        if (this.Rows.length === 0 || StringUtils.IsEmpty(condition))
+        if (this.Rows().length === 0 || StringUtils.IsEmpty(condition))
             return this
 
         return await this.FreeSqlAsync(`SELECT * FROM [${this.Name}] WHERE ${condition}`)
             .then((result: DataTable | undefined) => {
                 if (result)
-                    this.Rows = result.Rows
+                    this.SetRows(result.Rows())
                 return this
             })
             .catch(() => {
@@ -470,14 +543,16 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction()
+    @protect({ async: true })
     async DeleteRows(condition: string | undefined): Promise<this> {
-        if (this.Rows.length === 0 || StringUtils.IsEmpty(condition))
+        if (this.Rows().length === 0 || StringUtils.IsEmpty(condition))
             return this
 
         return await this.FreeSqlAsync(`DELETE FROM [${this.Name}] WHERE ${condition}`)
     }
 
     @Logger.LogFunction()
+    @protect({ async: true })
     async RemoveDuplicates(
         fields: string[] | undefined = undefined,
         method: string = REMOVE_DUPLICATES_METHOD.HASH,
@@ -492,7 +567,7 @@ export class DataTable extends clsClonable {
 
         const _mapDeduplicated: Map<string, TRow> = new Map()
 
-        this.Rows.forEach(async (row: TRow) => {
+        this.Rows().forEach(async (row: TRow) => {
             let __currentHash: string = ""
 
             const __rowString = (_fields)
@@ -544,10 +619,10 @@ export class DataTable extends clsClonable {
                             row
                         ])
 
-                        if (__dtDuplicates.Rows.length > 0)
+                        if (__dtDuplicates.Rows().length > 0)
                             _mapDeduplicated.set(
                                 __currentHash,
-                                (await __dtDuplicates.FilterRows(condition)).Rows[0]
+                                (await __dtDuplicates.FilterRows(condition)).Rows()[0]
                             )
                         break
                     case REMOVE_DUPLICATES_STRATEGY.FIRST:
@@ -561,31 +636,33 @@ export class DataTable extends clsClonable {
             }
         })
         // set rows
-        this.Rows = Array.from(_mapDeduplicated.values())
+        this.SetRows(Array.from(_mapDeduplicated.values()))
         return this
     }
 
     @Logger.LogFunction()
+    @protect()
     Transpose(renamedColumns?: string[]): this {
-        if (isEmpty(this.Rows))
+        if (isEmpty(this.Rows()))
             return this
 
         const NAME_PATTERN = "field_"
 
         // Get keys from the first object
-        const keys = Object.keys(this.Rows[0])
+        const keys = Object.keys(this.Rows()[0])
 
         // Determine column names
         const columns = (renamedColumns && renamedColumns.length > 0)
             ? [...renamedColumns, ...range(renamedColumns.length, keys.length).map(i => `${NAME_PATTERN}${i + 1}`)]
-            : ["key", ...range(1, this.Rows.length + 1).map(i => `${NAME_PATTERN}${i}`)]
+            : ["key", ...range(1, this.Rows().length + 1).map(i => `${NAME_PATTERN}${i}`)]
 
         // Transpose using lodash
 
-        this.Rows = keys.map((key) => {
-            const rowValues = [key, ...this.Rows.map((row) => row[key])]
+        this.SetRows(keys.map((key) => {
+            const rowValues = [key, ...this.Rows().map((row) => row[key])]
             return zipObject(columns, rowValues)
         })
+        )
         return this
     }
 }

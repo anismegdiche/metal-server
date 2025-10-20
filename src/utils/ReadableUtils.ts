@@ -12,7 +12,10 @@ export class ReadableUtils {
     @Logger.LogFunction(true)
     static async ToString(readable: Readable): Promise<string> {
         let result = ''
-
+        
+        if (!readable.readable)
+            return result
+        
         return new Promise((resolve, reject) => {
             let hasData = false
 

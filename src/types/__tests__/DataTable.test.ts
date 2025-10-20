@@ -15,18 +15,21 @@ jest.mock('../../utils/Logger', () => ({
         Info: () => () => { },
         Message: () => () => { },
         LogFunction: () => () => { },
-        Level : "error",
+        Level: "error",
         Out: 'OUT'
     }
 }))
 
+
 describe("DataTable", () => {
     let
-        dt: DataTable = <DataTable>{},
-        dtEmpty: DataTable = <DataTable>{},
-        dtA: DataTable = <DataTable>{},
-        dtB: DataTable = <DataTable>{},
-        dtC: DataTable = <DataTable>{}
+    dt: DataTable = <DataTable>{},
+    dtEmpty: DataTable = <DataTable>{},
+    dtA: DataTable = <DataTable>{},
+    dtB: DataTable = <DataTable>{},
+    dtC: DataTable = <DataTable>{}
+    
+    // DataTableConfig.Mode =  DATATABLE_MODE.PERSISTANT
 
     beforeEach(() => {
         dt = new DataTable("table", [
@@ -97,7 +100,7 @@ describe("DataTable", () => {
 
         it("should set the table name and fields", () => {
             expect(dt.Name).toEqual("table")
-            expect(dt.Fields).toEqual({
+            expect(dt.Fields()).toEqual({
                 name: "string",
                 age: "number"
             })
@@ -109,29 +112,29 @@ describe("DataTable", () => {
         })
     })
 
-    describe("Set", () => {
+    describe("SetRows", () => {
         it("should set the rows and fields of the table", () => {
-            dt.Set([
+            dt.SetRows([
                 {
                     name: "Charlie",
                     age: 35
                 }
             ])
-            expect(dt.Rows).toEqual([
+            expect(dt.Rows()).toEqual([
                 {
                     name: "Charlie",
                     age: 35
                 }
             ])
-            expect(dt.Fields).toEqual({
+            expect(dt.Fields()).toEqual({
                 name: "string",
                 age: "number"
             })
         })
 
         it("should not modify the table if rows are undefined", () => {
-            dt.Set()
-            expect(dt.Rows).toEqual([
+            dt.SetRows()
+            expect(dt.Rows()).toEqual([
                 {
                     name: "Alice",
                     age: 25
@@ -140,7 +143,7 @@ describe("DataTable", () => {
                     age: 30
                 }
             ])
-            expect(dt.Fields).toEqual({
+            expect(dt.Fields()).toEqual({
                 name: "string",
                 age: "number"
             })
@@ -150,7 +153,7 @@ describe("DataTable", () => {
     describe("SetFields", () => {
         it("should set the fields based on the first row of the table", () => {
             dt.SetFields()
-            expect(dt.Fields).toEqual({
+            expect(dt.Fields()).toEqual({
                 name: "string",
                 age: "number"
             })
@@ -159,12 +162,12 @@ describe("DataTable", () => {
 
     describe("GetFieldsNames", () => {
         it("should return an array of field names", () => {
-            const fields = dt.GetFieldNames()
+            const fields = dt.GetFieldsName()
             expect(fields).toEqual(["name", "age"])
         })
 
         it("should return emty array for empty Datatable", () => {
-            const fields = new DataTable("empty").GetFieldNames()
+            const fields = new DataTable("empty").GetFieldsName()
             expect(fields).toEqual([])
         })
     })
@@ -172,11 +175,11 @@ describe("DataTable", () => {
     describe("PrefixAllFields", () => {
         it("should prefix all field names with the given string", () => {
             dt.PrefixAllFields("prefix")
-            expect(dt.Fields).toEqual({
+            expect(dt.Fields()).toEqual({
                 "prefix.name": "string",
                 "prefix.age": "number"
             })
-            expect(dt.Rows).toEqual([
+            expect(dt.Rows()).toEqual([
                 {
                     "prefix.name": "Alice",
                     "prefix.age": 25
@@ -191,8 +194,8 @@ describe("DataTable", () => {
         it("should not modify the table if it has no rows", () => {
             const emptyTable = new DataTable("empty")
             emptyTable.PrefixAllFields("prefix")
-            expect(emptyTable.Fields).toEqual({})
-            expect(emptyTable.Rows).toEqual([])
+            expect(emptyTable.Fields()).toEqual({})
+            expect(emptyTable.Rows()).toEqual([])
         })
     })
 
@@ -217,11 +220,11 @@ describe("DataTable", () => {
             data.UnPrefixAllfields()
 
             // Assert
-            expect(data.Fields).toEqual({
+            expect(data.Fields()).toEqual({
                 Col1: "string",
                 Col2: "string"
             })
-            expect(data.Rows).toEqual([
+            expect(data.Rows()).toEqual([
                 {
                     Col1: "Value1",
                     Col2: "Value2"
@@ -250,11 +253,11 @@ describe("DataTable", () => {
             data.UnPrefixAllfields()
 
             // Assert
-            expect(data.Fields).toEqual({
+            expect(data.Fields()).toEqual({
                 Col1: "string",
                 Col2: "string"
             })
-            expect(data.Rows).toEqual([
+            expect(data.Rows()).toEqual([
                 {
                     Col1: "Value1",
                     Col2: "Value2"
@@ -274,14 +277,14 @@ describe("DataTable", () => {
             data.UnPrefixAllfields()
 
             // Assert
-            expect(data.Fields).toEqual({})
-            expect(data.Rows).toEqual([])
+            expect(data.Fields()).toEqual({})
+            expect(data.Rows()).toEqual([])
         })
     })
 
     describe('Sort', () => {
         it('should sort the rows by the specified fields in ascending order', () => {
-            const sorted = dtA.Sort({ 'name': SORT_ORDER.ASC }).Rows
+            const sorted = dtA.Sort({ 'name': SORT_ORDER.ASC }).Rows()
             expect(sorted).toEqual([
                 {
                     id: 1,
@@ -302,7 +305,7 @@ describe("DataTable", () => {
         })
 
         it('should sort the rows by the specified fields in descending order', () => {
-            const sorted = dtA.Sort({ 'age': SORT_ORDER.DESC }).Rows
+            const sorted = dtA.Sort({ 'age': SORT_ORDER.DESC }).Rows()
             expect(sorted).toEqual([
                 {
                     id: 3,
@@ -324,7 +327,7 @@ describe("DataTable", () => {
 
 
         it('should sort the rows by the specified fields in ascending order first, then descending order', () => {
-            const sorted = dtC.Sort({ 'x': SORT_ORDER.ASC, 'y': SORT_ORDER.DESC }).Rows
+            const sorted = dtC.Sort({ 'x': SORT_ORDER.ASC, 'y': SORT_ORDER.DESC }).Rows()
             expect(sorted).toEqual([
                 { x: 1, y: 1 },
                 { x: 2, y: 2 },
@@ -338,7 +341,7 @@ describe("DataTable", () => {
     describe('InnerJoin', () => {
         it('should return a new DataTable containing the inner join of the two tables on the specified fields', () => {
             const result = dtA.InnerJoin(dtB, 'id', 'id')
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 {
                     id: 2,
                     name: 'Bob',
@@ -358,7 +361,7 @@ describe("DataTable", () => {
     describe('LeftJoin', () => {
         it('should return a new DataTable containing the left join of the two tables on the specified fields', () => {
             const result = dtA.LeftJoin(dtB, 'id', 'id')
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 {
                     id: 2,
                     name: "Bob",
@@ -383,7 +386,7 @@ describe("DataTable", () => {
     describe('CrossJoin', () => {
         it('should return a new DataTable containing the cross join of the two tables on the specified fields', () => {
             const result = dtA.CrossJoin(dtB)
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 {
                     id: 3,
                     name: "Bob",
@@ -443,7 +446,7 @@ describe("DataTable", () => {
 
         it('should return empty if any is empty', () => {
             const result = dtA.CrossJoin(dtEmpty)
-            expect(result.Rows).toEqual([])
+            expect(result.Rows()).toEqual([])
         })
     })
 
@@ -457,7 +460,7 @@ describe("DataTable", () => {
             ])
             const result = dt.SelectFields([])
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 {
                     id: 1,
                     name: 'John'
@@ -469,7 +472,7 @@ describe("DataTable", () => {
             dt = new DataTable('test')
             const result = dt.SelectFields(['id'])
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([])
+            expect(result.Rows()).toEqual([])
         })
 
         it('should return the DataTable instance with only the specified fields in the rows', () => {
@@ -487,7 +490,7 @@ describe("DataTable", () => {
             ])
             const result = dt.SelectFields(['id', 'name'])
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 {
                     id: 1,
                     name: 'John'
@@ -521,7 +524,7 @@ describe("DataTable", () => {
         it('should execute valid SQL query and update Rows and Fields properties', async () => {
             // Arrange
             const myDataTable = new DataTable("myTable")
-            myDataTable.Set([
+            myDataTable.SetRows([
                 {
                     id: 1,
                     name: "John"
@@ -538,13 +541,13 @@ describe("DataTable", () => {
 
             // Assert
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 {
                     id: 1,
                     name: "John"
                 }
             ])
-            expect(result.Fields).toEqual({
+            expect(result.Fields()).toEqual({
                 id: "number",
                 name: "string"
             })
@@ -553,7 +556,7 @@ describe("DataTable", () => {
         it('should execute valid SQL query with no results and return DataTable object with empty Rows and Fields', async () => {
             // Arrange
             const myDataTable = new DataTable("myTable")
-            myDataTable.Set([
+            myDataTable.SetRows([
                 {
                     id: 1,
                     name: "John"
@@ -570,8 +573,8 @@ describe("DataTable", () => {
 
             // Assert
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([])
-            expect(result.Fields).toEqual({})
+            expect(result.Rows()).toEqual([])
+            expect(result.Fields()).toEqual({})
         })
 
         // Executes a valid SQL query with no input Rows and returns a DataTable object with empty Rows and updated Fields properties
@@ -585,27 +588,18 @@ describe("DataTable", () => {
 
             // Assert
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([])
-            expect(result.Fields).toEqual({})
+            expect(result.Rows()).toEqual([])
+            expect(result.Fields()).toEqual({})
         })
 
         // Executes an invalid SQL query and throws an error
-        it('should execute invalid SQL query and return same Datatable', async () => {
+        it('should throw error for invalid SQL query', async () => {
             // Arrange
             const myDataTable = new DataTable("myTable")
             const sqlQuery = "INVALID QUERY"
 
-
-            let result: DataTable | undefined
-
-            // Act
-            try {
-                result = await myDataTable.FreeSqlAsync(sqlQuery)
-            } catch {
-                //
-            }
             // Assert
-            expect(result).toEqual(undefined)
+            expect(() => myDataTable.FreeSql(sqlQuery)).toThrow()
         })
 
         // Executes a SQL query with a syntax error and throws an error
@@ -619,8 +613,8 @@ describe("DataTable", () => {
 
             // Assert
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([])
-            expect(result.Fields).toEqual({})
+            expect(result.Rows()).toEqual([])
+            expect(result.Fields()).toEqual({})
         })
 
         // Executes a SQL query with a semantic error and throws an error
@@ -645,7 +639,7 @@ describe("DataTable", () => {
         it('should execute insert data', async () => {
             // Arrange
             const myDataTable = new DataTable("myTable")
-            myDataTable.Set([
+            myDataTable.SetRows([
                 {
                     id: 1,
                     name: "John"
@@ -662,7 +656,7 @@ describe("DataTable", () => {
 
             // Assert
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 {
                     id: 1,
                     name: "John"
@@ -681,12 +675,36 @@ describe("DataTable", () => {
                     name: "Jane"
                 }
             ])
-            expect(result.Fields).toEqual({
+            expect(result.Fields()).toEqual({
                 id: "number",
                 name: "string"
             })
         })
     })
+
+    // describe('FreeSqlAsync', () => {
+
+    //     // Executes a valid SQL query and returns a DataTable object with updated Rows and Fields properties
+    //     it('UC 1', async () => {
+    //         // Arrange
+    //         const myDataTable = new DataTable("output.csv")
+    //         const sqlQuery = "INSERT INTO `output.csv`(`name`, `mimeType`, `type`, `size`, `createdAt`, `modifiedAt`, `path`, `ocr_text`, `translated_text`) VALUES ('ocr-1.png', 'image/png', 'file', 130403, ?, ?, 'data/img/ocr-1.png', 'Cedric himself knew nothing\nwhatever about it. It had never been\neven mentioned to him. He knew that\nhis papa had been an Englishman,\nbecause his mamma had told him so;\nbut then his papa had died when he\nwas so little a boy that he could not\nremember very much about him,\nexcept that he was big. and had blue\neyes and a long mustache, and that it\nwas a splendid thing to be carried\naround the room on his shoulder.\n'),  ('ocr-3.png', 'image/png', 'file', 23359, ?, ?, 'data/img/ocr-3.png', 'This is a lot of 12 point text to test the\nocr code and see if it works on all types\nof file format.\n\nThe quick brown dog jumped over the\nlazy fox. The quick brown dog jumped\nover the lazy fox. The quick brown dog\njumped over the lazy fox. The quick\nbrown dog jumped over the lazy fox.\n')"
+
+    //         const params = [
+    //             new Date("2025-05-27T17:22:27.600Z"),
+    //             new Date("2025-05-27T12:40:44.000Z"),
+    //             new Date("2025-07-16T16:51:26.107Z"),
+    //             new Date("2025-07-16T09:10:07.000Z"),
+    //           ]
+
+    //         // Act
+    //         const result = await myDataTable.FreeSqlAsync(sqlQuery, params)
+
+    //         // Assert
+    //         expect(result).toBeInstanceOf(DataTable)
+    //         expect(result.GetRows().length).toEqual(2)
+    //     })
+    // })
 
     describe('SyncReport', () => {
 
@@ -1332,7 +1350,7 @@ describe("DataTable", () => {
         // Anonymizes specified fields in all rows
         it('should anonymize specified fields in all rows', async () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Set([
+            dataTable.SetRows([
                 {
                     name: 'John Doe',
                     email: 'john@example.com'
@@ -1344,7 +1362,7 @@ describe("DataTable", () => {
             ])
             const fieldsToAnonymize = ['email']
             await dataTable.Anonymize(fieldsToAnonymize)
-            dataTable.Rows.forEach(row => {
+            dataTable.Rows().forEach(row => {
                 expect(row.email).toMatch(/^[A-Za-z0-9+/]*={0,2}$/)
             })
         })
@@ -1352,10 +1370,10 @@ describe("DataTable", () => {
         // Anonymizes fields when no rows are present
         it('should handle anonymization when no rows are present', async () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Set([])
+            dataTable.SetRows([])
             const fieldsToAnonymize = ['email']
             await dataTable.Anonymize(fieldsToAnonymize)
-            expect(dataTable.Rows).toEqual([])
+            expect(dataTable.Rows()).toEqual([])
         })
 
         // Returns the DataTable instance after anonymization
@@ -1369,7 +1387,7 @@ describe("DataTable", () => {
         // Handles multiple fields for anonymization
         it('should anonymize specified fields for all rows when multiple fields are provided', async () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Set([
+            dataTable.SetRows([
                 {
                     name: 'Alice',
                     email: 'alice@example.com'
@@ -1380,16 +1398,16 @@ describe("DataTable", () => {
             ])
             const fields = ['name', 'email']
             await dataTable.Anonymize(fields)
-            expect(dataTable.Rows[0].name).not.toBe('Alice')
-            expect(dataTable.Rows[0].email).not.toBe('alice@example.com')
-            expect(dataTable.Rows[1].name).not.toBe('Bob')
-            expect(dataTable.Rows[1].email).not.toBe('bob@example.com')
+            expect(dataTable.Rows()[0].name).not.toBe('Alice')
+            expect(dataTable.Rows()[0].email).not.toBe('alice@example.com')
+            expect(dataTable.Rows()[1].name).not.toBe('Bob')
+            expect(dataTable.Rows()[1].email).not.toBe('bob@example.com')
         })
 
         // Processes all rows in the DataTable
         it('should anonymize specified fields for all rows when processing all rows', async () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Set([
+            dataTable.SetRows([
                 {
                     name: 'Alice',
                     email: 'alice@example.com'
@@ -1400,10 +1418,10 @@ describe("DataTable", () => {
             ])
             const fields = ['name', 'email']
             await dataTable.Anonymize(fields)
-            expect(dataTable.Rows[0].name).not.toBe('Alice')
-            expect(dataTable.Rows[0].email).not.toBe('alice@example.com')
-            expect(dataTable.Rows[1].name).not.toBe('Bob')
-            expect(dataTable.Rows[1].email).not.toBe('bob@example.com')
+            expect(dataTable.Rows()[0].name).not.toBe('Alice')
+            expect(dataTable.Rows()[0].email).not.toBe('alice@example.com')
+            expect(dataTable.Rows()[1].name).not.toBe('Bob')
+            expect(dataTable.Rows()[1].email).not.toBe('bob@example.com')
         })
 
         // Handles empty fields array without errors
@@ -1418,9 +1436,9 @@ describe("DataTable", () => {
                     age: 25
                 }
             ]
-            dataTable.Set(rows)
+            dataTable.SetRows(rows)
 
-            expect((await dataTable.Anonymize([])).Rows).toEqual(rows)
+            expect((await dataTable.Anonymize([])).Rows()).toEqual(rows)
         })
 
         // Anonymizes fields when some rows lack the specified fields
@@ -1432,7 +1450,7 @@ describe("DataTable", () => {
                     age: 30
                 }, { name: 'Bob' }
             ]
-            dataTable.Set(rows)
+            dataTable.SetRows(rows)
 
             const expectedRows = [
                 {
@@ -1440,13 +1458,13 @@ describe("DataTable", () => {
                     age: 'F2mdKMiTK6Wq34bDP1jIKrF9dNPtu/EJu8QgFJLNIsw='
                 }, { name: 'Bob' }
             ]
-            expect((await dataTable.Anonymize(['age'])).Rows).toEqual(expectedRows)
+            expect((await dataTable.Anonymize(['age'])).Rows()).toEqual(expectedRows)
         })
 
         // Processes all fields in the DataTable
         it('should anonymize all fields for all rows', async () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Set([
+            dataTable.SetRows([
                 {
                     name: 'Alice',
                     email: 'alice@example.com'
@@ -1457,7 +1475,7 @@ describe("DataTable", () => {
             ])
             const fields = '*'
             await dataTable.Anonymize(fields)
-            expect(dataTable.Rows).toEqual([
+            expect(dataTable.Rows()).toEqual([
                 {
                     "email": "JKujUcPGJxgTM5IlypKLP7HKRd/8opG4tFp2wuvl644=",
                     "name": "lsuciPTQkJ1xx+/Pi9+xAZlgr/iAp7Cz4/+3ZHKqI4g=",
@@ -1494,7 +1512,7 @@ describe("DataTable", () => {
         // Removes duplicate rows based on specified fields using hash method
         it('should remove duplicate rows based on specified fields using hash method', () => {
             dtDuplicates.RemoveDuplicates(['id', 'name'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST)
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 1, name: 'alice', age: 30 },
                 { id: 2, name: 'Bob', age: 25, value: 20 },
@@ -1505,9 +1523,9 @@ describe("DataTable", () => {
 
         // Handles empty rows array gracefully
         it('should handle empty rows array gracefully', () => {
-            dtDuplicates.Set([])
+            dtDuplicates.SetRows([])
             dtDuplicates.RemoveDuplicates(['name', 'age'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST, '')
-            expect(dtDuplicates.Rows).toEqual([])
+            expect(dtDuplicates.Rows()).toEqual([])
         })
 
         it('should remove duplicate rows based on specified fields using exact method', () => {
@@ -1515,7 +1533,7 @@ describe("DataTable", () => {
             dtDuplicates.RemoveDuplicates(['id', 'name'], REMOVE_DUPLICATES_METHOD.EXACT)
 
             // Assertion
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 1, name: 'alice', age: 30 },
                 { id: 2, name: 'Bob', age: 25, value: 20 },
@@ -1529,7 +1547,7 @@ describe("DataTable", () => {
             dtDuplicates.RemoveDuplicates(['id', 'name'], REMOVE_DUPLICATES_METHOD.EXACT, REMOVE_DUPLICATES_STRATEGY.LAST)
 
             // Assertion
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 15, value: null },
                 { id: 1, name: 'alice', age: 30 },
                 { id: 2, name: 'Bob', age: undefined, value: 15 },
@@ -1543,7 +1561,7 @@ describe("DataTable", () => {
             dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.LAST)
 
             // Assertion
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'alice', age: 30 },
                 { id: 2, name: 'Bob', age: undefined, value: 15 },
                 { id: 3, name: 'Jane', age: 25, value: undefined },
@@ -1556,7 +1574,7 @@ describe("DataTable", () => {
             dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.HIGHEST, 'value')
 
             // Assertion
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 2, name: 'Bob', age: 25, value: 20 },
                 { id: 3, name: 'Jane', age: 10, value: true },
@@ -1569,7 +1587,7 @@ describe("DataTable", () => {
             dtDuplicates.RemoveDuplicates(['name'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.LOWEST, 'age')
 
             // Assertion
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 15, value: null },
                 { id: 1, name: 'alice', age: 30 },
                 { id: 2, name: 'Bob', age: true, value: 15 },
@@ -1583,7 +1601,7 @@ describe("DataTable", () => {
             dtDuplicates.RemoveDuplicates([], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST)
 
             // Assert that Rows remain unchanged
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 1, name: 'Alice', age: 15, value: null },
                 { id: 1, name: 'alice', age: 30 },
@@ -1601,7 +1619,7 @@ describe("DataTable", () => {
             dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST, '')
 
             // Assert that Rows remain unchanged
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 2, name: 'Bob', age: 25, value: 20 },
                 { id: 3, name: 'Jane', age: 10, value: true },
@@ -1613,7 +1631,7 @@ describe("DataTable", () => {
         it('should handle invalid condition path in rows when calling RemoveDuplicates', () => {
             dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST, 'invalidField')
             // Assertion
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 2, name: 'Bob', age: 25, value: 20 },
                 { id: 3, name: 'Jane', age: 10, value: true },
@@ -1626,7 +1644,7 @@ describe("DataTable", () => {
             dtDuplicates.RemoveDuplicates(['id', 'name'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST)
 
             // Assertion
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 1, name: 'alice', age: 30 },
                 { id: 2, name: 'Bob', age: 25, value: 20 },
@@ -1639,7 +1657,7 @@ describe("DataTable", () => {
         it('should handle rows with null or undefined values in specified fields when calling RemoveDuplicates method', () => {
             dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST)
             // Assertion
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 2, name: 'Bob', age: 25, value: 20 },
                 { id: 3, name: 'Jane', age: 10, value: true },
@@ -1651,7 +1669,7 @@ describe("DataTable", () => {
         it('should handle rows with non-string values in specified fields when calling RemoveDuplicates method and condition', () => {
             dtDuplicates.RemoveDuplicates(['id'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.HIGHEST, 'age')
             // Assertion
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 30, value: 10 },
                 { id: 2, name: 'Bob', age: 25, value: 20 },
                 { id: 3, name: 'Jane', age: 25, value: undefined },
@@ -1661,7 +1679,7 @@ describe("DataTable", () => {
 
         it('should remove duplicate rows based on specified fields using ignorecase method', () => {
             dtDuplicates.RemoveDuplicates(['id', 'name'], REMOVE_DUPLICATES_METHOD.IGNORE_CASE, REMOVE_DUPLICATES_STRATEGY.LOWEST, 'age')
-            expect(dtDuplicates.Rows).toEqual([
+            expect(dtDuplicates.Rows()).toEqual([
                 { id: 1, name: 'Alice', age: 15, value: null },
                 { id: 2, name: 'Bob', age: true, value: 15 },
                 { id: 3, name: 'Jane', age: 10, value: true },
@@ -1686,29 +1704,29 @@ describe("DataTable", () => {
         // Filters rows based on a valid SQL condition
         it('should filter rows based on a valid SQL condition', async () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Rows = [
+            dataTable.SetRows([
                 { id: 1, name: 'Alice' },
                 { id: 2, name: 'Bob' }
-            ]
+            ])
             const condition = "name = 'Alice'"
             await dataTable.FilterRows(condition)
-            expect(dataTable.Rows).toEqual([{ id: 1, name: 'Alice' }])
+            expect(dataTable.Rows()).toEqual([{ id: 1, name: 'Alice' }])
         })
 
         // Handles empty Rows array without errors
         it('should handle empty Rows array without errors', async () => {
             const dataTable = new DataTable("myTable")
-            dataTable.Rows = []
+            dataTable.SetRows([])
             const condition = "name = 'Alice'"
             expect(async () => await dataTable.FilterRows(condition)).not.toThrow()
-            expect(dataTable.Rows).toEqual([])
+            expect(dataTable.Rows()).toEqual([])
         })
 
         // Returns the DataTable instance after filtering
         it('should return DataTable instance after filtering when condition is valid', async () => {
             // Initialize DataTable object
             const dataTable = new DataTable("myTable")
-            dataTable.Rows = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+            dataTable.SetRows([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }])
 
             // Call the Filter method
             const result = await dataTable.FilterRows('id = 1')
@@ -1721,7 +1739,7 @@ describe("DataTable", () => {
         it('should execute SQL query using alasql when condition is valid', async () => {
             // Initialize DataTable object
             const dataTable = new DataTable("myTable")
-            dataTable.Rows = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+            dataTable.SetRows([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }])
 
             // Call the Filter method
             const result = await dataTable.FilterRows('id = 1')
@@ -1734,13 +1752,13 @@ describe("DataTable", () => {
         it('should return the filtered Rows when Rows array is non-empty', async () => {
             // Initialize the class object
             const dataTable = new DataTable("myTable")
-            dataTable.Rows = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
+            dataTable.SetRows([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }])
 
             // Call the Filter method with a valid condition
             await dataTable.FilterRows('id = 1')
 
             // Assertion
-            expect(dataTable.Rows).toEqual([{ id: 1, name: 'Alice' }])
+            expect(dataTable.Rows()).toEqual([{ id: 1, name: 'Alice' }])
         })
 
         it('should return same table gracefully', async () => {
@@ -1752,7 +1770,7 @@ describe("DataTable", () => {
             await dt1.FilterRows('!id = *1 %')
 
             // Assertion
-            expect(dt1.Rows).toEqual(data)
+            expect(dt1.Rows()).toEqual(data)
         }, 300_000)
     })
 
@@ -1761,17 +1779,17 @@ describe("DataTable", () => {
         // Transpose empty table returns the same table
         it('should return same table when input is empty', () => {
             const table = new DataTable()
-            table.Rows = []
+            table.SetRows([])
             const result = table.Transpose()
-            expect(result.Rows).toEqual([])
+            expect(result.Rows()).toEqual([])
         })
 
         // Transpose table with single row and multiple columns
         it('should correctly transpose single row with multiple columns', () => {
             const table = new DataTable()
-            table.Rows = [{ a: 1, b: 2, c: 3 }]
+            table.SetRows([{ a: 1, b: 2, c: 3 }])
             const result = table.Transpose()
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 { key: 'a', field_1: 1 },
                 { key: 'b', field_1: 2 },
                 { key: 'c', field_1: 3 }
@@ -1781,12 +1799,12 @@ describe("DataTable", () => {
         // Transpose table with multiple rows and columns
         it('should correctly transpose multiple rows and columns', () => {
             const table = new DataTable()
-            table.Rows = [
+            table.SetRows([
                 { a: 1, b: 2 },
                 { a: 3, b: 4 }
-            ]
+            ])
             const result = table.Transpose()
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 { key: 'a', field_1: 1, field_2: 3 },
                 { key: 'b', field_1: 2, field_2: 4 }
             ])
@@ -1795,9 +1813,9 @@ describe("DataTable", () => {
         // Transpose with renamed columns provided matches column count
         it('should use provided column names when count matches', () => {
             const table = new DataTable()
-            table.Rows = [{ a: 1, b: 2 }]
+            table.SetRows([{ a: 1, b: 2 }])
             const result = table.Transpose(['col1', 'val1'])
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 { col1: 'a', val1: 1 },
                 { col1: 'b', val1: 2 }
             ])
@@ -1806,9 +1824,9 @@ describe("DataTable", () => {
         // Transpose with no renamed columns uses default naming pattern
         it('should use default naming pattern when no column names provided', () => {
             const table = new DataTable()
-            table.Rows = [{ a: 1, b: 2 }]
+            table.SetRows([{ a: 1, b: 2 }])
             const result = table.Transpose()
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 { key: 'a', field_1: 1 },
                 { key: 'b', field_1: 2 }
             ])
@@ -1817,9 +1835,9 @@ describe("DataTable", () => {
         // Transpose with renamed columns array shorter than number of columns
         it('should use default pattern for remaining columns when renamed array is short', () => {
             const table = new DataTable()
-            table.Rows = [{ a: 1, b: 2, c: 3 }]
+            table.SetRows([{ a: 1, b: 2, c: 3 }])
             const result = table.Transpose(['col1'])
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 { col1: 'a', field_2: 1 },
                 { col1: 'b', field_2: 2 },
                 { col1: 'c', field_2: 3 }
@@ -1829,25 +1847,25 @@ describe("DataTable", () => {
         // Transpose with renamed columns array longer than number of columns
         it('should ignore extra renamed columns when array is too long', () => {
             const table = new DataTable()
-            table.Rows = [{ a: 1 }]
+            table.SetRows([{ a: 1 }])
             const result = table.Transpose(['col1', 'col2', 'col3'])
-            expect(result.Rows).toEqual([{ col1: 'a', col2: 1 }])
+            expect(result.Rows()).toEqual([{ col1: 'a', col2: 1 }])
         })
 
         // Transpose table with single column
         it('should correctly transpose table with single column', () => {
             const table = new DataTable()
-            table.Rows = [{ a: 1 }, { a: 2 }]
+            table.SetRows([{ a: 1 }, { a: 2 }])
             const result = table.Transpose()
-            expect(result.Rows).toEqual([{ key: 'a', field_1: 1, field_2: 2 }])
+            expect(result.Rows()).toEqual([{ key: 'a', field_1: 1, field_2: 2 }])
         })
 
         // Transpose table with null/undefined values in cells
         it('should handle null and undefined values correctly', () => {
             const table = new DataTable()
-            table.Rows = [{ a: null, b: undefined }]
+            table.SetRows([{ a: null, b: undefined }])
             const result = table.Transpose()
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 { key: 'a', field_1: null },
                 { key: 'b', field_1: undefined }
             ])
@@ -1856,9 +1874,9 @@ describe("DataTable", () => {
         // Transpose table with special characters in column names
         it('should handle special characters in column names', () => {
             const table = new DataTable()
-            table.Rows = [{ '@#$': 1, '!@#': 2 }]
+            table.SetRows([{ '@#$': 1, '!@#': 2 }])
             const result = table.Transpose()
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 { key: '@#$', field_1: 1 },
                 { key: '!@#', field_1: 2 }
             ])
@@ -1867,18 +1885,18 @@ describe("DataTable", () => {
         // Verify column naming pattern follows "field_N" format
         it('should follow field_N naming pattern for auto-generated columns', () => {
             const table = new DataTable()
-            table.Rows = [{ a: 1, b: 2 }, { a: 3, b: 4 }]
+            table.SetRows([{ a: 1, b: 2 }, { a: 3, b: 4 }])
             const result = table.Transpose()
-            expect(Object.keys(result.Rows[0])).toEqual(['key', 'field_1', 'field_2'])
+            expect(Object.keys(result.Rows()[0])).toEqual(['key', 'field_1', 'field_2'])
         })
 
         // Check if original data is preserved after transpose
         it('should preserve all original data values after transpose', () => {
             const table = new DataTable()
             const originalData = [{ a: 1, b: 2 }, { a: 3, b: 4 }]
-            table.Rows = originalData
+            table.SetRows(originalData)
             const result = table.Transpose()
-            const allValues = result.Rows.flatMap(row => Object.values(row))
+            const allValues = result.Rows().flatMap(row => Object.values(row))
             expect(allValues).toContain('a')
             expect(allValues).toContain('b')
             expect(allValues).toContain(1)

@@ -9,7 +9,7 @@ import { TJson } from "../types/TJson"
 
 
 //
-const RX_JS_CODE: RegExp = /\$\{\{(.*?)\}\}/m
+export const RX_JS_CODE: RegExp = /\$\{\{(.*?)\}\}/m
 
 
 //

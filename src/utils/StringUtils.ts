@@ -81,4 +81,9 @@ export class StringUtils {
 
         return true
     }
+
+    static IsLatin(str: string) {
+        // eslint-disable-next-line no-control-regex
+        return /^[\u0000-\u024F]*$/.test(str);
+    }
 }
