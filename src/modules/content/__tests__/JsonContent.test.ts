@@ -8,7 +8,7 @@ describe('JsonContent', () => {
         "json-path": 'data'
     }
 
-    let jsonContent = new JsonContent()
+    const jsonContent = new JsonContent()
 
     beforeEach(() => {
         jsonContent.SetConfig(contentConfig)
@@ -50,7 +50,7 @@ describe('JsonContent', () => {
 
             expect(dataTable).toBeInstanceOf(DataTable)
             expect(dataTable.Name).toBe(jsonContent.EntityName)
-            expect(dataTable.Rows).toEqual([
+            expect(dataTable.Rows()).toEqual([
                 {
                     id: 1,
                     name: 'John'
@@ -69,7 +69,7 @@ describe('JsonContent', () => {
 
             expect(dataTable).toBeInstanceOf(DataTable)
             expect(dataTable.Name).toBe(jsonContent.EntityName)
-            expect(dataTable.Rows).toEqual([])
+            expect(dataTable.Rows()).toEqual([])
         })
     })
 

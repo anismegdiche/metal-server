@@ -32,9 +32,14 @@ export class ConfigStore implements IConfigStore {
             },
             "response-chunk": false,
             "ai-engines": {
-                provider: "docker",
                 params: undefined, //{ socketPath: '/var/run/docker.sock' }
-                "engines-url": "http://localhost:5000"
+                "engines-url": "http://localhost:5000",
+                "timeout": 60_000, // v0.5
+                "min-instance": 1, // v0.5
+                "max-instance": 5, // v0.5
+                "cpu-scale-up": 70, // v0.5
+                "cpu-scale-down": 30, // v0.5
+                "scale-interval": 15_000 // v0.5
             }
         }
     }

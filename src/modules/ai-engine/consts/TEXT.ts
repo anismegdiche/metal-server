@@ -1,54 +1,54 @@
-/**
- * Text processing pipelines extracted from ai-docker.rest
- * These represent the available text processing endpoints
- */
-
+//
+//
+//
 import { LANG_ISO } from "./LANG";
 
+
+//
 export enum TEXT_LANGUAGE_DETECTION {
-    ar = "ar",
-    bg = "bg",
-    de = "de",
-    el = "el",
-    en = "en",
-    es = "es",
-    fr = "fr",
-    hi = "hi",
-    it = "it",
-    ja = "ja",
-    nl = "nl",
-    pl = "pl",
-    pt = "pt",
-    ru = "ru",
-    sw = "sw",
-    th = "th",
-    tr = "tr",
-    ur = "ur",
-    vi = "vi",
-    zh = "zh"
+    AR = "ar",
+    BG = "bg",
+    DE = "de",
+    EL = "el",
+    EN = "en",
+    ES = "es",
+    FR = "fr",
+    HI = "hi",
+    IT = "it",
+    JA = "ja",
+    NL = "nl",
+    PL = "pl",
+    PT = "pt",
+    RU = "ru",
+    SW = "sw",
+    TH = "th",
+    TR = "tr",
+    UR = "ur",
+    VI = "vi",
+    ZH = "zh"
 }
 
 export enum TEXT_LANGUAGE_DETECTION_ISO {
-    ar = LANG_ISO.ar_AR,
-    bg = "bg_BG",
-    de = LANG_ISO.de_DE,
-    el = "el_GR",
-    en = LANG_ISO.en_XX,
-    es = LANG_ISO.es_XX,
-    fr = LANG_ISO.fr_XX,
-    hi = LANG_ISO.hi_IN,
-    it = LANG_ISO.it_IT,
-    ja = LANG_ISO.ja_XX,
-    nl = LANG_ISO.nl_XX,
-    pl = LANG_ISO.pl_PL,
-    pt = LANG_ISO.pt_XX,
-    ru = LANG_ISO.ru_RU,
-    sw = LANG_ISO.sw_KE,
-    th = LANG_ISO.th_TH,
-    tr = LANG_ISO.tr_TR,
-    ur = LANG_ISO.ur_PK,
-    vi = LANG_ISO.vi_VN,
-    zh = LANG_ISO.zh_CN
+    AR = LANG_ISO.ar_AR,
+    BG = "bg_BG",
+    DE = LANG_ISO.de_DE,
+    EL = "el_GR",
+    EN = LANG_ISO.en_XX,
+    ES = LANG_ISO.es_XX,
+    FR = LANG_ISO.fr_XX,
+    HI = LANG_ISO.hi_IN,
+    IT = LANG_ISO.it_IT,
+    JA = LANG_ISO.ja_XX,
+    NL = LANG_ISO.nl_XX,
+    PL = LANG_ISO.pl_PL,
+    PT = LANG_ISO.pt_XX,
+    RU = LANG_ISO.ru_RU,
+    SW = LANG_ISO.sw_KE,
+    TH = LANG_ISO.th_TH,
+    TR = LANG_ISO.tr_TR,
+    UR = LANG_ISO.ur_PK,
+    VI = LANG_ISO.vi_VN,
+    ZH = LANG_ISO.zh_CN
 }
 
 /**
@@ -87,13 +87,13 @@ export enum TEXT_TASK {
     SUMMARIZATION = "summarization",
 
     /** Text-to-text generation */
-    TEXT2TEXT_GENERATION = "text2text-generation",
+    // TEXT2TEXT_GENERATION = "text2text-generation",
 
     /** Text generation */
     TEXT_GENERATION = "text-generation",
 
-    /** Token classification (e.g., NER) */
-    TOKEN_CLASSIFICATION = "token-classification",
+    /** Named Entity Recognition (NER) */
+    NER = "ner",
 
     /** Toxicity detection */
     TOXICITY_DETECTION = "toxicity-detection",
@@ -131,9 +131,6 @@ export enum TEXT_TASK {
 //     },
 //     [TEXT_TASK.ZERO_SHOT_CLASSIFICATION]: {
 //         candidate_labels: ["support"]
-//     },
-//     [TEXT_TASK.TOKEN_CLASSIFICATION]: {
-//         grouped_entities: true
 //     },
 //     [TEXT_TASK.TEXT2TEXT_GENERATION]: {}
 // } as const;

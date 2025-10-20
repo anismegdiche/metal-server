@@ -7,7 +7,7 @@ import { DOCKER } from '../consts/DOCKER';
 
 //
 
-export let AudioAudioClassificationDockerService: TAiDockerService = {
+export const AudioAudioClassificationDockerService: TAiDockerService = {
     Name: 'audio_audio_classification',
     Port: 5000,
     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_audio_classification:v1.0.0`,
@@ -18,7 +18,7 @@ export let AudioAudioClassificationDockerService: TAiDockerService = {
     InternalUrl: '/audio-audio-classification'
 };
 
-export let AudioAutomaticSpeechRecognitionDockerService: TAiDockerService = {
+export const AudioAutomaticSpeechRecognitionDockerService: TAiDockerService = {
     Name: 'audio_automatic_speech_recognition',
     Port: 5000,
     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_audio_automatic_speech_recognition:v1.0.0`,

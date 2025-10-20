@@ -22,7 +22,6 @@ import { ConfigStore } from './ConfigStore'
 import { ServerEndpoint } from './ServerEndpoint'
 import { ServerRuntime } from './ServerRuntime'
 import { AiEngine } from '../ai-engine/AiEngine'
-import { AiDocker } from '../ai-engine/AiDocker'
 //
 
 
@@ -54,8 +53,7 @@ export class ServerCore {
         await Cache.Init(DataProvider.GetProvider)
         await Cache.Connect()
 
-        // AI
-        await AiDocker.CleanStack()
+        // AI        
         await AiEngine.Init()
 
         // plans

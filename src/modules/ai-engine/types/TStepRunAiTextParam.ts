@@ -12,23 +12,23 @@ export type TAiText_top_k = number | null
 export type TStepRunAiTextTranslationParams = {
     task: TEXT_TASK.TRANSLATION
     params: {
-        src_lang: LANG_ISO
-        tgt_lang: LANG_ISO
+        source: LANG_ISO
+        target: LANG_ISO
     }
 }
 
 export type TStepRunAiTextSentimentAnalysisParams = {
     task: TEXT_TASK.SENTIMENT_ANALYSIS
     params?: {
-        top_k?: TAiText_top_k
+        top?: TAiText_top_k
     }
 }
 
 export type TStepRunAiTextTextGenerationParams = {
     task: TEXT_TASK.TEXT_GENERATION
     params?: {
-        max_length?: number
-        do_sample?: boolean
+        "max-length"?: number
+        "do-sample"?: boolean
         temperature?: number
     }
 }
@@ -36,47 +36,45 @@ export type TStepRunAiTextTextGenerationParams = {
 export type TStepRunAiTextQuestionAnsweringParams = {
     task: TEXT_TASK.QUESTION_ANSWERING
     params: {
-        context: string
+        question: string
     }
 }
 
 export type TStepRunAiTextSummarizationParams = {
     task: TEXT_TASK.SUMMARIZATION
     params: {
-        max_length: number
-        min_length: number
+        "max-length": number
+        "min-length": number
     }
 }
 
 export type TStepRunAiTextFillMaskParams = {
-    task: TEXT_TASK.FILL_MASK
-    params?: {
-        top_k?: TAiText_top_k
-    }
+    task: TEXT_TASK.FILL_MASK    
+    params: undefined
 }
 
 export type TStepRunAiTextZeroShotClassificationParams = {
     task: TEXT_TASK.ZERO_SHOT_CLASSIFICATION
     params: {
-        candidate_labels: string[]
+        labels: string[]
     }
 }
 
-export type TStepRunAiTextTokenClassificationParams = {
-    task: TEXT_TASK.TOKEN_CLASSIFICATION
+export type TStepRunAiTextNerParams = {
+    task: TEXT_TASK.NER
     params?: {
-        grouped_entities?: boolean
+        grouped?: boolean
     }
 }
 
-export type TStepRunAiTextText2TextGenerationParams = {
-    task: TEXT_TASK.TEXT2TEXT_GENERATION
-}
+// export type TStepRunAiTextText2TextGenerationParams = {
+//     task: TEXT_TASK.TEXT2TEXT_GENERATION
+// }
 
 export type TStepRunAiTextToxicityDetectionParams = {
     task: TEXT_TASK.TOXICITY_DETECTION
     params?: {
-        top_k?: TAiText_top_k
+        top?: TAiText_top_k
     }
 }
 
@@ -89,16 +87,12 @@ export type TStepRunAiTextFeatureExtractionParams = {
 
 export type TStepRunAiTextKeywordExtractionParams = {
     task: TEXT_TASK.KEYWORD_EXTRACTION
-    params?: {
-        top_k?: TAiText_top_k
-    }
+    params: undefined
 }
 
 export type TStepRunAiTextLanguageDetectionParams = {
     task: TEXT_TASK.LANGUAGE_DETECTION
-    params?: {
-        top_k?: TAiText_top_k
-    }
+    params: undefined
 }
 
 export type TStepRunAiTextParaphraseDetectionParams = {
@@ -118,7 +112,7 @@ export type TStepRunAiTextSentenceSimilarityParams = {
 export type TStepRunAiTextEmotionDetectionParams = {
     task: TEXT_TASK.EMOTION_DETECTION
     params?: {
-        top_k?: TAiText_top_k
+        top?: TAiText_top_k
     }
 }
 
@@ -129,8 +123,8 @@ export type TStepRunAiTextParams = TStepRunAiTextTranslationParams
     | TStepRunAiTextSummarizationParams 
     | TStepRunAiTextFillMaskParams 
     | TStepRunAiTextZeroShotClassificationParams 
-    | TStepRunAiTextTokenClassificationParams 
-    | TStepRunAiTextText2TextGenerationParams 
+    | TStepRunAiTextNerParams 
+    // | TStepRunAiTextText2TextGenerationParams 
     | TStepRunAiTextToxicityDetectionParams 
     | TStepRunAiTextFeatureExtractionParams 
     | TStepRunAiTextKeywordExtractionParams 

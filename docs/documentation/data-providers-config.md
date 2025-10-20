@@ -303,7 +303,7 @@ sources:
 
 ## ~~[REMOVED] Files~~ <Badge type="info" text="v0.5+" />
 
-::: warning
+::: warning ⚠️ Warning
 This feature has been replaced in v0.5 by [Storage data Provider](data-providers-config.md#storage).
 :::
 
@@ -611,7 +611,7 @@ sources:
 
 #### ~~[Removed] `smb` (SMB/CIFS)~~ <Badge type="info" text="v0.5+" />
 
-::: warning
+::: warning ⚠️ Warning
 This feature has been removed in v0.5.
 :::
 

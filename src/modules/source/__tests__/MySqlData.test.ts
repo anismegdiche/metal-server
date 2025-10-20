@@ -134,7 +134,7 @@ describe('MySqlData', () => {
             const mockInsertRequest: TSchemaRequest = {
                 schema: 'test-schema',
                 entity: 'test-table',
-                data: dt.Rows
+                data: dt.Rows()
             }
 
             const response = await provider.Insert(mockInsertRequest)
@@ -180,7 +180,7 @@ describe('MySqlData', () => {
             )
             expect(response.StatusCode).toBe(200)
             expect(response.Body?.data).toBeDefined()
-            expect(response.Body?.data.Rows).toHaveLength(1)
+            expect(response.Body?.data.Rows()).toHaveLength(1)
         })
 
         it('should handle empty result set', async () => {
@@ -193,8 +193,8 @@ describe('MySqlData', () => {
 
             const response = await provider.Select(mockSelectRequest)
             expect(response.Body?.data).toBeDefined()
-            expect(response.Body?.data.Rows).toBeDefined()
-            expect(response.Body?.data.Rows.length).toBe(0)
+            expect(response.Body?.data.Rows()).toBeDefined()
+            expect(response.Body?.data.Rows().length).toBe(0)
         })
     })
 
@@ -224,7 +224,7 @@ describe('MySqlData', () => {
             const response = await provider.ListEntities(mockListRequest)
 
             expect(response.StatusCode).toBe(200)
-            expect(response.Body?.data.Rows).toHaveLength(2)
+            expect(response.Body?.data.Rows()).toHaveLength(2)
             expect(mockPool.query).toHaveBeenCalled()
         })
 
@@ -253,7 +253,7 @@ describe('MySqlData', () => {
             const mockUpdateRequest: TSchemaRequest = {
                 schema: 'test-schema',
                 entity: 'test-table',
-                data: dt.Rows,
+                data: dt.Rows(),
                 filter: {
                     id: 1
                 }
@@ -288,7 +288,7 @@ describe('MySqlData', () => {
             const mockUpdateRequest: TSchemaRequest = {
                 schema: 'test-schema',
                 entity: 'test-table',
-                data: dt.Rows,
+                data: dt.Rows(),
                 "filter-expression": 'id > 5'
             }
 

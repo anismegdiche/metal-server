@@ -79,7 +79,7 @@ export class Image extends absAiEngine implements IAiEngine {
         const { task } = _args
 
         if (Object.values(IMAGE_TASK).includes(task as IMAGE_TASK)) {
-            await Utils.Wait(async () => await this.IsHealthy())
+            await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
             return await this.RunTask[task](args)
         }
 
@@ -95,7 +95,6 @@ export class Image extends absAiEngine implements IAiEngine {
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
-            this.InstanceName,
             'run'
         )
 
@@ -110,7 +109,11 @@ export class Image extends absAiEngine implements IAiEngine {
             throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
         })
 
-        return response.data.result
+        const objects = response.data.result
+
+        return {
+            objects
+        }
     }
 
     @Logger.LogFunction(true)
@@ -122,7 +125,6 @@ export class Image extends absAiEngine implements IAiEngine {
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
-            this.InstanceName,
             'run'
         )
 
@@ -137,7 +139,11 @@ export class Image extends absAiEngine implements IAiEngine {
             throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
         })
 
-        return response.data?.masks
+        const masks = response.data?.masks
+
+        return {
+            masks
+        }
     }
 
     @Logger.LogFunction(true)
@@ -149,7 +155,6 @@ export class Image extends absAiEngine implements IAiEngine {
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
-            this.InstanceName,
             'run'
         )
 
@@ -166,7 +171,9 @@ export class Image extends absAiEngine implements IAiEngine {
 
         const result: string = response.data.result[0].generated_text
 
-        return result.trim()
+        return {
+            text: result.trim()
+        }
     }
 
     @Logger.LogFunction(true)
@@ -178,7 +185,6 @@ export class Image extends absAiEngine implements IAiEngine {
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
-            this.InstanceName,
             'run'
         )
 
@@ -193,7 +199,11 @@ export class Image extends absAiEngine implements IAiEngine {
             throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
         })
 
-        return response.data.result
+        const objects = response.data.result
+
+        return {
+            objects
+        }
     }
 
     @Logger.LogFunction(true)
@@ -206,7 +216,6 @@ export class Image extends absAiEngine implements IAiEngine {
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
-            this.InstanceName,
             'run'
         )
 
@@ -221,6 +230,10 @@ export class Image extends absAiEngine implements IAiEngine {
             throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
         })
 
-        return response.data.result
+        const answers = response.data.result
+
+        return {
+            answers
+        }
     }
 }

@@ -6,7 +6,7 @@ import { DOCKER } from '../consts/DOCKER';
 
 
 //
-export let ImageImageDepthEstimationDockerService: TAiDockerService = {
+export const ImageImageDepthEstimationDockerService: TAiDockerService = {
     Name: 'image_depth_estimation',
     Port: 5000,
     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_depth_estimation:v1.0.0`,
@@ -17,7 +17,7 @@ export let ImageImageDepthEstimationDockerService: TAiDockerService = {
     InternalUrl: '/image-depth-estimation'
 };
 
-export let ImageImageClassificationDockerService: TAiDockerService = {
+export const ImageImageClassificationDockerService: TAiDockerService = {
     Name: 'image_image_classification',
     Port: 5000,
     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_classification:v1.0.0`,
@@ -28,7 +28,7 @@ export let ImageImageClassificationDockerService: TAiDockerService = {
     InternalUrl: '/image-image-classification'
 };
 
-export let ImageImageSegmentationDockerService: TAiDockerService = {
+export const ImageImageSegmentationDockerService: TAiDockerService = {
     Name: 'image_image_segmentation',
     Port: 5000,
     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_segmentation:v1.0.0`,
@@ -39,7 +39,7 @@ export let ImageImageSegmentationDockerService: TAiDockerService = {
     InternalUrl: '/image-image-segmentation'
 };
 
-export let ImageImageToTextDockerService: TAiDockerService = {
+export const ImageImageToTextDockerService: TAiDockerService = {
     Name: 'image_image_to_text',
     Port: 5000,
     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_to_text:v1.0.0`,
@@ -50,7 +50,7 @@ export let ImageImageToTextDockerService: TAiDockerService = {
     InternalUrl: '/image-image-to-text'
 };
 
-export let ImageObjectDetectionDockerService: TAiDockerService = {
+export const ImageObjectDetectionDockerService: TAiDockerService = {
     Name: 'image_object_detection',
     Port: 5000,
     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_object_detection:v1.0.0`,
@@ -61,7 +61,7 @@ export let ImageObjectDetectionDockerService: TAiDockerService = {
     InternalUrl: '/image-object-detection'
 };
 
-export let ImageVisualQuestionAnsweringDockerService: TAiDockerService = {
+export const ImageVisualQuestionAnsweringDockerService: TAiDockerService = {
     Name: 'image_visual_question_answering',
     Port: 5000,
     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_visual_question_answering:v1.0.0`,

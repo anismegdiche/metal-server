@@ -65,7 +65,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
     abstract EscapeEntity(entity: string): string
     abstract EscapeField(field: string): string
 
-    // eslint-disable-next-line class-methods-use-this
+     
     GetSqlQuery(sqlQueryHelper: SqlQueryUtils, options: TOptionalParameter): string | undefined {
         return (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
             ? sqlQueryHelper.Query()
@@ -83,22 +83,22 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
     GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
 
         Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
-        Assert.Condition(options.Data.Rows.length > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
+        Assert.Condition(options.Data.Rows().length > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
 
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
             .Insert(schemaRequest.entity)
-            .Fields(options.Data.GetFieldNames())
-            .Values(options.Data.Rows)
+            .Fields(options.Data.GetFieldsName())
+            .Values(options.Data.Rows())
     }
 
     GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
 
         Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
-        Assert.Condition(options.Data.Rows.length > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
+        Assert.Condition(options.Data.Rows().length > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
 
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
             .Update(schemaRequest.entity)
-            .Set(options.Data.Rows)
+            .Set(options.Data.Rows())
             .Where(options.Filter)
     }
 

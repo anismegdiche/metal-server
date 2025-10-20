@@ -204,7 +204,7 @@ export class WebServiceData extends absDataProvider {
         if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        await Promise.all(options.Data.Rows.map((row: TJson) => {
+        await Promise.all(options.Data.Rows().map((row: TJson) => {
 
             // eslint-disable-next-line no-param-reassign
             $context = _.merge(
@@ -271,13 +271,13 @@ export class WebServiceData extends absDataProvider {
 
         const keysCollection = await this.File.get(entity)!.Get(sqlQuery, $context)
 
-        await Promise.all(keysCollection.Rows.map((row: TJson) => {
-            if (!Array.isArray(options.Data?.Rows))
+        await Promise.all(keysCollection.Rows().map((row: TJson) => {
+            if (!Array.isArray(options.Data?.Rows()))
                 return Promise.resolve()
 
             const mergedRow: TJson = _.merge(
                 row,
-                options.Data.Rows.at(0)
+                options.Data.Rows().at(0)
             )
 
             // eslint-disable-next-line no-param-reassign
@@ -354,7 +354,7 @@ export class WebServiceData extends absDataProvider {
 
         const keysCollection = await this.File.get(entity)!.Get(sqlQuery, $context)
 
-        await Promise.all(keysCollection.Rows.map((row: TJson) => {
+        await Promise.all(keysCollection.Rows().map((row: TJson) => {
             // eslint-disable-next-line no-param-reassign
             $context = _.merge(
                 $context,

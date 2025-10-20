@@ -104,7 +104,7 @@ describe('MemoryData', () => {
         expect(response.StatusCode).toBe(HTTP_STATUS_CODE.OK)
         expect(response.Body?.schema).toBe(schemaRequest.schema)
         expect(response.Body?.entity).toBe(schemaRequest.entity)
-        expect(response.Body?.data.Rows).toEqual(testRows)
+        expect(response.Body?.data.Rows()).toEqual(testRows)
     })
 
     // Insert operation adds rows to an existing entity
@@ -140,7 +140,7 @@ describe('MemoryData', () => {
         const response = await memoryData.Insert(schemaRequest)
 
         expect(response.StatusCode).toBe(HTTP_STATUS_CODE.CREATED)
-        expect(memoryData.Connection?.Tables[testEntity].Rows).toEqual(testRows)
+        expect(memoryData.Connection?.Tables[testEntity].Rows()).toEqual(testRows)
         expect(Cache.Remove).toHaveBeenCalledWith(schemaRequest)
     })
 

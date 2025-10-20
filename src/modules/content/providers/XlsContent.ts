@@ -183,13 +183,13 @@ export class XlsContent extends absContentProvider {
         })
 
         // Set headers
-        const fields = Object.keys(data.Rows[0])
+        const fields = Object.keys(data.Rows()[0])
         fields.forEach((field, colIdx) => {
             worksheet.getCell(parseInt(startRow, 10), colIndex + colIdx).value = field
         })
 
         // Set data
-        data.Rows.forEach((row, rowIndex) => {
+        data.Rows().forEach((row, rowIndex) => {
             fields.forEach((field: string, fieldIdx: number) => {
                 const _rowIdx = parseInt(startRow, 10) + 1 + rowIndex
                 const _colIdx: number = colIndex + fieldIdx

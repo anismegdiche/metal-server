@@ -13,6 +13,7 @@ import { DOCKER } from './consts/DOCKER'
 import { TraefikDockerService } from './docker-services/TraefikDockerService'
 import { TAiDockerService } from './types/TAiDockerService'
 import { ConfigManager } from '../core/ConfigManager'
+import { HttpErrorInternalServerError } from '../errors/HttpErrors';
 
 
 //
@@ -27,11 +28,41 @@ export class AiDocker {
         MaxInstances: 5,
         CpuScaleUp: 70,
         CpuScaleDown: 30,
-        ScaleInterval: 15_000 // 15 seconds
+        ScaleInterval: 15_000, // 15 seconds
+        Timeout: 60_000, // 60 seconds
+        Sleep: 5_000 // 5 seconds
     }
 
-    constructor() {
+    static _convertStreamToLog(streamString: string): string[] {
+        if (!streamString) return []
+
+        const _streamString = streamString
+            .split('\r\n')
+            .map((item: string) => item.replace(/(\\r|\\n)/g, ''))
+            .map(item => {
+                try {
+                    const parsed = JsonUtils.TryParse(item, { stream: '' }, true)
+                    return parsed && typeof parsed.stream === 'string'
+                        ? parsed.stream
+                        : ''
+                } catch {
+                    return ''
+                }
+            })
+            .filter(item => item && typeof item === 'string' && item.trim().length > 0)
+
+        return _streamString
+    }
+
+    static async Init() {
+
         const _dockerOptions = ConfigManager.Get<DockerOptions>("server.ai-engines.params")
+        AiDocker.ServiceInstance.Timeout = ConfigManager.Get<number>("server.ai-engines.timeout")
+        AiDocker.ServiceInstance.MinInstances = ConfigManager.Get<number>("server.ai-engines.min-instance")
+        AiDocker.ServiceInstance.MaxInstances = ConfigManager.Get<number>("server.ai-engines.max-instance")
+        AiDocker.ServiceInstance.CpuScaleUp = ConfigManager.Get<number>("server.ai-engines.cpu-scale-up")
+        AiDocker.ServiceInstance.CpuScaleDown = ConfigManager.Get<number>("server.ai-engines.cpu-scale-down")
+        AiDocker.ServiceInstance.ScaleInterval = ConfigManager.Get<number>("server.ai-engines.scale-interval")
 
         if (_dockerOptions?.ca instanceof String)
             _dockerOptions.ca = fs.readFileSync(_dockerOptions.ca as string)
@@ -42,11 +73,10 @@ export class AiDocker {
         if (_dockerOptions?.key instanceof String)
             _dockerOptions.key = fs.readFileSync(_dockerOptions.key as string)
 
-        AiDocker.docker = new Docker(_dockerOptions)
-    }
-
-    static async Init() {
         try {
+            AiDocker.docker = new Docker(_dockerOptions)
+            await AiDocker.CleanStack()
+
             Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
             await AiDocker.CreateNetwork().catch(Logger.Debug)
             await AiDocker.StartTraefik().catch(Logger.Debug)
@@ -54,8 +84,7 @@ export class AiDocker {
             AiDocker.StartScaler()
             Logger.Info(`${Logger.Out} AI Engine stack manager started`)
         } catch (error) {
-            Logger.Error(`${Logger.Out} Error in Init: ${JSON.stringify(error)}`)
-            throw error
+            throw new HttpErrorInternalServerError(`AiDocker.Init: ${(error as Error).message}`)
         }
     }
 
@@ -64,7 +93,6 @@ export class AiDocker {
         await AiDocker.BuildServiceImage(service).catch(Logger.Debug)
         const containers = await AiDocker.ListActiveContainers(service)
         for (let i = containers.length; i < AiDocker.ServiceInstance.MinInstances; i++) {
-
             await AiDocker.ScaleUp(service)
             // await AiDocker.WaitForService(service)
         }
@@ -83,13 +111,42 @@ export class AiDocker {
             }
         })
 
-        for (const container of containers) {
-            Logger.Info(`${Logger.In} Stopping container '${container.Names[0]}'...`)
-            const c = AiDocker.docker.getContainer(container.Id)
-            await c.stop().catch((e) => Logger.Debug(e.message))
-            await c.remove().catch((e) => Logger.Debug(e.message))
-            Logger.Info(`${Logger.Out} Stopped container '${container.Names[0]}'`)
-        }
+        const promisesContainers = containers.map(container => new Promise<void>(async (resolve, reject) => {
+            try {
+                Logger.Info(`${Logger.In} Stopping container '${container.Names[0]}'...`)
+                const c = AiDocker.docker.getContainer(container.Id)
+                await c.stop().catch()
+                await c.remove().catch()
+                Logger.Info(`${Logger.Out} Stopped container '${container.Names[0]}'`)
+                resolve()
+            } catch (e: unknown) {
+                Logger.Debug((e as Error).message)
+                reject(e)
+            }
+        }))
+
+        await Promise.allSettled(promisesContainers)
+
+        const networks = await AiDocker.docker.listNetworks({
+            filters: {
+                name: [DOCKER.AI_NETWORK]
+            }
+        })
+
+        const promisesNetworks = networks.map(network => new Promise<void>(async (resolve, reject) => {
+            try {
+                Logger.Info(`${Logger.In} Removing docker network '${network.Name}'...`)
+                const n = AiDocker.docker.getNetwork(network.Id)
+                await n.remove()
+                Logger.Info(`${Logger.Out} Removed docker network '${network.Name}'`)
+                resolve()
+            } catch (e: unknown) {
+                Logger.Debug((e as Error).message)
+                reject(e)
+            }
+        }))
+
+        await Promise.allSettled(promisesNetworks)
 
         Logger.Info(`${Logger.Out} '${DOCKER.AI_ENGINE_PREFIX}' stack cleaned`)
     }
@@ -136,27 +193,6 @@ export class AiDocker {
         })
     }
 
-    static #ConvertStreamToLog(streamString: string): string[] {
-        if (!streamString) return []
-
-        const _streamString = streamString
-            .split('\r\n')
-            .map((item: string) => item.replace(/(\\r|\\n)/g, ''))
-            .map(item => {
-                try {
-                    const parsed = JsonUtils.TryParse(item, { stream: '' })
-                    return parsed && typeof parsed.stream === 'string'
-                        ? parsed.stream
-                        : ''
-                } catch {
-                    return ''
-                }
-            })
-            .filter(item => item && typeof item === 'string' && item.trim().length > 0)
-
-        return _streamString
-    }
-
     @Logger.LogFunction()
     static async BuildServiceImage(service: TAiDockerService): Promise<void> {
         return new Promise(async (resolve, reject) => {
@@ -173,27 +209,27 @@ export class AiDocker {
                 stream.on('data', (data: Buffer) => {
                     const __data = data.toString();
                     _streamData += __data;
-                
+
                     const parts = _streamData.split('}');
-                    
+
                     // Last part may be incomplete, keep it in buffer
                     _streamData = parts.pop() || '';
-                
+
                     for (const part of parts) {
                         const complete = `${part}}`;
                         try {
-                            const ___aLog = AiDocker.#ConvertStreamToLog(complete);
+                            const ___aLog = AiDocker._convertStreamToLog(complete);
                             ___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image... ${item}`));
                         } catch {
                             Logger.Warn(`${Logger.Out} ⚠️ Failed to parse log part: ${complete}`);
                         }
                     }
                 });
-                
+
 
                 stream.on('end', () => {
                     if (_streamData.length > 0) {
-                        const ___aLog = AiDocker.#ConvertStreamToLog(_streamData)
+                        const ___aLog = AiDocker._convertStreamToLog(_streamData)
                         ___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image: ${item}`))
                         _streamData = ""
                     }

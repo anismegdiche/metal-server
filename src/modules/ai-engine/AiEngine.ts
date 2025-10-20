@@ -125,8 +125,7 @@ export class AiEngine {
         if (Object.keys(AiEngine.BuildAiEnginesList()).length == 0) {
             return;
         }
-
-
+        
         await AiDocker.Init();
         AiEngine.#aiEnginesConfig = AiEngine.BuildAiEnginesList();
         AiEngine.CreateAll()

@@ -40,8 +40,8 @@ export class ResponseHandler {
             commonJsonResponse = {
                 ...commonJsonResponse,
                 metadata: schemaResponse.data.MetaData,
-                fields: schemaResponse.data.Fields,
-                rows: schemaResponse.data.Rows
+                fields: schemaResponse.data.Fields(),
+                rows: schemaResponse.data.Rows()
             }
         }
 
@@ -71,11 +71,11 @@ export class ResponseHandler {
                     this.push('"rows":[')
 
                     // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
-                    this.push(JSON.stringify(schemaResponse.data.Rows.shift()))
+                    this.push(JSON.stringify(schemaResponse.data.Rows().shift()))
 
-                    while (schemaResponse.data.Rows.length > 0) {
+                    while (schemaResponse.data.Rows().length > 0) {
                         // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
-                        this.push(`,${JSON.stringify(schemaResponse.data.Rows.shift())}`)
+                        this.push(`,${JSON.stringify(schemaResponse.data.Rows().shift())}`)
                     }
                     // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push(']') // End of array

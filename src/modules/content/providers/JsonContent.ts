@@ -2,7 +2,7 @@
 //
 //
 import { Readable } from "node:stream"
-import { is as TypiaIs } from "typia"
+import { is } from "typia"
 //
 import { DataTable } from "../../../types/DataTable"
 import { TJson } from "../../../types/TJson"
@@ -27,7 +27,7 @@ export class JsonContent extends absContentProvider {
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && TypiaIs<TJsonContentConfig>(this.Config)) {
+        if (this.Config && is<TJsonContentConfig>(this.Config)) {
             this.Params = {
                 path: this.Config["json-path"]
             }
@@ -38,11 +38,11 @@ export class JsonContent extends absContentProvider {
 
     @Logger.LogFunction(['$context'])
     async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TJsonContentParams>(this.Params, 
-            TypiaIs<TJsonContentParams>(this.Params),
+        Assert.Var<TJsonContentParams>(this.Params,
+            is<TJsonContentParams>(this.Params),
             'Params is not defined')
 
-        Assert.Var<VirtualFileSystem>(this.Content, 
+        Assert.Var<VirtualFileSystem>(this.Content,
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
@@ -64,27 +64,25 @@ export class JsonContent extends absContentProvider {
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
-        Assert.Var<TJsonContentParams>(this.Params, 
-            TypiaIs<TJsonContentParams>(this.Params),
+        Assert.Var<TJsonContentParams>(this.Params,
+            is<TJsonContentParams>(this.Params),
             'Params is not defined')
 
-        Assert.Var<VirtualFileSystem>(this.Content, 
+        Assert.Var<VirtualFileSystem>(this.Content,
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
         //TODO when content = "", data has empty json object {}
-        const json = JsonUtils.TryParse(
-            await ReadableUtils.ToString(
-                this.Content.ReadFile(this.EntityName)
-            ), {}
-        )
+        const readable = this.Content.ReadFile(this.EntityName)
+        const str = await ReadableUtils.ToString(readable)
+        const json = JsonUtils.TryParse(str, {})
 
         const $__path = PlaceHolder.EvaluateJsCode<string>(
             $context?.$request?.["data-path"] ?? this.Params.path,
             new Sandbox($context)
         )
 
-        JsonUtils.Set(json, $__path, data.Rows)
+        JsonUtils.Set(json, $__path, data.Rows())
 
         const streamOut = Readable.from(JSON.stringify(json))
         this.Content.UploadFile(this.EntityName, streamOut)

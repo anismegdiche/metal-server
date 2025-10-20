@@ -57,7 +57,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
         const { task } = _args
 
         if (Object.values(OCR_TASK).includes(task)) {
-            await Utils.Wait(async () => await this.IsHealthy())
+            await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
             return await this.RunTask[task](args)
         }
 
@@ -69,12 +69,11 @@ export class Ocr extends absAiEngine implements IAiEngine {
 
         const { data } = args
         const { task, params } = args as TStepRunAiOcrParams
-        
+
         Assert.Var(data, 'data is required')
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
-            this.InstanceName,
             task,
             `?lang=${LangUtils.Convert(params?.lang, OCR_LANG_ISO, OCR_LANG)}`
         )
@@ -89,17 +88,16 @@ export class Ocr extends absAiEngine implements IAiEngine {
                     }
                 }
             )
-            return response.data
-            /*
-            {
-                text: string,
-                language: OCR_LANGUAGE,
-                language_name: {
-                    downloaded: true,
-                    name: "French",
-                },
+
+            const ocr = {
+                text: response.data.text,
+                lang: LangUtils.Convert(response.data.language, OCR_LANG, OCR_LANG_ISO)
             }
-            */
+
+            return {
+                ocr
+            }
+            
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 throw new Error(`OCR request failed: ${error.response?.data?.message ?? error.message}`)

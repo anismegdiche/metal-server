@@ -2,12 +2,12 @@
 //
 // 
 import isEmpty from "lodash/isEmpty"
-import isNil from "lodash/isNil"
 import isString from "lodash/isString"
 import keys from "lodash/keys"
 import map from "lodash/map"
 import merge from "lodash/merge"
 import omit from "lodash/omit"
+import isObject from "lodash/isObject"
 import { is } from "typia"
 //
 import { DataTable, JOIN_TYPE, TRow } from "../../types/DataTable"
@@ -16,7 +16,7 @@ import { Assert } from "../../utils/Assert"
 import { Helper } from "../../utils/Helper"
 import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
-import { PlaceHolder } from "../../utils/PlaceHolder"
+import { PlaceHolder, RX_JS_CODE } from "../../utils/PlaceHolder"
 import { StringUtils } from "../../utils/StringUtils"
 import { TypeUtils } from "../../utils/TypeUtils"
 import { TAiRunArguments } from "../ai-engine/@types"
@@ -142,7 +142,7 @@ export class Step {
             )
 
             const sqlQuery = Step._dataProvider.GetSqlQuery(sqlQueryHelper, _options)
-            return await data.FreeSqlAsync(sqlQuery, sqlQueryHelper.Data)
+            return await data.FreeSqlAsync(sqlQuery, sqlQueryHelper.QueryParams)
         } else {
             // data from current datatable
             const sqlQueryHelper = Step._dataProvider.GenerateSqlSelect(<TSchemaRequestSelect>{
@@ -152,7 +152,7 @@ export class Step {
             )
 
             const sqlQuery = Step._dataProvider.GetSqlQuery(sqlQueryHelper, _options)
-            return await currentDataTable.FreeSqlAsync(sqlQuery, sqlQueryHelper.Data)
+            return await currentDataTable.FreeSqlAsync(sqlQuery, sqlQueryHelper.QueryParams)
         }
     }
 
@@ -198,20 +198,20 @@ export class Step {
     private static async _insertSchema(step: TStep, _$context?: Partial<TContext>): Promise<void> {
 
         const { currentSchemaName, currentDataTable, stepArgs } = step
-        const $__schemaRequest = stepArgs as TSchemaRequestInsert
-        const { schema, entity, data } = $__schemaRequest
+        const schemaRequest = stepArgs as TSchemaRequestInsert
+        const { schema, entity, data } = schemaRequest
 
         // only schema --> error
         Assert.Var<string>(entity, `${STEP.INSERT}: entity is required`)
         // At least one have data
-        Assert.Condition((data as TRow[])?.length > 0 || currentDataTable.Rows.length > 0, `${STEP.INSERT}: No data to insert ${JsonUtils.Stringify(step.stepArgs)}`)
+        Assert.Condition((data as TRow[])?.length > 0 || currentDataTable.Rows().length > 0, `${STEP.INSERT}: No data to insert ${JsonUtils.Stringify(step.stepArgs)}`)
 
         await Schema.Insert(<TSchemaRequestInsert>{
-            ...$__schemaRequest,
+            ...schemaRequest,
             schema: schema ?? currentSchemaName,
             data: (data)
                 ? data
-                : currentDataTable.Rows
+                : currentDataTable.Rows()
         })
     }
 
@@ -265,14 +265,14 @@ export class Step {
         // only schema --> error
         Assert.Var<string>(entity, `${STEP.UPDATE}: entity is required`)
         // At least one have data
-        Assert.Condition((data as TRow[])?.length > 0 || currentDataTable.Rows.length > 0, `${STEP.UPDATE}: No data to insert ${JsonUtils.Stringify(step.stepArgs)}`)
+        Assert.Condition((data as TRow[])?.length > 0 || currentDataTable.Rows().length > 0, `${STEP.UPDATE}: No data to insert ${JsonUtils.Stringify(step.stepArgs)}`)
 
         await Schema.Update(<TSchemaRequestUpdate>{
             ...$__schemaRequest,
             schema: schema ?? currentSchemaName,
             data: (data)
                 ? data
-                : currentDataTable.Rows
+                : currentDataTable.Rows()
         })
     }
 
@@ -294,7 +294,7 @@ export class Step {
             _options
         )
 
-        return await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query(), _sqlQueryHelper.Data)
+        return await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query(), _sqlQueryHelper.QueryParams)
     }
 
     @Logger.LogFunction()
@@ -355,7 +355,7 @@ export class Step {
             _options
         )
 
-        return await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query(), _sqlQueryHelper.Data)
+        return await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query(), _sqlQueryHelper.QueryParams)
     }
 
     @Logger.LogFunction(true)
@@ -496,69 +496,89 @@ export class Step {
     }
 
     @Logger.LogFunction(true)
-    static async Run(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
+    static async Run(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
 
-        Assert.Var<TStepArgsRun>(step.stepArgs, is<TStepArgsRun>(step.stepArgs),
-            `${STEP.RUN}: Wrong argument passed`)
+        Assert.Var<TStepArgsRun>(step.stepArgs, is<TStepArgsRun>(step.stepArgs), `${STEP.RUN}: Wrong argument passed`)
 
         const DEFAULT = {
             output: null
         }
 
-        const _stepArgs = merge(DEFAULT, step.stepArgs) as TStepArgsRun
+        $context = merge(
+            $context,
+            {
+                $row: undefined,
+                $result: undefined
+            }
+        )
 
-        const { ai, task, input, output } = _stepArgs
-        const ai_task = `${ai}-${task}`
-        const ai_engine = AiEngine.AiEnginesInstance.get(ai_task)
+        const stepArgs = merge(DEFAULT, step.stepArgs) as TStepArgsRun
 
-        Assert.Var<IAiEngine>(ai_engine, ai_engine !== undefined, `AI Engine ${ai_task} not found`)
+        const { ai, task, input, output } = stepArgs
+        const aiTask = `${ai}-${task}`
+        const aiEngine = AiEngine.AiEnginesInstance.get(aiTask)
 
-        const promises = []
+        Assert.Var<IAiEngine>(aiEngine, aiEngine !== undefined, `${STEP.RUN}: AI Engine ${aiTask} not found`)
 
-        for await (const [_rowIndex, _rowData] of step.currentDataTable.Rows.entries()) {
-            promises.push((async () => {
+        const rowPromises = []
 
-                const __data = _rowData[input]
-                const __result = <Record<string, any>>(await ai_engine.Run(
-                    {
-                        data: __data,
+        for await (const [_rowIndex, _rowData] of step.currentDataTable.Rows().entries()) {
+            rowPromises.push((async () => {
+
+                $context.$row = _rowData
+
+                const $__data = RX_JS_CODE.exec(<string>input) === null
+                    ? $context.$row[input]
+                    : PlaceHolder.EvaluateJsCode(<string>input, new Sandbox($context))
+
+                Assert.Condition($__data !== undefined, `${STEP.RUN}: Input ${input} is not defined`)
+
+                const __result = <Record<string, any>>(
+                    await aiEngine.Run({
+                        data: $__data,
                         ...step.stepArgs as TStepArgsRun
-                    } as TAiRunArguments
+                    } as TAiRunArguments)
                 )
-                )
 
-                if (!__result) {
+                if (isEmpty(__result))
                     return
-                }
 
-                // check if output is empty
-                if (isNil(output) || isEmpty(output)) {
-                    step.currentDataTable.Rows[_rowIndex] = {
-                        ..._rowData
-                    }
-                    step.currentDataTable.Rows[_rowIndex][ai_task] = JsonUtils.SafeCopy(__result)
-                    return
-                }
+                $context.$result = __result
 
-                // check if output is string
-                if (isString(output)) {
-                    step.currentDataTable.Rows[_rowIndex] = {
-                        ..._rowData
-                    }
-                    step.currentDataTable.Rows[_rowIndex][output] = __result
-                    return
-                }
+                switch (true) {
 
-                // else                
-                for (const [___inField, ___outField] of Object.entries(output)) {
-                    _rowData[___outField as string] = __result[___inField]
+                    case isString(output) && isEmpty(output):
+                        step.currentDataTable.SetRows({
+                            ..._rowData,
+                            [aiTask]: JsonUtils.SafeCopy(__result)
+                        },
+                            _rowIndex
+                        )
+                        break
+
+                    case isString(output):
+                        step.currentDataTable.SetRows({
+                            ..._rowData,
+                            [output]: __result
+                        },
+                            _rowIndex
+                        )
+                        break
+
+                    case isObject(output):
+                        for (const [___outField, ___inField] of Object.entries(output)) {
+                            const $__value = RX_JS_CODE.exec(<string>___inField) === null
+                                ? __result[___inField as string]
+                                : PlaceHolder.EvaluateJsCode(<string>___inField, new Sandbox($context))
+                            _rowData[___outField as string] = $__value
+                        }
+                        step.currentDataTable.SetRows(_rowData, _rowIndex)
+                        break
                 }
-                step.currentDataTable.Rows[_rowIndex] = _rowData
             })())
         }
 
-        await Promise.all(promises)
-
+        await Promise.all(rowPromises)
         return step.currentDataTable.SetFields()
     }
 
@@ -624,11 +644,11 @@ export class Step {
 
         // if no destination
         if (!to) {
-            step.currentDataTable.Rows = [
+            step.currentDataTable.SetRows([
                 ...syncReport.DeletedRows,
                 ...syncReport.UpdatedRows,
                 ...syncReport.AddedRows
-            ]
+            ])
         }
 
         return step.currentDataTable.SetFields()

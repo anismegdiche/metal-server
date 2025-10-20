@@ -119,7 +119,7 @@ export class XmlContent extends absContentProvider {
         JsonUtils.Set(
             xmlData,
             $__evalPath,
-            data.Rows
+            data.Rows()
         )
 
         const xmlBuilder = new fastXmlParser.XMLBuilder(this.ParserOptions as import('fast-xml-parser').XmlBuilderOptions);

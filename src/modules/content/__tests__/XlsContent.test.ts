@@ -143,8 +143,8 @@ describe('XlsContent', () => {
             const result = await xlsContent.Get(undefined,{})
 
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toHaveLength(2) // Only one data row since first row is header
-            expect(result.Rows[0]).toEqual({
+            expect(result.Rows()).toHaveLength(2) // Only one data row since first row is header
+            expect(result.Rows()[0]).toEqual({
                 Name: 'John',
                 Age: 30,
                 Date: expect.any(Date)
@@ -155,7 +155,7 @@ describe('XlsContent', () => {
             const result = await xlsContent.Get('SELECT * FROM testEntity WHERE Age > 25', {})
 
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows.length).toBeGreaterThanOrEqual(0)
+            expect(result.Rows().length).toBeGreaterThanOrEqual(0)
         })
     })
 

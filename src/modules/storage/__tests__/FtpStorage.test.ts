@@ -170,7 +170,7 @@ describe('FtpStorage', () => {
             const result = await ftpStorage.FolderListFiles()
 
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 {
                     name: 'file1.txt',
                     mimeType: 'text/plain',

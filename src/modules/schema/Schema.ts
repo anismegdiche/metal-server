@@ -71,8 +71,8 @@ export class Schema {
         if (!schemaResponseToMerge)
             return schemaResponse
 
-        const isSchemaResponseWithData = schemaResponse?.data?.Rows?.length > 0
-        const isSchemaResponseToMergeWithData = schemaResponse?.data?.Rows?.length > 0
+        const isSchemaResponseWithData = schemaResponse?.data?.Rows()?.length > 0
+        const isSchemaResponseToMergeWithData = schemaResponse?.data?.Rows()?.length > 0
 
         // only schemaResponse got data
         if (isSchemaResponseWithData && !isSchemaResponseToMergeWithData)
@@ -92,7 +92,7 @@ export class Schema {
             return <TSchemaResponse>{
                 ...schemaResponse,
                 data: schemaResponse.data.AddRows(
-                    schemaResponseToMerge.data.Rows
+                    schemaResponseToMerge.data.Rows()
                 )
             }
 

@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-regexp */
 import axios from 'axios';
 import { Ocr } from '../Ocr';
 import { TAiRunArguments } from '../../@types';
@@ -36,12 +37,10 @@ describe('Ocr', () => {
             });
 
             expect(result).toEqual({
-                text: "This is a sample text extracted from the image using OCR technology.",
-                language: "eng",
-                language_name: {
-                    downloaded: true,
-                    name: "English"
-                }
+                text: expect.any(String),
+                lang: expect.stringMatching(
+                    new RegExp(`^(${Object.values(OCR_LANG_ISO).join("|")})$`)
+                )
             });
         });
     });

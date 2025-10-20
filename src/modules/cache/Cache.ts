@@ -115,7 +115,7 @@ export class Cache {
             const schemaResponse = intResp.Body
 
             Cache.Index = schemaResponse && TypeUtils.IsSchemaResponseWithData(schemaResponse)
-                ? new Map((schemaResponse.data.Rows as TCacheData[]).map(row => [row.hash, row.expires]))
+                ? new Map((schemaResponse.data.Rows() as TCacheData[]).map(row => [row.hash, row.expires]))
                 : new Map()
 
         } catch {
@@ -280,13 +280,13 @@ export class Cache {
             })
 
         // no data
-        if (!intResp?.Body || intResp.Body.data.Rows.length === 0) {
+        if (!intResp?.Body || intResp.Body.data.Rows().length === 0) {
             Logger.Debug(`Cache.Get: Cache not found, Hash=${hash}`)
             return undefined
         }
 
         // return data
-        const { data } = intResp.Body.data.Rows.at(0) as TCacheData
+        const { data } = intResp.Body.data.Rows().at(0) as TCacheData
 
         return HttpResponse.Ok(<TSchemaResponse>{
             entity,

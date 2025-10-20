@@ -177,6 +177,38 @@ Default:
 - max: `600`
 - message: `Too many requests from this IP, please try again later`
 
+### `ai-engines` <Badge type="info" text="v0.5+" />
+
+To enable AI capabilities in your Metal server, configure the following in your server configuration file:
+
+**Example**
+
+```yaml
+server:
+  # ... other server configurations ...
+  ai-engines:
+    timeout: 600000
+    engines-url: http://localhost:5000
+    params:
+      host: "127.0.0.1" # or your machine IP
+      port: 2375 # exposed from docker-compose
+```
+
+The parameters that can be configured inside the `ai-engines` section include:
+
+| Parameter        | Type    | Default Value           | Required | Description                                      | Metal Version                         |
+| ---------------- | ------- | ----------------------- | -------- | ------------------------------------------------ | ------------------------------------- |
+| `engines-url`    | URL     | `http://localhost:5000` | Y        | URL for AI engine services.                      | <Badge type="info" text="v0.5+" />    |
+| `timeout`        | Integer | `60_000`                | N        | Timeout for AI engine requests in milliseconds.  | <Badge type="info" text="v0.5+" />    |
+| `min-instance`   | Integer | `1`                     | N        | Minimum number of AI engine instances.           | <Badge type="info" text="v0.5+" />    |
+| `max-instance`   | Integer | `5`                     | N        | Maximum number of AI engine instances.           | <Badge type="info" text="v0.5+" />    |
+| `cpu-scale-up`   | Integer | `70`                    | N        | CPU scale up value.                              | <Badge type="info" text="v0.5+" />    |
+| `cpu-scale-down` | Integer | `30`                    | N        | CPU scale down value.                            | <Badge type="info" text="v0.5+" />    |
+| `scale-interval` | Integer | `15_000`                | N        | AI Service Scale interval value in milliseconds. | <Badge type="info" text="v0.5+" />    |
+| `params`         | Object  | `null`                  | N        | Parameters for Container Provider                | <Badge type="default" text="v0.5+" /> |
+
+For more detailed information about how to configure a Container Provider, See: [Container Providers Configurations](./container-providers-config.md)
+
 ## `roles` <Badge type="default" text="v0.3+" />
 
 Sets the list of roles with associated permissions used when authentication is enabled with `server.authentication`. Each role is defined by a unique name and a string of permissions where each character represents a specific permission:
@@ -503,30 +535,11 @@ schemas:
 When using `anonymize` in a schema and in a plan, data will be anonymized twice.
 :::
 
-## `ai-engines` <Badge type="default" text="v0.1+" />
+## ~~ [Removed] `ai-engines`~~ <Badge type="info" text="v0.5+" />
 
-This section declares AI engine processors like Tesseract.js and NLP.js to be used in plans with the command `run` (see: [run](#run))
-
-The parameters that can be configured inside an AI engine include:
-
-| Parameter | Decription                     | Metal version                         |
-| --------- | ------------------------------ | ------------------------------------- |
-| `engine`  | AI engine to use               | <Badge type="default" text="v0.1+" /> |
-| `model`   | Model handled by the AI engine | <Badge type="default" text="v0.1+" /> |
-| `options` | Additional options             | <Badge type="default" text="v0.1+" /> |
-
-For more detailed information about how to configure an AI engine, See: [AI Engines Configurations](./ai-engines-config.md)
-
-**Example**
-
-```yaml
-ai-engines:
-  my-sentiment-analyzer:
-    engine: nlpjs
-    model: sentiment
-    options:
-      lang: en
-```
+::: warning ⚠️ Warning
+Starting from v0.5, this configuration has been removed and managed automatically by Metal server.
+:::
 
 ## `plans` <Badge type="default" text="v0.1+" />
 
@@ -839,7 +852,7 @@ plans:
           name: desc
 ```
 
-### `fields` <Badge type="default" text="v0.1+" />
+### `fields` <Badge type="info" text="v0.5+" />
 
 To keep fields from actual plan's entity data
 
@@ -859,20 +872,34 @@ plans:
           entity: my-first-entity
           left-field: partner_id
           right-field: id
-      - fields: id, name, display_name
+      - fields:
+          - id
+          - name
+          - display_name
 ```
 
-### `run` <Badge type="default" text="v0.1+" />
+### 📜`run` <Badge type="info" text="v0.5+" />
 
 To run an AI Engine on actual plan's entity data.
 
 The parameters that can be configured inside `run` tag are :
 
-| Name     | Description                                                                                                                                                                                                                                                     | Metal version                         |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `ai`     | name of a declared AI Engine (see: [ai-engines](#ai-engines))                                                                                                                                                                                                   | <Badge type="default" text="v0.1+" /> |
-| `input`  | input field to perform the processing                                                                                                                                                                                                                           | <Badge type="default" text="v0.1+" /> |
-| `output` | Output result to be stored. If nothing is provided, the entire object will be stored in a field that has the AI Engine name. It accept a list of `key:value` where the `key` is a child of the result and the `value` is the renamed field in the plan's entity | <Badge type="default" text="v0.1+" /> |
+| Name       | Type            | Description                                          | JS Context                                    | Metal version                         |
+| ---------- | --------------- | ---------------------------------------------------- | --------------------------------------------- | ------------------------------------- |
+| `ai`       | string          | AI Engine name (see: [AI Engines](ai-engines))       |                                               | <Badge type="default" text="v0.1+" /> |
+| `task`     | string          | AI Engine task (see: [AI Engines](ai-engines))       |                                               | <Badge type="info" text="v0.5+" />    |
+| `params`   | object          | AI Engine parameters (see: [AI Engines](ai-engines)) |                                               | <Badge type="info" text="v0.5+" />    |
+| 📜`input`  | string          | input field to perform the processing                | [`$row`](dynamic-expression-engine#row)       | <Badge type="default" text="v0.1+" /> |
+| 📜`output` | object / string | Output result to be stored. (see: [output](#output)) | [`$result`](dynamic-expression-engine#result) | <Badge type="info" text="v0.5+" />    |
+
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
+
+#### `output`
+
+It can be:
+
+- string representing the name of the field where the result will be stored
+- a list of `key:value` where `key` is the mapped name of the field and `value` is the name of result property. In this configuration JavaScript Expression Engine is supported.
 
 **Example**
 
@@ -886,11 +913,14 @@ plans:
             - url: https://jeroen.github.io/images/testocr.png
             - url: https://www.srcmake.com/uploads/5/3/9/0/5390645/ocr_orig.png
       - run:
-          ai: my-ocr
-          input: url
+          ai: ocr
+          task: image-to-string
+          params:
+            lang: en_XX
+          input: content
           output:
-            confidence: ocr_confidence
-            text: ocr_text
+            ocr_text: {{ $result.ocr.text}} # stores the $result.ocr.text in the `ocr_text` field
+            ocr_lang_code: ${{ $result.ocr.lang.split('_')[0] }} # using JavaScript Expression Engine to transform result
 ```
 
 ### 📜`sync` <Badge type="default" text="v0.2+" />
@@ -925,11 +955,9 @@ plans:
           id: user_id
 ```
 
-### `anonymize` <Badge type="default" text="v0.3+" />
+### `anonymize` <Badge type="info" text="v0.5+" />
 
-To anonymize data of given fields.
-
-It can be unique field or a list of fields seperated with comma
+To anonymize data of given list of fields.
 
 **Example**
 
@@ -937,7 +965,9 @@ It can be unique field or a list of fields seperated with comma
 plans:
   my-plan:
     my-entity:
-      - anonymize: contact_name, company_name
+      - anonymize:
+          - contact_name
+          - company_name
 ```
 
 ### `remove-duplicates` <Badge type="default" text="v0.3+" />

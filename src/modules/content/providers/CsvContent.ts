@@ -86,8 +86,8 @@ export class CsvContent extends absContentProvider {
             new Sandbox($context)
         )
 
-        //flattern nested objects in data.Rows
-        const _dataFlatten = data.Rows.map((row) => Object.fromEntries(
+        //flattern nested objects in data.GetRows()
+        const _dataFlatten = data.Rows().map((row) => Object.fromEntries(
             Object.entries(row).map(([k, v]) => [
                 k,
                 // and is not date

@@ -2,12 +2,11 @@
 //
 //
 import axios from 'axios'
-import _ from "lodash"
+import _, { isObject, merge } from "lodash"
 //
 import { Assert } from '../../../utils/Assert'
 import { LangUtils } from '../../../utils/LangUtils'
 import { Logger } from '../../../utils/Logger'
-import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from '../../../utils/Utils'
 import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
 import { AI_ENGINE } from '../@consts'
@@ -17,9 +16,10 @@ import { absAiEngine } from '../base/absAiEngine'
 import { IAiEngine } from '../base/IAiEngine'
 import { LANG_ISO } from "../consts/LANG"
 import { TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO, TEXT_TASK } from "../consts/TEXT"
-import { TextEmotionDetectionDockerService, TextFillMaskDockerService, TextKeywordExtractionDockerService, TextLanguageDetectionDockerService, TextParaphraseDetectionDockerService, TextQuestionAnsweringDockerService, TextSentenceSimilarityDockerService, TextSentimentAnalysisDockerService, TextSummarizationDockerService, TextText2TextGenerationDockerService, TextTextGenerationDockerService, TextTokenClassificationDockerService, TextToxicityDetectionDockerService, TextTranslationDockerService, TextZeroShotClassificationDockerService } from '../docker-services/TextDockerService'
+import { TextEmotionDetectionDockerService, TextFillMaskDockerService, TextKeywordExtractionDockerService, TextLanguageDetectionDockerService, TextParaphraseDetectionDockerService, TextQuestionAnsweringDockerService, TextSentenceSimilarityDockerService, TextSentimentAnalysisDockerService, TextSummarizationDockerService, TextTextGenerationDockerService, TextTokenClassificationDockerService, TextToxicityDetectionDockerService, TextTranslationDockerService, TextZeroShotClassificationDockerService } from '../docker-services/TextDockerService'
 import { TAiDockerService } from '../types/TAiDockerService'
-import { TStepRunAiTextEmotionDetectionParams, TStepRunAiTextFillMaskParams, TStepRunAiTextKeywordExtractionParams, TStepRunAiTextParams, TStepRunAiTextParaphraseDetectionParams, TStepRunAiTextQuestionAnsweringParams, TStepRunAiTextSentenceSimilarityParams, TStepRunAiTextSentimentAnalysisParams, TStepRunAiTextSummarizationParams, TStepRunAiTextTextGenerationParams, TStepRunAiTextTokenClassificationParams, TStepRunAiTextToxicityDetectionParams, TStepRunAiTextTranslationParams, TStepRunAiTextZeroShotClassificationParams } from '../types/TStepRunAiTextParam'
+import { TStepRunAiTextEmotionDetectionParams, TStepRunAiTextParams, TStepRunAiTextParaphraseDetectionParams, TStepRunAiTextQuestionAnsweringParams, TStepRunAiTextSentenceSimilarityParams, TStepRunAiTextSentimentAnalysisParams, TStepRunAiTextSummarizationParams, TStepRunAiTextTextGenerationParams, TStepRunAiTextNerParams, TStepRunAiTextToxicityDetectionParams, TStepRunAiTextTranslationParams, TStepRunAiTextZeroShotClassificationParams } from '../types/TStepRunAiTextParam'
+import { StringUtils } from '../../../utils/StringUtils'
 
 
 //
@@ -41,8 +41,8 @@ export class Text extends absAiEngine implements IAiEngine {
     DEFAULT: TStepRunAiTextParams = {
         task: TEXT_TASK.TRANSLATION,
         params: {
-            src_lang: LANG_ISO.en_XX,
-            tgt_lang: LANG_ISO.fr_XX
+            source: LANG_ISO.en_XX,
+            target: LANG_ISO.fr_XX
         }
     }
 
@@ -64,9 +64,9 @@ export class Text extends absAiEngine implements IAiEngine {
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.SENTENCE_SIMILARITY}`]: TextSentenceSimilarityDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.SENTIMENT_ANALYSIS}`]: TextSentimentAnalysisDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.SUMMARIZATION}`]: TextSummarizationDockerService,
-            [`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT2TEXT_GENERATION}`]: TextText2TextGenerationDockerService,
+            // [`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT2TEXT_GENERATION}`]: TextText2TextGenerationDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT_GENERATION}`]: TextTextGenerationDockerService,
-            [`${AI_ENGINE.TEXT}-${TEXT_TASK.TOKEN_CLASSIFICATION}`]: TextTokenClassificationDockerService,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.NER}`]: TextTokenClassificationDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.TOXICITY_DETECTION}`]: TextToxicityDetectionDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.ZERO_SHOT_CLASSIFICATION}`]: TextZeroShotClassificationDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.TRANSLATION}`]: TextTranslationDockerService
@@ -82,9 +82,9 @@ export class Text extends absAiEngine implements IAiEngine {
             [TEXT_TASK.SENTENCE_SIMILARITY]: async (args: TAiRunArguments) => await this.SentenceSimilarity(args),
             [TEXT_TASK.SENTIMENT_ANALYSIS]: async (args: TAiRunArguments) => await this.SentimentAnalysis(args),
             [TEXT_TASK.SUMMARIZATION]: async (args: TAiRunArguments) => await this.Summarization(args),
-            [TEXT_TASK.TEXT2TEXT_GENERATION]: async (args: TAiRunArguments) => await this.Text2TextGeneration(args),
+            // [TEXT_TASK.TEXT2TEXT_GENERATION]: async (args: TAiRunArguments) => await this.Text2TextGeneration(args),
             [TEXT_TASK.TEXT_GENERATION]: async (args: TAiRunArguments) => await this.TextGeneration(args),
-            [TEXT_TASK.TOKEN_CLASSIFICATION]: async (args: TAiRunArguments) => await this.TokenClassification(args),
+            [TEXT_TASK.NER]: async (args: TAiRunArguments) => await this.Ner(args),
             [TEXT_TASK.TOXICITY_DETECTION]: async (args: TAiRunArguments) => await this.ToxicityDetection(args),
             [TEXT_TASK.TRANSLATION]: async (args: TAiRunArguments) => await this.Translation(args),
             [TEXT_TASK.ZERO_SHOT_CLASSIFICATION]: async (args: TAiRunArguments) => await this.ZeroShotClassification(args)
@@ -105,7 +105,7 @@ export class Text extends absAiEngine implements IAiEngine {
         const { task } = _args
 
         if (Object.values(TEXT_TASK).includes(task)) {
-            await Utils.Wait(async () => await this.IsHealthy())
+            await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
             return await this.RunTask[task](args)
         }
 
@@ -118,19 +118,17 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextEmotionDetectionParams;
 
+        const _params = {
+            top_k: params?.top ?? null
+        }
+
         Assert.Var(data, 'data is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
-
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: data,
-                params
+                params: _params
             },
             TEXT_DEFAULT_HEADERS
         )
@@ -140,33 +138,34 @@ export class Text extends absAiEngine implements IAiEngine {
 
         const result = response.data.result[0];
 
-        const mapped = result.reduce((acc: any, item: any) => {
+        Assert.Var(isObject(result), 'result is not an object')
+
+        if (!Array.isArray(result))
+            return {
+                [result.label]: result.score
+            }
+
+        const emotion = result.reduce((acc: any, item: any) => {
             acc[item.label] = parseFloat(item.score);
             return acc;
         }, {});
 
-        return mapped
+        return {
+            emotion
+        }
     }
 
     @Logger.LogFunction(true)
     async FillMask(args: TAiRunArguments): Promise<TAiRunOutput> {
 
         const { data } = args;
-        const { params } = args as TStepRunAiTextFillMaskParams;
 
         Assert.Var(data, 'data is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
-
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
-                input_data: data,
-                params
+                input_data: data
             },
             TEXT_DEFAULT_HEADERS
         )
@@ -174,28 +173,30 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Fill mask failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0]
+        const fillmask = response.data.result.map((item: any) => {
+            return {
+                score: item.score,
+                word: item.token_str,
+                text: item.sequence
+            }
+        })
+
+        return {
+            fillmask
+        }
     }
 
     @Logger.LogFunction(true)
     async KeywordExtraction(args: TAiRunArguments): Promise<TAiRunOutput> {
 
         const { data } = args;
-        const { params } = args as TStepRunAiTextKeywordExtractionParams;
 
         Assert.Var(data, 'data is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
-
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
-                input_data: data,
-                params
+                input_data: data
             },
             TEXT_DEFAULT_HEADERS
         )
@@ -203,7 +204,11 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Keyword extraction failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result
+        const keywords = response.data.result[0]
+
+        return {
+            keywords
+        }
     }
 
     @Logger.LogFunction(true)
@@ -213,14 +218,8 @@ export class Text extends absAiEngine implements IAiEngine {
 
         Assert.Var(data, 'data is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
-
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: data
             },
@@ -232,10 +231,12 @@ export class Text extends absAiEngine implements IAiEngine {
 
         const result = response.data.result[0]
 
-        return {
-            label: LangUtils.Convert(result.label, TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO),
-            score: parseFloat(result.score)
+        const language = {
+            code: LangUtils.Convert(result.label, TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO),
+            score: Math.max(0, parseFloat(result.score))
         }
+
+        return { language }
     }
 
     @Logger.LogFunction(true)
@@ -248,14 +249,8 @@ export class Text extends absAiEngine implements IAiEngine {
         Assert.Var(params, 'params is required')
         Assert.Var(params.target, 'params.target is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
-
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: {
                     source_sentence: data,
@@ -268,7 +263,17 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Paraphrase detection failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result
+        const result = response.data.result
+
+        const paraphrase = {
+            source: result.source_sentence,
+            target: result.target_sentence,
+            score: Math.max(0, parseFloat(result.similarity_score))
+        }
+
+        return {
+            paraphrase
+        }
     }
 
     @Logger.LogFunction(true)
@@ -279,20 +284,14 @@ export class Text extends absAiEngine implements IAiEngine {
 
         Assert.Var(data, 'data is required')
         Assert.Var(params, 'params is required')
-        Assert.Var(params.context, 'params.context is required')
-
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
+        Assert.Var(params.question, 'params.context is required')
 
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: {
-                    question: data,
-                    context: params.context
+                    question: params.question,
+                    context: data
                 }
             },
             TEXT_DEFAULT_HEADERS
@@ -301,7 +300,18 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Question answering failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0]
+        const result = response.data.result
+
+        const answer = {
+            text: result.answer,
+            score: result.score,
+            start: result.start,
+            end: result.end
+        }
+
+        return {
+            answer
+        }
     }
 
     @Logger.LogFunction(true)
@@ -314,14 +324,8 @@ export class Text extends absAiEngine implements IAiEngine {
         Assert.Var(params, 'params is required')
         Assert.Var(params.sentences, 'params.sentences is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
-
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: {
                     source_sentence: data,
@@ -334,13 +338,15 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Sentence similarity failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        const result = response.data.result.map((item: any) => {
-            item.similarity = parseFloat(item.similarity);
-            item.rank = parseInt(item.rank);
-            return item
-        });
+        const similarity = response.data.result.map((item: any) => ({
+            sentence: item.sentence2,
+            score: Math.max(0, item.similarity),
+            rank: parseInt(item.rank,10)
+        }));
 
-        return result
+        return {
+            similarity
+        }
     }
 
     @Logger.LogFunction(true)
@@ -351,17 +357,15 @@ export class Text extends absAiEngine implements IAiEngine {
 
         Assert.Var(data, 'data is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
+        const _params = {
+            top_k: params?.top ?? null
+        }
 
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: data,
-                params
+                params: _params
             },
             TEXT_DEFAULT_HEADERS
         )
@@ -371,11 +375,14 @@ export class Text extends absAiEngine implements IAiEngine {
 
         const result = response.data.result[0]
 
-        result.map((item: any) => {
-            item.score = parseFloat(item.score)
-        })
+        const sentiment = {
+            label: result.label.toLowerCase(),
+            score: Math.max(0, result.score)
+        }
 
-        return result
+        return {
+            sentiment
+        }
     }
 
     @Logger.LogFunction(true)
@@ -386,17 +393,11 @@ export class Text extends absAiEngine implements IAiEngine {
 
         Assert.Var(data, 'data is required')
         Assert.Var(params, 'params is required')
-        Assert.Var(params.max_length, 'params.max_length is required')
-        Assert.Var(params.min_length, 'params.min_length is required')
-
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
+        Assert.Var(params['max-length'], 'max-length is required')
+        Assert.Var(params['min-length'], 'min-length is required')
 
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: data,
                 params
@@ -407,60 +408,65 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Summarization failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0].summary_text
+        const result = response.data.result[0]
+
+        const summary = {
+            text: result.summary_text
+        }
+
+        return {
+            summary
+        }
     }
 
-    @Logger.LogFunction(true)
-    async Text2TextGeneration(args: TAiRunArguments): Promise<TAiRunOutput> {
+    // @Logger.LogFunction(true)
+    // async Text2TextGeneration(args: TAiRunArguments): Promise<TAiRunOutput> {
 
-        const { data } = args;
+    //     const { data } = args;
 
-        Assert.Var(data, 'data is required')
+    //     Assert.Var(data, 'data is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
+    //     const _url = StringUtils.Url(
+    //         this.InstanceApiUrl,
+    //         this.InstanceName,
+    //         'run'
+    //     );
 
-        const response = await axios.post(
-            _url,
-            {
-                input_data: data
-            },
-            TEXT_DEFAULT_HEADERS
-        )
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Text2Text generation failed: ${error.response?.data?.message ?? error.message}`);
-            })
+    //     const response = await axios.post(
+    //         this.InstanceApiUrl,
+    //         {
+    //             input_data: data
+    //         },
+    //         TEXT_DEFAULT_HEADERS
+    //     )
+    //         .catch(error => {
+    //             throw new HttpErrorInternalServerError(`Text2Text generation failed: ${error.response?.data?.message ?? error.message}`);
+    //         })
 
-        return response.data.result[0].generated_text
-    }
+    //     const result = response.data.result[0]
+
+    //     return {
+    //         text: result.generated_text
+    //     }
+    // }
 
     @Logger.LogFunction(true)
     async TextGeneration(args: TAiRunArguments): Promise<TAiRunOutput> {
 
         const { data } = args;
-        const { params } = args as TStepRunAiTextTextGenerationParams;
+        const { params } = args as TStepRunAiTextTextGenerationParams
 
         Assert.Var(data, 'data is required')
 
-        // if (params) {
-        //     Assert.Var<TStepRunAiTextTextGenerationParams>(
-        //         params, typia.is<TStepRunAiTextTextGenerationParams>(params), 'params are not valid')
-        // }
-
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
-
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: data,
-                params
+                params: {
+                    max_legth: params!['max-length'],
+                    do_sample: params!['do-sample'],
+                    temperature: params!['temperature']
+                }
             },
             TEXT_DEFAULT_HEADERS
         )
@@ -468,28 +474,30 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Text generation failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0].generated_text
+        const result = response.data.result[0][0]
+
+        return {
+            text: result.generated_text
+        }
     }
 
     @Logger.LogFunction(true)
-    async TokenClassification(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async Ner(args: TAiRunArguments): Promise<TAiRunOutput> {
 
         const { data } = args;
-        const { params } = args as TStepRunAiTextTokenClassificationParams;
+        const { params } = args as TStepRunAiTextNerParams;
+
+        const DEFAULT = {
+            grouped: true
+        }
 
         Assert.Var(data, 'data is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
-
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: data,
-                params
+                params: merge(DEFAULT, params)
             },
             TEXT_DEFAULT_HEADERS
         )
@@ -497,7 +505,22 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Token classification failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result
+        const result = response.data.result[0]
+
+        const entities = result.reduce((acc: any, item: any) => {
+            acc.push({
+                group: item.entity_group,
+                score: item.score,
+                word: item.word,
+                start: item.start,
+                end: item.end
+            })
+            return acc
+        }, [])
+
+        return {
+            entities
+        }
     }
 
     @Logger.LogFunction(true)
@@ -508,17 +531,15 @@ export class Text extends absAiEngine implements IAiEngine {
 
         Assert.Var(data, 'data is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
+        const _params = {
+            top_k: params?.top ?? null
+        }
 
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: data,
-                params
+                params: _params
             },
             TEXT_DEFAULT_HEADERS
         )
@@ -528,11 +549,14 @@ export class Text extends absAiEngine implements IAiEngine {
 
         const result = response.data.result[0];
 
-        result.map((item: any) => {
-            item.score = parseFloat(item.score);
-        });
+        const toxicity = result.reduce((acc: any, item: any) => {
+            acc[item.label] = parseFloat(item.score);
+            return acc;
+        }, {});
 
-        return result
+        return {
+            toxicity
+        }
     }
 
     @Logger.LogFunction(true)
@@ -541,22 +565,26 @@ export class Text extends absAiEngine implements IAiEngine {
         const { data } = args;
         const { params } = args as TStepRunAiTextTranslationParams;
 
+        const DEFAULT = {
+            src_lang: LANG_ISO.en_XX,
+            tgt_lang: LANG_ISO.fr_XX
+        }
+
         Assert.Var(data, 'data is required')
         Assert.Var(params, 'params is required')
-        Assert.Var(params.src_lang, 'params.src_lang is required')
-        Assert.Var(params.tgt_lang, 'params.tgt_lang is required')
+        Assert.Var(params.source, 'source is required')
+        Assert.Var(params.target, 'target is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
+        const _params = merge(DEFAULT, {
+            src_lang: params.source,
+            tgt_lang: params.target
+        })
 
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: data,
-                params
+                params: _params
             },
             TEXT_DEFAULT_HEADERS
         )
@@ -564,7 +592,17 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Translation request failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result[0].translation_text
+        const result = response.data.result[0]
+
+        const translation = {
+            text: result.translation_text,
+            source: params.source,
+            target: params.target
+        }
+
+        return {
+            translation
+        }
     }
 
     @Logger.LogFunction(true)
@@ -575,19 +613,17 @@ export class Text extends absAiEngine implements IAiEngine {
 
         Assert.Var(data, 'data is required')
         Assert.Var(params, 'params is required')
-        Assert.Var(params.candidate_labels, 'params.candidate_labels is required')
+        Assert.Var(params.labels, 'labels is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            this.InstanceName,
-            'run'
-        );
+        const _params = {
+            candidate_labels: params.labels
+        }
 
         const response = await axios.post(
-            _url,
+            StringUtils.Url(this.InstanceApiUrl, 'run'),
             {
                 input_data: data,
-                params
+                params: _params
             },
             TEXT_DEFAULT_HEADERS
         )
@@ -595,6 +631,14 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Zero-shot classification failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        return response.data.result
+        const result = response.data.result
+
+        const zeroshot = Object.fromEntries(
+            result.labels.map((label: string, i: number) => [label, result.scores[i]])
+        );
+
+        return {
+            zeroshot
+        }
     }
 }

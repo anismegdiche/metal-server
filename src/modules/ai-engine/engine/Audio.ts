@@ -71,7 +71,7 @@ export class Audio extends absAiEngine implements IAiEngine {
         const { task } = _args
 
         if (Object.values(AUDIO_TASK).includes(task as AUDIO_TASK)) {
-            await Utils.Wait(async () => await this.IsHealthy())
+            await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
             return await this.RunTask[task](args)
         }
 
@@ -87,7 +87,6 @@ export class Audio extends absAiEngine implements IAiEngine {
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
-            this.InstanceName,
             'run'
         )
 
@@ -141,7 +140,6 @@ export class Audio extends absAiEngine implements IAiEngine {
 
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
-            this.InstanceName,
             'run'
         )
 

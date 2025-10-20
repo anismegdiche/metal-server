@@ -1,15 +1,15 @@
-import axios from 'axios';
-import { Image } from '../Image';
-import { TAiRunArguments } from '../../@types';
+import axios from 'axios'
+import { Image } from '../Image'
+import { TAiRunArguments } from '../../@types'
 
-const spyAxios = jest.spyOn(axios, 'post');
+const spyAxios = jest.spyOn(axios, 'post')
 
-const image = new Image();
+const image = new Image()
 
 describe('Image', () => {
     beforeEach(() => {
-        spyAxios.mockClear();
-    });
+        spyAxios.mockClear()
+    })
 
     describe('ImageClassification', () => {
         it('should classify image', async () => {
@@ -39,21 +39,23 @@ describe('Image', () => {
                             }
                         ]
                     }
-                });
-            });
+                })
+            })
 
             const result = await image.ImageClassification(<TAiRunArguments>{
                 data: "base64_image_data"
-            });
+            })
 
-            expect(result).toEqual(expect.arrayContaining([
-                expect.objectContaining({
-                    label: expect.any(String),
-                    score: expect.any(Number)
-                })
-            ]));
-        });
-    });
+            expect(result).toEqual({
+                objects: expect.arrayContaining([
+                    expect.objectContaining({
+                        label: expect.any(String),
+                        score: expect.any(Number)
+                    })
+                ])
+            })
+        })
+    })
 
     describe('ImageSegmentation', () => {
         it('should segment image', async () => {
@@ -78,22 +80,23 @@ describe('Image', () => {
                             }
                         ]
                     }
-                });
-            });
+                })
+            })
 
             const result = await image.ImageSegmentation(<TAiRunArguments>{
                 data: "base64_image_data"
-            });
+            })
 
-            expect(result).toEqual(expect.arrayContaining([
-                expect.objectContaining({
-                    score: null,
-                    label: expect.any(String),
-                    mask: expect.any(String)
-                })
-            ]));
-        });
-    });
+            expect(result).toEqual({
+                masks: expect.arrayContaining([
+                    expect.objectContaining({
+                        label: expect.any(String),
+                        mask: expect.any(String)
+                    })
+                ])
+            })
+        })
+    })
 
     describe('ImageToText', () => {
         it('should convert image to text', async () => {
@@ -106,16 +109,18 @@ describe('Image', () => {
                             }
                         ]
                     }
-                });
-            });
+                })
+            })
 
             const result = await image.ImageToText(<TAiRunArguments>{
                 data: "base64_image_data"
-            });
+            })
 
-            expect(result).toEqual(expect.any(String))
-        });
-    });
+            expect(result).toEqual({
+                text: expect.any(String)
+            })
+        })
+    })
 
     describe('ObjectDetection', () => {
         it('should detect objects in image', async () => {
@@ -155,27 +160,29 @@ describe('Image', () => {
                             }
                         ]
                     }
-                });
-            });
+                })
+            })
 
             const result = await image.ObjectDetection(<TAiRunArguments>{
                 data: "base64_image_data"
-            });
+            })
 
-            expect(result).toEqual(expect.arrayContaining([
-                expect.objectContaining({
-                    score: expect.any(Number),
-                    label: expect.any(String),
-                    box: expect.objectContaining({
-                        xmin: expect.any(Number),
-                        ymin: expect.any(Number),
-                        xmax: expect.any(Number),
-                        ymax: expect.any(Number)
+            expect(result).toEqual({
+                objects: expect.arrayContaining([
+                    expect.objectContaining({
+                        score: expect.any(Number),
+                        label: expect.any(String),
+                        box: expect.objectContaining({
+                            xmin: expect.any(Number),
+                            ymin: expect.any(Number),
+                            xmax: expect.any(Number),
+                            ymax: expect.any(Number)
+                        })
                     })
-                })
-            ]));
-        });
-    });
+                ])
+            })
+        })
+    })
 
     describe('VisualQuestionAnswering', () => {
         it('should answer questions about image', async () => {
@@ -197,22 +204,24 @@ describe('Image', () => {
                             }
                         ]
                     }
-                });
-            });
+                })
+            })
 
             const result = await image.VisualQuestionAnswering(<TAiRunArguments>{
                 data: "base64_image_data",
                 params: {
                     question: "How many people?"
                 }
-            });
+            })
 
-            expect(result).toEqual(expect.arrayContaining([
-                expect.objectContaining({
-                    score: expect.any(Number),
-                    answer: expect.any(String)
-                })
-            ]));
-        });
-    });
-});
+            expect(result).toEqual({
+                answers: expect.arrayContaining([
+                    expect.objectContaining({
+                        score: expect.any(Number),
+                        answer: expect.any(String)
+                    })
+                ])
+            })
+        })
+    })
+})

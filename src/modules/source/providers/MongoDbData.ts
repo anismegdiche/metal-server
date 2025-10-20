@@ -175,7 +175,7 @@ export class MongoDbData extends absDataProvider {
         await this.Connection
             .db(this.Config.database)
             .collection(schemaRequest.entity)
-            .insertMany(options?.Data?.Rows)
+            .insertMany(options?.Data?.Rows())
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -197,7 +197,7 @@ export class MongoDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!DataTable.Is(options.Data) || options.Data.Rows.length === 0)
+        if (!DataTable.Is(options.Data) || options.Data.Rows().length === 0)
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
@@ -207,7 +207,7 @@ export class MongoDbData extends absDataProvider {
         const mongoFilter: Filter<Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
 
         const mongoUpdate: UpdateFilter<Document> = {
-            $set: options?.Data?.Rows.at(0)
+            $set: options?.Data?.Rows().at(0)
         }
 
         await this.Connection

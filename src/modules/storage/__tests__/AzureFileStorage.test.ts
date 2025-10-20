@@ -272,7 +272,7 @@ describe("AzureFileStorage", () => {
 
                 const result = await storage.FolderListFiles()
                 expect(result).toBeInstanceOf(DataTable)
-                expect(result.Rows).toEqual([
+                expect(result.Rows()).toEqual([
                     {
                         name: "file1.txt",
                         size: 100,
@@ -290,7 +290,7 @@ describe("AzureFileStorage", () => {
 
                 const result = await storage.FolderListFiles()
                 expect(result).toBeInstanceOf(DataTable)
-                expect(result.Rows).toEqual([])
+                expect(result.Rows()).toEqual([])
             })
         })
     })

@@ -104,10 +104,10 @@ export class MemoryData extends absDataProvider {
 
         const data = new DataTable(entity)
 
-        const memoryDataTable = await this.Connection.Tables[entity].FreeSqlAsync(sqlQuery, sqlQueryHelper.Data)
+        const memoryDataTable = await this.Connection.Tables[entity].FreeSqlAsync(sqlQuery, sqlQueryHelper.QueryParams)
 
-        if (memoryDataTable && memoryDataTable.Rows.length > 0) {
-            data.AddRows(memoryDataTable.Rows)
+        if (memoryDataTable && memoryDataTable.Rows().length > 0) {
+            data.AddRows(memoryDataTable.Rows())
             if (options?.Cache)
                 Cache.Set({
                     ...schemaRequest,
@@ -145,7 +145,7 @@ export class MemoryData extends absDataProvider {
 
         Assert.Var<DataTable>(options.Data, `${schema}: data is missing`, new HttpErrorBadRequest())
 
-        this.Connection.Tables[entity].AddRows(options.Data.Rows)
+        this.Connection.Tables[entity].AddRows(options.Data.Rows())
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -172,7 +172,7 @@ export class MemoryData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
-        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
+        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.QueryParams)
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -198,7 +198,7 @@ export class MemoryData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
-        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
+        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.QueryParams)
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -228,7 +228,7 @@ export class MemoryData extends absDataProvider {
         const rows = Object.keys(this.Connection.Tables).map(entity => (<TDataListEntity>{
             name: entity,
             type: DATA_ENTITY_TYPE.DATATABLE,
-            size: this.Connection?.Tables[entity].Rows.length
+            size: this.Connection?.Tables[entity].Rows().length
         }))
 
         Assert.Condition(rows.length > 0, `${schema}: No entities found`, new HttpErrorNotFound())

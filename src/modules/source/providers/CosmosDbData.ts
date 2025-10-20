@@ -169,7 +169,7 @@ export class CosmosDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!DataTable.Is(options.Data) || !options.Data.Rows || options.Data.Rows.length === 0) {
+        if (!DataTable.Is(options.Data) || !options.Data.Rows() || options.Data.Rows().length === 0) {
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
         }
 
@@ -177,7 +177,7 @@ export class CosmosDbData extends absDataProvider {
             const container = await this.GetContainer(schemaRequest)
 
             // Use bulk operations for better performance
-            const operations: Array<{ operationType: 'Create'; id: string; resourceBody: typeof options.Data.Rows[0] }> = options.Data.Rows.map(row => {
+            const operations: Array<any> = options.Data.Rows().map(row => {
                 // Ensure each document has an id
                 if (!row.id) {
                     row.id = Date.now().toString() + Math.random().toString().substring(2, 8)
@@ -220,7 +220,7 @@ export class CosmosDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!DataTable.Is(options.Data) || !options.Data.Rows || options.Data.Rows.length === 0) {
+        if (!DataTable.Is(options.Data) || !options.Data.Rows() || options.Data.Rows().length === 0) {
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
         }
 
@@ -247,7 +247,7 @@ export class CosmosDbData extends absDataProvider {
                 return HttpResponse.NoContent()
             }
 
-            const updateData = options.Data.Rows[0]
+            const updateData = options.Data.Rows()[0]
 
             await Promise.all(itemsToUpdate.map(async (item) => {
                 try {
@@ -437,7 +437,7 @@ export class CosmosDbData extends absDataProvider {
             const containerDetails =
                 (await Body.data
                     .FilterRows(`name = "${schemaRequest.entity}"`))
-                    .Rows[0]
+                    .Rows()[0]
 
             Assert.Var<TDataListEntity>(containerDetails, `${schema}: Container not found`)
 

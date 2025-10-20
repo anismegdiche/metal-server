@@ -48,6 +48,8 @@ const aiData = new DataTable("aiData", [
     { filename: "ocr", content: "base64", text: "I'm not confident with this project!" }
 ]);
 
+const rndResponse = typia.random<TInternalResponse<TSchemaResponse>>() as unknown as TInternalResponse<TSchemaResponse>
+
 describe('Step', () => {
 
     beforeEach(async () => {
@@ -78,8 +80,8 @@ describe('Step', () => {
 
             expect(result).toBeInstanceOf(DataTable)
             expect(result.Name).toBe(mySchemaEntity1.Name)
-            expect(result.GetFieldNames()).toEqual(mySchemaEntity1.GetFieldNames())
-            expect(result.Rows).toEqual(mySchemaEntity1.Rows)
+            expect(result.GetFieldsName()).toEqual(mySchemaEntity1.GetFieldsName())
+            expect(result.Rows()).toEqual(mySchemaEntity1.Rows())
             spySchemaSelect.mockRestore();
         })
 
@@ -95,8 +97,8 @@ describe('Step', () => {
 
             expect(result).toBeInstanceOf(DataTable)
             expect(result.Name).toBe(myPlanEntity1.Name)
-            expect(result.GetFieldNames()).toEqual(myPlanEntity1.GetFieldNames())
-            expect(result.Rows).toEqual(myPlanEntity1.Rows)
+            expect(result.GetFieldsName()).toEqual(myPlanEntity1.GetFieldsName())
+            expect(result.Rows()).toEqual(myPlanEntity1.Rows())
         })
 
         it('should return plan entity data from given plan entity', async () => {
@@ -117,8 +119,8 @@ describe('Step', () => {
 
             expect(result).toBeInstanceOf(DataTable)
             expect(result.Name).toBe(myPlanEntity2.Name)
-            expect(result.GetFieldNames()).toEqual(myPlanEntity2.GetFieldNames())
-            expect(result.Rows).toEqual(myPlanEntity2.Rows)
+            expect(result.GetFieldsName()).toEqual(myPlanEntity2.GetFieldsName())
+            expect(result.Rows()).toEqual(myPlanEntity2.Rows())
             spyProcessSchemaRequest.mockRestore();
         })
 
@@ -157,7 +159,7 @@ describe('Step', () => {
     describe('Insert', () => {
         it('should insert with schema, entity and data then return current datatable', async () => {
             const spySchemaInsert = jest.spyOn(Schema, 'Insert')
-                .mockResolvedValue(typia.random<TInternalResponse<TSchemaResponse>>());
+                .mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -177,7 +179,7 @@ describe('Step', () => {
         })
 
         it('should throw error if only entity was given', async () => {
-            const spySchemaInsert = jest.spyOn(Schema, 'Insert').mockResolvedValue(typia.random<TInternalResponse<TSchemaResponse>>());
+            const spySchemaInsert = jest.spyOn(Schema, 'Insert').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -193,7 +195,7 @@ describe('Step', () => {
         })
 
         it('should throw error if only schema was given', async () => {
-            const spySchemaInsert = jest.spyOn(Schema, 'Insert').mockResolvedValue(typia.random<TInternalResponse<TSchemaResponse>>());
+            const spySchemaInsert = jest.spyOn(Schema, 'Insert').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -260,7 +262,7 @@ describe('Step', () => {
     describe('Update', () => {
         it('should update data to schema when entity is provided', async () => {
             const spySchemaUpdate = jest.spyOn(Schema, 'Update')
-                .mockResolvedValue(typia.random<TInternalResponse<TSchemaResponse>>());
+                .mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -280,7 +282,7 @@ describe('Step', () => {
         })
 
         it('should throw error if only entity was given', async () => {
-            const spySchemaUpdate = jest.spyOn(Schema, 'Update').mockResolvedValue(typia.random<TInternalResponse<TSchemaResponse>>());
+            const spySchemaUpdate = jest.spyOn(Schema, 'Update').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -296,7 +298,7 @@ describe('Step', () => {
         })
 
         it('should throw error if only schema was given', async () => {
-            const spySchemaUpdate = jest.spyOn(Schema, 'Update').mockResolvedValue(typia.random<TInternalResponse<TSchemaResponse>>());
+            const spySchemaUpdate = jest.spyOn(Schema, 'Update').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -367,7 +369,7 @@ describe('Step', () => {
     describe('Delete', () => {
         it('should delete data to schema when entity is provided', async () => {
             const spySchemaDelete = jest.spyOn(Schema, 'Delete')
-                .mockResolvedValue(typia.random<TInternalResponse<TSchemaResponse>>());
+                .mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -386,7 +388,7 @@ describe('Step', () => {
         })
 
         it('should throw error if only entity was given', async () => {
-            const spySchemaDelete = jest.spyOn(Schema, 'Delete').mockResolvedValue(typia.random<TInternalResponse<TSchemaResponse>>());
+            const spySchemaDelete = jest.spyOn(Schema, 'Delete').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -402,7 +404,7 @@ describe('Step', () => {
         })
 
         it('should throw error if only schema was given', async () => {
-            const spySchemaDelete = jest.spyOn(Schema, 'Delete').mockResolvedValue(typia.random<TInternalResponse<TSchemaResponse>>());
+            const spySchemaDelete = jest.spyOn(Schema, 'Delete').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -494,7 +496,7 @@ describe('Step', () => {
 
             expect(spyConfigManagerGet).toHaveBeenCalledWith("plans.myPlan")
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows).toEqual([
+            expect(result.Rows()).toEqual([
                 { name: "entity1", type: DATA_ENTITY_TYPE.PLAN_ENTITY },
                 { name: "entity2", type: DATA_ENTITY_TYPE.PLAN_ENTITY }
             ])
@@ -622,7 +624,7 @@ describe('Step', () => {
             }
 
             const result = await Step.Sort(step)
-            expect(result.Rows[0].age).toEqual(14)
+            expect(result.Rows()[0].age).toEqual(14)
         })
     })
 
@@ -795,7 +797,7 @@ describe('Step', () => {
                     ai: AI_ENGINE.TEXT,
                     task: TEXT_TASK.EMOTION_DETECTION,
                     params: {
-                        top_k: 10
+                        top: 10
                     },
                     input: "text",
                     output: null
@@ -804,7 +806,7 @@ describe('Step', () => {
 
             const result = await Step.Run(step)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Object.values(result.Rows[0][`${AI_ENGINE.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`] as any).forEach(value => {
+            Object.values(result.Rows()[0][`${AI_ENGINE.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`] as any).forEach(value => {
                 expect(value).toEqual(expect.any(Number));
             });
         })
@@ -818,7 +820,7 @@ describe('Step', () => {
                     ai: AI_ENGINE.TEXT,
                     task: TEXT_TASK.EMOTION_DETECTION,
                     params: {
-                        top_k: 10
+                        top: 10
                     },
                     input: "text",
                     output: "result"
@@ -827,7 +829,7 @@ describe('Step', () => {
 
             const result = await Step.Run(step)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Object.values(result.Rows[0]["result"] as any).forEach(value => {
+            Object.values(result.Rows()[0]["result"] as any).forEach(value => {
                 expect(value).toEqual(expect.any(Number));
             });
         })
@@ -841,7 +843,7 @@ describe('Step', () => {
                     ai: AI_ENGINE.TEXT,
                     task: TEXT_TASK.EMOTION_DETECTION,
                     params: {
-                        top_k: 10
+                        top: 10
                     },
                     input: "text",
                     output: {
@@ -853,8 +855,8 @@ describe('Step', () => {
 
             const result = await Step.Run(step)
 
-            expect(result.Rows[0]["emotion_joy"]).toEqual(expect.any(Number));
-            expect(result.Rows[0]["emotion_surprise"]).toEqual(expect.any(Number));
+            expect(result.Rows()[0]["emotion_joy"]).toEqual(expect.any(Number));
+            expect(result.Rows()[0]["emotion_surprise"]).toEqual(expect.any(Number));
         })
     })
 })

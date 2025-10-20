@@ -6,7 +6,6 @@ import has from "lodash/has"
 import keys from "lodash/keys"
 import merge from "lodash/merge"
 import values from "lodash/values"
-import typia from "typia"
 //
 import { DataTable } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
@@ -22,7 +21,6 @@ import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import { StepCommand } from "../core/types/TConfig"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
-import { WarnError } from "../errors/InternalError"
 import { TContext } from "../sandbox/types/TContext"
 import { TInternalResponse } from "../schema/types/TInternalResponse"
 import { TSchemaRequest } from "../schema/types/TSchemaRequest"
@@ -33,6 +31,8 @@ import { TStep } from "./types/TStep"
 import { DataBase } from "../../types/DataBase"
 import { Assert } from "../../utils/Assert"
 import { TStepArgs } from "./types/TStepArgs"
+import { is } from "typia"
+import { WarnError } from "../errors/InternalError"
 
 
 //
@@ -122,38 +122,23 @@ export class Plan {
             }
         }
 
-        // await this.#__LOCK__.get($context.$plan!.entity)!.Acquire()
-
         try {
             for await (const [_stepIndex, _step] of Object.entries(steps)) {
-                Assert.Condition(_step !== null, `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`, new HttpErrorBadRequest())
-
-                Logger.Debug(`${Logger.In} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(_step)}`)
-
-                // $context = merge(
-                //     $context,
-                //     <Partial<TContext>>{
-                //         $plan: {
-                //             $current: {
-                //                 stepIndex: parseInt(_stepIndex, 10) + 1,
-                //                 stepCommand: keys(_step)[0],
-                //                 stepArgs: values(<TStepArgs>_step)[0],
-                //                 status: STEP_STATUS.RUNNING
-                //             }
-                //         }
-                //     }
-                // )
-
+                
+                const __stepIndex = parseInt(_stepIndex, 10) + 1
+                
                 $context.$plan!.$current = {
                     ...$context.$plan!.$current,
-                    stepIndex: parseInt(_stepIndex, 10) + 1,
+                    stepIndex: __stepIndex,
                     stepCommand: keys(_step)[0] as STEP,
                     stepArgs: values(<TStepArgs>_step)[0],
                     status: STEP_STATUS.RUNNING
                 }
+                
+                Assert.Condition(_step !== null, `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`, new HttpErrorBadRequest())
+                
+                Logger.Debug(`${Logger.In} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(_step)}`)
 
-                // const __stepCommand: string = keys(_step)[0]
-                // const __stepArgs: TStepArgs = values(<object>_step)[0]
                 const __stepArguments: TStep = {
                     currentSchemaName: $context.$plan!.schema!,
                     currentPlanName: $context.$plan!.name!,
@@ -177,6 +162,7 @@ export class Plan {
                     <Partial<TContext>>{
                         $plan: {
                             $current: {
+                                data: this._dataBase.Tables[currentEntityName],
                                 status: STEP_STATUS.COMPLETED
                             }
                         }
@@ -205,7 +191,7 @@ export class Plan {
                     // eslint-disable-next-line no-case-declarations
                     const _errorMessage = `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify($context.$plan!.$current.stepCommand)}' is ignored because of error ${JsonUtils.Stringify(_error?.message)}`
 
-                    if (typia.is<WarnError>(error)) {
+                    if (is<WarnError>(error)) {
                         Logger.Warn(_errorMessage)
                     } else {
                         Logger.Error(_errorMessage)
@@ -234,10 +220,9 @@ export class Plan {
                         }
                     )
 
+                    // throw new HttpErrorInternalServerError(_errorMessage)
             }
         }
-
-        // this.#__LOCK__.get($context.$plan!.entity)!.Release()
 
         return this._dataBase.Tables[currentEntityName].Rename($context.$plan!.entity)
     }

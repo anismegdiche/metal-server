@@ -27,7 +27,10 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
     async Init(aiName: string, aiConfig: TConfigAiEngine): Promise<void> {
         this.InstanceName = aiName
         this.InstanceConfig = aiConfig
-        this.InstanceApiUrl = aiConfig.url || ConfigManager.Get<string>("server.ai-engines.engines-url")
+        this.InstanceApiUrl = StringUtils.Url(
+            aiConfig.url || ConfigManager.Get<string>("server.ai-engines.engines-url"),
+            this.InstanceName
+        );
     }
     
     abstract Run(params: TAiRunArguments): Promise<TAiRunOutput>
@@ -36,7 +39,6 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
     async IsHealthy(): Promise<boolean> {
         const _url = StringUtils.Url(
             this.InstanceApiUrl,
-            this.InstanceName,
             'health'
         )
 

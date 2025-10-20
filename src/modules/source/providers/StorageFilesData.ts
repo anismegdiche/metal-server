@@ -193,7 +193,7 @@ export class StorageFilesData extends absDataProvider {
 
             const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
+            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.QueryParams)
             await this.Connection.FileWrite(
                 '',
                 fileName,
@@ -238,7 +238,7 @@ export class StorageFilesData extends absDataProvider {
 
             const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
+            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.QueryParams)
 
             await this.Connection.FileWrite(
                 '',
@@ -281,7 +281,7 @@ export class StorageFilesData extends absDataProvider {
 
             const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.Data)
+            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.QueryParams)
 
             await this.Connection.FileWrite(
                 '',
@@ -321,9 +321,11 @@ export class StorageFilesData extends absDataProvider {
                 ).join('|')})`)
 
         const data: DataTable = await this.Connection.FolderListFiles()
-        data.Rows = data.Rows.filter(row => rxFilePatterns.test(row.name as string))
+        data.SetRows(
+            data.Rows().filter(row => rxFilePatterns.test(row.name as string))
+        )
 
-        Assert.Condition(data.Rows.length > 0, `${schema}: No entities found`, new HttpErrorNotFound())
+        Assert.Condition(data.Rows().length > 0, `${schema}: No entities found`, new HttpErrorNotFound())
 
         return HttpResponse.Ok(<TSchemaResponse>{
             schema,

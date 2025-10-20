@@ -98,7 +98,7 @@ describe('XmlContent', () => {
         const result = await xmlContent.Get(undefined, {})
 
         expect(result).toBeInstanceOf(DataTable)
-        expect(result.Rows).toEqual([
+        expect(result.Rows()).toEqual([
             {
                 id: 1,
                 firstname: "John",
@@ -141,8 +141,8 @@ describe('XmlContent', () => {
 
         const result = await xmlContent.Get('SELECT * FROM users WHERE id = 1', {})
 
-        expect(result.Rows).toHaveLength(1)
-        expect(result.Rows[0]).toEqual({
+        expect(result.Rows()).toHaveLength(1)
+        expect(result.Rows()[0]).toEqual({
             id: 1,
             firstname: "John",
             lastname: "Doe"
@@ -195,7 +195,7 @@ describe('XmlContent', () => {
         const result = await xmlContent.Get(undefined, {})
 
         expect(result).toBeInstanceOf(DataTable)
-        expect(result.Rows).toEqual([
+        expect(result.Rows()).toEqual([
             {
                 id: 1,
                 firstname: "John",
@@ -222,8 +222,8 @@ describe('XmlContent', () => {
 
         const result = await xmlContent.Get('SELECT * FROM users WHERE id = 1', {})
 
-        expect(result.Rows).toHaveLength(1)
-        expect(result.Rows[0]).toEqual({
+        expect(result.Rows()).toHaveLength(1)
+        expect(result.Rows()[0]).toEqual({
             id: 1,
             firstname: "John",
             lastname: "Doe"

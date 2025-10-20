@@ -35,4 +35,5 @@ export type TContext = {
             status?: STEP_STATUS
         }
     }
+    $result?: TJson | object | string | number | boolean | null
 }

@@ -1,17 +1,16 @@
-/* eslint-disable complexity */
+ 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-require-imports */
-/* eslint-disable no-plusplus */
-
 //
 //
 //
 const SQLParser = require('@synatic/noql')
 //
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { SqlQueryUtils, TSqlToken } from "../../../utils/SqlQueryUtils"
+import { SQL_TYPE, SqlQueryUtils, TSqlToken } from "../../../utils/SqlQueryUtils"
 import { TJson } from '../../../types/TJson'
 import { Logger } from "../../../utils/Logger"
+
 
 //
 export class MongoDbHelper {
@@ -59,10 +58,6 @@ export class MongoDbHelper {
         }
     }
 
-    // static ConvertSqlUpdateSet(tokens: TJson<string>[]): TJson {
-
-    // }
-
     static getOperatorPrecedence(operator: string): number {
         // Helper function to get operator precedence
         switch (operator) {
@@ -101,22 +96,22 @@ export class MongoDbHelper {
         let i = 1
         while (i < tokens.length - 1) {
             const token = tokens[i]
-            if (token.type === 'operator' && (token.token === '*' || token.token === '/')) {
+            if (token.type === SQL_TYPE.OPERATOR && (token.token === '*' || token.token === '/')) {
                 const left = tokens[i - 1]
                 const right = tokens[i + 1]
                 const operator = MongoDbHelper.getMongoOperator(token.token)
 
-                const leftValue = left.type === 'number'
+                const leftValue = left.type === SQL_TYPE.NUMBER
                     ? Number(left.token)
                     : `$${left.token}`
 
-                const rightValue = right.type === 'number'
+                const rightValue = right.type === SQL_TYPE.NUMBER
                     ? Number(right.token)
                     : `$${right.token}`
 
-                const _type = left.type === 'number' && right.type === 'number'
-                    ? 'number'
-                    : 'string'
+                const _type = left.type === SQL_TYPE.NUMBER && right.type === SQL_TYPE.NUMBER
+                    ? SQL_TYPE.NUMBER
+                    : SQL_TYPE.STRING
 
                 // Replace these three tokens with the result
                 tokens.splice(i - 1, 3, {
@@ -130,12 +125,12 @@ export class MongoDbHelper {
 
         // Then handle addition and subtraction
         const finalOperands: any[] = []
-        let currentOperator = '$add'
+        const currentOperator = '$add'
 
         // Handle first token
-        if (tokens[0].type === 'number') {
+        if (tokens[0].type === SQL_TYPE.NUMBER) {
             finalOperands.push(Number(tokens[0].token))
-        } else if (tokens[0].type === 'variable') {
+        } else if (tokens[0].type === SQL_TYPE.VARIABLE) {
             finalOperands.push(`$${tokens[0].token}`)
         } else if (tokens[0].token.startsWith('{')) {
             finalOperands.push(JSON.parse(tokens[0].token))
@@ -146,12 +141,12 @@ export class MongoDbHelper {
             const operator = tokens[i]
             const value = tokens[i + 1]
 
-            if (operator.type === 'operator') {
+            if (operator.type === SQL_TYPE.OPERATOR) {
                 if (value.token.startsWith('{')) {
                     finalOperands.push(JSON.parse(value.token))
-                } else if (value.type === 'number') {
+                } else if (value.type === SQL_TYPE.NUMBER) {
                     finalOperands.push(Number(value.token))
-                } else if (value.type === 'variable') {
+                } else if (value.type === SQL_TYPE.VARIABLE) {
                     finalOperands.push(`$${value.token}`)
                 } else  {
                     finalOperands.push(`${value.token}`)
@@ -169,14 +164,14 @@ export class MongoDbHelper {
         let i = 0
 
         while (i < tokens.length) {
-            if (tokens[i].type === 'par-open') {
+            if (tokens[i].type === SQL_TYPE.PAR_OPEN) {
                 let parenthesesCount = 1
                 let j = i + 1
                 const innerTokens: TSqlToken[] = []
 
                 while (j < tokens.length && parenthesesCount > 0) {
-                    if (tokens[j].type === 'par-open') parenthesesCount++
-                    if (tokens[j].type === 'par-closed') parenthesesCount--
+                    if (tokens[j].type === SQL_TYPE.PAR_OPEN) parenthesesCount++
+                    if (tokens[j].type === SQL_TYPE.PAR_CLOSED) parenthesesCount--
                     if (parenthesesCount > 0) {
                         innerTokens.push(tokens[j])
                     }
@@ -186,7 +181,7 @@ export class MongoDbHelper {
                 const evaluatedInner = MongoDbHelper.evaluateExpressionNumber(innerTokens)
                 result.push({
                     token: JSON.stringify(evaluatedInner),
-                    type: 'number'
+                    type: SQL_TYPE.NUMBER
                 })
                 i = j
             } else {
@@ -280,7 +275,7 @@ export class MongoDbHelper {
                 const evaluatedInner = MongoDbHelper.evaluateExpressionString(innerTokens)
                 result.push({
                     token: JSON.stringify(evaluatedInner),
-                    type: 'string'
+                    type: SQL_TYPE.STRING
                 })
                 i = j
             } else {

@@ -22,7 +22,6 @@ Content-Type: application/json
 {
 	"filter-expression": "date < '${{ new Date().toLocaleDateString(\"en-US\") }}'"
 }
-
 ```
 
 In this instance, the `filter-expression` incorporates JS code within the curly braces to dynamically calculate the current date in the specified format.
@@ -31,7 +30,9 @@ This flexibility enables precise control and customization, showcasing the versa
 
 ### Context variables
 
-Context variables are placeholders that can be used within your JavaScript Expression Engine. They are denoted by the `$` character, followed by the variable name.
+Context variables are placeholders that can be used within your JavaScript Expression Engine. They are denoted by the `$` character, followed by the variable name. 
+
+Their availability depends on the command and plan usage, and can be used to access specific information or functionality.
 
 #### `$schema` <Badge type="default" text="v0.4+" />
 
@@ -67,6 +68,10 @@ The response object for web services (exclusive to web services data providers),
 
 The current row being processed (exclusive to web services data providers).
 These object contains returned fields of the row
+
+#### `$result` <Badge type="info" text="v0.5+" />
+
+The result of the AI Engine processing. (see: [AI Engines](ai-engines))
 
 #### `$utils` <Badge type="default" text="v0.4+" />
 

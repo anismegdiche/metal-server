@@ -448,7 +448,7 @@ describe("StorageFilesData", () => {
 
             // Verify that the data was filtered
             const dataArg = (HttpResponse.Ok as jest.Mock).mock.calls[0][0];
-            const filteredRows = dataArg.data.Rows;
+            const filteredRows = dataArg.data.GetRows();
 
             // Should only include files matching the content handler patterns (*.json and users/*)
             expect(filteredRows).toHaveLength(2);

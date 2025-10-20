@@ -85,7 +85,7 @@ describe('DataProviderOptions', () => {
         const result = provider.GetData({}, request)
 
         expect(result.Data).toBeInstanceOf(DataTable)
-        expect(result.Data?.Rows.length).toBe(1)
+        expect(result.Data?.Rows().length).toBe(1)
     })
 
     // GetSort transfers sort parameter from request to options

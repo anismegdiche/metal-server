@@ -99,9 +99,14 @@ export type TConfig = {
         }
         "response-chunk"?: boolean                      // v0.4
         "ai-engines"?: {                                // v0.5
-            provider?: "docker"                         // v0.5
-            params?: DockerOptions                      // v0.5
             "engines-url"?: TUrl                        // v0.5
+            "timeout"?: number & tags.Type<"uint32"> // v0.5
+            "min-instance"?: number & tags.Type<"uint32"> & tags.Minimum<1> // v0.5
+            "max-instance"?: number & tags.Type<"uint32"> // v0.5
+            "cpu-scale-up"?: number & tags.Type<"uint32"> & tags.Minimum<0> & tags.Maximum<100>// v0.5
+            "cpu-scale-down"?: number & tags.Type<"uint32"> & tags.Minimum<0> & tags.Maximum<100>// v0.5
+            "scale-interval"?: number & tags.Type<"uint32"> & tags.Minimum<5_000> & tags.Maximum<600_000>// v0.5
+            params?: DockerOptions                      // v0.5
         }
     }
     roles?: TConfigRoles

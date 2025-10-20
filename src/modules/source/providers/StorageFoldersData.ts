@@ -136,7 +136,7 @@ export class StorageFoldersData extends absDataProvider {
         if (options.Fields?.includes(FLD_CONTENT)) {
             // read files content
             await Promise.all(
-                files.Rows.map(
+                files.Rows().map(
                     async (row: TRow) => {
                         const __file = row as TStorageFile
                         row.content = await ReadableUtils.ToBase64(
@@ -184,7 +184,7 @@ export class StorageFoldersData extends absDataProvider {
             await this.Connection.FolderCreate(dirName)
 
         await Promise.all(
-            options.Data.Rows.map(
+            options.Data.Rows().map(
                 async (row: TRow) => {
                     const __file = row as TStorageFile
 
@@ -222,7 +222,7 @@ export class StorageFoldersData extends absDataProvider {
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
         Assert.Var<DataTable>(options.Data, `${this.SourceName}: data is not defined`, new HttpErrorBadRequest())
 
-        const updateData = options.Data.Rows[0]
+        const updateData = options.Data.Rows()[0]
 
         const selectQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
         const selectQuery = this.GetSqlQuery(selectQueryHelper, options)
@@ -246,7 +246,7 @@ export class StorageFoldersData extends absDataProvider {
 
         // update files
         await Promise.all(
-            filesFiltered.Rows.map(
+            filesFiltered.Rows().map(
                 async (row: TRow) => {
                     const {
                         name: newFileName,
@@ -316,7 +316,7 @@ export class StorageFoldersData extends absDataProvider {
         const filesFiltered = await files.FreeSqlAsync(sqlQuery)
 
         await Promise.all(
-            filesFiltered.Rows.map(async (row: TRow) => {
+            filesFiltered.Rows().map(async (row: TRow) => {
                 const { name: fileName } = row as TStorageFile
                 Assert.Var<absStorageProvider>(this.Connection, 'Storage connection not set')
                 Assert.Var<string>(fileName, 'File name is required')

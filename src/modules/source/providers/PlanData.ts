@@ -81,8 +81,8 @@ export class PlanData extends absDataProvider {
 
         const data = new DataTable(schemaRequest.entity)
 
-        if (planData && planData.Rows.length > 0) {
-            data.AddRows(planData.Rows)
+        if (planData && planData.Rows().length > 0) {
+            data.AddRows(planData.Rows())
             if (options?.Cache)
                 Cache.Set({
                     ...schemaRequest,
