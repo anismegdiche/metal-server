@@ -6,6 +6,7 @@
 /build/*
 /data/*
 /coverage/*
+/cache/*
 *.traineddata
 .qodo
 __pycache__
