@@ -1,0 +1,16 @@
+services:
+  dind:
+    image: docker:24-dind   # DinD (pick version matching your host docker if needed)
+    privileged: true        # Required for DinD
+    environment:
+      - DOCKER_TLS_CERTDIR=  # Disable TLS (for simplicity, since we expose TCP)
+    command: ["--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock"]
+    ports:
+      - "2375:2375"  # Expose Docker API on host
+      - "8080:8080"  # Expose Traefik
+      - "5000:5000"  # Expose AI Service
+    volumes:
+      - dind-storage:/var/lib/docker
+
+volumes:
+  dind-storage:
