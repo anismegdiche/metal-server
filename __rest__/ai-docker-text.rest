@@ -68,10 +68,7 @@ POST {{apiUrl}}:5103/text-fill-mask/run
 Content-Type: application/json
 
 {
-    "input_data": "The capital of France is [MASK].",
-    "params": {
-        "top_k": 1
-    }
+    "input_data": "The capital of France is [MASK]."
 }
 
 # Response
@@ -92,20 +89,18 @@ Content-Type: application/json
 
 {
     "input_data": "Title: The Importance of Testing\r\rTesting plays a critical role in many aspects of life, from education and technology to medicine and product development. At its core, testing is a method of evaluating performance, reliability, or understanding. It helps ensure that systems, individuals, or products meet specific standards and function as intended.\r\rIn education, testing allows teachers to assess students’ knowledge and identify areas that need improvement. It provides feedback for both learners and educators, helping to guide instruction and learning strategies.\r\rIn technology, testing is essential for building reliable software and hardware. Before a product is released, it undergoes various stages of testing—such as unit testing, integration testing, and user acceptance testing—to catch bugs and improve performance.\r\rIn the medical field, testing is crucial for diagnosing diseases, monitoring patient health, and determining the effectiveness of treatments. Accurate testing can save lives and prevent the spread of illnesses.\r\rOverall, testing is not just about finding faults—it's about improvement, validation, and progress. Whether in classrooms, laboratories, or development teams, testing helps us move forward with confidence.",
-    "params": {
-        "top_k": 10
-    }
 }
 
 # Response
 # {
 #   "result": [
-#     "education",
-#     "integration testing",
-#     "medical field",
-#     "product development",
-#     "unit testing",
-#     "user acceptance testing"
+#     [
+#       "cedric",
+#       "englishman",
+#       "mamma",
+#       "blue eyes",
+#       "long mustache"
+#     ]
 #   ]
 # }
 
@@ -114,7 +109,7 @@ POST {{apiUrl}}:5105/text-language-detection/run
 Content-Type: application/json
 
 {
-    "input_data": "Hallo, wie geht es dir?"
+    "input_data": "Amor, ch'a nullo amato amar perdona."
 }
 
 # Response
@@ -143,9 +138,7 @@ Content-Type: application/json
 #   "result": {
 #     "source_sentence": "The quick brown fox jumps over the lazy dog",
 #     "target_sentence": "A fast brown fox leaps over a sleepy dog",
-#     "similarity_score": 0.8476852774620056,
-#     "is_paraphrase": true,
-#     "threshold": 0.75
+#     "similarity_score": 0.8476852774620056
 #   }
 # }
 
@@ -162,14 +155,12 @@ Content-Type: application/json
 
 # Response
 # {
-#   "result": [
-#     {
-#       "answer": "Paris",
-#       "score": 0.9995409250259399,
-#       "start": 0,
-#       "end": 5
-#     }
-#   ]
+#   "result": {
+#     "score": 0.9965794086456299,
+#     "start": 0,
+#     "end": 5,
+#     "answer": "Paris"
+#   }
 # }
 
 ### @name sentence-similarity
@@ -216,22 +207,15 @@ POST {{apiUrl}}:5109/text-sentiment-analysis/run
 Content-Type: application/json
 
 {
-    "input_data": "I love using this service!",
-    "params": {
-        "top_k": null
-    }
+    "input_data": "I love using this service!"
 }
 
 # Response
 # {
 #   "result": [
 #     {
-#       "label": "POSITIVE",
-#       "score": 0.9995409250259399
-#     },
-#     {
-#       "label": "NEGATIVE",
-#       "score": 0.0004590719472616911
+#       "label": "Positive",              ### "Very Negative","Negative","Neutral","Positive","Very Positive"
+#       "score": 0.6533908843994141
 #     }
 #   ]
 # }
@@ -257,14 +241,16 @@ Content-Type: application/json
 #   ]
 # }
 
-### @name text2text-generation
-POST {{apiUrl}}:5111/text-text2text-generation/run
-Content-Type: application/json
+# ### @name text2text-generation
+# POST {{apiUrl}}:5111/text-text2text-generation/run
+# Content-Type: application/json
 
-{
-    "input_data": "question: What is 42 ? context: 42 is the answer to life, the universe and everything",
-    "model": "google/flan-t5-base"
-}
+# {
+#     "input_data": "from the context how many answers are ? context: 42 is the answer to life, the universe and everything",
+#     "params":{
+#         "role": "You are a helpful assistant."        
+#     }
+# }
 
 # Response
 # {
@@ -276,7 +262,7 @@ Content-Type: application/json
 # }
 
 ### @name text-generation
-POST {{apiUrl}}:5112/text-text-generation/run
+POST {{apiUrl}}:5000/text-text-generation/run
 Content-Type: application/json
 
 {
@@ -291,47 +277,51 @@ Content-Type: application/json
 # Response
 # {
 #   "result": [
-#     {
-#       "generated_text": "Once upon a time in a land far away, the world is still a little overgrown and desolate. Its mountains range from the north to the east and west, but all its land is covered with vegetation. This is, however, how the earth"
-#     }
+#     [
+#       {
+#         "generated_text": "Once upon a time in a land far away, there were many people who lived as a living legend.\n\nThe story of a small village in the north of England, named \"Humberland,\" began more than a century ago. The story was told by a poor peasant, who could no longer afford a house, and who had only a few possessions. He was so poor that he was unable to afford his own food, the only source of food for his family. He was forced to work as a labourer, and could not earn enough to feed his family.\n\nIn 1735, the king of England, Thomas I, granted the local lord, the Earl of York, permission to build a castle on the edge of the English Channel, at what was then known as St. John's. It was called St. John's, and it was built by the very same people who had built St. John's. The castle built by the local lord was called St. John's Castle, and the castle was called St. John's Castle.\n\nThe king granted the castle to two local lords, the Earl of Warwick, who were both local lords of the town of St. John's. Warwick was the lord of the castle, and the Earl of St. John's was the lord of"
+#       }
+#     ]
 #   ]
 # }
 
-### @name token-classification
-POST {{apiUrl}}:5113/text-token-classification/run
+### @name ner
+POST {{apiUrl}}:5113/text-ner/run
 Content-Type: application/json
 
 {
     "input_data": "My name is John and I work at Google in New York.",
     "params": {
-        "grouped_entities": true
+        "grouped": true
     }
 }
 
 # Response
 # {
 #   "result": [
-#     {
-#       "entity_group": "PER",
-#       "score": 0.9986351132392883,
-#       "word": "John",
-#       "start": 11,
-#       "end": 15
-#     },
-#     {
-#       "entity_group": "ORG",
-#       "score": 0.9988879561424255,
-#       "word": "Google",
-#       "start": 30,
-#       "end": 36
-#     },
-#     {
-#       "entity_group": "LOC",
-#       "score": 0.9990233182907104,
-#       "word": "New York",
-#       "start": 40,
-#       "end": 48
-#     }
+#     [
+#       {
+#         "entity_group": "PER",
+#         "score": 0.7927860021591187,
+#         "word": "John",
+#         "start": 11,
+#         "end": 15
+#       },
+#       {
+#         "entity_group": "ORG",
+#         "score": 0.9791768193244934,
+#         "word": "Google",
+#         "start": 30,
+#         "end": 36
+#       },
+#       {
+#         "entity_group": "LOC",
+#         "score": 0.9997129440307617,
+#         "word": "New York",
+#         "start": 40,
+#         "end": 48
+#       }
+#     ]
 #   ]
 # }
 
@@ -342,7 +332,7 @@ Content-Type: application/json
 {
     "input_data": "you bastard, i hate you so much!are you fucked up! i will kill you",
     "params": {
-        "top_k": 10
+        "top_k": null
     }
 }
 

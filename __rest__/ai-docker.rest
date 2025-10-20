@@ -219,14 +219,14 @@ Content-Type: application/json
 #   ]
 # }
 
-### @name text2text-generation
-POST {{textUrl}}/text2text-generation
-Content-Type: application/json
+# ### @name text2text-generation
+# POST {{textUrl}}/text2text-generation
+# Content-Type: application/json
 
-{
-    "input_data": "question: What is 42 ? context: 42 is the answer to life, the universe and everything",
-    "model": "google/flan-t5-base"
-}
+# {
+#     "input_data": "question: What is 42 ? context: 42 is the answer to life, the universe and everything",
+#     "model": "google/flan-t5-base"
+# }
 
 # Response
 # {

@@ -1,0 +1,18 @@
+# Base URL
+@apiUrl = http://localhost
+
+### @name image-to-string
+POST {{apiUrl}}:5201/ocr-image-to-string?lang=eng
+Content-Type: application/octet-stream
+
+< ../data/pic/photo1.jpeg
+
+# Response
+# {
+#   "text": "This is a sample text extracted from the image using OCR technology.",
+#   "language": "eng",
+#   "language_name": {
+#     "downloaded": true,
+#     "name": "English"
+#   }
+# }
