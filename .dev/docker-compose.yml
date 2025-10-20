@@ -1,0 +1,6 @@
+services:
+  jupyter:
+    image: quay.io/jupyter/datascience-notebook:2023-11-17
+    command: jupyter notebook --ip 0.0.0.0
+    ports:
+      - "8888:8888"
