@@ -53,10 +53,10 @@ def process_item(item: Any) -> Any:
 def load_sentiment_pipeline() -> Any:
     cache_key = "sentiment-analysis"
     if cache_key not in TASK_CACHE:
-        logger.info("Loading sentiment-analysis pipeline...")
+        logger.info("Loading text-classification pipeline...")
         TASK_CACHE[cache_key] = pipeline(
-            task="sentiment-analysis",
-            model="distilbert/distilbert-base-uncased-finetuned-sst-2-english"
+            task="text-classification",
+            model="tabularisai/multilingual-sentiment-analysis"
         )
     return TASK_CACHE[cache_key]
 
@@ -98,8 +98,8 @@ if __name__ == "__main__":
     import argparse
     import sys
 
-    parser = argparse.ArgumentParser(description="Sentiment analysis service utility")
-    parser.add_argument("--load-pipe", action="store_true", help="Load the sentiment analysis pipeline and exit")
+    parser = argparse.ArgumentParser(description="Sentiment Analysis utility")
+    parser.add_argument("--load-pipe", action="store_true", help="Load the pipeline and exit")
     args = parser.parse_args()
     
     if args.load_pipe:

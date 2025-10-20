@@ -17,7 +17,7 @@ COPY app.py ./
 
 RUN python app.py --load-pipe
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=10s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:5000/text-paraphrase-detection/health || exit 1
 
 EXPOSE 5000

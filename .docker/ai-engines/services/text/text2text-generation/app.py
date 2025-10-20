@@ -8,9 +8,10 @@ from fastapi import FastAPI, HTTPException, status, APIRouter
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import Dict, Any, Union, List
+from typing import Dict, Any, Union, List, Optional
 import logging
-from transformers import pipeline
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 logging.basicConfig(
     level=logging.INFO,
@@ -36,8 +37,13 @@ app.add_middleware(
 router = APIRouter(prefix="/text-text2text-generation")
 TASK_CACHE: Dict[str, Any] = {}
 
+class Text2TextParams(BaseModel):
+    role: Optional[str] = Field("You are a helpful assistant.", description="System role for the model")
+    max_new_tokens: Optional[int] = Field(512, description="Maximum number of tokens to generate")
+
 class Text2TextRequest(BaseModel):
-    input_data: Union[str, List[str]] = Field(..., description="Input text or list of texts to transform")
+    input_data: str = Field(..., description="Input text to transform")
+    params: Optional[Text2TextParams] = Field(None, description="Generation parameters")
 
 class Text2TextResponse(BaseModel):
     result: Any = Field(..., description="The text2text-generation result")
@@ -49,14 +55,50 @@ def process_item(item: Any) -> Any:
         return [process_item(i) for i in item]
     return item
 
-def load_text2text_pipeline() -> Any:
+def load_text2text_pipeline() -> Dict[str, Any]:
     cache_key = "text2text-generation"
     if cache_key not in TASK_CACHE:
-        logger.info("Loading text2text-generation pipeline...")
-        TASK_CACHE[cache_key] = pipeline(
-            task="text2text-generation",
-            model="google/flan-t5-base"
-        )
+        logger.info("Loading model and tokenizer...")
+        
+        # Set device and dtype based on availability
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+        
+        try:
+            # Use smaller model for CPU environments
+            model_name = "Qwen/Qwen2-1.5B-Instruct"
+            logger.info(f"Loading model: {model_name}")
+            
+            # Load model with device_map and proper dtype
+            model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                device_map="auto" if torch.cuda.is_available() else None,
+                dtype=dtype,
+                low_cpu_mem_usage=True
+            )
+            
+            # Load tokenizer
+            tokenizer = AutoTokenizer.from_pretrained(
+                model_name,
+                padding_side="left",
+                trust_remote_code=True
+            )
+            
+            # Set pad token if not set
+            if tokenizer.pad_token is None:
+                tokenizer.pad_token = tokenizer.eos_token
+            
+            TASK_CACHE[cache_key] = {
+                "model": model,
+                "tokenizer": tokenizer,
+                "device": device
+            }
+            logger.info("Model and tokenizer loaded successfully")
+            
+        except Exception as e:
+            logger.error(f"Error loading model: {str(e)}")
+            raise
+            
     return TASK_CACHE[cache_key]
 
 @router.get("/health", response_class=PlainTextResponse)
@@ -67,24 +109,65 @@ async def health() -> str:
 async def run_text2text(request: Union[Text2TextRequest, Dict[str, Any]]) -> Text2TextResponse:
     if isinstance(request, dict):
         request = Text2TextRequest(**request)
-    input_data = request.input_data
-    if not input_data:
+    
+    if not request.input_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Input data cannot be empty"
         )
-    if isinstance(input_data, str):
-        input_data = [input_data]
+    
     try:
-        model = load_text2text_pipeline()
-        result = model(input_data)
-        processed_result = process_item(result)
-        return Text2TextResponse(result=processed_result)
+        # Load model and tokenizer
+        pipeline = load_text2text_pipeline()
+        model = pipeline["model"]
+        tokenizer = pipeline["tokenizer"]
+        device = pipeline["device"]
+        
+        # Get params with defaults
+        role = "You are a helpful assistant."
+        max_new_tokens = 512
+        
+        if request.params:
+            if request.params.role:
+                role = request.params.role
+            if request.params.max_new_tokens:
+                max_new_tokens = request.params.max_new_tokens
+        
+        # Prepare messages with chat template
+        messages = [
+            {"role": "system", "content": role},
+            {"role": "user", "content": request.input_data}
+        ]
+        
+        # Apply chat template
+        text = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+        
+        # Tokenize and generate
+        model_inputs = tokenizer([text], return_tensors="pt").to(device)
+        generated_ids = model.generate(
+            model_inputs.input_ids,
+            max_new_tokens=max_new_tokens,
+            pad_token_id=tokenizer.eos_token_id
+        )
+        
+        # Decode the generated text
+        generated_ids = [
+            output_ids[len(input_ids):] for input_ids, output_ids 
+            in zip(model_inputs.input_ids, generated_ids)
+        ]
+        response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        
+        return Text2TextResponse(result={"generated_text": response})
+        
     except Exception as e:
-        logger.error(f"Error processing text2text-generation: {str(e)}", exc_info=True)
+        logger.error(f"Error processing text generation: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred"
+            detail=f"Error generating text: {str(e)}"
         )
 
 app.include_router(router)

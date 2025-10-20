@@ -34,11 +34,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-router = APIRouter(prefix="/text-token-classification")
+router = APIRouter(prefix="/text-ner")
 TASK_CACHE: Dict[str, Any] = {}
 
 class TokenClassificationRequest(BaseModel):
     input_data: Union[str, List[str]] = Field(..., description="Input text or list of texts for token classification")
+    params: Dict[str, Any] = Field(default_factory=dict, description="Additional parameters for the model")
 
 class TokenClassificationResponse(BaseModel):
     result: Any = Field(..., description="The token classification result")
@@ -53,14 +54,14 @@ def process_item(item: Any) -> Any:
         return item.item()
     return item
 
-def load_token_classification_pipeline() -> Any:
-    cache_key = "token-classification"
+def load_token_classification_pipeline(aggregation_strategy: str = "simple") -> Any:
+    cache_key = f"token-classification-{aggregation_strategy}"
     if cache_key not in TASK_CACHE:
-        logger.info("Loading token-classification pipeline...")
+        logger.info(f"Loading token-classification pipeline with Babelscape's multilingual NER model (aggregation: {aggregation_strategy})...")
         TASK_CACHE[cache_key] = pipeline(
             task="token-classification",
-            model="dbmdz/bert-large-cased-finetuned-conll03-english",
-            aggregation_strategy="simple"
+            model="Babelscape/wikineural-multilingual-ner",
+            aggregation_strategy=aggregation_strategy
         )
     return TASK_CACHE[cache_key]
 
@@ -81,7 +82,11 @@ async def run_token_classification(request: Union[TokenClassificationRequest, Di
     if isinstance(input_data, str):
         input_data = [input_data]
     try:
-        model = load_token_classification_pipeline()
+        # Get the aggregation strategy from params, default to 'simple' if grouped is True, otherwise 'none'
+        aggregation_strategy = "simple" if request.params.get("grouped", False) else "none"
+        
+        # Load the model with the appropriate aggregation strategy
+        model = load_token_classification_pipeline(aggregation_strategy=aggregation_strategy)
         result = model(input_data)
         processed_result = process_item(result)
         return TokenClassificationResponse(result=processed_result)

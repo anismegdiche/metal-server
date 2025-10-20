@@ -19,7 +19,7 @@ COPY app.py .
 
 RUN python app.py --load-pipe
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=10s --timeout=10s --start-period=10s --retries=3 \
     CMD curl --fail http://localhost:5000/image-image-classification/health || exit 1
 
 # Start the application

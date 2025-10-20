@@ -56,22 +56,9 @@ def load_keyword_extraction_pipeline() -> Any:
     cache_key = "keyword-extraction"
     if cache_key not in TASK_CACHE:
         logger.info("Loading keyword-extraction pipeline...")
-        class KeyphraseExtractionPipeline(TokenClassificationPipeline):
-            def __init__(self, model, *args, **kwargs):
-                super().__init__(
-                    model=AutoModelForTokenClassification.from_pretrained(model),
-                    tokenizer=AutoTokenizer.from_pretrained(model),
-                    *args, **kwargs
-                )
-            def postprocess(self, all_outputs):
-                results = super().postprocess(
-                    all_outputs=all_outputs,
-                    aggregation_strategy="simple",
-                )
-                # Return unique keyphrases as strings
-                return list(np.unique([result.get("word").strip() for result in results if result.get("word").strip()]))
-        pipe = KeyphraseExtractionPipeline(
-            model="ml6team/keyphrase-extraction-kbir-inspec",
+        pipe = pipeline(
+            "summarization",
+            model="transformer3/H2-keywordextractor",
             device=-1  # CPU
         )
         TASK_CACHE[cache_key] = pipe
@@ -95,17 +82,19 @@ async def run_keyword_extraction(request: Union[KeywordExtractionRequest, Dict[s
     if isinstance(input_data, str):
         input_data = [input_data]
     try:
-        model = load_keyword_extraction_pipeline()
+        pipe = load_keyword_extraction_pipeline()
         result = []
         for text in input_data:
-            keyphrases = model(text)
-            result.append(keyphrases[:top_k])
+            summary = pipe(text, max_length=100, min_length=10, do_sample=False)
+            if summary and isinstance(summary, list) and len(summary) > 0:
+                # Extract keywords from the summary text
+                keywords = [kw.strip() for kw in summary[0]['summary_text'].split(',')]
+                result.append(keywords[:top_k])
         processed_result = process_item(result)
         return KeywordExtractionResponse(result=processed_result)
     except Exception as e:
         logger.error(f"Error processing keyword extraction: {str(e)}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred"
         )
 

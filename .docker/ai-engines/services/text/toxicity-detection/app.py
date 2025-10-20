@@ -38,6 +38,7 @@ TASK_CACHE: Dict[str, Any] = {}
 
 class ToxicityRequest(BaseModel):
     input_data: Union[str, List[str]] = Field(..., description="Input text or list of texts to check for toxicity")
+    params: Dict[str, Any] = Field(default_factory=dict, description="Additional parameters for the model")
 
 class ToxicityResponse(BaseModel):
     result: Any = Field(..., description="The toxicity detection result")
@@ -77,7 +78,8 @@ async def run_toxicity_detection(request: Union[ToxicityRequest, Dict[str, Any]]
         input_data = [input_data]
     try:
         model = load_toxicity_pipeline()
-        result = model(input_data)
+        top_k = request.params.get("top_k", 1)
+        result = model(input_data, top_k=top_k)
         processed_result = process_item(result)
         return ToxicityResponse(result=processed_result)
     except Exception as e:

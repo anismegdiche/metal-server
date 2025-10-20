@@ -84,13 +84,13 @@ services:
     volumes:
       - ./services/text/summarization:/app
 
-  text-text2text-generation:
-    build: ./services/text/text2text-generation
-    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
-    ports:
-      - "5111:5000"
-    volumes:
-      - ./services/text/text2text-generation:/app
+  # text-text2text-generation:
+  #   build: ./services/text/text2text-generation
+  #   command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+  #   ports:
+  #     - "5111:5000"
+  #   volumes:
+  #     - ./services/text/text2text-generation:/app
 
   text-text-generation:
     build: ./services/text/text-generation
@@ -100,13 +100,13 @@ services:
     volumes:
       - ./services/text/text-generation:/app
 
-  text-token-classification:
-    build: ./services/text/token-classification
+  text-ner:
+    build: ./services/text/ner
     command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
     ports:
       - "5113:5000"
     volumes:
-      - ./services/text/token-classification:/app
+      - ./services/text/ner:/app
 
   text-toxicity-detection:
     build: ./services/text/toxicity-detection
@@ -215,14 +215,3 @@ services:
       - "5402:5000"
     volumes:
       - ./services/audio/automatic-speech-recognition:/app
-
-
-  
-
-  hf-audio:
-    build: ./services/huggingface-audio
-    command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./services/huggingface-audio:/app

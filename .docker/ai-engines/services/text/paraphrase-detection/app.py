@@ -66,13 +66,10 @@ async def run_paraphrase_detection(request: Union[ParaphraseDetectionRequest, Di
         emb1 = model.encode(input_data.source_sentence, convert_to_tensor=True)
         emb2 = model.encode(input_data.target_sentence, convert_to_tensor=True)
         similarity = float(util.pytorch_cos_sim(emb1, emb2)[0][0])
-        is_paraphrase = similarity > 0.75  # You can tune this threshold
         result = {
             "source_sentence": input_data.source_sentence,
             "target_sentence": input_data.target_sentence,
-            "similarity_score": similarity,
-            "is_paraphrase": is_paraphrase,
-            "threshold": 0.75
+            "similarity_score": similarity
         }
         return ParaphraseDetectionResponse(result=result)
     except Exception as e:
