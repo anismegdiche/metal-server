@@ -1,0 +1,132 @@
+version: "0.5"
+
+server:
+  port: 3000
+  verbosity: debug
+  timezone: UTC
+  request-limit: 100mb
+  response-limit: 100mb
+  authentication:
+    provider: local
+    default-role: all
+  cache:
+    provider: memory
+    database: cache
+    options:
+      autocreate: true
+  ai-engines:
+    # docker-url:
+    engines-url: http://localhost:5000
+  
+
+roles:
+  all: lacrud
+
+users:
+  myapiuser:
+    password: myStr@ngpa$$w0rd
+
+sources:
+  src-fs:
+    provider: storage
+    options:
+      mode: folders
+      storage-type: fs
+      fs-folder: ./data/
+      allow-delete: true
+  # src-myplan:
+  #   provider: plan
+  #   database: myplan
+  src-csv:
+    provider: storage
+    options:
+      mode: files
+      storage-type: fs
+      fs-folder: ./data/
+      autocreate: true
+      content:
+        '*.csv':
+          content-type: csv
+          csv-delimiter: ";"
+          csv-newline: "\n"
+          csv-header: true
+          csv-quote: "\""
+
+schemas:
+  fs:
+    source: src-fs
+  myplan:
+    source: src-myplan
+  csv:
+    source: src-csv
+    
+
+schedules:
+  "p1":
+    plan: myplan
+    entity: myentity
+    cron: "*/1 * * * *"
+  "p2":
+    plan: myplan
+    entity: myentity
+    cron: "@start"
+
+plans:
+  myplan:
+    myentity:
+      - select:
+          schema: fs
+          entity: csv
+          fields: '*, content'
+
+      - insert:
+          schema: fs
+          entity: csv3
+
+      - update:
+          schema: fs
+          entity: csv3
+          filter:
+            name: csv.csv
+          data:
+            name: $> '2_' + name
+            content: SGVsbG8=
+
+      # - break:
+
+      - delete:
+          schema: fs
+          entity: csv3
+          filter-expression: name NOT LIKE 'c%' AND name NOT LIKE '2_%'
+
+      - select:
+          schema: fs
+          entity: csv3
+
+      - remove-fields: [content]
+
+      - insert:
+          schema: csv
+          entity: csv.csv
+
+      # - select:
+      #     schema: fs
+      #     entity: audio
+
+      # - run:
+      #     ai: audio
+      #     task: audio-classification
+      #     input: content
+
+      # - run:
+      #     ai: audio
+      #     task: automatic-speech-recognition
+      #     input: content
+      #     output: text
+
+      # - remove-fields: [content]
+
+      # - insert:
+      #     schema: csv
+      #     entity: csv.csv
+    
