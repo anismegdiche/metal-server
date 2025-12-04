@@ -1,4 +1,8 @@
 /* eslint-disable */
+import { mock_Logger } from '../../../__tests__/mockers'
+mock_Logger()
+
+
 import * as Sha512 from 'js-sha512'
 import { Cache } from '../Cache'
 import { DataTable } from '../../../types/DataTable'
@@ -13,34 +17,9 @@ import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { ConfigManager } from '../../core/ConfigManager'
 import { Roles } from '../../auth/Roles'
 
-// Mock dependencies
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
-    }
-}))
-
 jest.mock('../../../utils/SynchronizerManager', () => ({
     SynchronizerManager: {
         Synchronized: jest.fn().mockImplementation(() => (_: any, __: any, descriptor: any) => descriptor)
-    }
-}))
-jest.mock('../../../utils/TypeUtils', () => ({
-    TypeUtils: {
-        Validate: jest.fn(),
-        IsSchemaResponseWithData: jest.fn(),
-        IsSchemaRequestSelect: jest.fn()
     }
 }))
 jest.mock('../../auth/Roles')
@@ -70,7 +49,7 @@ describe('Cache', () => {
         jest.spyOn(DataProvider, 'GetProvider').mockResolvedValue(mockProvider)
 
         mockDataTable = {
-            SetMetaData: jest.fn()
+            MetaDataSet: jest.fn()
         } as unknown as DataTable;
 
         // Mock Config
@@ -374,7 +353,7 @@ describe('Cache', () => {
                 ])
             }))
 
-            expect(mockDataTable.SetMetaData).toHaveBeenCalledTimes(2)
+            expect(mockDataTable.MetaDataSet).toHaveBeenCalledTimes(2)
             expect(Cache.Index.size).toBe(1)
         })
 
@@ -421,7 +400,7 @@ describe('Cache', () => {
             jest.spyOn(Cache, 'GetExpires').mockResolvedValue(3000)
             jest.spyOn(Cache, 'IsCacheValid').mockReturnValue(true)
 
-            const cachedDataTable = new DataTable("test", { someData: 'value' })
+            const cachedDataTable = new DataTable("test", [{ someData: 'value' }])
 
             // Create a proper mock response structure for a TCacheData row
             const mockRow: TCacheData = {
@@ -455,10 +434,10 @@ describe('Cache', () => {
             expect(result).toEqual(expect.objectContaining({
                 Body: expect.objectContaining({
                     entity: 'test_entity',
-                    schema: 'test_schema',
-                    data: cachedDataTable
+                    schema: 'test_schema'
                 })
             }))
+            expect(JSON.stringify(result?.Body?.data)).toEqual(JSON.stringify(cachedDataTable))
         })
 
         it('should return undefined when no data found in cache', async () => {

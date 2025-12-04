@@ -11,7 +11,7 @@ import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import { Cache } from '../../cache/Cache'
 import { Logger } from '../../../utils/Logger'
-import { DATA_ENTITY_TYPE , DATA_PROVIDER } from "../@consts"
+import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
 import { HttpResponse } from "../../core/HttpResponse"
@@ -56,7 +56,7 @@ export class PlanData extends absDataProvider {
 
         const { schema, entity, source } = schemaRequest
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -81,8 +81,8 @@ export class PlanData extends absDataProvider {
 
         const data = new DataTable(schemaRequest.entity)
 
-        if (planData && planData.Rows().length > 0) {
-            data.AddRows(planData.Rows())
+        if (planData && await planData.Count() > 0) {
+            await data.RowsSet(await planData.Rows())
             if (options?.Cache)
                 Cache.Set({
                     ...schemaRequest,
@@ -101,7 +101,7 @@ export class PlanData extends absDataProvider {
         })
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
@@ -109,7 +109,7 @@ export class PlanData extends absDataProvider {
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
@@ -118,7 +118,7 @@ export class PlanData extends absDataProvider {
     }
 
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
@@ -126,7 +126,7 @@ export class PlanData extends absDataProvider {
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
@@ -134,7 +134,7 @@ export class PlanData extends absDataProvider {
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 
@@ -168,13 +168,13 @@ export class PlanData extends absDataProvider {
         })
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     EscapeEntity(entity: string): string {
-        return `\`${entity}\``
+        return `"${entity}"`
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     EscapeField(field: string): string {
-        return `\`${field}\``
+        return `"${field}"`
     }
 }

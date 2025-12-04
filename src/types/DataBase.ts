@@ -1,69 +1,99 @@
 //
 //
 //
-import alasql from 'alasql'
-import uniq from 'lodash/uniq'
-//
-import { DataTable, TRow } from './DataTable'
+import { DataTable, dataTable_convertSql, TRow } from './DataTable'
 import { TJson } from './TJson'
 import { Logger } from '../utils/Logger'
 import { Assert } from "../utils/Assert"
+import { DuckDBInstance } from '@duckdb/node-api/lib/DuckDBInstance'
+import { StringUtils } from '../utils/StringUtils'
+import { Utils } from '../utils/Utils'
+import { DuckDBValue } from '@duckdb/node-api'
+import { TAny } from './TAny'
+
 
 //
 export class DataBase {
-
     Name: string
     Tables: Record<string, DataTable> = {}
+    _duckInstance?: DuckDBInstance
+    _dbPath: string
 
-    constructor(name: string) {
+    constructor(name: string, path?: string) {
         Assert.Var(name, "undefined DataBase name")
         this.Name = name
+        this._dbPath = path
+            ? StringUtils.Path('./tmp', `${this.Name}_${Utils.Uuid(true)}.db`)
+            : ':memory:'
+    }
+
+    async Init() {
+        this._duckInstance = await DuckDBInstance.create(this._dbPath)
     }
 
     @Logger.LogFunction()
     AddTable(entity: string, rows?: TRow[] | TJson[]) {
         Assert.Var(entity, "undefined DataTable name")
         if (this.Tables[entity] === undefined)
-            this.Tables[entity] = new DataTable(entity, rows)
+            this.Tables[entity] = new DataTable(entity, rows, undefined, { duckInstance: this._duckInstance })
         else
             Logger.Error(`DataBase '${this.Name}' has already entity named '${entity}'`)
     }
 
     @Logger.LogFunction()
-    SetTable(entity: string, rows?: TRow[] | TJson[]) {
+    async SetTable(entity: string, rows?: TRow[] | TJson[]) {
         Assert.Var(entity, "undefined DataTable name")
         if (this.Tables[entity] === undefined)
             this.AddTable(entity, rows)
         else
-            this.Tables[entity].SetRows(rows)
+            this.Tables[entity].RowsSet(rows)
     }
 
     @Logger.LogFunction()
-    FreeSql(name: string, sqlQuery: string): DataTable | undefined {
-        Assert.Var(name, "undefined DataTable name")
-        Assert.Var(sqlQuery, "undefined SQL query")
-        let sqlQueryModified = sqlQuery
-        let rows: TRow[][] = []
+    async FreeSql(
+        {
+            entity: entity,
+            sqlQuery,
+            queryParams,
+            returnData = false,
+            convertCondition = true
+        }: {
+            entity?: string,
+            sqlQuery?: string,
+            queryParams?: TAny[],
+            returnData?: boolean,
+            convertCondition?: boolean
+        } = {}): Promise<DataTable | this> {
 
-        const rxDataTableNames = /\{([^}]+)\}/igm
-        const dataTables = sqlQuery.match(rxDataTableNames)
+        Assert.Var<string>(entity, "undefined DataTable name")
+        Assert.Var<string>(sqlQuery, "undefined SQL query")
 
-        if (dataTables === null)
-            return undefined
+        await this.Tables[entity]._dbEnsureInitialized()
+        const cnx = this.Tables[entity]._duckConnection!
 
+        const _sql = convertCondition
+            ? dataTable_convertSql(sqlQuery)
+            : sqlQuery
 
-        uniq(dataTables)
-            .forEach((_dt: string) => {
-                sqlQueryModified = sqlQueryModified.replace(`{${_dt}}`, ` ? ${_dt}`)
-                rows = [
-                    ...rows,
-                    this.Tables[_dt].Rows()
-                ]
+        if (returnData) {
+            const result = new DataTable(
+                this.Name,
+                await this.Tables[entity]._runSqlAndGetRows(_sql, queryParams)
+                    .catch((err) => {
+                        Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
+                        throw new Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
+                    })
+            )
+            await result.FieldsSet()
+            return result
+        }
+
+        await cnx.run(_sql, queryParams as DuckDBValue[])
+            .catch((err) => {
+                Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
+                throw new Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
             })
 
-        return new DataTable(name, alasql(
-            sqlQueryModified,
-            rows
-        ))
+        return this
     }
 }

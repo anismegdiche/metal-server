@@ -1,5 +1,5 @@
- 
- 
+
+
 import { Readable } from "node:stream"
 import * as ExcelJS from 'exceljs'
 import * as crc32 from 'crc-32'
@@ -24,7 +24,7 @@ jest.mock('../../../utils/Logger', () => ({
         Info: () => () => { },
         Message: () => () => { },
         LogFunction: () => () => { },
-        Level : "error",
+        Level: "error",
         Out: 'OUT'
     }
 }))
@@ -136,15 +136,17 @@ describe('XlsContent', () => {
 
         it('should throw error if Params is not defined', async () => {
             xlsContent.Params = undefined as unknown as TXlsContentParams
-            await expect(xlsContent.Get(undefined,{})).rejects.toThrow(HttpErrorInternalServerError)
+            await expect(xlsContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
         })
 
         it('should parse Excel data correctly', async () => {
-            const result = await xlsContent.Get(undefined,{})
+            const result = await xlsContent.Get({}, {})
 
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows()).toHaveLength(2) // Only one data row since first row is header
-            expect(result.Rows()[0]).toEqual({
+
+            const rows = await result.Rows()
+            expect(rows).toHaveLength(2) // Only one data row since first row is header
+            expect(rows[0]).toEqual({
                 Name: 'John',
                 Age: 30,
                 Date: expect.any(Date)
@@ -152,10 +154,12 @@ describe('XlsContent', () => {
         })
 
         it('should handle SQL queries', async () => {
-            const result = await xlsContent.Get('SELECT * FROM testEntity WHERE Age > 25', {})
+            const result = await xlsContent.Get({
+                filter: "Age > 25"
+            }, {})
 
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows().length).toBeGreaterThanOrEqual(0)
+            expect(await result.Count()).toBeGreaterThanOrEqual(0)
         })
     })
 
@@ -181,7 +185,7 @@ describe('XlsContent', () => {
 
         it('should throw error if Params is not defined', async () => {
             xlsContent.Params = undefined as unknown as TXlsContentParams
-            await expect(xlsContent.Set(mockDataTable,{})).rejects.toThrow(HttpErrorInternalServerError)
+            await expect(xlsContent.Set(mockDataTable, {})).rejects.toThrow(HttpErrorInternalServerError)
         })
 
         it('should write data to Excel correctly', async () => {
@@ -205,12 +209,12 @@ describe('XlsContent', () => {
                     const createFileHeader = (filename: string, content: string) => {
                         const data = Buffer.from(content)
                         const filenameBuffer = Buffer.from(filename)
-                        
+
                         // Calculate CRC-32 and file sizes
                         const crc32Value = crc32.buf(data)
                         const compressedSize = data.length
                         const uncompressedSize = data.length
-                        
+
                         // Local file header
                         const localFileHeader = Buffer.concat([
                             Buffer.from([0x50, 0x4B, 0x03, 0x04]), // Local file header signature
@@ -276,7 +280,7 @@ describe('XlsContent', () => {
 
             // Initialize the content with the mock Excel file
             xlsContent.Content.UploadFile('testEntity', mockExcelContent)
-            
+
             const result = await xlsContent.Set(mockDataTable, {})
 
             expect(result).toBeInstanceOf(Readable)

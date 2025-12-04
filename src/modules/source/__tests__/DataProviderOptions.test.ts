@@ -35,7 +35,7 @@ describe('DataProviderOptions', () => {
 
         const result = providerOptions.Parse(request)
 
-        expect(result.Fields).toBe('field1,field2')
+        expect(result.Fields).toEqual(['field1', 'field2'])
         expect(result.Sort).toEqual({ name: SORT_ORDER.ASC })
         expect(result.Cache).toBe(300)
     })
@@ -65,11 +65,11 @@ describe('DataProviderOptions', () => {
 
         const result = provider.GetFields({}, request)
 
-        expect(result.Fields).toBe('*')
+        expect(result.Fields).toEqual(['*'])
     })
 
     // GetData creates new DataTable instance from request data
-    it('should create DataTable from request data', () => {
+    it('should create DataTable from request data', async () => {
         const provider = new DataProviderOptions()
         const request: TSchemaRequest = {
             schema: 'test',
@@ -85,7 +85,7 @@ describe('DataProviderOptions', () => {
         const result = provider.GetData({}, request)
 
         expect(result.Data).toBeInstanceOf(DataTable)
-        expect(result.Data?.Rows().length).toBe(1)
+        expect(await result.Data!.Count()).toBe(1)
     })
 
     // GetSort transfers sort parameter from request to options
@@ -123,7 +123,7 @@ describe('DataProviderOptions', () => {
         const result = provider.Parse({} as TSchemaRequest)
 
         expect(result).toEqual(<TOptionalParameter>{
-            Fields: '*'
+            Fields: ['*']
         })
     })
 
@@ -164,7 +164,7 @@ describe('DataProviderOptions', () => {
 
         const result = provider.GetFields({}, request)
 
-        expect(result.Fields).toBe('*')
+        expect(result.Fields).toEqual(['*'])
     })
 
     // Manage concurrent filter-expression and filter fields in GetFilter
@@ -178,7 +178,7 @@ describe('DataProviderOptions', () => {
 
         const result = provider.GetFilter({}, request)
 
-        expect(result.Filter).toEqual([{ status: 'active' }])
+        expect(result.Filter).toEqual({ status: 'active' })
     })
 
     // Process empty or malformed sort parameters

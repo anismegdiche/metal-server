@@ -136,26 +136,41 @@ export class Logger {
 
     static LogFunction(hide: string[] | boolean = []): any {
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-            const originalMethod = descriptor.value
-            descriptor.value = function (...args: any[]) {
-                const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args)
-                const _hide = typeof hide === 'boolean'
-                    ? Object.keys(_paramObject)
-                    : hide
+            const wrap = (originalMethod?: (...args: any[]) => any) => {
+                if (!originalMethod)
+                    return undefined
 
-                const _filteredParams: Record<string, any> = _.chain(_paramObject)
-                    .omitBy(v => _.isNil(v) || _.isEmpty(v))
-                    .omit(_hide)
-                    .value()
+                return function (this: unknown, ...args: any[]) {
+                    const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args)
+                    const _hide = typeof hide === 'boolean'
+                        ? Object.keys(_paramObject) 
+                        : hide
 
-                const _argsString = (_.isEmpty(_filteredParams))
-                    ? ''
-                    : ` ${Stringify(_filteredParams)}`
+                    const _filteredParams: Record<string, any> = _.chain(_paramObject)
+                        .omitBy(v => _.isNil(v) || _.isEmpty(v))
+                        .omit(_hide)
+                        .value()
 
-                Logger.Debug(`${Logger.In} ${target.name ?? this.constructor.name}.${propertyKey}${_argsString}`)
-                // continue with original args
-                return originalMethod.apply(this, args)
+                    const _argsString = (_.isEmpty(_filteredParams))
+                        ? ''
+                        : ` ${Stringify(_filteredParams)}`
+
+                    const ctorName = target.name ?? (this as any)?.constructor?.name ?? 'Anonymous'
+                    Logger.Debug(`${Logger.In} ${ctorName}.${propertyKey}${_argsString}`)
+                    return originalMethod.apply(this, args)
+                }
             }
+
+            if (typeof descriptor.value === 'function') {
+                descriptor.value = wrap(descriptor.value)
+            }
+            if (typeof descriptor.get === 'function') {
+                descriptor.get = wrap(descriptor.get)
+            }
+            if (typeof descriptor.set === 'function') {
+                descriptor.set = wrap(descriptor.set)
+            }
+
             return descriptor
         }
     }

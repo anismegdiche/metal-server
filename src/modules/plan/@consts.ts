@@ -16,7 +16,9 @@ export enum STEP {
     REMOVE_DUPLICATE = "remove-duplicates",// v0.3
     LIST_ENTITIES = "list-entities", // v0.3
     REMOVE_FIELDS = "remove-fields", // v0.5
-    BREAK = "break" // v0.5
+    BREAK = "break", // v0.5
+    PICK = "pick", // v0.5
+    OMIT = "omit" // v0.5
 }
 
 

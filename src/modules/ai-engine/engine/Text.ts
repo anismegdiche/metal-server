@@ -104,12 +104,10 @@ export class Text extends absAiEngine implements IAiEngine {
         const _args: TStepRunAiTextParams = _.merge(this.DEFAULT, args)
         const { task } = _args
 
-        if (Object.values(TEXT_TASK).includes(task)) {
-            await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
-            return await this.RunTask[task](args)
-        }
+        Assert.Condition(Object.values(TEXT_TASK).includes(task as TEXT_TASK), `Invalid text task: ${task}`)
 
-        throw new HttpErrorInternalServerError(`Invalid model: ${task}`)
+        await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
+        return this.RunTask[task](args)
     }
 
     @Logger.LogFunction(true)

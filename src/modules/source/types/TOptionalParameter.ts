@@ -9,8 +9,8 @@ import { TJson } from "../../../types/TJson"
 
 //
 export type TOptionalParameter = {
-    Fields?: string
-    Filter?: TJson | TJson[] | string
+    Fields?: string[]
+    Filter?: TJson | string
     Sort?: TOrderBy
     Data?: DataTable
     Cache?: number

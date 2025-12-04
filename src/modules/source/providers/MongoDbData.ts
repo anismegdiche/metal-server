@@ -49,7 +49,7 @@ export type TMongoDbDataConfig = {
 //
 export class MongoDbData extends absDataProvider {
     private static _mongoDb: MongoDbTypes | null = null;
-    
+
     private static async _loadMongoDb(): Promise<MongoDbTypes> {
         if (!this._mongoDb) {
             const mongo = await import('mongodb');
@@ -120,7 +120,7 @@ export class MongoDbData extends absDataProvider {
 
         const { schema, entity } = schemaRequest
 
-         
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -140,7 +140,7 @@ export class MongoDbData extends absDataProvider {
         const data = new DataTable(entity)
 
         if (rows.length > 0) {
-            data.AddRows(rows)
+            await data.RowsSet(rows)
             if (options?.Cache)
                 Cache.Set(schemaRequest, data)
         }
@@ -161,7 +161,7 @@ export class MongoDbData extends absDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-         
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -175,7 +175,7 @@ export class MongoDbData extends absDataProvider {
         await this.Connection
             .db(this.Config.database)
             .collection(schemaRequest.entity)
-            .insertMany(options?.Data?.Rows())
+            .insertMany(await options?.Data?.Rows())
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -189,7 +189,7 @@ export class MongoDbData extends absDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-         
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -197,7 +197,7 @@ export class MongoDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!DataTable.Is(options.Data) || options.Data.Rows().length === 0)
+        if (!DataTable.Is(options.Data) || await options.Data.Count() === 0)
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
         const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
@@ -207,7 +207,7 @@ export class MongoDbData extends absDataProvider {
         const mongoFilter: Filter<Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
 
         const mongoUpdate: UpdateFilter<Document> = {
-            $set: options?.Data?.Rows().at(0)
+            $set: (await options?.Data?.Rows()).at(0)
         }
 
         await this.Connection
@@ -227,7 +227,7 @@ export class MongoDbData extends absDataProvider {
         if (this.Connection === undefined)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-         
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -252,7 +252,7 @@ export class MongoDbData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-     
+
     @Logger.LogFunction()
     async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
@@ -289,12 +289,12 @@ export class MongoDbData extends absDataProvider {
         })
     }
 
-     
+
     EscapeEntity(entity: string): string {
         return entity
     }
 
-     
+
     EscapeField(field: string): string {
         return field
     }

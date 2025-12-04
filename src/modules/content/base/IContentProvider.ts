@@ -4,7 +4,7 @@
 //
 import { Readable } from 'node:stream'
 //
-import { DataTable } from "../../../types/DataTable"
+import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { TContentConfig } from "../@types"
 import { clsClonable } from "../../../utils/base/clsClonable"
@@ -21,6 +21,6 @@ export interface IContentProvider extends clsClonable {
 
     SetConfig(contentConfig: TContentConfig): void
     InitContent(name: string, content: Readable): void
-    Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable>
+    Get(rowsParams: TRowsCopyParams, $context: Partial<TContext>): Promise<DataTable>
     Set(data: DataTable, $context: Partial<TContext>): Promise<Readable>
 }

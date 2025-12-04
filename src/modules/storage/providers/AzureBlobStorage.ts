@@ -176,7 +176,7 @@ export class AzureBlobStorage extends absStorageProvider {
         Assert.Var<import('@azure/storage-blob').ContainerClient>(this._containerClient, 'AzureBlobStorage: Connection to Azure Blob Storage not established')
 
         const blobClient = this._containerClient.getBlockBlobClient(StringUtils.Url(dirName, fileName))
-        return await blobClient.exists()
+        return blobClient.exists()
     }
 
     @Logger.LogFunction()

@@ -5,7 +5,7 @@ import has from "lodash/has"
 import merge from "lodash/merge"
 import typia from "typia"
 //
-import { DataTable } from "../../../types/DataTable"
+import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { Convert } from "../../../utils/Convert"
 import { Logger, VERBOSITY } from "../../../utils/Logger"
@@ -134,14 +134,21 @@ export class StorageFilesData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+        //XXX const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
-        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
+        //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const data = await this.File[fileName].Get(sqlQuery, $context)
+        const data = await this.File[fileName].Get(
+            <TRowsCopyParams>{
+                fields: options.Fields,
+                filter: options.Filter,
+                sort: options.Sort
+            },
+            $context
+        )
 
         if (Logger.Level == VERBOSITY.DEBUG)
-            data.SetMetaData("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
+            data.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
 
         if (options?.Cache)
             await Cache.Set({
@@ -189,11 +196,12 @@ export class StorageFilesData extends absDataProvider {
                 await this.Connection.FileRead('', fileName)
             )
 
-            const data = await this.File[fileName].Get(undefined, $context)
+            const data = await this.File[fileName].Get({}, $context)
 
-            const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
+            //XXX const sqlQueryHelper = await this.GenerateSqlInsert(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.QueryParams)
+            //XXX await data.FreeSql({ sqlQuery: sqlQueryHelper.Query(), queryParams: sqlQueryHelper.QueryParams })
+            await data.RowsAdd(await options.Data.Rows())
             await this.Connection.FileWrite(
                 '',
                 fileName,
@@ -234,11 +242,11 @@ export class StorageFilesData extends absDataProvider {
                 await this.Connection.FileRead('', fileName)
             )
 
-            const data = await this.File[fileName].Get(undefined, $context)
+            const data = await this.File[fileName].Get({}, $context)
 
-            const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
+            const sqlQueryHelper = await this.GenerateSqlUpdate(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.QueryParams)
+            await data.FreeSql({ sqlQuery: sqlQueryHelper.Query(), queryParams: sqlQueryHelper.QueryParams })
 
             await this.Connection.FileWrite(
                 '',
@@ -277,11 +285,11 @@ export class StorageFilesData extends absDataProvider {
                 await this.Connection.FileRead('', fileName)
             )
 
-            const data = await this.File[fileName].Get(undefined, $context)
+            const data = await this.File[fileName].Get({}, $context)
 
-            const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
+            const sqlQueryHelper = await this.GenerateSqlDelete(schemaRequest, options)
 
-            await data.FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.QueryParams)
+            await data.FreeSql({ sqlQuery: sqlQueryHelper.Query(), queryParams: sqlQueryHelper.QueryParams })
 
             await this.Connection.FileWrite(
                 '',
@@ -320,12 +328,12 @@ export class StorageFilesData extends absDataProvider {
                     .replace(/\//g, '')
                 ).join('|')})`)
 
-        const data: DataTable = await this.Connection.FolderListFiles()
-        data.SetRows(
-            data.Rows().filter(row => rxFilePatterns.test(row.name as string))
+        const data = await this.Connection.FolderListFiles()
+        await data.RowsSet(
+            (await data.Rows()).filter(row => rxFilePatterns.test(row.name as string))
         )
 
-        Assert.Condition(data.Rows().length > 0, `${schema}: No entities found`, new HttpErrorNotFound())
+        Assert.Condition(await data.Count() > 0, `${schema}: No entities found`, new HttpErrorNotFound())
 
         return HttpResponse.Ok(<TSchemaResponse>{
             schema,
@@ -337,11 +345,11 @@ export class StorageFilesData extends absDataProvider {
 
 
     EscapeEntity(entity: string): string {
-        return `\`${entity}\``
+        return `"${entity}"`
     }
 
 
     EscapeField(field: string): string {
-        return `\`${field}\``
+        return `"${field}"`
     }
 }

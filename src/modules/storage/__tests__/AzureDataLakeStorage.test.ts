@@ -302,7 +302,7 @@ describe('AzureDataLakeStorage', () => {
 
             // Verify data transformation logic
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows()).toEqual([
+            expect(await result.Rows()).toEqual([
                 {
                     name: 'file1.txt',
                     type: 'file',
@@ -340,7 +340,7 @@ describe('AzureDataLakeStorage', () => {
             const result = await storage.FolderListFiles()
 
             // Verify empty result
-            expect(result.Rows()).toEqual([])
+            expect(await result.Rows()).toEqual([])
         })
 
         it('should propagate listing errors', async () => {

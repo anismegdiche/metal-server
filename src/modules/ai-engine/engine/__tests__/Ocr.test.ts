@@ -37,10 +37,12 @@ describe('Ocr', () => {
             });
 
             expect(result).toEqual({
-                text: expect.any(String),
-                lang: expect.stringMatching(
-                    new RegExp(`^(${Object.values(OCR_LANG_ISO).join("|")})$`)
-                )
+                ocr: {
+                    text: expect.any(String),
+                    lang: expect.stringMatching(
+                        new RegExp(`^(${Object.values(OCR_LANG_ISO).join("|")})$`)
+                    )
+                }
             });
         });
     });

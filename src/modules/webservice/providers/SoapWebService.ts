@@ -97,13 +97,13 @@ export class SoapWebService extends absWebServiceProvider {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         Logger.Debug(`${Logger.Out} SoapWebService connected`)
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         Logger.Debug(`${Logger.Out} SoapWebService disconnected`)
@@ -131,7 +131,7 @@ export class SoapWebService extends absWebServiceProvider {
             if (!wsResp)
                 throw new HttpErrorInternalServerError(`${endpointType}: ${wsResp?.statusText}`)
 
-            // eslint-disable-next-line no-param-reassign
+             
             $context = _.merge(
                 $context,
                 <Partial<TContext>>{

@@ -107,7 +107,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
         Assert.Var<string>(dirName, 'Directory name is required')
 
         const directoryClient = this._fileSystemClient.getDirectoryClient(dirName)
-        return await directoryClient.exists()
+        return directoryClient.exists()
     }
 
     @Logger.LogFunction()
@@ -116,7 +116,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
         Assert.Var<string>(dirName, 'Directory name is required')
 
         const directoryClient = this._fileSystemClient.getDirectoryClient(dirName)
-        await directoryClient.create()
+        directoryClient.create()
     }
 
     @Logger.LogFunction()

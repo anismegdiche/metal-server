@@ -61,4 +61,25 @@ export class TypeUtils {
             .replace(/__@toStringTag@\d+/, "")
             .replace(" | undefined", "")
     }
+
+    static GetType(v: unknown): string {
+        if (v === null)
+            return 'null';
+
+        const t = typeof v;
+        if (t !== 'object')
+            return t;
+
+        if (Array.isArray(v))
+            return 'array';
+
+        if (v instanceof Date)
+            return 'date';
+
+        const ctor = (v as any)?.constructor;
+        if (ctor && ctor !== Object && ctor.name)
+            return ctor.name;
+
+        return 'object';
+    }
 }

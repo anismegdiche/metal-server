@@ -6,7 +6,7 @@ import { is as TypiaIs } from "typia"
 //
 import { Readable } from "node:stream"
 //
-import { DataTable } from "../../../types/DataTable"
+import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 import { TJson } from '../../../types/TJson'
 import { Assert } from '../../../utils/Assert'
 import { JsonUtils } from '../../../utils/JsonUtils'
@@ -52,7 +52,7 @@ export class CsvContent extends absContentProvider {
     }
 
     @Logger.LogFunction(['$context'])
-    async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
+    async Get(rowsParams: TRowsCopyParams, $context: Partial<TContext>): Promise<DataTable> {
 
         Assert.Var<VirtualFileSystem>(this.Content,
             VirtualFileSystem.Is(this.Content),
@@ -71,7 +71,8 @@ export class CsvContent extends absContentProvider {
             ),
             $__evalParams
         )
-        return new DataTable(this.EntityName, parsedCsv.data).FreeSqlAsync(sqlQuery)
+        return new DataTable(this.EntityName, parsedCsv.data)
+            .Copy(this.EntityName, rowsParams)
     }
 
     @Logger.LogFunction(true)
@@ -87,7 +88,7 @@ export class CsvContent extends absContentProvider {
         )
 
         //flattern nested objects in data.GetRows()
-        const _dataFlatten = data.Rows().map((row) => Object.fromEntries(
+        const _dataFlatten = (await data.Rows()).map((row) => Object.fromEntries(
             Object.entries(row).map(([k, v]) => [
                 k,
                 // and is not date

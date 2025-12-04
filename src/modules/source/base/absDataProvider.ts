@@ -65,9 +65,9 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
     abstract EscapeEntity(entity: string): string
     abstract EscapeField(field: string): string
 
-     
+
     GetSqlQuery(sqlQueryHelper: SqlQueryUtils, options: TOptionalParameter): string | undefined {
-        return (options.Fields != '*' || options.Filter != undefined || options.Sort != undefined)
+        return (options.Fields?.join('') !== '*' || options.Filter != undefined || options.Sort != undefined)
             ? sqlQueryHelper.Query()
             : undefined
     }
@@ -80,25 +80,25 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
             .OrderBy(options.Sort)
     }
 
-    GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+    async GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): Promise<SqlQueryUtils> {
 
         Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
-        Assert.Condition(options.Data.Rows().length > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
+        Assert.Condition(await options.Data.Count() > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
 
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
             .Insert(schemaRequest.entity)
             .Fields(options.Data.GetFieldsName())
-            .Values(options.Data.Rows())
+            .Values(await options.Data.Rows())
     }
 
-    GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+    async GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): Promise<SqlQueryUtils> {
 
         Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
-        Assert.Condition(options.Data.Rows().length > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
+        Assert.Condition(await options.Data.Count() > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
 
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
             .Update(schemaRequest.entity)
-            .Set(options.Data.Rows())
+            .Set(await options.Data.Rows())
             .Where(options.Filter)
     }
 

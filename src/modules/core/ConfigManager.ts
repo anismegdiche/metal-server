@@ -42,7 +42,7 @@ export class ConfigManager {
             return process.env[envVarName] ?? match
         })
 
-        return await Yaml.load(configInterpol) as TConfig
+        return Yaml.load(configInterpol) as TConfig
     }
 
     // @Logger.LogFunction(Logger.Debug, true)

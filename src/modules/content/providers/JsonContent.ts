@@ -4,7 +4,7 @@
 import { Readable } from "node:stream"
 import { is } from "typia"
 //
-import { DataTable } from "../../../types/DataTable"
+import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 import { TJson } from "../../../types/TJson"
 import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from "../../../utils/Logger"
@@ -37,7 +37,7 @@ export class JsonContent extends absContentProvider {
     }
 
     @Logger.LogFunction(['$context'])
-    async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
+    async Get(rowsParams: TRowsCopyParams, $context: Partial<TContext>): Promise<DataTable> {
         Assert.Var<TJsonContentParams>(this.Params,
             is<TJsonContentParams>(this.Params),
             'Params is not defined')
@@ -59,7 +59,8 @@ export class JsonContent extends absContentProvider {
 
         const data = JsonUtils.Get<TJson[]>(json, $__path)
 
-        return new DataTable(this.EntityName, data).FreeSqlAsync(sqlQuery)
+        return new DataTable(this.EntityName, data)
+            .Copy(this.EntityName, rowsParams)
     }
 
     @Logger.LogFunction(true)
@@ -82,7 +83,7 @@ export class JsonContent extends absContentProvider {
             new Sandbox($context)
         )
 
-        JsonUtils.Set(json, $__path, data.Rows())
+        JsonUtils.Set(json, $__path, await data.Rows())
 
         const streamOut = Readable.from(JSON.stringify(json))
         this.Content.UploadFile(this.EntityName, streamOut)

@@ -23,7 +23,7 @@ jest.mock('../../../utils/Logger', () => ({
         Info: () => () => { },
         Message: () => () => { },
         LogFunction: () => () => { },
-        Level : "error",
+        Level: "error",
         Out: 'OUT'
     }
 }))
@@ -85,7 +85,7 @@ describe('MemoryData', () => {
         })
         await memoryData.Connect()
 
-        const testEntity = 'testTable'
+        const testEntity = 'test-table'
         const testRows = [
             {
                 id: 1,
@@ -101,10 +101,12 @@ describe('MemoryData', () => {
 
         const response = await memoryData.Select(schemaRequest)
 
+        const resultRows = await response.Body?.data.Rows()
+
         expect(response.StatusCode).toBe(HTTP_STATUS_CODE.OK)
         expect(response.Body?.schema).toBe(schemaRequest.schema)
         expect(response.Body?.entity).toBe(schemaRequest.entity)
-        expect(response.Body?.data.Rows()).toEqual(testRows)
+        expect(resultRows).toEqual(testRows)
     })
 
     // Insert operation adds rows to an existing entity
@@ -117,7 +119,7 @@ describe('MemoryData', () => {
         })
         await memoryData.Connect()
 
-        const testEntity = 'testTable'
+        const testEntity = 'test-table'
         memoryData.Connection?.AddTable(testEntity)
 
         const testRows = [
@@ -133,14 +135,13 @@ describe('MemoryData', () => {
             data: testRows
         }
 
-        // jest.spyOn(Cache, 'Remove').mockImplementation(async () => { })
         Cache.Remove = jest.fn(async () => { })
 
-
         const response = await memoryData.Insert(schemaRequest)
+        const resultRows = await memoryData.Connection?.Tables[testEntity].Rows()
 
         expect(response.StatusCode).toBe(HTTP_STATUS_CODE.CREATED)
-        expect(memoryData.Connection?.Tables[testEntity].Rows()).toEqual(testRows)
+        expect(resultRows).toEqual(testRows)
         expect(Cache.Remove).toHaveBeenCalledWith(schemaRequest)
     })
 
@@ -180,7 +181,7 @@ describe('MemoryData', () => {
         }
 
         jest.spyOn(Cache, 'Remove').mockImplementation(async () => { })
-        jest.spyOn(memoryData.Connection!.Tables[testEntity], 'FreeSqlAsync').mockResolvedValue(
+        jest.spyOn(memoryData.Connection!.Tables[testEntity], 'FreeSql').mockResolvedValue(
             new DataTable(testEntity, [
                 {
                     id: 1,
@@ -226,7 +227,7 @@ describe('MemoryData', () => {
         }
 
         jest.spyOn(Cache, 'Remove').mockImplementation(async () => { })
-        jest.spyOn(memoryData.Connection!.Tables[testEntity], 'FreeSqlAsync').mockResolvedValue(
+        jest.spyOn(memoryData.Connection!.Tables[testEntity], 'FreeSql').mockResolvedValue(
             new DataTable(testEntity, [
                 {
                     id: 2,

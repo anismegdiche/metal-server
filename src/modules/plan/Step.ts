@@ -2,17 +2,20 @@
 //
 // 
 import isEmpty from "lodash/isEmpty"
+import isObject from "lodash/isObject"
 import isString from "lodash/isString"
 import keys from "lodash/keys"
 import map from "lodash/map"
 import merge from "lodash/merge"
 import omit from "lodash/omit"
-import isObject from "lodash/isObject"
+import omitBy from "lodash/omitBy"
 import { is } from "typia"
+import { UUID } from "uuidv7"
 //
-import { DataTable, JOIN_TYPE, TRow } from "../../types/DataTable"
+import { DataTable, dataTable_fieldIsSystem, TRow } from "../../types/DataTable"
 import { TJson } from "../../types/TJson"
 import { Assert } from "../../utils/Assert"
+import { DataTableUtils, JOIN_TYPE } from "../../utils/DataTableUtils"
 import { Helper } from "../../utils/Helper"
 import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
@@ -36,7 +39,7 @@ import { TOptionalParameter } from "../source/types/TOptionalParameter"
 import { STEP } from "./@consts"
 import { Plans } from "./Plans"
 import { TStep } from "./types/TStep"
-import { TStepArgsAnonymize, TStepArgsDebug, TStepArgsDelete, TStepArgsFields, TStepArgsInsert, TStepArgsJoin, TStepArgsListEntities, TStepArgsRemoveDuplicates, TStepArgsRemoveFields, TStepArgsRun, TStepArgsSelect, TStepArgsSort, TStepArgsSync, TStepArgsUpdate } from "./types/TStepArgs"
+import { TStepArgsAnonymize, TStepArgsDebug, TStepArgsDelete, TStepArgsInsert, TStepArgsJoin, TStepArgsListEntities, TStepArgsOmit, TStepArgsPick, TStepArgsRemoveDuplicates, TStepArgsRun, TStepArgsSelect, TStepArgsSort, TStepArgsSync, TStepArgsUpdate } from "./types/TStepArgs"
 
 
 //
@@ -56,23 +59,24 @@ export class Step {
         [STEP.DELETE]: Step.Delete,
         [STEP.INSERT]: Step.Insert,
         [STEP.JOIN]: Step.Join,
-        [STEP.FIELDS]: Step.Fields,
+        [STEP.FIELDS]: Step.Pick,
         [STEP.SORT]: Step.Sort,
         [STEP.RUN]: Step.Run,
         [STEP.SYNC]: Step.Sync,
         [STEP.ANONYMIZE]: Step.Anonymize,
         [STEP.REMOVE_DUPLICATE]: Step.RemoveDuplicates,
         [STEP.LIST_ENTITIES]: Step.ListEntities,
-        [STEP.REMOVE_FIELDS]: Step.RemoveFields,
-        [STEP.BREAK]: Step.Break
+        [STEP.BREAK]: Step.Break,
+        [STEP.PICK]: Step.Pick,
+        [STEP.OMIT]: Step.Omit
     }
 
     static _joinCaseMap: Record<string, TFunctionJoin> = {
-        [JOIN_TYPE.LEFT]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.LeftJoin(dtRight, leftField, rightField),
-        [JOIN_TYPE.RIGHT]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.RightJoin(dtRight, leftField, rightField),
-        [JOIN_TYPE.INNER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.InnerJoin(dtRight, leftField, rightField),
-        [JOIN_TYPE.FULL_OUTER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => dtLeft.FullOuterJoin(dtRight, leftField, rightField),
-        [JOIN_TYPE.CROSS]: async (dtLeft: DataTable, dtRight: DataTable) => dtLeft.CrossJoin(dtRight)
+        [JOIN_TYPE.LEFT]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => DataTableUtils.LeftJoin(dtLeft, dtRight, leftField, rightField),
+        [JOIN_TYPE.RIGHT]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => DataTableUtils.RightJoin(dtLeft, dtRight, leftField, rightField),
+        [JOIN_TYPE.INNER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => DataTableUtils.InnerJoin(dtLeft, dtRight, leftField, rightField),
+        [JOIN_TYPE.FULL_OUTER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => DataTableUtils.FullOuterJoin(dtLeft, dtRight, leftField, rightField),
+        [JOIN_TYPE.CROSS]: async (dtLeft: DataTable, dtRight: DataTable) => DataTableUtils.CrossJoin(dtLeft, dtRight)
     }
 
     @Logger.LogFunction()
@@ -142,7 +146,7 @@ export class Step {
             )
 
             const sqlQuery = Step._dataProvider.GetSqlQuery(sqlQueryHelper, _options)
-            return await data.FreeSqlAsync(sqlQuery, sqlQueryHelper.QueryParams)
+            return data.FreeSql({ sqlQuery, queryParams: sqlQueryHelper.QueryParams })
         } else {
             // data from current datatable
             const sqlQueryHelper = Step._dataProvider.GenerateSqlSelect(<TSchemaRequestSelect>{
@@ -152,7 +156,7 @@ export class Step {
             )
 
             const sqlQuery = Step._dataProvider.GetSqlQuery(sqlQueryHelper, _options)
-            return await currentDataTable.FreeSqlAsync(sqlQuery, sqlQueryHelper.QueryParams)
+            return currentDataTable.FreeSql({ sqlQuery, queryParams: sqlQueryHelper.QueryParams })
         }
     }
 
@@ -204,14 +208,14 @@ export class Step {
         // only schema --> error
         Assert.Var<string>(entity, `${STEP.INSERT}: entity is required`)
         // At least one have data
-        Assert.Condition((data as TRow[])?.length > 0 || currentDataTable.Rows().length > 0, `${STEP.INSERT}: No data to insert ${JsonUtils.Stringify(step.stepArgs)}`)
+        Assert.Condition((data as TRow[])?.length > 0 || await currentDataTable.Count() > 0, `${STEP.INSERT}: No data to insert ${JsonUtils.Stringify(step.stepArgs)}`)
 
         await Schema.Insert(<TSchemaRequestInsert>{
             ...schemaRequest,
             schema: schema ?? currentSchemaName,
             data: (data)
                 ? data
-                : currentDataTable.Rows()
+                : await currentDataTable.Rows()
         })
     }
 
@@ -226,7 +230,7 @@ export class Step {
         // At least one have data
         Assert.Condition((data as TRow[])?.length > 0, `${STEP.INSERT}: No data to insert ${JsonUtils.Stringify(step.stepArgs)}`)
 
-        return currentDataTable.AddRows(data)
+        return currentDataTable.RowsAdd(data)
     }
 
     @Logger.LogFunction()
@@ -265,14 +269,14 @@ export class Step {
         // only schema --> error
         Assert.Var<string>(entity, `${STEP.UPDATE}: entity is required`)
         // At least one have data
-        Assert.Condition((data as TRow[])?.length > 0 || currentDataTable.Rows().length > 0, `${STEP.UPDATE}: No data to insert ${JsonUtils.Stringify(step.stepArgs)}`)
+        Assert.Condition((data as TRow[])?.length > 0 || await currentDataTable.Count() > 0, `${STEP.UPDATE}: No data to insert ${JsonUtils.Stringify(step.stepArgs)}`)
 
         await Schema.Update(<TSchemaRequestUpdate>{
             ...$__schemaRequest,
             schema: schema ?? currentSchemaName,
             data: (data)
                 ? data
-                : currentDataTable.Rows()
+                : await currentDataTable.Rows()
         })
     }
 
@@ -288,13 +292,13 @@ export class Step {
         Assert.Condition((data as TRow[])?.length > 0, `${STEP.UPDATE}: No data to update ${JsonUtils.Stringify(step.stepArgs)}`)
 
         const _options: TOptionalParameter = Step._dataProvider.Options.Parse($__schemaRequest, $context)
-        const _sqlQueryHelper = Step._dataProvider.GenerateSqlUpdate(<TSchemaRequestUpdate>{
+        const _sqlQueryHelper = await Step._dataProvider.GenerateSqlUpdate(<TSchemaRequestUpdate>{
             entity: currentDataTable.Name
         },
             _options
         )
 
-        return await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query(), _sqlQueryHelper.QueryParams)
+        return currentDataTable.FreeSql({ sqlQuery: _sqlQueryHelper.Query(), queryParams: _sqlQueryHelper.QueryParams })
     }
 
     @Logger.LogFunction()
@@ -355,7 +359,7 @@ export class Step {
             _options
         )
 
-        return await currentDataTable.FreeSqlAsync(_sqlQueryHelper.Query(), _sqlQueryHelper.QueryParams)
+        return currentDataTable.FreeSql({ sqlQuery: _sqlQueryHelper.Query(), queryParams: _sqlQueryHelper.QueryParams })
     }
 
     @Logger.LogFunction(true)
@@ -448,26 +452,8 @@ export class Step {
             ? await Step.Select(requestToSchema)
             : await Plans.Plans.get(currentPlanName)!.ProcessSchemaRequest(requestToCurrentPlan)
 
-        return await this._joinCaseMap[type](step.currentDataTable, dtRight, leftField, rightField) ??
+        return this._joinCaseMap[type](step.currentDataTable, dtRight, leftField, rightField) ??
             (Helper.CaseMapNotFound(type) && step.currentDataTable)
-    }
-
-    @Logger.LogFunction()
-    static async Fields(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TStepArgsFields>(step.stepArgs, is<TStepArgsFields>(step.stepArgs),
-            `${STEP.FIELDS}: Wrong argument passed`)
-
-        const params = step.stepArgs
-
-        if (params == "*")
-            return step.currentDataTable
-
-        if (Array.isArray(params)) {
-            return step.currentDataTable.SelectFields(params)
-        } else {
-            Assert.Condition(!StringUtils.IsEmpty(params), "Step.Fields: cannot be empty")
-            return step.currentDataTable.SelectFields(StringUtils.Split(params, ","))
-        }
     }
 
     @Logger.LogFunction()
@@ -486,10 +472,10 @@ export class Step {
             `${STEP.DEBUG}: Wrong argument passed`)
 
         const debug = step.stepArgs
-        step.currentDataTable.SetMetaData(METADATA.PLAN_DEBUG, debug)
+        step.currentDataTable.MetaDataSet(METADATA.PLAN_DEBUG, debug)
 
         if (step.currentDataTable.MetaData[METADATA.PLAN_ERRORS] == undefined) {
-            step.currentDataTable.SetMetaData(METADATA.PLAN_ERRORS, <TJson[]>[])
+            step.currentDataTable.MetaDataSet(METADATA.PLAN_ERRORS, <TJson[]>[])
         }
 
         return step.currentDataTable
@@ -522,10 +508,13 @@ export class Step {
 
         const rowPromises = []
 
-        for await (const [_rowIndex, _rowData] of step.currentDataTable.Rows().entries()) {
+        for await (const _row of await step.currentDataTable.Rows({ includeIndex: true })) {
             rowPromises.push((async () => {
+                Assert.Var<string>(_row.__idx__, `${STEP.RUN}: Index is not defined`)
+                const __idx__: UUID = _row.__idx__
+                const __row = omitBy(_row, dataTable_fieldIsSystem)
 
-                $context.$row = _rowData
+                $context.$row = __row
 
                 const $__data = RX_JS_CODE.exec(<string>input) === null
                     ? $context.$row[input]
@@ -546,23 +535,13 @@ export class Step {
                 $context.$result = __result
 
                 switch (true) {
-
-                    case isString(output) && isEmpty(output):
-                        step.currentDataTable.SetRows({
-                            ..._rowData,
-                            [aiTask]: JsonUtils.SafeCopy(__result)
-                        },
-                            _rowIndex
-                        )
+                    default:
+                    case output === undefined || output === null:
+                        __row[aiTask] = JsonUtils.SafeCopy(__result)
                         break
 
                     case isString(output):
-                        step.currentDataTable.SetRows({
-                            ..._rowData,
-                            [output]: __result
-                        },
-                            _rowIndex
-                        )
+                        __row[output] = __result
                         break
 
                     case isObject(output):
@@ -570,16 +549,16 @@ export class Step {
                             const $__value = RX_JS_CODE.exec(<string>___inField) === null
                                 ? __result[___inField as string]
                                 : PlaceHolder.EvaluateJsCode(<string>___inField, new Sandbox($context))
-                            _rowData[___outField as string] = $__value
+                            __row[___outField as string] = $__value
                         }
-                        step.currentDataTable.SetRows(_rowData, _rowIndex)
                         break
                 }
+                await step.currentDataTable.RowUpdateByIndex(__idx__, __row)
             })())
         }
 
         await Promise.all(rowPromises)
-        return step.currentDataTable.SetFields()
+        return step.currentDataTable.FieldsSet()
     }
 
     @Logger.LogFunction()
@@ -606,8 +585,10 @@ export class Step {
             : step.currentDataTable
 
 
-        const syncReport = dtSource.SyncReport(dtDestination, id, {
-            keepOnlyUpdatedValues: true
+        const syncReport = await DataTableUtils.SyncReport({
+            source: dtSource,
+            destination: dtDestination,
+            on: id
         })
 
         // Apply transformations
@@ -635,7 +616,7 @@ export class Step {
 
         //// Insert
         if (syncReport.AddedRows.length > 0) {
-            Schema.Insert({
+            await Schema.Insert({
                 schema: to.schema,
                 entity: to.entity,
                 data: syncReport.AddedRows
@@ -644,21 +625,21 @@ export class Step {
 
         // if no destination
         if (!to) {
-            step.currentDataTable.SetRows([
+            await step.currentDataTable.RowsSet([
                 ...syncReport.DeletedRows,
                 ...syncReport.UpdatedRows,
                 ...syncReport.AddedRows
             ])
         }
 
-        return step.currentDataTable.SetFields()
+        return step.currentDataTable.FieldsSet()
     }
 
     @Logger.LogFunction(true)
     static async Anonymize(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
         Assert.Var<TStepArgsAnonymize>(step.stepArgs, is<TStepArgsAnonymize>(step.stepArgs),
             `${Logger.Out} ${[STEP.ANONYMIZE]}: Wrong argument passed`)
-        return await step.currentDataTable.Anonymize(step.stepArgs)
+        return DataTableUtils.Anonymize(step.currentDataTable, step.stepArgs)
     }
 
     @Logger.LogFunction(true)
@@ -671,21 +652,40 @@ export class Step {
 
         const { currentDataTable } = step
 
-        await currentDataTable.RemoveDuplicates(keys, method, strategy, condition)
+        await DataTableUtils.RemoveDuplicates(currentDataTable, keys, method, strategy, condition)
 
         Logger.Debug(`${Logger.Out} ${[STEP.REMOVE_DUPLICATE]}: ${JsonUtils.Stringify(step.stepArgs)}`)
         return currentDataTable
     }
 
     @Logger.LogFunction(true)
-    static async RemoveFields(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TStepArgsRemoveFields>(step.stepArgs, is<TStepArgsRemoveFields>(step.stepArgs),
-            `${Logger.Out} ${[STEP.REMOVE_FIELDS]}: Wrong argument passed`)
-        return step.currentDataTable.RemoveFields(step.stepArgs)
+    static async Break(_step: TStep, _$context?: Partial<TContext>): Promise<undefined> {
+        throw new Error("__BREAK__")
+    }
+
+    @Logger.LogFunction()
+    static async Pick(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
+        Assert.Var<TStepArgsPick>(step.stepArgs, is<TStepArgsPick>(step.stepArgs),
+            `${STEP.PICK}: Wrong argument passed`)
+
+        const params = step.stepArgs
+
+        if (params.join('') == "*")
+            return step.currentDataTable
+
+        if (Array.isArray(params)) {
+            return step.currentDataTable.Pick(params)
+        } else {
+            Assert.Condition(!StringUtils.IsEmpty(params), "Step.Fields: cannot be empty")
+            return step.currentDataTable.Pick(StringUtils.Split(params, ","))
+        }
     }
 
     @Logger.LogFunction(true)
-    static async Break(_step: TStep, _$context?: Partial<TContext>): Promise<undefined> {
-        throw new Error("__BREAK__")
+    static async Omit(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
+        Assert.Var<TStepArgsOmit>(step.stepArgs, is<TStepArgsOmit>(step.stepArgs),
+            `${Logger.Out} ${[STEP.OMIT]}: Wrong argument passed`)
+
+        return step.currentDataTable.Omit(step.stepArgs)
     }
 }

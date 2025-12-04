@@ -45,27 +45,4 @@ describe('CosmoDbHelper', () => {
             expect(CosmosDbHelper.ParseSqlQuery(sqlQuery)).toBe(expected);
         });
     });
-
-    // it('test', () => {
-    //     const query = "SELECT name,category FROM c WHERE name = 'test,A'"
-    //     const expected = [
-    //         "SELECT",
-    //         "name",
-    //         ",",
-    //         "category",
-    //         "FROM",
-    //         "c",
-    //         "WHERE",
-    //         "name",
-    //         "=",
-    //         "'test,A'",
-    //     ]
-
-    //     const tokens = _.chain(query.match(/(?:'[^']*'|[^,\s]+|,)/g))
-    //         .map(_.trim)
-    //         .compact()
-    //         .value()
-
-    //     expect(tokens).toEqual(expected)
-    // })
 });

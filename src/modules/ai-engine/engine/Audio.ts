@@ -70,12 +70,10 @@ export class Audio extends absAiEngine implements IAiEngine {
         const _args: TStepRunAiAudioParams = _.merge(this.DEFAULT, args)
         const { task } = _args
 
-        if (Object.values(AUDIO_TASK).includes(task as AUDIO_TASK)) {
-            await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
-            return await this.RunTask[task](args)
-        }
+        Assert.Condition(Object.values(AUDIO_TASK).includes(task as AUDIO_TASK), `Invalid audio task: ${task}`)
 
-        throw new HttpErrorInternalServerError(`Invalid audio task: ${task}`)
+        await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
+        return this.RunTask[task](args)
     }
 
     @Logger.LogFunction(true)
@@ -115,7 +113,7 @@ export class Audio extends absAiEngine implements IAiEngine {
         };
 
         const result = response.data.result.reduce((obj: { [x: string]: any }, item: { label: string; score: number }) => {
-            const fullName:string = labelMap[item.label as string] || item.label; // fallback to acronym if not found
+            const fullName: string = labelMap[item.label as string] || item.label; // fallback to acronym if not found
             obj[fullName] = item.score;
             return obj;
         }, {});

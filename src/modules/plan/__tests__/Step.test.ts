@@ -1,6 +1,7 @@
 import axios from "axios"
 import typia from "typia"
-import { DataTable, JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, SORT_ORDER } from "../../../types/DataTable"
+import { DataTable, SORT_ORDER } from "../../../types/DataTable"
+import { JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../../utils/DataTableUtils"
 import { AI_ENGINE } from "../../ai-engine/@consts"
 import { AiEngine } from "../../ai-engine/AiEngine"
 import { TEXT_TASK } from "../../ai-engine/consts/TEXT"
@@ -15,8 +16,9 @@ import { Plan } from "../Plan"
 import { Plans } from "../Plans"
 import { Step } from "../Step"
 import { TStep } from "../types/TStep"
-import { TStepArgsAnonymize, TStepArgsJoin, TStepArgsRun, TStepArgsSort } from "../types/TStepArgs"
+import { TStepArgsAnonymize, TStepArgsJoin, TStepArgsPick, TStepArgsRun, TStepArgsSort } from "../types/TStepArgs"
 import { Text } from "../../ai-engine/engine/Text"
+import { DataTableUtils } from "../../../utils/DataTableUtils"
 
 const mySchemaEntity1 = new DataTable("mySchemaEntity1", [
     { name: "Alice", age: 25, country: "USA" },
@@ -39,10 +41,7 @@ const myPlanEntity2 = new DataTable("myPlanEntity2", [
     { country: "Germany", code: "DE" },
 ]);
 
-const entitiesData = new DataTable("entities", [
-    { name: "entity1", type: DATA_ENTITY_TYPE.PLAN_ENTITY },
-    { name: "entity2", type: DATA_ENTITY_TYPE.PLAN_ENTITY }
-]);
+
 
 const aiData = new DataTable("aiData", [
     { filename: "ocr", content: "base64", text: "I'm not confident with this project!" }
@@ -50,18 +49,23 @@ const aiData = new DataTable("aiData", [
 
 const rndResponse = typia.random<TInternalResponse<TSchemaResponse>>() as unknown as TInternalResponse<TSchemaResponse>
 
+let dt_entity1: DataTable
+let dt_entity2: DataTable
+
 describe('Step', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks()
         Plans.Plans.clear()
+        dt_entity1 = await myPlanEntity1.Copy()
+        dt_entity2 = await myPlanEntity2.Copy()
     }, 120_000)
 
     describe('Select', () => {
         it('should return data from schema if schema and entity are given', async () => {
             const select = HttpResponse.Ok(<TSchemaResponse>{
                 ...typia.random<TSchemaResponse>(),
-                data: mySchemaEntity1
+                data: dt_entity1
             })
 
             const spySchemaSelect = jest.spyOn(Schema, 'Select').mockResolvedValue(select);
@@ -69,19 +73,19 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     schema: "mySchema",
-                    entity: mySchemaEntity1.Name
+                    entity: dt_entity1.Name
                 }
             }
 
             const result = await Step.Select(step)
 
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Name).toBe(mySchemaEntity1.Name)
-            expect(result.GetFieldsName()).toEqual(mySchemaEntity1.GetFieldsName())
-            expect(result.Rows()).toEqual(mySchemaEntity1.Rows())
+            expect(result.Name).toBe(dt_entity1.Name)
+            expect(result.GetFieldsName()).toEqual(dt_entity1.GetFieldsName())
+            expect(await result.Rows()).toEqual(await dt_entity1.Rows())
             spySchemaSelect.mockRestore();
         })
 
@@ -89,38 +93,38 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {}
             }
 
             const result = await Step.Select(step)
 
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Name).toBe(myPlanEntity1.Name)
-            expect(result.GetFieldsName()).toEqual(myPlanEntity1.GetFieldsName())
-            expect(result.Rows()).toEqual(myPlanEntity1.Rows())
+            expect(result.Name).toBe(dt_entity1.Name)
+            expect(result.GetFieldsName()).toEqual(dt_entity1.GetFieldsName())
+            expect(await result.Rows()).toEqual(await dt_entity1.Rows())
         })
 
         it('should return plan entity data from given plan entity', async () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
-                    entity: myPlanEntity2.Name
+                    entity: dt_entity2.Name
                 }
             }
 
             Plans.Plans.set(step.currentPlanName, new Plan(step.currentPlanName))
 
-            const spyProcessSchemaRequest = jest.spyOn(Plans.Plans.get(step.currentPlanName)!, 'ProcessSchemaRequest').mockResolvedValue(myPlanEntity2);
+            const spyProcessSchemaRequest = jest.spyOn(Plans.Plans.get(step.currentPlanName)!, 'ProcessSchemaRequest').mockResolvedValue(dt_entity2);
 
             const result = await Step.Select(step)
 
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Name).toBe(myPlanEntity2.Name)
-            expect(result.GetFieldsName()).toEqual(myPlanEntity2.GetFieldsName())
-            expect(result.Rows()).toEqual(myPlanEntity2.Rows())
+            expect(result.Name).toBe(dt_entity2.Name)
+            expect(result.GetFieldsName()).toEqual(dt_entity2.GetFieldsName())
+            expect(await result.Rows()).toEqual(await dt_entity2.Rows())
             spyProcessSchemaRequest.mockRestore();
         })
 
@@ -128,7 +132,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     schema: "mySchema"
                 }
@@ -141,7 +145,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     entity: "nonExistentEntity"
                 }
@@ -164,7 +168,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     schema: "mySchema",
                     entity: mySchemaEntity1.Name,
@@ -174,7 +178,7 @@ describe('Step', () => {
 
             const result = await Step.Insert(step)
 
-            expect(result).toEqual(myPlanEntity1)
+            expect(result).toEqual(dt_entity1)
             spySchemaInsert.mockRestore();
         })
 
@@ -184,7 +188,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     entity: "users"
                 }
@@ -200,7 +204,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     schema: "mySchema"
                 }
@@ -211,21 +215,21 @@ describe('Step', () => {
         })
 
         it('should add rows to current datatable when no schema and no entity', async () => {
-            const spyAddRows = jest.spyOn(myPlanEntity1, 'AddRows').mockReturnValue(myPlanEntity1);
+            const spyAddRows = jest.spyOn(dt_entity1, 'RowsAdd').mockImplementation(() => Promise.resolve(dt_entity1));
 
             const data = [{ name: "John", age: 25 }]
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     data
                 }
             }
 
             const result = await Step.Insert(step)
-            expect(result).toBe(myPlanEntity1.AddRows(data))
+            expect(result).toBe(await dt_entity1.RowsAdd(data))
             spyAddRows.mockRestore();
         })
 
@@ -267,7 +271,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     schema: "mySchema",
                     entity: "users",
@@ -277,7 +281,7 @@ describe('Step', () => {
             }
 
             const result = await Step.Update(step)
-            expect(result).toEqual(myPlanEntity1)
+            expect(result).toEqual(dt_entity1)
             spySchemaUpdate.mockRestore();
         })
 
@@ -287,7 +291,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     entity: "users"
                 }
@@ -303,7 +307,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     schema: "mySchema"
                 }
@@ -314,18 +318,17 @@ describe('Step', () => {
         })
 
         it('should update current datatable when no schema and no entity', async () => {
-            const data = [{ name: "David", age: 25, country: "France" }]
+            const data = [{ age: 25, country: "France" }]
 
-            const output = await myPlanEntity1
-                .FreeSqlAsync(
-                    `UPDATE [${myPlanEntity1.Name}] SET age = 25, country = 'France' WHERE name = 'David'`
-                    , data
-                )
+            const output = await dt_entity1.Copy()
+            await output.FreeSql({
+                sqlQuery: `UPDATE "${dt_entity1.Name}" SET age = 25, country = 'France' WHERE name = 'David'`
+            })
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     data: data,
                     filter: { name: "David" }
@@ -333,7 +336,11 @@ describe('Step', () => {
             }
 
             const result = await Step.Update(step)
-            expect(result).toEqual(output)
+
+            const outputRows = await output.Rows()
+            const resultRows = await result.Rows()
+
+            expect(resultRows).toEqual(outputRows)
         })
 
         it('should throw error when no args are given', async () => {
@@ -374,7 +381,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     schema: "mySchema",
                     entity: "users",
@@ -383,7 +390,7 @@ describe('Step', () => {
             }
 
             const result = await Step.Delete(step)
-            expect(result).toEqual(myPlanEntity1)
+            expect(result).toEqual(dt_entity1)
             spySchemaDelete.mockRestore();
         })
 
@@ -393,7 +400,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     entity: "users"
                 }
@@ -409,7 +416,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     schema: "mySchema"
                 }
@@ -421,12 +428,12 @@ describe('Step', () => {
 
         it('should delete current datatable when no schema and no entity', async () => {
 
-            const output = await myPlanEntity1.DeleteRows("name = 'David'")
+            const output = await dt_entity1.RowsDelete("name = 'David'")
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     filter: { name: "David" }
                 }
@@ -468,7 +475,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: { schema: "mySchema" }
             }
 
@@ -488,7 +495,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {}
             }
 
@@ -496,7 +503,7 @@ describe('Step', () => {
 
             expect(spyConfigManagerGet).toHaveBeenCalledWith("plans.myPlan")
             expect(result).toBeInstanceOf(DataTable)
-            expect(result.Rows()).toEqual([
+            expect(await result.Rows()).toEqual([
                 { name: "entity1", type: DATA_ENTITY_TYPE.PLAN_ENTITY },
                 { name: "entity2", type: DATA_ENTITY_TYPE.PLAN_ENTITY }
             ])
@@ -511,7 +518,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity2.Clone(),
+                currentDataTable: dt_entity2,
                 stepArgs: <TStepArgsJoin>{
                     type: JOIN_TYPE.LEFT,
                     schema: "mySchema",
@@ -521,7 +528,10 @@ describe('Step', () => {
                 }
             }
 
-            const output = myPlanEntity2.Clone<DataTable>().RightJoin(mySchemaEntity1, "country", "country")
+            const output = await DataTableUtils.RightJoin(
+                dt_entity2,
+                dt_entity1,
+                "country", "country")
             const result = await Step.Join(step)
 
             expect(result).toEqual(output)
@@ -536,7 +546,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: <TStepArgsJoin>{
                     entity: mySchemaEntity1.Name,
                     type: JOIN_TYPE.INNER,
@@ -545,7 +555,10 @@ describe('Step', () => {
                 }
             }
 
-            const output = myPlanEntity1.Clone<DataTable>().InnerJoin(mySchemaEntity1, "country", "country")
+            const output = await DataTableUtils.InnerJoin(
+                dt_entity1,
+                mySchemaEntity1,
+                "country", "country")
             const result = await Step.Join(step)
 
             expect(result).toEqual(output)
@@ -557,7 +570,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: null
             }
 
@@ -565,50 +578,50 @@ describe('Step', () => {
         })
     })
 
-    describe('Fields', () => {
+    describe('Pick', () => {
         it('should return current datatable when stepArgs is "*"', async () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
-                stepArgs: "*"
+                currentDataTable: dt_entity1,
+                stepArgs: <TStepArgsPick>["*"]
             }
 
-            const result = await Step.Fields(step)
-            expect(result).toEqual(myPlanEntity1)
+            const result = await Step.Pick(step)
+            expect(result).toEqual(dt_entity1)
         })
 
         it('should select specific fields from array', async () => {
-            const spySelectFields = jest.spyOn(myPlanEntity1, 'SelectFields').mockReturnValue(myPlanEntity1);
+            const spySelectFields = jest.spyOn(dt_entity1, 'Pick').mockReturnValue(Promise.resolve(dt_entity1));
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
-                stepArgs: ["name", "age"]
+                currentDataTable: dt_entity1,
+                stepArgs: <TStepArgsPick>["name", "age"]
             }
 
-            const result = await Step.Fields(step)
+            const result = await Step.Pick(step)
 
             expect(spySelectFields).toHaveBeenCalledWith(["name", "age"])
-            expect(result).toBe(myPlanEntity1)
+            expect(result).toBe(dt_entity1)
             spySelectFields.mockRestore();
         })
 
         it('should select specific fields from comma-separated string', async () => {
-            const spySelectFields = jest.spyOn(myPlanEntity1, 'SelectFields').mockReturnValue(myPlanEntity1);
+            const spySelectFields = jest.spyOn(dt_entity1, 'Pick').mockReturnValue(Promise.resolve(dt_entity1));
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
-                stepArgs: "name,age"
+                currentDataTable: dt_entity1,
+                stepArgs: <TStepArgsPick>["name", "age"]
             }
 
-            const result = await Step.Fields(step)
+            const result = await Step.Pick(step)
 
             expect(spySelectFields).toHaveBeenCalledWith(["name", "age"])
-            expect(result).toBe(myPlanEntity1)
+            expect(result).toBe(dt_entity1)
             spySelectFields.mockRestore();
         })
     })
@@ -619,23 +632,23 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: <TStepArgsSort>{ age: SORT_ORDER.ASC }
             }
 
             const result = await Step.Sort(step)
-            expect(result.Rows()[0].age).toEqual(14)
+            expect((await result.Rows())[0].age).toEqual(14)
         })
     })
 
     describe('Debug', () => {
         it('should set debug metadata on datatable', async () => {
-            const spySetMetaData = jest.spyOn(myPlanEntity1, 'SetMetaData');
+            const spySetMetaData = jest.spyOn(dt_entity1, 'MetaDataSet');
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: "error"
             }
 
@@ -653,12 +666,12 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: mySchemaEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: <TStepArgsAnonymize>["name"]
             }
 
             const result = await Step.Anonymize(step)
-            const output = await mySchemaEntity1.Clone<DataTable>().Anonymize(["name"])
+            const output = await DataTableUtils.Anonymize(dt_entity1, ["name"])
             expect(result).toEqual(output)
         })
     })
@@ -668,7 +681,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: null
             }
 
@@ -684,14 +697,14 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: {
                     keys: keys,
                     method: method,
                     strategy: strategy
                 }
             }
-            const output = await myPlanEntity1.Clone<DataTable>().RemoveDuplicates(keys, method, strategy)
+            const output = await DataTableUtils.RemoveDuplicates(dt_entity1, keys, method, strategy)
             const result = await Step.RemoveDuplicates(step)
 
             expect(result).toEqual(output)
@@ -704,12 +717,12 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: ["age"]
             }
 
-            const result = await Step.RemoveFields(step)
-            const output = myPlanEntity1.Clone<DataTable>().RemoveFields(["age"])
+            const result = await Step.Omit(step)
+            const output = await dt_entity1.Omit(["age"])
             expect(result).toEqual(output)
         })
     })
@@ -719,7 +732,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: myPlanEntity1.Clone(),
+                currentDataTable: dt_entity1,
                 stepArgs: null
             }
 
@@ -792,7 +805,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: aiData.Clone(),
+                currentDataTable: await aiData.Copy(),
                 stepArgs: <TStepArgsRun>{
                     ai: AI_ENGINE.TEXT,
                     task: TEXT_TASK.EMOTION_DETECTION,
@@ -805,8 +818,9 @@ describe('Step', () => {
             }
 
             const result = await Step.Run(step)
+            const rows = await result.Rows()
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Object.values(result.Rows()[0][`${AI_ENGINE.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`] as any).forEach(value => {
+            Object.values(rows[0][`${AI_ENGINE.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`] as any).forEach(value => {
                 expect(value).toEqual(expect.any(Number));
             });
         })
@@ -815,7 +829,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: aiData.Clone(),
+                currentDataTable: await aiData.Copy(),
                 stepArgs: <TStepArgsRun>{
                     ai: AI_ENGINE.TEXT,
                     task: TEXT_TASK.EMOTION_DETECTION,
@@ -828,8 +842,9 @@ describe('Step', () => {
             }
 
             const result = await Step.Run(step)
+            const rows = await result.Rows()
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Object.values(result.Rows()[0]["result"] as any).forEach(value => {
+            Object.values(rows[0]["result"] as any).forEach(value => {
                 expect(value).toEqual(expect.any(Number));
             });
         })
@@ -838,7 +853,7 @@ describe('Step', () => {
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
-                currentDataTable: aiData.Clone(),
+                currentDataTable: await aiData.Copy(),
                 stepArgs: <TStepArgsRun>{
                     ai: AI_ENGINE.TEXT,
                     task: TEXT_TASK.EMOTION_DETECTION,
@@ -847,16 +862,18 @@ describe('Step', () => {
                     },
                     input: "text",
                     output: {
-                        joy: "emotion_joy",
-                        surprise: "emotion_surprise"
+                        emotion_joy: "joy",
+                        emotion_surprise: "surprise"
                     }
                 }
             }
 
             const result = await Step.Run(step)
 
-            expect(result.Rows()[0]["emotion_joy"]).toEqual(expect.any(Number));
-            expect(result.Rows()[0]["emotion_surprise"]).toEqual(expect.any(Number));
+            const rows = await result.Rows()
+
+            expect(rows[0]["emotion_joy"]).toEqual(expect.any(Number));
+            expect(rows[0]["emotion_surprise"]).toEqual(expect.any(Number));
         })
     })
 })

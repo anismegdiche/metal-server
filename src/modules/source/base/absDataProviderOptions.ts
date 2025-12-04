@@ -4,7 +4,6 @@
 import { TSchemaRequest } from '../../schema/types/TSchemaRequest'
 import { TOptionalParameter } from '../types/TOptionalParameter'
 import { DataTable } from '../../../types/DataTable'
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { TJson } from "../../../types/TJson"
 import { TContext } from "../../sandbox/types/TContext"
@@ -31,7 +30,7 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
         return options
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction(true)
     GetFilter(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
 
@@ -44,30 +43,30 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
         }
 
         if (schemaRequest?.filter) {
-            options.Filter = JsonUtils.ToArray(
-                PlaceHolder.EvaluateJsCode(
-                    schemaRequest.filter,
-                    new Sandbox($context)
-                )
+            options.Filter = PlaceHolder.EvaluateJsCode(
+                schemaRequest.filter,
+                new Sandbox($context)
             )
         }
         return options
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction(true)
     GetFields(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
-        options.Fields = (schemaRequest?.fields === undefined)
+        const _fields: string = (schemaRequest?.fields === undefined)
             ? '*'
             : PlaceHolder.EvaluateJsCode(
                 schemaRequest.fields,
                 new Sandbox($context)
-            )
+            ) ?? '*'
+
+        options.Fields = _fields.split(',').map(f => f.trim())
 
         return options
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction(true)
     GetSort(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         if (schemaRequest?.sort) {
@@ -79,7 +78,7 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
         return options
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction(true)
     GetData(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         const { schema, entity, data } = schemaRequest
@@ -96,7 +95,7 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
         return options
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction(true)
     GetCache(options: TOptionalParameter, schemaRequest: TSchemaRequest): Partial<TOptionalParameter> {
         if (schemaRequest?.cache)
@@ -104,7 +103,7 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
         return options
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     IsFilterNotEmpty(schemaRequest: TSchemaRequest): boolean {
         return schemaRequest["filter-expression"] !== undefined || Object.keys(schemaRequest?.filter || {}).length > 0
     }

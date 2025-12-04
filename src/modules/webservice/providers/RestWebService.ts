@@ -80,7 +80,7 @@ export class RestWebService extends absWebServiceProvider {
             if (!httpStatusSuccess.includes(wsResp.status))
                 throw HttpErrorSwitch(wsResp.status, `${endpointType}: ${wsResp.statusText}`)
 
-            // eslint-disable-next-line no-param-reassign
+             
             $context = _.merge(
                 $context,
                 {
@@ -125,7 +125,7 @@ export class RestWebService extends absWebServiceProvider {
             await this.RequestClient(ENDPOINT.SESSION, [200])
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         Logger.Debug(`${Logger.Out} RestWebService disconnected`)

@@ -16,16 +16,17 @@ import { Convert } from '../../utils/Convert'
 import { JsonUtils } from '../../utils/JsonUtils'
 import { Logger } from '../../utils/Logger'
 import { TInternalResponse } from '../schema/types/TInternalResponse'
+import { TRow } from '../../types/DataTable'
 
 
-export class ResponseHandler {    
+export class ResponseHandler {
 
     static SetContentJson(req: Request, res: Response, next: NextFunction) {
         res.setHeader('Content-Type', 'application/json; charset=utf-8')
         next()
     }
 
-    static FromSchemaResponse(schemaResponse: TSchemaResponse, res: Response): Response {
+    static async FromSchemaResponse(schemaResponse: TSchemaResponse, res: Response): Promise<Response> {
         const { schema, entity, status } = schemaResponse
 
         let commonJsonResponse: TJson = {
@@ -40,8 +41,8 @@ export class ResponseHandler {
             commonJsonResponse = {
                 ...commonJsonResponse,
                 metadata: schemaResponse.data.MetaData,
-                fields: schemaResponse.data.Fields(),
-                rows: schemaResponse.data.Rows()
+                fields: schemaResponse.data.Fields,
+                rows: await schemaResponse.data.Rows()
             }
         }
 
@@ -54,38 +55,29 @@ export class ResponseHandler {
         return res
     }
 
-    static #ChunkPrepare(schemaResponse: TSchemaResponse, res: Response, resJson: TJson) {
+    static async #ChunkPrepare(schemaResponse: TSchemaResponse, res: Response, resJson: TJson): Promise<void> {
         // Create a readable stream for the response
         const readable = new Readable({
             objectMode: true,
-            read() {
+            async read() {
                 if (TypeUtils.IsSchemaResponseWithData(schemaResponse)) {
                     // Push the initial part of the JSON response
-                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push(
-
-                        JSON.stringify(_.omit(resJson, "rows"))
+                        JsonUtils.Stringify(_.omit(resJson, "rows"))
                             .replace(/}$/, ',')) // Remove closing brace to continue streaming rows
-
-                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push('"rows":[')
-
-                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
-                    this.push(JSON.stringify(schemaResponse.data.Rows().shift()))
-
-                    while (schemaResponse.data.Rows().length > 0) {
-                        // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
-                        this.push(`,${JSON.stringify(schemaResponse.data.Rows().shift())}`)
+                    const iterator: AsyncIterableIterator<TRow> = await schemaResponse.data.RowsIterator({ batchSize: 1000 })
+                    let row = await iterator.next()
+                    this.push(JsonUtils.Stringify(row.value))
+                    while (!row.done) {
+                        row = await iterator.next()
+                        this.push(`,${JsonUtils.Stringify(row.value)}`)
                     }
-                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push(']') // End of array
-                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push('}') // End of json
                 } else {
-                    // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                     this.push(JSON.stringify(resJson))
                 }
-                // deepcode ignore ArrayMethodOnNonArray: This usage is correct and unrelated to arrays
                 this.push(null) // End of stream
             }
         })
@@ -102,7 +94,7 @@ export class ResponseHandler {
         })
     }
 
-    static Response(res: Response, intRes: TInternalResponse<TSchemaResponse | undefined>): Response {
+    static async Response(res: Response, intRes: TInternalResponse<TSchemaResponse | undefined>): Promise<Response> {
         if (!intRes.Body) {
             throw new HttpErrorInternalServerError()
         }

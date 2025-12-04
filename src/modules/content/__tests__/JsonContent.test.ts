@@ -46,11 +46,11 @@ describe('JsonContent', () => {
         })
 
         it('should return the data as a DataTable', async () => {
-            const dataTable = await jsonContent.Get(undefined, {})
+            const dataTable = await jsonContent.Get({}, {})
 
             expect(dataTable).toBeInstanceOf(DataTable)
             expect(dataTable.Name).toBe(jsonContent.EntityName)
-            expect(dataTable.Rows()).toEqual([
+            expect(await dataTable.Rows()).toEqual([
                 {
                     id: 1,
                     name: 'John'
@@ -65,11 +65,11 @@ describe('JsonContent', () => {
         it('should return an empty DataTable if arrayPath is not found', async () => {
             jsonContent.Params!.path = 'nonexistent.path'
 
-            const dataTable = await jsonContent.Get(undefined, {})
+            const dataTable = await jsonContent.Get({}, {})
 
             expect(dataTable).toBeInstanceOf(DataTable)
             expect(dataTable.Name).toBe(jsonContent.EntityName)
-            expect(dataTable.Rows()).toEqual([])
+            expect(await dataTable.Rows()).toEqual([])
         })
     })
 
@@ -81,7 +81,7 @@ describe('JsonContent', () => {
         })
 
         it('should update the content and return the updated raw content', async () => {
-            const newData = new DataTable(name, [
+            const newData = await new DataTable(name, [
                 {
                     id: 3,
                     name: 'Alice'
@@ -92,9 +92,13 @@ describe('JsonContent', () => {
                 }
             ])
 
+            await newData.RowsSet()
+
             await jsonContent.Set(newData, {})
 
-            expect(await jsonContent.Get(undefined, {})).toEqual(newData)
+            const content = await jsonContent.Get({}, {})
+
+            expect(await content.Rows()).toEqual(await newData.Rows())
         })
     })
 })

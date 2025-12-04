@@ -4,7 +4,7 @@
 //
 import { Readable } from 'node:stream'
 //
-import { DataTable } from "../../../types/DataTable"
+import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 //
@@ -22,11 +22,11 @@ export abstract class absContentProvider extends clsClonable implements IContent
     Config?: TContentConfig              // raw configuration
     Content = new VirtualFileSystem()
 
-    SetConfig(contentConfig: TContentConfig):void {
+    SetConfig(contentConfig: TContentConfig): void {
         this.Config = contentConfig
     }
 
     abstract InitContent(name: string, content: Readable): void
-    abstract Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable>
+    abstract Get(rowsParams: TRowsCopyParams, $context: Partial<TContext>): Promise<DataTable>
     abstract Set(data: DataTable, $context: Partial<TContext>): Promise<Readable>
 }

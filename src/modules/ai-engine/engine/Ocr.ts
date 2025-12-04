@@ -9,7 +9,6 @@ import { LangUtils } from '../../../utils/LangUtils'
 import { Logger } from '../../../utils/Logger'
 import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from '../../../utils/Utils'
-import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
 import { AI_ENGINE } from '../@consts'
 import { TAiRunArguments, TAiRunOutput, TConfigAiEngine } from '../@types'
 import { AiDocker } from '../AiDocker'
@@ -56,12 +55,10 @@ export class Ocr extends absAiEngine implements IAiEngine {
         const _args: TStepRunAiOcrParams = _.merge(this.DEFAULT, args)
         const { task } = _args
 
-        if (Object.values(OCR_TASK).includes(task)) {
-            await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
-            return await this.RunTask[task](args)
-        }
+        Assert.Condition(Object.values(OCR_TASK).includes(task as OCR_TASK), `Invalid ocr task: ${task}`)
 
-        throw new HttpErrorInternalServerError(`Invalid model: ${task}`)
+        await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
+        return this.RunTask[task](args)
     }
 
     @Logger.LogFunction(true)

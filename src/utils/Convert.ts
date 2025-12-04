@@ -23,7 +23,7 @@ export class Convert {
         const { schema, entity } = req.params
         const { sort } = req.query ?? {}        
 
-        // eslint-disable-next-line no-undef-init
+         
         let _sort : TJson<string> | undefined = undefined
 
         if (typeof sort === 'string') {

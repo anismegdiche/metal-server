@@ -21,7 +21,6 @@ import { TContext } from "../../sandbox/types/TContext"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { TIpPort } from "../../../types/TIpPort"
 import { Assert } from "../../../utils/Assert"
-import { TypeUtils } from "../../../utils/TypeUtils"
 
 
 //
@@ -117,7 +116,7 @@ export class MySqlData extends absDataProvider {
 
         const connection = await this.#EnsureConnection()
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -132,7 +131,7 @@ export class MySqlData extends absDataProvider {
         const data = new DataTable(schemaRequest.entity)
 
         if (Array.isArray(rows) && rows.length > 0) {
-            data.AddRows(<TRow[]>rows)
+            await data.RowsSet(<TRow[]>rows)
             if (options?.Cache) {
                 Cache.Set(schemaRequest, data)
             }
@@ -150,7 +149,7 @@ export class MySqlData extends absDataProvider {
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -161,7 +160,7 @@ export class MySqlData extends absDataProvider {
         if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
+        const sqlQueryHelper = await this.GenerateSqlInsert(schemaRequest, options)
 
         try {
             const connection = await this.#EnsureConnection()
@@ -181,7 +180,7 @@ export class MySqlData extends absDataProvider {
     async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
         const connection = await this.#EnsureConnection()
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -192,7 +191,7 @@ export class MySqlData extends absDataProvider {
         if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
+        const sqlQueryHelper = await this.GenerateSqlUpdate(schemaRequest, options)
 
         await connection.query(sqlQueryHelper.Query())
         Cache.Remove(schemaRequest)
@@ -204,7 +203,7 @@ export class MySqlData extends absDataProvider {
     async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
         const connection = await this.#EnsureConnection()
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -220,7 +219,7 @@ export class MySqlData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented('AddEntity operation is not implemented')
@@ -231,7 +230,7 @@ export class MySqlData extends absDataProvider {
 
         const connection = await this.#EnsureConnection()
 
-        const {schema} = schemaRequest
+        const { schema } = schemaRequest
 
         const sqlQuery = `
                 SELECT 
@@ -257,12 +256,12 @@ export class MySqlData extends absDataProvider {
         })
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     EscapeEntity(entity: string): string {
         return `\`${entity}\``
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     EscapeField(field: string): string {
         return `\`${field}\``
     }

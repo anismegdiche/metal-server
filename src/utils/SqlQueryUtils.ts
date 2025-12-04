@@ -5,10 +5,8 @@ import _ from 'lodash'
 //
 import { TOrderBy, TRow } from "../types/DataTable"
 import { Logger } from './Logger'
-import { JsonUtils } from './JsonUtils'
 import { HttpErrorBadRequest, HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
 import { TAny } from "../types/TAny"
-import { StringUtils } from './StringUtils'
 
 //
 export const ESCAPE_FIELD_VALUE = "$>"
@@ -20,11 +18,46 @@ export enum SQL_TYPE {
     OPERATOR = 'operator',
     PAR_OPEN = 'par-open',
     PAR_CLOSED = 'par-closed',
-    SEPERATOR = 'seperator',
+    SEPARATOR = 'separator',
     COMMAND = 'command',
     ERROR = 'error',
     TERMINATOR = 'terminator',
-    COMMENT = 'comment'
+    COMMENT = 'comment',
+    KEYWORD = 'keyword',
+    WILDCARD = 'wildcard',
+    ENTITY = 'entity',
+    FIELD = 'field',
+    FUNCTION = 'function'
+}
+
+export const SQL_COMMANDS = [
+    'SELECT', 'INSERT', 'UPDATE', 'DELETE',
+    'CREATE', 'ALTER', 'DROP', 'TRUNCATE', 'RENAME',
+    'COMMIT', 'ROLLBACK', 'SAVEPOINT', 'SET',
+    'FROM', 'WHERE', 'GROUP', 'HAVING', 'ORDER', 'BY',
+    'ASC', 'DESC', 'LIMIT', 'OFFSET', 'VALUES', 'INTO'
+]
+
+export const SQL_KEYWORDS = [
+    'NOT', 'AND', 'OR', 'IN', 'BETWEEN', 'IS', 'NULL',
+    'JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'OUTER',
+    'ON', 'AS', 'DISTINCT', 'UNION', 'ALL', 'EXISTS',
+    'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'LIKE',
+    'PRIMARY', 'KEY', 'FOREIGN', 'REFERENCES', 'DEFAULT',
+    'CHECK', 'INDEX', 'VIEW', 'DATABASE', 'TABLE'
+]
+
+export const SQL_OPERATORS = [
+    '+', '-', '*', '/', '=', '<', '>', '<=', '>=', '<>', '!=', 'LIKE'
+]
+
+export const SQL_COMMENT_MARKERS = ['#', '--', '/*', '*/', '//']
+
+export const SQL_PUNCTUATION = {
+    PAR_OPEN: '(',
+    PAR_CLOSED: ')',
+    TERMINATOR: ';',
+    SEPARATOR: ','
 }
 
 
@@ -32,6 +65,7 @@ export enum SQL_TYPE {
 export type TSqlToken = {
     token: string
     type: SQL_TYPE
+    context: string
 }
 
 
@@ -75,35 +109,12 @@ export class SqlQueryUtils {
         }
     }
 
-    _escapeFields(fields?: string[] | string): string {
-        if (!fields)
+    _escapeFields(fields?: string[]): string {
+        if (!fields || fields.length === 0)
             return ""
 
-        const cleanFields: string[] = []
-
-        switch (true) {
-            case Array.isArray(fields):
-                cleanFields.push(...fields)
-                break
-
-
-            case _.isString(fields) && fields.includes(','):
-                {
-                    const _aFields = fields.split(',')
-                    _aFields.forEach((__field) => {
-                        cleanFields.push(__field.trim())
-                    })
-                    break
-                }
-            default:
-                cleanFields.push(fields.trim())
-                break
-        }
-
-        if (cleanFields.length === 0)
-            return ""
-
-        return _.chain(cleanFields)
+        return _.chain(fields)
+            .map((field) => field.trim())
             .map(this._fnEscapeField)
             .join(', ')
             .value()
@@ -114,29 +125,17 @@ export class SqlQueryUtils {
         switch (true) {
             case value === undefined:
             case value === null:
-                return 'NULL'
+                return 'NULL';  // Use literal NULL for nullish values
 
             case typeof value === 'string' && value.startsWith(ESCAPE_FIELD_VALUE):
-                return value.slice(ESCAPE_FIELD_VALUE.length).trim()
-
-            case typeof value === 'string' && StringUtils.IsLatin(value):
-                this.QueryParams.push(value)
-                return '?'
-
-            case typeof value === 'string':
-                return `'${value.replace(/'/g, "''")}'`
-
-            case typeof value === 'number':
-            case !isNaN(parseInt(value as string, 10)):
-            case !isNaN(parseFloat(value as string)):
-                return value.toString()
-
-            case typeof value === 'object':
-                this.QueryParams.push(value)
-                return '?'
+                // If you have a special marker to escape raw value, return raw without parameterizing
+                return value.slice(ESCAPE_FIELD_VALUE.length).trim();
 
             default:
-                return `'${JsonUtils.Stringify(value).replace(/'/g, "''")}'`
+                // For all other cases, including strings, numbers, and objects,
+                // push the value as a parameter and return the placeholder
+                this.QueryParams.push(value);
+                return '?';
         }
     }
 
@@ -146,49 +145,101 @@ export class SqlQueryUtils {
             return [this._query]
         }
 
-        const tokens = _.chain(query.match(/(?:'[^']*'|[^,\s]+|,)/g))
-            .map(_.trim)
-            .compact()
-            .value()
+        const tokens: string[] = [];
+        let currentToken = '';
+        let inString = false;
+        let inComment = false;
+        let stringQuote = '';
 
+        for (let i = 0; i < query.length; i++) {
+            const char = query[i];
+            const nextChar = query[i + 1];
 
-        const wherePos = _.findIndex(tokens, (word) => word.toUpperCase() === "WHERE")
+            // Handle string literals
+            if ((char === '"' || char === "'") && !inComment) {
+                if (!inString) {
+                    // Start of string
+                    inString = true;
+                    stringQuote = char;
+                    currentToken += char;
+                } else if (char === stringQuote) {
+                    // Handle escaped quotes inside string
+                    if (query[i - 1] === '\\') {
+                        currentToken += char;
+                    } else {
+                        // End of string
+                        currentToken += char;
+                        tokens.push(currentToken);
+                        currentToken = '';
+                        inString = false;
+                        stringQuote = '';
+                    }
+                } else {
+                    // Inside a string but not the closing quote
+                    currentToken += char;
+                }
+                continue;
+            }
 
-        const setPos = _.findIndex(tokens, (word) => word.toUpperCase() === "SET")
+            // If we're inside a string, just add the character
+            if (inString) {
+                currentToken += char;
+                continue;
+            }
 
-        const pos = (wherePos != -1 && setPos != -1)
-            ? Math.min(wherePos, setPos)
-            : Math.max(wherePos, setPos)
+            // Handle comments
+            if (char === '-' && nextChar === '-' && !inComment) {
+                if (currentToken.trim()) {
+                    tokens.push(currentToken.trim());
+                    currentToken = '';
+                }
+                inComment = true;
+                continue;
+            }
 
-        let beforeClause: string[] = []
-        let afterClause: string[] = []
+            if (inComment) {
+                if (char === '\n' || i === query.length - 1) {
+                    inComment = false;
+                }
+                continue;
+            }
 
-        if (pos !== -1) {
+            // Handle special characters that should be separate tokens
+            if (/[(),;=<>!+\-*/%]/.test(char)) {
+                if (currentToken.trim()) {
+                    tokens.push(currentToken.trim());
+                    currentToken = '';
+                }
+                // Handle multi-character operators (<=, >=, <>, !=, ==)
+                if (nextChar && /[=<>!]/.test(char) && /[=<>]/.test(nextChar)) {
+                    tokens.push(char + nextChar);
+                    i++; // Skip next character since we've processed it
+                } else {
+                    tokens.push(char);
+                }
+                continue;
+            }
 
-            beforeClause = _.slice(tokens, 0, pos)
+            // Handle whitespace
+            if (/\s/.test(char)) {
+                if (currentToken.trim()) {
+                    tokens.push(currentToken.trim());
+                    currentToken = '';
+                }
+                continue;
+            }
 
-            afterClause = _.slice(tokens, pos)
-
-            afterClause = _.chain(afterClause)
-                .map((token) => {
-                    return (token.startsWith("'") && token.endsWith("'"))
-                        ? token
-                        : token.replace(/[+\-*/=]/g, match => ` ${match} `)
-                })
-                .map(token => {
-                    return (token.startsWith("'") && token.endsWith("'"))
-                        ? token
-                        : token.split(' ')
-                })
-                .flatten()
-                .map(_.trim)
-                .compact()
-                .value()
-
-
-            return _.concat(beforeClause, afterClause)
+            // Add character to current token
+            currentToken += char;
         }
-        return tokens
+
+        // Add the last token if it exists
+        if (currentToken.trim()) {
+            tokens.push(currentToken.trim());
+        }
+
+        // Filter out empty tokens
+        return tokens.filter(token => token.length > 0);
     }
 
     _detectSqlInjection() {
@@ -296,9 +347,9 @@ export class SqlQueryUtils {
     }
 
     @Logger.LogFunction(true)
-    Select(fields?: string): this {
+    Select(fields?: string[]): this {
 
-        this._query = (fields === undefined || fields === '*')
+        this._query = (fields === undefined || fields.join('') === '*')
             ? `SELECT *`
             : `SELECT ${this._escapeFields(fields)}`
 
@@ -408,7 +459,7 @@ export class SqlQueryUtils {
     }
 
     @Logger.LogFunction(true)
-    Fields(fields?: string[] | string): this {
+    Fields(fields?: string[]): this {
         if (!fields)
             return this
 
@@ -456,54 +507,101 @@ export class SqlQueryUtils {
     }
 
     Tokenize(): TSqlToken[] {
-        const tokens = _.chain(this._sanitizeTokenize())
-            .map((token: string) => {
-                let tokenType = ''
+        const sanitizedTokens = this._sanitizeTokenize();
+
+        // default=WHERE case of only condition is passed
+        let context = 'WHERE'
+        let isInsertFields = false
+
+        const tokens = _.chain(sanitizedTokens)
+            .map((token: string, index: number) => {
+                const upperToken = token.toUpperCase();
+                let type = ''
+
                 switch (true) {
-                    case ['SELECT', 'UPDATE', 'INSERT', 'DELETE', 'SET', 'FROM', 'WHERE', 'LIKE', 'ORDER', 'BY', 'ASC', 'DESC'].includes(token.toUpperCase()):
-                        tokenType = SQL_TYPE.COMMAND
+                    case SQL_COMMANDS.includes(upperToken):
+                        type = SQL_TYPE.COMMAND
+                        context = upperToken
                         break
-                    case token === '(':
-                        tokenType = SQL_TYPE.PAR_OPEN
+
+                    case SQL_KEYWORDS.includes(upperToken):
+                        type = SQL_TYPE.KEYWORD
                         break
-                    case token === ')':
-                        tokenType = SQL_TYPE.PAR_CLOSED
+
+                    case token === "*" && context == 'SELECT':
+                    case token === "?" && context == 'VALUES':
+                        type = SQL_TYPE.WILDCARD
                         break
-                    case token === ';':
-                        tokenType = SQL_TYPE.TERMINATOR
+
+                    case SQL_OPERATORS.includes(upperToken):
+                        type = SQL_TYPE.OPERATOR
                         break
-                    case ['#', '--', '/*', '*/', '//'].includes(token):
-                        tokenType = SQL_TYPE.COMMENT
+
+                    case token === SQL_PUNCTUATION.PAR_OPEN && context === 'INTO':
+                        type = SQL_TYPE.PAR_OPEN
+                        isInsertFields = true
                         break
-                    case ['+', '-', '*', '/', '='].includes(token):
-                        tokenType = SQL_TYPE.OPERATOR
+
+                    case token === SQL_PUNCTUATION.PAR_CLOSED && context === 'INTO':
+                        type = SQL_TYPE.PAR_CLOSED
+                        isInsertFields = false
                         break
+
+                    case token === SQL_PUNCTUATION.PAR_OPEN:
+                        type = SQL_TYPE.PAR_OPEN
+                        break
+
+                    case token === SQL_PUNCTUATION.PAR_CLOSED:
+                        type = SQL_TYPE.PAR_CLOSED
+                        break
+
+                    case token === SQL_PUNCTUATION.TERMINATOR:
+                        type = SQL_TYPE.TERMINATOR
+                        break
+
+                    case token === SQL_PUNCTUATION.SEPARATOR:
+                        type = SQL_TYPE.SEPARATOR
+                        break
+
+                    case ['FROM', 'INTO', 'UPDATE'].includes(context) && [false].includes(isInsertFields):
+                        type = SQL_TYPE.ENTITY
+                        break
+
+                    case ['SELECT', 'INTO'].includes(context):
+                        type = SQL_TYPE.FIELD
+                        break
+
+                    case SQL_COMMENT_MARKERS.includes(upperToken):
+                        type = SQL_TYPE.COMMENT
+                        break
+
                     case token.startsWith("'") && token.endsWith("'"):
-                        tokenType = SQL_TYPE.STRING
+                        type = SQL_TYPE.STRING
                         break
-                    case !isNaN(parseInt(token, 10)):
-                    case !isNaN(parseFloat(token)):
-                        tokenType = SQL_TYPE.NUMBER
+
+                    case !isNaN(Number(token)):
+                        type = SQL_TYPE.NUMBER
                         break
                     case token === ',':
-                        tokenType = SQL_TYPE.SEPERATOR
+                        type = SQL_TYPE.SEPARATOR
                         break
                     case token.startsWith('"') && !token.endsWith('"'):
                     case token.startsWith("'") && !token.endsWith("'"):
-                        tokenType = SQL_TYPE.ERROR
+                        type = SQL_TYPE.ERROR
                         break
                     default:
-                        tokenType = SQL_TYPE.VARIABLE
+                        type = SQL_TYPE.VARIABLE
                         break
                 }
 
                 return <TSqlToken>{
                     token,
-                    type: tokenType
+                    type,
+                    context
                 }
             })
             .value()
 
-        return tokens as any[]
+        return tokens
     }
 }

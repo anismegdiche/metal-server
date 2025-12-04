@@ -1,4 +1,4 @@
-/* eslint-disable no-template-curly-in-string */
+ 
 //
 //
 //
@@ -202,18 +202,18 @@ export class MetalData extends absDataProvider {
         return intResp
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     @Logger.LogFunction()
     async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     EscapeEntity(entity: string): string {
         return entity
     }
 
-    // eslint-disable-next-line class-methods-use-this
+     
     EscapeField(field: string): string {
         return field
     }

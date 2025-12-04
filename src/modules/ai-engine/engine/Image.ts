@@ -78,12 +78,10 @@ export class Image extends absAiEngine implements IAiEngine {
         const _args: TStepRunAiImageParams = _.merge(this.DEFAULT, args)
         const { task } = _args
 
-        if (Object.values(IMAGE_TASK).includes(task as IMAGE_TASK)) {
-            await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
-            return await this.RunTask[task](args)
-        }
+        Assert.Condition(Object.values(IMAGE_TASK).includes(task as IMAGE_TASK), `Invalid image task: ${task}`)
 
-        throw new HttpErrorInternalServerError(`Invalid image task: ${task}`)
+        await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
+        return this.RunTask[task](args)
     }
 
     @Logger.LogFunction(true)

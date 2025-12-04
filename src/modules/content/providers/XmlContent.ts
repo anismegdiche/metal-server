@@ -6,14 +6,13 @@ import _ from "lodash"
 import { Readable } from "node:stream"
 import typia from "typia"
 //
-import { DataTable } from "../../../types/DataTable"
+import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 import { TJson } from "../../../types/TJson"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 //
-import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import { TContext } from "../../sandbox/types/TContext"
 //
@@ -63,12 +62,12 @@ export class XmlContent extends absContentProvider {
     }
 
     @Logger.LogFunction(['$context'])
-    async Get(sqlQuery: string | undefined, $context: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TXmlContentConfig>(this.Params, 
+    async Get(rowsParams: TRowsCopyParams, $context: Partial<TContext>): Promise<DataTable> {
+        Assert.Var<TXmlContentConfig>(this.Params,
             typia.is<TXmlContentConfig>(this.Params),
             'Params is not defined')
 
-        Assert.Var<VirtualFileSystem>(this.Content, 
+        Assert.Var<VirtualFileSystem>(this.Content,
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
@@ -85,29 +84,33 @@ export class XmlContent extends absContentProvider {
 
         const data = JsonUtils.Get<TJson[]>(xmlData, $__path)
 
-        if (!data)
-            throw new HttpErrorInternalServerError(`Xml: No data found at Path ${$__path}`)
+        Assert.Condition(data !== undefined, `XmlContent.Get: No data found at Path ${$__path}`)
 
-        return new DataTable(this.EntityName, Array.isArray(data)
-            ? data
-            : [data]).FreeSqlAsync(sqlQuery)
+        const result = new DataTable(
+            this.EntityName,
+            Array.isArray(data)
+                ? data
+                : [data]
+        )
+
+        return result.Copy(this.EntityName, rowsParams)
     }
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
-        Assert.Var<TXmlContentConfig>(this.Params, 
+        Assert.Var<TXmlContentConfig>(this.Params,
             typia.is<TXmlContentConfig>(this.Params),
             'Params is not defined')
 
-        Assert.Var<VirtualFileSystem>(this.Content, 
+        Assert.Var<VirtualFileSystem>(this.Content,
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
-        const { "xml-path": jsonPath  } = this.Params
+        const { "xml-path": jsonPath } = this.Params
 
         const fastXmlParser = await XmlContent._loadFastXmlParserModule();
         const xmlParser = new fastXmlParser.XMLParser(this.ParserOptions);
-        let xmlData = xmlParser.parse(
+        const xmlData = xmlParser.parse(
             await ReadableUtils.ToString(this.Content.ReadFile(this.EntityName))
         )
 
@@ -119,7 +122,7 @@ export class XmlContent extends absContentProvider {
         JsonUtils.Set(
             xmlData,
             $__evalPath,
-            data.Rows()
+            await data.Rows()
         )
 
         const xmlBuilder = new fastXmlParser.XMLBuilder(this.ParserOptions as import('fast-xml-parser').XmlBuilderOptions);

@@ -101,7 +101,7 @@ export class AzureFileStorage extends absStorageProvider {
         Assert.Var<string>(dirName, 'Directory name is required')
 
         const directoryClient = this._shareClient.getDirectoryClient(dirName)
-        return await directoryClient.exists()
+        return directoryClient.exists()
     }
 
     @Logger.LogFunction()

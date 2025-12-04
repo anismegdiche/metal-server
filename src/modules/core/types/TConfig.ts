@@ -11,7 +11,7 @@ import { TConfigAiEngine } from "../../ai-engine/@types"
 import { TRolePermissions } from "../../auth/@types"
 import { TAuthentication } from "../../auth/types/TAuthentication"
 import { STEP } from "../../plan/@consts"
-import { TStepArgsAnonymize, TStepArgsBreak, TStepArgsDebug, TStepArgsDelete, TStepArgsFields, TStepArgsInsert, TStepArgsJoin, TStepArgsListEntities, TStepArgsRemoveDuplicates, TStepArgsRemoveFields, TStepArgsRun, TStepArgsSelect, TStepArgsSort, TStepArgsSync, TStepArgsUpdate } from "../../plan/types/TStepArgs"
+import { TStepArgsAnonymize, TStepArgsBreak, TStepArgsDebug, TStepArgsDelete, TStepArgsInsert, TStepArgsJoin, TStepArgsListEntities, TStepArgsOmit, TStepArgsPick, TStepArgsRemoveDuplicates, TStepArgsRun, TStepArgsSelect, TStepArgsSort, TStepArgsSync, TStepArgsUpdate } from "../../plan/types/TStepArgs"
 import { TConfigSource } from "../../source/types/TConfigSource"
 import { TConfigUsers } from "./TConfigUsers"
 
@@ -53,14 +53,14 @@ type Update = { [STEP.UPDATE]: TStepArgsUpdate }
 type Delete = { [STEP.DELETE]: TStepArgsDelete }
 type Insert = { [STEP.INSERT]: TStepArgsInsert }
 type Join = { [STEP.JOIN]: TStepArgsJoin }
-type Fields = { [STEP.FIELDS]: TStepArgsFields }
+type Pick = { [STEP.PICK]: TStepArgsPick }
 type Sort = { [STEP.SORT]: TStepArgsSort }
 type Run = { [STEP.RUN]: TStepArgsRun }
 type Sync = { [STEP.SYNC]: TStepArgsSync }
 type Anonymize = { [STEP.ANONYMIZE]: TStepArgsAnonymize }
 type RemoveDuplicates = { [STEP.REMOVE_DUPLICATE]: TStepArgsRemoveDuplicates }
 type ListEntities = { [STEP.LIST_ENTITIES]: TStepArgsListEntities }
-type RemoveFields = { [STEP.REMOVE_FIELDS]: TStepArgsRemoveFields }
+type Omit = { [STEP.OMIT]: TStepArgsOmit }
 type Break = { [STEP.BREAK]: TStepArgsBreak }
 
 export type StepCommand =
@@ -70,15 +70,15 @@ export type StepCommand =
     | Delete
     | Insert
     | Join
-    | Fields
     | Sort
     | Run
     | Sync
     | Anonymize
     | RemoveDuplicates
     | ListEntities
-    | RemoveFields
     | Break
+    | Pick
+    | Omit
 
 //
 

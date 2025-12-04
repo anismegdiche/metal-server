@@ -74,7 +74,7 @@ export class Plan {
             this.Entities.get(entity)!
         )
 
-        await currentDatatable.FreeSqlAsync(sqlQuery)
+        await currentDatatable.FreeSql({sqlQuery})
 
         Logger.Debug(`${Logger.Out} Plan.Execute: ${source}.${entity}`)
         return currentDatatable
@@ -94,7 +94,7 @@ export class Plan {
 
         this.ExecuteSteps(undefined, plan, entity, entitySteps)
             .then((data) => {
-                data.FreeSqlAsync(sqlQuery)
+                data.FreeSql({sqlQuery})
                     .then(() => {
                         Logger.Debug(`${Logger.Out} Plan.Execute: ${plan}.${entity}`)
                     })

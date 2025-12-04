@@ -116,7 +116,8 @@ export class MongoDbHelper {
                 // Replace these three tokens with the result
                 tokens.splice(i - 1, 3, {
                     token: JSON.stringify({ [operator]: [leftValue, rightValue] }),
-                    type: _type
+                    type: _type,
+                    context: token.context
                 })
                 i--
             }
@@ -181,7 +182,8 @@ export class MongoDbHelper {
                 const evaluatedInner = MongoDbHelper.evaluateExpressionNumber(innerTokens)
                 result.push({
                     token: JSON.stringify(evaluatedInner),
-                    type: SQL_TYPE.NUMBER
+                    type: SQL_TYPE.NUMBER,
+                    context: tokens[i].context
                 })
                 i = j
             } else {
@@ -275,7 +277,8 @@ export class MongoDbHelper {
                 const evaluatedInner = MongoDbHelper.evaluateExpressionString(innerTokens)
                 result.push({
                     token: JSON.stringify(evaluatedInner),
-                    type: SQL_TYPE.STRING
+                    type: SQL_TYPE.STRING,
+                    context: tokens[i].context
                 })
                 i = j
             } else {

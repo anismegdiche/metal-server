@@ -25,7 +25,7 @@ export class OidcAuth extends absAuthProvider {
     #Config?: TOidcAuthConfig
     readonly #TokenCache: Map<string, TokenSet> = new Map()
 
-    // eslint-disable-next-line class-methods-use-this
+     
     GetUsers() {
         // Since Oidc users are managed externally, return empty object
         return {}

@@ -1,4 +1,4 @@
-/* eslint-disable no-plusplus */
+
 //
 //
 //
@@ -8,7 +8,7 @@ import { Logger } from "./Logger"
 export class Semaphore {
 
     #Tasks: (() => void)[] = [] //NOSONAR
-    #Available: number
+    #Available: number = 0
 
     constructor(maxConcurrency: number) {
         this.#Available = maxConcurrency

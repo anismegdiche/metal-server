@@ -1,4 +1,4 @@
-/* eslint-disable no-promise-executor-return */
+ 
 
 import { Synchronizer } from '../Synchronizer'
 import { setTimeout } from 'timers'

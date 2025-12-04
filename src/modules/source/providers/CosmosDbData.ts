@@ -120,9 +120,9 @@ export class CosmosDbData extends absDataProvider {
     @SynchronizerManager.Synchronized()
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
         const { schema, entity } = schemaRequest
-        
+
         Assert.Var<Database>(this.Database, this.Database !== undefined, `${schema}: Database not connected`)
-         
+
         $context = merge(
             $context,
             this.GetContext(schemaRequest)
@@ -139,7 +139,7 @@ export class CosmosDbData extends absDataProvider {
             const data = new DataTable(entity)
 
             if (rows.length > 0) {
-                data.AddRows(rows)
+                data.RowsSet(rows)
                 if (options?.Cache)
                     Cache.Set(schemaRequest, data)
             }
@@ -159,9 +159,9 @@ export class CosmosDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        
+
         const { entity } = schemaRequest
-         
+
         $context = merge(
             $context,
             this.GetContext(schemaRequest)
@@ -169,7 +169,7 @@ export class CosmosDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!DataTable.Is(options.Data) || !options.Data.Rows() || options.Data.Rows().length === 0) {
+        if (!DataTable.Is(options.Data) || !await options.Data.Rows() || await options.Data.Count() === 0) {
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
         }
 
@@ -177,7 +177,7 @@ export class CosmosDbData extends absDataProvider {
             const container = await this.GetContainer(schemaRequest)
 
             // Use bulk operations for better performance
-            const operations: Array<any> = options.Data.Rows().map(row => {
+            const operations: Array<any> = (await options.Data.Rows()).map(row => {
                 // Ensure each document has an id
                 if (!row.id) {
                     row.id = Date.now().toString() + Math.random().toString().substring(2, 8)
@@ -194,7 +194,7 @@ export class CosmosDbData extends absDataProvider {
             const chunkSize = 100
             for (let i = 0; i < operations.length; i += chunkSize) {
                 const chunk = operations.slice(i, i + chunkSize) as OperationInput[]
-                 
+
                 await container.items.bulk(chunk)
             }
 
@@ -210,9 +210,9 @@ export class CosmosDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        
+
         const { entity, schema } = schemaRequest
-         
+
         $context = merge(
             $context,
             this.GetContext(schemaRequest)
@@ -220,7 +220,7 @@ export class CosmosDbData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!DataTable.Is(options.Data) || !options.Data.Rows() || options.Data.Rows().length === 0) {
+        if (!DataTable.Is(options.Data) || !await options.Data.Rows() || await options.Data.Count() === 0) {
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
         }
 
@@ -247,7 +247,7 @@ export class CosmosDbData extends absDataProvider {
                 return HttpResponse.NoContent()
             }
 
-            const updateData = options.Data.Rows()[0]
+            const updateData = (await options.Data.Rows())[0]
 
             await Promise.all(itemsToUpdate.map(async (item) => {
                 try {
@@ -285,9 +285,9 @@ export class CosmosDbData extends absDataProvider {
 
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
-        
+
         const { entity, schema } = schemaRequest
-         
+
         $context = merge(
             $context,
             this.GetContext(schemaRequest)
@@ -354,7 +354,7 @@ export class CosmosDbData extends absDataProvider {
     @SynchronizerManager.Synchronized()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
         const { schema } = schemaRequest
-        
+
         Assert.Var<Database>(this.Database, this.Database !== undefined, `${schema}: Database not connected`)
 
         try {
@@ -413,12 +413,12 @@ export class CosmosDbData extends absDataProvider {
         throw new HttpErrorNotImplemented()
     }
 
-     
+
     EscapeEntity(entity: string): string {
         return CosmosDbHelper.EscapeEntity(entity)
     }
 
-     
+
     EscapeField(field: string): string {
         return CosmosDbHelper.EscapeField(field)
     }
@@ -436,8 +436,9 @@ export class CosmosDbData extends absDataProvider {
 
             const containerDetails =
                 (await Body.data
-                    .FilterRows(`name = "${schemaRequest.entity}"`))
-                    .Rows()[0]
+                    .Rows({
+                        filter: `name = "${schemaRequest.entity}"`
+                    }))[0]
 
             Assert.Var<TDataListEntity>(containerDetails, `${schema}: Container not found`)
 

@@ -29,7 +29,7 @@ import { WEBSERVICE, ENDPOINT } from "../../webservice/@consts"
 import { TWebServiceEndpoint, TEndpoint } from "../../webservice/@types"
 import { absWebServiceProvider } from "../../webservice/base/absWebServiceProvider"
 import { WebServiceProvider } from "../../webservice/WebServiceProvider"
-import { DataTable } from "../../../types/DataTable"
+import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 
 
 //
@@ -95,7 +95,7 @@ export class WebServiceData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize webservice provider`)
 
         // init content
-        
+
         this.ContentHandler = await ContentProvider.GetProvider(content)
         this.ContentHandler.SetConfig(this.Config.options)
     }
@@ -133,7 +133,7 @@ export class WebServiceData extends absDataProvider {
 
         this.SetContentHandler(entity)
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -146,14 +146,21 @@ export class WebServiceData extends absDataProvider {
             await this.Connection.Read($context)
         )
 
-        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+        //XXX const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
-        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
+        //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const data = await this.File.get(entity)!.Get(sqlQuery, $context)
+        const data = await this.File.get(entity)!.Get(
+            <TRowsCopyParams>{
+                fields: options.Fields,
+                filter: options.Filter,
+                sort: options.Sort
+            },
+            $context
+        )
 
         if (Logger.Level == VERBOSITY.DEBUG)
-            data.SetMetaData("__DEBUG_SOURCE_OPTIONS__", this.Config?.options)
+            data.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config?.options)
 
         if (options?.Cache)
             await Cache.Set({
@@ -185,7 +192,7 @@ export class WebServiceData extends absDataProvider {
 
         this.SetContentHandler(entity)
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -193,7 +200,7 @@ export class WebServiceData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             {
@@ -204,9 +211,9 @@ export class WebServiceData extends absDataProvider {
         if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        await Promise.all(options.Data.Rows().map((row: TJson) => {
+        await Promise.all((await options.Data.Rows()).map((row: TJson) => {
 
-            // eslint-disable-next-line no-param-reassign
+
             $context = _.merge(
                 $context,
                 {
@@ -238,7 +245,7 @@ export class WebServiceData extends absDataProvider {
 
         this.SetContentHandler(entity)
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -246,7 +253,7 @@ export class WebServiceData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             {
@@ -265,22 +272,29 @@ export class WebServiceData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
 
-        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+        //XXX const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
-        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
+        //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const keysCollection = await this.File.get(entity)!.Get(sqlQuery, $context)
+        const keysCollection = await this.File.get(entity)!.Get(
+            <TRowsCopyParams>{
+                fields: options.Fields,
+                filter: options.Filter,
+                sort: options.Sort
+            },
+            $context
+        )
 
-        await Promise.all(keysCollection.Rows().map((row: TJson) => {
-            if (!Array.isArray(options.Data?.Rows()))
+        await Promise.all((await keysCollection.Rows()).map(async (row: TJson) => {
+            if (!Array.isArray(await options.Data?.Rows()))
                 return Promise.resolve()
 
             const mergedRow: TJson = _.merge(
                 row,
-                options.Data.Rows().at(0)
+                await options.Data?.Row(0)
             )
 
-            // eslint-disable-next-line no-param-reassign
+
             $context = _.merge(
                 $context,
                 {
@@ -299,13 +313,13 @@ export class WebServiceData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     ListEntities(_schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
         throw new HttpErrorNotImplemented()
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
@@ -321,7 +335,7 @@ export class WebServiceData extends absDataProvider {
 
         this.SetContentHandler(entity)
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -329,7 +343,7 @@ export class WebServiceData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             {
@@ -348,14 +362,21 @@ export class WebServiceData extends absDataProvider {
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
 
-        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+        //XXX const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
-        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
+        //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const keysCollection = await this.File.get(entity)!.Get(sqlQuery, $context)
+        const keysCollection = await this.File.get(entity)!.Get(
+            <TRowsCopyParams>{
+                fields: options.Fields,
+                filter: options.Filter,
+                sort: options.Sort
+            },
+            $context
+        )
 
-        await Promise.all(keysCollection.Rows().map((row: TJson) => {
-            // eslint-disable-next-line no-param-reassign
+        await Promise.all((await keysCollection.Rows()).map((row: TJson) => {
+
             $context = _.merge(
                 $context,
                 {
@@ -371,14 +392,14 @@ export class WebServiceData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     EscapeEntity(entity: string): string {
-        return `\`${entity}\``
+        return `"${entity}"`
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     EscapeField(field: string): string {
-        return `\`${field}\``
+        return `"${field}"`
     }
 
     //

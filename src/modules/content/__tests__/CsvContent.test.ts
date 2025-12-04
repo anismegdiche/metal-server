@@ -11,7 +11,7 @@ describe('CsvContent', () => {
         "csv-quote": '',
         "csv-skip-empty": 'greedy'
     }
-    
+
     const csvContent = new CsvContent()
 
     beforeEach(() => {
@@ -71,10 +71,10 @@ describe('CsvContent', () => {
             const content = Readable.from('id,name\n1,John\n2,Jane')
 
             await csvContent.InitContent(name, content)
-            const dataTable = await csvContent.Get(undefined, {})
+            const dataTable = await csvContent.Get({}, {})
 
             expect(dataTable.Name).toBe(name)
-            expect(dataTable.Rows()).toEqual([
+            expect(await dataTable.Rows()).toEqual([
                 {
                     id: '1',
                     name: 'John'
@@ -91,10 +91,10 @@ describe('CsvContent', () => {
             const content = Readable.from('')
 
             await csvContent.InitContent(name, content)
-            const dataTable = await csvContent.Get(undefined, {})
+            const dataTable = await csvContent.Get({}, {})
 
             expect(dataTable.Name).toBe(name)
-            expect(dataTable.Rows()).toEqual([])
+            expect(await dataTable.Rows()).toEqual([])
         })
 
         test('should return an empty DataTable object when content is invalid', async () => {
@@ -102,10 +102,10 @@ describe('CsvContent', () => {
             const content = Readable.from('id,name\n1,John\n2')
 
             await csvContent.InitContent(name, content)
-            const dataTable = await csvContent.Get(undefined, {})
+            const dataTable = await csvContent.Get({}, {})
 
             expect(dataTable.Name).toBe(name)
-            expect(dataTable.Rows()).toEqual([
+            expect(await dataTable.Rows()).toEqual([
                 {
                     id: "1",
                     name: "John"

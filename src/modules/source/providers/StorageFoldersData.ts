@@ -131,12 +131,12 @@ export class StorageFoldersData extends absDataProvider {
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
         const files = await (await this.Connection.FolderListFiles(dirName))
-            .FreeSqlAsync(sqlQuery)
+            .FreeSql({ sqlQuery })
 
         if (options.Fields?.includes(FLD_CONTENT)) {
             // read files content
             await Promise.all(
-                files.Rows().map(
+                (await files.Rows()).map(
                     async (row: TRow) => {
                         const __file = row as TStorageFile
                         row.content = await ReadableUtils.ToBase64(
@@ -146,7 +146,7 @@ export class StorageFoldersData extends absDataProvider {
         }
 
         if (Logger.Level == VERBOSITY.DEBUG)
-            files.SetMetaData("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
+            files.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
 
         if (options?.Cache)
             await Cache.Set({
@@ -184,7 +184,7 @@ export class StorageFoldersData extends absDataProvider {
             await this.Connection.FolderCreate(dirName)
 
         await Promise.all(
-            options.Data.Rows().map(
+            (await options.Data.Rows()).map(
                 async (row: TRow) => {
                     const __file = row as TStorageFile
 
@@ -222,31 +222,32 @@ export class StorageFoldersData extends absDataProvider {
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
         Assert.Var<DataTable>(options.Data, `${this.SourceName}: data is not defined`, new HttpErrorBadRequest())
 
-        const updateData = options.Data.Rows()[0]
+        const updateData = (await options.Data.Rows())[0]
 
         const selectQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
         const selectQuery = this.GetSqlQuery(selectQueryHelper, options)
+        const folderList = (await this.Connection.FolderListFiles(dirName)).Rename(dirName)
 
-        const files = (await this.Connection.FolderListFiles(dirName))
-            .SelectFields(['name', 'path'])
-            .Rename(dirName)
+        const files = await folderList.Pick(['name', 'path'])
 
-        const filesFiltered = await files.FreeSqlAsync(selectQuery)
+        const filesFiltered = await files.FreeSql({ sqlQuery: selectQuery })
 
         // add old name
-        await filesFiltered.FreeSqlAsync(`
-            UPDATE ${dirName}
-            SET ${FLD_OLD_NAME} = name
-        `)
+        await filesFiltered.FreeSql({
+            sqlQuery: `
+                UPDATE ${dirName}
+                SET ${FLD_OLD_NAME} = name
+            `
+        })
 
-        const updateQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
+        const updateQueryHelper = await this.GenerateSqlUpdate(schemaRequest, options)
         const updateQuery = this.GetSqlQuery(updateQueryHelper, options)
 
-        await filesFiltered.FreeSqlAsync(updateQuery)
+        await filesFiltered.FreeSql({ sqlQuery: updateQuery })
 
         // update files
         await Promise.all(
-            filesFiltered.Rows().map(
+            (await filesFiltered.Rows()).map(
                 async (row: TRow) => {
                     const {
                         name: newFileName,
@@ -313,10 +314,10 @@ export class StorageFoldersData extends absDataProvider {
         const files = (await this.Connection.FolderListFiles(dirName))
             .Rename(dirName)
 
-        const filesFiltered = await files.FreeSqlAsync(sqlQuery)
+        const filesFiltered = await files.FreeSql({ sqlQuery })
 
         await Promise.all(
-            filesFiltered.Rows().map(async (row: TRow) => {
+            (await filesFiltered.Rows()).map(async (row: TRow) => {
                 const { name: fileName } = row as TStorageFile
                 Assert.Var<absStorageProvider>(this.Connection, 'Storage connection not set')
                 Assert.Var<string>(fileName, 'File name is required')

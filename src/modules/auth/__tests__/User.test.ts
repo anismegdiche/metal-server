@@ -1,4 +1,4 @@
-
+// snyk disable
 import _ from "lodash"
 import { User } from '../User'
 import { TUserTokenInfo, TUserToken, TUserCredentials } from "../@types"

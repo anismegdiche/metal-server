@@ -1,7 +1,8 @@
 //
 //
 //
-import { JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, TOrderBy } from "../../../types/DataTable"
+import { TOrderBy } from "../../../types/DataTable"
+import { JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../../utils/DataTableUtils"
 import { TJson } from "../../../types/TJson"
 import { TStepRunAiParams } from "../../ai-engine/@types"
 import { TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
@@ -52,8 +53,6 @@ export type TStepArgsJoin = {
     "right-field": string
 }
 
-export type TStepArgsFields = string | string[]
-
 export type TStepArgsSort = TOrderBy
 
 export type TStepArgsRun = {
@@ -97,6 +96,10 @@ export type TStepArgsRemoveFields = string[]
 
 export type TStepArgsBreak = null
 
+export type TStepArgsOmit = string[]
+
+export type TStepArgsPick = string[]
+
 
 //
 export type TStepArgs = TStepArgsDebug
@@ -105,7 +108,6 @@ export type TStepArgs = TStepArgsDebug
     | TStepArgsDelete
     | TStepArgsInsert
     | TStepArgsJoin
-    | TStepArgsFields
     | TStepArgsSort
     | TStepArgsRun
     | TStepArgsSync
@@ -114,3 +116,5 @@ export type TStepArgs = TStepArgsDebug
     | TStepArgsListEntities
     | TStepArgsRemoveFields
     | TStepArgsBreak
+    | TStepArgsOmit
+    | TStepArgsPick

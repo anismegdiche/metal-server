@@ -115,7 +115,7 @@ export class Cache {
             const schemaResponse = intResp.Body
 
             Cache.Index = schemaResponse && TypeUtils.IsSchemaResponseWithData(schemaResponse)
-                ? new Map((schemaResponse.data.Rows() as TCacheData[]).map(row => [row.hash, row.expires]))
+                ? new Map((await schemaResponse.data.Rows() as TCacheData[]).map(row => [row.hash, row.expires]))
                 : new Map()
 
         } catch {
@@ -205,8 +205,8 @@ export class Cache {
 
         if (!isHashExists) {
             Logger.Debug(`${Logger.Out} Cache.Set: no cache found, creating Hash=${hash}`)
-            datatable.SetMetaData(METADATA.CACHE, true)
-            datatable.SetMetaData(METADATA.CACHE_EXPIRE, expiresNow)
+            datatable.MetaDataSet(METADATA.CACHE, true)
+            datatable.MetaDataSet(METADATA.CACHE_EXPIRE, expiresNow)
             await Cache.#__LOCK__.Acquire()
             await Cache.DataSource.Insert({
                 ...Cache.#CacheSchemaRequest,
@@ -280,13 +280,13 @@ export class Cache {
             })
 
         // no data
-        if (!intResp?.Body || intResp.Body.data.Rows().length === 0) {
+        if (!intResp?.Body || await intResp.Body.data.Count() === 0) {
             Logger.Debug(`Cache.Get: Cache not found, Hash=${hash}`)
             return undefined
         }
 
         // return data
-        const { data } = intResp.Body.data.Rows().at(0) as TCacheData
+        const { data } = (await intResp.Body.data.Rows()).at(0) as TCacheData
 
         return HttpResponse.Ok(<TSchemaResponse>{
             entity,
@@ -316,7 +316,7 @@ export class Cache {
     @Logger.LogFunction()
     static async View(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
-        return await Cache.DataSource.Select(Cache.#CacheSchemaRequest)
+        return Cache.DataSource.Select(Cache.#CacheSchemaRequest)
     }
 
     @Logger.LogFunction()

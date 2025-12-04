@@ -1,16 +1,15 @@
 //
 //
 //
-import _ from "lodash"
 //
-import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
+import { SQL_TYPE, SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 import { StringUtils } from "../../../utils/StringUtils"
 import { Assert } from "../../../utils/Assert"
 
 
 //
 export class CosmosDbHelper {
-     
+
     static EscapeEntity(entity: string): string {
         return 'c'
     }
@@ -23,17 +22,24 @@ export class CosmosDbHelper {
         Assert.Var<string>(sqlQuery, !StringUtils.IsEmpty(sqlQuery), `Empty SQL Query: ${sqlQuery}`)
         const sqlHelper = new SqlQueryUtils(sqlQuery)
         let sqlTokens = sqlHelper.Tokenize()
-        sqlTokens = _.map(sqlTokens, (token) => {
-            if (token.type === 'variable' && !token.token.startsWith("c.") && token.token !== "c") {
-                return {
+        sqlTokens = sqlTokens.map((token) => {
+            let _token = token
+            if (token.type === SQL_TYPE.FIELD && !token.token.startsWith("c.")) {
+                _token = {
                     ...token,
                     token: CosmosDbHelper.EscapeField(token.token)
                 }
             }
-            return token
+            if (token.type === SQL_TYPE.VARIABLE && !token.token.startsWith("c.")) {
+                _token = {
+                    ...token,
+                    token: CosmosDbHelper.EscapeField(token.token)
+                }
+            }
+            return _token
         })
 
-        const _sqlQuery = _.map(sqlTokens, (token) => token.token).join(' ')
+        const _sqlQuery = sqlTokens.map((token) => token.token).join(' ')
         return _sqlQuery
     }
 }

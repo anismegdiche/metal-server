@@ -22,7 +22,6 @@ import { TContext } from "../../sandbox/types/TContext"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { TIpPort } from "../../../types/TIpPort"
 import { Assert } from '../../../utils/Assert'
-import { TypeUtils } from '../../../utils/TypeUtils'
 
 
 //
@@ -110,7 +109,7 @@ export class SqlServerData extends absDataProvider {
 
         const { schema, entity } = schemaRequest
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -125,7 +124,7 @@ export class SqlServerData extends absDataProvider {
         const data = new DataTable(schemaRequest.entity)
 
         if (sqlServerResult.recordset != null && sqlServerResult.recordset.length > 0) {
-            data.AddRows(sqlServerResult.recordset)
+            await data.RowsSet(sqlServerResult.recordset)
             if (options?.Cache)
                 Cache.Set(schemaRequest, data)
         }
@@ -145,7 +144,7 @@ export class SqlServerData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -156,7 +155,7 @@ export class SqlServerData extends absDataProvider {
         if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
+        const sqlQueryHelper = await this.GenerateSqlInsert(schemaRequest, options)
 
         await this.Connection.query(sqlQueryHelper.Query())
 
@@ -172,7 +171,7 @@ export class SqlServerData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -183,7 +182,7 @@ export class SqlServerData extends absDataProvider {
         if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
+        const sqlQueryHelper = await this.GenerateSqlUpdate(schemaRequest, options)
 
         await this.Connection.query(sqlQueryHelper.Query())
 
@@ -199,7 +198,7 @@ export class SqlServerData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -217,7 +216,7 @@ export class SqlServerData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
@@ -253,12 +252,12 @@ export class SqlServerData extends absDataProvider {
         })
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     EscapeEntity(entity: string): string {
         return `[${entity}]`.replace(/\./g, "].[")
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     EscapeField(field: string): string {
         return `[${field}]`
     }

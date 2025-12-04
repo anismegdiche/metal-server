@@ -6,7 +6,7 @@ import { Readable } from 'node:stream'
 import _ from 'lodash'
 import typia from "typia"
 //
-import { DataTable } from '../../../types/DataTable'
+import { DataTable, TRowsCopyParams } from '../../../types/DataTable'
 import { Logger } from '../../../utils/Logger'
 import { TJson } from '../../../types/TJson'
 import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
@@ -24,11 +24,11 @@ import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
 export function ColumnLetterToNumber(letter: string): number {
     let column = 0
     const { length } = letter
-     
-    for (let i = 0; i < length; i++) {         
+
+    for (let i = 0; i < length; i++) {
         column += (letter.charCodeAt(i) - 64) * Math.pow(26, length - i - 1)
     }
-    
+
     return column
 }
 
@@ -70,12 +70,12 @@ export class XlsContent extends absContentProvider {
     }
 
     @Logger.LogFunction(['$context'])
-    async Get(sqlQuery: string | undefined, $context?: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TXlsContentParams>(this.Params, 
+    async Get(rowsParams: TRowsCopyParams, $context?: Partial<TContext>): Promise<DataTable> {
+        Assert.Var<TXlsContentParams>(this.Params,
             typia.is<TXlsContentParams>(this.Params),
             'Params is not defined')
 
-        Assert.Var<VirtualFileSystem>(this.Content, 
+        Assert.Var<VirtualFileSystem>(this.Content,
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
@@ -136,28 +136,27 @@ export class XlsContent extends absContentProvider {
         })
         Logger.Debug('XlsContent.Get: Exporting')
         const dataTable = new DataTable(this.EntityName, rows)
-        return await dataTable.FreeSqlAsync(sqlQuery)
+        return dataTable.Copy(this.EntityName, rowsParams)
     }
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context?: Partial<TContext>): Promise<Readable> {
-        Assert.Var<TXlsContentParams>(this.Params, 
+        Assert.Var<TXlsContentParams>(this.Params,
             typia.is<TXlsContentParams>(this.Params),
             'Params is not defined')
 
-        Assert.Var<VirtualFileSystem>(this.Content, 
+        Assert.Var<VirtualFileSystem>(this.Content,
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
         const ExcelJS = await XlsContent._loadExcelJsModule();
         const workbook = new ExcelJS.Workbook()
-        
+
         // Try to read the existing file, but create a new workbook if it fails
-        try {
-            await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
-        } catch {
-            Logger.Warn('XlsContent.Set: Could not read existing file, creating new workbook')
-        }
+        await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
+            .catch(() => {
+                Logger.Warn('XlsContent.Set: Could not read existing file, creating new workbook')
+            })
 
         const $__evalParams = PlaceHolder.EvaluateJsCode<TXlsContentParams>(
             this.Params,
@@ -183,42 +182,41 @@ export class XlsContent extends absContentProvider {
         })
 
         // Set headers
-        const fields = Object.keys(data.Rows()[0])
+        const fields = Object.keys((await data.Rows())[0])
         fields.forEach((field, colIdx) => {
             worksheet.getCell(parseInt(startRow, 10), colIndex + colIdx).value = field
         })
 
-        // Set data
-        data.Rows().forEach((row, rowIndex) => {
-            fields.forEach((field: string, fieldIdx: number) => {
-                const _rowIdx = parseInt(startRow, 10) + 1 + rowIndex
-                const _colIdx: number = colIndex + fieldIdx
+            // Set data
+            ; (await data.Rows()).forEach((row, rowIndex) => {
+                fields.forEach((field: string, fieldIdx: number) => {
+                    const _rowIdx = parseInt(startRow, 10) + 1 + rowIndex
+                    const _colIdx: number = colIndex + fieldIdx
 
-                let _valueToSet = row[field]
+                    let _valueToSet = row[field]
 
-                if (_valueToSet === null) {
-                    _valueToSet = $__evalParams!.default
-                }
+                    if (_valueToSet === null) {
+                        _valueToSet = $__evalParams!.default
+                    }
 
-                if ($__evalParams!.parseDates && _valueToSet instanceof Date) {
-                    worksheet.getCell(_rowIdx, _colIdx).numFmt = $__evalParams!.dateFormat as string
-                }
-                worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet as import('exceljs').ValueType
+                    if ($__evalParams!.parseDates && _valueToSet instanceof Date) {
+                        worksheet.getCell(_rowIdx, _colIdx).numFmt = $__evalParams!.dateFormat as string
+                    }
+                    worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet as import('exceljs').ValueType
+                })
             })
-        })
 
         // Create a new buffer and stream
         const buffer = await workbook.xlsx.writeBuffer()
         const streamOut = new Readable()
-        
-        // Set the encoding to binary to prevent corruption
-        streamOut.setEncoding('binary')
+
+        // Push binary buffer without encoding to preserve Excel file integrity
         streamOut.push(buffer)
         streamOut.push(null)
 
         // Upload the buffer to content
         this.Content.UploadFile(this.EntityName, streamOut)
-        
+
         return streamOut
     }
 }

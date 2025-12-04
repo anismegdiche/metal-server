@@ -71,6 +71,7 @@ export class JsonUtils {
         return Stringify(json)
     }
 
+
     static SafeCopy<T>(json: T): T {
         try {
             return JSON.parse(JSON.stringify(json))
@@ -110,7 +111,6 @@ export class JsonUtils {
 
     static PrefixKeys(obj: TJson, prefix: string = ''): TJson {
         const result: TJson = {}
-
 
         forEach(obj, (value, key) => {
             const newKey = `${prefix}${key}`
@@ -159,5 +159,18 @@ export class JsonUtils {
 
     static RemoveUndefined<T>(obj: T): T {
         return pickBy(obj as object, v => v !== undefined) as T
+    }
+
+    static Join(json: TJson | undefined, keyValueSeparator: string = '=', propertiesSeparator: string = ",") {
+        if (!json)
+            return ''
+
+        const parts: string[] = []
+
+        forEach(json, (value, key) => {
+            parts.push(`${key}${keyValueSeparator}${JsonUtils.Stringify(value)}`)
+        })
+
+        return parts.join(propertiesSeparator)
     }
 }

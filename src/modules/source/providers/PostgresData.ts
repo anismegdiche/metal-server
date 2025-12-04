@@ -119,7 +119,7 @@ export class PostgresData extends absDataProvider {
 
         const { schema, entity } = schemaRequest
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -134,7 +134,7 @@ export class PostgresData extends absDataProvider {
         const data = new DataTable(entity)
 
         if (result.rows.length > 0) {
-            data.AddRows(result.rows)
+            await data.RowsSet(result.rows)
             if (options?.Cache)
                 Cache.Set(schemaRequest, data)
         }
@@ -154,7 +154,7 @@ export class PostgresData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -165,7 +165,7 @@ export class PostgresData extends absDataProvider {
         if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const sqlQueryHelper = this.GenerateSqlInsert(schemaRequest, options)
+        const sqlQueryHelper = await this.GenerateSqlInsert(schemaRequest, options)
 
         await this.Connection.query(sqlQueryHelper.Query())
 
@@ -181,7 +181,7 @@ export class PostgresData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -192,7 +192,7 @@ export class PostgresData extends absDataProvider {
         if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
+        const sqlQueryHelper = await this.GenerateSqlUpdate(schemaRequest, options)
 
         await this.Connection.query(sqlQueryHelper.Query())
 
@@ -208,7 +208,7 @@ export class PostgresData extends absDataProvider {
         if (!this.Connection)
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        // eslint-disable-next-line no-param-reassign
+
         $context = _.merge(
             $context,
             this.GetContext(schemaRequest)
@@ -226,7 +226,7 @@ export class PostgresData extends absDataProvider {
         return HttpResponse.NoContent()
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     @Logger.LogFunction()
     async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
@@ -293,12 +293,12 @@ export class PostgresData extends absDataProvider {
         })
     }
 
-    // eslint-disable-next-line class-methods-use-this
+
     EscapeEntity(entity: string): string {
         return `"${entity}"`
     }
-    
-    // eslint-disable-next-line class-methods-use-this
+
+
     EscapeField(field: string): string {
         return `"${field}"`
     }

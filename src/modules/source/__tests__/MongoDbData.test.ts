@@ -134,7 +134,7 @@ describe('MongoDbData', () => {
             const response = await provider.ListEntities(mockListRequest);
 
             expect(response.StatusCode).toBe(200);
-            expect(response.Body?.data.Rows()).toHaveLength(2);
+            expect(await response.Body?.data.Rows()).toHaveLength(2);
         })
 
         it('should throw NotFound when no entities exist', async () => {

@@ -19,7 +19,7 @@ jest.mock('../../../utils/Logger', () => ({
         Info: () => () => { },
         Message: () => () => { },
         LogFunction: () => () => { },
-        Level : "error",
+        Level: "error",
         Out: 'OUT'
     }
 }))
@@ -82,7 +82,7 @@ describe('XmlContent', () => {
         const config = { 'xml-path': 'users.user' }
 
         xmlContent.SetConfig(config as TContentConfig)
-        await xmlContent.InitContent(entity, content)
+        xmlContent.InitContent(entity, content)
 
         expect(xmlContent.EntityName).toBe(entity)
         expect(xmlContent.Params?.["xml-path"]).toBe('users.user')
@@ -95,10 +95,10 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
         xmlContent.Params = { "xml-path": 'users.user' }
 
-        const result = await xmlContent.Get(undefined, {})
+        const result = await xmlContent.Get({}, {})
 
         expect(result).toBeInstanceOf(DataTable)
-        expect(result.Rows()).toEqual([
+        expect(await result.Rows()).toEqual([
             {
                 id: 1,
                 firstname: "John",
@@ -139,35 +139,20 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
         xmlContent.EntityName = 'users'
 
-        const result = await xmlContent.Get('SELECT * FROM users WHERE id = 1', {})
+        const result = await xmlContent.Get({
+            filter: 'id = 1'
+        }, {})
 
-        expect(result.Rows()).toHaveLength(1)
-        expect(result.Rows()[0]).toEqual({
-            id: 1,
-            firstname: "John",
-            lastname: "Doe"
-        })
-    })
+        const rows = await result.Rows()
 
-    // XML data is properly transformed between different formats
-    it('should transform XML between different formats', async () => {
-        const xmlContent = new XmlContent()
-        const xmlData = '<root><data attr="value">content</data></root>'
-        xmlContent.SetConfig(<TContentConfig>{
-            "xml-path": 'root.data',
-            "xml-ignore-attributes": false
-        })
-        await xmlContent.InitContent('test', Readable.from(xmlData))
-
-        const result = await xmlContent.Get(undefined, {})
-        await result.FreeSqlAsync("UPDATE test SET `@attr` = 'new value', `#text` = 'new content'")
-        //WORKAROUND
-        await xmlContent.InitContent('test', Readable.from(xmlData))
-        await xmlContent.Set(result, {})
-
-        const transformed = await xmlContent.Get(undefined, {})
-
-        expect(transformed).toEqual(result)
+        expect(rows).toHaveLength(1)
+        expect(rows).toEqual([
+            {
+                id: 1,
+                firstname: "John",
+                lastname: "Doe"
+            }
+        ])
     })
 
     // Handle undefined or missing Params configuration
@@ -176,7 +161,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('test', Readable.from('<root/>'))
         xmlContent.EntityName = 'test'
 
-        await expect(xmlContent.Get(undefined, {}))
+        await expect(xmlContent.Get({}, {}))
             .rejects
             .toThrow(HttpErrorInternalServerError)
 
@@ -192,10 +177,10 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsersSoap))
         xmlContent.Params = { "xml-path": 'soap:Envelope.soap:Body.GetUsersResponse.GetUsersResult.users.user' }
 
-        const result = await xmlContent.Get(undefined, {})
+        const result = await xmlContent.Get({}, {})
 
         expect(result).toBeInstanceOf(DataTable)
-        expect(result.Rows()).toEqual([
+        expect(await result.Rows()).toEqual([
             {
                 id: 1,
                 firstname: "John",
@@ -220,10 +205,12 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsersSoap))
         xmlContent.EntityName = 'users'
 
-        const result = await xmlContent.Get('SELECT * FROM users WHERE id = 1', {})
+        const result = await xmlContent.Get({
+            filter: 'id = 1'
+        }, {})
 
-        expect(result.Rows()).toHaveLength(1)
-        expect(result.Rows()[0]).toEqual({
+        expect(await result.Rows()).toHaveLength(1)
+        expect((await result.Rows())[0]).toEqual({
             id: 1,
             firstname: "John",
             lastname: "Doe"
@@ -236,7 +223,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(''))
         xmlContent.Params = { "xml-path": 'users.user' }
 
-        await expect(xmlContent.Get(undefined, {}))
+        await expect(xmlContent.Get({}, {}))
             .rejects
             .toThrow(HttpErrorInternalServerError)
     })
@@ -247,7 +234,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from('<root> invalid xml </root>'))
         xmlContent.Params = { "xml-path": 'users.user' }
 
-        await expect(xmlContent.Get(undefined, {}))
+        await expect(xmlContent.Get({}, {}))
             .rejects
             .toThrow(HttpErrorInternalServerError)
     })
@@ -258,7 +245,7 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
         xmlContent.Params = { "xml-path": 'missing.path' }
 
-        await expect(xmlContent.Get(undefined, {}))
+        await expect(xmlContent.Get({}, {}))
             .rejects
             .toThrow(HttpErrorInternalServerError)
     })
@@ -269,29 +256,8 @@ describe('XmlContent', () => {
         xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
         xmlContent.Params = { "xml-path": 'users invalid.path' }
 
-        await expect(xmlContent.Get(undefined, {}))
+        await expect(xmlContent.Get({}, {}))
             .rejects
             .toThrow(HttpErrorInternalServerError)
-    })
-
-    it('should handle SQL queries with invalid syntax', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.EntityName = 'users'
-        xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
-        xmlContent.Params = { "xml-path": 'users.user' }
-
-        await expect(xmlContent.Get('SELECT * FROM users WHERE', {}))
-            .rejects.toThrow()
-    })
-
-    it('should handle SQL queries with invalid table name', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.EntityName = 'users'
-        xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
-        xmlContent.Params = { "xml-path": 'users.user' }
-
-        await expect(xmlContent.Get('SELECT * FROM invalid_table WHERE id = 1', {}))
-            .rejects
-            .toThrow()
     })
 })

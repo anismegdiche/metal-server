@@ -279,7 +279,7 @@ describe('AmazonS3Storage', () => {
             await storage.Connect()
             const result = await storage.FolderListFiles()
 
-            expect(result.Rows()).toEqual([
+            expect(await result.Rows()).toEqual([
                 {
                     name: 'file1.txt',
                     type: 'file',

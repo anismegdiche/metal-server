@@ -133,12 +133,12 @@ describe("StorageFilesData", () => {
     describe("EscapeEntity and EscapeField", () => {
         it("should escape entity correctly", () => {
             const result = storageFilesData.EscapeEntity("test");
-            expect(result).toBe("`test`");
+            expect(result).toBe("\"test\"");
         });
 
         it("should escape field correctly", () => {
             const result = storageFilesData.EscapeField("field");
-            expect(result).toBe("`field`");
+            expect(result).toBe("\"field\"");
         });
     });
 
@@ -198,8 +198,6 @@ describe("StorageFilesData", () => {
             const mockDataTable = new DataTable()
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
 
-            storageFilesData.GenerateSqlSelect = jest.fn().mockReturnValue({ Query: () => "SELECT * FROM test" })
-            storageFilesData.GetSqlQuery = jest.fn().mockReturnValue("SELECT * FROM test")
             storageFilesData.GetContext = jest.fn().mockReturnValue({})
             storageFilesData.Options = {
                 Parse: jest.fn().mockReturnValue({})
@@ -211,10 +209,8 @@ describe("StorageFilesData", () => {
         it("should select successfully", async () => {
             const result = await storageFilesData.Select(mockSchemaRequest as any)
 
-            expect(storageFilesData.GenerateSqlSelect).toHaveBeenCalled()
-            expect(storageFilesData.GetSqlQuery).toHaveBeenCalled()
             expect(mockContentProvider.InitContent).toHaveBeenCalledWith("test.json", "test data")
-            expect(mockContentProvider.Get).toHaveBeenCalledWith("SELECT * FROM test", expect.anything())
+            expect(mockContentProvider.Get).toHaveBeenCalledWith({ "fields": undefined, "filter": undefined, "sort": undefined }, expect.anything())
             expect(HttpResponse.Ok).toHaveBeenCalledWith(expect.objectContaining({
                 schema: "testSchema",
                 entity: "test.json"
@@ -253,18 +249,14 @@ describe("StorageFilesData", () => {
             mockStorageProvider.FileRead.mockResolvedValue("test data")
             mockStorageProvider.FileWrite.mockResolvedValue(undefined)
 
-            const mockDataTable = new DataTable()
-            mockDataTable.FreeSqlAsync = jest.fn().mockResolvedValue(undefined)
+            const mockDataTable = new DataTable("test.json")
+            // mockDataTable.FreeSql = jest.fn().mockResolvedValue(undefined)
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
             mockContentProvider.Set.mockResolvedValue("updated data")
 
-            storageFilesData.GenerateSqlInsert = jest.fn().mockReturnValue({
-                Query: () => "INSERT INTO test",
-                Data: {}
-            })
             storageFilesData.GetContext = jest.fn().mockReturnValue({})
             storageFilesData.Options = {
-                Parse: jest.fn().mockReturnValue({ Data: new DataTable() })
+                Parse: jest.fn().mockReturnValue({ Data: new DataTable("test.json", [{ data: "test data" }]) })
             } as any;
 
             (HttpResponse.Created as jest.Mock).mockReturnValue({ status: 201 })
@@ -273,7 +265,6 @@ describe("StorageFilesData", () => {
         it("should insert successfully", async () => {
             const result = await storageFilesData.Insert(mockSchemaRequest as any)
 
-            expect(storageFilesData.GenerateSqlInsert).toHaveBeenCalled()
             expect(mockContentProvider.InitContent).toHaveBeenCalledWith("test.json", "test data")
             expect(mockContentProvider.Get).toHaveBeenCalled()
             expect(mockContentProvider.Set).toHaveBeenCalled()
@@ -312,18 +303,14 @@ describe("StorageFilesData", () => {
             mockStorageProvider.FileRead.mockResolvedValue("test data")
             mockStorageProvider.FileWrite.mockResolvedValue(undefined)
 
-            const mockDataTable = new DataTable()
-            mockDataTable.FreeSqlAsync = jest.fn().mockResolvedValue(undefined)
+            const mockDataTable = new DataTable("test.json")
+            // mockDataTable.FreeSql = jest.fn().mockResolvedValue(undefined)
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
             mockContentProvider.Set.mockResolvedValue("updated data")
 
-            storageFilesData.GenerateSqlUpdate = jest.fn().mockReturnValue({
-                Query: () => "UPDATE test",
-                Data: {}
-            })
             storageFilesData.GetContext = jest.fn().mockReturnValue({})
             storageFilesData.Options = {
-                Parse: jest.fn().mockReturnValue({ Data: new DataTable() })
+                Parse: jest.fn().mockReturnValue({ Data: new DataTable("test", [{ data: "test data" }]) })
             } as any;
 
             (HttpResponse.NoContent as jest.Mock).mockReturnValue({ status: 204 })
@@ -332,7 +319,6 @@ describe("StorageFilesData", () => {
         it("should update successfully", async () => {
             const result = await storageFilesData.Update(mockSchemaRequest as any)
 
-            expect(storageFilesData.GenerateSqlUpdate).toHaveBeenCalled()
             expect(mockContentProvider.InitContent).toHaveBeenCalledWith("test.json", "test data")
             expect(mockContentProvider.Get).toHaveBeenCalled()
             expect(mockContentProvider.Set).toHaveBeenCalled()
@@ -365,15 +351,11 @@ describe("StorageFilesData", () => {
             mockStorageProvider.FileRead.mockResolvedValue("test data")
             mockStorageProvider.FileWrite.mockResolvedValue(undefined)
 
-            const mockDataTable = new DataTable()
-            mockDataTable.FreeSqlAsync = jest.fn().mockResolvedValue(undefined)
+            const mockDataTable = new DataTable("test.json")
+            // mockDataTable.FreeSql = jest.fn().mockResolvedValue(undefined)
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
             mockContentProvider.Set.mockResolvedValue("updated data")
 
-            storageFilesData.GenerateSqlDelete = jest.fn().mockReturnValue({
-                Query: () => "DELETE FROM test",
-                Data: {}
-            })
             storageFilesData.GetContext = jest.fn().mockReturnValue({})
             storageFilesData.Options = {
                 Parse: jest.fn().mockReturnValue({})
@@ -385,7 +367,6 @@ describe("StorageFilesData", () => {
         it("should delete successfully", async () => {
             const result = await storageFilesData.Delete(mockSchemaRequest as any)
 
-            expect(storageFilesData.GenerateSqlDelete).toHaveBeenCalled()
             expect(mockContentProvider.InitContent).toHaveBeenCalledWith("test.json", "test data")
             expect(mockContentProvider.Get).toHaveBeenCalled()
             expect(mockContentProvider.Set).toHaveBeenCalled()
@@ -422,14 +403,7 @@ describe("StorageFilesData", () => {
             ];
 
             // Create a mock DataTable with filter method
-            const mockDataTable = {
-                Rows: mockFiles,
-                filter: jest.fn().mockImplementation((predicate) => {
-                    return {
-                        Rows: mockFiles.filter(predicate)
-                    };
-                })
-            };
+            const mockDataTable = new DataTable(undefined, mockFiles)
 
             mockStorageProvider.FolderListFiles.mockResolvedValue(mockDataTable);
 
@@ -448,7 +422,7 @@ describe("StorageFilesData", () => {
 
             // Verify that the data was filtered
             const dataArg = (HttpResponse.Ok as jest.Mock).mock.calls[0][0];
-            const filteredRows = dataArg.data.GetRows();
+            const filteredRows = await (dataArg.data as any).Rows();
 
             // Should only include files matching the content handler patterns (*.json and users/*)
             expect(filteredRows).toHaveLength(2);

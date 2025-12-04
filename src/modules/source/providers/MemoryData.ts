@@ -19,7 +19,6 @@ import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
 import { TConfigSource } from "../types/TConfigSource"
-import { TDataListEntity } from "../types/TDataListEntity"
 import { TOptionalParameter } from "../types/TOptionalParameter"
 
 
@@ -81,7 +80,7 @@ export class MemoryData extends absDataProvider {
     async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
 
         const { schema, entity } = schemaRequest
-        
+
         Assert.Var<DataBase>(this.Connection, `${schema}: Connection is required`)
 
         const schemaResponse = <TSchemaResponse>{
@@ -98,16 +97,17 @@ export class MemoryData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
-
-        const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
-
         const data = new DataTable(entity)
 
-        const memoryDataTable = await this.Connection.Tables[entity].FreeSqlAsync(sqlQuery, sqlQueryHelper.QueryParams)
+        //XXX const memoryDataTable = await this.Connection.Tables[entity].FreeSql({ sqlQuery, queryParams: sqlQueryHelper.QueryParams })
+        const memoryRows = await this.Connection.Tables[entity].Rows({
+            fields: options.Fields,
+            filter: options.Filter,
+            sort: options.Sort
+        })
 
-        if (memoryDataTable && memoryDataTable.Rows().length > 0) {
-            data.AddRows(memoryDataTable.Rows())
+        if (memoryRows.length > 0) {
+            await data.RowsSet(memoryRows)
             if (options?.Cache)
                 Cache.Set({
                     ...schemaRequest,
@@ -131,9 +131,9 @@ export class MemoryData extends absDataProvider {
         const { schema, entity } = schemaRequest
 
         Assert.Var<DataBase>(this.Connection, `${schema}: Connection is required`)
-        
+
         await this.AddEntity(schemaRequest)
-        
+
         Assert.Var<DataTable>(this.Connection.Tables[entity], `${schema}: Entity '${entity}' not found`, new HttpErrorNotFound())
 
         $context = merge(
@@ -145,19 +145,16 @@ export class MemoryData extends absDataProvider {
 
         Assert.Var<DataTable>(options.Data, `${schema}: data is missing`, new HttpErrorBadRequest())
 
-        this.Connection.Tables[entity].AddRows(options.Data.Rows())
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.Created()
+        return this.Connection.Tables[entity].RowsAdd(await options.Data.Rows())
+            .then(() => Cache.Remove(schemaRequest))
+            .then(() => HttpResponse.Created())
     }
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
         const { schema, entity } = schemaRequest
-        
+
         Assert.Var<DataBase>(this.Connection, `${schema}: Connection is required`)
         Assert.Var<DataTable>(this.Connection.Tables[entity], `${schema}: Entity '${entity}' not found`, new HttpErrorNotFound())
 
@@ -170,9 +167,9 @@ export class MemoryData extends absDataProvider {
 
         Assert.Var<DataTable>(options.Data, `${schema}: data is missing`, new HttpErrorBadRequest())
 
-        const sqlQueryHelper = this.GenerateSqlUpdate(schemaRequest, options)
+        const sqlQueryHelper = await this.GenerateSqlUpdate(schemaRequest, options)
 
-        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.QueryParams)
+        await this.Connection.Tables[entity].FreeSql({ sqlQuery: sqlQueryHelper.Query(), queryParams: sqlQueryHelper.QueryParams })
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -183,9 +180,9 @@ export class MemoryData extends absDataProvider {
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
-        
+
         const { schema, entity } = schemaRequest
-        
+
         Assert.Var<DataBase>(this.Connection, `${schema}: Connection is required`)
         Assert.Var<DataTable>(this.Connection.Tables[entity], `${schema}: Entity '${entity}' not found`, new HttpErrorNotFound())
 
@@ -198,7 +195,7 @@ export class MemoryData extends absDataProvider {
 
         const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
-        await this.Connection.Tables[entity].FreeSqlAsync(sqlQueryHelper.Query(), sqlQueryHelper.QueryParams)
+        await this.Connection.Tables[entity].FreeSql({ sqlQuery: sqlQueryHelper.Query(), queryParams: sqlQueryHelper.QueryParams })
 
         // clean cache
         Cache.Remove(schemaRequest)
@@ -220,16 +217,22 @@ export class MemoryData extends absDataProvider {
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        
+
         const { schema } = schemaRequest
-        
+
         Assert.Var<DataBase>(this.Connection, `${schema}: Connection is required`)
 
-        const rows = Object.keys(this.Connection.Tables).map(entity => (<TDataListEntity>{
-            name: entity,
-            type: DATA_ENTITY_TYPE.DATATABLE,
-            size: this.Connection?.Tables[entity].Rows().length
-        }))
+        const rows = (
+            await Promise.all(
+                Object.keys(this.Connection.Tables).map(
+                    async (entity) => ({
+                        name: entity,
+                        type: DATA_ENTITY_TYPE.DATATABLE,
+                        size: await this.Connection?.Tables[entity].Count()
+                    })
+                )
+            )
+        )
 
         Assert.Condition(rows.length > 0, `${schema}: No entities found`, new HttpErrorNotFound())
 
@@ -242,10 +245,10 @@ export class MemoryData extends absDataProvider {
     }
 
     EscapeEntity(entity: string): string {
-        return `\`${entity}\``
+        return `"${entity}"`
     }
 
     EscapeField(field: string): string {
-        return `\`${field}\``
+        return field
     }
 }
