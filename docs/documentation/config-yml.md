@@ -9,7 +9,7 @@ description: "Metal:Middleware, ETL & AI at the same place. Empower your project
 **Example `config.yml`**
 
 ```yaml
-version: "0.4"
+version: "0.5"
 
 server:
   port: 3000
@@ -32,12 +32,12 @@ schemas:
 
 Defines the version used for the configuration.
 Accepted values :
-`0.3`, `0.4`
+`0.5`
 
 **Example:**
 
 ```yaml
-version: "0.4"
+version: "0.5"
 ```
 
 ## `server` <Badge type="default" text="v0.1+" />
@@ -196,16 +196,16 @@ server:
 
 The parameters that can be configured inside the `ai-engines` section include:
 
-| Parameter        | Type    | Default Value           | Required | Description                                      | Metal Version                         |
-| ---------------- | ------- | ----------------------- | -------- | ------------------------------------------------ | ------------------------------------- |
-| `engines-url`    | URL     | `http://localhost:5000` | Y        | URL for AI engine services.                      | <Badge type="info" text="v0.5+" />    |
-| `timeout`        | Integer | `60_000`                | N        | Timeout for AI engine requests in milliseconds.  | <Badge type="info" text="v0.5+" />    |
-| `min-instance`   | Integer | `1`                     | N        | Minimum number of AI engine instances.           | <Badge type="info" text="v0.5+" />    |
-| `max-instance`   | Integer | `5`                     | N        | Maximum number of AI engine instances.           | <Badge type="info" text="v0.5+" />    |
-| `cpu-scale-up`   | Integer | `70`                    | N        | CPU scale up value.                              | <Badge type="info" text="v0.5+" />    |
-| `cpu-scale-down` | Integer | `30`                    | N        | CPU scale down value.                            | <Badge type="info" text="v0.5+" />    |
-| `scale-interval` | Integer | `15_000`                | N        | AI Service Scale interval value in milliseconds. | <Badge type="info" text="v0.5+" />    |
-| `params`         | Object  | `null`                  | N        | Parameters for Container Provider                | <Badge type="default" text="v0.5+" /> |
+| Parameter        | Type    | Default Value           | Required | Description                                      | Metal Version                      |
+| ---------------- | ------- | ----------------------- | -------- | ------------------------------------------------ | ---------------------------------- |
+| `engines-url`    | URL     | `http://localhost:5000` | Y        | URL for AI engine services.                      | <Badge type="info" text="v0.5+" /> |
+| `timeout`        | Integer | `60_000`                | N        | Timeout for AI engine requests in milliseconds.  | <Badge type="info" text="v0.5+" /> |
+| `min-instance`   | Integer | `1`                     | N        | Minimum number of AI engine instances.           | <Badge type="info" text="v0.5+" /> |
+| `max-instance`   | Integer | `5`                     | N        | Maximum number of AI engine instances.           | <Badge type="info" text="v0.5+" /> |
+| `cpu-scale-up`   | Integer | `70`                    | N        | CPU scale up value.                              | <Badge type="info" text="v0.5+" /> |
+| `cpu-scale-down` | Integer | `30`                    | N        | CPU scale down value.                            | <Badge type="info" text="v0.5+" /> |
+| `scale-interval` | Integer | `15_000`                | N        | AI Service Scale interval value in milliseconds. | <Badge type="info" text="v0.5+" /> |
+| `params`         | Object  | `null`                  | N        | Parameters for Container Provider                | <Badge type="info" text="v0.5+" /> |
 
 For more detailed information about how to configure a Container Provider, See: [Container Providers Configurations](./container-providers-config.md)
 
@@ -596,12 +596,13 @@ The steps that can be configured inside a plan can be:
 | `break`             | to stop plan execution at this step                                                              | <Badge type="default" text="v0.1+" /> |
 | `join`              | to perform data joins (Left,Right,Inner,Full outer and Cross)                                    | <Badge type="default" text="v0.1+" /> |
 | `sort`              | to sort actual data                                                                              | <Badge type="default" text="v0.1+" /> |
-| `fields`            | fields to keep from actual data                                                                  | <Badge type="default" text="v0.1+" /> |
 | `run`               | to run an AI Engine                                                                              | <Badge type="default" text="v0.1+" /> |
 | `sync`              | to synchronize data from data source to a data destination                                       | <Badge type="default" text="v0.2+" /> |
 | `anonymize`         | to anonymize data of given fields                                                                | <Badge type="default" text="v0.3+" /> |
-| `remove-duplicates` | to remove duplicated rows                                                                        | <Badge type="default" text="v0.3+" /> |
 | `list-entities`     | to list entities in a schema                                                                     | <Badge type="default" text="v0.3+" /> |
+| `remove-duplicates` | to remove duplicated rows                                                                        | <Badge type="default" text="v0.3+" /> |
+| `pick`              | fields to keep from actual data                                                                  | <Badge type="info" text="v0.5+" />    |
+| `omit`              | to remove fields from actual data                                                                | <Badge type="info" text="v0.5+" />    |
 
 ### `list-entities` <Badge type="default" text="v0.3+" />
 
@@ -852,7 +853,13 @@ plans:
           name: desc
 ```
 
-### `fields` <Badge type="info" text="v0.5+" />
+### ~~[Removed] `fields`~~ <Badge type="info" text="v0.5+" />
+
+::: warning ⚠️ Warning
+Starting from v0.5, this configuration has been renamed to `pick`.
+:::
+
+### `pick` <Badge type="info" text="v0.5+" />
 
 To keep fields from actual plan's entity data
 
@@ -872,8 +879,33 @@ plans:
           entity: my-first-entity
           left-field: partner_id
           right-field: id
-      - fields:
+      - pick:
           - id
+          - name
+          - display_name
+```
+
+### `omit` <Badge type="info" text="v0.5+" />
+
+To remove fields from actual plan's entity data
+
+```yaml
+plans:
+  my-plan:
+    my-first-entity:
+      - select:
+          schema: demo
+          entity: users
+    my-second-entity:
+      - select:
+          schema: demo
+          entity: contacts
+      - join:
+          type: left
+          entity: my-first-entity
+          left-field: partner_id
+          right-field: id
+      - omit:
           - name
           - display_name
 ```
@@ -890,11 +922,11 @@ The parameters that can be configured inside `run` tag are :
 | `task`     | string          | AI Engine task (see: [AI Engines](ai-engines))       |                                               | <Badge type="info" text="v0.5+" />    |
 | `params`   | object          | AI Engine parameters (see: [AI Engines](ai-engines)) |                                               | <Badge type="info" text="v0.5+" />    |
 | 📜`input`  | string          | input field to perform the processing                | [`$row`](dynamic-expression-engine#row)       | <Badge type="default" text="v0.1+" /> |
-| 📜`output` | object / string | Output result to be stored. (see: [output](#output)) | [`$result`](dynamic-expression-engine#result) | <Badge type="info" text="v0.5+" />    |
+| 📜`output` | object / string | Output result to be stored. (see: output)            | [`$result`](dynamic-expression-engine#result) | <Badge type="info" text="v0.5+" />    |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
-#### `output`
+<u>**`output`**</u>
 
 It can be:
 
@@ -919,7 +951,7 @@ plans:
             lang: en_XX
           input: content
           output:
-            ocr_text: {{ $result.ocr.text}} # stores the $result.ocr.text in the `ocr_text` field
+            ocr_text: { { $result.ocr.text } } # stores the $result.ocr.text in the `ocr_text` field
             ocr_lang_code: ${{ $result.ocr.lang.split('_')[0] }} # using JavaScript Expression Engine to transform result
 ```
 

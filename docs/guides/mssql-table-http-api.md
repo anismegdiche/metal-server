@@ -1,6 +1,7 @@
 ---
 description: "Metal:Middleware, ETL & AI at the same place. Empower your projects with a free open-source data transformation solution"
 ---
+
 <Badge type="default" text="Technical Guide"/>
 
 # Exposing Selected Tables from MS SQL Server through HTTP API
@@ -46,7 +47,7 @@ The goal is to expose the tables **locations** and **countries** through an HTTP
 Let's begin with a minimal Metal configuration file, `config.yml`:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:
@@ -107,7 +108,7 @@ It is possible to expose a different name from the original table name.
 The final configuration will be:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:

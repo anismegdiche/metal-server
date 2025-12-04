@@ -1,6 +1,7 @@
 ---
 description: "Metal:Middleware, ETL & AI at the same place. Empower your projects with a free open-source data transformation solution"
 ---
+
 <Badge type="default" text="Technical Guide"/>
 
 # Transforming Azure Blob CSV Files into Data Tables
@@ -44,7 +45,7 @@ The objective is to expose this CSV file through an HTTP API using Metal.
 Begin with a minimal Metal configuration file, `config.yml`:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:
@@ -81,7 +82,7 @@ sources:
       az-blob-connection-string: UseDevelopmentStorage=true
       az-blob-container: datacontainer1
       content:
-        '*.csv':
+        "*.csv":
           content-type: csv
 ```
 
@@ -104,7 +105,7 @@ schemas:
 The final configuration will be:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:

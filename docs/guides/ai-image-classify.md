@@ -1,6 +1,7 @@
 ---
 description: "Metal:Middleware, ETL & AI at the same place. Empower your projects with a free open-source data transformation solution"
 ---
+
 <Badge type="default" text="Technical Guide"/>
 
 # Plan using AI Image Classifier
@@ -33,7 +34,7 @@ The goal is to configure a plan that classifies these images and exposes the ren
 Begin with a minimal Metal configuration file, `config.yml`:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:
@@ -90,10 +91,10 @@ plans:
             class: class
 ```
 
-| Step Command                                                                                                                                                            | Block                                                                                                                |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| <pre>- insert:<br>    data:<br>      - img: https://thumbs.dreamstime...<br>      - img: https://img.freepik...<br>      - img: https://encrypted-tbn0.gstatic...</pre> | Inserts the images in the plan data                                                                                   |
-| <pre>- run:<br>    ai: img-class<br>    input: img<br>    output:<br>      class: class</pre>                                                                           | Runs AI `img-class` on the `img` field and creates a new field (`class`) for the AI output |
+| Step Command                                                                                                                                          | Block                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| <pre>- insert:<br> data:<br> - img: https://thumbs.dreamstime...<br> - img: https://img.freepik...<br> - img: https://encrypted-tbn0.gstatic...</pre> | Inserts the images in the plan data                                                        |
+| <pre>- run:<br> ai: img-class<br> input: img<br> output:<br> class: class</pre>                                                                       | Runs AI `img-class` on the `img` field and creates a new field (`class`) for the AI output |
 
 ::: tip ℹ️ INFO
 For more information about using plans, please refer to: [Configuration File Reference (Section Plans)](../documentation/config-yml.md#plans).
@@ -119,7 +120,7 @@ schemas:
 The final configuration will be:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:

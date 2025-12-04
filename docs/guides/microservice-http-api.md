@@ -1,6 +1,7 @@
 ---
 description: "Metal:Middleware, ETL & AI at the same place. Empower your projects with a free open-source data transformation solution"
 ---
+
 <Badge type="default" text="Technical Guide"/>
 
 # Microservice HTTP Middleware
@@ -76,7 +77,7 @@ The goal is to expose the tables **members**, **facilities**, and **bookings** t
 Let's start with a minimal Metal configuration file, `config.yml`:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:
@@ -150,7 +151,7 @@ With the `entities` command, we define tables to expose and their exposed names.
 The final configuration will be:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:

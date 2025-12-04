@@ -1,6 +1,7 @@
 ---
 description: "Metal:Middleware, ETL & AI at the same place. Empower your projects with a free open-source data transformation solution"
 ---
+
 <Badge type="default" text="Technical Guide"/>
 
 # Scheduled ETL
@@ -21,19 +22,19 @@ Here are the steps to achieve this transfer:
 graph TD
 B([begin])
 -->
-1[update <span style="color:red">mflix.log</span> 
+1[update <span style="color:red">mflix.log</span>
 set etl_status = 'locked'
 where etl_status = 'new']
 -->
-2[select * 
-from <span style="color:red">mflix.log</span> 
+2[select *
+from <span style="color:red">mflix.log</span>
 where etl_status = 'locked']
 -->
 3[select ts, message]
 -->
 4[insert into <span style="color:green">clubdata.mflix_log</span>]
 -->
-5[delete from <span style="color:red">mflix.log</span> 
+5[delete from <span style="color:red">mflix.log</span>
 where etl_status = 'locked']
 -->
 E([end])
@@ -46,7 +47,7 @@ The goal is to configure this plan and schedule it to be executed every 5 second
 Start with a minimal Metal configuration file, `config.yml`:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:
@@ -148,14 +149,13 @@ plans:
             etl_status: locked
 ```
 
-| Block                                                                                                    | Step command                                                                                                                                  |
-| -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| update <span style="color:red">mflix.log</span><br>set etl_status = 'locked'<br>where etl_status = 'new' | <pre>- update:<br>    schema: mflix<br>    entity: log<br>    filter:<br>      etl_status: new<br>    data:<br>      etl_status: locked</pre> |
-| select *<br>from <span style="color:red">mflix.log</span><br>where etl_status = 'locked'                 | <pre>- select:<br>    schema: mflix<br>    entity: log<br>    filter:<br>      etl_status: locked</pre>                                       |
-| select ts, message                                                                                       | <pre>- fields: ts, message     </pre>                                                                                                         |
-| insert into <span style="color:green">clubdata.mflix_log</span>                                          | <pre>- insert:<br>    schema: clubdata<br>    entity: mflix_log</pre>                                                                         |
-| delete from <span style="color:red">mflix.log</span><br>where etl_status = 'locked'                      | <pre>- delete:<br>    schema: mflix<br>    entity: log<br>    filter:<br>      etl_status: locked</pre>                                       |
-
+| Block                                                                                                    | Step command                                                                                                            |
+| -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| update <span style="color:red">mflix.log</span><br>set etl_status = 'locked'<br>where etl_status = 'new' | <pre>- update:<br> schema: mflix<br> entity: log<br> filter:<br> etl_status: new<br> data:<br> etl_status: locked</pre> |
+| select \*<br>from <span style="color:red">mflix.log</span><br>where etl_status = 'locked'                | <pre>- select:<br> schema: mflix<br> entity: log<br> filter:<br> etl_status: locked</pre>                               |
+| select ts, message                                                                                       | <pre>- fields: ts, message </pre>                                                                                       |
+| insert into <span style="color:green">clubdata.mflix_log</span>                                          | <pre>- insert:<br> schema: clubdata<br> entity: mflix_log</pre>                                                         |
+| delete from <span style="color:red">mflix.log</span><br>where etl_status = 'locked'                      | <pre>- delete:<br> schema: mflix<br> entity: log<br> filter:<br> etl_status: locked</pre>                               |
 
 ::: tip ℹ️ INFO
 For more information about using plans, please refer to: [Configuration File Reference (Section Plans)](../documentation/config-yml.md#plans).
@@ -178,7 +178,7 @@ schedules:
 The final configuration will be:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   verbosity: debug
   port: 3000
@@ -282,7 +282,7 @@ You should see the following output in the console with the command `docker comp
 15:16:45 DEBUG [Metal] root: Plan 'move-data': '1',  {"debug":null}
 15:16:45 DEBUG [Metal] root: --> Plans.Debug: null
 15:16:45 DEBUG [Metal] root: Plan 'move-data': '2',  {"update":{"schema":"mflix","entity":"log","filter":{"etl_status":"new"},"data":{"etl_status":"locked"}}}
-15:16:45 DEBUG [Metal] root: --> Plans.Update: {"schema":"mflix","entity":"log","filter":{"etl_status":"new"},"data":{"etl_status":"locked"}}       
+15:16:45 DEBUG [Metal] root: --> Plans.Update: {"schema":"mflix","entity":"log","filter":{"etl_status":"new"},"data":{"etl_status":"locked"}}
 15:16:45 DEBUG [Metal] root: Data.Update: {"schema":"mflix","entity":"log","filter":{"etl_status":"new"},"data":{"etl_status":"locked"}}
 15:16:45 DEBUG [Metal] root: <-- MongoDb.Update: {"schema":"mflix","entity":"log","filter":{"etl_status":"new"},"data":{"etl_status":"locked"}}
 15:16:45 DEBUG [Metal] root: --> MongoDb.Insert: {"schema":"mflix","entity":"log","data":{"ts":"${{Date.now()}}","message":"This is a fake message ${{Math.random()}}","etl_status":"new"}}
@@ -303,7 +303,6 @@ You should see the following output in the console with the command `docker comp
 15:16:45 DEBUG [Metal] root: <-- MongoDb.Delete: {"schema":"mflix","entity":"log","filter":{"etl_status":"locked"}}
 15:16:45 DEBUG [Metal] root: --> MongoDb.Delete: {"schema":"mflix","entity":"log","filter":{"etl_status":"locked"}}
 ```
-
 
 ## Playing with the HTTP API
 

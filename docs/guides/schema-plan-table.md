@@ -1,6 +1,7 @@
 ---
 description: "Metal:Middleware, ETL & AI at the same place. Empower your projects with a free open-source data transformation solution"
 ---
+
 <Badge type="default" text="Technical Guide"/>
 
 # Schema with Plan Table
@@ -25,12 +26,12 @@ Here are the steps to achieve this view (order-countries):
 graph TD
 B([begin])
 -->
-S[<span style="color:yellow">select</span> customer_id, order_id, order_date 
-<span style="color:yellow">from</span> <span style="color:red">northwind.orders</span>] 
---> 
+S[<span style="color:yellow">select</span> customer_id, order_id, order_date
+<span style="color:yellow">from</span> <span style="color:red">northwind.orders</span>]
+-->
 J[<span style="color:yellow">left join</span> <span style="color:green">northwind.customers</span>
 <span style="color:yellow">on</span> <span style="color:red">northwind.orders</span>.customer_id <span style="color:yellow">=</span> <span style="color:green">northwind.customers</span>.customer_id]
---> 
+-->
 F[<span style="color:yellow">select</span> order_id, order_date, country]
 -->
 X[<span style="color:yellow">order by</span> order_date <span style="color:yellow">asc</span>]
@@ -45,7 +46,7 @@ The goal is to configure this plan and expose it through an HTTP API.
 Start with a minimal Metal configuration file, `config.yml`:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:
@@ -120,12 +121,12 @@ plans:
           order_date: asc
 ```
 
-| Block                                                                                   | Step command |
-| --------------------------------------------------------------------------------------- | ------------ |
-| <span style="color:yellow">select</span> customer_id, order_id, order_date <br> <span style="color:yellow">from</span> <span style="color:red">northwind.orders</span> | <pre>- select:<br>    schema: northwind<br>    entity: orders<br>    fields: customer_id, order_id, order_date<br>      </pre>             |
-|<span style="color:yellow">left join</span> <span style="color:green">northwind.customers</span><br><span style="color:yellow">on</span> <span style="color:red">northwind.orders</span>.customer_id <span style="color:yellow">=</span> <span style="color:green">northwind.customers</span>.customer_id|<pre>- join:<br>    type: left<br>    schema: northwind<br>    entity: customers<br>    left-field: customer_id<br>    right-field: customer_id</pre>|
-|<span style="color:yellow">select</span> order_id, order_date, country|<pre>- fields: order_id, order_date, country</pre>|
-|<span style="color:yellow">order by</span> order_date <span style="color:yellow">asc</span>|<pre>- sort:<br>    order_date: asc</pre>|
+| Block                                                                                                                                                                                                                                                                                                     | Step command                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| <span style="color:yellow">select</span> customer_id, order_id, order_date <br> <span style="color:yellow">from</span> <span style="color:red">northwind.orders</span>                                                                                                                                    | <pre>- select:<br> schema: northwind<br> entity: orders<br> fields: customer_id, order_id, order_date<br> </pre>                       |
+| <span style="color:yellow">left join</span> <span style="color:green">northwind.customers</span><br><span style="color:yellow">on</span> <span style="color:red">northwind.orders</span>.customer_id <span style="color:yellow">=</span> <span style="color:green">northwind.customers</span>.customer_id | <pre>- join:<br> type: left<br> schema: northwind<br> entity: customers<br> left-field: customer_id<br> right-field: customer_id</pre> |
+| <span style="color:yellow">select</span> order_id, order_date, country                                                                                                                                                                                                                                    | <pre>- fields: order_id, order_date, country</pre>                                                                                     |
+| <span style="color:yellow">order by</span> order_date <span style="color:yellow">asc</span>                                                                                                                                                                                                               | <pre>- sort:<br> order_date: asc</pre>                                                                                                 |
 
 ::: tip ℹ️ INFO
 For more information about using plans, please refer to: [Configuration File Reference (Section Plans)](../documentation/config-yml.md#plans).
@@ -155,7 +156,7 @@ schemas:
 The final configuration will be:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:

@@ -419,6 +419,7 @@ sources:
   my-files:
     provider: storage
     options:
+      mode: files
       storage-type: fs
       fs-folder: ./data/
       …
@@ -454,6 +455,7 @@ sources:
   my-local-files:
     provider: storage
     options:
+      mode: files
       storage-type: fs
       fs-folder: ./data/
       …
@@ -483,6 +485,7 @@ sources:
   my-ftp-files:
     provider: storage
     options:
+      mode: files
       storage-type: ftp
       ftp-host: ftp.server.com
       ftp-port: 21
@@ -512,6 +515,7 @@ sources:
   my-az-blob-files:
     provider: storage
     options:
+      mode: files
       storage-type: az-blob
       az-blob-connection-string: UseDevelopmentStorage=true
       az-blob-container: datacontainer1
@@ -540,6 +544,7 @@ sources:
   my-az-file-files:
     provider: storage
     options:
+      mode: files
       storage-type: az-file
       az-file-connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
       az-file-share-name: myshare
@@ -569,6 +574,7 @@ sources:
   my-az-datalake-files:
     provider: storage
     options:
+      mode: files
       storage-type: az-datalake
       az-datalake-storage-account: your-storage-account
       az-datalake-storage-key: your-storage-key
@@ -600,6 +606,7 @@ sources:
   my-s3-files:
     provider: storage
     options:
+      mode: files
       storage-type: s3
       s3-access-key-id: your-access-key-id
       s3-secret-access-key: your-secret-access-key

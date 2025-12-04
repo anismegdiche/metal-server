@@ -54,7 +54,7 @@ The goal is to expose this database through an HTTP API using Metal.
 Let's begin with a minimal Metal configuration file, `config.yml`:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:
@@ -103,7 +103,7 @@ schemas:
 The final configuration will be:
 
 ```yaml
-version: "0.3"
+version: "0.5"
 server:
   port: 3000
   authentication:
