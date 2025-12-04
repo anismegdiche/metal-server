@@ -1,4 +1,7 @@
+__pycache__
 .vs
+.qodo
+
 .idea/*
 .vagrant/*
 /test/*
@@ -7,6 +10,6 @@
 /data/*
 /coverage/*
 /cache/*
+/tmp/*
+
 *.traineddata
-.qodo
-__pycache__
