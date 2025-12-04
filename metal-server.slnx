@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="metal-server.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>

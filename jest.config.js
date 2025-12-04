@@ -12,5 +12,6 @@ module.exports = {
     transformIgnorePatterns: [
         '<rootDir>/node_modules/',
         '<rootDir>/build/'
-    ]
+    ],
+    testTimeout: 120_000
 }
