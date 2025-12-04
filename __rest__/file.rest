@@ -129,5 +129,7 @@ authorization: Bearer {{token}}
 
 
 ###
-GET http://localhost:3000/schema/fs/industry_sic.csv
+GET http://localhost:3000/schema/fs/homes.csv
+    ?fields=Country,City,Sell
+    &filter-expression=Sell > 500
 authorization: Bearer {{token}}
