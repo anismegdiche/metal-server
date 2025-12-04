@@ -24,7 +24,7 @@ users:
     password: myStr@ngpa$$w0rd
     secret: 1234567890
     roles: [jsonreader, lister, modifier]
-    
+
   myguest:
     password: guest
     secret: 1234567890
@@ -60,16 +60,18 @@ sources:
     password: "123456"
     database: clubdata
   fs-json-data:
-    provider: files
+    provider: storage
     database: ./data/
     options:
+      mode: files
       storage-type: fs
       content-type: json
       json-path: rows
   fs-csv-data:
-    provider: files
+    provider: storage
     database: ./data/
     options:
+      mode: files
       storage-type: fs
       content-type: csv
       csv-delimiter: ","
@@ -77,10 +79,11 @@ sources:
       csv-header: true
       csv-quote: '"'
   az-json-data:
-    provider: files
+    provider: storage
     host: UseDevelopmentStorage=true
     database: datacontainer1
     options:
+      mode: files
       storage-type: azureBlob
       content-type: json
 
