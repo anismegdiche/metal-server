@@ -1,27 +1,49 @@
 {
-    "todo-tree.tree.showCountsInTree": true,
-    "docwriter.style": "JSDoc",
-    "docwriter.progress.trackFunctions": true,
-    "docwriter.progress.trackTypes": true,
-    "docwriter.progress.trackClasses": true,
-    "todo-tree.tree.scanMode": "workspace",
-    "prettier.singleQuote": false,
-    "jest.runMode": "on-demand",
-    "jest.testtimeout": 120000,
-    "jest.outputConfig": {
-        "revealOn": "run",
-        "revealWithFocus": "test-results",
-        "clearOnRun": "none"
-    },
-    "codescene.previewCodeHealthGate": true,
-    "codescene.enableAutoRefactor": true,
-    "sonarlint.connectedMode.project": {
-        "connectionId": "anismegdiche",
-        "projectKey": "anismegdiche_metal-server"
-    },
-    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
-    "eslint.workingDirectories": [{ "mode": "auto" }],
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "always"
-    }
+  "todo-tree.tree.showCountsInTree": true,
+  "docwriter.style": "JSDoc",
+  "docwriter.progress.trackFunctions": true,
+  "docwriter.progress.trackTypes": true,
+  "docwriter.progress.trackClasses": true,
+  "todo-tree.tree.scanMode": "workspace",
+  "prettier.singleQuote": false,
+  "jest.runMode": "on-demand",
+  "jest.testtimeout": 120000,
+  "jest.outputConfig": {
+    "revealOn": "run",
+    "revealWithFocus": "test-results",
+    "clearOnRun": "none"
+  },
+  "codescene.previewCodeHealthGate": true,
+  "codescene.enableAutoRefactor": true,
+  "sonarlint.connectedMode.project": {
+    "connectionId": "anismegdiche",
+    "projectKey": "anismegdiche_metal-server"
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "errorLens.alignMessage": {
+    "start": 0,
+    "end": 0,
+    "minimumMargin": 4,
+    "padding": [0, 0],
+    "useFixedPosition": false
+  },
+  "errorLens.codeLensEnabled": false,
+  "errorLens.codeLensTemplate": "$severity $message",
+  "errorLens.messageBackgroundMode": "line",
+  "errorLens.messageEnabled": true,
+  "errorLens.problemRangeDecorationEnabled": true,
+  "errorLens.removeLinebreaks": false,
+  "errorLens.statusBarColorsEnabled": true,
+  "errorLens.statusBarIconsEnabled": true,
+  "errorLens.gutterIconsEnabled": true,
+  "errorLens.gutterIconSize": "150%"
 }
