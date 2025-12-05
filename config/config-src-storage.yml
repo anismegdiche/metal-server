@@ -17,7 +17,6 @@ server:
   ai-engines:
     # docker-url:
     engines-url: http://localhost:5000
-  
 
 roles:
   all: lacrud
@@ -45,12 +44,12 @@ sources:
       fs-folder: ./data/
       autocreate: true
       content:
-        '*.csv':
+        "*.csv":
           content-type: csv
           csv-delimiter: ";"
           csv-newline: "\n"
           csv-header: true
-          csv-quote: "\""
+          csv-quote: '"'
 
 schemas:
   fs:
@@ -59,7 +58,6 @@ schemas:
     source: src-myplan
   csv:
     source: src-csv
-    
 
 schedules:
   "p1":
@@ -77,7 +75,7 @@ plans:
       - select:
           schema: fs
           entity: csv
-          fields: '*, content'
+          fields: "*, content"
 
       - insert:
           schema: fs
@@ -103,7 +101,7 @@ plans:
           schema: fs
           entity: csv3
 
-      - remove-fields: [content]
+      - omit: [content]
 
       - insert:
           schema: csv
@@ -124,9 +122,8 @@ plans:
       #     input: content
       #     output: text
 
-      # - remove-fields: [content]
+      # - omit: [content]
 
       # - insert:
       #     schema: csv
       #     entity: csv.csv
-    

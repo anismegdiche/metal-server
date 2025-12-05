@@ -17,7 +17,6 @@ server:
   ai-engines:
     # docker-url:
     engines-url: http://localhost:5000
-  
 
 roles:
   all: lacrud
@@ -41,7 +40,6 @@ schemas:
     source: src-fs
   myplan:
     source: src-myplan
-    
 
 schedules:
   "p1":
@@ -71,5 +69,4 @@ plans:
           input: content
           output: text
 
-      - remove-fields: [content]
-    
+      - omit: [content]

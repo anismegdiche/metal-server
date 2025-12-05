@@ -15,7 +15,7 @@ server:
     options:
       autocreate: true
   ai-engines:
-    engines-url: http://localhost:5000  
+    engines-url: http://localhost:5000
     timeout: 600000
     # params:
     #   host: "127.0.0.1"  # or your machine IP
@@ -46,7 +46,7 @@ sources:
         "*.json":
           content-type: json
           json-path: rows
-          
+
   src-myplan:
     provider: plan
     database: myplan
@@ -57,7 +57,7 @@ schemas:
   myplan:
     source: src-myplan
   json:
-    source: src-json    
+    source: src-json
 
 schedules:
   "ocr":
@@ -84,7 +84,7 @@ plans:
             lang: en_XX
           input: content
           output:
-            _ocr_text: ${{ $result.ocr.text }} 
+            _ocr_text: ${{ $result.ocr.text }}
             _ocr_lang_code: (${{ $result.ocr.lang.split('_')[0].toUpperCase() }})
 
       # - run:
@@ -212,19 +212,19 @@ plans:
           ai: text
           task: zero-shot-classification
           params:
-            labels: 
-            # # Sentiment
-            # - positive
-            # - negative
-            # - neutral
+            labels:
+              # # Sentiment
+              # - positive
+              # - negative
+              # - neutral
 
-            # Intent / Purpose
-            - informative
-            - opinion
-            - question
-            - instruction
-            - narrative
-            - promotional
+              # Intent / Purpose
+              - informative
+              - opinion
+              - question
+              - instruction
+              - narrative
+              - promotional
 
             # # Topic / Domain
             # - politics
@@ -265,7 +265,7 @@ plans:
           output:
             _zero_shot_class: zeroshot
 
-      - remove-fields: [content]
+      - omit: [content]
 
       - insert:
           schema: json
