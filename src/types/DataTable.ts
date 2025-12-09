@@ -935,7 +935,7 @@ export class DataTable extends clsClonable {
             .then(() => this._fields = {})
             .then(() => this.FieldsSet())
             .catch((error) => {
-                Logger.Error(`Failed to delete from '${this.SafeName}': ${JsonUtils.Stringify(error)}`)
+                Logger.Error(`${Logger.Out} DataTable.RowsDelete: Failed to delete from '${this.SafeName}': ${JsonUtils.Stringify(error)}`)
                 throw error
             })
     }
@@ -1046,7 +1046,7 @@ export class DataTable extends clsClonable {
         return this.FieldsSet()
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     async Sort(sorts: TOrderBy): Promise<this> {
         if (Object.keys(sorts).length === 0) return this
 
@@ -1094,6 +1094,7 @@ export class DataTable extends clsClonable {
         return this
     }
 
+    @Logger.LogFunction(true)
     async Pick(fields: string[]): Promise<this> {
         if (!fields || fields.length === 0)
             return this;
@@ -1111,6 +1112,7 @@ export class DataTable extends clsClonable {
         return this.FieldsSet()
     }
 
+    @Logger.LogFunction(true)
     async Omit(fields: string[]): Promise<this> {
         if (!fields || fields.length === 0)
             return this;
@@ -1138,6 +1140,7 @@ export class DataTable extends clsClonable {
         return this.FieldsSet()
     }
 
+    @Logger.LogFunction(true)
     async Map(fnMap: (row: TRow) => TRow): Promise<this> {
         const iterator = await this.RowsIterator({ includeIndex: true });
         const updatePromises: Promise<this>[] = [];
@@ -1154,5 +1157,17 @@ export class DataTable extends clsClonable {
                 Logger.Error(`Failed to update rows in '${this.SafeName}': ${JsonUtils.Stringify(error)}`)
                 throw error
             })
+    }
+
+    @Logger.LogFunction(true)
+    async ForEach<T>(fnForEach: (row: TRow) => T | Promise<T>): Promise<T[]> {
+        const iterator = await this.RowsIterator({ includeIndex: true });
+
+        const promises: (T | Promise<T>)[] = [];
+        for await (const row of iterator) {
+            promises.push(fnForEach(row));
+        }
+
+        return Promise.all(promises);
     }
 }
