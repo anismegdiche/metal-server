@@ -115,8 +115,10 @@ export class AiDocker {
             try {
                 Logger.Info(`${Logger.In} Stopping container '${container.Names[0]}'...`)
                 const c = AiDocker.docker.getContainer(container.Id)
-                await c.stop().catch()
-                await c.remove().catch()
+                if (container.State === "running") {
+                    await c.stop().catch(Logger.Debug)
+                }
+                await c.remove().catch(Logger.Debug)
                 Logger.Info(`${Logger.Out} Stopped container '${container.Names[0]}'`)
                 resolve()
             } catch (e: unknown) {
