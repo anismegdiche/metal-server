@@ -64,6 +64,7 @@ type TRowsIteratorParams = Pick<TRowsParams, 'includeIndex' | 'fields' | 'filter
 type TRowsConstructSqlParams = Pick<TRowsParams, 'includeIndex' | 'fields' | 'filter' | 'skip' | 'limit' | 'sort'> & {
     safeName: string
 }
+
 type TRowsRunParams = Pick<TRowsParams, 'includeIndex' | 'fields' | 'fnMap'>
 
 type TRowsParseParams = TRowsRunParams & {
@@ -712,9 +713,19 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction()
-    Rename(name: string): this {
-        this.Name = name
-        return this
+    async Rename(name: string): Promise<this> {
+        Assert.Condition(!StringUtils.IsEmpty(name), "DataTable.Rename: name must not be empty")
+        this._dbEnsureInitialized()
+        const cnx = this._duckConnection!
+        return cnx.run(duckDb_Sql_RenameTable(this.Name, name))
+            .then(() => {
+                this.Name = name
+                return this
+            })
+            .catch((err) => {
+                Logger.Error(`DataTable.Rename: ${err}`)
+                return this
+            })
     }
 
     BatchSizeSet(batchSize: number) {
@@ -828,16 +839,26 @@ export class DataTable extends clsClonable {
             safeName: this.SafeName
         })
 
-        const rows = await this._runSqlAndGetRows(sql, undefined, {
+        return this._runSqlAndGetRows(sql, undefined, {
             includeIndex,
             fields,
             fnMap
         })
-
-        if (fnFilter)
-            return rows.filter(row => fnFilter(row))
-
-        return rows
+            .then(rows => {
+                if (fnFilter)
+                    return rows.filter(row => fnFilter(row))
+                return rows
+            })
+            .catch(async (err) => {
+                const tables = await this._duckConnection!.runAndReadAll("show tables;")
+                    .then(reader => reader.getRowObjects())
+                    .catch(err => {
+                        Logger.Error(`DataTable.Rows: '${this.Name}' Error executing SQL query: '${sql}': ${err.message}`)
+                        throw new Error(`DataTable.Rows: '${this.Name}' Error executing SQL query: '${sql}': ${err.message}`)
+                    })
+                Logger.Error(`DataTable.Rows: '${this.Name}' Error executing SQL query: '${sql}': ${err.message}\r\ncandidate tables:\r\n${JSON.stringify(tables)}`)
+                throw new Error(`DataTable.Rows: '${this.Name}' Error executing SQL query: '${sql}': ${err.message}`)
+            })
     }
 
     /**
@@ -900,7 +921,7 @@ export class DataTable extends clsClonable {
             : this._rows ?? []
 
         await this._dbEnsureInitialized()
-        await this.RowsDelete()
+        await this.RowsDelete().catch()
         await this._dbPersistRows(__data__)
 
         return this.FieldsSet()
@@ -936,7 +957,7 @@ export class DataTable extends clsClonable {
             .then(() => this.FieldsSet())
             .catch((error) => {
                 Logger.Error(`${Logger.Out} DataTable.RowsDelete: Failed to delete from '${this.SafeName}': ${JsonUtils.Stringify(error)}`)
-                throw error
+                return this
             })
     }
 
