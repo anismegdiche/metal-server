@@ -88,6 +88,10 @@ export class MemoryData extends absDataProvider {
             entity
         }
 
+        if (this.Config.options?.autocreate) {
+            await this.AddEntity(schemaRequest)
+        }
+
         Assert.Var<DataTable>(this.Connection.Tables[entity], `${schema}: Entity '${entity}' not found`, new HttpErrorNotFound())
 
         $context = merge(
