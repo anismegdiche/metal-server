@@ -74,7 +74,7 @@ export class Plan {
             this.Entities.get(entity)!
         )
 
-        await currentDatatable.FreeSql({sqlQuery})
+        await currentDatatable.FreeSql({ sqlQuery })
 
         Logger.Debug(`${Logger.Out} Plan.Execute: ${source}.${entity}`)
         return currentDatatable
@@ -94,7 +94,7 @@ export class Plan {
 
         this.ExecuteSteps(undefined, plan, entity, entitySteps)
             .then((data) => {
-                data.FreeSql({sqlQuery})
+                data.FreeSql({ sqlQuery })
                     .then(() => {
                         Logger.Debug(`${Logger.Out} Plan.Execute: ${plan}.${entity}`)
                     })
@@ -124,9 +124,9 @@ export class Plan {
 
         try {
             for await (const [_stepIndex, _step] of Object.entries(steps)) {
-                
+
                 const __stepIndex = parseInt(_stepIndex, 10) + 1
-                
+
                 $context.$plan!.$current = {
                     ...$context.$plan!.$current,
                     stepIndex: __stepIndex,
@@ -134,9 +134,24 @@ export class Plan {
                     stepArgs: values(<TStepArgs>_step)[0],
                     status: STEP_STATUS.RUNNING
                 }
-                
-                Assert.Condition(_step !== null, `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`, new HttpErrorBadRequest())
-                
+                // check loop detection
+                const _argSchema = ($context.$plan!.$current.stepArgs as TSchemaRequest).schema
+                const _argEntity = ($context.$plan!.$current.stepArgs as TSchemaRequest).entity
+                const _planSchema = $context.$plan!.schema
+                const _planEntity = $context.$plan!.entity
+
+                Assert.Condition(
+                    _argSchema !== _planSchema || _argEntity !== _planEntity,
+                    `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': loop detected in step ${$context.$plan!.$current.stepIndex}`,
+                    new HttpErrorInternalServerError()
+                )
+                // check step validity
+                Assert.Condition(
+                    _step !== null,
+                    `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
+                    new HttpErrorBadRequest()
+                )
+
                 Logger.Debug(`${Logger.In} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(_step)}`)
 
                 const __stepArguments: TStep = {
@@ -220,7 +235,7 @@ export class Plan {
                         }
                     )
 
-                    // throw new HttpErrorInternalServerError(_errorMessage)
+                // throw new HttpErrorInternalServerError(_errorMessage)
             }
         }
 
