@@ -77,7 +77,7 @@ function normalizeValue(val: unknown): string {
 
 //
 export class DataTableUtils {
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async PrefixAllFields(dt: DataTable, prefix: string): Promise<DataTable> {
         // transform every row in DB by prefixing field names (done inside DuckDB)
         await dt._dbEnsureInitialized()
@@ -119,7 +119,7 @@ export class DataTableUtils {
         return dt
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async UnPrefixAllfields(dt: DataTable): Promise<DataTable> {
         for await (const row of await dt.RowsIterator({ batchSize: dt.BatchSize, includeIndex: true })) {
             const __data__: TRow = {}
@@ -136,7 +136,7 @@ export class DataTableUtils {
         return dt
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async LeftJoin(dtA: DataTable, dtB: DataTable, leftField: string, rightField: string): Promise<DataTable> {
         await dtA._dbEnsureInitialized()
         await dtB._dbEnsureInitialized()
@@ -197,7 +197,7 @@ export class DataTableUtils {
         return dtA
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async InnerJoin(dtA: DataTable, dtB: DataTable, leftField: string, rightField: string): Promise<DataTable> {
         await dtA._dbEnsureInitialized()
         await dtB._dbEnsureInitialized()
@@ -255,7 +255,7 @@ export class DataTableUtils {
         return dtA
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async RightJoin(dtA: DataTable, dtB: DataTable, leftField: string, rightField: string): Promise<DataTable> {
         await dtA._dbEnsureInitialized()
         await dtB._dbEnsureInitialized()
@@ -316,7 +316,7 @@ export class DataTableUtils {
         return dtA
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async FullOuterJoin(dtA: DataTable, dtB: DataTable, leftField: string, rightField: string): Promise<DataTable> {
         await dtA._dbEnsureInitialized()
         await dtB._dbEnsureInitialized()
@@ -389,7 +389,7 @@ export class DataTableUtils {
         return dtA
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async CrossJoin(dtA: DataTable, dtB: DataTable): Promise<DataTable> {
         await dtA._dbEnsureInitialized()
         await dtB._dbEnsureInitialized()
@@ -443,7 +443,7 @@ export class DataTableUtils {
         return dtA
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async RemoveDuplicates(
         dt: DataTable,
         fields: string[] | undefined = undefined,
@@ -564,7 +564,7 @@ export class DataTableUtils {
             await conn.run(`DELETE FROM ${dt.SafeName}`)
             await conn.run(`INSERT INTO ${dt.SafeName}(__data__) SELECT __data__ FROM ${tempTableName}`)
         } catch (error) {
-            Logger.Error(`Error in RemoveDuplicates: ${error}`)
+            Logger.Error(`${Logger.Out} DataTableUtils.RemoveDuplicates: Failed to remove duplicates: ${error}`)
             throw error
         } finally {
             // Clean up temp table
@@ -573,7 +573,7 @@ export class DataTableUtils {
         return dt
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async Anonymize(
         dt: DataTable,
         fields: string | string[],
@@ -656,7 +656,7 @@ export class DataTableUtils {
         return dt
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async SyncReport(
         {
             source,
@@ -797,7 +797,7 @@ export class DataTableUtils {
         }
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     static async SetFromDataTable(target: DataTable, source: DataTable): Promise<DataTable> {
         await source._dbEnsureInitialized()
         await target._dbEnsureInitialized()
@@ -855,7 +855,7 @@ export class DataTableUtils {
     }
 
 
-    // @Logger.LogFunction()
+    // @Logger.LogFunction(true)
     // async Transpose(renamedColumns?: string[]): Promise<this> {
     //     await this._dbEnsureInitialized()
     //     const conn = this._duckConnection!
