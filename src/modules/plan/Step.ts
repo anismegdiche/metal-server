@@ -506,7 +506,7 @@ export class Step {
 
         Assert.Var<IAiEngine>(aiEngine, aiEngine !== undefined, `${STEP.RUN}: AI Engine ${aiTask} not found`)
 
-        const rowPromises = []
+        const rowPromises: Promise<void>[] = []
 
         for await (const _row of await step.currentDataTable.Rows({ includeIndex: true })) {
             rowPromises.push((async () => {
