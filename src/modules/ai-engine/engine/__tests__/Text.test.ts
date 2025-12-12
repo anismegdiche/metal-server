@@ -550,19 +550,36 @@ describe('Text', () => {
             spyAxios.mockImplementationOnce(() => {
                 return Promise.resolve({
                     data: {
-                        result: {
-                            "sequence": "I have a problem with my order",
-                            "labels": [
-                                "billing",
-                                "refund",
-                                "technical support"
-                            ],
-                            "scores": [
-                                0.4180431663990021,
-                                0.3394615352153778,
-                                0.24249528348445892
-                            ]
-                        }
+                        result: [
+                            {
+                                sequence: `This is a lot of 12 point text to test the
+                                ocr code and see if it works on all types
+                                of file format.
+
+                                The quick brown dog jumped over the
+                                lazy fox. The quick brown dog jumped
+                                over the lazy fox. The quick brown dog
+                                jumped over the lazy fox. The quick
+                                brown dog jumped over the lazy fox.
+                                `,
+                                labels: [
+                                    "instruction",
+                                    "question",
+                                    "informative",
+                                    "narrative",
+                                    "opinion",
+                                    "promotional",
+                                ],
+                                scores: [
+                                    0.25470343232154846,
+                                    0.24146001040935516,
+                                    0.20922932028770447,
+                                    0.15585294365882874,
+                                    0.08678287267684937,
+                                    0.051971372216939926,
+                                ],
+                            },
+                        ]
                     }
                 });
             });

@@ -339,7 +339,7 @@ export class Text extends absAiEngine implements IAiEngine {
         const similarity = response.data.result.map((item: any) => ({
             sentence: item.sentence2,
             score: Math.max(0, item.similarity),
-            rank: parseInt(item.rank,10)
+            rank: parseInt(item.rank, 10)
         }));
 
         return {
@@ -629,7 +629,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 throw new HttpErrorInternalServerError(`Zero-shot classification failed: ${error.response?.data?.message ?? error.message}`);
             })
 
-        const result = response.data.result
+        const result = response.data.result[0]
 
         const zeroshot = Object.fromEntries(
             result.labels.map((label: string, i: number) => [label, result.scores[i]])
