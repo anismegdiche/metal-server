@@ -19,31 +19,45 @@ import { TJson } from "../types/TJson"
 import { Logger } from "./Logger"
 import { Stringify } from "./JsonUtils/Stringify"
 
+const BASE64_REGEX = /^[A-Za-z0-9+/]+={0,2}$/;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const HEX_REGEX = /^[0-9a-f]{20,}$/i; // long hex strings (tokens, hashes)
 
 //
 export class JsonUtils {
 
     static TryParse<T>(jsonString: string | undefined, defaultValue: T, silent: boolean = false): T {
         if (!jsonString)
-            return defaultValue
+            return defaultValue;
 
         try {
             return JSON.parse(jsonString, (key, value) => {
-                if (typeof value === 'string') {
-                    // case Date string
-                    const _parsedDate = chrono.strict.parseDate(value)
-                    if (_parsedDate !== null)
-                        return _parsedDate
-                }
-                return value
-            })
+                if (typeof value !== 'string')
+                    return value;
+
+                // 1. Reject known data types that should NOT be interpreted as dates
+                if (BASE64_REGEX.test(value)) return value;
+                if (UUID_REGEX.test(value)) return value;
+                if (HEX_REGEX.test(value)) return value;
+
+                // 2. Very short strings cannot be real dates
+                if (value.length < 4) return value;
+
+                // 4. Try parsing with chrono STRICT
+                const parsed = chrono.strict.parseDate(value);
+                if (parsed !== null && !isNaN(parsed.getTime()))
+                    return parsed;
+
+                return value;
+            });
+
         } catch (error) {
             if (!silent)
-                Logger.Error(`JsonUtils.TryParse Error: ${JsonUtils.Stringify(error)}`)
-
-            return defaultValue
+                Logger.Error(`JsonUtils.TryParse Error: ${JsonUtils.Stringify(error)}`);
+            return defaultValue;
         }
     }
+
 
     static Get<T>(json: TJson, jsonPath?: string, defaultValue?: T): T {
         if (!jsonPath)
