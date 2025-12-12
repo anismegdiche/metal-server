@@ -133,45 +133,73 @@ export class Logger {
         Logger.SetLevel()
     }
 
-
     static LogFunction(hide: string[] | boolean = []): any {
         return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
             const wrap = (originalMethod?: (...args: any[]) => any) => {
                 if (!originalMethod)
-                    return undefined
+                    return undefined;
 
                 return function (this: unknown, ...args: any[]) {
-                    const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args)
+                    // ---------- BEFORE CALL ----------
+                    const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args);
                     const _hide = typeof hide === 'boolean'
-                        ? Object.keys(_paramObject) 
-                        : hide
+                        ? Object.keys(_paramObject)
+                        : hide;
 
                     const _filteredParams: Record<string, any> = _.chain(_paramObject)
                         .omitBy(v => _.isNil(v) || _.isEmpty(v))
                         .omit(_hide)
-                        .value()
+                        .value();
 
-                    const _argsString = (_.isEmpty(_filteredParams))
+                    const _argsString = _.isEmpty(_filteredParams)
                         ? ''
-                        : ` ${Stringify(_filteredParams)}`
+                        : ` ${Stringify(_filteredParams)}`;
 
-                    const ctorName = target.name ?? (this as any)?.constructor?.name ?? 'Anonymous'
-                    Logger.Debug(`${Logger.In} ${ctorName}.${propertyKey}${_argsString}`)
-                    return originalMethod.apply(this, args)
-                }
+                    const ctorName =
+                        target.name ??
+                        (this as any)?.constructor?.name ??
+                        "Anonymous";
+
+                    Logger.Debug(`${Logger.In} ${ctorName}.${propertyKey}${_argsString}`);
+                    // ---------- CALL ORIGINAL ----------
+                    let result;
+                    try {
+                        result = originalMethod.apply(this, args);
+                    } catch (err) {
+                        // sync error
+                        Logger.Error(`${Logger.Out} ${ctorName}.${propertyKey} threw ${Stringify(err)}`);
+                        throw err; // rethrow
+                    }
+                    // ---------- ASYNC HANDLING ----------
+                    if (result instanceof Promise) {
+                        return result
+                            .then(res => {
+                                Logger.Debug(`${Logger.Out} ${ctorName}.${propertyKey}`);
+                                return res;
+                            })
+                            .catch(err => {
+                                Logger.Error(`${Logger.Out} ${ctorName}.${propertyKey} threw ${Stringify(err)}`);
+                                throw err; // rethrow async error
+                            });
+                    }
+                    // ---------- SYNC SUCCESS ----------
+                    Logger.Debug(`${Logger.Out} ${ctorName}.${propertyKey}`);
+                    return result;
+                };
+            };
+
+            // wrap function / getter / setter
+            if (typeof descriptor.value === "function") {
+                descriptor.value = wrap(descriptor.value);
+            }
+            if (typeof descriptor.get === "function") {
+                descriptor.get = wrap(descriptor.get);
+            }
+            if (typeof descriptor.set === "function") {
+                descriptor.set = wrap(descriptor.set);
             }
 
-            if (typeof descriptor.value === 'function') {
-                descriptor.value = wrap(descriptor.value)
-            }
-            if (typeof descriptor.get === 'function') {
-                descriptor.get = wrap(descriptor.get)
-            }
-            if (typeof descriptor.set === 'function') {
-                descriptor.set = wrap(descriptor.set)
-            }
-
-            return descriptor
-        }
+            return descriptor;
+        };
     }
 }
