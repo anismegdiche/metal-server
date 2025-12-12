@@ -363,21 +363,22 @@ The `folders` mode enables treating folders as data, returning subfolders as ent
 
 Data returned from folders mode are:
 
-| Property     | Type     | Description                                                                                              |
-| ------------ | -------- | -------------------------------------------------------------------------------------------------------- |
-| `name`       | `string` | The name of the file.                                                                                    |
-| `mimeType`   | `string` | The mime type of the file.                                                                               |
-| `type`       | `string` | The type of the file.                                                                                    |
-| `size`       | `number` | The size of the file in bytes.                                                                           |
-| `createdAt`  | `date`   | The creation date of the file. (ISO 8601 format)                                                         |
-| `modifiedAt` | `date`   | The modification date of the file. (ISO 8601 format)                                                     |
-| `path`       | `string` | The path of the file.                                                                                    |
-| `content`    | `string` | The Base64 content of the file. By default it is not returned unless you specify it explicitly in fields |
+| Property     | Type     | Description                                                                                                |
+| ------------ | -------- | ---------------------------------------------------------------------------------------------------------- |
+| `name`       | `string` | The name of the file.                                                                                      |
+| `mimeType`   | `string` | The mime type of the file.                                                                                 |
+| `type`       | `string` | The type of the file.                                                                                      |
+| `size`       | `number` | The size of the file in bytes.                                                                             |
+| `createdAt`  | `date`   | The creation date of the file. (ISO 8601 format)                                                           |
+| `modifiedAt` | `date`   | The modification date of the file. (ISO 8601 format)                                                       |
+| `path`       | `string` | The path of the file.                                                                                      |
+| `content`    | `string` | The Base64 content of the file. ❗By default it is not returned unless you specify it explicitly in fields |
 
-::: note
-
+::: warning ⚠️ IMPORTANT
+By Default, the `content` field is not returned unless you specify it explicitly in `select.fields`.
+:::
+::: tip ℹ️ NOTE
 When you perform Insert and Update, only fields `name` and `content` can be modified.
-
 :::
 
 **Example:**
