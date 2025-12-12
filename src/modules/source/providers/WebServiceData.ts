@@ -211,25 +211,23 @@ export class WebServiceData extends absDataProvider {
         if (!DataTable.Is(options.Data))
             throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        await Promise.all((await options.Data.Rows()).map((row: TJson) => {
+        return options.Data.ForEach(
+            async (row: TJson) => {
+                $context = _.merge(
+                    $context,
+                    {
+                        $row: row
+                    }
+                )
 
-
-            $context = _.merge(
-                $context,
-                {
-                    $row: row
-                }
-            )
-
-            return this.Connection!.Create(
-                row,
-                $context
-            )
-        }))
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-        return HttpResponse.Created()
+                return this.Connection!.Create(
+                    row,
+                    $context
+                )
+            }
+        )
+            .then(() => Cache.Remove(schemaRequest))
+            .then(() => HttpResponse.Created())
     }
 
     @Logger.LogFunction()
@@ -285,32 +283,31 @@ export class WebServiceData extends absDataProvider {
             $context
         )
 
-        await Promise.all((await keysCollection.Rows()).map(async (row: TJson) => {
-            if (!Array.isArray(await options.Data?.Rows()))
-                return Promise.resolve()
+        return keysCollection.ForEach(
+            async (row: TJson) => {
+                if (!Array.isArray(await options.Data?.Rows()))
+                    return Promise.resolve()
 
-            const mergedRow: TJson = _.merge(
-                row,
-                await options.Data?.Row(0)
-            )
+                const mergedRow: TJson = _.merge(
+                    row,
+                    await options.Data?.Row(0)
+                )
 
+                $context = _.merge(
+                    $context,
+                    {
+                        $row: row
+                    }
+                )
 
-            $context = _.merge(
-                $context,
-                {
-                    $row: row
-                }
-            )
-
-            return this.Connection!.Update(
-                mergedRow,
-                $context
-            )
-        }))
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-        return HttpResponse.NoContent()
+                return this.Connection!.Update(
+                    mergedRow,
+                    $context
+                )
+            }
+        )
+            .then(() => Cache.Remove(schemaRequest))
+            .then(() => HttpResponse.NoContent())
     }
 
 
@@ -375,21 +372,19 @@ export class WebServiceData extends absDataProvider {
             $context
         )
 
-        await Promise.all((await keysCollection.Rows()).map((row: TJson) => {
-
-            $context = _.merge(
-                $context,
-                {
-                    $row: row
-                }
-            )
-
-            return this.Connection!.Delete($context)
-        }))
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-        return HttpResponse.NoContent()
+        return keysCollection.ForEach(
+            async (row: TJson) => {
+                $context = _.merge(
+                    $context,
+                    {
+                        $row: row
+                    }
+                )
+                this.Connection!.Delete($context)
+            }
+        )
+            .then(() => Cache.Remove(schemaRequest))
+            .then(() => HttpResponse.NoContent())
     }
 
 

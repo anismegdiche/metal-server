@@ -133,7 +133,7 @@ export class CosmosDbData extends absDataProvider {
         try {
             const container = await this.GetContainer(schemaRequest)
             const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
-            const iterator = await container.items.query(CosmosDbHelper.ParseSqlQuery(sqlQueryHelper.Query()))
+            const iterator = container.items.query(CosmosDbHelper.ParseSqlQuery(sqlQueryHelper.Query()))
             const { resources: rows } = await iterator.fetchAll()
 
             const data = new DataTable(entity)
@@ -177,7 +177,7 @@ export class CosmosDbData extends absDataProvider {
             const container = await this.GetContainer(schemaRequest)
 
             // Use bulk operations for better performance
-            const operations: Array<any> = (await options.Data.Rows()).map(row => {
+            const operations: Array<any> = await options.Data.ForEach(row => {
                 // Ensure each document has an id
                 if (!row.id) {
                     row.id = Date.now().toString() + Math.random().toString().substring(2, 8)

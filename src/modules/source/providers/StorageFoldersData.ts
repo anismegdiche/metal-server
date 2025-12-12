@@ -135,14 +135,13 @@ export class StorageFoldersData extends absDataProvider {
 
         if (options.Fields?.includes(FLD_CONTENT)) {
             // read files content
-            await Promise.all(
-                (await files.Rows()).map(
-                    async (row: TRow) => {
-                        const __file = row as TStorageFile
-                        row.content = await ReadableUtils.ToBase64(
-                            await this.Connection!.FileRead(dirName, __file.name)
-                        )
-                    }))
+            await files.RowsMap(async (row: TRow) => {
+                const __file = row as TStorageFile
+                row.content = await ReadableUtils.ToBase64(
+                    await this.Connection!.FileRead(dirName, __file.name)
+                )
+                return row
+            })
         }
 
         if (Logger.Level == VERBOSITY.DEBUG)
@@ -183,26 +182,22 @@ export class StorageFoldersData extends absDataProvider {
         if (this.Config.options.autocreate && !(await this.Connection.FolderIsExist(dirName)))
             await this.Connection.FolderCreate(dirName)
 
-        await Promise.all(
-            (await options.Data.Rows()).map(
-                async (row: TRow) => {
-                    const __file = row as TStorageFile
+        return options.Data.ForEach(
+            async (row: TRow) => {
+                const __file = row as TStorageFile
 
-                    Assert.Var<string>(__file.name, 'File name is required', new HttpErrorBadRequest())
-                    Assert.Var<string>(__file.content, 'File content is required', new HttpErrorBadRequest())
-                    Assert.Condition(StringUtils.IsBase64(__file.content), 'File content is not a valid base64 string', new HttpErrorBadRequest())
+                Assert.Var<string>(__file.name, 'File name is required', new HttpErrorBadRequest())
+                Assert.Var<string>(__file.content, 'File content is required', new HttpErrorBadRequest())
+                Assert.Condition(StringUtils.IsBase64(__file.content), 'File content is not a valid base64 string', new HttpErrorBadRequest())
 
-                    this.setLock(__file.path)
-                    await this.Lock.get(__file.path)!.Acquire()
-                    await this.Connection!.FileWrite(dirName, __file.name, Readable.from(Buffer.from(__file.content, 'base64')))
-                    this.Lock.get(__file.path)!.Release()
-
-                }))
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.Created()
+                this.setLock(__file.path)
+                await this.Lock.get(__file.path)!.Acquire()
+                await this.Connection!.FileWrite(dirName, __file.name, Readable.from(Buffer.from(__file.content, 'base64')))
+                this.Lock.get(__file.path)!.Release()
+            }
+        )
+            .then(() => Cache.Remove(schemaRequest))
+            .then(() => HttpResponse.Created())
     }
 
     @Logger.LogFunction(true)
@@ -226,7 +221,8 @@ export class StorageFoldersData extends absDataProvider {
 
         const selectQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
         const selectQuery = this.GetSqlQuery(selectQueryHelper, options)
-        const folderList = (await this.Connection.FolderListFiles(dirName)).Rename(dirName)
+        const folderList = await this.Connection.FolderListFiles(dirName)
+            .then(dt => dt.Rename(dirName))
 
         const files = await folderList.Pick(['name', 'path'])
 
@@ -246,48 +242,44 @@ export class StorageFoldersData extends absDataProvider {
         await filesFiltered.FreeSql({ sqlQuery: updateQuery })
 
         // update files
-        await Promise.all(
-            (await filesFiltered.Rows()).map(
-                async (row: TRow) => {
-                    const {
-                        name: newFileName,
-                        [FLD_OLD_NAME]: oldFileName
-                    } = row as TStorageFile & {
-                        [FLD_OLD_NAME]: string
-                    }
+        return filesFiltered.ForEach(
+            async (row: TRow) => {
+                const {
+                    name: newFileName,
+                    [FLD_OLD_NAME]: oldFileName
+                } = row as TStorageFile & {
+                    [FLD_OLD_NAME]: string
+                }
 
-                    Assert.Var<string>(newFileName, 'File name is required')
-                    Assert.Var<string>(oldFileName, 'File old name is required')
+                Assert.Var<string>(newFileName, 'File name is required')
+                Assert.Var<string>(oldFileName, 'File old name is required')
 
-                    const __lock = dirName + '/' + oldFileName
-                    this.setLock(__lock)
-                    await this.Lock.get(__lock)!.Acquire()
+                const __lock = dirName + '/' + oldFileName
+                this.setLock(__lock)
+                await this.Lock.get(__lock)!.Acquire()
 
-                    // update file content
-                    const __fileContent = await ReadableUtils.ToBase64(
-                        await this.Connection!.FileRead(dirName, oldFileName)
-                    )
+                // update file content
+                const __fileContent = await ReadableUtils.ToBase64(
+                    await this.Connection!.FileRead(dirName, oldFileName)
+                )
 
-                    if (updateData.content && updateData.content !== __fileContent) {
-                        const ___content = updateData.content ?? __fileContent
+                if (updateData.content && updateData.content !== __fileContent) {
+                    const ___content = updateData.content ?? __fileContent
 
-                        Assert.Var<string>(___content, StringUtils.IsBase64(___content), 'content is not a valid base64 string', new HttpErrorBadRequest())
+                    Assert.Var<string>(___content, StringUtils.IsBase64(___content), 'content is not a valid base64 string', new HttpErrorBadRequest())
 
-                        await this.Connection!.FileWrite(dirName, oldFileName, Readable.from(Buffer.from(___content, 'base64')))
-                    }
+                    await this.Connection!.FileWrite(dirName, oldFileName, Readable.from(Buffer.from(___content, 'base64')))
+                }
 
-                    // rename file
-                    if (oldFileName !== newFileName)
-                        await this.Connection!.FileRename(dirName, oldFileName, newFileName)
+                // rename file
+                if (oldFileName !== newFileName)
+                    await this.Connection!.FileRename(dirName, oldFileName, newFileName)
 
-                    this.Lock.get(__lock)!.Release()
-                })
+                this.Lock.get(__lock)!.Release()
+            }
         )
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.NoContent()
+            .then(() => Cache.Remove(schemaRequest))
+            .then(() => HttpResponse.NoContent())
     }
 
     @Logger.LogFunction(true)
@@ -311,24 +303,21 @@ export class StorageFoldersData extends absDataProvider {
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const files = (await this.Connection.FolderListFiles(dirName))
-            .Rename(dirName)
+        const files = await this.Connection.FolderListFiles(dirName)
+            .then(dt => dt.Rename(dirName))
 
         const filesFiltered = await files.FreeSql({ sqlQuery })
 
-        await Promise.all(
-            (await filesFiltered.Rows()).map(async (row: TRow) => {
+        return filesFiltered.ForEach(
+            async (row: TRow) => {
                 const { name: fileName } = row as TStorageFile
                 Assert.Var<absStorageProvider>(this.Connection, 'Storage connection not set')
                 Assert.Var<string>(fileName, 'File name is required')
                 await this.Connection.FileDelete(dirName, fileName)
-            })
+            }
         )
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.NoContent()
+            .then(() => Cache.Remove(schemaRequest))
+            .then(() => HttpResponse.NoContent())
     }
 
     @Logger.LogFunction(true)

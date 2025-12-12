@@ -6,7 +6,7 @@ import { is as TypiaIs } from "typia"
 //
 import { Readable } from "node:stream"
 //
-import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
+import { DataTable, TRow, TRowsCopyParams } from "../../../types/DataTable"
 import { TJson } from '../../../types/TJson'
 import { Assert } from '../../../utils/Assert'
 import { JsonUtils } from '../../../utils/JsonUtils'
@@ -88,15 +88,17 @@ export class CsvContent extends absContentProvider {
         )
 
         //flattern nested objects in data.GetRows()
-        const _dataFlatten = (await data.Rows()).map((row) => Object.fromEntries(
-            Object.entries(row).map(([k, v]) => [
-                k,
-                // and is not date
-                typeof v === "object" && v !== null && !Date.parse(v.toString())
-                    ? JsonUtils.Stringify(v)
-                    : v
-            ])
-        ));
+        const _dataFlatten = await data.ForEach(
+            (row: TRow) => Object.fromEntries(
+                Object.entries(row).map(([k, v]) => [
+                    k,
+                    // and is not date
+                    typeof v === "object" && v !== null && !Date.parse(v.toString())
+                        ? JsonUtils.Stringify(v)
+                        : v
+                ])
+            )
+        )
 
         const papaparse = await CsvContent._loadPapaParseModule();
         const streamOut = Readable.from(
