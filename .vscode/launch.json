@@ -10,7 +10,8 @@
       "name": "Launch Program",
       "outFiles": ["${workspaceFolder}/build/**/*.js", "!**/node_modules/**"],
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\build\\index.js"
+      "program": "${workspaceFolder}\\build\\index.js",
+      "sourceMaps": true
     },
     {
       "type": "node",
@@ -18,19 +19,23 @@
       "name": "Debug Current File",
       "skipFiles": ["<node_internals>/**"],
       "runtimeArgs": ["-r", "ts-node/register"],
+      "outFiles": ["${workspaceFolder}/build/**/*.js", "!**/node_modules/**"],
       "args": ["${file}"],
       "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "sourceMaps": true
     },
     {
       "type": "node",
       "request": "attach",
       "name": "Attach to ts-node in Docker",
+      "outFiles": ["${workspaceFolder}/build/**/*.js", "!**/node_modules/**"],
       "address": "localhost",
       "port": 9229,
       "localRoot": "${workspaceFolder}",
       "remoteRoot": "/app",
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true
     }
   ]
 }
