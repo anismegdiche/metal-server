@@ -187,4 +187,17 @@ export class JsonUtils {
 
         return parts.join(propertiesSeparator)
     }
+
+    static ToTextList(json?: TJson): string {
+        if (!json) {
+            return ''
+        }
+
+        const result: string[] = []
+        forEach(json, (value, key) => {
+            result.push(` - ${key}: ${JsonUtils.Stringify(value)}`)
+        })
+        return result.join('\r\n')
+    }
+
 }
