@@ -59,6 +59,7 @@ export class Text extends absAiEngine implements IAiEngine {
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.FILL_MASK}`]: TextFillMaskDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.KEYWORD_EXTRACTION}`]: TextKeywordExtractionDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.LANGUAGE_DETECTION}`]: TextLanguageDetectionDockerService,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.NER}`]: TextTokenClassificationDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.PARAPHRASE_DETECTION}`]: TextParaphraseDetectionDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.QUESTION_ANSWERING}`]: TextQuestionAnsweringDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.SENTENCE_SIMILARITY}`]: TextSentenceSimilarityDockerService,
@@ -66,10 +67,9 @@ export class Text extends absAiEngine implements IAiEngine {
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.SUMMARIZATION}`]: TextSummarizationDockerService,
             // [`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT2TEXT_GENERATION}`]: TextText2TextGenerationDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.TEXT_GENERATION}`]: TextTextGenerationDockerService,
-            [`${AI_ENGINE.TEXT}-${TEXT_TASK.NER}`]: TextTokenClassificationDockerService,
             [`${AI_ENGINE.TEXT}-${TEXT_TASK.TOXICITY_DETECTION}`]: TextToxicityDetectionDockerService,
-            [`${AI_ENGINE.TEXT}-${TEXT_TASK.ZERO_SHOT_CLASSIFICATION}`]: TextZeroShotClassificationDockerService,
-            [`${AI_ENGINE.TEXT}-${TEXT_TASK.TRANSLATION}`]: TextTranslationDockerService
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.TRANSLATION}`]: TextTranslationDockerService,
+            [`${AI_ENGINE.TEXT}-${TEXT_TASK.ZERO_SHOT_CLASSIFICATION}`]: TextZeroShotClassificationDockerService
         }
 
         this.RunTask = {
