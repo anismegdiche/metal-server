@@ -32,9 +32,9 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
             this.InstanceName
         );
     }
-    
+
     abstract Run(params: TAiRunArguments): Promise<TAiRunOutput>
-    
+
     @SynchronizerManager.Synchronized()
     async IsHealthy(): Promise<boolean> {
         const _url = StringUtils.Url(
@@ -46,9 +46,7 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
             .then(response => response.status === 200)
             .catch(() => false)
 
-        Logger.Info(`${Logger.Out} '${this.InstanceName}': Health check at ${_url}, ${_isHealthy
-            ? 'Ok 🟢'
-            : 'Ko 🔴'}`)
+        Logger.Info(`${Logger.Out} '${this.InstanceName}': ${_isHealthy ? '🟢' : '🔴'} - Health check at ${_url}, ${_isHealthy ? 'Ok' : 'Ko'}`)
 
         return _isHealthy
     }
