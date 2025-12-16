@@ -41,14 +41,6 @@ describe('Text', () => {
                                 {
                                     "label": "sadness",
                                     "score": "0.0012625681702047586"
-                                },
-                                {
-                                    "label": "fear",
-                                    "score": "0.001110117882490158"
-                                },
-                                {
-                                    "label": "disgust",
-                                    "score": "0.0004773985710926354"
                                 }
                             ]
                         ]

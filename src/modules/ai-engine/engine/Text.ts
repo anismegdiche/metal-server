@@ -143,13 +143,26 @@ export class Text extends absAiEngine implements IAiEngine {
                 [result.label]: result.score
             }
 
+        const DEFAULT = {
+            joy: 0,
+            surprise: 0,
+            neutral: 0,
+            anger: 0,
+            sadness: 0,
+            fear: 0,
+            disgust: 0
+        }
+
         const emotion = result.reduce((acc: any, item: any) => {
             acc[item.label] = parseFloat(item.score);
             return acc;
         }, {});
 
         return {
-            emotion
+            emotion: {
+                ...DEFAULT,
+                ...emotion
+            }
         }
     }
 
