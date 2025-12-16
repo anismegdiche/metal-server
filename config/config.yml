@@ -94,16 +94,16 @@ plans:
             top: 7
           input: _ocr_text
           output:
-            _emotion_positive: ${{ $result.emotion?.joy ?? 0 }}
-            _emotion_negative: ${{ $result.emotion?.anger ?? 0 }}
+            _emotion_positive: ${{ $result.emotion.joy }}
+            _emotion_negative: ${{ $result.emotion.anger }}
 
       - run:
           ai: text
           task: fill-mask
           input: "[MASK] ${{ $row._ocr_text }}"
           output:
-            _fillmask_text: ${{ $result.fillmask[0]?.text }}
-            _fillmask_word: ${{ $result.fillmask[0]?.word }}
+            _fillmask_text: ${{ $result.fillmask[0].text }}
+            _fillmask_word: ${{ $result.fillmask[0].word }}
 
       - run:
           ai: text
