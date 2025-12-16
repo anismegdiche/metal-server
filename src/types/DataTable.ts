@@ -19,6 +19,7 @@ import { TypeUtils } from '../utils/TypeUtils'
 import { Utils } from '../utils/Utils'
 import { TAny } from './TAny'
 import { TJson } from './TJson'
+import { SERVER } from '../modules/core/@consts'
 
 //
 export const enum SORT_ORDER {
@@ -32,6 +33,8 @@ export const DATATABLE_SYS_FIELDS = [
     "__data__",
     "created_at"
 ]
+
+export const DATATABLE_TEMP_PATH = StringUtils.Path(SERVER.TEMP_PATH, 'data')
 
 //
 export type TRow = TJson & {
@@ -491,7 +494,7 @@ export class DataTable extends clsClonable {
             this._duckInstance = opt.duckInstance
             this._isAttached = true
         } else {
-            this._dbPath = StringUtils.Path('./tmp', `${this.Name}_${Utils.Uuid(true)}.db`)
+            this._dbPath = StringUtils.Path(DATATABLE_TEMP_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
             this._persistent = opt.persistant ?? false
         }
 

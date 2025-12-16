@@ -1,7 +1,7 @@
 //
 //
 //
-import { DataTable, dataTable_convertSql, TRow } from './DataTable'
+import { DataTable, dataTable_convertSql, DATATABLE_TEMP_PATH, TRow } from './DataTable'
 import { TJson } from './TJson'
 import { Logger } from '../utils/Logger'
 import { Assert } from "../utils/Assert"
@@ -23,7 +23,7 @@ export class DataBase {
         Assert.Var(name, "undefined DataBase name")
         this.Name = name
         this._dbPath = path
-            ? StringUtils.Path('./tmp', `${this.Name}_${Utils.Uuid(true)}.db`)
+            ? StringUtils.Path(DATATABLE_TEMP_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
             : ':memory:'
     }
 
