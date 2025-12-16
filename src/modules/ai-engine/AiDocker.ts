@@ -15,11 +15,6 @@ import { TAiDockerService } from './types/TAiDockerService'
 import { ConfigManager } from '../core/ConfigManager'
 import { HttpErrorInternalServerError } from '../errors/HttpErrors';
 import { BaseDockerService } from './docker-services/BaseDockerService';
-import { SERVER } from '../core/@consts';
-
-
-//
-export const AI_DOCKER_MODEL_PATH = StringUtils.Path(SERVER.TEMP_PATH, 'models')
 
 
 //
