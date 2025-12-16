@@ -106,6 +106,7 @@ export type TConfig = {
             "cpu-scale-up"?: number & tags.Type<"uint32"> & tags.Minimum<0> & tags.Maximum<100>// v0.5
             "cpu-scale-down"?: number & tags.Type<"uint32"> & tags.Minimum<0> & tags.Maximum<100>// v0.5
             "scale-interval"?: number & tags.Type<"uint32"> & tags.Minimum<5_000> & tags.Maximum<600_000>// v0.5
+            "build-batch-size"?: number & tags.Type<"uint32"> & tags.Minimum<1> & tags.Maximum<10> // v0.5
             params?: DockerOptions                      // v0.5
         }
     }

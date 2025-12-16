@@ -46,7 +46,7 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
             .then(response => response.status === 200)
             .catch(() => false)
 
-        Logger.Info(`${Logger.Out} '${this.InstanceName}': ${_isHealthy ? '🟢' : '🔴'} - Health check at ${_url}, ${_isHealthy ? 'Ok' : 'Ko'}`)
+        Logger.Info(`${Logger.Out} '${this.InstanceName}': ${_isHealthy ? '🟢' : '🔴'} Health check at ${_url}, ${_isHealthy ? 'Ok' : 'Ko'}`)
 
         return _isHealthy
     }

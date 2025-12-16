@@ -14,6 +14,12 @@ import { TraefikDockerService } from './docker-services/TraefikDockerService'
 import { TAiDockerService } from './types/TAiDockerService'
 import { ConfigManager } from '../core/ConfigManager'
 import { HttpErrorInternalServerError } from '../errors/HttpErrors';
+import { BaseDockerService } from './docker-services/BaseDockerService';
+import { SERVER } from '../core/@consts';
+
+
+//
+export const AI_DOCKER_MODEL_PATH = StringUtils.Path(SERVER.TEMP_PATH, 'models')
 
 
 //
@@ -54,6 +60,7 @@ export class AiDocker {
         return _streamString
     }
 
+    @Logger.LogFunction()
     static async Init() {
 
         const _dockerOptions = ConfigManager.Get<DockerOptions>("server.ai-engines.params")
@@ -75,11 +82,17 @@ export class AiDocker {
 
         try {
             AiDocker.docker = new Docker(_dockerOptions)
+            Logger.Info(`${Logger.Out} Docker client initialized`)
+
+            await AiDocker.docker.ping()
+            Logger.Info(`${Logger.Out} Docker daemon is reachable`)
+
             await AiDocker.CleanStack()
+            await AiDocker.BuildServiceImage(BaseDockerService)
 
             Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
-            await AiDocker.CreateNetwork().catch(Logger.Debug)
-            await AiDocker.StartTraefik().catch(Logger.Debug)
+            await AiDocker.CreateNetwork().catch(Logger.Error)
+            await AiDocker.StartTraefik().catch(Logger.Error)
 
             AiDocker.StartScaler()
             Logger.Info(`${Logger.Out} AI Engine stack manager started`)
@@ -88,9 +101,10 @@ export class AiDocker {
         }
     }
 
+    @Logger.LogFunction()
     static async StartService(service: TAiDockerService) {
         AiDocker.Instances.set(service.InstanceName ?? service.Name, service)
-        await AiDocker.BuildServiceImage(service).catch(Logger.Debug)
+        await AiDocker.BuildServiceImage(service).catch(Logger.Error)
         const containers = await AiDocker.ListActiveContainers(service)
         for (let i = containers.length; i < AiDocker.ServiceInstance.MinInstances; i++) {
             await AiDocker.ScaleUp(service)
@@ -98,10 +112,12 @@ export class AiDocker {
         }
     }
 
+    @Logger.LogFunction()
     static StartScaler() {
         AiDocker.AutoScaleWorker = setInterval(AiDocker.AutoScale, AiDocker.ServiceInstance.ScaleInterval)
     }
 
+    @Logger.LogFunction()
     static async CleanStack() {
         Logger.Info(`${Logger.In} Cleaning ${DOCKER.AI_ENGINE_PREFIX} stack...`)
         const containers = await AiDocker.docker.listContainers({
@@ -116,13 +132,13 @@ export class AiDocker {
                 Logger.Info(`${Logger.In} Stopping container '${container.Names[0]}'...`)
                 const c = AiDocker.docker.getContainer(container.Id)
                 if (container.State === "running") {
-                    await c.stop().catch(Logger.Debug)
+                    await c.stop().catch(Logger.Error)
                 }
-                await c.remove().catch(Logger.Debug)
+                await c.remove().catch(Logger.Error)
                 Logger.Info(`${Logger.Out} Stopped container '${container.Names[0]}'`)
                 resolve()
             } catch (e: unknown) {
-                Logger.Debug((e as Error).message)
+                Logger.Error((e as Error).message)
                 reject(e)
             }
         }))
@@ -143,7 +159,7 @@ export class AiDocker {
                 Logger.Info(`${Logger.Out} Removed docker network '${network.Name}'`)
                 resolve()
             } catch (e: unknown) {
-                Logger.Debug((e as Error).message)
+                Logger.Error((e as Error).message)
                 reject(e)
             }
         }))
@@ -153,19 +169,21 @@ export class AiDocker {
         Logger.Info(`${Logger.Out} '${DOCKER.AI_ENGINE_PREFIX}' stack cleaned`)
     }
 
+    @Logger.LogFunction()
     static async CreateNetwork() {
         try {
             await AiDocker.docker.createNetwork({ Name: DOCKER.AI_NETWORK })
-            Logger.Debug(`Docker network created: ${DOCKER.AI_NETWORK}`)
+            Logger.Info(`Docker network created: ${DOCKER.AI_NETWORK}`)
         } catch (e: any) {
             if (e.statusCode === 409) {
-                Logger.Debug(`Docker network already exists: ${DOCKER.AI_NETWORK}`)
+                Logger.Info(`Docker network already exists: ${DOCKER.AI_NETWORK}`)
             } else {
                 throw e
             }
         }
     }
 
+    @Logger.LogFunction()
     static async PullImage(image: string) {
         return new Promise<void>((resolve, reject) => {
             AiDocker.docker.pull(image, (err: any, stream: any) => {
@@ -199,6 +217,12 @@ export class AiDocker {
     static async BuildServiceImage(service: TAiDockerService): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
+                const existingImages = await AiDocker.docker.listImages({ filters: { reference: [service.ImageName] } });
+                if (existingImages.length > 0) {
+                    Logger.Info(`${Logger.Out} 📦 Image ${service.ImageName} already exists. Skipping build.`);
+                    return resolve();
+                }
+
                 const stream = await AiDocker.docker.buildImage(
                     service.ImageContext as Docker.ImageBuildContext,
                     {
@@ -235,7 +259,7 @@ export class AiDocker {
                         ___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image: ${item}`))
                         _streamData = ""
                     }
-                    Logger.Debug(`${Logger.Out} 🔨 Built '${service.ImageName}' image`)
+                    Logger.Info(`${Logger.Out} 🔨 Built '${service.ImageName}' image`)
                     resolve()
                 })
 
@@ -250,6 +274,7 @@ export class AiDocker {
         })
     }
 
+    @Logger.LogFunction()
     private static async CreateServiceContainer(service: TAiDockerService) {
         const serviceName = service.InstanceName ?? service.Name
         const containerName = `${DOCKER.AI_ENGINE_PREFIX}_${serviceName}_${Date.now()}`
@@ -274,14 +299,16 @@ export class AiDocker {
             },
             HostConfig: {
                 NetworkMode: DOCKER.AI_NETWORK,
-                RestartPolicy: { Name: 'unless-stopped' }
+                RestartPolicy: { Name: 'unless-stopped' },
+                Binds: service.DockerVolume
             }
         })
 
         await container.start()
-        Logger.Debug(`${Logger.Out} Started new '${serviceName}' container '${containerName}'`)
+        Logger.Info(`${Logger.Out} Started new '${serviceName}' container '${containerName}'`)
     }
 
+    @Logger.LogFunction()
     static async StartTraefik() {
         try {
             const containers = await AiDocker.docker.listContainers({
@@ -289,11 +316,11 @@ export class AiDocker {
                 filters: { name: [TraefikDockerService.Name] }
             })
             if (containers.length > 0) {
-                Logger.Debug(`${Logger.Out} Traefik container already running`)
+                Logger.Info(`${Logger.Out} Traefik container already running`)
                 return
             }
-            Logger.Debug(`${Logger.Out} Starting Traefik container`)
-            Logger.Debug(`${Logger.Out} '${TraefikDockerService.ImageName}' pull started`)
+            Logger.Info(`${Logger.Out} Starting Traefik container`)
+            Logger.Info(`${Logger.Out} '${TraefikDockerService.ImageName}' pull started`)
 
             await AiDocker.PullImage(TraefikDockerService.ImageName).catch(Logger.Error)
 
@@ -321,7 +348,7 @@ export class AiDocker {
                         [`${TraefikDockerService.Port}/tcp`]: [{ HostPort: (TraefikDockerService.Port as number).toString() }],
                         [`${TraefikDockerService.Options?.DashboardPort}/tcp`]: [{ HostPort: (TraefikDockerService.Options?.DashboardPort as number).toString() }]
                     },
-                    Binds: [TraefikDockerService.DockerVolume as string]
+                    Binds: TraefikDockerService.DockerVolume
                 },
                 NetworkingConfig: {
                     EndpointsConfig: { [DOCKER.AI_NETWORK]: {} }
@@ -333,15 +360,16 @@ export class AiDocker {
         }
     }
 
+    @Logger.LogFunction()
     static async ListActiveContainers(service: TAiDockerService) {
-        const containers = await AiDocker.docker.listContainers({
+        return AiDocker.docker.listContainers({
             filters: {
                 label: [`service=${service.InstanceName ?? service.Name}`]
             }
         })
-        return containers
     }
 
+    @Logger.LogFunction()
     static async AutoScale() {
         for (const service of AiDocker.Instances.values()) {
 
@@ -352,46 +380,49 @@ export class AiDocker {
 
             const avgCpu = await AiDocker.GetAverageCpuUsage(service)
 
-            Logger.Debug(`${Logger.In} AutoScale: '${service.InstanceName ?? service.Name}', Containers: ${containers.length}, Avg CPU: ${avgCpu.toFixed(0)}%`)
+            Logger.Info(`${Logger.In} AutoScale: '${service.InstanceName ?? service.Name}', Containers: ${containers.length}, Avg CPU: ${avgCpu.toFixed(0)}%`)
 
             if (avgCpu > AiDocker.ServiceInstance.CpuScaleUp && containers.length < AiDocker.ServiceInstance.MaxInstances) {
                 await AiDocker.ScaleUp(service)
             } else if (avgCpu < AiDocker.ServiceInstance.CpuScaleDown && containers.length > AiDocker.ServiceInstance.MinInstances) {
                 await AiDocker.ScaleDown(service)
             } else {
-                Logger.Debug(`${Logger.Out} AutoScale: No scaling needed for '${service.InstanceName ?? service.Name}'`)
+                Logger.Info(`${Logger.Out} AutoScale: No scaling needed for '${service.InstanceName ?? service.Name}'`)
             }
         }
     }
 
+    @Logger.LogFunction()
     static async ScaleUp(service: TAiDockerService) {
         const containers = await AiDocker.ListActiveContainers(service)
         if (containers.length >= AiDocker.ServiceInstance.MaxInstances) {
-            Logger.Debug(`Max '${service.InstanceName ?? service.Name}' containers reached: ${AiDocker.ServiceInstance.MaxInstances}`)
+            Logger.Info(`Max '${service.InstanceName ?? service.Name}' containers reached: ${AiDocker.ServiceInstance.MaxInstances}`)
             return
         }
 
-        Logger.Debug(`Scaling up '${service.InstanceName ?? service.Name}' service...`)
+        Logger.Info(`Scaling up '${service.InstanceName ?? service.Name}' service...`)
         await AiDocker.CreateServiceContainer(service)
     }
 
+    @Logger.LogFunction()
     static async ScaleDown(service: TAiDockerService) {
         const containers = await AiDocker.ListActiveContainers(service)
         if (containers.length <= AiDocker.ServiceInstance.MinInstances) {
-            Logger.Debug(`Min '${service.InstanceName ?? service.Name}' containers reached: ${AiDocker.ServiceInstance.MinInstances}`)
+            Logger.Info(`Min '${service.InstanceName ?? service.Name}' containers reached: ${AiDocker.ServiceInstance.MinInstances}`)
             return
         }
 
-        Logger.Debug(`Scaling down '${service.InstanceName ?? service.Name}' service...`)
+        Logger.Info(`Scaling down '${service.InstanceName ?? service.Name}' service...`)
 
         // Remove oldest scaled container
         const toRemove = containers[0]
         const container = AiDocker.docker.getContainer(toRemove.Id)
         await container.stop()
         await container.remove()
-        Logger.Debug(`Removed '${service.InstanceName ?? service.Name}' container: ${toRemove.Names[0]}`)
+        Logger.Info(`Removed '${service.InstanceName ?? service.Name}' container: ${toRemove.Names[0]}`)
     }
 
+    @Logger.LogFunction()
     static async GetAverageCpuUsage(service: TAiDockerService): Promise<number> {
         try {
             const containers = await AiDocker.ListActiveContainers(service)
@@ -438,6 +469,7 @@ export class AiDocker {
         }
     }
 
+    @Logger.LogFunction()
     static async WaitForService(service: TAiDockerService, interval = 3000): Promise<void> {
         if (!service.InternalUrl) {
             return
@@ -508,19 +540,18 @@ export class AiDocker {
                     }
 
                     const statusCode = parseInt(cleanOutput.trim(), 10);
-                    Logger.Debug(`Parsed status code: ${statusCode}`);
 
                     if (statusCode === 200) {
-                        Logger.Debug(`Success: ${internalUrl} is available in container ${containerId}`);
+                        Logger.Info(`Success: ${internalUrl} is available in container ${containerId}`);
                         break;
                     } else if (statusCode >= 100 && statusCode < 500) {
-                        Logger.Debug(`Waiting... Status: ${statusCode}`);
+                        Logger.Info(`Waiting... Status: ${statusCode}`);
                     } else {
-                        Logger.Debug(`Invalid status code received: ${statusCode}, raw: '${cleanOutput}'`);
+                        Logger.Info(`Invalid status code received: ${statusCode}, raw: '${cleanOutput}'`);
                     }
 
                 } catch (error) {
-                    Logger.Debug(`Error testing service in container ${containerId}: ${error instanceof Error
+                    Logger.Error(`Error testing service in container ${containerId}: ${error instanceof Error
                         ? error.message
                         : String(error)}`);
                 }

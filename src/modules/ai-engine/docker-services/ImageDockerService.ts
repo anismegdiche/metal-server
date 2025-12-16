@@ -7,9 +7,9 @@ import { DOCKER } from '../consts/DOCKER';
 
 //
 export const ImageImageDepthEstimationDockerService: TAiDockerService = {
-    Name: 'image_depth_estimation',
+    Name: 'image-depth-estimation',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_depth_estimation:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-image-depth-estimation:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/image/depth-estimation`,
         src: ['.', './requirements.txt']
@@ -18,9 +18,9 @@ export const ImageImageDepthEstimationDockerService: TAiDockerService = {
 };
 
 export const ImageImageClassificationDockerService: TAiDockerService = {
-    Name: 'image_image_classification',
+    Name: 'image-image-classification',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_classification:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-image-image-classification:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/image/image-classification`,
         src: ['.', './requirements.txt']
@@ -29,9 +29,9 @@ export const ImageImageClassificationDockerService: TAiDockerService = {
 };
 
 export const ImageImageSegmentationDockerService: TAiDockerService = {
-    Name: 'image_image_segmentation',
+    Name: 'image-image-segmentation',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_segmentation:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-image-image-segmentation:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/image/image-segmentation`,
         src: ['.', './requirements.txt']
@@ -40,9 +40,9 @@ export const ImageImageSegmentationDockerService: TAiDockerService = {
 };
 
 export const ImageImageToTextDockerService: TAiDockerService = {
-    Name: 'image_image_to_text',
+    Name: 'image-image-to-text',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_to_text:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-image-image-to-text:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/image/image-to-text`,
         src: ['.', './requirements.txt']
@@ -51,9 +51,9 @@ export const ImageImageToTextDockerService: TAiDockerService = {
 };
 
 export const ImageObjectDetectionDockerService: TAiDockerService = {
-    Name: 'image_object_detection',
+    Name: 'image-object-detection',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_object_detection:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-image-object-detection:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/image/object-detection`,
         src: ['.', './requirements.txt']
@@ -62,9 +62,9 @@ export const ImageObjectDetectionDockerService: TAiDockerService = {
 };
 
 export const ImageVisualQuestionAnsweringDockerService: TAiDockerService = {
-    Name: 'image_visual_question_answering',
+    Name: 'image-visual-question-answering',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_image_visual_question_answering:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-image-visual-question-answering:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/image/visual-question-answering`,
         src: ['.', './requirements.txt']

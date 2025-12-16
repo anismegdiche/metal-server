@@ -134,6 +134,9 @@ export class Plan {
                     stepArgs: values(<TStepArgs>_step)[0],
                     status: STEP_STATUS.RUNNING
                 }
+
+                Logger.Info(`${Logger.In} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(_step)}`)
+
                 // check loop detection
                 const _argSchema = ($context.$plan!.$current.stepArgs as TSchemaRequest).schema
                 const _argEntity = ($context.$plan!.$current.stepArgs as TSchemaRequest).entity
@@ -151,8 +154,6 @@ export class Plan {
                     `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
                     new HttpErrorBadRequest()
                 )
-
-                Logger.Debug(`${Logger.In} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(_step)}`)
 
                 const __stepArguments: TStep = {
                     currentSchemaName: $context.$plan!.schema!,

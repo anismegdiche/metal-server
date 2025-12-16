@@ -7,9 +7,12 @@ import { DOCKER } from '../consts/DOCKER';
 
 //
 export const TraefikDockerService: TAiDockerService = {
-    Name: `${DOCKER.AI_ENGINE_PREFIX}_traefik`,
+    Name: `${DOCKER.AI_ENGINE_PREFIX}-traefik`,
     ImageName: 'traefik:v2.11',
-    DockerVolume: '/var/run/docker.sock:/var/run/docker.sock:ro', // '\\\.\\pipe\\docker_engine:\\\.\\pipe\\docker_engine:ro'
+    DockerVolume: [
+        '/var/run/docker.sock:/var/run/docker.sock:ro'
+        // '\\\.\\pipe\\docker_engine:\\\.\\pipe\\docker_engine:ro'
+    ],
     Port: 5000,
     Options: {
         DashboardPort: 8080

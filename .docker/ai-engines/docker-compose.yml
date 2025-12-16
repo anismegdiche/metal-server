@@ -1,6 +1,13 @@
 services:
 
   #
+  # Base Image (Build this first: docker-compose build base)
+  #
+  base:
+    image: metal-ai-engine-base:v1.0.0
+    build: ./services/base
+
+  #
   # Text
   #
 
@@ -11,6 +18,7 @@ services:
       - "5101:5000"
     volumes:
       - ./services/text/emotion-detection:/app
+      - metal-model-cache:/data/models
 
   text-feature-extraction:
     build: ./services/text/feature-extraction
@@ -19,6 +27,7 @@ services:
       - "5102:5000"
     volumes:
       - ./services/text/feature-extraction:/app
+      - metal-model-cache:/data/models
 
   text-fill-mask:
     build: ./services/text/fill-mask
@@ -27,6 +36,7 @@ services:
       - "5103:5000"
     volumes:
       - ./services/text/fill-mask:/app
+      - metal-model-cache:/data/models
 
   text-keyword-extraction:
     build: ./services/text/keyword-extraction
@@ -35,6 +45,7 @@ services:
       - "5104:5000"
     volumes:
       - ./services/text/keyword-extraction:/app
+      - metal-model-cache:/data/models
 
   text-language-detection:
     build: ./services/text/language-detection
@@ -43,6 +54,7 @@ services:
       - "5105:5000"
     volumes:
       - ./services/text/language-detection:/app
+      - metal-model-cache:/data/models
 
   text-paraphrase-detection:
     build: ./services/text/paraphrase-detection
@@ -51,6 +63,7 @@ services:
       - "5106:5000"
     volumes:
       - ./services/text/paraphrase-detection:/app
+      - metal-model-cache:/data/models
 
   text-question-answering:
     build: ./services/text/question-answering
@@ -59,6 +72,7 @@ services:
       - "5107:5000"
     volumes:
       - ./services/text/question-answering:/app
+      - metal-model-cache:/data/models
 
   text-sentence-similarity:
     build: ./services/text/sentence-similarity
@@ -67,6 +81,7 @@ services:
       - "5108:5000"
     volumes:
       - ./services/text/sentence-similarity:/app
+      - metal-model-cache:/data/models
 
   text-sentiment-analysis:
     build: ./services/text/sentiment-analysis
@@ -75,6 +90,7 @@ services:
       - "5109:5000"
     volumes:
       - ./services/text/sentiment-analysis:/app
+      - metal-model-cache:/data/models
 
   text-summarization:
     build: ./services/text/summarization
@@ -83,6 +99,7 @@ services:
       - "5110:5000"
     volumes:
       - ./services/text/summarization:/app
+      - metal-model-cache:/data/models
 
   # text-text2text-generation:
   #   build: ./services/text/text2text-generation
@@ -91,6 +108,7 @@ services:
   #     - "5111:5000"
   #   volumes:
   #     - ./services/text/text2text-generation:/app
+  #     - metal-model-cache:/data/models
 
   text-text-generation:
     build: ./services/text/text-generation
@@ -99,6 +117,7 @@ services:
       - "5112:5000"
     volumes:
       - ./services/text/text-generation:/app
+      - metal-model-cache:/data/models
 
   text-ner:
     build: ./services/text/ner
@@ -107,6 +126,7 @@ services:
       - "5113:5000"
     volumes:
       - ./services/text/ner:/app
+      - metal-model-cache:/data/models
 
   text-toxicity-detection:
     build: ./services/text/toxicity-detection
@@ -115,6 +135,7 @@ services:
       - "5114:5000"
     volumes:
       - ./services/text/toxicity-detection:/app
+      - metal-model-cache:/data/models
 
   text-translation:
     build: ./services/text/translation
@@ -123,6 +144,7 @@ services:
       - "5115:5000"
     volumes:
       - ./services/text/translation:/app
+      - metal-model-cache:/data/models
 
   text-zero-shot-classification:
     build: ./services/text/zero-shot-classification
@@ -131,6 +153,7 @@ services:
       - "5116:5000"
     volumes:
       - ./services/text/zero-shot-classification:/app
+      - metal-model-cache:/data/models
 
   #
   # Ocr
@@ -143,6 +166,7 @@ services:
       - "5201:5000"
     volumes:
       - ./services/ocr:/app
+      - metal-model-cache:/data/models
 
   #
   # Image
@@ -155,6 +179,7 @@ services:
   #     - "5301:5000"
   #   volumes:
   #     - ./services/image/depth-estimation:/app
+  #     - metal-model-cache:/data/models
 
   image-image-classification:
     build: ./services/image/image-classification
@@ -163,6 +188,7 @@ services:
       - "5302:5000"
     volumes:
       - ./services/image/image-classification:/app
+      - metal-model-cache:/data/models
 
   image-image-segmentation:
     build: ./services/image/image-segmentation
@@ -171,6 +197,7 @@ services:
       - "5303:5000"
     volumes:
       - ./services/image/image-segmentation:/app
+      - metal-model-cache:/data/models
 
   image-image-to-text:
     build: ./services/image/image-to-text
@@ -179,6 +206,7 @@ services:
       - "5304:5000"
     volumes:
       - ./services/image/image-to-text:/app
+      - metal-model-cache:/data/models
 
   image-object-detection:
     build: ./services/image/object-detection
@@ -187,6 +215,7 @@ services:
       - "5305:5000"
     volumes:
       - ./services/image/object-detection:/app
+      - metal-model-cache:/data/models
 
   image-visual-question-answering:
     build: ./services/image/visual-question-answering
@@ -195,6 +224,7 @@ services:
       - "5306:5000"
     volumes:
       - ./services/image/visual-question-answering:/app
+      - metal-model-cache:/data/models
 
 #
 # Audio
@@ -207,6 +237,7 @@ services:
       - "5401:5000"
     volumes:
       - ./services/audio/audio-classification:/app
+      - metal-model-cache:/data/models
 
   audio-automatic-speech-recognition:
     build: ./services/audio/automatic-speech-recognition
@@ -215,3 +246,7 @@ services:
       - "5402:5000"
     volumes:
       - ./services/audio/automatic-speech-recognition:/app
+      - metal-model-cache:/data/models
+
+volumes:
+  metal-model-cache:

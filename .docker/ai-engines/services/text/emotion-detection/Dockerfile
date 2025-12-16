@@ -1,24 +1,21 @@
-# Use a small Python 3.11 base image
-FROM python:3.11-slim-bullseye
+# Use shared base image
+FROM metal-ai-engine-base:v1.0.0
 
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install only curl for healthcheck in a single RUN command
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# (Optional) Updates if needed, but base should have curl
+# RUN apt-get update && ...
 
 # Copy requirements and install dependencies
+# Base image already has torch/transformers on CPU
 COPY requirements.txt ./
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY app.py ./
-
-RUN python app.py --load-pipe
 
 # Health check endpoint (uses curl)
 HEALTHCHECK --interval=10s --timeout=10s --start-period=10s --retries=3 \

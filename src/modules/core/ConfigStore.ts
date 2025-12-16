@@ -39,7 +39,8 @@ export class ConfigStore implements IConfigStore {
                 "max-instance": 5, // v0.5
                 "cpu-scale-up": 70, // v0.5
                 "cpu-scale-down": 30, // v0.5
-                "scale-interval": 15_000 // v0.5
+                "scale-interval": 15_000, // v0.5
+                "build-batch-size": 5 // v0.5
             }
         }
     }

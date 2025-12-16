@@ -9,6 +9,8 @@ import _ from 'lodash'
 import { SERVER } from '../modules/core/@consts'
 import { DecoratorUtils } from "./DecoratorUtils"
 import { Stringify } from './JsonUtils/Stringify'
+import { JsonUtils } from './JsonUtils'
+import { TJson } from '../types/TJson'
 
 
 //
@@ -78,8 +80,8 @@ function _processQueue() {
 
 export class Logger {
 
-    static readonly In = magenta('▶')
-    static readonly Out = yellow('◀')
+    static readonly In = magenta('▶ ')
+    static readonly Out = yellow('◀ ')
     static Level: LogLevel.LogLevelDesc = LoggerDefaultLevel //NOSONAR
 
     static readonly RequestMiddleware = morgan(
@@ -165,9 +167,9 @@ export class Logger {
                     let result;
                     try {
                         result = originalMethod.apply(this, args);
-                    } catch (err) {
+                    } catch (err: unknown) {
                         // sync error
-                        Logger.Error(`${Logger.Out} ${ctorName}.${propertyKey} threw ${Stringify(err)}`);
+                        Logger.Error(`${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${JsonUtils.ToTextList(err as TJson)}`);
                         throw err; // rethrow
                     }
                     // ---------- ASYNC HANDLING ----------
@@ -177,8 +179,8 @@ export class Logger {
                                 Logger.Debug(`${Logger.Out} ${ctorName}.${propertyKey}`);
                                 return res;
                             })
-                            .catch(err => {
-                                Logger.Error(`${Logger.Out} ${ctorName}.${propertyKey} threw ${Stringify(err)}`);
+                            .catch((err: unknown) => {
+                                Logger.Error(`${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${JsonUtils.ToTextList(err as TJson)}`);
                                 throw err; // rethrow async error
                             });
                     }

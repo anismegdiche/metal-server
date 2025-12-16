@@ -12,6 +12,7 @@ import { AI_ENGINE } from "./@consts";
 import { TConfigAiEngine } from "./@types";
 import { AiDocker } from "./AiDocker";
 import { IAiEngine } from "./base/IAiEngine";
+import { Semaphore } from "../../utils/Semaphore";
 
 
 //
@@ -125,7 +126,7 @@ export class AiEngine {
         if (Object.keys(AiEngine.BuildAiEnginesList()).length == 0) {
             return;
         }
-        
+
         await AiDocker.Init();
         AiEngine.#aiEnginesConfig = AiEngine.BuildAiEnginesList();
         AiEngine.CreateAll()
@@ -137,10 +138,15 @@ export class AiEngine {
     static async CreateAll() {
         const entries = Object.entries(AiEngine.#aiEnginesConfig);
 
+        const buildBatchSize = ConfigManager.Get<number>("server.ai-engines.build-batch-size");
+
+        const __LOCK__ = new Semaphore(buildBatchSize);
+
         // Process all providers in parallel
         const results = await Promise.allSettled(
             entries.map(async ([aiName, aiConfig]) => {
                 try {
+                    await __LOCK__.Acquire();
                     // Get the provider asynchronously (will load it if not already loaded)
                     const provider = await AiEngine.GetProvider(aiConfig.engine);
 
@@ -159,6 +165,9 @@ export class AiEngine {
                             ? error.message
                             : String(error)
                     };
+                }
+                finally {
+                    __LOCK__.Release();
                 }
             })
         );

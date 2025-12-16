@@ -3,131 +3,143 @@
 //
 import { TAiDockerService } from '../types/TAiDockerService';
 import { DOCKER } from '../consts/DOCKER';
+import { AI_DOCKER_MODEL_PATH } from '../AiDocker';
 
 
 //
 export const TextEmotionDetectionDockerService: TAiDockerService = {
-    Name: 'text_emotion_detection',
+    Name: 'text-emotion-detection',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_emotion_detection:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-emotion-detection:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/emotion-detection`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-emotion-detection'
+    InternalUrl: '/text-emotion-detection',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 
 export const TextFeatureExtractionDockerService: TAiDockerService = {
-    Name: 'text_feature_extraction',
+    Name: 'text-feature-extraction',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_feature_extraction:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-feature-extraction:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/feature-extraction`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-feature-extraction'
+    InternalUrl: '/text-feature-extraction',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 
 export const TextFillMaskDockerService: TAiDockerService = {
-    Name: 'text_fill_mask',
+    Name: 'text-fill-mask',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_fill_mask:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-fill-mask:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/fill-mask`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-fill-mask'
+    InternalUrl: '/text-fill-mask',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 export const TextKeywordExtractionDockerService: TAiDockerService = {
-    Name: 'text_keyword_extraction',
+    Name: 'text-keyword-extraction',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_keyword_extraction:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-keyword-extraction:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/keyword-extraction`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-keyword-extraction'
+    InternalUrl: '/text-keyword-extraction',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 export const TextLanguageDetectionDockerService: TAiDockerService = {
-    Name: 'text_language_detection',
+    Name: 'text-language-detection',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_language_detection:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-language-detection:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/language-detection`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-language-detection'
+    InternalUrl: '/text-language-detection',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 export const TextParaphraseDetectionDockerService: TAiDockerService = {
-    Name: 'text_paraphrase_detection',
+    Name: 'text-paraphrase-detection',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_paraphrase_detection:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-paraphrase-detection:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/paraphrase-detection`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-paraphrase-detection'
+    InternalUrl: '/text-paraphrase-detection',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 export const TextQuestionAnsweringDockerService: TAiDockerService = {
-    Name: 'text_question_answering',
+    Name: 'text-question-answering',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_question_answering:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-question-answering:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/question-answering`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-question-answering'
+    InternalUrl: '/text-question-answering',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 export const TextSentenceSimilarityDockerService: TAiDockerService = {
-    Name: 'text_sentence_similarity',
+    Name: 'text-sentence-similarity',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_sentence_similarity:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-sentence-similarity:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/sentence-similarity`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-sentence-similarity'
+    InternalUrl: '/text-sentence-similarity',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 export const TextSentimentAnalysisDockerService: TAiDockerService = {
-    Name: 'text_sentiment_analysis',
+    Name: 'text-sentiment-analysis',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_sentiment_analysis:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-sentiment-analysis:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/sentiment-analysis`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-sentiment-analysis'
+    InternalUrl: '/text-sentiment-analysis',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 export const TextSummarizationDockerService: TAiDockerService = {
-    Name: 'text_summarization',
+    Name: 'text-summarization',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_summarization:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-summarization:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/summarization`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-summarization'
+    InternalUrl: '/text-summarization',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 
 export const TextTextGenerationDockerService: TAiDockerService = {
-    Name: 'text_text_generation',
+    Name: 'text-text-generation',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_text_generation:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-text-generation:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/text-generation`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-text-generation'
+    InternalUrl: '/text-text-generation',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 // export const TextText2TextGenerationDockerService: TAiDockerService = {
@@ -142,45 +154,49 @@ export const TextTextGenerationDockerService: TAiDockerService = {
 // };
 
 export const TextTokenClassificationDockerService: TAiDockerService = {
-    Name: 'text_ner',
+    Name: 'text-ner',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_ner:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-ner:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/ner`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-ner'
+    InternalUrl: '/text-ner',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 export const TextToxicityDetectionDockerService: TAiDockerService = {
-    Name: 'text_toxicity_detection',
+    Name: 'text-toxicity-detection',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_toxicity_detection:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-toxicity-detection:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/toxicity-detection`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-toxicity-detection'
+    InternalUrl: '/text-toxicity-detection',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 export const TextTranslationDockerService: TAiDockerService = {
-    Name: 'text_translation',
+    Name: 'text-translation',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_translation:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-translation:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/translation`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-translation'
+    InternalUrl: '/text-translation',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
 export const TextZeroShotClassificationDockerService: TAiDockerService = {
-    Name: 'text_zero_shot_classification',
+    Name: 'text-zero-shot-classification',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_zero_shot_classification:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-zero-shot-classification:v1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/zero-shot-classification`,
         src: ['.', './requirements.txt']
     },
-    InternalUrl: '/text-zero-shot-classification'
+    InternalUrl: '/text-zero-shot-classification',
+    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };

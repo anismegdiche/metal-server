@@ -196,16 +196,17 @@ server:
 
 The parameters that can be configured inside the `ai-engines` section include:
 
-| Parameter        | Type    | Default Value           | Required | Description                                      | Metal Version                      |
-| ---------------- | ------- | ----------------------- | -------- | ------------------------------------------------ | ---------------------------------- |
-| `engines-url`    | URL     | `http://localhost:5000` | Y        | URL for AI engine services.                      | <Badge type="info" text="v0.5+" /> |
-| `timeout`        | Integer | `60_000`                | N        | Timeout for AI engine requests in milliseconds.  | <Badge type="info" text="v0.5+" /> |
-| `min-instance`   | Integer | `1`                     | N        | Minimum number of AI engine instances.           | <Badge type="info" text="v0.5+" /> |
-| `max-instance`   | Integer | `5`                     | N        | Maximum number of AI engine instances.           | <Badge type="info" text="v0.5+" /> |
-| `cpu-scale-up`   | Integer | `70`                    | N        | CPU scale up value.                              | <Badge type="info" text="v0.5+" /> |
-| `cpu-scale-down` | Integer | `30`                    | N        | CPU scale down value.                            | <Badge type="info" text="v0.5+" /> |
-| `scale-interval` | Integer | `15_000`                | N        | AI Service Scale interval value in milliseconds. | <Badge type="info" text="v0.5+" /> |
-| `params`         | Object  | `null`                  | N        | Parameters for Container Provider                | <Badge type="info" text="v0.5+" /> |
+| Parameter          | Type    | Default Value           | Required | Description                                      | Metal Version                      |
+| ------------------ | ------- | ----------------------- | -------- | ------------------------------------------------ | ---------------------------------- |
+| `engines-url`      | URL     | `http://localhost:5000` | Y        | URL for AI engine services.                      | <Badge type="info" text="v0.5+" /> |
+| `timeout`          | Integer | `60_000`                | N        | Timeout for AI engine requests in milliseconds.  | <Badge type="info" text="v0.5+" /> |
+| `min-instance`     | Integer | `1`                     | N        | Minimum number of AI engine instances.           | <Badge type="info" text="v0.5+" /> |
+| `max-instance`     | Integer | `5`                     | N        | Maximum number of AI engine instances.           | <Badge type="info" text="v0.5+" /> |
+| `cpu-scale-up`     | Integer | `70`                    | N        | CPU scale up value.                              | <Badge type="info" text="v0.5+" /> |
+| `cpu-scale-down`   | Integer | `30`                    | N        | CPU scale down value.                            | <Badge type="info" text="v0.5+" /> |
+| `scale-interval`   | Integer | `15_000`                | N        | AI Service Scale interval value in milliseconds. | <Badge type="info" text="v0.5+" /> |
+| `build-batch-size` | Integer | `5`                     | N        | AI Service Build batch size value.               | <Badge type="info" text="v0.5+" /> |
+| `params`           | Object  | `null`                  | N        | Parameters for Container Provider                | <Badge type="info" text="v0.5+" /> |
 
 For more detailed information about how to configure a Container Provider, See: [Container Providers Configurations](./container-providers-config.md)
 
