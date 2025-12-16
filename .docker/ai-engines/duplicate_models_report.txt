@@ -1,9 +1,0 @@
-The following model is used in more than one file:
-
-*   **Model:** `sentence-transformers/all-MiniLM-L6-v2`
-    *   **Files:**
-        *   `feature-extraction/app.py`
-        *   `paraphrase-detection/app.py`
-        *   `sentence-similarity/app.py`
-
-Consolidating the usage of this model could help optimize and reduce the number of files.
