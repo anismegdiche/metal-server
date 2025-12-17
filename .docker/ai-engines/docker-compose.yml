@@ -5,7 +5,7 @@ services:
   #
   base-text:
     image: metal-ai-engine-base-text:1.0.0
-    build: ./services/base
+    build: ./services/text/base
 
   #
   # Text
