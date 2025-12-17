@@ -10,7 +10,7 @@ import { AI_DOCKER_MODEL_PATH } from '../@consts';
 export const TextEmotionDetectionDockerService: TAiDockerService = {
     Name: 'text-emotion-detection',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-emotion-detection:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-emotion-detection:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/emotion-detection`,
         src: ['.', './requirements.txt']
@@ -23,7 +23,7 @@ export const TextEmotionDetectionDockerService: TAiDockerService = {
 export const TextFeatureExtractionDockerService: TAiDockerService = {
     Name: 'text-feature-extraction',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-feature-extraction:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-feature-extraction:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/feature-extraction`,
         src: ['.', './requirements.txt']
@@ -36,7 +36,7 @@ export const TextFeatureExtractionDockerService: TAiDockerService = {
 export const TextFillMaskDockerService: TAiDockerService = {
     Name: 'text-fill-mask',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-fill-mask:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-fill-mask:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/fill-mask`,
         src: ['.', './requirements.txt']
@@ -48,7 +48,7 @@ export const TextFillMaskDockerService: TAiDockerService = {
 export const TextKeywordExtractionDockerService: TAiDockerService = {
     Name: 'text-keyword-extraction',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-keyword-extraction:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-keyword-extraction:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/keyword-extraction`,
         src: ['.', './requirements.txt']
@@ -60,7 +60,7 @@ export const TextKeywordExtractionDockerService: TAiDockerService = {
 export const TextLanguageDetectionDockerService: TAiDockerService = {
     Name: 'text-language-detection',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-language-detection:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-language-detection:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/language-detection`,
         src: ['.', './requirements.txt']
@@ -72,7 +72,7 @@ export const TextLanguageDetectionDockerService: TAiDockerService = {
 export const TextParaphraseDetectionDockerService: TAiDockerService = {
     Name: 'text-paraphrase-detection',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-paraphrase-detection:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-paraphrase-detection:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/paraphrase-detection`,
         src: ['.', './requirements.txt']
@@ -84,7 +84,7 @@ export const TextParaphraseDetectionDockerService: TAiDockerService = {
 export const TextQuestionAnsweringDockerService: TAiDockerService = {
     Name: 'text-question-answering',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-question-answering:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-question-answering:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/question-answering`,
         src: ['.', './requirements.txt']
@@ -96,7 +96,7 @@ export const TextQuestionAnsweringDockerService: TAiDockerService = {
 export const TextSentenceSimilarityDockerService: TAiDockerService = {
     Name: 'text-sentence-similarity',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-sentence-similarity:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-sentence-similarity:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/sentence-similarity`,
         src: ['.', './requirements.txt']
@@ -108,7 +108,7 @@ export const TextSentenceSimilarityDockerService: TAiDockerService = {
 export const TextSentimentAnalysisDockerService: TAiDockerService = {
     Name: 'text-sentiment-analysis',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-sentiment-analysis:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-sentiment-analysis:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/sentiment-analysis`,
         src: ['.', './requirements.txt']
@@ -120,7 +120,7 @@ export const TextSentimentAnalysisDockerService: TAiDockerService = {
 export const TextSummarizationDockerService: TAiDockerService = {
     Name: 'text-summarization',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-summarization:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-summarization:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/summarization`,
         src: ['.', './requirements.txt']
@@ -133,7 +133,7 @@ export const TextSummarizationDockerService: TAiDockerService = {
 export const TextTextGenerationDockerService: TAiDockerService = {
     Name: 'text-text-generation',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-text-generation:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-text-generation:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/text-generation`,
         src: ['.', './requirements.txt']
@@ -145,7 +145,7 @@ export const TextTextGenerationDockerService: TAiDockerService = {
 // export const TextText2TextGenerationDockerService: TAiDockerService = {
 //     Name: 'text_text2text_generation',
 //     Port: 5000,
-//     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_text2text_generation:v1.0.0`,
+//     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_text2text_generation:1.0.0`,
 //     ImageContext: {
 //         context: `${process.cwd()}/.docker/ai-engines/services/text/text2text-generation`,
 //         src: ['.', './requirements.txt']
@@ -156,7 +156,7 @@ export const TextTextGenerationDockerService: TAiDockerService = {
 export const TextTokenClassificationDockerService: TAiDockerService = {
     Name: 'text-ner',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-ner:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-ner:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/ner`,
         src: ['.', './requirements.txt']
@@ -168,7 +168,7 @@ export const TextTokenClassificationDockerService: TAiDockerService = {
 export const TextToxicityDetectionDockerService: TAiDockerService = {
     Name: 'text-toxicity-detection',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-toxicity-detection:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-toxicity-detection:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/toxicity-detection`,
         src: ['.', './requirements.txt']
@@ -180,7 +180,7 @@ export const TextToxicityDetectionDockerService: TAiDockerService = {
 export const TextTranslationDockerService: TAiDockerService = {
     Name: 'text-translation',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-translation:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-translation:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/translation`,
         src: ['.', './requirements.txt']
@@ -192,7 +192,7 @@ export const TextTranslationDockerService: TAiDockerService = {
 export const TextZeroShotClassificationDockerService: TAiDockerService = {
     Name: 'text-zero-shot-classification',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-zero-shot-classification:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-text-zero-shot-classification:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/text/zero-shot-classification`,
         src: ['.', './requirements.txt']

@@ -10,7 +10,7 @@ import { DOCKER } from '../consts/DOCKER';
 export const AudioAudioClassificationDockerService: TAiDockerService = {
     Name: 'audio-audio-classification',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-audio-audio-classification:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-audio-audio-classification:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/audio/audio-classification`,
         src: ['.', './requirements.txt']
@@ -21,7 +21,7 @@ export const AudioAudioClassificationDockerService: TAiDockerService = {
 export const AudioAutomaticSpeechRecognitionDockerService: TAiDockerService = {
     Name: 'audio-automatic-speech-recognition',
     Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-audio-automatic-speech-recognition:v1.0.0`,
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-audio-automatic-speech-recognition:1.0.0`,
     ImageContext: {
         context: `${process.cwd()}/.docker/ai-engines/services/audio/automatic-speech-recognition`,
         src: ['.', './requirements.txt']

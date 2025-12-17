@@ -7,10 +7,10 @@ import { DOCKER } from '../consts/DOCKER';
 
 //
 export const BaseDockerService: TAiDockerService = {
-    Name: 'base',
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-base:v1.0.0`,
+    Name: 'base-text',
+    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-base-text:1.0.0`,
     ImageContext: {
-        context: `${process.cwd()}/.docker/ai-engines/services/base`,
+        context: `${process.cwd()}/.docker/ai-engines/services/base-text`,
         src: ['.']
     }
 };

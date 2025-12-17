@@ -1,4 +1,4 @@
-FROM metal-ai-engine-base:v1.0.0
+FROM metal-ai-engine-base-text:1.0.0
 
 ENV PYTHONUNBUFFERED=1
 

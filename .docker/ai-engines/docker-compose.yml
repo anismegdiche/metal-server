@@ -3,8 +3,8 @@ services:
   #
   # Base Image (Build this first: docker-compose build base)
   #
-  base:
-    image: metal-ai-engine-base:v1.0.0
+  base-text:
+    image: metal-ai-engine-base-text:1.0.0
     build: ./services/base
 
   #
