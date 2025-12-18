@@ -23,6 +23,11 @@
 # --image--
 
 
+### @name image-classification-health
+GET {{apiUrl}}:5302/image-image-classification/health
+Content-Type: application/json
+
+
 ### @name image-classification
 POST {{apiUrl}}:5302/image-image-classification/run
 Content-Type: application/json

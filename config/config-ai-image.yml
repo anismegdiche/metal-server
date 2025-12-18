@@ -15,8 +15,11 @@ server:
     options:
       autocreate: true
   ai-engines:
-    # docker-url:
     engines-url: http://localhost:5000
+    timeout: 600000
+    # params:
+    #   host: "127.0.0.1"  # or your machine IP
+    #   port: 2375         # exposed from docker-compose
 
 roles:
   all: lacrud
@@ -27,10 +30,23 @@ users:
 
 sources:
   src-fs:
-    provider: folder
+    provider: storage
     options:
+      mode: folders
       storage-type: fs
       fs-folder: ./data/
+  src-json:
+    provider: storage
+    options:
+      mode: files
+      storage-type: fs
+      fs-folder: ./data/
+      autocreate: true
+      content:
+        "*.json":
+          content-type: json
+          json-path: rows
+
   src-myplan:
     provider: plan
     database: myplan
@@ -40,6 +56,8 @@ schemas:
     source: src-fs
   myplan:
     source: src-myplan
+  json:
+    source: src-json
 
 schedules:
   "p1":
@@ -57,6 +75,7 @@ plans:
       - select:
           schema: fs
           entity: pic
+          fields: "*,content"
 
       - run:
           ai: image
@@ -92,3 +111,7 @@ plans:
           output:
 
       - omit: [content]
+
+      - insert:
+          schema: json
+          entity: image.json
