@@ -193,14 +193,14 @@ export class AiDocker {
                             Logger.Error(`Error in pull progress for ${image}: ${err.message}`)
                             return reject(err)
                         }
-                        Logger.Debug(`${Logger.Out} 📦 Pulling ${image}...`)
+                        Logger.Debug(`${Logger.Out} AiDocker.PullImage: 📦 Pulling ${image}...`)
                         resolve()
                     },
                     (event: any) => {
                         if (event.status === 'Downloading') {
-                            Logger.Debug(`${Logger.Out} 📦 Pulling ${image}... ${event.progress}`)
+                            Logger.Debug(`${Logger.Out} AiDocker.PullImage: 📦 Pulling ${image}... ${event.progress}`)
                         } else {
-                            Logger.Debug(`${Logger.Out} 📦 Pulling ${image}... ${event.status}`)
+                            Logger.Debug(`${Logger.Out} AiDocker.PullImage: 📦 Pulling ${image}... ${event.status}`)
                         }
                     }
                 )
