@@ -60,10 +60,10 @@ schemas:
     source: src-json
 
 schedules:
-  "p1":
-    plan: myplan
-    entity: myentity
-    cron: "*/5 * * * *"
+  # "p1":
+  #   plan: myplan
+  #   entity: myentity
+  #   cron: "*/5 * * * *"
   "p2":
     plan: myplan
     entity: myentity
@@ -74,20 +74,10 @@ plans:
     myentity:
       - select:
           schema: fs
-          entity: pic
+          entity: rec
           fields: "*,content"
-
-      - run:
-          ai: image
-          task: image-classification
-          input: content
-          output:
-
-      - run:
-          ai: image
-          task: image-segmentation
-          input: content
-          output:
+          sort:
+            name: asc
 
       - run:
           ai: image
@@ -95,22 +85,8 @@ plans:
           input: content
           output:
 
-      - run:
-          ai: image
-          task: object-detection
-          input: content
-          output:
-
-      - run:
-          ai: image
-          task: visual-question-answering
-          params:
-            question: How many people are in the image?
-          input: content
-          output:
-
       - omit: [content]
 
       - insert:
           schema: json
-          entity: image.json
+          entity: recovered.json

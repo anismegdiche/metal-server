@@ -136,11 +136,11 @@ export class StorageFoldersData extends absDataProvider {
         if (options.Fields?.includes(FLD_CONTENT)) {
             // read files content
             await files.RowsMap(async (row: TRow) => {
-                const __file = row as TStorageFile
-                row.content = await ReadableUtils.ToBase64(
-                    await this.Connection!.FileRead(dirName, __file.name)
+                const _file = row as TStorageFile
+                _file.content = await ReadableUtils.ToBase64(
+                    await this.Connection!.FileRead(dirName, _file.name)
                 )
-                return row
+                return _file
             })
         }
 
