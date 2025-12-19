@@ -13,6 +13,7 @@ import { TConfigAiEngine } from "./@types";
 import { AiDocker } from "./AiDocker";
 import { IAiEngine } from "./base/IAiEngine";
 import { Semaphore } from "../../utils/Semaphore";
+import { BaseImageDockerService, BaseTextDockerService } from "./docker-services/BaseDockerService";
 
 
 //
@@ -119,16 +120,21 @@ export class AiEngine {
     }
 
     static async Init() {
-        if (!ConfigManager.Has('plans')) {
+        if (!ConfigManager.Has('plans'))
             return;
-        }
 
-        if (Object.keys(AiEngine.BuildAiEnginesList()).length == 0) {
+        if (Object.keys(AiEngine.BuildAiEnginesList()).length == 0)
             return;
-        }
 
         await AiDocker.Init();
         AiEngine.#aiEnginesConfig = AiEngine.BuildAiEnginesList();
+
+        if (Object.keys(AiEngine.#aiEnginesConfig).some(key => key.startsWith(AI_ENGINE.TEXT)))
+            await AiDocker.BuildServiceImage(BaseTextDockerService);
+
+        if (Object.keys(AiEngine.#aiEnginesConfig).some(key => key.startsWith(AI_ENGINE.IMAGE)))
+            await AiDocker.BuildServiceImage(BaseImageDockerService);
+
         AiEngine.CreateAll()
     }
 

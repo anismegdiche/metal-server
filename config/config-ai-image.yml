@@ -63,7 +63,7 @@ schedules:
   "p1":
     plan: myplan
     entity: myentity
-    cron: "*/1 * * * *"
+    cron: "*/5 * * * *"
   "p2":
     plan: myplan
     entity: myentity
@@ -94,7 +94,6 @@ plans:
           task: image-to-text
           input: content
           output:
-            generated_text: description
 
       - run:
           ai: image

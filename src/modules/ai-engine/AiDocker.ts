@@ -14,7 +14,6 @@ import { TraefikDockerService } from './docker-services/TraefikDockerService'
 import { TAiDockerService } from './types/TAiDockerService'
 import { ConfigManager } from '../core/ConfigManager'
 import { HttpErrorInternalServerError } from '../errors/HttpErrors';
-import { BaseDockerService } from './docker-services/BaseDockerService';
 
 
 //
@@ -83,7 +82,7 @@ export class AiDocker {
             Logger.Info(`${Logger.Out} Docker daemon is reachable`)
 
             await AiDocker.CleanStack()
-            await AiDocker.BuildServiceImage(BaseDockerService)
+            //XXX await AiDocker.BuildServiceImage(BaseTextDockerService)
 
             Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
             await AiDocker.CreateNetwork().catch(Logger.Error)
@@ -300,7 +299,24 @@ export class AiDocker {
         })
 
         await container.start()
-        Logger.Info(`${Logger.Out} Started new '${serviceName}' container '${containerName}'`)
+            .then(() => {
+                Logger.Info(`${Logger.Out} Started new '${serviceName}' container '${containerName}'`)
+
+            })
+            .catch((error) => {
+                Logger.Error(`${Logger.Out} Failed to start new '${serviceName}' container '${containerName}': ${error}`)
+            })
+
+        Logger.Info(`${Logger.In} Loading pipe for '${serviceName}'`)
+        await container.exec({
+            Cmd: ['python', 'app.py', '--load-pipe'],
+            AttachStdout: true,
+            AttachStderr: true
+        }).then(exec => exec.start({}))
+            .then(() => Logger.Info(`${Logger.Out} Pipe loaded for '${serviceName}'`))
+            .catch((error) => {
+                Logger.Error(`${Logger.Out} Failed to load pipe for '${serviceName}': ${error}`)
+            })
     }
 
     @Logger.LogFunction()
@@ -314,8 +330,8 @@ export class AiDocker {
                 Logger.Info(`${Logger.Out} Traefik container already running`)
                 return
             }
-            Logger.Info(`${Logger.Out} Starting Traefik container`)
-            Logger.Info(`${Logger.Out} '${TraefikDockerService.ImageName}' pull started`)
+            Logger.Info(`${Logger.In} Starting Traefik container`)
+            Logger.Info(`${Logger.In} '${TraefikDockerService.ImageName}' pull started`)
 
             await AiDocker.PullImage(TraefikDockerService.ImageName).catch(Logger.Error)
 
