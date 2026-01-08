@@ -14,7 +14,7 @@ import { HttpResponse } from "../../core/HttpResponse"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaRequestAddEntity, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
@@ -208,7 +208,7 @@ export class MemoryData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async AddEntity(schemaRequest: TSchemaRequestAddEntity): Promise<TInternalResponse<undefined>> {
 
         const { schema, entity } = schemaRequest
         Assert.Var<DataBase>(this.Connection, `${schema}: Connection is required`)

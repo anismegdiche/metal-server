@@ -6,7 +6,7 @@ import * as _ from 'lodash-es'
 //
 import type { TConfigSource } from "../types/TConfigSource"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { TSchemaRequestListEntities, TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestDelete } from "../../schema/types/TSchemaRequest"
+import type { TSchemaRequestListEntities, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestAddEntity } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { Logger } from "../../../utils/Logger"
 import { absDataProvider } from "../base/absDataProvider"
@@ -204,7 +204,7 @@ export class MetalData extends absDataProvider {
 
 
     @Logger.LogFunction()
-    async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+    async AddEntity(_schemaRequest: TSchemaRequestAddEntity): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 

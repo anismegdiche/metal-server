@@ -132,8 +132,8 @@ export class PlanData extends absDataProvider {
 
     @Logger.LogFunction()
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        const { schema, entity } = schemaRequest
-        Logger.Error(`AddEntity: Not allowed for plans '${schema}', entity '${entity}'`)
+        const { schema } = schemaRequest
+        Logger.Error(`AddEntity: Not allowed for plans '${schema}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 

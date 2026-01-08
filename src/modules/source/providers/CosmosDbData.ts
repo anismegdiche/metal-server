@@ -438,7 +438,7 @@ export class CosmosDbData extends absDataProvider {
             const containerDetails =
                 (await data
                     .Rows({
-                        filter: `name = "${schemaRequest.entity}"`
+                        filter: `name = "${(schemaRequest as TSchemaRequestSelect).entity}"`
                     }))[0]
 
             Assert.Var<TDataListEntity>(containerDetails, `${schema}: Container not found`)
@@ -450,7 +450,7 @@ export class CosmosDbData extends absDataProvider {
 
             return container
         } catch (error) {
-            Logger.Error(`Failed to get or create container '${schemaRequest.entity}': ${error}`)
+            Logger.Error(`Failed to get or create container '${(schemaRequest as TSchemaRequestSelect).entity}': ${error}`)
             throw new HttpErrorInternalServerError(`Failed to get or create container: ${error}`)
         }
     }

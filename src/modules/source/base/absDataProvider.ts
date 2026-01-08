@@ -75,7 +75,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
     GenerateSqlSelect(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
             .Select(options.Fields)
-            .From(schemaRequest.entity)
+            .From((schemaRequest as TSchemaRequestSelect).entity)
             .Where(options.Filter)
             .OrderBy(options.Sort)
     }
@@ -86,7 +86,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
         Assert.Condition(await options.Data.Count() > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
 
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
-            .Insert(schemaRequest.entity)
+            .Insert((schemaRequest as TSchemaRequestInsert).entity)
             .Fields(options.Data.GetFieldsName())
             .Values(await options.Data.Rows())
     }
@@ -97,7 +97,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
         Assert.Condition(await options.Data.Count() > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
 
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
-            .Update(schemaRequest.entity)
+            .Update((schemaRequest as TSchemaRequestUpdate).entity)
             .Set(await options.Data.Rows())
             .Where(options.Filter)
     }
@@ -105,7 +105,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
     GenerateSqlDelete(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
         return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
             .Delete()
-            .From(schemaRequest.entity)
+            .From((schemaRequest as TSchemaRequestDelete).entity)
             .Where(options.Filter)
     }
 }
