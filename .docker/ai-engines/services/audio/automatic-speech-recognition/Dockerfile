@@ -35,7 +35,7 @@ EXPOSE 5000
 
 # Health check
 HEALTHCHECK --interval=10s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:5000/audio-automatic-speech-recognition/health || exit 1
+    CMD curl -f http://127.0.0.1:5000/audio-automatic-speech-recognition/health || exit 1
 
 # Command to run the application
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000"]

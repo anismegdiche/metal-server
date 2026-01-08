@@ -19,7 +19,7 @@ COPY app.py ./
 
 # Health check endpoint (uses curl)
 HEALTHCHECK --interval=10s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:5000/text-emotion-detection/health || exit 1
+    CMD curl -f http://127.0.0.1:5000/text-emotion-detection/health || exit 1
 
 EXPOSE 5000
 

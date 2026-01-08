@@ -15,7 +15,7 @@ COPY app.py .
 
 
 HEALTHCHECK --interval=10s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl --fail http://localhost:5000/image-visual-question-answering/health || exit 1
+    CMD curl --fail http://127.0.0.1:5000/image-visual-question-answering/health || exit 1
 
 # Start the application
 EXPOSE 5000
