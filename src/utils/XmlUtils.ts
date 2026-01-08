@@ -28,14 +28,14 @@ export class XmlUtils {
 
         for (let i = 0; i < segments.length - 1; i++) {
             const segment = segments[i]
-            if (!(segment in currentNode)) {
-                currentNode[segment] = {} // Create missing segments
+            if (!(segment! in currentNode)) {
+                currentNode[segment!] = {} // Create missing segments
             }
-            currentNode = currentNode[segment]
+            currentNode = currentNode[segment!]
         }
 
         const targetSegment = segments[segments.length - 1]
-        currentNode[targetSegment] = newData
+        currentNode[targetSegment!] = newData
 
         return xml
     }

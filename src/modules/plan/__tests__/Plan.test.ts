@@ -1,28 +1,12 @@
-import { TypeUtils } from "../../../utils/TypeUtils"
+import { mock_Logger } from '../../../__tests__/mockers'
+mock_Logger()
 import { DataTable } from "../../../types/DataTable"
-import { TSchemaRequest } from "../../schema/types/TSchemaRequest"
+import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 import { Plan } from "../Plan"
 import { ConfigManager } from "../../core/ConfigManager"
-import { TStep } from "../types/TStep"
+import type { TStep } from "../types/TStep"
+import { Schema } from "../../schema/Schema"
 
-
-// Mock the Logger
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
-    }
-}))
 
 describe('Process', () => {
 
@@ -42,8 +26,8 @@ describe('Process', () => {
 
         const _plan = new Plan("TestPlan")
 
-        jest.spyOn(TypeUtils, 'IsSchemaRequest').mockReturnValue(true)
-        jest.spyOn(_plan, 'ProcessSchemaRequest').mockResolvedValue(new DataTable())
+        vi.spyOn(Schema, 'IsSchemaRequest').mockReturnValue(true)
+        vi.spyOn(_plan, 'ProcessSchemaRequest').mockResolvedValue(new DataTable())
 
         const result = await _plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
 
@@ -65,14 +49,14 @@ describe('Process', () => {
         const _plan = new Plan("TestPlan")
         _plan.Entities.set("TestEntity", [])
 
-        jest.spyOn(_plan, 'ExecuteSteps').mockResolvedValue(new DataTable())
-        jest.spyOn(ConfigManager, 'Get').mockReturnValueOnce(steps)
+        vi.spyOn(_plan, 'ExecuteSteps').mockResolvedValue(new DataTable())
+        vi.spyOn(ConfigManager, 'Get').mockReturnValueOnce(steps)
 
         // Act
         const result = await _plan.ProcessScheduleConfig(scheduleConfig)
 
         // expect ExecuteSteps to have been called
-        expect(_plan.ExecuteSteps).toHaveBeenCalledWith(undefined,scheduleConfig.plan,scheduleConfig.entity,steps)
+        expect(_plan.ExecuteSteps).toHaveBeenCalledWith(undefined, scheduleConfig.plan, scheduleConfig.entity, steps)
 
         // Assert
         expect(result).toEqual(undefined)

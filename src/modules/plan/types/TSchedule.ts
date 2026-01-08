@@ -1,10 +1,10 @@
 //
 //
 //
-//
-//
-import { CronJob } from 'cron'
+import type { CronJob } from 'cron'
 
+
+//
 export type TSchedule = {
     schedule: string
     cronJob: CronJob

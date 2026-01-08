@@ -2,17 +2,17 @@ import { CosmosDbHelper } from "../providers/CosmosDbHelper";
 
 
 // mock related classes
-jest.mock('../providers/StorageData', () => ({ StorageData: {} }))
-jest.mock('../providers/MemoryData', () => ({ MemoryData: {} }))
-jest.mock('../providers/WebServiceData', () => ({ WebServiceData: {} }))
-jest.mock('../providers/MetalData', () => ({ MetalData: {} }))
-jest.mock('../providers/MongoDbData', () => ({ MongoDbData: {} }))
-jest.mock('../providers/MySqlData', () => ({ MySqlData: {} }))
-jest.mock('../../plan/Step', () => ({ Step: {} }))
-jest.mock('../providers/PlanData', () => ({ PlanData: {} }))
-jest.mock('../providers/PostgresData', () => ({ PostgresData: {} }))
-jest.mock('../providers/SqlServerData', () => ({ SqlServerData: {} }))
-jest.mock('../providers/CosmosDbData', () => ({ CosmosDbData: {} }))
+vi.mock('../providers/StorageData', () => ({ StorageData: {} }))
+vi.mock('../providers/MemoryData', () => ({ MemoryData: {} }))
+vi.mock('../providers/WebServiceData', () => ({ WebServiceData: {} }))
+vi.mock('../providers/MetalData', () => ({ MetalData: {} }))
+vi.mock('../providers/MongoDbData', () => ({ MongoDbData: {} }))
+vi.mock('../providers/MySqlData', () => ({ MySqlData: {} }))
+vi.mock('../../plan/Step', () => ({ Step: {} }))
+vi.mock('../providers/PlanData', () => ({ PlanData: {} }))
+vi.mock('../providers/PostgresData', () => ({ PostgresData: {} }))
+vi.mock('../providers/SqlServerData', () => ({ SqlServerData: {} }))
+vi.mock('../providers/CosmosDbData', () => ({ CosmosDbData: {} }))
 
 describe('CosmoDbHelper', () => {
     describe('ParseSqlQuery', () => {

@@ -1,5 +1,5 @@
-import { TConvertParams } from '../../../utils/TypeUtils';
-import { TXlsContentConfig } from './TXlsContentConfig';
+import type { TConvertParams } from '../../../utils/TypeUtils';
+import type { TXlsContentConfig } from './TXlsContentConfig';
 
 
 export type TXlsContentParams = {

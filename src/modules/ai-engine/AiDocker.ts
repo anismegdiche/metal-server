@@ -2,18 +2,21 @@
 //
 //
 //
-import Docker, { DockerOptions } from 'dockerode'
+import type { DockerOptions } from 'dockerode';
+import Docker from 'dockerode';
 import fs from "fs";
 
 //
-import { JsonUtils } from '../../utils/JsonUtils'
-import { Logger } from '../../utils/Logger'
-import { StringUtils } from '../../utils/StringUtils'
-import { DOCKER } from './consts/DOCKER'
-import { TraefikDockerService } from './docker-services/TraefikDockerService'
-import { TAiDockerService } from './types/TAiDockerService'
-import { ConfigManager } from '../core/ConfigManager'
+import { Assert } from '../../utils/Assert';
+import { JsonUtils } from '../../utils/JsonUtils';
+import { Logger } from '../../utils/Logger';
+import { Mutex } from '../../utils/Mutex';
+import { StringUtils } from '../../utils/StringUtils';
+import { ConfigManager } from '../core/ConfigManager';
 import { HttpErrorInternalServerError } from '../errors/HttpErrors';
+import { DOCKER } from './consts/DOCKER';
+import { CaddyDockerService } from './docker-services/CaddyDockerService';
+import type { TAiDockerService } from './types/TAiDockerService';
 
 
 //
@@ -30,7 +33,8 @@ export class AiDocker {
         CpuScaleDown: 30,
         ScaleInterval: 15_000, // 15 seconds
         Timeout: 60_000, // 60 seconds
-        Sleep: 5_000 // 5 seconds
+        Sleep: 5_000, // 5 seconds
+        ScaleDownGracePeriod: 3600_000 // 1 hour
     }
 
     static _convertStreamToLog(streamString: string): string[] {
@@ -64,6 +68,7 @@ export class AiDocker {
         AiDocker.ServiceInstance.CpuScaleUp = ConfigManager.Get<number>("server.ai-engines.cpu-scale-up")
         AiDocker.ServiceInstance.CpuScaleDown = ConfigManager.Get<number>("server.ai-engines.cpu-scale-down")
         AiDocker.ServiceInstance.ScaleInterval = ConfigManager.Get<number>("server.ai-engines.scale-interval")
+        AiDocker.ServiceInstance.ScaleDownGracePeriod = ConfigManager.Get<number>("server.ai-engines.scale-down-grace-period") ?? 60_000
 
         if (_dockerOptions?.ca instanceof String)
             _dockerOptions.ca = fs.readFileSync(_dockerOptions.ca as string)
@@ -86,7 +91,7 @@ export class AiDocker {
 
             Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
             await AiDocker.CreateNetwork().catch(Logger.Error)
-            await AiDocker.StartTraefik().catch(Logger.Error)
+            await AiDocker.StartCaddy().catch(Logger.Error)
 
             AiDocker.StartScaler()
             Logger.Info(`${Logger.Out} AI Engine stack manager started`)
@@ -97,7 +102,9 @@ export class AiDocker {
 
     @Logger.LogFunction()
     static async StartService(service: TAiDockerService) {
-        AiDocker.Instances.set(service.InstanceName ?? service.Name, service)
+        service.Lock = new Mutex()
+        const serviceName = service.InstanceName ?? service.Name
+        AiDocker.Instances.set(serviceName, service)
         await AiDocker.BuildServiceImage(service).catch(Logger.Error)
         const containers = await AiDocker.ListActiveContainers(service)
         for (let i = containers.length; i < AiDocker.ServiceInstance.MinInstances; i++) {
@@ -108,7 +115,20 @@ export class AiDocker {
 
     @Logger.LogFunction()
     static StartScaler() {
+        // Clear any existing interval first to prevent duplicates
+        if (AiDocker.AutoScaleWorker) {
+            clearInterval(AiDocker.AutoScaleWorker)
+        }
         AiDocker.AutoScaleWorker = setInterval(AiDocker.AutoScale, AiDocker.ServiceInstance.ScaleInterval)
+    }
+
+    @Logger.LogFunction()
+    static StopScaler() {
+        if (AiDocker.AutoScaleWorker) {
+            clearInterval(AiDocker.AutoScaleWorker)
+            AiDocker.AutoScaleWorker = undefined as any
+            Logger.Info('AutoScaler stopped')
+        }
     }
 
     @Logger.LogFunction()
@@ -226,7 +246,7 @@ export class AiDocker {
 
                 let _streamData: string = ""
 
-                stream.on('data', (data: Buffer) => {
+                const onData = (data: Buffer) => {
                     const __data = data.toString();
                     _streamData += __data;
 
@@ -244,10 +264,16 @@ export class AiDocker {
                             Logger.Warn(`${Logger.Out} ⚠️ Failed to parse log part: ${complete}`);
                         }
                     }
-                });
+                };
 
+                const cleanup = () => {
+                    stream.removeListener('data', onData);
+                    stream.removeListener('end', onEnd);
+                    stream.removeListener('error', onError);
+                };
 
-                stream.on('end', () => {
+                const onEnd = () => {
+                    cleanup();
                     if (_streamData.length > 0) {
                         const ___aLog = AiDocker._convertStreamToLog(_streamData)
                         ___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image: ${item}`))
@@ -255,12 +281,18 @@ export class AiDocker {
                     }
                     Logger.Info(`${Logger.Out} 🔨 Built '${service.ImageName}' image`)
                     resolve()
-                })
+                };
 
-                stream.on('error', (err: Error) => {
+                const onError = (err: Error) => {
+                    cleanup();
                     Logger.Error(`${Logger.Out} 🔨 ❌ Error building '${service.ImageName}' image: ${err}`)
                     reject(err)
-                })
+                };
+
+                stream.on('data', onData);
+                stream.on('end', onEnd);
+                stream.on('error', onError);
+
             } catch (err) {
                 Logger.Error(`${Logger.Out} 🔨 ❌ Failed to build '${service.ImageName}' image: ${err}`)
                 reject(err)
@@ -272,6 +304,8 @@ export class AiDocker {
     private static async CreateServiceContainer(service: TAiDockerService) {
         const serviceName = service.InstanceName ?? service.Name
         const containerName = `${DOCKER.AI_ENGINE_PREFIX}_${serviceName}_${Date.now()}`
+        const serviceIndex = Array.from(AiDocker.Instances.keys()).indexOf(serviceName)
+
         const container = await AiDocker.docker.createContainer({
             Image: service.ImageName,
             name: containerName,
@@ -279,22 +313,49 @@ export class AiDocker {
             NetworkingConfig: {
                 EndpointsConfig: { [DOCKER.AI_NETWORK]: {} }
             },
+            Env: [
+                'MAX_HISTORY=3',
+                'MAX_LOAD=30'
+            ],
             Labels: {
                 service: serviceName,
                 scaled: 'true',
-                'traefik.enable': 'true',
-                [`traefik.http.routers.${serviceName}.rule`]: `PathPrefix(\`/${serviceName}\`)`,
-                [`traefik.http.services.${serviceName}.loadbalancer.server.port`]: (service.Port as number).toString(),
-                //
-                [`traefik.http.routers.${serviceName}.middlewares`]: `rewrite-to-${serviceName}`,
-                [`traefik.http.middlewares.rewrite-to-${serviceName}.replacePathRegex.regex`]: `^/${serviceName}(/.*)?$`,
-                [`traefik.http.middlewares.rewrite-to-${serviceName}.replacePathRegex.replacement`]: `${service.InternalUrl}$1`
-                //
+
+                'caddy_ingress_network': DOCKER.AI_NETWORK,
+
+                // Caddy site
+                'caddy': ':5000',
+
+                // Use an index to avoid label conflicts between different services
+                [`caddy.${serviceIndex}_route`]: `/${serviceName}*`,
+
+                // Rewrite path
+                [`caddy.${serviceIndex}_route.0_uri`]: `replace ^/${serviceName} ${service.InternalUrl}`,
+
+                // Reverse proxy to the container itself
+                [`caddy.${serviceIndex}_route.1_reverse_proxy`]: `{{upstreams ${service?.Port ?? 5000}}}`,
+
+                // Health check configuration
+                // [`caddy.${serviceIndex}_route.1_reverse_proxy.health_uri`]: `${service.InternalUrl}/health`,
+                // [`caddy.${serviceIndex}_route.1_reverse_proxy.health_interval`]: `10s`,
+                // [`caddy.${serviceIndex}_route.1_reverse_proxy.health_timeout`]: `5s`,
+
+                // Passive health checks
+                [`caddy.${serviceIndex}_route.1_reverse_proxy.unhealthy_status`]: `429`,
+                [`caddy.${serviceIndex}_route.1_reverse_proxy.max_fails`]: `1`,
+                [`caddy.${serviceIndex}_route.1_reverse_proxy.fail_duration`]: `10s`,
+
+                // Load balancing configuration
+                [`caddy.${serviceIndex}_route.1_reverse_proxy.lb_policy`]: `round_robin`,
+                [`caddy.${serviceIndex}_route.1_reverse_proxy.lb_retries`]: `3`,
+                [`caddy.${serviceIndex}_route.1_reverse_proxy.lb_try_duration`]: `5s`,
+                [`caddy.${serviceIndex}_route.1_reverse_proxy.lb_try_interval`]: `250ms`,
             },
             HostConfig: {
                 NetworkMode: DOCKER.AI_NETWORK,
                 RestartPolicy: { Name: 'unless-stopped' },
-                Binds: service.DockerVolume
+                Binds: service.DockerVolume,
+                NanoCpus: 1000000000
             }
         })
 
@@ -307,59 +368,65 @@ export class AiDocker {
                 Logger.Error(`${Logger.Out} Failed to start new '${serviceName}' container '${containerName}': ${error}`)
             })
 
+        if (service.PipeLoaded) {
+            Logger.Info(`${Logger.Out} Pipe already loaded for '${serviceName}'`)
+            return
+        }
+
         Logger.Info(`${Logger.In} Loading pipe for '${serviceName}'`)
-        await container.exec({
-            Cmd: ['python', 'app.py', '--load-pipe'],
-            AttachStdout: true,
-            AttachStderr: true
-        }).then(exec => exec.start({}))
-            .then(() => Logger.Info(`${Logger.Out} Pipe loaded for '${serviceName}'`))
-            .catch((error) => {
-                Logger.Error(`${Logger.Out} Failed to load pipe for '${serviceName}': ${error}`)
-            })
+        await service.Lock?.Acquire()
+        {
+            await container.exec({
+                Cmd: ['python', 'app.py', '--load-pipe'],
+                AttachStdout: true,
+                AttachStderr: true
+            }).then(exec => exec.start({}))
+                .then(() => {
+                    service.PipeLoaded = true
+                    Logger.Info(`${Logger.Out} Pipe loaded for '${serviceName}'`)
+                })
+                .catch((error) => {
+                    Logger.Error(`${Logger.Out} Failed to load pipe for '${serviceName}': ${error}`)
+                })
+        }
+        service.Lock?.Release()
     }
 
     @Logger.LogFunction()
-    static async StartTraefik() {
+    static async StartCaddy() {
         try {
             const containers = await AiDocker.docker.listContainers({
                 all: true,
-                filters: { name: [TraefikDockerService.Name] }
+                filters: { name: [CaddyDockerService.Name] }
             })
             if (containers.length > 0) {
-                Logger.Info(`${Logger.Out} Traefik container already running`)
+                Logger.Info(`${Logger.Out} Caddy container already running`)
                 return
             }
-            Logger.Info(`${Logger.In} Starting Traefik container`)
-            Logger.Info(`${Logger.In} '${TraefikDockerService.ImageName}' pull started`)
+            Logger.Info(`${Logger.In} Starting Caddy container`)
+            Logger.Info(`${Logger.In} '${CaddyDockerService.ImageName}' pull started`)
 
-            await AiDocker.PullImage(TraefikDockerService.ImageName).catch(Logger.Error)
+            await AiDocker.PullImage(CaddyDockerService.ImageName).catch(Logger.Error)
 
             const container = await AiDocker.docker.createContainer({
-                Image: TraefikDockerService.ImageName,
-                name: TraefikDockerService.Name,
-                Hostname: TraefikDockerService.Name,
-                Cmd: [
-                    "--api.dashboard=true",
-                    "--api.insecure=true",
-                    `--entrypoints.web.address=:${TraefikDockerService.Port}`,
-                    `--entrypoints.traefik.address=:${TraefikDockerService.Options?.DashboardPort}`,
-                    "--providers.docker=true",
-                    "--providers.docker.exposedbydefault=false",
-                    `--providers.docker.network=${DOCKER.AI_NETWORK}`,
-                    "--log.level=DEBUG"
+                Image: CaddyDockerService.ImageName,
+                name: CaddyDockerService.Name,
+                Hostname: CaddyDockerService.Name,
+                Env: [
+                    `CADDY_INGRESS_NETWORKS=${DOCKER.AI_NETWORK}`,
+                    `CADDY_DOCKER_SCAN_INTERVAL=5s`
                 ],
                 ExposedPorts: {
-                    [`${TraefikDockerService.Port}/tcp`]: {},
-                    [`${TraefikDockerService.Options?.DashboardPort}/tcp`]: {}
+                    [`${CaddyDockerService.Port}/tcp`]: {},
+                    [`${CaddyDockerService.Options?.DashboardPort}/tcp`]: {}
                 },
                 HostConfig: {
                     NetworkMode: DOCKER.AI_NETWORK,
                     PortBindings: {
-                        [`${TraefikDockerService.Port}/tcp`]: [{ HostPort: (TraefikDockerService.Port as number).toString() }],
-                        [`${TraefikDockerService.Options?.DashboardPort}/tcp`]: [{ HostPort: (TraefikDockerService.Options?.DashboardPort as number).toString() }]
+                        [`${CaddyDockerService.Port}/tcp`]: [{ HostPort: (CaddyDockerService.Port as number).toString() }],
+                        [`${CaddyDockerService.Options?.DashboardPort}/tcp`]: [{ HostPort: (CaddyDockerService.Options?.DashboardPort as number).toString() }]
                     },
-                    Binds: TraefikDockerService.DockerVolume
+                    Binds: CaddyDockerService.DockerVolume
                 },
                 NetworkingConfig: {
                     EndpointsConfig: { [DOCKER.AI_NETWORK]: {} }
@@ -395,9 +462,20 @@ export class AiDocker {
 
             if (avgCpu > AiDocker.ServiceInstance.CpuScaleUp && containers.length < AiDocker.ServiceInstance.MaxInstances) {
                 await AiDocker.ScaleUp(service)
+                service.IdleSince = undefined
             } else if (avgCpu < AiDocker.ServiceInstance.CpuScaleDown && containers.length > AiDocker.ServiceInstance.MinInstances) {
-                await AiDocker.ScaleDown(service)
+                if (!service.IdleSince) {
+                    service.IdleSince = Date.now()
+                    Logger.Info(`${Logger.Out} AutoScale: '${service.InstanceName ?? service.Name}' is idle. Grace period started.`)
+                } else if (Date.now() - service.IdleSince > AiDocker.ServiceInstance.ScaleDownGracePeriod) {
+                    await AiDocker.ScaleDown(service)
+                    service.IdleSince = undefined
+                } else {
+                    const remaining = Math.ceil((AiDocker.ServiceInstance.ScaleDownGracePeriod - (Date.now() - service.IdleSince)) / 1000)
+                    Logger.Info(`${Logger.Out} AutoScale: '${service.InstanceName ?? service.Name}' is idle. Scaling down in ${remaining}s`)
+                }
             } else {
+                service.IdleSince = undefined
                 Logger.Info(`${Logger.Out} AutoScale: No scaling needed for '${service.InstanceName ?? service.Name}'`)
             }
         }
@@ -406,7 +484,8 @@ export class AiDocker {
     @Logger.LogFunction()
     static async ScaleUp(service: TAiDockerService) {
         const containers = await AiDocker.ListActiveContainers(service)
-        if (containers.length >= AiDocker.ServiceInstance.MaxInstances) {
+        const nbrContainers = (containers?.length ?? Number.MAX_SAFE_INTEGER)
+        if (nbrContainers >= AiDocker.ServiceInstance.MaxInstances) {
             Logger.Info(`Max '${service.InstanceName ?? service.Name}' containers reached: ${AiDocker.ServiceInstance.MaxInstances}`)
             return
         }
@@ -427,6 +506,9 @@ export class AiDocker {
 
         // Remove oldest scaled container
         const toRemove = containers[0]
+
+        Assert.Var<Docker.ContainerInfo>(toRemove, 'toRemove is required')
+
         const container = AiDocker.docker.getContainer(toRemove.Id)
         await container.stop()
         await container.remove()
@@ -437,38 +519,61 @@ export class AiDocker {
     static async GetAverageCpuUsage(service: TAiDockerService): Promise<number> {
         try {
             const containers = await AiDocker.ListActiveContainers(service)
-            if (containers.length === 0) return 0
+            if (containers.length === 0)
+                return 0
 
             // Process all containers in parallel
             const cpuUsages = await Promise.all(
                 containers.map(async (containerInfo) => {
                     try {
                         const container = AiDocker.docker.getContainer(containerInfo.Id)
-                        const start = Date.now()
-                        const first = await container.stats({ stream: false })
-                        await new Promise(r => setTimeout(r, 1000)) // Wait 1 sec
-                        const second = await container.stats({ stream: false })
-                        const end = Date.now()
 
-                        const elapsedMs = end - start
-                        const elapsedSeconds = elapsedMs / 1000
+                        // Take 5 snapshots over 5 seconds
+                        const snapshots = []
+                        for (let i = 0; i < 5; i++) {
+                            snapshots.push(await container.stats({ stream: false }))
+                            if (i < 4) await new Promise(r => setTimeout(r, 1250)) // 5 seconds / 4 intervals
+                        }
 
-                        const cpuDelta = second.cpu_stats.cpu_usage.total_usage - first.cpu_stats.cpu_usage.total_usage
-                        const cpuCores = second.cpu_stats.online_cpus ||
-                            (second.cpu_stats.cpu_usage.percpu_usage?.length ?? 1)
-                        return (cpuDelta / 1e9 / elapsedSeconds) * 100 / cpuCores
+                        // Calculate CPU percentage for each interval
+                        const percentages = []
+                        for (let i = 1; i < snapshots.length; i++) {
+                            const cpuDelta =
+                                snapshots[i]!.cpu_stats.cpu_usage.total_usage -
+                                snapshots[i - 1]!.cpu_stats.cpu_usage.total_usage
+
+                            const systemDelta =
+                                snapshots[i]!.cpu_stats.system_cpu_usage -
+                                snapshots[i - 1]!.cpu_stats.system_cpu_usage
+
+                            if (systemDelta > 0 && cpuDelta > 0) {
+                                const cpuCores = snapshots[i]!.cpu_stats.online_cpus ||
+                                    (snapshots[i]!.cpu_stats.cpu_usage.percpu_usage?.length ?? 1)
+
+                                const cpuPercent = (cpuDelta / systemDelta) * cpuCores * 100
+                                percentages.push(cpuPercent)
+                            }
+                        }
+
+                        // Return average of the 4 intervals
+                        if (percentages.length === 0)
+                            return 0
+
+                        return percentages.reduce((sum, p) => sum + p, 0) / percentages.length
+
                     } catch (error) {
-                        Logger.Error(`Error getting CPU stats for container '${service.Name}/${containerInfo.Id}': ${error instanceof Error
+                        Logger.Warn(`Error getting CPU stats for container '${service.Name}/${containerInfo.Names[0]}' returning 0: ${error instanceof Error
                             ? error.message
                             : String(error)}`)
-                        return NaN
+                        return 0 //NaN
                     }
                 })
             )
 
-            // Calculate average of valid CPU percentages
+            // Calculate average of valid CPU percentages across all containers
             const validUsages = cpuUsages.filter(usage => !isNaN(usage))
-            if (validUsages.length === 0) return 0
+            if (validUsages.length === 0)
+                return 0
 
             const totalCpuUsage = validUsages.reduce((sum, usage) => sum + usage, 0)
             return totalCpuUsage / validUsages.length
@@ -487,7 +592,7 @@ export class AiDocker {
         }
 
         const internalUrl = StringUtils.Url(
-            `http://localhost:${service.Port}`,
+            `http://127.0.0.1:${service.Port}`,
             service.InternalUrl,
             '/health'
         )
@@ -523,15 +628,31 @@ export class AiDocker {
 
                     let output = '';
 
-                    // Handle the stream data
-                    stream.on('data', (chunk: Buffer) => {
-                        output += chunk.toString();
-                    });
-
                     // Wait for completion
                     await new Promise((resolve, reject) => {
-                        stream.on('end', resolve);
-                        stream.on('error', reject);
+                        const onData = (chunk: Buffer) => {
+                            output += chunk.toString();
+                        };
+
+                        const cleanup = () => {
+                            stream.removeListener('data', onData);
+                            stream.removeListener('end', onEnd);
+                            stream.removeListener('error', onError);
+                        };
+
+                        const onEnd = () => {
+                            cleanup();
+                            resolve(undefined);
+                        };
+
+                        const onError = (err: any) => {
+                            cleanup();
+                            reject(err);
+                        };
+
+                        stream.on('data', onData);
+                        stream.on('end', onEnd);
+                        stream.on('error', onError);
                     });
 
                     // Clean up the output - remove Docker stream headers if present

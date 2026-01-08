@@ -1,54 +1,60 @@
+import { mock_Logger } from '../../../__tests__/mockers'
+mock_Logger()
+import { vi, type Mock, type Mocked } from 'vitest'
 import { FtpStorage } from '../providers/FtpStorage'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../../modules/errors/HttpErrors'
 import { DataTable } from '../../../types/DataTable'
 import * as Ftp from 'basic-ftp'
 import { Readable } from 'stream'
-import { TConfigSource } from "../../source/types/TConfigSource"
-import typia from "typia"
+import type { TConfigSource } from "../../source/types/TConfigSource"
+import { DATA_PROVIDER } from "../../source/@consts"
+//
 
-jest.mock('basic-ftp')
-jest.mock('../../../utils/Convert')
-
-// Mock the Logger
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
+vi.mock('basic-ftp', () => {
+    return {
+        Client: vi.fn(function () {
+            return {
+                access: vi.fn(),
+                close: vi.fn(),
+                ensureDir: vi.fn(),
+                list: vi.fn(),
+                size: vi.fn(),
+                downloadTo: vi.fn(),
+                uploadFrom: vi.fn(),
+                appendFrom: vi.fn(),
+                rename: vi.fn(),
+                remove: vi.fn(),
+            }
+        })
     }
-}))
+})
+vi.mock('../../../utils/Convert')
 
-const rndParams = typia.random<TConfigSource>()
+const rndParams = {
+    provider: DATA_PROVIDER.STORAGE,
+    host: '127.0.0.1',
+} as unknown as TConfigSource
 
 describe('FtpStorage', () => {
-     
+
     let ftpStorage: FtpStorage
-     
-    let mockFtpClient: jest.Mocked<Ftp.Client>
+
+    let mockFtpClient: Mocked<Ftp.Client>
 
     beforeEach(() => {
-        mockFtpClient = new Ftp.Client() as jest.Mocked<Ftp.Client>;
-        (Ftp.Client as jest.Mock).mockReturnValue(mockFtpClient)
+        mockFtpClient = new Ftp.Client() as Mocked<Ftp.Client>;
+        (Ftp.Client as unknown as Mock).mockImplementation(function () { return mockFtpClient })
         ftpStorage = new FtpStorage()
         ftpStorage.SetConfig({
             ...rndParams,
             options: {
-                "ftp-host": 'localhost',
+                "ftp-host": '127.0.0.1',
                 "ftp-user": 'user',
                 "ftp-password": 'password'
             }
         })
         ftpStorage.Params = {
-            host: 'localhost',
+            host: '127.0.0.1',
             port: 21,
             user: 'user',
             password: 'password',
@@ -58,13 +64,13 @@ describe('FtpStorage', () => {
     })
 
     afterEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
     })
 
     describe('Init', () => {
         it('should initialize the FTP client with given options', async () => {
             await ftpStorage.Init()
-            expect(ftpStorage.ConfigStorage?.["ftp-host"]).toBe('localhost')
+            expect(ftpStorage.ConfigStorage?.["ftp-host"]).toBe('127.0.0.1')
         })
     })
 
@@ -72,7 +78,7 @@ describe('FtpStorage', () => {
         it('should connect to the FTP server', async () => {
             await ftpStorage.Connect()
             expect(mockFtpClient.access).toHaveBeenCalledWith({
-                host: 'localhost',
+                host: '127.0.0.1',
                 user: 'user',
                 port: 21,
                 password: 'password',
@@ -106,7 +112,7 @@ describe('FtpStorage', () => {
 
     describe('Read', () => {
         it('should return a readable stream of the file content', async () => {
-            jest.spyOn(ftpStorage, 'FileIsExist').mockResolvedValue(true)
+            vi.spyOn(ftpStorage, 'FileIsExist').mockResolvedValue(true)
 
             mockFtpClient.downloadTo.mockResolvedValue({} as Ftp.FTPResponse)
 
@@ -116,14 +122,14 @@ describe('FtpStorage', () => {
         })
 
         it('should throw HttpErrorNotFound if file does not exist', async () => {
-            jest.spyOn(ftpStorage, 'FileIsExist').mockResolvedValue(false)
+            vi.spyOn(ftpStorage, 'FileIsExist').mockResolvedValue(false)
             await expect(ftpStorage.FileRead('', 'nonexistent.txt')).rejects.toThrow(HttpErrorNotFound)
         })
     })
 
     describe('Write', () => {
         // it('should write a file to the FTP server', async () => {
-        //     jest.spyOn(ftpStorage, 'IsExist').mockResolvedValue(false)
+        //     vi.spyOn(ftpStorage, 'IsExist').mockResolvedValue(false)
         //     const mockStream = new Readable()
 
         //     await ftpStorage.Write('newfile.txt', mockStream)
@@ -131,7 +137,7 @@ describe('FtpStorage', () => {
         // })
 
         it('should append to a file if it exists', async () => {
-            jest.spyOn(ftpStorage, 'FileIsExist').mockResolvedValue(true)
+            vi.spyOn(ftpStorage, 'FileIsExist').mockResolvedValue(true)
             const mockStream = new Readable()
 
             await ftpStorage.FileWrite('', 'existingfile.txt', mockStream)

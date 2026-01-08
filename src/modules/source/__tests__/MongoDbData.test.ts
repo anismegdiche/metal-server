@@ -1,78 +1,64 @@
 
+import { mock_Logger } from '../../../__tests__/mockers'
+mock_Logger()
 import { MongoDbData } from '../providers/MongoDbData'
-import { TSchemaRequestListEntities } from '../../schema/types/TSchemaRequest'
+import type { TSchemaRequestListEntities } from '../../schema/types/TSchemaRequest'
 import { HttpErrorNotFound } from '../../errors/HttpErrors'
-import { TConfigSource } from "../types/TConfigSource"
+import type { TConfigSource } from "../types/TConfigSource"
 import { DATA_PROVIDER } from "../@consts"
 
 // Mock the mongodb module
 const mockCollection = {
-    insertMany: jest.fn().mockResolvedValue({ insertedCount: 1 }),
-    aggregate: jest.fn().mockReturnThis(),
-    find: jest.fn().mockReturnThis(),
-    toArray: jest.fn().mockResolvedValue([{ id: 1, name: 'test' }]),
-    updateMany: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
-    deleteMany: jest.fn().mockResolvedValue({ deletedCount: 1 }),
-    countDocuments: jest.fn().mockResolvedValue(1),
-    listCollections: jest.fn().mockReturnThis()
+    insertMany: vi.fn().mockResolvedValue({ insertedCount: 1 }),
+    aggregate: vi.fn().mockReturnThis(),
+    find: vi.fn().mockReturnThis(),
+    toArray: vi.fn().mockResolvedValue([{ id: 1, name: 'test' }]),
+    updateMany: vi.fn().mockResolvedValue({ modifiedCount: 1 }),
+    deleteMany: vi.fn().mockResolvedValue({ deletedCount: 1 }),
+    countDocuments: vi.fn().mockResolvedValue(1),
+    listCollections: vi.fn().mockReturnThis()
 };
 
 const mockDb = {
-    command: jest.fn().mockResolvedValue({}),
-    collection: jest.fn().mockReturnValue(mockCollection),
-    listCollections: jest.fn().mockReturnThis()
+    command: vi.fn().mockResolvedValue({}),
+    collection: vi.fn().mockReturnValue(mockCollection),
+    listCollections: vi.fn().mockReturnThis()
 };
 
 const mockMongoClient = {
-    connect: jest.fn().mockResolvedValue(undefined),
-    db: jest.fn().mockReturnValue(mockDb),
-    close: jest.fn().mockResolvedValue(undefined)
+    connect: vi.fn().mockResolvedValue(undefined),
+    db: vi.fn().mockReturnValue(mockDb),
+    close: vi.fn().mockResolvedValue(undefined)
 };
 
 // Mock the mongodb module
-jest.mock('mongodb', () => ({
-    MongoClient: jest.fn().mockImplementation(() => mockMongoClient)
+vi.mock('mongodb', () => ({
+    MongoClient: vi.fn(function MockMongoClient() {
+        return mockMongoClient;
+    })
 }));
 
 // Mock the Cache module
-jest.mock('../../cache/Cache')
-
-// Mock the Logger
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
-    }
-}))
+vi.mock('../../cache/Cache')
 
 describe('MongoDbData', () => {
     let provider: MongoDbData
 
     const providerConfig: TConfigSource = {
         provider: DATA_PROVIDER.MONGODB,
-        host: 'mongodb://localhost:27017/',
+        host: 'mongodb://127.0.0.1:27017/',
         database: 'test-db',
         options: {}
     }
 
     beforeEach(async () => {
         // Reset all mocks before each test
-        jest.clearAllMocks()
+        vi.clearAllMocks()
 
         // Setup default mock implementations
         mockCollection.toArray.mockResolvedValue([{ dummy: 'data' }]);
         mockDb.listCollections.mockReturnValue({
-            toArray: jest.fn().mockResolvedValue([{ name: 'test-collection' }])
+            toArray: vi.fn().mockResolvedValue([{ name: 'test-collection' }])
         });
 
         // Create a new provider instance with test configuration
@@ -117,7 +103,7 @@ describe('MongoDbData', () => {
 
     describe('ListEntities', () => {
         it('should successfully list entities', async () => {
-            const mockListRequest: TSchemaRequestListEntities = {
+            const mockListRequest = <TSchemaRequestListEntities>{
                 schema: 'test-schema'
             };
 
@@ -128,7 +114,7 @@ describe('MongoDbData', () => {
 
             // Mock the listCollections response
             mockDb.listCollections.mockReturnValue({
-                toArray: jest.fn().mockResolvedValue(mockCollections)
+                toArray: vi.fn().mockResolvedValue(mockCollections)
             });
 
             const response = await provider.ListEntities(mockListRequest);
@@ -138,13 +124,13 @@ describe('MongoDbData', () => {
         })
 
         it('should throw NotFound when no entities exist', async () => {
-            const mockListRequest: TSchemaRequestListEntities = {
+            const mockListRequest = <TSchemaRequestListEntities>{
                 schema: 'test-schema'
             };
 
             // Mock empty collections list
             mockDb.listCollections.mockReturnValue({
-                toArray: jest.fn().mockResolvedValue([])
+                toArray: vi.fn().mockResolvedValue([])
             });
 
             await expect(provider.ListEntities(mockListRequest))

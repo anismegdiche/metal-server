@@ -1,7 +1,7 @@
 //
 //
 //
-import merge from "lodash/merge"
+import { merge } from "lodash-es"
 //
 import { DataBase } from '../../../types/DataBase'
 import { DataTable } from "../../../types/DataTable"
@@ -12,14 +12,14 @@ import { Cache } from '../../cache/Cache'
 import { RESPONSE } from '../../core/@consts'
 import { HttpResponse } from "../../core/HttpResponse"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
-import { TContext } from "../../sandbox/types/TContext"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import { TConfigSource } from "../types/TConfigSource"
-import { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
 
 
 //
@@ -232,7 +232,7 @@ export class MemoryData extends absDataProvider {
                     async (entity) => ({
                         name: entity,
                         type: DATA_ENTITY_TYPE.DATATABLE,
-                        size: await this.Connection?.Tables[entity].Count()
+                        size: await this.Connection?.Tables[entity]!.Count()
                     })
                 )
             )

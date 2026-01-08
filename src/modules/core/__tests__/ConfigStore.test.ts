@@ -1,24 +1,23 @@
 
-import { random } from "typia"
 import { ConfigStore } from "../ConfigStore"
-import { TConfig, TConfigRoles } from "../types/TConfig"
-import { TConfigUsers } from "../types/TConfigUsers"
+import type { U_config } from "../types/U_config"
 
 describe('ConfigStore', () => {
 
-    const config = random<TConfig>()
-    config.roles = {
-        ...random<TConfigRoles>(),
-        ...random<TConfigRoles>(),
-        ...random<TConfigRoles>()
+    const config: U_config = {
+        version: "0.5",
+        roles: {
+            admin: "crudla"
+        },
+        users: {
+            admin: {
+                password: "password",
+                roles: ["admin"]
+            }
+        },
+        sources: {}
     }
 
-    config.users = {
-        ...random<TConfigUsers>(),
-        ...random<TConfigUsers>(),
-        ...random<TConfigUsers>()
-    }
-    
     const configStore = new ConfigStore()
 
     beforeAll(() => {

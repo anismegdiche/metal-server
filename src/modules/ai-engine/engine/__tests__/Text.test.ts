@@ -1,10 +1,10 @@
 /* eslint-disable security/detect-non-literal-regexp */
 import axios from 'axios';
 import { Text } from '../Text';
-import { TAiRunArguments } from '../../@types';
+import type { TAiRunArguments } from '../../@types';
 import { TEXT_LANGUAGE_DETECTION_ISO } from '../../consts/TEXT';
 
-const spyAxios = jest.spyOn(axios, 'post');
+const spyAxios = vi.spyOn(axios, 'post');
 
 const text = new Text();
 

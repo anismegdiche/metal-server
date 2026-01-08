@@ -1,4 +1,4 @@
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-require-imports */
 //
@@ -7,9 +7,11 @@
 const SQLParser = require('@synatic/noql')
 //
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { SQL_TYPE, SqlQueryUtils, TSqlToken } from "../../../utils/SqlQueryUtils"
-import { TJson } from '../../../types/TJson'
+import type { TSqlToken } from "../../../utils/SqlQueryUtils"
+import { SQL_TYPE, SqlQueryUtils } from "../../../utils/SqlQueryUtils"
+import type { TJson } from '../../../types/TJson'
 import { Logger } from "../../../utils/Logger"
+import { Assert } from "../../../utils/Assert"
 
 
 //
@@ -81,14 +83,23 @@ export class MongoDbHelper {
             '*': '$multiply',
             '/': '$divide'
         }
+
+        Assert.Var<string>(operatorMap[operator], `operator ${operator} is not supported`)
+
         return operatorMap[operator]
     }
 
     static evaluateExpressionNumber(tokens: TSqlToken[]): any {
-        if (tokens.length === 0) return null
+        if (tokens.length === 0)
+            return null
+
+        let firstToken = tokens[0]
+
+        Assert.Var<TSqlToken>(firstToken, 'firstToken is undefined')
+
         if (tokens.length === 1) {
-            if (tokens[0].type === 'number') return Number(tokens[0].token)
-            if (tokens[0].type === 'variable') return `$${tokens[0].token}`
+            if (firstToken.type === SQL_TYPE.NUMBER) return Number(firstToken.token)
+            if (firstToken.type === SQL_TYPE.VARIABLE) return `$${firstToken.token}`
             return null
         }
 
@@ -96,9 +107,16 @@ export class MongoDbHelper {
         let i = 1
         while (i < tokens.length - 1) {
             const token = tokens[i]
+
+            Assert.Var<TSqlToken>(token, 'token is undefined')
+
             if (token.type === SQL_TYPE.OPERATOR && (token.token === '*' || token.token === '/')) {
                 const left = tokens[i - 1]
                 const right = tokens[i + 1]
+
+                Assert.Var<TSqlToken>(left, 'left is undefined')
+                Assert.Var<TSqlToken>(right, 'right is undefined')
+
                 const operator = MongoDbHelper.getMongoOperator(token.token)
 
                 const leftValue = left.type === SQL_TYPE.NUMBER
@@ -128,19 +146,25 @@ export class MongoDbHelper {
         const finalOperands: any[] = []
         const currentOperator = '$add'
 
+        firstToken = tokens[0]
+        Assert.Var<TSqlToken>(firstToken, 'firstToken is undefined')
+
         // Handle first token
-        if (tokens[0].type === SQL_TYPE.NUMBER) {
-            finalOperands.push(Number(tokens[0].token))
-        } else if (tokens[0].type === SQL_TYPE.VARIABLE) {
-            finalOperands.push(`$${tokens[0].token}`)
-        } else if (tokens[0].token.startsWith('{')) {
-            finalOperands.push(JSON.parse(tokens[0].token))
+        if (firstToken.type === SQL_TYPE.NUMBER) {
+            finalOperands.push(Number(firstToken.token))
+        } else if (firstToken.type === SQL_TYPE.VARIABLE) {
+            finalOperands.push(`$${firstToken.token}`)
+        } else if (firstToken.token.startsWith('{')) {
+            finalOperands.push(JSON.parse(firstToken.token))
         }
 
         // Process the rest
         for (let i = 1; i < tokens.length; i += 2) {
             const operator = tokens[i]
             const value = tokens[i + 1]
+
+            Assert.Var<TSqlToken>(operator, 'operator is undefined')
+            Assert.Var<TSqlToken>(value, 'value is undefined')
 
             if (operator.type === SQL_TYPE.OPERATOR) {
                 if (value.token.startsWith('{')) {
@@ -149,7 +173,7 @@ export class MongoDbHelper {
                     finalOperands.push(Number(value.token))
                 } else if (value.type === SQL_TYPE.VARIABLE) {
                     finalOperands.push(`$${value.token}`)
-                } else  {
+                } else {
                     finalOperands.push(`${value.token}`)
                 }
             }
@@ -165,16 +189,22 @@ export class MongoDbHelper {
         let i = 0
 
         while (i < tokens.length) {
-            if (tokens[i].type === SQL_TYPE.PAR_OPEN) {
+            const currentToken = tokens[i]
+            Assert.Var<TSqlToken>(currentToken, 'currentToken is undefined')
+
+            if (currentToken.type === SQL_TYPE.PAR_OPEN) {
                 let parenthesesCount = 1
                 let j = i + 1
                 const innerTokens: TSqlToken[] = []
 
+                const nextToken = tokens[j]
+                Assert.Var<TSqlToken>(nextToken, 'nextToken is undefined')
+
                 while (j < tokens.length && parenthesesCount > 0) {
-                    if (tokens[j].type === SQL_TYPE.PAR_OPEN) parenthesesCount++
-                    if (tokens[j].type === SQL_TYPE.PAR_CLOSED) parenthesesCount--
+                    if (nextToken.type === SQL_TYPE.PAR_OPEN) parenthesesCount++
+                    if (nextToken.type === SQL_TYPE.PAR_CLOSED) parenthesesCount--
                     if (parenthesesCount > 0) {
-                        innerTokens.push(tokens[j])
+                        innerTokens.push(nextToken)
                     }
                     j++
                 }
@@ -183,11 +213,11 @@ export class MongoDbHelper {
                 result.push({
                     token: JSON.stringify(evaluatedInner),
                     type: SQL_TYPE.NUMBER,
-                    context: tokens[i].context
+                    context: currentToken.context
                 })
                 i = j
             } else {
-                result.push(tokens[i])
+                result.push(currentToken)
                 i++
             }
         }
@@ -200,7 +230,7 @@ export class MongoDbHelper {
         Object.entries(data).forEach(([key, value]) => {
             const sqlHelper = new SqlQueryUtils(value as string)
             const tokens = sqlHelper.Tokenize()
-            const $setClause = tokens.some(token => token.type === 'string')
+            const $setClause = tokens.some(token => token.type === SQL_TYPE.STRING)
                 ? MongoDbHelper.ConvertSqlUpdateSetString(tokens, key)
                 : MongoDbHelper.ConvertSqlUpdateSetNumber(tokens, key)
             $set = {
@@ -218,33 +248,41 @@ export class MongoDbHelper {
     }
 
     static evaluateExpressionString(tokens: TSqlToken[]): any {
-        if (tokens.length === 0) return null
+        if (tokens.length === 0)
+            return null
+
+        const firstToken = tokens[0]
+
+        Assert.Var<TSqlToken>(firstToken, 'firstToken is undefined')
+
         if (tokens.length === 1) {
-            if (tokens[0].type === 'string') return tokens[0].token.replace(/^'|'$/g, '') // Remove surrounding quotes
-            if (tokens[0].type === 'variable') return `$${tokens[0].token}`
+            if (firstToken.type === SQL_TYPE.STRING) return firstToken.token.replace(/^'|'$/g, '') // Remove surrounding quotes
+            if (firstToken.type === SQL_TYPE.VARIABLE) return `$${firstToken.token}`
             return null
         }
 
         const operands: any[] = []
 
         // Handle first token
-        if (tokens[0].type === 'string') {
-            operands.push(tokens[0].token.replace(/^'|'$/g, ''))
-        } else if (tokens[0].type === 'variable') {
-            operands.push(`$${tokens[0].token}`)
-        } else if (tokens[0].token.startsWith('{')) {
-            operands.push(JSON.parse(tokens[0].token))
+        if (firstToken.type === SQL_TYPE.STRING) {
+            operands.push(firstToken.token.replace(/^'|'$/g, ''))
+        } else if (firstToken.type === SQL_TYPE.VARIABLE) {
+            operands.push(`$${firstToken.token}`)
+        } else if (firstToken.token.startsWith('{')) {
+            operands.push(JSON.parse(firstToken.token))
         }
 
         // Process the rest
         for (let i = 1; i < tokens.length; i += 2) {
             const value = tokens[i + 1]
 
+            Assert.Var<TSqlToken>(value, 'value is undefined')
+
             if (value.token.startsWith('{')) {
                 operands.push(JSON.parse(value.token))
-            } else if (value.type === 'string') {
+            } else if (value.type === SQL_TYPE.STRING) {
                 operands.push(value.token.replace(/^'|'$/g, ''))
-            } else if (value.type === 'variable') {
+            } else if (value.type === SQL_TYPE.VARIABLE) {
                 operands.push(`$${value.token}`)
             }
         }
@@ -259,17 +297,23 @@ export class MongoDbHelper {
         let i = 0
 
         while (i < tokens.length) {
-            if (tokens[i].type === 'par-open') {
+            const currentToken = tokens[i]
+            Assert.Var<TSqlToken>(currentToken, 'currentToken is undefined')
+
+            if (currentToken.type === SQL_TYPE.PAR_OPEN) {
                 let parenthesesCount = 1
                 let j = i + 1
                 const innerTokens: TSqlToken[] = []
 
                 while (j < tokens.length && parenthesesCount > 0) {
-                    if (tokens[j].type === 'par-open') parenthesesCount++
-                    if (tokens[j].type === 'par-closed') parenthesesCount--
+                    const nextToken = tokens[j]
+                    Assert.Var<TSqlToken>(nextToken, 'nextToken is undefined')
+
+                    if (nextToken.type === SQL_TYPE.PAR_OPEN) parenthesesCount++
+                    if (nextToken.type === SQL_TYPE.PAR_CLOSED) parenthesesCount--
 
                     if (parenthesesCount > 0) {
-                        innerTokens.push(tokens[j])
+                        innerTokens.push(nextToken)
                     }
                     j++
                 }
@@ -278,11 +322,11 @@ export class MongoDbHelper {
                 result.push({
                     token: JSON.stringify(evaluatedInner),
                     type: SQL_TYPE.STRING,
-                    context: tokens[i].context
+                    context: currentToken.context
                 })
                 i = j
             } else {
-                result.push(tokens[i])
+                result.push(currentToken)
                 i++
             }
         }

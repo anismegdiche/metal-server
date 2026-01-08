@@ -1,12 +1,12 @@
 //
 //
 //
-import _ from "lodash"
+import * as _ from 'lodash-es'
 import { createContext, Script } from 'vm'
 //
 import { Logger } from '../../utils/Logger'
 import { HttpErrorInternalServerError } from "../errors/HttpErrors"
-import { TContext } from "./types/TContext"
+import type { TContext } from "./types/TContext"
 import { maliciousPatterns } from "./@consts"
 import { Utils } from "../../utils/Utils"
 
@@ -25,7 +25,7 @@ export class Sandbox {
     }
 
     // Example validation function
-    static #IsValidCode(code: string): boolean {      
+    static #IsValidCode(code: string): boolean {
         return !maliciousPatterns.some(pattern => pattern.test(code))
     }
 

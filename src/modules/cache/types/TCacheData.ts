@@ -1,5 +1,5 @@
 import { DataTable } from "../../../types/DataTable"
-import { TSchemaRequest } from "../../schema/types/TSchemaRequest"
+import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 
 
 export type TCacheData = {

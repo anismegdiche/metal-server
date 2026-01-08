@@ -4,10 +4,10 @@
 //
 //
 import { DataTable } from '../../../types/DataTable'
-import { TJson } from '../../../types/TJson'
+import type { TJson } from '../../../types/TJson'
 import { STEP, STEP_STATUS } from '../../plan/@consts'
-import { TStepArgs } from '../../plan/types/TStepArgs'
-import { TSchemaRequest } from '../../schema/types/TSchemaRequest'
+import type { U_config_plans_plan_entity_step_Params } from '../../plan/types/U_config_plans_plan_entity_step'
+import type { TSchemaRequest } from '../../schema/types/TSchemaRequest'
 
 //
 export type TContext = {
@@ -27,10 +27,10 @@ export type TContext = {
         name: string
         schema?: string
         entity: string
-        $current:{
+        $current: {
             stepIndex?: number
             stepCommand?: STEP
-            stepArgs?: TStepArgs
+            stepArgs?: U_config_plans_plan_entity_step_Params
             data?: DataTable
             status?: STEP_STATUS
         }

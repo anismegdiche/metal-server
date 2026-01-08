@@ -6,8 +6,8 @@ import { Readable } from 'node:stream'
 //
 import { DataTable } from "../../../types/DataTable"
 import { clsClonable } from "../../../utils/base/clsClonable"
-import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
-import { TConfigSource } from "../../source/types/TConfigSource"
+import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { TConfigSource } from "../../source/types/TConfigSource"
 
 
 //

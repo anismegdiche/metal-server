@@ -1,24 +1,38 @@
+import { mock_Logger } from "../../../__tests__/mockers"
+mock_Logger()
+
 import axios from "axios"
-import typia from "typia"
 import { DataTable, SORT_ORDER } from "../../../types/DataTable"
-import { JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../../utils/DataTableUtils"
+import { DataTableUtils, JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../../utils/DataTableUtils"
 import { AI_ENGINE } from "../../ai-engine/@consts"
 import { AiEngine } from "../../ai-engine/AiEngine"
 import { TEXT_TASK } from "../../ai-engine/consts/TEXT"
+import { Text } from "../../ai-engine/engine/Text"
+import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { ConfigManager } from "../../core/ConfigManager"
 import { HttpResponse } from "../../core/HttpResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { Schema } from "../../schema/Schema"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import { Plan } from "../Plan"
 import { Plans } from "../Plans"
 import { Step } from "../Step"
-import { TStep } from "../types/TStep"
-import { TStepArgsAnonymize, TStepArgsJoin, TStepArgsPick, TStepArgsRun, TStepArgsSort } from "../types/TStepArgs"
-import { Text } from "../../ai-engine/engine/Text"
-import { DataTableUtils } from "../../../utils/DataTableUtils"
+import type { TStep } from "../types/TStep"
+import type {
+    U_config_plans_plan_entity_anonymize_Params,
+    U_config_plans_plan_entity_delete_Params,
+    U_config_plans_plan_entity_insert_Params,
+    U_config_plans_plan_entity_join_Params,
+    U_config_plans_plan_entity_list_entities_Params,
+    U_config_plans_plan_entity_pick_Params,
+    U_config_plans_plan_entity_remove_duplicates_Params,
+    U_config_plans_plan_entity_run_Params,
+    U_config_plans_plan_entity_select_Params,
+    U_config_plans_plan_entity_sort_Params,
+    U_config_plans_plan_entity_update_Params
+} from "../types/U_config_plans_plan_entity_step"
 
 const mySchemaEntity1 = new DataTable("mySchemaEntity1", [
     { name: "Alice", age: 25, country: "USA" },
@@ -47,7 +61,13 @@ const aiData = new DataTable("aiData", [
     { filename: "ocr", content: "base64", text: "I'm not confident with this project!" }
 ]);
 
-const rndResponse = typia.random<TInternalResponse<TSchemaResponse>>() as unknown as TInternalResponse<TSchemaResponse>
+const rndResponse = {
+    StatusCode: 200,
+    Body: {
+        schema: "testSchema",
+        entity: "testEntity"
+    }
+} as unknown as TInternalResponse<TSchemaResponse>
 
 let dt_entity1: DataTable
 let dt_entity2: DataTable
@@ -55,7 +75,7 @@ let dt_entity2: DataTable
 describe('Step', () => {
 
     beforeEach(async () => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         Plans.Plans.clear()
         dt_entity1 = await myPlanEntity1.Copy()
         dt_entity2 = await myPlanEntity2.Copy()
@@ -63,12 +83,14 @@ describe('Step', () => {
 
     describe('Select', () => {
         it('should return data from schema if schema and entity are given', async () => {
-            const select = HttpResponse.Ok(<TSchemaResponse>{
-                ...typia.random<TSchemaResponse>(),
+            const intRespSelect = HttpResponse.Ok(<TSchemaResponse>{
+                schema: "mySchema",
+                entity: dt_entity1.Name,
+                status: HTTP_STATUS_CODE.OK,
                 data: dt_entity1
             })
 
-            const spySchemaSelect = jest.spyOn(Schema, 'Select').mockResolvedValue(select);
+            const spySchemaSelect = vi.spyOn(Schema, 'Select').mockResolvedValue(intRespSelect);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -90,14 +112,14 @@ describe('Step', () => {
         })
 
         it('should return current data if schema and entity are not given', async () => {
-            const step: TStep = {
+            const stepSelect: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
                 stepArgs: {}
             }
 
-            const result = await Step.Select(step)
+            const result = await Step.Select(stepSelect)
 
             expect(result).toBeInstanceOf(DataTable)
             expect(result.Name).toBe(dt_entity1.Name)
@@ -117,7 +139,7 @@ describe('Step', () => {
 
             Plans.Plans.set(step.currentPlanName, new Plan(step.currentPlanName))
 
-            const spyProcessSchemaRequest = jest.spyOn(Plans.Plans.get(step.currentPlanName)!, 'ProcessSchemaRequest').mockResolvedValue(dt_entity2);
+            const spyProcessSchemaRequest = vi.spyOn(Plans.Plans.get(step.currentPlanName)!, 'ProcessSchemaRequest').mockResolvedValue(dt_entity2);
 
             const result = await Step.Select(step)
 
@@ -133,7 +155,7 @@ describe('Step', () => {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: {
+                stepArgs: <U_config_plans_plan_entity_select_Params>{
                     schema: "mySchema"
                 }
             }
@@ -153,7 +175,7 @@ describe('Step', () => {
 
             Plans.Plans.set(step.currentPlanName, new Plan(step.currentPlanName))
 
-            const spyProcessSchemaRequest = jest.spyOn(Plans.Plans.get(step.currentPlanName)!, 'ProcessSchemaRequest').mockRejectedValue(new HttpErrorNotFound("Entity not found"));
+            const spyProcessSchemaRequest = vi.spyOn(Plans.Plans.get(step.currentPlanName)!, 'ProcessSchemaRequest').mockRejectedValue(new HttpErrorNotFound("Entity not found"));
 
             await expect(Step.Select(step)).rejects.toThrow(HttpErrorNotFound)
             spyProcessSchemaRequest.mockRestore();
@@ -162,7 +184,7 @@ describe('Step', () => {
 
     describe('Insert', () => {
         it('should insert with schema, entity and data then return current datatable', async () => {
-            const spySchemaInsert = jest.spyOn(Schema, 'Insert')
+            const spySchemaInsert = vi.spyOn(Schema, 'Insert')
                 .mockResolvedValue(rndResponse);
 
             const step: TStep = {
@@ -183,7 +205,7 @@ describe('Step', () => {
         })
 
         it('should throw error if only entity was given', async () => {
-            const spySchemaInsert = jest.spyOn(Schema, 'Insert').mockResolvedValue(rndResponse);
+            const spySchemaInsert = vi.spyOn(Schema, 'Insert').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -199,13 +221,13 @@ describe('Step', () => {
         })
 
         it('should throw error if only schema was given', async () => {
-            const spySchemaInsert = jest.spyOn(Schema, 'Insert').mockResolvedValue(rndResponse);
+            const spySchemaInsert = vi.spyOn(Schema, 'Insert').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: {
+                stepArgs: <U_config_plans_plan_entity_insert_Params>{
                     schema: "mySchema"
                 }
             }
@@ -215,7 +237,7 @@ describe('Step', () => {
         })
 
         it('should add rows to current datatable when no schema and no entity', async () => {
-            const spyAddRows = jest.spyOn(dt_entity1, 'RowsAdd').mockImplementation(() => Promise.resolve(dt_entity1));
+            const spyAddRows = vi.spyOn(dt_entity1, 'RowsAdd').mockImplementation(() => Promise.resolve(dt_entity1));
 
             const data = [{ name: "John", age: 25 }]
 
@@ -265,7 +287,7 @@ describe('Step', () => {
 
     describe('Update', () => {
         it('should update data to schema when entity is provided', async () => {
-            const spySchemaUpdate = jest.spyOn(Schema, 'Update')
+            const spySchemaUpdate = vi.spyOn(Schema, 'Update')
                 .mockResolvedValue(rndResponse);
 
             const step: TStep = {
@@ -286,7 +308,7 @@ describe('Step', () => {
         })
 
         it('should throw error if only entity was given', async () => {
-            const spySchemaUpdate = jest.spyOn(Schema, 'Update').mockResolvedValue(rndResponse);
+            const spySchemaUpdate = vi.spyOn(Schema, 'Update').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -302,13 +324,13 @@ describe('Step', () => {
         })
 
         it('should throw error if only schema was given', async () => {
-            const spySchemaUpdate = jest.spyOn(Schema, 'Update').mockResolvedValue(rndResponse);
+            const spySchemaUpdate = vi.spyOn(Schema, 'Update').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: {
+                stepArgs: <U_config_plans_plan_entity_update_Params>{
                     schema: "mySchema"
                 }
             }
@@ -375,7 +397,7 @@ describe('Step', () => {
 
     describe('Delete', () => {
         it('should delete data to schema when entity is provided', async () => {
-            const spySchemaDelete = jest.spyOn(Schema, 'Delete')
+            const spySchemaDelete = vi.spyOn(Schema, 'Delete')
                 .mockResolvedValue(rndResponse);
 
             const step: TStep = {
@@ -395,7 +417,7 @@ describe('Step', () => {
         })
 
         it('should throw error if only entity was given', async () => {
-            const spySchemaDelete = jest.spyOn(Schema, 'Delete').mockResolvedValue(rndResponse);
+            const spySchemaDelete = vi.spyOn(Schema, 'Delete').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -411,13 +433,13 @@ describe('Step', () => {
         })
 
         it('should throw error if only schema was given', async () => {
-            const spySchemaDelete = jest.spyOn(Schema, 'Delete').mockResolvedValue(rndResponse);
+            const spySchemaDelete = vi.spyOn(Schema, 'Delete').mockResolvedValue(rndResponse);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: {
+                stepArgs: <U_config_plans_plan_entity_delete_Params>{
                     schema: "mySchema"
                 }
             }
@@ -465,21 +487,24 @@ describe('Step', () => {
                 { name: "entity2", type: "view" }
             ]);
 
-            const spyListEntities = jest.spyOn(Schema, 'ListEntities').mockResolvedValue(
+            const spyListEntities = vi.spyOn(Schema, 'ListEntities').mockResolvedValue(
                 HttpResponse.Ok(<TSchemaResponse>{
-                    ...typia.random<TSchemaResponse>(),
+                    schema: "mySchema",
+                    status: HTTP_STATUS_CODE.OK,
                     data: entitiesData
                 })
             );
 
-            const step: TStep = {
+            const stepListEntities: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: { schema: "mySchema" }
+                stepArgs: <U_config_plans_plan_entity_list_entities_Params>{
+                    schema: "mySchema"
+                }
             }
 
-            const result = await Step.ListEntities(step)
+            const result = await Step.ListEntities(stepListEntities)
 
             expect(spyListEntities).toHaveBeenCalledWith({ schema: "mySchema" })
             expect(result).toBe(entitiesData)
@@ -487,7 +512,7 @@ describe('Step', () => {
         })
 
         it('should return plan entities when no schema provided', async () => {
-            const spyConfigManagerGet = jest.spyOn(ConfigManager, 'Get').mockReturnValue({
+            const spyConfigManagerGet = vi.spyOn(ConfigManager, 'Get').mockReturnValue({
                 entity1: {},
                 entity2: {}
             });
@@ -496,7 +521,7 @@ describe('Step', () => {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: {}
+                stepArgs: null
             }
 
             const result = await Step.ListEntities(step)
@@ -513,13 +538,13 @@ describe('Step', () => {
 
     describe('Join', () => {
         it('should perform left join with data from schema', async () => {
-            const spySelect = jest.spyOn(Step, 'Select').mockResolvedValue(mySchemaEntity1);
+            const spySelect = vi.spyOn(Step, 'Select').mockResolvedValue(mySchemaEntity1);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity2,
-                stepArgs: <TStepArgsJoin>{
+                stepArgs: <U_config_plans_plan_entity_join_Params>{
                     type: JOIN_TYPE.LEFT,
                     schema: "mySchema",
                     entity: mySchemaEntity1.Name,
@@ -541,13 +566,13 @@ describe('Step', () => {
 
         it('should perform inner join with data from current plan', async () => {
             Plans.Plans.set("myPlan", new Plan("myPlan"))
-            const spyProcessSchemaRequest = jest.spyOn(Plans.Plans.get("myPlan")!, 'ProcessSchemaRequest').mockResolvedValue(mySchemaEntity1);
+            const spyProcessSchemaRequest = vi.spyOn(Plans.Plans.get("myPlan")!, 'ProcessSchemaRequest').mockResolvedValue(mySchemaEntity1);
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: <TStepArgsJoin>{
+                stepArgs: <U_config_plans_plan_entity_join_Params>{
                     entity: mySchemaEntity1.Name,
                     type: JOIN_TYPE.INNER,
                     "left-field": "country",
@@ -584,7 +609,7 @@ describe('Step', () => {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: <TStepArgsPick>["*"]
+                stepArgs: <U_config_plans_plan_entity_pick_Params>["*"]
             }
 
             const result = await Step.Pick(step)
@@ -592,13 +617,13 @@ describe('Step', () => {
         })
 
         it('should select specific fields from array', async () => {
-            const spySelectFields = jest.spyOn(dt_entity1, 'Pick').mockReturnValue(Promise.resolve(dt_entity1));
+            const spySelectFields = vi.spyOn(dt_entity1, 'Pick').mockReturnValue(Promise.resolve(dt_entity1));
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: <TStepArgsPick>["name", "age"]
+                stepArgs: <U_config_plans_plan_entity_pick_Params>["name", "age"]
             }
 
             const result = await Step.Pick(step)
@@ -609,13 +634,13 @@ describe('Step', () => {
         })
 
         it('should select specific fields from comma-separated string', async () => {
-            const spySelectFields = jest.spyOn(dt_entity1, 'Pick').mockReturnValue(Promise.resolve(dt_entity1));
+            const spySelectFields = vi.spyOn(dt_entity1, 'Pick').mockReturnValue(Promise.resolve(dt_entity1));
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: <TStepArgsPick>["name", "age"]
+                stepArgs: <U_config_plans_plan_entity_pick_Params>["name", "age"]
             }
 
             const result = await Step.Pick(step)
@@ -633,17 +658,17 @@ describe('Step', () => {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: <TStepArgsSort>{ age: SORT_ORDER.ASC }
+                stepArgs: <U_config_plans_plan_entity_sort_Params>{ age: SORT_ORDER.ASC }
             }
 
             const result = await Step.Sort(step)
-            expect((await result.Rows())[0].age).toEqual(14)
+            expect((await result.Rows())[0]!.age).toEqual(14)
         })
     })
 
     describe('Debug', () => {
         it('should set debug metadata on datatable', async () => {
-            const spySetMetaData = jest.spyOn(dt_entity1, 'MetaDataSet');
+            const spySetMetaData = vi.spyOn(dt_entity1, 'MetaDataSet');
 
             const step: TStep = {
                 currentSchemaName: "mySchema",
@@ -667,7 +692,7 @@ describe('Step', () => {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: <TStepArgsAnonymize>["name"]
+                stepArgs: <U_config_plans_plan_entity_anonymize_Params>["name"]
             }
 
             const result = await Step.Anonymize(step)
@@ -698,7 +723,7 @@ describe('Step', () => {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: dt_entity1,
-                stepArgs: {
+                stepArgs: <U_config_plans_plan_entity_remove_duplicates_Params>{
                     keys: keys,
                     method: method,
                     strategy: strategy
@@ -742,10 +767,10 @@ describe('Step', () => {
 
     describe('Run', () => {
 
-        const spyAxios = jest.spyOn(axios, 'post');
-        const spyAiEngineAiEnginesInstanceGet = jest.spyOn(AiEngine.AiEnginesInstance, 'get')
-        const spyTextIsHealthy = jest.spyOn(Text.prototype, 'IsHealthy')
-        const spyTextRun = jest.spyOn(Text.prototype, 'Run')
+        const spyAxios = vi.spyOn(axios, 'post');
+        const spyAiEngineAiEnginesInstanceGet = vi.spyOn(AiEngine.AiEnginesInstance, 'get')
+        const spyTextIsHealthy = vi.spyOn(Text.prototype, 'IsHealthy')
+        const spyTextRun = vi.spyOn(Text.prototype, 'Run')
         spyAxios.mockImplementation(() => {
             return Promise.resolve({
                 data: {
@@ -806,7 +831,7 @@ describe('Step', () => {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: await aiData.Copy(),
-                stepArgs: <TStepArgsRun>{
+                stepArgs: <U_config_plans_plan_entity_run_Params>{
                     ai: AI_ENGINE.TEXT,
                     task: TEXT_TASK.EMOTION_DETECTION,
                     params: {
@@ -820,7 +845,7 @@ describe('Step', () => {
             const result = await Step.Run(step)
             const rows = await result.Rows()
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Object.values(rows[0][`${AI_ENGINE.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`] as any).forEach(value => {
+            Object.values(rows[0]![`${AI_ENGINE.TEXT}-${TEXT_TASK.EMOTION_DETECTION}`] as any).forEach(value => {
                 expect(value).toEqual(expect.any(Number));
             });
         })
@@ -830,7 +855,7 @@ describe('Step', () => {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: await aiData.Copy(),
-                stepArgs: <TStepArgsRun>{
+                stepArgs: <U_config_plans_plan_entity_run_Params>{
                     ai: AI_ENGINE.TEXT,
                     task: TEXT_TASK.EMOTION_DETECTION,
                     params: {
@@ -844,7 +869,7 @@ describe('Step', () => {
             const result = await Step.Run(step)
             const rows = await result.Rows()
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Object.values(rows[0]["result"] as any).forEach(value => {
+            Object.values(rows[0]!["result"] as any).forEach(value => {
                 expect(value).toEqual(expect.any(Number));
             });
         })
@@ -854,7 +879,7 @@ describe('Step', () => {
                 currentSchemaName: "mySchema",
                 currentPlanName: "myPlan",
                 currentDataTable: await aiData.Copy(),
-                stepArgs: <TStepArgsRun>{
+                stepArgs: <U_config_plans_plan_entity_run_Params>{
                     ai: AI_ENGINE.TEXT,
                     task: TEXT_TASK.EMOTION_DETECTION,
                     params: {
@@ -872,8 +897,8 @@ describe('Step', () => {
 
             const rows = await result.Rows()
 
-            expect(rows[0]["emotion_joy"]).toEqual(expect.any(Number));
-            expect(rows[0]["emotion_surprise"]).toEqual(expect.any(Number));
+            expect(rows[0]!["emotion_joy"]).toEqual(expect.any(Number));
+            expect(rows[0]!["emotion_surprise"]).toEqual(expect.any(Number));
         })
     })
 })

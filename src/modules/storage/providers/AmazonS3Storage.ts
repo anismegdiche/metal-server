@@ -3,7 +3,7 @@
 //
 // Lazy-loaded @aws-sdk/client-s3 module
 import { loadEsm } from 'load-esm'
-import merge from "lodash/merge"
+import { merge } from "lodash-es"
 import { Readable } from "node:stream"
 //
 import { DataTable } from "../../../types/DataTable"
@@ -12,13 +12,13 @@ import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from '../../../utils/Logger'
 import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { StringUtils } from '../../../utils/StringUtils'
-import { TConvertParams } from "../../../utils/TypeUtils"
-import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
-import { TConfigSource } from "../../source/types/TConfigSource"
-import { TStorageFile } from '../@types'
-import { absStorageProvider } from '../base/absStorageProvider'
+import type { TConvertParams } from "../../../utils/TypeUtils"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../errors/HttpErrors'
+import { DATA_ENTITY_TYPE } from "../../source/@consts"
+import type { TConfigSource } from "../../source/types/TConfigSource"
+import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { TStorageFile } from '../@types'
+import { absStorageProvider } from '../base/absStorageProvider'
 
 
 //

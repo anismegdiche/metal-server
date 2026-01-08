@@ -1,27 +1,25 @@
 //
 //
 //
-// eslint-disable-next-line lodash/import-scope
-import type { Dictionary } from 'lodash'
-import forEach from 'lodash/forEach'
-import forOwn from 'lodash/forOwn'
-import get from 'lodash/get'
-import isEmpty from 'lodash/isEmpty'
-import isObject from 'lodash/isObject'
-import isString from 'lodash/isString'
-import pickBy from 'lodash/pickBy'
-import set from 'lodash/set'
-//
 import * as chrono from 'chrono-node'
+import { forEach, forOwn, get, isEmpty, isObject, isString, pickBy, set } from 'lodash-es'
 import objectPath from 'object-path'
 //
-import { TJson } from "../types/TJson"
-import { Logger } from "./Logger"
+import type { TJson } from "../types/TJson"
 import { Stringify } from "./JsonUtils/Stringify"
+import { Logger } from "./Logger"
 
+
+//
 const BASE64_REGEX = /^[A-Za-z0-9+/]+={0,2}$/;
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const HEX_REGEX = /^[0-9a-f]{20,}$/i; // long hex strings (tokens, hashes)
+
+
+//
+type Dictionary<T> = Record<string, T>;
+
+
 
 //
 export class JsonUtils {

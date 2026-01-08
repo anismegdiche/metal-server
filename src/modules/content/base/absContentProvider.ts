@@ -4,14 +4,15 @@
 //
 import { Readable } from 'node:stream'
 //
-import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
+import type { DataTable } from "../../../types/DataTable"
+import type { TRowsCopyParams } from "../../../types/DataTable"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 //
 //
-import { TContentConfig } from "../@types"
-import { IContentProvider } from './IContentProvider'
-import { TContext } from '../../sandbox/types/TContext'
+import type { TContentConfig } from "../@types"
+import type { IContentProvider } from './IContentProvider'
+import type { TContext } from '../../sandbox/types/TContext'
 
 
 //

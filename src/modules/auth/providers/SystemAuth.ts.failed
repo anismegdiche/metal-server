@@ -10,8 +10,8 @@
 // import { Logger } from "../../utils/Logger"
 // import { ACAuthProvider, TUserCredentials } from "../ACAuthProvider"
 // import { HttpErrorUnauthorized, HttpErrorInternalServerError } from "../../server/HttpErrors"
-// import { TUserTokenInfo } from "../../server/User"
-// import { TConfigUsers } from "../../types/TConfig"
+// import type { TUserTokenInfo } from "../../server/User"
+// import type { TConfigUsers } from "../../types/TConfig"
 
 
 // //

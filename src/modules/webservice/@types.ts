@@ -1,7 +1,7 @@
 //
 //
 //
-import { TJson } from "../../types/TJson"
+import type { TJson } from "../../types/TJson"
 
 //
 export type TEndpoint = {

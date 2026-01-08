@@ -2,12 +2,12 @@
 //
 //
 import { Logger } from '../../utils/Logger'
-import { TConfigSource } from "./types/TConfigSource"
-import { TSource } from "./types/TSource"
+import type { TConfigSource } from "./types/TConfigSource"
+import type { TSource } from "./types/TSource"
 import { DATA_PROVIDER } from "./@consts"
 import { DataProvider } from "./DataProvider"
 import { HttpErrorLog } from "../errors/HttpErrors"
-import { TJson } from '../../types/TJson'
+import type { TJson } from '../../types/TJson'
 import { ConfigManager } from '../core/ConfigManager'
 
 

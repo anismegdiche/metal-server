@@ -1,5 +1,5 @@
-import { TConfigSource } from "./TConfigSource";
-import { IDataProvider } from "../base/IDataProvider";
+import type { TConfigSource } from "./TConfigSource";
+import type { IDataProvider } from "../base/IDataProvider";
 
 //
 export type TSource = {

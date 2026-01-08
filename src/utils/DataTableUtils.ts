@@ -4,16 +4,16 @@
 //
 import DataType, { DuckDBScalarFunction } from "@duckdb/node-api"
 import { createHash, createHmac, randomUUID } from "crypto"
-import omit from "lodash/omit"
+import { omit } from "lodash-es"
 import fs from 'node:fs'
 //
-import { DataTable, dataTable_convertSql, duckDb_Sql_CreateTable, duckDb_Sql_DropTable, duckDb_Sql_RenameTable, TRow } from "../types/DataTable"
+import { DataTable, dataTable_convertSql, duckDb_Sql_CreateTable, duckDb_Sql_DropTable, duckDb_Sql_RenameTable, type TRow } from "../types/DataTable"
 import { JsonUtils } from "./JsonUtils"
 import { Logger } from "./Logger"
 
 
 //
-export const enum JOIN_TYPE {
+export enum JOIN_TYPE {
     LEFT = "left",
     RIGHT = "right",
     INNER = "inner",
@@ -21,19 +21,22 @@ export const enum JOIN_TYPE {
     CROSS = "cross"
 }
 
-export const enum REMOVE_DUPLICATES_METHOD {
+
+export enum REMOVE_DUPLICATES_METHOD {
     HASH = "hash",
     EXACT = "exact",
     IGNORE_CASE = "ignorecase"
 }
 
-export const enum REMOVE_DUPLICATES_STRATEGY {
+
+export enum REMOVE_DUPLICATES_STRATEGY {
     FIRST = "first",
     LAST = "last",
     HIGHEST = "highest",
     LOWEST = "lowest",
     CUSTOM = "custom"
 }
+
 
 const HASH_ALGO = 'sha256'
 const HASH_DIGEST = 'base64'

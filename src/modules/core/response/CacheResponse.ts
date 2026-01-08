@@ -1,7 +1,7 @@
 //
 //
 //
-import { Request, Response } from 'express'
+import type { Request, Response } from 'express'
 //
 import { Convert } from '../../../utils/Convert'
 import { Cache } from '../../cache/Cache'

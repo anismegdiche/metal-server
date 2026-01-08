@@ -2,7 +2,7 @@
 //
 
 import { CONTENT } from "../../content/@consts";
-import { TContentConfig } from "../../content/@types";
+import type { TContentConfig } from "../../content/@types";
 
 
 export type TStorageFilesDataOptionsContent = {

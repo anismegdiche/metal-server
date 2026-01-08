@@ -1,24 +1,24 @@
 //
 //
 //
-import _ from "lodash"
+import * as _ from 'lodash-es'
 //
 import { Assert } from "../../utils/Assert"
 import { StringUtils } from "../../utils/StringUtils"
 import { ConfigManager } from "../core/ConfigManager"
-import { TConfigRoles } from "../core/types/TConfig"
 import { HttpErrorForbidden } from "../errors/HttpErrors"
-import { TUserTokenInfo } from "./@types"
+import type { TUserTokenInfo } from "./@types"
+import type { U_config_roles } from "../core/types/U_config_roles"
 
 
 //
 export class Roles {
 
-    static _serverRoles: TConfigRoles
+    static _serverRoles: U_config_roles
     static UserDefaultRole?: string
 
     static Init(): void {
-        Roles._serverRoles = ConfigManager.Get<TConfigRoles>("roles") ?? {}
+        Roles._serverRoles = ConfigManager.Get<U_config_roles>("roles") ?? <U_config_roles>{}
         Roles.UserDefaultRole = ConfigManager.Get("server.authentication.default-role")
     }
 

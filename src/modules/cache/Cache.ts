@@ -5,17 +5,16 @@ import * as Sha512 from 'js-sha512'
 
 // Types and interfaces
 import { DataTable } from '../../types/DataTable'
-import { TJson } from "../../types/TJson"
+import type { TJson } from "../../types/TJson"
 
 // Utils
 import { Logger } from '../../utils/Logger'
 import { Semaphore } from "../../utils/Semaphore"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
-import { TypeUtils } from '../../utils/TypeUtils'
 
 // Auth
 import { AUTH_PERMISSION } from "../auth/@consts"
-import { TUserTokenInfo } from "../auth/@types"
+import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
 
 // Core
@@ -24,22 +23,23 @@ import { METADATA, RESPONSE } from '../core/@consts'
 import { ConfigManager } from '../core/ConfigManager'
 import { Global } from '../core/Global'
 import { HttpResponse } from '../core/HttpResponse'
-import { TConfigSchema } from '../core/types/TConfig'
+import type { U_config_schemas_schema } from "../core/types/U_config_schemas"
 
 // Errors
 import { HttpError, HttpErrorBadRequest, HttpErrorLog, HttpErrorNotFound } from "../errors/HttpErrors"
 
 // Schema
-import { TInternalResponse } from "../schema/types/TInternalResponse"
-import { TSchemaRequest, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
-import { TSchemaResponse } from "../schema/types/TSchemaResponse"
+import type { TInternalResponse } from "../core/types/TInternalResponse"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from "../schema/types/TSchemaRequest"
+import type { TSchemaResponse } from "../schema/types/TSchemaResponse"
 
 // Data providers
-import { IDataProvider } from "../source/base/IDataProvider"
-import { TConfigSource } from "../source/types/TConfigSource"
+import type { IDataProvider } from "../source/base/IDataProvider"
+import type { TConfigSource } from "../source/types/TConfigSource"
 
 // Cache types
-import { TCacheData } from './types/TCacheData'
+import type { TCacheData } from './types/TCacheData'
+import { Schema } from '../schema/Schema'
 
 // Exports
 export class Cache {
@@ -66,6 +66,8 @@ export class Cache {
     static IsEnabled = false //NOSONAR
 
     static Index = new Map<string, number>()
+    static AutoCleanupInterval: NodeJS.Timeout | undefined
+    static AutoCleanupIntervalMs = 3600000 // 1 hour
 
     @Logger.LogFunction()
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -87,6 +89,8 @@ export class Cache {
             Database: Cache.Database,
             Entity: Cache.Entity
         }
+
+        Cache.StartAutoCleanup()
     }
 
     @Logger.LogFunction()
@@ -100,6 +104,7 @@ export class Cache {
 
     @Logger.LogFunction()
     static async Disconnect(): Promise<void> {
+        Cache.StopAutoCleanup()
         if (Cache.IsEnabled)
             await Cache.DataSource.Disconnect()
     }
@@ -107,14 +112,14 @@ export class Cache {
     @Logger.LogFunction()
     static async GetHashList(): Promise<void> {
         try {
-            const intResp = await Cache.DataSource.Select(<TSchemaRequest>{
+            const intResp = await Cache.DataSource.Select(<TSchemaRequestSelect>{
                 ...Cache.#CacheSchemaRequest,
                 fields: "hash,expires"
             })
 
             const schemaResponse = intResp.Body
 
-            Cache.Index = schemaResponse && TypeUtils.IsSchemaResponseWithData(schemaResponse)
+            Cache.Index = Schema.IsSchemaResponse(schemaResponse) && (await schemaResponse.data.Count()) > 0
                 ? new Map((await schemaResponse.data.Rows() as TCacheData[]).map(row => [row.hash, row.expires]))
                 : new Map()
 
@@ -158,7 +163,7 @@ export class Cache {
     }
 
     static IsConfigurationGood(schemaRequest: TSchemaRequest): boolean {
-        if (!Cache.IsEnabled && schemaRequest?.cache) {
+        if (!Cache.IsEnabled && (<TSchemaRequestSelect>schemaRequest)?.cache) {
             Logger.Warn(`${Logger.Out} 'server.cache' is not configured, bypassing option 'cache'`)
             return false
         }
@@ -172,7 +177,7 @@ export class Cache {
         if (this.DataSource === undefined)
             return false
 
-        if (!schemaRequest?.cache)
+        if (!(<TSchemaRequestSelect>schemaRequest)?.cache)
             return false
 
         return true
@@ -193,7 +198,7 @@ export class Cache {
         // remove source from schemaRequest
         delete schemaRequest.source
 
-        const { schema, entity, cache = 0 } = schemaRequest
+        const { schema, entity, cache = 0 } = schemaRequest as TSchemaRequestSelect
 
         // calculate cache expiration time
         const now = new Date()
@@ -208,7 +213,7 @@ export class Cache {
             datatable.MetaDataSet(METADATA.CACHE, true)
             datatable.MetaDataSet(METADATA.CACHE_EXPIRE, expiresNow)
             await Cache.#__LOCK__.Acquire()
-            await Cache.DataSource.Insert({
+            await Cache.DataSource.Insert(<TSchemaRequestInsert>{
                 ...Cache.#CacheSchemaRequest,
                 data: <TCacheData[]>[
                     {
@@ -242,15 +247,15 @@ export class Cache {
     @SynchronizerManager.Synchronized()
     static async Get(schemaRequest: TSchemaRequestSelect, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse> | undefined> {
 
-        Assert.Var<TSchemaRequestSelect>(schemaRequest, 
-            TypeUtils.IsSchemaRequestSelect(schemaRequest),
-             `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
-             new HttpErrorBadRequest()
-            )
+        Assert.Var<TSchemaRequestSelect>(schemaRequest,
+            Schema.IsSchemaRequestSelect(schemaRequest),
+            `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
+            new HttpErrorBadRequest()
+        )
 
         const { schema, entity } = schemaRequest
 
-        const schemaConfig = ConfigManager.Get<TConfigSchema>(`schemas.${schema}`)
+        const schemaConfig = ConfigManager.Get<U_config_schemas_schema>(`schemas.${schema}`)
         if (!schemaConfig)
             throw new HttpErrorNotFound(`Schema '${schema}' not found`)
 
@@ -267,13 +272,12 @@ export class Cache {
             return undefined
         }
 
-        const intResp = await Cache.DataSource.Select(<TSchemaRequest>{
+        const intResp = await Cache.DataSource.Select(<TSchemaRequestSelect>{
             ...Cache.#CacheSchemaRequest,
             filter: {
                 hash
             }
         })
-            .then()
             .catch((err) => {
                 Logger.Error(err)
                 return undefined
@@ -298,7 +302,7 @@ export class Cache {
     }
 
     static async Update(hash: string, expires: number, datatable: DataTable) {
-        Cache.DataSource.Update(<TSchemaRequest>{
+        Cache.DataSource.Update(<TSchemaRequestUpdate>{
             ...Cache.#CacheSchemaRequest,
             filter: {
                 hash
@@ -316,7 +320,7 @@ export class Cache {
     @Logger.LogFunction()
     static async View(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
-        return Cache.DataSource.Select(Cache.#CacheSchemaRequest)
+        return Cache.DataSource.Select(Cache.#CacheSchemaRequest as TSchemaRequestSelect)
     }
 
     @Logger.LogFunction()
@@ -337,7 +341,7 @@ export class Cache {
         const expiresNow = new Date().getTime()
 
         Logger.Debug(`Cache.Clean ${expiresNow}`)
-        await Cache.DataSource.Delete(<TSchemaRequest>{
+        await Cache.DataSource.Delete(<TSchemaRequestDelete>{
             ...Cache.#CacheSchemaRequest,
             "filter-expression": `expires < ${expiresNow}`
         })
@@ -361,7 +365,7 @@ export class Cache {
 
         const { schema, entity } = schemaRequest
 
-        Cache.DataSource.Delete(<TSchemaRequest>{
+        Cache.DataSource.Delete(<TSchemaRequestDelete>{
             ...Cache.#CacheSchemaRequest,
             "filter-expression": `${Cache.DataSource.EscapeField("schema")}= '${schema}' AND ${Cache.DataSource.EscapeField("entity")}= '${entity}'`
         })
@@ -370,5 +374,47 @@ export class Cache {
         Cache.Index.delete(Cache.Hash(schemaRequest))
 
         Logger.Debug(`${Logger.Out} Cache.Removed`)
+    }
+
+    static StartAutoCleanup(intervalMs: number = Cache.AutoCleanupIntervalMs) {
+        Cache.StopAutoCleanup()
+
+        Logger.Info(`Cache auto-cleanup started (interval: ${intervalMs}ms)`)
+        Cache.AutoCleanupInterval = setInterval(async () => {
+            const expiresNow = new Date().getTime()
+            // Clean Index Map
+            let cleanedCount = 0
+            Cache.Index.forEach((expires, hash) => {
+                if (expires < expiresNow) {
+                    Cache.Index.delete(hash)
+                    cleanedCount++
+                }
+            })
+
+            if (cleanedCount > 0) {
+                Logger.Debug(`Cache auto-cleanup: Removed ${cleanedCount} expired items from memory index`)
+            }
+
+            // Clean DataSource
+            try {
+                if (Cache.DataSource) {
+                    await Cache.DataSource.Delete(<TSchemaRequestDelete>{
+                        ...Cache.#CacheSchemaRequest,
+                        "filter-expression": `expires < ${expiresNow}`
+                    })
+                }
+            } catch (e) {
+                Logger.Error(`Cache.AutoCleanup error: ${e}`)
+            }
+
+        }, intervalMs)
+    }
+
+    static StopAutoCleanup() {
+        if (Cache.AutoCleanupInterval) {
+            clearInterval(Cache.AutoCleanupInterval)
+            Cache.AutoCleanupInterval = undefined
+            Logger.Debug('Cache auto-cleanup stopped')
+        }
     }
 }

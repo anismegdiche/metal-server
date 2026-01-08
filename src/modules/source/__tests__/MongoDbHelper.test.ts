@@ -1,23 +1,7 @@
-import { TJson } from "../../../types/TJson"
+import { mock_Logger } from "../../../__tests__/mockers"
+mock_Logger()
+import type { TJson } from "../../../types/TJson"
 import { MongoDbHelper } from "../providers/MongoDbHelper"
-
-// Mock the Logger
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
-    }
-}))
 
 
 describe('MongoDbHelper', () => {

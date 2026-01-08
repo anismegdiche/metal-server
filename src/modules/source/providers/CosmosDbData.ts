@@ -1,8 +1,8 @@
 //
 //
 //
-import { ConnectionMode, Container, CosmosClient, CosmosClientOptions, Database, OperationInput, SqlQuerySpec } from "@azure/cosmos"
-import merge from "lodash/merge"
+import { ConnectionMode, Container, CosmosClient, type CosmosClientOptions, Database, type OperationInput, type SqlQuerySpec } from "@azure/cosmos"
+import { merge } from "lodash-es"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -13,15 +13,15 @@ import { Cache } from "../../cache/Cache"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
-import { TContext } from "../../sandbox/types/TContext"
-import { TInternalResponse } from '../../schema/types/TInternalResponse'
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TInternalResponse } from '../../core/types/TInternalResponse'
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import { TConfigSource } from "../types/TConfigSource"
-import { TDataListEntity } from "../types/TDataListEntity"
-import { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TDataListEntity } from "../types/TDataListEntity"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
 import { CosmosDbHelper } from "./CosmosDbHelper"
 
 
@@ -433,9 +433,10 @@ export class CosmosDbData extends absDataProvider {
             const { Body } = await this.ListEntities(schemaRequest)
 
             Assert.Var<DataTable>(Body?.data, `${schema}: No data found`)
+            using data = Body.data
 
             const containerDetails =
-                (await Body.data
+                (await data
                     .Rows({
                         filter: `name = "${schemaRequest.entity}"`
                     }))[0]

@@ -2,21 +2,22 @@
 //
 //
 import bcrypt from "bcryptjs"
-import _ from "lodash"
+import * as _ from 'lodash-es'
 //
 import { Logger } from "../../../utils/Logger"
 import { absAuthProvider } from "../base/absAuthProvider"
-import { TUserCredentials, TUserTokenInfo } from "../@types"
+import type { TUserCredentials, TUserTokenInfo } from "../@types"
 import { HttpErrorInternalServerError, HttpErrorUnauthorized } from "../../errors/HttpErrors"
-import { TConfigUsers } from "../../core/types/TConfigUsers"
+import type { U_config_users_user, U_config_users } from "../../core/types/U_config_users"
 import { ConfigManager } from "../../core/ConfigManager"
+import { Assert } from "../../../utils/Assert"
 
 
 //
 export class LocalAuth extends absAuthProvider {
 
     readonly #SALT_ROUNDS = 10
-    #Users: TConfigUsers = {}
+    #Users: U_config_users = {}
 
     #HashPassword(password: string): string {
         return bcrypt.hashSync(password, this.#SALT_ROUNDS)
@@ -28,11 +29,11 @@ export class LocalAuth extends absAuthProvider {
 
     @Logger.LogFunction()
     Init(): void {
-        if (!ConfigManager.Get<TConfigUsers | undefined>('users'))
+        if (!ConfigManager.Get<U_config_users | undefined>('users'))
             throw new HttpErrorInternalServerError("users configuration is not set")
 
         // convert password to string
-        this.#Users = _.mapValues(ConfigManager.Get<TConfigUsers>('users'), (user) => ({
+        this.#Users = _.mapValues(ConfigManager.Get<U_config_users>('users'), (user) => ({
             ...user,
             password: String(user.password)
         }))
@@ -43,13 +44,8 @@ export class LocalAuth extends absAuthProvider {
 
         const userInfo = this.#Users[username] ?? undefined
 
-        if (!userInfo) {
-            throw new HttpErrorUnauthorized("Invalid username or password")
-        }
-
-        if (!bcrypt.compareSync(password, this.#HashPassword(this.#Users[username].password.toString()))) {
-            throw new HttpErrorUnauthorized("Invalid username or password")
-        }
+        Assert.Var<U_config_users_user>(userInfo, 'Invalid username or password', new HttpErrorUnauthorized())
+        Assert.Condition(bcrypt.compareSync(password, this.#HashPassword(userInfo.password.toString())), 'Invalid username or password', new HttpErrorUnauthorized())
 
         return <TUserTokenInfo>{
             user: username,
@@ -58,7 +54,7 @@ export class LocalAuth extends absAuthProvider {
     }
 
     @Logger.LogFunction()
-     
+
     async LogOut(username: string): Promise<void> {
         Logger.Debug(`User ${username} logged out`)
     }

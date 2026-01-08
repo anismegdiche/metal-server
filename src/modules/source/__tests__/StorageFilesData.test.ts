@@ -8,20 +8,20 @@ import { DataTable } from "../../../types/DataTable"
 import { HttpResponse } from "../../core/HttpResponse"
 import { HttpErrorNotImplemented, HttpErrorInternalServerError, HttpErrorBadRequest } from "../../errors/HttpErrors"
 import { Convert } from "../../../utils/Convert"
-import { TConfigSource } from "../types/TConfigSource"
+import type { TConfigSource } from "../types/TConfigSource"
 import { CONTENT } from "../../content/@consts"
 import { ContentProvider } from "../../content/ContentProvider"
 import { STORAGE } from "../../storage/@consts"
 import { StorageProvider } from "../../storage/StorageProvider"
 
-jest.mock("../../cache/Cache")
-jest.mock("../DataProvider")
-jest.mock("../../storage/StorageProvider")
-jest.mock("../../content/ContentProvider")
-jest.mock("../../../utils/Mutex")
-jest.mock("../../../utils/SynchronizerManager")
-jest.mock("../../../utils/Convert")
-jest.mock("../../core/HttpResponse")
+vi.mock("../../cache/Cache")
+vi.mock("../DataProvider")
+vi.mock("../../storage/StorageProvider")
+vi.mock("../../content/ContentProvider")
+vi.mock("../../../utils/Mutex")
+vi.mock("../../../utils/SynchronizerManager")
+vi.mock("../../../utils/Convert")
+vi.mock("../../core/HttpResponse")
 
 describe("StorageFilesData", () => {
     let storageFilesData: StorageFilesData
@@ -29,30 +29,30 @@ describe("StorageFilesData", () => {
     let mockContentProvider: any
 
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
 
         // Setup mocks
         mockStorageProvider = {
-            SetConfig: jest.fn(),
-            Init: jest.fn(),
-            Connect: jest.fn(),
-            Disconnect: jest.fn(),
-            FileRead: jest.fn(),
-            FileWrite: jest.fn(),
-            FolderListFiles: jest.fn().mockResolvedValue(new DataTable("list", [{ name: 'test.json' }]))
+            SetConfig: vi.fn(),
+            Init: vi.fn(),
+            Connect: vi.fn(),
+            Disconnect: vi.fn(),
+            FileRead: vi.fn(),
+            FileWrite: vi.fn(),
+            FolderListFiles: vi.fn().mockResolvedValue(new DataTable("list", [{ name: 'test.json' }]))
         }
 
         mockContentProvider = {
-            SetConfig: jest.fn(),
-            InitContent: jest.fn(),
-            Get: jest.fn(),
-            Set: jest.fn()
+            SetConfig: vi.fn(),
+            InitContent: vi.fn(),
+            Get: vi.fn(),
+            Set: vi.fn()
         };
 
-        (StorageProvider.GetProvider as jest.Mock).mockReturnValue(mockStorageProvider);
-        (ContentProvider.GetProvider as jest.Mock).mockReturnValue(mockContentProvider);
+        (StorageProvider.GetProvider as vi.Mock).mockReturnValue(mockStorageProvider);
+        (ContentProvider.GetProvider as vi.Mock).mockReturnValue(mockContentProvider);
 
-        (Convert.PatternToRegex as jest.Mock).mockImplementation((pattern: string) => new RegExp(pattern.replace("*", ".*")))
+        (Convert.PatternToRegex as vi.Mock).mockImplementation((pattern: string) => new RegExp(pattern.replace("*", ".*")))
 
         // Create instance
         storageFilesData = new StorageFilesData()
@@ -100,7 +100,7 @@ describe("StorageFilesData", () => {
         });
 
         it("should throw error when connection init fails", async () => {
-            (StorageProvider.GetProvider as jest.Mock).mockReturnValueOnce(null);
+            (StorageProvider.GetProvider as vi.Mock).mockReturnValueOnce(null);
             await expect(storageFilesData.Init("testSource", sourceConfig))
                 .rejects.toThrow(TypeError);
         });
@@ -198,12 +198,12 @@ describe("StorageFilesData", () => {
             const mockDataTable = new DataTable()
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
 
-            storageFilesData.GetContext = jest.fn().mockReturnValue({})
+            storageFilesData.GetContext = vi.fn().mockReturnValue({})
             storageFilesData.Options = {
-                Parse: jest.fn().mockReturnValue({})
+                Parse: vi.fn().mockReturnValue({})
             } as any;
 
-            (HttpResponse.Ok as jest.Mock).mockReturnValue({ status: 200 })
+            (HttpResponse.Ok as vi.Mock).mockReturnValue({ status: 200 })
         })
 
         it("should select successfully", async () => {
@@ -219,7 +219,7 @@ describe("StorageFilesData", () => {
         })
 
         it("should cache results when cache option is enabled", async () => {
-            storageFilesData.Options.Parse = jest.fn().mockReturnValue({ Cache: true })
+            storageFilesData.Options.Parse = vi.fn().mockReturnValue({ Cache: true })
 
             await storageFilesData.Select(mockSchemaRequest as any)
 
@@ -250,16 +250,16 @@ describe("StorageFilesData", () => {
             mockStorageProvider.FileWrite.mockResolvedValue(undefined)
 
             const mockDataTable = new DataTable("test.json")
-            // mockDataTable.FreeSql = jest.fn().mockResolvedValue(undefined)
+            // mockDataTable.FreeSql = vi.fn().mockResolvedValue(undefined)
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
             mockContentProvider.Set.mockResolvedValue("updated data")
 
-            storageFilesData.GetContext = jest.fn().mockReturnValue({})
+            storageFilesData.GetContext = vi.fn().mockReturnValue({})
             storageFilesData.Options = {
-                Parse: jest.fn().mockReturnValue({ Data: new DataTable("test.json", [{ data: "test data" }]) })
+                Parse: vi.fn().mockReturnValue({ Data: new DataTable("test.json", [{ data: "test data" }]) })
             } as any;
 
-            (HttpResponse.Created as jest.Mock).mockReturnValue({ status: 201 })
+            (HttpResponse.Created as vi.Mock).mockReturnValue({ status: 201 })
         })
 
         it("should insert successfully", async () => {
@@ -281,7 +281,7 @@ describe("StorageFilesData", () => {
         })
 
         it("should throw error when data is missing", async () => {
-            storageFilesData.Options.Parse = jest.fn().mockReturnValue({})
+            storageFilesData.Options.Parse = vi.fn().mockReturnValue({})
 
             await expect(storageFilesData.Insert(mockSchemaRequest as any)).rejects.toThrow(HttpErrorBadRequest)
         })
@@ -304,16 +304,16 @@ describe("StorageFilesData", () => {
             mockStorageProvider.FileWrite.mockResolvedValue(undefined)
 
             const mockDataTable = new DataTable("test.json")
-            // mockDataTable.FreeSql = jest.fn().mockResolvedValue(undefined)
+            // mockDataTable.FreeSql = vi.fn().mockResolvedValue(undefined)
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
             mockContentProvider.Set.mockResolvedValue("updated data")
 
-            storageFilesData.GetContext = jest.fn().mockReturnValue({})
+            storageFilesData.GetContext = vi.fn().mockReturnValue({})
             storageFilesData.Options = {
-                Parse: jest.fn().mockReturnValue({ Data: new DataTable("test", [{ data: "test data" }]) })
+                Parse: vi.fn().mockReturnValue({ Data: new DataTable("test", [{ data: "test data" }]) })
             } as any;
 
-            (HttpResponse.NoContent as jest.Mock).mockReturnValue({ status: 204 })
+            (HttpResponse.NoContent as vi.Mock).mockReturnValue({ status: 204 })
         })
 
         it("should update successfully", async () => {
@@ -329,7 +329,7 @@ describe("StorageFilesData", () => {
         })
 
         it("should throw error when data is missing", async () => {
-            storageFilesData.Options.Parse = jest.fn().mockReturnValue({})
+            storageFilesData.Options.Parse = vi.fn().mockReturnValue({})
 
             await expect(storageFilesData.Update(mockSchemaRequest as any)).rejects.toThrow(HttpErrorBadRequest)
         })
@@ -352,16 +352,16 @@ describe("StorageFilesData", () => {
             mockStorageProvider.FileWrite.mockResolvedValue(undefined)
 
             const mockDataTable = new DataTable("test.json")
-            // mockDataTable.FreeSql = jest.fn().mockResolvedValue(undefined)
+            // mockDataTable.FreeSql = vi.fn().mockResolvedValue(undefined)
             mockContentProvider.Get.mockResolvedValue(mockDataTable)
             mockContentProvider.Set.mockResolvedValue("updated data")
 
-            storageFilesData.GetContext = jest.fn().mockReturnValue({})
+            storageFilesData.GetContext = vi.fn().mockReturnValue({})
             storageFilesData.Options = {
-                Parse: jest.fn().mockReturnValue({})
+                Parse: vi.fn().mockReturnValue({})
             } as any;
 
-            (HttpResponse.NoContent as jest.Mock).mockReturnValue({ status: 204 })
+            (HttpResponse.NoContent as vi.Mock).mockReturnValue({ status: 204 })
         })
 
         it("should delete successfully", async () => {
@@ -407,7 +407,7 @@ describe("StorageFilesData", () => {
 
             mockStorageProvider.FolderListFiles.mockResolvedValue(mockDataTable);
 
-            (HttpResponse.Ok as jest.Mock).mockReturnValue({ status: 200 })
+            (HttpResponse.Ok as vi.Mock).mockReturnValue({ status: 200 })
         })
 
         it("should list entities successfully", async () => {
@@ -421,7 +421,7 @@ describe("StorageFilesData", () => {
             await storageFilesData.ListEntities(mockSchemaRequest as any);
 
             // Verify that the data was filtered
-            const dataArg = (HttpResponse.Ok as jest.Mock).mock.calls[0][0];
+            const dataArg = (HttpResponse.Ok as vi.Mock).mock.calls[0][0];
             const filteredRows = await (dataArg.data as any).Rows();
 
             // Should only include files matching the content handler patterns (*.json and users/*)

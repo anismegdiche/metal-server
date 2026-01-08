@@ -2,7 +2,7 @@
 //
 //
 import axios from 'axios'
-import _ from "lodash"
+import * as _ from 'lodash-es'
 //
 import { Assert } from '../../../utils/Assert'
 import { LangUtils } from '../../../utils/LangUtils'
@@ -10,20 +10,21 @@ import { Logger } from '../../../utils/Logger'
 import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from '../../../utils/Utils'
 import { AI_ENGINE } from '../@consts'
-import { TAiRunArguments, TAiRunOutput, TConfigAiEngine } from '../@types'
+import type { TAiRunArguments, TAiRunOutput } from '../@types'
+import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
 import { AiDocker } from '../AiDocker'
 import { absAiEngine } from '../base/absAiEngine'
-import { IAiEngine } from '../base/IAiEngine'
+import type { IAiEngine } from '../base/IAiEngine'
 import { OCR_LANG, OCR_LANG_ISO, OCR_TASK } from "../consts/OCR"
 import { OcrDockerService as SERVICE_OCR } from '../docker-services/OcrDockerService'
-import { TStepRunAiOcrParams } from "../types/TStepRunAiOcrParams"
+import type { U_config_plans_plan_entity_run_ai_ocr_Params } from "../types/U_config_plans_plan_entity_run_ai_ocr_Params"
 
 export class Ocr extends absAiEngine implements IAiEngine {
     AiEngineName = AI_ENGINE.OCR
 
     RunTask: Record<string, (args: TAiRunArguments) => Promise<TAiRunOutput>> = {}
 
-    DEFAULT: TStepRunAiOcrParams = {
+    DEFAULT: U_config_plans_plan_entity_run_ai_ocr_Params = {
         task: OCR_TASK.IMAGE_TO_STRING,
         params: {
             lang: OCR_LANG_ISO.ENG
@@ -35,7 +36,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction()
-    async Init(aiName: string, aiConfig: TConfigAiEngine): Promise<void> {
+    async Init(aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
         await super.Init(aiName, aiConfig)
 
         this.RunTask = {
@@ -52,20 +53,20 @@ export class Ocr extends absAiEngine implements IAiEngine {
     @Logger.LogFunction(true)
     async Run(args: TAiRunArguments): Promise<TAiRunOutput> {
 
-        const _args: TStepRunAiOcrParams = _.merge(this.DEFAULT, args)
+        const _args: U_config_plans_plan_entity_run_ai_ocr_Params = _.merge(this.DEFAULT, args)
         const { task } = _args
 
         Assert.Condition(Object.values(OCR_TASK).includes(task as OCR_TASK), `Invalid ocr task: ${task}`)
 
         await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
-        return this.RunTask[task](args)
+        return this.RunTask[task]!(args)
     }
 
     @Logger.LogFunction(true)
     async ImageToString(args: TAiRunArguments): Promise<TAiRunOutput> {
 
         const { data } = args
-        const { task, params } = args as TStepRunAiOcrParams
+        const { task, params } = args as U_config_plans_plan_entity_run_ai_ocr_Params
 
         Assert.Var(data, 'data is required')
 
@@ -94,7 +95,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
             return {
                 ocr
             }
-            
+
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 throw new Error(`OCR request failed: ${error.response?.data?.message ?? error.message}`)

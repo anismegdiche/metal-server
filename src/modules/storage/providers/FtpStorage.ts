@@ -1,21 +1,21 @@
 //
 // FTP Storage
 import * as Ftp from "basic-ftp"
-import merge from "lodash/merge"
+import { merge } from "lodash-es"
 import { PassThrough, Readable } from "node:stream"
 //
-import { DataTable, TRow } from "../../../types/DataTable"
-import { TIpPort } from "../../../types/TIpPort"
+import { DataTable, type TRow } from "../../../types/DataTable"
+import type { TIpPort } from "../../../types/TIpPort"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { StringUtils } from "../../../utils/StringUtils"
-import { TConvertParams } from "../../../utils/TypeUtils"
+import type { TConvertParams } from "../../../utils/TypeUtils"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
-import { TConfigSource } from "../../source/types/TConfigSource"
-import { TStorageFile, TStorageFolder } from '../@types'
+import type { TConfigSource } from "../../source/types/TConfigSource"
+import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
 
 //

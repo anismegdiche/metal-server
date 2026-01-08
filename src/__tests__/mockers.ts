@@ -3,7 +3,7 @@
 
 export function mock_Logger() {
     // Mock dependencies
-    jest.doMock('../utils/Logger', () => ({
+    vi.doMock('../utils/Logger', () => ({
         Logger: {
             SetLevel: () => () => { },
             EnableAll: () => () => { },
@@ -16,7 +16,8 @@ export function mock_Logger() {
             Message: () => () => { },
             LogFunction: () => () => { },
             Level: "error",
-            Out: 'OUT'
+            Out: 'OUT',
+            In: 'IN'
         }
     }))
 }

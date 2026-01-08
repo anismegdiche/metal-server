@@ -1,10 +1,10 @@
 /* eslint-disable security/detect-non-literal-regexp */
 import axios from 'axios';
 import { Ocr } from '../Ocr';
-import { TAiRunArguments } from '../../@types';
+import type { TAiRunArguments } from '../../@types';
 import { OCR_LANG_ISO, OCR_TASK } from '../../consts/OCR';
 
-const spyAxios = jest.spyOn(axios, 'post');
+const spyAxios = vi.spyOn(axios, 'post');
 
 const ocr = new Ocr();
 

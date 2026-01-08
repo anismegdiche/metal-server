@@ -1,33 +1,14 @@
-
+import { mock_Logger } from "../../../__tests__/mockers"
+mock_Logger()
 
 import { Readable } from "node:stream"
 import * as ExcelJS from 'exceljs'
 import * as crc32 from 'crc-32'
-import typia from "typia"
+//
 import { DataTable } from "../../../types/DataTable"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import { ColumnLetterToNumber, XlsContent } from "../providers/XlsContent"
-import { TXlsContentConfig } from "../types/TXlsContentConfig"
-import { TXlsContentParams } from "../types/TXlsContentParams"
-
-
-// Mock the Logger decorator
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level: "error",
-        Out: 'OUT'
-    }
-}))
+import type { TXlsContentParams } from "../types/TXlsContentParams"
 
 
 describe("ColumnLetterToNumber", () => {
@@ -81,7 +62,7 @@ describe('XlsContent', () => {
 
         // Setup XlsContent
         xlsContent = new XlsContent()
-        xlsContent.SetConfig(typia.random<TXlsContentConfig>())
+        xlsContent.SetConfig({})
     }, 300_000)
 
 

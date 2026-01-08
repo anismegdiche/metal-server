@@ -3,7 +3,7 @@
 //
 import { HttpErrorNotFound } from "../errors/HttpErrors"
 import { Factory } from "../../utils/Factory"
-import { IAuthProvider } from "./base/IAuthProvider"
+import type { IAuthProvider } from "./base/IAuthProvider"
 import { AUTH_PROVIDER } from "./@consts"
 
 

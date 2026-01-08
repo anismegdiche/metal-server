@@ -3,15 +3,16 @@
 //
 
 import chokidar from "chokidar"
-import { TJson } from "../../types/TJson"
+import type { FSWatcher } from "chokidar"
+import type { TJson } from "../../types/TJson"
 import { Logger } from "../../utils/Logger"
 import { AUTH_PERMISSION } from "../auth/@consts"
-import { TUserTokenInfo } from "../auth/@types"
+import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
 import { Cache } from "../cache/Cache"
-import { HttpErrorNotImplemented } from "../errors/HttpErrors"
+import { ServerShutdown } from './ServerShutdown'
 import { Schedule } from "../plan/Schedule"
-import { TInternalResponse } from "../schema/types/TInternalResponse"
+import type { TInternalResponse } from "./types/TInternalResponse"
 import { Source } from "../source/Source"
 import { SERVER } from "./@consts"
 import { ConfigManager } from "./ConfigManager"
@@ -21,9 +22,18 @@ import { HttpResponse } from "./HttpResponse"
 //
 export class ServerRuntime {
 
+    private static configWatcher?: FSWatcher
+
     @Logger.LogFunction()
-    static Stop() {
-        throw new HttpErrorNotImplemented()
+    static async Stop(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
+        Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
+
+        const { ServerShutdown } = await import('./ServerShutdown')
+        await ServerShutdown.Shutdown('MANUAL_STOP')
+
+        return HttpResponse.Ok({
+            message: 'Server stopped'
+        })
     }
 
     //FIXME server reload: not work to correct
@@ -53,11 +63,14 @@ export class ServerRuntime {
     static StartWatcher(): void {
 
         // Config
-        chokidar.watch(ConfigManager.ConfigFilePath).on('change', () => {
+        this.configWatcher = chokidar.watch(ConfigManager.ConfigFilePath).on('change', () => {
             Logger.Info('Config file changed. Reloading...')
             ServerRuntime.Reload()
                 .catch((err: Error) => Logger.Error(err.message))
         })
+
+        // Register watcher for shutdown
+        ServerShutdown.RegisterConfigWatcher(this.configWatcher)
     }
 
 }

@@ -2,25 +2,25 @@
 //
 //
 //
-import _ from 'lodash'
+import * as _ from 'lodash-es'
 import type { MongoClientOptions, Document as MongoDocument } from 'mongodb';
 //
 import { RESPONSE } from '../../core/@consts'
-import { TOptionalParameter } from '../types/TOptionalParameter'
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
+import type { TOptionalParameter } from '../types/TOptionalParameter'
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
 import { DataTable } from "../../../types/DataTable"
 import { Logger } from "../../../utils/Logger"
 import { Cache } from '../../cache/Cache'
 import { DATA_PROVIDER } from "../@consts"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import { HttpResponse } from "../../core/HttpResponse"
 import { absDataProvider } from "../base/absDataProvider"
-import { TConfigSource } from "../types/TConfigSource"
-import { TDataListEntity } from "../types/TDataListEntity"
-import { TContext } from "../../sandbox/types/TContext"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TDataListEntity } from "../types/TDataListEntity"
+import type { TContext } from "../../sandbox/types/TContext"
 import { MongoDbHelper } from "./MongoDbHelper"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Assert } from '../../../utils/Assert'
@@ -68,7 +68,7 @@ export class MongoDbData extends absDataProvider {
     Connection?: import('mongodb').MongoClient = undefined
 
     DEFAULT: Partial<TMongoDbDataConfig> = {
-        host: 'mongodb://localhost:27017/'
+        host: 'mongodb://127.0.0.1:27017/'
     }
 
     constructor() {

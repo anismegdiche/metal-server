@@ -1,12 +1,12 @@
 //
 //
 //
-import { Express, Response, Request, NextFunction } from 'express'
+import type { Express, Response, Request, NextFunction } from 'express'
 // Lazy-loaded modules
 import * as Fs from 'fs'
 //
 import { ROUTE } from "../modules/core/@consts"
-import { TJson } from "../types/TJson"
+import type { TJson } from "../types/TJson"
 import { Logger } from "./Logger"
 // import { Package } from "./Package"
 

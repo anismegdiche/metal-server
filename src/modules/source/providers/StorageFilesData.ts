@@ -1,35 +1,35 @@
 //
 //
 //
-import has from "lodash/has"
-import merge from "lodash/merge"
-import typia from "typia"
+import { has, merge } from "lodash-es"
 //
-import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
+import type { TRowsCopyParams } from "../../../types/DataTable"
+import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { Convert } from "../../../utils/Convert"
 import { Logger, VERBOSITY } from "../../../utils/Logger"
 import { Mutex } from "../../../utils/Mutex"
+import { z_TStorageFilesDataOptionsContent } from "../../../utils/Schemas"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Cache } from "../../cache/Cache"
-import { IContentProvider } from "../../content/base/IContentProvider"
+import type { IContentProvider } from "../../content/base/IContentProvider"
 import { ContentProvider } from "../../content/ContentProvider"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
-import { TContext } from "../../sandbox/types/TContext"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { STORAGE } from "../../storage/@consts"
 import { absStorageProvider } from "../../storage/base/absStorageProvider"
 import { StorageProvider } from "../../storage/StorageProvider"
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import { TConfigSource } from "../types/TConfigSource"
-import { TOptionalParameter } from "../types/TOptionalParameter"
-import { TStorageFilesDataOptions } from "../types/TStorageFilesDataOptions"
-import { TStorageFilesDataOptionsContent } from "../types/TStorageFilesDataOptionsContent"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TStorageFilesDataOptions } from "../types/TStorageFilesDataOptions"
+import type { TStorageFilesDataOptionsContent } from "../types/TStorageFilesDataOptionsContent"
 
 
 //
@@ -53,7 +53,7 @@ export class StorageFilesData extends absDataProvider {
         if (!has(this.File, entity)) {
             const handler = Object.keys(this.ContentHandler).find(pattern => Convert.PatternToRegex(pattern)?.test(entity))
             if (handler)
-                this.File[entity] = this.ContentHandler[handler]
+                this.File[entity] = this.ContentHandler[handler]!
             else
                 throw new HttpErrorNotImplemented(`${this.SourceName}: No content handler found for entity ${entity}`)
         }
@@ -73,7 +73,7 @@ export class StorageFilesData extends absDataProvider {
             content
         } = this.Config.options as TStorageFilesDataOptions
 
-        Assert.Var<TStorageFilesDataOptionsContent>(content, typia.is<TStorageFilesDataOptionsContent>(content), `${this.SourceName}: Content type is not defined`)
+        Assert.Var<TStorageFilesDataOptionsContent>(content, z_TStorageFilesDataOptionsContent.safeParse(content).success, `${this.SourceName}: Content type is not defined`)
 
         this.Connection = await StorageProvider.GetProvider(storage)
         this.Connection.SetConfig(this.Config)
@@ -85,10 +85,10 @@ export class StorageFilesData extends absDataProvider {
         // init content
         for (const filePattern in content) {
             if (Object.hasOwn(content, filePattern)) {
-                const { "content-type": type } = content[filePattern]
+                const { "content-type": type } = content[filePattern]!
 
                 this.ContentHandler[filePattern] = await ContentProvider.GetProvider(type)
-                this.ContentHandler[filePattern].SetConfig(content[filePattern])
+                this.ContentHandler[filePattern].SetConfig(content[filePattern]!)
             }
         }
     }
@@ -124,7 +124,7 @@ export class StorageFilesData extends absDataProvider {
 
         this._setContentHandler(fileName)
 
-        this.File[fileName].InitContent(
+        this.File[fileName]!.InitContent(
             fileName,
             await this.Connection.FileRead('', fileName)
         )
@@ -138,7 +138,7 @@ export class StorageFilesData extends absDataProvider {
 
         //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const data = await this.File[fileName].Get(
+        const data = await this.File[fileName]!.Get(
             <TRowsCopyParams>{
                 fields: options.Fields,
                 filter: options.Filter,
@@ -191,12 +191,12 @@ export class StorageFilesData extends absDataProvider {
         await this.Lock.get(fileName)!.Acquire()
 
         try {
-            this.File[fileName].InitContent(
+            this.File[fileName]!.InitContent(
                 fileName,
                 await this.Connection.FileRead('', fileName)
             )
 
-            const data = await this.File[fileName].Get({}, $context)
+            using data = await this.File[fileName]!.Get({}, $context)
 
             //XXX const sqlQueryHelper = await this.GenerateSqlInsert(schemaRequest, options)
 
@@ -205,7 +205,7 @@ export class StorageFilesData extends absDataProvider {
             await this.Connection.FileWrite(
                 '',
                 fileName,
-                await this.File[fileName].Set(data, $context)
+                await this.File[fileName]!.Set(data, $context)
             )
 
             // clean cache
@@ -237,12 +237,12 @@ export class StorageFilesData extends absDataProvider {
         await this.Lock.get(fileName)!.Acquire()
 
         try {
-            this.File[fileName].InitContent(
+            this.File[fileName]!.InitContent(
                 fileName,
                 await this.Connection.FileRead('', fileName)
             )
 
-            const data = await this.File[fileName].Get({}, $context)
+            using data = await this.File[fileName]!.Get({}, $context)
 
             const sqlQueryHelper = await this.GenerateSqlUpdate(schemaRequest, options)
 
@@ -251,7 +251,7 @@ export class StorageFilesData extends absDataProvider {
             await this.Connection.FileWrite(
                 '',
                 fileName,
-                await this.File[fileName].Set(data, $context)
+                await this.File[fileName]!.Set(data, $context)
             )
 
             // clean cache
@@ -280,12 +280,12 @@ export class StorageFilesData extends absDataProvider {
         await this.Lock.get(fileName)!.Acquire()
 
         try {
-            this.File[fileName].InitContent(
+            this.File[fileName]!.InitContent(
                 fileName,
                 await this.Connection.FileRead('', fileName)
             )
 
-            const data = await this.File[fileName].Get({}, $context)
+            using data = await this.File[fileName]!.Get({}, $context)
 
             const sqlQueryHelper = await this.GenerateSqlDelete(schemaRequest, options)
 
@@ -294,7 +294,7 @@ export class StorageFilesData extends absDataProvider {
             await this.Connection.FileWrite(
                 '',
                 fileName,
-                await this.File[fileName].Set(data, $context)
+                await this.File[fileName]!.Set(data, $context)
             )
 
             // clean cache

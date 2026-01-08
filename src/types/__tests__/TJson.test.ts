@@ -3,7 +3,7 @@
 //
 //
 //
-import { TJson } from '../TJson'
+import type { TJson } from '../TJson'
 
 
 const dataA: TJson = {

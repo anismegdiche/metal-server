@@ -1,15 +1,16 @@
 //
 //
 //
-import { Issuer, Client, TokenSet } from "openid-client"
-import _ from 'lodash'
+import { Issuer, TokenSet } from "openid-client"
+import type { Client } from "openid-client"
+import * as _ from 'lodash-es'
 //
 import { Logger } from '../../../utils/Logger'
 import { absAuthProvider } from '../base/absAuthProvider'
-import { TUserCredentials, TUserTokenInfo } from "../@types"
+import type { TUserCredentials, TUserTokenInfo } from "../@types"
 import { HttpErrorInternalServerError, HttpErrorUnauthorized } from '../../errors/HttpErrors'
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { TOidcAuthConfig } from "../types/TOidcAuthConfig"
+import type { U_config_server_authentication_oidc } from "../types/U_config_server_authentication_oidc"
 import { ConfigManager } from "../../core/ConfigManager"
 
 
@@ -22,16 +23,16 @@ enum OIDC_ERROR_MESSAGE {
 export class OidcAuth extends absAuthProvider {
 
     #OidcClient: Client | null = null
-    #Config?: TOidcAuthConfig
+    #Config?: U_config_server_authentication_oidc
     readonly #TokenCache: Map<string, TokenSet> = new Map()
 
-     
+
     GetUsers() {
         // Since Oidc users are managed externally, return empty object
         return {}
     }
 
-    readonly DEFAULT: Partial<TOidcAuthConfig> = {
+    readonly DEFAULT: Partial<U_config_server_authentication_oidc> = {
         scope: "openid roles",
         "roles-path": "realm_access.roles"
     }
@@ -39,12 +40,11 @@ export class OidcAuth extends absAuthProvider {
     @Logger.LogFunction()
     async Init(): Promise<void> {
         //TODO workaround for SSL/TLS errors
-        // file deepcode ignore InsecureTLSConfig: Workround
         process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
         this.#Config = _.merge(
             this.DEFAULT,
-            ConfigManager.Get<TOidcAuthConfig>("server.authentication")
+            ConfigManager.Get<U_config_server_authentication_oidc>("server.authentication")
         )
 
         if (this.#Config.issuer)

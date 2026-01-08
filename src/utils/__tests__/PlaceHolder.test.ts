@@ -1,26 +1,9 @@
- 
+import { mock_Logger } from "../../__tests__/mockers"
+mock_Logger()
 
 import { Sandbox } from "../../modules/sandbox/Sandbox"
-import { TJson } from "../../types/TJson"
+import type { TJson } from "../../types/TJson"
 import { PlaceHolder } from "../PlaceHolder"
-
-// Mock the Logger
-jest.mock('../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
-    }
-}))
 
 
 describe('PlaceHolder', () => {

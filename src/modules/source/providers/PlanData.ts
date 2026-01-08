@@ -1,23 +1,23 @@
 //
 //
 //
-import _ from "lodash"
+import * as _ from 'lodash-es'
 //
 import { RESPONSE } from '../../core/@consts'
-import { TConfigSource } from "../types/TConfigSource"
-import { TDataListEntity } from "../types/TDataListEntity"
-import { TOptionalParameter } from "../types/TOptionalParameter"
-import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TDataListEntity } from "../types/TDataListEntity"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import { Cache } from '../../cache/Cache'
 import { Logger } from '../../../utils/Logger'
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
 import { HttpResponse } from "../../core/HttpResponse"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import { absDataProvider } from "../base/absDataProvider"
-import { TContext } from "../../sandbox/types/TContext"
+import type { TContext } from "../../sandbox/types/TContext"
 import { Plans } from "../../plan/Plans"
 import { Source } from "../Source"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
@@ -81,15 +81,18 @@ export class PlanData extends absDataProvider {
 
         const data = new DataTable(schemaRequest.entity)
 
-        if (planData && await planData.Count() > 0) {
-            await data.RowsSet(await planData.Rows())
-            if (options?.Cache)
-                Cache.Set({
-                    ...schemaRequest,
-                    source: this.SourceName
-                },
-                    data
-                )
+        if (planData) {
+            using _ = planData
+            if (await planData.Count() > 0) {
+                await data.RowsSet(await planData.Rows())
+                if (options?.Cache)
+                    Cache.Set({
+                        ...schemaRequest,
+                        source: this.SourceName
+                    },
+                        data
+                    )
+            }
         }
 
         return HttpResponse.Ok(<TSchemaResponse>{
@@ -149,13 +152,13 @@ export class PlanData extends absDataProvider {
         if (!planName)
             throw new HttpErrorBadRequest(`${schema}: plan '${source}' is missing`)
 
-        const planEntities = Plans.Plans.get(planName)?.Entities.keys().toArray()
+        const planEntities = Array.from(Plans.Plans.get(planName)?.Entities.keys() || [])
 
         if (!planEntities || planEntities.length == 0)
             throw new HttpErrorNotFound(`${schema}: No entities found`)
 
         const data: TDataListEntity[] = planEntities
-            .map(key => (<TDataListEntity>{
+            .map((key: string) => (<TDataListEntity>{
                 name: key,
                 type: DATA_ENTITY_TYPE.PLAN_ENTITY
             }))

@@ -1,22 +1,22 @@
 //
 //
 //
-import { NextFunction, Request, Response } from 'express'
-import _ from "lodash"
+import type { NextFunction, Request, Response } from 'express'
+import * as _ from 'lodash-es'
 import { Readable } from 'node:stream'
-import typia from "typia"
 //
-import { TJson } from '../../types/TJson'
-import { TypeUtils } from '../../utils/TypeUtils'
+
+import type { TJson } from '../../types/TJson'
 import { HttpError, HttpErrorBadRequest, HttpErrorContentTooLarge, HttpErrorInternalServerError, HttpErrorLog, HttpErrorNotImplemented } from '../errors/HttpErrors'
-import { TSchemaResponse } from '../schema/types/TSchemaResponse'
+import type { TSchemaResponse } from '../schema/types/TSchemaResponse'
 import { HTTP_STATUS_CODE } from "./@consts"
 import { ConfigManager } from "./ConfigManager"
 import { Convert } from '../../utils/Convert'
 import { JsonUtils } from '../../utils/JsonUtils'
 import { Logger } from '../../utils/Logger'
-import { TInternalResponse } from '../schema/types/TInternalResponse'
-import { TRow } from '../../types/DataTable'
+import type { TInternalResponse } from './types/TInternalResponse'
+import type { TRow } from '../../types/DataTable'
+import { Schema } from '../schema/Schema'
 
 
 export class ResponseHandler {
@@ -37,7 +37,7 @@ export class ResponseHandler {
 
         res.status(status)
 
-        if (TypeUtils.IsSchemaResponseWithData(schemaResponse)) {
+        if (Schema.IsSchemaResponse(schemaResponse) && (await schemaResponse.data.Count()) > 0) {
             commonJsonResponse = {
                 ...commonJsonResponse,
                 metadata: schemaResponse.data.MetaData,
@@ -60,7 +60,7 @@ export class ResponseHandler {
         const readable = new Readable({
             objectMode: true,
             async read() {
-                if (TypeUtils.IsSchemaResponseWithData(schemaResponse)) {
+                if (Schema.IsSchemaResponse(schemaResponse) && (await schemaResponse.data.Count()) > 0) {
                     // Push the initial part of the JSON response
                     this.push(
                         JsonUtils.Stringify(_.omit(resJson, "rows"))
@@ -112,9 +112,10 @@ export class ResponseHandler {
     }
 
     static ResponseError(res: Response, error: HttpError | Error) {
-        const status = typia.is<HttpError>(error)
+        const status = (error instanceof HttpError)
             ? error.Status
             : HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR
+
 
         HttpErrorLog(error)
         res

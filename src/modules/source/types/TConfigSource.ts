@@ -1,9 +1,9 @@
 //
 //
 //
-import { TIpPort } from "../../../types/TIpPort";
+import type { TIpPort } from "../../../types/TIpPort";
 import { DATA_PROVIDER } from "../@consts";
-import { TConfigSourceOptions } from "./TConfigSourceOptions";
+import type { TConfigSourceOptions } from "./TConfigSourceOptions";
 
 
 // sources.*

@@ -3,8 +3,8 @@
 //
 import path from "node:path"
 import { Stringify } from "./JsonUtils/Stringify"
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const urlJoin = require("@loxjs/url-join")
+
+import urlJoin from "@loxjs/url-join"
 
 
 //

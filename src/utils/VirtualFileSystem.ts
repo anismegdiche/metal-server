@@ -1,22 +1,19 @@
 //
 //
 //
-import typia from 'typia';
-//
 import { Readable } from 'node:stream';
 import { Logger } from './Logger';
 
 //
 export class VirtualFileSystem {
-    
     // static
-    static readonly #virtualFileSystem = typia.createIs<VirtualFileSystem>();
-    
+
     @Logger.LogFunction(true)
     static Is(vfs: unknown): vfs is VirtualFileSystem {
-        return VirtualFileSystem.#virtualFileSystem(vfs)
+        return vfs instanceof VirtualFileSystem
     }
-    
+
+
     // dynamic
 
     Files: { [key: string]: Readable } = {};
@@ -29,7 +26,7 @@ export class VirtualFileSystem {
 
     @Logger.LogFunction(true)
     ReadFile(filePath: string): Readable {
-        return this.Files[filePath] // Return the stored stream or null if not found
+        return this.Files[filePath]! // Return the stored stream or null if not found
     }
 
     @Logger.LogFunction(true)

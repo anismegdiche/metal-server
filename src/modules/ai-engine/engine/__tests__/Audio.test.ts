@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Audio } from '../Audio';
-import { TAiRunArguments } from '../../@types';
+import type { TAiRunArguments } from '../../@types';
 
-const spyAxios = jest.spyOn(axios, 'post');
+const spyAxios = vi.spyOn(axios, 'post');
 
 const audio = new Audio();
 

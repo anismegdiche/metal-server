@@ -1,25 +1,7 @@
- 
+import { mock_Logger } from "../../../__tests__/mockers"
+mock_Logger()
 import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { Sandbox } from "../Sandbox"
-
-
-// Mock the Logger
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
-    }
-}))
 
 describe('Sandbox', () => {
     // Sandbox context is created successfully

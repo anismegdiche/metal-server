@@ -2,8 +2,8 @@
 //
 //
 import { STORAGE } from "../../storage/@consts";
-import { TStorageConfig } from "../../storage/types/TStorageConfig";
-import { TStorageFilesDataOptionsContent } from "./TStorageFilesDataOptionsContent";
+import type { TStorageConfig } from "../../storage/types/TStorageConfig";
+import type { TStorageFilesDataOptionsContent } from "./TStorageFilesDataOptionsContent";
 
 
 export type TStorageFilesDataOptions = {

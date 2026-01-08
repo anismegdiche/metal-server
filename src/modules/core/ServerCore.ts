@@ -1,7 +1,7 @@
 //
 //
 //
-import { LogLevelDesc } from 'loglevel'
+import type { LogLevelDesc } from 'loglevel'
 import os from 'node:os'
 //
 import { Convert } from "../../utils/Convert"
@@ -9,8 +9,8 @@ import { Logger } from '../../utils/Logger'
 //
 //
 import { AuthProvider } from '../auth/AuthProvider'
+import type { U_config_server_authentication } from '../auth/types/U_config_server_authentication'
 import { Roles } from '../auth/Roles'
-import { TAuthentication } from '../auth/types/TAuthentication'
 import { Cache } from '../cache/Cache'
 import { Plans } from '../plan/Plans'
 import { Schedule } from '../plan/Schedule'
@@ -27,9 +27,9 @@ import { AiEngine } from '../ai-engine/AiEngine'
 
 //
 export class ServerCore {
-
-    static CurrentPath: string  //NOSONAR
+    static readonly CurrentPath = process.cwd()
     static readonly Cpus = os.cpus().length ?? 1
+    static readonly Memory = os.freemem()
     static readonly Platform = process.platform
 
 
@@ -57,8 +57,8 @@ export class ServerCore {
         await AiEngine.Init()
 
         // plans
-        Plans.Init()
-        Schedule.Init()
+        await Plans.Init()
+        await Schedule.Init()
 
 
         await ServerCore.InitAuthentication()
@@ -76,7 +76,7 @@ export class ServerCore {
 
     @Logger.LogFunction()
     static async InitAuthentication(): Promise<void> {
-        const authentication = ConfigManager.Get<TAuthentication>("server.authentication")
+        const authentication = ConfigManager.Get<U_config_server_authentication>("server.authentication")
         await AuthProvider.SetCurrent(authentication.provider)
         AuthProvider.Provider.Init()
         Roles.Init()

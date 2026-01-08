@@ -1,5 +1,5 @@
-import { TConvertParams } from '../../../utils/TypeUtils';
-import { TCsvContentConfig } from './TCsvContentConfig';
+import type { TConvertParams } from '../../../utils/TypeUtils';
+import type { TCsvContentConfig } from './TCsvContentConfig';
 
 
 export type TCsvContentParams = Omit<Required<{

@@ -2,7 +2,7 @@
 //
 //
 import { DOCKER } from '../consts/DOCKER';
-import { TAiDockerService } from '../types/TAiDockerService';
+import type { TAiDockerService } from '../types/TAiDockerService';
 
 
 //

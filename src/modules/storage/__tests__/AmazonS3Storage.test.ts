@@ -1,61 +1,60 @@
-/* eslint-disable no-import-assign */
- 
+
+
+import { mock_Logger } from "../../../__tests__/mockers"
+mock_Logger()
+import { type Mock } from 'vitest'
 import { AmazonS3Storage, FileTypeFromBuffer } from '../providers/AmazonS3Storage'
 import { S3Client } from '@aws-sdk/client-s3'
 import { Readable } from 'node:stream'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../../modules/errors/HttpErrors"
-import { TConfigSource } from "../../source/types/TConfigSource"
+import type { TConfigSource } from "../../source/types/TConfigSource"
 import { DATA_PROVIDER } from "../../source/@consts"
-import typia from 'typia'
+
+vi.mock('load-esm', () => ({
+    loadEsm: vi.fn(async (name: string) => {
+        if (name === 'file-type') {
+            return {
+                fileTypeFromBuffer: vi.fn().mockResolvedValue({
+                    ext: 'txt',
+                    mime: 'text/plain'
+                })
+            }
+        }
+    })
+}))
 
 // Mock AWS S3 Client
-jest.mock('@aws-sdk/client-s3', () => {
+vi.mock('@aws-sdk/client-s3', () => {
     return {
-        S3Client: jest.fn(),
-        GetObjectCommand: jest.fn((params) => ({ ...params })),
-        PutObjectCommand: jest.fn((params) => ({ ...params })),
-        DeleteObjectCommand: jest.fn((params) => ({ ...params })),
-        ListObjectsV2Command: jest.fn((params) => ({ ...params }))
+        S3Client: vi.fn(function () { }),
+        GetObjectCommand: vi.fn(function (params) { return { ...params } }),
+        PutObjectCommand: vi.fn(function (params) { return { ...params } }),
+        DeleteObjectCommand: vi.fn(function (params) { return { ...params } }),
+        ListObjectsV2Command: vi.fn(function (params) { return { ...params } }),
+        CopyObjectCommand: vi.fn(function (params) { return { ...params } })
     }
 })
 
-// Mock the Logger decorator
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
-    }
-}))
+// Base mock configuration for tests
+const baseParams: Partial<TConfigSource> = {
+    host: '127.0.0.1',
+    port: 3306,
+    user: 'test-user',
+    password: 'test-password',
+    database: 'test-db'
+}
 
-const rndParams = typia.random<TConfigSource>()
-
-let fileTypeFromBuffer: jest.Mock;
+// let fileTypeFromBuffer: Mock; // Removed unused
 
 beforeAll(async () => {
-    // Mock FileTypeFromBuffer
-    fileTypeFromBuffer = jest.fn().mockResolvedValue({
-        ext: 'txt',
-        mime: 'text/plain'
-    });
-
-    (FileTypeFromBuffer as any) = fileTypeFromBuffer;
+    // Wait for the real FileTypeFromBuffer promise to resolve (controlled by our load-esm mock)
     await FileTypeFromBuffer;
 })
 
 describe('AmazonS3Storage', () => {
     let storage: AmazonS3Storage
     const mockConfig: TConfigSource = {
-        ...rndParams,
+        ...baseParams,
         provider: DATA_PROVIDER.STORAGE,
         host: 's3.amazonaws.com',
         options: {
@@ -63,7 +62,7 @@ describe('AmazonS3Storage', () => {
             "s3-secret-access-key": 'test-secret',
             "s3-region": 'us-east-1',
             "s3-bucket": 'test-bucket',
-            "s3-endpoint": 'http://localhost:9000'
+            "s3-endpoint": 'http://127.0.0.1:9000'
         }
     }
 
@@ -73,7 +72,7 @@ describe('AmazonS3Storage', () => {
     })
 
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         storage = new AmazonS3Storage()
         storage.SetConfig(mockConfig)
     })
@@ -81,11 +80,11 @@ describe('AmazonS3Storage', () => {
     describe('Connect', () => {
         it('should connect successfully with valid credentials', async () => {
             const mockS3Client = {
-                send: jest.fn().mockResolvedValue({})
+                send: vi.fn().mockResolvedValue({})
             } as unknown as S3Client
 
             // Set up the S3Client mock
-            (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
+            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
 
             await storage.Connect()
         })
@@ -105,7 +104,7 @@ describe('AmazonS3Storage', () => {
             }
 
             const mockS3Client = {
-                send: jest.fn().mockResolvedValue({
+                send: vi.fn().mockResolvedValue({
                     $metadata: {},
                     ContentLength: 100,
                     $response: {
@@ -115,10 +114,10 @@ describe('AmazonS3Storage', () => {
             };
 
             // Set up the S3Client mock
-            (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
+            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
 
             await storage.Connect()
-            const exists = await storage.FileIsExist('','test.txt')
+            const exists = await storage.FileIsExist('', 'test.txt')
             expect(exists).toBe(true)
             expect(mockS3Client.send).toHaveBeenCalledWith(mockCommand)
         })
@@ -130,7 +129,7 @@ describe('AmazonS3Storage', () => {
             }
 
             const mockS3Client = {
-                send: jest.fn().mockRejectedValue({
+                send: vi.fn().mockRejectedValue({
                     $metadata: {},
                     name: 'NoSuchKey',
                     code: 'NoSuchKey',
@@ -142,10 +141,10 @@ describe('AmazonS3Storage', () => {
             };
 
             // Set up the S3Client mock
-            (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
+            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
 
             await storage.Connect()
-            const exists = await storage.FileIsExist('','nonexistent.txt')
+            const exists = await storage.FileIsExist('', 'nonexistent.txt')
             expect(exists).toBe(false)
             expect(mockS3Client.send).toHaveBeenCalledWith(mockCommand)
         })
@@ -158,7 +157,7 @@ describe('AmazonS3Storage', () => {
             mockStream.push(null)
 
             const mockS3Client = {
-                send: jest.fn().mockResolvedValue({
+                send: vi.fn().mockResolvedValue({
                     $metadata: {},
                     Body: mockStream,
                     ContentType: 'application/octet-stream',
@@ -169,10 +168,10 @@ describe('AmazonS3Storage', () => {
             } as unknown as S3Client
 
             // Set up the S3Client mock
-            (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
+            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
 
             await storage.Connect()
-            const stream = await storage.FileRead('','test.txt')
+            const stream = await storage.FileRead('', 'test.txt')
 
             const chunks: string[] = []
             for await (const chunk of stream) {
@@ -190,7 +189,7 @@ describe('AmazonS3Storage', () => {
 
         it('should throw error for non-existing file', async () => {
             const mockS3Client = {
-                send: jest.fn().mockRejectedValue({
+                send: vi.fn().mockRejectedValue({
                     $metadata: {},
                     name: 'NoSuchKey',
                     code: 'NoSuchKey',
@@ -206,10 +205,10 @@ describe('AmazonS3Storage', () => {
             } as unknown as S3Client
 
             // Set up the S3Client mock
-            (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
+            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
 
             await storage.Connect()
-            await expect(storage.FileRead('','nonexistent.txt'))
+            await expect(storage.FileRead('', 'nonexistent.txt'))
                 .rejects.toThrow(HttpErrorNotFound)
         })
     })
@@ -217,7 +216,7 @@ describe('AmazonS3Storage', () => {
     describe('Write', () => {
         it('should write file successfully', async () => {
             const mockS3Client = {
-                send: jest.fn().mockResolvedValue({
+                send: vi.fn().mockResolvedValue({
                     $metadata: {},
                     ETag: 'test-etag',
                     $response: {
@@ -227,14 +226,14 @@ describe('AmazonS3Storage', () => {
             } as unknown as S3Client
 
             // Set up the S3Client mock
-            (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
+            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
 
             await storage.Connect()
             const content = new Readable()
             content.push('test content')
             content.push(null)
 
-            await storage.FileWrite('','test.txt', content)
+            await storage.FileWrite('', 'test.txt', content)
             expect(mockS3Client.send).toHaveBeenCalledWith(
                 expect.objectContaining({
                     Bucket: 'test-bucket',
@@ -253,7 +252,7 @@ describe('AmazonS3Storage', () => {
             }
 
             const mockS3Client = {
-                send: jest.fn().mockResolvedValue({
+                send: vi.fn().mockResolvedValue({
                     $metadata: {},
                     Contents: [
                         {
@@ -274,7 +273,7 @@ describe('AmazonS3Storage', () => {
             };
 
             // Set up the S3Client mock
-            (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
+            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
 
             await storage.Connect()
             const result = await storage.FolderListFiles()
@@ -293,7 +292,7 @@ describe('AmazonS3Storage', () => {
 
         it('should handle error when listing files', async () => {
             const mockS3Client = {
-                send: jest.fn().mockRejectedValue({
+                send: vi.fn().mockRejectedValue({
                     $metadata: {},
                     name: 'InternalError',
                     code: 'InternalError',
@@ -309,7 +308,7 @@ describe('AmazonS3Storage', () => {
             } as unknown as S3Client
 
             // Set up the S3Client mock
-            (S3Client as jest.Mock).mockImplementation(() => mockS3Client)
+            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
 
             await storage.Connect()
             await expect(storage.FolderListFiles()).rejects.toThrow(HttpErrorInternalServerError)

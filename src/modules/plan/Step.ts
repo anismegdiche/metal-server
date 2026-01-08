@@ -1,19 +1,13 @@
 //
 //
 // 
-import isEmpty from "lodash/isEmpty"
-import isObject from "lodash/isObject"
-import isString from "lodash/isString"
-import keys from "lodash/keys"
-import map from "lodash/map"
-import merge from "lodash/merge"
-import omit from "lodash/omit"
-import omitBy from "lodash/omitBy"
-import { is } from "typia"
-import { UUID } from "uuidv7"
+import { isEmpty, isObject, isString, keys, map, merge, omit, omitBy } from "lodash-es"
+
 //
-import { DataTable, dataTable_fieldIsSystem, TRow } from "../../types/DataTable"
-import { TJson } from "../../types/TJson"
+import type { TOrderBy, TRow } from "../../types/DataTable"
+import { DataTable, dataTable_fieldIsSystem } from "../../types/DataTable"
+import type { TJson } from "../../types/TJson"
+import type { TUuidv7 } from "../../types/TUuidv7"
 import { Assert } from "../../utils/Assert"
 import { DataTableUtils, JOIN_TYPE } from "../../utils/DataTableUtils"
 import { Helper } from "../../utils/Helper"
@@ -21,25 +15,58 @@ import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
 import { PlaceHolder, RX_JS_CODE } from "../../utils/PlaceHolder"
 import { StringUtils } from "../../utils/StringUtils"
-import { TypeUtils } from "../../utils/TypeUtils"
-import { TAiRunArguments } from "../ai-engine/@types"
+import type { TAiRunArguments } from "../ai-engine/@types"
 import { AiEngine } from "../ai-engine/AiEngine"
-import { IAiEngine } from "../ai-engine/base/IAiEngine"
+import type { IAiEngine } from "../ai-engine/base/IAiEngine"
 import { METADATA } from "../core/@consts"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
 import { Sandbox } from "../sandbox/Sandbox"
-import { TContext } from "../sandbox/types/TContext"
+import type { TContext } from "../sandbox/types/TContext"
+import { z_TSchemaResponse } from "../schema/types/TSchemaResponse"
 import { Schema } from "../schema/Schema"
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../schema/types/TSchemaRequest'
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../schema/types/TSchemaRequest'
 import { DATA_ENTITY_TYPE } from "../source/@consts"
 import { MemoryData } from "../source/providers/MemoryData"
-import { TDataListEntity } from "../source/types/TDataListEntity"
-import { TOptionalParameter } from "../source/types/TOptionalParameter"
+import type { TDataListEntity } from "../source/types/TDataListEntity"
+import type { TOptionalParameter } from "../source/types/TOptionalParameter"
 import { STEP } from "./@consts"
 import { Plans } from "./Plans"
-import { TStep } from "./types/TStep"
-import { TStepArgsAnonymize, TStepArgsDebug, TStepArgsDelete, TStepArgsInsert, TStepArgsJoin, TStepArgsListEntities, TStepArgsOmit, TStepArgsPick, TStepArgsRemoveDuplicates, TStepArgsRun, TStepArgsSelect, TStepArgsSort, TStepArgsSync, TStepArgsUpdate } from "./types/TStepArgs"
+import type { TStep } from "./types/TStep"
+import type {
+    U_config_plans_plan_entity_anonymize_Params,
+    U_config_plans_plan_entity_break_Params,
+    U_config_plans_plan_entity_debug_Params,
+    U_config_plans_plan_entity_delete_Params,
+    U_config_plans_plan_entity_insert_Params,
+    U_config_plans_plan_entity_join_Params,
+    U_config_plans_plan_entity_list_entities_Params,
+    U_config_plans_plan_entity_omit_Params,
+    U_config_plans_plan_entity_pick_Params,
+    U_config_plans_plan_entity_remove_duplicates_Params,
+    U_config_plans_plan_entity_run_Params,
+    U_config_plans_plan_entity_select_Params,
+    U_config_plans_plan_entity_sort_Params,
+    U_config_plans_plan_entity_sync_Params,
+    U_config_plans_plan_entity_update_Params
+} from "./types/U_config_plans_plan_entity_step"
+import {
+    z_U_config_plans_plan_entity_anonymize_Params,
+    z_U_config_plans_plan_entity_break_Params,
+    z_U_config_plans_plan_entity_debug_Params,
+    z_U_config_plans_plan_entity_delete_Params,
+    z_U_config_plans_plan_entity_insert_Params,
+    z_U_config_plans_plan_entity_join_Params,
+    z_U_config_plans_plan_entity_list_entities_Params,
+    z_U_config_plans_plan_entity_omit_Params,
+    z_U_config_plans_plan_entity_pick_Params,
+    z_U_config_plans_plan_entity_remove_duplicates_Params,
+    z_U_config_plans_plan_entity_run_Params,
+    z_U_config_plans_plan_entity_select_Params,
+    z_U_config_plans_plan_entity_sort_Params,
+    z_U_config_plans_plan_entity_sync_Params,
+    z_U_config_plans_plan_entity_update_Params
+} from "./types/U_config_plans_plan_entity_step"
 
 
 //
@@ -82,7 +109,8 @@ export class Step {
     @Logger.LogFunction()
     static async Select(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
 
-        Assert.Var<TStepArgsSelect>(step.stepArgs, is<TStepArgsSelect>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_select_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_select_Params.safeParse(step.stepArgs).success,
             `${Logger.Out} ${STEP.SELECT}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`)
 
         const { stepArgs } = step
@@ -94,7 +122,7 @@ export class Step {
             Step._dataProvider.GetContext($__schemaRequest)
         )
 
-        return ($__schemaRequest.schema)
+        return ($__schemaRequest.schema && $__schemaRequest.entity)
             ? await Step._selectSchema(step)
             : await Step._selectPlan(step, $context)
     }
@@ -107,6 +135,7 @@ export class Step {
 
         // only schema --> error
         Assert.Var<string>(entity, `${STEP.SELECT}: entity is required`)
+        Assert.Var<string>(schema, `${STEP.SELECT}: schema is required`)
 
         // data from schema
         const _intResp = await Schema.Select(<TSchemaRequestSelect>{
@@ -114,7 +143,7 @@ export class Step {
             schema: schema ?? currentSchemaName
         })
 
-        if (_intResp.Body && TypeUtils.IsSchemaResponseWithData(_intResp.Body))
+        if (_intResp.Body && Schema.IsSchemaResponse(_intResp.Body) && (await _intResp.Body.data.Count()) > 0)
             return _intResp.Body.data
         else
             throw new HttpErrorInternalServerError(`${Logger.Out} ${STEP.SELECT}: Schema '${schema}' and entity '${entity}' are not valid`)
@@ -166,7 +195,7 @@ export class Step {
             entity
         })
 
-        if (intResp.Body && TypeUtils.IsSchemaResponseWithData(intResp.Body))
+        if (intResp.Body && Schema.IsSchemaResponse(intResp.Body) && (await intResp.Body.data.Count()) > 0)
             return intResp.Body.data
 
         return undefined
@@ -175,7 +204,8 @@ export class Step {
     @Logger.LogFunction()
     static async Insert(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
 
-        Assert.Var<TStepArgsInsert>(step.stepArgs, is<TStepArgsInsert>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_insert_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_insert_Params.safeParse(step.stepArgs).success,
             `${Logger.Out} ${STEP.INSERT}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`
         )
 
@@ -236,7 +266,8 @@ export class Step {
     @Logger.LogFunction()
     static async Update(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
 
-        Assert.Var<TStepArgsUpdate>(step.stepArgs, is<TStepArgsUpdate>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_update_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_update_Params.safeParse(step.stepArgs).success,
             `${Logger.Out} ${STEP.UPDATE}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`
         )
 
@@ -305,7 +336,8 @@ export class Step {
     static async Delete(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
 
 
-        Assert.Var<TStepArgsDelete>(step.stepArgs, is<TStepArgsDelete>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_delete_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_delete_Params.safeParse(step.stepArgs).success,
             `${Logger.Out} ${STEP.DELETE}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`
         )
 
@@ -366,7 +398,8 @@ export class Step {
     static async ListEntities(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
 
 
-        Assert.Var<TStepArgsListEntities>(step.stepArgs, is<TStepArgsListEntities>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_list_entities_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_list_entities_Params.safeParse(step.stepArgs).success,
             `${STEP.LIST_ENTITIES}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`)
 
         const { stepArgs } = step
@@ -378,7 +411,7 @@ export class Step {
             Step._dataProvider.GetContext($__schemaRequest)
         )
 
-        return ($__schemaRequest.schema)
+        return ($__schemaRequest?.schema)
             ? await Step._listEntitiesSchema(step)
             : await Step._listEntitiesPlan(step, $context)
     }
@@ -395,10 +428,20 @@ export class Step {
             schema: schema ?? currentSchemaName
         })
 
-        if (_intResp.Body && TypeUtils.IsSchemaResponseWithData(_intResp.Body))
+        const _isSchemaResponse = Schema.IsSchemaResponse(_intResp.Body)
+
+        if (_intResp.Body && _isSchemaResponse)
             return _intResp.Body.data
-        else
+        else {
+            console.error("Validation debug:", {
+                hasBody: !!_intResp.Body,
+                body: _intResp.Body,
+                isSchemaResponse: _intResp.Body ? Schema.IsSchemaResponse(_intResp.Body) : false,
+                dataCount: _intResp.Body && Schema.IsSchemaResponse(_intResp.Body) ? await _intResp.Body.data.Count() : "N/A",
+                validationError: _intResp.Body ? z_TSchemaResponse.safeParse(_intResp.Body).error : "No body"
+            });
             throw new HttpErrorNotFound(`${STEP.LIST_ENTITIES}: Schema '${schema}' is not valid`)
+        }
     }
 
     private static async _listEntitiesPlan(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
@@ -418,7 +461,8 @@ export class Step {
     @Logger.LogFunction()
     static async Join(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
 
-        Assert.Var<TStepArgsJoin>(step.stepArgs, is<TStepArgsJoin>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_join_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_join_Params.safeParse(step.stepArgs).success,
             `${STEP.JOIN}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`
         )
 
@@ -429,13 +473,23 @@ export class Step {
 
         const $__stepArgs = PlaceHolder.EvaluateJsCode<Record<string, string>>(stepArgs, new Sandbox($context)) as Record<string, string>
 
-        const { schema, entity, type, "left-field": leftField, "right-field": rightField } = $__stepArgs
+        const {
+            schema,
+            entity,
+            type,
+            "left-field": leftField,
+            "right-field": rightField
+        } = $__stepArgs
 
-        let dtRight = new DataTable(entity)
+        // Assert.Var<string>(schema, `${STEP.JOIN}: schema is required`)
+        Assert.Var<string>(entity, `${STEP.JOIN}: entity is required`)
+        Assert.Var<string>(type, `${STEP.JOIN}: type is required`)
+        Assert.Var<string>(leftField, `${STEP.JOIN}: left-field is required`)
+        Assert.Var<string>(rightField, `${STEP.JOIN}: right-field is required`)
 
         const requestToSchema: TStep = {
             ...step,
-            currentDataTable: dtRight,
+            currentDataTable: <DataTable>{},
             stepArgs: {
                 schema,
                 entity
@@ -443,32 +497,36 @@ export class Step {
         }
 
         const requestToCurrentPlan: TSchemaRequest = {
-            schema,
+            schema: schema ?? step.currentSchemaName,
             source: currentPlanName,
             entity
         }
 
-        dtRight = (schema)
+        const dtRight = (schema)
             ? await Step.Select(requestToSchema)
             : await Plans.Plans.get(currentPlanName)!.ProcessSchemaRequest(requestToCurrentPlan)
 
-        return this._joinCaseMap[type](step.currentDataTable, dtRight, leftField, rightField) ??
+        using _ = dtRight
+
+        return this._joinCaseMap[type]!(step.currentDataTable, dtRight, leftField, rightField) ??
             (Helper.CaseMapNotFound(type) && step.currentDataTable)
     }
 
     @Logger.LogFunction()
     static async Sort(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TStepArgsSort>(step.stepArgs, is<TStepArgsSort>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_sort_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_sort_Params.safeParse(step.stepArgs).success,
             `${STEP.SORT}: Wrong argument passed`)
 
-        const params = step.stepArgs
+        const params = step.stepArgs as TOrderBy
         const { currentDataTable } = step
         return currentDataTable.Sort(params)
     }
 
     @Logger.LogFunction()
     static async Debug(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TStepArgsDebug>(step.stepArgs, is<TStepArgsDebug>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_debug_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_debug_Params.safeParse(step.stepArgs).success,
             `${STEP.DEBUG}: Wrong argument passed`)
 
         const debug = step.stepArgs
@@ -484,7 +542,8 @@ export class Step {
     @Logger.LogFunction(true)
     static async Run(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
 
-        Assert.Var<TStepArgsRun>(step.stepArgs, is<TStepArgsRun>(step.stepArgs), `${STEP.RUN}: Wrong argument passed`)
+        Assert.Var<U_config_plans_plan_entity_run_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_run_Params.safeParse(step.stepArgs).success, `${STEP.RUN}: Wrong argument passed`)
 
         const DEFAULT = {
             output: null
@@ -498,7 +557,7 @@ export class Step {
             }
         )
 
-        const stepArgs = merge(DEFAULT, step.stepArgs) as TStepArgsRun
+        const stepArgs = merge(DEFAULT, step.stepArgs) as U_config_plans_plan_entity_run_Params
 
         const { ai, task, input, output } = stepArgs
         const aiTask = `${ai}-${task}`
@@ -511,7 +570,9 @@ export class Step {
         for await (const _row of await step.currentDataTable.Rows({ includeIndex: true })) {
             rowPromises.push((async () => {
                 Assert.Var<string>(_row.__idx__, `${STEP.RUN}: Index is not defined`)
-                const __idx__: UUID = _row.__idx__
+                Assert.Condition(_row?.content, `${STEP.RUN}: content is not defined`)
+
+                const __idx__: TUuidv7 = _row.__idx__
                 const __row = omitBy(_row, dataTable_fieldIsSystem)
 
                 $context.$row = __row
@@ -525,7 +586,7 @@ export class Step {
                 const __result = <Record<string, any>>(
                     await aiEngine.Run({
                         data: $__data,
-                        ...step.stepArgs as TStepArgsRun
+                        ...step.stepArgs as U_config_plans_plan_entity_run_Params
                     } as TAiRunArguments)
                 )
 
@@ -564,12 +625,13 @@ export class Step {
     @Logger.LogFunction()
     static async Sync(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
 
-        Assert.Var<TStepArgsSync>(step.stepArgs, is<TStepArgsSync>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_sync_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_sync_Params.safeParse(step.stepArgs).success,
             `${Logger.Out} ${[STEP.SYNC]}: Wrong argument passed`)
 
         const stepArgs = step.stepArgs
 
-        const $__stepArgs = PlaceHolder.EvaluateJsCode<TStepArgsSync>(stepArgs, new Sandbox($context)) as TStepArgsSync
+        const $__stepArgs = PlaceHolder.EvaluateJsCode<U_config_plans_plan_entity_sync_Params>(stepArgs, new Sandbox($context)) as U_config_plans_plan_entity_sync_Params
 
         const { from, to, id } = $__stepArgs
 
@@ -637,7 +699,8 @@ export class Step {
 
     @Logger.LogFunction(true)
     static async Anonymize(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TStepArgsAnonymize>(step.stepArgs, is<TStepArgsAnonymize>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_anonymize_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_anonymize_Params.safeParse(step.stepArgs).success,
             `${Logger.Out} ${[STEP.ANONYMIZE]}: Wrong argument passed`)
         return DataTableUtils.Anonymize(step.currentDataTable, step.stepArgs)
     }
@@ -645,7 +708,8 @@ export class Step {
     @Logger.LogFunction(true)
     static async RemoveDuplicates(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
 
-        Assert.Var<TStepArgsRemoveDuplicates>(step.stepArgs, is<TStepArgsRemoveDuplicates>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_remove_duplicates_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_remove_duplicates_Params.safeParse(step.stepArgs).success,
             `${Logger.Out} ${[STEP.REMOVE_DUPLICATE]}: Wrong argument passed`)
 
         const { keys, method, strategy, condition } = step.stepArgs
@@ -659,13 +723,17 @@ export class Step {
     }
 
     @Logger.LogFunction(true)
-    static async Break(_step: TStep, _$context?: Partial<TContext>): Promise<undefined> {
+    static async Break(step: TStep, _$context?: Partial<TContext>): Promise<undefined> {
+        Assert.Var<U_config_plans_plan_entity_break_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_break_Params.safeParse(step.stepArgs).success,
+            `${STEP.BREAK}: Wrong argument passed`)
         throw new Error("__BREAK__")
     }
 
     @Logger.LogFunction()
     static async Pick(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TStepArgsPick>(step.stepArgs, is<TStepArgsPick>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_pick_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_pick_Params.safeParse(step.stepArgs).success,
             `${STEP.PICK}: Wrong argument passed`)
 
         const params = step.stepArgs
@@ -683,7 +751,8 @@ export class Step {
 
     @Logger.LogFunction(true)
     static async Omit(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TStepArgsOmit>(step.stepArgs, is<TStepArgsOmit>(step.stepArgs),
+        Assert.Var<U_config_plans_plan_entity_omit_Params>(step.stepArgs,
+            z_U_config_plans_plan_entity_omit_Params.safeParse(step.stepArgs).success,
             `${Logger.Out} ${[STEP.OMIT]}: Wrong argument passed`)
 
         return step.currentDataTable.Omit(step.stepArgs)

@@ -1,26 +1,26 @@
 //
 //
 //
-import mssql, { ConnectionPool, IOptions } from 'mssql'
-import _ from "lodash"
+import mssql, { ConnectionPool, type IOptions } from 'mssql'
+import * as _ from 'lodash-es'
 //
 import { RESPONSE } from '../../core/@consts'
-import { TConfigSource } from "../types/TConfigSource"
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
 import { DataTable } from "../../../types/DataTable"
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import { Logger } from '../../../utils/Logger'
 import { Cache } from '../../cache/Cache'
 import { DATA_PROVIDER } from "../@consts"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import { HttpResponse } from "../../core/HttpResponse"
 import { absDataProvider } from "../base/absDataProvider"
-import { TContext } from "../../sandbox/types/TContext"
+import type { TContext } from "../../sandbox/types/TContext"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
-import { TIpPort } from "../../../types/TIpPort"
+import type { TIpPort } from "../../../types/TIpPort"
 import { Assert } from '../../../utils/Assert'
 
 
@@ -45,7 +45,7 @@ export class SqlServerData extends absDataProvider {
     Connection?: ConnectionPool = undefined
 
     DEFAULT: Partial<TSqlServerDataConfig> = {
-        host: 'localhost',
+        host: '127.0.0.1',
         database: 'master',
         user: 'sa',
         password: '',

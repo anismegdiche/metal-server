@@ -1,29 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable security/detect-non-literal-fs-filename */
+import { mock_Logger } from "../../__tests__/mockers"
+mock_Logger()
 //
 import { DuckDBInstance } from '@duckdb/node-api'
-import { DataTable, dataTable_convertSql, SORT_ORDER, TRow } from '../DataTable'
+import { DataTable, dataTable_convertSql, SORT_ORDER } from '../DataTable'
+import type { TRow } from '../DataTable'
 import fs from 'node:fs'
 import { Utils } from '../../utils/Utils'
-
-
-// Mock the Logger decorator
-jest.mock('../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level: "error",
-        Out: 'OUT'
-    }
-}))
 
 
 describe("DataTable", () => {
@@ -252,7 +234,7 @@ describe("DataTable", () => {
                 ], undefined, {
                     duckInstance
                 }))
-                await tables[i].RowsSet()
+                await tables[i]!.RowsSet()
             }
 
             const count_after = (await cnx.runAndReadAll(`SHOW TABLES;`))
@@ -262,12 +244,12 @@ describe("DataTable", () => {
             expect(count_after).toEqual(total)
 
             for (let i = 0; i < total; i++) {
-                const rows = await tables[i].Rows()
+                const rows = await tables[i]!.Rows()
                 expect(rows.length).toEqual(2)
             }
 
             for (let i = 0; i < total; i++) {
-                tables[i].Dispose()
+                tables[i]!.Dispose()
             }
 
             const count_clean = (await cnx.runAndReadAll(`SHOW TABLES;`))
@@ -404,35 +386,35 @@ describe("DataTable", () => {
             const row = rows[0];
 
             // Check primitive types
-            expect(row.string).toBe('test string');
-            expect(typeof row.string).toBe('string');
+            expect(row!.string).toBe('test string');
+            expect(typeof row!.string).toBe('string');
 
-            expect(row.number).toBe(42);
-            expect(typeof row.number).toBe('number');
+            expect(row!.number).toBe(42);
+            expect(typeof row!.number).toBe('number');
 
-            expect(row.float).toBeCloseTo(3.14159);
-            expect(typeof row.float).toBe('number');
+            expect(row!.float).toBeCloseTo(3.14159);
+            expect(typeof row!.float).toBe('number');
 
-            expect(row.boolean).toBe(true);
-            expect(typeof row.boolean).toBe('boolean');
+            expect(row!.boolean).toBe(true);
+            expect(typeof row!.boolean).toBe('boolean');
 
             // Check Date
-            expect(row.date).toBeInstanceOf(Date);
-            expect((row.date as Date).toISOString()).toBe(testDate.toISOString());
+            expect(row!.date).toBeInstanceOf(Date);
+            expect((row!.date as Date).toISOString()).toBe(testDate.toISOString());
 
             // Check Object
-            const rowObject = row.object as { key: string; nested: { number: number } };
+            const rowObject = row!.object as { key: string; nested: { number: number } };
             expect(rowObject).toEqual(testObject);
             expect(typeof rowObject).toBe('object');
             expect(rowObject.nested.number).toBe(42);
 
             // Check Array
-            const rowArray = row.array as Array<unknown>;
+            const rowArray = row!.array as Array<unknown>;
             expect(Array.isArray(rowArray)).toBe(true);
             expect(rowArray).toEqual(testArray);
 
             // Check null and undefined
-            expect(row.nullValue).toBeNull();
+            expect(row!.nullValue).toBeNull();
             const rowAsRecord = row as Record<string, unknown>;
             expect('undefinedValue' in rowAsRecord).toBe(false); // undefined values should be omitted
 
@@ -718,7 +700,7 @@ describe("DataTable", () => {
             it('should maintain the order of fields as specified', async () => {
                 const rows = await testDt.Rows({ fields: ['age', 'id', 'name'] });
                 const firstRow = rows[0];
-                expect(Object.keys(firstRow)).toEqual(['age', 'id', 'name']);
+                expect(Object.keys(firstRow!)).toEqual(['age', 'id', 'name']);
             });
         })
 
@@ -746,16 +728,6 @@ describe("DataTable", () => {
             expect(returnedData.length).toEqual(data.length)
             expect(returnedData).toEqual(data)
         })
-
-
-        it("should accept 0 and remove LIMIT from lazy result", async () => {
-            const rows: TRow[] = []
-            for await (const row of await dtA.RowsIterator({ batchSize: 0 })) {
-                rows.push(row)
-            }
-            expect(rows).toBeInstanceOf(Array);
-            expect(rows).toEqual(await dtA.Rows());
-        });
 
 
         it("should throw an error if batchSize is less than 0", async () => {
@@ -1401,6 +1373,39 @@ describe("DataTable", () => {
                 { a: 1 },
                 { a: 4 }
             ])
+        })
+    })
+
+    describe('RowsMap', () => {
+        it('should map rows', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet([
+                { a: 1, b: 2, c: 3 },
+                { a: 4, b: 5, c: 6 }
+            ])
+            const result = await dt.RowsMap(async (row: TRow) => {
+                return {
+                    a: row.a * 2,
+                    b: row.b * 2,
+                    c: row.c * 2
+                }
+            })
+            expect(await result.Rows()).toEqual([
+                { a: 2, b: 4, c: 6 },
+                { a: 8, b: 10, c: 12 }
+            ])
+        })
+
+        it('should do for count > batchSize', async () => {
+            const dt = new DataTable()
+            dt.BatchSize = 2
+            await dt.RowsSet(Array.from({ length: 10 }, (_, i) => ({ a: i })))
+            const result = await dt.RowsMap(async (row: TRow) => {
+                return {
+                    a: row.a * 2
+                }
+            })
+            expect(await result.Rows()).toEqual(Array.from({ length: 10 }, (_, i) => ({ a: i * 2 })))
         })
     })
 

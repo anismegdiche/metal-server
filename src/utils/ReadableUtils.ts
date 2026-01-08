@@ -4,58 +4,79 @@
 import { PassThrough, Readable, Writable } from 'node:stream'
 import { ReadStream } from 'node:fs'
 //
-import { Logger } from "./Logger"
 
 
 export class ReadableUtils {
 
-    @Logger.LogFunction(true)
     static async ToString(readable: Readable): Promise<string> {
         let result = ''
-        
+
         if (!readable.readable)
             return result
-        
+
         return new Promise((resolve, reject) => {
             let hasData = false
 
-            readable.on('data', (chunk) => {
+            const onData = (chunk: any) => {
                 hasData = true
-                result += chunk.toString() // Convert each chunk to string and append
-            })
+                result += chunk.toString()
+            }
 
-            readable.on('end', () => {
-                if (hasData) {
-                    resolve(result) // Resolve with the complete string
-                } else {
-                    resolve('') // If no data was received, resolve with an empty string
-                }
-            })
+            const onEnd = () => {
+                cleanup()
+                resolve(hasData ? result : '')
+            }
 
-            readable.on('error', (err) => {
-                reject(err) // Reject on error
-            })
+            const onError = (err: Error) => {
+                cleanup()
+                reject(err)
+            }
+
+            const cleanup = () => {
+                readable.removeListener('data', onData)
+                readable.removeListener('end', onEnd)
+                readable.removeListener('error', onError)
+            }
+
+            readable.on('data', onData)
+            readable.on('end', onEnd)
+            readable.on('error', onError)
         })
     }
 
-    @Logger.LogFunction(true)
     static async ToBuffer(stream: Readable): Promise<Buffer> {
         const chunks: any[] = []
         return new Promise((resolve, reject) => {
-            stream.on('data', (chunk) => chunks.push(chunk))
-            stream.on('end', () => resolve(Buffer.concat(chunks)))
-            stream.on('error', reject)
+            const onData = (chunk: any) => chunks.push(chunk)
+
+            const onEnd = () => {
+                cleanup()
+                resolve(Buffer.concat(chunks))
+            }
+
+            const onError = (err: Error) => {
+                cleanup()
+                reject(err)
+            }
+
+            const cleanup = () => {
+                stream.removeListener('data', onData)
+                stream.removeListener('end', onEnd)
+                stream.removeListener('error', onError)
+            }
+
+            stream.on('data', onData)
+            stream.on('end', onEnd)
+            stream.on('error', onError)
         })
     }
 
-    @Logger.LogFunction(true)
     static ToWritable(readable: Readable): Writable {
         const writable = new PassThrough()
         readable.pipe(writable)
         return writable
     }
 
-    @Logger.LogFunction(true)
     static FromWritable(writable: Writable): Readable {
         const readable = new PassThrough()
         writable.pipe(readable)
@@ -63,7 +84,6 @@ export class ReadableUtils {
     }
 
 
-    @Logger.LogFunction(true)
     static async FromBuffer(buffer: Buffer): Promise<Readable> {
         return Readable.from(buffer)
     }
@@ -72,27 +92,36 @@ export class ReadableUtils {
         const readableStream = new Readable({
             read() {
                 // No-op, because we're manually pushing data
+            },
+            destroy(error, callback) {
+                // Cleanup listeners when stream is destroyed
+                readStream.removeListener('data', onData)
+                readStream.removeListener('end', onEnd)
+                readStream.removeListener('error', onError)
+                callback(error)
             }
         })
 
-        // Pipe data from ReadStream into Readable
-        readStream.on('data', (chunk) => {
-            readableStream.push(chunk)  // Push data into the new Readable stream
-        })
+        const onData = (chunk: any) => {
+            readableStream.push(chunk)
+        }
 
-        readStream.on('end', () => {
-            readableStream.push(null)  // Signal the end of the stream
-        })
+        const onEnd = () => {
+            readableStream.push(null)
+        }
 
-        readStream.on('error', (err) => {
-            readableStream.emit('error', err)  // Forward any errors
-        })
+        const onError = (err: Error) => {
+            readableStream.emit('error', err)
+        }
+
+        readStream.on('data', onData)
+        readStream.on('end', onEnd)
+        readStream.on('error', onError)
 
         return readableStream
     }
 
 
-    @Logger.LogFunction(true)
     static Duplicate(original: Readable): [Readable, Readable] {
         const passThrough1 = new PassThrough()
         const passThrough2 = new PassThrough()
@@ -103,7 +132,6 @@ export class ReadableUtils {
         return [passThrough1, passThrough2]
     }
 
-    @Logger.LogFunction(true)
     static async ToBase64(readable: Readable): Promise<string> {
         const chunks: Buffer[] = []
         for await (const chunk of readable) {
@@ -114,19 +142,33 @@ export class ReadableUtils {
         return Buffer.concat(chunks).toString('base64')
     }
 
-
-    @Logger.LogFunction(true)
     static FromReadableStream(stream: NodeJS.ReadableStream): Readable {
-        const readable = new Readable()
-        readable._read = () => { }
+        const readable = new Readable({
+            read() { },
+            destroy(error, callback) {
+                // Cleanup listeners when stream is destroyed
+                stream.removeListener('data', onData)
+                stream.removeListener('end', onEnd)
+                stream.removeListener('error', onError)
+                callback(error)
+            }
+        })
 
-        stream.on('data', (chunk) => {
+        const onData = (chunk: any) => {
             readable.push(chunk)
-        })
+        }
 
-        stream.on('end', () => {
+        const onEnd = () => {
             readable.push(null)
-        })
+        }
+
+        const onError = (err: Error) => {
+            readable.emit('error', err)
+        }
+
+        stream.on('data', onData)
+        stream.on('end', onEnd)
+        stream.on('error', onError)
 
         return readable
     }

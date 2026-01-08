@@ -1,60 +1,56 @@
 //
 //
 //
-import forEach from "lodash/forEach"
-import has from "lodash/has"
-import keys from "lodash/keys"
-import merge from "lodash/merge"
-import values from "lodash/values"
+import { forEach, has, keys, merge, values } from "lodash-es"
 //
+import { DataBase } from "../../types/DataBase"
 import { DataTable } from "../../types/DataTable"
-import { TJson } from "../../types/TJson"
+import type { TJson } from "../../types/TJson"
+import { Assert } from "../../utils/Assert"
 import { Helper } from "../../utils/Helper"
 import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 import { AUTH_PERMISSION } from "../auth/@consts"
-import { TUserTokenInfo } from "../auth/@types"
+import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
 import { METADATA } from "../core/@consts"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
-import { StepCommand } from "../core/types/TConfig"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
-import { TContext } from "../sandbox/types/TContext"
-import { TInternalResponse } from "../schema/types/TInternalResponse"
-import { TSchemaRequest } from "../schema/types/TSchemaRequest"
-import { STEP, STEP_STATUS } from "./@consts"
-import { Step, TFunctionStep } from "./Step"
-import { TScheduleConfig } from './types/TScheduleConfig'
-import { TStep } from "./types/TStep"
-import { DataBase } from "../../types/DataBase"
-import { Assert } from "../../utils/Assert"
-import { TStepArgs } from "./types/TStepArgs"
-import { is } from "typia"
 import { WarnError } from "../errors/InternalError"
+import type { TContext } from "../sandbox/types/TContext"
+import type { TInternalResponse } from "../core/types/TInternalResponse"
+import type { TSchemaRequest } from "../schema/types/TSchemaRequest"
+import { STEP, STEP_STATUS } from "./@consts"
+import { Step, type TFunctionStep } from "./Step"
+import type { TStep } from "./types/TStep"
+import type { U_config_plans_plan_entity_steps } from "./types/U_config_plans"
+import type { U_config_plans_plan_entity_step_Params } from "./types/U_config_plans_plan_entity_step"
+import type { U_config_schedules_schedule } from "./types/U_config_schedules"
 
 
 //
 export class Plan {
 
     Name: string                                    // Plan name
-    Entities = new Map<string, StepCommand[]>()     // Plan entities and associated steps
+    Entities = new Map<string, U_config_plans_plan_entity_steps>()     // Plan entities and associated steps
     _dataBase: DataBase                              // Plan entities rendered data
     // SemaphoreSize: number
     // #__LOCK__ = new Map<string, Semaphore>()       // Plan Lock by entity
 
     constructor(name: string) {
         this.Name = name
-        this._dataBase = new DataBase(this.Name)
+        this._dataBase = new DataBase(this.Name, true)
         // this.SemaphoreSize = 1                      // Force to have single thread of execution
         // this.#__LOCK__ = new Semaphore(this.SemaphoreSize)
     }
 
     async Init() {
-        const entities = ConfigManager.Get<TJson<StepCommand[]>>(`plans.${this.Name}`) ?? {}
+        await this._dataBase.Init()
+        const entities = ConfigManager.Get<TJson<U_config_plans_plan_entity_steps>>(`plans.${this.Name}`) ?? {}
 
-        forEach(entities, (steps: StepCommand[], entity: string) => {
+        forEach(entities, (steps: U_config_plans_plan_entity_steps, entity: string) => {
             this.Entities.set(entity, steps)
             // this.#__LOCK__.set(entity, new Semaphore(this.SemaphoreSize))
         })
@@ -80,7 +76,7 @@ export class Plan {
         return currentDatatable
     }
 
-    async ProcessScheduleConfig(schemaRequest: TScheduleConfig, sqlQuery?: string): Promise<void> {
+    async ProcessScheduleConfig(schemaRequest: U_config_schedules_schedule, sqlQuery?: string): Promise<void> {
 
         const { plan, entity } = schemaRequest
 
@@ -88,7 +84,7 @@ export class Plan {
         Assert.Condition(entity !== null, `Plan.Execute: entity '${entity}' is not defined`, new HttpErrorBadRequest())
         Assert.Condition(this.Entities.has(entity), `Plan.Execute: entity '${entity}' not found in plan ${this.Name}`, new HttpErrorBadRequest())
 
-        const entitySteps: Array<StepCommand> = ConfigManager.Get(`plans.${plan}.${entity}`)
+        const entitySteps = ConfigManager.Get<U_config_plans_plan_entity_steps>(`plans.${plan}.${entity}`)
 
         Logger.Debug(`${Logger.In} Plan.Execute: ${plan}.${entity}: ${JsonUtils.Stringify(entitySteps)}`)
 
@@ -103,7 +99,7 @@ export class Plan {
 
     @Logger.LogFunction()
     @SynchronizerManager.Synchronized()
-    async ExecuteSteps(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: Array<StepCommand>): Promise<DataTable> {
+    async ExecuteSteps(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: U_config_plans_plan_entity_steps): Promise<DataTable> {
 
         this._dataBase.SetTable(currentEntityName, [])
 
@@ -131,7 +127,7 @@ export class Plan {
                     ...$context.$plan!.$current,
                     stepIndex: __stepIndex,
                     stepCommand: keys(_step)[0] as STEP,
-                    stepArgs: values(<TStepArgs>_step)[0],
+                    stepArgs: values(<U_config_plans_plan_entity_step_Params>_step)[0] as U_config_plans_plan_entity_step_Params,
                     status: STEP_STATUS.RUNNING
                 }
 
@@ -155,7 +151,13 @@ export class Plan {
                     new HttpErrorBadRequest()
                 )
 
-                const __stepArguments: TStep = {
+                Assert.Var<DataTable>(
+                    this._dataBase.Tables[currentEntityName],
+                    `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
+                    new HttpErrorBadRequest()
+                )
+
+                const __stepArguments: TStep = <TStep>{
                     currentSchemaName: $context.$plan!.schema!,
                     currentPlanName: $context.$plan!.name!,
                     currentDataTable: this._dataBase.Tables[currentEntityName],
@@ -207,11 +209,17 @@ export class Plan {
                     // eslint-disable-next-line no-case-declarations
                     const _errorMessage = `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify($context.$plan!.$current.stepCommand)}' is ignored because of error ${JsonUtils.Stringify(_error?.message)}`
 
-                    if (is<WarnError>(error)) {
+                    if (error instanceof WarnError) {
                         Logger.Warn(_errorMessage)
                     } else {
                         Logger.Error(_errorMessage)
                     }
+
+                    Assert.Var<DataTable>(
+                        this._dataBase.Tables[currentEntityName],
+                        `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
+                        new HttpErrorBadRequest()
+                    )
 
                     if (this._dataBase.Tables[currentEntityName].MetaData[METADATA.PLAN_DEBUG] == 'error') {
                         /* TODO In case of cross entities, only errors in the final entity are returned.
@@ -239,6 +247,12 @@ export class Plan {
                 // throw new HttpErrorInternalServerError(_errorMessage)
             }
         }
+
+        Assert.Var<DataTable>(
+            this._dataBase.Tables[currentEntityName],
+            `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
+            new HttpErrorBadRequest()
+        )
 
         return this._dataBase.Tables[currentEntityName].Rename($context.$plan!.entity)
     }

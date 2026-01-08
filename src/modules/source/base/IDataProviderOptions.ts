@@ -1,9 +1,9 @@
 //
 //
 //
-import { TSchemaRequest } from '../../schema/types/TSchemaRequest'
-import { TOptionalParameter } from '../types/TOptionalParameter'
-import { TContext } from '../../sandbox/types/TContext'
+import type { TSchemaRequest } from '../../schema/types/TSchemaRequest'
+import type { TOptionalParameter } from '../types/TOptionalParameter'
+import type { TContext } from '../../sandbox/types/TContext'
 
 //
 export interface IDataProviderOptions {

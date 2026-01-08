@@ -2,13 +2,13 @@
 //
 //
 //
-import { Readable } from 'node:stream'
+import type { Readable } from 'node:stream'
 //
-import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
-import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
-import { TContentConfig } from "../@types"
-import { clsClonable } from "../../../utils/base/clsClonable"
-import { TContext } from "../../sandbox/types/TContext"
+import type { DataTable, TRowsCopyParams } from "../../../types/DataTable"
+import type { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
+import type { TContentConfig } from "../@types"
+import type { clsClonable } from "../../../utils/base/clsClonable"
+import type { TContext } from "../../sandbox/types/TContext"
 
 
 //

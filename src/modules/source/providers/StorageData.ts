@@ -1,20 +1,21 @@
 //
 //
 //
-import merge from 'lodash/merge';
+import { merge } from 'lodash-es';
 //
 import { Assert } from '../../../utils/Assert';
-import { TContext } from '../../sandbox/types/TContext';
-import { TInternalResponse } from '../../schema/types/TInternalResponse';
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest';
-import { TSchemaResponse } from '../../schema/types/TSchemaResponse';
+import type { TContext } from '../../sandbox/types/TContext';
+import type { TInternalResponse } from '../../core/types/TInternalResponse';
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest';
+import type { TSchemaResponse } from '../../schema/types/TSchemaResponse';
 import { DATA_PROVIDER } from '../@consts';
 import { absDataProvider } from '../base/absDataProvider';
-import { IDataProvider } from '../base/IDataProvider';
-import { TConfigSource } from '../types/TConfigSource';
+import type { IDataProvider } from '../base/IDataProvider';
+import type { TConfigSource } from '../types/TConfigSource';
 import { StorageFilesData } from './StorageFilesData';
-import { StorageFoldersData, TStorageFoldersDataOptions } from './StorageFoldersData';
-import { TStorageFilesDataOptions } from '../types/TStorageFilesDataOptions';
+import type { TStorageFoldersDataOptions } from './StorageFoldersData';
+import { StorageFoldersData } from './StorageFoldersData';
+import type { TStorageFilesDataOptions } from '../types/TStorageFilesDataOptions';
 
 
 //

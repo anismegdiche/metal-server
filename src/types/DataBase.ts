@@ -1,15 +1,15 @@
 //
 //
 //
-import { DataTable, dataTable_convertSql, DATATABLE_TEMP_PATH, TRow } from './DataTable'
-import { TJson } from './TJson'
-import { Logger } from '../utils/Logger'
+import { DuckDBInstance, type DuckDBValue } from '@duckdb/node-api'
+//
 import { Assert } from "../utils/Assert"
-import { DuckDBInstance } from '@duckdb/node-api/lib/DuckDBInstance'
+import { Logger } from '../utils/Logger'
 import { StringUtils } from '../utils/StringUtils'
 import { Utils } from '../utils/Utils'
-import { DuckDBValue } from '@duckdb/node-api'
-import { TAny } from './TAny'
+import { DataTable, dataTable_convertSql, DATATABLE_TEMP_PATH, type TRow } from './DataTable'
+import type { TAny } from './TAny'
+import type { TJson } from './TJson'
 
 
 //
@@ -19,10 +19,10 @@ export class DataBase {
     _duckInstance?: DuckDBInstance
     _dbPath: string
 
-    constructor(name: string, path?: string) {
+    constructor(name: string, isPersistant?: boolean) {
         Assert.Var(name, "undefined DataBase name")
         this.Name = name
-        this._dbPath = path
+        this._dbPath = isPersistant === true
             ? StringUtils.Path(DATATABLE_TEMP_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
             : ':memory:'
     }
@@ -68,8 +68,8 @@ export class DataBase {
         Assert.Var<string>(entity, "undefined DataTable name")
         Assert.Var<string>(sqlQuery, "undefined SQL query")
 
-        await this.Tables[entity]._dbEnsureInitialized()
-        const cnx = this.Tables[entity]._duckConnection!
+        await this.Tables[entity]!._dbEnsureInitialized()
+        const cnx = this.Tables[entity]!._duckConnection!
 
         const _sql = convertCondition
             ? dataTable_convertSql(sqlQuery)
@@ -78,7 +78,7 @@ export class DataBase {
         if (returnData) {
             const result = new DataTable(
                 this.Name,
-                await this.Tables[entity]._runSqlAndGetRows(_sql, queryParams)
+                await this.Tables[entity]!._runSqlAndGetRows(_sql, queryParams)
                     .catch((err) => {
                         Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
                         throw new Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)

@@ -1,7 +1,7 @@
 //
 //
 //
-import { TDataListEntity } from "../source/types/TDataListEntity";
+import type { TDataListEntity } from "../source/types/TDataListEntity";
 import { DATA_ENTITY_TYPE } from "../source/@consts";
 
 

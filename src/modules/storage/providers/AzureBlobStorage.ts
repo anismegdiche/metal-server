@@ -1,6 +1,6 @@
 //
 // Lazy-loaded @azure/storage-blob module
-import merge from "lodash/merge"
+import { merge } from "lodash-es"
 import { Readable } from "node:stream"
 //
 import { DataTable } from "../../../types/DataTable"
@@ -8,11 +8,11 @@ import { Assert } from '../../../utils/Assert'
 import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from '../../../utils/Logger'
 import { StringUtils } from "../../../utils/StringUtils"
-import { TConvertParams } from "../../../utils/TypeUtils"
+import type { TConvertParams } from "../../../utils/TypeUtils"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
-import { TConfigSource } from "../../source/types/TConfigSource"
-import { TStorageFile, TStorageFolder } from '../@types'
+import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { TConfigSource } from "../../source/types/TConfigSource"
+import type { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
 
 //

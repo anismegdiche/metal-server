@@ -2,10 +2,11 @@
 //
 //
 // lodash
-import merge from 'lodash/merge'
+import { merge } from 'lodash-es'
 import { Readable } from 'node:stream'
 //
-import { DataTable, TRow } from '../../../types/DataTable'
+import type { TRow } from '../../../types/DataTable'
+import { DataTable } from '../../../types/DataTable'
 import { Assert } from '../../../utils/Assert'
 import { Logger, VERBOSITY } from '../../../utils/Logger'
 import { Mutex } from '../../../utils/Mutex'
@@ -15,19 +16,19 @@ import { Cache } from "../../cache/Cache"
 import { RESPONSE } from '../../core/@consts'
 import { HttpResponse } from '../../core/HttpResponse'
 import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorInternalServerError, HttpErrorNotImplemented } from '../../errors/HttpErrors'
-import { TContext } from '../../sandbox/types/TContext'
-import { TInternalResponse } from '../../schema/types/TInternalResponse'
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
+import type { TContext } from '../../sandbox/types/TContext'
+import type { TInternalResponse } from '../../core/types/TInternalResponse'
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { STORAGE } from '../../storage/@consts'
-import { TStorageFile } from '../../storage/@types'
+import type { TStorageFile } from '../../storage/@types'
 import { absStorageProvider } from '../../storage/base/absStorageProvider'
 import { StorageProvider } from '../../storage/StorageProvider'
-import { TStorageConfig } from '../../storage/types/TStorageConfig'
+import type { TStorageConfig } from '../../storage/types/TStorageConfig'
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from '../base/absDataProvider'
-import { TConfigSource } from "../types/TConfigSource"
-import { TOptionalParameter } from '../types/TOptionalParameter'
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TOptionalParameter } from '../types/TOptionalParameter'
 
 
 //
@@ -60,6 +61,9 @@ export class StorageFoldersData extends absDataProvider {
 
     // FolderData
     Lock: Map<string, Mutex> = new Map<string, Mutex>()
+    LockTimestamps: Map<string, number> = new Map<string, number>()
+    LockCleanupInterval = 300000 // 5 minutes
+    LockCleanupTimer?: NodeJS.Timeout
 
     DEFAULT: Partial<TStorageFoldersDataConfig> = {
         options: {
@@ -78,6 +82,49 @@ export class StorageFoldersData extends absDataProvider {
     setLock(fileName: string) {
         if (!this.Lock.has(fileName))
             this.Lock.set(fileName, new Mutex())
+        this.LockTimestamps.set(fileName, Date.now())
+    }
+
+    cleanupLock(fileName: string) {
+        // Remove lock if it hasn't been used in the last cleanup interval
+        const lastUsed = this.LockTimestamps.get(fileName)
+        if (lastUsed && Date.now() - lastUsed > this.LockCleanupInterval) {
+            this.Lock.delete(fileName)
+            this.LockTimestamps.delete(fileName)
+        }
+    }
+
+    async cleanupAllLocks() {
+        const now = Date.now()
+        const toDelete: string[] = []
+        for (const [fileName, lastUsed] of this.LockTimestamps.entries()) {
+            if (now - lastUsed > this.LockCleanupInterval) {
+                toDelete.push(fileName)
+            }
+        }
+        toDelete.forEach(fileName => {
+            this.Lock.delete(fileName)
+            this.LockTimestamps.delete(fileName)
+        })
+        if (toDelete.length > 0) {
+            Logger.Debug(`${this.SourceName}: Cleaned up ${toDelete.length} unused locks`)
+        }
+    }
+
+    startLockCleanup() {
+        // Run cleanup every 5 minutes
+        this.LockCleanupTimer = setInterval(() => {
+            this.cleanupAllLocks()
+        }, this.LockCleanupInterval)
+        Logger.Debug(`${this.SourceName}: Lock cleanup timer started (interval: ${this.LockCleanupInterval}ms)`)
+    }
+
+    stopLockCleanup() {
+        if (this.LockCleanupTimer) {
+            clearInterval(this.LockCleanupTimer)
+            this.LockCleanupTimer = undefined
+            Logger.Debug(`${this.SourceName}: Lock cleanup timer stopped`)
+        }
     }
 
     @Logger.LogFunction(true)
@@ -95,6 +142,9 @@ export class StorageFoldersData extends absDataProvider {
             this.Connection.Init()
         else
             throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize storage provider`)
+
+        // Start periodic lock cleanup
+        this.startLockCleanup()
     }
 
     @Logger.LogFunction(true)
@@ -105,6 +155,12 @@ export class StorageFoldersData extends absDataProvider {
 
     @Logger.LogFunction(true)
     async Disconnect(): Promise<void> {
+        // Stop lock cleanup timer
+        this.stopLockCleanup()
+
+        // Clean up all locks before disconnecting
+        await this.cleanupAllLocks()
+
         if (this.Connection)
             await this.Connection.Disconnect()
     }
@@ -137,10 +193,12 @@ export class StorageFoldersData extends absDataProvider {
             // read files content
             await files.RowsMap(async (row: TRow) => {
                 const _file = row as TStorageFile
-                _file.content = await ReadableUtils.ToBase64(
-                    await this.Connection!.FileRead(dirName, _file.name)
-                )
-                return _file
+                const _fileContent = await this.Connection!.FileRead(dirName, _file.name)
+                return ReadableUtils.ToBase64(_fileContent)
+                    .then(_content => {
+                        _file.content = _content
+                        return _file
+                    })
             })
         }
 
@@ -192,8 +250,13 @@ export class StorageFoldersData extends absDataProvider {
 
                 this.setLock(__file.path)
                 await this.Lock.get(__file.path)!.Acquire()
-                await this.Connection!.FileWrite(dirName, __file.name, Readable.from(Buffer.from(__file.content, 'base64')))
-                this.Lock.get(__file.path)!.Release()
+                try {
+                    await this.Connection!.FileWrite(dirName, __file.name, Readable.from(Buffer.from(__file.content, 'base64')))
+                } finally {
+                    this.Lock.get(__file.path)!.Release()
+                    // Optionally cleanup lock after use (commented out to rely on periodic cleanup)
+                    // this.cleanupLock(__file.path)
+                }
             }
         )
             .then(() => Cache.Remove(schemaRequest))
@@ -221,7 +284,7 @@ export class StorageFoldersData extends absDataProvider {
 
         const selectQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
         const selectQuery = this.GetSqlQuery(selectQueryHelper, options)
-        const folderList = await this.Connection.FolderListFiles(dirName)
+        using folderList = await this.Connection.FolderListFiles(dirName)
             .then(dt => dt.Rename(dirName))
 
         const files = await folderList.Pick(['name', 'path'])
@@ -258,24 +321,28 @@ export class StorageFoldersData extends absDataProvider {
                 this.setLock(__lock)
                 await this.Lock.get(__lock)!.Acquire()
 
-                // update file content
-                const __fileContent = await ReadableUtils.ToBase64(
-                    await this.Connection!.FileRead(dirName, oldFileName)
-                )
+                try {
+                    // update file content
+                    const __fileContent = await ReadableUtils.ToBase64(
+                        await this.Connection!.FileRead(dirName, oldFileName)
+                    )
 
-                if (updateData.content && updateData.content !== __fileContent) {
-                    const ___content = updateData.content ?? __fileContent
+                    if (updateData!.content && updateData!.content !== __fileContent) {
+                        const ___content = updateData!.content ?? __fileContent
 
-                    Assert.Var<string>(___content, StringUtils.IsBase64(___content), 'content is not a valid base64 string', new HttpErrorBadRequest())
+                        Assert.Var<string>(___content, StringUtils.IsBase64(___content), 'content is not a valid base64 string', new HttpErrorBadRequest())
 
-                    await this.Connection!.FileWrite(dirName, oldFileName, Readable.from(Buffer.from(___content, 'base64')))
+                        await this.Connection!.FileWrite(dirName, oldFileName, Readable.from(Buffer.from(___content, 'base64')))
+                    }
+
+                    // rename file
+                    if (oldFileName !== newFileName)
+                        await this.Connection!.FileRename(dirName, oldFileName, newFileName)
+                } finally {
+                    this.Lock.get(__lock)!.Release()
+                    // Optionally cleanup lock after use (commented out to rely on periodic cleanup)
+                    // this.cleanupLock(__lock)
                 }
-
-                // rename file
-                if (oldFileName !== newFileName)
-                    await this.Connection!.FileRename(dirName, oldFileName, newFileName)
-
-                this.Lock.get(__lock)!.Release()
             }
         )
             .then(() => Cache.Remove(schemaRequest))
@@ -303,7 +370,7 @@ export class StorageFoldersData extends absDataProvider {
 
         const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const files = await this.Connection.FolderListFiles(dirName)
+        using files = await this.Connection.FolderListFiles(dirName)
             .then(dt => dt.Rename(dirName))
 
         const filesFiltered = await files.FreeSql({ sqlQuery })

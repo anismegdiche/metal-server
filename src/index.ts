@@ -5,10 +5,15 @@
 //
 import { ServerCore } from './modules/core/ServerCore'
 import { ServerEndpoint } from './modules/core/ServerEndpoint'
-import { TJson } from './types/TJson'
+import { ServerShutdown } from './modules/core/ServerShutdown'
 import { Logger } from './utils/Logger'
-import { JsonUtils } from './utils/JsonUtils'
 
+// Setup graceful shutdown handlers
+ServerShutdown.SetupSignalHandlers()
+
+// Initialize and start server
 ServerCore.Init()
     .then(ServerEndpoint.Start)
-    .catch((error: unknown) => Logger.Error(JsonUtils.ToTextList(error as TJson)))
+    .catch(() => {
+        Logger.FlushQueue()
+    })

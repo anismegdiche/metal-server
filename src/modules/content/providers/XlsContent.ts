@@ -3,21 +3,23 @@
 //
 import { Readable } from 'node:stream'
 // Lazy-loaded module
-import _ from 'lodash'
-import typia from "typia"
+import * as _ from 'lodash-es'
+import { z_TXlsContentConfig, z_TXlsContentParams } from "../../../utils/Schemas"
 //
-import { DataTable, TRowsCopyParams } from '../../../types/DataTable'
+import { DataTable } from "../../../types/DataTable"
+import type { TRowsCopyParams } from "../../../types/DataTable"
 import { Logger } from '../../../utils/Logger'
-import { TJson } from '../../../types/TJson'
+import type { TJson } from '../../../types/TJson'
 import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
 import { absContentProvider } from "../base/absContentProvider"
-import { TContext } from "../../sandbox/types/TContext"
+import type { TContext } from "../../sandbox/types/TContext"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
-import { TXlsContentConfig } from '../types/TXlsContentConfig'
-import { TXlsContentParams } from '../types/TXlsContentParams'
+import type { TXlsContentConfig } from '../types/TXlsContentConfig'
+import type { TXlsContentParams } from '../types/TXlsContentParams'
 import { Assert } from '../../../utils/Assert'
 import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
+import type { Worksheet } from 'exceljs'
 
 
 // Convert column letter (e.g., 'A', 'B', 'AA') to a column number
@@ -46,15 +48,16 @@ export class XlsContent extends absContentProvider {
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && typia.is<TXlsContentConfig>(this.Config)) {
+        if (this.Config && z_TXlsContentConfig.safeParse(this.Config).success) {
+            const config = this.Config as TXlsContentConfig
             this.Params = _.merge(
                 this.Params,
                 {
-                    sheet: this.Config["xls-sheet"],
-                    parseDates: this.Config["xls-parse-dates"],
-                    default: this.Config["xls-default"],
-                    dateFormat: this.Config["xls-date-format"],
-                    startingCell: this.Config["xls-starting-cell"]
+                    sheet: config["xls-sheet"],
+                    parseDates: config["xls-parse-dates"],
+                    default: config["xls-default"],
+                    dateFormat: config["xls-date-format"],
+                    startingCell: config["xls-starting-cell"]
                 }
             )
         }
@@ -72,7 +75,7 @@ export class XlsContent extends absContentProvider {
     @Logger.LogFunction(['$context'])
     async Get(rowsParams: TRowsCopyParams, $context?: Partial<TContext>): Promise<DataTable> {
         Assert.Var<TXlsContentParams>(this.Params,
-            typia.is<TXlsContentParams>(this.Params),
+            z_TXlsContentParams.safeParse(this.Params).success,
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content,
@@ -90,6 +93,9 @@ export class XlsContent extends absContentProvider {
         )
 
         Logger.Debug('XlsContent.Get: Converting')
+
+        Assert.Var<Worksheet>(workbook.worksheets[0], 'Sheet is not defined')
+
         const sheetName = $__evalParams!.sheet ?? workbook.worksheets[0].name
         const worksheet = workbook.getWorksheet(sheetName)
 
@@ -100,6 +106,9 @@ export class XlsContent extends absContentProvider {
             .getCell($__evalParams!.startingCell!)
             .address
             .match(/[A-Z]+|\d+/g)!
+
+        Assert.Var<string>(startCol, 'startCol is not defined')
+        Assert.Var<string>(startRow, 'startRow is not defined')
 
         const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
@@ -135,14 +144,14 @@ export class XlsContent extends absContentProvider {
             }
         })
         Logger.Debug('XlsContent.Get: Exporting')
-        const dataTable = new DataTable(this.EntityName, rows)
+        using dataTable = new DataTable(this.EntityName, rows)
         return dataTable.Copy(this.EntityName, rowsParams)
     }
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context?: Partial<TContext>): Promise<Readable> {
         Assert.Var<TXlsContentParams>(this.Params,
-            typia.is<TXlsContentParams>(this.Params),
+            z_TXlsContentParams.safeParse(this.Params).success,
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content,
@@ -174,6 +183,10 @@ export class XlsContent extends absContentProvider {
         const [startCol, startRow] = worksheet.getCell($__evalParams?.startingCell as string).address.match(/[A-Z]+|\d+/g)!
         const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
+        Assert.Var<string>(startCol, 'startCol is not defined')
+        Assert.Var<string>(startRow, 'startRow is not defined')
+        Assert.Var<number>(colIndex, 'colIndex is not defined')
+
         // Clear existing data if any
         worksheet.eachRow({ includeEmpty: true }, (row) => {
             row.eachCell({ includeEmpty: true }, (cell) => {
@@ -182,7 +195,7 @@ export class XlsContent extends absContentProvider {
         })
 
         // Set headers
-        const fields = Object.keys((await data.Rows())[0])
+        const fields: string[] = Object.keys((await data.Row(0)))
         fields.forEach((field, colIdx) => {
             worksheet.getCell(parseInt(startRow, 10), colIndex + colIdx).value = field
         })

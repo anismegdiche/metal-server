@@ -3,7 +3,7 @@
 //
 // Lazy-loaded @azure/storage-file-datalake module
 import { DataLakeFileSystemClient } from '@azure/storage-file-datalake'
-import merge from 'lodash/merge'
+import { merge } from 'lodash-es'
 import { Readable } from 'node:stream'
 //
 import { HttpErrorInternalServerError } from '../../../modules/errors/HttpErrors'
@@ -13,11 +13,11 @@ import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from '../../../utils/Logger'
 import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { StringUtils } from '../../../utils/StringUtils'
-import { TConvertParams } from '../../../utils/TypeUtils'
+import type { TConvertParams } from '../../../utils/TypeUtils'
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
-import { TConfigSource } from "../../source/types/TConfigSource"
-import { TStorageFile } from '../@types'
+import type { TConfigSource } from "../../source/types/TConfigSource"
+import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { TStorageFile } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
 
 
@@ -139,7 +139,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderListFiles(dirName?: string): Promise<DataTable> {
-        
+
         Assert.Var<DataLakeFileSystemClient>(this._fileSystemClient, 'AzureDataLakeStorage: Connection to storage not established')
 
         const files: TStorageFile[] = []

@@ -1,8 +1,8 @@
 // // SAMLAuth.ts
 // import { ACAuthProvider } from "../ACAuthProvider";
 // import { Logger } from "../../utils/Logger";
-// import { TConfigUsers } from "../../types/TConfig"
-// import { TUserTokenInfo } from "../../server/User"
+// import type { TConfigUsers } from "../../types/TConfig"
+// import type { TUserTokenInfo } from "../../server/User"
 
 // export class SAMLAuth extends ACAuthProvider {
 //     GetUsers(): TConfigUsers {

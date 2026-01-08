@@ -2,7 +2,7 @@
 
 
 import { HttpErrorInternalServerError } from "../../modules/errors/HttpErrors"
-import { TJson } from "../../types/TJson"
+import type { TJson } from "../../types/TJson"
 import { JsonUtils } from "../JsonUtils"
 
 describe('JsonUtils', () => {

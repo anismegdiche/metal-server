@@ -2,34 +2,34 @@
 //
 //
 //
-import _ from "lodash"
-import typia from "typia"
+import * as _ from 'lodash-es'
+import { z_TEndpoint } from "../../../utils/Schemas"
 //
-import { TConfigSource } from "../types/TConfigSource"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
-import { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import type { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { absDataProvider } from "../base/absDataProvider"
 import { DATA_PROVIDER } from "../@consts"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import { Logger, VERBOSITY } from "../../../utils/Logger"
-import { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import { Cache } from "../../cache/Cache"
-import { TJson } from "../../../types/TJson"
-import { TContext } from "../../sandbox/types/TContext"
-import { TUrl } from "../../../types/TUrl"
+import type { TJson } from "../../../types/TJson"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TUrl } from "../../../types/TUrl"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { CONTENT } from "../../content/@consts"
-import { TContentConfig } from "../../content/@types"
-import { IContentProvider } from "../../content/base/IContentProvider"
+import type { TContentConfig } from "../../content/@types"
+import type { IContentProvider } from "../../content/base/IContentProvider"
 import { ContentProvider } from "../../content/ContentProvider"
 import { WEBSERVICE, ENDPOINT } from "../../webservice/@consts"
-import { TWebServiceEndpoint, TEndpoint } from "../../webservice/@types"
+import type { TWebServiceEndpoint } from "../../webservice/@types"
 import { absWebServiceProvider } from "../../webservice/base/absWebServiceProvider"
 import { WebServiceProvider } from "../../webservice/WebServiceProvider"
-import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
+import { DataTable, type TRowsCopyParams } from "../../../types/DataTable"
 
 
 //
@@ -266,7 +266,7 @@ export class WebServiceData extends absDataProvider {
 
         const endpointUpdate = this.Connection.Endpoints.get(ENDPOINT.ITEM_UPDATE)
 
-        if (!endpointUpdate || !typia.validateEquals<TEndpoint>(endpointUpdate))
+        if (!endpointUpdate || !z_TEndpoint.safeParse(endpointUpdate).success)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
 
@@ -274,7 +274,7 @@ export class WebServiceData extends absDataProvider {
 
         //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const keysCollection = await this.File.get(entity)!.Get(
+        using keysCollection = await this.File.get(entity)!.Get(
             <TRowsCopyParams>{
                 fields: options.Fields,
                 filter: options.Filter,
@@ -355,7 +355,7 @@ export class WebServiceData extends absDataProvider {
 
         const endpointDelete = this.Connection.Endpoints.get(ENDPOINT.ITEM_DELETE)
 
-        if (!endpointDelete || !typia.validateEquals<TEndpoint>(endpointDelete))
+        if (!endpointDelete || !z_TEndpoint.safeParse(endpointDelete).success)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
 
@@ -363,7 +363,7 @@ export class WebServiceData extends absDataProvider {
 
         //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-        const keysCollection = await this.File.get(entity)!.Get(
+        using keysCollection = await this.File.get(entity)!.Get(
             <TRowsCopyParams>{
                 fields: options.Fields,
                 filter: options.Filter,

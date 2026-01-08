@@ -1,23 +1,23 @@
 
 
 import { DataTable, SORT_ORDER } from "../../../types/DataTable"
-import { TCacheData } from "../../cache/types/TCacheData"
-import { TOptionalParameter } from "../types/TOptionalParameter"
-import { TSchemaRequest } from "../../schema/types/TSchemaRequest"
+import type { TCacheData } from "../../cache/types/TCacheData"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 import { DataProviderOptions } from "../base/absDataProvider"
 
 // mock related classes
-jest.mock('../../source/providers/MemoryData', () => ({ MemoryData: {} }))
-jest.mock('../../source/providers/WebServiceData', () => ({ WebServiceData: {} }))
-jest.mock('../../source/providers/MetalData', () => ({ MetalData: {} }))
-jest.mock('../../source/providers/MongoDbData', () => ({ MongoDbData: {} }))
-jest.mock('../../source/providers/MySqlData', () => ({ MySqlData: {} }))
-jest.mock('../../source/providers/PlanData', () => ({ PlanData: {} }))
-jest.mock('../../source/providers/PostgresData', () => ({ PostgresData: {} }))
-jest.mock('../../source/providers/SqlServerData', () => ({ SqlServerData: {} }))
-jest.mock('../../source/providers/CosmosDbData', () => ({ CosmosDbData: {} }))
-jest.mock('../../source/providers/StorageData', () => ({ StorageData: {} }))
-jest.mock('../../plan/Step', () => ({ Step: {} }))
+vi.mock('../../source/providers/MemoryData', () => ({ MemoryData: {} }))
+vi.mock('../../source/providers/WebServiceData', () => ({ WebServiceData: {} }))
+vi.mock('../../source/providers/MetalData', () => ({ MetalData: {} }))
+vi.mock('../../source/providers/MongoDbData', () => ({ MongoDbData: {} }))
+vi.mock('../../source/providers/MySqlData', () => ({ MySqlData: {} }))
+vi.mock('../../source/providers/PlanData', () => ({ PlanData: {} }))
+vi.mock('../../source/providers/PostgresData', () => ({ PostgresData: {} }))
+vi.mock('../../source/providers/SqlServerData', () => ({ SqlServerData: {} }))
+vi.mock('../../source/providers/CosmosDbData', () => ({ CosmosDbData: {} }))
+vi.mock('../../source/providers/StorageData', () => ({ StorageData: {} }))
+vi.mock('../../plan/Step', () => ({ Step: {} }))
 
 
 describe('DataProviderOptions', () => {

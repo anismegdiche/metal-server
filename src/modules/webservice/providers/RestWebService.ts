@@ -1,20 +1,20 @@
 //
 //
 //
-import _ from "lodash"
+import * as _ from 'lodash-es'
 import { Readable } from "stream"
-import axios, { AxiosResponse, AxiosInstance } from "axios"
+import axios, { type AxiosResponse, type AxiosInstance } from "axios"
 //
 import { absWebServiceProvider } from '../base/absWebServiceProvider'
-import { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
+import type { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
 import { Logger } from "../../../utils/Logger"
 import { StringUtils } from "../../../utils/StringUtils"
 import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../errors/HttpErrors"
 import { JsonUtils } from '../../../utils/JsonUtils'
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
-import { TContext } from "../../sandbox/types/TContext"
-import { TJson } from "../../../types/TJson"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TJson } from "../../../types/TJson"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { HEADER, ENDPOINT } from "../@consts"
 import { CONTENT } from "../../content/@consts"
@@ -49,8 +49,8 @@ export class RestWebService extends absWebServiceProvider {
         this.Client.defaults.baseURL = this.ConfigSource!.host
 
         // set content type
-        const [header] = Object.keys(HEADER[this.ConfigSourceOptions!.content])
-        const [value] = Object.values(HEADER[this.ConfigSourceOptions!.content])
+        const [header] = Object.keys(HEADER[this.ConfigSourceOptions!.content]!)
+        const [value] = Object.values(HEADER[this.ConfigSourceOptions!.content]!)
 
         if (typeof header == 'string' && typeof value == 'string')
             this.Client.defaults.headers.common[header] = value
@@ -80,7 +80,7 @@ export class RestWebService extends absWebServiceProvider {
             if (!httpStatusSuccess.includes(wsResp.status))
                 throw HttpErrorSwitch(wsResp.status, `${endpointType}: ${wsResp.statusText}`)
 
-             
+
             $context = _.merge(
                 $context,
                 {
@@ -107,12 +107,12 @@ export class RestWebService extends absWebServiceProvider {
 
         } catch (error: any) {
             throw HttpErrorSwitch(
-                error.status || HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, 
+                error.status || HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,
                 JsonUtils.Stringify(
-                    error.response.data.message || 
-                    error.response.data || 
-                    error.errors || 
-                    error.message || 
+                    error.response.data.message ||
+                    error.response.data ||
+                    error.errors ||
+                    error.message ||
                     "Unknown error"
                 )
             )
@@ -125,7 +125,7 @@ export class RestWebService extends absWebServiceProvider {
             await this.RequestClient(ENDPOINT.SESSION, [200])
     }
 
-     
+
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         Logger.Debug(`${Logger.Out} RestWebService disconnected`)

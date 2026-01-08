@@ -1,18 +1,18 @@
- 
+
 //
 //
 //
-import _ from "lodash"
+import * as _ from 'lodash-es'
 //
-import { TConfigSource } from "../types/TConfigSource"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
-import { TSchemaRequestListEntities, TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestDelete } from "../../schema/types/TSchemaRequest"
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import type { TSchemaRequestListEntities, TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestDelete } from "../../schema/types/TSchemaRequest"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { Logger } from "../../../utils/Logger"
 import { absDataProvider } from "../base/absDataProvider"
 import { DATA_PROVIDER } from "../@consts"
 import { WebServiceData } from "./WebServiceData"
-import { TUrl } from "../../../types/TUrl"
+import type { TUrl } from "../../../types/TUrl"
 import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import { Assert } from "../../../utils/Assert"
 import { CONTENT } from "../../content/@consts"
@@ -37,7 +37,7 @@ export class MetalData extends absDataProvider {
     Connection?: WebServiceData
 
     DEFAULT: TMetalDataConfig = {
-        host: 'http://localhost:3000',
+        host: 'http://127.0.0.1:3000',
         user: '',
         password: '',
         schema: ''
@@ -202,18 +202,18 @@ export class MetalData extends absDataProvider {
         return intResp
     }
 
-     
+
     @Logger.LogFunction()
     async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         throw new HttpErrorNotImplemented()
     }
 
-     
+
     EscapeEntity(entity: string): string {
         return entity
     }
 
-     
+
     EscapeField(field: string): string {
         return field
     }

@@ -5,7 +5,7 @@ import { JsonUtils } from "./JsonUtils"
 import { StringUtils } from "./StringUtils"
 import { Sandbox } from "../modules/sandbox/Sandbox"
 import { Logger } from "./Logger"
-import { TJson } from "../types/TJson"
+import type { TJson } from "../types/TJson"
 
 
 //
@@ -65,7 +65,7 @@ export class PlaceHolder {
         const match = RX_JS_CODE.exec(jsCode)
 
         if (match?.[1])
-            return sandBox.Evaluate(match[1].trim())        
+            return sandBox.Evaluate(match[1].trim())
 
         return undefined
     }

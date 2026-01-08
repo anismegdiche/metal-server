@@ -6,27 +6,28 @@ mock_Logger()
 import * as Sha512 from 'js-sha512'
 import { Cache } from '../Cache'
 import { DataTable } from '../../../types/DataTable'
-import { TSchemaRequest, TSchemaRequestSelect } from '../../schema/types/TSchemaRequest'
+import type { TSchemaRequest, TSchemaRequestSelect } from '../../schema/types/TSchemaRequest'
 import { DataProvider } from '../../source/DataProvider'
 import { absDataProvider } from '../../source/base/absDataProvider'
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { TypeUtils } from "../../../utils/TypeUtils"
-import { TCacheData } from "../types/TCacheData"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
+import type { TCacheData } from "../types/TCacheData"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { ConfigManager } from '../../core/ConfigManager'
 import { Roles } from '../../auth/Roles'
+import { Schema } from '../../schema/Schema'
 
-jest.mock('../../../utils/SynchronizerManager', () => ({
+vi.mock('../../../utils/SynchronizerManager', () => ({
     SynchronizerManager: {
-        Synchronized: jest.fn().mockImplementation(() => (_: any, __: any, descriptor: any) => descriptor)
+        Synchronized: vi.fn().mockImplementation(() => (_: any, __: any, descriptor: any) => descriptor)
     }
 }))
-jest.mock('../../auth/Roles')
-jest.mock('js-sha512')
+vi.mock('../../auth/Roles')
+vi.mock('js-sha512')
 
 describe('Cache', () => {
-    let mockProvider: jest.Mocked<absDataProvider>
+    let mockProvider: vi.Mocked<absDataProvider>
     let mockDataTable: DataTable
 
     beforeEach(() => {
@@ -36,38 +37,38 @@ describe('Cache', () => {
 
         // Setup mocks
         mockProvider = {
-            Init: jest.fn(),
-            Connect: jest.fn(),
-            Disconnect: jest.fn(),
-            Select: jest.fn(),
-            Insert: jest.fn().mockResolvedValue(undefined),
-            Update: jest.fn().mockResolvedValue(undefined),
-            Delete: jest.fn().mockResolvedValue(undefined),
-            EscapeField: jest.fn(field => `"${field}"`)
-        } as unknown as jest.Mocked<absDataProvider>;
+            Init: vi.fn(),
+            Connect: vi.fn(),
+            Disconnect: vi.fn(),
+            Select: vi.fn(),
+            Insert: vi.fn().mockResolvedValue(undefined),
+            Update: vi.fn().mockResolvedValue(undefined),
+            Delete: vi.fn().mockResolvedValue(undefined),
+            EscapeField: vi.fn(field => `"${field}"`)
+        } as unknown as vi.Mocked<absDataProvider>;
 
-        jest.spyOn(DataProvider, 'GetProvider').mockResolvedValue(mockProvider)
+        vi.spyOn(DataProvider, 'GetProvider').mockResolvedValue(mockProvider)
 
         mockDataTable = {
-            MetaDataSet: jest.fn()
+            MetaDataSet: vi.fn()
         } as unknown as DataTable;
 
         // Mock Config
-        jest.spyOn(ConfigManager, 'Has').mockReturnValue(true);
-        jest.spyOn(ConfigManager, 'Get').mockReturnValue({
+        vi.spyOn(ConfigManager, 'Has').mockReturnValue(true);
+        vi.spyOn(ConfigManager, 'Get').mockReturnValue({
             database: 'test_cache_db',
             provider: 'test_provider'
         });
 
         // Mock Sha512
-        (Sha512.sha512 as unknown as jest.Mock).mockImplementation(data => `hashed_${data}`)
+        (Sha512.sha512 as unknown as vi.Mock).mockImplementation(data => `hashed_${data}`)
 
         // Set Cache.CacheSource to mock provider - needed for many tests
         Cache.DataSource = mockProvider
     })
 
     afterEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
     })
 
     describe('GetHashList', () => {
@@ -93,7 +94,7 @@ describe('Cache', () => {
             }
 
             mockProvider.Select.mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
+            vi.spyOn(Schema, 'IsSchemaResponse').mockReturnValue(true)
 
             // Act
             await Cache.GetHashList()
@@ -124,7 +125,7 @@ describe('Cache', () => {
             }
 
             mockProvider.Select.mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
+            vi.spyOn(Schema, 'IsSchemaResponse').mockReturnValue(true)
 
             // Act
             await Cache.GetHashList()
@@ -151,7 +152,7 @@ describe('Cache', () => {
             }
 
             mockProvider.Select.mockResolvedValue(mockResponse)
-            const isSchemaResponseWithDataSpy = jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
+            const isSchemaResponseWithDataSpy = vi.spyOn(Schema, 'IsSchemaResponse').mockReturnValue(true)
 
             // Act
             await Cache.GetHashList()
@@ -176,8 +177,8 @@ describe('Cache', () => {
                 }
             }
 
-            const selectSpy = jest.spyOn(Cache.DataSource, 'Select').mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
+            const selectSpy = vi.spyOn(Cache.DataSource, 'Select').mockResolvedValue(mockResponse)
+            vi.spyOn(Schema, 'IsSchemaResponse').mockReturnValue(true)
 
             // Act
             await Cache.GetHashList()
@@ -193,7 +194,7 @@ describe('Cache', () => {
         // Catches and handles any exceptions during CacheSource.Select by setting Cache.Index to empty Map
         it('should set Cache.Index to empty Map when CacheSource.Select throws an exception', async () => {
             // Arrange
-            jest.spyOn(Cache.DataSource, 'Select').mockRejectedValue(new Error('Database connection error'))
+            vi.spyOn(Cache.DataSource, 'Select').mockRejectedValue(new Error('Database connection error'))
 
             // Set initial state to verify it changes
             Cache.Index = new Map([['existing', 123]])
@@ -221,8 +222,8 @@ describe('Cache', () => {
                 }
             }
 
-            jest.spyOn(Cache.DataSource, 'Select').mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(false)
+            vi.spyOn(Cache.DataSource, 'Select').mockResolvedValue(mockResponse)
+            vi.spyOn(Schema, 'IsSchemaResponse').mockReturnValue(false)
 
             // Set initial state to verify it changes
             Cache.Index = new Map([['existing', 123]])
@@ -251,8 +252,8 @@ describe('Cache', () => {
                 }
             }
 
-            const selectSpy = jest.spyOn(Cache.DataSource, 'Select').mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
+            const selectSpy = vi.spyOn(Cache.DataSource, 'Select').mockResolvedValue(mockResponse)
+            vi.spyOn(Schema, 'IsSchemaResponse').mockReturnValue(true)
 
             // Act
             await Cache.GetHashList()
@@ -290,7 +291,7 @@ describe('Cache', () => {
             }
 
             mockProvider.Select.mockResolvedValue(mockResponse)
-            jest.spyOn(TypeUtils, 'IsSchemaResponseWithData').mockReturnValue(true)
+            vi.spyOn(Schema, 'IsSchemaResponse').mockReturnValue(true)
 
             await Cache.Connect()
 
@@ -314,8 +315,8 @@ describe('Cache', () => {
     describe('Set', () => {
         beforeEach(() => {
             Cache.IsEnabled = true
-            jest.spyOn(Date.prototype, 'getTime').mockReturnValue(2000)
-            jest.spyOn(Date.prototype, 'setSeconds').mockReturnValue(0)
+            vi.spyOn(Date.prototype, 'getTime').mockReturnValue(2000)
+            vi.spyOn(Date.prototype, 'setSeconds').mockReturnValue(0)
         })
 
         it('should insert new cache entry when hash does not exist', async () => {
@@ -326,7 +327,7 @@ describe('Cache', () => {
                 source: 'should_be_removed'
             }
 
-            jest.spyOn(Cache, 'IsHashExists').mockResolvedValue(false)
+            vi.spyOn(Cache, 'IsHashExists').mockResolvedValue(false)
 
             await Cache.Set(schemaRequest, mockDataTable)
 
@@ -364,10 +365,10 @@ describe('Cache', () => {
                 cache: 300
             }
 
-            jest.spyOn(Cache, 'IsHashExists').mockResolvedValue(true)
-            jest.spyOn(Cache, 'GetExpires').mockResolvedValue(1000)
-            jest.spyOn(Cache, 'IsCacheValid').mockReturnValue(false)
-            jest.spyOn(Cache, 'Update').mockResolvedValue(undefined)
+            vi.spyOn(Cache, 'IsHashExists').mockResolvedValue(true)
+            vi.spyOn(Cache, 'GetExpires').mockResolvedValue(1000)
+            vi.spyOn(Cache, 'IsCacheValid').mockReturnValue(false)
+            vi.spyOn(Cache, 'Update').mockResolvedValue(undefined)
 
             await Cache.Set(schemaRequest, mockDataTable)
 
@@ -389,16 +390,16 @@ describe('Cache', () => {
             };
 
             // Mock TypeHelper.Validate not to throw
-            // (TypeUtils.Validate as jest.Mock).mockImplementation(() => true);
+            // (TypeUtils.Validate as vi.Mock).mockImplementation(() => true);
 
             // Mock Roles.CheckPermission not to throw
-            jest.spyOn(Roles, 'CheckPermission').mockImplementation(() => true)
+            vi.spyOn(Roles, 'CheckPermission').mockImplementation(() => true)
         })
 
         it('should return cached data when valid cache exists', async () => {
-            jest.spyOn(Cache, 'IsArgumentsValid').mockReturnValue(true)
-            jest.spyOn(Cache, 'GetExpires').mockResolvedValue(3000)
-            jest.spyOn(Cache, 'IsCacheValid').mockReturnValue(true)
+            vi.spyOn(Cache, 'IsArgumentsValid').mockReturnValue(true)
+            vi.spyOn(Cache, 'GetExpires').mockResolvedValue(3000)
+            vi.spyOn(Cache, 'IsCacheValid').mockReturnValue(true)
 
             const cachedDataTable = new DataTable("test", [{ someData: 'value' }])
 
@@ -426,7 +427,7 @@ describe('Cache', () => {
 
             mockProvider.Select.mockResolvedValue(mockResponse)
 
-            jest.spyOn(TypeUtils, 'IsSchemaRequestSelect').mockReturnValue(true)
+            vi.spyOn(Schema, 'IsSchemaRequestSelect').mockReturnValue(true)
 
             const result = await Cache.Get(mockSchemaRequest)
 
@@ -441,9 +442,9 @@ describe('Cache', () => {
         })
 
         it('should return undefined when no data found in cache', async () => {
-            jest.spyOn(Cache, 'IsArgumentsValid').mockReturnValue(true)
-            jest.spyOn(Cache, 'GetExpires').mockResolvedValue(3000)
-            jest.spyOn(Cache, 'IsCacheValid').mockReturnValue(true)
+            vi.spyOn(Cache, 'IsArgumentsValid').mockReturnValue(true)
+            vi.spyOn(Cache, 'GetExpires').mockResolvedValue(3000)
+            vi.spyOn(Cache, 'IsCacheValid').mockReturnValue(true)
 
             // Empty array of rows
             const dataTable = new DataTable("test", [])
@@ -473,7 +474,7 @@ describe('Cache', () => {
             Cache.Index.set('hash1', 500)  // expired
             Cache.Index.set('hash2', 1500) // not expired
 
-            jest.spyOn(Date.prototype, 'getTime').mockReturnValue(1000)
+            vi.spyOn(Date.prototype, 'getTime').mockReturnValue(1000)
         })
 
         it('should delete expired cache entries and update index', async () => {

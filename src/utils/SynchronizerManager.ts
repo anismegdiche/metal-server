@@ -1,9 +1,9 @@
- 
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 //
 //
 //
-import _ from "lodash"
+import * as _ from 'lodash-es'
 //
 import { JsonUtils } from "./JsonUtils"
 import { Logger } from "./Logger"

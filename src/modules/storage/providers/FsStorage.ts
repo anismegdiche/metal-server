@@ -2,7 +2,7 @@
 //
 //
 import * as Fs from 'fs'
-import merge from 'lodash/merge'
+import { merge } from 'lodash-es'
 import { Readable } from "node:stream"
 //
 import { DataTable } from "../../../types/DataTable"
@@ -11,12 +11,12 @@ import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from "../../../utils/Logger"
 import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { StringUtils } from '../../../utils/StringUtils'
-import { TConvertParams } from "../../../utils/TypeUtils"
+import type { TConvertParams } from "../../../utils/TypeUtils"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
-import { TConfigSource } from "../../source/types/TConfigSource"
-import { TStorageFile, TStorageFolder } from '../@types'
+import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { TConfigSource } from "../../source/types/TConfigSource"
+import type { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
 
 
@@ -33,10 +33,10 @@ type TFsStorageParams = Required<{
 
 //
 export class FsStorage extends absStorageProvider {
-    ConfigSource?: TConfigSource | undefined
-    ConfigStorage?: TStorageFilesDataOptions | undefined
+    ConfigSource?: TConfigSource
+    ConfigStorage?: TStorageFilesDataOptions
 
-    Params: TFsStorageParams | undefined
+    Params?: TFsStorageParams
 
     DEFAULT: TFsStorageParams = {
         folder: '',
@@ -65,7 +65,7 @@ export class FsStorage extends absStorageProvider {
     async Disconnect(): Promise<void> {
         Logger.Debug(`${Logger.Out} FsStorage: Disconnected`)
     }
-    
+
     @Logger.LogFunction()
     async FolderIsExist(dirName: string): Promise<boolean> {
         Assert.Var<TFsStorageParams>(this.Params, 'FsStorage: No params defined')

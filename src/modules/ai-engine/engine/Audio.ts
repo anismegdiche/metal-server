@@ -2,7 +2,7 @@
 //
 //
 import axios from 'axios'
-import _ from "lodash"
+import { merge } from 'lodash-es'
 //
 import { Assert } from '../../../utils/Assert'
 import { Logger } from '../../../utils/Logger'
@@ -10,14 +10,15 @@ import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from '../../../utils/Utils'
 import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
 import { AI_ENGINE } from '../@consts'
-import { TAiRunArguments, TAiRunOutput, TConfigAiEngine } from '../@types'
+import type { TAiRunArguments, TAiRunOutput } from '../@types'
 import { AiDocker } from '../AiDocker'
 import { absAiEngine } from '../base/absAiEngine'
-import { IAiEngine } from '../base/IAiEngine'
+import type { IAiEngine } from '../base/IAiEngine'
 import { AUDIO_TASK } from '../consts/AUDIO'
 import { AudioAudioClassificationDockerService, AudioAutomaticSpeechRecognitionDockerService } from '../docker-services/AudioDockerService'
-import { TAiDockerService } from '../types/TAiDockerService'
-import { TStepRunAiAudioParams } from '../types/TStepRunAiAudioParam'
+import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
+import type { TAiDockerService } from '../types/TAiDockerService'
+import type { U_config_plans_plan_entity_run_ai_audio_Params } from '../types/U_config_plans_plan_entity_run_ai_audio_Params'
 
 //
 const AUDIO_DEFAULT_HEADERS = {
@@ -34,7 +35,7 @@ export class Audio extends absAiEngine implements IAiEngine {
     AiDockerService: Record<string, TAiDockerService> = {}
     RunTask: Record<string, (args: TAiRunArguments) => Promise<TAiRunOutput>> = {}
 
-    DEFAULT: TStepRunAiAudioParams = {
+    DEFAULT: U_config_plans_plan_entity_run_ai_audio_Params = {
         task: AUDIO_TASK.AUDIO_CLASSIFICATION,
         params: undefined
     }
@@ -44,7 +45,7 @@ export class Audio extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction()
-    async Init(aiName: string, aiConfig: TConfigAiEngine): Promise<void> {
+    async Init(aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
         await super.Init(aiName, aiConfig)
 
         this.AiDockerService = {
@@ -59,7 +60,7 @@ export class Audio extends absAiEngine implements IAiEngine {
 
         await AiDocker.StartService({
             InstanceName: aiName,
-            ...this.AiDockerService[this.InstanceName]
+            ...this.AiDockerService[this.InstanceName] as TAiDockerService
         })
 
         Logger.Debug(`${Logger.Out} Successfully initialized Audio instance '${this.InstanceName}'`)
@@ -67,19 +68,19 @@ export class Audio extends absAiEngine implements IAiEngine {
 
     @Logger.LogFunction(true)
     async Run(args: TAiRunArguments): Promise<TAiRunOutput> {
-        const _args: TStepRunAiAudioParams = _.merge(this.DEFAULT, args)
+        const _args: U_config_plans_plan_entity_run_ai_audio_Params = merge(this.DEFAULT, args)
         const { task } = _args
 
         Assert.Condition(Object.values(AUDIO_TASK).includes(task as AUDIO_TASK), `Invalid audio task: ${task}`)
 
         await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
-        return this.RunTask[task](args)
+        return this.RunTask[task]!(args)
     }
 
     @Logger.LogFunction(true)
     async AudioClassification(args: TAiRunArguments): Promise<TAiRunOutput> {
         const { data } = args;
-        const { params } = args as TStepRunAiAudioParams;
+        const { params } = args as U_config_plans_plan_entity_run_ai_audio_Params;
 
         Assert.Var(data, 'data is required')
 
@@ -132,7 +133,7 @@ export class Audio extends absAiEngine implements IAiEngine {
     @Logger.LogFunction(true)
     async AutomaticSpeechRecognition(args: TAiRunArguments): Promise<TAiRunOutput> {
         const { data } = args;
-        const { params } = args as TStepRunAiAudioParams;
+        const { params } = args as U_config_plans_plan_entity_run_ai_audio_Params;
 
         Assert.Var(data, 'data is required')
 

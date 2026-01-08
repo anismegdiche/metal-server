@@ -2,11 +2,10 @@
 //
 //
 //
-import { tags } from 'typia'
+import { z } from 'zod'
 
 //
-export type TIpPort =
-    & number
-    & tags.Type<'uint32'>
-    & tags.Minimum<1>
-    & tags.Maximum<65_535>
+export const z_TIpPort = z.number().int().min(1).max(65535);
+
+export type TIpPort = z.infer<typeof z_TIpPort>;
+

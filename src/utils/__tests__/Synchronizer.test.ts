@@ -1,9 +1,9 @@
- 
+
 
 import { Synchronizer } from '../Synchronizer'
 import { setTimeout } from 'timers'
 
-jest.useFakeTimers()
+vi.useFakeTimers()
 
 describe('Synchronizer', () => {
     it('should return the same result for concurrent calls and than a different result after a delay', async () => {
@@ -36,7 +36,7 @@ describe('Synchronizer', () => {
 
         const initialResult = await initialPromise
 
-        jest.runOnlyPendingTimers()
+        vi.runOnlyPendingTimers()
 
         const subsequentPromise = syncOnce.Execute(async () => {
             await new Promise(resolve => setTimeout(resolve, 5000))

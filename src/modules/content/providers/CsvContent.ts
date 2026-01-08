@@ -2,12 +2,13 @@
 //
 //
 // Lazy-loaded module
-import { is as TypiaIs } from "typia"
+import { z_TCsvContentConfig } from "../../../utils/Schemas"
 //
 import { Readable } from "node:stream"
 //
-import { DataTable, TRow, TRowsCopyParams } from "../../../types/DataTable"
-import { TJson } from '../../../types/TJson'
+import { DataTable } from "../../../types/DataTable"
+import type { TRow, TRowsCopyParams } from "../../../types/DataTable"
+import type { TJson } from '../../../types/TJson'
 import { Assert } from '../../../utils/Assert'
 import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from "../../../utils/Logger"
@@ -15,10 +16,10 @@ import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { StringUtils } from "../../../utils/StringUtils"
 import { Sandbox } from "../../sandbox/Sandbox"
-import { TContext } from "../../sandbox/types/TContext"
+import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
-import { TCsvContentConfig } from '../types/TCsvContentConfig'
-import { TCsvContentParams } from '../types/TCsvContentParams'
+import type { TCsvContentConfig } from '../types/TCsvContentConfig'
+import type { TCsvContentParams } from '../types/TCsvContentParams'
 import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
 
 
@@ -37,15 +38,16 @@ export class CsvContent extends absContentProvider {
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && TypiaIs<TCsvContentConfig>(this.Config)) {
+        if (this.Config && z_TCsvContentConfig.safeParse(this.Config).success) {
+            const config = this.Config as TCsvContentConfig
             this.Params = {
-                delimiter: this.Config["csv-delimiter"] ?? ',',
-                newline: this.Config["csv-newline"] ?? '\n',
-                header: this.Config["csv-header"] ?? true,
-                quoteChar: (StringUtils.IsEmpty(this.Config["csv-quote"]))
+                delimiter: config["csv-delimiter"] ?? ',',
+                newline: config["csv-newline"] ?? '\n',
+                header: config["csv-header"] ?? true,
+                quoteChar: (StringUtils.IsEmpty(config["csv-quote"]))
                     ? '"'
-                    : this.Config["csv-quote"]!,
-                skipEmptyLines: this.Config["csv-skip-empty"] ?? 'greedy'
+                    : config["csv-quote"]!,
+                skipEmptyLines: config["csv-skip-empty"] ?? 'greedy'
             }
         }
         this.Content.UploadFile(entity, content)
@@ -71,8 +73,8 @@ export class CsvContent extends absContentProvider {
             ),
             $__evalParams
         )
-        return new DataTable(this.EntityName, parsedCsv.data)
-            .Copy(this.EntityName, rowsParams)
+        using data = new DataTable(this.EntityName, parsedCsv.data)
+        return data.Copy(this.EntityName, rowsParams)
     }
 
     @Logger.LogFunction(true)

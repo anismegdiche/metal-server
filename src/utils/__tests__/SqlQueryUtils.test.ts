@@ -2,7 +2,7 @@ import { mock_Logger } from '../../__tests__/mockers'
 mock_Logger()
 
 import { SQL_TYPE, SqlQueryUtils } from '../SqlQueryUtils'
-import { TRow } from '../../types/DataTable'
+import type { TRow } from '../../types/DataTable'
 import { JsonUtils } from "../JsonUtils"
 import { HttpErrorBadRequest } from "../../modules/errors/HttpErrors"
 

@@ -1,18 +1,22 @@
 //
 //
 //
-import { Request, Response } from 'express'
+import type { Request, Response } from 'express'
 //
 import { Convert } from '../../../utils/Convert'
 import { Schedule } from '../../plan/Schedule'
 import { RequestHandler } from '../RequestHandler'
 import { ResponseHandler } from '../ResponseHandler'
+import { Assert } from '../../../utils/Assert'
 
 export class ScheduleResponse {
     static Start(req: Request, res: Response) {
         RequestHandler.CheckRequest(req)
         try {
             const { jobName } = req.params
+
+            Assert.Var<string>(jobName, 'jobName is not defined')
+
             const intRes = Schedule.Start(jobName, req.__METAL_CURRENT_USER)
             Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {
@@ -24,6 +28,9 @@ export class ScheduleResponse {
         RequestHandler.CheckRequest(req)
         try {
             const { jobName } = req.params
+
+            Assert.Var<string>(jobName, 'jobName is not defined')
+
             const intRes = Schedule.Stop(jobName, req.__METAL_CURRENT_USER)
             Convert.InternalResponseToResponse(res, intRes)
         } catch (error: unknown) {

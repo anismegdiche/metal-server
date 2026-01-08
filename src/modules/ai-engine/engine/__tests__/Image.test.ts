@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { Image } from '../Image'
-import { TAiRunArguments } from '../../@types'
+import type { TAiRunArguments } from '../../@types'
 
-const spyAxios = jest.spyOn(axios, 'post')
+const spyAxios = vi.spyOn(axios, 'post')
 
 const image = new Image()
 

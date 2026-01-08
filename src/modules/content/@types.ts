@@ -1,10 +1,10 @@
 //
 //
 //
-import { TCsvContentConfig } from './types/TCsvContentConfig';
-import { TJsonContentConfig } from './types/TJsonContentConfig';
-import { TXlsContentConfig } from './types/TXlsContentConfig';
-import { TXmlContentConfig } from './types/TXmlContentConfig';
+import type { TCsvContentConfig } from './types/TCsvContentConfig';
+import type { TJsonContentConfig } from './types/TJsonContentConfig';
+import type { TXlsContentConfig } from './types/TXlsContentConfig';
+import type { TXmlContentConfig } from './types/TXmlContentConfig';
 
 //
 export type TContentConfig =

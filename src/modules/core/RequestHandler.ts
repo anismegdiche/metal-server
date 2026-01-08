@@ -1,7 +1,7 @@
 //
 //
 //
-import _ from "lodash";
+import * as _ from 'lodash-es';
 //
 import { HttpErrorUnauthorized } from "../errors/HttpErrors";
 
@@ -13,5 +13,5 @@ export class RequestHandler {
         if (!_.has(req, '__METAL_CURRENT_USER')) {
             throw new HttpErrorUnauthorized()
         }
-    }    
+    }
 }

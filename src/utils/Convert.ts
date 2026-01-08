@@ -1,39 +1,42 @@
 //
 //
 //
-import { Request, Response } from 'express'
+import type { Request, Response } from 'express'
+import bytes from 'bytes'
 //
-import { TSchemaRequest } from '../modules/schema/types/TSchemaRequest'
-import { TJson } from '../types/TJson'
-import { TInternalResponse } from '../modules/schema/types/TInternalResponse'
+import type { TSchemaRequest } from '../modules/schema/types/TSchemaRequest'
+import type { TJson } from '../types/TJson'
+import type { TInternalResponse } from '../modules/core/types/TInternalResponse'
 import { HttpErrorBadRequest } from '../modules/errors/HttpErrors'
+import { Assert } from './Assert'
 
 const RX_SORT = /^(\w+:(asc|desc))(,\w+:(asc|desc))*$/
 
 
 export class Convert {
 
-    static HumainSizeToBytes(size: string) {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const bytes = require('bytes')
-        return bytes(size)
+    static HumainSizeToBytes(size: string): number {
+        return bytes(size) ?? 0
     }
 
     static RequestToSchemaRequest(req: Request): TSchemaRequest {
         const { schema, entity } = req.params
-        const { sort } = req.query ?? {}        
+        const { sort } = req.query ?? {}
 
-         
-        let _sort : TJson<string> | undefined = undefined
+
+        let _sort: TJson<string> | undefined = undefined
 
         if (typeof sort === 'string') {
             if (!RX_SORT.test(sort))
                 throw new HttpErrorBadRequest(`Invalid sort format: ${sort}`)
-            
+
             _sort = sort
                 .split(',')
                 .reduce<TJson<string>>((acc, curr) => {
                     const [key, value] = curr.split(':')
+                    Assert.Var<string>(key, "undefined key")
+                    Assert.Var<string>(value, "undefined value")
+
                     acc[key] = value
                     return acc
                 }, {})

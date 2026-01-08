@@ -2,16 +2,16 @@
 //
 //
 //
-import _ from "lodash";
+import * as _ from 'lodash-es';
 //
-import { TJson } from "../../types/TJson";
+import type { TJson } from "../../types/TJson";
 import { Factory } from "../../utils/Factory";
 import { ConfigManager } from "../core/ConfigManager";
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors";
 import { AI_ENGINE } from "./@consts";
-import { TConfigAiEngine } from "./@types";
+import type { T_config_ai_engines_ai_engine } from "./types/T_config_ai_engines_ai_engine";
 import { AiDocker } from "./AiDocker";
-import { IAiEngine } from "./base/IAiEngine";
+import type { IAiEngine } from "./base/IAiEngine";
 import { Semaphore } from "../../utils/Semaphore";
 import { BaseImageDockerService, BaseTextDockerService } from "./docker-services/BaseDockerService";
 
@@ -40,37 +40,36 @@ export class AiEngine {
     static readonly #aiEngineFactory = new Factory<IAiEngine>();
     static readonly #loadingPromises = new Map<string, Promise<IAiEngine>>();
 
-    static #aiEnginesConfig: TJson<TConfigAiEngine> = {};
+    static #aiEnginesConfig: TJson<T_config_ai_engines_ai_engine> = {};
     static AiEnginesInstance: Map<string, IAiEngine> = new Map();
 
     /**
      * Build a list of AI engines from the configuration
      */
-    static BuildAiEnginesList(): TJson<TConfigAiEngine> {
+    static BuildAiEnginesList(): TJson<T_config_ai_engines_ai_engine> {
         if (!ConfigManager.Has('plans')) {
             return {};
         }
 
         const plans = ConfigManager.Get<Plan>("plans");
 
-        const aiTasks = _(Object.values(plans))
-            .flatMap(plan => _
-                .flatMap(plan, entity => entity
-                    .map(step => step.run)
-                    .filter((run): run is NonNullable<typeof run> => Boolean(run))
-                    .map(({ ai, task }): AiTask => ({
-                        ai,
-                        task
-                    }))
-                ))
+        const aiTasks = _.chain(Object.values(plans))
+            .flatMap((plan: PlanEntity[]) => _.flatMap(plan, (entity: PlanEntity) => entity
+                .map((step: PlanStep) => step.run)
+                .filter((run): run is NonNullable<typeof run> => Boolean(run))
+                .map(({ ai, task }): AiTask => ({
+                    ai,
+                    task
+                }))
+            ))
             .filter(Boolean)
             .uniqWith(_.isEqual)
-            .value();
+            .value() as AiTask[];
 
-        return aiTasks.reduce((acc, { ai, task }) => {
-            acc[`${ai}-${task}`] = { engine: `${ai}-${task}` } as TConfigAiEngine;
+        return aiTasks.reduce((acc: TJson<T_config_ai_engines_ai_engine>, { ai, task }: AiTask) => {
+            acc[`${ai}-${task}`] = { engine: `${ai}-${task}` } as T_config_ai_engines_ai_engine;
             return acc;
-        }, {} as TJson<TConfigAiEngine>);
+        }, {} as TJson<T_config_ai_engines_ai_engine>);
     }
 
     /**
@@ -96,7 +95,10 @@ export class AiEngine {
         }
 
         // Get the loader for this engine type
-        const engineLoader = engineLoaders[engineType];
+        if (!Object.prototype.hasOwnProperty.call(engineLoaders, engineType)) {
+            throw new HttpErrorNotFound(`AI Engine type '${engineType}' not found`);
+        }
+        const engineLoader = engineLoaders[engineType]!;
         if (!engineLoader) {
             throw new HttpErrorNotFound(`AI Engine type '${engineType}' not found`);
         }
@@ -149,7 +151,7 @@ export class AiEngine {
         const __LOCK__ = new Semaphore(buildBatchSize);
 
         // Process all providers in parallel
-        const results = await Promise.allSettled(
+        const results = await Promise.all(
             entries.map(async ([aiName, aiConfig]) => {
                 try {
                     await __LOCK__.Acquire();
@@ -171,22 +173,14 @@ export class AiEngine {
                             ? error.message
                             : String(error)
                     };
-                }
-                finally {
+                } finally {
                     __LOCK__.Release();
                 }
             })
         );
 
         // Check for any failures
-        const failures = results
-            .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
-            .map((result, index) => ({
-                aiName: entries[index]?.[0] || 'unknown',
-                error: result.reason instanceof Error
-                    ? result.reason.message
-                    : String(result.reason)
-            }));
+        const failures = results.filter((r): r is { aiName: string; success: false; error: string } => !r.success);
 
         if (failures.length > 0) {
             const errorDetails = failures

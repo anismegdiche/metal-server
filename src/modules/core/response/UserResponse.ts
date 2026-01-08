@@ -1,11 +1,11 @@
 //
 //
 //
-import { NextFunction, Request, Response } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 //
 import { Convert } from '../../../utils/Convert'
 import { HttpError, HttpErrorForbidden, HttpErrorUnauthorized } from '../../errors/HttpErrors'
-import { TUserCredentials } from '../../auth/@types'
+import type { TUserCredentials } from '../../auth/@types'
 import { User } from '../../auth/User'
 import { ResponseHandler } from '../ResponseHandler'
 
@@ -18,7 +18,7 @@ export class UserResponse {
     static async Authenticate(req: Request, res: Response): Promise<void> {
         const { username, password } = req.body
         User.Authenticate(
-            <TUserCredentials> {
+            <TUserCredentials>{
                 username,
                 password
             }

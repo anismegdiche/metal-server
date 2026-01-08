@@ -2,26 +2,26 @@
 //
 //
 // Lazy-loaded pg module
-import _ from "lodash"
+import * as _ from 'lodash-es'
 //
 import { RESPONSE } from '../../core/@consts'
-import { TConfigSourceOptions } from "../types/TConfigSourceOptions"
-import { TConfigSource } from "../types/TConfigSource"
-import { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TConfigSourceOptions } from "../types/TConfigSourceOptions"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
 import { DataTable } from "../../../types/DataTable"
-import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import { Cache } from '../../cache/Cache'
 import { Logger } from '../../../utils/Logger'
 import { DATA_PROVIDER } from "../@consts"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import { HttpResponse } from "../../core/HttpResponse"
 import { absDataProvider } from "../base/absDataProvider"
-import { TContext } from "../../sandbox/types/TContext"
+import type { TContext } from "../../sandbox/types/TContext"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
-import { TIpPort } from "../../../types/TIpPort"
+import type { TIpPort } from "../../../types/TIpPort"
 import { Assert } from '../../../utils/Assert'
 
 
@@ -53,7 +53,7 @@ export class PostgresData extends absDataProvider {
     Connection?: import('pg').Pool
 
     DEFAULT: Partial<TPostgresDataConfig> = {
-        host: 'localhost',
+        host: '127.0.0.1',
         port: 5432,
         user: 'root',
         password: '',

@@ -2,21 +2,21 @@
 //
 //
 import { CronJob } from 'cron'
-import findKey from 'lodash/findKey'
+import { findKey } from 'lodash-es'
 //
-import { TJson } from "../../types/TJson"
+import type { TJson } from "../../types/TJson"
 import { JsonUtils } from '../../utils/JsonUtils'
 import { Logger } from '../../utils/Logger'
 import { AUTH_PERMISSION } from '../auth/@consts'
-import { TUserTokenInfo } from '../auth/@types'
+import type { TUserTokenInfo } from '../auth/@types'
 import { Roles } from '../auth/Roles'
 import { ConfigManager } from '../core/ConfigManager'
 import { HttpResponse } from "../core/HttpResponse"
 import { HttpErrorNotFound } from "../errors/HttpErrors"
-import { TInternalResponse } from '../schema/types/TInternalResponse'
+import type { TInternalResponse } from '../core/types/TInternalResponse'
 import { Plans } from "./Plans"
-import { TSchedule } from './types/TSchedule'
-import { TScheduleConfig } from './types/TScheduleConfig'
+import type { TSchedule } from './types/TSchedule'
+import type { U_config_schedules, U_config_schedules_schedule } from './types/U_config_schedules'
 
 //
 const ON_START = '@start'
@@ -39,7 +39,7 @@ export class Schedule {
             return undefined
         }
 
-        const scheduleConfig: Array<[string, TScheduleConfig]> = Object.entries(ConfigManager.Get<TJson<TScheduleConfig>>('schedules'))
+        const scheduleConfig: Array<[string, U_config_schedules_schedule]> = Object.entries(ConfigManager.Get<U_config_schedules>('schedules'))
 
         for (const [_jobName, _scheduleParams] of scheduleConfig) {
             Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_jobName}'`)
@@ -66,11 +66,11 @@ export class Schedule {
         }
     }
 
-    static JobProcess(jobName: string, scheduleParams: TScheduleConfig) {
+    static JobProcess(jobName: string, scheduleParams: U_config_schedules_schedule) {
         Logger.Info(`${Logger.In} Schedule.Job: Running job '${jobName}'`)
-        
+
         const { plan } = scheduleParams
-        
+
         Plans.Plans.get(plan)?.ProcessScheduleConfig(scheduleParams)
             .then(() => {
                 Logger.Info(`${Logger.Out} Schedule.Job: job '${jobName}' terminated`)
@@ -87,7 +87,7 @@ export class Schedule {
         const jobKey = findKey(this.Jobs, ["name", jobName])
 
         if (jobKey) {
-            this.Jobs[Number(jobKey)].cronJob.start()
+            this.Jobs[Number(jobKey)]!.cronJob.start()
             return HttpResponse.Ok({ message: `Job '${jobName}' started` })
         }
 
@@ -99,10 +99,10 @@ export class Schedule {
         Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
 
         const jobKey = findKey(this.Jobs, ["name", jobName])
-        
+
         if (jobKey) {
             const _jobKey = parseInt(jobKey, 10)
-            this.Jobs[_jobKey].cronJob.stop()
+            this.Jobs[_jobKey]!.cronJob.stop()
             return HttpResponse.Ok({ message: `Job '${jobName}' stopped` })
         }
 

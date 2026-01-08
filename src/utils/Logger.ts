@@ -4,13 +4,13 @@ import LogLevel from 'loglevel'
 import Prefix from 'loglevel-plugin-prefix'
 import morgan from "morgan"
 import { magenta, green, cyan, yellow, red, gray, whiteBright, bold } from 'colorette'
-import _ from 'lodash'
+import * as _ from 'lodash-es'
 //
 import { SERVER } from '../modules/core/@consts'
 import { DecoratorUtils } from "./DecoratorUtils"
 import { Stringify } from './JsonUtils/Stringify'
 import { JsonUtils } from './JsonUtils'
-import { TJson } from '../types/TJson'
+import type { TJson } from '../types/TJson'
 
 
 //
@@ -32,15 +32,15 @@ const _colors: Record<string, (text: string) => string> = {
     [VERBOSITY.ERROR.toUpperCase()]: (text: string) => red(text)
 }
 
-export const LoggerDefaultLevel: LogLevel.LogLevelDesc = VERBOSITY.WARN
+export const LOGGER_DEFAULT_LEVEL: LogLevel.LogLevelDesc = VERBOSITY.WARN
 
 Prefix.reg(LogLevel)
 
-LogLevel.setLevel(LoggerDefaultLevel)
+LogLevel.setLevel(LOGGER_DEFAULT_LEVEL)
 
 Prefix.apply(LogLevel, {
     format(level: string, name: string | undefined, timestamp: Date) {
-        return `${gray(timestamp.toString())} ${_colors[level]((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${whiteBright(`${name}:`)}`
+        return `${gray(timestamp.toString())} ${_colors[level]!((level.padEnd(5)).slice(-5))} [${SERVER.NAME}] ${whiteBright(`${name}:`)}`
     }
 })
 
@@ -82,7 +82,7 @@ export class Logger {
 
     static readonly In = magenta('▶ ')
     static readonly Out = yellow('◀ ')
-    static Level: LogLevel.LogLevelDesc = LoggerDefaultLevel //NOSONAR
+    static Level: LogLevel.LogLevelDesc = LOGGER_DEFAULT_LEVEL //NOSONAR
 
     static readonly RequestMiddleware = morgan(
         ':remote-addr, :method :url, :status, :res[content-length], :response-time ms',
@@ -98,7 +98,7 @@ export class Logger {
         try {
             LogLevel.setLevel(Logger.Level)
         } catch (error: unknown) {
-            LogLevel.setLevel(LoggerDefaultLevel)
+            LogLevel.setLevel(LOGGER_DEFAULT_LEVEL)
             Logger.Error(`Logger.SetLevel: Error while setting verbosity, resetting to default`)
             Logger.Error(error)
         }
@@ -203,5 +203,11 @@ export class Logger {
 
             return descriptor;
         };
+    }
+
+    static FlushQueue(): void {
+        while (_logQueue.length > 0) {
+            _processQueue()
+        }
     }
 }

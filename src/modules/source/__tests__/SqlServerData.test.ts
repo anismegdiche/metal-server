@@ -1,55 +1,41 @@
- 
- 
+import { mock_Logger } from "../../../__tests__/mockers"
+mock_Logger()
+
 import { SqlServerData } from "../providers/SqlServerData"
-import { TConfigSource } from "../types/TConfigSource"
-import { TSchemaRequestSelect, TSchemaRequestInsert, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TSchemaRequestSelect, TSchemaRequestInsert, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
 import { HttpErrorInternalServerError, HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
-import { TIpPort } from "../../../types/TIpPort"
+import type { TIpPort } from "../../../types/TIpPort"
 import { DATA_PROVIDER } from "../@consts"
-import { TJson } from "../../../types/TJson"
+import type { TJson } from "../../../types/TJson"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { Cache } from '../../cache/Cache'
 import mssql from 'mssql'
 
 // Mock mssql module
-jest.mock('mssql', () => {
+vi.mock('mssql', () => {
+    const connect = vi.fn()
+    const mockModule = { connect }
     return {
-        connect: jest.fn()
+        ...mockModule,
+        default: mockModule
     }
 })
 
-// Mock the Logger
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
-    }
-}))
-
 // mock console.warn
-console.warn = jest.fn()
+console.warn = vi.fn()
 
 // Mock Cache
-jest.mock('../../cache/Cache', () => ({
+vi.mock('../../cache/Cache', () => ({
     Cache: {
-        Set: jest.fn(),
-        Remove: jest.fn(() => Promise.resolve())
+        Set: vi.fn(),
+        Remove: vi.fn(() => Promise.resolve())
     }
 }))
 
 const mockConfig: TConfigSource = {
     provider: DATA_PROVIDER.MSSQL,
-    host: 'localhost',
+    host: '127.0.0.1',
     port: 1433 as TIpPort,
     user: 'testuser',
     password: 'testpass',
@@ -70,12 +56,12 @@ describe('SqlServerData', () => {
 
     beforeEach(() => {
         sqlServerData = new SqlServerData()
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         const mockConnection = {
-            query: jest.fn()
+            query: vi.fn()
         }
-        const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-        jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+        const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+        vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
     })
 
     describe('Init', () => {
@@ -104,7 +90,7 @@ describe('SqlServerData', () => {
         it('should merge configuration with defaults', async () => {
             const partialConfig: TConfigSource = {
                 provider: DATA_PROVIDER.MSSQL,
-                host: 'localhost',
+                host: '127.0.0.1',
                 database: 'testdb'
             }
             await sqlServerData.Init('test', partialConfig)
@@ -133,10 +119,10 @@ describe('SqlServerData', () => {
     describe('Connect', () => {
         it('should establish connection successfully', async () => {
             const mockConnection = {
-                query: jest.fn()
+                query: vi.fn()
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -155,8 +141,8 @@ describe('SqlServerData', () => {
 
         it('should handle connection error gracefully', async () => {
             const mockError = new HttpErrorInternalServerError('Connection failed')
-            const mockConnect = jest.fn().mockRejectedValue(mockError)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockRejectedValue(mockError)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             const sqlServerData = new SqlServerData()
             await sqlServerData.Init('test', mockConfig)
@@ -177,10 +163,10 @@ describe('SqlServerData', () => {
                 }
             }
             const mockConnection = {
-                query: jest.fn()
+                query: vi.fn()
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', customConfig)
             await sqlServerData.Connect()
@@ -199,8 +185,8 @@ describe('SqlServerData', () => {
 
         it('should handle connection error gracefully', async () => {
             const mockError = new HttpErrorInternalServerError('Connection failed')
-            const mockConnect = jest.fn().mockRejectedValue(mockError)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockRejectedValue(mockError)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -212,10 +198,10 @@ describe('SqlServerData', () => {
     describe('Disconnect', () => {
         it('should disconnect successfully when connection exists', async () => {
             const mockConnection = {
-                close: jest.fn()
+                close: vi.fn()
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -234,7 +220,7 @@ describe('SqlServerData', () => {
 
     describe('Select', () => {
         it('should handle select operation successfully', async () => {
-            const mockQuery = jest.fn().mockResolvedValue({
+            const mockQuery = vi.fn().mockResolvedValue({
                 recordset: [
                     {
                         id: 1,
@@ -245,8 +231,8 @@ describe('SqlServerData', () => {
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -264,12 +250,12 @@ describe('SqlServerData', () => {
         })
 
         it('should handle select operation with empty result', async () => {
-            const mockQuery = jest.fn().mockResolvedValue({ recordset: [] })
+            const mockQuery = vi.fn().mockResolvedValue({ recordset: [] })
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -299,12 +285,12 @@ describe('SqlServerData', () => {
 
         it('should handle query error gracefully', async () => {
             const mockError = new HttpErrorInternalServerError('Query failed')
-            const mockQuery = jest.fn().mockRejectedValue(mockError)
+            const mockQuery = vi.fn().mockRejectedValue(mockError)
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -320,7 +306,7 @@ describe('SqlServerData', () => {
         })
 
         it('should handle caching correctly', async () => {
-            const mockQuery = jest.fn().mockResolvedValue({
+            const mockQuery = vi.fn().mockResolvedValue({
                 recordset: [
                     {
                         id: 1,
@@ -331,8 +317,8 @@ describe('SqlServerData', () => {
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -351,12 +337,12 @@ describe('SqlServerData', () => {
 
     describe('Insert', () => {
         it('should handle insert operation successfully', async () => {
-            const mockQuery = jest.fn().mockResolvedValue({})
+            const mockQuery = vi.fn().mockResolvedValue({})
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -374,12 +360,12 @@ describe('SqlServerData', () => {
         })
 
         it('should throw error when data is missing', async () => {
-            const mockQuery = jest.fn().mockResolvedValue({})
+            const mockQuery = vi.fn().mockResolvedValue({})
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -407,12 +393,12 @@ describe('SqlServerData', () => {
 
         it('should handle query error gracefully', async () => {
             const mockError = new HttpErrorInternalServerError('Query failed')
-            const mockQuery = jest.fn().mockRejectedValue(mockError)
+            const mockQuery = vi.fn().mockRejectedValue(mockError)
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -430,12 +416,12 @@ describe('SqlServerData', () => {
 
     describe('Update', () => {
         it('should handle update operation successfully', async () => {
-            const mockQuery = jest.fn().mockResolvedValue({})
+            const mockQuery = vi.fn().mockResolvedValue({})
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -454,12 +440,12 @@ describe('SqlServerData', () => {
         })
 
         it('should throw error when data is missing', async () => {
-            const mockQuery = jest.fn().mockResolvedValue({})
+            const mockQuery = vi.fn().mockResolvedValue({})
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -489,12 +475,12 @@ describe('SqlServerData', () => {
 
         it('should handle query error gracefully', async () => {
             const mockError = new HttpErrorInternalServerError('Query failed')
-            const mockQuery = jest.fn().mockRejectedValue(mockError)
+            const mockQuery = vi.fn().mockRejectedValue(mockError)
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -513,12 +499,12 @@ describe('SqlServerData', () => {
 
     describe('Delete', () => {
         it('should handle delete operation successfully', async () => {
-            const mockQuery = jest.fn().mockResolvedValue({})
+            const mockQuery = vi.fn().mockResolvedValue({})
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -548,12 +534,12 @@ describe('SqlServerData', () => {
 
         it('should handle query error gracefully', async () => {
             const mockError = new HttpErrorInternalServerError('Query failed')
-            const mockQuery = jest.fn().mockRejectedValue(mockError)
+            const mockQuery = vi.fn().mockRejectedValue(mockError)
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
@@ -571,7 +557,7 @@ describe('SqlServerData', () => {
 
     describe('ListEntities', () => {
         it('should list entities successfully', async () => {
-            const mockQuery = jest.fn().mockResolvedValue({
+            const mockQuery = vi.fn().mockResolvedValue({
                 recordset: [
                     {
                         name: 'test_table',
@@ -583,13 +569,13 @@ describe('SqlServerData', () => {
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
-            const mockListRequest: TSchemaRequestListEntities = {
+            const mockListRequest = <TSchemaRequestListEntities>{
                 schema: 'test_schema'
             }
 
@@ -601,17 +587,17 @@ describe('SqlServerData', () => {
         })
 
         it('should throw error when entities not found', async () => {
-            const mockQuery = jest.fn().mockResolvedValue({ recordset: [] })
+            const mockQuery = vi.fn().mockResolvedValue({ recordset: [] })
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
-            const mockListRequest: TSchemaRequestListEntities = {
+            const mockListRequest = <TSchemaRequestListEntities>{
                 schema: 'test_schema'
             }
 
@@ -622,7 +608,7 @@ describe('SqlServerData', () => {
 
         it('should throw error when connection is not established', async () => {
             await sqlServerData.Init('test', mockConfig)
-            const mockListRequest: TSchemaRequestListEntities = {
+            const mockListRequest = <TSchemaRequestListEntities>{
                 schema: 'test_schema'
             }
             await expect(sqlServerData.ListEntities(mockListRequest))
@@ -632,17 +618,17 @@ describe('SqlServerData', () => {
 
         it('should handle query error gracefully', async () => {
             const mockError = new HttpErrorInternalServerError('Query failed')
-            const mockQuery = jest.fn().mockRejectedValue(mockError)
+            const mockQuery = vi.fn().mockRejectedValue(mockError)
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
 
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 
-            const mockListRequest: TSchemaRequestListEntities = {
+            const mockListRequest = <TSchemaRequestListEntities>{
                 schema: 'test_schema'
             }
 
@@ -654,12 +640,12 @@ describe('SqlServerData', () => {
 
     describe('Error Handling', () => {
         it('should handle query error', async () => {
-            const mockQuery = jest.fn().mockRejectedValue(new HttpErrorInternalServerError('Query failed'))
+            const mockQuery = vi.fn().mockRejectedValue(new HttpErrorInternalServerError('Query failed'))
             const mockConnection = {
                 query: mockQuery
             }
-            const mockConnect = jest.fn().mockResolvedValue(mockConnection)
-            jest.spyOn(mssql, 'connect').mockImplementation(mockConnect)
+            const mockConnect = vi.fn().mockResolvedValue(mockConnection)
+            vi.spyOn(mssql, 'connect').mockImplementation(mockConnect)
             await sqlServerData.Init('test', mockConfig)
             await sqlServerData.Connect()
 

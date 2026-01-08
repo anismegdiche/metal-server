@@ -2,16 +2,16 @@
 //
 //
 //
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import { TInternalResponse } from '../../schema/types/TInternalResponse'
-import { IDataProviderOptions } from "./IDataProviderOptions"
-import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
-import { TOptionalParameter } from "../types/TOptionalParameter"
-import { DATA_PROVIDER } from "../@consts"
-import { TConfigSource } from "../types/TConfigSource"
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { clsClonable } from "../../../utils/base/clsClonable"
-import { clsContext } from "../../../utils/base/clsContext"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TInternalResponse } from '../../core/types/TInternalResponse'
+import type { IDataProviderOptions } from "./IDataProviderOptions"
+import type { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { DATA_PROVIDER } from "../@consts"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { clsClonable } from "../../../utils/base/clsClonable"
+import type { clsContext } from "../../../utils/base/clsContext"
 
 
 //
@@ -45,7 +45,7 @@ export interface IDataProvider extends clsClonable, clsContext {
     EscapeEntity(entity: string): string
     EscapeField(field: string): string
 
-     
+
     GetSqlQuery(sqlQueryHelper: SqlQueryUtils, options: TOptionalParameter): string | undefined
     GenerateSqlSelect(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils
     GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): Promise<SqlQueryUtils>

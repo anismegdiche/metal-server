@@ -1,25 +1,27 @@
 //
 //
 //
-import _ from "lodash"
-import mysql, { Pool } from 'mysql2/promise'
+import * as _ from 'lodash-es'
+import mysql from 'mysql2/promise'
+import type { Pool } from 'mysql2/promise'
 //
 import { RESPONSE } from '../../core/@consts'
-import { TConfigSource } from "../types/TConfigSource"
-import { TOptionalParameter } from "../types/TOptionalParameter"
-import { DataTable, TRow } from "../../../types/DataTable"
-import { TSchemaResponse } from '../../schema/types/TSchemaResponse'
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
+import { DataTable } from "../../../types/DataTable"
+import type { TRow } from "../../../types/DataTable"
+import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import { Cache } from '../../cache/Cache'
 import { Logger } from '../../../utils/Logger'
 import { DATA_PROVIDER } from "../@consts"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
-import { TInternalResponse } from "../../schema/types/TInternalResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import { HttpResponse } from "../../core/HttpResponse"
 import { absDataProvider } from "../base/absDataProvider"
-import { TContext } from "../../sandbox/types/TContext"
+import type { TContext } from "../../sandbox/types/TContext"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
-import { TIpPort } from "../../../types/TIpPort"
+import type { TIpPort } from "../../../types/TIpPort"
 import { Assert } from "../../../utils/Assert"
 
 
@@ -41,7 +43,7 @@ export class MySqlData extends absDataProvider {
     Connection?: Pool
 
     DEFAULT: Partial<TMySqlDataConfig> = {
-        host: 'localhost',
+        host: '127.0.0.1',
         port: 3306,
         user: 'root',
         password: '',

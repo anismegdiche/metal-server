@@ -1,4 +1,4 @@
-import { HTTP_STATUS_CODE } from '../../core/@consts'
+import { HTTP_STATUS_CODE } from '../@consts'
 
 
 export type TInternalResponse<T> = {

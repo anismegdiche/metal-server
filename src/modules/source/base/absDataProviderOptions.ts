@@ -1,16 +1,16 @@
 //
 //
 //
-import { TSchemaRequest } from '../../schema/types/TSchemaRequest'
-import { TOptionalParameter } from '../types/TOptionalParameter'
+import type { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect } from '../../schema/types/TSchemaRequest'
+import type { TOptionalParameter } from '../types/TOptionalParameter'
 import { DataTable } from '../../../types/DataTable'
 import { Logger } from "../../../utils/Logger"
-import { TJson } from "../../../types/TJson"
-import { TContext } from "../../sandbox/types/TContext"
+import type { TJson } from "../../../types/TJson"
+import type { TContext } from "../../sandbox/types/TContext"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
 import { Global } from "../../../modules/core/Global"
-import { IDataProviderOptions } from './IDataProviderOptions'
+import type { IDataProviderOptions } from './IDataProviderOptions'
 
 
 //
@@ -33,18 +33,19 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 
     @Logger.LogFunction(true)
     GetFilter(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
+        const { "filter-expression": filterExpression, filter } = schemaRequest as TSchemaRequestSelect
 
-        if (schemaRequest["filter-expression"]) {
+        if (filterExpression) {
             options.Filter = PlaceHolder.EvaluateJsCode(
-                schemaRequest["filter-expression"],
+                filterExpression,
                 new Sandbox($context)
             )
             return options
         }
 
-        if (schemaRequest?.filter) {
+        if (filter) {
             options.Filter = PlaceHolder.EvaluateJsCode(
-                schemaRequest.filter,
+                filter,
                 new Sandbox($context)
             )
         }
@@ -54,10 +55,11 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 
     @Logger.LogFunction(true)
     GetFields(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
-        const _fields: string = (schemaRequest?.fields === undefined)
+        const { fields } = schemaRequest as TSchemaRequestSelect
+        const _fields: string = (fields === undefined)
             ? '*'
             : PlaceHolder.EvaluateJsCode(
-                schemaRequest.fields,
+                fields,
                 new Sandbox($context)
             ) ?? '*'
 
@@ -69,9 +71,10 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 
     @Logger.LogFunction(true)
     GetSort(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
-        if (schemaRequest?.sort) {
+        const { sort } = schemaRequest as TSchemaRequestSelect
+        if (sort) {
             options.Sort = PlaceHolder.EvaluateJsCode(
-                schemaRequest.sort,
+                sort,
                 new Sandbox($context)
             )
         }
@@ -81,13 +84,13 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 
     @Logger.LogFunction(true)
     GetData(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
-        const { schema, entity, data } = schemaRequest
+        const { schema, entity, data } = schemaRequest as TSchemaRequestInsert
 
         if (data) {
             const _isCacheData = (schema === Global.Cache.Database && entity === Global.Cache.Entity)
             // no evaluation for CacheData
             const _data = _isCacheData
-                ? schemaRequest.data as TJson[]
+                ? data as TJson[]
                 : PlaceHolder.EvaluateJsCode<TJson[]>(data, new Sandbox($context))
 
             options.Data = new DataTable(entity, _data)
@@ -98,13 +101,15 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 
     @Logger.LogFunction(true)
     GetCache(options: TOptionalParameter, schemaRequest: TSchemaRequest): Partial<TOptionalParameter> {
-        if (schemaRequest?.cache)
-            options.Cache = schemaRequest.cache
+        const { cache } = schemaRequest as TSchemaRequestSelect
+        if (cache)
+            options.Cache = cache
         return options
     }
 
 
     IsFilterNotEmpty(schemaRequest: TSchemaRequest): boolean {
-        return schemaRequest["filter-expression"] !== undefined || Object.keys(schemaRequest?.filter || {}).length > 0
+        const { "filter-expression": filterExpression, filter } = schemaRequest as TSchemaRequestSelect
+        return filterExpression !== undefined || Object.keys(filter || {}).length > 0
     }
 }

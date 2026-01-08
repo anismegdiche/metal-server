@@ -1,21 +1,21 @@
 //
 //
 //
-import _ from "lodash"
+import * as _ from 'lodash-es'
 import { Readable } from "stream"
 // Lazy-loaded soap module
 //
 import { absWebServiceProvider } from "../base/absWebServiceProvider"
-import {  ENDPOINT, HEADER } from "../@consts"
+import { ENDPOINT, HEADER } from "../@consts"
 import { JsonUtils } from '../../../utils/JsonUtils'
-import { TWebServiceDataOptions, TConfigSourceWebService } from "../../source/providers/WebServiceData"
+import type { TWebServiceDataOptions, TConfigSourceWebService } from "../../source/providers/WebServiceData"
 import { Logger } from "../../../utils/Logger"
 import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../errors/HttpErrors"
-import { TContext } from "../../sandbox/types/TContext"
+import type { TContext } from "../../sandbox/types/TContext"
 import { Sandbox } from "../../sandbox/Sandbox"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { CONTENT } from "../../content/@consts"
-import { TJson } from "../../../types/TJson"
+import type { TJson } from "../../../types/TJson"
 import { Validator } from "../../../utils/Validator"
 
 
@@ -85,8 +85,8 @@ export class SoapWebService extends absWebServiceProvider {
                 throw new HttpErrorInternalServerError(`SoapWebService.Init: Failed to create client`)
 
             // set content type
-            const [header] = Object.keys(HEADER[this.ConfigSourceOptions!.content])
-            const [value] = Object.values(HEADER[this.ConfigSourceOptions!.content])
+            const [header] = Object.keys(HEADER[this.ConfigSourceOptions!.content]!)
+            const [value] = Object.values(HEADER[this.ConfigSourceOptions!.content]!)
 
             if (typeof header == 'string' && typeof value == 'string')
                 this.Client.addHttpHeader(header, value)
@@ -97,13 +97,13 @@ export class SoapWebService extends absWebServiceProvider {
         }
     }
 
-     
+
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         Logger.Debug(`${Logger.Out} SoapWebService connected`)
     }
 
-     
+
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
         Logger.Debug(`${Logger.Out} SoapWebService disconnected`)
@@ -131,7 +131,7 @@ export class SoapWebService extends absWebServiceProvider {
             if (!wsResp)
                 throw new HttpErrorInternalServerError(`${endpointType}: ${wsResp?.statusText}`)
 
-             
+
             $context = _.merge(
                 $context,
                 <Partial<TContext>>{

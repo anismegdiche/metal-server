@@ -1,7 +1,7 @@
 //
 //
 //
-import express, { Express, NextFunction, Request, Response } from 'express'
+import express, { type Express, type NextFunction, type Request, type Response } from 'express'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import responseTime from 'response-time'
@@ -19,6 +19,9 @@ import { SchemaRouter } from './routes/SchemaRouter'
 import { ServerRouter } from './routes/ServerRouter'
 import { UserRouter } from './routes/UserRouter'
 import { JsonUtils } from '../../utils/JsonUtils'
+import { ServerShutdown } from './ServerShutdown'
+
+
 
 
 //
@@ -100,7 +103,7 @@ export class ServerEndpoint {
     @Logger.LogFunction()
     static Start() {
         // Start Server
-        ServerEndpoint.Api
+        const server = ServerEndpoint.Api
             .listen(
                 ServerEndpoint.Port,
                 () => {
@@ -116,5 +119,8 @@ export class ServerEndpoint {
                     Logger.Error(`An error occurred: ${JsonUtils.Stringify(error)}`)
                 }
             })
+
+        // Register server instance for graceful shutdown
+        ServerShutdown.RegisterHttpServer(server)
     }
 }

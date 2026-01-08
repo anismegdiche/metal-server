@@ -1,4 +1,4 @@
- 
+
 //
 //
 //
@@ -48,6 +48,14 @@ export class HttpErrorInternalServerError extends HttpError {
         super(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR, message ?? HTTP_STATUS_MESSAGE.INTERNAL_SERVER_ERROR)
         this.name = "HttpErrorInternalServerError"
         this.Name = HTTP_STATUS_MESSAGE.INTERNAL_SERVER_ERROR
+    }
+}
+
+export class HttpErrorTooManyRequests extends HttpError {
+    constructor(message?: string) {
+        super(HTTP_STATUS_CODE.TOO_MANY_REQUESTS, message ?? HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS)
+        this.name = "HttpErrorTooManyRequests"
+        this.Name = HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS
     }
 }
 
@@ -109,6 +117,8 @@ export function HttpErrorSwitch(status?: number, message?: string): HttpError {
                 return new HttpErrorBadRequest(message)
             case HTTP_STATUS_CODE.NOT_FOUND:
                 return new HttpErrorNotFound(message)
+            case HTTP_STATUS_CODE.TOO_MANY_REQUESTS:
+                return new HttpErrorTooManyRequests(message)
             case HTTP_STATUS_CODE.CONTENT_TOO_LARGE:
                 return new HttpErrorContentTooLarge(message)
             case HTTP_STATUS_CODE.NOT_IMPLEMENTED:

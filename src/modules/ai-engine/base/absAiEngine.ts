@@ -8,9 +8,11 @@ import { Logger } from '../../../utils/Logger'
 import { StringUtils } from '../../../utils/StringUtils'
 import { SynchronizerManager } from '../../../utils/SynchronizerManager'
 import { ConfigManager } from '../../core/ConfigManager'
+import type { U_config_server_ai_engines } from '../../core/types/U_config_server'
 import { AI_ENGINE } from '../@consts'
-import { TAiRunArguments, TAiRunOutput, TConfigAiEngine } from '../@types'
-import { IAiEngine } from './IAiEngine'
+import type { TAiRunArguments, TAiRunOutput } from '../@types'
+import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
+import type { IAiEngine } from './IAiEngine'
 
 
 //
@@ -18,17 +20,19 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
     abstract AiEngineName: AI_ENGINE
     InstanceName!: string
     InstanceApiUrl!: string
-    InstanceConfig!: TConfigAiEngine
+    InstanceConfig!: T_config_ai_engines_ai_engine
+    InstanceCommonConfig!: U_config_server_ai_engines
 
     constructor() {
         super()
     }
 
-    async Init(aiName: string, aiConfig: TConfigAiEngine): Promise<void> {
+    async Init(aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
         this.InstanceName = aiName
         this.InstanceConfig = aiConfig
+        this.InstanceCommonConfig = ConfigManager.Get<U_config_server_ai_engines>("server.ai-engines")
         this.InstanceApiUrl = StringUtils.Url(
-            aiConfig.url || ConfigManager.Get<string>("server.ai-engines.engines-url"),
+            aiConfig.url || this.InstanceCommonConfig['engines-url'],
             this.InstanceName
         );
     }

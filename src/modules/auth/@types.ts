@@ -1,7 +1,15 @@
 //
 //
 //
-import { tags } from "typia"
+import z from "zod"
+//
+
+
+//
+export const z_TUserCredentials = z.object({
+    username: z.string().min(1).max(64),
+    password: z.string().min(1).max(64),
+});
 
 
 //
@@ -12,14 +20,6 @@ export type TUserTokenInfo = {
     roles?: string[]
 }
 
-export type TUserCredentials = {
-    username: string
-    password: string
-}
+export type TUserCredentials = z.infer<typeof z_TUserCredentials>
 
-export type TRolePermissions = null |
-    (string &
-        tags.MinLength<1> &
-        tags.MaxLength<6> &
-        tags.Pattern<`^(?!.*(.).*\1)[crudla]{1,6}$`>)
 

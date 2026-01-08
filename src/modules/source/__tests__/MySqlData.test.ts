@@ -1,67 +1,50 @@
- 
+import { mock_Logger } from '../../../__tests__/mockers'
+mock_Logger()
 import mysql from 'mysql2/promise'
 import { MySqlData } from '../providers/MySqlData'
-import { TSchemaRequest } from '../../schema/types/TSchemaRequest'
+import type { TSchemaRequest } from '../../schema/types/TSchemaRequest'
 import { Cache } from '../../cache/Cache'
 import { DataTable } from '../../../types/DataTable'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../errors/HttpErrors'
-import { TConfigSource } from "../types/TConfigSource"
+import type { TConfigSource } from "../types/TConfigSource"
 import { DATA_PROVIDER } from "../@consts"
 
 // Mock the mysql2/promise module
-jest.mock('mysql2/promise')
+vi.mock('mysql2/promise')
 
 // Mock the Cache module
-jest.mock('../../cache/Cache')
-jest.mock('../../plan/Step')
-jest.mock('../providers/MemoryData', () => {
+vi.mock('../../cache/Cache')
+vi.mock('../../plan/Step')
+vi.mock('../providers/MemoryData', () => {
     return {
-        MemoryData: jest.fn().mockImplementation(() => {
+        MemoryData: vi.fn().mockImplementation(() => {
             return {
-                EscapeEntity: jest.fn(),
-                EscapeField: jest.fn(),
-                Init: jest.fn(),
-                Connect: jest.fn(),
-                Disconnect: jest.fn(),
-                ListEntities: jest.fn(),
-                Select: jest.fn(),
-                Insert: jest.fn(),
-                Update: jest.fn(),
-                Delete: jest.fn()
+                EscapeEntity: vi.fn(),
+                EscapeField: vi.fn(),
+                Init: vi.fn(),
+                Connect: vi.fn(),
+                Disconnect: vi.fn(),
+                ListEntities: vi.fn(),
+                Select: vi.fn(),
+                Insert: vi.fn(),
+                Update: vi.fn(),
+                Delete: vi.fn()
             }
         })
     }
 })
 
-// Mock the Logger
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
-    }
-}))
-
 describe('MySqlData', () => {
     let provider: MySqlData
     const mockPool = {
-        query: jest.fn(),
-        end: jest.fn()
+        query: vi.fn(),
+        end: vi.fn()
     }
-    const mockCreatePool = mysql.createPool as jest.Mock
+    const mockCreatePool = mysql.createPool as vi.Mock
 
     const providerConfig: TConfigSource = {
         provider: DATA_PROVIDER.MYSQL,
-        host: 'localhost',
+        host: '127.0.0.1',
         port: 3306,
         user: 'test-user',
         // file deepcode ignore NoHardcodedPasswords/test: testing
@@ -80,9 +63,9 @@ describe('MySqlData', () => {
 
     beforeEach(async () => {
         // Reset all mocks before each test
-        jest.clearAllMocks()
-        jest.resetModules()
-        
+        vi.clearAllMocks()
+        vi.resetModules()
+
         mockCreatePool.mockReturnValue(mockPool)
         //XXX mockPool.query.mockResolvedValue([[{ dummy: 'data' }]])
 
@@ -96,7 +79,7 @@ describe('MySqlData', () => {
     describe('Init and Connection', () => {
         it('should successfully initialize and connect', async () => {
             expect(mockCreatePool).toHaveBeenCalledWith(expect.objectContaining({
-                host: 'localhost',
+                host: '127.0.0.1',
                 database: 'test-db',
                 user: 'test-user',
                 password: 'test-password',

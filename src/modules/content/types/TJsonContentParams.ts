@@ -1,5 +1,5 @@
-import { TConvertParams } from "../../../utils/TypeUtils";
-import { TJsonContentConfig } from "./TJsonContentConfig";
+import type { TConvertParams } from "../../../utils/TypeUtils";
+import type { TJsonContentConfig } from "./TJsonContentConfig";
 
 
 export type TJsonContentParams = {

@@ -1,6 +1,6 @@
 import { Readable } from "node:stream"
 import { CsvContent } from "../providers/CsvContent"
-import { TCsvContentConfig } from "../types/TCsvContentConfig"
+import type { TCsvContentConfig } from "../types/TCsvContentConfig"
 import { DataTable } from "../../../types/DataTable"
 
 describe('CsvContent', () => {
@@ -118,7 +118,7 @@ describe('CsvContent', () => {
     })
 
     describe('Set', () => {
-        test('should set the content of CsvContent using the provided DataTable and return the updated content', async () => {
+        test('should replace the content of CsvContent using the provided DataTable and return the updated content', async () => {
             const name = 'test.csv'
             const content = Readable.from('id,name\n1,John\n2,Jane')
             const dataTable = new DataTable(name, [
@@ -132,7 +132,7 @@ describe('CsvContent', () => {
                 }
             ])
 
-            await csvContent.InitContent(name, content)
+            csvContent.InitContent(name, content)
             const updatedContent = await csvContent.Set(dataTable, {})
             const expectedContent = Readable.from('id,name\n3,Alice\n4,Bob')
 

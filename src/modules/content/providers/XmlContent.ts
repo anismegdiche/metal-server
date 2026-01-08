@@ -2,25 +2,26 @@
 //
 //
 // Lazy-loaded module
-import _ from "lodash"
+import * as _ from 'lodash-es'
 import { Readable } from "node:stream"
-import typia from "typia"
+import { z_TXmlContentConfig } from "../../../utils/Schemas"
 //
-import { DataTable, TRowsCopyParams } from "../../../types/DataTable"
-import { TJson } from "../../../types/TJson"
+import { DataTable } from "../../../types/DataTable"
+import type { TRowsCopyParams } from "../../../types/DataTable"
+import type { TJson } from "../../../types/TJson"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 //
 import { Sandbox } from "../../sandbox/Sandbox"
-import { TContext } from "../../sandbox/types/TContext"
+import type { TContext } from "../../sandbox/types/TContext"
 //
 import { Assert } from "../../../utils/Assert"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
-import { TContentConfig } from "../@types"
+import type { TContentConfig } from "../@types"
 import { absContentProvider } from "../base/absContentProvider"
-import { TXmlContentConfig } from "../types/TXmlContentConfig"
+import type { TXmlContentConfig } from "../types/TXmlContentConfig"
 
 
 //
@@ -64,7 +65,7 @@ export class XmlContent extends absContentProvider {
     @Logger.LogFunction(['$context'])
     async Get(rowsParams: TRowsCopyParams, $context: Partial<TContext>): Promise<DataTable> {
         Assert.Var<TXmlContentConfig>(this.Params,
-            typia.is<TXmlContentConfig>(this.Params),
+            z_TXmlContentConfig.safeParse(this.Params).success,
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content,
@@ -86,7 +87,7 @@ export class XmlContent extends absContentProvider {
 
         Assert.Condition(data !== undefined, `XmlContent.Get: No data found at Path ${$__path}`)
 
-        const result = new DataTable(
+        using result = new DataTable(
             this.EntityName,
             Array.isArray(data)
                 ? data
@@ -99,7 +100,7 @@ export class XmlContent extends absContentProvider {
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
         Assert.Var<TXmlContentConfig>(this.Params,
-            typia.is<TXmlContentConfig>(this.Params),
+            z_TXmlContentConfig.safeParse(this.Params).success,
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content,

@@ -1,17 +1,17 @@
 //
 //
 //
-import _ from "lodash"
+import * as _ from 'lodash-es'
 import { Readable } from "node:stream"
 //
 import { clsClonable } from "../../../utils/base/clsClonable"
-import { TWebServiceDataOptions, TConfigSourceWebService } from "../../source/providers/WebServiceData"
-import { TJson } from "../../../types/TJson"
+import type { TWebServiceDataOptions, TConfigSourceWebService } from "../../source/providers/WebServiceData"
+import type { TJson } from "../../../types/TJson"
 import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
-import { TContext } from "../../sandbox/types/TContext"
-import { IWebServiceProvider } from "./IWebServiceProvider"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { IWebServiceProvider } from "./IWebServiceProvider"
 import { ENDPOINT } from "../@consts"
-import { TEndpoint, TWebServiceEndpoint } from "../@types"
+import type { TEndpoint, TWebServiceEndpoint } from "../@types"
 
 
 //

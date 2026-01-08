@@ -2,14 +2,14 @@
 //
 //
 import { HTTP_STATUS_CODE } from "./@consts"
-import { TInternalResponse } from "../schema/types/TInternalResponse"
+import type { TInternalResponse } from "./types/TInternalResponse"
 
 export class HttpResponse {
     static Ok<T>(data: T): TInternalResponse<T> {
         return <TInternalResponse<T>>{
             StatusCode: HTTP_STATUS_CODE.OK,
             Body: data
-        } 
+        }
     }
 
     static Created(): TInternalResponse<undefined> {

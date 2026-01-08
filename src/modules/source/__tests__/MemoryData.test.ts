@@ -1,32 +1,15 @@
-
-import typia from "typia"
+import {mock_Logger} from '../../../__tests__/mockers'
+mock_Logger()
+//
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorBadRequest } from "../../errors/HttpErrors"
 import { DataBase } from "../../../types/DataBase"
 import { DataTable } from "../../../types/DataTable"
-import { TSchemaRequestSelect, TSchemaRequestInsert, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
+import type { TSchemaRequestSelect, TSchemaRequestInsert, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../@consts"
 import { MemoryData } from "../providers/MemoryData"
-import { TConfigSource } from "../types/TConfigSource"
+import type { TConfigSource } from "../types/TConfigSource"
 import { Cache } from "../../cache/Cache"
-
-// Mock dependencies
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level: "error",
-        Out: 'OUT'
-    }
-}))
 
 describe('MemoryData', () => {
 
@@ -135,10 +118,10 @@ describe('MemoryData', () => {
             data: testRows
         }
 
-        Cache.Remove = jest.fn(async () => { })
+        Cache.Remove = vi.fn(async () => { })
 
         const response = await memoryData.Insert(schemaRequest)
-        const resultRows = await memoryData.Connection?.Tables[testEntity].Rows()
+        const resultRows = await memoryData.Connection?.Tables[testEntity]!.Rows()
 
         expect(response.StatusCode).toBe(HTTP_STATUS_CODE.CREATED)
         expect(resultRows).toEqual(testRows)
@@ -180,8 +163,8 @@ describe('MemoryData', () => {
             data: updatedRows
         }
 
-        jest.spyOn(Cache, 'Remove').mockImplementation(async () => { })
-        jest.spyOn(memoryData.Connection!.Tables[testEntity], 'FreeSql').mockResolvedValue(
+        vi.spyOn(Cache, 'Remove').mockImplementation(async () => { })
+        vi.spyOn(memoryData.Connection!.Tables[testEntity]!, 'FreeSql').mockResolvedValue(
             new DataTable(testEntity, [
                 {
                     id: 1,
@@ -226,8 +209,8 @@ describe('MemoryData', () => {
             filter: { id: 1 }
         }
 
-        jest.spyOn(Cache, 'Remove').mockImplementation(async () => { })
-        jest.spyOn(memoryData.Connection!.Tables[testEntity], 'FreeSql').mockResolvedValue(
+        vi.spyOn(Cache, 'Remove').mockImplementation(async () => { })
+        vi.spyOn(memoryData.Connection!.Tables[testEntity]!, 'FreeSql').mockResolvedValue(
             new DataTable(testEntity, [
                 {
                     id: 2,
@@ -299,8 +282,7 @@ describe('MemoryData', () => {
             // No data provided
         }
 
-        jest.spyOn(typia, 'is').mockReturnValue(false)
-
+        // No typia mock needed
         await expect(memoryData.Insert(schemaRequest)).rejects.toThrow(HttpErrorBadRequest)
     })
 
@@ -323,8 +305,7 @@ describe('MemoryData', () => {
             // No data provided
         }
 
-        jest.spyOn(typia, 'is').mockReturnValue(false)
-
+        // No typia mock needed
         await expect(memoryData.Update(schemaRequest)).rejects.toThrow(HttpErrorBadRequest)
     })
 
@@ -371,7 +352,7 @@ describe('MemoryData', () => {
 
         // Connection exists but no tables added
 
-        const schemaRequest: TSchemaRequestListEntities = {
+        const schemaRequest = <TSchemaRequestListEntities>{
             schema: 'test-schema'
         }
 

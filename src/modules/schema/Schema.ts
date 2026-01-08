@@ -1,27 +1,26 @@
 //
 //
 //
-import forEach from "lodash/forEach"
-import has from "lodash/has"
+import { forEach, has } from "lodash-es"
 //
-import { TJson } from '../../types/TJson'
+import type { TJson } from '../../types/TJson'
 import { Assert } from '../../utils/Assert'
+import { DataTableUtils } from "../../utils/DataTableUtils"
 import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from '../../utils/Logger'
-import { TypeUtils } from '../../utils/TypeUtils'
-import { Validator } from '../../utils/Validator'
 import { AUTH_PERMISSION } from "../auth/@consts"
-import { TUserTokenInfo } from "../auth/@types"
+import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
 import { ConfigManager } from '../core/ConfigManager'
 import { HttpResponse } from "../core/HttpResponse"
-import { TConfigSchema, TConfigSchemaEntity } from '../core/types/TConfig'
+import type { U_config_schemas_schema, U_config_schemas_schema_entities_entity } from "../core/types/U_config_schemas"
 import { HttpErrorBadRequest, HttpErrorNotFound } from '../errors/HttpErrors'
 import { Source } from "../source/Source"
-import { TInternalResponse } from "./types/TInternalResponse"
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from './types/TSchemaRequest'
-import { TSchemaResponse } from './types/TSchemaResponse'
-import { DataTableUtils } from "../../utils/DataTableUtils"
+import type { TInternalResponse } from "../core/types/TInternalResponse"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from './types/TSchemaRequest'
+import { z_TSchemaRequest, z_TSchemaRequestDelete, z_TSchemaRequestInsert, z_TSchemaRequestSelect, z_TSchemaRequestUpdate } from "./types/TSchemaRequest"
+import type { TSchemaResponse } from './types/TSchemaResponse'
+import { z_TSchemaResponse } from "./types/TSchemaResponse"
 
 
 //
@@ -100,6 +99,37 @@ export class Schema {
         // anything else
         return schemaResponse
     }
+
+    @Logger.LogFunction(true)
+    static IsSchemaRequest(schemaRequest: unknown): schemaRequest is TSchemaRequest {
+        return z_TSchemaRequest.safeParse(schemaRequest).success;
+    }
+
+    static IsSchemaRequestSelect(schemaRequest: unknown): schemaRequest is TSchemaRequestSelect {
+        return z_TSchemaRequestSelect.safeParse(schemaRequest).success;
+    }
+
+    static IsSchemaRequestUpdate(schemaRequest: unknown): schemaRequest is TSchemaRequestUpdate {
+        return z_TSchemaRequestUpdate.safeParse(schemaRequest).success;
+    }
+
+    static IsSchemaRequestInsert(schemaRequest: unknown): schemaRequest is TSchemaRequestInsert {
+        return z_TSchemaRequestInsert.safeParse(schemaRequest).success;
+    }
+
+    static IsSchemaRequestDelete(schemaRequest: unknown): schemaRequest is TSchemaRequestDelete {
+        return z_TSchemaRequestDelete.safeParse(schemaRequest).success;
+    }
+
+    @Logger.LogFunction(true)
+    static IsSchemaResponse(schemaResponse: unknown): schemaResponse is TSchemaResponse {
+        return z_TSchemaResponse.safeParse(schemaResponse).success;
+    }
+
+    //XXX @Logger.LogFunction(true)
+    //XXX static IsSchemaResponseWithData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponse {
+    //XXX     return z_TSchemaResponse.safeParse(schemaResponse).success && DataTable.Is(schemaResponse.data)
+    //XXX }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     static Init(fnCacheGet: Function) {
@@ -182,7 +212,7 @@ export class Schema {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
         Assert.Var<Function>(Schema.fnCacheGet, Schema.fnCacheGet !== undefined, 'Schema.fnCacheGet is not initialized')
         Assert.Var<TSchemaRequestSelect>(schemaRequest,
-            TypeUtils.IsSchemaRequestSelect(schemaRequest),
+            Schema.IsSchemaRequestSelect(schemaRequest),
             `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
             new HttpErrorBadRequest()
         )
@@ -196,7 +226,6 @@ export class Schema {
 
         // check ofr cache before return
         const cachedData = await Schema.fnCacheGet(schemaRequest, userToken)
-            .then()
             .catch(undefined)
 
         if (cachedData)
@@ -206,7 +235,7 @@ export class Schema {
         //
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
-        return Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
+        return Schema.SourceTypeCaseMap[schemaRoute.type]!(<TSourceTypeExecuteParams>{
             source: schemaRoute.routeName,
             entity: schemaRoute.entity,
             schemaRequest,
@@ -223,7 +252,7 @@ export class Schema {
                 await _intResp.Body.data.FieldsSet()
 
                 // Anonymizer
-                if (schemaConfig?.anonymize && TypeUtils.IsSchemaResponseWithData(_intResp.Body)) {
+                if (schemaConfig?.anonymize && Schema.IsSchemaResponse(_intResp.Body) && (await _intResp.Body.data.Count()) > 0) {
                     _intResp.Body.data = await DataTableUtils.Anonymize(
                         _intResp.Body.data,
                         schemaConfig.anonymize
@@ -238,7 +267,7 @@ export class Schema {
     static async Delete(schemaRequest: TSchemaRequestDelete, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         Assert.Var<TSchemaRequestDelete>(schemaRequest,
-            Validator.SchemaRequestDelete(schemaRequest),
+            Schema.IsSchemaRequestDelete(schemaRequest),
             `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
             new HttpErrorBadRequest()
         )
@@ -250,7 +279,7 @@ export class Schema {
 
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
-        return Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
+        return Schema.SourceTypeCaseMap[schemaRoute.type]!(<TSourceTypeExecuteParams>{
             source: schemaRoute.routeName,
             entity: schemaRoute.entity,
             schemaRequest,
@@ -268,7 +297,7 @@ export class Schema {
     static async Update(schemaRequest: TSchemaRequestUpdate, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         Assert.Var<TSchemaRequestUpdate>(schemaRequest,
-            Validator.SchemaRequestUpdate(schemaRequest),
+            Schema.IsSchemaRequestUpdate(schemaRequest),
             `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
             new HttpErrorBadRequest()
         )
@@ -280,7 +309,7 @@ export class Schema {
 
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
-        return Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
+        return Schema.SourceTypeCaseMap[schemaRoute.type]!(<TSourceTypeExecuteParams>{
             source: schemaRoute.routeName,
             entity: schemaRoute.entity,
             schemaRequest,
@@ -298,7 +327,7 @@ export class Schema {
     static async Insert(schemaRequest: TSchemaRequestInsert, userToken?: TUserTokenInfo): Promise<TInternalResponse<TSchemaResponse>> {
 
         Assert.Var<TSchemaRequestInsert>(schemaRequest,
-            Validator.SchemaRequestInsert(schemaRequest),
+            Schema.IsSchemaRequestInsert(schemaRequest),
             `Bad arguments passed: ${JSON.stringify(schemaRequest)}`,
             new HttpErrorBadRequest()
         )
@@ -310,7 +339,7 @@ export class Schema {
 
         const schemaRoute = Schema.GetRoute(schema, entity, schemaConfig)
 
-        return Schema.SourceTypeCaseMap[schemaRoute.type](<TSourceTypeExecuteParams>{
+        return Schema.SourceTypeCaseMap[schemaRoute.type]!(<TSourceTypeExecuteParams>{
             source: schemaRoute.routeName,
             entity: schemaRoute.entity,
             schemaRequest,
@@ -336,7 +365,7 @@ export class Schema {
         let schemaResponse = {} as TSchemaResponse
 
         if (entitiesSources.has("*")) {
-            const _source = (<TConfigSchemaEntity>entitiesSources.get("*")).source
+            const _source = (<U_config_schemas_schema_entities_entity>entitiesSources.get("*")).source
             const _intResp = await Source.Sources.get(_source)!.DataProvider.ListEntities(<TSchemaRequestListEntities>{
                 ...schemaRequest,
                 source: _source
@@ -346,8 +375,8 @@ export class Schema {
         }
 
         for await (const [entity, entitySource] of entitiesSources) {
-            const _source = (<TConfigSchemaEntity>entitySource).source
-            if (TypeUtils.IsSchemaResponseWithData(schemaResponse))
+            const _source = (<U_config_schemas_schema_entities_entity>entitySource).source
+            if (Schema.IsSchemaResponse(schemaResponse) && (await schemaResponse.data.Count()) > 0)
                 await schemaResponse.data.RowsDelete(`name = '${entity}'`)
 
             const _intResp = await Source.Sources.get(_source)!.DataProvider.ListEntities(<TSchemaRequestListEntities>{
@@ -355,7 +384,10 @@ export class Schema {
                 source: _source
             })
 
-            await Schema.#MergeData(schemaResponse, <TSchemaResponse>_intResp.Body)
+            if (_intResp.Body && Schema.IsSchemaResponse(_intResp.Body) && (await _intResp.Body.data.Count()) > 0) {
+                using _data = _intResp.Body.data
+                schemaResponse = await Schema.#MergeData(schemaResponse, <TSchemaResponse>_intResp.Body)
+            }
         }
         return HttpResponse.Ok(schemaResponse)
     }
@@ -372,7 +404,7 @@ export class Schema {
             })
 
         if (schemaConfig?.entities)
-            forEach(schemaConfig.entities, (entityConfig: TConfigSchemaEntity, entity: string) => {
+            forEach(schemaConfig.entities, (entityConfig: U_config_schemas_schema_entities_entity, entity: string) => {
                 entities.set(entity, {
                     source: entityConfig.source,
                     database: ConfigManager.Get<string | undefined>(`sources.${entityConfig.source}.database`)
@@ -382,8 +414,8 @@ export class Schema {
         return entities
     }
 
-    static GetSchemaConfig(schema: string): TConfigSchema {
-        const schemaConfig = ConfigManager.Get<TConfigSchema>(`schemas.${schema}`)
+    static GetSchemaConfig(schema: string): U_config_schemas_schema {
+        const schemaConfig = ConfigManager.Get<U_config_schemas_schema>(`schemas.${schema}`)
         if (!schemaConfig)
             throw new HttpErrorNotFound(`Schema '${schema}' not found`)
 

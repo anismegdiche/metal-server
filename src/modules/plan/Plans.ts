@@ -1,9 +1,9 @@
 //
 //
 //
-import _ from "lodash"
+import * as _ from 'lodash-es'
 //
-import { TJson } from "../../types/TJson"
+import type { TJson } from "../../types/TJson"
 import { Plan } from "./Plan"
 import { ConfigManager } from "../core/ConfigManager"
 
@@ -13,16 +13,16 @@ export class Plans {
 
     static readonly Plans = new Map<string, Plan>()
 
-    static Init() {
+    static async Init() {
         if (!ConfigManager.Has('plans'))
             return
 
 
         const plans = _.keys(ConfigManager.Get<TJson>("plans") ?? {})
 
-        plans.forEach((plan: string) => {
+        plans.forEach(async (plan: string) => {
             Plans.Plans.set(plan, new Plan(plan))
-            Plans.Plans.get(plan)?.Init()
+            await Plans.Plans.get(plan)?.Init()
         })
     }
 }

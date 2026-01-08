@@ -1,17 +1,18 @@
 // snyk disable
-import _ from "lodash"
+import * as _ from 'lodash-es'
 import { User } from '../User'
-import { TUserTokenInfo, TUserToken, TUserCredentials } from "../@types"
+import type { TUserTokenInfo, TUserToken, TUserCredentials } from "../@types"
 import { HttpErrorUnauthorized } from "../../errors/HttpErrors"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
-import { TConfig, TConfigRoles } from "../../core/types/TConfig"
+import type { U_config } from "../../core/types/U_config"
 import { AuthProvider } from "../AuthProvider"
 import { ConfigManager } from "../../core/ConfigManager"
 import { Roles } from "../Roles"
-import { TConfigUsers } from "../../core/types/TConfigUsers"
+import type { U_config_roles } from "../../core/types/U_config_roles"
+import type { U_config_users } from "../../core/types/U_config_users"
 
 // Minimal test configuration that matches TConfig
-const config: Partial<TConfig> = {
+const config: Partial<U_config> = {
     roles: {
         admin: "crudal",
         user: "r",
@@ -29,19 +30,19 @@ const config: Partial<TConfig> = {
     }
 }
 
-jest.spyOn(ConfigManager, 'Get').mockImplementation((path: string) => {
+vi.spyOn(ConfigManager, 'Get').mockImplementation((path: string) => {
     if (path === 'server.authentication.default-role') {
         return config.server?.authentication?.["default-role"] as string
     } else if (path === 'roles') {
-        return config.roles as TConfigRoles
+        return config.roles as U_config_roles
     }
     return undefined
 })
 
 AuthProvider.Provider = {
-    Init: jest.fn(),
-    GetUsers: jest.fn().mockImplementation(() => config.users as TConfigUsers),
-    Authenticate: jest.fn().mockImplementation((userCredentials: TUserCredentials) => {
+    Init: vi.fn(),
+    GetUsers: vi.fn().mockImplementation(() => config.users as U_config_users),
+    Authenticate: vi.fn().mockImplementation((userCredentials: TUserCredentials) => {
         if (userCredentials.username === 'alice' && userCredentials.password === '123456789') {
             return {
                 user: 'alice',
@@ -50,14 +51,14 @@ AuthProvider.Provider = {
         }
         throw new HttpErrorUnauthorized('Invalid username or password')
     }),
-    LogOut: jest.fn()
+    LogOut: vi.fn()
 }
 
 
 describe('User', () => {
     beforeEach(() => {
         // Reset all mocks before each test
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         // Initialize Roles
         Roles.Init()
     })

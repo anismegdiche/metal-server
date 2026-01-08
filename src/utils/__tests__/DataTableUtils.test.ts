@@ -1,26 +1,9 @@
+import { mock_Logger } from "../../__tests__/mockers"
+mock_Logger()
 //
 import { DataTableUtils } from '../DataTableUtils'
 import { DataTable } from '../../types/DataTable'
 import { REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from '../../utils/DataTableUtils'
-
-
-// Mock the Logger decorator
-jest.mock('../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level: "error",
-        Out: 'OUT'
-    }
-}))
 
 
 describe("DataTableUtils", () => {
@@ -1152,10 +1135,10 @@ describe("DataTableUtils", () => {
             ])
             const fields = ['name', 'email']
             const result = await DataTableUtils.Anonymize(dataTable, fields)
-            expect((await result.Rows())[0].name).not.toBe('Alice')
-            expect((await result.Rows())[0].email).not.toBe('alice@example.com')
-            expect((await result.Rows())[1].name).not.toBe('Bob')
-            expect((await result.Rows())[1].email).not.toBe('bob@example.com')
+            expect((await result.Rows())[0]!.name).not.toBe('Alice')
+            expect((await result.Rows())[0]!.email).not.toBe('alice@example.com')
+            expect((await result.Rows())[1]!.name).not.toBe('Bob')
+            expect((await result.Rows())[1]!.email).not.toBe('bob@example.com')
         })
 
         // Processes all rows in the DataTable
@@ -1172,10 +1155,10 @@ describe("DataTableUtils", () => {
             ])
             const fields = ['name', 'email']
             const result = await DataTableUtils.Anonymize(dataTable, fields)
-            expect((await result.Rows())[0].name).not.toBe('Alice')
-            expect((await result.Rows())[0].email).not.toBe('alice@example.com')
-            expect((await result.Rows())[1].name).not.toBe('Bob')
-            expect((await result.Rows())[1].email).not.toBe('bob@example.com')
+            expect((await result.Rows())[0]!.name).not.toBe('Alice')
+            expect((await result.Rows())[0]!.email).not.toBe('alice@example.com')
+            expect((await result.Rows())[1]!.name).not.toBe('Bob')
+            expect((await result.Rows())[1]!.email).not.toBe('bob@example.com')
         })
 
         // Handles empty fields array without errors

@@ -3,11 +3,9 @@
 //
 //
 import { HttpError, HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
-import { TSchemaRequest, TSchemaRequestSelect } from "../modules/schema/types/TSchemaRequest"
-import { TSchemaResponse } from "../modules/schema/types/TSchemaResponse"
-import { DataTable } from "../types/DataTable"
 import { Logger } from "./Logger"
-import { Validator } from "./Validator"
+import { prettifyError, type ZodSafeParseResult } from "zod"
+import type { U_config } from "../modules/core/types/U_config"
 
 
 //
@@ -15,51 +13,16 @@ export type TConvertParams<S extends string> =
     S extends `${infer T}-${infer U}` ? `${T}${Capitalize<TConvertParams<U>>}` : S
 
 export class TypeUtils {
-
-    @Logger.LogFunction(true)
-    static IsSchemaRequest(schemaRequest: unknown): schemaRequest is TSchemaRequest {
-        return Validator.SchemaRequest(schemaRequest);
-    }
-
-    static IsSchemaRequestSelect(schemaRequest: unknown): schemaRequest is TSchemaRequestSelect {
-        return Validator.SchemaRequestSelect(schemaRequest);
-    }
-
-    @Logger.LogFunction(true)
-    static IsSchemaResponse(schemaResponse: unknown): schemaResponse is TSchemaResponse {
-        return Validator.SchemaResponse(schemaResponse);
-    }
-
-    @Logger.LogFunction(true)
-    static IsSchemaResponseWithData(schemaResponse: TSchemaResponse): schemaResponse is TSchemaResponse {
-        return Validator.SchemaResponse(schemaResponse) && DataTable.Is(schemaResponse.data);
-    }
-
-    @Logger.LogFunction(true)
-    static Validate(res: any, httpError: HttpError = new HttpErrorInternalServerError()) {
-        if (res.success)
+    static Validate(result: ZodSafeParseResult<U_config>, httpError: HttpError = new HttpErrorInternalServerError()) {
+        if (result.success)
             return
 
-        const renamedErrors = res.errors.map((error: any) => {
-            const _ret = `${error.path.replace('$input.', '')} expected to be ${error.expected}`
-            return TypeUtils.#translateFriendlyErrors(_ret)
-        })
-
-        Logger.Error(`${httpError.Name}:\r\n - ${renamedErrors.join('\r\n - ')}`)
-        httpError.message = renamedErrors
+        const prettyErrors = prettifyError(result.error);
+        Logger.Error(`${httpError.Name}:\r\n\r\n${prettyErrors}\r\n`)
+        httpError.message = prettyErrors
         httpError.Name = "Bad Parameters"
         delete httpError.stack
         throw httpError
-    }
-
-    static #translateFriendlyErrors(txt: string) {
-        return txt
-            .replace("TJson", "JSON")
-            .replace("$input expected to be TConfig", "Configuration file is empty")
-            .replace("$input", "")
-            .replace(/__type\.o\d+/, "object")
-            .replace(/__@toStringTag@\d+/, "")
-            .replace(" | undefined", "")
     }
 
     static GetType(v: unknown): string {
@@ -76,7 +39,7 @@ export class TypeUtils {
         if (v instanceof Date)
             return 'date';
 
-        const ctor = (v as any)?.constructor;
+        const ctor = (v as { constructor?: new (...args: unknown[]) => unknown })?.constructor;
         if (ctor && ctor !== Object && ctor.name)
             return ctor.name;
 

@@ -1,12 +1,13 @@
 import { Roles } from "../Roles"
 import { AUTH_PERMISSION, AUTH_PROVIDER } from "../@consts"
-import { TUserTokenInfo } from "../@types"
+import type { TUserTokenInfo } from "../@types"
 import { HttpErrorForbidden } from "../../errors/HttpErrors"
-import { TConfig, TConfigRoles } from "../../core/types/TConfig"
 import { ConfigManager } from "../../core/ConfigManager"
+import type { U_config_roles } from "../../core/types/U_config_roles"
+import type { U_config } from "../../core/types/U_config"
 
 // Minimal test configuration that matches TConfig
-const config: Partial<TConfig> = {
+const config: Partial<U_config> = {
     roles: {
         admin: "crudal",
         user: "r",
@@ -20,11 +21,11 @@ const config: Partial<TConfig> = {
     }
 }
 
-jest.spyOn(ConfigManager, 'Get').mockImplementation((path: string) => {
+vi.spyOn(ConfigManager, 'Get').mockImplementation((path: string) => {
     if (path === 'server.authentication.default-role') {
         return config.server?.authentication?.["default-role"] as string
     } else if (path === 'roles') {
-        return config.roles as TConfigRoles
+        return config.roles as U_config_roles
     }
     return undefined
 })
@@ -34,7 +35,7 @@ jest.spyOn(ConfigManager, 'Get').mockImplementation((path: string) => {
 describe("Roles", () => {
     beforeEach(() => {
         // Reset all mocks before each test
-        jest.clearAllMocks()
+        vi.clearAllMocks()
         // Initialize Roles
         Roles.Init()
     })

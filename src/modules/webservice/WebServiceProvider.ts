@@ -4,7 +4,7 @@
 import { HttpErrorNotFound } from "../errors/HttpErrors"
 import { Factory } from "../../utils/Factory"
 import { WEBSERVICE } from "./@consts"
-import { IWebServiceProvider } from "./base/IWebServiceProvider"
+import type { IWebServiceProvider } from "./base/IWebServiceProvider"
 
 type ProviderLoader = () => Promise<{ new(): IWebServiceProvider }>;
 

@@ -3,25 +3,30 @@
 //
 //
 //
-import { DuckDBConnection, DuckDBInstance, DuckDBValue } from '@duckdb/node-api'
-import fs from 'node:fs'
-import { createIs } from 'typia'
-import { UUID } from 'uuidv7'
+import type { DuckDBValue } from '@duckdb/node-api';
+import { DuckDBConnection, DuckDBInstance } from '@duckdb/node-api';
+import fs from 'node:fs';
+import { z } from "zod";
 //
-import { Assert } from '../utils/Assert'
-import { clsClonable } from "../utils/base/clsClonable"
-import { JsonUtils } from "../utils/JsonUtils"
-import { Logger } from '../utils/Logger'
-import { Mutex } from '../utils/Mutex'
-import { SQL_TYPE, SqlQueryUtils, TSqlToken } from '../utils/SqlQueryUtils'
-import { StringUtils } from "../utils/StringUtils"
-import { TypeUtils } from '../utils/TypeUtils'
-import { Utils } from '../utils/Utils'
-import { TAny } from './TAny'
-import { TJson } from './TJson'
-import { SERVER } from '../modules/core/@consts'
 
-//
+import { Assert } from '../utils/Assert';
+
+import { SERVER } from '../modules/core/@consts';
+import { clsClonable } from "../utils/base/clsClonable";
+import { JsonUtils } from "../utils/JsonUtils";
+import { Logger } from '../utils/Logger';
+import { Mutex } from '../utils/Mutex';
+import type { TSqlToken } from '../utils/SqlQueryUtils';
+import { SQL_TYPE, SqlQueryUtils } from '../utils/SqlQueryUtils';
+import { StringUtils } from "../utils/StringUtils";
+import { TypeUtils } from '../utils/TypeUtils';
+import { Utils } from '../utils/Utils';
+import type { TAny } from './TAny';
+import { z_TJson, type TJson } from './TJson';
+import { z_TUuidv7, type TUuidv7 } from './TUuidv7';
+import os from 'node:os';
+
+// constants
 export const enum SORT_ORDER {
     ASC = "asc",
     DESC = "desc"
@@ -36,11 +41,25 @@ export const DATATABLE_SYS_FIELDS = [
 
 export const DATATABLE_TEMP_PATH = StringUtils.Path(SERVER.TEMP_PATH, 'data')
 
-//
-export type TRow = TJson & {
-    __seq__?: number
-    __idx__?: UUID
-}
+
+// schemas
+export const z_SORT_ORDER = z.enum(["asc", "desc"]);// TOrderBy
+
+export const z_TOrderBy = z.record(z.string(), z_SORT_ORDER.optional());
+
+const z_TRow = z_TJson.and(
+    z.object({
+        __seq__: z.number().optional(),
+        __idx__: z_TUuidv7.optional(),
+    })
+);
+
+
+
+
+
+// types
+export type TRow = z.infer<typeof z_TRow>
 export type TFields = TJson
 export type TMetaData = Record<string, unknown>
 export type TOrderBy = Record<string, SORT_ORDER | undefined>
@@ -234,6 +253,9 @@ export function dataTable_convertSql(sql?: string): string {
 
     for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i]
+
+        Assert.Var<TSqlToken>(token, 'token is undefined')
+
         if (token.context === 'SET' && token.type !== SQL_TYPE.COMMAND) {
             if (!firstSetEncountered) {
                 finalTokens.push({ token: setToken, type: SQL_TYPE.FUNCTION, context: 'SET' })
@@ -282,7 +304,7 @@ function duckDb_row_parser(
     }
 
     if (row.__idx__ && includeIndex)
-        _row.__idx__ = row.__idx__ as UUID
+        _row.__idx__ = <TUuidv7>row.__idx__
 
     // Apply mapping if specified
     if (fnMap)
@@ -292,113 +314,96 @@ function duckDb_row_parser(
 }
 
 //
-// LazyResult (cursor-based chunked streaming)
+// LazyResult - Memory-efficient streaming iterator for DuckDB
 //
 class LazyResult<T> {
     private batchSize: number
+    private cacheSize: number
+    private offset: number = 0
+    private done: boolean = false
     private cache = new Map<number, T>()
     private totalCount: number | null = null
-    private lastSeq: number | null = null
-    private done = false
-    private cacheSize: number
 
     constructor(
         private _duckConnection: DuckDBConnection,
-        private sqlQuery: string, // "SELECT __seq__, __idx__, __data__, created_at FROM <table> WHERE 1=1"
-        private queryParams: (string | number | boolean | null)[] = [],
+        private baseQuery: string,  // Query WITHOUT LIMIT/OFFSET
+        private queryParams: DuckDBValue[] = [],
         private fnParser: (row: Record<string, DuckDBValue>) => T,
         batchSize: number = 100,
         cacheSize: number = 1000
     ) {
-        this.batchSize = batchSize
+        this.batchSize = Math.max(1, batchSize)
         this.cacheSize = cacheSize
     }
 
-    private async _fetchNextChunk(): Promise<T[]> {
-        const queryParams = [...this.queryParams]
-        let fullQuery: string
+    private async _fetchBatch(): Promise<T[]> {
+        // Clean up query - remove any existing LIMIT/OFFSET
+        const cleanQuery = this.baseQuery
+            .trim()
+            .replace(/LIMIT\s+\d+\s*/gi, '')
+            .replace(/OFFSET\s+\d+\s*/gi, '')
 
-        const sqlLimit = (this.batchSize > 0)
-            ? `LIMIT ${this.batchSize}`
-            : ''
+        const query = `${cleanQuery} LIMIT ${this.batchSize} OFFSET ${this.offset}`
 
-        if (this.lastSeq === null) {
-            fullQuery = `${this.sqlQuery} ORDER BY __seq__ ${sqlLimit}`
-        } else {
-            fullQuery = `${this.sqlQuery} AND __seq__ > ? ORDER BY __seq__ ${sqlLimit}`
-            queryParams.push(String(this.lastSeq))
-        }
+        try {
+            const reader = await this._duckConnection.runAndReadAll(
+                query,
+                this.queryParams as DuckDBValue[]
+            )
+            const rows = reader.getRowObjects()
 
-        const reader = await this._duckConnection.streamAndReadAll(fullQuery, queryParams)
-        const rows = reader.getRowObjects()
-        if (!rows || rows.length === 0) {
+            if (!rows || rows.length === 0) {
+                this.done = true
+                return []
+            }
+
+            // If we got fewer rows than batch size, we're at the end
+            if (rows.length < this.batchSize) {
+                this.done = true
+            }
+
+            this.offset += rows.length
+
+            return rows.map(row => this.fnParser(row))
+        } catch (err) {
+            Logger.Error(`LazyResult._fetchBatch: Error fetching batch at offset ${this.offset}: ${(err as Error).message}`)
             this.done = true
             return []
         }
-
-        const lastRowSeq = rows[rows.length - 1].__seq__
-        this.lastSeq = typeof lastRowSeq === 'number'
-            ? lastRowSeq
-            : (typeof lastRowSeq === 'string'
-                ? Number(lastRowSeq)
-                : null)
-
-        return rows.map(this.fnParser)
-    }
-
-    private async _ensureLoaded(index: number): Promise<T | undefined> {
-        if (this.cache.has(index))
-            return this.cache.get(index)
-
-        let currentIndex = this.cache.size > 0
-            ? Math.max(-1, ...Array.from(this.cache.keys())) + 1
-            : 0
-
-        while (currentIndex <= index && !this.done) {
-            const chunk = await this._fetchNextChunk()
-            chunk.forEach((item, i) => {
-                const globalIndex = currentIndex + i
-                if (this.cache.size >= this.cacheSize) {
-                    const oldest = this.cache.keys().next().value
-                    if (oldest !== undefined)
-                        this.cache.delete(oldest)
-                }
-                this.cache.set(globalIndex, item)
-            })
-            if (chunk.length === 0)
-                break
-            currentIndex += chunk.length
-        }
-
-        return this.cache.get(index)
-    }
-
-    async get(index: number): Promise<T | undefined> {
-        return this._ensureLoaded(index)
     }
 
     async length(): Promise<number> {
         if (this.totalCount !== null)
             return this.totalCount
 
-        const countQuery = this.sqlQuery
-            .replace(/ORDER BY.*/i, '')
-            .replace(/LIMIT.*/i, '')
+        try {
+            const cleanQuery = this.baseQuery
+                .trim()
+                .replace(/LIMIT\s+\d+\s*/gi, '')
+                .replace(/OFFSET\s+\d+\s*/gi, '')
 
-        const wrapped = `SELECT COUNT(*) as count FROM (${countQuery})`
-        const reader = await this._duckConnection.runAndReadAll(wrapped, this.queryParams)
-        const rows = reader.getRowObjects()
-        this.totalCount = Number(rows[0]?.count ?? 0)
-        return this.totalCount
+            const countQuery = `SELECT COUNT(*) as count FROM (${cleanQuery}) AS __count_query`
+            const reader = await this._duckConnection.runAndReadAll(
+                countQuery,
+                this.queryParams as DuckDBValue[]
+            )
+            const rows = reader.getRowObjects()
+            this.totalCount = Number(rows[0]?.count ?? 0)
+            return this.totalCount
+        } catch (err) {
+            Logger.Error(`LazyResult.length: Error counting rows: ${(err as Error).message}`)
+            return 0
+        }
     }
 
     async *[Symbol.asyncIterator](): AsyncIterableIterator<T> {
-        this.lastSeq = null
-        this.done = false
         while (!this.done) {
-            const chunk = await this._fetchNextChunk()
-            for (const item of chunk) yield item
-            if (chunk.length < this.batchSize) this.done = true
+            const batch = await this._fetchBatch()
+            if (batch.length === 0) break
+
+            for (const item of batch) {
+                yield item
+            }
         }
     }
 
@@ -412,8 +417,9 @@ class LazyResult<T> {
     async map<U>(callback: (item: T, index: number) => U | Promise<U>): Promise<U[]> {
         const out: U[] = []
         let idx = 0
-        for await (const item of this)
+        for await (const item of this) {
             out.push(await callback(item, idx++))
+        }
         return out
     }
 
@@ -429,37 +435,27 @@ class LazyResult<T> {
 
     async toArray(): Promise<T[]> {
         const out: T[] = []
-        for await (const item of this)
-            out.push(item)
-        return out
-    }
-
-    async slice(start: number, end?: number): Promise<T[]> {
-        const out: T[] = []
-        let idx = 0
         for await (const item of this) {
-            if (idx >= start && (end === undefined || idx < end))
-                out.push(item)
-            idx++
-            if (end !== undefined && idx >= end)
-                break
+            out.push(item)
         }
         return out
     }
 
     clearCache(): void {
         this.cache.clear()
+        this.offset = 0
+        this.done = false
     }
 }
 
 export class DataTable extends clsClonable {
     // static
-    static readonly DataTableType = createIs<DataTable>();
 
     @Logger.LogFunction(true)
     static Is(dataTable: unknown): dataTable is DataTable {
-        return DataTable.DataTableType(dataTable)
+        return dataTable instanceof DataTable
     }
+
 
     Name: string
     MetaData: TMetaData = {}
@@ -475,6 +471,7 @@ export class DataTable extends clsClonable {
     private _lock: Mutex = new Mutex()
     private _rows?: TRow[]
     private _isAttached: boolean = false
+    private _isDisposed: boolean = false
 
     constructor(
         name?: string,
@@ -507,11 +504,16 @@ export class DataTable extends clsClonable {
 
     }
 
+
     [Symbol.dispose](): void {
+        if (this._isDisposed)
+            return
+
         this.MetaData = {}
 
         if (this._isAttached) {
-            this._duckConnection!.run(duckDb_Sql_DropTable(this.Name))
+            this._duckConnection?.run(duckDb_Sql_DropTable(this.Name))
+            this._isDisposed = true
             return
         }
         // close duckdb resources if any
@@ -538,6 +540,8 @@ export class DataTable extends clsClonable {
                 Logger.Error('Error removing DuckDB database')
             }
         }
+        this._isDisposed = true
+        Logger.Debug(`${Logger.Out} 🗑️  DataTable '${this.Name}' destroyed`)
     }
 
     Dispose(): void {
@@ -572,6 +576,14 @@ export class DataTable extends clsClonable {
         const cnx = this._duckConnection
         await this._lock.Acquire()
         {
+            // tune performance
+            await cnx.run(`
+                SET memory_limit = '8GB';
+                SET temp_directory = '${DATATABLE_TEMP_PATH}';
+                SET threads = ${Math.max(1, Math.floor((os.cpus().length ?? 1) / 2))};
+                SET preserve_insertion_order=false;
+            `)
+
             // create table
             await cnx.run(duckDb_Sql_DropTable(this.Name))
             await cnx.run(duckDb_Sql_CreateTable(this.Name))
@@ -718,7 +730,7 @@ export class DataTable extends clsClonable {
     @Logger.LogFunction()
     async Rename(name: string): Promise<this> {
         Assert.Condition(!StringUtils.IsEmpty(name), "DataTable.Rename: name must not be empty")
-        this._dbEnsureInitialized()
+        await this._dbEnsureInitialized()
         const cnx = this._duckConnection!
         return cnx.run(duckDb_Sql_RenameTable(this.Name, name))
             .then(() => {
@@ -774,6 +786,8 @@ export class DataTable extends clsClonable {
             `
         const reader = await cnx.runAndReadAll(sql)
         const stats = reader.getRowObjects()[0]
+        Assert.Var<Record<string, DuckDBValue>>(stats, 'stats is undefined')
+
         await this.FieldsSet()
         return <TStats>{
             row_count: Number(stats.estimated_size),
@@ -865,20 +879,21 @@ export class DataTable extends clsClonable {
     }
 
     /**
-     * Streaming async iterator (lazy) over DB rows.
-     */
+ * Streaming async iterator (lazy) over DB rows - memory efficient
+ */
     @Logger.LogFunction(true)
-    async RowsIterator({
-        includeIndex = false,
-        fields,
-        filter,
-        fnMap,
-        fnFilter,
-        batchSize = this.BatchSize,
-        abortSignal
-    }: TRowsIteratorParams
-    ): Promise<AsyncIterableIterator<TRow>> {
-        Assert.Condition(batchSize >= 0, "batchSize must be greater than or equal to 0")
+    async RowsIterator(params: TRowsIteratorParams = {}): Promise<AsyncIterableIterator<TRow>> {
+        const {
+            includeIndex = false,
+            fields,
+            filter,
+            fnMap,
+            fnFilter,
+            batchSize = this.BatchSize,
+            abortSignal
+        } = params
+
+        Assert.Condition(batchSize > 0, "batchSize must be greater than 0")
 
         // Build base query with SQL filtering if provided
         const sql = dataTable_constructSql({
@@ -887,29 +902,35 @@ export class DataTable extends clsClonable {
             filter,
             skip: undefined,
             limit: undefined,
-            sort: null, //WORKAROUND undefined
+            sort: '__seq__', // Always sort by __seq__ for consistent ordering
             safeName: this.SafeName
         })
 
-        await this._dbEnsureInitialized();
+        await this._dbEnsureInitialized()
+
         const lazy = new LazyResult<TRow>(
             this._duckConnection!,
             sql,
             [],
-            (row: Record<string, DuckDBValue>) => duckDb_row_parser({ row, fields, includeIndex, fnMap }),
+            (row: Record<string, DuckDBValue>) => duckDb_row_parser({
+                row,
+                fields,
+                includeIndex,
+                fnMap
+            }),
             batchSize
-        );
+        )
 
         // If fnFilter is provided, wrap the iterator with the filter
         if (fnFilter) {
             return (async function* () {
                 for await (const r of lazy) {
-                    if (await fnFilter(r)) yield r;
+                    if (await fnFilter(r)) yield r
                 }
-            })();
+            })()
         }
 
-        return lazy[Symbol.asyncIterator]();
+        return lazy[Symbol.asyncIterator]()
     }
 
     @Logger.LogFunction(true)
@@ -930,7 +951,7 @@ export class DataTable extends clsClonable {
         return this.FieldsSet()
     }
 
-    @Logger.LogFunction()
+    @Logger.LogFunction(true)
     async RowsAdd(newRowOrRows?: TJson | TRow | TJson[] | TRow[]): Promise<this> {
         if (!newRowOrRows)
             return this
@@ -975,56 +996,115 @@ export class DataTable extends clsClonable {
             : ''
 
         await cnx.run(`
-            UPDATE ${this.SafeName}
-            SET __data__ = ?
-            ${_condition}`,
+        UPDATE ${this.SafeName}
+        SET __data__ = ?
+        ${_condition}`,
             [__data__]
         )
         return this.FieldsSet()
     }
 
     @Logger.LogFunction(true)
-    async RowUpdateByIndex(index?: UUID, row?: TJson | TRow): Promise<this> {
+    async RowUpdateByIndex(index?: TUuidv7, row?: TJson | TRow, opt: { skipFieldsSet?: boolean } = {}): Promise<this> {
         if (!index || !row)
             return this
 
+        await this._dbRowUpdateByIndex(index, row)
+
+        if (opt.skipFieldsSet)
+            return this
+
+        return this.FieldsSet()
+    }
+
+    private async _dbRowUpdateByIndex(index: TUuidv7, row: TJson | TRow): Promise<void> {
         await this._dbEnsureInitialized()
         const cnx = this._duckConnection!
         const __data__ = JsonUtils.Stringify(row)
 
-        await cnx.run(`
-            UPDATE ${this.SafeName}
-            SET __data__ = ?
-            WHERE __idx__ = ?`,
-            [__data__, index]
-        )
-        return this.FieldsSet()
+        // Use parameterized query instead of string interpolation
+        const sql = `
+        UPDATE ${this.SafeName}
+        SET __data__ = ?
+        WHERE __idx__ = ?
+    `
+
+        await cnx.run(sql, [__data__, index])
+            .catch((error) => {
+                Logger.Error(`${Logger.Out} DataTable.RowUpdateByIndex: Failed to update row in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`)
+                throw error
+            })
     }
+
 
     @Logger.LogFunction(true)
     async RowsMap(fnMap: (row: Partial<TRow>) => Promise<TRow>, condition?: string): Promise<this> {
-        await this._dbEnsureInitialized()
-
-        const iterator = await this.RowsIterator({
-            includeIndex: true, // We need the index to update specific rows
-            filter: condition,
-        })
-
-        const updatePromises: Promise<this>[] = []
-        for await (const row of iterator) {
-            const updatedRow = await Promise.resolve(fnMap(row))
-            if (updatedRow.__idx__) {
-                updatePromises.push(this.RowUpdateByIndex(updatedRow.__idx__, updatedRow))
-            } else {
-                Logger.Warn(`DataTable.RowsMap: Row missing __idx__ for update, skipping. Row: ${JSON.stringify(row)}`)
-            }
+        if (!fnMap) {
+            Logger.Warn(`${Logger.Out} DataTable.RowsMap: No map function provided`)
+            return this
         }
 
-        await Promise.all(updatePromises)
+        const rowCount = await this.Count()
+        if (rowCount === 0) {
+            Logger.Info(`${Logger.Out} DataTable.RowsMap: No rows to map`)
+            return this
+        }
 
-        // Refresh fields in case the mapping changed the structure of rows
+        await this._dbEnsureInitialized()
+        const cnx = this._duckConnection!
+
+        try {
+            await cnx.run('BEGIN TRANSACTION')
+
+            const iterator = await this.RowsIterator({
+                includeIndex: true,
+                filter: condition
+            })
+
+            let processedCount = 0
+            const batchSize = 50 // Process updates in batches to avoid memory issues
+
+            for await (const rowData of iterator) {
+                try {
+                    const updatedRow = await fnMap(rowData)
+
+                    if (rowData.__idx__) {
+                        const __data__ = JsonUtils.Stringify(updatedRow)
+                        await cnx.run(
+                            `UPDATE ${this.SafeName} SET __data__ = ? WHERE __idx__ = ?`,
+                            [__data__, rowData.__idx__]
+                        )
+                        processedCount++
+
+                        // Commit in batches to avoid transaction getting too large
+                        if (processedCount % batchSize === 0) {
+                            await cnx.run('COMMIT')
+                            await cnx.run('BEGIN TRANSACTION')
+                        }
+                    } else {
+                        Logger.Warn(`DataTable.RowsMap: Row missing __idx__`)
+                    }
+                } catch (err) {
+                    Logger.Error(`DataTable.RowsMap: Error processing row: ${JsonUtils.Stringify(err)}`)
+                    throw err
+                }
+            }
+
+            await cnx.run('COMMIT')
+            Logger.Info(`${Logger.Out} DataTable.RowsMap: Processed ${processedCount} rows successfully`)
+        } catch (err) {
+            try {
+                await cnx.run('ROLLBACK')
+            } catch (rbErr) {
+                Logger.Error(`DataTable.RowsMap: Rollback failed: ${(rbErr as Error).message}`)
+            }
+            Logger.Error(`${Logger.Out} DataTable.RowsMap: Error mapping rows: ${JsonUtils.Stringify(err)}`)
+            throw err
+        }
+
         return this.FieldsSet()
     }
+
 
     @Logger.LogFunction(true)
     async FreeSql(
@@ -1121,71 +1201,68 @@ export class DataTable extends clsClonable {
     @Logger.LogFunction(true)
     async Pick(fields: string[]): Promise<this> {
         if (!fields || fields.length === 0)
-            return this;
+            return this
 
-        const sqlSet = fields.map(f => `'${f}', (__data__->'${f}')`).join(', ')
+        Logger.Info(`${Logger.Out} DataTable.Pick: Starting to pick fields ${fields.join(', ')}`)
 
-        const sql = `
-            UPDATE 
-                ${this.SafeName}
-            SET 
-                __data__ = json_object(${sqlSet})                
-        `
+        return this.RowsMap(async (row: TRow) => {
+            const filtered: TRow = {}
 
-        await this.FreeSql({ sqlQuery: sql, convertCondition: false })
-        return this.FieldsSet()
+            // Keep only the specified fields
+            for (const field of fields) {
+                // eslint-disable-next-line no-prototype-builtins
+                if (row.hasOwnProperty(field)) {
+                    filtered[field] = (row as any)[field]
+                }
+            }
+
+            return filtered
+        }).then(() => {
+            Logger.Info(`${Logger.Out} DataTable.Pick: Successfully picked ${fields.length} fields`)
+            return this
+        })
     }
 
     @Logger.LogFunction(true)
     async Omit(fields: string[]): Promise<this> {
         if (!fields || fields.length === 0)
-            return this;
+            return this
 
-        const excludeClause = fields.map(f => `'${f}'`).join(', ');
+        Logger.Info(`${Logger.Out} DataTable.Omit: Starting to omit fields ${fields.join(', ')}`)
 
-        const sql = `
-            UPDATE ${this.SafeName}
-            SET __data__ = (
-                SELECT to_json(
-                    map_from_entries(
-                        list_zip(
-                            list_filter(json_keys(__data__), k -> k NOT IN (${excludeClause})),
-                            list_transform(
-                                list_filter(json_keys(__data__), k -> k NOT IN (${excludeClause})),
-                                k -> json_extract(__data__, '$.' || k)
-                            )
-                        )
-                    )
-                )
-            );
-        `;
+        return this.RowsMap(async (row: TRow) => {
+            const filtered: TRow = {}
 
-        await this.FreeSql({ sqlQuery: sql, convertCondition: false });
-        return this.FieldsSet()
+            // Keep all fields except the ones to omit
+            for (const [key, value] of Object.entries(row)) {
+                if (!fields.includes(key)) {
+                    filtered[key] = value
+                }
+            }
+
+            return filtered
+        }).then(() => {
+            Logger.Info(`${Logger.Out} DataTable.Omit: Successfully omitted ${fields.length} fields`)
+            return this
+        })
     }
 
-    @Logger.LogFunction(true)
-    async Map(fnMap: (row: TRow) => TRow): Promise<this> {
-        const iterator = await this.RowsIterator({ includeIndex: true });
-        const updatePromises: Promise<this>[] = [];
+    // @Logger.LogFunction(true)
+    // async Map(fnMap: (row: TRow) => TRow): Promise<this> {
+    //     const iterator = await this.RowsIterator({ includeIndex: true });
 
-        for await (const row of iterator) {
-            const __idx__ = row.__idx__;
-            const newData = fnMap(row);
-            updatePromises.push(this.RowUpdateByIndex(__idx__, newData));
-        }
+    //     for await (const row of iterator) {
+    //         const __idx__ = row.__idx__;
+    //         const newData = fnMap(row);
+    //         await this.RowUpdateByIndex(__idx__, newData);
+    //     }
 
-        return Promise.all(updatePromises)
-            .then(() => this.FieldsSet())
-            .catch((error) => {
-                Logger.Error(`Failed to update rows in '${this.SafeName}': ${JsonUtils.Stringify(error)}`)
-                throw error
-            })
-    }
+    //     return this.FieldsSet()
+    // }
 
     @Logger.LogFunction(true)
-    async ForEach<T>(fnForEach: (row: TRow) => T | Promise<T>): Promise<T[]> {
-        const iterator = await this.RowsIterator({ includeIndex: true });
+    async ForEach<T>(fnForEach: (row: TRow) => T | Promise<T>, params: TRowsIteratorParams = {}): Promise<T[]> {
+        const iterator = await this.RowsIterator(params);
 
         const promises: (T | Promise<T>)[] = [];
         for await (const row of iterator) {

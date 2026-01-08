@@ -5,20 +5,20 @@ import { Mixin } from "ts-mixer"
 //
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { clsContext } from "../../../utils/base/clsContext"
-import { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import { TInternalResponse } from '../../schema/types/TInternalResponse'
-import { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TInternalResponse } from '../../core/types/TInternalResponse'
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { absDataProviderOptions } from "./absDataProviderOptions"
 import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
-import { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
 import { HttpErrorBadRequest } from "../../errors/HttpErrors"
 import { StringUtils } from '../../../utils/StringUtils'
 import { Assert } from "../../../utils/Assert"
 import { DATA_PROVIDER } from "../@consts"
-import { TConfigSource } from "../types/TConfigSource"
-import { IDataProviderOptions } from "./IDataProviderOptions"
-import { IDataProvider } from "./IDataProvider"
-import { DataTable } from "../../../types/DataTable"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { IDataProviderOptions } from "./IDataProviderOptions"
+import type { IDataProvider } from "./IDataProvider"
+import type { DataTable } from "../../../types/DataTable"
 
 
 export class DataProviderOptions extends absDataProviderOptions implements IDataProviderOptions { }

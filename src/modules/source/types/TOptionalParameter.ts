@@ -3,8 +3,8 @@
 //
 //
 //
-import { DataTable, TOrderBy } from "../../../types/DataTable"
-import { TJson } from "../../../types/TJson"
+import type { DataTable, TOrderBy } from "../../../types/DataTable"
+import type { TJson } from "../../../types/TJson"
 
 
 //

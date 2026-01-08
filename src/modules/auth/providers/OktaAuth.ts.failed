@@ -3,8 +3,8 @@
 // import { Logger } from "../../utils/Logger"
 // import { Config } from "../../server/Config"
 // import axios from "axios"
-// import { TConfigUsers } from "../../types/TConfig"
-// import { TUserTokenInfo } from "../../server/User"
+// import type { TConfigUsers } from "../../types/TConfig"
+// import type { TUserTokenInfo } from "../../server/User"
 
 
 // //

@@ -3,7 +3,7 @@
 //
 import { HttpErrorNotFound } from "../errors/HttpErrors"
 import { Factory } from "../../utils/Factory"
-import { IDataProvider } from "./base/IDataProvider"
+import type { IDataProvider } from "./base/IDataProvider"
 import { DATA_PROVIDER } from "./@consts"
 
 

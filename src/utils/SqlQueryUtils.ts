@@ -1,12 +1,13 @@
 //
 //
 //
-import _ from 'lodash'
+import * as _ from 'lodash-es'
 //
-import { TOrderBy, TRow } from "../types/DataTable"
+import type { TOrderBy, TRow } from "../types/DataTable"
 import { Logger } from './Logger'
 import { HttpErrorBadRequest, HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
-import { TAny } from "../types/TAny"
+import type { TAny } from "../types/TAny"
+import { Assert } from './Assert'
 
 //
 export const ESCAPE_FIELD_VALUE = "$>"
@@ -204,6 +205,8 @@ export class SqlQueryUtils {
                 continue;
             }
 
+            Assert.Var<string>(char, 'char is undefined')
+
             // Handle special characters that should be separate tokens
             if (/[(),;=<>!+\-*/%]/.test(char)) {
                 if (currentToken.trim()) {
@@ -323,7 +326,15 @@ export class SqlQueryUtils {
 
     _hasLiteralEquality(tokens: TSqlToken[]) {
         for (let i = 0; i <= tokens.length - 3; i++) {
-            const a = tokens[i], b = tokens[i + 1], c = tokens[i + 2];
+
+            const a = tokens[i]
+            const b = tokens[i + 1]
+            const c = tokens[i + 2]
+
+            Assert.Var<TSqlToken>(a, 'a is undefined')
+            Assert.Var<TSqlToken>(b, 'b is undefined')
+            Assert.Var<TSqlToken>(c, 'c is undefined')
+
             if (b.type === "operator" && b.token === "=") {
                 if (a.type === "string" && c.type === "string") return true;
                 if (a.type === "number" && c.type === "number") return true;
@@ -429,10 +440,12 @@ export class SqlQueryUtils {
         if (rows === undefined)
             return this
 
-        let fieldsValues: TRow = {}
+        let fieldsValues: TRow | undefined = {}
         fieldsValues = (Array.isArray(rows))
             ? rows[0]
             : rows
+
+        Assert.Var<TRow>(fieldsValues, 'fieldsValues is undefined')
 
         const setValues = _.chain(fieldsValues)
             .mapValues((_value, _field) => {

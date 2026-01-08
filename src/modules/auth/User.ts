@@ -1,16 +1,17 @@
 //
 //
 //
-import jwt, { JsonWebTokenError, Secret } from 'jsonwebtoken'
+import jwt, { type JsonWebTokenError } from 'jsonwebtoken'
+import type { Secret } from 'jsonwebtoken'
 import { randomBytes } from 'crypto'
 //
-import { TInternalResponse } from '../schema/types/TInternalResponse'
+import type { TInternalResponse } from '../core/types/TInternalResponse'
 import { Logger } from "../../utils/Logger"
 import { HttpErrorUnauthorized } from "../errors/HttpErrors"
 import { HttpResponse } from "../core/HttpResponse"
-import { TJson } from "../../types/TJson"
+import type { TJson } from "../../types/TJson"
 import { AuthProvider } from "./AuthProvider"
-import { TUserCredentials, TUserTokenInfo, TUserToken } from "./@types"
+import type { TUserCredentials, TUserTokenInfo, TUserToken } from "./@types"
 import { Roles } from "./Roles"
 
 

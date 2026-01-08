@@ -1,66 +1,53 @@
-/* eslint-disable  */
-import typia from "typia"
+import { mock_Logger } from "../../../__tests__/mockers"
+mock_Logger()
+
 import { Readable } from 'stream'
 import { DataLakeServiceClient, DataLakeFileSystemClient, DataLakeFileClient } from '@azure/storage-file-datalake'
 import { AzureDataLakeStorage } from '../providers/AzureDataLakeStorage'
 import { HttpErrorInternalServerError } from '../../../modules/errors/HttpErrors'
 import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { DataTable } from '../../../types/DataTable'
-import { TConfigSource } from "../../source/types/TConfigSource"
+import type { TConfigSource } from "../../source/types/TConfigSource"
+import { DATA_PROVIDER } from "../../source/@consts"
 
 // Mock dependencies
-jest.mock('@azure/storage-file-datalake')
-jest.mock('../../../utils/ReadableUtils')
+vi.mock('@azure/storage-file-datalake')
+vi.mock('../../../utils/ReadableUtils')
 
-// Mock dependencies
-jest.mock('../../../utils/Logger', () => ({
-    Logger: {
-        SetLevel: () => () => { },
-        EnableAll: () => () => { },
-        DisableAll: () => () => { },
-        Log: () => () => { },
-        Error: () => () => { },
-        Warn: () => () => { },
-        Debug: () => () => { },
-        Info: () => () => { },
-        Message: () => () => { },
-        LogFunction: () => () => { },
-        Level : "error",
-        Out: 'OUT'
-    }
-}))
-
-const rndParams = typia.random<TConfigSource>()
+const rndParams = {
+    provider: DATA_PROVIDER.STORAGE,
+    host: 'test.datalake.core.windows.net',
+} as unknown as TConfigSource
 
 describe('AzureDataLakeStorage', () => {
     let storage: AzureDataLakeStorage
-    let mockServiceClient: jest.Mocked<DataLakeServiceClient>
-    let mockFileSystemClient: jest.Mocked<DataLakeFileSystemClient>
-    let mockFileClient: jest.Mocked<DataLakeFileClient>
+    let mockServiceClient: vi.Mocked<DataLakeServiceClient>
+    let mockFileSystemClient: vi.Mocked<DataLakeFileSystemClient>
+    let mockFileClient: vi.Mocked<DataLakeFileClient>
 
     beforeEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
 
         // Setup mocks
         mockFileClient = {
-            getProperties: jest.fn(),
-            read: jest.fn(),
-            create: jest.fn(),
-            append: jest.fn(),
-            flush: jest.fn(),
-        } as unknown as jest.Mocked<DataLakeFileClient>
+            getProperties: vi.fn(),
+            read: vi.fn(),
+            create: vi.fn(),
+            append: vi.fn(),
+            flush: vi.fn(),
+        } as unknown as vi.Mocked<DataLakeFileClient>
 
         mockFileSystemClient = {
-            createIfNotExists: jest.fn(),
-            getFileClient: jest.fn().mockReturnValue(mockFileClient),
-            listPaths: jest.fn(),
-        } as unknown as jest.Mocked<DataLakeFileSystemClient>
+            createIfNotExists: vi.fn(),
+            getFileClient: vi.fn().mockReturnValue(mockFileClient),
+            listPaths: vi.fn(),
+        } as unknown as vi.Mocked<DataLakeFileSystemClient>
 
         mockServiceClient = {
-            getFileSystemClient: jest.fn().mockReturnValue(mockFileSystemClient),
-        } as unknown as jest.Mocked<DataLakeServiceClient>;
+            getFileSystemClient: vi.fn().mockReturnValue(mockFileSystemClient),
+        } as unknown as vi.Mocked<DataLakeServiceClient>;
 
-        (DataLakeServiceClient.fromConnectionString as jest.Mock).mockReturnValue(mockServiceClient)
+        (DataLakeServiceClient.fromConnectionString as vi.Mock).mockReturnValue(mockServiceClient)
 
         storage = new AzureDataLakeStorage()
         storage.SetConfig({
@@ -122,7 +109,7 @@ describe('AzureDataLakeStorage', () => {
 
         it('should throw error when Azure connection fails', async () => {
             storage.Init();
-            (DataLakeServiceClient.fromConnectionString as jest.Mock).mockImplementation(() => {
+            (DataLakeServiceClient.fromConnectionString as vi.Mock).mockImplementation(() => {
                 throw new Error('Connection failed')
             })
 
@@ -222,7 +209,7 @@ describe('AzureDataLakeStorage', () => {
             storage.Init()
             await storage.Connect();
 
-            (ReadableUtils.ToBuffer as jest.Mock).mockResolvedValue(mockBuffer)
+            (ReadableUtils.ToBuffer as vi.Mock).mockResolvedValue(mockBuffer)
 
             // All of these need to resolve for Write to complete
             mockFileClient.create.mockResolvedValue({} as any)
@@ -238,7 +225,7 @@ describe('AzureDataLakeStorage', () => {
             storage.Init()
             await storage.Connect();
 
-            (ReadableUtils.ToBuffer as jest.Mock).mockRejectedValue(new Error('Buffer conversion failed'))
+            (ReadableUtils.ToBuffer as vi.Mock).mockRejectedValue(new Error('Buffer conversion failed'))
 
             const promise = storage.FileWrite('', 'test.txt', mockContent)
 
@@ -250,7 +237,7 @@ describe('AzureDataLakeStorage', () => {
             storage.Init()
             await storage.Connect();
 
-            (ReadableUtils.ToBuffer as jest.Mock).mockResolvedValue(Buffer.from('test'))
+            (ReadableUtils.ToBuffer as vi.Mock).mockResolvedValue(Buffer.from('test'))
             mockFileClient.create.mockRejectedValue(new Error('Create failed'))
 
             const promise = storage.FileWrite('', 'test.txt', mockContent)

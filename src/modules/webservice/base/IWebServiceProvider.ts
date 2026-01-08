@@ -3,10 +3,10 @@
 //
 import { Readable } from "stream"
 //
-import { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
-import { TContext } from "../../sandbox/types/TContext"
-import { TJson } from "../../../types/TJson"
-import { TWebServiceEndpoint, TEndpoint } from "../@types"
+import type { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TJson } from "../../../types/TJson"
+import type { TWebServiceEndpoint, TEndpoint } from "../@types"
 import { clsClonable } from "../../../utils/base/clsClonable"
 
 
