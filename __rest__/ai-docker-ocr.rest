@@ -1,5 +1,5 @@
 # Base URL
-@apiUrl = http://localhost
+@apiUrl = http://127.0.0.1
 
 ### @name image-to-string
 POST {{apiUrl}}:5201/ocr-image-to-string?lang=eng

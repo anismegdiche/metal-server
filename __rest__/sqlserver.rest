@@ -1,5 +1,5 @@
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -14,19 +14,19 @@ Content-Type: application/json
 
 
 # @name list
-GET http://localhost:3000/schema/hr
+GET http://127.0.0.1:3000/schema/hr
 authorization: Bearer {{token}}
 ###
 
 
 # @name select
-GET http://localhost:3000/schema/hr/countries
+GET http://127.0.0.1:3000/schema/hr/countries
 authorization: Bearer {{token}}
 ###
 
 
 # @name select-filtered
-GET http://localhost:3000/schema/hr/countries
+GET http://127.0.0.1:3000/schema/hr/countries
     ?filter-expression=country_name LIKE '*a'
     &fields=country_id,country_name
     &sort={"country_id": "asc","country_name": "desc"}
@@ -35,7 +35,7 @@ authorization: Bearer {{token}}
 
 
 # @name insert-one
-POST http://localhost:3000/schema/hr/countries
+POST http://127.0.0.1:3000/schema/hr/countries
 Content-Type: application/json
 authorization: Bearer {{token}}
 

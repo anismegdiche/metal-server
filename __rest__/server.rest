@@ -3,7 +3,7 @@
 #
 
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -16,11 +16,11 @@ Content-Type: application/json
 @token={{login.response.body.token}}
 
 # @name info
-GET http://localhost:3000/server/info
+GET http://127.0.0.1:3000/server/info
 
 ###
 # @name reload
-POST http://localhost:3000/server/reload
+POST http://127.0.0.1:3000/server/reload
 Content-Type: application/json
 authorization: Bearer {{token}}
 

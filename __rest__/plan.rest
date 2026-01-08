@@ -1,5 +1,5 @@
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -19,39 +19,39 @@ Content-Type: application/json
 
 
 # @name list
-GET http://localhost:3000/schema/etl1
+GET http://127.0.0.1:3000/schema/etl1
 authorization: Bearer {{token}}
 ###
 
 # @name reload
-POST http://localhost:3000/plan/{{plan}}/reload
+POST http://127.0.0.1:3000/plan/{{plan}}/reload
 authorization: Bearer {{token}}
 ###
 
 
 # @name get-plan-src
-GET http://localhost:3000/schema/etl1/src
+GET http://127.0.0.1:3000/schema/etl1/src
     # ?cache=300
 authorization: Bearer {{token}}
 ###
 
 
 # @name get-plan-aitest
-GET http://localhost:3000/schema/etl1/aitest
+GET http://127.0.0.1:3000/schema/etl1/aitest
 #    ?cache=300
 authorization: Bearer {{token}}
 ###
 
 
 # @name get-plan-aitest2
-GET http://localhost:3000/schema/etl1/aitest2
+GET http://127.0.0.1:3000/schema/etl1/aitest2
     ?cache=300
 authorization: Bearer {{token}}
 ###
 
 
 # @name get-plan-aitest
-GET http://localhost:3000/schema/etl1/aitest
+GET http://127.0.0.1:3000/schema/etl1/aitest
     ?fields=img_to_text
 authorization: Bearer {{token}}
 ###
@@ -59,6 +59,6 @@ authorization: Bearer {{token}}
 
 
 # @name ai-test
-GET http://localhost:3000/schema/myplan/myentity
+GET http://127.0.0.1:3000/schema/myplan/myentity
 authorization: Bearer {{token}}
 ###

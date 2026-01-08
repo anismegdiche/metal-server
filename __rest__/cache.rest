@@ -1,5 +1,5 @@
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -14,7 +14,7 @@ Content-Type: application/json
 
 
 # @name add-some-data
-GET http://localhost:3000/schema/mflix/users
+GET http://127.0.0.1:3000/schema/mflix/users
     ?filter={"country":"France","name":"John"}
     &cache=100
 authorization: Bearer {{token}}
@@ -23,17 +23,17 @@ Content-Type: application/json
 
 
 # @name view
-GET http://localhost:3000/cache/view
+GET http://127.0.0.1:3000/cache/view
 authorization: Bearer {{token}}
 ###
 
 
 # @name purge
-POST http://localhost:3000/cache/purge
+POST http://127.0.0.1:3000/cache/purge
 authorization: Bearer {{token}}
 ###
 
 
 # @name clean
-POST http://localhost:3000/cache/clean
+POST http://127.0.0.1:3000/cache/clean
 authorization: Bearer {{token}}

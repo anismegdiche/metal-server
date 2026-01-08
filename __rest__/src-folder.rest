@@ -1,5 +1,5 @@
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -14,19 +14,19 @@ Content-Type: application/json
 ###### FS   ######
 
 # @name list
-GET http://localhost:3000/schema/fs
+GET http://127.0.0.1:3000/schema/fs
 authorization: Bearer {{token}}
 ###
 
 # @name select
-GET http://localhost:3000/schema/fs/csv
+GET http://127.0.0.1:3000/schema/fs/csv
     ?fields=*,content
 authorization: Bearer {{token}}
 
 ###
 
 # @name delete
-DELETE http://localhost:3000/schema/fs/csv
+DELETE http://127.0.0.1:3000/schema/fs/csv
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -38,21 +38,21 @@ authorization: Bearer {{token}}
 ###
 
 # @name by
-GET http://localhost:3000/schema/fs/pdf/by/name/covid.pdf
+GET http://127.0.0.1:3000/schema/fs/pdf/by/name/covid.pdf
     # ?fields=city,country
     # &filter={"country":"France"}
     # &cache=300
 authorization: Bearer {{token}}
 ###
 
-GET http://localhost:3000/schema/fscsv/covid.csv
+GET http://127.0.0.1:3000/schema/fscsv/covid.csv
     ?fields=iso_code,continent,location
 authorization: Bearer {{token}}
 ###
 
 
 # @name patch_customer_json
-PATCH  http://localhost:3000/schema/fsjson/customer.json
+PATCH  http://127.0.0.1:3000/schema/fsjson/customer.json
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -68,25 +68,25 @@ authorization: Bearer {{token}}
 ###### AZURE BLOB   ######
 
 # @name list
-GET http://localhost:3000/schema/azjson
+GET http://127.0.0.1:3000/schema/azjson
 authorization: Bearer {{token}}
 ###
 
 
 # @name select
-GET http://localhost:3000/schema/azjson/colors.json
+GET http://127.0.0.1:3000/schema/azjson/colors.json
     ?filter-expression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
 ###
 
 
-GET http://localhost:3000/schema/azcsv/addresses.csv
+GET http://127.0.0.1:3000/schema/azcsv/addresses.csv
     # ?filter-expression=hexcode LIKE '%%00'
 authorization: Bearer {{token}}
 ###
 
 
-PATCH  http://localhost:3000/schema/azcsv/addresses.csv
+PATCH  http://127.0.0.1:3000/schema/azcsv/addresses.csv
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -100,19 +100,19 @@ authorization: Bearer {{token}}
 
 
 # @name xls-list
-GET http://localhost:3000/schema/fs
+GET http://127.0.0.1:3000/schema/fs
 authorization: Bearer {{token}}
 ###
 
 
 # @name xls-select
-GET http://localhost:3000/schema/fs/sample.xlsx
+GET http://127.0.0.1:3000/schema/fs/sample.xlsx
    ?filter-expression=Name = 'Mary'
 authorization: Bearer {{token}}
 ###
 
 
-PATCH  http://localhost:3000/schema/fs/sample.xlsx
+PATCH  http://127.0.0.1:3000/schema/fs/sample.xlsx
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -124,17 +124,17 @@ authorization: Bearer {{token}}
 }
 
 ###
-GET http://localhost:3000/schema/fs
+GET http://127.0.0.1:3000/schema/fs
 authorization: Bearer {{token}}
 
 
 ###
-GET http://localhost:3000/schema/fs/homes.csv
+GET http://127.0.0.1:3000/schema/fs/homes.csv
 authorization: Bearer {{token}}
 
 
 ###
-PATCH  http://localhost:3000/schema/fs/homes.csv
+PATCH  http://127.0.0.1:3000/schema/fs/homes.csv
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -147,5 +147,5 @@ authorization: Bearer {{token}}
 
 
 ###
-GET http://localhost:3000/schema/fs/industry_sic.csv
+GET http://127.0.0.1:3000/schema/fs/industry_sic.csv
 authorization: Bearer {{token}}

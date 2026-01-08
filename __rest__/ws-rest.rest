@@ -1,6 +1,6 @@
 ###
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -15,7 +15,7 @@ Content-Type: application/json
 ######################################
 ###
 # @name read
-GET http://localhost:3000/schema/ws1/Users
+GET http://127.0.0.1:3000/schema/ws1/Users
     # ?filter={"id":3,"userName": "User 3"}
     # &filter={"country":"France"}
     ?sort={"id":"desc"}
@@ -24,7 +24,7 @@ authorization: Bearer {{token}}
 
 ###
 # @name update
-PATCH  http://localhost:3000/schema/ws1/Users
+PATCH  http://127.0.0.1:3000/schema/ws1/Users
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -35,7 +35,7 @@ authorization: Bearer {{token}}
 }
 ###
 # @name create
-POST  http://localhost:3000/schema/ws1/Users
+POST  http://127.0.0.1:3000/schema/ws1/Users
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -48,7 +48,7 @@ authorization: Bearer {{token}}
 
 ###
 # @name delete
-DELETE  http://localhost:3000/schema/ws1/Users
+DELETE  http://127.0.0.1:3000/schema/ws1/Users
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -60,7 +60,7 @@ GET https://dummyjson.com/carts
 
 ###
 # @name read
-GET http://localhost:3000/schema/ws2/carts
+GET http://127.0.0.1:3000/schema/ws2/carts
     #?fields=id,userId
     # &filter-expression=firstName like 'A%'
     # &cache=300
@@ -69,7 +69,7 @@ authorization: Bearer {{token}}
 
 ###
 # @name update
-PATCH  http://localhost:3000/schema/ws2/carts
+PATCH  http://127.0.0.1:3000/schema/ws2/carts
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -88,7 +88,7 @@ authorization: Bearer {{token}}
 
 ###
 # @name create
-POST  http://localhost:3000/schema/ws2/carts
+POST  http://127.0.0.1:3000/schema/ws2/carts
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -111,7 +111,7 @@ authorization: Bearer {{token}}
 
 ###
 # @name delete
-DELETE  http://localhost:3000/schema/ws2/carts
+DELETE  http://127.0.0.1:3000/schema/ws2/carts
 Content-Type: application/json
 authorization: Bearer {{token}}
 
@@ -122,7 +122,7 @@ GET https://dog.ceo/api/breeds/list/all
 
 ###
 # @name read
-GET http://localhost:3000/schema/ws3/breeds
+GET http://127.0.0.1:3000/schema/ws3/breeds
     #?fields=id,userId
     # &filter-expression=firstName like 'A%'
     # &cache=300

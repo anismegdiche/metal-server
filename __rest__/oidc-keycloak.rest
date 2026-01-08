@@ -4,7 +4,7 @@
 #
 #
 
-@issuer=http://localhost:8080/realms/metal
+@issuer=http://127.0.0.1:8080/realms/metal
 
 
 
@@ -50,7 +50,7 @@ authorization: Bearer {{server-token}}
 
 ###
 # @name metal_login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -64,17 +64,17 @@ Content-Type: application/json
 
 ### 
 # @name select
-GET http://localhost:3000/schema/mem/users
+GET http://127.0.0.1:3000/schema/mem/users
 authorization: Bearer {{metal_token}}
 
 ###
 # @name getinfo
-GET  http://localhost:3000/user/info
+GET  http://127.0.0.1:3000/user/info
 authorization: Bearer {{metal_token}}
 
 
 ###
 # @name logout
-POST  http://localhost:3000/user/logout
+POST  http://127.0.0.1:3000/user/logout
 Content-Type: application/json
 authorization: Bearer {{metal_token}}

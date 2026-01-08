@@ -1,6 +1,6 @@
 ###
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -13,6 +13,6 @@ Content-Type: application/json
 
 ###
 # @name get-plan
-GET http://localhost:3000/schema/aiplan/img2class
+GET http://127.0.0.1:3000/schema/aiplan/img2class
 Content-Type: application/json
 authorization: Bearer {{token}}

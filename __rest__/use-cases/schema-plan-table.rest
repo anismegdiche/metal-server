@@ -1,6 +1,6 @@
 ###
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -13,25 +13,25 @@ Content-Type: application/json
 
 ###
 # @name northwind_order-countries
-GET http://localhost:3000/schema/northwind/order-countries
+GET http://127.0.0.1:3000/schema/northwind/order-countries
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 ###
 # @name northwind_orders
-GET http://localhost:3000/schema/northwind/orders
+GET http://127.0.0.1:3000/schema/northwind/orders
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 
 ###
 # @name northwind_customers
-GET http://localhost:3000/schema/northwind/customers
+GET http://127.0.0.1:3000/schema/northwind/customers
 Content-Type: application/json
 authorization: Bearer {{token}}
 
 ###
 # @name plan-order-countries_order-countries
-GET http://localhost:3000/schema/db-order-countries/order-countries
+GET http://127.0.0.1:3000/schema/db-order-countries/order-countries
 Content-Type: application/json
 authorization: Bearer {{token}}

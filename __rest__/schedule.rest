@@ -1,5 +1,5 @@
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -14,11 +14,11 @@ Content-Type: application/json
 
 
 # @name stop
-POST http://localhost:3000/schedule/test/stop
+POST http://127.0.0.1:3000/schedule/test/stop
 authorization: Bearer {{token}}
 ###
 
 
 # @name start
-POST http://localhost:3000/schedule/test/start
+POST http://127.0.0.1:3000/schedule/test/start
 authorization: Bearer {{token}}

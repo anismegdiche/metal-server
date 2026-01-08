@@ -4,7 +4,7 @@
 #
 #
 
-@issuer=http://localhost:4011
+@issuer=http://127.0.0.1:4011
 
 
 
@@ -51,7 +51,7 @@ authorization: Bearer {{token}}
 ###
 # @name metal-test
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {

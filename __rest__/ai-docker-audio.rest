@@ -1,6 +1,6 @@
 # @name huggingface
 # Base URL
-@apiUrl = http://localhost
+@apiUrl = http://127.0.0.1
 
 # Common variables
 @harvard = harvard.wav 

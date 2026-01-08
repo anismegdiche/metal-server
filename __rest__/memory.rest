@@ -1,5 +1,5 @@
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -14,19 +14,19 @@ Content-Type: application/json
 
 
 # @name list
-GET http://localhost:3000/schema/mem
+GET http://127.0.0.1:3000/schema/mem
 authorization: Bearer {{token}}
 ### 
 
 
 # @name select
-GET http://localhost:3000/schema/mem/users
+GET http://127.0.0.1:3000/schema/mem/users
 authorization: Bearer {{token}}
 ###
 
 
 # @name insert
-POST http://localhost:3000/schema/mem/users
+POST http://127.0.0.1:3000/schema/mem/users
 authorization: Bearer {{token}}
 Content-Type: application/json
 
@@ -48,14 +48,14 @@ Content-Type: application/json
 
 
 # @name get-cache
-GET http://localhost:3000/schema/mem/users
+GET http://127.0.0.1:3000/schema/mem/users
     ?cache=3600
 authorization: Bearer {{token}}
 ###
 
 
 # @name update
-PATCH http://localhost:3000/schema/mem/users
+PATCH http://127.0.0.1:3000/schema/mem/users
 authorization: Bearer {{token}}
 Content-Type: application/json
 
@@ -69,6 +69,6 @@ Content-Type: application/json
 
 
 # @name delete
-DELETE http://localhost:3000/schema/mem/users
+DELETE http://127.0.0.1:3000/schema/mem/users
 authorization: Bearer {{token}}
 Content-Type: application/json

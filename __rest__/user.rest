@@ -1,6 +1,6 @@
 ###
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -13,12 +13,12 @@ Content-Type: application/json
 @token={{login.response.body.token}}
 
 # @name getinfo
-GET  http://localhost:3000/user/info
+GET  http://127.0.0.1:3000/user/info
 authorization: Bearer {{token}}
 
 ###
 
 # @name logout
-POST  http://localhost:3000/user/logout
+POST  http://127.0.0.1:3000/user/logout
 Content-Type: application/json
 authorization: Bearer {{token}}

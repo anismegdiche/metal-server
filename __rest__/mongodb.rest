@@ -1,5 +1,5 @@
 # @name login
-POST  http://localhost:3000/user/login
+POST  http://127.0.0.1:3000/user/login
 Content-Type: application/json
 
 {
@@ -14,13 +14,13 @@ Content-Type: application/json
 
 
 # @name list
-GET http://localhost:3000/schema/mflix
+GET http://127.0.0.1:3000/schema/mflix
 authorization: Bearer {{token}}
 ###
 
 
 # @name select-users
-GET http://localhost:3000/schema/mflix/users
+GET http://127.0.0.1:3000/schema/mflix/users
     ?filter={"name":"Jaime Lannister"}
     &cache=300
 authorization: Bearer {{token}}
@@ -28,6 +28,6 @@ authorization: Bearer {{token}}
 
 
 # @name select-movies
-GET http://localhost:3000/schema/mflix/movies
+GET http://127.0.0.1:3000/schema/mflix/movies
     ?filter={"year":1980}
 authorization: Bearer {{token}}

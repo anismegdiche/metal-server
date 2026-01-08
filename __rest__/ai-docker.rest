@@ -1,7 +1,7 @@
 # @name huggingface
 # Base URL
-@baseUrl = http://localhost:5000/huggingface
-@textUrl = http://localhost:5001/huggingface/text
+@baseUrl = http://127.0.0.1:5000/huggingface
+@textUrl = http://127.0.0.1:5001/huggingface/text
 
 # Common variables
 @car1 = car1.jpg
