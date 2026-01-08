@@ -140,7 +140,7 @@ To test the HTTP API, begin by logging in:
 
 ```bash
 curl --request POST \
-  --url http://localhost:3000/user/login \
+  --url http://127.0.0.1:3000/user/login \
   --header 'content-type: application/json' \
   --data '{"username":"myapiuser","password": "myStr@ngpa$$w0rd"}'
 ```
@@ -157,7 +157,7 @@ Then, select data from the "customers" table using the provided token after the 
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/northwind/customers \
+  --url http://127.0.0.1:3000/schema/northwind/customers \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwMDU3NTA2NCwiZXhwIjoxNzAwNTc4NjY0fQ.OaA9I35HVgmxRzy3cTyaGR3mjd1tf0xYRdHlE7BtYS0' \
   --header 'content-type: application/json'
 ```

@@ -153,8 +153,8 @@ users:
 
 To configure OIDC authentication in Metal Server, you need to add the following informations to the `server.authentication` section of the `config.yml` file:
 
-| Parameter       | Required | Description                                                              | Metal version                     |
-| --------------- | -------- | ------------------------------------------------------------------------ | --------------------------------- |
+| Parameter       | Required | Description                                                              | Metal version                         |
+| --------------- | -------- | ------------------------------------------------------------------------ | ------------------------------------- |
 | `type`          | Y        | Type of authentication. For OIDC, it should be set to `oidc`.            | <Badge type="default" text="v0.4+" /> |
 | `issuer`        | Y        | The URL of the OIDC provider's issuer.                                   | <Badge type="default" text="v0.4+" /> |
 | `client-id`     | Y        | The client ID of the OIDC application.                                   | <Badge type="default" text="v0.4+" /> |
@@ -170,7 +170,7 @@ KeyCloak integration example
 server:
   authentication:
     type: oidc # [!code highlight]
-    issuer: http://localhost:8080/realms/metal # [!code highlight]
+    issuer: http://127.0.0.1:8080/realms/metal # [!code highlight]
     client-id: metal-server # [!code highlight]
     client-secret: dOQoanZt02oGV4jTjGR4LVudwSJqbujT # [!code highlight]
     scope: roles # [!code highlight]
@@ -221,7 +221,7 @@ The final configuration will be:
 server:
   authentication:
     type: oidc
-    issuer: http://localhost:8080/realms/metal
+    issuer: http://127.0.0.1:8080/realms/metal
     client-id: metal-server
     client-secret: dOQoanZt02oGV4jTjGR4LVudwSJqbujT
     scope: roles

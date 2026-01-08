@@ -15,7 +15,7 @@ Each configuration specifies the necessary parameters such as host, port, user c
 | Parameter  | Type    | Required | Description                                                                      |
 | ---------- | ------- | -------- | -------------------------------------------------------------------------------- |
 | `provider` | String  | Y        | Set to `mssql` for Azure SQL Database/Microsoft SQL Server                       |
-| `host`     | String  | Y        | Server to connect to. Use `localhost\instance` for named instances.              |
+| `host`     | String  | Y        | Server to connect to. Use `127.0.0.1\instance` for named instances.              |
 | `port`     | Integer | N        | Port to connect to (default: 1433). Don't set when connecting to named instance. |
 | `user`     | String  | Y        | User name for authentication.                                                    |
 | `password` | String  | Y        | Password for authentication.                                                     |
@@ -223,7 +223,7 @@ The MySql data provider is used to connect to a MySql database. It supports vari
 | Parameter  | Type    | Required | Description                                |
 | ---------- | ------- | -------- | ------------------------------------------ |
 | `provider` | String  | Y        | Set to `mysql` for MySql data provider     |
-| `host`     | String  | Y        | Server to connect to (default: localhost). |
+| `host`     | String  | Y        | Server to connect to (default: 127.0.0.1). |
 | `port`     | Integer | N        | Port to connect to (default: 3306).        |
 | `user`     | String  | Y        | User name for authentication.              |
 | `password` | String  | Y        | Password for authentication.               |
@@ -613,7 +613,7 @@ sources:
       s3-secret-access-key: your-secret-access-key
       s3-region: us-east-1
       s3-bucket: your-bucket-name
-      s3-endpoint: http://localhost:9000 # Optional for S3-compatible services
+      s3-endpoint: http://127.0.0.1:9000 # Optional for S3-compatible services
       …
 ```
 

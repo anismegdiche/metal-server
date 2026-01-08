@@ -310,7 +310,7 @@ To check if the data is transfered using the HTTP API, begin by logging in:
 
 ```bash
 curl --request POST \
-  --url http://localhost:3000/user/login \
+  --url http://127.0.0.1:3000/user/login \
   --header 'content-type: application/json' \
   --data '{"username":"myapiuser","password": "myStr@ngpa$$w0rd"}'
 ```
@@ -327,7 +327,7 @@ Then, select data from the **mflix.log** table using the provided token after th
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/mflix/log \
+  --url http://127.0.0.1:3000/schema/mflix/log \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwMTM1NDAyMSwiZXhwIjoxNzAxMzU3NjIxfQ.-RpBr9EFYt3AUKrJY4AGijUrZa3aD1TcgLJuqoX0h_Y' \
   --header 'content-type: application/json'
 ```
@@ -361,7 +361,7 @@ Then, select data from the **clubdata.mflix_log** table using the provided token
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/clubdata/mflix_log \
+  --url http://127.0.0.1:3000/schema/clubdata/mflix_log \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwMTM1NDAyMSwiZXhwIjoxNzAxMzU3NjIxfQ.-RpBr9EFYt3AUKrJY4AGijUrZa3aD1TcgLJuqoX0h_Y' \
   --header 'content-type: application/json'
 ```

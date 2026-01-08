@@ -218,7 +218,7 @@ To test the HTTP API, begin by logging in:
 
 ```bash
 curl --request POST \
-  --url http://localhost:3000/user/login \
+  --url http://127.0.0.1:3000/user/login \
   --header 'content-type: application/json' \
   --data '{"username":"myapiuser","password": "myStr@ngpa$$w0rd"}'
 ```
@@ -235,7 +235,7 @@ Then, select data from the "order-countries" table using the provided token afte
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/northwind/order-countries \
+  --url http://127.0.0.1:3000/schema/northwind/order-countries \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwMTA5MTg3MCwiZXhwIjoxNzAxMDk1NDcwfQ.VN_OLogWUkz8TDG01woMHDe9ClP97EqpFsee9k4vuK4' \
   --header 'content-type: application/json'
 ```

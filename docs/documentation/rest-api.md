@@ -10,21 +10,21 @@ Metal offers a REST API specifically crafted to execute a range of functions:
 - Facilitating data transformation
 - Implementing a data caching mechanism for a specified duration
 
-| Endpoint Starting | Usage              | Metal version                        |
-| ----------------- | ------------------ | ------------------------------------ |
-| `/user/`…       | User operations    | <Badge type="default" text="v0.1+" /> |
-| `/server/`…     | Server operations  | <Badge type="default" text="v0.1+" /> |
-| `/schema/`…     | Schemas operations | <Badge type="default" text="v0.1+" /> |
-| `/plan/`…       | Plans operations   | <Badge type="default" text="v0.1+" /> |
-| `/cache/`…      | Cache operations   | <Badge type="default" text="v0.1+" /> |
+| Endpoint Starting | Usage              | Metal version                         |
+| ----------------- | ------------------ | ------------------------------------- |
+| `/user/`…         | User operations    | <Badge type="default" text="v0.1+" /> |
+| `/server/`…       | Server operations  | <Badge type="default" text="v0.1+" /> |
+| `/schema/`…       | Schemas operations | <Badge type="default" text="v0.1+" /> |
+| `/plan/`…         | Plans operations   | <Badge type="default" text="v0.1+" /> |
+| `/cache/`…        | Cache operations   | <Badge type="default" text="v0.1+" /> |
 
 ## `/user/`…
 
 This endpoint serves as the entry point for User operations.
 The table below describes available endpoints and methods to use for request :
 
-| Endpoint       | Method | Usage                                         | Metal version                        |
-| -------------- | ------ | --------------------------------------------- | ------------------------------------ |
+| Endpoint       | Method | Usage                                         | Metal version                         |
+| -------------- | ------ | --------------------------------------------- | ------------------------------------- |
 | `/user/login`  | POST   | Authenticate a Metal user                     | <Badge type="default" text="v0.1+" /> |
 | `/user/logout` | POST   | Log out current Metal user                    | <Badge type="default" text="v0.1+" /> |
 | `/user/info`   | GET    | Get informations about the current Metal user | <Badge type="default" text="v0.1+" /> |
@@ -57,7 +57,7 @@ For more information about authentication, see [Understanding Authentication, Us
 > **Request**
 >
 > ```http
-> POST  http://localhost:3000/user/login
+> POST  http://127.0.0.1:3000/user/login
 > Content-Type: application/json
 >
 > {
@@ -102,7 +102,7 @@ When a user logs out, it terminates their current session and invalidates the as
 > **Request**
 >
 > ```http
-> POST  http://localhost:3000/user/logout
+> POST  http://127.0.0.1:3000/user/logout
 > ```
 >
 > **Response**
@@ -134,7 +134,7 @@ This feature provides access to detailed information about the currently logged-
 > **Request**
 >
 > ```http
-> GET  http://localhost:3000/user/info
+> GET  http://127.0.0.1:3000/user/info
 > ```
 >
 > **Response**
@@ -164,8 +164,8 @@ This feature provides access to detailed information about the currently logged-
 This endpoint serves as the entry point for Server operations.
 The table below describes available endpoints and methods to use for request :
 
-| Endpoint         | Method | Usage                                  | Metal version                        |
-| ---------------- | ------ | -------------------------------------- | ------------------------------------ |
+| Endpoint         | Method | Usage                                  | Metal version                         |
+| ---------------- | ------ | -------------------------------------- | ------------------------------------- |
 | `/server/info`   | GET    | Get informations about Metal server    | <Badge type="default" text="v0.1+" /> |
 | `/server/reload` | POST   | Reload configuration file and apply it | <Badge type="default" text="v0.1+" /> |
 
@@ -184,7 +184,7 @@ Get informations about Metal server
 > **Request**
 >
 > ```http
-> GET http://localhost:3000/server/info
+> GET http://127.0.0.1:3000/server/info
 > ```
 >
 > **Response**
@@ -227,7 +227,7 @@ When reloading, all connections will be reset.
 > **Request**
 >
 > ```http
-> POST http://localhost:3000/server/reload
+> POST http://127.0.0.1:3000/server/reload
 > ```
 >
 > **Response**
@@ -255,9 +255,9 @@ When reloading, all connections will be reset.
 This endpoint serves as the entry point for Entities operations.
 The table below describes available endpoints and methods to use for request :
 
-| Endpoint                              | Method                   | Usage                                                                                     | Metal version                        |
-| ------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------- | ------------------------------------ |
-| `/schema`/**`:schema`**               | GET                      | Lists entities in the `:schema`                                                           | <Badge type="default" text="v0.3+" />    |
+| Endpoint                              | Method                   | Usage                                                                                     | Metal version                         |
+| ------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------- | ------------------------------------- |
+| `/schema`/**`:schema`**               | GET                      | Lists entities in the `:schema`                                                           | <Badge type="default" text="v0.3+" /> |
 | `/schema`/**`:schema`**/**`:entity`** | GET, POST, PATCH, DELETE | Performs CRUD operations for one or many items in the `:entity` existing in the `:schema` | <Badge type="default" text="v0.1+" /> |
 
 ### `/schema/:schema`
@@ -287,7 +287,7 @@ Returns list of the entities of the schema provided in URL parameters.
 > **Request**
 >
 > ```http
-> GET http://localhost:3000/schema/my-schema
+> GET http://127.0.0.1:3000/schema/my-schema
 > ```
 >
 > **Response**
@@ -338,8 +338,8 @@ Returns data from the entity of the schema provided in URL parameters. By defaul
 
 **Query Parameters**
 
-| Name                 | type        | Required | Description                                                                                      | Metal version                        |
-| -------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| Name                 | type        | Required | Description                                                                             | Metal version                         |
+| -------------------- | ----------- | -------- | --------------------------------------------------------------------------------------- | ------------------------------------- |
 | `:fields`            | string      | N        | fields to keep, comma seperated. (see: [Optional Parameters](optional-parameters))      | <Badge type="default" text="v0.1+" /> |
 | `:filter`            | JSON object | N        | condition `key:value` to filter data. (see: [Optional Parameters](optional-parameters)) | <Badge type="default" text="v0.1+" /> |
 | `:filter-expression` | string      | N        | free form condition to filter data. (see: [Optional Parameters](optional-parameters))   | <Badge type="default" text="v0.1+" /> |
@@ -357,7 +357,7 @@ For detailed description of `fields`, `filter`, `filter-expression`, `sort`, `ca
 > **Request**
 >
 > ```http
-> GET http://localhost:3000/schema/my-schema/my-entity?filter={color:"red"}
+> GET http://127.0.0.1:3000/schema/my-schema/my-entity?filter={color:"red"}
 > ```
 >
 > **Response**
@@ -400,10 +400,10 @@ Insert one or more objects in the entity of the schema provided in URL parameter
 
 **Parameters**
 
-| Name      | type       | Required | Description                                                                                      |
-| --------- | ---------- | -------- | ------------------------------------------------------------------------------------------------ |
-| `:schema` | string     | Y        | name of schema                                                                                   |
-| `:entity` | string     | Y        | name of entity in the `:schema`                                                                  |
+| Name      | type       | Required | Description                                                                             |
+| --------- | ---------- | -------- | --------------------------------------------------------------------------------------- |
+| `:schema` | string     | Y        | name of schema                                                                          |
+| `:entity` | string     | Y        | name of entity in the `:schema`                                                         |
 | `:data`   | JSON array | Y        | data to be inserted in the `:entity`. (see: [Optional Parameters](optional-parameters)) |
 
 ::: tip ℹ️ NOTE
@@ -422,7 +422,7 @@ For detailed description of `data` usage, please refer to [Optional Parameters](
 > **Request**
 >
 > ```http
-> POST http://localhost:3000/schema/my-schema/my-entity
+> POST http://127.0.0.1:3000/schema/my-schema/my-entity
 > Content-Type: application/json
 >
 > {
@@ -477,10 +477,10 @@ If no filtering is supplied in the body with `filter` or `filter-expression`, AL
 
 **Parameters**
 
-| Name                 | Type        | Required | Description                                                                                                                     |
-| -------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `:schema`            | String      | Y        | The name of the selected schema.                                                                                                |
-| `:entity`            | String      | Y        | The name of the entity in the selected schema.                                                                                  |
+| Name                 | Type        | Required | Description                                                                                                            |
+| -------------------- | ----------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `:schema`            | String      | Y        | The name of the selected schema.                                                                                       |
+| `:entity`            | String      | Y        | The name of the entity in the selected schema.                                                                         |
 | `:filter`            | JSON Object | N        | A condition in the format `field:value` to filter data. (see: [Optional Parameters](optional-parameters))              |
 | `:filter-expression` | String      | N        | A free-form condition to filter data. (see: [Optional Parameters](optional-parameters))                                |
 | `:data`              | JSON Object | Y        | JSON data in the format `field:newvalue` to modify in the `:entity`. (see: [Optional Parameters](optional-parameters)) |
@@ -496,7 +496,7 @@ For detailed description of `data`, `filter` and `filter-expression` usage, plea
 > **Request**
 >
 > ```http
-> PATCH http://localhost:3000/schema/my-schema/my-entity
+> PATCH http://127.0.0.1:3000/schema/my-schema/my-entity
 > Content-Type: application/json
 >
 > {
@@ -536,6 +536,7 @@ If no filtering is supplied in the body with `filter` or `filter-expression`, AL
 :::
 
 **Endpoint**
+
 ```http
 DELETE /schema/:schema/:entity
 Content-Type: application/json
@@ -549,10 +550,10 @@ Content-Type: application/json
 
 **Parameters**
 
-| Name                 | type        | Required | Description                                                                                      |
-| -------------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------ |
-| `:schema`            | string      | Y        | name of the selected schema                                                                      |
-| `:entity`            | string      | Y        | name of the entity in the selected schema                                                        |
+| Name                 | type        | Required | Description                                                                             |
+| -------------------- | ----------- | -------- | --------------------------------------------------------------------------------------- |
+| `:schema`            | string      | Y        | name of the selected schema                                                             |
+| `:entity`            | string      | Y        | name of the entity in the selected schema                                               |
 | `:filter`            | JSON object | N        | condition `key:value` to filter data. (see: [Optional Parameters](optional-parameters)) |
 | `:filter-expression` | string      | N        | free form condition to filter data. (see: [Optional Parameters](optional-parameters))   |
 
@@ -567,7 +568,7 @@ For detailed description of `filter` and `filter-expression` usage, please refer
 > **Request**
 >
 > ```http
-> DELETE http://localhost:3000/schema/my-schema/my-entity
+> DELETE http://127.0.0.1:3000/schema/my-schema/my-entity
 > Content-Type: application/json
 >
 > {
@@ -600,8 +601,8 @@ For detailed description of `filter` and `filter-expression` usage, please refer
 This endpoint serves as the entry point for Plans operations.
 The table below describes available endpoints and methods to use for request :
 
-| Endpoint                     | Method | Usage                                                                     | Metal version                        |
-| ---------------------------- | ------ | ------------------------------------------------------------------------- | ------------------------------------ |
+| Endpoint                     | Method | Usage                                                                     | Metal version                         |
+| ---------------------------- | ------ | ------------------------------------------------------------------------- | ------------------------------------- |
 | `/plan`/**`:plan`**/`reload` | POST   | Reload the plan `:plan` definition as described in the configuration file | <Badge type="default" text="v0.1+" /> |
 
 ### `/plan`/**`:plan`**/`reload`
@@ -623,7 +624,7 @@ Reload the plan `:plan` definition as described in the configuration file.
 > **Request**
 >
 > ```http
-> POST  http://localhost:3000/plan/my-plan/reload
+> POST  http://127.0.0.1:3000/plan/my-plan/reload
 > Content-Type: application/json
 > ```
 >
@@ -656,8 +657,8 @@ Reload the plan `:plan` definition as described in the configuration file.
 This endpoint serves as the entry point for Cache operations.
 The table below provides an overview of the available endpoints and the corresponding methods to be used for each request:
 
-| Endpoint       | Method | Description                      | Metal version                        |
-| -------------- | ------ | -------------------------------- | ------------------------------------ |
+| Endpoint       | Method | Description                      | Metal version                         |
+| -------------- | ------ | -------------------------------- | ------------------------------------- |
 | `/cache/view`  | GET    | Retrieve and display cached data | <Badge type="default" text="v0.1+" /> |
 | `/cache/clean` | POST   | Remove expired cached data       | <Badge type="default" text="v0.1+" /> |
 | `/cache/purge` | POST   | Delete all cached data           | <Badge type="default" text="v0.1+" /> |
@@ -678,7 +679,7 @@ It returns the cached data in a readable format, providing insights into the sto
 > **Request**
 >
 > ```http
-> GET http://localhost:3000/cache/view
+> GET http://127.0.0.1:3000/cache/view
 > ```
 >
 > **Response**
@@ -717,7 +718,7 @@ It helps in maintaining the cache server's efficiency by eliminating outdated or
 > **Request**
 >
 > ```http
-> POST http://localhost:3000/cache/clean
+> POST http://127.0.0.1:3000/cache/clean
 > Content-Type: application/json
 > ```
 >
@@ -757,7 +758,7 @@ This action can be useful when you need to clear the cache completely, such as d
 > **Request**
 >
 > ```http
-> POST http://localhost:3000/cache/purge
+> POST http://127.0.0.1:3000/cache/purge
 > Content-Type: application/json
 > ```
 >
@@ -782,4 +783,3 @@ This action can be useful when you need to clear the cache completely, such as d
 | 500       | Something Went Wrong         |
 
 ---
-

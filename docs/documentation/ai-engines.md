@@ -18,7 +18,7 @@ server:
     docker-url: unix:///var/run/docker.sock
 
     # Required: Base URL for AI engine services
-    engines-url: http://localhost:5000
+    engines-url: http://127.0.0.1:5000
 ```
 
 ## AI Engines
@@ -43,7 +43,7 @@ version: "0.5"
 server:
   ...
   ai-engines:
-    engines-url: http://localhost:5000
+    engines-url: http://127.0.0.1:5000
 ```
 
 ## AI Tasks Configuration

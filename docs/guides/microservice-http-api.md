@@ -211,7 +211,7 @@ To test the HTTP API, begin by logging in:
 
 ```bash
 curl --request POST \
-  --url http://localhost:3000/user/login \
+  --url http://127.0.0.1:3000/user/login \
   --header 'content-type: application/json' \
   --data '{"username":"myapiuser","password": "myStr@ngpa$$w0rd"}'
 ```
@@ -230,7 +230,7 @@ Then, select data from the "members" table using the provided token after the "B
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/clubdata/members \
+  --url http://127.0.0.1:3000/schema/clubdata/members \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwMDY0NzM4OCwiZXhwIjoxNzAwNjUwOTg4fQ.lcRcJBOWC6BiYLpR2EiWNWwWSyyLIoMSnzVHAy3SWlE' \
   --header 'content-type: application/json'
 ```
@@ -293,7 +293,7 @@ Then, select data from the "facilities" table using the provided token after the
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/clubdata/facilities \
+  --url http://127.0.0.1:3000/schema/clubdata/facilities \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwMDY0NzM4OCwiZXhwIjoxNzAwNjUwOTg4fQ.lcRcJBOWC6BiYLpR2EiWNWwWSyyLIoMSnzVHAy3SWlE' \
   --header 'content-type: application/json'
 ```
@@ -348,7 +348,7 @@ Then, select data from the "bookings" table using the provided token after the "
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/clubdata/bookings \
+  --url http://127.0.0.1:3000/schema/clubdata/bookings \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwMDY0NzM4OCwiZXhwIjoxNzAwNjUwOTg4fQ.lcRcJBOWC6BiYLpR2EiWNWwWSyyLIoMSnzVHAy3SWlE' \
   --header 'content-type: application/json'
 ```

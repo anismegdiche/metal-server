@@ -1,13 +1,14 @@
 ---
 description: "Metal:Middleware, ETL & AI at the same place. Empower your projects with a free open-source data transformation solution"
 ---
+
 # Sample Project Overview
 
 ## Introduction
 
-This sample project showcases a Docker Compose stack comprising Metal Server and various Database Management System (DBMS) providers. 
+This sample project showcases a Docker Compose stack comprising Metal Server and various Database Management System (DBMS) providers.
 
-The stack comes preloaded with data, facilitating the execution and testing of diverse use cases. 
+The stack comes preloaded with data, facilitating the execution and testing of diverse use cases.
 
 The project has been tested on:
 
@@ -101,14 +102,15 @@ Follow these steps to install the sample project:
 To ensure everything is set up correctly, run the following command:
 
 ```bash
-curl http://localhost:3000/server/info
+curl http://127.0.0.1:3000/server/info
 ```
 
 You sould receive the following response:
 
 ```json
-{"server":"Metal","version":"0.3"}
+{ "server": "Metal", "version": "0.3" }
 ```
+
 Congratulations! You have successfully configured and verified your Metal Server Sample Project.
 
 For more configuration details and use cases, please refer to the section [Technical Guides](https://metal-docs-sh3b0.kinsta.page/guides/technical-guides.html)

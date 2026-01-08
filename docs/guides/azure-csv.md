@@ -148,7 +148,7 @@ First, log in to obtain a token:
 
 ```bash
 curl --request POST \
-  --url http://localhost:3000/user/login \
+  --url http://127.0.0.1:3000/user/login \
   --header 'content-type: application/json' \
   --data '{"username":"myapiuser","password": "myStr@ngpa$$w0rd"}'
 ```
@@ -165,7 +165,7 @@ Use the token to select data from the **addresses.csv** table:
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/azcsv/addresses.csv \
+  --url http://127.0.0.1:3000/schema/azcsv/addresses.csv \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcyMDg3MjU0OSwiZXhwIjoxNzIwODc2MTQ5fQ.VsVCPpIB9lEAb1fUgzRnzwV-IeDeVLu7BykW4EzNYfo' \
   --header 'content-type: application/json'
 ```
@@ -220,7 +220,7 @@ To add a field **Country** with value **USA** for all rows:
 
 ```bash
 curl --request PATCH \
-  --url http://localhost:3000/schema/azcsv/addresses.csv \
+  --url http://127.0.0.1:3000/schema/azcsv/addresses.csv \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcyMDg3MjU0OSwiZXhwIjoxNzIwODc2MTQ5fQ.VsVCPpIB9lEAb1fUgzRnzwV-IeDeVLu7BykW4EzNYfo' \
   --header 'content-type: application/json' \
   --data '{"data": {"Country": "USA"}}'
@@ -230,7 +230,7 @@ To verify that the modification has been applied:
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/azcsv/addresses.csv \
+  --url http://127.0.0.1:3000/schema/azcsv/addresses.csv \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcyMDg3MjU0OSwiZXhwIjoxNzIwODc2MTQ5fQ.VsVCPpIB9lEAb1fUgzRnzwV-IeDeVLu7BykW4EzNYfo' \
   --header 'content-type: application/json'
 ```

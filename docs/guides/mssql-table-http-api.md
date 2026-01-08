@@ -151,7 +151,7 @@ To test the HTTP API, begin by logging in:
 
 ```bash
 curl --request POST \
-  --url http://localhost:3000/user/login \
+  --url http://127.0.0.1:3000/user/login \
   --header 'content-type: application/json' \
   --data '{"username":"myapiuser","password": "myStr@ngpa$$w0rd"}'
 ```
@@ -168,7 +168,7 @@ Then, select data from the "countries" table using the provided token after the 
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/hr/countries \
+  --url http://127.0.0.1:3000/schema/hr/countries \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwMDU4MDcxMywiZXhwIjoxNzAwNTg0MzEzfQ.GL0k-HM6T-Htp6ypcFnXEZxLacGLGOlYjfdAIO1a2cU' \
   --header 'content-type: application/json'
 ```
@@ -211,7 +211,7 @@ Then, select data from the "locations" table using the provided token after the 
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/hr/locations \
+  --url http://127.0.0.1:3000/schema/hr/locations \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwMDU4MDcxMywiZXhwIjoxNzAwNTg0MzEzfQ.GL0k-HM6T-Htp6ypcFnXEZxLacGLGOlYjfdAIO1a2cU' \
   --header 'content-type: application/json'
 ```
@@ -268,7 +268,7 @@ Because only **locations** and **countries** are exposed, attempting to query **
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/hr/jobs \
+  --url http://127.0.0.1:3000/schema/hr/jobs \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwMDU4MDcxMywiZXhwIjoxNzAwNTg0MzEzfQ.GL0k-HM6T-Htp6ypcFnXEZxLacGLGOlYjfdAIO1a2cU' \
   --header 'content-type: application/json'
 ```

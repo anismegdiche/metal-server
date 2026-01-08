@@ -175,7 +175,7 @@ To test the HTTP API, begin by logging in:
 
 ```bash
 curl --request POST \
-  --url http://localhost:3000/user/login \
+  --url http://127.0.0.1:3000/user/login \
   --header 'content-type: application/json' \
   --data '{"username":"myapiuser","password": "myStr@ngpa$$w0rd"}'
 ```
@@ -192,7 +192,7 @@ Then, select data from the "img2class" table using the provided token after the 
 
 ```bash
 curl --request GET \
-  --url http://localhost:3000/schema/aiplan/img2class \
+  --url http://127.0.0.1:3000/schema/aiplan/img2class \
   --header 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im15YXBpdXNlciIsImlhdCI6MTcwNTA1NjMzOCwiZXhwIjoxNzA1MDU5OTM4fQ._ugUqb3BfQRWe0xYqFbvIzmlBrKMXf5EYws9aWozsaE' \
   --header 'content-type: application/json'
 ```

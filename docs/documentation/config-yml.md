@@ -17,7 +17,7 @@ server:
 sources:
   my-source:
     provider: postgres
-    host: localhost
+    host: 127.0.0.1
     port: 5432
     user: myuser
     password: myStr@ngpa$$w0rd
@@ -65,7 +65,7 @@ server:
   verbosity: debug
   cache:
     provider: mongodb
-    uri: mongodb://localhost:27017/
+    uri: mongodb://127.0.0.1:27017/
     database: metal_cache
     options:
       connectTimeoutMS: 5000
@@ -188,7 +188,7 @@ server:
   # ... other server configurations ...
   ai-engines:
     timeout: 600000
-    engines-url: http://localhost:5000
+    engines-url: http://127.0.0.1:5000
     params:
       host: "127.0.0.1" # or your machine IP
       port: 2375 # exposed from docker-compose
@@ -198,7 +198,7 @@ The parameters that can be configured inside the `ai-engines` section include:
 
 | Parameter          | Type    | Default Value           | Required | Description                                      | Metal Version                      |
 | ------------------ | ------- | ----------------------- | -------- | ------------------------------------------------ | ---------------------------------- |
-| `engines-url`      | URL     | `http://localhost:5000` | Y        | URL for AI engine services.                      | <Badge type="info" text="v0.5+" /> |
+| `engines-url`      | URL     | `http://127.0.0.1:5000` | Y        | URL for AI engine services.                      | <Badge type="info" text="v0.5+" /> |
 | `timeout`          | Integer | `60_000`                | N        | Timeout for AI engine requests in milliseconds.  | <Badge type="info" text="v0.5+" /> |
 | `min-instance`     | Integer | `1`                     | N        | Minimum number of AI engine instances.           | <Badge type="info" text="v0.5+" /> |
 | `max-instance`     | Integer | `5`                     | N        | Maximum number of AI engine instances.           | <Badge type="info" text="v0.5+" /> |
@@ -341,7 +341,7 @@ sources:
 ```
 
 ::: warning ⚠️ IMPORTANT
-For MongoDB, the host must be provided in the URI form `mongodb://my-server:my-server-port/`. Example: `mongodb://localhost:27017/`.
+For MongoDB, the host must be provided in the URI form `mongodb://my-server:my-server-port/`. Example: `mongodb://127.0.0.1:27017/`.
 :::
 
 ::: tip ℹ️ NOTE
@@ -410,7 +410,7 @@ This parameter defines optional parameters to be passed to the data provider.
 sources:
   mongo-db1:
     provider: mongodb
-    host: mongodb://localhost:27017/
+    host: mongodb://127.0.0.1:27017/
     database: myDatabase
     options:
       connectTimeoutMS: 5000
