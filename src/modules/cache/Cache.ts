@@ -155,7 +155,7 @@ export class Cache {
     }
 
     static IsSchemaCacheRequest(schemaRequest: TSchemaRequest): boolean {
-        if (schemaRequest.schema === Cache.Database && schemaRequest.entity === Cache.Entity) {
+        if (schemaRequest.schema === Cache.Database && 'entity' in schemaRequest && schemaRequest.entity === Cache.Entity) {
             Logger.Debug(`${Logger.Out} bypassing: schema cache request`)
             return false
         }
@@ -327,7 +327,7 @@ export class Cache {
     static async Purge(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
         Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
 
-        await Cache.DataSource.Delete(Cache.#CacheSchemaRequest)
+        await Cache.DataSource.Delete(Cache.#CacheSchemaRequest as TSchemaRequestDelete)
         Cache.Index.clear()
 
         Logger.Debug(`${Logger.Out} Cache.Purge`)
@@ -363,7 +363,7 @@ export class Cache {
         if (!Cache.IsArgumentsValid(schemaRequest))
             return
 
-        const { schema, entity } = schemaRequest
+        const { schema, entity } = schemaRequest as TSchemaRequestSelect
 
         Cache.DataSource.Delete(<TSchemaRequestDelete>{
             ...Cache.#CacheSchemaRequest,
