@@ -68,13 +68,16 @@ export const z_TSchemaRequestInsert = z_TSchemaRequestBase.merge(
 );
 
 export const z_TSchemaRequestListEntities = z_TSchemaRequestBase.omit({ entity: true });
+export const z_TSchemaRequestAddEntity = z_TSchemaRequestBase
 
 export const z_TSchemaRequest = z.union([
+    z_TSchemaRequestBase,
     z_TSchemaRequestSelect,
     z_TSchemaRequestUpdate,
     z_TSchemaRequestDelete,
     z_TSchemaRequestInsert,
     z_TSchemaRequestListEntities,
+    z_TSchemaRequestAddEntity
 ]);
 
 
@@ -84,4 +87,6 @@ export type TSchemaRequestUpdate = z.infer<typeof z_TSchemaRequestUpdate>
 export type TSchemaRequestDelete = z.infer<typeof z_TSchemaRequestDelete>
 export type TSchemaRequestInsert = z.infer<typeof z_TSchemaRequestInsert>
 export type TSchemaRequestListEntities = z.infer<typeof z_TSchemaRequestListEntities>
+export type TSchemaRequestAddEntity = z.infer<typeof z_TSchemaRequestAddEntity>
 export type TSchemaRequest = z.infer<typeof z_TSchemaRequest>
+export type TSchemaRequestBase = z.infer<typeof z_TSchemaRequestBase>

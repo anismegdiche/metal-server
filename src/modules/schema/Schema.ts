@@ -17,7 +17,7 @@ import type { U_config_schemas_schema, U_config_schemas_schema_entities_entity }
 import { HttpErrorBadRequest, HttpErrorNotFound } from '../errors/HttpErrors'
 import { Source } from "../source/Source"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from './types/TSchemaRequest'
+import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from './types/TSchemaRequest'
 import { z_TSchemaRequest, z_TSchemaRequestDelete, z_TSchemaRequestInsert, z_TSchemaRequestSelect, z_TSchemaRequestUpdate } from "./types/TSchemaRequest"
 import type { TSchemaResponse } from './types/TSchemaResponse'
 import { z_TSchemaResponse } from "./types/TSchemaResponse"
@@ -173,7 +173,7 @@ export class Schema {
                 return nothingToDoSchemaRoute
             }
 
-            const { source: _source, entity: _entity } = _schemaEntityConfig
+            const { source: _source, entity: _entity } = _schemaEntityConfig as TSchemaRequestBase
 
             // schema.entities.*.source
             if (_source) {
