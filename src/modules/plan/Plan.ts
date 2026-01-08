@@ -17,11 +17,11 @@ import { Roles } from "../auth/Roles"
 import { METADATA } from "../core/@consts"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
+import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
 import { WarnError } from "../errors/InternalError"
 import type { TContext } from "../sandbox/types/TContext"
-import type { TInternalResponse } from "../core/types/TInternalResponse"
-import type { TSchemaRequest } from "../schema/types/TSchemaRequest"
+import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
 import { STEP, STEP_STATUS } from "./@consts"
 import { Step, type TFunctionStep } from "./Step"
 import type { TStep } from "./types/TStep"
@@ -58,7 +58,7 @@ export class Plan {
 
     async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery?: string) {
 
-        const { schema, source, entity } = schemaRequest
+        const { schema, source, entity } = schemaRequest as TSchemaRequestSelect
 
         Assert.Var<string>(source, `Plan.Execute: no source found for ${schema}`, new HttpErrorNotFound())
         Assert.Condition(this.Entities.has(entity), `Plan.Execute: entity '${entity}' not found in plan ${this.Name}`, new HttpErrorNotFound())
@@ -134,8 +134,8 @@ export class Plan {
                 Logger.Info(`${Logger.In} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(_step)}`)
 
                 // check loop detection
-                const _argSchema = ($context.$plan!.$current.stepArgs as TSchemaRequest).schema
-                const _argEntity = ($context.$plan!.$current.stepArgs as TSchemaRequest).entity
+                const _argSchema = ($context.$plan!.$current.stepArgs as TSchemaRequestBase).schema
+                const _argEntity = ($context.$plan!.$current.stepArgs as TSchemaRequestBase).entity
                 const _planSchema = $context.$plan!.schema
                 const _planEntity = $context.$plan!.entity
 
