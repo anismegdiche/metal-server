@@ -15,8 +15,9 @@ server:
     options:
       autocreate: true
   ai-engines:
-    engines-url: http://localhost:5000
+    engines-url: http://127.0.0.1:5000
     timeout: 600000
+    min-instance: 2
     # params:
     #   host: "127.0.0.1"  # or your machine IP
     #   port: 2375         # exposed from docker-compose
@@ -79,11 +80,14 @@ plans:
           sort:
             name: asc
 
-      - run:
-          ai: image
-          task: image-to-text
-          input: content
-          output:
+      # - run:
+      #     ai: image
+      #     task: image-to-text
+      #     input: content
+      #     output:
+      #       description: ${{ $result.text }}
+
+      - pick: [name, content]
 
       - omit: [content]
 

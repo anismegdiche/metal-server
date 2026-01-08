@@ -28,34 +28,34 @@ sources:
     database: memory
     options:
       autocreate: true
-      
-  soap-movies:    # http://localhost:8080/ws/movies.wsdl
+
+  soap-movies: # http://127.0.0.1:8080/ws/movies.wsdl
     provider: webservice
-    host: http://localhost:8080/ws/movies.wsdl
+    host: http://127.0.0.1:8080/ws/movies.wsdl
     options:
       type: soap
       content: xml
       # XXX xml-path: SOAP-ENV:Envelope.SOAP-ENV:Body.ns2:${{ $endpoint.name }}Response.ns2:${{ $entity }}
       endpoints:
         collection-read:
-          listMovies: 
+          listMovies:
           response: Envelope.Body.listMoviesResponse.${{ $entity }}s
-        # item-read: 
+        # item-read:
         #   getMovie:
         item-create:
           addMovie:
-          data: 
-            ${{ $entity }}: ${{ $row }} 
+          data:
+            ${{ $entity }}: ${{ $row }}
         item-update:
           updateMovie:
-          data: 
+          data:
             ${{ $entity }}: ${{ $row }}
         item-delete:
           deleteMovie:
           data:
             id: ${{ $row.id }}
-      
-  soap-missions:    # https://www.crcind.com/csp/samples/SOAP.Demo.cls
+
+  soap-missions: # https://www.crcind.com/csp/samples/SOAP.Demo.cls
     provider: webservice
     host: https://www.crcind.com/csp/samples/SOAP.Demo.CLS?WSDL=1
     options:
@@ -63,7 +63,7 @@ sources:
       content: xml
       endpoints:
         collection-read:
-          GetListByName: 
+          GetListByName:
           response: Envelope.Body.GetListByNameResponse.GetListByNameResult.PersonIdentification
 
 schemas:

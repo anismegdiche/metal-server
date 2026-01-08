@@ -17,7 +17,7 @@ users:
 sources:
   metal-northwind:
     provider: metal
-    host: http://localhost:3001
+    host: http://127.0.0.1:3001
     user: myapiuser
     password: myStr@ngpa$$w0rd
     database: northwind

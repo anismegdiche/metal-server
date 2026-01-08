@@ -23,49 +23,49 @@ users:
 sources:
   ms-hr:
     provider: mssql
-    host: localhost
+    host: 127.0.0.1
     port: 1433
     user: sa
     password: Azerty123!
     database: hr
   mdb-mflix:
     provider: mongodb
-    host: mongodb://localhost:27017/
+    host: mongodb://127.0.0.1:27017/
     database: mflix
     options:
       connectTimeoutMS: 5000
       serverSelectionTimeoutMS: 5000
   pg-northwind:
     provider: postgres
-    host: localhost
+    host: 127.0.0.1
     port: 5432
     user: admin
     password: "123456"
     database: northwind
   pg-clubdata:
     provider: postgres
-    host: localhost
+    host: 127.0.0.1
     port: 5433
     user: admin
     password: "123456"
     database: clubdata
   pg-clubdata-bookings:
     provider: postgres
-    host: localhost
+    host: 127.0.0.1
     port: 5434
     user: admin
     password: "123456"
     database: clubdata
   pg-clubdata-facilities:
     provider: postgres
-    host: localhost
+    host: 127.0.0.1
     port: 5435
     user: admin
     password: "123456"
     database: clubdata
   pg-clubdata-members:
     provider: postgres
-    host: localhost
+    host: 127.0.0.1
     port: 5436
     user: admin
     password: "123456"

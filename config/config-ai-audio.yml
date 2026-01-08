@@ -16,7 +16,7 @@ server:
       autocreate: true
   ai-engines:
     # docker-url:
-    engines-url: http://localhost:5000
+    engines-url: http://127.0.0.1:5000
 
 roles:
   all: lacrud

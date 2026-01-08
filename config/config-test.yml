@@ -7,7 +7,7 @@ server:
   request-limit: 100mb
   cache:
     provider: mongodb
-    host: mongodb://localhost:27017/
+    host: mongodb://127.0.0.1:27017/
     database: metal_cache
     options:
       connectTimeoutMS: 5000
@@ -33,28 +33,28 @@ users:
 sources:
   mssql:
     provider: mssql
-    host: localhost
+    host: 127.0.0.1
     port: 1433
     user: sa
     password: Azerty123!
     database: hr
   mongo:
     provider: mongodb
-    host: mongodb://localhost:27017/
+    host: mongodb://127.0.0.1:27017/
     database: mflix
     options:
       connectTimeoutMS: 5000
       serverSelectionTimeoutMS: 5000
   postgres1:
     provider: postgres
-    host: localhost
+    host: 127.0.0.1
     port: 5432
     user: admin
     password: "123456"
     database: northwind
   postgres2:
     provider: postgres
-    host: localhost
+    host: 127.0.0.1
     port: 5433
     user: admin
     password: "123456"
@@ -98,7 +98,7 @@ schemas:
     source: mssql
     access:
       - root@*: crud
-      - user@localhost: r
+      - user@127.0.0.1: r
       - any@*: r
 
   mflix:
