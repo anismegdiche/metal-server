@@ -8,6 +8,7 @@ import { DataTable } from '../../../types/DataTable'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../errors/HttpErrors'
 import type { TConfigSource } from "../types/TConfigSource"
 import { DATA_PROVIDER } from "../@consts"
+import type { Mock } from 'vitest'
 
 // Mock the mysql2/promise module
 vi.mock('mysql2/promise')
@@ -40,7 +41,7 @@ describe('MySqlData', () => {
         query: vi.fn(),
         end: vi.fn()
     }
-    const mockCreatePool = mysql.createPool as vi.Mock
+    const mockCreatePool = mysql.createPool as Mock
 
     const providerConfig: TConfigSource = {
         provider: DATA_PROVIDER.MYSQL,

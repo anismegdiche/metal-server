@@ -1,13 +1,14 @@
 import { mock_Logger } from "../../../__tests__/mockers"
 mock_Logger()
 //
+import { ShareDirectoryClient, ShareFileClient, ShareServiceClient } from "@azure/storage-file-share"
 import { Readable } from "stream"
+import type { Mock, Mocked } from "vitest"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
-import { DATA_PROVIDER } from "../../source/@consts"
 import { DataTable } from "../../../types/DataTable"
-import { AzureFileStorage, type TAzureFileStorageConfig } from "../providers/AzureFileStorage"
+import { DATA_PROVIDER } from "../../source/@consts"
 import type { TConfigSource } from "../../source/types/TConfigSource"
-import { ShareServiceClient, ShareDirectoryClient, ShareFileClient } from "@azure/storage-file-share"
+import { AzureFileStorage, type TAzureFileStorageConfig } from "../providers/AzureFileStorage"
 
 // Mock Azure SDK
 vi.mock("@azure/storage-file-share")
@@ -19,10 +20,10 @@ const rndParams = {
 
 describe("AzureFileStorage", () => {
     let storage: AzureFileStorage
-    let mockShareServiceClient: vi.Mocked<ShareServiceClient>
+    let mockShareServiceClient: Mocked<ShareServiceClient>
     let mockShareClient: any
-    let mockDirectoryClient: vi.Mocked<ShareDirectoryClient>
-    let mockFileClient: vi.Mocked<ShareFileClient>
+    let mockDirectoryClient: Mocked<ShareDirectoryClient>
+    let mockFileClient: Mocked<ShareFileClient>
 
     beforeEach(() => {
         vi.clearAllMocks()
@@ -51,7 +52,7 @@ describe("AzureFileStorage", () => {
             getShareClient: vi.fn().mockReturnValue(mockShareClient),
         } as any
 
-            ; (ShareServiceClient.fromConnectionString as vi.Mock).mockReturnValue(mockShareServiceClient)
+            ; (ShareServiceClient.fromConnectionString as Mock).mockReturnValue(mockShareServiceClient)
 
         storage = new AzureFileStorage()
         storage.SetConfig({
@@ -94,7 +95,7 @@ describe("AzureFileStorage", () => {
 
         it("should throw error if connection fails", async () => {
             storage.Init()
-                ; (ShareServiceClient.fromConnectionString as vi.Mock).mockImplementation(() => {
+                ; (ShareServiceClient.fromConnectionString as Mock).mockImplementation(() => {
                     throw new Error("Connection failed")
                 })
             await expect(storage.Connect()).rejects.toThrow(HttpErrorInternalServerError)

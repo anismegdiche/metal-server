@@ -1,14 +1,15 @@
 import { mock_Logger } from "../../../__tests__/mockers"
 mock_Logger()
 
+import { DataLakeFileClient, DataLakeFileSystemClient, DataLakeServiceClient } from '@azure/storage-file-datalake'
 import { Readable } from 'stream'
-import { DataLakeServiceClient, DataLakeFileSystemClient, DataLakeFileClient } from '@azure/storage-file-datalake'
-import { AzureDataLakeStorage } from '../providers/AzureDataLakeStorage'
+import type { Mock, Mocked } from "vitest"
 import { HttpErrorInternalServerError } from '../../../modules/errors/HttpErrors'
-import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { DataTable } from '../../../types/DataTable'
-import type { TConfigSource } from "../../source/types/TConfigSource"
+import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { DATA_PROVIDER } from "../../source/@consts"
+import type { TConfigSource } from "../../source/types/TConfigSource"
+import { AzureDataLakeStorage } from '../providers/AzureDataLakeStorage'
 
 // Mock dependencies
 vi.mock('@azure/storage-file-datalake')
@@ -21,9 +22,9 @@ const rndParams = {
 
 describe('AzureDataLakeStorage', () => {
     let storage: AzureDataLakeStorage
-    let mockServiceClient: vi.Mocked<DataLakeServiceClient>
-    let mockFileSystemClient: vi.Mocked<DataLakeFileSystemClient>
-    let mockFileClient: vi.Mocked<DataLakeFileClient>
+    let mockServiceClient: Mocked<DataLakeServiceClient>
+    let mockFileSystemClient: Mocked<DataLakeFileSystemClient>
+    let mockFileClient: Mocked<DataLakeFileClient>
 
     beforeEach(() => {
         vi.clearAllMocks()
@@ -35,19 +36,19 @@ describe('AzureDataLakeStorage', () => {
             create: vi.fn(),
             append: vi.fn(),
             flush: vi.fn(),
-        } as unknown as vi.Mocked<DataLakeFileClient>
+        } as unknown as Mocked<DataLakeFileClient>
 
         mockFileSystemClient = {
             createIfNotExists: vi.fn(),
             getFileClient: vi.fn().mockReturnValue(mockFileClient),
             listPaths: vi.fn(),
-        } as unknown as vi.Mocked<DataLakeFileSystemClient>
+        } as unknown as Mocked<DataLakeFileSystemClient>
 
         mockServiceClient = {
             getFileSystemClient: vi.fn().mockReturnValue(mockFileSystemClient),
-        } as unknown as vi.Mocked<DataLakeServiceClient>;
+        } as unknown as Mocked<DataLakeServiceClient>;
 
-        (DataLakeServiceClient.fromConnectionString as vi.Mock).mockReturnValue(mockServiceClient)
+        (DataLakeServiceClient.fromConnectionString as Mock).mockReturnValue(mockServiceClient)
 
         storage = new AzureDataLakeStorage()
         storage.SetConfig({
@@ -109,7 +110,7 @@ describe('AzureDataLakeStorage', () => {
 
         it('should throw error when Azure connection fails', async () => {
             storage.Init();
-            (DataLakeServiceClient.fromConnectionString as vi.Mock).mockImplementation(() => {
+            (DataLakeServiceClient.fromConnectionString as Mock).mockImplementation(() => {
                 throw new Error('Connection failed')
             })
 
@@ -209,7 +210,7 @@ describe('AzureDataLakeStorage', () => {
             storage.Init()
             await storage.Connect();
 
-            (ReadableUtils.ToBuffer as vi.Mock).mockResolvedValue(mockBuffer)
+            (ReadableUtils.ToBuffer as Mock).mockResolvedValue(mockBuffer)
 
             // All of these need to resolve for Write to complete
             mockFileClient.create.mockResolvedValue({} as any)
@@ -225,7 +226,7 @@ describe('AzureDataLakeStorage', () => {
             storage.Init()
             await storage.Connect();
 
-            (ReadableUtils.ToBuffer as vi.Mock).mockRejectedValue(new Error('Buffer conversion failed'))
+            (ReadableUtils.ToBuffer as Mock).mockRejectedValue(new Error('Buffer conversion failed'))
 
             const promise = storage.FileWrite('', 'test.txt', mockContent)
 
@@ -237,7 +238,7 @@ describe('AzureDataLakeStorage', () => {
             storage.Init()
             await storage.Connect();
 
-            (ReadableUtils.ToBuffer as vi.Mock).mockResolvedValue(Buffer.from('test'))
+            (ReadableUtils.ToBuffer as Mock).mockResolvedValue(Buffer.from('test'))
             mockFileClient.create.mockRejectedValue(new Error('Create failed'))
 
             const promise = storage.FileWrite('', 'test.txt', mockContent)

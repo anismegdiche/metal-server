@@ -17,6 +17,7 @@ import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { ConfigManager } from '../../core/ConfigManager'
 import { Roles } from '../../auth/Roles'
 import { Schema } from '../../schema/Schema'
+import type { Mock, Mocked } from 'vitest'
 
 vi.mock('../../../utils/SynchronizerManager', () => ({
     SynchronizerManager: {
@@ -27,7 +28,7 @@ vi.mock('../../auth/Roles')
 vi.mock('js-sha512')
 
 describe('Cache', () => {
-    let mockProvider: vi.Mocked<absDataProvider>
+    let mockProvider: Mocked<absDataProvider>
     let mockDataTable: DataTable
 
     beforeEach(() => {
@@ -45,7 +46,7 @@ describe('Cache', () => {
             Update: vi.fn().mockResolvedValue(undefined),
             Delete: vi.fn().mockResolvedValue(undefined),
             EscapeField: vi.fn(field => `"${field}"`)
-        } as unknown as vi.Mocked<absDataProvider>;
+        } as unknown as Mocked<absDataProvider>;
 
         vi.spyOn(DataProvider, 'GetProvider').mockResolvedValue(mockProvider)
 
@@ -61,7 +62,7 @@ describe('Cache', () => {
         });
 
         // Mock Sha512
-        (Sha512.sha512 as unknown as vi.Mock).mockImplementation(data => `hashed_${data}`)
+        (Sha512.sha512 as unknown as Mock).mockImplementation(data => `hashed_${data}`)
 
         // Set Cache.CacheSource to mock provider - needed for many tests
         Cache.DataSource = mockProvider
@@ -390,7 +391,7 @@ describe('Cache', () => {
             };
 
             // Mock TypeHelper.Validate not to throw
-            // (TypeUtils.Validate as vi.Mock).mockImplementation(() => true);
+            // (TypeUtils.Validate as Mock).mockImplementation(() => true);
 
             // Mock Roles.CheckPermission not to throw
             vi.spyOn(Roles, 'CheckPermission').mockImplementation(() => true)
