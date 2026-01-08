@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 
 
-const { describe, it, expect, beforeAll } = require("@jest/globals")
+const { describe, it, expect, beforeAll } = require("@vitest/expect")
 
 const MetalClient = require("../metal_client")
 
@@ -24,7 +24,7 @@ describe('MongoDb', () => {
 
     beforeAll(async () => {
         metalClient = new MetalClient({
-            RestApiUrl: "http://localhost:3000"
+            RestApiUrl: "http://127.0.0.1:3000"
         })
         await metalClient.UserLogin("myapiuser", "myStr@ngpa$$w0rd")
     })

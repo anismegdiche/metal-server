@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 
-const { describe, it, expect, beforeAll } = require("@jest/globals")
+const { describe, it, expect, beforeAll } = require("@vitest/expect")
 const MetalClient = require("../metal_client")
 
 describe("SqlServer", () => {
@@ -10,7 +10,7 @@ describe("SqlServer", () => {
 
     beforeAll(async () => {
         metalClient = new MetalClient({
-            RestApiUrl: "http://localhost:3000"
+            RestApiUrl: "http://127.0.0.1:3000"
         })
         await metalClient.UserLogin("myapiuser", "myStr@ngpa$$w0rd")
     })
@@ -106,9 +106,9 @@ describe("SqlServer", () => {
             const response = await metalClient.DataDelete(schema, entity, {
                 "filter-expression": "country_id LIKE 'X%'"
             })
-            expect(response).toStrictEqual({ 
-                status: 204 ,
-                data: "" 
+            expect(response).toStrictEqual({
+                status: 204,
+                data: ""
             })
         })
     })

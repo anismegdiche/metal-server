@@ -8,7 +8,7 @@
 class MetalClient {
 
     Params = {
-        RestApiUrl: "http://localhost:3000",
+        RestApiUrl: "http://127.0.0.1:3000",
         Username: undefined,
         Password: undefined,
         Authentication: false
