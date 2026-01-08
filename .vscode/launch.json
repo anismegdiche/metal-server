@@ -30,7 +30,7 @@
       "request": "attach",
       "name": "Attach to ts-node in Docker",
       "outFiles": ["${workspaceFolder}/build/**/*.js", "!**/node_modules/**"],
-      "address": "localhost",
+      "address": "127.0.0.1",
       "port": 9229,
       "localRoot": "${workspaceFolder}",
       "remoteRoot": "/app",
