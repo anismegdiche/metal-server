@@ -32,15 +32,16 @@
     "typeRoots": ["./node_modules", "./node_modules/@types", "./src/@types"]
   },
   "include": ["src/**/*", "vitest.config.*", "__tests__/*"],
-  "exclude": ["node_modules", "**/node_modules/**", "__*/**/*", "docs/**/*"],
+  "exclude": [
+    "node_modules",
+    "**/node_modules/**",
+    "build/**/*",
+    "dist/**/*",
+    "__tests__/**/*",
+    "docs/**/*"
+  ],
   "ts-node": {
     "files": true,
     "esm": true
-  },
-  "files": [
-    "src/index.ts",
-    "src/@types/express/index.d.ts",
-    "src/@types/sql-tokenizer/index.d.ts",
-    "src/@types/loxjs-url-join.d.ts"
-  ]
+  }
 }
