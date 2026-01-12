@@ -9,9 +9,8 @@ import fs from 'node:fs';
 import { z } from "zod";
 //
 
-import { Assert } from '../utils/Assert';
-
 import { SERVER } from '../modules/core/@consts';
+import { Assert } from '../utils/Assert';
 import { clsClonable } from "../utils/base/clsClonable";
 import { JsonUtils } from "../utils/JsonUtils";
 import { Logger } from '../utils/Logger';
@@ -25,6 +24,7 @@ import type { TAny } from './TAny';
 import { z_TJson, type TJson } from './TJson';
 import { z_TUuidv7, type TUuidv7 } from './TUuidv7';
 import os from 'node:os';
+
 
 // constants
 export const enum SORT_ORDER {
@@ -150,7 +150,9 @@ function dataTable_constructSql(
     if (filter) {
         const _filter = typeof filter === 'string'
             ? filter
-            : JsonUtils.Join(filter, ' = ', ' AND ')
+            : Object.entries(filter).map(([key, value]) => {
+                return `${key} = '${value}'`
+            }).join(' AND ')
 
         sqlWhere = `WHERE ${dataTable_convertSql(_filter)}`
     }
@@ -467,7 +469,9 @@ export class DataTable extends clsClonable {
     private _tableInitialized: boolean = false
     private _dbPath?: string
     private _persistent?: boolean
+    private _encryptionKey?: string
     private _writeLock: Promise<void> = Promise.resolve();
+    private _queue: Promise<unknown> = Promise.resolve();
     private _lock: Mutex = new Mutex()
     private _rows?: TRow[]
     private _isAttached: boolean = false
@@ -493,6 +497,11 @@ export class DataTable extends clsClonable {
         } else {
             this._dbPath = StringUtils.Path(DATATABLE_TEMP_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
             this._persistent = opt.persistant ?? false
+
+            // Generate encryption key for persistent databases
+            if (this._persistent) {
+                this._encryptionKey = Utils.Uuid()
+            }
         }
 
         // If initial rows provided, persist them during lazy init later
@@ -563,14 +572,32 @@ export class DataTable extends clsClonable {
             return
 
         if (!this._duckInstance) {
-            const uri = this._persistent
-                ? this._dbPath
-                : ':memory:'
+            this._duckInstance = await DuckDBInstance.create(':memory:')
 
-            this._duckInstance = await DuckDBInstance.create(uri)
+            // For persistent databases with encryption
+            if (this._persistent && this._encryptionKey && this._dbPath) {
+                // Create in-memory instance first
+                const cnx = await this._duckInstance.connect()
+                try {
+                    // Attach encrypted database
+                    await cnx.run(`
+                        ATTACH '${this._dbPath}' AS ${this.SafeName}
+                        (ENCRYPTION_KEY '${this._encryptionKey}');
+                    `)
+                    Logger.Debug(`DataTable '${this.Name}': attached encrypted database: ${this._dbPath}`)
+                    cnx.closeSync()
+                } catch (err) {
+                    Logger.Error(`DataTable '${this.Name}': Failed to attach encrypted database: ${(err as Error).message}`)
+                    throw err
+                }
+            }
         }
+
         if (!this._duckConnection) {
             this._duckConnection = await this._duckInstance.connect()
+            if (this._persistent) {
+                await this._duckConnection.run(`USE ${this.SafeName};`)
+            }
         }
 
         const cnx = this._duckConnection
@@ -1017,23 +1044,35 @@ export class DataTable extends clsClonable {
         return this.FieldsSet()
     }
 
+    /**
+     * Enqueues a function to run sequentially in the single-writer queue.
+     * This ensures high-throughput updates without lock contention.
+     */
+    private _enqueue<T>(fn: () => Promise<T>): Promise<T> {
+        const next = this._queue.then(fn);
+        this._queue = next.catch(() => { }) as Promise<unknown>;
+        return next;
+    }
+
     private async _dbRowUpdateByIndex(index: TUuidv7, row: TJson | TRow): Promise<void> {
         await this._dbEnsureInitialized()
         const cnx = this._duckConnection!
         const __data__ = JsonUtils.Stringify(row)
 
-        // Use parameterized query instead of string interpolation
-        const sql = `
-        UPDATE ${this.SafeName}
-        SET __data__ = ?
-        WHERE __idx__ = ?
-    `
-
-        await cnx.run(sql, [__data__, index])
-            .catch((error) => {
-                Logger.Error(`${Logger.Out} DataTable.RowUpdateByIndex: Failed to update row in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`)
+        // Use single-writer queue for high-throughput updates
+        await this._enqueue(async () => {
+            const sql = `
+                UPDATE ${this.SafeName}
+                SET __data__ = ?
+                WHERE __idx__ = ?
+                `
+            try {
+                await cnx.run(sql, [__data__, index])
+            } catch (error) {
+                Logger.Error(`${Logger.Out} DataTable._dbRowUpdateByIndex: Failed to update row in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`)
                 throw error
-            })
+            }
+        })
     }
 
 

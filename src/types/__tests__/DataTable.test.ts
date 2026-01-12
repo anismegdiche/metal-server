@@ -1,12 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { mock_Logger } from "../../__tests__/mockers"
 mock_Logger()
 //
 import { DuckDBInstance } from '@duckdb/node-api'
-import { DataTable, dataTable_convertSql, SORT_ORDER } from '../DataTable'
-import type { TRow } from '../DataTable'
 import fs from 'node:fs'
 import { Utils } from '../../utils/Utils'
-
+import type { TRow } from '../DataTable'
+import { DataTable, dataTable_convertSql, SORT_ORDER } from '../DataTable'
 
 describe("DataTable", () => {
     const dt = new DataTable("test")
@@ -1409,6 +1409,40 @@ describe("DataTable", () => {
         })
     })
 
+    describe('RowUpdateByIndex', () => {
+        it('should update row by index with object', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet([
+                { id: 1, name: "John" },
+                { id: 2, name: "Jane" }
+            ])
+            const row = await dt.Rows({ includeIndex: true, filter: { name: "John" } })
+            const updatedRow = row[0]! as TRow
+            updatedRow.name = "Johnny"
+            const result = await dt.RowUpdateByIndex(updatedRow.__idx__, updatedRow)
+            expect(await result.Rows()).toEqual([
+                { id: 1, name: "Johnny" },
+                { id: 2, name: "Jane" }
+            ])
+        })
+
+        it('should update without fails 10k rows ', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet(Array.from({ length: 10000 }, (_, i) => ({ id: i + 1, name: "John" })))
+            try {
+                await dt.ForEach(async (row: TRow) => {
+                    dt.RowUpdateByIndex(row.__idx__, { ...row, name: row.name + " Doe" });
+                }, { includeIndex: true });
+            } catch (error) {
+                expect(error).toBeUndefined()
+            }
+
+            const result = await dt.Rows({ limit: 1 })
+            expect(result[0]).toEqual({ id: 1, name: "John Doe" })
+        }, 300_000)
+    })
+
+
     // Executes a valid SQL query and returns a DataTable object with updated Rows and Fields properties
     // it('UC 1', async () => {
     //     // Arrange
@@ -1509,3 +1543,68 @@ describe("dataTable_convertSql", () => {
             .toBe(`UPDATE table1 SET __data__ = json_merge_patch(__data__, json_object('a',2)) WHERE (__data__->'b') != 3 AND (__data__->'c') IN ( 1 , 2 , 3 )`)
     })
 })
+
+describe('DataTable Encryption', () => {
+    let testDbName: string;
+    let dataTable: DataTable;
+
+    beforeEach(() => {
+        testDbName = `test_encrypted_${Date.now()}`;
+    });
+
+    afterEach(() => {
+        if (dataTable) {
+            dataTable.Dispose();
+        }
+    });
+
+    it('should generate encryption key for persistent database', async () => {
+        dataTable = new DataTable(
+            testDbName,
+            [{ id: 1, name: 'Test' }],
+            {},
+            { persistant: true }
+        );
+
+        // Initialize the database
+        await dataTable.Rows();
+
+
+        expect((dataTable as any)._encryptionKey).toBeDefined();
+        expect((dataTable as any)._encryptionKey).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+    });
+
+    it('should work with encrypted persistent database', async () => {
+        dataTable = new DataTable(
+            testDbName,
+            [
+                { id: 1, name: 'Alice' },
+                { id: 2, name: 'Bob' }
+            ],
+            {},
+            { persistant: true }
+        );
+
+        // Add more rows
+        await dataTable.RowsAdd({ id: 3, name: 'Charlie' });
+
+        // Query data
+        const rows = await dataTable.Rows();
+
+        expect(rows).toHaveLength(3);
+        expect(rows[0]).toMatchObject({ id: 1, name: 'Alice' });
+        expect(rows[1]).toMatchObject({ id: 2, name: 'Bob' });
+        expect(rows[2]).toMatchObject({ id: 3, name: 'Charlie' });
+    });
+
+    it('should not generate encryption key for non-persistent database', async () => {
+        dataTable = new DataTable(
+            testDbName,
+            [{ id: 1, name: 'Test' }]
+        );
+
+        await dataTable.Rows();
+
+        expect((dataTable as any)._encryptionKey).toBeUndefined();
+    });
+});
