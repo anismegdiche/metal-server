@@ -23,9 +23,9 @@ import { ConfigManager } from "../core/ConfigManager"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
 import { Sandbox } from "../sandbox/Sandbox"
 import type { TContext } from "../sandbox/types/TContext"
-import { z_TSchemaResponse } from "../schema/types/TSchemaResponse"
 import { Schema } from "../schema/Schema"
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../schema/types/TSchemaRequest'
+import { z_TSchemaResponse } from "../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE } from "../source/@consts"
 import { MemoryData } from "../source/providers/MemoryData"
 import type { TDataListEntity } from "../source/types/TDataListEntity"
@@ -573,7 +573,7 @@ export class Step {
                 Assert.Condition(_row?.content, `${STEP.RUN}: content is not defined`)
 
                 const __idx__: TUuidv7 = _row.__idx__
-                const __row = omitBy(_row, dataTable_fieldIsSystem)
+                const __row = omitBy(_row, dataTable_fieldIsSystem) as TJson
 
                 $context.$row = __row
 
