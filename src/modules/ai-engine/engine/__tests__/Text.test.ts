@@ -1,7 +1,7 @@
 /* eslint-disable security/detect-non-literal-regexp */
 import axios from 'axios';
 import { Text } from '../Text';
-import type { TAiRunArguments } from '../../@types';
+import type { TAiArguments } from '../../@types';
 import { TEXT_LANGUAGE_DETECTION_ISO } from '../../consts/TEXT';
 
 const spyAxios = vi.spyOn(axios, 'post');
@@ -48,7 +48,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.EmotionDetection(<TAiRunArguments>{
+            const result = await text.EmotionDetection(<TAiArguments>{
                 data: "I'm not confident with this project!",
                 params: {
                     top: 10
@@ -86,7 +86,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.FillMask(<TAiRunArguments>{
+            const result = await text.FillMask(<TAiArguments>{
                 data: 'The capital of France is [MASK].'
             });
 
@@ -121,7 +121,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.KeywordExtraction(<TAiRunArguments>{
+            const result = await text.KeywordExtraction(<TAiArguments>{
                 data: "Title: The Importance of Testing\r\rTesting plays a critical role in many aspects of life, from education and technology to medicine and product development. At its core, testing is a method of evaluating performance, reliability, or understanding. It helps ensure that systems, individuals, or products meet specific standards and function as intended.\r\rIn education, testing allows teachers to assess students’ knowledge and identify areas that need improvement. It provides feedback for both learners and educators, helping to guide instruction and learning strategies.\r\rIn technology, testing is essential for building reliable software and hardware. Before a product is released, it undergoes various stages of testing—such as unit testing, integration testing, and user acceptance testing—to catch bugs and improve performance.\r\rIn the medical field, testing is crucial for diagnosing diseases, monitoring patient health, and determining the effectiveness of treatments. Accurate testing can save lives and prevent the spread of illnesses.\r\rOverall, testing is not just about finding faults—it's about improvement, validation, and progress. Whether in classrooms, laboratories, or development teams, testing helps us move forward with confidence.",
             });
 
@@ -149,7 +149,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.LanguageDetection(<TAiRunArguments>{
+            const result = await text.LanguageDetection(<TAiArguments>{
                 data: "Hallo, wie geht es dir?"
             });
 
@@ -179,7 +179,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.ParaphraseDetection(<TAiRunArguments>{
+            const result = await text.ParaphraseDetection(<TAiArguments>{
                 data: "The quick brown fox jumps over the lazy dog",
                 params: {
                     target: "A fast brown fox leaps over a sleepy dog"
@@ -211,7 +211,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.QuestionAnswering(<TAiRunArguments>{
+            const result = await text.QuestionAnswering(<TAiArguments>{
                 data: 'Paris is the capital of France. It is known for its beautiful architecture and rich history.',
                 params: {
                     question: 'What is the capital of France?'
@@ -259,7 +259,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.SentenceSimilarity(<TAiRunArguments>{
+            const result = await text.SentenceSimilarity(<TAiArguments>{
                 data: "That is a happy person",
                 params: {
                     sentences: [
@@ -295,7 +295,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.SentimentAnalysis(<TAiRunArguments>{
+            const result = await text.SentimentAnalysis(<TAiArguments>{
                 data: 'I love using this service!'
             });
 
@@ -322,7 +322,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.Summarization(<TAiRunArguments>{
+            const result = await text.Summarization(<TAiArguments>{
                 data: 'Artificial intelligence is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals.',
                 params: {
                     "min-length": 10,
@@ -376,7 +376,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.TextGeneration(<TAiRunArguments>{
+            const result = await text.TextGeneration(<TAiArguments>{
                 data: 'The capital of France is',
                 params: {
                     "max-length": 50,
@@ -425,7 +425,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.Ner(<TAiRunArguments>{
+            const result = await text.Ner(<TAiArguments>{
                 data: 'My name is John and I work at Google in New York.',
                 params: { grouped: true }
             });
@@ -481,7 +481,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.ToxicityDetection(<TAiRunArguments>{
+            const result = await text.ToxicityDetection(<TAiArguments>{
                 data: "you bastard, i hate you so much!are you fucked up! i will kill you",
                 params: {
                     top: 10
@@ -515,7 +515,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.Translation(<TAiRunArguments>{
+            const result = await text.Translation(<TAiArguments>{
                 data: 'Hello, how are you?',
                 params: {
                     source: 'en_XX',
@@ -576,7 +576,7 @@ describe('Text', () => {
                 });
             });
 
-            const result = await text.ZeroShotClassification(<TAiRunArguments>{
+            const result = await text.ZeroShotClassification(<TAiArguments>{
                 data: 'I have a problem with my order',
                 params: {
                     labels: ['refund', 'technical support', 'billing']

@@ -9,7 +9,7 @@ import { Logger } from '../../../utils/Logger';
 import { StringUtils } from "../../../utils/StringUtils";
 import { Utils } from '../../../utils/Utils';
 import { AI_ENGINE } from '../@consts';
-import type { TAiRunArguments, TAiRunOutput } from '../@types';
+import type { TAiArguments, TAiOutput } from '../@types';
 import { AiDocker } from '../AiDocker';
 import { absAiEngine } from '../base/absAiEngine';
 import type { IAiEngine } from '../base/IAiEngine';
@@ -39,7 +39,7 @@ export class Image extends absAiEngine implements IAiEngine {
 
     AiEngineName = AI_ENGINE.IMAGE
     AiDockerService: Record<string, TAiDockerService> = {}
-    RunTask: Record<string, (args: TAiRunArguments) => Promise<TAiRunOutput>> = {}
+    RunTask: Record<string, (args: TAiArguments) => Promise<TAiOutput>> = {}
     DEFAULT: U_config_plans_plan_entity_run_ai_image_Params = {
         task: IMAGE_TASK.IMAGE_CLASSIFICATION,
         params: undefined
@@ -91,11 +91,11 @@ export class Image extends absAiEngine implements IAiEngine {
 
         this.RunTask = {
             // [IMAGE_TASK.DEPTH_ESTIMATION]: async (args: TAiRunArguments) => await this.DepthEstimation(args),
-            [IMAGE_TASK.IMAGE_CLASSIFICATION]: async (args: TAiRunArguments) => await this.ImageClassification(args),
-            [IMAGE_TASK.IMAGE_SEGMENTATION]: async (args: TAiRunArguments) => await this.ImageSegmentation(args),
-            [IMAGE_TASK.IMAGE_TO_TEXT]: async (args: TAiRunArguments) => await this.ImageToText(args),
-            [IMAGE_TASK.OBJECT_DETECTION]: async (args: TAiRunArguments) => await this.ObjectDetection(args),
-            [IMAGE_TASK.VISUAL_QUESTION_ANSWERING]: async (args: TAiRunArguments) => await this.VisualQuestionAnswering(args)
+            [IMAGE_TASK.IMAGE_CLASSIFICATION]: async (args: TAiArguments) => await this.ImageClassification(args),
+            [IMAGE_TASK.IMAGE_SEGMENTATION]: async (args: TAiArguments) => await this.ImageSegmentation(args),
+            [IMAGE_TASK.IMAGE_TO_TEXT]: async (args: TAiArguments) => await this.ImageToText(args),
+            [IMAGE_TASK.OBJECT_DETECTION]: async (args: TAiArguments) => await this.ObjectDetection(args),
+            [IMAGE_TASK.VISUAL_QUESTION_ANSWERING]: async (args: TAiArguments) => await this.VisualQuestionAnswering(args)
         }
 
         await AiDocker.StartService({
@@ -107,7 +107,7 @@ export class Image extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async Run(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async Run(args: TAiArguments): Promise<TAiOutput> {
         const _args: U_config_plans_plan_entity_run_ai_image_Params = _.merge(this.DEFAULT, args)
         const { task } = _args
 
@@ -118,7 +118,7 @@ export class Image extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async ImageClassification(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async ImageClassification(args: TAiArguments): Promise<TAiOutput> {
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_image_image_classification_Params;
 
@@ -134,7 +134,7 @@ export class Image extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async ImageSegmentation(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async ImageSegmentation(args: TAiArguments): Promise<TAiOutput> {
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_image_image_segmentation_Params;
 
@@ -150,7 +150,7 @@ export class Image extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async ImageToText(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async ImageToText(args: TAiArguments): Promise<TAiOutput> {
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_image_image_to_text_Params;
 
@@ -166,7 +166,7 @@ export class Image extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async ObjectDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async ObjectDetection(args: TAiArguments): Promise<TAiOutput> {
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_image_object_detection_Params;
 
@@ -182,7 +182,7 @@ export class Image extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async VisualQuestionAnswering(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async VisualQuestionAnswering(args: TAiArguments): Promise<TAiOutput> {
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_image_visual_question_answering_Params;
 

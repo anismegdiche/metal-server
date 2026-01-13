@@ -11,7 +11,7 @@ import { StringUtils } from '../../../utils/StringUtils'
 import { Utils } from '../../../utils/Utils'
 import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
 import { AI_ENGINE } from '../@consts'
-import type { TAiRunArguments, TAiRunOutput } from '../@types'
+import type { TAiArguments, TAiOutput } from '../@types'
 import { AiDocker } from '../AiDocker'
 import { absAiEngine } from '../base/absAiEngine'
 import type { IAiEngine } from '../base/IAiEngine'
@@ -49,7 +49,7 @@ export class Text extends absAiEngine implements IAiEngine {
     AiEngineName = AI_ENGINE.TEXT
 
     AiDockerService: Record<string, TAiDockerService> = {}
-    RunTask: Record<string, (args: TAiRunArguments) => Promise<TAiRunOutput>> = {}
+    RunTask: Record<string, (args: TAiArguments) => Promise<TAiOutput>> = {}
 
     DEFAULT: U_config_plans_plan_entity_run_ai_text_Params = {
         task: TEXT_TASK.TRANSLATION,
@@ -86,21 +86,21 @@ export class Text extends absAiEngine implements IAiEngine {
         }
 
         this.RunTask = {
-            [TEXT_TASK.EMOTION_DETECTION]: async (args: TAiRunArguments) => await this.EmotionDetection(args),
-            [TEXT_TASK.FILL_MASK]: async (args: TAiRunArguments) => await this.FillMask(args),
-            [TEXT_TASK.KEYWORD_EXTRACTION]: async (args: TAiRunArguments) => await this.KeywordExtraction(args),
-            [TEXT_TASK.LANGUAGE_DETECTION]: async (args: TAiRunArguments) => await this.LanguageDetection(args),
-            [TEXT_TASK.PARAPHRASE_DETECTION]: async (args: TAiRunArguments) => await this.ParaphraseDetection(args),
-            [TEXT_TASK.QUESTION_ANSWERING]: async (args: TAiRunArguments) => await this.QuestionAnswering(args),
-            [TEXT_TASK.SENTENCE_SIMILARITY]: async (args: TAiRunArguments) => await this.SentenceSimilarity(args),
-            [TEXT_TASK.SENTIMENT_ANALYSIS]: async (args: TAiRunArguments) => await this.SentimentAnalysis(args),
-            [TEXT_TASK.SUMMARIZATION]: async (args: TAiRunArguments) => await this.Summarization(args),
+            [TEXT_TASK.EMOTION_DETECTION]: async (args: TAiArguments) => await this.EmotionDetection(args),
+            [TEXT_TASK.FILL_MASK]: async (args: TAiArguments) => await this.FillMask(args),
+            [TEXT_TASK.KEYWORD_EXTRACTION]: async (args: TAiArguments) => await this.KeywordExtraction(args),
+            [TEXT_TASK.LANGUAGE_DETECTION]: async (args: TAiArguments) => await this.LanguageDetection(args),
+            [TEXT_TASK.PARAPHRASE_DETECTION]: async (args: TAiArguments) => await this.ParaphraseDetection(args),
+            [TEXT_TASK.QUESTION_ANSWERING]: async (args: TAiArguments) => await this.QuestionAnswering(args),
+            [TEXT_TASK.SENTENCE_SIMILARITY]: async (args: TAiArguments) => await this.SentenceSimilarity(args),
+            [TEXT_TASK.SENTIMENT_ANALYSIS]: async (args: TAiArguments) => await this.SentimentAnalysis(args),
+            [TEXT_TASK.SUMMARIZATION]: async (args: TAiArguments) => await this.Summarization(args),
             // [TEXT_TASK.TEXT2TEXT_GENERATION]: async (args: TAiRunArguments) => await this.Text2TextGeneration(args),
-            [TEXT_TASK.TEXT_GENERATION]: async (args: TAiRunArguments) => await this.TextGeneration(args),
-            [TEXT_TASK.NER]: async (args: TAiRunArguments) => await this.Ner(args),
-            [TEXT_TASK.TOXICITY_DETECTION]: async (args: TAiRunArguments) => await this.ToxicityDetection(args),
-            [TEXT_TASK.TRANSLATION]: async (args: TAiRunArguments) => await this.Translation(args),
-            [TEXT_TASK.ZERO_SHOT_CLASSIFICATION]: async (args: TAiRunArguments) => await this.ZeroShotClassification(args)
+            [TEXT_TASK.TEXT_GENERATION]: async (args: TAiArguments) => await this.TextGeneration(args),
+            [TEXT_TASK.NER]: async (args: TAiArguments) => await this.Ner(args),
+            [TEXT_TASK.TOXICITY_DETECTION]: async (args: TAiArguments) => await this.ToxicityDetection(args),
+            [TEXT_TASK.TRANSLATION]: async (args: TAiArguments) => await this.Translation(args),
+            [TEXT_TASK.ZERO_SHOT_CLASSIFICATION]: async (args: TAiArguments) => await this.ZeroShotClassification(args)
         }
 
         await AiDocker.StartService({
@@ -112,7 +112,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async Run(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async Run(args: TAiArguments): Promise<TAiOutput> {
 
         const _args: U_config_plans_plan_entity_run_ai_text_Params = merge(this.DEFAULT, args)
         const { task } = _args
@@ -124,7 +124,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async EmotionDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async EmotionDetection(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_emotion_detection_Params;
@@ -180,7 +180,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async FillMask(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async FillMask(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
 
@@ -211,7 +211,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async KeywordExtraction(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async KeywordExtraction(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
 
@@ -236,7 +236,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async LanguageDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async LanguageDetection(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
 
@@ -264,7 +264,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async ParaphraseDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async ParaphraseDetection(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_paraphrase_detection_Params;
@@ -301,7 +301,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async QuestionAnswering(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async QuestionAnswering(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_question_answering_Params;
@@ -339,7 +339,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async SentenceSimilarity(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async SentenceSimilarity(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_sentence_similarity_Params;
@@ -374,7 +374,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async SentimentAnalysis(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async SentimentAnalysis(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_sentiment_analysis_Params;
@@ -410,7 +410,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async Summarization(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async Summarization(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_summarization_Params;
@@ -475,7 +475,7 @@ export class Text extends absAiEngine implements IAiEngine {
     // }
 
     @Logger.LogFunction(true)
-    async TextGeneration(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async TextGeneration(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_text_generation_Params
@@ -506,7 +506,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async Ner(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async Ner(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_Params;
@@ -548,7 +548,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async ToxicityDetection(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async ToxicityDetection(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_toxicity_detection_Params;
@@ -584,7 +584,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async Translation(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async Translation(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_translation_Params;
@@ -630,7 +630,7 @@ export class Text extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async ZeroShotClassification(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async ZeroShotClassification(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args;
         const { params } = args as U_config_plans_plan_entity_run_ai_text_zero_shot_classification_Params;

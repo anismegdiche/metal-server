@@ -1,7 +1,7 @@
 /* eslint-disable security/detect-non-literal-regexp */
 import axios from 'axios';
 import { Ocr } from '../Ocr';
-import type { TAiRunArguments } from '../../@types';
+import type { TAiArguments } from '../../@types';
 import { OCR_LANG_ISO, OCR_TASK } from '../../consts/OCR';
 
 const spyAxios = vi.spyOn(axios, 'post');
@@ -28,7 +28,7 @@ describe('Ocr', () => {
                 });
             });
 
-            const result = await ocr.ImageToString(<TAiRunArguments>{
+            const result = await ocr.ImageToString(<TAiArguments>{
                 data: "base64_image_data",
                 task: OCR_TASK.IMAGE_TO_STRING,
                 params: {

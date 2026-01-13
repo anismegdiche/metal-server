@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { Image } from '../Image'
-import type { TAiRunArguments } from '../../@types'
+import type { TAiArguments } from '../../@types'
 
 const spyAxios = vi.spyOn(axios, 'post')
 
@@ -42,7 +42,7 @@ describe('Image', () => {
                 })
             })
 
-            const result = await image.ImageClassification(<TAiRunArguments>{
+            const result = await image.ImageClassification(<TAiArguments>{
                 data: "base64_image_data"
             })
 
@@ -83,7 +83,7 @@ describe('Image', () => {
                 })
             })
 
-            const result = await image.ImageSegmentation(<TAiRunArguments>{
+            const result = await image.ImageSegmentation(<TAiArguments>{
                 data: "base64_image_data"
             })
 
@@ -112,7 +112,7 @@ describe('Image', () => {
                 })
             })
 
-            const result = await image.ImageToText(<TAiRunArguments>{
+            const result = await image.ImageToText(<TAiArguments>{
                 data: "base64_image_data"
             })
 
@@ -163,7 +163,7 @@ describe('Image', () => {
                 })
             })
 
-            const result = await image.ObjectDetection(<TAiRunArguments>{
+            const result = await image.ObjectDetection(<TAiArguments>{
                 data: "base64_image_data"
             })
 
@@ -207,7 +207,7 @@ describe('Image', () => {
                 })
             })
 
-            const result = await image.VisualQuestionAnswering(<TAiRunArguments>{
+            const result = await image.VisualQuestionAnswering(<TAiArguments>{
                 data: "base64_image_data",
                 params: {
                     question: "How many people?"

@@ -80,14 +80,12 @@ plans:
           sort:
             name: asc
 
-      # - run:
-      #     ai: image
-      #     task: image-to-text
-      #     input: content
-      #     output:
-      #       description: ${{ $result.text }}
-
-      - pick: [name, content]
+      - run:
+          ai: image
+          task: image-to-text
+          input: content
+          output:
+            description: ${{ $result.text }}
 
       - omit: [content]
 

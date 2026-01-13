@@ -15,7 +15,7 @@ import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
 import { PlaceHolder, RX_JS_CODE } from "../../utils/PlaceHolder"
 import { StringUtils } from "../../utils/StringUtils"
-import type { TAiRunArguments } from "../ai-engine/@types"
+import type { TAiArguments } from "../ai-engine/@types"
 import { AiEngine } from "../ai-engine/AiEngine"
 import type { IAiEngine } from "../ai-engine/base/IAiEngine"
 import { METADATA } from "../core/@consts"
@@ -587,7 +587,7 @@ export class Step {
                     await aiEngine.Run({
                         data: $__data,
                         ...step.stepArgs as U_config_plans_plan_entity_run_Params
-                    } as TAiRunArguments)
+                    } as TAiArguments)
                 )
 
                 if (isEmpty(__result))

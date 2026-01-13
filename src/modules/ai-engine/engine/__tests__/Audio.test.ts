@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Audio } from '../Audio';
-import type { TAiRunArguments } from '../../@types';
+import type { TAiArguments } from '../../@types';
 
 const spyAxios = vi.spyOn(axios, 'post');
 
@@ -38,7 +38,7 @@ describe('Audio', () => {
                 });
             });
 
-            const result = await audio.AudioClassification(<TAiRunArguments>{
+            const result = await audio.AudioClassification(<TAiArguments>{
                 data: "base64_audio_data"
             });
 
@@ -63,7 +63,7 @@ describe('Audio', () => {
                 });
             });
 
-            const result = await audio.AutomaticSpeechRecognition(<TAiRunArguments>{
+            const result = await audio.AutomaticSpeechRecognition(<TAiArguments>{
                 data: "base64_audio_data"
             });
 

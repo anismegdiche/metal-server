@@ -10,7 +10,7 @@ import { SynchronizerManager } from '../../../utils/SynchronizerManager'
 import { ConfigManager } from '../../core/ConfigManager'
 import type { U_config_server_ai_engines } from '../../core/types/U_config_server'
 import { AI_ENGINE } from '../@consts'
-import type { TAiRunArguments, TAiRunOutput } from '../@types'
+import type { TAiArguments, TAiOutput } from '../@types'
 import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
 import type { IAiEngine } from './IAiEngine'
 
@@ -37,7 +37,7 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
         );
     }
 
-    abstract Run(params: TAiRunArguments): Promise<TAiRunOutput>
+    abstract Run(params: TAiArguments): Promise<TAiOutput>
 
     @SynchronizerManager.Synchronized()
     async IsHealthy(): Promise<boolean> {

@@ -10,7 +10,7 @@ import { Logger } from '../../../utils/Logger'
 import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from '../../../utils/Utils'
 import { AI_ENGINE } from '../@consts'
-import type { TAiRunArguments, TAiRunOutput } from '../@types'
+import type { TAiArguments, TAiOutput } from '../@types'
 import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
 import { AiDocker } from '../AiDocker'
 import { absAiEngine } from '../base/absAiEngine'
@@ -22,7 +22,7 @@ import type { U_config_plans_plan_entity_run_ai_ocr_Params } from "../types/U_co
 export class Ocr extends absAiEngine implements IAiEngine {
     AiEngineName = AI_ENGINE.OCR
 
-    RunTask: Record<string, (args: TAiRunArguments) => Promise<TAiRunOutput>> = {}
+    RunTask: Record<string, (args: TAiArguments) => Promise<TAiOutput>> = {}
 
     DEFAULT: U_config_plans_plan_entity_run_ai_ocr_Params = {
         task: OCR_TASK.IMAGE_TO_STRING,
@@ -40,7 +40,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
         await super.Init(aiName, aiConfig)
 
         this.RunTask = {
-            [OCR_TASK.IMAGE_TO_STRING]: async (args: TAiRunArguments) => await this.ImageToString(args)
+            [OCR_TASK.IMAGE_TO_STRING]: async (args: TAiArguments) => await this.ImageToString(args)
         }
 
         await AiDocker.StartService({
@@ -51,7 +51,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async Run(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async Run(args: TAiArguments): Promise<TAiOutput> {
 
         const _args: U_config_plans_plan_entity_run_ai_ocr_Params = _.merge(this.DEFAULT, args)
         const { task } = _args
@@ -63,7 +63,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction(true)
-    async ImageToString(args: TAiRunArguments): Promise<TAiRunOutput> {
+    async ImageToString(args: TAiArguments): Promise<TAiOutput> {
 
         const { data } = args
         const { task, params } = args as U_config_plans_plan_entity_run_ai_ocr_Params
