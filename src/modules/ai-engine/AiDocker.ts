@@ -27,13 +27,13 @@ export class AiDocker {
     static Instances: Map<string, TAiDockerService> = new Map()
 
     static ServiceInstance = {
-        MinInstances: 1,
-        MaxInstances: 5,
-        CpuScaleUp: 70,
-        CpuScaleDown: 30,
-        ScaleInterval: 15_000, // 15 seconds
         Timeout: 60_000, // 60 seconds
         Sleep: 5_000, // 5 seconds
+        MinInstances: 1,
+        MaxInstances: 5,
+        CpuScaleUp: 50,
+        CpuScaleDown: 5,
+        ScaleInterval: 15_000, // 15 seconds
         ScaleDownGracePeriod: 3600_000 // 1 hour
     }
 
@@ -315,7 +315,7 @@ export class AiDocker {
             },
             Env: [
                 'MAX_HISTORY=3',
-                'MAX_LOAD=30'
+                `MAX_LOAD=${AiDocker.ServiceInstance.CpuScaleUp}`
             ],
             Labels: {
                 service: serviceName,
