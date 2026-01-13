@@ -1,5 +1,3 @@
-import { mock_Logger } from '../../__tests__/mockers'
-mock_Logger()
 
 import { SQL_TYPE, SqlQueryUtils } from '../SqlQueryUtils'
 import type { TRow } from '../../types/DataTable'

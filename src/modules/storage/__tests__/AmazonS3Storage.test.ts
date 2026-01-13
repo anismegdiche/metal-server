@@ -1,7 +1,6 @@
 
 
-import { mock_Logger } from "../../../__tests__/mockers"
-mock_Logger()
+
 import { type Mock } from 'vitest'
 import { AmazonS3Storage, FileTypeFromBuffer } from '../providers/AmazonS3Storage'
 import { S3Client } from '@aws-sdk/client-s3'

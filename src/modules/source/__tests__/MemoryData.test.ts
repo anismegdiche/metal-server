@@ -1,5 +1,3 @@
-import {mock_Logger} from '../../../__tests__/mockers'
-mock_Logger()
 //
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorBadRequest } from "../../errors/HttpErrors"

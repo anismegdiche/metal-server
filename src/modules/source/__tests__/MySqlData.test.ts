@@ -1,5 +1,4 @@
-import { mock_Logger } from '../../../__tests__/mockers'
-mock_Logger()
+
 import mysql from 'mysql2/promise'
 import { MySqlData } from '../providers/MySqlData'
 import type { TSchemaRequest } from '../../schema/types/TSchemaRequest'

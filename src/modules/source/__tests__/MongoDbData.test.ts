@@ -1,6 +1,5 @@
 
-import { mock_Logger } from '../../../__tests__/mockers'
-mock_Logger()
+
 import { MongoDbData } from '../providers/MongoDbData'
 import type { TSchemaRequestListEntities } from '../../schema/types/TSchemaRequest'
 import { HttpErrorNotFound } from '../../errors/HttpErrors'

@@ -1,5 +1,3 @@
-import { mock_Logger } from "../../__tests__/mockers"
-mock_Logger()
 //
 import { DataTableUtils } from '../DataTableUtils'
 import { DataTable } from '../../types/DataTable'

@@ -1061,7 +1061,7 @@ export class DataTable extends clsClonable {
             try {
                 await cnx.run(sql, [__data__, index])
             } catch (error) {
-                Logger.Error(`${Logger.Out} DataTable._dbRowUpdateByIndex: Failed to update row in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`)
+                Logger.Error(`${Logger.Out} DataTable._RowUpdateByIndex: Failed to update row in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`)
                 throw error
             }
         })

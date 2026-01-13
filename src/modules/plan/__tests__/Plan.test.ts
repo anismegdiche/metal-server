@@ -1,5 +1,4 @@
-import { mock_Logger } from '../../../__tests__/mockers'
-mock_Logger()
+
 import { DataTable } from "../../../types/DataTable"
 import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 import { Plan } from "../Plan"

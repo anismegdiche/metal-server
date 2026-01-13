@@ -1,5 +1,4 @@
-import { mock_Logger } from '../../../__tests__/mockers'
-mock_Logger()
+
 import { vi, type Mock, type Mocked } from 'vitest'
 import { FtpStorage } from '../providers/FtpStorage'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../../modules/errors/HttpErrors'

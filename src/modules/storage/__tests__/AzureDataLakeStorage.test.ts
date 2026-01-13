@@ -1,5 +1,4 @@
-import { mock_Logger } from "../../../__tests__/mockers"
-mock_Logger()
+
 
 import { DataLakeFileClient, DataLakeFileSystemClient, DataLakeServiceClient } from '@azure/storage-file-datalake'
 import { Readable } from 'stream'

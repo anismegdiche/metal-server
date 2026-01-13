@@ -1,5 +1,4 @@
-import { mock_Logger } from "../../../__tests__/mockers"
-mock_Logger()
+
 import type { TJson } from "../../../types/TJson"
 import { MongoDbHelper } from "../providers/MongoDbHelper"
 

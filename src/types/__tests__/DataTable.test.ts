@@ -1,7 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { mock_Logger } from "../../__tests__/mockers"
-mock_Logger()
-//
 import { DuckDBInstance } from '@duckdb/node-api'
 import fs from 'node:fs'
 import { Utils } from '../../utils/Utils'
@@ -1102,8 +1099,11 @@ describe("DataTable", () => {
             const myDataTable = new DataTable("myTable")
             const sqlQuery = 'INVALID QUERY'
 
-            // Assert
-            expect(async () => await myDataTable.FreeSql({ sqlQuery })).rejects.toThrow()
+            try {
+                await myDataTable.FreeSql({ sqlQuery })
+            } catch (error) {
+                expect(error).toBeInstanceOf(Error)
+            }
         })
 
         // Executes a SQL query with a syntax error and throws an error

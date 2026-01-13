@@ -1,8 +1,4 @@
 /* eslint-disable */
-import { mock_Logger } from '../../../__tests__/mockers'
-mock_Logger()
-
-
 import * as Sha512 from 'js-sha512'
 import { Cache } from '../Cache'
 import { DataTable } from '../../../types/DataTable'

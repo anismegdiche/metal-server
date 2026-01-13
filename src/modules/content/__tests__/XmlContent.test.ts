@@ -1,5 +1,4 @@
-import { mock_Logger } from "../../../__tests__/mockers"
-mock_Logger()
+
 import { Readable } from "stream"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"

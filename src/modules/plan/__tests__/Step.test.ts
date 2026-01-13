@@ -1,5 +1,4 @@
-import { mock_Logger } from "../../../__tests__/mockers"
-mock_Logger()
+
 
 import axios from "axios"
 import { DataTable, SORT_ORDER } from "../../../types/DataTable"

@@ -1,5 +1,4 @@
-import { mock_Logger } from "../../../__tests__/mockers"
-mock_Logger()
+
 import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { Sandbox } from "../Sandbox"
 

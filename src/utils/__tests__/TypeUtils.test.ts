@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ZodSafeParseResult } from 'zod';
-import { mock_Logger } from '../../__tests__/mockers'
 import type { U_config } from '../../modules/core/types/U_config';
-mock_Logger()
-
 import { HttpErrorInternalServerError } from '../../modules/errors/HttpErrors';
 import { TypeUtils } from '../TypeUtils';
 //

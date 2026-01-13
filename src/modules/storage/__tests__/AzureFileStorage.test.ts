@@ -1,5 +1,4 @@
-import { mock_Logger } from "../../../__tests__/mockers"
-mock_Logger()
+
 //
 import { ShareDirectoryClient, ShareFileClient, ShareServiceClient } from "@azure/storage-file-share"
 import { Readable } from "stream"

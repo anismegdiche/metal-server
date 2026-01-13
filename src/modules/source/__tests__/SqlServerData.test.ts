@@ -1,5 +1,4 @@
-import { mock_Logger } from "../../../__tests__/mockers"
-mock_Logger()
+
 
 import { SqlServerData } from "../providers/SqlServerData"
 import type { TConfigSource } from "../types/TConfigSource"

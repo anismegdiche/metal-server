@@ -1,5 +1,3 @@
-import { mock_Logger } from "../../__tests__/mockers"
-mock_Logger()
 
 import { Sandbox } from "../../modules/sandbox/Sandbox"
 import type { TJson } from "../../types/TJson"

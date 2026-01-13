@@ -1,5 +1,3 @@
-import { mock_Logger } from "../../../__tests__/mockers"
-mock_Logger()
 
 import { Readable } from "node:stream"
 import * as ExcelJS from 'exceljs'
