@@ -3,7 +3,6 @@
 //
 import axios, { type AxiosResponse } from 'axios';
 import * as _ from 'lodash-es';
-import pLimit from 'p-limit';
 //
 import { Assert } from '../../../utils/Assert';
 import { Logger } from '../../../utils/Logger';
@@ -39,13 +38,8 @@ const IMAGE_DEFAULT_HEADERS = {
 export class Image extends absAiEngine implements IAiEngine {
 
     AiEngineName = AI_ENGINE.IMAGE
-
     AiDockerService: Record<string, TAiDockerService> = {}
     RunTask: Record<string, (args: TAiRunArguments) => Promise<TAiRunOutput>> = {}
-
-    Concurrency: number = 1
-    Limit: any
-
     DEFAULT: U_config_plans_plan_entity_run_ai_image_Params = {
         task: IMAGE_TASK.IMAGE_CLASSIFICATION,
         params: undefined
@@ -103,9 +97,6 @@ export class Image extends absAiEngine implements IAiEngine {
             [IMAGE_TASK.OBJECT_DETECTION]: async (args: TAiRunArguments) => await this.ObjectDetection(args),
             [IMAGE_TASK.VISUAL_QUESTION_ANSWERING]: async (args: TAiRunArguments) => await this.VisualQuestionAnswering(args)
         }
-
-        this.Concurrency = AiDocker.ServiceInstance.MaxInstances
-        this.Limit = pLimit(this.Concurrency)
 
         await AiDocker.StartService({
             InstanceName: aiName,
