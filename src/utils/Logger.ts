@@ -58,7 +58,7 @@ export class Logger {
     static Level: LogLevel.LogLevelDesc = LOGGER_DEFAULT_LEVEL
     private static _queue = new Queue()
 
-    static readonly RequestMiddleware = morgan(
+    static RequestMiddleware = morgan(
         ':remote-addr, :method :url, :status, :res[content-length], :response-time ms',
         {
             stream: {
@@ -84,23 +84,23 @@ export class Logger {
 
     // Non-blocking queued log methods
     static Trace(msg: any): void {
-        Logger._queue.Enqueue(LogLevel.trace(msg))
+        Logger._queue.Enqueue(LogLevel.trace(msg), false)
     }
 
     static Debug(msg: any): void {
-        Logger._queue.Enqueue(LogLevel.debug(msg))
+        Logger._queue.Enqueue(LogLevel.debug(msg), false)
     }
 
     static Info(msg: any): void {
-        Logger._queue.Enqueue(LogLevel.info(msg))
+        Logger._queue.Enqueue(LogLevel.info(msg), false)
     }
 
     static Warn(msg: any): void {
-        Logger._queue.Enqueue(LogLevel.warn(msg))
+        Logger._queue.Enqueue(LogLevel.warn(msg), false)
     }
 
     static Error(msg: any): void {
-        Logger._queue.Enqueue(LogLevel.error(msg))
+        Logger._queue.Enqueue(LogLevel.error(msg), false)
     }
 
     static Message(msg: any): void {
