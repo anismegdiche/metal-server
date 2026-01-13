@@ -6,6 +6,7 @@
 import type { DuckDBValue } from '@duckdb/node-api';
 import { DuckDBConnection, DuckDBInstance } from '@duckdb/node-api';
 import fs from 'node:fs';
+import { cpus } from 'node:os';
 import { z } from "zod";
 //
 
@@ -23,8 +24,6 @@ import { Utils } from '../utils/Utils';
 import type { TAny } from './TAny';
 import { z_TJson, type TJson } from './TJson';
 import { z_TUuidv7, type TUuidv7 } from './TUuidv7';
-import os from 'node:os';
-import { Queue } from '../utils/Queue';
 
 
 // constants
@@ -54,9 +53,6 @@ const z_TRow = z_TJson.and(
         __idx__: z_TUuidv7.optional(),
     })
 );
-
-
-
 
 
 // types
@@ -96,6 +92,8 @@ type TRowsParseParams = TRowsRunParams & {
 
 export type TRowsCopyParams = Pick<TRowsParams, 'fields' | 'filter' | 'skip' | 'limit' | 'sort' | 'fnMap' | 'fnFilter'>
 
+
+//
 function duckDb_Sql_SafeName(table: string): string {
     return `"${table}"`
 }
@@ -477,7 +475,7 @@ export class DataTable extends clsClonable {
     private _rows?: TRow[]
     private _isAttached: boolean = false
     private _isDisposed: boolean = false
-    private _queueInsertRow = new Queue()
+
 
     constructor(
         name?: string,
@@ -609,7 +607,7 @@ export class DataTable extends clsClonable {
             await cnx.run(`
                 SET memory_limit = '8GB';
                 SET temp_directory = '${DATATABLE_TEMP_PATH}';
-                SET threads = ${Math.max(1, Math.floor((os.cpus().length ?? 1) / 2))};
+                SET threads = ${Math.max(1, Math.floor((cpus().length ?? 1) / 2))};
                 SET preserve_insertion_order=false;
             `)
 
@@ -1046,13 +1044,23 @@ export class DataTable extends clsClonable {
         return this.FieldsSet()
     }
 
+    /**
+     * Enqueues a function to run sequentially in the single-writer queue.
+     * This ensures high-throughput updates without lock contention.
+     */
+    private _enqueue<T>(fn: () => Promise<T>): Promise<T> {
+        const next = this._queue.then(fn);
+        this._queue = next.catch(() => { }) as Promise<unknown>;
+        return next;
+    }
+
     private async _RowUpdateByIndex(index: TUuidv7, row: TJson | TRow): Promise<void> {
         await this._dbEnsureInitialized()
         const cnx = this._duckConnection!
         const __data__ = JsonUtils.Stringify(row)
 
         // Use single-writer queue for high-throughput updates
-        await this._queueInsertRow.Enqueue(async () => {
+        await this._enqueue(async () => {
             const sql = `
                 UPDATE ${this.SafeName}
                 SET __data__ = ?
