@@ -11,6 +11,7 @@ import { DecoratorUtils } from "./DecoratorUtils"
 import { Stringify } from './JsonUtils/Stringify'
 import { JsonUtils } from './JsonUtils'
 import type { TJson } from '../types/TJson'
+import { Queue } from './Queue'
 
 
 //
@@ -50,39 +51,12 @@ Prefix.apply(LogLevel.getLogger('critical'), {
     }
 })
 
-
-// Queue for non-blocking, in-order logging
-const _logQueue: (() => void)[] = [];
-
-let _processing = false;
-
-function _enqueueLog(fn: () => void) {
-    _logQueue.push(fn);
-    if (!_processing) _processQueue();
-}
-
-function _processQueue() {
-    if (_logQueue.length === 0) {
-        _processing = false;
-        return;
-    }
-    _processing = true;
-    const fn = _logQueue.shift()!;
-    setImmediate(() => {
-        try {
-            fn();
-        } finally {
-            _processQueue();
-        }
-    });
-}
-
-
 export class Logger {
 
     static readonly In = magenta('▶ ')
     static readonly Out = yellow('◀ ')
-    static Level: LogLevel.LogLevelDesc = LOGGER_DEFAULT_LEVEL //NOSONAR
+    static Level: LogLevel.LogLevelDesc = LOGGER_DEFAULT_LEVEL
+    private static _queue = new Queue()
 
     static readonly RequestMiddleware = morgan(
         ':remote-addr, :method :url, :status, :res[content-length], :response-time ms',
@@ -110,23 +84,23 @@ export class Logger {
 
     // Non-blocking queued log methods
     static Trace(msg: any): void {
-        _enqueueLog(() => LogLevel.trace(msg))
+        Logger._queue.Enqueue(LogLevel.trace(msg))
     }
 
     static Debug(msg: any): void {
-        _enqueueLog(() => LogLevel.debug(msg))
+        Logger._queue.Enqueue(LogLevel.debug(msg))
     }
 
     static Info(msg: any): void {
-        _enqueueLog(() => LogLevel.info(msg))
+        Logger._queue.Enqueue(LogLevel.info(msg))
     }
 
     static Warn(msg: any): void {
-        _enqueueLog(() => LogLevel.warn(msg))
+        Logger._queue.Enqueue(LogLevel.warn(msg))
     }
 
     static Error(msg: any): void {
-        _enqueueLog(() => LogLevel.error(msg))
+        Logger._queue.Enqueue(LogLevel.error(msg))
     }
 
     static Message(msg: any): void {
@@ -205,9 +179,9 @@ export class Logger {
         };
     }
 
-    static FlushQueue(): void {
-        while (_logQueue.length > 0) {
-            _processQueue()
+    static async FlushQueue(): Promise<void> {
+        while (Logger._queue.Tasks.length > 0) {
+            await Logger._queue.ProcessQueue()
         }
     }
 }

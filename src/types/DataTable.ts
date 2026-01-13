@@ -24,6 +24,7 @@ import type { TAny } from './TAny';
 import { z_TJson, type TJson } from './TJson';
 import { z_TUuidv7, type TUuidv7 } from './TUuidv7';
 import os from 'node:os';
+import { Queue } from '../utils/Queue';
 
 
 // constants
@@ -476,6 +477,7 @@ export class DataTable extends clsClonable {
     private _rows?: TRow[]
     private _isAttached: boolean = false
     private _isDisposed: boolean = false
+    private _queueInsertRow = new Queue()
 
     constructor(
         name?: string,
@@ -1036,7 +1038,7 @@ export class DataTable extends clsClonable {
         if (!index || !row)
             return this
 
-        await this._dbRowUpdateByIndex(index, row)
+        await this._RowUpdateByIndex(index, row)
 
         if (opt.skipFieldsSet)
             return this
@@ -1044,23 +1046,13 @@ export class DataTable extends clsClonable {
         return this.FieldsSet()
     }
 
-    /**
-     * Enqueues a function to run sequentially in the single-writer queue.
-     * This ensures high-throughput updates without lock contention.
-     */
-    private _enqueue<T>(fn: () => Promise<T>): Promise<T> {
-        const next = this._queue.then(fn);
-        this._queue = next.catch(() => { }) as Promise<unknown>;
-        return next;
-    }
-
-    private async _dbRowUpdateByIndex(index: TUuidv7, row: TJson | TRow): Promise<void> {
+    private async _RowUpdateByIndex(index: TUuidv7, row: TJson | TRow): Promise<void> {
         await this._dbEnsureInitialized()
         const cnx = this._duckConnection!
         const __data__ = JsonUtils.Stringify(row)
 
         // Use single-writer queue for high-throughput updates
-        await this._enqueue(async () => {
+        await this._queueInsertRow.Enqueue(async () => {
             const sql = `
                 UPDATE ${this.SafeName}
                 SET __data__ = ?

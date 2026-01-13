@@ -14,6 +14,7 @@ ServerShutdown.SetupSignalHandlers()
 // Initialize and start server
 ServerCore.Init()
     .then(ServerEndpoint.Start)
-    .catch(() => {
-        Logger.FlushQueue()
+    .catch(async () => {
+        Logger.Info('✅ flushing log')
+        await Logger.FlushQueue()
     })
