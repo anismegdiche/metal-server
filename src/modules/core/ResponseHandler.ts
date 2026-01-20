@@ -64,7 +64,7 @@ export class ResponseHandler {
                     // Push the initial part of the JSON response
                     this.push(
                         JsonUtils.Stringify(_.omit(resJson, "rows"))
-                            .replace(/}$/, ',')) // Remove closing brace to continue streaming rows
+                            .replaceAll(/}$/, ',')) // Remove closing brace to continue streaming rows
                     this.push('"rows":[')
                     const iterator: AsyncIterableIterator<TRow> = await schemaResponse.data.RowsIterator({ batchSize: 1000 })
                     let row = await iterator.next()

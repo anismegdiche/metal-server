@@ -2,21 +2,21 @@
 //
 //
 //
-import type { DockerOptions } from 'dockerode';
-import Docker from 'dockerode';
-import fs from "fs";
+import type { DockerOptions } from 'dockerode'
+import Docker from 'dockerode'
+import fs from "node:fs"
 
 //
-import { Assert } from '../../utils/Assert';
-import { JsonUtils } from '../../utils/JsonUtils';
-import { Logger } from '../../utils/Logger';
-import { Mutex } from '../../utils/Mutex';
-import { StringUtils } from '../../utils/StringUtils';
-import { ConfigManager } from '../core/ConfigManager';
-import { HttpErrorInternalServerError } from '../errors/HttpErrors';
-import { DOCKER } from './consts/DOCKER';
-import { CaddyDockerService } from './docker-services/CaddyDockerService';
-import type { TAiDockerService } from './types/TAiDockerService';
+import { Assert } from '../../utils/Assert'
+import { JsonUtils } from '../../utils/JsonUtils'
+import { Logger } from '../../utils/Logger'
+import { Mutex } from '../../utils/Mutex'
+import { StringUtils } from '../../utils/StringUtils'
+import { ConfigManager } from '../core/ConfigManager'
+import { HttpErrorInternalServerError } from '../errors/HttpErrors'
+import { DOCKER } from './consts/DOCKER'
+import { CaddyDockerService } from './docker-services/CaddyDockerService'
+import type { TAiDockerService } from './types/TAiDockerService'
 
 
 //
@@ -34,7 +34,7 @@ export class AiDocker {
         CpuScaleUp: 50,
         CpuScaleDown: 5,
         ScaleInterval: 15_000, // 15 seconds
-        ScaleDownGracePeriod: 3600_000 // 1 hour
+        ScaleDownGracePeriod: 3_600_000 // 1 hour
     }
 
     static _convertStreamToLog(streamString: string): string[] {
@@ -42,7 +42,7 @@ export class AiDocker {
 
         const _streamString = streamString
             .split('\r\n')
-            .map((item: string) => item.replace(/(\\r|\\n)/g, ''))
+            .map((item: string) => item.replaceAll(/(\\r|\\n)/g, ''))
             .map(item => {
                 try {
                     const parsed = JsonUtils.TryParse(item, { stream: '' }, true)
@@ -70,14 +70,14 @@ export class AiDocker {
         AiDocker.ServiceInstance.ScaleInterval = ConfigManager.Get<number>("server.ai-engines.scale-interval")
         AiDocker.ServiceInstance.ScaleDownGracePeriod = ConfigManager.Get<number>("server.ai-engines.scale-down-grace-period") ?? 60_000
 
-        if (_dockerOptions?.ca instanceof String)
-            _dockerOptions.ca = fs.readFileSync(_dockerOptions.ca as string)
+        if (typeof _dockerOptions?.ca == "string")
+            _dockerOptions.ca = fs.readFileSync(_dockerOptions.ca)
 
-        if (_dockerOptions?.cert instanceof String)
-            _dockerOptions.cert = fs.readFileSync(_dockerOptions.cert as string)
+        if (typeof _dockerOptions?.cert == "string")
+            _dockerOptions.cert = fs.readFileSync(_dockerOptions.cert)
 
-        if (_dockerOptions?.key instanceof String)
-            _dockerOptions.key = fs.readFileSync(_dockerOptions.key as string)
+        if (typeof _dockerOptions?.key == "string")
+            _dockerOptions.key = fs.readFileSync(_dockerOptions.key)
 
         try {
             AiDocker.docker = new Docker(_dockerOptions)
@@ -231,10 +231,10 @@ export class AiDocker {
     static async BuildServiceImage(service: TAiDockerService): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
-                const existingImages = await AiDocker.docker.listImages({ filters: { reference: [service.ImageName] } });
+                const existingImages = await AiDocker.docker.listImages({ filters: { reference: [service.ImageName] } })
                 if (existingImages.length > 0) {
-                    Logger.Info(`${Logger.Out} 📦 Image ${service.ImageName} already exists. Skipping build.`);
-                    return resolve();
+                    Logger.Info(`${Logger.Out} 📦 Image ${service.ImageName} already exists. Skipping build.`)
+                    return resolve()
                 }
 
                 const stream = await AiDocker.docker.buildImage(
@@ -247,33 +247,33 @@ export class AiDocker {
                 let _streamData: string = ""
 
                 const onData = (data: Buffer) => {
-                    const __data = data.toString();
-                    _streamData += __data;
+                    const __data = data.toString()
+                    _streamData += __data
 
-                    const parts = _streamData.split('}');
+                    const parts = _streamData.split('}')
 
                     // Last part may be incomplete, keep it in buffer
-                    _streamData = parts.pop() || '';
+                    _streamData = parts.pop() || ''
 
                     for (const part of parts) {
-                        const complete = `${part}}`;
+                        const complete = `${part}}`
                         try {
-                            const ___aLog = AiDocker._convertStreamToLog(complete);
-                            ___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image... ${item}`));
+                            const ___aLog = AiDocker._convertStreamToLog(complete)
+                            ___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image... ${item}`))
                         } catch {
-                            Logger.Warn(`${Logger.Out} ⚠️ Failed to parse log part: ${complete}`);
+                            Logger.Warn(`${Logger.Out} ⚠️ Failed to parse log part: ${complete}`)
                         }
                     }
-                };
+                }
 
                 const cleanup = () => {
-                    stream.removeListener('data', onData);
-                    stream.removeListener('end', onEnd);
-                    stream.removeListener('error', onError);
-                };
+                    stream.removeListener('data', onData)
+                    stream.removeListener('end', onEnd)
+                    stream.removeListener('error', onError)
+                }
 
                 const onEnd = () => {
-                    cleanup();
+                    cleanup()
                     if (_streamData.length > 0) {
                         const ___aLog = AiDocker._convertStreamToLog(_streamData)
                         ___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image: ${item}`))
@@ -281,17 +281,17 @@ export class AiDocker {
                     }
                     Logger.Info(`${Logger.Out} 🔨 Built '${service.ImageName}' image`)
                     resolve()
-                };
+                }
 
                 const onError = (err: Error) => {
-                    cleanup();
+                    cleanup()
                     Logger.Error(`${Logger.Out} 🔨 ❌ Error building '${service.ImageName}' image: ${err}`)
                     reject(err)
-                };
+                }
 
-                stream.on('data', onData);
-                stream.on('end', onEnd);
-                stream.on('error', onError);
+                stream.on('data', onData)
+                stream.on('end', onEnd)
+                stream.on('error', onError)
 
             } catch (err) {
                 Logger.Error(`${Logger.Out} 🔨 ❌ Failed to build '${service.ImageName}' image: ${err}`)
@@ -603,91 +603,91 @@ export class AiDocker {
         }
 
         for (const container of containers) {
-            const containerId = container.Id;
+            const containerId = container.Id
 
             while (true) {
                 try {
                     // Get container instance
-                    const container = AiDocker.docker.getContainer(containerId);
+                    const container = AiDocker.docker.getContainer(containerId)
 
                     // First, let's try a simpler approach - just test if curl can reach the URL
                     const execOptions: Docker.ExecCreateOptions = {
                         Cmd: ['sh', '-c', `curl -s -w '%{http_code}' -o /dev/null ${internalUrl} || echo "CURL_FAILED"`],
                         AttachStdout: true,
                         AttachStderr: true
-                    };
+                    }
 
-                    const execInstance = await container.exec(execOptions);
+                    const execInstance = await container.exec(execOptions)
 
                     // Try using inspect to get the result after execution
                     const streamPromise = execInstance.start({
                         hijack: false,
                         stdin: false
-                    });
-                    const stream = await streamPromise;
+                    })
+                    const stream = await streamPromise
 
-                    let output = '';
+                    let output = ''
 
                     // Wait for completion
                     await new Promise((resolve, reject) => {
                         const onData = (chunk: Buffer) => {
-                            output += chunk.toString();
-                        };
+                            output += chunk.toString()
+                        }
 
                         const cleanup = () => {
-                            stream.removeListener('data', onData);
-                            stream.removeListener('end', onEnd);
-                            stream.removeListener('error', onError);
-                        };
+                            stream.removeListener('data', onData)
+                            stream.removeListener('end', onEnd)
+                            stream.removeListener('error', onError)
+                        }
 
                         const onEnd = () => {
-                            cleanup();
-                            resolve(undefined);
-                        };
+                            cleanup()
+                            resolve(undefined)
+                        }
 
                         const onError = (err: any) => {
-                            cleanup();
-                            reject(err);
-                        };
+                            cleanup()
+                            reject(err)
+                        }
 
-                        stream.on('data', onData);
-                        stream.on('end', onEnd);
-                        stream.on('error', onError);
-                    });
+                        stream.on('data', onData)
+                        stream.on('end', onEnd)
+                        stream.on('error', onError)
+                    })
 
                     // Clean up the output - remove Docker stream headers if present
-                    let cleanOutput = output;
+                    let cleanOutput = output
                     if (output.includes('200') || output.includes('404') || output.includes('500')) {
                         // Extract just the HTTP status code
-                        const statusMatch = output.match(/[2-5]\d{2}/);
+                        const statusMatch = output.match(/[2-5]\d{2}/)
                         if (statusMatch) {
-                            cleanOutput = statusMatch[0];
+                            cleanOutput = statusMatch[0]
                         }
                     }
 
                     if (cleanOutput.includes('CURL_FAILED')) {
-                        Logger.Warn(`curl command failed in container ${containerId}`);
-                        await new Promise(resolve => setTimeout(resolve, interval)); // wait before retry
-                        continue;
+                        Logger.Warn(`curl command failed in container ${containerId}`)
+                        await new Promise(resolve => setTimeout(resolve, interval)) // wait before retry
+                        continue
                     }
 
-                    const statusCode = parseInt(cleanOutput.trim(), 10);
+                    const statusCode = Number.parseInt(cleanOutput.trim(), 10)
 
                     if (statusCode === 200) {
-                        Logger.Info(`Success: ${internalUrl} is available in container ${containerId}`);
-                        break;
+                        Logger.Info(`Success: ${internalUrl} is available in container ${containerId}`)
+                        break
                     } else if (statusCode >= 100 && statusCode < 500) {
-                        Logger.Info(`Waiting... Status: ${statusCode}`);
+                        Logger.Info(`Waiting... Status: ${statusCode}`)
                     } else {
-                        Logger.Info(`Invalid status code received: ${statusCode}, raw: '${cleanOutput}'`);
+                        Logger.Info(`Invalid status code received: ${statusCode}, raw: '${cleanOutput}'`)
                     }
 
                 } catch (error) {
                     Logger.Error(`Error testing service in container ${containerId}: ${error instanceof Error
                         ? error.message
-                        : String(error)}`);
+                        : String(error)}`)
                 }
-                await new Promise(resolve => setTimeout(resolve, interval)); // wait before retry
+                await new Promise(resolve => setTimeout(resolve, interval)) // wait before retry
             }
         }
     }

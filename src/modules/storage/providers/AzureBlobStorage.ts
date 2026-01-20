@@ -128,7 +128,7 @@ export class AzureBlobStorage extends absStorageProvider {
 
         for await (const item of iter) {
             if (item.kind === 'prefix') {
-                const folderName = item.name.replace(/\/$/, '')
+                const folderName = item.name.replaceAll(/\/$/, '')
                 result.push(JsonUtils.RemoveUndefined(
                     <TStorageFolder>{
                         name: folderName,

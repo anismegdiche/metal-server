@@ -47,7 +47,7 @@ export class PlaceHolder {
     }
 
     static EvaluateJsCodeString(jsCode: string, sandBox: Sandbox): string {
-        return jsCode.replace(/\$\{\{(.*?)\}\}/mg, (_match, _code) => {
+        return jsCode.replaceAll(/\$\{\{(.*?)\}\}/mg, (_match, _code) => {
             try {
                 // file deepcode ignore ImproperCodeSanitization: // TODO Review this
                 const result = sandBox.Evaluate(_code)

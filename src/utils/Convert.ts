@@ -62,12 +62,12 @@ export class Convert {
 
     static PatternToRegex(pattern: string): RegExp {
         // Escape special regex characters except for * and ?
-        const escapedPattern = pattern.replace(/([.+?^${}()|[\]\\])/g, '\\$1')
+        const escapedPattern = pattern.replaceAll(/([.+?^${}()|[\]\\])/g, '\\$1')
 
         // Replace friendly wildcards with regex equivalents
         const rxPattern = escapedPattern
-            .replace(/\*/g, '.*')   // Convert * to .*
-            .replace(/\?/g, '.')    // Convert ? to .
+            .replaceAll(/\*/g, '.*')   // Convert * to .*
+            .replaceAll(/\?/g, '.')    // Convert ? to .
 
         // Create and return the RegExp object
         return new RegExp(`^${rxPattern}$`) // Anchored to match the whole string

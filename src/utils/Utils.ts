@@ -48,7 +48,7 @@ export class Utils {
 
     static Uuid(safe: boolean = false): string {
         return safe
-            ? uuidv7().replace(/-/g, '')
+            ? uuidv7().replaceAll(/-/g, '')
             : uuidv7()
     }
 }

@@ -121,7 +121,7 @@ export class Plan {
         try {
             for await (const [_stepIndex, _step] of Object.entries(steps)) {
 
-                const __stepIndex = parseInt(_stepIndex, 10) + 1
+                const __stepIndex = Number.parseInt(_stepIndex, 10) + 1
 
                 $context.$plan!.$current = {
                     ...$context.$plan!.$current,

@@ -1,3 +1,4 @@
+/* eslint-disable security/detect-non-literal-fs-filename */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DuckDBInstance } from '@duckdb/node-api'
 import fs from 'node:fs'
@@ -1417,7 +1418,7 @@ describe("DataTable", () => {
                 { id: 2, name: "Jane" }
             ])
             const row = await dt.Rows({ includeIndex: true, filter: { name: "John" } })
-            const updatedRow = row[0]! as TRow
+            const updatedRow = row[0]!
             updatedRow.name = "Johnny"
             const result = await dt.RowUpdateByIndex(updatedRow.__idx__, updatedRow)
             expect(await result.Rows()).toEqual([

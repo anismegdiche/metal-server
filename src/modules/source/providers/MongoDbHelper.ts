@@ -256,7 +256,7 @@ export class MongoDbHelper {
         Assert.Var<TSqlToken>(firstToken, 'firstToken is undefined')
 
         if (tokens.length === 1) {
-            if (firstToken.type === SQL_TYPE.STRING) return firstToken.token.replace(/^'|'$/g, '') // Remove surrounding quotes
+            if (firstToken.type === SQL_TYPE.STRING) return firstToken.token.replaceAll(/^'|'$/g, '') // Remove surrounding quotes
             if (firstToken.type === SQL_TYPE.VARIABLE) return `$${firstToken.token}`
             return null
         }
@@ -265,7 +265,7 @@ export class MongoDbHelper {
 
         // Handle first token
         if (firstToken.type === SQL_TYPE.STRING) {
-            operands.push(firstToken.token.replace(/^'|'$/g, ''))
+            operands.push(firstToken.token.replaceAll(/^'|'$/g, ''))
         } else if (firstToken.type === SQL_TYPE.VARIABLE) {
             operands.push(`$${firstToken.token}`)
         } else if (firstToken.token.startsWith('{')) {
@@ -281,7 +281,7 @@ export class MongoDbHelper {
             if (value.token.startsWith('{')) {
                 operands.push(JSON.parse(value.token))
             } else if (value.type === SQL_TYPE.STRING) {
-                operands.push(value.token.replace(/^'|'$/g, ''))
+                operands.push(value.token.replaceAll(/^'|'$/g, ''))
             } else if (value.type === SQL_TYPE.VARIABLE) {
                 operands.push(`$${value.token}`)
             }

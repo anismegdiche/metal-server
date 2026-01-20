@@ -365,7 +365,7 @@ export class Text extends absAiEngine implements IAiEngine {
         const similarity = response.data.result.map((item: any) => ({
             sentence: item.sentence2,
             score: Math.max(0, item.similarity),
-            rank: parseInt(item.rank, 10)
+            rank: Number.parseInt(item.rank, 10)
         }));
 
         return {

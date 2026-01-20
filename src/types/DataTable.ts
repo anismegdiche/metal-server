@@ -99,7 +99,7 @@ function duckDb_Sql_SafeName(table: string): string {
 }
 
 function duckDb_Sql_SafeSeqName(table: string): string {
-    return `seq_${table.replace(/[^a-zA-Z0-9_]/g, '_')}`
+    return `seq_${table.replaceAll(/[^a-zA-Z0-9_]/g, '_')}`
 }
 
 export function duckDb_Sql_CreateTable(table: string): string {
@@ -204,7 +204,7 @@ export function dataTable_convertSql(sql?: string): string {
             case token.type === SQL_TYPE.VARIABLE
                 && !dataTable_fieldIsSystem(token.token)
                 && !['FROM', 'INTO', 'SET'].includes(token.context):
-                token.token = `(__data__->'${token.token.replace(/"/g, '')}')`
+                token.token = `(__data__->'${token.token.replaceAll(/"/g, '')}')`
                 break
 
             case token.type === SQL_TYPE.STRING
@@ -217,7 +217,7 @@ export function dataTable_convertSql(sql?: string): string {
             case token.type === SQL_TYPE.FIELD
                 && !dataTable_fieldIsSystem(token.token)
                 && token.context === 'SELECT':
-                token.token = `(__data__->'${token.token.replace(/"/g, '')}') AS ${token.token}`
+                token.token = `(__data__->'${token.token.replaceAll(/"/g, '')}') AS ${token.token}`
                 break
             default:
                 break
@@ -239,7 +239,7 @@ export function dataTable_convertSql(sql?: string): string {
                     setToken += token.token
                     break
                 case token.type === SQL_TYPE.VARIABLE:
-                    setToken += `'${token.token.replace(/"/g, '')}'`
+                    setToken += `'${token.token.replaceAll(/"/g, '')}'`
                     break
                 default:
                     setToken += token.token
@@ -341,15 +341,15 @@ class LazyResult<T> {
         // Clean up query - remove any existing LIMIT/OFFSET
         const cleanQuery = this.baseQuery
             .trim()
-            .replace(/LIMIT\s+\d+\s*/gi, '')
-            .replace(/OFFSET\s+\d+\s*/gi, '')
+            .replaceAll(/LIMIT\s+\d+\s*/gi, '')
+            .replaceAll(/OFFSET\s+\d+\s*/gi, '')
 
         const query = `${cleanQuery} LIMIT ${this.batchSize} OFFSET ${this.offset}`
 
         try {
             const reader = await this._duckConnection.runAndReadAll(
                 query,
-                this.queryParams as DuckDBValue[]
+                this.queryParams
             )
             const rows = reader.getRowObjects()
 
@@ -380,13 +380,13 @@ class LazyResult<T> {
         try {
             const cleanQuery = this.baseQuery
                 .trim()
-                .replace(/LIMIT\s+\d+\s*/gi, '')
-                .replace(/OFFSET\s+\d+\s*/gi, '')
+                .replaceAll(/LIMIT\s+\d+\s*/gi, '')
+                .replaceAll(/OFFSET\s+\d+\s*/gi, '')
 
             const countQuery = `SELECT COUNT(*) as count FROM (${cleanQuery}) AS __count_query`
             const reader = await this._duckConnection.runAndReadAll(
                 countQuery,
-                this.queryParams as DuckDBValue[]
+                this.queryParams
             )
             const rows = reader.getRowObjects()
             this.totalCount = Number(rows[0]?.count ?? 0)
@@ -809,7 +809,7 @@ export class DataTable extends clsClonable {
             FROM
                 duckdb_tables()
             WHERE
-                table_name = '${this.SafeName.replace(/"/g, '')}'
+                table_name = '${this.SafeName.replaceAll(/"/g, '')}'
             `
         const reader = await cnx.runAndReadAll(sql)
         const stats = reader.getRowObjects()[0]

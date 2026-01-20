@@ -58,7 +58,7 @@ export class CosmosDbData extends absDataProvider {
 
     #getPartitionKey(item: any, path?: string): any {
         if (!path) return undefined
-        const key = path.replace(/^\//, '')
+        const key = path.replaceAll(/^\//, '')
         return item[key]
     }
 

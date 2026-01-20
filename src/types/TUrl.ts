@@ -47,7 +47,7 @@ export const z_TUrl = z.string().refine((val) => {
         if (ipv4Match) {
           // Validate each octet is between 0-255
           return ipv4Match.slice(1).every((octet) => {
-            const num = parseInt(octet, 10);
+            const num = Number.parseInt(octet, 10);
             return num >= 0 && num <= 255;
           });
         }

@@ -101,7 +101,7 @@ export class Schedule {
         const jobKey = findKey(this.Jobs, ["name", jobName])
 
         if (jobKey) {
-            const _jobKey = parseInt(jobKey, 10)
+            const _jobKey = Number.parseInt(jobKey, 10)
             this.Jobs[_jobKey]!.cronJob.stop()
             return HttpResponse.Ok({ message: `Job '${jobName}' stopped` })
         }

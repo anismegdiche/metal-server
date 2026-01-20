@@ -14,7 +14,7 @@ const ARGUMENT_NAMES = /([^\s,]+)/g
 //
 export class DecoratorUtils {
     static GetParameters(originalMethod: Function, ...args: any[]): TJson {
-        const fnStr = originalMethod.toString().replace(STRIP_COMMENTS, '')
+        const fnStr = originalMethod.toString().replaceAll(STRIP_COMMENTS, '')
         const params = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES)
         return (params)
             ? Object.fromEntries(params.map((name, index) => [name, args[index]]))

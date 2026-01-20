@@ -61,7 +61,7 @@ export class JsonUtils {
         if (!jsonPath)
             return json as T
 
-        const _jsonPath = jsonPath.replace(/\[(\d+)\]/g, '.$1')
+        const _jsonPath = jsonPath.replaceAll(/\[(\d+)\]/g, '.$1')
 
         const extractedData = objectPath.get(json, _jsonPath) ?? get(json, jsonPath)
 
@@ -144,7 +144,7 @@ export class JsonUtils {
         forEach(obj, (v, k) => {
             switch (true) {
                 case isString(v):
-                    obj[k] = v.replace(pattern, replacement)
+                    obj[k] = v.replaceAll(pattern, replacement)
                     break
                 case JsonUtils.IsJson(v):
                     obj[k] = JsonUtils.ReplaceStrings(v as TJson, pattern, replacement)

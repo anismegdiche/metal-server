@@ -12,7 +12,7 @@ import { ResponseHandler } from '../ResponseHandler'
 //
 export class UserResponse {
     static GetRequestToken(req: Request): string | undefined {
-        return req.headers.authorization?.replace('Bearer ', '')
+        return req.headers.authorization?.replaceAll('Bearer ', '')
     }
 
     static async Authenticate(req: Request, res: Response): Promise<void> {

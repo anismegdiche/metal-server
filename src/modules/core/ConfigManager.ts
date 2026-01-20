@@ -2,7 +2,7 @@
 //
 //
 import * as dotenv from 'dotenv'
-import * as Fs from 'fs'
+import * as Fs from 'node:fs'
 import * as Yaml from 'js-yaml'
 import { has, merge } from 'lodash-es'
 //
@@ -74,7 +74,7 @@ export class ConfigManager {
     static async Load(): Promise<U_config> {
         dotenv.config({ path: ConfigManager.EnvFilePath })
         const configFileRaw = Fs.readFileSync(ConfigManager.ConfigFilePath, 'utf8')
-        const configInterpol = configFileRaw.replace(/\$(?:{([^{}]*)})/g, (match, envVarName) => {
+        const configInterpol = configFileRaw.replaceAll(/\$(?:{([^{}]*)})/g, (match, envVarName) => {
             return process.env[envVarName] ?? match
         })
 

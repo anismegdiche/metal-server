@@ -1,9 +1,10 @@
+/* eslint-disable security/detect-non-literal-fs-filename */
 /* eslint-disable no-case-declarations */
 //
 //
 //
 import DataType, { DuckDBScalarFunction } from "@duckdb/node-api"
-import { createHash, createHmac, randomUUID } from "crypto"
+import { createHash, createHmac, randomUUID } from "node:crypto"
 import { omit } from "lodash-es"
 import fs from 'node:fs'
 //
@@ -484,11 +485,6 @@ export class DataTableUtils {
             let whereClause = ''
             let methodClause = ''
             switch (strategy) {
-                case REMOVE_DUPLICATES_STRATEGY.FIRST:
-                default:
-                    orderByClause = 'ORDER BY __seq__ ASC'
-                    break
-
                 case REMOVE_DUPLICATES_STRATEGY.LAST:
                     orderByClause = 'ORDER BY __seq__ DESC'
                     break
@@ -510,7 +506,7 @@ export class DataTableUtils {
                             WHEN LOWER(__data__->>'$.${condition}') = 'false' THEN 0.0
                             ELSE NULL
                         END`
-                        .replace(/\s+/g, ' '); // remove excessive whitespace for readability in SQL
+                        .replaceAll(/\s+/g, ' '); // remove excessive whitespace for readability in SQL
 
                     // A small helper: prefer rows with a defined value (0) before undefined (1)
                     const definedFirstExpr = `
@@ -519,7 +515,7 @@ export class DataTableUtils {
                             WHEN LOWER(__data__->>'$.${condition}') IN ('true','false') THEN 0
                             ELSE 1
                         END`
-                        .replace(/\s+/g, ' ');
+                        .replaceAll(/\s+/g, ' ');
 
                     if (strategy === REMOVE_DUPLICATES_STRATEGY.HIGHEST) {
                         // prefer defined rows, then highest normalized value
@@ -533,6 +529,11 @@ export class DataTableUtils {
                 case REMOVE_DUPLICATES_STRATEGY.CUSTOM:
                     whereClause = `CASE WHEN ${dataTable_convertSql(condition)} THEN 0 ELSE 1 END`
                     orderByClause = `ORDER BY ${whereClause}, __seq__ ASC` // Default order for custom strategy
+                    break
+                
+                case REMOVE_DUPLICATES_STRATEGY.FIRST:
+                default:
+                    orderByClause = 'ORDER BY __seq__ ASC'
                     break
             }
 
@@ -888,7 +889,7 @@ export class DataTableUtils {
     //     const rowCount = rows.length
 
     //     // Create a temporary table to store the transposed data
-    //     const tempTableName = `temp_transposed_${randomUUID().replace(/-/g, '_')}`
+    //     const tempTableName = `temp_transposed_${randomUUID().replaceAll(/-/g, '_')}`
 
     //     try {
     //         // Create the transposed table with dynamic columns

@@ -254,7 +254,7 @@ export class SqlServerData extends absDataProvider {
 
 
     EscapeEntity(entity: string): string {
-        return `[${entity}]`.replace(/\./g, "].[")
+        return `[${entity}]`.replaceAll(/\./g, "].[")
     }
 
 

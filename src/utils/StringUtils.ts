@@ -18,8 +18,8 @@ export class StringUtils {
     }
 
     static FixObjectMissingQuotes(str: string): string {
-        const stringFixed = str.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
-        return stringFixed.replace(/:\s*([^"{[,\s][^,\s}]*)/g, ':"$1"')
+        const stringFixed = str.replaceAll(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+        return stringFixed.replaceAll(/:\s*([^"{[,\s][^,\s}]*)/g, ':"$1"')
     }
 
     static IsEmpty(str: string | undefined | null): boolean {
@@ -32,7 +32,7 @@ export class StringUtils {
             return ''
 
         return urlJoin(...cleanSubPaths)
-            .replace(/\\/g, '/')
+            .replaceAll(/\\/g, '/')
     }
 
     static Path(...subPaths: Array<string | undefined>) {

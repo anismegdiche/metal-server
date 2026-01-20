@@ -112,14 +112,14 @@ export class XlsContent extends absContentProvider {
 
         const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
-        const fields = _.compact(worksheet.getRow(parseInt(startRow, 10)).values as string[])
+        const fields = _.compact(worksheet.getRow(Number.parseInt(startRow, 10)).values as string[])
 
         if (fields == undefined || fields.length == 0)
             throw new HttpErrorInternalServerError(`Data in "${sheetName}" not found.`)
 
         const rows: TJson[] = []
         worksheet.eachRow({ includeEmpty: false }, (sheetRow, sheetRowNumber) => {
-            if (sheetRowNumber > parseInt(startRow, 10)) {
+            if (sheetRowNumber > Number.parseInt(startRow, 10)) {
                 const row: TJson = fields.reduce((_row: TJson, field: string, index: number) => {
                     let cellValue = sheetRow.getCell(colIndex + index).value
 
@@ -197,13 +197,13 @@ export class XlsContent extends absContentProvider {
         // Set headers
         const fields: string[] = Object.keys((await data.Row(0)))
         fields.forEach((field, colIdx) => {
-            worksheet.getCell(parseInt(startRow, 10), colIndex + colIdx).value = field
+            worksheet.getCell(Number.parseInt(startRow, 10), colIndex + colIdx).value = field
         })
 
             // Set data
             ; (await data.Rows()).forEach((row, rowIndex) => {
                 fields.forEach((field: string, fieldIdx: number) => {
-                    const _rowIdx = parseInt(startRow, 10) + 1 + rowIndex
+                    const _rowIdx = Number.parseInt(startRow, 10) + 1 + rowIndex
                     const _colIdx: number = colIndex + fieldIdx
 
                     let _valueToSet = row[field]

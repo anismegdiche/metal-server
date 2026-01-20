@@ -53,7 +53,7 @@ describe("StorageFilesData", () => {
         (StorageProvider.GetProvider as Mock).mockReturnValue(mockStorageProvider);
         (ContentProvider.GetProvider as Mock).mockReturnValue(mockContentProvider);
 
-        (Convert.PatternToRegex as Mock).mockImplementation((pattern: string) => new RegExp(pattern.replace("*", ".*")))
+        (Convert.PatternToRegex as Mock).mockImplementation((pattern: string) => new RegExp(pattern.replaceAll("*", ".*")))
 
         // Create instance
         storageFilesData = new StorageFilesData()
@@ -423,7 +423,7 @@ describe("StorageFilesData", () => {
 
             // Verify that the data was filtered
             const dataArg = (HttpResponse.Ok as Mock).mock.calls[0]![0];
-            const filteredRows = await (dataArg.data as any).Rows();
+            const filteredRows = await (dataArg.data).Rows();
 
             // Should only include files matching the content handler patterns (*.json and users/*)
             expect(filteredRows).toHaveLength(2);
