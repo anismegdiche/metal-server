@@ -81,7 +81,6 @@ export class Image extends absAiEngine implements IAiEngine {
         await super.Init(aiName, aiConfig)
 
         this.AiDockerService = {
-            // [`${AI_ENGINE.IMAGE}-${IMAGE_TASK.DEPTH_ESTIMATION}`]: ImageImageDepthEstimationDockerService,
             [`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_CLASSIFICATION}`]: ImageImageClassificationDockerService,
             [`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_SEGMENTATION}`]: ImageImageSegmentationDockerService,
             [`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_TO_TEXT}`]: ImageImageToTextDockerService,
@@ -90,7 +89,6 @@ export class Image extends absAiEngine implements IAiEngine {
         }
 
         this.RunTask = {
-            // [IMAGE_TASK.DEPTH_ESTIMATION]: async (args: TAiRunArguments) => await this.DepthEstimation(args),
             [IMAGE_TASK.IMAGE_CLASSIFICATION]: async (args: TAiArguments) => await this.ImageClassification(args),
             [IMAGE_TASK.IMAGE_SEGMENTATION]: async (args: TAiArguments) => await this.ImageSegmentation(args),
             [IMAGE_TASK.IMAGE_TO_TEXT]: async (args: TAiArguments) => await this.ImageToText(args),

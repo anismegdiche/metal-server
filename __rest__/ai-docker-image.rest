@@ -10,19 +10,6 @@
 @city1 = city1.jpg
 
 
-# //XXX to remove from catalogue
-# ### @name depth-estimation
-# POST {{apiUrl}}:5301/image-depth-estimation/run
-# Content-Type: multipart/form-data; boundary=image
-
-# --image
-# Content-Disposition: form-data; name="input_data"; filename="{{photo1}}"
-# Content-Type: image/jpeg
-
-# < ../data/pic/{{photo1}}
-# --image--
-
-
 ### @name image-classification-health
 GET {{apiUrl}}:5302/image-image-classification/health
 Content-Type: application/json

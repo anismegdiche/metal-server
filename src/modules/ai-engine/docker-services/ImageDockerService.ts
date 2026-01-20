@@ -5,20 +5,6 @@ import type { TAiDockerService } from '../types/TAiDockerService';
 import { DOCKER } from '../consts/DOCKER';
 import { AI_DOCKER_MODEL_PATH } from '../@consts';
 
-
-//
-export const ImageImageDepthEstimationDockerService: TAiDockerService = {
-    Name: 'image-depth-estimation',
-    Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-image-depth-estimation:1.0.0`,
-    ImageContext: {
-        context: `${process.cwd()}/.docker/ai-engines/services/image/depth-estimation`,
-        src: ['.', './requirements.txt']
-    },
-    InternalUrl: '/image-depth-estimation',
-    DockerVolume: [`${AI_DOCKER_MODEL_PATH}/image:/data`]
-};
-
 export const ImageImageClassificationDockerService: TAiDockerService = {
     Name: 'image-image-classification',
     Port: 5000,

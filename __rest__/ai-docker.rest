@@ -473,27 +473,6 @@ Content-Type: image/jpeg
 #   ]
 # }
 
-# ### @name depth-estimation
-# POST {{baseUrl}}/image/depth-estimation
-# Content-Type: multipart/form-data; boundary=image
-
-# --image
-# Content-Disposition: form-data; name="file"; filename="{{photo1}}"
-# Content-Type: image/jpeg
-
-# < ../data/pic/{{photo1}}
-# --image--
-
-# ### @name image-to-image
-# POST {{baseUrl}}/image/image-to-image
-# Content-Type: multipart/form-data; boundary=image
-
-# --image
-# Content-Disposition: form-data; name="file"; filename="{{photo1}}"
-# Content-Type: image/jpeg
-
-# < ../data/pic/{{photo1}}
-# --image--
 
 ### 3. AUDIO PIPELINES
 
