@@ -11,6 +11,10 @@ services:
     image: metal-ai-engine-base-image:1.0.0
     build: ./services/base/image
 
+  base-audio:
+    image: metal-ai-engine-base-audio:1.0.0
+    build: ./services/base/audio
+
   #
   # Text
   #
@@ -104,15 +108,6 @@ services:
     volumes:
       - ./services/text/summarization:/app
       - metal-model-cache:/data/models
-
-  # text-text2text-generation:
-  #   build: ./services/text/text2text-generation
-  #   command: uvicorn app:app --host 0.0.0.0 --port 5000 --reload
-  #   ports:
-  #     - "5111:5000"
-  #   volumes:
-  #     - ./services/text/text2text-generation:/app
-  #     - metal-model-cache:/data/models
 
   text-text-generation:
     build: ./services/text/text-generation

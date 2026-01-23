@@ -36,5 +36,7 @@
   "errorLens.problemRangeDecorationEnabled": true,
   "errorLens.removeLinebreaks": false,
   "errorLens.statusBarColorsEnabled": true,
-  "errorLens.statusBarIconsEnabled": true
+  "errorLens.statusBarIconsEnabled": true,
+  "snyk.advanced.organization": "b3bc97ae-c17f-48a3-8496-d132c738ec92",
+  "snyk.advanced.autoSelectOrganization": true
 }

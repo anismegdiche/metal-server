@@ -59,7 +59,7 @@ export class AiDocker {
     }
 
     @Logger.LogFunction()
-    static async Init() {
+    static async Init(isBuildMode = false) {
 
         const _dockerOptions = ConfigManager.Get<DockerOptions>("server.ai-engines.params")
         AiDocker.ServiceInstance.Timeout = ConfigManager.Get<number>("server.ai-engines.timeout")
@@ -86,15 +86,16 @@ export class AiDocker {
             await AiDocker.docker.ping()
             Logger.Info(`${Logger.Out} Docker daemon is reachable`)
 
-            await AiDocker.CleanStack()
-            //XXX await AiDocker.BuildServiceImage(BaseTextDockerService)
+            if (!isBuildMode) {
+                await AiDocker.CleanStack()
+                //XXX await AiDocker.BuildServiceImage(BaseTextDockerService)
 
-            Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
-            await AiDocker.CreateNetwork().catch(Logger.Error)
-            await AiDocker.StartCaddy().catch(Logger.Error)
-
-            AiDocker.StartScaler()
-            Logger.Info(`${Logger.Out} AI Engine stack manager started`)
+                Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
+                await AiDocker.CreateNetwork().catch(Logger.Error)
+                await AiDocker.StartCaddy().catch(Logger.Error)
+                AiDocker.StartScaler()
+                Logger.Info(`${Logger.Out} AI Engine stack manager started`)
+            }
         } catch (error) {
             throw new HttpErrorInternalServerError(`AiDocker.Init: ${(error as Error).message}`)
         }
@@ -231,7 +232,16 @@ export class AiDocker {
     static async BuildServiceImage(service: TAiDockerService): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
-                const existingImages = await AiDocker.docker.listImages({ filters: { reference: [service.ImageName] } })
+                const existingImages = await AiDocker.docker.listImages({
+                    filters: {
+                        reference: [service.ImageName]
+                    }
+                })
+                    .catch((error) => {
+                        Logger.Error(`Error listing images: ${error.message}`)
+                        return [] as Docker.ImageInfo[]
+                    })
+
                 if (existingImages.length > 0) {
                     Logger.Info(`${Logger.Out} 📦 Image ${service.ImageName} already exists. Skipping build.`)
                     return resolve()
@@ -439,12 +449,16 @@ export class AiDocker {
     }
 
     @Logger.LogFunction()
-    static async ListActiveContainers(service: TAiDockerService) {
+    static async ListActiveContainers(service: TAiDockerService): Promise<Docker.ContainerInfo[]> {
         return AiDocker.docker.listContainers({
             filters: {
                 label: [`service=${service.InstanceName ?? service.Name}`]
             }
         })
+            .catch(() => {
+                Logger.Error(`${Logger.Out} Failed to list containers for '${service.InstanceName ?? service.Name}'`)
+                return []
+            })
     }
 
     @Logger.LogFunction()
@@ -562,8 +576,8 @@ export class AiDocker {
                         return percentages.reduce((sum, p) => sum + p, 0) / percentages.length
 
                     } catch (error) {
-                        Logger.Warn(`Error getting CPU stats for container '${service.Name}/${containerInfo.Names[0]}' returning 0: ${error instanceof Error
-                            ? error.message
+                        Logger.Warn(`Failed to get CPU stats for container '${service.Name}/${containerInfo.Names[0]}' returning 0: ${error instanceof Error
+                            ? error?.message
                             : String(error)}`)
                         return 0 //NaN
                     }

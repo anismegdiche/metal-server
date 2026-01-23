@@ -8,9 +8,20 @@ from fastapi import FastAPI, HTTPException, status, APIRouter
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import Dict, Any, Union, List
+from typing import Dict, Any, Union, List, Optional
 import logging
+import os
+import psutil
 from transformers import pipeline
+
+# CPU monitoring history
+CPU_HISTORY: List[float] = []
+MAX_HISTORY = int(os.getenv("MAX_HISTORY", 5))
+MAX_LOAD = float(os.getenv("MAX_LOAD", 70))
+
+# Initialize psutil to get accurate readings later
+process = psutil.Process()
+process.cpu_percent(interval=None)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -66,6 +77,20 @@ async def health() -> str:
 
 @router.post("/run", response_model=SummarizationResponse)
 async def run_summarization(request: Union[SummarizationRequest, Dict[str, Any]]) -> SummarizationResponse:
+    # Update CPU history with a new snapshot
+    current_cpu = process.cpu_percent(interval=None)
+    CPU_HISTORY.append(current_cpu)
+    if len(CPU_HISTORY) > MAX_HISTORY:
+        CPU_HISTORY.pop(0)
+    avg_cpu = sum(CPU_HISTORY) / len(CPU_HISTORY)
+    logger.info(f"ℹ️ Average CPU usage: {avg_cpu:.2f}%")
+    if avg_cpu > MAX_LOAD:
+        logger.warning(f"⚠️ Average CPU usage too high: {avg_cpu:.2f}%")
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Server is overloaded. Please try again later.",
+            headers={"Retry-After": "15"}
+        )
     if isinstance(request, dict):
         request = SummarizationRequest(**request)
     input_data = request.input_data

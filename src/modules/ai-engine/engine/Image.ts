@@ -1,22 +1,20 @@
 //
 //
 //
-import axios, { type AxiosResponse } from 'axios';
-import * as _ from 'lodash-es';
+import { merge } from 'lodash-es'
 //
-import { Assert } from '../../../utils/Assert';
-import { Logger } from '../../../utils/Logger';
-import { StringUtils } from "../../../utils/StringUtils";
-import { Utils } from '../../../utils/Utils';
-import { AI_ENGINE } from '../@consts';
-import type { TAiArguments, TAiOutput } from '../@types';
-import { AiDocker } from '../AiDocker';
-import { absAiEngine } from '../base/absAiEngine';
-import type { IAiEngine } from '../base/IAiEngine';
-import { IMAGE_TASK } from "../consts/IMAGE";
-import { ImageImageClassificationDockerService, ImageImageSegmentationDockerService, ImageImageToTextDockerService, ImageObjectDetectionDockerService, ImageVisualQuestionAnsweringDockerService } from '../docker-services/ImageDockerService';
-import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine";
-import type { TAiDockerService } from '../types/TAiDockerService';
+import { Assert } from '../../../utils/Assert'
+import { Logger } from '../../../utils/Logger'
+import { Utils } from '../../../utils/Utils'
+import { AI_ENGINE } from '../@consts'
+import type { TAiArguments, TAiOutput } from '../@types'
+import { AiDocker } from '../AiDocker'
+import { absAiEngine } from '../base/absAiEngine'
+import type { IAiEngine } from '../base/IAiEngine'
+import { IMAGE_TASK } from "../consts/IMAGE"
+import { ImageImageClassificationDockerService, ImageImageSegmentationDockerService, ImageImageToTextDockerService, ImageObjectDetectionDockerService, ImageVisualQuestionAnsweringDockerService } from '../docker-services/ImageDockerService'
+import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
+import type { TAiDockerService } from '../types/TAiDockerService'
 import type {
     U_config_plans_plan_entity_run_ai_image_image_classification_Params,
     U_config_plans_plan_entity_run_ai_image_image_segmentation_Params,
@@ -24,15 +22,8 @@ import type {
     U_config_plans_plan_entity_run_ai_image_object_detection_Params,
     U_config_plans_plan_entity_run_ai_image_Params,
     U_config_plans_plan_entity_run_ai_image_visual_question_answering_Params
-} from '../types/U_config_plans_plan_entity_run_ai_image_Params';
+} from '../types/U_config_plans_plan_entity_run_ai_image_Params'
 
-
-//
-const IMAGE_DEFAULT_HEADERS = {
-    headers: {
-        'Content-Type': 'application/json'
-    }
-}
 
 //
 export class Image extends absAiEngine implements IAiEngine {
@@ -49,37 +40,8 @@ export class Image extends absAiEngine implements IAiEngine {
         super()
     }
 
-    async _postData(data: any, params: any): Promise<AxiosResponse> {
-
-        const _url = StringUtils.Url(this.InstanceApiUrl, 'run')
-        while (true) {
-            try {
-                return await axios.post(
-                    _url,
-                    {
-                        input_data: data,
-                        params
-                    },
-                    IMAGE_DEFAULT_HEADERS
-                )
-            } catch (error: any) {
-                if (error.response?.status === 429) {
-                    Logger.Info(`${this.InstanceName} processing is busy, retrying`)
-                } else {
-                    Logger.Warn(`${this.InstanceName} processing failed: ${error.response?.data?.message ?? error.message}`)
-                }
-                await Utils.Sleep(200)
-                // } else {
-                //     throw new HttpErrorInternalServerError(`Image processing failed: ${error.response?.data?.message ?? error.message}`)
-                // }
-            }
-        }
-    }
-
     @Logger.LogFunction()
-    async Init(aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
-        await super.Init(aiName, aiConfig)
-
+    async Prepare(): Promise<void> {
         this.AiDockerService = {
             [`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_CLASSIFICATION}`]: ImageImageClassificationDockerService,
             [`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_SEGMENTATION}`]: ImageImageSegmentationDockerService,
@@ -95,7 +57,12 @@ export class Image extends absAiEngine implements IAiEngine {
             [IMAGE_TASK.OBJECT_DETECTION]: async (args: TAiArguments) => await this.ObjectDetection(args),
             [IMAGE_TASK.VISUAL_QUESTION_ANSWERING]: async (args: TAiArguments) => await this.VisualQuestionAnswering(args)
         }
+    }
 
+    @Logger.LogFunction()
+    async Init(aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
+        await super.Init(aiName, aiConfig)
+        await this.Prepare()
         await AiDocker.StartService({
             InstanceName: aiName,
             ...this.AiDockerService[this.InstanceName] as TAiDockerService
@@ -106,7 +73,7 @@ export class Image extends absAiEngine implements IAiEngine {
 
     @Logger.LogFunction(true)
     async Run(args: TAiArguments): Promise<TAiOutput> {
-        const _args: U_config_plans_plan_entity_run_ai_image_Params = _.merge(this.DEFAULT, args)
+        const _args: U_config_plans_plan_entity_run_ai_image_Params = merge(this.DEFAULT, args)
         const { task } = _args
 
         Assert.Condition(Object.values(IMAGE_TASK).includes(task as IMAGE_TASK), `Invalid image task: ${task}`)

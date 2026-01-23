@@ -10,12 +10,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional
 import logging
+import os
+import psutil
 from transformers import pipeline
 import soundfile as sf
 import numpy as np
 import io
 import base64
 from io import BytesIO
+
+# CPU monitoring history
+CPU_HISTORY: List[float] = []
+MAX_HISTORY = int(os.getenv("MAX_HISTORY", 5))
+MAX_LOAD = float(os.getenv("MAX_LOAD", 70))
+
+# Initialize psutil to get accurate readings later
+# Using Process().cpu_percent() provides usage relative to one CPU core (100% = 1 core)
+# which is consistent with Docker monitoring and container limits.
+process = psutil.Process()
+process.cpu_percent(interval=None)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -100,6 +113,25 @@ async def run(
     Args:
         request: Request containing base64-encoded audio data and optional parameters
     """
+    # Update CPU history with a new snapshot (per-process usage)
+    current_cpu = process.cpu_percent(interval=None)
+    CPU_HISTORY.append(current_cpu)
+    if len(CPU_HISTORY) > MAX_HISTORY:
+        CPU_HISTORY.pop(0)
+    
+    # Calculate average
+    avg_cpu = sum(CPU_HISTORY) / len(CPU_HISTORY)
+
+    logger.info(f"ℹ️ Average CPU usage: {avg_cpu:.2f}%")
+    
+    if avg_cpu > MAX_LOAD:
+        logger.warning(f"⚠️ Average CPU usage too high: {avg_cpu:.2f}%")
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Server is overloaded. Please try again later.",
+            headers={"Retry-After": "15"}
+        )
+
     try:
         # Decode base64 audio
         audio_data = base64.b64decode(request.input_data)
@@ -150,7 +182,3 @@ if __name__ == "__main__":
         exit(0)
     
     uvicorn.run(app, host="0.0.0.0", port=5000)
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)

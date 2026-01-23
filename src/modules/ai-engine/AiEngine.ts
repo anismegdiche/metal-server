@@ -39,7 +39,6 @@ const engineLoaders: Record<string, ProviderLoader> = {
 export class AiEngine {
     static readonly #aiEngineFactory = new Factory<IAiEngine>();
     static readonly #loadingPromises = new Map<string, Promise<IAiEngine>>();
-
     static #aiEnginesConfig: TJson<T_config_ai_engines_ai_engine> = {};
     static AiEnginesInstance: Map<string, IAiEngine> = new Map();
 

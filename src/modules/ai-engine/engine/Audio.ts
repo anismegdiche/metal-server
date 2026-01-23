@@ -1,12 +1,10 @@
 //
 //
 //
-import axios from 'axios'
 import { merge } from 'lodash-es'
 //
 import { Assert } from '../../../utils/Assert'
 import { Logger } from '../../../utils/Logger'
-import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from '../../../utils/Utils'
 import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
 import { AI_ENGINE } from '../@consts'
@@ -20,12 +18,6 @@ import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines
 import type { TAiDockerService } from '../types/TAiDockerService'
 import type { U_config_plans_plan_entity_run_ai_audio_Params } from '../types/U_config_plans_plan_entity_run_ai_audio_Params'
 
-//
-const AUDIO_DEFAULT_HEADERS = {
-    headers: {
-        'Content-Type': 'application/json'
-    }
-}
 
 //
 export class Audio extends absAiEngine implements IAiEngine {
@@ -45,9 +37,7 @@ export class Audio extends absAiEngine implements IAiEngine {
     }
 
     @Logger.LogFunction()
-    async Init(aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
-        await super.Init(aiName, aiConfig)
-
+    async Prepare() {
         this.AiDockerService = {
             [`${AI_ENGINE.AUDIO}-${AUDIO_TASK.AUDIO_CLASSIFICATION}`]: AudioAudioClassificationDockerService,
             [`${AI_ENGINE.AUDIO}-${AUDIO_TASK.AUTOMATIC_SPEECH_RECOGNITION}`]: AudioAutomaticSpeechRecognitionDockerService
@@ -57,7 +47,12 @@ export class Audio extends absAiEngine implements IAiEngine {
             [AUDIO_TASK.AUDIO_CLASSIFICATION]: async (args: TAiArguments) => await this.AudioClassification(args),
             [AUDIO_TASK.AUTOMATIC_SPEECH_RECOGNITION]: async (args: TAiArguments) => await this.AutomaticSpeechRecognition(args)
         }
+    }
 
+    @Logger.LogFunction()
+    async Init(aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
+        await super.Init(aiName, aiConfig)
+        await this.Prepare()
         await AiDocker.StartService({
             InstanceName: aiName,
             ...this.AiDockerService[this.InstanceName] as TAiDockerService
@@ -79,26 +74,15 @@ export class Audio extends absAiEngine implements IAiEngine {
 
     @Logger.LogFunction(true)
     async AudioClassification(args: TAiArguments): Promise<TAiOutput> {
-        const { data } = args;
-        const { params } = args as U_config_plans_plan_entity_run_ai_audio_Params;
+        const { data } = args
+        const { params } = args as U_config_plans_plan_entity_run_ai_audio_Params
 
         Assert.Var(data, 'data is required')
 
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            'run'
-        )
-
-        const response = await axios.post(
-            _url,
-            {
-                input_data: data,
-                params
-            },
-            AUDIO_DEFAULT_HEADERS
-        ).catch(error => {
-            throw new HttpErrorInternalServerError(`Audio processing failed: ${error.response?.data?.message ?? error.message}`)
-        })
+        const response = await this._postData(data, params)
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Audio processing failed: ${error.response?.data?.message ?? error.message}`)
+            })
 
         if (response.data.result === undefined) {
             Logger.Error(`Audio processing failed: ${response.data.message}`)
@@ -111,13 +95,13 @@ export class Audio extends absAiEngine implements IAiEngine {
             sad: "sad",
             neu: "neutral",
             ang: "angry"
-        };
+        }
 
         const result = response.data.result.reduce((obj: { [x: string]: any }, item: { label: string; score: number }) => {
-            const fullName: string = labelMap[item.label as string] || item.label; // fallback to acronym if not found
-            obj[fullName] = item.score;
-            return obj;
-        }, {});
+            const fullName: string = labelMap[item.label as string] || item.label // fallback to acronym if not found
+            obj[fullName] = item.score
+            return obj
+        }, {})
 
         return result
 
@@ -132,26 +116,13 @@ export class Audio extends absAiEngine implements IAiEngine {
 
     @Logger.LogFunction(true)
     async AutomaticSpeechRecognition(args: TAiArguments): Promise<TAiOutput> {
-        const { data } = args;
-        const { params } = args as U_config_plans_plan_entity_run_ai_audio_Params;
+        const { data } = args
+        const { params } = args as U_config_plans_plan_entity_run_ai_audio_Params
 
-        Assert.Var(data, 'data is required')
-
-        const _url = StringUtils.Url(
-            this.InstanceApiUrl,
-            'run'
-        )
-
-        const response = await axios.post(
-            _url,
-            {
-                input_data: data,
-                params
-            },
-            AUDIO_DEFAULT_HEADERS
-        ).catch(error => {
-            throw new HttpErrorInternalServerError(`Audio processing failed: ${error.response?.data?.message ?? error.message}`)
-        })
+        const response = await this._postData(data, params)
+            .catch(error => {
+                throw new HttpErrorInternalServerError(`Audio processing failed: ${error.response?.data?.message ?? error.message}`)
+            })
 
         return response.data.result.text.trim()
     }

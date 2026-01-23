@@ -1,0 +1,94 @@
+version: "0.5"
+
+server:
+  port: 3000
+  verbosity: debug
+  timezone: UTC
+  request-limit: 100mb
+  response-limit: 100mb
+  authentication:
+    provider: local
+    default-role: all
+  cache:
+    provider: memory
+    database: cache
+    options:
+      autocreate: true
+  ai-engines:
+    engines-url: http://127.0.0.1:5000
+    timeout: 600000
+    min-instance: 2
+    # params:
+    #   host: "127.0.0.1"  # or your machine IP
+    #   port: 2375         # exposed from docker-compose
+
+roles:
+  all: lacrud
+
+users:
+  myapiuser:
+    password: myStr@ngpa$$w0rd
+
+sources:
+  src-fs:
+    provider: storage
+    options:
+      mode: folders
+      storage-type: fs
+      fs-folder: ./data/
+  src-json:
+    provider: storage
+    options:
+      mode: files
+      storage-type: fs
+      fs-folder: ./data/
+      autocreate: true
+      content:
+        "*.json":
+          content-type: json
+          json-path: rows
+
+  src-myplan:
+    provider: plan
+    database: myplan
+
+schemas:
+  fs:
+    source: src-fs
+  myplan:
+    source: src-myplan
+  json:
+    source: src-json
+
+schedules:
+  # "p1":
+  #   plan: myplan
+  #   entity: myentity
+  #   cron: "*/5 * * * *"
+  "p2":
+    plan: myplan
+    entity: myentity
+    cron: "@start"
+
+plans:
+  myplan:
+    myentity:
+      - select:
+          schema: fs
+          entity: rec
+          fields: "*,content"
+          sort:
+            name: asc
+
+      - run:
+          ai: image
+          task: image-to-text
+          input: content
+          output:
+            description: ${{ $result.text }}
+
+      - omit: [content]
+
+      - insert:
+          schema: json
+          entity: recovered.json
