@@ -3,10 +3,14 @@ base image audio #dev {start:2026-01-21T21:40:09} {cm:2026-01-22} {duration:21h5
 test audio #test {start:2026-01-21T21:50:17} {cm:2026-01-22} {duration:21h47m} {h}
 check ocr #dev {start:2026-01-22T19:38:01} {cm:2026-01-22} {duration:31m} {h}
 update url post code for all ai services like Image.ts #dev {start:2026-01-22T19:38:14} {cm:2026-01-22} {duration:01m} {h}
-test build mode #test {start:2026-01-22T19:39:52} {cm:2026-01-22} {duration:01h42m}
-test new ai images #test {start:2026-01-22T20:11:06}
+test build mode #test {start:2026-01-22T19:39:52} {cm:2026-01-22} {duration:01h42m} {h}
+test new ai images #test {start:2026-01-22T20:11:06} {cm:2026-01-27} {duration:5d_21m}
 check docs ai services #test
 check docs build mode #doc
 
+async Text.ts #dev {start:2026-01-23T17:52:55} {cm:2026-01-23} {duration:11m} {h}
+async Audio.ts #dev {start:2026-01-23T18:08:07} {cm:2026-01-23} {duration:48m} {h}
+async Image.ts #dev {cm:2026-01-23} {h}
+async OCr.ts #dev  {cm:2026-01-23} {h}
+CSV file data test #test
 hot load after plan reload #feature
-async Text.ts #dev {start:2026-01-23T17:52:55}

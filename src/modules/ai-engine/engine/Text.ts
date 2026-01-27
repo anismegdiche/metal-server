@@ -7,7 +7,6 @@ import { Assert } from '../../../utils/Assert'
 import { LangUtils } from '../../../utils/LangUtils'
 import { Logger } from '../../../utils/Logger'
 import { Utils } from '../../../utils/Utils'
-import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
 import { AI_ENGINE } from '../@consts'
 import type { TAiArguments, TAiOutput } from '../@types'
 import { AiDocker } from '../AiDocker'
@@ -168,22 +167,20 @@ export class Text extends absAiEngine implements IAiEngine {
 
         Assert.Var(data, 'data is required')
 
-        const response = await this._postData(data)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Fill mask failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data)
+            .then((response) => {
+                const fillmask = response.data.result.map((item: any) => {
+                    return {
+                        score: item.score,
+                        word: item.token_str,
+                        text: item.sequence
+                    }
+                })
+
+                return {
+                    fillmask
+                }
             })
-
-        const fillmask = response.data.result.map((item: any) => {
-            return {
-                score: item.score,
-                word: item.token_str,
-                text: item.sequence
-            }
-        })
-
-        return {
-            fillmask
-        }
     }
 
     @Logger.LogFunction(true)
@@ -193,16 +190,13 @@ export class Text extends absAiEngine implements IAiEngine {
 
         Assert.Var(data, 'data is required')
 
-        const response = await this._postData(data)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Keyword extraction failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data)
+            .then((response) => {
+                const keywords = response.data.result[0]
+                return {
+                    keywords
+                }
             })
-
-        const keywords = response.data.result[0]
-
-        return {
-            keywords
-        }
     }
 
     @Logger.LogFunction(true)
@@ -212,19 +206,17 @@ export class Text extends absAiEngine implements IAiEngine {
 
         Assert.Var(data, 'data is required')
 
-        const response = await this._postData(data)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Language detection failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data)
+            .then((response) => {
+                const result = response.data.result[0]
+
+                const language = {
+                    code: LangUtils.Convert(result.label, TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO),
+                    score: Math.max(0, parseFloat(result.score))
+                }
+
+                return { language }
             })
-
-        const result = response.data.result[0]
-
-        const language = {
-            code: LangUtils.Convert(result.label, TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO),
-            score: Math.max(0, parseFloat(result.score))
-        }
-
-        return { language }
     }
 
     @Logger.LogFunction(true)
@@ -242,22 +234,20 @@ export class Text extends absAiEngine implements IAiEngine {
             target_sentence: params.target
         }
 
-        const response = await this._postData(_data)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Paraphrase detection failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(_data)
+            .then((response) => {
+                const { result } = response.data
+
+                const paraphrase = {
+                    source: result.source_sentence,
+                    target: result.target_sentence,
+                    score: Math.max(0, parseFloat(result.similarity_score))
+                }
+
+                return {
+                    paraphrase
+                }
             })
-
-        const { result } = response.data
-
-        const paraphrase = {
-            source: result.source_sentence,
-            target: result.target_sentence,
-            score: Math.max(0, parseFloat(result.similarity_score))
-        }
-
-        return {
-            paraphrase
-        }
     }
 
     @Logger.LogFunction(true)
@@ -275,23 +265,21 @@ export class Text extends absAiEngine implements IAiEngine {
             context: data
         }
 
-        const response = await this._postData(_data)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Question answering failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(_data)
+            .then((response) => {
+                const { result } = response.data
+
+                const answer = {
+                    text: result.answer,
+                    score: result.score,
+                    start: result.start,
+                    end: result.end
+                }
+
+                return {
+                    answer
+                }
             })
-
-        const { result } = response.data
-
-        const answer = {
-            text: result.answer,
-            score: result.score,
-            start: result.start,
-            end: result.end
-        }
-
-        return {
-            answer
-        }
     }
 
     @Logger.LogFunction(true)
@@ -309,20 +297,18 @@ export class Text extends absAiEngine implements IAiEngine {
             sentences: params.sentences
         }
 
-        const response = await this._postData(_data)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Sentence similarity failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(_data)
+            .then((response) => {
+                const similarity = response.data.result.map((item: any) => ({
+                    sentence: item.sentence2,
+                    score: Math.max(0, item.similarity),
+                    rank: Number.parseInt(item.rank, 10)
+                }))
+
+                return {
+                    similarity
+                }
             })
-
-        const similarity = response.data.result.map((item: any) => ({
-            sentence: item.sentence2,
-            score: Math.max(0, item.similarity),
-            rank: Number.parseInt(item.rank, 10)
-        }))
-
-        return {
-            similarity
-        }
     }
 
     @Logger.LogFunction(true)
@@ -337,21 +323,19 @@ export class Text extends absAiEngine implements IAiEngine {
             top_k: params?.top ?? null
         }
 
-        const response = await this._postData(data, _params)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Sentiment analysis failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data, _params)
+            .then((response) => {
+                const result = response.data.result[0]
+
+                const sentiment = {
+                    label: result.label.toLowerCase(),
+                    score: Math.max(0, result.score)
+                }
+
+                return {
+                    sentiment
+                }
             })
-
-        const result = response.data.result[0]
-
-        const sentiment = {
-            label: result.label.toLowerCase(),
-            score: Math.max(0, result.score)
-        }
-
-        return {
-            sentiment
-        }
     }
 
     @Logger.LogFunction(true)
@@ -365,20 +349,18 @@ export class Text extends absAiEngine implements IAiEngine {
         Assert.Var(params['max-length'], 'max-length is required')
         Assert.Var(params['min-length'], 'min-length is required')
 
-        const response = await this._postData(data, params)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Summarization failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data, params)
+            .then((response) => {
+                const result = response.data.result[0]
+
+                const summary = {
+                    text: result.summary_text
+                }
+
+                return {
+                    summary
+                }
             })
-
-        const result = response.data.result[0]
-
-        const summary = {
-            text: result.summary_text
-        }
-
-        return {
-            summary
-        }
     }
 
     @Logger.LogFunction(true)
@@ -395,16 +377,14 @@ export class Text extends absAiEngine implements IAiEngine {
             temperature: params!.temperature
         }
 
-        const response = await this._postData(data, _params)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Text generation failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data, _params)
+            .then((response) => {
+                const result = response.data.result[0][0]
+
+                return {
+                    text: result.generated_text
+                }
             })
-
-        const result = response.data.result[0][0]
-
-        return {
-            text: result.generated_text
-        }
     }
 
     @Logger.LogFunction(true)
@@ -421,27 +401,25 @@ export class Text extends absAiEngine implements IAiEngine {
 
         const _params = merge(DEFAULT, params)
 
-        const response = await this._postData(data, _params)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Token classification failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data, _params)
+            .then((response) => {
+                const result = response.data.result[0]
+
+                const entities = result.reduce((acc: any, item: any) => {
+                    acc.push({
+                        group: item.entity_group,
+                        score: item.score,
+                        word: item.word,
+                        start: item.start,
+                        end: item.end
+                    })
+                    return acc
+                }, [])
+
+                return {
+                    entities
+                }
             })
-
-        const result = response.data.result[0]
-
-        const entities = result.reduce((acc: any, item: any) => {
-            acc.push({
-                group: item.entity_group,
-                score: item.score,
-                word: item.word,
-                start: item.start,
-                end: item.end
-            })
-            return acc
-        }, [])
-
-        return {
-            entities
-        }
     }
 
     @Logger.LogFunction(true)
@@ -456,21 +434,19 @@ export class Text extends absAiEngine implements IAiEngine {
             top_k: params?.top ?? null
         }
 
-        const response = await this._postData(data, _params)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Toxicity detection failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data, _params)
+            .then((response) => {
+                const result = response.data.result[0]
+
+                const toxicity = result.reduce((acc: any, item: any) => {
+                    acc[item.label] = parseFloat(item.score)
+                    return acc
+                }, {})
+
+                return {
+                    toxicity
+                }
             })
-
-        const result = response.data.result[0]
-
-        const toxicity = result.reduce((acc: any, item: any) => {
-            acc[item.label] = parseFloat(item.score)
-            return acc
-        }, {})
-
-        return {
-            toxicity
-        }
     }
 
     @Logger.LogFunction(true)
@@ -494,22 +470,20 @@ export class Text extends absAiEngine implements IAiEngine {
             tgt_lang: params.target
         })
 
-        const response = await this._postData(data, _params)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Translation request failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data, _params)
+            .then((response) => {
+                const result = response.data.result[0]
+
+                const translation = {
+                    text: result.translation_text,
+                    source: params.source,
+                    target: params.target
+                }
+
+                return {
+                    translation
+                }
             })
-
-        const result = response.data.result[0]
-
-        const translation = {
-            text: result.translation_text,
-            source: params.source,
-            target: params.target
-        }
-
-        return {
-            translation
-        }
     }
 
     @Logger.LogFunction(true)
@@ -526,19 +500,17 @@ export class Text extends absAiEngine implements IAiEngine {
             candidate_labels: params.labels
         }
 
-        const response = await this._postData(data, _params)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Zero-shot classification failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data, _params)
+            .then((response) => {
+                const result = response.data.result[0]
+
+                const zeroshot = Object.fromEntries(
+                    result.labels.map((label: string, i: number) => [label, result.scores[i]])
+                )
+
+                return {
+                    zeroshot
+                }
             })
-
-        const result = response.data.result[0]
-
-        const zeroshot = Object.fromEntries(
-            result.labels.map((label: string, i: number) => [label, result.scores[i]])
-        )
-
-        return {
-            zeroshot
-        }
     }
 }

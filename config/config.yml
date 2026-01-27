@@ -15,11 +15,7 @@ server:
     options:
       autocreate: true
   ai-engines:
-    engines-url: http://127.0.0.1:5000
     timeout: 600000
-    # params:
-    #   host: "127.0.0.1"  # or your machine IP
-    #   port: 2375         # exposed from docker-compose
 
 roles:
   all: lacrud
@@ -60,10 +56,10 @@ schemas:
     source: src-json
 
 schedules:
-  "ocr":
-    plan: myplan
-    entity: myentity
-    cron: "*/1 * * * *"
+  # "ocr":
+  #   plan: myplan
+  #   entity: myentity
+  #   cron: "*/1 * * * *"
   "ocr2":
     plan: myplan
     entity: myentity
@@ -112,158 +108,158 @@ plans:
           output:
             _keyword_extraction: ${{ $result.keywords.join(',') }}
 
-      # - run:
-      #     ai: text
-      #     task: language-detection
-      #     input: _ocr_text
-      #     output:
-      #       _languagedetection_code: ${{ $result.language.code }}
+      - run:
+          ai: text
+          task: language-detection
+          input: _ocr_text
+          output:
+            _languagedetection_code: ${{ $result.language.code }}
 
-      # - run:
-      #     ai: text
-      #     task: ner
-      #     params:
-      #       grouped: true
-      #     input: _ocr_text
-      #     output:
-      #       _token_class: entities
+      - run:
+          ai: text
+          task: ner
+          params:
+            grouped: true
+          input: _ocr_text
+          output:
+            _token_class: entities
 
-      # - run:
-      #     ai: text
-      #     task: paraphrase-detection
-      #     input: _ocr_text
-      #     params:
-      #       target: A fast brown fox leaps over a sleepy dog
-      #     output:
-      #       _paraphrase_detection_score: ${{ $result.paraphrase.score }}
+      - run:
+          ai: text
+          task: paraphrase-detection
+          input: _ocr_text
+          params:
+            target: A fast brown fox leaps over a sleepy dog
+          output:
+            _paraphrase_detection_score: ${{ $result.paraphrase.score }}
 
-      # - run:
-      #     ai: text
-      #     task: question-answering
-      #     input: _ocr_text
-      #     params:
-      #       question: What is the subject?
-      #     output:
-      #       _question_answering_answer: ${{ $result.answer.answer }}
-      #       _question_answering_score: ${{ $result.answer.score }}
+      - run:
+          ai: text
+          task: question-answering
+          input: _ocr_text
+          params:
+            question: What is the subject?
+          output:
+            _question_answering_answer: ${{ $result.answer.answer }}
+            _question_answering_score: ${{ $result.answer.score }}
 
-      # - run:
-      #     ai: text
-      #     task: sentence-similarity
-      #     input: _ocr_text
-      #     params:
-      #       sentences:
-      #         - That is a happy dog
-      #         - That is a very happy person
-      #         - Today is a sunny day
-      #     output:
-      #       _similarity_score1: ${{ $result.similarity[0].score }}
-      #       _similarity_score2: ${{ $result.similarity[1].score }}
+      - run:
+          ai: text
+          task: sentence-similarity
+          input: _ocr_text
+          params:
+            sentences:
+              - That is a happy dog
+              - That is a very happy person
+              - Today is a sunny day
+          output:
+            _similarity_score1: ${{ $result.similarity[0].score }}
+            _similarity_score2: ${{ $result.similarity[1].score }}
 
-      # - run:
-      #     ai: text
-      #     task: sentiment-analysis
-      #     input: _ocr_text
-      #     params:
-      #       top:
-      #     output:
-      #       _sentiment_label: ${{ $result.sentiment.label }}
-      #       _sentiment_score: ${{ $result.sentiment.score }}
+      - run:
+          ai: text
+          task: sentiment-analysis
+          input: _ocr_text
+          params:
+            top:
+          output:
+            _sentiment_label: ${{ $result.sentiment.label }}
+            _sentiment_score: ${{ $result.sentiment.score }}
 
-      # - run:
-      #     ai: text
-      #     task: summarization
-      #     input: _ocr_text
-      #     params:
-      #       min-length: 5
-      #       max-length: 10
-      #     output:
-      #       _summarization_summary: ${{ $result.summary.text }}
+      - run:
+          ai: text
+          task: summarization
+          input: _ocr_text
+          params:
+            min-length: 5
+            max-length: 10
+          output:
+            _summarization_summary: ${{ $result.summary.text }}
 
-      # - run:
-      #     ai: text
-      #     task: text-generation
-      #     params:
-      #       max-length: 50
-      #       do-sample: true
-      #       temperature: 0.9
-      #     input: _ocr_text
-      #     output:
-      #       _generated_text: text
+      - run:
+          ai: text
+          task: text-generation
+          params:
+            max-length: 50
+            do-sample: true
+            temperature: 0.9
+          input: _ocr_text
+          output:
+            _generated_text: text
 
-      # - run:
-      #     ai: text
-      #     task: toxicity-detection
-      #     input: _ocr_text
-      #     output:
-      #       _toxicity: toxicity
+      - run:
+          ai: text
+          task: toxicity-detection
+          input: _ocr_text
+          output:
+            _toxicity: toxicity
 
-      # - run:
-      #     ai: text
-      #     task: translation
-      #     params:
-      #       source: en_XX
-      #       target: ar_AR
-      #     input: _ocr_text
-      #     output:
-      #       _translated_text: ${{ $result.translation.text }}
+      - run:
+          ai: text
+          task: translation
+          params:
+            source: en_XX
+            target: ar_AR
+          input: _ocr_text
+          output:
+            _translated_text: ${{ $result.translation.text }}
 
-      # - run:
-      #     ai: text
-      #     task: zero-shot-classification
-      #     params:
-      #       labels:
-      #         # # Sentiment
-      #         # - positive
-      #         # - negative
-      #         # - neutral
+      - run:
+          ai: text
+          task: zero-shot-classification
+          params:
+            labels:
+              # # Sentiment
+              # - positive
+              # - negative
+              # - neutral
 
-      #         # Intent / Purpose
-      #         - informative
-      #         - opinion
-      #         - question
-      #         - instruction
-      #         - narrative
-      #         - promotional
+              # Intent / Purpose
+              - informative
+              - opinion
+              - question
+              - instruction
+              - narrative
+              - promotional
 
-      #       # # Topic / Domain
-      #       # - politics
-      #       # - business
-      #       # - science and technology
-      #       # - health and medicine
-      #       # - environment and nature
-      #       # - sports
-      #       # - entertainment and arts
-      #       # - education and research
-      #       # - lifestyle and culture
-      #       # - other
+            # # Topic / Domain
+            # - politics
+            # - business
+            # - science and technology
+            # - health and medicine
+            # - environment and nature
+            # - sports
+            # - entertainment and arts
+            # - education and research
+            # - lifestyle and culture
+            # - other
 
-      #       # # Emotional Tone
-      #       # - joyful
-      #       # - angry
-      #       # - sad
-      #       # - fearful
-      #       # - surprised
-      #       # - calm
+            # # Emotional Tone
+            # - joyful
+            # - angry
+            # - sad
+            # - fearful
+            # - surprised
+            # - calm
 
-      #       # # Formality / Register
-      #       # - formal
-      #       # - informal
-      #       # - technical
-      #       # - conversational
+            # # Formality / Register
+            # - formal
+            # - informal
+            # - technical
+            # - conversational
 
-      #       # # Stance
-      #       # - supportive
-      #       # - opposed
-      #       # - neutral stance
+            # # Stance
+            # - supportive
+            # - opposed
+            # - neutral stance
 
-      #       # # Informativeness
-      #       # - highly informative
-      #       # - partially informative
-      #       # - irrelevant
-      #     input: _ocr_text
-      #     output:
-      #       _zero_shot_class: zeroshot
+            # # Informativeness
+            # - highly informative
+            # - partially informative
+            # - irrelevant
+          input: _ocr_text
+          output:
+            _zero_shot_class: zeroshot
 
       - omit: [content]
 

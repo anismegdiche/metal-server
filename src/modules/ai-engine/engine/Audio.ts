@@ -79,16 +79,6 @@ export class Audio extends absAiEngine implements IAiEngine {
 
         Assert.Var(data, 'data is required')
 
-        const response = await this._postData(data, params)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Audio processing failed: ${error.response?.data?.message ?? error.message}`)
-            })
-
-        if (response.data.result === undefined) {
-            Logger.Error(`Audio processing failed: ${response.data.message}`)
-            return {}
-        }
-
         // dictionary to map acronyms -> full names
         const labelMap: { [x: string]: string } = {
             hap: "happy",
@@ -97,13 +87,21 @@ export class Audio extends absAiEngine implements IAiEngine {
             ang: "angry"
         }
 
-        const result = response.data.result.reduce((obj: { [x: string]: any }, item: { label: string; score: number }) => {
-            const fullName: string = labelMap[item.label as string] || item.label // fallback to acronym if not found
-            obj[fullName] = item.score
-            return obj
-        }, {})
+        return this._postData(data, params)
+            .then((response) => {
+                if (response.data.result === undefined) {
+                    Logger.Error(`Audio processing failed: ${response.data.message}`)
+                    throw new HttpErrorInternalServerError(`Audio processing failed: ${response.data.message}`)
+                }
 
-        return result
+                const result = response.data.result.reduce((obj: { [x: string]: any }, item: { label: string; score: number }) => {
+                    const fullName: string = labelMap[item.label as string] || item.label // fallback to acronym if not found
+                    obj[fullName] = item.score
+                    return obj
+                }, {})
+
+                return result
+            })
 
         // response :
         // {
@@ -119,11 +117,9 @@ export class Audio extends absAiEngine implements IAiEngine {
         const { data } = args
         const { params } = args as U_config_plans_plan_entity_run_ai_audio_Params
 
-        const response = await this._postData(data, params)
-            .catch(error => {
-                throw new HttpErrorInternalServerError(`Audio processing failed: ${error.response?.data?.message ?? error.message}`)
+        return this._postData(data, params)
+            .then((response) => {
+                return response.data.result.text.trim()
             })
-
-        return response.data.result.text.trim()
     }
 }

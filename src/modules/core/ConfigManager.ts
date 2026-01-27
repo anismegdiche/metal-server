@@ -46,9 +46,9 @@ export class ConfigManager {
                 "timeout": 60_000, // v0.5
                 "min-instance": 1, // v0.5
                 "max-instance": 5, // v0.5
-                "cpu-scale-up": 50, // v0.5
-                "cpu-scale-down": 5, // v0.5
-                "scale-interval": 15_000, // v0.5
+                "cpu-scale-up": 70, // v0.5
+                "cpu-scale-down": 10, // v0.5
+                "scale-interval": 20_000, // v0.5
                 "build-batch-size": 5 // v0.5
             }
         }
