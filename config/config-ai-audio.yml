@@ -15,8 +15,7 @@ server:
     options:
       autocreate: true
   ai-engines:
-    # docker-url:
-    engines-url: http://127.0.0.1:5000
+    timeout: 600000
 
 roles:
   all: lacrud

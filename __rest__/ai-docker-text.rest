@@ -51,7 +51,6 @@ Content-Type: application/json
 #   ]
 # }
 
-//XXX
 ### @name feature-extraction
 POST {{apiUrl}}:5102/text-feature-extraction/run
 Content-Type: application/json
@@ -415,14 +414,4 @@ Content-Type: application/json
 #       0.24249528348445892
 #     ]
 #   }
-# }
-
-### To ignore
-# //XXX
-# ### @name ner
-# POST {{baseUrl}}/text/ner
-# Content-Type: application/json
-
-# {
-#     "input_data": "My name is John and I work at Google in New York."
 # }

@@ -67,7 +67,6 @@ describe('MySqlData', () => {
         vi.resetModules()
 
         mockCreatePool.mockReturnValue(mockPool)
-        //XXX mockPool.query.mockResolvedValue([[{ dummy: 'data' }]])
 
         // Create a new provider instance with test configuration
         provider = new MySqlData()

@@ -146,10 +146,6 @@ export class WebServiceData extends absDataProvider {
             await this.Connection.Read($context)
         )
 
-        //XXX const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
-
-        //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
-
         const data = await this.File.get(entity)!.Get(
             <TRowsCopyParams>{
                 fields: options.Fields,
@@ -269,11 +265,6 @@ export class WebServiceData extends absDataProvider {
         if (!endpointUpdate || !z_TEndpoint.safeParse(endpointUpdate).success)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
 
-
-        //XXX const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
-
-        //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
-
         using keysCollection = await this.File.get(entity)!.Get(
             <TRowsCopyParams>{
                 fields: options.Fields,
@@ -357,11 +348,6 @@ export class WebServiceData extends absDataProvider {
 
         if (!endpointDelete || !z_TEndpoint.safeParse(endpointDelete).success)
             throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
-
-
-        //XXX const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
-
-        //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
         using keysCollection = await this.File.get(entity)!.Get(
             <TRowsCopyParams>{

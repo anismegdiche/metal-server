@@ -103,7 +103,6 @@ export class MemoryData extends absDataProvider {
 
         const data = new DataTable(entity)
 
-        //XXX const memoryDataTable = await this.Connection.Tables[entity].FreeSql({ sqlQuery, queryParams: sqlQueryHelper.QueryParams })
         const memoryRows = await this.Connection.Tables[entity].Rows({
             fields: options.Fields,
             filter: options.Filter,

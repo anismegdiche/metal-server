@@ -134,10 +134,6 @@ export class StorageFilesData extends absDataProvider {
 
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        //XXX const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
-
-        //XXX const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
-
         const data = await this.File[fileName]!.Get(
             <TRowsCopyParams>{
                 fields: options.Fields,
@@ -198,9 +194,6 @@ export class StorageFilesData extends absDataProvider {
 
             using data = await this.File[fileName]!.Get({}, $context)
 
-            //XXX const sqlQueryHelper = await this.GenerateSqlInsert(schemaRequest, options)
-
-            //XXX await data.FreeSql({ sqlQuery: sqlQueryHelper.Query(), queryParams: sqlQueryHelper.QueryParams })
             await data.RowsAdd(await options.Data.Rows())
             await this.Connection.FileWrite(
                 '',

@@ -66,7 +66,7 @@ export class CsvContent extends absContentProvider {
         )
 
         const papaparse = await CsvContent._loadPapaParseModule();
-        // TODO to test
+        //BUG: papaparse.parse is not a function
         const parsedCsv = papaparse.parse<TJson>(
             await ReadableUtils.ToString(
                 this.Content.ReadFile(this.EntityName)

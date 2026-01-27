@@ -88,8 +88,6 @@ export class AiDocker {
 
             if (!isBuildMode) {
                 await AiDocker.CleanStack()
-                //XXX await AiDocker.BuildServiceImage(BaseTextDockerService)
-
                 Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
                 await AiDocker.CreateNetwork().catch(Logger.Error)
                 await AiDocker.StartCaddy().catch(Logger.Error)
