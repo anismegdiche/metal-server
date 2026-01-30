@@ -103,13 +103,18 @@ export class Text extends absAiEngine implements IAiEngine {
 
     @Logger.LogFunction(true)
     async Run(args: TAiArguments): Promise<TAiOutput> {
+        const _sleep = AiDocker.Config['sleep']
+        const _timeout = AiDocker.Config['timeout']
+
+        Assert.Var<number>(_sleep, "server.ai-engines.sleep is not defined")
+        Assert.Var<number>(_timeout, "server.ai-engines.timeout is not defined")
 
         const _args: U_config_plans_plan_entity_run_ai_text_Params = merge(this.DEFAULT, args)
         const { task } = _args
 
         Assert.Condition(Object.values(TEXT_TASK).includes(task as TEXT_TASK), `Invalid text task: ${task}`)
 
-        await Utils.Wait(async () => await this.IsHealthy(), AiDocker.ServiceInstance.Sleep, AiDocker.ServiceInstance.Timeout)
+        await Utils.Wait(async () => await this.IsHealthy(), _sleep, _timeout)
         return this.RunTask[task]!(args)
     }
 

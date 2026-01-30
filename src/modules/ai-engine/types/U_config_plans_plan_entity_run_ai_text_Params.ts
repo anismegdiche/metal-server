@@ -5,10 +5,11 @@ import { z } from "zod"
 //
 import { TEXT_TASK } from "../consts/TEXT"
 import { LANG_ISO } from "../consts/LANG"
+import { z_T_IntPositive } from "../../../types/T_IntPositive"
 
 
 //
-export const z_TAiText_top_k = z.number().nullable()
+export const z_TAiText_top_k = z_T_IntPositive.nullable()
 
 
 export const z_U_config_plans_plan_entity_run_ai_text_translation_Params = z.object({
@@ -29,9 +30,9 @@ export const z_U_config_plans_plan_entity_run_ai_text_sentiment_analysis_Params 
 export const z_U_config_plans_plan_entity_run_ai_text_text_generation_Params = z.object({
     task: z.literal(TEXT_TASK.TEXT_GENERATION),
     params: z.object({
-        "max-length": z.number().optional(),
+        "max-length": z_T_IntPositive.optional(),
         "do-sample": z.boolean().optional(),
-        temperature: z.number().optional()
+        temperature: z_T_IntPositive.optional()
     }).optional()
 })
 
@@ -45,8 +46,8 @@ export const z_U_config_plans_plan_entity_run_ai_text_question_answering_Params 
 export const z_U_config_plans_plan_entity_run_ai_text_summarization_Params = z.object({
     task: z.literal(TEXT_TASK.SUMMARIZATION),
     params: z.object({
-        "max-length": z.number(),
-        "min-length": z.number()
+        "max-length": z_T_IntPositive,
+        "min-length": z_T_IntPositive
     })
 })
 

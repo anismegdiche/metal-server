@@ -3,7 +3,7 @@
 //
 import { Issuer, TokenSet } from "openid-client"
 import type { Client } from "openid-client"
-import * as _ from 'lodash-es'
+import { intersection, merge } from 'lodash-es'
 //
 import { Logger } from '../../../utils/Logger'
 import { absAuthProvider } from '../base/absAuthProvider'
@@ -42,7 +42,7 @@ export class OidcAuth extends absAuthProvider {
         //TODO workaround for SSL/TLS errors
         process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
-        this.#Config = _.merge(
+        this.#Config = merge(
             this.DEFAULT,
             ConfigManager.Get<U_config_server_authentication_oidc>("server.authentication")
         )
@@ -88,7 +88,7 @@ export class OidcAuth extends absAuthProvider {
             const userRoles: string[] = JsonUtils.Get(userInfo, this.#Config["roles-path"]) ?? []
 
             // const decodedToken = jwt.decode(tokenSet.access_token!) as JwtPayload
-            const roles = _.intersection(
+            const roles = intersection(
                 userRoles,
                 Object.keys(ConfigManager.Get("roles") ?? {})
             )

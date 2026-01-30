@@ -1,27 +1,27 @@
 //
 //
 //
+import { merge } from 'lodash-es'
 import mssql, { ConnectionPool, type IOptions } from 'mssql'
-import * as _ from 'lodash-es'
 //
-import { RESPONSE } from '../../core/@consts'
-import type { TConfigSource } from "../types/TConfigSource"
-import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
 import { DataTable } from "../../../types/DataTable"
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import { Logger } from '../../../utils/Logger'
-import { Cache } from '../../cache/Cache'
-import { DATA_PROVIDER } from "../@consts"
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
-import { JsonUtils } from "../../../utils/JsonUtils"
-import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import { HttpResponse } from "../../core/HttpResponse"
-import { absDataProvider } from "../base/absDataProvider"
-import type { TContext } from "../../sandbox/types/TContext"
-import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import type { TIpPort } from "../../../types/TIpPort"
 import { Assert } from '../../../utils/Assert'
+import { JsonUtils } from "../../../utils/JsonUtils"
+import { Logger } from '../../../utils/Logger'
+import { SynchronizerManager } from "../../../utils/SynchronizerManager"
+import { Cache } from '../../cache/Cache'
+import { RESPONSE } from '../../core/@consts'
+import { HttpResponse } from "../../core/HttpResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import { DATA_PROVIDER } from "../@consts"
+import { absDataProvider } from "../base/absDataProvider"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
 
 
 //
@@ -68,7 +68,7 @@ export class SqlServerData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = _.merge(this.DEFAULT, sourceConfig as TSqlServerDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as TSqlServerDataConfig)
     }
 
     @Logger.LogFunction()
@@ -110,7 +110,7 @@ export class SqlServerData extends absDataProvider {
         const { schema, entity } = schemaRequest
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -145,7 +145,7 @@ export class SqlServerData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -172,7 +172,7 @@ export class SqlServerData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -199,7 +199,7 @@ export class SqlServerData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )

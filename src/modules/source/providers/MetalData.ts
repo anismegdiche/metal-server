@@ -2,7 +2,7 @@
 //
 //
 //
-import * as _ from 'lodash-es'
+import { merge } from 'lodash-es'
 //
 import type { TConfigSource } from "../types/TConfigSource"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
@@ -51,7 +51,7 @@ export class MetalData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = _.merge(
+        this.Config = merge(
             this.DEFAULT,
             sourceConfig,
             {

@@ -5,6 +5,7 @@ import { z } from "zod"
 //
 import { z_TOrderBy } from "../../../types/DataTable"
 import { z_TJson } from "../../../types/TJson"
+import { z_T_IntPositive } from "../../../types/T_IntPositive";
 
 
 // SchemaRequestBase
@@ -27,7 +28,7 @@ const z_filter_expression = z.string("filter-expression must be a valid expressi
 // sort
 const z_sort = z_TOrderBy.optional();
 // cache
-const z_cache = z.number("cache must be a number of seconds").min(0).optional();
+const z_cache = z_T_IntPositive.min(1, { message: "cache must be greater than 0" }).optional();
 // data
 const z_data = z.union([z_TJson, z.array(z_TJson)], "data must be a valid json or an array of valid json").optional();
 // anonymize
@@ -43,7 +44,7 @@ export const z_TSchemaRequestSelect = z_TSchemaRequestBase.merge(
         sort: z_sort,
         cache: z_cache,
         anonymize: z_anonymize
-    }, "options must be one of the following: fields, filter, filter-expression, sort, cache, anonymize")
+    }, { message: "options must be one of the following: fields, filter, filter-expression, sort, cache, anonymize" })
 );
 
 export const z_TSchemaRequestUpdate = z_TSchemaRequestBase.merge(

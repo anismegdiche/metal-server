@@ -2,7 +2,7 @@
 //
 //
 //
-import * as _ from 'lodash-es'
+import { merge } from 'lodash-es'
 import { z_TEndpoint } from "../../../utils/Schemas"
 //
 import type { TConfigSource } from "../types/TConfigSource"
@@ -77,7 +77,7 @@ export class WebServiceData extends absDataProvider {
     @Logger.LogFunction(['sourceConfig'])
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = _.merge(this.Config, sourceConfig)
+        this.Config = merge(this.Config, sourceConfig)
 
         //
         const { content, type: webservice } = this.Config.options
@@ -134,7 +134,7 @@ export class WebServiceData extends absDataProvider {
         this.SetContentHandler(entity)
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -189,7 +189,7 @@ export class WebServiceData extends absDataProvider {
         this.SetContentHandler(entity)
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -197,7 +197,7 @@ export class WebServiceData extends absDataProvider {
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             {
                 $options: options
@@ -209,7 +209,7 @@ export class WebServiceData extends absDataProvider {
 
         return options.Data.ForEach(
             async (row: TJson) => {
-                $context = _.merge(
+                $context = merge(
                     $context,
                     {
                         $row: row
@@ -240,7 +240,7 @@ export class WebServiceData extends absDataProvider {
         this.SetContentHandler(entity)
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -248,7 +248,7 @@ export class WebServiceData extends absDataProvider {
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             {
                 $options: options
@@ -279,12 +279,12 @@ export class WebServiceData extends absDataProvider {
                 if (!Array.isArray(await options.Data?.Rows()))
                     return Promise.resolve()
 
-                const mergedRow: TJson = _.merge(
+                const mergedRow: TJson = merge(
                     row,
                     await options.Data?.Row(0)
                 )
 
-                $context = _.merge(
+                $context = merge(
                     $context,
                     {
                         $row: row
@@ -324,7 +324,7 @@ export class WebServiceData extends absDataProvider {
         this.SetContentHandler(entity)
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -332,7 +332,7 @@ export class WebServiceData extends absDataProvider {
         const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             {
                 $options: options
@@ -360,7 +360,7 @@ export class WebServiceData extends absDataProvider {
 
         return keysCollection.ForEach(
             async (row: TJson) => {
-                $context = _.merge(
+                $context = merge(
                     $context,
                     {
                         $row: row

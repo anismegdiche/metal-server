@@ -1,24 +1,22 @@
 //
 //
 //
-// Lazy-loaded module
-import * as _ from 'lodash-es'
+import { XMLBuilder, XMLParser, type X2jOptions, type XmlBuilderOptions } from 'fast-xml-parser'
+import { merge } from 'lodash-es'
 import { Readable } from "node:stream"
-import { z_TXmlContentConfig } from "../../../utils/Schemas"
 //
-import { DataTable } from "../../../types/DataTable"
 import type { TRowsCopyParams } from "../../../types/DataTable"
+import { DataTable } from "../../../types/DataTable"
 import type { TJson } from "../../../types/TJson"
+import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
-//
+import { z_TXmlContentConfig } from "../../../utils/Schemas"
+import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
-//
-import { Assert } from "../../../utils/Assert"
-import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import type { TContentConfig } from "../@types"
 import { absContentProvider } from "../base/absContentProvider"
 import type { TXmlContentConfig } from "../types/TXmlContentConfig"
@@ -26,13 +24,7 @@ import type { TXmlContentConfig } from "../types/TXmlContentConfig"
 
 //
 export class XmlContent extends absContentProvider {
-    private static _fastXmlParserModule: typeof import('fast-xml-parser');
-    private static async _loadFastXmlParserModule(): Promise<typeof import('fast-xml-parser')> {
-        if (!this._fastXmlParserModule) {
-            this._fastXmlParserModule = await import('fast-xml-parser');
-        }
-        return this._fastXmlParserModule;
-    }
+
 
     Params: TXmlContentConfig | undefined
 
@@ -44,11 +36,11 @@ export class XmlContent extends absContentProvider {
     }
 
     // XML Content
-    ParserOptions: import('fast-xml-parser').X2jOptions = {}
+    ParserOptions: X2jOptions = {}
 
     SetConfig(contentConfig: TContentConfig): void {
         super.SetConfig(contentConfig)
-        this.Params = _.merge(this.DEFAULT, this.Config)
+        this.Params = merge(this.DEFAULT, this.Config)
         this.ParserOptions = {
             attributeNamePrefix: this.Params["xml-attribute-prefix"],
             ignoreAttributes: this.Params["xml-ignore-attributes"],
@@ -72,8 +64,7 @@ export class XmlContent extends absContentProvider {
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
-        const fastXmlParser = await XmlContent._loadFastXmlParserModule();
-        const xmlParser = new fastXmlParser.XMLParser(this.ParserOptions);
+        const xmlParser = new XMLParser(this.ParserOptions);
         const xmlData = xmlParser.parse(
             await ReadableUtils.ToString(this.Content.ReadFile(this.EntityName))
         )
@@ -109,8 +100,7 @@ export class XmlContent extends absContentProvider {
 
         const { "xml-path": jsonPath } = this.Params
 
-        const fastXmlParser = await XmlContent._loadFastXmlParserModule();
-        const xmlParser = new fastXmlParser.XMLParser(this.ParserOptions);
+        const xmlParser = new XMLParser(this.ParserOptions);
         const xmlData = xmlParser.parse(
             await ReadableUtils.ToString(this.Content.ReadFile(this.EntityName))
         )
@@ -126,7 +116,7 @@ export class XmlContent extends absContentProvider {
             await data.Rows()
         )
 
-        const xmlBuilder = new fastXmlParser.XMLBuilder(this.ParserOptions as import('fast-xml-parser').XmlBuilderOptions);
+        const xmlBuilder = new XMLBuilder(this.ParserOptions as XmlBuilderOptions);
         const xmlString = xmlBuilder.build(xmlData)
 
         const streamOut = Readable.from(xmlString)

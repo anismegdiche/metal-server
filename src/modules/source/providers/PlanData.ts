@@ -1,26 +1,26 @@
 //
 //
 //
-import * as _ from 'lodash-es'
+import { merge } from 'lodash-es'
 //
+import { DataTable } from "../../../types/DataTable"
+import { Logger } from '../../../utils/Logger'
+import { SynchronizerManager } from "../../../utils/SynchronizerManager"
+import { Cache } from '../../cache/Cache'
 import { RESPONSE } from '../../core/@consts'
+import { HttpResponse } from "../../core/HttpResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
+import { Plans } from "../../plan/Plans"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
+import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
+import { absDataProvider } from "../base/absDataProvider"
+import { Source } from "../Source"
 import type { TConfigSource } from "../types/TConfigSource"
 import type { TDataListEntity } from "../types/TDataListEntity"
 import type { TOptionalParameter } from "../types/TOptionalParameter"
-import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import { Cache } from '../../cache/Cache'
-import { Logger } from '../../../utils/Logger'
-import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
-import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
-import { DataTable } from "../../../types/DataTable"
-import { HttpResponse } from "../../core/HttpResponse"
-import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import { absDataProvider } from "../base/absDataProvider"
-import type { TContext } from "../../sandbox/types/TContext"
-import { Plans } from "../../plan/Plans"
-import { Source } from "../Source"
-import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 
 
 export class PlanData extends absDataProvider {
@@ -57,7 +57,7 @@ export class PlanData extends absDataProvider {
         const { schema, entity, source } = schemaRequest
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )

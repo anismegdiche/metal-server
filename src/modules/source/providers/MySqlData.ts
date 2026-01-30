@@ -1,7 +1,7 @@
 //
 //
 //
-import * as _ from 'lodash-es'
+import { merge } from 'lodash-es'
 import mysql from 'mysql2/promise'
 import type { Pool } from 'mysql2/promise'
 //
@@ -66,7 +66,7 @@ export class MySqlData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = _.merge(this.DEFAULT, sourceConfig as TMySqlDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as TMySqlDataConfig)
     }
 
     @Logger.LogFunction()
@@ -119,7 +119,7 @@ export class MySqlData extends absDataProvider {
         const connection = await this.#EnsureConnection()
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -152,7 +152,7 @@ export class MySqlData extends absDataProvider {
     async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -183,7 +183,7 @@ export class MySqlData extends absDataProvider {
         const connection = await this.#EnsureConnection()
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -206,7 +206,7 @@ export class MySqlData extends absDataProvider {
         const connection = await this.#EnsureConnection()
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )

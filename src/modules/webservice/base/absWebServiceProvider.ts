@@ -1,7 +1,7 @@
 //
 //
 //
-import * as _ from 'lodash-es'
+import { merge, omit } from 'lodash-es'
 import { Readable } from "node:stream"
 //
 import { clsClonable } from "../../../utils/base/clsClonable"
@@ -26,7 +26,7 @@ export abstract class absWebServiceProvider extends clsClonable implements IWebS
 
     SetConfig(configSource: TConfigSourceWebService) {
         this.ConfigSource = configSource
-        this.ConfigSourceOptions = _.merge(this.DEFAULT, configSource.options)
+        this.ConfigSourceOptions = merge(this.DEFAULT, configSource.options)
 
         if (this.ConfigSourceOptions?.endpoints === undefined || this.ConfigSource?.host === undefined)
             throw new HttpErrorInternalServerError(`${this.constructor.name}: No urls defined in config for web service provider`)
@@ -56,8 +56,7 @@ export abstract class absWebServiceProvider extends clsClonable implements IWebS
 
         // get method from key
         const endpointMethod = Object.keys(
-
-            _.omit(endpointConfig, ["data", "response", "session-headers"])
+            omit(endpointConfig, ["data", "response", "session-headers"])
         ).at(0)
 
         if (!endpointMethod)

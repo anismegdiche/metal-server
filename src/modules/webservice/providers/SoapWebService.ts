@@ -1,22 +1,22 @@
 //
 //
 //
-import * as _ from 'lodash-es'
+import { merge } from 'lodash-es'
 import { Readable } from "stream"
 // Lazy-loaded soap module
 //
-import { absWebServiceProvider } from "../base/absWebServiceProvider"
-import { ENDPOINT, HEADER } from "../@consts"
-import { JsonUtils } from '../../../utils/JsonUtils'
-import type { TWebServiceDataOptions, TConfigSourceWebService } from "../../source/providers/WebServiceData"
-import { Logger } from "../../../utils/Logger"
-import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../errors/HttpErrors"
-import type { TContext } from "../../sandbox/types/TContext"
-import { Sandbox } from "../../sandbox/Sandbox"
-import { PlaceHolder } from "../../../utils/PlaceHolder"
-import { CONTENT } from "../../content/@consts"
 import type { TJson } from "../../../types/TJson"
+import { JsonUtils } from '../../../utils/JsonUtils'
+import { Logger } from "../../../utils/Logger"
+import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Validator } from "../../../utils/Validator"
+import { CONTENT } from "../../content/@consts"
+import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../errors/HttpErrors"
+import { Sandbox } from "../../sandbox/Sandbox"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
+import { ENDPOINT, HEADER } from "../@consts"
+import { absWebServiceProvider } from "../base/absWebServiceProvider"
 
 
 //
@@ -132,7 +132,7 @@ export class SoapWebService extends absWebServiceProvider {
                 throw new HttpErrorInternalServerError(`${endpointType}: ${wsResp?.statusText}`)
 
 
-            $context = _.merge(
+            $context = merge(
                 $context,
                 <Partial<TContext>>{
                     $request: {

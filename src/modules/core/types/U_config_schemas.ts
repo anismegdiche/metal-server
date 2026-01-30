@@ -32,7 +32,10 @@ export const z_U_config_schemas_schema = z.union([
 }));
 
 
-export const z_U_config_schemas = z.record(z.string(), z_U_config_schemas_schema);
+export const z_U_config_schemas = z.record(
+    z.string(),
+    z_U_config_schemas_schema
+);
 
 
 //

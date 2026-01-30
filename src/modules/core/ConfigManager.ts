@@ -42,14 +42,18 @@ export class ConfigManager {
             "response-chunk": false,
             "ai-engines": {
                 params: undefined, //{ socketPath: '/var/run/docker.sock' }
+                "build-batch-size": 5,
                 "engines-url": "http://127.0.0.1:5000",
-                "timeout": 60_000, // v0.5
-                "min-instance": 1, // v0.5
-                "max-instance": 5, // v0.5
-                "cpu-scale-up": 70, // v0.5
-                "cpu-scale-down": 10, // v0.5
-                "scale-interval": 20_000, // v0.5
-                "build-batch-size": 5 // v0.5
+                "timeout": 60_000,
+                "sleep": 5_000,
+                "min-instance": 1,
+                "max-instance": 5,
+                "cpu-scale-up": 70,
+                "cpu-scale-down": 10,
+                "scale-interval": 20_000,
+                "scale-down-grace-period": 300_000,
+                "cpu": 4,
+                "memory": 2
             }
         }
     }

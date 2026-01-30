@@ -1,25 +1,25 @@
 //
 //
 //
+import ExcelJS, { type Worksheet } from 'exceljs'
+import { compact, merge } from 'lodash-es'
 import { Readable } from 'node:stream'
-// Lazy-loaded module
-import * as _ from 'lodash-es'
-import { z_TXlsContentConfig, z_TXlsContentParams } from "../../../utils/Schemas"
 //
-import { DataTable } from "../../../types/DataTable"
 import type { TRowsCopyParams } from "../../../types/DataTable"
-import { Logger } from '../../../utils/Logger'
+import { DataTable } from "../../../types/DataTable"
 import type { TJson } from '../../../types/TJson'
-import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
-import { absContentProvider } from "../base/absContentProvider"
-import type { TContext } from "../../sandbox/types/TContext"
+import { Assert } from '../../../utils/Assert'
+import { Logger } from '../../../utils/Logger'
 import { PlaceHolder } from "../../../utils/PlaceHolder"
+import { z_TXlsContentConfig, z_TXlsContentParams } from "../../../utils/Schemas"
+import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
+import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
 import { Sandbox } from "../../sandbox/Sandbox"
+import type { TContext } from "../../sandbox/types/TContext"
+import { absContentProvider } from "../base/absContentProvider"
 import type { TXlsContentConfig } from '../types/TXlsContentConfig'
 import type { TXlsContentParams } from '../types/TXlsContentParams'
-import { Assert } from '../../../utils/Assert'
-import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
-import type { Worksheet } from 'exceljs'
+
 
 
 // Convert column letter (e.g., 'A', 'B', 'AA') to a column number
@@ -50,7 +50,7 @@ export class XlsContent extends absContentProvider {
         this.EntityName = entity
         if (this.Config && z_TXlsContentConfig.safeParse(this.Config).success) {
             const config = this.Config as TXlsContentConfig
-            this.Params = _.merge(
+            this.Params = merge(
                 this.Params,
                 {
                     sheet: config["xls-sheet"],
@@ -64,13 +64,7 @@ export class XlsContent extends absContentProvider {
         this.Content.UploadFile(entity, content)
     }
 
-    private static _excelJsModule: typeof import('exceljs');
-    private static async _loadExcelJsModule(): Promise<typeof import('exceljs')> {
-        if (!this._excelJsModule) {
-            this._excelJsModule = await import('exceljs');
-        }
-        return this._excelJsModule;
-    }
+
 
     @Logger.LogFunction(['$context'])
     async Get(rowsParams: TRowsCopyParams, $context?: Partial<TContext>): Promise<DataTable> {
@@ -82,7 +76,6 @@ export class XlsContent extends absContentProvider {
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
-        const ExcelJS = await XlsContent._loadExcelJsModule();
         const workbook = new ExcelJS.Workbook()
         Logger.Debug('XlsContent.Get: reading stream')
         await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
@@ -112,7 +105,7 @@ export class XlsContent extends absContentProvider {
 
         const colIndex = ColumnLetterToNumber(startCol) // Convert column letter to number
 
-        const fields = _.compact(worksheet.getRow(Number.parseInt(startRow, 10)).values as string[])
+        const fields = compact(worksheet.getRow(Number.parseInt(startRow, 10)).values as string[])
 
         if (fields == undefined || fields.length == 0)
             throw new HttpErrorInternalServerError(`Data in "${sheetName}" not found.`)
@@ -158,7 +151,6 @@ export class XlsContent extends absContentProvider {
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
-        const ExcelJS = await XlsContent._loadExcelJsModule();
         const workbook = new ExcelJS.Workbook()
 
         // Try to read the existing file, but create a new workbook if it fails

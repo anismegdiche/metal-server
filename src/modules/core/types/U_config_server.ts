@@ -7,30 +7,45 @@ import { z_TIpPort } from "../../../types/TIpPort";
 import { z_TUrl } from "../../../types/TUrl";
 import { z_U_config_sources_source } from "./U_config_sources";
 import { z_U_config_server_authentication } from "../../auth/types/U_config_server_authentication";
+import { z_T_IntPositive } from "../../../types/T_IntPositive";
+import { z_TJson } from "../../../types/TJson";
 
+
+// v0.5
 export const z_U_config_server_ai_engines = z.object({
+    // contenizer
+    params: z_TJson.optional(),
+    "build-batch-size": z_T_IntPositive.min(1).max(10).optional(),
+
+    // endpoint
     "engines-url": z_TUrl.optional(),
-    "timeout": z.number().int().positive().optional(),
-    "min-instance": z.number().int().min(1).optional(),
-    "max-instance": z.number().int().positive().optional(),
-    "cpu-scale-up": z.number().int().min(10).max(100).optional(),
-    "cpu-scale-down": z.number().int().min(0).max(50).optional(),
-    "scale-interval": z.number().int().min(5000).max(600000).optional(),
-    "build-batch-size": z.number().int().min(1).max(10).optional(),
-    params: z.record(z.string(), z.unknown()).optional(),
+    "timeout": z_T_IntPositive.optional(),
+    "sleep": z_T_IntPositive.min(5_000).max(600_000).optional(),
+
+    // orchestrator
+    "min-instance": z_T_IntPositive.min(1).optional(),
+    "max-instance": z_T_IntPositive.optional(),
+    "cpu-scale-up": z_T_IntPositive.min(10).max(100).optional(),
+    "cpu-scale-down": z_T_IntPositive.min(0).max(50).optional(),
+    "scale-interval": z_T_IntPositive.min(5_000).max(600_000).optional(),
+    "scale-down-grace-period": z_T_IntPositive.min(5_000).max(600_000).optional(),
+
+    // instance
+    "cpu": z_T_IntPositive.min(1).max(64).optional(),
+    "memory": z_T_IntPositive.min(1).max(128).optional(),
 })
 
 export const z_U_config_server = z.object({
     port: z_TIpPort.optional(),
-    verbosity: z.union([z.string(), z.number()]).optional(),
+    verbosity: z.union([z.string(), z_T_IntPositive]).optional(),
     timezone: z.string().optional(),
     cache: z_U_config_sources_source.optional(),
     authentication: z_U_config_server_authentication,
     "request-limit": z.string().optional(),
     "response-limit": z.string().optional(),
     "response-rate": z.object({
-        windowMs: z.number().int().positive().optional(),
-        max: z.number().int().positive().optional(),
+        windowMs: z_T_IntPositive.optional(),
+        max: z_T_IntPositive.optional(),
         message: z.string().optional(),
     }).optional(),
     "response-chunk": z.boolean().optional(),

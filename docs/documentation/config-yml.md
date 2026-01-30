@@ -280,7 +280,7 @@ The parameters that can be configured inside a source include:
 | Parameter  | Type         | Required | Decription             | Metal version                         |
 | ---------- | ------------ | -------- | ---------------------- | ------------------------------------- |
 | `provider` | Enum(String) | Y        | Provider type          | <Badge type="default" text="v0.1+" /> |
-| `database` | String       | Y        | Provider database      | <Badge type="default" text="v0.1+" /> |
+| `database` | String       | N        | Provider database      | <Badge type="info" text="v0.5+" />    |
 | `host`     | String       | N        | Host server            | <Badge type="default" text="v0.1+" /> |
 | `port`     | Integer      | N        | Host port              | <Badge type="default" text="v0.1+" /> |
 | `user`     | String       | N        | Provider user          | <Badge type="default" text="v0.1+" /> |

@@ -6,7 +6,8 @@ export type TCsvContentParams = Omit<Required<{
     [K in keyof TCsvContentConfig as K extends `csv-${infer U}` ? TConvertParams<U> : K]: TCsvContentConfig[K];
 }> & {
     // Workaround to align with Csv.ParseConfig
-    quoteChar: string;
+    quoteChar?: string;
     skipEmptyLines: boolean | "greedy";
+    quotes: boolean;
 }, 'quote' | 'skipEmpty'
 >;

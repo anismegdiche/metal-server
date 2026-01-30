@@ -1,28 +1,27 @@
 //
 //
 //
-// Lazy-loaded pg module
-import * as _ from 'lodash-es'
+import { merge } from 'lodash-es'
 //
-import { RESPONSE } from '../../core/@consts'
-import type { TConfigSourceOptions } from "../types/TConfigSourceOptions"
-import type { TConfigSource } from "../types/TConfigSource"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
 import { DataTable } from "../../../types/DataTable"
-import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import { Cache } from '../../cache/Cache'
-import { Logger } from '../../../utils/Logger'
-import { DATA_PROVIDER } from "../@consts"
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
-import { JsonUtils } from "../../../utils/JsonUtils"
-import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import { HttpResponse } from "../../core/HttpResponse"
-import { absDataProvider } from "../base/absDataProvider"
-import type { TContext } from "../../sandbox/types/TContext"
-import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import type { TIpPort } from "../../../types/TIpPort"
 import { Assert } from '../../../utils/Assert'
+import { JsonUtils } from "../../../utils/JsonUtils"
+import { Logger } from '../../../utils/Logger'
+import { SynchronizerManager } from "../../../utils/SynchronizerManager"
+import { Cache } from '../../cache/Cache'
+import { RESPONSE } from '../../core/@consts'
+import { HttpResponse } from "../../core/HttpResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
+import { DATA_PROVIDER } from "../@consts"
+import { absDataProvider } from "../base/absDataProvider"
+import type { TConfigSource } from "../types/TConfigSource"
+import type { TConfigSourceOptions } from "../types/TConfigSourceOptions"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
 
 
 //
@@ -67,7 +66,7 @@ export class PostgresData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = _.merge(this.DEFAULT, sourceConfig as TPostgresDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as TPostgresDataConfig)
     }
 
     @Logger.LogFunction()
@@ -120,7 +119,7 @@ export class PostgresData extends absDataProvider {
         const { schema, entity } = schemaRequest
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -155,7 +154,7 @@ export class PostgresData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -182,7 +181,7 @@ export class PostgresData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -209,7 +208,7 @@ export class PostgresData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )

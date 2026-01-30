@@ -14,7 +14,10 @@ export const z_TEndpoint = z.object({
         z_TJson,
         z.string()
     ]),
-    SessionHeaders: z.record(z.string(), z.string()).optional(),
+    SessionHeaders: z.record(
+        z.string(),
+        z.string()
+    ).optional(),
     DataPath: z.string().optional(),
 });
 
@@ -22,12 +25,17 @@ export const z_TEndpoint = z.object({
 export const z_CONTENTS = z.enum(["json", "csv", "xls", "xml"]);
 
 // TContentConfig (simplified for now)
-export const z_TContentConfig = z.record(z.string(), z.unknown());
+export const z_TContentConfig = z.record(
+    z.string(),
+    z.unknown()
+);
 
 // TStorageFilesDataOptionsContent
-export const z_TStorageFilesDataOptionsContent = z.record(z.string(), z.object({
-    "content-type": z_CONTENTS,
-}).and(z_TContentConfig));
+export const z_TStorageFilesDataOptionsContent = z.record(
+    z.string(),
+    z.object({
+        "content-type": z_CONTENTS,
+    }).and(z_TContentConfig));
 
 // TJsonContentConfig
 export const z_TJsonContentConfig = z.object({
@@ -62,8 +70,14 @@ export const z_TCsvContentConfig = z.object({
     "csv-delimiter": z.string().optional(),
     "csv-newline": z.string().optional(),
     "csv-header": z.boolean().optional(),
-    "csv-quote": z.string().optional(),
-    "csv-skip-empty": z.union([z.boolean(), z.literal("greedy")]).optional(),
+    "csv-quote": z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    "csv-skip-empty": z.union([
+        z.boolean(),
+        z.literal("greedy")
+    ]).optional()
 });
 
 // TCsvContentParams

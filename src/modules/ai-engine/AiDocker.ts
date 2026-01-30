@@ -2,7 +2,6 @@
 //
 //
 //
-import type { DockerOptions } from 'dockerode'
 import Docker from 'dockerode'
 import fs from "node:fs"
 
@@ -17,6 +16,7 @@ import { HttpErrorInternalServerError } from '../errors/HttpErrors'
 import { DOCKER } from './consts/DOCKER'
 import { CaddyDockerService } from './docker-services/CaddyDockerService'
 import type { TAiDockerService } from './types/TAiDockerService'
+import type { U_config_server_ai_engines } from '../core/types/U_config_server'
 
 
 //
@@ -26,16 +26,7 @@ export class AiDocker {
     static AutoScaleWorker: NodeJS.Timeout
     static Instances: Map<string, TAiDockerService> = new Map()
 
-    static ServiceInstance = {
-        Timeout: 60_000, // 60 seconds
-        Sleep: 5_000, // 5 seconds
-        MinInstances: 1,
-        MaxInstances: 5,
-        CpuScaleUp: 50,
-        CpuScaleDown: 5,
-        ScaleInterval: 15_000, // 15 seconds
-        ScaleDownGracePeriod: 3_600_000 // 1 hour
-    }
+    static Config: U_config_server_ai_engines
 
     static _convertStreamToLog(streamString: string): string[] {
         if (!streamString) return []
@@ -60,15 +51,9 @@ export class AiDocker {
 
     @Logger.LogFunction()
     static async Init(isBuildMode = false) {
+        AiDocker.Config = ConfigManager.Get<U_config_server_ai_engines>("server.ai-engines")
 
-        const _dockerOptions = ConfigManager.Get<DockerOptions>("server.ai-engines.params")
-        AiDocker.ServiceInstance.Timeout = ConfigManager.Get<number>("server.ai-engines.timeout")
-        AiDocker.ServiceInstance.MinInstances = ConfigManager.Get<number>("server.ai-engines.min-instance")
-        AiDocker.ServiceInstance.MaxInstances = ConfigManager.Get<number>("server.ai-engines.max-instance")
-        AiDocker.ServiceInstance.CpuScaleUp = ConfigManager.Get<number>("server.ai-engines.cpu-scale-up")
-        AiDocker.ServiceInstance.CpuScaleDown = ConfigManager.Get<number>("server.ai-engines.cpu-scale-down")
-        AiDocker.ServiceInstance.ScaleInterval = ConfigManager.Get<number>("server.ai-engines.scale-interval")
-        AiDocker.ServiceInstance.ScaleDownGracePeriod = ConfigManager.Get<number>("server.ai-engines.scale-down-grace-period") ?? 60_000
+        const _dockerOptions = AiDocker.Config.params
 
         if (typeof _dockerOptions?.ca == "string")
             _dockerOptions.ca = fs.readFileSync(_dockerOptions.ca)
@@ -101,12 +86,15 @@ export class AiDocker {
 
     @Logger.LogFunction()
     static async StartService(service: TAiDockerService) {
+        const minInstances = AiDocker.Config['min-instance']
+        Assert.Var<number>(minInstances, "server.ai-engines.min-instance is not defined")
+
         service.Lock = new Mutex()
         const serviceName = service.InstanceName ?? service.Name
         AiDocker.Instances.set(serviceName, service)
         await AiDocker.BuildServiceImage(service).catch(Logger.Error)
         const containers = await AiDocker.ListActiveContainers(service)
-        for (let i = containers.length; i < AiDocker.ServiceInstance.MinInstances; i++) {
+        for (let i = containers.length; i < minInstances; i++) {
             await AiDocker.ScaleUp(service)
             // await AiDocker.WaitForService(service)
         }
@@ -114,11 +102,14 @@ export class AiDocker {
 
     @Logger.LogFunction()
     static StartScaler() {
+        const scaleInterval = AiDocker.Config['scale-interval']
+        Assert.Var<number>(scaleInterval, "server.ai-engines.scale-interval is not defined")
+
         // Clear any existing interval first to prevent duplicates
-        if (AiDocker.AutoScaleWorker) {
+        if (AiDocker.AutoScaleWorker)
             clearInterval(AiDocker.AutoScaleWorker)
-        }
-        AiDocker.AutoScaleWorker = setInterval(AiDocker.AutoScale, AiDocker.ServiceInstance.ScaleInterval)
+
+        AiDocker.AutoScaleWorker = setInterval(AiDocker.AutoScale, scaleInterval)
     }
 
     @Logger.LogFunction()
@@ -310,6 +301,21 @@ export class AiDocker {
 
     @Logger.LogFunction()
     private static async CreateServiceContainer(service: TAiDockerService) {
+        const _cpu = AiDocker.Config.cpu
+        const _memory = AiDocker.Config.memory
+        const _cpuScaleUp = AiDocker.Config['cpu-scale-up']
+        const _cpuScaleDown = AiDocker.Config['cpu-scale-down']
+        const _scaleInterval = AiDocker.Config['scale-interval']
+        const _scaleDownGracePeriod = AiDocker.Config['scale-down-grace-period']
+
+        Assert.Var<number>(_cpu, "server.ai-engines.cpu is not defined")
+        Assert.Var<number>(_memory, "server.ai-engines.memory is not defined")
+        Assert.Var<number>(_cpuScaleUp, "server.ai-engines.cpu-scale-up is not defined")
+        Assert.Var<number>(_cpuScaleDown, "server.ai-engines.cpu-scale-down is not defined")
+        Assert.Var<number>(_scaleInterval, "server.ai-engines.scale-interval is not defined")
+        Assert.Var<number>(_scaleDownGracePeriod, "server.ai-engines.scale-down-grace-period is not defined")
+
+
         const serviceName = service.InstanceName ?? service.Name
         const containerName = `${DOCKER.AI_ENGINE_PREFIX}_${serviceName}_${Date.now()}`
         const serviceIndex = Array.from(AiDocker.Instances.keys()).indexOf(serviceName)
@@ -323,7 +329,7 @@ export class AiDocker {
             },
             Env: [
                 'MAX_HISTORY=3',
-                `MAX_LOAD=${AiDocker.ServiceInstance.CpuScaleUp}`
+                `MAX_LOAD=${_cpuScaleUp}`
             ],
             Labels: {
                 service: serviceName,
@@ -360,17 +366,28 @@ export class AiDocker {
                 [`caddy.${serviceIndex}_route.1_reverse_proxy.lb_try_interval`]: `250ms`,
             },
             HostConfig: {
-                NetworkMode: DOCKER.AI_NETWORK,
+                // Restart Policy
                 RestartPolicy: { Name: 'unless-stopped' },
+
+                // Network
+                NetworkMode: DOCKER.AI_NETWORK,
+
+                // Volume
                 Binds: service.DockerVolume,
-                NanoCpus: 1000000000
+
+                // CPU Configuration
+                NanoCpus: _cpu * 1_000_000_000,  // 4 CPUs (1 CPU = 1e9 nanocpus)
+
+                // Memory Configuration
+                Memory: _memory * 1_000_000_000,      // 6 GB hard limit (in bytes)
+                MemoryReservation: _memory * 100_000_000,  // 4 GB soft limit
+                MemorySwap: -1,        // Disable swap (or set to Memory value to prevent 
             }
         })
 
         await container.start()
             .then(() => {
                 Logger.Info(`${Logger.Out} Started new '${serviceName}' container '${containerName}'`)
-
             })
             .catch((error) => {
                 Logger.Error(`${Logger.Out} Failed to start new '${serviceName}' container '${containerName}': ${error}`)
@@ -402,13 +419,20 @@ export class AiDocker {
 
     @Logger.LogFunction()
     static async StartCaddy() {
+        let caddyContainer: Docker.ContainerInfo | undefined
         try {
             const containers = await AiDocker.docker.listContainers({
                 all: true,
                 filters: { name: [CaddyDockerService.Name] }
             })
             if (containers.length > 0) {
-                Logger.Info(`${Logger.Out} Caddy container already running`)
+                caddyContainer = containers[0]!
+                if (caddyContainer.State === "running") {
+                    Logger.Info(`${Logger.Out} Caddy container already running`)
+                    return
+                }
+                await AiDocker.docker.getContainer(caddyContainer.Id).start()
+                Logger.Info(`${Logger.Out} Caddy container started`)
                 return
             }
             Logger.Info(`${Logger.In} Starting Caddy container`)
@@ -431,8 +455,8 @@ export class AiDocker {
                 HostConfig: {
                     NetworkMode: DOCKER.AI_NETWORK,
                     PortBindings: {
-                        [`${CaddyDockerService.Port}/tcp`]: [{ HostPort: (CaddyDockerService.Port as number).toString() }],
-                        [`${CaddyDockerService.Options?.DashboardPort}/tcp`]: [{ HostPort: (CaddyDockerService.Options?.DashboardPort as number).toString() }]
+                        [`${CaddyDockerService.Port}/tcp`]: [{ HostPort: (CaddyDockerService.Port as number).toString() }]//,
+                        // [`${CaddyDockerService.Options?.DashboardPort}/tcp`]: [{ HostPort: (CaddyDockerService.Options?.DashboardPort as number).toString() }]
                     },
                     Binds: CaddyDockerService.DockerVolume
                 },
@@ -440,7 +464,15 @@ export class AiDocker {
                     EndpointsConfig: { [DOCKER.AI_NETWORK]: {} }
                 }
             })
-            await container.start().catch(Logger.Error)
+
+            caddyContainer = (await AiDocker.docker.listContainers({
+                all: true,
+                filters: { name: [CaddyDockerService.Name] }
+            }))[0]
+
+            await AiDocker.docker.getContainer(caddyContainer!.Id).start()
+                .catch(Logger.Error)
+
         } catch (error) {
             Logger.Error(error)
         }
@@ -461,8 +493,21 @@ export class AiDocker {
 
     @Logger.LogFunction()
     static async AutoScale() {
-        for (const service of AiDocker.Instances.values()) {
+        const _cpuScaleUp = AiDocker.Config['cpu-scale-up']
+        const _cpuScaleDown = AiDocker.Config['cpu-scale-down']
+        const _scaleInterval = AiDocker.Config['scale-interval']
+        const _scaleDownGracePeriod = AiDocker.Config['scale-down-grace-period']
+        const _minInstances = AiDocker.Config['min-instance']
+        const _maxInstances = AiDocker.Config['max-instance']
 
+        Assert.Var<number>(_cpuScaleUp, "server.ai-engines.cpu-scale-up is not defined")
+        Assert.Var<number>(_cpuScaleDown, "server.ai-engines.cpu-scale-down is not defined")
+        Assert.Var<number>(_scaleInterval, "server.ai-engines.scale-interval is not defined")
+        Assert.Var<number>(_scaleDownGracePeriod, "server.ai-engines.scale-down-grace-period is not defined")
+        Assert.Var<number>(_minInstances, "server.ai-engines.min-instance is not defined")
+        Assert.Var<number>(_maxInstances, "server.ai-engines.max-instance is not defined")
+
+        for (const service of AiDocker.Instances.values()) {
             const containers = await AiDocker.ListActiveContainers(service)
 
             if (containers.length === 0)
@@ -472,18 +517,18 @@ export class AiDocker {
 
             Logger.Info(`${Logger.In} AutoScale: '${service.InstanceName ?? service.Name}', Containers: ${containers.length}, Avg CPU: ${avgCpu.toFixed(0)}%`)
 
-            if (avgCpu > AiDocker.ServiceInstance.CpuScaleUp && containers.length < AiDocker.ServiceInstance.MaxInstances) {
+            if (avgCpu > _cpuScaleUp && containers.length < _maxInstances) {
                 await AiDocker.ScaleUp(service)
                 service.IdleSince = undefined
-            } else if (avgCpu < AiDocker.ServiceInstance.CpuScaleDown && containers.length > AiDocker.ServiceInstance.MinInstances) {
+            } else if (avgCpu < _cpuScaleDown && containers.length > _minInstances) {
                 if (!service.IdleSince) {
                     service.IdleSince = Date.now()
                     Logger.Info(`${Logger.Out} AutoScale: '${service.InstanceName ?? service.Name}' is idle. Grace period started.`)
-                } else if (Date.now() - service.IdleSince > AiDocker.ServiceInstance.ScaleDownGracePeriod) {
+                } else if (Date.now() - service.IdleSince > _scaleDownGracePeriod) {
                     await AiDocker.ScaleDown(service)
                     service.IdleSince = undefined
                 } else {
-                    const remaining = Math.ceil((AiDocker.ServiceInstance.ScaleDownGracePeriod - (Date.now() - service.IdleSince)) / 1000)
+                    const remaining = Math.ceil((_scaleDownGracePeriod - (Date.now() - service.IdleSince)) / 1000)
                     Logger.Info(`${Logger.Out} AutoScale: '${service.InstanceName ?? service.Name}' is idle. Scaling down in ${remaining}s`)
                 }
             } else {
@@ -495,10 +540,14 @@ export class AiDocker {
 
     @Logger.LogFunction()
     static async ScaleUp(service: TAiDockerService) {
+        const _maxInstances = AiDocker.Config['max-instance']
+
+        Assert.Var<number>(_maxInstances, "server.ai-engines.max-instance is not defined")
+
         const containers = await AiDocker.ListActiveContainers(service)
         const nbrContainers = (containers?.length ?? Number.MAX_SAFE_INTEGER)
-        if (nbrContainers >= AiDocker.ServiceInstance.MaxInstances) {
-            Logger.Info(`Max '${service.InstanceName ?? service.Name}' containers reached: ${AiDocker.ServiceInstance.MaxInstances}`)
+        if (nbrContainers >= _maxInstances) {
+            Logger.Info(`Max '${service.InstanceName ?? service.Name}' containers reached: ${_maxInstances}`)
             return
         }
 
@@ -508,9 +557,13 @@ export class AiDocker {
 
     @Logger.LogFunction()
     static async ScaleDown(service: TAiDockerService) {
+        const _minInstances = AiDocker.Config['min-instance']
+
+        Assert.Var<number>(_minInstances, "server.ai-engines.min-instance is not defined")
+
         const containers = await AiDocker.ListActiveContainers(service)
-        if (containers.length <= AiDocker.ServiceInstance.MinInstances) {
-            Logger.Info(`Min '${service.InstanceName ?? service.Name}' containers reached: ${AiDocker.ServiceInstance.MinInstances}`)
+        if (containers.length <= _minInstances) {
+            Logger.Info(`Min '${service.InstanceName ?? service.Name}' containers reached: ${_minInstances}`)
             return
         }
 
@@ -519,7 +572,7 @@ export class AiDocker {
         // Remove oldest scaled container
         const toRemove = containers[0]
 
-        Assert.Var<Docker.ContainerInfo>(toRemove, 'toRemove is required')
+        Assert.Var<Docker.ContainerInfo>(toRemove, 'Unable to scale down: undefined container info')
 
         const container = AiDocker.docker.getContainer(toRemove.Id)
         await container.stop()

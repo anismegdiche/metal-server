@@ -24,6 +24,7 @@ import { Utils } from '../utils/Utils';
 import type { TAny } from './TAny';
 import { z_TJson, type TJson } from './TJson';
 import { z_TUuidv7, type TUuidv7 } from './TUuidv7';
+import { z_T_IntPositive } from './T_IntPositive';
 
 
 // constants
@@ -45,11 +46,14 @@ export const DATATABLE_TEMP_PATH = StringUtils.Path(SERVER.TEMP_PATH, 'data')
 // schemas
 export const z_SORT_ORDER = z.enum(["asc", "desc"]);// TOrderBy
 
-export const z_TOrderBy = z.record(z.string(), z_SORT_ORDER.optional());
+export const z_TOrderBy = z.record(
+    z.string(),
+    z_SORT_ORDER.optional()
+);
 
 const z_TRow = z_TJson.and(
     z.object({
-        __seq__: z.number().optional(),
+        __seq__: z_T_IntPositive.optional(),
         __idx__: z_TUuidv7.optional(),
     })
 );

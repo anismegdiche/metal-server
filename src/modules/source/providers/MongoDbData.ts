@@ -2,28 +2,28 @@
 //
 //
 //
-import * as _ from 'lodash-es'
+import { assign, merge, pick } from 'lodash-es';
 import type { MongoClientOptions, Document as MongoDocument } from 'mongodb';
 //
-import { RESPONSE } from '../../core/@consts'
-import type { TOptionalParameter } from '../types/TOptionalParameter'
-import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
-import { DataTable } from "../../../types/DataTable"
-import { Logger } from "../../../utils/Logger"
-import { Cache } from '../../cache/Cache'
-import { DATA_PROVIDER } from "../@consts"
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
-import { JsonUtils } from "../../../utils/JsonUtils"
-import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import { HttpResponse } from "../../core/HttpResponse"
-import { absDataProvider } from "../base/absDataProvider"
-import type { TConfigSource } from "../types/TConfigSource"
-import type { TDataListEntity } from "../types/TDataListEntity"
-import type { TContext } from "../../sandbox/types/TContext"
-import { MongoDbHelper } from "./MongoDbHelper"
-import { SynchronizerManager } from "../../../utils/SynchronizerManager"
-import { Assert } from '../../../utils/Assert'
+import { DataTable, type TRow } from "../../../types/DataTable";
+import { Assert } from '../../../utils/Assert';
+import { JsonUtils } from "../../../utils/JsonUtils";
+import { Logger } from "../../../utils/Logger";
+import { SynchronizerManager } from "../../../utils/SynchronizerManager";
+import { Cache } from '../../cache/Cache';
+import { RESPONSE } from '../../core/@consts';
+import { HttpResponse } from "../../core/HttpResponse";
+import type { TInternalResponse } from "../../core/types/TInternalResponse";
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors";
+import type { TContext } from "../../sandbox/types/TContext";
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest";
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse";
+import { DATA_PROVIDER } from "../@consts";
+import { absDataProvider } from "../base/absDataProvider";
+import type { TConfigSource } from "../types/TConfigSource";
+import type { TDataListEntity } from "../types/TDataListEntity";
+import type { TOptionalParameter } from '../types/TOptionalParameter';
+import { MongoDbHelper } from "./MongoDbHelper";
 
 
 // Define the MongoDB types that we'll use
@@ -78,7 +78,7 @@ export class MongoDbData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = _.merge(this.DEFAULT, sourceConfig as TMongoDbDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as TMongoDbDataConfig)
         // Just load the module to ensure it's available
         await MongoDbData._loadMongoDb();
     }
@@ -121,7 +121,7 @@ export class MongoDbData extends absDataProvider {
         const { schema, entity } = schemaRequest
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -162,7 +162,7 @@ export class MongoDbData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -190,7 +190,7 @@ export class MongoDbData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -206,8 +206,13 @@ export class MongoDbData extends absDataProvider {
 
         const mongoFilter: Filter<Document> = mongoParsedQuery?.aggregate?.at(0)?.$match ?? {}
 
+        let $set: TRow | undefined = undefined
+
+        if (await options?.Data?.Count() > 0)
+            $set = await options?.Data?.Rows({ limit: 1 })
+
         const mongoUpdate: UpdateFilter<Document> = {
-            $set: (await options?.Data?.Rows()).at(0)
+            $set
         }
 
         await this.Connection
@@ -228,7 +233,7 @@ export class MongoDbData extends absDataProvider {
             throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
 
-        $context = _.merge(
+        $context = merge(
             $context,
             this.GetContext(schemaRequest)
         )
@@ -277,7 +282,7 @@ export class MongoDbData extends absDataProvider {
                     size = await collection.countDocuments()
                 }
 
-                return <TDataListEntity>_.assign(_.pick(item, ['name', 'type']), { size })
+                return assign(pick(item, ['name', 'type']), { size }) as TDataListEntity
             })
         )
 
