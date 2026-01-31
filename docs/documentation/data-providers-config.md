@@ -683,12 +683,12 @@ sources:
       …
 ```
 
-#### `csv` <Badge type="default" text="v0.3+" />
+#### `csv` <Badge type="info" text="v0.5+" />
 
 | Parameter        | Type            | Description                                                                                                                                                                                                                                          |
 | ---------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `csv-delimiter`  | String          | The delimiting character (default: `,`).                                                                                                                                                                                                             |
-| `csv-newline`    | String          | The newline sequence. Must be one of `\r`, `\n`, or `\r\n` (default: `\n`).                                                                                                                                                                          |
+| `csv-delimiter`  | String          | The delimiting character (default: `;`).                                                                                                                                                                                                             |
+| `csv-newline`    | String          | The newline sequence. Must be one of `\r`, `\n`, or `\r\n` (default: `\r\n`).                                                                                                                                                                        |
 | `csv-header`     | Boolean         | If true, the first row of parsed data will be interpreted as field names (default: `true`).                                                                                                                                                          |
 | `csv-quote`      | String          | The character used to quote fields (default: `"`).                                                                                                                                                                                                   |
 | `csv-skip-empty` | String\|Boolean | If true, lines that are completely empty (those which evaluate to an empty string) will be skipped. If set to `greedy`, lines that don't have any content (those which have only whitespace after parsing) will also be skipped (default: `greedy`). |

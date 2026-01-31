@@ -12,7 +12,7 @@ async Text.ts #dev {start:2026-01-23T17:52:55} {cm:2026-01-23} {duration:11m} {h
 async Audio.ts #dev {start:2026-01-23T18:08:07} {cm:2026-01-23} {duration:48m} {h}
 async Image.ts #dev {cm:2026-01-23} {h}
 async OCr.ts #dev  {cm:2026-01-23} {h}
-CSV file data test #test {f} {start:2026-01-27T21:12:09} {cm:2026-01-30} {duration:2d_21h20m}
+CSV file data test #test {f} {start:2026-01-27T21:12:09} {cm:2026-01-30} {duration:2d_21h20m} {h}
 hot load after plan reload #fix
 
 plan should stop if error in step #feature
@@ -20,4 +20,4 @@ plan should be configured on-error: stop/continue, can be a common template star
 TconfigSource, U_config_sources infer and other U_config sections {f} {start:2026-01-30T00:49:52}
 AiDocker HostConfig {f} {start:2026-01-30T00:50:31}
 config get remove undefined {f}
-csv convert return lines {start:2026-01-30T18:32:52} {f}
+csv convert return lines {start:2026-01-30T18:32:52} {f} {cm:2026-01-31} {duration:18h01m}
