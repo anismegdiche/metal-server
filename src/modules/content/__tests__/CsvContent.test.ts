@@ -23,7 +23,7 @@ describe('CsvContent', () => {
             const name = 'test.csv'
             const content = Readable.from('id,name\n1,John\n2,Jane')
 
-            await csvContent.InitContent(name, content)
+            csvContent.InitContent(name, content)
 
             expect(csvContent.EntityName).toBe(name)
             expect(csvContent.Content.ReadFile(name)).toBe(content)
@@ -33,12 +33,13 @@ describe('CsvContent', () => {
             const name = 'test.csv'
             const content = Readable.from('id,name\n1,John\n2,Jane')
 
-            await csvContent.InitContent(name, content)
+            csvContent.InitContent(name, content)
 
             expect(csvContent.Params!.delimiter).toBe(',')
-            expect(csvContent.Params!.newline).toBe('\n')
             expect(csvContent.Params!.header).toBe(true)
-            expect(csvContent.Params!.quoteChar).toBe('"')
+            expect(csvContent.Params!.newline).toBe('\n')
+            expect(csvContent.Params!.quoteChar).toBe(undefined)
+            expect(csvContent.Params!.quotes).toBe(false)
             expect(csvContent.Params!.skipEmptyLines).toBe('greedy')
         })
 
@@ -55,12 +56,13 @@ describe('CsvContent', () => {
 
             csvContent.Config = options as TCsvContentConfig
 
-            await csvContent.InitContent(name, content)
+            csvContent.InitContent(name, content)
 
             expect(csvContent.Params!.delimiter).toBe('')
-            expect(csvContent.Params!.newline).toBe('\r\n')
             expect(csvContent.Params!.header).toBe(false)
-            expect(csvContent.Params!.quoteChar).toBe('"')
+            expect(csvContent.Params!.newline).toBe('\r\n')
+            expect(csvContent.Params!.quoteChar).toBe(undefined)
+            expect(csvContent.Params!.quotes).toBe(false)
             expect(csvContent.Params!.skipEmptyLines).toBe('greedy')
         })
     })
@@ -70,7 +72,7 @@ describe('CsvContent', () => {
             const name = 'test.csv'
             const content = Readable.from('id,name\n1,John\n2,Jane')
 
-            await csvContent.InitContent(name, content)
+            csvContent.InitContent(name, content)
             const dataTable = await csvContent.Get({}, {})
 
             expect(dataTable.Name).toBe(name)
@@ -90,7 +92,7 @@ describe('CsvContent', () => {
             const name = 'test.csv'
             const content = Readable.from('')
 
-            await csvContent.InitContent(name, content)
+            csvContent.InitContent(name, content)
             const dataTable = await csvContent.Get({}, {})
 
             expect(dataTable.Name).toBe(name)
@@ -101,7 +103,7 @@ describe('CsvContent', () => {
             const name = 'test.csv'
             const content = Readable.from('id,name\n1,John\n2')
 
-            await csvContent.InitContent(name, content)
+            csvContent.InitContent(name, content)
             const dataTable = await csvContent.Get({}, {})
 
             expect(dataTable.Name).toBe(name)

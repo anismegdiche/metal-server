@@ -62,7 +62,7 @@ export class CsvContent extends absContentProvider {
                 header: config["csv-header"],
                 skipEmptyLines: config["csv-skip-empty"]
             })
-            this.Params.quoteChar = config["csv-quote"] == null
+            this.Params.quoteChar = config["csv-quote"] == null || config["csv-quote"] == undefined || config["csv-quote"] == ''
                 ? undefined
                 : config["csv-quote"]
 
