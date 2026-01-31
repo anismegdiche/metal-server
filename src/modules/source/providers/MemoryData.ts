@@ -11,14 +11,14 @@ import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Cache } from '../../cache/Cache'
 import { RESPONSE } from '../../core/@consts'
 import { HttpResponse } from "../../core/HttpResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import type { TSchemaRequestAddEntity, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import type { TConfigSource } from "../types/TConfigSource"
 import type { TOptionalParameter } from "../types/TOptionalParameter"
 
 
@@ -54,7 +54,7 @@ export class MemoryData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
         this.Config = merge(
             this.DEFAULT,

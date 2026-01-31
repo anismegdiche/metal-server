@@ -11,9 +11,9 @@ import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TypeUtils"
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { TConfigSource } from "../../source/types/TConfigSource"
 import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
 import type { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
@@ -35,7 +35,7 @@ type TFtpStorageParams = Required<{
 //
 export class FtpStorage extends absStorageProvider {
 
-    ConfigSource?: TConfigSource
+    ConfigSource?: U_config_sources_source
     ConfigStorage?: TStorageFilesDataOptions
     Params?: TFtpStorageParams
 

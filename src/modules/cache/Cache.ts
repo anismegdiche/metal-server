@@ -1,45 +1,30 @@
 //
 //
-// External dependencies
+//
 import * as Sha512 from 'js-sha512'
-
-// Types and interfaces
+//
 import { DataTable } from '../../types/DataTable'
 import type { TJson } from "../../types/TJson"
-
-// Utils
+import { Assert } from '../../utils/Assert'
 import { Logger } from '../../utils/Logger'
 import { Semaphore } from "../../utils/Semaphore"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
-
-// Auth
 import { AUTH_PERMISSION } from "../auth/@consts"
 import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
-
-// Core
-import { Assert } from '../../utils/Assert'
 import { METADATA, RESPONSE } from '../core/@consts'
 import { ConfigManager } from '../core/ConfigManager'
 import { Global } from '../core/Global'
 import { HttpResponse } from '../core/HttpResponse'
-import type { U_config_schemas_schema } from "../core/types/U_config_schemas"
-
-// Errors
-import { HttpError, HttpErrorBadRequest, HttpErrorLog, HttpErrorNotFound } from "../errors/HttpErrors"
-
-// Schema
 import type { TInternalResponse } from "../core/types/TInternalResponse"
+import type { U_config_schemas_schema } from "../core/types/U_config_schemas"
+import type { U_config_sources_source } from '../core/types/U_config_sources'
+import { HttpError, HttpErrorBadRequest, HttpErrorLog, HttpErrorNotFound } from "../errors/HttpErrors"
+import { Schema } from '../schema/Schema'
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate } from "../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../schema/types/TSchemaResponse"
-
-// Data providers
 import type { IDataProvider } from "../source/base/IDataProvider"
-import type { TConfigSource } from "../source/types/TConfigSource"
-
-// Cache types
 import type { TCacheData } from './types/TCacheData'
-import { Schema } from '../schema/Schema'
 
 // Exports
 export class Cache {
@@ -54,7 +39,7 @@ export class Cache {
 
     static DataSource: IDataProvider //NOSONAR
 
-    static DataSourceConfig: TConfigSource
+    static DataSourceConfig: U_config_sources_source
 
     static #__LOCK__: Semaphore = new Semaphore(1) //NOSONAR
 
@@ -76,7 +61,7 @@ export class Cache {
         if (!Cache.IsEnabled)
             return
 
-        Cache.DataSourceConfig = ConfigManager.Get<TConfigSource>("server.cache")
+        Cache.DataSourceConfig = ConfigManager.Get<U_config_sources_source>("server.cache")
         Cache.Database = Cache.DataSourceConfig.database ?? Cache.DEFAULT.database
         Cache.#CacheSchemaRequest = <TSchemaRequest>{
             schema: Cache.Database,

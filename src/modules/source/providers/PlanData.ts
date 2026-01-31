@@ -10,6 +10,7 @@ import { Cache } from '../../cache/Cache'
 import { RESPONSE } from '../../core/@consts'
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { Plans } from "../../plan/Plans"
 import type { TContext } from "../../sandbox/types/TContext"
@@ -18,7 +19,6 @@ import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
 import { Source } from "../Source"
-import type { TConfigSource } from "../types/TConfigSource"
 import type { TDataListEntity } from "../types/TDataListEntity"
 import type { TOptionalParameter } from "../types/TOptionalParameter"
 
@@ -27,7 +27,7 @@ export class PlanData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.PLAN
-    Config: TConfigSource = <TConfigSource>{}
+    Config: U_config_sources_source = <U_config_sources_source>{}
     Connection: undefined
 
     constructor() {
@@ -35,7 +35,7 @@ export class PlanData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
         this.Config = sourceConfig
     }

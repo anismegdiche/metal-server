@@ -2,16 +2,16 @@
 //
 //
 //
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import type { TInternalResponse } from '../../core/types/TInternalResponse'
-import type { IDataProviderOptions } from "./IDataProviderOptions"
-import type { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
-import type { DATA_PROVIDER } from "../@consts"
-import type { TConfigSource } from "../types/TConfigSource"
-import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import type { clsClonable } from "../../../utils/base/clsClonable"
 import type { clsContext } from "../../../utils/base/clsContext"
+import type { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
+import type { TInternalResponse } from '../../core/types/TInternalResponse'
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import type { DATA_PROVIDER } from "../@consts"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { IDataProviderOptions } from "./IDataProviderOptions"
 
 
 //
@@ -24,7 +24,7 @@ export interface IDataProvider extends clsClonable, clsContext {
     Options: IDataProviderOptions
 
     // Init
-    Init(source: string, sourceConfig: TConfigSource): Promise<void>
+    Init(source: string, sourceConfig: U_config_sources_source): Promise<void>
 
     // Connection
     Connect(): Promise<void>

@@ -3,22 +3,22 @@
 //
 import { Mixin } from "ts-mixer"
 //
+import type { DataTable } from "../../../types/DataTable"
+import { Assert } from "../../../utils/Assert"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { clsContext } from "../../../utils/base/clsContext"
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import type { TInternalResponse } from '../../core/types/TInternalResponse'
-import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { absDataProviderOptions } from "./absDataProviderOptions"
 import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
-import { HttpErrorBadRequest } from "../../errors/HttpErrors"
 import { StringUtils } from '../../../utils/StringUtils'
-import { Assert } from "../../../utils/Assert"
+import type { TInternalResponse } from '../../core/types/TInternalResponse'
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import { HttpErrorBadRequest } from "../../errors/HttpErrors"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
-import type { TConfigSource } from "../types/TConfigSource"
-import type { IDataProviderOptions } from "./IDataProviderOptions"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
+import { absDataProviderOptions } from "./absDataProviderOptions"
 import type { IDataProvider } from "./IDataProvider"
-import type { DataTable } from "../../../types/DataTable"
+import type { IDataProviderOptions } from "./IDataProviderOptions"
 
 
 export class DataProviderOptions extends absDataProviderOptions implements IDataProviderOptions { }
@@ -38,7 +38,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
     }
 
     // Init
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         Assert.Condition(!StringUtils.IsEmpty(source), `${source}: source name is missing`)
         Assert.Condition(sourceConfig != undefined, `${source}: source config is missing`)
         this.SourceName = source

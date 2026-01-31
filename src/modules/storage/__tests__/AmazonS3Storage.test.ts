@@ -1,13 +1,13 @@
 
 
 
-import { type Mock } from 'vitest'
-import { AmazonS3Storage, FileTypeFromBuffer } from '../providers/AmazonS3Storage'
 import { S3Client } from '@aws-sdk/client-s3'
 import { Readable } from 'node:stream'
+import { type Mock } from 'vitest'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../../modules/errors/HttpErrors"
-import type { TConfigSource } from "../../source/types/TConfigSource"
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { DATA_PROVIDER } from "../../source/@consts"
+import { AmazonS3Storage, FileTypeFromBuffer } from '../providers/AmazonS3Storage'
 
 vi.mock('load-esm', () => ({
     loadEsm: vi.fn(async (name: string) => {
@@ -35,7 +35,7 @@ vi.mock('@aws-sdk/client-s3', () => {
 })
 
 // Base mock configuration for tests
-const baseParams: Partial<TConfigSource> = {
+const baseParams: Partial<U_config_sources_source> = {
     host: '127.0.0.1',
     port: 3306,
     user: 'test-user',
@@ -52,7 +52,7 @@ beforeAll(async () => {
 
 describe('AmazonS3Storage', () => {
     let storage: AmazonS3Storage
-    const mockConfig: TConfigSource = {
+    const mockConfig: U_config_sources_source = {
         ...baseParams,
         provider: DATA_PROVIDER.STORAGE,
         host: 's3.amazonaws.com',

@@ -13,9 +13,9 @@ import { Logger } from '../../../utils/Logger'
 import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { StringUtils } from '../../../utils/StringUtils'
 import type { TConvertParams } from "../../../utils/TypeUtils"
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../errors/HttpErrors'
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { TConfigSource } from "../../source/types/TConfigSource"
 import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
 import type { TStorageFile } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
@@ -51,7 +51,7 @@ type TAmazonS3StorageParams = Required<{
 //
 export class AmazonS3Storage extends absStorageProvider {
 
-    ConfigSource?: TConfigSource
+    ConfigSource?: U_config_sources_source
     ConfigStorage?: TStorageFilesDataOptions
     Params?: TAmazonS3StorageParams
 

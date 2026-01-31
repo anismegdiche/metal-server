@@ -1,15 +1,15 @@
 
 
-import { SqlServerData } from "../providers/SqlServerData"
-import type { TConfigSource } from "../types/TConfigSource"
-import type { TSchemaRequestSelect, TSchemaRequestInsert, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
-import { HttpErrorInternalServerError, HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
-import type { TIpPort } from "../../../types/TIpPort"
-import { DATA_PROVIDER } from "../@consts"
-import type { TJson } from "../../../types/TJson"
-import { HTTP_STATUS_CODE } from "../../core/@consts"
-import { Cache } from '../../cache/Cache'
 import mssql from 'mssql'
+import type { TIpPort } from "../../../types/TIpPort"
+import type { TJson } from "../../../types/TJson"
+import { Cache } from '../../cache/Cache'
+import { HTTP_STATUS_CODE } from "../../core/@consts"
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
+import type { TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
+import { DATA_PROVIDER } from "../@consts"
+import { SqlServerData } from "../providers/SqlServerData"
 
 // Mock mssql module
 vi.mock('mssql', () => {
@@ -32,7 +32,7 @@ vi.mock('../../cache/Cache', () => ({
     }
 }))
 
-const mockConfig: TConfigSource = {
+const mockConfig: U_config_sources_source = {
     provider: DATA_PROVIDER.MSSQL,
     host: '127.0.0.1',
     port: 1433 as TIpPort,
@@ -81,13 +81,13 @@ describe('SqlServerData', () => {
         })
 
         it('should throw error when configuration is missing', async () => {
-            await expect(sqlServerData.Init('test', undefined as unknown as TConfigSource))
+            await expect(sqlServerData.Init('test', undefined as unknown as U_config_sources_source))
                 .rejects
                 .toThrow('source config is missing')
         })
 
         it('should merge configuration with defaults', async () => {
-            const partialConfig: TConfigSource = {
+            const partialConfig: U_config_sources_source = {
                 provider: DATA_PROVIDER.MSSQL,
                 host: '127.0.0.1',
                 database: 'testdb'
@@ -109,7 +109,7 @@ describe('SqlServerData', () => {
         })
 
         it('should throw error when configuration is null', async () => {
-            await expect(sqlServerData.Init('test', null as unknown as TConfigSource))
+            await expect(sqlServerData.Init('test', null as unknown as U_config_sources_source))
                 .rejects
                 .toThrow('source config is missing')
         })
@@ -152,7 +152,7 @@ describe('SqlServerData', () => {
         })
 
         it('should handle connection configuration properly', async () => {
-            const customConfig: TConfigSource = {
+            const customConfig: U_config_sources_source = {
                 ...mockConfig,
                 host: 'custom-host',
                 database: 'custom-db',

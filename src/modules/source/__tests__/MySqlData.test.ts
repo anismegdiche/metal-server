@@ -1,13 +1,13 @@
 
 import mysql from 'mysql2/promise'
-import { MySqlData } from '../providers/MySqlData'
-import type { TSchemaRequest } from '../../schema/types/TSchemaRequest'
-import { Cache } from '../../cache/Cache'
-import { DataTable } from '../../../types/DataTable'
-import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../errors/HttpErrors'
-import type { TConfigSource } from "../types/TConfigSource"
-import { DATA_PROVIDER } from "../@consts"
 import type { Mock } from 'vitest'
+import { DataTable } from '../../../types/DataTable'
+import { Cache } from '../../cache/Cache'
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
+import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../errors/HttpErrors'
+import type { TSchemaRequest } from '../../schema/types/TSchemaRequest'
+import { DATA_PROVIDER } from "../@consts"
+import { MySqlData } from '../providers/MySqlData'
 
 // Mock the mysql2/promise module
 vi.mock('mysql2/promise')
@@ -42,7 +42,7 @@ describe('MySqlData', () => {
     }
     const mockCreatePool = mysql.createPool as Mock
 
-    const providerConfig: TConfigSource = {
+    const providerConfig: U_config_sources_source = {
         provider: DATA_PROVIDER.MYSQL,
         host: '127.0.0.1',
         port: 3306,

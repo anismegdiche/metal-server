@@ -2,27 +2,27 @@
 //
 //
 import { merge } from 'lodash-es'
-import mysql from 'mysql2/promise'
 import type { Pool } from 'mysql2/promise'
+import mysql from 'mysql2/promise'
 //
-import { RESPONSE } from '../../core/@consts'
-import type { TConfigSource } from "../types/TConfigSource"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
-import { DataTable } from "../../../types/DataTable"
 import type { TRow } from "../../../types/DataTable"
-import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import { Cache } from '../../cache/Cache'
-import { Logger } from '../../../utils/Logger'
-import { DATA_PROVIDER } from "../@consts"
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
-import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import { HttpResponse } from "../../core/HttpResponse"
-import { absDataProvider } from "../base/absDataProvider"
-import type { TContext } from "../../sandbox/types/TContext"
-import { SynchronizerManager } from "../../../utils/SynchronizerManager"
+import { DataTable } from "../../../types/DataTable"
 import type { TIpPort } from "../../../types/TIpPort"
 import { Assert } from "../../../utils/Assert"
+import { Logger } from '../../../utils/Logger'
+import { SynchronizerManager } from "../../../utils/SynchronizerManager"
+import { Cache } from '../../cache/Cache'
+import { RESPONSE } from '../../core/@consts'
+import { HttpResponse } from "../../core/HttpResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
+import { DATA_PROVIDER } from "../@consts"
+import { absDataProvider } from "../base/absDataProvider"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
 
 
 //
@@ -64,7 +64,7 @@ export class MySqlData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
         this.Config = merge(this.DEFAULT, sourceConfig as TMySqlDataConfig)
     }

@@ -15,9 +15,10 @@ import { StringUtils } from '../../../utils/StringUtils'
 import { Cache } from "../../cache/Cache"
 import { RESPONSE } from '../../core/@consts'
 import { HttpResponse } from '../../core/HttpResponse'
+import type { TInternalResponse } from '../../core/types/TInternalResponse'
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { HttpErrorBadRequest, HttpErrorForbidden, HttpErrorInternalServerError, HttpErrorNotImplemented } from '../../errors/HttpErrors'
 import type { TContext } from '../../sandbox/types/TContext'
-import type { TInternalResponse } from '../../core/types/TInternalResponse'
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { STORAGE } from '../../storage/@consts'
@@ -27,7 +28,6 @@ import { StorageProvider } from '../../storage/StorageProvider'
 import type { TStorageConfig } from '../../storage/types/TStorageConfig'
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from '../base/absDataProvider'
-import type { TConfigSource } from "../types/TConfigSource"
 import type { TOptionalParameter } from '../types/TOptionalParameter'
 
 
@@ -128,7 +128,7 @@ export class StorageFoldersData extends absDataProvider {
     }
 
     @Logger.LogFunction(true)
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
         this.Config = merge(this.DEFAULT, sourceConfig as TStorageFoldersDataConfig)
 

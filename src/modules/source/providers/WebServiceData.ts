@@ -3,33 +3,33 @@
 //
 //
 import { merge } from 'lodash-es'
-import { z_TEndpoint } from "../../../utils/Schemas"
 //
-import type { TConfigSource } from "../types/TConfigSource"
-import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
-import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { absDataProvider } from "../base/absDataProvider"
-import { DATA_PROVIDER } from "../@consts"
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
-import { Logger, VERBOSITY } from "../../../utils/Logger"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
-import { RESPONSE } from "../../core/@consts"
-import { HttpResponse } from "../../core/HttpResponse"
-import { Cache } from "../../cache/Cache"
+import { DataTable, type TRowsCopyParams } from "../../../types/DataTable"
 import type { TJson } from "../../../types/TJson"
-import type { TContext } from "../../sandbox/types/TContext"
 import type { TUrl } from "../../../types/TUrl"
+import { Logger, VERBOSITY } from "../../../utils/Logger"
+import { z_TEndpoint } from "../../../utils/Schemas"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
+import { Cache } from "../../cache/Cache"
 import { CONTENT } from "../../content/@consts"
 import type { TContentConfig } from "../../content/@types"
 import type { IContentProvider } from "../../content/base/IContentProvider"
 import { ContentProvider } from "../../content/ContentProvider"
-import { WEBSERVICE, ENDPOINT } from "../../webservice/@consts"
+import { RESPONSE } from "../../core/@consts"
+import { HttpResponse } from "../../core/HttpResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import type { TContext } from "../../sandbox/types/TContext"
+import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import { ENDPOINT, WEBSERVICE } from "../../webservice/@consts"
 import type { TWebServiceEndpoint } from "../../webservice/@types"
 import { absWebServiceProvider } from "../../webservice/base/absWebServiceProvider"
 import { WebServiceProvider } from "../../webservice/WebServiceProvider"
-import { DataTable, type TRowsCopyParams } from "../../../types/DataTable"
+import { DATA_PROVIDER } from "../@consts"
+import { absDataProvider } from "../base/absDataProvider"
+import type { TOptionalParameter } from "../types/TOptionalParameter"
 
 
 //
@@ -75,7 +75,7 @@ export class WebServiceData extends absDataProvider {
     }
 
     @Logger.LogFunction(['sourceConfig'])
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
         this.Config = merge(this.Config, sourceConfig)
 

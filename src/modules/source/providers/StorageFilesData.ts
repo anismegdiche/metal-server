@@ -16,9 +16,10 @@ import type { IContentProvider } from "../../content/base/IContentProvider"
 import { ContentProvider } from "../../content/ContentProvider"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { STORAGE } from "../../storage/@consts"
@@ -26,7 +27,6 @@ import { absStorageProvider } from "../../storage/base/absStorageProvider"
 import { StorageProvider } from "../../storage/StorageProvider"
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import type { TConfigSource } from "../types/TConfigSource"
 import type { TOptionalParameter } from "../types/TOptionalParameter"
 import type { TStorageFilesDataOptions } from "../types/TStorageFilesDataOptions"
 import type { TStorageFilesDataOptionsContent } from "../types/TStorageFilesDataOptionsContent"
@@ -37,7 +37,7 @@ export class StorageFilesData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.STORAGE
-    Config: TConfigSource = <TConfigSource>{}
+    Config: U_config_sources_source = <U_config_sources_source>{}
     Connection?: absStorageProvider = undefined
 
     // FilesData
@@ -65,7 +65,7 @@ export class StorageFilesData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
         this.Config = sourceConfig
         const {

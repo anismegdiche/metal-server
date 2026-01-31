@@ -1,10 +1,10 @@
 
 
-import { MongoDbData } from '../providers/MongoDbData'
-import type { TSchemaRequestListEntities } from '../../schema/types/TSchemaRequest'
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { HttpErrorNotFound } from '../../errors/HttpErrors'
-import type { TConfigSource } from "../types/TConfigSource"
+import type { TSchemaRequestListEntities } from '../../schema/types/TSchemaRequest'
 import { DATA_PROVIDER } from "../@consts"
+import { MongoDbData } from '../providers/MongoDbData'
 
 // Mock the mongodb module
 const mockCollection = {
@@ -43,7 +43,7 @@ vi.mock('../../cache/Cache')
 describe('MongoDbData', () => {
     let provider: MongoDbData
 
-    const providerConfig: TConfigSource = {
+    const providerConfig: U_config_sources_source = {
         provider: DATA_PROVIDER.MONGODB,
         host: 'mongodb://127.0.0.1:27017/',
         database: 'test-db',

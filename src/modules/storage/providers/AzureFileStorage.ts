@@ -2,19 +2,19 @@
 // Lazy-loaded @azure/storage-file-share module
 import { Readable } from "stream"
 //
-import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
-import type { TConfigSource } from "../../source/types/TConfigSource"
 import { DataTable } from "../../../types/DataTable"
-import { absStorageProvider } from "../base/absStorageProvider"
-import type { TStorageFolder, TStorageFile } from '../@types'
-import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
-import type { TConvertParams } from "../../../utils/TypeUtils"
-import { ReadableUtils } from "../../../utils/ReadableUtils"
-import { Logger } from "../../../utils/Logger"
-import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { Assert } from "../../../utils/Assert"
+import { JsonUtils } from "../../../utils/JsonUtils"
+import { Logger } from "../../../utils/Logger"
+import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { StringUtils } from "../../../utils/StringUtils"
+import type { TConvertParams } from "../../../utils/TypeUtils"
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
+import { DATA_ENTITY_TYPE } from "../../source/@consts"
+import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { TStorageFile, TStorageFolder } from '../@types'
+import { absStorageProvider } from "../base/absStorageProvider"
 
 //
 export type TAzureFileStorageConfig = {
@@ -30,7 +30,7 @@ type TAzureFileStorageParams = {
 //
 export class AzureFileStorage extends absStorageProvider {
 
-    ConfigSource?: TConfigSource
+    ConfigSource?: U_config_sources_source
     ConfigStorage?: TStorageFilesDataOptions
     Params?: TAzureFileStorageParams
 

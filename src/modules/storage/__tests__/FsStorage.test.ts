@@ -1,13 +1,13 @@
 import * as Fs from 'fs'
 import { vi, type Mock } from 'vitest'
 
-import { Readable } from 'node:stream'
-import type { TConfigSource } from "../../source/types/TConfigSource"
-import { FsStorage } from '../providers/FsStorage'
-import { ReadableUtils } from '../../../utils/ReadableUtils'
-import { HttpErrorNotFound, HttpErrorInternalServerError } from '../../../modules/errors/HttpErrors'
 import { ReadStream } from "node:fs"
+import { Readable } from 'node:stream'
+import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../../modules/errors/HttpErrors'
+import { ReadableUtils } from '../../../utils/ReadableUtils'
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { DATA_PROVIDER } from "../../source/@consts"
+import { FsStorage } from '../providers/FsStorage'
 
 vi.mock('fs', async () => {
     const actual = await vi.importActual<typeof import('fs')>('fs')
@@ -35,7 +35,7 @@ type FsMock = typeof Fs & {
 const fsMock = Fs as unknown as FsMock
 
 describe('FsStorage', () => {
-    const sourceConfig = <TConfigSource>{
+    const sourceConfig = <U_config_sources_source>{
         provider: DATA_PROVIDER.STORAGE,
         options: {
             "fs-folder": './'

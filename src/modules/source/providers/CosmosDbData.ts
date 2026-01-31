@@ -12,14 +12,14 @@ import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Cache } from "../../cache/Cache"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
+import type { TInternalResponse } from '../../core/types/TInternalResponse'
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { TInternalResponse } from '../../core/types/TInternalResponse'
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import type { TConfigSource } from "../types/TConfigSource"
 import type { TDataListEntity } from "../types/TDataListEntity"
 import type { TOptionalParameter } from "../types/TOptionalParameter"
 import { CosmosDbHelper } from "./CosmosDbHelper"
@@ -71,7 +71,7 @@ export class CosmosDbData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
         this.Config = merge(this.DEFAULT, sourceConfig as TCosmosDbDataConfig)
         this.Config.options.endpoint = this.Config.host

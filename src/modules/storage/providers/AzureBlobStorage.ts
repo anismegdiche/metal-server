@@ -1,5 +1,6 @@
 //
-// Lazy-loaded @azure/storage-blob module
+//
+//
 import { merge } from "lodash-es"
 import { Readable } from "node:stream"
 //
@@ -9,9 +10,9 @@ import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from '../../../utils/Logger'
 import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TypeUtils"
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
-import type { TConfigSource } from "../../source/types/TConfigSource"
 import type { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
 
@@ -29,7 +30,7 @@ type TAzureBlobStorageParams = Required<{
 //
 export class AzureBlobStorage extends absStorageProvider {
 
-    ConfigSource?: TConfigSource
+    ConfigSource?: U_config_sources_source
     ConfigStorage?: TStorageFilesDataOptions
     Params: TAzureBlobStorageParams | undefined
 

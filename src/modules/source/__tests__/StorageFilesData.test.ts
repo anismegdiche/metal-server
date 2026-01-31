@@ -1,19 +1,19 @@
 /* eslint-disable security/detect-non-literal-regexp */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { StorageFilesData } from "../providers/StorageFilesData"
-import { Cache } from "../../cache/Cache"
-import { DATA_PROVIDER } from "../@consts"
+import type { Mock } from "vitest"
 import { DataTable } from "../../../types/DataTable"
-import { HttpResponse } from "../../core/HttpResponse"
-import { HttpErrorNotImplemented, HttpErrorInternalServerError, HttpErrorBadRequest } from "../../errors/HttpErrors"
 import { Convert } from "../../../utils/Convert"
-import type { TConfigSource } from "../types/TConfigSource"
+import { Cache } from "../../cache/Cache"
 import { CONTENT } from "../../content/@consts"
 import { ContentProvider } from "../../content/ContentProvider"
+import { HttpResponse } from "../../core/HttpResponse"
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import { STORAGE } from "../../storage/@consts"
 import { StorageProvider } from "../../storage/StorageProvider"
-import type { Mock } from "vitest"
+import { DATA_PROVIDER } from "../@consts"
+import { StorageFilesData } from "../providers/StorageFilesData"
 
 vi.mock("../../cache/Cache")
 vi.mock("../DataProvider")
@@ -71,7 +71,7 @@ describe("StorageFilesData", () => {
     });
 
     describe("Init", () => {
-        const sourceConfig: TConfigSource = {
+        const sourceConfig: U_config_sources_source = {
             provider: DATA_PROVIDER.STORAGE,
             options: {
                 storage: STORAGE.FILESYSTEM,
@@ -81,7 +81,7 @@ describe("StorageFilesData", () => {
                     }
                 }
             }
-        } as TConfigSource;
+        } as U_config_sources_source;
 
         it("should initialize correctly with valid config", async () => {
             await storageFilesData.Init("testSource", sourceConfig);

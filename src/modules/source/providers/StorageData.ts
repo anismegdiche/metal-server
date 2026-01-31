@@ -4,18 +4,18 @@
 import { merge } from 'lodash-es';
 //
 import { Assert } from '../../../utils/Assert';
-import type { TContext } from '../../sandbox/types/TContext';
 import type { TInternalResponse } from '../../core/types/TInternalResponse';
+import type { U_config_sources_source } from '../../core/types/U_config_sources';
+import type { TContext } from '../../sandbox/types/TContext';
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest';
 import type { TSchemaResponse } from '../../schema/types/TSchemaResponse';
 import { DATA_PROVIDER } from '../@consts';
 import { absDataProvider } from '../base/absDataProvider';
 import type { IDataProvider } from '../base/IDataProvider';
-import type { TConfigSource } from '../types/TConfigSource';
+import type { TStorageFilesDataOptions } from '../types/TStorageFilesDataOptions';
 import { StorageFilesData } from './StorageFilesData';
 import type { TStorageFoldersDataOptions } from './StorageFoldersData';
 import { StorageFoldersData } from './StorageFoldersData';
-import type { TStorageFilesDataOptions } from '../types/TStorageFilesDataOptions';
 
 
 //
@@ -29,7 +29,7 @@ export enum STORAGE_MODE {
 export type TStorageDataOptions = ({ mode: STORAGE_MODE.FILES } & TStorageFilesDataOptions)
     | ({ mode: STORAGE_MODE.FOLDERS } & TStorageFoldersDataOptions)
 
-export type TStorageDataConfig = TConfigSource & {
+export type TStorageDataConfig = U_config_sources_source & {
     options: TStorageDataOptions;
 }
 
@@ -39,7 +39,7 @@ export class StorageData extends absDataProvider implements IDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.STORAGE
-    Config: TConfigSource = <TConfigSource>{}
+    Config: U_config_sources_source = <U_config_sources_source>{}
     Connection?: StorageFilesData | StorageFoldersData;
 
     DEFAULT = {
@@ -52,7 +52,7 @@ export class StorageData extends absDataProvider implements IDataProvider {
         super()
     }
 
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
 
         this.Config = merge(this.DEFAULT, sourceConfig)

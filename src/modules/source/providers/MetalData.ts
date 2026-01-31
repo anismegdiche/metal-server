@@ -4,19 +4,19 @@
 //
 import { merge } from 'lodash-es'
 //
-import type { TConfigSource } from "../types/TConfigSource"
-import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { TSchemaRequestListEntities, TSchemaRequestInsert, TSchemaRequestSelect, TSchemaRequestUpdate, TSchemaRequestDelete, TSchemaRequestAddEntity } from "../../schema/types/TSchemaRequest"
-import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { Logger } from "../../../utils/Logger"
-import { absDataProvider } from "../base/absDataProvider"
-import { DATA_PROVIDER } from "../@consts"
-import { WebServiceData } from "./WebServiceData"
 import type { TUrl } from "../../../types/TUrl"
-import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import { Assert } from "../../../utils/Assert"
+import { Logger } from "../../../utils/Logger"
 import { CONTENT } from "../../content/@consts"
-import { WEBSERVICE, ENDPOINT } from "../../webservice/@consts"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
+import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import type { TSchemaRequestAddEntity, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import { ENDPOINT, WEBSERVICE } from "../../webservice/@consts"
+import { DATA_PROVIDER } from "../@consts"
+import { absDataProvider } from "../base/absDataProvider"
+import { WebServiceData } from "./WebServiceData"
 
 
 //
@@ -49,7 +49,7 @@ export class MetalData extends absDataProvider {
     }
 
     @Logger.LogFunction()
-    async Init(source: string, sourceConfig: TConfigSource): Promise<void> {
+    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
         this.Config = merge(
             this.DEFAULT,
@@ -59,7 +59,7 @@ export class MetalData extends absDataProvider {
             }
         )
 
-        const webServiceConfig: TConfigSource = {
+        const webServiceConfig: U_config_sources_source = {
             provider: DATA_PROVIDER.WEBSERVICE,
             host: this.Config.host,
             options: {

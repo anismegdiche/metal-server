@@ -6,8 +6,8 @@ import type { Mock, Mocked } from "vitest"
 import { HttpErrorInternalServerError } from '../../../modules/errors/HttpErrors'
 import { DataTable } from '../../../types/DataTable'
 import { ReadableUtils } from '../../../utils/ReadableUtils'
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { DATA_PROVIDER } from "../../source/@consts"
-import type { TConfigSource } from "../../source/types/TConfigSource"
 import { AzureDataLakeStorage } from '../providers/AzureDataLakeStorage'
 
 // Mock dependencies
@@ -17,7 +17,7 @@ vi.mock('../../../utils/ReadableUtils')
 const rndParams = {
     provider: DATA_PROVIDER.STORAGE,
     host: 'test.datalake.core.windows.net',
-} as unknown as TConfigSource
+} as unknown as U_config_sources_source
 
 describe('AzureDataLakeStorage', () => {
     let storage: AzureDataLakeStorage

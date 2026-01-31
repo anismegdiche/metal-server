@@ -1,12 +1,12 @@
 
-import { vi, type Mock, type Mocked } from 'vitest'
-import { FtpStorage } from '../providers/FtpStorage'
-import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../../modules/errors/HttpErrors'
-import { DataTable } from '../../../types/DataTable'
 import * as Ftp from 'basic-ftp'
 import { Readable } from 'stream'
-import type { TConfigSource } from "../../source/types/TConfigSource"
+import { vi, type Mock, type Mocked } from 'vitest'
+import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../../modules/errors/HttpErrors'
+import { DataTable } from '../../../types/DataTable'
+import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { DATA_PROVIDER } from "../../source/@consts"
+import { FtpStorage } from '../providers/FtpStorage'
 //
 
 vi.mock('basic-ftp', () => {
@@ -32,7 +32,7 @@ vi.mock('../../../utils/Convert')
 const rndParams = {
     provider: DATA_PROVIDER.STORAGE,
     host: '127.0.0.1',
-} as unknown as TConfigSource
+} as unknown as U_config_sources_source
 
 describe('FtpStorage', () => {
 
