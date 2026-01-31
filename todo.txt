@@ -17,7 +17,7 @@ hot load after plan reload #fix
 
 plan should stop if error in step #feature
 plan should be configured on-error: stop/continue, can be a common template starting with _ that config is added for steps #feature
-TconfigSource, U_config_sources infer and other U_config sections {f} {start:2026-01-30T00:49:52}
+TconfigSource, U_config_sources infer and other U_config sections {f} {start:2026-01-30T00:49:52} {cm:2026-01-31} {duration:1d_12h58m} {h}
 AiDocker HostConfig {f} {start:2026-01-30T00:50:31} {cm:2026-01-31} {duration:1d_11h45m} {h}
 config get remove undefined {f}
 csv convert return lines {start:2026-01-30T18:32:52} {f} {cm:2026-01-31} {duration:18h01m} {h}
