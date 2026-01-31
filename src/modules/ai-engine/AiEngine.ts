@@ -6,22 +6,23 @@ import * as _ from 'lodash-es';
 //
 import type { TJson } from "../../types/TJson";
 import { Factory } from "../../utils/Factory";
+import { Semaphore } from "../../utils/Semaphore";
 import { ConfigManager } from "../core/ConfigManager";
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors";
+import { STEP } from '../plan/@consts';
+import type { U_config_plans } from '../plan/types/U_config_plans';
+import type { U_config_plans_plan_entity_run_Params } from '../plan/types/U_config_plans_plan_entity_step';
 import { AI_ENGINE } from "./@consts";
-import type { T_config_ai_engines_ai_engine } from "./types/T_config_ai_engines_ai_engine";
 import { AiDocker } from "./AiDocker";
 import type { IAiEngine } from "./base/IAiEngine";
-import { Semaphore } from "../../utils/Semaphore";
 import { BaseImageDockerService, BaseTextDockerService } from "./docker-services/BaseDockerService";
+import type { T_config_ai_engines_ai_engine } from "./types/T_config_ai_engines_ai_engine";
 
 
 //
-type PlanStep = { run?: { ai: string; task: string } };
-type PlanEntity = PlanStep[];
-type Plan = Record<string, PlanEntity[]>;
-
-type AiTask = {
+type TPlanStep = { [STEP.RUN]: U_config_plans_plan_entity_run_Params };
+type TPlanEntity = TPlanStep[];
+type TAiTask = {
     ai: string;
     task: string;
 };
@@ -42,30 +43,28 @@ export class AiEngine {
     static #aiEnginesConfig: TJson<T_config_ai_engines_ai_engine> = {};
     static AiEnginesInstance: Map<string, IAiEngine> = new Map();
 
-    /**
-     * Build a list of AI engines from the configuration
-     */
+    // Build a list of AI engines from the configuration
     static BuildAiEnginesList(): TJson<T_config_ai_engines_ai_engine> {
         if (!ConfigManager.Has('plans')) {
             return {};
         }
 
-        const plans = ConfigManager.Get<Plan>("plans");
+        const plans = ConfigManager.Get<U_config_plans>("plans");
 
-        const aiTasks = _.chain(Object.values(plans))
-            .flatMap((plan: PlanEntity[]) => _.flatMap(plan, (entity: PlanEntity) => entity
-                .map((step: PlanStep) => step.run)
+        const aiTasks = _.chain(plans)
+            .flatMap((plan: TPlanEntity[]) => _.flatMap(plan, (entity: TPlanEntity) => entity
+                .map((step: TPlanStep) => step.run)
                 .filter((run): run is NonNullable<typeof run> => Boolean(run))
-                .map(({ ai, task }): AiTask => ({
+                .map(({ ai, task }): TAiTask => ({
                     ai,
                     task
                 }))
             ))
             .filter(Boolean)
             .uniqWith(_.isEqual)
-            .value() as AiTask[];
+            .value() as unknown as TAiTask[];
 
-        return aiTasks.reduce((acc: TJson<T_config_ai_engines_ai_engine>, { ai, task }: AiTask) => {
+        return aiTasks.reduce((acc: TJson<T_config_ai_engines_ai_engine>, { ai, task }: TAiTask) => {
             acc[`${ai}-${task}`] = { engine: `${ai}-${task}` } as T_config_ai_engines_ai_engine;
             return acc;
         }, {} as TJson<T_config_ai_engines_ai_engine>);

@@ -102,7 +102,8 @@ export enum TEXT_TASK {
     TRANSLATION = "translation",
 
     /** Zero-shot classification */
-    ZERO_SHOT_CLASSIFICATION = "zero-shot-classification"
+    ZERO_SHOT_CLASSIFICATION = "zero-shot-classification",
+    SUMMARIZE = "summarize"
 }
 
 /**
