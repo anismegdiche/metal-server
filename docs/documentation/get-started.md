@@ -14,7 +14,7 @@ It is strongly discouraged to deploy Metal As It Is in a production environment 
 
 Before diving into Metal Server, make sure your environment meets the following prerequisites:
 
-- [Node.js](https://nodejs.org/) 22.13.0
+- [Node.js](https://nodejs.org/) 24.13.0
 - [Git](https://git-scm.com/) 2.42 or newer
 
 ## Installation

@@ -9,6 +9,13 @@ on:
       - dev
 
 jobs:
+  enable-deploy:
+    # set to true to enable deployment
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "CI enabled"
+
   matrix-build-and-test:
     if: github.ref_name == 'dev'
     strategy:
@@ -23,10 +30,10 @@ jobs:
           - macos-13
           - macos-14
           - macos-15
-        
+
         node:
-          - "22.13.0"
-          - "24.9.0"
+          - "24.13.0"
+          - "25.5.0"
 
     runs-on: ${{ matrix.os }}
 
@@ -48,23 +55,19 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Prepare
-        run: npm run prepare
-
       - name: Compile
-        run: npx tsc
+        run: npm run build
 
       - name: run tests
         run: npm test
-  
-  
+
   docker-image-build-and-test:
     if: github.ref_name == 'dev'
 
     runs-on: ubuntu-latest
-    
+
     permissions:
-      contents: read  # Reduced permissions since we're not pushing
+      contents: read # Reduced permissions since we're not pushing
 
     steps:
       - name: Checkout code
@@ -81,17 +84,18 @@ jobs:
           tags: metal-test:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          load: true  # Makes the image available locally
-          push: false  # Explicitly disable pushing
+          load: true # Makes the image available locally
+          push: false # Explicitly disable pushing
 
       - name: Run tests in container
         run: |
           docker run --rm \
             metal-test:latest \
             npm run test
-  
+
   sync-docs:
     needs:
+      - enable-deploy
       - matrix-build-and-test
       - docker-image-build-and-test
     if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-and-test.result == 'success'
@@ -111,9 +115,10 @@ jobs:
         with:
           GH_PAT: ${{ secrets.GH_PAT }}
           SKIP_PR: true
-  
+
   deploy:
     needs:
+      - enable-deploy
       - matrix-build-and-test
       - docker-image-build-and-test
     if: github.ref_name == 'dev' && needs.docker-image-build-and-test.result == 'success' && needs.matrix-build-and-test.result == 'success'
@@ -137,5 +142,3 @@ jobs:
           git checkout dev
           git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/anismegdiche/metal-server.git
           git push origin dev:latest --force
-
-        
