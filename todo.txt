@@ -5,7 +5,7 @@ check ocr #dev {start:2026-01-22T19:38:01} {cm:2026-01-22} {duration:31m} {h}
 update url post code for all ai services like Image.ts #dev {start:2026-01-22T19:38:14} {cm:2026-01-22} {duration:01m} {h}
 test build mode #test {start:2026-01-22T19:39:52} {cm:2026-01-22} {duration:01h42m} {h}
 test new ai images #test {start:2026-01-22T20:11:06} {cm:2026-01-27} {duration:5d_21m} {h}
-check docs ai services #doc {f}
+check docs ai services #doc {f} {cm:2026-02-01}
 check docs build mode #doc {f}
 
 async Text.ts #dev {start:2026-01-23T17:52:55} {cm:2026-01-23} {duration:11m} {h}

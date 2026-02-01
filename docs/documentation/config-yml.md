@@ -196,19 +196,24 @@ server:
 
 The parameters that can be configured inside the `ai-engines` section include:
 
-| Parameter          | Type    | Default Value           | Required | Description                                      | Metal Version                      |
-| ------------------ | ------- | ----------------------- | -------- | ------------------------------------------------ | ---------------------------------- |
-| `engines-url`      | URL     | `http://127.0.0.1:5000` | Y        | URL for AI engine services.                      | <Badge type="info" text="v0.5+" /> |
-| `timeout`          | Integer | `60_000`                | N        | Timeout for AI engine requests in milliseconds.  | <Badge type="info" text="v0.5+" /> |
-| `min-instance`     | Integer | `1`                     | N        | Minimum number of AI engine instances.           | <Badge type="info" text="v0.5+" /> |
-| `max-instance`     | Integer | `5`                     | N        | Maximum number of AI engine instances.           | <Badge type="info" text="v0.5+" /> |
-| `cpu-scale-up`     | Integer | `70`                    | N        | CPU scale up value.                              | <Badge type="info" text="v0.5+" /> |
-| `cpu-scale-down`   | Integer | `30`                    | N        | CPU scale down value.                            | <Badge type="info" text="v0.5+" /> |
-| `scale-interval`   | Integer | `15_000`                | N        | AI Service Scale interval value in milliseconds. | <Badge type="info" text="v0.5+" /> |
-| `build-batch-size` | Integer | `5`                     | N        | AI Service Build batch size value.               | <Badge type="info" text="v0.5+" /> |
-| `params`           | Object  | `null`                  | N        | Parameters for Container Provider                | <Badge type="info" text="v0.5+" /> |
+| Parameter                 | Type    | Default Value           | Required | Description                                                                      | Metal Version                      |
+| ------------------------- | ------- | ----------------------- | -------- | -------------------------------------------------------------------------------- | ---------------------------------- |
+| `params`                  | Object  |                         | N        | Parameters for Container Provider. By default, local Docker daemon will be used. | <Badge type="info" text="v0.5+" /> |
+| `build-batch-size`        | Integer | `5`                     | N        | AI Engine Build batch size value.                                                | <Badge type="info" text="v0.5+" /> |
+| `engines-url`             | URL     | `http://127.0.0.1:5000` | Y        | URL for AI Engine services.                                                      | <Badge type="info" text="v0.5+" /> |
+| `timeout`                 | Integer | `60000`                 | N        | Timeout for AI Engine requests in milliseconds.                                  | <Badge type="info" text="v0.5+" /> |
+| `min-instance`            | Integer | `1`                     | N        | Minimum number of AI Engine instances.                                           | <Badge type="info" text="v0.5+" /> |
+| `max-instance`            | Integer | `5`                     | N        | Maximum number of AI Engine instances.                                           | <Badge type="info" text="v0.5+" /> |
+| `cpu-scale-up`            | Integer | `70`                    | N        | Percentage of CPU used to trigger a scale up.                                    | <Badge type="info" text="v0.5+" /> |
+| `cpu-scale-down`          | Integer | `30`                    | N        | Percentage of CPU used to trigger a scale down.                                  | <Badge type="info" text="v0.5+" /> |
+| `scale-interval`          | Integer | `15000`                 | N        | AI Engine Scale interval value in milliseconds.                                  | <Badge type="info" text="v0.5+" /> |
+| `scale-down-grace-period` | Integer | `300000`                | N        | Grace period before scaling down in milliseconds.                                | <Badge type="info" text="v0.5+" /> |
+| `cpu`                     | Integer | `4`                     | N        | CPU limit per AI Engine instances.                                               | <Badge type="info" text="v0.5+" /> |
+| `memory`                  | Integer | `2`                     | N        | Memory limit per AI Engine instances.                                            | <Badge type="info" text="v0.5+" /> |
 
-For more detailed information about how to configure a Container Provider, See: [Container Providers Configurations](./container-providers-config.md)
+::: tip ℹ️ NOTE
+For more detailed information about how to configure a Container Provider in `params`, See: [Container Providers Configurations](./container-providers-config.md)
+:::
 
 ## `roles` <Badge type="default" text="v0.3+" />
 

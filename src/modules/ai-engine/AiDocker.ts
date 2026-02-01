@@ -96,7 +96,6 @@ export class AiDocker {
         const containers = await AiDocker.ListActiveContainers(service)
         for (let i = containers.length; i < minInstances; i++) {
             await AiDocker.ScaleUp(service)
-            // await AiDocker.WaitForService(service)
         }
     }
 

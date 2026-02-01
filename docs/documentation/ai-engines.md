@@ -10,15 +10,28 @@ This section outlines the AI engines and their supported tasks in the Metal plat
 
 To enable AI capabilities in your Metal server, configure the following in your server configuration file:
 
+**Exmaple:**
+
 ```yaml
 server:
   # ... other server configurations ...
   ai-engines:
-    # Optional: Uncomment to enable Docker-based AI services
     docker-url: unix:///var/run/docker.sock
-
-    # Required: Base URL for AI engine services
     engines-url: http://127.0.0.1:5000
+```
+
+::: tip ℹ️ NOTE
+For complete configuration, please see [AI Engines Server Configuration](config-yml#ai-engines)
+:::
+
+## AI Engine Images build
+
+Upon initialization, Metal validates the availability of AI Engine images and automatically provisions any missing image.
+
+To manually pre-build these images before starting the server, execute the following command; this process will generate the required images and exit upon completion.
+
+```bash
+npm run prod:build-all-images
 ```
 
 ## AI Engines
