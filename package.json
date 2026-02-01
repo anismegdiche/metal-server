@@ -27,7 +27,7 @@
         "release:major": "standard-version --release-as major"
     },
     "dependencies": {
-        "@aws-sdk/client-s3": "^3.943.0",
+        "@aws-sdk/client-s3": "^3.893.0",
         "@azure/cosmos": "^4.9.0",
         "@azure/storage-blob": "^12.29.1",
         "@azure/storage-file-datalake": "^12.28.1",
@@ -35,7 +35,7 @@
         "@duckdb/duckdb-wasm": "^1.30.0",
         "@duckdb/node-api": "^1.4.2-r.1",
         "@loxjs/url-join": "^1.0.2",
-        "@synatic/noql": "^5.1.0",
+        "@synatic/noql": "^4.1.20",
         "@types/lodash-es": "^4.17.12",
         "alasql": "^4.10.1",
         "axios": "^1.13.2",
