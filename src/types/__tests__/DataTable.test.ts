@@ -4,7 +4,8 @@ import { DuckDBInstance } from '@duckdb/node-api'
 import fs from 'node:fs'
 import { Utils } from '../../utils/Utils'
 import type { TRow } from '../DataTable'
-import { DataTable, dataTable_convertSql, SORT_ORDER } from '../DataTable'
+import { DataTable, dataTable_convertSql, DATATABLE_TEMP_PATH, SORT_ORDER } from '../DataTable'
+import { StringUtils } from '../../utils/StringUtils'
 
 describe("DataTable", () => {
     const dt = new DataTable("test")
@@ -210,7 +211,7 @@ describe("DataTable", () => {
 
             const tables: DataTable[] = []
             const total = 10
-            const db_name = `./tmp/share_${Utils.Uuid(true)}.db`
+            const db_name = StringUtils.Path(DATATABLE_TEMP_PATH, `share_${Utils.Uuid(true)}.db`)
             const duckInstance = await DuckDBInstance.create(db_name)
             const cnx = await duckInstance.connect()
 

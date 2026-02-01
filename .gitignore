@@ -10,7 +10,10 @@ __pycache__
 /data/*
 /coverage/*
 /cache/*
-/tmp/*
+/tmp/data/*
+/tmp/models/*
 /dist/*
 
 *.traineddata
+
+!.gitkeep
