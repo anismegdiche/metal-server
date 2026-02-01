@@ -37,24 +37,12 @@ Before diving into Metal Server, make sure your environment meets the following 
    npm install
    ```
 
-4. Prepare dependencies using npm:
-
-   ```bash
-   npm run prepare
-   ```
-
-5. Compile the scripts:
-
-   ```bash
-   npx tsc
-   ```
-
-6. Configure your `config.yml` file located in the **./config** folder.
+4. Configure your `config.yml` file located in the **./config** folder.
    ::: tip ℹ️ NOTE
    For detailed configuration options, refer to the [Configuration File Reference](config-yml.md).
    :::
 
-7. Start the server:
+5. Start the server:
 
    ```bash
    npm run prod
@@ -73,7 +61,7 @@ You should receive a response similar to the following:
 ```json
 {
   "server": "Metal",
-  "version": "0.4"
+  "version": "0.5"
 }
 ```
 
