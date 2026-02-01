@@ -5,22 +5,22 @@ check ocr #dev {start:2026-01-22T19:38:01} {cm:2026-01-22} {duration:31m} {h}
 update url post code for all ai services like Image.ts #dev {start:2026-01-22T19:38:14} {cm:2026-01-22} {duration:01m} {h}
 test build mode #test {start:2026-01-22T19:39:52} {cm:2026-01-22} {duration:01h42m} {h}
 test new ai images #test {start:2026-01-22T20:11:06} {cm:2026-01-27} {duration:5d_21m} {h}
-check docs ai services #doc {f} {cm:2026-02-01} {h}
-check docs build mode #doc {f} {cm:2026-02-01} {h}
+check docs ai services #doc {cm:2026-02-01} {h}
+check docs build mode #doc {cm:2026-02-01} {h}
 
 async Text.ts #dev {start:2026-01-23T17:52:55} {cm:2026-01-23} {duration:11m} {h}
 async Audio.ts #dev {start:2026-01-23T18:08:07} {cm:2026-01-23} {duration:48m} {h}
 async Image.ts #dev {cm:2026-01-23} {h}
 async OCr.ts #dev  {cm:2026-01-23} {h}
-CSV file data test #test {f} {start:2026-01-27T21:12:09} {cm:2026-01-30} {duration:2d_21h20m} {h}
+CSV file data test #test {start:2026-01-27T21:12:09} {cm:2026-01-30} {duration:2d_21h20m} {h}
 hot load after plan reload #fix
 
 plan should stop if error in step #feature
 plan should be configured on-error: stop/continue, can be a common template starting with _ that config is added for steps #feature
-TconfigSource, U_config_sources infer and other U_config sections {f} {start:2026-01-30T00:49:52} {cm:2026-01-31} {duration:1d_12h58m} {h}
-AiDocker HostConfig {f} {start:2026-01-30T00:50:31} {cm:2026-01-31} {duration:1d_11h45m} {h}
+TconfigSource, U_config_sources infer and other U_config sections {start:2026-01-30T00:49:52} {cm:2026-01-31} {duration:1d_12h58m} {h}
+AiDocker HostConfig {start:2026-01-30T00:50:31} {cm:2026-01-31} {duration:1d_11h45m} {h}
 config get remove undefined
-csv convert return lines {start:2026-01-30T18:32:52} {f} {cm:2026-01-31} {duration:18h01m} {h}
-fix CI , bug with duckdb file mode {f} {start:2026-02-01T13:05:12} {cm:2026-02-01} {duration:05h10m}
-fix CI , bug with docker image build {f} {start:2026-02-01T13:05:14}
+csv convert return lines {start:2026-01-30T18:32:52} {cm:2026-01-31} {duration:18h01m} {h}
+fix CI , bug with duckdb file mode {start:2026-02-01T13:05:12} {cm:2026-02-01} {duration:05h10m} {h}
+fix CI , bug with docker image build {start:2026-02-01T13:05:14} {cm:2026-02-01} {duration:05h14m} {h}
 plan : activate disk for storage #feature

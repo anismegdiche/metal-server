@@ -43,7 +43,7 @@ export default withMermaid({
       { text: 'Get Started', link: '/documentation/get-started' },
       {
         text: 'Documentation', items: [
-          { text: 'Configuration file', link: 'documentation/config-yml' },
+          { text: 'Configuration file', link: '/documentation/config-yml' },
           { text: 'Data Providers Configurations', link: '/documentation/data-providers-config' },
           { text: 'Optional Parameters', link: '/documentation/optional-parameters' },
           { text: 'Dynamic Expression Engine', link: '/documentation/dynamic-expression-engine' },
@@ -72,15 +72,15 @@ export default withMermaid({
           text: 'Configuration file',
           collapsible: false,
           items: [
-            { text: 'version', link: 'documentation/config-yml#version' },
-            { text: 'server', link: 'documentation/config-yml#server' },
-            { text: 'roles', link: 'documentation/config-yml#roles' },
-            { text: 'users', link: 'documentation/config-yml#users' },
-            { text: 'sources', link: 'documentation/config-yml#sources' },
-            { text: 'schemas', link: 'documentation/config-yml#schemas' },
+            { text: 'version', link: '/documentation/config-yml#version' },
+            { text: 'server', link: '/documentation/config-yml#server' },
+            { text: 'roles', link: '/documentation/config-yml#roles' },
+            { text: 'users', link: '/documentation/config-yml#users' },
+            { text: 'sources', link: '/documentation/config-yml#sources' },
+            { text: 'schemas', link: '/documentation/config-yml#schemas' },
             { text: 'AI Engines', link: '/documentation/ai-engines' },
-            { text: 'plans', link: 'documentation/config-yml#plans' },
-            { text: 'schedules', link: 'documentation/config-yml#schedules' },
+            { text: 'plans', link: '/documentation/config-yml#plans' },
+            { text: 'schedules', link: '/documentation/config-yml#schedules' },
           ],
         },
         {

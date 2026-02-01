@@ -7,24 +7,23 @@ hero:
   name: What's new in v0.5
 
 features:
+  - title: New Performance improvements
+    details: |
+      We have made some performance improvements to the system as well as plan and data providers.
+      <br><br><span class="VPBadge danger">Learn more...</span>
+    link: /documentation/config-yml
 
-    - title: New Performance improvements
-      details: |
-        We have made some performance improvements to the system.
-        <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /guides/ai-engines
+  - title: New Refactored AI Engines
+    details: |
+      We have refactored the AI engines to be more powerful and flexible. 
+      No more AI engines configuration, everything is made automatically.
+      All you have to do is to add the AI engine name in the run step. 
+      <br><br><span class="VPBadge danger">Learn more...</span>
+    link: /guides/ai-engines
 
-    - title: New Refactored AI Engines
-      details: |
-        We have refactored the AI engines to be more powerful and flexible. 
-        No more AI engines configuration, everything is made automatically.
-        All you have to do is to add the AI engine name in the run step. 
-        <br><br><span class="VPBadge danger">Learn more...</span>
-      link: /guides/ai-engines
-
-    - title: Storage Data Provider
-      details: |
-        We have extended File Data Provider and added a new mode to handle directory data allowing to read and write files in a directory and process them.
-        <br><br><span class="VPBadge danger">Learn more...</span>
-      link: data-providers#storage
+  - title: Storage Data Provider
+    details: |
+      We have extended File Data Provider and added a new mode to handle directory data allowing to read and write files in a directory and process them.
+      <br><br><span class="VPBadge danger">Learn more...</span>
+    link: data-providers#storage
 ---
