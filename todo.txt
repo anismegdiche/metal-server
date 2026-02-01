@@ -21,5 +21,6 @@ TconfigSource, U_config_sources infer and other U_config sections {f} {start:202
 AiDocker HostConfig {f} {start:2026-01-30T00:50:31} {cm:2026-01-31} {duration:1d_11h45m} {h}
 config get remove undefined
 csv convert return lines {start:2026-01-30T18:32:52} {f} {cm:2026-01-31} {duration:18h01m} {h}
-fix CI , bug with duckdb file mode {f} {start:2026-02-01T13:05:12}
+fix CI , bug with duckdb file mode {f} {start:2026-02-01T13:05:12} {cm:2026-02-01} {duration:05h10m}
 fix CI , bug with docker image build {f} {start:2026-02-01T13:05:14}
+plan : activate disk for storage #feature

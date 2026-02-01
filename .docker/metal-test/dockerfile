@@ -9,17 +9,20 @@ RUN apt-get update && apt-get upgrade -y
 WORKDIR /app
 
 # Copy dependency and config files
+# folders
+COPY src ./src
+COPY config ./config
+RUN mkdir -p tmp/data
+RUN mkdir -p tmp/models
+# files
 COPY package.json ./
 COPY tsconfig.json ./
 COPY tsup.config.ts ./
 COPY vitest* ./
-COPY src ./src
-COPY config ./config
 COPY *.md ./
 
 # Install dependencies
 RUN npm install
-RUN npm run prepare
 
 # Start your app (you can change this to whatever you use to start the container)
 CMD ["npm", "run", "test"]
