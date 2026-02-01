@@ -8,9 +8,10 @@ import { createHash, createHmac, randomUUID } from "node:crypto"
 import { omit } from "lodash-es"
 import fs from 'node:fs'
 //
-import { DataTable, dataTable_convertSql, duckDb_Sql_CreateTable, duckDb_Sql_DropTable, duckDb_Sql_RenameTable, type TRow } from "../types/DataTable"
+import { DataTable, dataTable_convertSql, DATATABLE_TEMP_PATH, duckDb_Sql_CreateTable, duckDb_Sql_DropTable, duckDb_Sql_RenameTable, type TRow } from "../types/DataTable"
 import { JsonUtils } from "./JsonUtils"
 import { Logger } from "./Logger"
+import { StringUtils } from "./StringUtils"
 
 
 //
@@ -530,7 +531,7 @@ export class DataTableUtils {
                     whereClause = `CASE WHEN ${dataTable_convertSql(condition)} THEN 0 ELSE 1 END`
                     orderByClause = `ORDER BY ${whereClause}, __seq__ ASC` // Default order for custom strategy
                     break
-                
+
                 case REMOVE_DUPLICATES_STRATEGY.FIRST:
                 default:
                     orderByClause = 'ORDER BY __seq__ ASC'
@@ -810,7 +811,7 @@ export class DataTableUtils {
         const targetConn = target._duckConnection!
 
         // Use a temp file for transfer to avoid memory pressure
-        const tempFile = `tmp/${randomUUID()}.parquet`
+        const tempFile = StringUtils.Path(DATATABLE_TEMP_PATH, `${randomUUID()}.parquet`)
 
         try {
             // Export source to parquet
