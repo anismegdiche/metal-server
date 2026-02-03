@@ -22,7 +22,7 @@ describe('JsonContent', () => {
             const jsonContentEmptyOptions = new JsonContent()
             jsonContentEmptyOptions.SetConfig({})
 
-            await jsonContentEmptyOptions.InitContent(name, content)
+            jsonContentEmptyOptions.InitContent(name, content)
             expect(jsonContentEmptyOptions.Params).toEqual({ path: undefined })
         })
 
@@ -30,7 +30,7 @@ describe('JsonContent', () => {
             const name = 'test'
             const content = Readable.from('{"key": "value"}')
 
-            await jsonContent.InitContent(name, content)
+            jsonContent.InitContent(name, content)
 
             expect(jsonContent.EntityName).toBe(name)
             expect(jsonContent.Content.ReadFile(name)).toBe(content)
@@ -42,7 +42,7 @@ describe('JsonContent', () => {
             const name = 'test'
             const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
 
-            await jsonContent.InitContent(name, content)
+            jsonContent.InitContent(name, content)
         })
 
         it('should return the data as a DataTable', async () => {
@@ -77,11 +77,11 @@ describe('JsonContent', () => {
         const name = 'test'
         beforeEach(async () => {
             const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
-            await jsonContent.InitContent(name, content)
+            jsonContent.InitContent(name, content)
         })
 
         it('should update the content and return the updated raw content', async () => {
-            const newData = await new DataTable(name, [
+            const newData = new DataTable(name, [
                 {
                     id: 3,
                     name: 'Alice'

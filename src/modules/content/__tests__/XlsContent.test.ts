@@ -69,7 +69,7 @@ describe('XlsContent', () => {
             const inputStream = createReadableStream(mockWorkbookBuffer)
             xlsContent.Config = {}
 
-            await xlsContent.InitContent('testEntity', inputStream)
+            xlsContent.InitContent('testEntity', inputStream)
 
             expect(xlsContent.EntityName).toBe('testEntity')
             expect(xlsContent.Params).toEqual({
@@ -91,7 +91,7 @@ describe('XlsContent', () => {
                 'xls-starting-cell': 'B2'
             }
 
-            await xlsContent.InitContent('testEntity', inputStream)
+            xlsContent.InitContent('testEntity', inputStream)
 
             expect(xlsContent.Params).toEqual({
                 sheet: 'Sheet1',
@@ -110,7 +110,7 @@ describe('XlsContent', () => {
                 'xls-sheet': 'Sheet1',
                 'xls-starting-cell': 'A1'
             }
-            await xlsContent.InitContent('testEntity', inputStream)
+            xlsContent.InitContent('testEntity', inputStream)
         })
 
         it('should throw error if Params is not defined', async () => {
@@ -151,7 +151,7 @@ describe('XlsContent', () => {
                 'xls-sheet': 'Sheet1',
                 'xls-starting-cell': 'A1'
             }
-            await xlsContent.InitContent('testEntity', inputStream)
+            xlsContent.InitContent('testEntity', inputStream)
 
             mockDataTable = new DataTable('testEntity', [
                 {

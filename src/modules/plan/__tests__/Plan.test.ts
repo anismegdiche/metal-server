@@ -1,115 +1,95 @@
 
-import { DataTable } from "../../../types/DataTable"
-import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
-import { Plan } from "../Plan"
-import { ConfigManager } from "../../core/ConfigManager"
-import type { TStep } from "../types/TStep"
-import { Schema } from "../../schema/Schema"
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { Plan } from '../Plan';
+import { ConfigManager } from '../../core/ConfigManager';
+import { DataTable } from '../../../types/DataTable';
+import { Step } from '../Step';
 
+vi.mock('../../core/ConfigManager');
+vi.mock('../../../utils/Logger', () => ({
+    LOGGER_DEFAULT_LEVEL: 'info',
+    VERBOSITY: { DEBUG: 'debug' },
+    Logger: {
+        LogFunction: () => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
+        Info: vi.fn(),
+        Error: vi.fn(),
+        Warn: vi.fn(),
+        Debug: vi.fn(),
+        In: '',
+        Out: ''
+    }
+}));
 
-describe('Process', () => {
+vi.mock('../../../types/DataBase', async (importOriginal) => {
+    const actual = await importOriginal<any>();
+    const DataBase = vi.fn(function (this: any) {
+        this.Init = vi.fn().mockResolvedValue(undefined);
+        this.Tables = {};
+        this.SetTable = vi.fn((name, data) => { this.Tables[name] = data; });
+    });
+    return { ...actual, DataBase };
+});
 
-    // Process a valid TSchemaRequest and return a DataTable
-    it('should return a DataTable when processing a valid TSchemaRequest', async () => {
-        const schemaRequest = {
-            schema: 'testSchema',
-            entity: 'testEntity',
-            data: [
-                {
-                    id: 1,
-                    name: 'Test'
-                }
-            ]
-        }
-        const sqlQuery = 'SELECT * FROM testEntity'
+vi.mock('../../../types/DataTable', async (importOriginal) => {
+    const actual = await importOriginal<any>();
+    const DataTable = vi.fn(function (this: any) {
+        this.FreeSql = vi.fn().mockResolvedValue(undefined);
+        this.Rename = vi.fn().mockReturnThis();
+        this.MetaData = {};
+    });
+    return { ...actual, DataTable };
+});
 
-        const _plan = new Plan("TestPlan")
+vi.mock('../Step', () => ({
+    Step: {
+        ExecuteCaseMap: {}
+    }
+}));
 
-        vi.spyOn(Schema, 'IsSchemaRequest').mockReturnValue(true)
-        vi.spyOn(_plan, 'ProcessSchemaRequest').mockResolvedValue(new DataTable())
+vi.mock('../../../utils/SynchronizerManager', () => ({
+    SynchronizerManager: {
+        Synchronized: () => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => descriptor
+    }
+}));
 
-        const result = await _plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
+describe('Plan', () => {
+    let plan: Plan;
 
-        expect(result).toBeInstanceOf(DataTable)
-        expect(_plan.ProcessSchemaRequest).toHaveBeenCalledWith(schemaRequest, sqlQuery)
-    })
+    beforeEach(() => {
+        vi.clearAllMocks();
+        plan = new Plan('test-plan');
+    });
 
-    // Process a valid TScheduleConfig and return a DataTable
-    it('should process valid TScheduleConfig and return a DataTable', async () => {
-        // Arrange
-        const scheduleConfig = {
-            plan: 'TestPlan',
-            entity: 'TestEntity',
-            cron: '* * * * *'
-        }
+    it('should initialize and load entities', async () => {
+        vi.mocked(ConfigManager.Get).mockReturnValue({
+            'entity1': [{ step1: {} }]
+        });
 
-        const steps: TStep[] = []
+        await plan.Init();
 
-        const _plan = new Plan("TestPlan")
-        _plan.Entities.set("TestEntity", [])
+        expect(plan.Entities.has('entity1')).toBe(true);
+        expect(plan._dataBase.Init).toHaveBeenCalled();
+    });
 
-        vi.spyOn(_plan, 'ExecuteSteps').mockResolvedValue(new DataTable())
-        vi.spyOn(ConfigManager, 'Get').mockReturnValueOnce(steps)
+    it('should fail ProcessSchemaRequest if entity not found', async () => {
+        await expect(plan.ProcessSchemaRequest({ schema: 's', source: 's1', entity: 'missing' } as any))
+            .rejects.toThrow();
+    });
 
-        // Act
-        const result = await _plan.ProcessScheduleConfig(scheduleConfig)
+    describe('ExecuteSteps', () => {
+        it('should execute steps in sequence', async () => {
+            const steps = {
+                '0': { 'mock-cmd': { args: 1 } }
+            };
+            const mockDataTable = new DataTable() as any;
+            (plan._dataBase as any).Tables['e1'] = mockDataTable;
 
-        // expect ExecuteSteps to have been called
-        expect(_plan.ExecuteSteps).toHaveBeenCalledWith(undefined, scheduleConfig.plan, scheduleConfig.entity, steps)
+            const executeMock = vi.fn().mockResolvedValue(mockDataTable);
+            Step.ExecuteCaseMap['mock-cmd'] = executeMock;
 
-        // Assert
-        expect(result).toEqual(undefined)
-    })
+            await plan.ExecuteSteps('s', 'p', 'e1', steps as any);
 
-    // Handle a valid SQL query with TSchemaRequest
-    it('should handle valid SQL query with TSchemaRequest', async () => {
-        // Arrange
-        const schemaRequest: TSchemaRequest = {
-            anonymize: 'email',
-            schema: 'TestSchema',
-            entity: 'TestEntity',
-            data: [
-                {
-                    id: 1,
-                    name: 'Alice'
-                }
-            ],
-            fields: 'id, name',
-            filter: { id: 1 },
-            "filter-expression": 'id = 1',
-            sort: { 'name': undefined },
-            cache: 60,
-            source: 'TestSource'
-        }
-        const sqlQuery = 'SELECT * FROM TestEntity'
-
-        const _plan = new Plan("TestPlan")
-        _plan.Entities.set("TestEntity", [])
-
-        // Act
-        const result = await _plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
-
-        // Assert
-        expect(result).toBeInstanceOf(DataTable)
-    })
-
-    // Handle a valid SQL query with TScheduleConfig
-    it('should handle a valid SQL query with TScheduleConfig', async () => {
-        // Arrange
-        const schemaRequest = {
-            schema: 'TestPlan',
-            entity: 'TestEntity',
-            source: 'TestSource'
-        }
-        const sqlQuery = 'SELECT * FROM TestEntity'
-
-        const _plan = new Plan("TestPlan")
-        _plan.Entities.set("TestEntity", [])
-
-        // Act
-        const result = await _plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
-
-        // Assert
-        expect(result).toBeInstanceOf(DataTable)
-    })
-})
+            expect(executeMock).toHaveBeenCalled();
+        });
+    });
+});

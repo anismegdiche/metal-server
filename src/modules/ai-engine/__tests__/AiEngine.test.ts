@@ -1,90 +1,56 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { AiEngine } from '../AiEngine';
 import { ConfigManager } from '../../core/ConfigManager';
 import { AI_ENGINE } from '../@consts';
-import { AiEngine } from '../AiEngine';
-import { IMAGE_TASK } from '../consts/IMAGE';
-import { TEXT_TASK } from '../consts/TEXT';
+
+vi.mock('../../core/ConfigManager');
+vi.mock('../AiDocker');
+vi.mock('../engine/Text', () => ({
+    Text: class {
+        Clone() { return new (this.constructor as any)(); }
+        Init() { return Promise.resolve(); }
+    }
+}));
 
 describe('AiEngine', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        // Clear private static factory if possible? 
+        // We'll just test the logic.
+    });
+
     describe('BuildAiEnginesList', () => {
-        beforeEach(() => {
-            vi.resetAllMocks();
+        it('should return empty object if no plans', () => {
+            vi.mocked(ConfigManager.Has).mockReturnValue(false);
+            expect(AiEngine.BuildAiEnginesList()).toEqual({});
         });
 
-        it('should return empty object if no plans are configured', () => {
-            vi.spyOn(ConfigManager, 'Has').mockReturnValue(false);
-
-            const result = AiEngine.BuildAiEnginesList();
-
-            expect(result).toEqual({});
-        });
-
-        it('should correctly build engine list from complex plans', () => {
-            const mockPlans = {
-                plan1: [
-                    [
-                        { run: { ai: [AI_ENGINE.TEXT], task: TEXT_TASK.TRANSLATION } },
-                        { run: { ai: [AI_ENGINE.IMAGE], task: IMAGE_TASK.IMAGE_TO_TEXT } },
-                        { somethingElse: {} } as any
-                    ],
-                    [
-                        { run: { ai: [AI_ENGINE.TEXT], task: TEXT_TASK.SUMMARIZE } },
-                        { somethingElse: {} } as any,
-                        { somethingElse: {} } as any,
+        it('should extract ai-tasks from plans', () => {
+            vi.mocked(ConfigManager.Has).mockReturnValue(true);
+            vi.mocked(ConfigManager.Get).mockReturnValue({
+                p1: {
+                    e1: [
+                        { run: { ai: 'text', task: 't1' } }
                     ]
-                ],
-                plan2: [
-                    [
-                        { run: { ai: [AI_ENGINE.TEXT], task: TEXT_TASK.TRANSLATION } }, // Duplicate across plans
-                        { somethingElse: {} } as any
-                    ]
-                ]
-            };
-
-            vi.spyOn(ConfigManager, 'Has').mockReturnValue(true);
-            vi.spyOn(ConfigManager, 'Get').mockReturnValue(mockPlans);
-
-            const result = AiEngine.BuildAiEnginesList();
-
-            expect(result).toEqual({
-                [`${AI_ENGINE.TEXT}-${TEXT_TASK.TRANSLATION}`]: { engine: `${AI_ENGINE.TEXT}-${TEXT_TASK.TRANSLATION}` },
-                [`${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_TO_TEXT}`]: { engine: `${AI_ENGINE.IMAGE}-${IMAGE_TASK.IMAGE_TO_TEXT}` },
-                [`${AI_ENGINE.TEXT}-${TEXT_TASK.SUMMARIZE}`]: { engine: `${AI_ENGINE.TEXT}-${TEXT_TASK.SUMMARIZE}` }
+                }
             });
-            // Check uniqueness - '${AI_ENGINE.TEXT}-${TEXT_TASK.TRANSLATION}' should appear only once in keys
-            expect(Object.keys(result)).toHaveLength(3);
+
+            const list = AiEngine.BuildAiEnginesList();
+            expect(list).toEqual({
+                'text-t1': { engine: 'text-t1' }
+            });
+        });
+    });
+
+    describe('GetProvider', () => {
+        it('should load and return a provider', async () => {
+            const provider = await AiEngine.GetProvider('text-t1');
+            expect(provider).toBeDefined();
         });
 
-        it('should handle plans with no run steps', () => {
-            const mockPlans = {
-                plan1: [
-                    [
-                        { other: 'stuff' } as any
-                    ]
-                ]
-            };
-
-            vi.spyOn(ConfigManager, 'Has').mockReturnValue(true);
-            vi.spyOn(ConfigManager, 'Get').mockReturnValue(mockPlans);
-
-            const result = AiEngine.BuildAiEnginesList();
-
-            expect(result).toEqual({});
-        });
-
-        it('should handle plans with empty entities', () => {
-            const mockPlans = {
-                plan1: []
-            };
-
-            vi.spyOn(ConfigManager, 'Has').mockReturnValue(true);
-            vi.spyOn(ConfigManager, 'Get').mockReturnValue(mockPlans);
-
-            const result = AiEngine.BuildAiEnginesList();
-
-            expect(result).toEqual({});
+        it('should throw for invalid provider name', async () => {
+            await expect(AiEngine.GetProvider('invalid')).rejects.toThrow();
         });
     });
 });

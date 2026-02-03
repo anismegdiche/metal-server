@@ -1,32 +1,12 @@
 
-import { ConfigStore } from "../ConfigStore"
-import type { U_config } from "../types/U_config"
+import { describe, expect, it } from 'vitest';
+import { ConfigStore } from '../ConfigStore';
 
 describe('ConfigStore', () => {
-
-    const config: U_config = {
-        version: "0.5",
-        roles: {
-            admin: "crudla"
-        },
-        users: {
-            admin: {
-                password: "password",
-                roles: ["admin"]
-            }
-        },
-        sources: {}
-    }
-
-    const configStore = new ConfigStore()
-
-    beforeAll(() => {
-        //
-    })
-
-    describe('Init', () => {
-        it('should init the configuration', async () => {
-            expect(() => configStore.Init(config)).not.toThrow()
-        })
-    })
-})
+    it('should initialize with new config', () => {
+        const store = new ConfigStore();
+        const config = { server: { port: 3000 } };
+        store.Init(config as any);
+        expect(store.Configuration).toEqual(config);
+    });
+});

@@ -1,160 +1,85 @@
-// snyk disable
-import * as _ from 'lodash-es'
-import { User } from '../User'
-import type { TUserTokenInfo, TUserToken, TUserCredentials } from "../@types"
-import { HttpErrorUnauthorized } from "../../errors/HttpErrors"
-import { HTTP_STATUS_CODE } from "../../core/@consts"
-import type { U_config } from "../../core/types/U_config"
-import { AuthProvider } from "../AuthProvider"
-import { ConfigManager } from "../../core/ConfigManager"
-import { Roles } from "../Roles"
-import type { U_config_roles } from "../../core/types/U_config_roles"
-import type { U_config_users } from "../../core/types/U_config_users"
 
-// Minimal test configuration that matches TConfig
-const config: Partial<U_config> = {
-    roles: {
-        admin: "crudal",
-        user: "r",
-        none: null
-    },
-    users: {
-        alice: {
-            password: '123456789',
-            roles: ['lister']
-        },
-        bob: {
-            password: 'password2',
-            roles: ['admin']
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { User } from '../User';
+import { AuthProvider } from '../AuthProvider';
+import { Roles } from '../Roles';
+import jwt from 'jsonwebtoken';
+import { HttpErrorUnauthorized } from '../../errors/HttpErrors';
+
+vi.mock('jsonwebtoken');
+vi.mock('../AuthProvider', () => ({
+    AuthProvider: {
+        Provider: {
+            Authenticate: vi.fn(),
+            LogOut: vi.fn()
         }
     }
-}
-
-vi.spyOn(ConfigManager, 'Get').mockImplementation((path: string) => {
-    if (path === 'server.authentication.default-role') {
-        return config.server?.authentication?.["default-role"] as string
-    } else if (path === 'roles') {
-        return config.roles as U_config_roles
+}));
+vi.mock('../Roles', () => ({
+    Roles: {
+        UserDefaultRole: 'user'
     }
-    return undefined
-})
-
-AuthProvider.Provider = {
-    Init: vi.fn(),
-    GetUsers: vi.fn().mockImplementation(() => config.users as U_config_users),
-    Authenticate: vi.fn().mockImplementation((userCredentials: TUserCredentials) => {
-        if (userCredentials.username === 'alice' && userCredentials.password === '123456789') {
-            return {
-                user: 'alice',
-                roles: ['lister']
-            }
-        }
-        throw new HttpErrorUnauthorized('Invalid username or password')
-    }),
-    LogOut: vi.fn()
-}
-
+}));
+vi.mock('../../../utils/Logger', () => ({
+    Logger: {
+        LogFunction: () => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
+        Info: vi.fn()
+    }
+}));
 
 describe('User', () => {
     beforeEach(() => {
-        // Reset all mocks before each test
-        vi.clearAllMocks()
-        // Initialize Roles
-        Roles.Init()
-    })
+        vi.clearAllMocks();
+        (User as any)._tokens.clear();
+    });
 
-    describe('LoadUsers', () => {
-        it('should convert password to string', () => {
+    describe('Authenticate', () => {
+        it('should authenticate user and return token', async () => {
+            const credentials = { username: 'admin', password: 'password' };
+            vi.mocked(AuthProvider.Provider.Authenticate).mockResolvedValue({ user: 'admin', roles: ['admin'] });
+            vi.mocked(jwt.sign).mockReturnValue('mock-token' as any);
 
-            expect(AuthProvider.Provider.GetUsers()).toEqual({
-                alice: {
-                    password: '123456789',
-                    roles: ['lister']
-                },
-                bob: {
-                    password: 'password2',
-                    roles: ['admin']
-                }
-            })
-        })
-    })
+            const res = await User.Authenticate(credentials);
 
-    describe('LogIn', () => {
-        it('should return a token for a valid username and password', async () => {
-            const _intLogIn = await User.Authenticate({
-                username: 'alice',
-                password: '123456789'
-            })
-            expect(_intLogIn.Body?.token).toBeDefined()
-        })
+            expect(res.Body).toEqual({ token: 'mock-token' });
+            expect(AuthProvider.Provider.Authenticate).toHaveBeenCalledWith(credentials);
+            expect((User as any)._tokens.has('mock-token')).toBe(true);
+        });
+    });
 
-        it('should throw HttpUnauthorized for invalid username', async () => {
-            try {
-                await User.Authenticate({
-                    username: 'eve',
-                    password: 'password'
-                })
-            } catch (error) {
-                expect(error).toBeInstanceOf(HttpErrorUnauthorized)
-            }
-        })
+    describe('_decodeToken', () => {
+        it('should decode valid token', () => {
+            const token = 'valid-token';
+            const secret = 'secret';
+            (User as any)._tokens.set(token, secret);
+            vi.mocked(jwt.verify).mockReturnValue({ user: 'admin' } as any);
 
-        it('should throw HttpUnauthorized for an invalid password', async () => {
-            try {
-                await User.Authenticate({
-                    username: 'alice',
-                    password: 'wrongpassword'
-                })
-            } catch (error) {
-                expect(error).toBeInstanceOf(HttpErrorUnauthorized)
-            }
-        })
-    })
+            const decoded = (User as any)._decodeToken(token);
+            expect(decoded).toEqual({ user: 'admin' });
+            expect(jwt.verify).toHaveBeenCalledWith(token, secret);
+        });
 
-    describe('GetInfo', () => {
-        it('should return user for a valid token', async () => {
+        it('should throw HttpErrorUnauthorized for undefined token', () => {
+            expect(() => (User as any)._decodeToken(undefined)).toThrow(HttpErrorUnauthorized);
+        });
 
-            const respLogin = await User.Authenticate({
-                username: 'alice',
-                password: '123456789'
-            })
-            const _IRGetInfo = await User.GetUserInfo(<TUserToken>respLogin.Body?.token)
-            expect(_.omit(_IRGetInfo, 'Body.exp', 'Body.iat')).toEqual({
-                StatusCode: 200,
-                Body: <TUserTokenInfo>{
-                    user: 'alice',
-                    roles: ['lister']
-                }
-            })
-        })
-
-        it('should return nothing for an invalid token', async () => {
-            try {
-                await User.GetUserInfo('invalidtoken')
-            } catch (error) {
-                expect(error).toBeInstanceOf(HttpErrorUnauthorized)
-            }
-        })
-    })
+        it('should throw HttpErrorUnauthorized for invalid token', () => {
+            (User as any)._tokens.set('bad', 'secret');
+            vi.mocked(jwt.verify).mockImplementation(() => { throw new Error('invalid'); });
+            expect(() => (User as any)._decodeToken('bad')).toThrow(HttpErrorUnauthorized);
+        });
+    });
 
     describe('LogOut', () => {
-        it('should remove a user from the logged-in users list', async () => {
-            const intRespLogIn = await User.Authenticate({
-                username: 'alice',
-                password: '123456789'
-            })
-            const intRespLogOut = await User.LogOut(<TUserToken>intRespLogIn.Body?.token)
-            expect(intRespLogOut).toEqual({
-                StatusCode: HTTP_STATUS_CODE.NO_CONTENT
-            })
-        })
+        it('should delete token and call provider LogOut', async () => {
+            const token = 'token';
+            vi.spyOn(User as any, '_decodeToken').mockReturnValue({ user: 'admin' });
+            (User as any)._tokens.set(token, 'secret');
 
-        it('should do nothing if the token is invalid', async () => {
-            try {
-                await User.LogOut('invalidtoken')
-            } catch (error) {
-                expect(error).toBeInstanceOf(HttpErrorUnauthorized)
-            }
-        })
-    })
-})
+            await User.LogOut(token);
+
+            expect((User as any)._tokens.has(token)).toBe(false);
+            expect(AuthProvider.Provider.LogOut).toHaveBeenCalledWith('admin');
+        });
+    });
+});

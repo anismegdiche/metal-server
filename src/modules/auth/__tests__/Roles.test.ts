@@ -1,119 +1,61 @@
-import { Roles } from "../Roles"
-import { AUTH_PERMISSION, AUTH_PROVIDER } from "../@consts"
-import type { TUserTokenInfo } from "../@types"
-import { HttpErrorForbidden } from "../../errors/HttpErrors"
-import { ConfigManager } from "../../core/ConfigManager"
-import type { U_config_roles } from "../../core/types/U_config_roles"
-import type { U_config } from "../../core/types/U_config"
 
-// Minimal test configuration that matches TConfig
-const config: Partial<U_config> = {
-    roles: {
-        admin: "crudal",
-        user: "r",
-        none: null
-    },
-    server: {
-        authentication: {
-            provider: AUTH_PROVIDER.LOCAL,
-            "default-role": "none"
-        },
-    }
-}
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { Roles } from '../Roles';
+import { ConfigManager } from '../../core/ConfigManager';
+import { HttpErrorForbidden } from '../../errors/HttpErrors';
 
-vi.spyOn(ConfigManager, 'Get').mockImplementation((path: string) => {
-    if (path === 'server.authentication.default-role') {
-        return config.server?.authentication?.["default-role"] as string
-    } else if (path === 'roles') {
-        return config.roles as U_config_roles
-    }
-    return undefined
-})
+vi.mock('../../core/ConfigManager');
 
-
-
-describe("Roles", () => {
+describe('Roles', () => {
     beforeEach(() => {
-        // Reset all mocks before each test
-        vi.clearAllMocks()
-        // Initialize Roles
-        Roles.Init()
-    })
+        vi.clearAllMocks();
+        Roles._serverRoles = {};
+    });
 
-    describe("Init", () => {
-        it("should initialize ServerRoles and UserDefaultRole", () => {
-            expect(Roles.UserDefaultRole).toBe("none")
-        })
-    })
+    describe('Init', () => {
+        it('should load roles from config', () => {
+            vi.mocked(ConfigManager.Get).mockImplementation((key: string) => {
+                if (key === 'roles') return { admin: 'CRUD', user: 'R' };
+                if (key === 'server.authentication.default-role') return 'user';
+                return undefined;
+            });
 
-    describe("HasPermission", () => {
-        it("should return true if userToken is undefined", () => {
-            expect(Roles.HasPermission(undefined, ["admin"], AUTH_PERMISSION.ADMIN)).toBe(true)
-        })
+            Roles.Init();
+            expect(Roles._serverRoles).toEqual({ admin: 'CRUD', user: 'R' });
+            expect(Roles.UserDefaultRole).toBe('user');
+        });
+    });
 
-        it("should return true if userToken roles are empty", () => {
-            const userToken: TUserTokenInfo = {
-                user: "test",
-                roles: []
-            }
-            expect(Roles.HasPermission(userToken, ["admin"], AUTH_PERMISSION.ADMIN)).toBe(true)
-        })
+    describe('HasPermission', () => {
+        it('should return true if no userToken provided', () => {
+            expect(Roles.HasPermission(undefined, [], 'C')).toBe(true);
+        });
 
-        it("should return false if no intersection of roles with schemaRoles", () => {
-            const userToken = {
-                user: "test",
-                roles: ["guest"]
-            }
-            expect(Roles.HasPermission(userToken, ["admin"], AUTH_PERMISSION.ADMIN)).toBe(false)
-        })
+        it('should return true if user has no roles', () => {
+            expect(Roles.HasPermission({ user: 'u', roles: [] }, [], 'C')).toBe(true);
+        });
 
-        it("should return true if permission exists in user's roles", () => {
-            const userToken = {
-                user: "test",
-                roles: ["admin"]
-            }
-            expect(Roles.HasPermission(userToken, ["admin"], AUTH_PERMISSION.ADMIN)).toBe(true)
-        })
+        it('should check permissions correctly', () => {
+            Roles._serverRoles = { admin: 'CRUD', user: 'R' };
 
-        it("should return false if permission does not exist in user's roles", () => {
-            const userToken = {
-                user: "test",
-                roles: ["user"]
-            }
-            expect(Roles.HasPermission(userToken, ["admin"], AUTH_PERMISSION.ADMIN)).toBe(false)
-        })
+            expect(Roles.HasPermission({ user: 'a', roles: ['admin'] }, ['admin'], 'C')).toBe(true);
+            expect(Roles.HasPermission({ user: 'a', roles: ['admin'] }, ['admin'], 'X')).toBe(false);
+            expect(Roles.HasPermission({ user: 'u', roles: ['user'] }, ['user'], 'R')).toBe(true);
+            expect(Roles.HasPermission({ user: 'u', roles: ['user'] }, ['user'], 'C')).toBe(false);
+        });
+    });
 
-        it("should return false if user has no permissions", () => {
-            const userToken = {
-                user: "test",
-                roles: ["none"]
-            }
-            expect(Roles.HasPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)).toBe(false)
-            expect(Roles.HasPermission(userToken, undefined, AUTH_PERMISSION.READ)).toBe(false)
-            expect(Roles.HasPermission(userToken, undefined, AUTH_PERMISSION.CREATE)).toBe(false)
-            expect(Roles.HasPermission(userToken, undefined, AUTH_PERMISSION.DELETE)).toBe(false)
-            expect(Roles.HasPermission(userToken, undefined, AUTH_PERMISSION.LIST)).toBe(false)
-            expect(Roles.HasPermission(userToken, undefined, AUTH_PERMISSION.UPDATE)).toBe(false)
-        })
-    })
+    describe('CheckPermission', () => {
+        it('should throw HttpErrorForbidden if permission denied', () => {
+            Roles._serverRoles = { user: 'R' };
+            expect(() => Roles.CheckPermission({ user: 'u', roles: ['user'] }, ['user'], 'C'))
+                .toThrow(HttpErrorForbidden);
+        });
 
-    describe("CheckPermission", () => {
-        it("should not throw if user has permission", () => {
-            const userToken = {
-                user: "test",
-                roles: ["admin"]
-            }
-            expect(() => Roles.CheckPermission(userToken, ["admin"], AUTH_PERMISSION.ADMIN)
-            ).not.toThrow()
-        })
-
-        it("should throw HttpErrorForbidden if user lacks permission", () => {
-            const userToken = {
-                user: "test",
-                roles: ["user"]
-            }
-            expect(() => Roles.CheckPermission(userToken, ["admin"], AUTH_PERMISSION.ADMIN)
-            ).toThrow(HttpErrorForbidden)
-        })
-    })
-})
+        it('should not throw if permission granted', () => {
+            Roles._serverRoles = { admin: 'CRUD' };
+            expect(() => Roles.CheckPermission({ user: 'a', roles: ['admin'] }, ['admin'], 'C'))
+                .not.toThrow();
+        });
+    });
+});

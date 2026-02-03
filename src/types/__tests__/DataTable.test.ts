@@ -180,28 +180,26 @@ describe("DataTable", () => {
                 ], undefined, {
                     persistant: true
                 })
-                {
-                    await data.RowsSet()
+                await data.RowsSet()
 
-                    dbPath = (<any>data)._dbPath
+                dbPath = (<any>data)._dbPath
 
-                    // Assert
-                    expect(data.Name).toEqual("dt_persistant_removable")
-                    expect(await data.Rows()).toEqual([
-                        {
-                            Col1: "Value1",
-                            Col2: "Value2"
-                        },
-                        {
-                            Col1: "Value3",
-                            Col2: "Value4"
-                        }
-                    ])
-                    expect(data.Fields).toEqual({
-                        Col1: "string",
-                        Col2: "string"
-                    })
-                }
+                // Assert
+                expect(data.Name).toEqual("dt_persistant_removable")
+                expect(await data.Rows()).toEqual([
+                    {
+                        Col1: "Value1",
+                        Col2: "Value2"
+                    },
+                    {
+                        Col1: "Value3",
+                        Col2: "Value4"
+                    }
+                ])
+                expect(data.Fields).toEqual({
+                    Col1: "string",
+                    Col2: "string"
+                })
             }
             await dt_create()
             expect(!fs.existsSync(dbPath)).toBeTruthy()
