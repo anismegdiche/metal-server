@@ -142,17 +142,6 @@ export const TextTextGenerationDockerService: TAiDockerService = {
     DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`]
 };
 
-// export const TextText2TextGenerationDockerService: TAiDockerService = {
-//     Name: 'text_text2text_generation',
-//     Port: 5000,
-//     ImageName: `${DOCKER.AI_ENGINE_PREFIX}_text_text2text_generation:1.0.0`,
-//     ImageContext: {
-//         context: `${process.cwd()}/.docker/ai-engines/services/text/text2text-generation`,
-//         src: ['.', './requirements.txt']
-//     },
-//     InternalUrl: '/text-text2text-generation'
-// };
-
 export const TextTokenClassificationDockerService: TAiDockerService = {
     Name: 'text-ner',
     Port: 5000,

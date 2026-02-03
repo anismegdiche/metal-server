@@ -365,7 +365,7 @@ export class AmazonS3Storage extends absStorageProvider {
             ContentType: contentType
         });
 
-        await (this._s3Client as S3Client).send(command);
+        await this._s3Client.send(command);
         Logger.Debug(`File '${key}' uploaded successfully`);
     }
 

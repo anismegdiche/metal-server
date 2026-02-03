@@ -52,7 +52,7 @@ export class DataBase {
     @Logger.LogFunction()
     async FreeSql(
         {
-            entity: entity,
+            entity,
             sqlQuery,
             queryParams,
             returnData = false,

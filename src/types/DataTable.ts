@@ -103,7 +103,7 @@ function duckDb_Sql_SafeName(table: string): string {
 }
 
 function duckDb_Sql_SafeSeqName(table: string): string {
-    return `seq_${table.replaceAll(/[^a-zA-Z0-9_]/g, '_')}`
+    return `seq_${table.replaceAll(/\W/g, '_')}`
 }
 
 export function duckDb_Sql_CreateTable(table: string): string {

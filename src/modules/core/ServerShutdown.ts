@@ -3,7 +3,7 @@
 // Server Shutdown Manager
 // Handles graceful shutdown of all server components
 //
-import { Server } from 'http'
+import { Server } from 'node:http'
 import { Logger } from '../../utils/Logger'
 import { Cache } from '../cache/Cache'
 import { Source } from '../source/Source'
@@ -202,9 +202,9 @@ export class ServerShutdown {
             // This would need to be called on each instance if you track them
 
             // Force garbage collection if available
-            if (global.gc) {
+            if (globalThis.gc) {
                 Logger.Debug('Running garbage collection...')
-                global.gc()
+                globalThis.gc()
             }
 
             Logger.Info('✅ Final cleanup completed')

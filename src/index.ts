@@ -14,8 +14,8 @@ import { Logger } from './utils/Logger'
 
 
 // params
-const args = process.argv.slice(2)
-const ARG_build_all_images = args.includes('--build-all-images') || args.includes('-bai')
+const args = new Set(process.argv.slice(2))
+const ARG_build_all_images = args.has('--build-all-images') || args.has('-bai')
 
 // Setup graceful shutdown handlers
 if (!ARG_build_all_images)
@@ -39,7 +39,7 @@ if (ARG_build_all_images) {
 // Initialize and start server
 ServerCore.Init()
     .then(ServerEndpoint.Start)
-    .catch(async () => {
+    .catch(async () => { // NOSONAR
         Logger.Info('✅ flushing log')
         await Logger.FlushQueue()
     })

@@ -31,8 +31,7 @@ export class Utils {
                     if (!controller.signal.aborted) {
                         setTimeout(check, sleepTime);
                     }
-                    // eslint-disable-next-line unused-imports/no-unused-vars
-                } catch (error) {
+                } catch {
                     clearTimeout(timeoutId);
                     resolve(false);
                 }

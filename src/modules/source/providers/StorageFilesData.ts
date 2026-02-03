@@ -280,7 +280,7 @@ export class StorageFilesData extends absDataProvider {
 
             using data = await this.File[fileName]!.Get({}, $context)
 
-            const sqlQueryHelper = await this.GenerateSqlDelete(schemaRequest, options)
+            const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
             await data.FreeSql({ sqlQuery: sqlQueryHelper.Query(), queryParams: sqlQueryHelper.QueryParams })
 

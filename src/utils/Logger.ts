@@ -56,7 +56,7 @@ export class Logger {
     static readonly In = magenta('▶ ')
     static readonly Out = yellow('◀ ')
     static Level: LogLevel.LogLevelDesc = LOGGER_DEFAULT_LEVEL
-    private static _queue = new Queue()
+    private static readonly _queue = new Queue()
 
     static RequestMiddleware = morgan(
         ':remote-addr, :method :url, :status, :res[content-length], :response-time ms',

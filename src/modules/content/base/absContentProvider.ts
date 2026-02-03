@@ -4,8 +4,7 @@
 //
 import { Readable } from 'node:stream'
 //
-import type { DataTable } from "../../../types/DataTable"
-import type { TRowsCopyParams } from "../../../types/DataTable"
+import type { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 //
