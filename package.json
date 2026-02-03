@@ -16,7 +16,7 @@
         "start": "node dist/index.js",
         "prod": "npm run build && npm run start",
         "prod:build-all-images": "npm run build && node dist/index.js --build-all-images",
-        "test": "vitest",
+        "test": "vitest run",
         "lint": "eslint --fix src",
         "pretty": "dprint fmt src/**",
         "check": "npm run lint && npm run pretty",
