@@ -785,11 +785,7 @@ export class DataTableUtils {
             const addedRows = await source._runSqlAndGetRows(addedSql, undefined, { includeIndex });
             const deletedRows = await source._runSqlAndGetRows(deletedSql, undefined, { includeIndex });
             const updatedRows = await source._runSqlAndGetRows(updatedSql, undefined, { includeIndex });
-            // const [addedRows, deletedRows, updatedRows] = await Promise.all([
-            //     dtSource._runSqlAndGetRows(addedSql),
-            //     dtSource._runSqlAndGetRows(deletedSql),
-            //     dtSource._runSqlAndGetRows(updatedSql)
-            // ]);
+            
 
             return {
                 AddedRows: addedRows,

@@ -77,9 +77,9 @@ export type TFunctionJoin = (dtLeft: DataTable, dtRight: DataTable, leftField: s
 //
 export class Step {
 
-    private static readonly _dataProvider = new MemoryData()
+    static readonly _dataProvider = new MemoryData()
 
-    static ExecuteCaseMap: Record<string, TFunctionStep> = {
+    static readonly ExecuteCaseMap: Record<string, TFunctionStep> = {
         [STEP.DEBUG]: Step.Debug,
         [STEP.SELECT]: Step.Select,
         [STEP.UPDATE]: Step.Update,
@@ -98,7 +98,7 @@ export class Step {
         [STEP.OMIT]: Step.Omit
     }
 
-    static _joinCaseMap: Record<string, TFunctionJoin> = {
+    static readonly _joinCaseMap: Record<string, TFunctionJoin> = {
         [JOIN_TYPE.LEFT]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => DataTableUtils.LeftJoin(dtLeft, dtRight, leftField, rightField),
         [JOIN_TYPE.RIGHT]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => DataTableUtils.RightJoin(dtLeft, dtRight, leftField, rightField),
         [JOIN_TYPE.INNER]: async (dtLeft: DataTable, dtRight: DataTable, leftField: string, rightField: string) => DataTableUtils.InnerJoin(dtLeft, dtRight, leftField, rightField),
@@ -243,9 +243,7 @@ export class Step {
         await Schema.Insert(<TSchemaRequestInsert>{
             ...schemaRequest,
             schema: schema ?? currentSchemaName,
-            data: (data)
-                ? data
-                : await currentDataTable.Rows()
+            data: (data) ?? await currentDataTable.Rows()
         })
     }
 
@@ -305,9 +303,7 @@ export class Step {
         await Schema.Update(<TSchemaRequestUpdate>{
             ...$__schemaRequest,
             schema: schema ?? currentSchemaName,
-            data: (data)
-                ? data
-                : await currentDataTable.Rows()
+            data: (data) ?? await currentDataTable.Rows()
         })
     }
 
@@ -567,7 +563,7 @@ export class Step {
 
         const rowPromises: Promise<void>[] = []
 
-        for await (const _row of await step.currentDataTable.Rows({ includeIndex: true })) {
+        for (const _row of await step.currentDataTable.Rows({ includeIndex: true })) {
             rowPromises.push((async () => {
                 Assert.Var<string>(_row.__idx__, `${STEP.RUN}: Index is not defined`)
                 Assert.Condition(_row?.content, `${STEP.RUN}: content is not defined`)
@@ -577,9 +573,9 @@ export class Step {
 
                 $context.$row = __row
 
-                const $__data = RX_JS_CODE.exec(<string>input) === null
+                const $__data = RX_JS_CODE.exec(input) === null
                     ? $context.$row[input]
-                    : PlaceHolder.EvaluateJsCode(<string>input, new Sandbox($context))
+                    : PlaceHolder.EvaluateJsCode(input, new Sandbox($context))
 
                 Assert.Condition($__data !== undefined, `${STEP.RUN}: Input ${input} is not defined`)
 
@@ -596,11 +592,6 @@ export class Step {
                 $context.$result = __result
 
                 switch (true) {
-                    default:
-                    case output === undefined || output === null:
-                        __row[aiTask] = JsonUtils.SafeCopy(__result)
-                        break
-
                     case isString(output):
                         __row[output] = __result
                         break
@@ -610,8 +601,13 @@ export class Step {
                             const $__value = RX_JS_CODE.exec(<string>___inField) === null
                                 ? __result[___inField as string]
                                 : PlaceHolder.EvaluateJsCode(<string>___inField, new Sandbox($context))
-                            __row[___outField as string] = $__value
+                            __row[___outField] = $__value
                         }
+                        break
+
+                    case output === undefined || output === null:
+                    default:
+                        __row[aiTask] = JsonUtils.SafeCopy(__result)
                         break
                 }
                 await step.currentDataTable.RowUpdateByIndex(__idx__, __row)

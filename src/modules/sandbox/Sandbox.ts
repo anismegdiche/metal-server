@@ -2,7 +2,7 @@
 //
 //
 import * as _ from 'lodash-es'
-import { createContext, Script } from 'vm'
+import { createContext, Script } from 'node:vm'
 //
 import { Logger } from '../../utils/Logger'
 import { HttpErrorInternalServerError } from "../errors/HttpErrors"

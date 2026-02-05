@@ -47,7 +47,7 @@ export class Utils {
 
     static Uuid(safe: boolean = false): string {
         return safe
-            ? uuidv7().replaceAll(/-/g, '')
+            ? uuidv7().replaceAll(/-/g, '')// NOSONAR
             : uuidv7()
     }
 }

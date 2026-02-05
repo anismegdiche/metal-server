@@ -149,12 +149,12 @@ export class Text extends absAiEngine implements IAiEngine {
 
                 if (!Array.isArray(result)) {
                     emotion = {
-                        [result.label]: parseFloat(result.score)
+                        [result.label]: Number.parseFloat(result.score)
                     }
                 }
                 else {
                     emotion = result.reduce((acc: any, item: any) => {
-                        acc[item.label] = parseFloat(item.score)
+                        acc[item.label] = Number.parseFloat(item.score)
                         return acc
                     }, {})
                 }
@@ -217,7 +217,7 @@ export class Text extends absAiEngine implements IAiEngine {
 
                 const language = {
                     code: LangUtils.Convert(result.label, TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO),
-                    score: Math.max(0, parseFloat(result.score))
+                    score: Math.max(0, Number.parseFloat(result.score))
                 }
 
                 return { language }
@@ -246,7 +246,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 const paraphrase = {
                     source: result.source_sentence,
                     target: result.target_sentence,
-                    score: Math.max(0, parseFloat(result.similarity_score))
+                    score: Math.max(0, Number.parseFloat(result.similarity_score))
                 }
 
                 return {
@@ -444,7 +444,7 @@ export class Text extends absAiEngine implements IAiEngine {
                 const result = response.data.result[0]
 
                 const toxicity = result.reduce((acc: any, item: any) => {
-                    acc[item.label] = parseFloat(item.score)
+                    acc[item.label] = Number.parseFloat(item.score)
                     return acc
                 }, {})
 

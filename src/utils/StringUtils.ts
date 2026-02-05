@@ -32,7 +32,7 @@ export class StringUtils {
             return ''
 
         return urlJoin(...cleanSubPaths)
-            .replaceAll(/\\/g, '/')
+            .replaceAll(/\\/g, '/')// NOSONAR
     }
 
     static Path(...subPaths: Array<string | undefined>) {

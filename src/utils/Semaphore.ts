@@ -18,7 +18,7 @@ export class Semaphore {
         if (this.#Available > 0) {
             this.#Available--
             Logger.Debug(`${Logger.Out} Semaphore.Acquire: remaining ${this.#Available}`)
-            return Promise.resolve()
+            return
         }
         return new Promise((resolve) => {
             this.#Tasks.push(resolve)

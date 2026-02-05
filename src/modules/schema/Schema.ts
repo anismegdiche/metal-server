@@ -374,7 +374,7 @@ export class Schema {
             entitiesSources.delete("*")
         }
 
-        for await (const [entity, entitySource] of entitiesSources) {
+        for (const [entity, entitySource] of entitiesSources) {
             const _source = (<U_config_schemas_schema_entities_entity>entitySource).source
             if (Schema.IsSchemaResponse(schemaResponse) && (await schemaResponse.data.Count()) > 0)
                 await schemaResponse.data.RowsDelete(`name = '${entity}'`)
@@ -386,7 +386,7 @@ export class Schema {
 
             if (_intResp.Body && Schema.IsSchemaResponse(_intResp.Body) && (await _intResp.Body.data.Count()) > 0) {
                 using _data = _intResp.Body.data
-                schemaResponse = await Schema.#MergeData(schemaResponse, <TSchemaResponse>_intResp.Body)
+                schemaResponse = await Schema.#MergeData(schemaResponse, _intResp.Body)
             }
         }
         return HttpResponse.Ok(schemaResponse)

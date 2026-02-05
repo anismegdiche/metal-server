@@ -38,9 +38,9 @@ const engineLoaders: Record<string, ProviderLoader> = {
 };
 
 export class AiEngine {
-    static readonly #aiEngineFactory = new Factory<IAiEngine>();
-    static readonly #loadingPromises = new Map<string, Promise<IAiEngine>>();
-    static #aiEnginesConfig: TJson<T_config_ai_engines_ai_engine> = {};
+    static readonly _aiEngineFactory = new Factory<IAiEngine>();
+    static readonly _loadingPromises = new Map<string, Promise<IAiEngine>>();
+    static _aiEnginesConfig: TJson<T_config_ai_engines_ai_engine> = {};
     static AiEnginesInstance: Map<string, IAiEngine> = new Map();
 
     // Build a list of AI engines from the configuration
@@ -76,12 +76,12 @@ export class AiEngine {
      */
     static async GetProvider(providerName: string): Promise<IAiEngine> {
         // If already loaded, return from factory
-        if (AiEngine.#aiEngineFactory.Has(providerName)) {
-            return AiEngine.#aiEngineFactory.Get(providerName)!.Clone();
+        if (AiEngine._aiEngineFactory.Has(providerName)) {
+            return AiEngine._aiEngineFactory.Get(providerName)!.Clone();
         }
 
         // If already loading, return the existing promise
-        const existingPromise = AiEngine.#loadingPromises.get(providerName);
+        const existingPromise = AiEngine._loadingPromises.get(providerName);
         if (existingPromise) {
             return existingPromise.then(provider => provider.Clone());
         }
@@ -106,15 +106,15 @@ export class AiEngine {
             try {
                 const EngineClass = await engineLoader();
                 const engine = new EngineClass();
-                AiEngine.#aiEngineFactory.Register(providerName, engine);
+                AiEngine._aiEngineFactory.Register(providerName, engine);
                 return engine;
             } finally {
-                AiEngine.#loadingPromises.delete(providerName);
+                AiEngine._loadingPromises.delete(providerName);
             }
         })();
 
         // Store the loading promise to prevent duplicate loads
-        AiEngine.#loadingPromises.set(providerName, loadPromise);
+        AiEngine._loadingPromises.set(providerName, loadPromise);
         const engine = await loadPromise;
         return engine.Clone();
     }
@@ -127,12 +127,12 @@ export class AiEngine {
             return;
 
         await AiDocker.Init();
-        AiEngine.#aiEnginesConfig = AiEngine.BuildAiEnginesList();
+        AiEngine._aiEnginesConfig = AiEngine.BuildAiEnginesList();
 
-        if (Object.keys(AiEngine.#aiEnginesConfig).some(key => key.startsWith(AI_ENGINE.TEXT)))
+        if (Object.keys(AiEngine._aiEnginesConfig).some(key => key.startsWith(AI_ENGINE.TEXT)))
             await AiDocker.BuildServiceImage(BaseTextDockerService);
 
-        if (Object.keys(AiEngine.#aiEnginesConfig).some(key => key.startsWith(AI_ENGINE.IMAGE)))
+        if (Object.keys(AiEngine._aiEnginesConfig).some(key => key.startsWith(AI_ENGINE.IMAGE)))
             await AiDocker.BuildServiceImage(BaseImageDockerService);
 
         AiEngine.CreateAll()
@@ -142,7 +142,7 @@ export class AiEngine {
      * Create and initialize all AI engine instances from the configuration
      */
     static async CreateAll() {
-        const entries = Object.entries(AiEngine.#aiEnginesConfig);
+        const entries = Object.entries(AiEngine._aiEnginesConfig);
 
         const buildBatchSize = ConfigManager.Get<number>("server.ai-engines.build-batch-size");
 

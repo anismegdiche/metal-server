@@ -277,7 +277,7 @@ export class WebServiceData extends absDataProvider {
         return keysCollection.ForEach(
             async (row: TJson) => {
                 if (!Array.isArray(await options.Data?.Rows()))
-                    return Promise.resolve()
+                    return
 
                 const mergedRow: TJson = merge(
                     row,

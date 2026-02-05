@@ -46,7 +46,7 @@ export class Roles {
         if (userPermissions === undefined)
             return false
 
-        return (userPermissions as string[]).includes(permission)
+        return (userPermissions).includes(permission)
     }
 
     static CheckPermission(userToken: TUserTokenInfo | undefined, schemaRoles: string[] | undefined, permission: string): void {

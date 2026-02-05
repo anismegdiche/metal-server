@@ -24,13 +24,5 @@ export const z_T_config_ai_engines_ai_engine = z.object({
     model: z.string().optional(),
     url: z_TUrl.optional(),
 })
-
-
-//
-// export type AI_ENGINE_TASK_MATRIX =
-//     `${AI_ENGINE.OCR}-${OCR_TASK}`
-//     | `${AI_ENGINE.TEXT}-${TEXT_TASK}`
-//     | `${AI_ENGINE.IMAGE}-${IMAGE_TASK}`
-//     | `${AI_ENGINE.AUDIO}-${AUDIO_TASK}`;
 export type AI_ENGINE_TASK_MATRIX = z.infer<typeof z_AI_ENGINE_TASK_MATRIX>
 export type T_config_ai_engines_ai_engine = z.infer<typeof z_T_config_ai_engines_ai_engine>;

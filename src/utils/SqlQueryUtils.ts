@@ -592,7 +592,7 @@ export class SqlQueryUtils {
                         type = SQL_TYPE.STRING
                         break
 
-                    case !isNaN(Number(token)):
+                    case !Number.isNaN(Number(token)):
                         type = SQL_TYPE.NUMBER
                         break
                     case token === ',':

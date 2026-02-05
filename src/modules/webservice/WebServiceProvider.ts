@@ -45,7 +45,7 @@ export class WebServiceProvider {
             try {
                 const ProviderClass = await providerLoader();
                 const provider = new ProviderClass();
-                await WebServiceProvider.#webServiceFactory.Register(providerName, Promise.resolve(provider));
+                WebServiceProvider.#webServiceFactory.Register(providerName, Promise.resolve(provider));
                 return provider;
             } finally {
                 WebServiceProvider.#loadingPromises.delete(providerName);

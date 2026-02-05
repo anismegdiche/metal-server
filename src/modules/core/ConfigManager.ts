@@ -68,8 +68,7 @@ export class ConfigManager {
             )
         )
         // Config.CheckRessourcesUsage(newConfig)
-        if (!ConfigManager.configStore)
-            ConfigManager.configStore = configStore
+        ConfigManager.configStore ??= configStore;
 
         ConfigManager.configStore.Init(newConfig)
     }

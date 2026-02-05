@@ -2,7 +2,7 @@
 //
 //
 //
-import * as Fs from 'fs'
+import * as Fs from 'node:fs'
 import type { TJson } from "../types/TJson"
 
 const packageRaw = Fs.readFileSync('./package.json', 'utf8')

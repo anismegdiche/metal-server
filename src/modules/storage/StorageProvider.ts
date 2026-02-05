@@ -49,7 +49,7 @@ export class StorageProvider {
             try {
                 const ProviderClass = await providerLoader();
                 const provider = new ProviderClass();
-                await StorageProvider.#storageFactory.Register(providerName, Promise.resolve(provider));
+                StorageProvider.#storageFactory.Register(providerName, Promise.resolve(provider));
                 return provider;
             } finally {
                 StorageProvider.#loadingPromises.delete(providerName);

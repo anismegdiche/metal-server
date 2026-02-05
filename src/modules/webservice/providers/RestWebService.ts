@@ -3,7 +3,7 @@
 //
 import axios, { type AxiosInstance, type AxiosResponse } from "axios"
 import { merge } from 'lodash-es'
-import { Readable } from "stream"
+import { Readable } from "node:stream"
 //
 import type { TJson } from "../../../types/TJson"
 import { JsonUtils } from '../../../utils/JsonUtils'

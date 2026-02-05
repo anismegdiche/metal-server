@@ -2,7 +2,7 @@
 //
 //
 import { merge } from 'lodash-es'
-import { Readable } from "stream"
+import { Readable } from "node:stream"
 // Lazy-loaded soap module
 //
 import type { TJson } from "../../../types/TJson"

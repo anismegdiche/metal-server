@@ -14,6 +14,10 @@ import { Logger } from "./Logger"
 const BASE64_REGEX = /^[A-Za-z0-9+/]+={0,2}$/;
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const HEX_REGEX = /^[0-9a-f]{20,}$/i; // long hex strings (tokens, hashes)
+const JSON_USELESS_KEYS = new Set([
+    "[Object]",
+    "[Array]"
+])
 
 
 //
@@ -43,7 +47,7 @@ export class JsonUtils {
 
                 // 4. Try parsing with chrono STRICT
                 const parsed = chrono.strict.parseDate(value);
-                if (parsed !== null && !isNaN(parsed.getTime()))
+                if (parsed !== null && !Number.isNaN(parsed.getTime()))
                     return parsed;
 
                 return value;
@@ -72,7 +76,7 @@ export class JsonUtils {
 
     static Set<T extends object>(json: T, jsonPath?: string, data?: any): T {
         if (jsonPath) {
-            json = set(json, jsonPath!, data)
+            json = set(json, jsonPath, data)
         } else {
             json = data as T
         }
@@ -106,7 +110,12 @@ export class JsonUtils {
                 JsonUtils.RemoveUselessKeys(value)
             }
 
-            if (["[Object]", "[Array]"].includes(value) || (Array.isArray(value) && value.every(v => v === null))) {
+            if (JSON_USELESS_KEYS.has(value)
+                || (
+                    Array.isArray(value) &&
+                    value.every(v => v === null)
+                )
+            ) {
                 delete obj[key]
             }
         })
@@ -141,22 +150,29 @@ export class JsonUtils {
     }
 
     static ReplaceStrings(obj: TJson, pattern: RegExp, replacement: string): TJson {
-        forEach(obj, (v, k) => {
+        if (!obj) return obj
+
+        const entries = Object.entries(obj)
+        const updated = entries.map(([key, value]) => {
             switch (true) {
-                case isString(v):
-                    obj[k] = v.replaceAll(pattern, replacement)
-                    break
-                case JsonUtils.IsJson(v):
-                    obj[k] = JsonUtils.ReplaceStrings(v as TJson, pattern, replacement)
-                    break
-                case Array.isArray(v):
-                    obj[k] = v.map(_v => JsonUtils.ReplaceStrings(_v as TJson, pattern, replacement))
-                    break
+                case isString(value):
+                    return [key, value.replaceAll(pattern, replacement)]
+                case JsonUtils.IsJson(value):
+                    return [key, JsonUtils.ReplaceStrings(value as TJson, pattern, replacement)]
+                case Array.isArray(value):
+                    return [key, value.map(item => 
+                        typeof item === 'string' 
+                            ? item.replaceAll(pattern, replacement)
+                            : JsonUtils.IsJson(item)
+                                ? JsonUtils.ReplaceStrings(item as TJson, pattern, replacement)
+                                : item
+                    )]
                 default:
-                    break
+                    return [key, value]
             }
         })
-        return obj
+
+        return Object.fromEntries(updated) as TJson
     }
 
     static IsJson(obj: unknown): boolean {

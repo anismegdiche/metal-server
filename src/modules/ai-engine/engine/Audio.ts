@@ -101,7 +101,7 @@ export class Audio extends absAiEngine implements IAiEngine {
                 }
 
                 const result = response.data.result.reduce((obj: { [x: string]: any }, item: { label: string; score: number }) => {
-                    const fullName: string = labelMap[item.label as string] || item.label // fallback to acronym if not found
+                    const fullName: string = labelMap[item.label] || item.label // fallback to acronym if not found
                     obj[fullName] = item.score
                     return obj
                 }, {})

@@ -49,7 +49,7 @@ export class AuthProvider {
             try {
                 const ProviderClass = await providerLoader();
                 const provider = new ProviderClass();
-                await AuthProvider.#authFactory.Register(providerName, Promise.resolve(provider));
+                AuthProvider.#authFactory.Register(providerName, Promise.resolve(provider));
                 return provider;
             } finally {
                 AuthProvider.#loadingPromises.delete(providerName);

@@ -36,14 +36,10 @@ export class Plan {
     Name: string                                    // Plan name
     Entities = new Map<string, U_config_plans_plan_entity_steps>()     // Plan entities and associated steps
     _dataBase: DataBase                              // Plan entities rendered data
-    // SemaphoreSize: number
-    // #__LOCK__ = new Map<string, Semaphore>()       // Plan Lock by entity
 
     constructor(name: string) {
         this.Name = name
         this._dataBase = new DataBase(this.Name, true)
-        // this.SemaphoreSize = 1                      // Force to have single thread of execution
-        // this.#__LOCK__ = new Semaphore(this.SemaphoreSize)
     }
 
     async Init() {
@@ -119,7 +115,7 @@ export class Plan {
         }
 
         try {
-            for await (const [_stepIndex, _step] of Object.entries(steps)) {
+            for (const [_stepIndex, _step] of Object.entries(steps)) {
 
                 const __stepIndex = Number.parseInt(_stepIndex, 10) + 1
 
@@ -159,7 +155,7 @@ export class Plan {
 
                 const __stepArguments: TStep = <TStep>{
                     currentSchemaName: $context.$plan!.schema!,
-                    currentPlanName: $context.$plan!.name!,
+                    currentPlanName: $context.$plan!.name,
                     currentDataTable: this._dataBase.Tables[currentEntityName],
                     stepArgs: $context.$plan!.$current.stepArgs!
                 }
@@ -191,7 +187,7 @@ export class Plan {
         } catch (error: unknown) {
             const _error = error as Error
 
-            switch (true) {
+            switch (true) { // NOSONAR
                 case _error.message === "__BREAK__":
                     Logger.Info(`${Logger.Out} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': user break at step '${$context.$plan!.$current.stepIndex}', ${JsonUtils.Stringify($context.$plan!.$current.stepCommand)}`)
                     $context = merge(
