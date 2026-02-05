@@ -12,7 +12,7 @@ import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { StringUtils } from "../../../utils/StringUtils"
 import { CONTENT } from "../../content/@consts"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
-import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorSwitch, NormalizeError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import type { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
@@ -105,14 +105,15 @@ export class RestWebService extends absWebServiceProvider {
 
             return Readable.from(JsonUtils.Stringify(wsResp.data))
 
-        } catch (error: any) {
+        } catch (err: unknown) {
+            const _err = NormalizeError(err)
             throw HttpErrorSwitch(
-                error.status || HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,
+                _err.status || HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,
                 JsonUtils.Stringify(
-                    error.response.data.message ||
-                    error.response.data ||
-                    error.errors ||
-                    error.message ||
+                    _err.response.data.message ||
+                    _err.response.data ||
+                    _err.errors ||
+                    _err.message ||
                     "Unknown error"
                 )
             )

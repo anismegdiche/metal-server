@@ -11,7 +11,7 @@ import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Validator } from "../../../utils/Validator"
 import { CONTENT } from "../../content/@consts"
-import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorSwitch, NormalizeError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import type { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
@@ -91,8 +91,9 @@ export class SoapWebService extends absWebServiceProvider {
             if (typeof header == 'string' && typeof value == 'string')
                 this.Client.addHttpHeader(header, value)
 
-        } catch (error: any) {
-            const _message = error.errors?.at(1).message ?? error.errors?.at(0).message ?? error.message
+        } catch (err: unknown) {
+            const _err = NormalizeError(err)
+            const _message = _err.errors.at(1).message ?? _err.errors.at(0).message ?? _err.message
             Logger.Error(`SoapWebService.Init: ${_message}`)
         }
     }
@@ -156,8 +157,9 @@ export class SoapWebService extends absWebServiceProvider {
 
             return Readable.from(JsonUtils.Stringify(wsResp.at(1)))
 
-        } catch (error: any) {
-            throw HttpErrorSwitch(error.status, error.message)
+        } catch (err: unknown) {
+            const _err = NormalizeError(err)   
+            throw HttpErrorSwitch(_err.status, _err.message)
         }
     }
 

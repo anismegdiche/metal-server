@@ -19,7 +19,7 @@ import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import type { U_config_sources_source } from '../../core/types/U_config_sources'
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented, NormalizeError } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
@@ -107,8 +107,8 @@ export class WebServiceData extends absDataProvider {
                 await this.Connection.Connect()
                 Logger.Debug(`${Logger.Out} WebService provider '${this.SourceName}' connected`)
             }
-        } catch (error: any) {
-            Logger.Error(`${this.SourceName}: Failed to connect to WebService provider: ${error.message}`)
+        } catch (err: unknown) {
+            Logger.Error(`${this.SourceName}: Failed to connect to WebService provider: ${NormalizeError(err).message}`)
         }
     }
 
@@ -117,8 +117,8 @@ export class WebServiceData extends absDataProvider {
         try {
             if (this.Connection && this.ContentHandler)
                 await this.Connection.Disconnect()
-        } catch (error: any) {
-            Logger.Error(`${this.SourceName}: Failed to disconnect in WebService provider: ${error.message}`)
+        } catch (err: unknown) {
+            Logger.Error(`${this.SourceName}: Failed to disconnect in WebService provider: ${NormalizeError(err).message}`)
         }
     }
 

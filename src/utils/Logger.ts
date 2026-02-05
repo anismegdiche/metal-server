@@ -1,16 +1,16 @@
 //
 //
+import { bold, cyan, gray, green, magenta, red, whiteBright, yellow } from 'colorette'
+import * as _ from 'lodash-es'
 import LogLevel from 'loglevel'
 import Prefix from 'loglevel-plugin-prefix'
 import morgan from "morgan"
-import { magenta, green, cyan, yellow, red, gray, whiteBright, bold } from 'colorette'
-import * as _ from 'lodash-es'
 //
 import { SERVER } from '../modules/core/@consts'
+import { NormalizeError } from '../modules/errors/HttpErrors'
 import { DecoratorUtils } from "./DecoratorUtils"
-import { Stringify } from './JsonUtils/Stringify'
 import { JsonUtils } from './JsonUtils'
-import type { TJson } from '../types/TJson'
+import { Stringify } from './JsonUtils/Stringify'
 import { Queue } from './Queue'
 
 
@@ -142,8 +142,7 @@ export class Logger {
                     try {
                         result = originalMethod.apply(this, args);
                     } catch (err: unknown) {
-                        // sync error
-                        Logger.Error(`${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${JsonUtils.ToTextList(err as TJson)}`);
+                        Logger.Error(`${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${JsonUtils.ToTextList(NormalizeError(err))}`);
                         throw err; // rethrow
                     }
                     // ---------- ASYNC HANDLING ----------
@@ -154,7 +153,7 @@ export class Logger {
                                 return res;
                             })
                             .catch((err: unknown) => {
-                                Logger.Error(`${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${JsonUtils.ToTextList(err as TJson)}`);
+                                Logger.Error(`${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${JsonUtils.ToTextList(NormalizeError(err))}`);
                                 throw err; // rethrow async error
                             });
                     }

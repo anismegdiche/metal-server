@@ -14,7 +14,7 @@ import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { StringUtils } from '../../../utils/StringUtils'
 import type { TConvertParams } from "../../../utils/TypeUtils"
 import type { U_config_sources_source } from '../../core/types/U_config_sources'
-import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../errors/HttpErrors'
+import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from '../../errors/HttpErrors'
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
 import type { TStorageFile } from '../@types'
@@ -26,9 +26,9 @@ export const FileTypeFromBuffer = (async () => {
     try {
         const { fileTypeFromBuffer } = await loadEsm<typeof import('file-type')>('file-type')
         return fileTypeFromBuffer
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        Logger.Error(`Error importing module:${error?.message}`)
+
+    } catch (err: unknown) {
+        Logger.Error(`Error importing module:${NormalizeError(err).message}`)
         return undefined
     }
 })()
@@ -252,13 +252,14 @@ export class AmazonS3Storage extends absStorageProvider {
 
             await this._s3Client.send(command)
             return true
-        } catch (error: any) {
+        } catch (err: unknown) {
+            const _err = NormalizeError(err)
             // Only return false if it's a NoSuchKey error
-            if (error.name === 'NoSuchKey' || error.code === 'NoSuchKey') {
+            if (_err.name === 'NoSuchKey' || _err.code === 'NoSuchKey') {
                 return false
             }
             // Throw for other errors
-            throw error
+            throw err
         }
     }
 

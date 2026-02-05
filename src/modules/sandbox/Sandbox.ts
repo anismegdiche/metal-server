@@ -5,7 +5,7 @@ import * as _ from 'lodash-es'
 import { createContext, Script } from 'node:vm'
 //
 import { Logger } from '../../utils/Logger'
-import { HttpErrorInternalServerError } from "../errors/HttpErrors"
+import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrors"
 import type { TContext } from "./types/TContext"
 import { maliciousPatterns } from "./@consts"
 import { Utils } from "../../utils/Utils"
@@ -57,10 +57,10 @@ export class Sandbox {
             const script = new Script(_code)
             return script.runInContext(this.#Context)
 
-        } catch (error: any) {
-            Logger.Error(`Error evaluating code: ${_code}, ${error?.message}`)
+        } catch (err: unknown) {
+            Logger.Error(`Error evaluating code: ${_code}, ${NormalizeError(err).message}`)
             if (isSuspicious)
-                throw error
+                throw err
             return undefined
         }
     }

@@ -18,7 +18,7 @@ import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import type { U_config_sources_source } from "../../core/types/U_config_sources"
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented, NormalizeError } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
@@ -100,8 +100,8 @@ export class StorageFilesData extends absDataProvider {
                 this.Connection.Connect()
                 Logger.Debug(`${Logger.Out} Storage provider '${this.SourceName}' connected`)
             }
-        } catch (error: any) {
-            Logger.Error(`${this.SourceName}: Failed to connect in storage provider: ${error.message}`)
+        } catch (err: unknown) {
+            Logger.Error(`${this.SourceName}: Failed to connect in storage provider: ${NormalizeError(err).message}`)
         }
     }
 
@@ -110,8 +110,8 @@ export class StorageFilesData extends absDataProvider {
         try {
             if (this.Connection && this.ContentHandler)
                 await this.Connection.Disconnect()
-        } catch (error: any) {
-            Logger.Error(`${this.SourceName}: Failed to disconnect in storage provider: ${error.message}`)
+        } catch (err: unknown) {
+            Logger.Error(`${this.SourceName}: Failed to disconnect in storage provider: ${NormalizeError(err).message}`)
         }
     }
 
@@ -205,8 +205,8 @@ export class StorageFilesData extends absDataProvider {
             Cache.Remove(schemaRequest)
             return HttpResponse.Created()
 
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(`${this.SourceName}: ${error.message}`)
+        } catch (err: unknown) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: ${NormalizeError(err).message}`)
         } finally {
             this.Lock.get(fileName)!.Release()
         }
@@ -251,8 +251,8 @@ export class StorageFilesData extends absDataProvider {
             Cache.Remove(schemaRequest)
             return HttpResponse.NoContent()
 
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${fileName} in storage provider: ${error.message}`)
+        } catch (err: unknown) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${fileName} in storage provider: ${NormalizeError(err).message}`)
         } finally {
             this.Lock.get(fileName)!.Release()
         }
@@ -294,8 +294,8 @@ export class StorageFilesData extends absDataProvider {
             Cache.Remove(schemaRequest)
             return HttpResponse.NoContent()
 
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${fileName} in storage provider: ${error.message}`)
+        } catch (err: unknown) {
+            throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to update ${fileName} in storage provider: ${NormalizeError(err).message}`)
         } finally {
             this.Lock.get(fileName)!.Release()
         }

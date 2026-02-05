@@ -8,7 +8,7 @@ import { intersection, merge } from 'lodash-es'
 import { Logger } from '../../../utils/Logger'
 import { absAuthProvider } from '../base/absAuthProvider'
 import type { TUserCredentials, TUserTokenInfo } from "../@types"
-import { HttpErrorInternalServerError, HttpErrorUnauthorized } from '../../errors/HttpErrors'
+import { HttpErrorInternalServerError, HttpErrorUnauthorized, NormalizeError } from '../../errors/HttpErrors'
 import { JsonUtils } from "../../../utils/JsonUtils"
 import type { U_config_server_authentication_oidc } from "../types/U_config_server_authentication_oidc"
 import { ConfigManager } from "../../core/ConfigManager"
@@ -62,8 +62,8 @@ export class OidcAuth extends absAuthProvider {
                 client_secret: this.#Config["client-secret"],
                 response_types: ['token']
             })
-        } catch (error: any) {
-            throw new HttpErrorInternalServerError(`Failed to initialize OIDC Authentication: ${error.message}`)
+        } catch (err: unknown) {
+            throw new HttpErrorInternalServerError(`Failed to initialize OIDC Authentication: ${NormalizeError(err).message}`)
         }
     }
 
@@ -98,8 +98,8 @@ export class OidcAuth extends absAuthProvider {
                 roles
             }
 
-        } catch (error: any) {
-            throw new HttpErrorUnauthorized(`Authentication failed: ${error.message}`)
+        } catch (err: unknown) {
+            throw new HttpErrorUnauthorized(`Authentication failed: ${NormalizeError(err).message}`)
         }
     }
 
@@ -114,8 +114,8 @@ export class OidcAuth extends absAuthProvider {
                 this.#TokenCache.delete(username)
             }
             Logger.Debug(`User ${username} logged out`)
-        } catch (error: any) {
-            Logger.Error(`Error during logout for user ${username}: ${error.message}`)
+        } catch (err: unknown) {
+            Logger.Error(`Error during logout for user ${username}: ${NormalizeError(err).message}`)
         }
     }
 }

@@ -21,6 +21,7 @@ import { OcrDockerService } from '../docker-services/OcrDockerService'
 import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
 import type { TAiDockerService } from '../types/TAiDockerService'
 import type { U_config_plans_plan_entity_run_ai_ocr_Params } from "../types/U_config_plans_plan_entity_run_ai_ocr_Params"
+import { NormalizeError } from '../../errors/HttpErrors'
 
 
 //
@@ -56,11 +57,12 @@ export class Ocr extends absAiEngine implements IAiEngine {
                     Buffer.from(data, 'base64'),
                     OCR_DEFAULT_HEADERS
                 )
-            } catch (error: any) {
-                if (error.response?.status === 429) {
+            } catch (err: unknown) {
+                const _err = NormalizeError(err)
+                if (_err.response.status === 429) {
                     Logger.Info(`${this.InstanceName} processing is busy, retrying`)
                 } else {
-                    Logger.Warn(`${this.InstanceName} processing failed: ${error.response?.data?.message ?? error.message}`)
+                    Logger.Warn(`${this.InstanceName} processing failed: ${_err.response.data.message ?? _err.message}`)
                 }
                 await Utils.Sleep(200)
             }

@@ -12,6 +12,7 @@ import { SQL_TYPE, SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 import type { TJson } from '../../../types/TJson'
 import { Logger } from "../../../utils/Logger"
 import { Assert } from "../../../utils/Assert"
+import { NormalizeError } from "../../errors/HttpErrors"
 
 
 //
@@ -25,8 +26,8 @@ export class MongoDbHelper {
         try {
             mongoParsedQuery = SQLParser.parseSQL(sqlQuery)
 
-        } catch (error: any) {
-            Logger.Error(`MongoDbHelper.ParseSqlQuery: Error parsing SQL query: ${sqlQuery}\r\n${error.message}`)
+        } catch (err: unknown) {
+            Logger.Error(`MongoDbHelper.ParseSqlQuery: Error parsing SQL query: ${sqlQuery}\r\n${NormalizeError(err).message}`)
         }
 
         mongoParsedQuery = JsonUtils.ReplaceStrings(mongoParsedQuery, /%/g, '.*')

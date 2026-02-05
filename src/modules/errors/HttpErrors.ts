@@ -2,11 +2,41 @@
 //
 //
 //
-import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from "../core/@consts"
+import type { TJson } from "../../types/TJson"
 import { Stringify } from "../../utils/JsonUtils/Stringify"
 import { Logger, VERBOSITY } from "../../utils/Logger"
+import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from "../core/@consts"
 
 
+//
+export function NormalizeError(err: unknown): TJson {
+    if (err instanceof HttpError) {
+        return {
+            type: err.name,
+            message: err.message,
+            status: err.Status,
+            statusName: err.Name,
+            stack: err.stack,
+        }
+    }
+
+    if (err instanceof Error) {
+        return {
+            type: err.name || "Error",
+            message: err.message || "Unknown error",
+            stack: err.stack,
+        }
+    }
+
+    // rejected with string / object / whatever
+    return {
+        type: "UnknownThrownValue",
+        message: String(err),
+    }
+}
+
+
+//
 export class HttpError extends Error {
     Status: number
     Name: string
@@ -100,14 +130,17 @@ export class ConfigFileError extends HttpError {
 }
 
 
-export function HttpErrorLog(error: HttpError | Error): void {
+export function HttpErrorLog(error: HttpError | Error | unknown): void {
     const logger = (error instanceof HttpErrorNotFound)
         ? Logger.Warn
         : Logger.Error
 
-    logger(error.message)
+    const _err = NormalizeError(error)
+
+    logger(_err.message)
+
     if (Logger.Level === VERBOSITY.DEBUG)
-        logger(error.stack)
+        logger(_err.stack)
 }
 
 export function HttpErrorSwitch(status?: number, message?: string): HttpError {

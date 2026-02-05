@@ -16,6 +16,7 @@ import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines
 import type { TAiDockerService } from "../types/TAiDockerService"
 import type { IAiEngine } from './IAiEngine'
 import type { TJson } from "../../../types/TJson"
+import { NormalizeError } from '../../errors/HttpErrors'
 
 
 //
@@ -53,11 +54,12 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
                     },
                     IMAGE_DEFAULT_HEADERS
                 )
-            } catch (error: any) {
-                if (error.response?.status === 429) {
+            } catch (err: unknown) {
+                const _err = NormalizeError(err)
+                if (_err.response?.status === 429) {
                     Logger.Info(`${this.InstanceName} processing is busy, retrying`)
                 } else {
-                    Logger.Warn(`${this.InstanceName} processing failed: ${error.response?.data?.message ?? error.message}`)
+                    Logger.Warn(`${this.InstanceName} processing failed: ${_err.response.data.message ?? _err.message}`)
                 }
                 await Utils.Sleep(200)
             }

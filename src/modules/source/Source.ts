@@ -39,7 +39,7 @@ export class Source {
             await Source.Sources.get(source)!.DataProvider.Init(source, sourceConfig)
             Source.Sources.get(source)!.DataProvider.Connect()
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             HttpErrorLog(error)
         }
     }
