@@ -43,6 +43,9 @@ export class ServerCore {
         await ConfigManager.Init(new ConfigStore())
         ServerCore.InitLogging()
 
+        // Start logger queue cleanup
+        Logger.StartQueueCleanup()
+
         // schema
         Schema.Init(Cache.Get)
 
@@ -66,6 +69,18 @@ export class ServerCore {
         ServerCore.InitResponse()
         ServerEndpoint.InitApi()
         ServerRuntime.StartWatcher()
+    }
+
+    @Logger.LogFunction()
+    static async Shutdown(): Promise<void> {
+        Logger.Info('Server shutdown initiated')
+        
+        // Stop logger queue cleanup
+        Logger.StopQueueCleanup()
+        
+        // TODO: Add proper cleanup for other components
+        
+        Logger.Info('Server shutdown completed')
     }
 
     @Logger.LogFunction()

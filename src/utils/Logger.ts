@@ -57,6 +57,8 @@ export class Logger {
     static readonly Out = yellow('◀ ')
     static Level: LogLevel.LogLevelDesc = LOGGER_DEFAULT_LEVEL
     private static readonly _queue = new Queue()
+    private static readonly _maxQueueSize = 1_000
+    private static _cleanupInterval: NodeJS.Timeout | undefined
 
     static RequestMiddleware = morgan(
         ':remote-addr, :method :url, :status, :res[content-length], :response-time ms',
@@ -75,6 +77,38 @@ export class Logger {
             LogLevel.setLevel(LOGGER_DEFAULT_LEVEL)
             Logger.Error(`Logger.SetLevel: Error while setting verbosity, resetting to default`)
             Logger.Error(error)
+        }
+    }
+
+    static StartQueueCleanup(): void {
+        if (Logger._cleanupInterval) {
+            clearInterval(Logger._cleanupInterval)
+        }
+
+        Logger._cleanupInterval = setInterval(() => {
+            Logger._cleanupQueue()
+        }, 60000) // Clean up every minute
+    }
+
+    static StopQueueCleanup(): void {
+        if (Logger._cleanupInterval) {
+            clearInterval(Logger._cleanupInterval)
+            Logger._cleanupInterval = undefined
+        }
+    }
+
+    private static _cleanupQueue(): void {
+        try {
+            const currentSize = Logger._queue.Tasks.length
+            if (currentSize > Logger._maxQueueSize) {
+                const excess = currentSize - Logger._maxQueueSize
+                Logger.Warn(`Logger queue size (${currentSize}) exceeds maximum (${Logger._maxQueueSize}), removing ${excess} oldest entries`)
+
+                // Remove oldest entries from the front of the array
+                Logger._queue.Tasks.splice(0, excess)
+            }
+        } catch (error) {
+            Logger.Error(`Failed to cleanup logger queue: ${error instanceof Error ? error.message : String(error)}`)
         }
     }
 

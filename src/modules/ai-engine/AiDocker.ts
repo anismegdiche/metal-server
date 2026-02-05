@@ -12,7 +12,7 @@ import { Logger } from '../../utils/Logger'
 import { Mutex } from '../../utils/Mutex'
 import { StringUtils } from '../../utils/StringUtils'
 import { ConfigManager } from '../core/ConfigManager'
-import { HttpErrorInternalServerError } from '../errors/HttpErrors'
+import { HttpErrorInternalServerError, NormalizeError } from '../errors/HttpErrors'
 import { DOCKER } from './consts/DOCKER'
 import { CaddyDockerService } from './docker-services/CaddyDockerService'
 import type { TAiDockerService } from './types/TAiDockerService'
@@ -23,7 +23,7 @@ import type { U_config_server_ai_engines } from '../core/types/U_config_server'
 export class AiDocker {
 
     static docker: Docker = new Docker();
-    static AutoScaleWorker: NodeJS.Timeout
+    static AutoScaleWorker: NodeJS.Timeout | undefined
     static Instances: Map<string, TAiDockerService> = new Map()
 
     static Config: U_config_server_ai_engines
@@ -69,18 +69,27 @@ export class AiDocker {
             Logger.Info(`${Logger.Out} Docker client initialized`)
 
             await AiDocker.docker.ping()
+                .catch(e => { throw new HttpErrorInternalServerError(`Docker daemon is unreachable: ${e.message}`) })
             Logger.Info(`${Logger.Out} Docker daemon is reachable`)
 
             if (!isBuildMode) {
-                await AiDocker.CleanStack()
                 Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
-                await AiDocker.CreateNetwork().catch(Logger.Error)
-                await AiDocker.StartCaddy().catch(Logger.Error)
+
+                await AiDocker.CleanStack()
+                    .catch(e => { throw new HttpErrorInternalServerError(`Unable to clean stack: ${e.message}`) })
+
+                await AiDocker.CreateNetwork()
+                    .catch(e => { throw new HttpErrorInternalServerError(`Unable to create network: ${e.message}`) })
+
+                await AiDocker.StartCaddy()
+                    .catch(e => { throw new HttpErrorInternalServerError(`Unable to start reverse proxy: ${e.message}`) })
+
                 AiDocker.StartScaler()
+                
                 Logger.Info(`${Logger.Out} AI Engine stack manager started`)
             }
         } catch (error) {
-            throw new HttpErrorInternalServerError(`AiDocker.Init: ${(error as Error).message}`)
+            throw new HttpErrorInternalServerError(NormalizeError(error).message)
         }
     }
 
@@ -114,9 +123,14 @@ export class AiDocker {
     @Logger.LogFunction()
     static StopScaler() {
         if (AiDocker.AutoScaleWorker) {
-            clearInterval(AiDocker.AutoScaleWorker)
-            AiDocker.AutoScaleWorker = undefined as any
-            Logger.Info('AutoScaler stopped')
+            try {
+                clearInterval(AiDocker.AutoScaleWorker)
+                Logger.Info('AutoScaler stopped successfully')
+            } catch (error) {
+                Logger.Error(`Failed to clear auto scaler: ${error instanceof Error ? error.message : String(error)}`)
+            } finally {
+                AiDocker.AutoScaleWorker = undefined
+            }
         }
     }
 
@@ -130,23 +144,34 @@ export class AiDocker {
             }
         })
 
-        const promisesContainers = containers.map(container => new Promise<void>(async (resolve, reject) => {
+        const containerCleanupPromises = containers.map(async (container) => {
             try {
                 Logger.Info(`${Logger.In} Stopping container '${container.Names[0]}'...`)
                 const c = AiDocker.docker.getContainer(container.Id)
                 if (container.State === "running") {
-                    await c.stop().catch(Logger.Error)
+                    await c.stop({ t: 10000 }).catch((stopError) => {
+                        Logger.Warn(`Failed to stop container '${container.Names[0]}': ${stopError instanceof Error ? stopError.message : String(stopError)}`)
+                    })
                 }
-                await c.remove().catch(Logger.Error)
+                await c.remove({ force: true }).catch((removeError) => {
+                    Logger.Warn(`Failed to remove container '${container.Names[0]}': ${removeError instanceof Error ? removeError.message : String(removeError)}`)
+                })
                 Logger.Info(`${Logger.Out} Stopped container '${container.Names[0]}'`)
-                resolve()
-            } catch (e: unknown) {
-                Logger.Error((e as Error).message)
-                reject(e)
+                return { success: true, container: container.Names[0] }
+            } catch (error) {
+                Logger.Error(`Error processing container '${container.Names[0]}': ${error instanceof Error ? error.message : String(error)}`)
+                return { success: false, container: container.Names[0], error }
             }
-        }))
+        })
 
-        await Promise.allSettled(promisesContainers)
+        const cleanupResults = await Promise.allSettled(containerCleanupPromises)
+        const failedContainers = cleanupResults.filter(result =>
+            result.status === 'fulfilled' && !result.value.success
+        )
+
+        if (failedContainers.length > 0) {
+            Logger.Warn(`${failedContainers.length} containers failed to clean up properly`)
+        }
 
         const networks = await AiDocker.docker.listNetworks({
             filters: {
@@ -240,7 +265,7 @@ export class AiDocker {
                     {
                         t: service.ImageName
                     }
-                ) as NodeJS.ReadableStream
+                )
 
                 let _streamData: string = ""
 
@@ -635,7 +660,7 @@ export class AiDocker {
             )
 
             // Calculate average of valid CPU percentages across all containers
-            const validUsages = cpuUsages.filter(usage => !isNaN(usage))
+            const validUsages = cpuUsages.filter(usage => !Number.isNaN(usage))
             if (validUsages.length === 0)
                 return 0
 
