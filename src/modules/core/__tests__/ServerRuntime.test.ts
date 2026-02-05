@@ -5,7 +5,6 @@ import { Roles } from '../../auth/Roles';
 import { ServerShutdown } from '../ServerShutdown';
 import { Schedule } from '../../plan/Schedule';
 import { ConfigManager } from '../ConfigManager';
-import { HttpResponse } from '../HttpResponse';
 import { SERVER } from '../@consts';
 
 vi.mock('../../auth/Roles');

@@ -1,11 +1,8 @@
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { Source } from '../Source';
-import { ConfigManager } from '../../core/ConfigManager';
 import { DataProvider } from '../DataProvider';
-import { DATA_PROVIDER } from '../@consts';
 
-vi.mock('../../core/ConfigManager');
 vi.mock('../../../utils/Logger', () => ({
     LOGGER_DEFAULT_LEVEL: 'info',
     VERBOSITY: { DEBUG: 'debug' },

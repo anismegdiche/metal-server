@@ -3,7 +3,6 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ConfigManager } from '../ConfigManager';
 import * as Fs from 'node:fs';
 import * as Yaml from 'js-yaml';
-import { z_U_config } from '../types/U_config';
 
 vi.mock('node:fs');
 vi.mock('js-yaml');
@@ -32,12 +31,15 @@ describe('ConfigManager', () => {
         it('should load and interpolate config correctly', async () => {
             const yamlContent = 'server:\n  port: ${PORT}';
             vi.mocked(Fs.readFileSync).mockReturnValue(yamlContent);
-            vi.mocked(Yaml.load).mockImplementation((str) => ({ server: { port: parseInt(str.split(': ')[1]) } }));
+            vi.mocked(Yaml.load).mockImplementation((str) => {
+                const portPart = (str ?? '').split(': ')[1] ?? '';
+                return { server: { port: Number.parseInt(portPart, 10) } };
+            });
 
             process.env.PORT = '4000';
             const config = await ConfigManager.Load();
 
-            expect(config.server.port).toBe(4000);
+            expect(config.server?.port).toBe(4000);
             expect(Fs.readFileSync).toHaveBeenCalledWith(ConfigManager.ConfigFilePath, 'utf8');
         });
     });

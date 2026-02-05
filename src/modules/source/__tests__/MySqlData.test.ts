@@ -48,7 +48,7 @@ describe('MySqlData', () => {
         port: 3306,
         user: 'test-user',
         // file deepcode ignore NoHardcodedPasswords/test: testing
-        password: 'test-password',
+        password: 'test-password', // NOSONAR
         database: 'test-db',
         options: {
             waitForConnections: true,
@@ -81,7 +81,7 @@ describe('MySqlData', () => {
                 host: '127.0.0.1',
                 database: 'test-db',
                 user: 'test-user',
-                password: 'test-password',
+                password: 'test-password', // NOSONAR
                 waitForConnections: true,
                 connectionLimit: 10,
                 maxIdle: 10,

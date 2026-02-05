@@ -46,7 +46,7 @@ describe('Schedule', () => {
             await Schedule.Init();
 
             expect(Schedule.Jobs.length).toBe(1);
-            expect(Schedule.Jobs[0].schedule).toBe('job1');
+            expect(Schedule.Jobs[0]?.schedule).toBe('job1');
         });
     });
 

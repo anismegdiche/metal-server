@@ -1,5 +1,5 @@
 
-import { Readable } from "stream"
+import { Readable } from "node:stream"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"

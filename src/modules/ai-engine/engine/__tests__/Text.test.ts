@@ -338,28 +338,6 @@ describe('Text', () => {
         });
     });
 
-    // describe('Text2TextGeneration', () => {
-    //     it('should perform text2text generation', async () => {
-    //         spyAxios.mockImplementationOnce(() => {
-    //             return Promise.resolve({
-    //                 data: {
-    //                     result: [
-    //                         {
-    //                             generated_text: '42 is the answer to life, the universe and everything'
-    //                         }
-    //                     ]
-    //                 }
-    //             });
-    //         });
-
-    //         const result = await text.Text2TextGeneration(<TAiRunArguments>{
-    //             data: 'question: What is 42 ? context: 42 is the answer to life, the universe and everything'
-    //         });
-
-    //         expect(result).toEqual(expect.any(String));
-    //     });
-    // });
-
     describe('TextGeneration', () => {
         it('should generate text', async () => {
             spyAxios.mockImplementationOnce(() => {

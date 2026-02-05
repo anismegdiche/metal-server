@@ -2,7 +2,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { User } from '../User';
 import { AuthProvider } from '../AuthProvider';
-import { Roles } from '../Roles';
 import jwt from 'jsonwebtoken';
 import { HttpErrorUnauthorized } from '../../errors/HttpErrors';
 
@@ -35,7 +34,7 @@ describe('User', () => {
 
     describe('Authenticate', () => {
         it('should authenticate user and return token', async () => {
-            const credentials = { username: 'admin', password: 'password' };
+            const credentials = { username: 'admin', password: 'password' }; // NOSONAR
             vi.mocked(AuthProvider.Provider.Authenticate).mockResolvedValue({ user: 'admin', roles: ['admin'] });
             vi.mocked(jwt.sign).mockReturnValue('mock-token' as any);
 

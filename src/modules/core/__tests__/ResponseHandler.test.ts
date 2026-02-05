@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ResponseHandler } from '../ResponseHandler';
 import { Schema } from '../../schema/Schema';
+import type { TSchemaResponse } from '../../schema/types/TSchemaResponse';
+import type { DataTable } from '../../../types/DataTable';
 
 vi.mock('../ConfigManager');
 vi.mock('../../../utils/Logger', () => ({
@@ -34,7 +37,7 @@ describe('ResponseHandler', () => {
     describe('SetContentJson', () => {
         it('should set Content-Type header', () => {
             const next = vi.fn();
-            ResponseHandler.SetContentJson({} as any, mockRes as any, next);
+            ResponseHandler.SetContentJson({} as any, mockRes, next);
             expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Type', 'application/json; charset=utf-8');
             expect(next).toHaveBeenCalled();
         });
@@ -43,7 +46,7 @@ describe('ResponseHandler', () => {
     describe('ResponseError', () => {
         it('should return error with message', () => {
             const error = new Error('test-error');
-            ResponseHandler.ResponseError(mockRes as any, error);
+            ResponseHandler.ResponseError(mockRes, error);
             expect(mockRes.status).toHaveBeenCalledWith(500);
             expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'test-error' }));
         });
@@ -51,15 +54,15 @@ describe('ResponseHandler', () => {
 
     describe('FromSchemaResponse', () => {
         it('should return basic json if no data', async () => {
-            const schemaRes = {
+            const schemaRes: TSchemaResponse = {
                 schema: 's',
                 entity: 'e',
                 status: 200,
-                data: { Count: vi.fn().mockResolvedValue(0) }
+                data: { Count: vi.fn().mockResolvedValue(0) } as unknown as DataTable
             };
             vi.mocked(Schema.IsSchemaResponse).mockReturnValue(true);
 
-            await ResponseHandler.FromSchemaResponse(schemaRes as any, mockRes as any);
+            await ResponseHandler.FromSchemaResponse(schemaRes, mockRes);
 
             expect(mockRes.status).toHaveBeenCalledWith(200);
             expect(mockRes.json).toHaveBeenCalledWith({ schema: 's', entity: 'e', status: 200 });

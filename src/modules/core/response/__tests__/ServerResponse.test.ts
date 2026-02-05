@@ -35,7 +35,7 @@ describe('ServerResponse', () => {
         const intRes = { Body: { version: '1.0' } };
         vi.mocked(ServerRuntime.GetInfo).mockResolvedValue(intRes as any);
 
-        await ServerResponse.GetInfo(mockReq as any, mockRes as any);
+        await ServerResponse.GetInfo(mockReq, mockRes);
 
         expect(ServerRuntime.GetInfo).toHaveBeenCalled();
         expect(Convert.InternalResponseToResponse).toHaveBeenCalledWith(mockRes, intRes);
@@ -45,7 +45,7 @@ describe('ServerResponse', () => {
         const intRes = { Body: { message: 'reloaded' } };
         vi.mocked(ServerRuntime.Reload).mockResolvedValue(intRes as any);
 
-        await ServerResponse.Reload(mockReq as any, mockRes as any);
+        await ServerResponse.Reload(mockReq, mockRes);
 
         expect(RequestHandler.CheckRequest).toHaveBeenCalledWith(mockReq);
         expect(ServerRuntime.Reload).toHaveBeenCalledWith(mockReq.__METAL_CURRENT_USER);

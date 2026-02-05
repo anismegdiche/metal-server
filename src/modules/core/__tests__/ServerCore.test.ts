@@ -2,7 +2,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ServerCore } from '../ServerCore';
 import { ConfigManager } from '../ConfigManager';
-import { Logger } from '../../../utils/Logger';
 import { Source } from '../../source/Source';
 import { Cache } from '../../cache/Cache';
 import { AiEngine } from '../../ai-engine/AiEngine';

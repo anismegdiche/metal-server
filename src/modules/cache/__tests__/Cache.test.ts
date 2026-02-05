@@ -99,7 +99,7 @@ describe('Cache', () => {
 
             const res = await Cache.Get({ schema: 's', entity: 'e' } as any);
 
-            expect(res?.Body.data).toBe(mockData);
+            expect(res?.Body?.data).toBe(mockData);
         });
     });
 });

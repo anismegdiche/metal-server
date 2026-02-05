@@ -22,7 +22,7 @@ describe('XmlUtils', () => {
             const xml = { a: { b: 1 } };
             const result = XmlUtils.SetNodeByPath(xml, 'a.c', 2);
             expect(result).toBe(xml);
-            expect(xml.a.c).toBe(2);
+            expect((xml as unknown as { a: { c: number } }).a.c).toBe(2);
         });
 
         it('should create missing segments', () => {

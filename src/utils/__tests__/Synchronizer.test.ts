@@ -1,7 +1,13 @@
-
-
-import { Synchronizer } from '../Synchronizer'
+import { describe, expect, it, vi } from 'vitest'
 import { setTimeout } from 'timers'
+import { Synchronizer } from '../Synchronizer'
+
+vi.mock('../Logger', () => ({
+    Logger: {
+        Debug: vi.fn(),
+        Out: 'out'
+    }
+}))
 
 vi.useFakeTimers()
 
@@ -47,5 +53,24 @@ describe('Synchronizer', () => {
 
         expect(subsequentResult).not.toBe(initialResult)
     }, 30_000)
+
+    it('should resolve pending callers with the first result', async () => {
+        const syncOnce = new Synchronizer()
+        let resolveFirst: (value: string) => void
+
+        const firstPromise = syncOnce.Execute(async () => new Promise<string>(resolve => {
+            resolveFirst = resolve
+        }))
+
+        const queuedPromises = Array.from({ length: 3 }, () =>
+            syncOnce.Execute(async () => 'queued-result')
+        )
+
+        resolveFirst!('first-result')
+
+        const results = await Promise.all([firstPromise, ...queuedPromises])
+
+        expect(results).toEqual(['first-result', 'first-result', 'first-result', 'first-result'])
+    })
 })
 

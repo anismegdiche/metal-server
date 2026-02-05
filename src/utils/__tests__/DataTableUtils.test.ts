@@ -1267,7 +1267,7 @@ describe("DataTableUtils", () => {
 
         // Handles empty rows array gracefully
         it('should handle empty rows array gracefully', async () => {
-            dtDuplicates.RowsSet([])
+            await dtDuplicates.RowsSet([])
             const result = await DataTableUtils.RemoveDuplicates(dtDuplicates, ['name', 'age'], REMOVE_DUPLICATES_METHOD.HASH, REMOVE_DUPLICATES_STRATEGY.FIRST, '')
             expect(await result.Rows()).toEqual([])
         })
