@@ -18,7 +18,7 @@
       "request": "launch",
       "name": "Debug Current File",
       "skipFiles": ["<node_internals>/**"],
-      "runtimeArgs": ["-r", "ts-node/register"],
+      "runtimeArgs": ["-r", "tsx/cjs"],
       "outFiles": ["${workspaceFolder}/build/**/*.js", "!**/node_modules/**"],
       "args": ["${file}"],
       "cwd": "${workspaceFolder}",
@@ -28,7 +28,7 @@
     {
       "type": "node",
       "request": "attach",
-      "name": "Attach to ts-node in Docker",
+      "name": "Attach to tsx in Docker",
       "outFiles": ["${workspaceFolder}/build/**/*.js", "!**/node_modules/**"],
       "address": "127.0.0.1",
       "port": 9229,
