@@ -51,7 +51,7 @@ export default defineConfig([
                     "argsIgnorePattern": "^_",
                 },
             ],
-            "lodash/import-scope": "warn",
+            "lodash/import-scope": "off",
             "no-unused-vars": "off",
             "no-undef": "off",
             "@typescript-eslint/no-explicit-any": "warn",
