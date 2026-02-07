@@ -9,7 +9,7 @@ import { z_T_IntPositive } from "../../../types/T_IntPositive"
 
 
 //
-export const z_TAiText_top_k = z_T_IntPositive.nullable()
+export const z_T_AiText_param_top = z_T_IntPositive.nullable()
 
 
 export const z_U_config_plans_plan_entity_run_ai_text_translation_Params = z.object({
@@ -23,7 +23,7 @@ export const z_U_config_plans_plan_entity_run_ai_text_translation_Params = z.obj
 export const z_U_config_plans_plan_entity_run_ai_text_sentiment_analysis_Params = z.object({
     task: z.literal(TEXT_TASK.SENTIMENT_ANALYSIS),
     params: z.object({
-        top: z_TAiText_top_k.optional()
+        top: z_T_AiText_param_top.optional()
     }).optional()
 })
 
@@ -32,7 +32,7 @@ export const z_U_config_plans_plan_entity_run_ai_text_text_generation_Params = z
     params: z.object({
         "max-length": z_T_IntPositive.optional(),
         "do-sample": z.boolean().optional(),
-        temperature: z_T_IntPositive.optional()
+        temperature: z.number().gt(0).max(2).optional()
     }).optional()
 })
 
@@ -73,7 +73,7 @@ export const z_U_config_plans_plan_entity_run_ai_text_ner_Params = z.object({
 export const z_U_config_plans_plan_entity_run_ai_text_toxicity_detection_Params = z.object({
     task: z.literal(TEXT_TASK.TOXICITY_DETECTION),
     params: z.object({
-        top: z_TAiText_top_k.optional()
+        top: z_T_AiText_param_top.optional()
     }).optional()
 })
 
@@ -111,7 +111,7 @@ export const z_U_config_plans_plan_entity_run_ai_text_sentence_similarity_Params
 export const z_U_config_plans_plan_entity_run_ai_text_emotion_detection_Params = z.object({
     task: z.literal(TEXT_TASK.EMOTION_DETECTION),
     params: z.object({
-        top: z_TAiText_top_k.optional()
+        top: z_T_AiText_param_top.optional()
     }).optional()
 })
 
@@ -135,7 +135,7 @@ export const z_U_config_plans_plan_entity_run_ai_text_Params = z.discriminatedUn
 
 
 //
-export type TAiText_top_k = z.infer<typeof z_TAiText_top_k>
+export type T_AiText_param_top = z.infer<typeof z_T_AiText_param_top>
 export type U_config_plans_plan_entity_run_ai_text_translation_Params = z.infer<typeof z_U_config_plans_plan_entity_run_ai_text_translation_Params>
 export type U_config_plans_plan_entity_run_ai_text_sentiment_analysis_Params = z.infer<typeof z_U_config_plans_plan_entity_run_ai_text_sentiment_analysis_Params>
 export type U_config_plans_plan_entity_run_ai_text_text_generation_Params = z.infer<typeof z_U_config_plans_plan_entity_run_ai_text_text_generation_Params>

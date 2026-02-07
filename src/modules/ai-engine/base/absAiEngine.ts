@@ -59,7 +59,8 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
                 if (_err.response?.status === 429) {
                     Logger.Info(`${this.InstanceName} processing is busy, retrying`)
                 } else {
-                    Logger.Warn(`${this.InstanceName} processing failed: ${_err.response.data.message ?? _err.message}`)
+                    const errorMessage = _err.response?.data?.message ?? _err.message
+                    Logger.Warn(`${this.InstanceName} processing failed: ${errorMessage}`)
                 }
                 await Utils.Sleep(200)
             }

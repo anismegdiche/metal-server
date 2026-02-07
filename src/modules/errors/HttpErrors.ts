@@ -12,24 +12,23 @@ import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from "../core/@consts"
 export function NormalizeError(err: unknown): TJson {
     if (err instanceof HttpError) {
         return {
-            type: err.name,
-            message: err.message,
-            status: err.Status,
-            statusName: err.Name,
-            stack: err.stack,
+            ...err,
+            message: err?.message,
+            stack: err?.stack,
         }
     }
 
     if (err instanceof Error) {
         return {
-            type: err.name || "Error",
-            message: err.message || "Unknown error",
-            stack: err.stack,
+            ...err,
+            message: err?.message || "Unknown error",
+            stack: err?.stack,
         }
     }
 
     // rejected with string / object / whatever
     return {
+
         type: "UnknownThrownValue",
         message: String(err),
     }

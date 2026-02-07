@@ -86,9 +86,6 @@ export enum TEXT_TASK {
     /** Text summarization */
     SUMMARIZATION = "summarization",
 
-    /** Text-to-text generation */
-    // TEXT2TEXT_GENERATION = "text2text-generation",
-
     /** Text generation */
     TEXT_GENERATION = "text-generation",
 
@@ -105,33 +102,3 @@ export enum TEXT_TASK {
     ZERO_SHOT_CLASSIFICATION = "zero-shot-classification",
     SUMMARIZE = "summarize"
 }
-
-/**
- * Default parameters for each text processing task
- */
-// export const DEFAULT_TEXT_TASK_PARAMS = {
-//     [TEXT_TASK.SENTIMENT_ANALYSIS]: {
-//         top_k: null
-//     },
-//     [TEXT_TASK.TEXT_GENERATION]: {
-//         max_length: 50,
-//         do_sample: true,
-//         temperature: 0.9
-//     },
-//     [TEXT_TASK.QUESTION_ANSWERING]: {},
-//     [TEXT_TASK.SUMMARIZATION]: {
-//         max_length: 20,
-//         min_length: 10
-//     },
-//     [TEXT_TASK.FILL_MASK]: {
-//         top_k: 1
-//     },
-//     [TEXT_TASK.TRANSLATION]: {
-//         src_lang: LANG_ISO.en_XX,
-//         tgt_lang: LANG_ISO.fr_XX
-//     },
-//     [TEXT_TASK.ZERO_SHOT_CLASSIFICATION]: {
-//         candidate_labels: ["support"]
-//     },
-//     [TEXT_TASK.TEXT2TEXT_GENERATION]: {}
-// } as const;

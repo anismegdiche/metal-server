@@ -1,3 +1,4 @@
+/* eslint-disable lodash/import-scope */
 //
 //
 //
@@ -209,7 +210,9 @@ export class JsonUtils {
 
         const result: string[] = []
         forEach(json, (value, key) => {
-            result.push(` - ${key}: ${JsonUtils.Stringify(value)}`)
+            if (value) {
+                result.push(` - ${key}: ${JsonUtils.Stringify(value)}`)
+            }
         })
         return result.join('\r\n')
     }

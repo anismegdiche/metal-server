@@ -11,6 +11,7 @@ import { Helper } from "../../utils/Helper"
 import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
+import { Utils } from "../../utils/Utils"
 import { AUTH_PERMISSION } from "../auth/@consts"
 import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
@@ -18,7 +19,7 @@ import { METADATA } from "../core/@consts"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
+import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../errors/HttpErrors"
 import { WarnError } from "../errors/InternalError"
 import type { TContext } from "../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
@@ -36,6 +37,7 @@ export class Plan {
     Name: string                                    // Plan name
     Entities = new Map<string, U_config_plans_plan_entity_steps>()     // Plan entities and associated steps
     _dataBase: DataBase                              // Plan entities rendered data
+    _isReady = false
 
     constructor(name: string) {
         this.Name = name
@@ -44,15 +46,22 @@ export class Plan {
 
     async Init() {
         await this._dataBase.Init()
+            .catch(e => {
+                const _e = NormalizeError(e)
+                throw new HttpErrorInternalServerError(`Unable to set temporary database for plan ${this.Name}: ${_e.message}`)
+            })
+
         const entities = ConfigManager.Get<TJson<U_config_plans_plan_entity_steps>>(`plans.${this.Name}`) ?? {}
 
         forEach(entities, (steps: U_config_plans_plan_entity_steps, entity: string) => {
             this.Entities.set(entity, steps)
             // this.#__LOCK__.set(entity, new Semaphore(this.SemaphoreSize))
         })
+        this._isReady = true
     }
 
     async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery?: string) {
+        await Utils.Wait(async () => this._isReady, 50, 60_000)
 
         const { schema, source, entity } = schemaRequest as TSchemaRequestSelect
 
@@ -73,6 +82,7 @@ export class Plan {
     }
 
     async ProcessScheduleConfig(schemaRequest: U_config_schedules_schedule, sqlQuery?: string): Promise<void> {
+        await Utils.Wait(async () => this._isReady, 50, 60_000)
 
         const { plan, entity } = schemaRequest
 

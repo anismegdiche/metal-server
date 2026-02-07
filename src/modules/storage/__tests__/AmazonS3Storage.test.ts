@@ -127,16 +127,12 @@ describe('AmazonS3Storage', () => {
                 Key: 'nonexistent.txt'
             }
 
+            const noSuchKeyError = new Error('The specified key does not exist.')
+            noSuchKeyError.name = 'NoSuchKey'
+            ;(noSuchKeyError as any).code = 'NoSuchKey'
+
             const mockS3Client = {
-                send: vi.fn().mockRejectedValue({
-                    $metadata: {},
-                    name: 'NoSuchKey',
-                    code: 'NoSuchKey',
-                    message: 'The specified key does not exist.',
-                    $response: {
-                        statusCode: 404
-                    }
-                })
+                send: vi.fn().mockRejectedValue(noSuchKeyError)
             };
 
             // Set up the S3Client mock
@@ -246,9 +242,6 @@ describe('AmazonS3Storage', () => {
 
     describe('ListFiles', () => {
         it('should list files successfully', async () => {
-            const mockCommand = {
-                Bucket: 'test-bucket'
-            }
 
             const mockS3Client = {
                 send: vi.fn().mockResolvedValue({

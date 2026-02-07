@@ -44,12 +44,22 @@ app = FastAPI(
     description="API for HuggingFace image segmentation",
     version="1.0.0"
 )
+# CORS configuration - restrict origins for better security
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS if origin.strip()]
+
+ALLOWED_METHODS = os.getenv("ALLOWED_METHODS", "*").split(",")
+ALLOWED_METHODS = [method.strip() for method in ALLOWED_METHODS if method.strip()]
+
+ALLOWED_HEADERS = os.getenv("ALLOWED_HEADERS", "*").split(",")
+ALLOWED_HEADERS = [header.strip() for header in ALLOWED_HEADERS if header.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=ALLOWED_METHODS,
+    allow_headers=ALLOWED_HEADERS,
 )
 
 router = APIRouter(prefix="/image-image-segmentation")
@@ -300,22 +310,16 @@ app.include_router(router)
 if __name__ == "__main__":
     import argparse
     import sys
-    import uvicorn
-    
-    parser = argparse.ArgumentParser(description="Image Segmentation Service")
-    parser.add_argument('--load-pipe', action='store_true', help='Load the pipeline and exit')
-    parser.add_argument('--host', type=str, default='0.0.0.0', help='Host to run the server on')
-    parser.add_argument('--port', type=int, default=5000, help='Port to run the server on')
+
+    parser = argparse.ArgumentParser(description="Image Segmentation utility")
+    parser.add_argument("--load-pipe", action="store_true", help="Load the pipeline and exit")
     args = parser.parse_args()
     
     if args.load_pipe:
         try:
-            model = load_pipeline()
-            print(f"Successfully loaded {model.get('model_name', 'model')} pipeline")
+            load_pipeline()
+            print("Pipeline loaded successfully.")
             sys.exit(0)
         except Exception as e:
             print(f"Failed to load pipeline: {str(e)}")
             sys.exit(1)
-    
-    print(f"Starting image segmentation service on {args.host}:{args.port}")
-    uvicorn.run(app, host=args.host, port=args.port)

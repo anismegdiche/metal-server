@@ -331,6 +331,7 @@ export class AiDocker {
         const _cpuScaleDown = AiDocker.Config['cpu-scale-down']
         const _scaleInterval = AiDocker.Config['scale-interval']
         const _scaleDownGracePeriod = AiDocker.Config['scale-down-grace-period']
+        const _cors = AiDocker.Config['cors']
 
         Assert.Var<number>(_cpu, "server.ai-engines.cpu is not defined")
         Assert.Var<number>(_memory, "server.ai-engines.memory is not defined")
@@ -353,7 +354,10 @@ export class AiDocker {
             },
             Env: [
                 'MAX_HISTORY=3',
-                `MAX_LOAD=${_cpuScaleUp}`
+                `MAX_LOAD=${_cpuScaleUp}`,
+                `ALLOWED_ORIGINS=${_cors?.['allowed-origins']}`,
+                `ALLOWED_METHODS=${_cors?.['allowed-methods']}`,
+                `ALLOWED_HEADERS=${_cors?.['allowed-headers']}`
             ],
             Labels: {
                 service: serviceName,

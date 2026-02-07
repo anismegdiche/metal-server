@@ -5,14 +5,13 @@ import { CronJob } from 'cron'
 import { findKey } from 'lodash-es'
 //
 import type { TJson } from "../../types/TJson"
-import { JsonUtils } from '../../utils/JsonUtils'
 import { Logger } from '../../utils/Logger'
 import { AUTH_PERMISSION } from '../auth/@consts'
 import type { TUserTokenInfo } from '../auth/@types'
 import { Roles } from '../auth/Roles'
 import { ConfigManager } from '../core/ConfigManager'
 import { HttpResponse } from "../core/HttpResponse"
-import { HttpErrorNotFound } from "../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../errors/HttpErrors"
 import type { TInternalResponse } from '../core/types/TInternalResponse'
 import { Plans } from "./Plans"
 import type { TSchedule } from './types/TSchedule'
@@ -67,16 +66,17 @@ export class Schedule {
     }
 
     static JobProcess(jobName: string, scheduleParams: U_config_schedules_schedule) {
-        Logger.Info(`${Logger.In} Schedule.Job: Running job '${jobName}'`)
+        Logger.Info(`${Logger.In} Schedule.JobProcess: Running job '${jobName}'`)
 
         const { plan } = scheduleParams
 
         Plans.Plans.get(plan)?.ProcessScheduleConfig(scheduleParams)
             .then(() => {
-                Logger.Info(`${Logger.Out} Schedule.Job: job '${jobName}' terminated`)
+                Logger.Info(`${Logger.Out} Schedule.JobProcess: job '${jobName}' terminated`)
             })
-            .catch((error) => {
-                Logger.Error(`${Logger.Out} Schedule.Job: Error has occured with '${jobName}' : ${JsonUtils.Stringify(error)}`)
+            .catch((e) => {
+                const _e = NormalizeError(e)
+                throw new HttpErrorInternalServerError(`Unable to process scheduled job '${jobName}': ${_e.message} `)
             })
     }
 

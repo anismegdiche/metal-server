@@ -22,6 +22,7 @@ vi.mock('../../../utils/Logger', () => ({
         Error: vi.fn(),
         Debug: vi.fn(),
         SetLevel: vi.fn(),
+        StartQueueCleanup: vi.fn(),
         In: '',
         Out: ''
     }

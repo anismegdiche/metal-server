@@ -12,6 +12,12 @@ import { z_TJson } from "../../../types/TJson";
 
 
 // v0.5
+export const z_U_config_server_ai_engines_cors = z.object({
+    "allowed-origins": z.string().optional(),
+    "allowed-methods": z.string().optional(),
+    "allowed-headers": z.string().optional(),
+})
+
 export const z_U_config_server_ai_engines = z.object({
     // contenizer
     params: z_TJson.optional(),
@@ -21,6 +27,7 @@ export const z_U_config_server_ai_engines = z.object({
     "engines-url": z_TUrl.optional(),
     "timeout": z_T_IntPositive.optional(),
     "sleep": z_T_IntPositive.min(5_000).max(600_000).optional(),
+    "cors": z_U_config_server_ai_engines_cors.optional(),
 
     // orchestrator
     "min-instance": z_T_IntPositive.min(1).optional(),
@@ -53,5 +60,7 @@ export const z_U_config_server = z.object({
 });
 
 
+//
+export type U_config_server_ai_engines_cors = z.infer<typeof z_U_config_server_ai_engines_cors>
 export type U_config_server_ai_engines = z.infer<typeof z_U_config_server_ai_engines>
 export type U_config_server = z.infer<typeof z_U_config_server>

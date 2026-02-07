@@ -1,7 +1,5 @@
-
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
-    HttpError,
     HttpErrorBadRequest,
     HttpErrorContentTooLarge,
     HttpErrorForbidden,
@@ -16,18 +14,10 @@ import {
 import { HTTP_STATUS_CODE } from '../../core/@consts';
 import { Logger } from '../../../utils/Logger';
 
-vi.mock('../../../utils/Logger', () => ({
-    Logger: {
-        Warn: vi.fn(),
-        Error: vi.fn(),
-        Level: 'info'
-    },
-    VERBOSITY: {
-        DEBUG: 'debug'
-    }
-}));
-
 describe('HttpErrors', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
     describe('Classes', () => {
         it('HttpErrorBadRequest should have status 400', () => {
             const err = new HttpErrorBadRequest('test');
@@ -74,7 +64,9 @@ describe('HttpErrors', () => {
         it('should log stack in debug mode', () => {
             const err = new HttpErrorInternalServerError('boom');
             err.stack = 'stacktrace';
-            (Logger as unknown as { Level: string }).Level = 'debug';
+            
+            // Mock the Logger.Level to be 'debug'
+            Logger.Level = 'debug';
 
             HttpErrorLog(err);
 

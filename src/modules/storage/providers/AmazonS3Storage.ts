@@ -1,3 +1,4 @@
+/* eslint-disable lodash/import-scope */
 //
 //
 //
@@ -255,7 +256,7 @@ export class AmazonS3Storage extends absStorageProvider {
         } catch (err: unknown) {
             const _err = NormalizeError(err)
             // Only return false if it's a NoSuchKey error
-            if (_err.name === 'NoSuchKey' || _err.code === 'NoSuchKey') {
+            if (_err.type === 'NoSuchKey' || _err.name === 'NoSuchKey' || _err.code === 'NoSuchKey') {
                 return false
             }
             // Throw for other errors

@@ -44,16 +44,21 @@ export class ConfigManager {
                 params: undefined, //{ socketPath: '/var/run/docker.sock' }
                 "build-batch-size": 5,
                 "engines-url": "http://127.0.0.1:5000",
-                "timeout": 60_000,
-                "sleep": 5_000,
+                timeout: 60_000,
+                sleep: 5_000,
+                cors: {
+                    "allowed-origins": "*",
+                    "allowed-methods": "GET,POST,OPTIONS",
+                    "allowed-headers": "Content-Type,Authorization,X-Requested-With"
+                },
                 "min-instance": 1,
                 "max-instance": 5,
                 "cpu-scale-up": 70,
                 "cpu-scale-down": 10,
                 "scale-interval": 20_000,
                 "scale-down-grace-period": 300_000,
-                "cpu": 4,
-                "memory": 2
+                cpu: 4,
+                memory: 2
             }
         }
     }

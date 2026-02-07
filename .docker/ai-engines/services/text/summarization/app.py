@@ -36,12 +36,22 @@ app = FastAPI(
     description="API for HuggingFace summarization",
     version="1.0.0"
 )
+# CORS configuration - restrict origins for better security
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS if origin.strip()]
+
+ALLOWED_METHODS = os.getenv("ALLOWED_METHODS", "*").split(",")
+ALLOWED_METHODS = [method.strip() for method in ALLOWED_METHODS if method.strip()]
+
+ALLOWED_HEADERS = os.getenv("ALLOWED_HEADERS", "*").split(",")
+ALLOWED_HEADERS = [header.strip() for header in ALLOWED_HEADERS if header.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=ALLOWED_METHODS,
+    allow_headers=ALLOWED_HEADERS,
 )
 
 router = APIRouter(prefix="/text-summarization")

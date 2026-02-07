@@ -27,6 +27,10 @@ services:
     volumes:
       - ./services/text/emotion-detection:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-feature-extraction:
     build: ./services/text/feature-extraction
@@ -36,6 +40,10 @@ services:
     volumes:
       - ./services/text/feature-extraction:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-fill-mask:
     build: ./services/text/fill-mask
@@ -45,6 +53,10 @@ services:
     volumes:
       - ./services/text/fill-mask:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-keyword-extraction:
     build: ./services/text/keyword-extraction
@@ -54,6 +66,10 @@ services:
     volumes:
       - ./services/text/keyword-extraction:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-language-detection:
     build: ./services/text/language-detection
@@ -63,6 +79,10 @@ services:
     volumes:
       - ./services/text/language-detection:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-paraphrase-detection:
     build: ./services/text/paraphrase-detection
@@ -72,6 +92,10 @@ services:
     volumes:
       - ./services/text/paraphrase-detection:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-question-answering:
     build: ./services/text/question-answering
@@ -81,6 +105,10 @@ services:
     volumes:
       - ./services/text/question-answering:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-sentence-similarity:
     build: ./services/text/sentence-similarity
@@ -90,6 +118,10 @@ services:
     volumes:
       - ./services/text/sentence-similarity:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-sentiment-analysis:
     build: ./services/text/sentiment-analysis
@@ -99,6 +131,10 @@ services:
     volumes:
       - ./services/text/sentiment-analysis:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-summarization:
     build: ./services/text/summarization
@@ -108,6 +144,10 @@ services:
     volumes:
       - ./services/text/summarization:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-text-generation:
     build: ./services/text/text-generation
@@ -117,6 +157,10 @@ services:
     volumes:
       - ./services/text/text-generation:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-ner:
     build: ./services/text/ner
@@ -126,6 +170,10 @@ services:
     volumes:
       - ./services/text/ner:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-toxicity-detection:
     build: ./services/text/toxicity-detection
@@ -135,6 +183,10 @@ services:
     volumes:
       - ./services/text/toxicity-detection:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-translation:
     build: ./services/text/translation
@@ -144,6 +196,10 @@ services:
     volumes:
       - ./services/text/translation:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   text-zero-shot-classification:
     build: ./services/text/zero-shot-classification
@@ -153,6 +209,10 @@ services:
     volumes:
       - ./services/text/zero-shot-classification:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   #
   # Ocr
@@ -166,6 +226,10 @@ services:
     volumes:
       - ./services/ocr:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   #
   # Image
@@ -179,6 +243,10 @@ services:
     volumes:
       - ./services/image/image-classification:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   image-image-segmentation:
     build: ./services/image/image-segmentation
@@ -188,6 +256,10 @@ services:
     volumes:
       - ./services/image/image-segmentation:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   image-image-to-text:
     build: ./services/image/image-to-text
@@ -197,6 +269,10 @@ services:
     volumes:
       - ./services/image/image-to-text:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   image-object-detection:
     build: ./services/image/object-detection
@@ -206,6 +282,10 @@ services:
     volumes:
       - ./services/image/object-detection:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   image-visual-question-answering:
     build: ./services/image/visual-question-answering
@@ -215,6 +295,10 @@ services:
     volumes:
       - ./services/image/visual-question-answering:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
 #
 # Audio
@@ -228,6 +312,10 @@ services:
     volumes:
       - ./services/audio/audio-classification:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
   audio-automatic-speech-recognition:
     build: ./services/audio/automatic-speech-recognition
@@ -237,6 +325,10 @@ services:
     volumes:
       - ./services/audio/automatic-speech-recognition:/app
       - metal-model-cache:/data/models
+    environment:
+      - ALLOWED_ORIGINS=*
+      - ALLOWED_METHODS=GET,POST,OPTIONS
+      - ALLOWED_HEADERS=Content-Type,Authorization,X-Requested-With
 
 volumes:
   metal-model-cache:

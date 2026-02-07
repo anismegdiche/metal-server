@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException, status
 from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.middleware.cors import CORSMiddleware
 import pytesseract
 from PIL import Image, ImageFile
 import io
@@ -135,7 +136,28 @@ for lang in REQUIRED_LANGUAGES:
     else:
         logger.warning(message)
 
-app = FastAPI()
+app = FastAPI(
+    title="HuggingFace OCR Service",
+    description="API for OCR text extraction",
+    version="1.0.0"
+)
+# CORS configuration - restrict origins for better security
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS if origin.strip()]
+
+ALLOWED_METHODS = os.getenv("ALLOWED_METHODS", "*").split(",")
+ALLOWED_METHODS = [method.strip() for method in ALLOWED_METHODS if method.strip()]
+
+ALLOWED_HEADERS = os.getenv("ALLOWED_HEADERS", "*").split(",")
+ALLOWED_HEADERS = [header.strip() for header in ALLOWED_HEADERS if header.strip()]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=ALLOWED_METHODS,
+    allow_headers=ALLOWED_HEADERS,
+)
 
 # List of supported languages and their download status
 SUPPORTED_LANGUAGES = {
@@ -253,4 +275,29 @@ async def ocr(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process image: {str(e)}"
         )
+
+# ------------------------
+# CLI Entry Point
+# ------------------------
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser(description="OCR utility")
+    parser.add_argument("--load-pipe", action="store_true", help="Load the pipeline and exit")
+    args = parser.parse_args()
+    
+    if args.load_pipe:
+        try:
+            # OCR doesn't have a pipeline to load, but we can check if tesseract is available
+            subprocess.run(['tesseract', '--version'], 
+                          check=True, 
+                          stdout=subprocess.PIPE, 
+                          stderr=subprocess.PIPE)
+            print("OCR service initialized successfully.")
+            sys.exit(0)
+        except Exception as e:
+            print(f"Failed to initialize OCR service: {str(e)}")
+            sys.exit(1)
         

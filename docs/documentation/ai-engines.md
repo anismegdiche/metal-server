@@ -575,7 +575,12 @@ Generate new text.
 | ------------- | ------- | --------------------------------------------------------- |
 | `max-length`  | number  | Maximum length of generated text (in tokens)              |
 | `do-sample`   | boolean | Whether to use sampling (true) or greedy decoding (false) |
-| `temperature` | number  | Controls randomness in generation (0.0 to 1.0)            |
+| `temperature` | float   | Controls randomness in generation (> 0.0 to 2.0)          |
+
+**Typical guidelines for `temperature`:**
+* **Low temperature (e.g., 0.2–0.5):** very focused, predictable, and fact‑like outputs; good for code, summaries, or technical content.
+* **Medium temperature (e.g., 0.5–0.9):** good balance between coherence and creativity; usually “best” for general writing and chat.
+* **High temperature (≥1.0-2.0):** much more random and creative, but also more likely to be incoherent, off‑topic, or nonsensical.
 
 **Example**
 
