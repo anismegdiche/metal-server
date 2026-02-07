@@ -65,8 +65,8 @@ export class Plan {
 
         const { schema, source, entity } = schemaRequest as TSchemaRequestSelect
 
-        Assert.Var<string>(source, `Plan.Execute: no source found for ${schema}`, new HttpErrorNotFound())
-        Assert.Condition(this.Entities.has(entity), `Plan.Execute: entity '${entity}' not found in plan ${this.Name}`, new HttpErrorNotFound())
+        Assert.Var<string>(source, `no source found for ${schema}`, new HttpErrorNotFound())
+        Assert.Condition(this.Entities.has(entity), `entity '${entity}' not found in plan ${this.Name}`, new HttpErrorNotFound())
 
         const currentDatatable = await this.ExecuteSteps(
             schema,
@@ -77,28 +77,28 @@ export class Plan {
 
         await currentDatatable.FreeSql({ sqlQuery })
 
-        Logger.Debug(`${Logger.Out} Plan.Execute: ${source}.${entity}`)
+        Logger.Debug(`${Logger.Out} Plan.ProcessSchemaRequest: ${source}.${entity}`)
         return currentDatatable
     }
 
-    async ProcessScheduleConfig(schemaRequest: U_config_schedules_schedule, sqlQuery?: string): Promise<void> {
+    async ProcessSchedule(schemaRequest: U_config_schedules_schedule, sqlQuery?: string): Promise<void> {
         await Utils.Wait(async () => this._isReady, 50, 60_000)
 
         const { plan, entity } = schemaRequest
 
-        Assert.Condition(plan !== null, `Plan.Execute: plan '${plan}' is not defined`, new HttpErrorBadRequest())
-        Assert.Condition(entity !== null, `Plan.Execute: entity '${entity}' is not defined`, new HttpErrorBadRequest())
-        Assert.Condition(this.Entities.has(entity), `Plan.Execute: entity '${entity}' not found in plan ${this.Name}`, new HttpErrorBadRequest())
+        Assert.Condition(plan !== null, `plan '${plan}' is not defined`, new HttpErrorBadRequest())
+        Assert.Condition(entity !== null, `entity '${entity}' is not defined`, new HttpErrorBadRequest())
+        Assert.Condition(this.Entities.has(entity), `entity '${entity}' not found in plan ${this.Name}`, new HttpErrorBadRequest())
 
         const entitySteps = ConfigManager.Get<U_config_plans_plan_entity_steps>(`plans.${plan}.${entity}`)
 
-        Logger.Debug(`${Logger.In} Plan.Execute: ${plan}.${entity}: ${JsonUtils.Stringify(entitySteps)}`)
+        Logger.Debug(`${Logger.In} Plan.ProcessSchedule: ${plan}.${entity}: ${JsonUtils.Stringify(entitySteps)}`)
 
         this.ExecuteSteps(undefined, plan, entity, entitySteps)
             .then((data) => {
                 data.FreeSql({ sqlQuery })
                     .then(() => {
-                        Logger.Debug(`${Logger.Out} Plan.Execute: ${plan}.${entity}`)
+                        Logger.Debug(`${Logger.Out} Plan.ProcessSchedule: ${plan}.${entity}`)
                     })
             })
     }
@@ -147,19 +147,19 @@ export class Plan {
 
                 Assert.Condition(
                     _argSchema !== _planSchema || _argEntity !== _planEntity,
-                    `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': loop detected in step ${$context.$plan!.$current.stepIndex}`,
+                    `'${$context.$plan!.name}', Entity '${$context.$plan!.entity}': loop detected in step ${$context.$plan!.$current.stepIndex}`,
                     new HttpErrorInternalServerError()
                 )
                 // check step validity
                 Assert.Condition(
                     _step !== null,
-                    `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
+                    `'${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
                     new HttpErrorBadRequest()
                 )
 
                 Assert.Var<DataTable>(
                     this._dataBase.Tables[currentEntityName],
-                    `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
+                    `'${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
                     new HttpErrorBadRequest()
                 )
 
@@ -174,7 +174,7 @@ export class Plan {
 
                 Assert.Var<TFunctionStep>(
                     executeStep,
-                    `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`, new HttpErrorInternalServerError())
+                    `'${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`, new HttpErrorInternalServerError())
 
                 const __stepReturn = await executeStep(__stepArguments)
                 if (__stepReturn) {
@@ -223,7 +223,7 @@ export class Plan {
 
                     Assert.Var<DataTable>(
                         this._dataBase.Tables[currentEntityName],
-                        `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
+                        `'${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
                         new HttpErrorBadRequest()
                     )
 
@@ -256,7 +256,7 @@ export class Plan {
 
         Assert.Var<DataTable>(
             this._dataBase.Tables[currentEntityName],
-            `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
+            `'${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
             new HttpErrorBadRequest()
         )
 

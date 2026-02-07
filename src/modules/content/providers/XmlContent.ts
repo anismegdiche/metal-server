@@ -76,7 +76,7 @@ export class XmlContent extends absContentProvider {
 
         const data = JsonUtils.Get<TJson[]>(xmlData, $__path)
 
-        Assert.Condition(data !== undefined, `XmlContent.Get: No data found at Path ${$__path}`)
+        Assert.Condition(data !== undefined, `No data found at Path ${$__path}`)
 
         using result = new DataTable(
             this.EntityName,

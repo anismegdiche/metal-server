@@ -45,7 +45,7 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     Init(): void {
-        Assert.Var<TFsStorageConfig>(this.ConfigStorage, this.ConfigStorage !== undefined, 'FsStorage: No configuration defined')
+        Assert.Var<TFsStorageConfig>(this.ConfigStorage, this.ConfigStorage !== undefined, 'No configuration defined')
 
         this.Params = merge(
             this.DEFAULT, {
@@ -57,7 +57,7 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Debug(`${Logger.Out} FsStorage: Connected`)
+        Logger.Debug(`${Logger.Out} FsStorage.Connect: Connected`)
     }
 
 
@@ -68,13 +68,13 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderIsExist(dirName: string): Promise<boolean> {
-        Assert.Var<TFsStorageParams>(this.Params, 'FsStorage: No params defined')
+        Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
         return Fs.existsSync(StringUtils.Path(this.Params.folder, dirName))
     }
 
     @Logger.LogFunction()
     async FolderCreate(dirName: string): Promise<void> {
-        Assert.Var<TFsStorageParams>(this.Params, 'FsStorage: No params defined')
+        Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
         const folderPath = StringUtils.Path(this.Params.folder, dirName)
         if (!Fs.existsSync(folderPath))
             Fs.mkdirSync(folderPath)
@@ -82,7 +82,7 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderListFiles(dirName?: string): Promise<DataTable> {
-        Assert.Var<TFsStorageParams>(this.Params, 'FsStorage: No params defined')
+        Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
 
         const dirPath = dirName
             ? StringUtils.Path(this.Params.folder, dirName)
@@ -113,8 +113,8 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderListFolders(): Promise<DataTable> {
-        Assert.Var<TFsStorageParams>(this.Params, 'FsStorage: No params defined')
-        Assert.Var<string>(this.Params.folder, this.Params.folder !== undefined, 'FsStorage: No folder defined')
+        Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
+        Assert.Var<string>(this.Params.folder, this.Params.folder !== undefined, 'No folder defined')
 
         const folders = await Fs.promises.readdir(this.Params.folder, { withFileTypes: true })
             .then(folders => folders.filter(folder => folder.isDirectory())
@@ -134,13 +134,13 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileIsExist(dirName: string, fileName: string): Promise<boolean> {
-        Assert.Var<TFsStorageParams>(this.Params, 'FsStorage: No params defined')
+        Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
         return Fs.existsSync(StringUtils.Path(this.Params.folder, dirName, fileName))
     }
 
     @Logger.LogFunction()
     async FileRead(dirName: string, fileName: string): Promise<Readable> {
-        Assert.Var<TFsStorageParams>(this.Params, 'FsStorage: No params defined')
+        Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
 
         const fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
 
@@ -158,7 +158,7 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction(['content'])
     async FileWrite(dirName: string, fileName: string, content: Readable): Promise<void> {
-        Assert.Var<TFsStorageParams>(this.Params, 'FsStorage: No params defined')
+        Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
 
         const fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
 
@@ -172,7 +172,7 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileRename(dirName: string, oldFileName: string, newFileName: string): Promise<void> {
-        Assert.Var<TFsStorageParams>(this.Params, 'FsStorage: No params defined')
+        Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
         const filePath = StringUtils.Path(this.Params.folder, dirName, oldFileName)
         if (Fs.existsSync(filePath))
             Fs.renameSync(filePath, StringUtils.Path(this.Params.folder, dirName, newFileName))
@@ -180,7 +180,7 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileDelete(dirName: string, fileName: string): Promise<void> {
-        Assert.Var<TFsStorageParams>(this.Params, 'FsStorage: No params defined')
+        Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
         const filePath = StringUtils.Path(this.Params.folder, dirName, fileName)
         if (Fs.existsSync(filePath))
             Fs.unlinkSync(filePath)

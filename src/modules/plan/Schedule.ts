@@ -70,7 +70,7 @@ export class Schedule {
 
         const { plan } = scheduleParams
 
-        Plans.Plans.get(plan)?.ProcessScheduleConfig(scheduleParams)
+        Plans.Plans.get(plan)?.ProcessSchedule(scheduleParams)
             .then(() => {
                 Logger.Info(`${Logger.Out} Schedule.JobProcess: job '${jobName}' terminated`)
             })

@@ -111,7 +111,7 @@ export class Step {
 
         Assert.Var<U_config_plans_plan_entity_select_Params>(step.stepArgs,
             z_U_config_plans_plan_entity_select_Params.safeParse(step.stepArgs).success,
-            `${Logger.Out} ${STEP.SELECT}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`)
+            `${STEP.SELECT}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`)
 
         const { stepArgs } = step
 
@@ -206,7 +206,7 @@ export class Step {
 
         Assert.Var<U_config_plans_plan_entity_insert_Params>(step.stepArgs,
             z_U_config_plans_plan_entity_insert_Params.safeParse(step.stepArgs).success,
-            `${Logger.Out} ${STEP.INSERT}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`
+            `${STEP.INSERT}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`
         )
 
         const { currentDataTable, stepArgs } = step
@@ -266,7 +266,7 @@ export class Step {
 
         Assert.Var<U_config_plans_plan_entity_update_Params>(step.stepArgs,
             z_U_config_plans_plan_entity_update_Params.safeParse(step.stepArgs).success,
-            `${Logger.Out} ${STEP.UPDATE}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`
+            `${STEP.UPDATE}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`
         )
 
         const { currentDataTable, stepArgs } = step
@@ -334,7 +334,7 @@ export class Step {
 
         Assert.Var<U_config_plans_plan_entity_delete_Params>(step.stepArgs,
             z_U_config_plans_plan_entity_delete_Params.safeParse(step.stepArgs).success,
-            `${Logger.Out} ${STEP.DELETE}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`
+            `${STEP.DELETE}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`
         )
 
         const { currentDataTable, stepArgs } = step
@@ -565,7 +565,7 @@ export class Step {
 
         for (const _row of await step.currentDataTable.Rows({ includeIndex: true })) {
             rowPromises.push((async () => {
-                Assert.Var<string>(_row.__idx__, `${STEP.RUN}: Index is not defined`)
+                Assert.Var<string>(_row.__idx__, `${STEP.RUN}: data index is not defined`)
                 Assert.Condition(_row?.content, `${STEP.RUN}: content is not defined`)
 
                 const __idx__: TUuidv7 = _row.__idx__
@@ -623,7 +623,7 @@ export class Step {
 
         Assert.Var<U_config_plans_plan_entity_sync_Params>(step.stepArgs,
             z_U_config_plans_plan_entity_sync_Params.safeParse(step.stepArgs).success,
-            `${Logger.Out} ${[STEP.SYNC]}: Wrong argument passed`)
+            `${[STEP.SYNC]}: Wrong argument passed`)
 
         const stepArgs = step.stepArgs
 
@@ -697,7 +697,7 @@ export class Step {
     static async Anonymize(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
         Assert.Var<U_config_plans_plan_entity_anonymize_Params>(step.stepArgs,
             z_U_config_plans_plan_entity_anonymize_Params.safeParse(step.stepArgs).success,
-            `${Logger.Out} ${[STEP.ANONYMIZE]}: Wrong argument passed`)
+            `${[STEP.ANONYMIZE]}: Wrong argument passed`)
         return DataTableUtils.Anonymize(step.currentDataTable, step.stepArgs)
     }
 
@@ -706,7 +706,7 @@ export class Step {
 
         Assert.Var<U_config_plans_plan_entity_remove_duplicates_Params>(step.stepArgs,
             z_U_config_plans_plan_entity_remove_duplicates_Params.safeParse(step.stepArgs).success,
-            `${Logger.Out} ${[STEP.REMOVE_DUPLICATE]}: Wrong argument passed`)
+            `${[STEP.REMOVE_DUPLICATE]}: Wrong argument passed`)
 
         const { keys, method, strategy, condition } = step.stepArgs
 
@@ -740,7 +740,7 @@ export class Step {
         if (Array.isArray(params)) {
             return step.currentDataTable.Pick(params)
         } else {
-            Assert.Condition(!StringUtils.IsEmpty(params), "Step.Fields: cannot be empty")
+            Assert.Condition(!StringUtils.IsEmpty(params), `${[STEP.PICK]}: params cannot be empty`)
             return step.currentDataTable.Pick(StringUtils.Split(params, ","))
         }
     }
@@ -749,7 +749,7 @@ export class Step {
     static async Omit(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
         Assert.Var<U_config_plans_plan_entity_omit_Params>(step.stepArgs,
             z_U_config_plans_plan_entity_omit_Params.safeParse(step.stepArgs).success,
-            `${Logger.Out} ${[STEP.OMIT]}: Wrong argument passed`)
+            `${[STEP.OMIT]}: Wrong argument passed`)
 
         return step.currentDataTable.Omit(step.stepArgs)
     }

@@ -761,7 +761,7 @@ export class DataTable extends clsClonable {
 
     @Logger.LogFunction()
     async Rename(name: string): Promise<this> {
-        Assert.Condition(!StringUtils.IsEmpty(name), "DataTable.Rename: name must not be empty")
+        Assert.Condition(!StringUtils.IsEmpty(name), "name must not be empty")
         await this._dbEnsureInitialized()
         const cnx = this._duckConnection!
         return cnx.run(duckDb_Sql_RenameTable(this.Name, name))

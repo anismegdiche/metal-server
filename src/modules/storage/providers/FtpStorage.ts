@@ -55,7 +55,7 @@ export class FtpStorage extends absStorageProvider {
     // -----------------------------
     @Logger.LogFunction()
     Init(): void {
-        Assert.Var<TFtpStorageParams>(this.ConfigStorage, 'FtpStorage: No config storage defined')
+        Assert.Var<TFtpStorageParams>(this.ConfigStorage, 'No config storage defined')
 
         this.Params = merge(this.DEFAULT, <TFtpStorageParams>{
             host: this.ConfigStorage["ftp-host"],
@@ -72,7 +72,7 @@ export class FtpStorage extends absStorageProvider {
     // -----------------------------
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Assert.Var<TFtpStorageParams>(this.Params, 'FtpStorage: No params defined')
+        Assert.Var<TFtpStorageParams>(this.Params, 'No params defined')
 
         try {
             await this.#FtpClient.access({
@@ -97,7 +97,7 @@ export class FtpStorage extends absStorageProvider {
     // -----------------------------
     @Logger.LogFunction()
     async FolderIsExist(dirName: string): Promise<boolean> {
-        Assert.Var<TFtpStorageParams>(this.Params, 'FtpStorage: No params defined')
+        Assert.Var<TFtpStorageParams>(this.Params, 'No params defined')
 
         try {
             const fullPath = StringUtils.Path(this.Params.folder, dirName)
@@ -110,7 +110,7 @@ export class FtpStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderCreate(dirName: string): Promise<void> {
-        Assert.Var<TFtpStorageParams>(this.Params, 'FtpStorage: No params defined')
+        Assert.Var<TFtpStorageParams>(this.Params, 'No params defined')
 
         const fullPath = StringUtils.Path(this.Params.folder, dirName)
         await this.#FtpClient.ensureDir(fullPath)
@@ -118,8 +118,8 @@ export class FtpStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderListFolders(): Promise<DataTable> {
-        Assert.Var<TFtpStorageParams>(this.Params, 'FtpStorage: No params defined')
-        Assert.Var<string>(this.Params.folder, 'FtpStorage: No folder defined')
+        Assert.Var<TFtpStorageParams>(this.Params, 'No params defined')
+        Assert.Var<string>(this.Params.folder, 'No folder defined')
 
         const list = await this.#FtpClient.list(this.Params.folder)
             .catch((error) => {
@@ -138,7 +138,7 @@ export class FtpStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderListFiles(dirName?: string): Promise<DataTable> {
-        Assert.Var<TFtpStorageParams>(this.Params, 'FtpStorage: No params defined')
+        Assert.Var<TFtpStorageParams>(this.Params, 'No params defined')
 
         const targetDir = dirName ? StringUtils.Path(this.Params.folder, dirName) : this.Params.folder
         const list = await this.#FtpClient.list(targetDir)
@@ -166,7 +166,7 @@ export class FtpStorage extends absStorageProvider {
     // -----------------------------
     @Logger.LogFunction()
     async FileIsExist(dirName: string, fileName: string): Promise<boolean> {
-        Assert.Var<TFtpStorageParams>(this.Params, 'FtpStorage: No params defined')
+        Assert.Var<TFtpStorageParams>(this.Params, 'No params defined')
 
         try {
             const fileInfo = await this.#FtpClient.size(StringUtils.Path(this.Params.folder, dirName, fileName))
@@ -178,7 +178,7 @@ export class FtpStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileRead(dirName: string, fileName: string): Promise<Readable> {
-        Assert.Var<TFtpStorageParams>(this.Params, 'FtpStorage: No params defined')
+        Assert.Var<TFtpStorageParams>(this.Params, 'No params defined')
 
         if (!(await this.FileIsExist(dirName, fileName)))
             throw new HttpErrorNotFound(`File '${fileName}' does not exist on the FTP server`)
@@ -190,7 +190,7 @@ export class FtpStorage extends absStorageProvider {
 
     @Logger.LogFunction(['content'])
     async FileWrite(dirName: string, fileName: string, content: Readable): Promise<void> {
-        Assert.Var<TFtpStorageParams>(this.Params, 'FtpStorage: No params defined')
+        Assert.Var<TFtpStorageParams>(this.Params, 'No params defined')
 
         const fullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
         if (this.ConfigStorage?.autocreate && !(await this.FileIsExist(dirName, fileName)))
@@ -201,7 +201,7 @@ export class FtpStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileRename(dirName: string, fileName: string, newName: string): Promise<void> {
-        Assert.Var<TFtpStorageParams>(this.Params, 'FtpStorage: No params defined')
+        Assert.Var<TFtpStorageParams>(this.Params, 'No params defined')
 
         try {
             const oldPath = StringUtils.Path(this.Params.folder, dirName, fileName)
@@ -222,7 +222,7 @@ export class FtpStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileDelete(dirName: string, fileName: string): Promise<void> {
-        Assert.Var<TFtpStorageParams>(this.Params, 'FtpStorage: No params defined')
+        Assert.Var<TFtpStorageParams>(this.Params, 'No params defined')
         Assert.Var<string>(fileName, 'File name is required')
 
         await this.#FtpClient.remove(StringUtils.Path(this.Params.folder, dirName, fileName))

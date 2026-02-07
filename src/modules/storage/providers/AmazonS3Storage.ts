@@ -1,4 +1,4 @@
-/* eslint-disable lodash/import-scope */
+ 
 //
 //
 //
@@ -70,7 +70,7 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction()
     Init(): void {
-        Assert.Var<TAmazonS3StorageConfig>(this.ConfigStorage, 'AmazonS3Storage: No configuration defined')
+        Assert.Var<TAmazonS3StorageConfig>(this.ConfigStorage, 'No configuration defined')
         this.Params = merge(this.DEFAULT, <TAmazonS3StorageParams>{
             accessKeyId: this.ConfigStorage["s3-access-key-id"],
             secretAccessKey: this.ConfigStorage["s3-secret-access-key"],
@@ -82,7 +82,7 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Assert.Var<TAmazonS3StorageParams>(this.Params, 'AmazonS3Storage: No params defined')
+        Assert.Var<TAmazonS3StorageParams>(this.Params, 'No params defined')
 
         const { accessKeyId, secretAccessKey, region, bucket, endpoint } = this.Params
 
@@ -116,9 +116,9 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderIsExist(dirName: string): Promise<boolean> {
-        Assert.Var<TAmazonS3StorageParams>(this.Params, 'AmazonS3Storage: No params defined')
-        Assert.Var<string>(this.Params.bucket, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<TAmazonS3StorageParams>(this.Params, 'No params defined')
+        Assert.Var<string>(this.Params.bucket, 'No bucket defined')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'Connection to S3 not established')
 
         const s3 = await AmazonS3Storage._loadS3Module();
 
@@ -139,9 +139,9 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderCreate(dirName: string): Promise<void> {
-        Assert.Var<TAmazonS3StorageParams>(this.Params, 'AmazonS3Storage: No params defined')
-        Assert.Var<string>(this.Params.bucket, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<TAmazonS3StorageParams>(this.Params, 'No params defined')
+        Assert.Var<string>(this.Params.bucket, 'No bucket defined')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'Connection to S3 not established')
 
         const s3 = await AmazonS3Storage._loadS3Module()
 
@@ -157,9 +157,9 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderListFiles(dirName?: string): Promise<DataTable> {
-        Assert.Var<TAmazonS3StorageParams>(this.Params, 'AmazonS3Storage: No params defined')
-        Assert.Var<string>(this.Params.bucket, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<TAmazonS3StorageParams>(this.Params, 'No params defined')
+        Assert.Var<string>(this.Params.bucket, 'No bucket defined')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'Connection to S3 not established')
 
         const s3 = await AmazonS3Storage._loadS3Module();
         const prefix = dirName
@@ -204,9 +204,9 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderListFolders(): Promise<DataTable> {
-        Assert.Var<TAmazonS3StorageParams>(this.Params, 'AmazonS3Storage: No params defined')
-        Assert.Var<string>(this.Params.bucket, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<TAmazonS3StorageParams>(this.Params, 'No params defined')
+        Assert.Var<string>(this.Params.bucket, 'No bucket defined')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'Connection to S3 not established')
 
         const s3 = await AmazonS3Storage._loadS3Module();
         const prefix = ''
@@ -240,9 +240,9 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileIsExist(dirName: string, fileName: string): Promise<boolean> {
-        Assert.Var<TAmazonS3StorageParams>(this.Params, 'AmazonS3Storage: No params defined')
-        Assert.Var<string>(this.Params.bucket, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<TAmazonS3StorageParams>(this.Params, 'No params defined')
+        Assert.Var<string>(this.Params.bucket, 'No bucket defined')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'Connection to S3 not established')
 
         try {
             const s3 = await AmazonS3Storage._loadS3Module();
@@ -266,9 +266,9 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileRead(dirName: string, fileName: string): Promise<Readable> {
-        Assert.Var<TAmazonS3StorageParams>(this.Params, 'AmazonS3Storage: No params defined')
-        Assert.Var<string>(this.Params.bucket, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<TAmazonS3StorageParams>(this.Params, 'No params defined')
+        Assert.Var<string>(this.Params.bucket, 'No bucket defined')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'Connection to S3 not established')
 
         const s3 = await AmazonS3Storage._loadS3Module();
         const command = new s3.GetObjectCommand({
@@ -278,10 +278,10 @@ export class AmazonS3Storage extends absStorageProvider {
 
         const response = await this._s3Client.send(command)
             .catch(() => {
-                throw new HttpErrorNotFound('AmazonS3Storage: File not found')
+                throw new HttpErrorNotFound('File not found')
             })
 
-        Assert.Var<NodeJS.ReadableStream>(response.Body, 'AmazonS3Storage: No body defined')
+        Assert.Var<NodeJS.ReadableStream>(response.Body, 'No body defined')
 
         return ReadableUtils.FromReadableStream(response.Body as NodeJS.ReadableStream)
     }
@@ -289,13 +289,13 @@ export class AmazonS3Storage extends absStorageProvider {
     @Logger.LogFunction(['content'])
     async FileWrite(dirName: string, fileName: string, content: Readable): Promise<void> {
         // 1. Validate parameters and connection
-        Assert.Var<TAmazonS3StorageParams>(this.Params, 'AmazonS3Storage: No params defined');
-        Assert.Var<string>(this.Params.bucket, 'AmazonS3Storage: No bucket defined');
+        Assert.Var<TAmazonS3StorageParams>(this.Params, 'No params defined');
+        Assert.Var<string>(this.Params.bucket, 'No bucket defined');
 
         // 2. Load S3 module and validate client
         const s3Module = await AmazonS3Storage._loadS3Module();
         type S3Client = InstanceType<typeof s3Module.S3Client>;
-        Assert.Var<S3Client>(this._s3Client, 'AmazonS3Storage: Connection to S3 not established');
+        Assert.Var<S3Client>(this._s3Client, 'Connection to S3 not established');
 
         // 3. Build S3 key with dirName
         const key = StringUtils.Path(dirName, fileName);
@@ -373,9 +373,9 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileRename(dirName: string, oldFileName: string, newFileName: string): Promise<void> {
-        Assert.Var<TAmazonS3StorageParams>(this.Params, 'AmazonS3Storage: No params defined')
-        Assert.Var<string>(this.Params.bucket, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<TAmazonS3StorageParams>(this.Params, 'No params defined')
+        Assert.Var<string>(this.Params.bucket, 'No bucket defined')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'Connection to S3 not established')
 
         const s3 = await AmazonS3Storage._loadS3Module()
 
@@ -398,9 +398,9 @@ export class AmazonS3Storage extends absStorageProvider {
     @Logger.LogFunction()
     async FileDelete(fileName: string): Promise<void> {
         Assert.Var<string>(fileName, 'File name is required')
-        Assert.Var<TAmazonS3StorageParams>(this.Params, 'AmazonS3Storage: No params defined')
-        Assert.Var<string>(this.Params.bucket, 'AmazonS3Storage: No bucket defined')
-        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'AmazonS3Storage: Connection to S3 not established')
+        Assert.Var<TAmazonS3StorageParams>(this.Params, 'No params defined')
+        Assert.Var<string>(this.Params.bucket, 'No bucket defined')
+        Assert.Var<import('@aws-sdk/client-s3').S3Client>(this._s3Client, 'Connection to S3 not established')
 
         const s3 = await AmazonS3Storage._loadS3Module();
         const command = new s3.DeleteObjectCommand({
