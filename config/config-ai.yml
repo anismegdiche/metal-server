@@ -14,8 +14,6 @@ server:
     database: cache
     options:
       autocreate: true
-  ai-engines:
-    timeout: 600000
 
 roles:
   all: lacrud
@@ -56,10 +54,10 @@ schemas:
     source: src-json
 
 schedules:
-  "ocr":
-    plan: myplan
-    entity: myentity
-    cron: "*/1 * * * *"
+  # "ocr":
+  #   plan: myplan
+  #   entity: myentity
+  #   cron: "*/1 * * * *"
   "ocr2":
     plan: myplan
     entity: myentity
@@ -83,126 +81,126 @@ plans:
             _ocr_text: ${{ $result.ocr.text }}
             _ocr_lang_code: (${{ $result.ocr.lang.split('_')[0].toUpperCase() }})
 
-      # - run:
-      #     ai: text
-      #     task: emotion-detection
-      #     params:
-      #       top_k: 7
-      #     input: _ocr_text
-      #     output:
-      #       _emotion_positive: ${{ $result.emotion.joy ?? 0 }}
-      #       _emotion_negative: ${{ $result.emotion.anger ?? 0 }}
+      - run:
+          ai: text
+          task: emotion-detection
+          params:
+            top_k: 7
+          input: _ocr_text
+          output:
+            _emotion_positive: ${{ $result.emotion.joy ?? 0 }}
+            _emotion_negative: ${{ $result.emotion.anger ?? 0 }}
 
-      # - run:
-      #     ai: text
-      #     task: fill-mask
-      #     input: "[MASK] ${{ $row._ocr_text }}"
-      #     output:
-      #       _fillmask_text: ${{ $result.fillmask[0].text }}
-      #       _fillmask_word: ${{ $result.fillmask[0].word }}
+      - run:
+          ai: text
+          task: fill-mask
+          input: "[MASK] ${{ $row._ocr_text }}"
+          output:
+            _fillmask_text: ${{ $result.fillmask[0].text }}
+            _fillmask_word: ${{ $result.fillmask[0].word }}
 
-      # - run:
-      #     ai: text
-      #     task: keyword-extraction
-      #     input: _ocr_text
-      #     output:
-      #       _keyword_extraction: ${{ $result.keywords.join(',') }}
+      - run:
+          ai: text
+          task: keyword-extraction
+          input: _ocr_text
+          output:
+            _keyword_extraction: ${{ $result.keywords.join(',') }}
 
-      # - run:
-      #     ai: text
-      #     task: language-detection
-      #     input: _ocr_text
-      #     output:
-      #       _languagedetection_code: ${{ $result.language.code }}
+      - run:
+          ai: text
+          task: language-detection
+          input: _ocr_text
+          output:
+            _languagedetection_code: ${{ $result.language.code }}
 
-      # - run:
-      #     ai: text
-      #     task: paraphrase-detection
-      #     input: _ocr_text
-      #     params:
-      #       target: A fast brown fox leaps over a sleepy dog
-      #     output:
-      #       _paraphrase_detection_score: ${{ $result.paraphrase.score }}
+      - run:
+          ai: text
+          task: paraphrase-detection
+          input: _ocr_text
+          params:
+            target: A fast brown fox leaps over a sleepy dog
+          output:
+            _paraphrase_detection_score: ${{ $result.paraphrase.score }}
 
-      # - run:
-      #     ai: text
-      #     task: question-answering
-      #     input: _ocr_text
-      #     params:
-      #       question: What is the subject?
-      #     output:
-      #       _question_answering_answer: ${{ $result.answer.answer }}
-      #       _question_answering_score: ${{ $result.answer.score }}
+      - run:
+          ai: text
+          task: question-answering
+          input: _ocr_text
+          params:
+            question: What is the subject?
+          output:
+            _question_answering_answer: ${{ $result.answer.answer }}
+            _question_answering_score: ${{ $result.answer.score }}
 
-      # - run:
-      #     ai: text
-      #     task: sentence-similarity
-      #     input: _ocr_text
-      #     params:
-      #       sentences:
-      #         - That is a happy dog
-      #         - That is a very happy person
-      #         - Today is a sunny day
-      #     output:
-      #       _similarity_score1: ${{ $result.similarity[0].score }}
-      #       _similarity_score2: ${{ $result.similarity[1].score }}
+      - run:
+          ai: text
+          task: sentence-similarity
+          input: _ocr_text
+          params:
+            sentences:
+              - That is a happy dog
+              - That is a very happy person
+              - Today is a sunny day
+          output:
+            _similarity_score1: ${{ $result.similarity[0].score }}
+            _similarity_score2: ${{ $result.similarity[1].score }}
 
-      # - run:
-      #     ai: text
-      #     task: sentiment-analysis
-      #     input: _ocr_text
-      #     params:
-      #       top_k:
-      #     output:
-      #       _sentiment_label: ${{ $result.sentiment.label }}
-      #       _sentiment_score: ${{ $result.sentiment.score }}
+      - run:
+          ai: text
+          task: sentiment-analysis
+          input: _ocr_text
+          params:
+            top_k:
+          output:
+            _sentiment_label: ${{ $result.sentiment.label }}
+            _sentiment_score: ${{ $result.sentiment.score }}
 
-      # - run:
-      #     ai: text
-      #     task: summarization
-      #     input: _ocr_text
-      #     params:
-      #       min-length: 5
-      #       max-length: 10
-      #     output:
-      #       _summarization_summary: ${{ $result.summary.text }}
+      - run:
+          ai: text
+          task: summarization
+          input: _ocr_text
+          params:
+            min-length: 5
+            max-length: 10
+          output:
+            _summarization_summary: ${{ $result.summary.text }}
 
-      # - run:
-      #     ai: text
-      #     task: text-generation
-      #     params:
-      #       max-length: 50
-      #       do-sample: true
-      #       temperature: 0.9
-      #     input: _ocr_text
-      #     output:
-      #       _generated_text: text
+      - run:
+          ai: text
+          task: text-generation
+          params:
+            max-length: 50
+            do-sample: true
+            temperature: 0.9
+          input: _ocr_text
+          output:
+            _generated_text: text
 
-      # - run:
-      #     ai: text
-      #     task: ner
-      #     params:
-      #       grouped: true
-      #     input: _ocr_text
-      #     output:
-      # #       _token_class: entities
+      - run:
+          ai: text
+          task: ner
+          params:
+            grouped: true
+          input: _ocr_text
+          output:
+      #       _token_class: entities
 
-      # - run:
-      #     ai: text
-      #     task: toxicity-detection
-      #     input: _ocr_text
-      #     output:
-      #       _toxicity: toxicity
+      - run:
+          ai: text
+          task: toxicity-detection
+          input: _ocr_text
+          output:
+            _toxicity: toxicity
 
-      # - run:
-      #     ai: text
-      #     task: translation
-      #     params:
-      #       source: en_XX
-      #       target: ar_AR
-      #     input: _ocr_text
-      #     output:
-      #       _translated_text: ${{ $result.translation.text }}
+      - run:
+          ai: text
+          task: translation
+          params:
+            source: en_XX
+            target: ar_AR
+          input: _ocr_text
+          output:
+            _translated_text: ${{ $result.translation.text }}
 
       - run:
           ai: text

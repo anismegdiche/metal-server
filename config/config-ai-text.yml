@@ -14,8 +14,6 @@ server:
     database: cache
     options:
       autocreate: true
-  ai-engines:
-    timeout: 600000
 
 roles:
   all: lacrud
@@ -56,10 +54,10 @@ schemas:
     source: src-json
 
 schedules:
-  "ocr":
-    plan: myplan
-    entity: myentity
-    cron: "*/1 * * * *"
+  # "ocr":
+  #   plan: myplan
+  #   entity: myentity
+  #   cron: "*/1 * * * *"
   "ocr2":
     plan: myplan
     entity: myentity
@@ -90,8 +88,8 @@ plans:
             top: 7
           input: _ocr_text
           output:
-            _emotion_positive: ${{ $result.emotion.joy }}
-            _emotion_negative: ${{ $result.emotion.anger }}
+            _emotion_positive: ${{ $result.emotion.joy ?? 0 }}
+            _emotion_negative: ${{ $result.emotion.anger ?? 0 }}
 
       - run:
           ai: text
@@ -114,15 +112,6 @@ plans:
           input: _ocr_text
           output:
             _languagedetection_code: ${{ $result.language.code }}
-
-      - run:
-          ai: text
-          task: ner
-          params:
-            grouped: true
-          input: _ocr_text
-          output:
-            _token_class: entities
 
       - run:
           ai: text
@@ -186,6 +175,15 @@ plans:
           input: _ocr_text
           output:
             _generated_text: text
+
+      - run:
+          ai: text
+          task: ner
+          params:
+            grouped: true
+          input: _ocr_text
+          output:
+      #       _token_class: entities
 
       - run:
           ai: text

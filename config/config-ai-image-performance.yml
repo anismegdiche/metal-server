@@ -14,8 +14,6 @@ server:
     database: cache
     options:
       autocreate: true
-  ai-engines:
-    timeout: 600000
 
 roles:
   all: lacrud
