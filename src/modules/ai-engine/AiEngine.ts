@@ -10,13 +10,13 @@ import { Semaphore } from "../../utils/Semaphore";
 import { ConfigManager } from "../core/ConfigManager";
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors";
 import { STEP } from '../plan/@consts';
-import type { U_config_plans } from '../plan/types/U_config_plans';
 import type { U_config_plans_plan_entity_run_Params } from '../plan/types/U_config_plans_plan_entity_step';
 import { AI_ENGINE } from "./@consts";
 import { AiDocker } from "./AiDocker";
 import type { IAiEngine } from "./base/IAiEngine";
 import { BaseImageDockerService, BaseTextDockerService } from "./docker-services/BaseDockerService";
 import type { T_config_ai_engines_ai_engine } from "./types/T_config_ai_engines_ai_engine";
+import { Plans } from '../plan/Plans';
 
 
 //
@@ -49,9 +49,7 @@ export class AiEngine {
             return {};
         }
 
-        const plans = ConfigManager.Get<U_config_plans>("plans");
-
-        const aiTasks = _.chain(plans)
+        const aiTasks = _.chain(Plans.Config)
             .flatMap((plan: TPlanEntity[]) => _.flatMap(plan, (entity: TPlanEntity) => entity
                 .map((step: TPlanStep) => step.run)
                 .filter((run): run is NonNullable<typeof run> => Boolean(run))

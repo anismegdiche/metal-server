@@ -11,12 +11,15 @@ import type { U_config_plans } from './types/U_config_plans'
 export class Plans {
 
     static readonly Plans = new Map<string, Plan>()
+    static Config: U_config_plans = {}
 
     static async Init() {
         if (!ConfigManager.Has('plans'))
             return
 
-        const plans = Object.keys(ConfigManager.Get<U_config_plans>("plans") ?? {})
+        Plans.Config = ConfigManager.Get<U_config_plans>("plans") ?? {}
+        
+        const plans = Object.keys(Plans.Config)
 
         plans.forEach(async (plan: string) => {
             Plans.Plans.set(plan, new Plan(plan))

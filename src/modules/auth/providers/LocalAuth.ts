@@ -4,13 +4,13 @@
 import bcrypt from "bcryptjs"
 import * as _ from 'lodash-es'
 //
-import { Logger } from "../../../utils/Logger"
-import { absAuthProvider } from "../base/absAuthProvider"
-import type { TUserCredentials, TUserTokenInfo } from "../@types"
-import { HttpErrorInternalServerError, HttpErrorUnauthorized } from "../../errors/HttpErrors"
-import type { U_config_users_user, U_config_users } from "../../core/types/U_config_users"
-import { ConfigManager } from "../../core/ConfigManager"
 import { Assert } from "../../../utils/Assert"
+import { Logger } from "../../../utils/Logger"
+import { ConfigManager } from "../../core/ConfigManager"
+import type { U_config_users, U_config_users_user } from "../../core/types/U_config_users"
+import { HttpErrorInternalServerError, HttpErrorUnauthorized } from "../../errors/HttpErrors"
+import type { TUserCredentials, TUserTokenInfo } from "../@types"
+import { absAuthProvider } from "../base/absAuthProvider"
 
 
 //
@@ -19,7 +19,7 @@ export class LocalAuth extends absAuthProvider {
     readonly #SALT_ROUNDS = 10
     #Users: U_config_users = {}
 
-    #HashPassword(password: string): string {
+    _hashPassword(password: string): string {
         return bcrypt.hashSync(password, this.#SALT_ROUNDS)
     }
 
@@ -45,7 +45,7 @@ export class LocalAuth extends absAuthProvider {
         const userInfo = this.#Users[username] ?? undefined
 
         Assert.Var<U_config_users_user>(userInfo, 'Invalid username or password', new HttpErrorUnauthorized())
-        Assert.Condition(bcrypt.compareSync(password, this.#HashPassword(userInfo.password.toString())), 'Invalid username or password', new HttpErrorUnauthorized())
+        Assert.Condition(bcrypt.compareSync(password, this._hashPassword(userInfo.password.toString())), 'Invalid username or password', new HttpErrorUnauthorized())
 
         return <TUserTokenInfo>{
             user: username,
