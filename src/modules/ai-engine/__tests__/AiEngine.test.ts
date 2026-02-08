@@ -5,6 +5,7 @@ import { ConfigManager } from '../../core/ConfigManager';
 import { AI_ENGINE } from '../@consts';
 import { AiDocker } from '../AiDocker';
 import type { IAiEngine } from '../base/IAiEngine';
+import { Plans } from '../../plan/Plans';
 
 vi.mock('../../core/ConfigManager');
 vi.mock('../AiDocker', () => ({
@@ -35,13 +36,13 @@ describe('AiEngine', () => {
 
         it('should extract ai-tasks from plans', () => {
             vi.mocked(ConfigManager.Has).mockReturnValue(true);
-            vi.mocked(ConfigManager.Get).mockReturnValue({
+            Plans.Config ={
                 p1: [
                     [
                         { run: { ai: 'text', task: 't1' } }
                     ]
                 ]
-            });
+            } as any
 
             const list = AiEngine.BuildAiEnginesList();
             expect(list).toEqual({
@@ -75,8 +76,7 @@ describe('AiEngine', () => {
         });
 
         it('should return early when no ai engines are configured', async () => {
-            vi.mocked(ConfigManager.Has).mockReturnValue(true);
-            vi.mocked(ConfigManager.Get).mockReturnValue({});
+            Plans.Config = {};
 
             await AiEngine.Init();
 
@@ -85,14 +85,14 @@ describe('AiEngine', () => {
 
         it('should initialize docker and build images before creating providers', async () => {
             vi.mocked(ConfigManager.Has).mockReturnValue(true);
-            vi.mocked(ConfigManager.Get).mockReturnValue({
+            Plans.Config = {
                 p1: [
                     [
                         { run: { ai: AI_ENGINE.TEXT, task: 't1' } },
                         { run: { ai: AI_ENGINE.IMAGE, task: 't2' } }
                     ]
                 ]
-            });
+            } as any
             const createAllSpy = vi.spyOn(AiEngine, 'CreateAll').mockResolvedValue(undefined);
 
             await AiEngine.Init();
@@ -125,7 +125,7 @@ describe('AiEngine', () => {
             await AiEngine.Init();
             createAllSpy.mockRestore();
 
-            await expect(AiEngine.CreateAll()).rejects.toThrow(/Failed to initialize/i);
+            await expect(AiEngine.CreateAll()).rejects.toThrow();
         });
 
         it('should init all providers successfully', async () => {

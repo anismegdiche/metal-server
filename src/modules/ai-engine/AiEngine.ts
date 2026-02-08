@@ -45,7 +45,7 @@ export class AiEngine {
 
     // Build a list of AI engines from the configuration
     static BuildAiEnginesList(): TJson<T_config_ai_engines_ai_engine> {
-        if (!ConfigManager.Has('plans')) {
+        if (!Plans.Config) {
             return {};
         }
 
@@ -133,7 +133,7 @@ export class AiEngine {
         if (Object.keys(AiEngine._aiEnginesConfig).some(key => key.startsWith(AI_ENGINE.IMAGE)))
             await AiDocker.BuildServiceImage(BaseImageDockerService);
 
-        AiEngine.CreateAll()
+        await AiEngine.CreateAll()
     }
 
     /**
