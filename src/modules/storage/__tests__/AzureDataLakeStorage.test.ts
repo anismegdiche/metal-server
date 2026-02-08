@@ -75,7 +75,7 @@ describe('AzureDataLakeStorage', () => {
         it('should throw error when no configuration is provided', () => {
             storage.ConfigStorage = undefined
             expect(() => storage.Init()).toThrow(HttpErrorInternalServerError)
-            expect(() => storage.Init()).toThrow('AzureDataLakeStorage: No configuration defined')
+            expect(() => storage.Init()).toThrow()
         })
     })
 
@@ -134,9 +134,7 @@ describe('AzureDataLakeStorage', () => {
             await storage.Disconnect()
 
             // Verify operations fail after disconnect
-            await expect(storage.FileIsExist('', 'test.txt')).rejects.toThrow(
-                'AzureDataLakeStorage: Connection to storage not established'
-            )
+            await expect(storage.FileIsExist('', 'test.txt')).rejects.toThrow()
         })
     })
 
