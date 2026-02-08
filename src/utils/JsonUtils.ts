@@ -1,4 +1,4 @@
-/* eslint-disable lodash/import-scope */
+ 
 //
 //
 //
@@ -217,4 +217,9 @@ export class JsonUtils {
         return result.join('\r\n')
     }
 
+    static ForEach(json: TJson, callback: (key: string, value: any, index: number) => void) {
+        Object.keys(json).forEach((key, index) => {
+            callback(key, json[key], index)
+        })
+    }
 }

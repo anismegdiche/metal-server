@@ -15,7 +15,7 @@ async OCr.ts #dev  {cm:2026-01-23} {h}
 CSV file data test #test {start:2026-01-27T21:12:09} {cm:2026-01-30} {duration:2d_21h20m} {h}
 hot load after plan reload #fix
 
-plan should stop if error in step #feature
+plan should stop if error in step #feature {f} {start:2026-02-08T10:50:25} {cm:2026-02-08} {duration:50m}
 plan should be configured on-error: stop/continue, can be a common template starting with _ that config is added for steps #feature
 TconfigSource, U_config_sources infer and other U_config sections {start:2026-01-30T00:49:52} {cm:2026-01-31} {duration:1d_12h58m} {h}
 AiDocker HostConfig {start:2026-01-30T00:50:31} {cm:2026-01-31} {duration:1d_11h45m} {h}
@@ -24,3 +24,6 @@ csv convert return lines {start:2026-01-30T18:32:52} {cm:2026-01-31} {duration:1
 fix CI , bug with duckdb file mode {start:2026-02-01T13:05:12} {cm:2026-02-01} {duration:05h10m} {h}
 fix CI , bug with docker image build {start:2026-02-01T13:05:14} {cm:2026-02-01} {duration:05h14m} {h}
 plan : activate disk for storage #feature
+text ai engines with cors {f} {start:2026-02-06T19:44:27} {cm:2026-02-07} {duration:23h19m} {h}
+plan: history of transformation with which step has done the processing, also flag keep history
+finish zod migration {f} {start:2026-02-08T10:47:26}

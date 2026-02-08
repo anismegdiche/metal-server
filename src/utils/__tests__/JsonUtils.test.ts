@@ -22,7 +22,7 @@ describe('JsonUtils', () => {
         it('should parse strings as dates if they look like dates', () => {
             const dateStr = '2023-01-01';
             const result = JsonUtils.TryParse(`{"d":"${dateStr}"}`, {});
-            expect((result as any).d).toBeInstanceOf(Date);
+            expect((result as { d: unknown }).d).toBeInstanceOf(Date);
         });
     });
 
@@ -42,7 +42,7 @@ describe('JsonUtils', () => {
         it('should set value by path', () => {
             const json = { a: 1 };
             JsonUtils.Set(json, 'b', 2);
-            expect((json as any).b).toBe(2);
+            expect((json as { b?: unknown }).b).toBe(2);
         });
     });
 
@@ -154,6 +154,122 @@ describe('JsonUtils', () => {
     describe('Size', () => {
         it('should compute byte size', () => {
             expect(JsonUtils.Size({ a: 'x' })).toBeGreaterThan(0);
+        });
+    });
+
+    describe('ForEach', () => {
+        it('should iterate over all key-value pairs in object', () => {
+            const obj = { a: 1, b: 2, c: 3 };
+            const results: Array<{key: string, value: unknown, index: number}> = [];
+            
+            JsonUtils.ForEach(obj, (key, value, index) => {
+                results.push({ key, value, index });
+            });
+            
+            expect(results).toHaveLength(3);
+            expect(results[0]).toEqual({ key: 'a', value: 1, index: 0 });
+            expect(results[1]).toEqual({ key: 'b', value: 2, index: 1 });
+            expect(results[2]).toEqual({ key: 'c', value: 3, index: 2 });
+        });
+
+        it('should handle empty object', () => {
+            const obj = {};
+            const results: Array<{key: string, value: unknown, index: number}> = [];
+            
+            JsonUtils.ForEach(obj, (key, value, index) => {
+                results.push({ key, value, index });
+            });
+            
+            expect(results).toHaveLength(0);
+        });
+
+        it('should pass correct index parameter', () => {
+            const obj = { first: 'value1', second: 'value2', third: 'value3' };
+            const indices: number[] = [];
+            
+            JsonUtils.ForEach(obj, (key, value, index) => {
+                indices.push(index);
+            });
+            
+            expect(indices).toEqual([0, 1, 2]);
+        });
+
+        it('should handle different value types', () => {
+            const obj = { 
+                string: 'hello',
+                number: 42,
+                boolean: true,
+                null: null,
+                undefined: undefined,
+                object: { nested: 'value' },
+                array: [1, 2, 3]
+            };
+            const results: Array<{key: string, value: unknown, type: string}> = [];
+            
+            JsonUtils.ForEach(obj, (key, value, _index) => {
+                results.push({ 
+                    key, 
+                    value, 
+                    type: Array.isArray(value) ? 'array' : typeof value 
+                });
+            });
+            
+            expect(results).toHaveLength(7);
+            expect(results.find(r => r.key === 'string')?.value).toBe('hello');
+            expect(results.find(r => r.key === 'number')?.value).toBe(42);
+            expect(results.find(r => r.key === 'boolean')?.value).toBe(true);
+            expect(results.find(r => r.key === 'null')?.value).toBe(null);
+            expect(results.find(r => r.key === 'undefined')?.value).toBe(undefined);
+            expect(results.find(r => r.key === 'object')?.value).toEqual({ nested: 'value' });
+            expect(results.find(r => r.key === 'array')?.value).toEqual([1, 2, 3]);
+        });
+
+        it('should allow callback to modify external state', () => {
+            const obj = { a: 1, b: 2 };
+            let sum = 0;
+            const keys: string[] = [];
+            
+            JsonUtils.ForEach(obj, (key, value, _index) => {
+                sum += value as number;
+                keys.push(key);
+            });
+            
+            expect(sum).toBe(3);
+            expect(keys).toEqual(['a', 'b']);
+        });
+
+        it('should handle object with numeric keys', () => {
+            const obj = { '0': 'zero', '1': 'one', '2': 'two' };
+            const results: Array<{key: string, value: unknown}> = [];
+            
+            JsonUtils.ForEach(obj, (key, value, _index) => {
+                results.push({ key, value });
+            });
+            
+            expect(results).toHaveLength(3);
+            expect(results.some(r => r.key === '0' && r.value === 'zero')).toBe(true);
+            expect(results.some(r => r.key === '1' && r.value === 'one')).toBe(true);
+            expect(results.some(r => r.key === '2' && r.value === 'two')).toBe(true);
+        });
+
+        it('should handle object with special character keys', () => {
+            const obj = { 
+                'with-space': 'value1',
+                'with_underscore': 'value2',
+                'with.dot': 'value3',
+                'with/slash': 'value4'
+            };
+            const results: Array<{key: string, value: unknown}> = [];
+            
+            JsonUtils.ForEach(obj, (key, value, _index) => {
+                results.push({ key, value });
+            });
+            
+            expect(results).toHaveLength(4);
+            expect(results.find(r => r.key === 'with-space')?.value).toBe('value1');
+            expect(results.find(r => r.key === 'with_underscore')?.value).toBe('value2');
+            expect(results.find(r => r.key === 'with.dot')?.value).toBe('value3');
+            expect(results.find(r => r.key === 'with/slash')?.value).toBe('value4');
         });
     });
 });
