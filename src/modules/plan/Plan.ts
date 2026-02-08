@@ -194,11 +194,11 @@ export class Plan {
                 )
             }
 
-        } catch (error: unknown) {
-            const _error = error as Error
+        } catch (e: unknown) {
+            const _e = NormalizeError(e)
 
             switch (true) { // NOSONAR
-                case _error.message === "__BREAK__":
+                case _e.message === "__BREAK__":
                     Logger.Info(`${Logger.Out} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': user break at step '${$context.$plan!.$current.stepIndex}', ${JsonUtils.Stringify($context.$plan!.$current.stepCommand)}`)
                     $context = merge(
                         $context,
@@ -211,14 +211,13 @@ export class Plan {
                         }
                     )
                     break
-                default:
-                    // eslint-disable-next-line no-case-declarations
-                    const _errorMessage = `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify($context.$plan!.$current.stepCommand)}' is ignored because of error ${JsonUtils.Stringify(_error?.message)}`
+                default: {
+                    let isThrowError = true
+                    const _errorMessage = `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify($context.$plan!.$current.stepCommand)}' is ignored because of error ${JsonUtils.Stringify(_e?.message)}`
 
-                    if (error instanceof WarnError) {
+                    if (e instanceof WarnError) {
                         Logger.Warn(_errorMessage)
-                    } else {
-                        Logger.Error(_errorMessage)
+                        isThrowError = false
                     }
 
                     Assert.Var<DataTable>(
@@ -249,8 +248,9 @@ export class Plan {
                             }
                         }
                     )
-
-                // throw new HttpErrorInternalServerError(_errorMessage)
+                    if (isThrowError)
+                        throw new HttpErrorInternalServerError(_errorMessage)
+                }
             }
         }
 

@@ -91,5 +91,58 @@ describe('Plan', () => {
 
             expect(executeMock).toHaveBeenCalled();
         });
+
+        it('should stop execution and throw error when step fails (not break)', async () => {
+            const steps = {
+                '0': { 'mock-cmd': { args: 1 } },
+                '1': { 'mock-cmd-2': { args: 2 } },
+                '2': { 'mock-cmd-3': { args: 3 } }
+            };
+            const mockDataTable = new DataTable() as any;
+            (plan._dataBase as any).Tables['e1'] = mockDataTable;
+
+            const executeMock1 = vi.fn().mockResolvedValue(mockDataTable);
+            const executeMock2 = vi.fn().mockRejectedValue(new Error('Test error'));
+            const executeMock3 = vi.fn().mockResolvedValue(mockDataTable);
+            
+            Step.ExecuteCaseMap['mock-cmd'] = executeMock1;
+            Step.ExecuteCaseMap['mock-cmd-2'] = executeMock2;
+            Step.ExecuteCaseMap['mock-cmd-3'] = executeMock3;
+
+            await expect(plan.ExecuteSteps('s', 'p', 'e1', steps as any))
+                .rejects.toThrow('Test error');
+
+            // First step should execute, second should fail, third should not execute
+            expect(executeMock1).toHaveBeenCalled();
+            expect(executeMock2).toHaveBeenCalled();
+            expect(executeMock3).not.toHaveBeenCalled();
+        });
+
+        it('should continue execution when break is encountered', async () => {
+            const steps = {
+                '0': { 'mock-cmd': { args: 1 } },
+                '1': { 'mock-cmd-2': { args: 2 } },
+                '2': { 'mock-cmd-3': { args: 3 } }
+            };
+            const mockDataTable = new DataTable() as any;
+            (plan._dataBase as any).Tables['e1'] = mockDataTable;
+
+            const executeMock1 = vi.fn().mockResolvedValue(mockDataTable);
+            const executeMock2 = vi.fn().mockRejectedValue(new Error('__BREAK__'));
+            const executeMock3 = vi.fn().mockResolvedValue(mockDataTable);
+            
+            Step.ExecuteCaseMap['mock-cmd'] = executeMock1;
+            Step.ExecuteCaseMap['mock-cmd-2'] = executeMock2;
+            Step.ExecuteCaseMap['mock-cmd-3'] = executeMock3;
+
+            const result = await plan.ExecuteSteps('s', 'p', 'e1', steps as any);
+
+            // First two steps should execute, third should not (break stops execution)
+            expect(executeMock1).toHaveBeenCalled();
+            expect(executeMock2).toHaveBeenCalled();
+            expect(executeMock3).not.toHaveBeenCalled();
+            // Should return the data table without throwing
+            expect(result).toBe(mockDataTable);
+        });
     });
 });
