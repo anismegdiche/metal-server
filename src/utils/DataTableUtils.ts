@@ -1,5 +1,4 @@
 /* eslint-disable security/detect-non-literal-fs-filename */
-/* eslint-disable no-case-declarations */
 //
 //
 //
@@ -491,7 +490,7 @@ export class DataTableUtils {
                     break
 
                 case REMOVE_DUPLICATES_STRATEGY.HIGHEST:
-                case REMOVE_DUPLICATES_STRATEGY.LOWEST:
+                case REMOVE_DUPLICATES_STRATEGY.LOWEST: {
                     if (!condition || condition.trim() === '') {
                         // If no condition given, fallback to seq ordering
                         orderByClause = 'ORDER BY __seq__ ASC'
@@ -526,7 +525,7 @@ export class DataTableUtils {
                         orderByClause = `ORDER BY ${definedFirstExpr}, (${valueNormExpr}) ASC, __seq__ ASC`
                     }
                     break
-
+                }
                 case REMOVE_DUPLICATES_STRATEGY.CUSTOM:
                     whereClause = `CASE WHEN ${dataTable_convertSql(condition)} THEN 0 ELSE 1 END`
                     orderByClause = `ORDER BY ${whereClause}, __seq__ ASC` // Default order for custom strategy
@@ -785,7 +784,7 @@ export class DataTableUtils {
             const addedRows = await source._runSqlAndGetRows(addedSql, undefined, { includeIndex });
             const deletedRows = await source._runSqlAndGetRows(deletedSql, undefined, { includeIndex });
             const updatedRows = await source._runSqlAndGetRows(updatedSql, undefined, { includeIndex });
-            
+
 
             return {
                 AddedRows: addedRows,
