@@ -81,4 +81,23 @@ describe('User', () => {
             expect(AuthProvider.Provider.LogOut).toHaveBeenCalledWith('admin');
         });
     });
+
+    
+        describe('IsUserCredentials', () => {
+            it('should return true for valid credentials', () => {
+                const valid = {
+                    username: 'admin',
+                    password: 'password'// NOSONAR
+                };
+                expect(User.IsUserCredentials(valid)).toBe(true);
+            });
+    
+            it('should return false for invalid credentials', () => {
+                const invalid = {
+                    username: 'admin',
+                    // missing password
+                };
+                expect(User.IsUserCredentials(invalid)).toBe(false);
+            });
+        });
 });

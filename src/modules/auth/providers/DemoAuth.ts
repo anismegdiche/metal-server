@@ -19,7 +19,7 @@ export class DemoAuth extends absAuthProvider {
     GetUsers(): U_config_users {
         return {
             "admin": {
-                password: "password",
+                password: "password",// NOSONAR
                 roles: ["admin"]
             }
         }

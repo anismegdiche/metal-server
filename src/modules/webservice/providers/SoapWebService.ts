@@ -9,7 +9,7 @@ import type { TJson } from "../../../types/TJson"
 import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
-import { Validator } from "../../../utils/Validator"
+import { User } from '../../auth/User'
 import { CONTENT } from "../../content/@consts"
 import { HttpErrorInternalServerError, HttpErrorSwitch, NormalizeError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
@@ -64,9 +64,9 @@ export class SoapWebService extends absWebServiceProvider {
 
         let soapOptions: import('soap').IOptions = {}
 
-        if (Validator.TEndpoint(endpoint)) {
+        if (this.IsEndpoint(endpoint)) {
             const { Data } = this.Endpoints.get(ENDPOINT.SESSION)!
-            if (Validator.TUserCredentials(Data)) {
+            if (User.IsUserCredentials(Data)) {
                 const { username, password } = Data
                 const auth = Buffer.from(`${username}:${password}`).toString('base64')
                 soapOptions = {

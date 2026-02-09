@@ -1,17 +1,16 @@
 //
 //
 //
-import jwt, { type JsonWebTokenError } from 'jsonwebtoken'
-import type { Secret } from 'jsonwebtoken'
-import { randomBytes } from 'crypto'
+import jwt, { type JsonWebTokenError, type Secret } from 'jsonwebtoken'
+import { randomBytes } from 'node:crypto'
 //
-import type { TInternalResponse } from '../core/types/TInternalResponse'
-import { Logger } from "../../utils/Logger"
-import { HttpErrorUnauthorized } from "../errors/HttpErrors"
-import { HttpResponse } from "../core/HttpResponse"
 import type { TJson } from "../../types/TJson"
+import { Logger } from "../../utils/Logger"
+import { HttpResponse } from "../core/HttpResponse"
+import type { TInternalResponse } from '../core/types/TInternalResponse'
+import { HttpErrorUnauthorized } from "../errors/HttpErrors"
+import { z_TUserCredentials, type TUserCredentials, type TUserToken, type TUserTokenInfo } from "./@types"
 import { AuthProvider } from "./AuthProvider"
-import type { TUserCredentials, TUserTokenInfo, TUserToken } from "./@types"
 import { Roles } from "./Roles"
 
 
@@ -37,6 +36,10 @@ export class User {
         } catch (error: unknown) {
             throw new HttpErrorUnauthorized((<JsonWebTokenError>error).message)
         }
+    }
+
+    static IsUserCredentials(v: unknown): v is TUserCredentials {
+        return z_TUserCredentials.safeParse(v).success
     }
 
     @Logger.LogFunction(true)

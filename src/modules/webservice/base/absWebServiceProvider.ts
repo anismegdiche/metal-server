@@ -4,14 +4,14 @@
 import { merge, omit } from 'lodash-es'
 import { Readable } from "node:stream"
 //
-import { clsClonable } from "../../../utils/base/clsClonable"
-import type { TWebServiceDataOptions, TConfigSourceWebService } from "../../source/providers/WebServiceData"
 import type { TJson } from "../../../types/TJson"
+import { clsClonable } from "../../../utils/base/clsClonable"
 import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { IWebServiceProvider } from "./IWebServiceProvider"
+import type { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
 import { ENDPOINT } from "../@consts"
-import type { TEndpoint, TWebServiceEndpoint } from "../@types"
+import { z_TEndpoint, type TEndpoint, type TWebServiceEndpoint } from "../@types"
+import type { IWebServiceProvider } from "./IWebServiceProvider"
 
 
 //
@@ -74,5 +74,9 @@ export abstract class absWebServiceProvider extends clsClonable implements IWebS
                 DataPath: endpointConfig.response
             }
         )
+    }
+
+    IsEndpoint(v: unknown): v is TEndpoint {
+        return z_TEndpoint.safeParse(v).success
     }
 }

@@ -55,11 +55,11 @@ describe('UserResponse', () => {
 
     it('should authenticate and convert response', async () => {
         mockResolved(UserMock.Authenticate as unknown as Mock, { StatusCode: 200 })
-        const req = { body: { username: 'u', password: 'p' } } as Request
+        const req = { body: { username: 'u', password: 'p' } } as Request  // NOSONAR
 
         await UserResponse.Authenticate(req, res as unknown as Response)
 
-        expect(UserMock.Authenticate).toHaveBeenCalledWith({ username: 'u', password: 'p' })
+        expect(UserMock.Authenticate).toHaveBeenCalledWith({ username: 'u', password: 'p' }) // NOSONAR
         expect(ConvertMock.InternalResponseToResponse).toHaveBeenCalled()
     })
 

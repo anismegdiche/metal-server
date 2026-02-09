@@ -1,7 +1,7 @@
 //
 //
 //
-import { Readable } from "stream"
+import { Readable } from "node:stream"
 //
 import type { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
 import type { TContext } from "../../sandbox/types/TContext"
@@ -27,4 +27,5 @@ export interface IWebServiceProvider extends clsClonable {
     Update(data: TJson, $context: Partial<TContext>): Promise<Readable>
     Delete($context: Partial<TContext>): Promise<Readable>
     ProcessEndpoint(endpointType: string, endpointConfig: TWebServiceEndpoint): void
+    IsEndpoint(v: unknown): v is TEndpoint
 }
