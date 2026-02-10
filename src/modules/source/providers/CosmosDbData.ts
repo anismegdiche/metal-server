@@ -20,13 +20,13 @@ import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchem
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import type { TDataListEntity } from "../types/TDataListEntity"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TDataListEntity } from "../@types"
+import type { TOptionalParameter } from "../@types"
 import { CosmosDbHelper } from "./CosmosDbHelper"
 
 
 //
-export type TCosmosDbDataConfig = {
+export type U__source_cosmosdb = {
     provider: DATA_PROVIDER.COSMOSDB
     host: string
     database: string
@@ -40,10 +40,10 @@ export type TCosmosDbDataConfig = {
 export class CosmosDbData extends absDataProvider {
     ProviderName = DATA_PROVIDER.COSMOSDB
     SourceName?: string
-    Config: TCosmosDbDataConfig = <TCosmosDbDataConfig>{}
+    Config: U__source_cosmosdb = <U__source_cosmosdb>{}
     Connection?: Container
 
-    DEFAULT: Partial<TCosmosDbDataConfig> = {
+    DEFAULT: Partial<U__source_cosmosdb> = {
         host: '',
         options: {
             key: '',
@@ -73,7 +73,7 @@ export class CosmosDbData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = merge(this.DEFAULT, sourceConfig as TCosmosDbDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as U__source_cosmosdb)
         this.Config.options.endpoint = this.Config.host
 
         Assert.Condition(!StringUtils.IsEmpty(this.Config.options.endpoint), `${this.SourceName}: Cosmos DB endpoint is required`)

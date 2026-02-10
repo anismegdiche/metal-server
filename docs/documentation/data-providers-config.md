@@ -717,13 +717,13 @@ sources:
 Only XLSX files created with Excel 2007 and later are supported.
 :::
 
-| Parameter           | Type    | Description                                               |
-| ------------------- | ------- | --------------------------------------------------------- |
-| `xls-sheet`         | String  | Specify which sheet to use, default first sheet.          |
-| `xls-starting-cell` | String  | Specify the starting cell (e.g., `"B2"`), default `"A1"`. |
-| `xls-default`       | Any     | Default value for empty cells.                            |
-| `xls-parse-dates`   | Boolean | Parse dates from cells, default `false`.                  |
-| `xls-date-format`   | String  | Specify the date format for parsing dates.                |
+| Parameter           | Type    | Description                                                      |
+| ------------------- | ------- | ---------------------------------------------------------------- |
+| `xls-sheet`         | String  | Specify which sheet to use, default first sheet.                 |
+| `xls-starting-cell` | String  | Specify the starting cell (e.g., `"B2"`), default `"A1"`.        |
+| `xls-default`       | Any     | Default value for empty cells, default `null`.                   |
+| `xls-parse-dates`   | Boolean | Parse dates from cells, default `false`.                         |
+| `xls-date-format`   | String  | Specify the date format for parsing dates, default: `dd/mm/yyyy` |
 
 **Example:**
 

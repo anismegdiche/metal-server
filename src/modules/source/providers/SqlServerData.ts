@@ -21,11 +21,11 @@ import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchem
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TOptionalParameter } from "../@types"
 
 
 //
-export type TSqlServerDataConfig = {
+export type U__source_sqlserver = {
     provider: DATA_PROVIDER.MSSQL
     host: string
     port: TIpPort
@@ -41,10 +41,10 @@ export class SqlServerData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.MSSQL
-    Config: TSqlServerDataConfig = <TSqlServerDataConfig>{}
+    Config: U__source_sqlserver = <U__source_sqlserver>{}
     Connection?: ConnectionPool = undefined
 
-    DEFAULT: Partial<TSqlServerDataConfig> = {
+    DEFAULT: Partial<U__source_sqlserver> = {
         host: '127.0.0.1',
         database: 'master',
         user: 'sa',
@@ -68,7 +68,7 @@ export class SqlServerData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = merge(this.DEFAULT, sourceConfig as TSqlServerDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as U__source_sqlserver)
     }
 
     @Logger.LogFunction()
@@ -254,7 +254,7 @@ export class SqlServerData extends absDataProvider {
 
 
     EscapeEntity(entity: string): string {
-        return `[${entity}]`.replaceAll(/\./g, "].[")
+        return `[${entity}]`.replaceAll('.', "].[")
     }
 
 

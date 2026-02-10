@@ -10,7 +10,7 @@ import { Assert } from "../../../utils/Assert"
 //
 export class CosmosDbHelper {
 
-    static EscapeEntity(entity: string): string {
+    static EscapeEntity(_entity: string): string {
         return 'c'
     }
 

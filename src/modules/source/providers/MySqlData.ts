@@ -22,11 +22,11 @@ import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchem
 import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TOptionalParameter } from "../@types"
 
 
 //
-export type TMySqlDataConfig = {
+export type U__source_mysql = {
     host: string
     port: TIpPort
     user: string
@@ -39,10 +39,10 @@ export class MySqlData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.MYSQL
-    Config: TMySqlDataConfig = <TMySqlDataConfig>{}
+    Config: U__source_mysql = <U__source_mysql>{}
     Connection?: Pool
 
-    DEFAULT: Partial<TMySqlDataConfig> = {
+    DEFAULT: Partial<U__source_mysql> = {
         host: '127.0.0.1',
         port: 3306,
         user: 'root',
@@ -66,7 +66,7 @@ export class MySqlData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = merge(this.DEFAULT, sourceConfig as TMySqlDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as U__source_mysql)
     }
 
     @Logger.LogFunction()

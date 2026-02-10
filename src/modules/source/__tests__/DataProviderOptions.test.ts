@@ -1,8 +1,8 @@
 
 
 import { DataTable, SORT_ORDER } from "../../../types/DataTable"
-import type { TCacheData } from "../../cache/types/TCacheData"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TCacheData } from "../../cache/@types"
+import type { TOptionalParameter } from "../@types"
 import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 import { DataProviderOptions } from "../base/absDataProvider"
 

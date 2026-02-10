@@ -2,7 +2,7 @@
 //
 //
 import type { TSchemaRequest } from '../../schema/types/TSchemaRequest'
-import type { TOptionalParameter } from '../types/TOptionalParameter'
+import type { TOptionalParameter } from "../@types"
 import type { TContext } from '../../sandbox/types/TContext'
 
 //

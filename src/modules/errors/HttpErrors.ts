@@ -9,7 +9,7 @@ import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from "../core/@consts"
 
 
 //
-export function NormalizeError(err: unknown): TJson {
+export function NormalizeError(err: unknown): TJson<any> {
     if (err instanceof HttpError) {
         return {
             ...err,
@@ -28,7 +28,6 @@ export function NormalizeError(err: unknown): TJson {
 
     // rejected with string / object / whatever
     return {
-
         type: "UnknownThrownValue",
         message: String(err),
     }

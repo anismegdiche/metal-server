@@ -1,12 +1,11 @@
 
-import { Readable } from "node:stream"
-import * as ExcelJS from 'exceljs'
 import * as crc32 from 'crc-32'
+import * as ExcelJS from 'exceljs'
+import { Readable } from "node:stream"
 //
-import { DataTable } from "../../../types/DataTable"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
-import { ColumnLetterToNumber, XlsContent } from "../providers/XlsContent"
-import type { TXlsContentParams } from "../types/TXlsContentParams"
+import { DataTable } from "../../../types/DataTable"
+import { ColumnLetterToNumber, XlsContent, type T_XlsContentParams } from "../providers/XlsContent"
 
 
 describe("ColumnLetterToNumber", () => {
@@ -114,7 +113,7 @@ describe('XlsContent', () => {
         })
 
         it('should throw error if Params is not defined', async () => {
-            xlsContent.Params = undefined as unknown as TXlsContentParams
+            xlsContent.Params = undefined as unknown as T_XlsContentParams
             await expect(xlsContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
         })
 
@@ -163,7 +162,7 @@ describe('XlsContent', () => {
         })
 
         it('should throw error if Params is not defined', async () => {
-            xlsContent.Params = undefined as unknown as TXlsContentParams
+            xlsContent.Params = undefined as unknown as T_XlsContentParams
             await expect(xlsContent.Set(mockDataTable, {})).rejects.toThrow(HttpErrorInternalServerError)
         })
 

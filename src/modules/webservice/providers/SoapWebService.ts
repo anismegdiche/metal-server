@@ -14,32 +14,23 @@ import { CONTENT } from "../../content/@consts"
 import { HttpErrorInternalServerError, HttpErrorSwitch, NormalizeError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
+import type { U__source_webservice, U__source_webservice_options } from "../../source/providers/WebServiceData"
 import { ENDPOINT, HEADER } from "../@consts"
-import { absWebServiceProvider } from "../base/absWebServiceProvider"
+import { absWebServiceProvider } from '../base/absWebServiceProvider'
 
 
 //
 export class SoapWebService extends absWebServiceProvider {
 
-    DEFAULT: Partial<TWebServiceDataOptions> = {
+    DEFAULT: Partial<U__source_webservice_options> = {
         content: CONTENT.XML
     }
 
-    ConfigSource?: TConfigSourceWebService
-    ConfigSourceOptions?: TWebServiceDataOptions
+    ConfigSource?: U__source_webservice
+    ConfigSourceOptions?: U__source_webservice_options
     Client?: import('soap').Client
 
     Headers: Record<string, string>[] = []
-
-    // SOAP
-    SoapNamespace: {
-        Prefix: string
-        Uri: string
-    } = {
-            Prefix: 'web',
-            Uri: 'http://example.com/soap/namespace'
-        }
 
     private static _soapModule: typeof import('soap');
     private static async _loadSoapModule(): Promise<typeof import('soap')> {
@@ -53,7 +44,7 @@ export class SoapWebService extends absWebServiceProvider {
         super()
     }
 
-    SetConfig(configSource: TConfigSourceWebService): void {
+    SetConfig(configSource: U__source_webservice): void {
         super.SetConfig(configSource)
     }
 

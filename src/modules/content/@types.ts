@@ -1,14 +1,22 @@
 //
 //
 //
-import type { TCsvContentConfig } from './types/TCsvContentConfig';
-import type { TJsonContentConfig } from './types/TJsonContentConfig';
-import type { TXlsContentConfig } from './types/TXlsContentConfig';
-import type { TXmlContentConfig } from './types/TXmlContentConfig';
+import z from 'zod';
+//
+import { z_U__source_options_content_csv } from './providers/CsvContent';
+import { z_U__source_options_content_json } from './providers/JsonContent';
+import { z_U__source_options_content_xls } from './providers/XlsContent';
+import { z_U__source_options_content_xml } from './providers/XmlContent';
+
 
 //
-export type TContentConfig =
-    TJsonContentConfig |
-    TCsvContentConfig |
-    TXlsContentConfig |
-    TXmlContentConfig
+export const z_U__source_options_content = z.union([
+    z_U__source_options_content_json,
+    z_U__source_options_content_csv,
+    z_U__source_options_content_xls,
+    z_U__source_options_content_xml
+])
+
+
+//
+export type U__source_options_content = z.infer<typeof z_U__source_options_content>

@@ -12,26 +12,26 @@ import type { TConvertParams } from "../../../utils/TypeUtils"
 import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
 import type { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from "../base/absStorageProvider"
 
 //
-export type TAzureFileStorageConfig = {
+export type U__source_storage_azfs_options = {
     "az-file-connection-string"?: string
     "az-file-share-name"?: string
     "az-file-folder"?: string
 }
 
 type TAzureFileStorageParams = {
-    [K in keyof TAzureFileStorageConfig as K extends `az-file-${infer U}` ? TConvertParams<U> : K]: TAzureFileStorageConfig[K]
+    [K in keyof U__source_storage_azfs_options as K extends `az-file-${infer U}` ? TConvertParams<U> : K]: U__source_storage_azfs_options[K]
 }
 
 //
 export class AzureFileStorage extends absStorageProvider {
 
     ConfigSource?: U_config_sources_source
-    ConfigStorage?: TStorageFilesDataOptions
+    ConfigStorage?: U__source_storage_file_options
     Params?: TAzureFileStorageParams
 
     DEFAULT: Partial<TAzureFileStorageParams> = {
@@ -55,7 +55,7 @@ export class AzureFileStorage extends absStorageProvider {
     // -----------------------------
     @Logger.LogFunction()
     Init(): void {
-        Assert.Var<TAzureFileStorageConfig>(this.ConfigStorage, 'No config storage defined')
+        Assert.Var<U__source_storage_azfs_options>(this.ConfigStorage, 'No config storage defined')
 
         this.Params = {
             ...this.DEFAULT,

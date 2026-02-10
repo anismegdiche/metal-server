@@ -15,7 +15,7 @@ import { HttpErrorBadRequest } from "../../errors/HttpErrors"
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TOptionalParameter } from "../@types"
 import { absDataProviderOptions } from "./absDataProviderOptions"
 import type { IDataProvider } from "./IDataProvider"
 import type { IDataProviderOptions } from "./IDataProviderOptions"

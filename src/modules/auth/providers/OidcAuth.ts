@@ -1,23 +1,40 @@
 //
 //
 //
-import { Issuer, TokenSet } from "openid-client"
-import type { Client } from "openid-client"
 import { intersection, merge } from 'lodash-es'
+import type { Client } from "openid-client"
+import { Issuer, TokenSet } from "openid-client"
+import z from "zod"
 //
-import { Logger } from '../../../utils/Logger'
-import { absAuthProvider } from '../base/absAuthProvider'
-import type { TUserCredentials, TUserTokenInfo } from "../@types"
-import { HttpErrorInternalServerError, HttpErrorUnauthorized, NormalizeError } from '../../errors/HttpErrors'
 import { JsonUtils } from "../../../utils/JsonUtils"
-import type { U_config_server_authentication_oidc } from "../types/U_config_server_authentication_oidc"
+import { Logger } from '../../../utils/Logger'
 import { ConfigManager } from "../../core/ConfigManager"
+import { HttpErrorInternalServerError, HttpErrorUnauthorized, NormalizeError } from '../../errors/HttpErrors'
+import { AUTH_PROVIDER } from "../@consts"
+import type { TUserCredentials, TUserTokenInfo } from "../@types"
+import { absAuthProvider } from '../base/absAuthProvider'
 
 
 //
 enum OIDC_ERROR_MESSAGE {
     NOT_INITIALIZED = 'OIDC client not initialized'
 }
+
+
+//
+export const z_U_config_server_authentication_oidc = z.object({
+    provider: z.literal(AUTH_PROVIDER.OIDC),
+    issuer: z.string(),
+    "client-id": z.string(),
+    "client-secret": z.string(),
+    scope: z.string().optional(),
+    "roles-path": z.string().optional(),
+});
+
+
+//
+export type U_config_server_authentication_oidc = z.infer<typeof z_U_config_server_authentication_oidc>;
+
 
 //
 export class OidcAuth extends absAuthProvider {

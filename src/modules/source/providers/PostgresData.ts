@@ -20,11 +20,11 @@ import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchem
 import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TOptionalParameter } from "../@types"
 
 
 //
-export type TPostgresDataConfig = {
+export type U__source_postgres = {
     provider: DATA_PROVIDER.POSTGRES
     host: string
     port: TIpPort
@@ -47,10 +47,10 @@ export class PostgresData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.POSTGRES
-    Config: TPostgresDataConfig = <TPostgresDataConfig>{}
+    Config: U__source_postgres = <U__source_postgres>{}
     Connection?: import('pg').Pool
 
-    DEFAULT: Partial<TPostgresDataConfig> = {
+    DEFAULT: Partial<U__source_postgres> = {
         host: '127.0.0.1',
         port: 5432,
         user: 'root',
@@ -65,7 +65,7 @@ export class PostgresData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = merge(this.DEFAULT, sourceConfig as TPostgresDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as U__source_postgres)
     }
 
     @Logger.LogFunction()

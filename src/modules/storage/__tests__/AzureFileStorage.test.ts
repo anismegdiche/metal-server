@@ -7,7 +7,7 @@ import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors
 import { DataTable } from "../../../types/DataTable"
 import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { DATA_PROVIDER } from "../../source/@consts"
-import { AzureFileStorage, type TAzureFileStorageConfig } from "../providers/AzureFileStorage"
+import { AzureFileStorage, type U__source_storage_azfs_options } from "../providers/AzureFileStorage"
 
 // Mock Azure SDK
 vi.mock("@azure/storage-file-share")
@@ -56,7 +56,7 @@ describe("AzureFileStorage", () => {
         storage = new AzureFileStorage()
         storage.SetConfig({
             ...rndParams,
-            options: <TAzureFileStorageConfig>{
+            options: <U__source_storage_azfs_options>{
                 "az-file-connection-string": "testconnectionstring",
                 "az-file-share-name": "testshare",
                 "az-file-folder": "testfolder",

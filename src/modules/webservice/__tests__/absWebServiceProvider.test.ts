@@ -5,12 +5,12 @@ import { absWebServiceProvider } from '../base/absWebServiceProvider';
 import type { Readable } from 'node:stream';
 import type { TJson } from '../../../types/TJson';
 import type { TContext } from '../../sandbox/types/TContext';
-import type { TConfigSourceWebService, TWebServiceDataOptions } from '../../source/providers/WebServiceData';
+import type { U__source_webservice, U__source_webservice_options } from '../../source/providers/WebServiceData';
 
 class mockWS extends absWebServiceProvider { // NOSONAR
     DEFAULT: unknown;
-    ConfigSource?: TConfigSourceWebService;
-    ConfigSourceOptions?: TWebServiceDataOptions;
+    ConfigSource?: U__source_webservice;
+    ConfigSourceOptions?: U__source_webservice_options;
     Client?: unknown;
     Init(): Promise<void> {
         throw new Error('Method not implemented.');

@@ -8,9 +8,9 @@ import type { TJson } from "../../../types/TJson"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
+import type { U__source_webservice, U__source_webservice_options } from "../../source/providers/WebServiceData"
 import { ENDPOINT } from "../@consts"
-import { z_TEndpoint, type TEndpoint, type TWebServiceEndpoint } from "../@types"
+import { type TEndpoint, type TWebServiceEndpoint, z_TEndpoint } from '../@types'
 import type { IWebServiceProvider } from "./IWebServiceProvider"
 
 
@@ -18,13 +18,13 @@ import type { IWebServiceProvider } from "./IWebServiceProvider"
 export abstract class absWebServiceProvider extends clsClonable implements IWebServiceProvider { //NOSONAR
 
     abstract DEFAULT: unknown
-    abstract ConfigSource?: TConfigSourceWebService
-    abstract ConfigSourceOptions?: TWebServiceDataOptions
+    abstract ConfigSource?: U__source_webservice
+    abstract ConfigSourceOptions?: U__source_webservice_options
     abstract Client?: unknown
     // deepcode ignore CollectionUpdatedButNeverQueried: abstract class
     Endpoints = new Map<string, TEndpoint>()
 
-    SetConfig(configSource: TConfigSourceWebService) {
+    SetConfig(configSource: U__source_webservice) {
         this.ConfigSource = configSource
         this.ConfigSourceOptions = merge(this.DEFAULT, configSource.options)
 

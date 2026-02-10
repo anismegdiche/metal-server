@@ -3,7 +3,8 @@
 //
 import { merge } from "lodash-es"
 import { Readable } from "node:stream"
-import Papa, { type ParseConfig } from "papaparse"
+import Papa, { type ParseConfig, type UnparseConfig } from "papaparse"
+import z from "zod"
 //
 import type { TRow, TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
@@ -13,28 +14,43 @@ import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
-import { z_TCsvContentConfig } from "../../../utils/Schemas"
+import { StringUtils } from "../../../utils/StringUtils"
 import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
-import type { TCsvContentConfig } from '../types/TCsvContentConfig'
-import type { TCsvContentParams } from '../types/TCsvContentParams'
-import { StringUtils } from "../../../utils/StringUtils"
 
+
+//
+export const z_U__source_options_content_csv = z.object({
+    "csv-delimiter": z.string().optional(),
+    "csv-newline": z.string().optional(),
+    "csv-header": z.boolean().optional(),
+    "csv-quote": z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    "csv-skip-empty": z.union([
+        z.boolean(),
+        z.literal("greedy")
+    ]).optional()
+});
+
+
+//
+export type U__source_options_content_csv = z.infer<typeof z_U__source_options_content_csv>
 
 
 //
 export class CsvContent extends absContentProvider {
-    Params: TCsvContentParams | undefined
+    Params: UnparseConfig | undefined
 
-    DEFAULT: TCsvContentParams = {
-        header: true,
-        delimiter: ';',
-        quoteChar: '"',
-        newline: '\r\n',
-        skipEmptyLines: 'greedy',
-        quotes: true
+    DEFAULT: U__source_options_content_csv = {
+        "csv-header": true,
+        "csv-delimiter": ';',
+        "csv-quote": '"',
+        "csv-newline": '\r\n',
+        "csv-skip-empty": 'greedy'
     }
 
     static EscapeNewlines(value: string): string {
@@ -54,19 +70,22 @@ export class CsvContent extends absContentProvider {
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && z_TCsvContentConfig.safeParse(this.Config).success) {
-            const config = this.Config as TCsvContentConfig
-            this.Params = merge(this.DEFAULT, {
-                delimiter: config["csv-delimiter"],
-                newline: config["csv-newline"],
-                header: config["csv-header"],
-                skipEmptyLines: config["csv-skip-empty"]
-            })
-            this.Params.quoteChar = config["csv-quote"] == null || config["csv-quote"] == undefined || config["csv-quote"] == ''
-                ? undefined
-                : config["csv-quote"]
+        if (this.Config && z_U__source_options_content_csv.safeParse(this.Config).success) {
+            this.Config = merge(this.DEFAULT, this.Config) as U__source_options_content_csv
 
-            this.Params.quotes = !StringUtils.IsEmpty(config["csv-quote"])
+            this.Params = {
+                delimiter: this.Config["csv-delimiter"],
+                newline: this.Config["csv-newline"],
+                header: this.Config["csv-header"],
+                skipEmptyLines: this.Config["csv-skip-empty"]
+            }
+            
+            this.Params.quoteChar =
+                (this.Config["csv-quote"] == null || this.Config["csv-quote"] == undefined || this.Config["csv-quote"] == '')
+                    ? undefined
+                    : this.Config["csv-quote"]
+
+            this.Params.quotes = !StringUtils.IsEmpty(this.Config["csv-quote"])
         }
 
         this.Content.UploadFile(entity, content)
@@ -111,7 +130,7 @@ export class CsvContent extends absContentProvider {
             VirtualFileSystem.Is(this.Content),
             'Content is not defined')
 
-        const $__evalParams = PlaceHolder.EvaluateJsCode<TCsvContentParams>(
+        const $__evalParams = PlaceHolder.EvaluateJsCode<UnparseConfig>(
             this.Params,
             new Sandbox($context)
         )

@@ -4,7 +4,6 @@ import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
 import { XmlContent } from "../providers/XmlContent"
-import type { TContentConfig } from "../@types"
 
 const xmlUsers = `<?xml version="1.0" encoding="UTF-8"?>
 <users>
@@ -63,7 +62,7 @@ describe('XmlContent', () => {
         const content = Readable.from(xmlUsers)
         const config = { 'xml-path': 'users.user' }
 
-        xmlContent.SetConfig(config as TContentConfig)
+        xmlContent.SetConfig(config)
         xmlContent.InitContent(entity, content)
 
         expect(xmlContent.EntityName).toBe(entity)

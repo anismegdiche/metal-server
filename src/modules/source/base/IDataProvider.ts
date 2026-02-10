@@ -10,7 +10,7 @@ import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import type { DATA_PROVIDER } from "../@consts"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TOptionalParameter } from "../@types"
 import type { IDataProviderOptions } from "./IDataProviderOptions"
 
 

@@ -9,7 +9,7 @@ import { clsClonable } from "../../../utils/base/clsClonable"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 //
 //
-import type { TContentConfig } from "../@types"
+import type { U__source_options_content } from "../@types"
 import type { IContentProvider } from './IContentProvider'
 import type { TContext } from '../../sandbox/types/TContext'
 
@@ -19,10 +19,10 @@ export abstract class absContentProvider extends clsClonable implements IContent
 
     abstract Params: unknown            // TS transformed configuration
     EntityName: string = "DEFAULT"
-    Config?: TContentConfig              // raw configuration
+    Config?: U__source_options_content              // raw configuration
     Content = new VirtualFileSystem()
 
-    SetConfig(contentConfig: TContentConfig): void {
+    SetConfig(contentConfig: U__source_options_content): void {
         this.Config = contentConfig
     }
 

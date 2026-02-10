@@ -19,8 +19,8 @@ import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
 import { Source } from "../Source"
-import type { TDataListEntity } from "../types/TDataListEntity"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TDataListEntity } from "../@types"
+import type { TOptionalParameter } from "../@types"
 
 
 export class PlanData extends absDataProvider {

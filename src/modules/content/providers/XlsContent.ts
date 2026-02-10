@@ -5,21 +5,51 @@ import ExcelJS, { type Worksheet } from 'exceljs'
 import { compact, merge } from 'lodash-es'
 import { Readable } from 'node:stream'
 //
+import z from 'zod'
 import type { TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
 import type { TJson } from '../../../types/TJson'
 import { Assert } from '../../../utils/Assert'
 import { Logger } from '../../../utils/Logger'
 import { PlaceHolder } from "../../../utils/PlaceHolder"
-import { z_TXlsContentConfig, z_TXlsContentParams } from "../../../utils/Schemas"
 import { VirtualFileSystem } from '../../../utils/VirtualFileSystem'
 import { HttpErrorInternalServerError } from '../../errors/HttpErrors'
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
-import type { TXlsContentConfig } from '../types/TXlsContentConfig'
-import type { TXlsContentParams } from '../types/TXlsContentParams'
 
+
+//
+export const z_U__source_options_content_xls = z.object({
+    "xls-sheet": z.string().describe("Specify which sheet to use, default first sheet").optional(),
+    "xls-starting-cell": z.string().describe("Specify the starting cell (e.g., 'B2'), default 'A1'").optional(),
+    "xls-default": z.union([
+        z.number(),
+        z.string(),
+        z.null()
+    ]).describe("Default value for empty cells").optional(),
+    "xls-parse-dates": z.boolean().describe("Parse dates from cells, default false").optional(),
+    "xls-date-format": z.string().describe("Specify the date format for parsing dates").optional(),
+});
+
+
+//
+export const z_T_XlsContentParams = z.object({
+    sheet: z.string().optional(),
+    startingCell: z.string().optional(),
+    default: z.union([
+        z.number(),
+        z.string(),
+        z.null()
+    ]).optional(),
+    parseDates: z.boolean().optional(),
+    dateFormat: z.string().optional(),
+});
+
+
+//
+export type U__source_options_content_xls = z.infer<typeof z_U__source_options_content_xls>
+export type T_XlsContentParams = z.infer<typeof z_T_XlsContentParams>
 
 
 // Convert column letter (e.g., 'A', 'B', 'AA') to a column number
@@ -38,38 +68,35 @@ export function ColumnLetterToNumber(letter: string): number {
 //
 export class XlsContent extends absContentProvider {
 
-    Params: TXlsContentParams = {
-        parseDates: false,
-        default: null,
-        dateFormat: 'dd/mm/yyyy',
-        startingCell: 'A1'
+    Params: T_XlsContentParams | undefined
+
+    DEFAULT: U__source_options_content_xls = {
+        "xls-parse-dates": false,
+        "xls-default": null,
+        "xls-date-format": "dd/mm/yyyy",
+        "xls-starting-cell": "A1"
     }
 
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && z_TXlsContentConfig.safeParse(this.Config).success) {
-            const config = this.Config as TXlsContentConfig
-            this.Params = merge(
-                this.Params,
-                {
-                    sheet: config["xls-sheet"],
-                    parseDates: config["xls-parse-dates"],
-                    default: config["xls-default"],
-                    dateFormat: config["xls-date-format"],
-                    startingCell: config["xls-starting-cell"]
-                }
-            )
+        if (this.Config && z_U__source_options_content_xls.safeParse(this.Config).success) {
+            this.Config = merge(this.DEFAULT, this.Config) as U__source_options_content_xls
+            this.Params = {
+                sheet: this.Config["xls-sheet"],
+                parseDates: this.Config["xls-parse-dates"],
+                default: this.Config["xls-default"],
+                dateFormat: this.Config["xls-date-format"],
+                startingCell: this.Config["xls-starting-cell"]
+            }
         }
         this.Content.UploadFile(entity, content)
     }
 
-
-
     @Logger.LogFunction(['$context'])
     async Get(rowsParams: TRowsCopyParams, $context?: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TXlsContentParams>(this.Params,
-            z_TXlsContentParams.safeParse(this.Params).success,
+        Assert.Var<T_XlsContentParams>(this.Params,
+            z_T_XlsContentParams.safeParse(this.Params).success,
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content,
@@ -80,7 +107,7 @@ export class XlsContent extends absContentProvider {
         Logger.Debug('XlsContent.Get: reading stream')
         await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
 
-        const $__evalParams = PlaceHolder.EvaluateJsCode<TXlsContentParams>(
+        const $__evalParams = PlaceHolder.EvaluateJsCode<T_XlsContentParams>(
             this.Params,
             new Sandbox($context)
         )
@@ -143,8 +170,8 @@ export class XlsContent extends absContentProvider {
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context?: Partial<TContext>): Promise<Readable> {
-        Assert.Var<TXlsContentParams>(this.Params,
-            z_TXlsContentParams.safeParse(this.Params).success,
+        Assert.Var<T_XlsContentParams>(this.Params,
+            z_T_XlsContentParams.safeParse(this.Params).success,
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content,
@@ -159,7 +186,7 @@ export class XlsContent extends absContentProvider {
                 Logger.Warn('XlsContent.Set: Could not read existing file, creating new workbook')
             })
 
-        const $__evalParams = PlaceHolder.EvaluateJsCode<TXlsContentParams>(
+        const $__evalParams = PlaceHolder.EvaluateJsCode<T_XlsContentParams>(
             this.Params,
             new Sandbox($context)
         )

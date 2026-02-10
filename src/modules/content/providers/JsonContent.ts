@@ -2,6 +2,7 @@
 //
 //
 import { Readable } from "node:stream"
+import z from "zod"
 //
 import type { TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
@@ -11,27 +12,42 @@ import { JsonUtils } from '../../../utils/JsonUtils'
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
-import { z_TJsonContentConfig, z_TJsonContentParams } from "../../../utils/Schemas"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
-import type { TJsonContentConfig } from "../types/TJsonContentConfig"
-import type { TJsonContentParams } from "../types/TJsonContentParams"
+import { merge } from "lodash-es"
+
+
+//
+export const z_U__source_options_content_json = z.object({
+    "json-path": z.string().describe("JSON path, if undefined will return the whole JSON").optional()
+});
+
+export const z_T_JsonContentParams = z.object({
+    path: z.string().optional(),
+});
+
+
+//
+export type U__source_options_content_json = z.infer<typeof z_U__source_options_content_json>
+export type T_JsonContentParams = z.infer<typeof z_T_JsonContentParams>
 
 
 //
 export class JsonContent extends absContentProvider {
-
-    Params: TJsonContentParams | undefined
+    Params: T_JsonContentParams | undefined
+    DEFAULT: U__source_options_content_json = {
+        "json-path": undefined
+    }
 
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && z_TJsonContentConfig.safeParse(this.Config).success) {
-            const config = this.Config as TJsonContentConfig
+        if (this.Config && z_U__source_options_content_json.safeParse(this.Config).success) {
+            this.Config = merge(this.DEFAULT,this.Config) as U__source_options_content_json
             this.Params = {
-                path: config["json-path"]
+                path: this.Config["json-path"]
             }
         }
 
@@ -40,8 +56,8 @@ export class JsonContent extends absContentProvider {
 
     @Logger.LogFunction(['$context'])
     async Get(rowsParams: TRowsCopyParams, $context: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TJsonContentParams>(this.Params,
-            z_TJsonContentParams.safeParse(this.Params).success,
+        Assert.Var<T_JsonContentParams>(this.Params,
+            z_T_JsonContentParams.safeParse(this.Params).success,
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content,
@@ -67,8 +83,8 @@ export class JsonContent extends absContentProvider {
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
-        Assert.Var<TJsonContentParams>(this.Params,
-            z_TJsonContentParams.safeParse(this.Params).success,
+        Assert.Var<T_JsonContentParams>(this.Params,
+            z_T_JsonContentParams.safeParse(this.Params).success,
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content,

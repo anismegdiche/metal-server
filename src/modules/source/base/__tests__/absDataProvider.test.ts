@@ -5,7 +5,7 @@ import { DATA_PROVIDER } from '../../@consts'
 import { HTTP_STATUS_CODE } from '../../../core/@consts'
 import type { TInternalResponse } from '../../../core/types/TInternalResponse'
 import type { DataTable } from '../../../../types/DataTable'
-import type { TOptionalParameter } from '../../types/TOptionalParameter'
+import type { TOptionalParameter } from "../../@types"
 
 class TestProvider extends absDataProvider {
     ProviderName = DATA_PROVIDER.MEMORY

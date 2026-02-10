@@ -12,9 +12,9 @@ import type { TSchemaResponse } from '../../schema/types/TSchemaResponse';
 import { DATA_PROVIDER } from '../@consts';
 import { absDataProvider } from '../base/absDataProvider';
 import type { IDataProvider } from '../base/IDataProvider';
-import type { TStorageFilesDataOptions } from '../types/TStorageFilesDataOptions';
+import type { U__source_storage_file_options } from "./StorageFilesData";
 import { StorageFilesData } from './StorageFilesData';
-import type { TStorageFoldersDataOptions } from './StorageFoldersData';
+import type { U__source_storage_folder_options } from './StorageFoldersData';
 import { StorageFoldersData } from './StorageFoldersData';
 
 
@@ -26,12 +26,14 @@ export enum STORAGE_MODE {
 
 
 //
-export type TStorageDataOptions = ({ mode: STORAGE_MODE.FILES } & TStorageFilesDataOptions)
-    | ({ mode: STORAGE_MODE.FOLDERS } & TStorageFoldersDataOptions)
+export type U__source_storage_options =
+    ({ mode: STORAGE_MODE.FILES } & U__source_storage_file_options)
+    | ({ mode: STORAGE_MODE.FOLDERS } & U__source_storage_folder_options)
 
-export type TStorageDataConfig = U_config_sources_source & {
-    options: TStorageDataOptions;
-}
+export type U__source_storage =
+    U_config_sources_source & {
+        options: U__source_storage_options;
+    }
 
 
 //
@@ -57,7 +59,7 @@ export class StorageData extends absDataProvider implements IDataProvider {
 
         this.Config = merge(this.DEFAULT, sourceConfig)
 
-        const { mode } = this.Config.options as TStorageDataOptions
+        const { mode } = this.Config.options as U__source_storage_options
 
         this.Connection = (mode === STORAGE_MODE.FILES)
             ? new StorageFilesData()

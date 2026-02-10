@@ -2,7 +2,7 @@
 //
 //
 import type { TSchemaRequest, TSchemaRequestInsert, TSchemaRequestSelect } from '../../schema/types/TSchemaRequest'
-import type { TOptionalParameter } from '../types/TOptionalParameter'
+import type { TOptionalParameter } from "../@types"
 import { DataTable } from '../../../types/DataTable'
 import { Logger } from "../../../utils/Logger"
 import type { TJson } from "../../../types/TJson"

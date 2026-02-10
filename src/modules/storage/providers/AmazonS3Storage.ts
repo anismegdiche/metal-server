@@ -2,7 +2,6 @@
 //
 //
 //
-// Lazy-loaded @aws-sdk/client-s3 module
 import { loadEsm } from 'load-esm'
 import { merge } from "lodash-es"
 import { Readable } from "node:stream"
@@ -17,7 +16,7 @@ import type { TConvertParams } from "../../../utils/TypeUtils"
 import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from '../../errors/HttpErrors'
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
 import type { TStorageFile } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
 
@@ -36,7 +35,7 @@ export const FileTypeFromBuffer = (async () => {
 
 
 //
-export type TAmazonS3StorageConfig = {
+export type U__source_storage_s3_options = {
     "s3-access-key-id"?: string
     "s3-secret-access-key"?: string
     "s3-region"?: string
@@ -45,7 +44,7 @@ export type TAmazonS3StorageConfig = {
 }
 
 type TAmazonS3StorageParams = Required<{
-    [K in keyof TAmazonS3StorageConfig as K extends `s3-${infer U}` ? TConvertParams<U> : K]: TAmazonS3StorageConfig[K]
+    [K in keyof U__source_storage_s3_options as K extends `s3-${infer U}` ? TConvertParams<U> : K]: U__source_storage_s3_options[K]
 }>
 
 
@@ -53,7 +52,7 @@ type TAmazonS3StorageParams = Required<{
 export class AmazonS3Storage extends absStorageProvider {
 
     ConfigSource?: U_config_sources_source
-    ConfigStorage?: TStorageFilesDataOptions
+    ConfigStorage?: U__source_storage_file_options
     Params?: TAmazonS3StorageParams
 
     private _s3Client: import('@aws-sdk/client-s3').S3Client | undefined
@@ -70,7 +69,7 @@ export class AmazonS3Storage extends absStorageProvider {
 
     @Logger.LogFunction()
     Init(): void {
-        Assert.Var<TAmazonS3StorageConfig>(this.ConfigStorage, 'No configuration defined')
+        Assert.Var<U__source_storage_s3_options>(this.ConfigStorage, 'No configuration defined')
         this.Params = merge(this.DEFAULT, <TAmazonS3StorageParams>{
             accessKeyId: this.ConfigStorage["s3-access-key-id"],
             secretAccessKey: this.ConfigStorage["s3-secret-access-key"],

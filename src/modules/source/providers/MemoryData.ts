@@ -19,19 +19,19 @@ import type { TSchemaRequestAddEntity, TSchemaRequestDelete, TSchemaRequestInser
 import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TOptionalParameter } from "../@types"
 
 
 //
-export type TMemoryDataOptions = {
+export type U__source_memory_options = {
     autocreate?: boolean            // v0.3, Auto create table if not exist
 }
 
 
 //
-export type TMemoryDataConfig = {
+export type U__source_memory = {
     database: string,
-    options?: TMemoryDataOptions
+    options?: U__source_memory_options
 }
 
 
@@ -40,10 +40,10 @@ export class MemoryData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER?.MEMORY
-    Config: TMemoryDataConfig = <TMemoryDataConfig>{}
+    Config: U__source_memory = <U__source_memory>{}
     Connection?: DataBase = undefined
 
-    DEFAULT: Partial<TMemoryDataConfig> = {
+    DEFAULT: Partial<U__source_memory> = {
         options: {
             autocreate: false
         }
@@ -58,7 +58,7 @@ export class MemoryData extends absDataProvider {
         await super.Init(source, sourceConfig)
         this.Config = merge(
             this.DEFAULT,
-            sourceConfig as TMemoryDataConfig
+            sourceConfig as U__source_memory
         )
     }
 

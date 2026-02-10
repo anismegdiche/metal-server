@@ -8,7 +8,7 @@ import type { U_config_sources_source } from "../core/types/U_config_sources"
 import { HttpErrorLog } from "../errors/HttpErrors"
 import { DATA_PROVIDER } from "./@consts"
 import { DataProvider } from "./DataProvider"
-import type { TSource } from "./types/TSource"
+import type { TSource } from "./@types"
 
 
 //

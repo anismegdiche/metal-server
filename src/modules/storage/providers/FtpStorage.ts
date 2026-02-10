@@ -14,12 +14,12 @@ import type { TConvertParams } from "../../../utils/TypeUtils"
 import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
 import type { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
 
 //
-export type TFtpStorageConfig = {
+export type U__source_storage_ftp_options = {
     "ftp-host": string
     "ftp-port"?: TIpPort
     "ftp-user": string
@@ -29,14 +29,14 @@ export type TFtpStorageConfig = {
 }
 
 type TFtpStorageParams = Required<{
-    [K in keyof TFtpStorageConfig as K extends `ftp-${infer U}` ? TConvertParams<U> : K]: TFtpStorageConfig[K]
+    [K in keyof U__source_storage_ftp_options as K extends `ftp-${infer U}` ? TConvertParams<U> : K]: U__source_storage_ftp_options[K]
 }>
 
 //
 export class FtpStorage extends absStorageProvider {
 
     ConfigSource?: U_config_sources_source
-    ConfigStorage?: TStorageFilesDataOptions
+    ConfigStorage?: U__source_storage_file_options
     Params?: TFtpStorageParams
 
     #FtpClient: Ftp.Client = new Ftp.Client()

@@ -1,7 +1,11 @@
-import z from "zod"
-import { z_U_config_server_authentication_demo } from "./U_config_server_authentication_demo";
-import { z_U_config_server_authentication_local } from "./U_config_server_authentication_local";
-import { z_U_config_server_authentication_oidc } from "./U_config_server_authentication_oidc";
+//
+//
+//
+import z from "zod";
+//
+import { z_U_config_server_authentication_demo } from "../providers/DemoAuth";
+import { z_U_config_server_authentication_local } from "../providers/LocalAuth";
+import { z_U_config_server_authentication_oidc } from "../providers/OidcAuth";
 
 
 //

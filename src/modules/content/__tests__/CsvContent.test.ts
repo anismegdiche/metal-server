@@ -1,10 +1,10 @@
 import { Readable } from "node:stream"
-import { CsvContent } from "../providers/CsvContent"
-import type { TCsvContentConfig } from "../types/TCsvContentConfig"
 import { DataTable } from "../../../types/DataTable"
+import type { U__source_options_content_csv } from "../providers/CsvContent"
+import { CsvContent } from "../providers/CsvContent"
 
 describe('CsvContent', () => {
-    const contentConfig: TCsvContentConfig = <TCsvContentConfig>{
+    const contentConfig: U__source_options_content_csv = <U__source_options_content_csv>{
         "csv-delimiter": ',',
         "csv-newline": '\n',
         "csv-header": true,
@@ -54,7 +54,7 @@ describe('CsvContent', () => {
                 "csv-skip-empty": 'greedy'
             }
 
-            csvContent.Config = options as TCsvContentConfig
+            csvContent.Config = options as U__source_options_content_csv
 
             csvContent.InitContent(name, content)
 

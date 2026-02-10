@@ -20,7 +20,7 @@ import { WebServiceData } from "./WebServiceData"
 
 
 //
-export type TMetalDataConfig = {
+export type U__source_metal = {
     host: TUrl
     user: string
     password: string
@@ -33,10 +33,10 @@ export class MetalData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.METAL
-    Config: TMetalDataConfig = <TMetalDataConfig>{}
+    Config: U__source_metal = <U__source_metal>{}
     Connection?: WebServiceData
 
-    DEFAULT: TMetalDataConfig = {
+    DEFAULT: U__source_metal = {
         host: 'http://127.0.0.1:3000',
         user: '',
         password: '',

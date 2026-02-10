@@ -1,10 +1,10 @@
 import { Readable } from "node:stream"
 import { DataTable } from '../../../types/DataTable'
 import { JsonContent } from '../providers/JsonContent'
-import type { TContentConfig } from "../@types"
+import type { U__source_options_content } from "../@types"
 
 describe('JsonContent', () => {
-    const contentConfig: TContentConfig = {
+    const contentConfig: U__source_options_content = {
         "json-path": 'data'
     }
 

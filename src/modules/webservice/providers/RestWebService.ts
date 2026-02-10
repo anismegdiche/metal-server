@@ -15,20 +15,19 @@ import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { HttpErrorInternalServerError, HttpErrorSwitch, NormalizeError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { TConfigSourceWebService, TWebServiceDataOptions } from "../../source/providers/WebServiceData"
+import type { U__source_webservice, U__source_webservice_options } from "../../source/providers/WebServiceData"
 import { ENDPOINT, HEADER } from "../@consts"
 import { absWebServiceProvider } from '../base/absWebServiceProvider'
-
 
 //
 export class RestWebService extends absWebServiceProvider {
 
-    DEFAULT: Partial<TWebServiceDataOptions> = {
+    DEFAULT: Partial<U__source_webservice_options> = {
         content: CONTENT.JSON
     }
 
-    ConfigSource?: TConfigSourceWebService
-    ConfigSourceOptions?: TWebServiceDataOptions
+    ConfigSource?: U__source_webservice
+    ConfigSourceOptions?: U__source_webservice_options
     Client?: AxiosInstance
 
     Headers: Record<string, string>[] = []
@@ -37,7 +36,7 @@ export class RestWebService extends absWebServiceProvider {
         super()
     }
 
-    SetConfig(configSource: TConfigSourceWebService): void {
+    SetConfig(configSource: U__source_webservice): void {
         super.SetConfig(configSource)
     }
 

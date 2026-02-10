@@ -1,18 +1,17 @@
 //
 //
 //
-//
 import { merge } from 'lodash-es'
 //
 import { DataTable, type TRowsCopyParams } from "../../../types/DataTable"
 import type { TJson } from "../../../types/TJson"
 import type { TUrl } from "../../../types/TUrl"
+import { Assert } from '../../../utils/Assert'
 import { Logger, VERBOSITY } from "../../../utils/Logger"
-import { z_TEndpoint } from "../../../utils/Schemas"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Cache } from "../../cache/Cache"
 import { CONTENT } from "../../content/@consts"
-import type { TContentConfig } from "../../content/@types"
+import type { U__source_options_content } from "../../content/@types"
 import type { IContentProvider } from "../../content/base/IContentProvider"
 import { ContentProvider } from "../../content/ContentProvider"
 import { RESPONSE } from "../../core/@consts"
@@ -24,16 +23,16 @@ import type { TContext } from "../../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { ENDPOINT, WEBSERVICE } from "../../webservice/@consts"
-import type { TWebServiceEndpoint } from "../../webservice/@types"
+import { type TEndpoint, type TWebServiceEndpoint } from '../../webservice/@types'
 import { absWebServiceProvider } from "../../webservice/base/absWebServiceProvider"
 import { WebServiceProvider } from "../../webservice/WebServiceProvider"
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import type { TOptionalParameter } from "../types/TOptionalParameter"
+import type { TOptionalParameter } from "../@types"
 
 
 //
-export type TWebServiceDataOptions = {
+export type U__source_webservice_options = {
     type: WEBSERVICE
     content: CONTENT
     endpoints: {
@@ -49,12 +48,12 @@ export type TWebServiceDataOptions = {
         [ENDPOINT.ITEM_DELETE]?: TWebServiceEndpoint
     }
 }
-    & TContentConfig
+    & U__source_options_content
 
-export type TConfigSourceWebService = {
+export type U__source_webservice = {
     provider: DATA_PROVIDER.WEBSERVICE
     host: TUrl
-    options: TWebServiceDataOptions
+    options: U__source_webservice_options
 }
 
 
@@ -63,7 +62,7 @@ export class WebServiceData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.WEBSERVICE
-    Config: TConfigSourceWebService | undefined
+    Config: U__source_webservice | undefined
     Connection?: absWebServiceProvider
 
     // WebServiceData
@@ -262,8 +261,8 @@ export class WebServiceData extends absDataProvider {
 
         const endpointUpdate = this.Connection.Endpoints.get(ENDPOINT.ITEM_UPDATE)
 
-        if (!endpointUpdate || !z_TEndpoint.safeParse(endpointUpdate).success)
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
+        Assert.Condition(endpointUpdate !== undefined, `${this.SourceName}: Invalid endpoint in WebService provider`)
+        Assert.Var<TEndpoint>(this.Connection.IsEndpoint(endpointUpdate), `${this.SourceName}: Invalid endpoint in WebService provider`)
 
         using keysCollection = await this.File.get(entity)!.Get(
             <TRowsCopyParams>{
@@ -346,8 +345,9 @@ export class WebServiceData extends absDataProvider {
 
         const endpointDelete = this.Connection.Endpoints.get(ENDPOINT.ITEM_DELETE)
 
-        if (!endpointDelete || !z_TEndpoint.safeParse(endpointDelete).success)
-            throw new HttpErrorInternalServerError(`${this.SourceName}: Invalid endpoint in WebService provider`)
+        Assert.Condition(endpointDelete !== undefined, `${this.SourceName}: Invalid endpoint in WebService provider`)
+        Assert.Var<TEndpoint>(this.Connection.IsEndpoint(endpointDelete), `${this.SourceName}: Invalid endpoint in WebService provider`)
+        
 
         using keysCollection = await this.File.get(entity)!.Get(
             <TRowsCopyParams>{

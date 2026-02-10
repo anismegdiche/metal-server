@@ -15,7 +15,7 @@ async OCr.ts #dev  {cm:2026-01-23} {h}
 CSV file data test #test {start:2026-01-27T21:12:09} {cm:2026-01-30} {duration:2d_21h20m} {h}
 hot load after plan reload #fix
 
-plan should stop if error in step #feature {f} {start:2026-02-08T10:50:25} {cm:2026-02-08} {duration:50m}
+plan should stop if error in step #feature {f} {start:2026-02-08T10:50:25} {cm:2026-02-08} {duration:50m} {h}
 plan should be configured on-error: stop/continue, can be a common template starting with _ that config is added for steps #feature
 TconfigSource, U_config_sources infer and other U_config sections {start:2026-01-30T00:49:52} {cm:2026-01-31} {duration:1d_12h58m} {h}
 AiDocker HostConfig {start:2026-01-30T00:50:31} {cm:2026-01-31} {duration:1d_11h45m} {h}

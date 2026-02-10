@@ -21,8 +21,8 @@ import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchem
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse";
 import { DATA_PROVIDER } from "../@consts";
 import { absDataProvider } from "../base/absDataProvider";
-import type { TDataListEntity } from "../types/TDataListEntity";
-import type { TOptionalParameter } from '../types/TOptionalParameter';
+import type { TDataListEntity } from "../@types";
+import type { TOptionalParameter } from '../@types';
 import { MongoDbHelper } from "./MongoDbHelper";
 
 
@@ -38,7 +38,7 @@ type Filter<_T> = object;
 type UpdateFilter<_T> = object;
 
 //
-export type TMongoDbDataConfig = {
+export type U__source_mongodb = {
     provider: DATA_PROVIDER.MONGODB,
     host: string,
     database?: string,
@@ -64,10 +64,10 @@ export class MongoDbData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.MONGODB
-    Config: TMongoDbDataConfig = <TMongoDbDataConfig>{}
+    Config: U__source_mongodb = <U__source_mongodb>{}
     Connection?: import('mongodb').MongoClient = undefined
 
-    DEFAULT: Partial<TMongoDbDataConfig> = {
+    DEFAULT: Partial<U__source_mongodb> = {
         host: 'mongodb://127.0.0.1:27017/'
     }
 
@@ -78,7 +78,7 @@ export class MongoDbData extends absDataProvider {
     @Logger.LogFunction()
     async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
         await super.Init(source, sourceConfig)
-        this.Config = merge(this.DEFAULT, sourceConfig as TMongoDbDataConfig)
+        this.Config = merge(this.DEFAULT, sourceConfig as U__source_mongodb)
         // Just load the module to ensure it's available
         await MongoDbData._loadMongoDb();
     }

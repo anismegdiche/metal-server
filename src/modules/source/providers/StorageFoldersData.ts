@@ -25,10 +25,10 @@ import { STORAGE } from '../../storage/@consts'
 import type { TStorageFile } from '../../storage/@types'
 import { absStorageProvider } from '../../storage/base/absStorageProvider'
 import { StorageProvider } from '../../storage/StorageProvider'
-import type { TStorageConfig } from '../../storage/types/TStorageConfig'
+import type { U__source_storage_options } from "../../storage/@types"
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from '../base/absDataProvider'
-import type { TOptionalParameter } from '../types/TOptionalParameter'
+import type { TOptionalParameter } from "../@types"
 
 
 //
@@ -37,17 +37,17 @@ const FLD_OLD_NAME = "old_name"
 
 
 //
-export type TStorageFoldersDataOptions = {
+export type U__source_storage_folder_options = {
     storage?: STORAGE
     autocreate?: boolean
     "allow-delete"?: boolean
     "folders-pattern": string
     "files-pattern": string
-} & TStorageConfig
+} & U__source_storage_options
 
 export type TStorageFoldersDataConfig = {
     provider: DATA_PROVIDER.STORAGE
-    options: TStorageFoldersDataOptions
+    options: U__source_storage_folder_options
 }
 
 
@@ -72,7 +72,7 @@ export class StorageFoldersData extends absDataProvider {
             "allow-delete": false,
             "folders-pattern": "*.*",
             "files-pattern": "*.*"
-        } as TStorageFoldersDataOptions
+        } as U__source_storage_folder_options
     }
 
     constructor() {

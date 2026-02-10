@@ -4,6 +4,7 @@
 import { XMLBuilder, XMLParser, type X2jOptions, type XmlBuilderOptions } from 'fast-xml-parser'
 import { merge } from 'lodash-es'
 import { Readable } from "node:stream"
+import z from "zod"
 //
 import type { TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
@@ -13,22 +14,32 @@ import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
-import { z_TXmlContentConfig } from "../../../utils/Schemas"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { TContentConfig } from "../@types"
 import { absContentProvider } from "../base/absContentProvider"
-import type { TXmlContentConfig } from "../types/TXmlContentConfig"
+
+
+//
+
+export const z_U__source_options_content_xml = z.object({
+    "xml-path": z.string().describe("XML path, if undefined will return the whole XML").optional(),
+    "xml-ignore-attributes": z.boolean().describe("Ignore XML attributes, default is true").optional(),
+    "xml-attribute-prefix": z.string().describe("Prefix for XML attributes, default is `@`").optional(),
+    "xml-remove-ns-prefix": z.boolean().describe("remove namespace string from tag and attribute names, default `true`").optional(),
+});
+
+
+//
+export type U__source_options_content_xml = z.infer<typeof z_U__source_options_content_xml>
 
 
 //
 export class XmlContent extends absContentProvider {
 
+    Params: U__source_options_content_xml | undefined
 
-    Params: TXmlContentConfig | undefined
-
-    DEFAULT = {
+    DEFAULT: U__source_options_content_xml = {
         "xml-path": undefined,
         "xml-ignore-attributes": true,
         "xml-attribute-prefix": "@",
@@ -38,7 +49,7 @@ export class XmlContent extends absContentProvider {
     // XML Content
     ParserOptions: X2jOptions = {}
 
-    SetConfig(contentConfig: TContentConfig): void {
+    SetConfig(contentConfig: U__source_options_content_xml): void {
         super.SetConfig(contentConfig)
         this.Params = merge(this.DEFAULT, this.Config)
         this.ParserOptions = {
@@ -56,8 +67,8 @@ export class XmlContent extends absContentProvider {
 
     @Logger.LogFunction(['$context'])
     async Get(rowsParams: TRowsCopyParams, $context: Partial<TContext>): Promise<DataTable> {
-        Assert.Var<TXmlContentConfig>(this.Params,
-            z_TXmlContentConfig.safeParse(this.Params).success,
+        Assert.Var<U__source_options_content_xml>(this.Params,
+            z_U__source_options_content_xml.safeParse(this.Params).success,
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content,
@@ -90,8 +101,8 @@ export class XmlContent extends absContentProvider {
 
     @Logger.LogFunction(true)
     async Set(data: DataTable, $context: Partial<TContext>): Promise<Readable> {
-        Assert.Var<TXmlContentConfig>(this.Params,
-            z_TXmlContentConfig.safeParse(this.Params).success,
+        Assert.Var<U__source_options_content_xml>(this.Params,
+            z_U__source_options_content_xml.safeParse(this.Params).success,
             'Params is not defined')
 
         Assert.Var<VirtualFileSystem>(this.Content,

@@ -16,20 +16,20 @@ import { StringUtils } from '../../../utils/StringUtils'
 import type { TConvertParams } from '../../../utils/TypeUtils'
 import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
 import type { TStorageFile } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
 
 
 //
-export type TAzureDataLakeStorageConfig = {
+export type U__source_storage_azdatalake_options = {
     'az-datalake-storage-account': string
     'az-datalake-container-name': string
     'az-datalake-storage-key': string
 }
 
 type TAzureDataLakeStorageParams = Required<{
-    [K in keyof TAzureDataLakeStorageConfig as K extends `az-datalake-${infer U}` ? TConvertParams<U> : K]: TAzureDataLakeStorageConfig[K]
+    [K in keyof U__source_storage_azdatalake_options as K extends `az-datalake-${infer U}` ? TConvertParams<U> : K]: U__source_storage_azdatalake_options[K]
 }>
 
 
@@ -37,7 +37,7 @@ type TAzureDataLakeStorageParams = Required<{
 export class AzureDataLakeStorage extends absStorageProvider {
 
     ConfigSource?: U_config_sources_source
-    ConfigStorage?: TStorageFilesDataOptions
+    ConfigStorage?: U__source_storage_file_options
     Params?: TAzureDataLakeStorageParams
 
     private _fileSystemClient: DataLakeFileSystemClient | undefined
@@ -57,7 +57,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
     // -----------------------------
     @Logger.LogFunction()
     Init(): void {
-        Assert.Var<TAzureDataLakeStorageConfig>(this.ConfigStorage, 'No configuration defined')
+        Assert.Var<U__source_storage_azdatalake_options>(this.ConfigStorage, 'No configuration defined')
         this.Params = merge(this.DEFAULT, <TAzureDataLakeStorageParams>{
             storageAccount: this.ConfigStorage['az-datalake-storage-account'],
             containerName: this.ConfigStorage['az-datalake-container-name'],

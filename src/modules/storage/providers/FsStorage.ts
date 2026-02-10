@@ -15,26 +15,26 @@ import type { TConvertParams } from "../../../utils/TypeUtils"
 import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
 import type { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from '../base/absStorageProvider'
 
 
 //
-export type TFsStorageConfig = {
+export type U__source_storage_fs_options = {
     "fs-folder"?: string
     autocreate?: boolean
 }
 
 type TFsStorageParams = Required<{
-    [K in keyof TFsStorageConfig as K extends `fs-${infer U}` ? TConvertParams<U> : K]: TFsStorageConfig[K]
+    [K in keyof U__source_storage_fs_options as K extends `fs-${infer U}` ? TConvertParams<U> : K]: U__source_storage_fs_options[K]
 }>
 
 
 //
 export class FsStorage extends absStorageProvider {
     ConfigSource?: U_config_sources_source
-    ConfigStorage?: TStorageFilesDataOptions
+    ConfigStorage?: U__source_storage_file_options
 
     Params?: TFsStorageParams
 
@@ -45,7 +45,7 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     Init(): void {
-        Assert.Var<TFsStorageConfig>(this.ConfigStorage, this.ConfigStorage !== undefined, 'No configuration defined')
+        Assert.Var<U__source_storage_fs_options>(this.ConfigStorage, this.ConfigStorage !== undefined, 'No configuration defined')
 
         this.Params = merge(
             this.DEFAULT, {

@@ -7,18 +7,18 @@ import { Readable } from 'node:stream'
 import { DataTable } from "../../../types/DataTable"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import type { U_config_sources_source } from '../../core/types/U_config_sources'
-import type { TStorageFilesDataOptions } from "../../source/types/TStorageFilesDataOptions"
+import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
 
 
 //
 export abstract class absStorageProvider extends clsClonable {
 
     abstract ConfigSource?: U_config_sources_source
-    abstract ConfigStorage?: TStorageFilesDataOptions
+    abstract ConfigStorage?: U__source_storage_file_options
 
     SetConfig(configSource: U_config_sources_source) {
         this.ConfigSource = configSource
-        this.ConfigStorage = configSource.options as TStorageFilesDataOptions
+        this.ConfigStorage = configSource.options as U__source_storage_file_options
         this.Init()
     }
 

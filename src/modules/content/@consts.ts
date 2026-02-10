@@ -1,10 +1,12 @@
-
+//
+//
 //
 
 
+//
 export enum CONTENT {
-    JSON = "json",// JSON files
-    CSV = "csv",// CSV files
-    XLS = "xls",// XLSX files
-    XML = "xml" // XML files
+    JSON = "json",
+    CSV = "csv",
+    XLS = "xls",
+    XML = "xml"
 }
