@@ -1,13 +1,7 @@
 {
   "todo-tree.tree.showCountsInTree": true,
-  "docwriter.style": "JSDoc",
-  "docwriter.progress.trackFunctions": true,
-  "docwriter.progress.trackTypes": true,
-  "docwriter.progress.trackClasses": true,
   "todo-tree.tree.scanMode": "workspace",
   "prettier.singleQuote": false,
-  "codescene.previewCodeHealthGate": true,
-  "codescene.enableAutoRefactor": true,
   "sonarlint.connectedMode.project": {
     "connectionId": "anismegdiche",
     "projectKey": "anismegdiche_metal-server"
@@ -37,5 +31,6 @@
   "errorLens.removeLinebreaks": false,
   "errorLens.statusBarColorsEnabled": true,
   "errorLens.statusBarIconsEnabled": true,
-  "snyk.advanced.autoSelectOrganization": false
+  "snyk.advanced.autoSelectOrganization": false,
+  "vitest.applyDiagnostic": true
 }

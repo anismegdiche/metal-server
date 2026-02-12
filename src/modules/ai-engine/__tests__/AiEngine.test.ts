@@ -5,7 +5,7 @@ import { ConfigManager } from '../../core/ConfigManager';
 import { AI_ENGINE } from '../@consts';
 import { AiDocker } from '../AiDocker';
 import type { IAiEngine } from '../base/IAiEngine';
-import { Plans } from '../../plan/Plans';
+import { PlansManager } from '../../plan/PlansManager';
 
 vi.mock('../../core/ConfigManager');
 vi.mock('../AiDocker', () => ({
@@ -36,7 +36,7 @@ describe('AiEngine', () => {
 
         it('should extract ai-tasks from plans', () => {
             vi.mocked(ConfigManager.Has).mockReturnValue(true);
-            Plans.Config ={
+            PlansManager.Config ={
                 p1: [
                     [
                         { run: { ai: 'text', task: 't1' } }
@@ -76,7 +76,7 @@ describe('AiEngine', () => {
         });
 
         it('should return early when no ai engines are configured', async () => {
-            Plans.Config = {};
+            PlansManager.Config = {};
 
             await AiEngine.Init();
 
@@ -85,7 +85,7 @@ describe('AiEngine', () => {
 
         it('should initialize docker and build images before creating providers', async () => {
             vi.mocked(ConfigManager.Has).mockReturnValue(true);
-            Plans.Config = {
+            PlansManager.Config = {
                 p1: [
                     [
                         { run: { ai: AI_ENGINE.TEXT, task: 't1' } },

@@ -11,8 +11,8 @@ import type { TUserTokenInfo } from '../auth/@types'
 import { Roles } from '../auth/Roles'
 import { ConfigManager } from '../core/ConfigManager'
 import { HttpResponse } from "../core/HttpResponse"
-import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../errors/HttpErrors"
 import type { TInternalResponse } from '../core/types/TInternalResponse'
+import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../errors/HttpErrors"
 import { Plans } from "./Plans"
 import type { TSchedule } from './types/TSchedule'
 import type { U_config_schedules, U_config_schedules_schedule } from './types/U_config_schedules'
@@ -70,11 +70,11 @@ export class Schedule {
 
         const { plan } = scheduleParams
 
-        Plans.Plans.get(plan)?.ProcessSchedule(scheduleParams)
+        Plans.get(plan)?.ProcessSchedule(scheduleParams)
             .then(() => {
                 Logger.Info(`${Logger.Out} Schedule.JobProcess: job '${jobName}' terminated`)
             })
-            .catch((e) => {
+            .catch((e: unknown) => {
                 const _e = NormalizeError(e)
                 throw new HttpErrorInternalServerError(`Unable to process scheduled job '${jobName}': ${_e.message} `)
             })

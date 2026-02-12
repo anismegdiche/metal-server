@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { Plans } from '../Plans';
+import { PlansManager } from '../PlansManager';
+import { Plans } from "../Plans";
 import { ConfigManager } from '../../core/ConfigManager';
 import { Plan } from '../Plan';
 
@@ -12,10 +14,10 @@ vi.mock('../Plan', () => {
     return { Plan };
 });
 
-describe('Plans', () => {
+describe('PlansManager', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        Plans.Plans.clear();
+        Plans.clear();
     });
 
     describe('Init', () => {
@@ -26,12 +28,12 @@ describe('Plans', () => {
                 'plan2': {}
             });
 
-            await Plans.Init();
+            await PlansManager.Init();
 
             expect(Plan).toHaveBeenCalledTimes(2);
-            expect(Plans.Plans.size).toBe(2);
-            expect(Plans.Plans.has('plan1')).toBe(true);
-            expect(Plans.Plans.has('plan2')).toBe(true);
+            expect(Plans.size).toBe(2);
+            expect(Plans.has('plan1')).toBe(true);
+            expect(Plans.has('plan2')).toBe(true);
         });
     });
 });

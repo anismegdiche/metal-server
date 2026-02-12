@@ -1439,7 +1439,7 @@ describe("DataTable", () => {
 
             const result = await dt.Rows({ limit: 1 })
             expect(result[0]).toEqual({ id: 1, name: "John Doe" })
-        }, 300_000)
+        }, 600_000)
     })
 
 

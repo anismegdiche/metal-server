@@ -1,5 +1,7 @@
 //
 
+import { MemoryData } from "../source/providers/MemoryData";
+
 
 export enum STEP {
     DEBUG = "debug",
@@ -27,3 +29,5 @@ export enum STEP_STATUS {
     COMPLETED = "completed",
     FAILED = "failed"
 }
+
+export const DATAPROVIDER = new MemoryData()

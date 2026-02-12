@@ -198,13 +198,13 @@ export class Logger {
             };
 
             // wrap function / getter / setter
-            if (typeof descriptor.value === "function") {
+            if (typeof descriptor?.value === "function") {
                 descriptor.value = wrap(descriptor.value);
             }
-            if (typeof descriptor.get === "function") {
+            if (typeof descriptor?.get === "function") {
                 descriptor.get = wrap(descriptor.get);
             }
-            if (typeof descriptor.set === "function") {
+            if (typeof descriptor?.set === "function") {
                 descriptor.set = wrap(descriptor.set);
             }
 

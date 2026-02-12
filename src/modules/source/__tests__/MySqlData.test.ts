@@ -17,20 +17,18 @@ vi.mock('../../cache/Cache')
 vi.mock('../../plan/Step')
 vi.mock('../providers/MemoryData', () => {
     return {
-        MemoryData: vi.fn().mockImplementation(() => {
-            return {
-                EscapeEntity: vi.fn(),
-                EscapeField: vi.fn(),
-                Init: vi.fn(),
-                Connect: vi.fn(),
-                Disconnect: vi.fn(),
-                ListEntities: vi.fn(),
-                Select: vi.fn(),
-                Insert: vi.fn(),
-                Update: vi.fn(),
-                Delete: vi.fn()
-            }
-        })
+        MemoryData: class {
+            EscapeEntity = vi.fn()
+            EscapeField = vi.fn()
+            Init = vi.fn()
+            Connect = vi.fn()
+            Disconnect = vi.fn()
+            ListEntities = vi.fn()
+            Select = vi.fn()
+            Insert = vi.fn()
+            Update = vi.fn()
+            Delete = vi.fn()
+        }
     }
 })
 

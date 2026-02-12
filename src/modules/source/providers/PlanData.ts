@@ -17,19 +17,18 @@ import type { TContext } from "../../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
+import type { TDataListEntity, TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
 import { Source } from "../Source"
-import type { TDataListEntity } from "../@types"
-import type { TOptionalParameter } from "../@types"
 
 
+//
 export class PlanData extends absDataProvider {
 
     SourceName?: string
     ProviderName = DATA_PROVIDER.PLAN
     Config: U_config_sources_source = <U_config_sources_source>{}
     Connection: undefined
-
     constructor() {
         super()
     }
@@ -56,7 +55,6 @@ export class PlanData extends absDataProvider {
 
         const { schema, entity, source } = schemaRequest
 
-
         $context = merge(
             $context,
             this.GetContext(schemaRequest)
@@ -77,7 +75,7 @@ export class PlanData extends absDataProvider {
         if (!planName)
             throw new HttpErrorBadRequest(`${schema}: plan '${source}' is missing`)
 
-        const planData = await Plans.Plans.get(planName)?.ProcessSchemaRequest(schemaRequest, sqlQuery)
+        const planData = await Plans.get(planName)?.ProcessSchemaRequest(schemaRequest, sqlQuery)
 
         const data = new DataTable(schemaRequest.entity)
 
@@ -104,14 +102,12 @@ export class PlanData extends absDataProvider {
         })
     }
 
-
     @Logger.LogFunction()
     async Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
         Logger.Error(`Insert: Not allowed for plans '${schema}', entity '${entity}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
-
 
     @Logger.LogFunction()
     async Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>> {
@@ -120,8 +116,6 @@ export class PlanData extends absDataProvider {
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
-
-
     @Logger.LogFunction()
     async Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>> {
         const { schema, entity } = schemaRequest
@@ -129,14 +123,12 @@ export class PlanData extends absDataProvider {
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
 
-
     @Logger.LogFunction()
     async AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
         const { schema } = schemaRequest
         Logger.Error(`AddEntity: Not allowed for plans '${schema}'`)
         throw new HttpErrorBadRequest("Not allowed for plans")
     }
-
 
     @Logger.LogFunction()
     async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
@@ -152,7 +144,7 @@ export class PlanData extends absDataProvider {
         if (!planName)
             throw new HttpErrorBadRequest(`${schema}: plan '${source}' is missing`)
 
-        const planEntities = Array.from(Plans.Plans.get(planName)?.Entities.keys() || [])
+        const planEntities = Array.from(Plans.get(planName)?.Entities.keys() || [])
 
         if (!planEntities || planEntities.length == 0)
             throw new HttpErrorNotFound(`${schema}: No entities found`)
@@ -171,11 +163,9 @@ export class PlanData extends absDataProvider {
         })
     }
 
-
     EscapeEntity(entity: string): string {
         return `"${entity}"`
     }
-
 
     EscapeField(field: string): string {
         return `"${field}"`

@@ -20,7 +20,6 @@ import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../errors/HttpErrors"
-import { WarnError } from "../errors/InternalError"
 import type { TContext } from "../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
 import { STEP, STEP_STATUS } from "./@consts"
@@ -68,15 +67,13 @@ export class Plan {
         Assert.Var<string>(source, `no source found for ${schema}`, new HttpErrorNotFound())
         Assert.Condition(this.Entities.has(entity), `entity '${entity}' not found in plan ${this.Name}`, new HttpErrorNotFound())
 
-        const currentDatatable = await this.ExecuteSteps(
+        const currentDatatable = await this.Run(
             schema,
             source,
             entity,
             this.Entities.get(entity)!
         )
-
         await currentDatatable.FreeSql({ sqlQuery })
-
         Logger.Debug(`${Logger.Out} Plan.ProcessSchemaRequest: ${source}.${entity}`)
         return currentDatatable
     }
@@ -94,18 +91,21 @@ export class Plan {
 
         Logger.Debug(`${Logger.In} Plan.ProcessSchedule: ${plan}.${entity}: ${JsonUtils.Stringify(entitySteps)}`)
 
-        this.ExecuteSteps(undefined, plan, entity, entitySteps)
+        this.Run(undefined, plan, entity, entitySteps)
             .then((data) => {
                 data.FreeSql({ sqlQuery })
                     .then(() => {
                         Logger.Debug(`${Logger.Out} Plan.ProcessSchedule: ${plan}.${entity}`)
                     })
             })
+            .catch((e) => {
+                Logger.Error(`${Logger.Out} Plan.ProcessSchedule: ${plan}.${entity}: ${e}`)
+            })
     }
 
     @Logger.LogFunction()
     @SynchronizerManager.Synchronized()
-    async ExecuteSteps(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: U_config_plans_plan_entity_steps): Promise<DataTable> {
+    async Run(currentSchemaName: string | undefined, currentPlanName: string, currentEntityName: string, steps: U_config_plans_plan_entity_steps): Promise<DataTable> {
 
         this._dataBase.SetTable(currentEntityName, [])
 
@@ -137,7 +137,7 @@ export class Plan {
                     status: STEP_STATUS.RUNNING
                 }
 
-                Logger.Info(`${Logger.In} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(_step)}`)
+                Logger.Info(`${Logger.In} Plan.Run '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(_step)}`)
 
                 // check loop detection
                 const _argSchema = ($context.$plan!.$current.stepArgs as TSchemaRequestBase).schema
@@ -199,7 +199,7 @@ export class Plan {
 
             switch (true) { // NOSONAR
                 case _e.message === "__BREAK__":
-                    Logger.Info(`${Logger.Out} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': user break at step '${$context.$plan!.$current.stepIndex}', ${JsonUtils.Stringify($context.$plan!.$current.stepCommand)}`)
+                    Logger.Info(`${Logger.Out} Plan.Run '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': user break at step '${$context.$plan!.$current.stepIndex}', ${JsonUtils.Stringify($context.$plan!.$current.stepCommand)}`)
                     $context = merge(
                         $context,
                         <Partial<TContext>>{
@@ -212,29 +212,15 @@ export class Plan {
                     )
                     break
                 default: {
-                    let isThrowError = true
-                    const _errorMessage = `Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify($context.$plan!.$current.stepCommand)}' is ignored because of error ${JsonUtils.Stringify(_e?.message)}`
-
-                    if (e instanceof WarnError) {
-                        Logger.Warn(_errorMessage)
-                        isThrowError = false
-                    }
-
-                    Assert.Var<DataTable>(
-                        this._dataBase.Tables[currentEntityName],
-                        `'${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`,
-                        new HttpErrorBadRequest()
-                    )
-
+                    Assert.Var<DataTable>(this._dataBase.Tables[currentEntityName], `'${$context.$plan!.name}', Entity '${$context.$plan!.entity}': Data is not set`)
+                    // trace error if debug enabled
                     if (this._dataBase.Tables[currentEntityName].MetaData[METADATA.PLAN_DEBUG] == 'error') {
-                        /* TODO In case of cross entities, only errors in the final entity are returned.
-                        Console log is working fine.
-                        */
+                        // TODO In case of cross entities, only errors in the final entity are returned.  Console log is working fine.
                         const _planErrors: TJson = {
                             [`entity(${$context.$plan!.entity}), step(${$context.$plan!.$current.stepIndex})`]: $context.$plan!.$current.stepCommand
                         }
 
-                        Logger.Debug(`${Logger.Out} Plan.ExecuteSteps '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify($context.$plan!.$current.stepArgs)}' added error ${JsonUtils.Stringify((<TJson[]>this._dataBase.Tables[currentEntityName].MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
+                        Logger.Debug(`${Logger.Out} Plan.Run '${$context.$plan!.name}', Entity '${$context.$plan!.entity}': step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify($context.$plan!.$current.stepArgs)}' added error ${JsonUtils.Stringify((<TJson[]>this._dataBase.Tables[currentEntityName].MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`)
                     }
 
                     $context = merge(
@@ -248,8 +234,7 @@ export class Plan {
                             }
                         }
                     )
-                    if (isThrowError)
-                        throw new HttpErrorInternalServerError(_errorMessage)
+                    throw new HttpErrorInternalServerError(`'${$context.$plan!.name}', Entity '${$context.$plan!.entity}': stopped at step '${$context.$plan!.$current.stepIndex},${JsonUtils.Stringify($context.$plan!.$current.stepCommand)}' because of error: ${JsonUtils.Stringify(_e?.message)}`)
                 }
             }
         }

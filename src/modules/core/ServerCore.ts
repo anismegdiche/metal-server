@@ -13,7 +13,7 @@ import { AuthProvider } from '../auth/AuthProvider'
 import { Roles } from '../auth/Roles'
 import type { U_config_server_authentication } from '../auth/types/U_config_server_authentication'
 import { Cache } from '../cache/Cache'
-import { Plans } from '../plan/Plans'
+import { PlansManager } from '../plan/PlansManager'
 import { Schedule } from '../plan/Schedule'
 import { Schema } from '../schema/Schema'
 import { DataProvider } from '../source/DataProvider'
@@ -46,9 +46,6 @@ export class ServerCore {
         // Start logger queue cleanup
         Logger.StartQueueCleanup()
 
-        // schema
-        Schema.Init(Cache.Get)
-
         // sources
         await Source.Init()
 
@@ -56,11 +53,14 @@ export class ServerCore {
         await Cache.Init(DataProvider.GetProvider)
         await Cache.Connect()
 
+        // schema
+        Schema.Init(Cache.Get)
+
         // AI        
         await AiEngine.Init()
 
         // plans
-        await Plans.Init()
+        await PlansManager.Init()
         await Schedule.Init()
 
 

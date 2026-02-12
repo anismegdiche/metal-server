@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { Plan } from '../Plan';
@@ -55,16 +56,17 @@ vi.mock('../../../utils/SynchronizerManager', () => ({
 describe('Plan', () => {
     let plan: Plan;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
         plan = new Plan('test-plan');
+        await plan.Init();
     });
 
     it('should initialize and load entities', async () => {
         vi.mocked(ConfigManager.Get).mockReturnValue({
             'entity1': [{ step1: {} }]
-        });
-
+        });   
+        
         await plan.Init();
 
         expect(plan.Entities.has('entity1')).toBe(true);
@@ -72,11 +74,11 @@ describe('Plan', () => {
     });
 
     it('should fail ProcessSchemaRequest if entity not found', async () => {
-        await expect(plan.ProcessSchemaRequest({ schema: 's', source: 's1', entity: 'missing' } as any))
+        await expect(async () => await plan.ProcessSchemaRequest({ schema: 's', source: 's1', entity: 'missing' } as any))
             .rejects.toThrow();
     });
 
-    describe('ExecuteSteps', () => {
+    describe('Run', () => {
         it('should execute steps in sequence', async () => {
             const steps = {
                 '0': { 'mock-cmd': { args: 1 } }
@@ -87,7 +89,7 @@ describe('Plan', () => {
             const executeMock = vi.fn().mockResolvedValue(mockDataTable);
             Step.ExecuteCaseMap['mock-cmd'] = executeMock;
 
-            await plan.ExecuteSteps('s', 'p', 'e1', steps as any);
+            await plan.Run('s', 'p', 'e1', steps as any);
 
             expect(executeMock).toHaveBeenCalled();
         });
@@ -109,7 +111,7 @@ describe('Plan', () => {
             Step.ExecuteCaseMap['mock-cmd-2'] = executeMock2;
             Step.ExecuteCaseMap['mock-cmd-3'] = executeMock3;
 
-            await expect(plan.ExecuteSteps('s', 'p', 'e1', steps as any))
+            await expect(plan.Run('s', 'p', 'e1', steps as any))
                 .rejects.toThrow('Test error');
 
             // First step should execute, second should fail, third should not execute
@@ -125,7 +127,7 @@ describe('Plan', () => {
                 '2': { 'mock-cmd-3': { args: 3 } }
             };
             const mockDataTable = new DataTable() as any;
-            (plan._dataBase as any).Tables['e1'] = mockDataTable;
+            plan._dataBase.Tables['e1'] = mockDataTable;
 
             const executeMock1 = vi.fn().mockResolvedValue(mockDataTable);
             const executeMock2 = vi.fn().mockRejectedValue(new Error('__BREAK__'));
@@ -135,7 +137,7 @@ describe('Plan', () => {
             Step.ExecuteCaseMap['mock-cmd-2'] = executeMock2;
             Step.ExecuteCaseMap['mock-cmd-3'] = executeMock3;
 
-            const result = await plan.ExecuteSteps('s', 'p', 'e1', steps as any);
+            const result = await plan.Run('s', 'p', 'e1', steps as any);
 
             // First two steps should execute, third should not (break stops execution)
             expect(executeMock1).toHaveBeenCalled();

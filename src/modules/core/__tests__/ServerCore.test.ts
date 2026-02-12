@@ -5,7 +5,7 @@ import { ConfigManager } from '../ConfigManager';
 import { Source } from '../../source/Source';
 import { Cache } from '../../cache/Cache';
 import { AiEngine } from '../../ai-engine/AiEngine';
-import { Plans } from '../../plan/Plans';
+import { PlansManager } from '../../plan/PlansManager';
 import { Schedule } from '../../plan/Schedule';
 import { AuthProvider } from '../../auth/AuthProvider';
 import { ServerEndpoint } from '../ServerEndpoint';
@@ -39,7 +39,7 @@ vi.mock('../../cache/Cache', () => ({
     }
 }));
 vi.mock('../../ai-engine/AiEngine');
-vi.mock('../../plan/Plans');
+vi.mock('../../plan/PlansManager');
 vi.mock('../../plan/Schedule');
 vi.mock('../../auth/AuthProvider', () => ({
     AuthProvider: {
@@ -79,7 +79,7 @@ describe('ServerCore', () => {
             expect(Cache.Init).toHaveBeenCalled();
             expect(Cache.Connect).toHaveBeenCalled();
             expect(AiEngine.Init).toHaveBeenCalled();
-            expect(Plans.Init).toHaveBeenCalled();
+            expect(PlansManager.Init).toHaveBeenCalled();
             expect(Schedule.Init).toHaveBeenCalled();
             expect(AuthProvider.SetCurrent).toHaveBeenCalledWith('local');
             expect(ServerEndpoint.InitApi).toHaveBeenCalled();
