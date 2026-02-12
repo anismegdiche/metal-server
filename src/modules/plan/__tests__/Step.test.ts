@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DataTable } from '../../../types/DataTable';
-import { REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, DataTableUtils } from '../../../utils/DataTableUtils';
+import { REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY, DataTableUtils, JOIN_TYPE } from '../../../utils/DataTableUtils';
 import { ConfigManager } from '../../core/ConfigManager';
 import { HttpResponse } from '../../core/HttpResponse';
 import type { TInternalResponse } from '../../core/types/TInternalResponse';
@@ -11,17 +11,21 @@ import type { TSchemaResponse } from '../../schema/types/TSchemaResponse';
 import { DATA_ENTITY_TYPE } from '../../source/@consts';
 import { Plan } from '../Plan';
 import { Plans } from "../Plans";
+import { AiEngine } from '../../ai-engine/AiEngine';
 import { Anonymize } from '../steps/Anonymize';
 import { Break } from '../steps/Break';
 import { Debug } from '../steps/Debug';
 import { Delete } from '../steps/Delete';
 import { Insert } from '../steps/Insert';
+import { Join } from '../steps/Join';
 import { ListEntities } from '../steps/ListEntities';
 import { Omit } from '../steps/Omit';
 import { Pick } from '../steps/Pick';
 import { RemoveDuplicates } from '../steps/RemoveDuplicates';
+import { Run } from '../steps/Run';
 import { Select } from '../steps/Select';
 import { Sort } from '../steps/Sort';
+import { Sync } from '../steps/Sync';
 import { Update } from '../steps/Update';
 import type { TStep } from '../types/TStep';
 
@@ -735,6 +739,161 @@ describe('Step', () => {
             };
             await Omit(step as any);
             expect(myPlanEntity1.Omit).toHaveBeenCalledWith(['f1']);
+        });
+    });
+
+    describe('Join', () => {
+        it('should perform left join with specified parameters', async () => {
+            const spyLeftJoin = vi.spyOn(DataTableUtils, 'LeftJoin').mockResolvedValue(myPlanEntity1);
+            const mockResponse = {
+                Body: {
+                    schema: "mySchema",
+                    entity: "myPlanEntity2",
+                    status: 200,
+                    data: myPlanEntity2
+                }
+            };
+            const spySchemaSelect = vi.spyOn(Schema, 'Select').mockResolvedValue(mockResponse as any);
+            vi.spyOn(Schema, 'IsSchemaResponse').mockReturnValue(true);
+            vi.spyOn(myPlanEntity2, 'Count').mockResolvedValue(3);
+
+            const step: TStep = {
+                currentSchemaName: "mySchema",
+                currentPlanName: "myPlan",
+                currentDataTable: myPlanEntity1,
+                stepArgs: {
+                    type: JOIN_TYPE.LEFT,
+                    schema: "mySchema",
+                    entity: "myPlanEntity2",
+                    "left-field": "name",
+                    "right-field": "name"
+                }
+            }
+
+            const result = await Join(step)
+            expect(spySchemaSelect).toHaveBeenCalled()
+            expect(spyLeftJoin).toHaveBeenCalledWith(myPlanEntity1, myPlanEntity2, "name", "name")
+            expect(result).toBe(myPlanEntity1)
+            spyLeftJoin.mockRestore();
+            spySchemaSelect.mockRestore();
+        });
+
+        it('should throw error for invalid join parameters', async () => {
+            const step: TStep = {
+                currentSchemaName: "mySchema",
+                currentPlanName: "myPlan",
+                currentDataTable: myPlanEntity1,
+                stepArgs: {
+                    type: "invalid-type" as any
+                }
+            }
+
+            await expect(Join(step)).rejects.toThrow(HttpErrorInternalServerError)
+        });
+    });
+
+    describe('Run', () => {
+        it('should execute AI engine with specified parameters', async () => {
+            const mockAiEngine = {
+                Run: vi.fn().mockResolvedValue({ result: "AI response" })
+            };
+            const mockMap = new Map();
+            mockMap.set("openai-default", mockAiEngine);
+            vi.spyOn(AiEngine.AiEnginesInstance, 'get').mockReturnValue(mockAiEngine as any);
+            myPlanEntity1.Rows = vi.fn().mockResolvedValue([
+                { __idx__: "test-id", name: "David", age: 28, content: "Generate summary" }
+            ]);
+
+            const step: TStep = {
+                currentSchemaName: "mySchema",
+                currentPlanName: "myPlan",
+                currentDataTable: myPlanEntity1,
+                stepArgs: {
+                    ai: "openai",
+                    input: "name",
+                    output: "summary",
+                    task: "sentiment-analysis"
+                } as any
+            }
+
+            const result = await Run(step)
+            expect(mockAiEngine.Run).toHaveBeenCalledWith({
+                data: "David",
+                ai: "openai",
+                input: "name",
+                output: "summary",
+                task: "sentiment-analysis"
+            })
+            expect(result).toBeInstanceOf(DataTable)
+        });
+
+        it('should throw error for invalid run parameters', async () => {
+            const step: TStep = {
+                currentSchemaName: "mySchema",
+                currentPlanName: "myPlan",
+                currentDataTable: myPlanEntity1,
+                stepArgs: {} as any
+            }
+
+            await expect(Run(step)).rejects.toThrow(HttpErrorInternalServerError)
+        });
+    });
+
+    describe('Sync', () => {
+        it('should sync data between schema entities', async () => {
+            const mockResponse = {
+                Body: {
+                    schema: "sourceSchema",
+                    entity: "sourceEntity", 
+                    status: 200,
+                    data: myPlanEntity1
+                }
+            };
+            const spySchemaSelect = vi.spyOn(Schema, 'Select').mockResolvedValue(mockResponse as any);
+            vi.spyOn(Schema, 'IsSchemaResponse').mockReturnValue(true);
+            vi.spyOn(myPlanEntity1, 'Count').mockResolvedValue(3);
+            myPlanEntity1.Rows = vi.fn().mockResolvedValue([{ name: "David", age: 28 }]);
+            const spyUpsert = vi.spyOn(DataTableUtils, 'SyncReport' as any).mockResolvedValue({
+                UpdatedRows: [],
+                InsertedRows: [],
+                DeletedRows: [],
+                AddedRows: []
+            });
+
+            const step: TStep = {
+                currentSchemaName: "mySchema",
+                currentPlanName: "myPlan",
+                currentDataTable: myPlanEntity1,
+                stepArgs: {
+                    from: {
+                        schema: "sourceSchema",
+                        entity: "sourceEntity"
+                    },
+                    to: {
+                        schema: "targetSchema",
+                        entity: "targetEntity"
+                    },
+                    id: "name"
+                }
+            }
+
+            const result = await Sync(step)
+            expect(spySchemaSelect).toHaveBeenCalled()
+            expect(spyUpsert).toHaveBeenCalled()
+            expect(result).toBe(myPlanEntity1)
+            spySchemaSelect.mockRestore();
+            spyUpsert.mockRestore();
+        });
+
+        it('should throw error for invalid sync parameters', async () => {
+            const step: TStep = {
+                currentSchemaName: "mySchema",
+                currentPlanName: "myPlan",
+                currentDataTable: myPlanEntity1,
+                stepArgs: {} as any
+            }
+
+            await expect(Sync(step)).rejects.toThrow(HttpErrorInternalServerError)
         });
     });
 

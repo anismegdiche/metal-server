@@ -40,4 +40,4 @@ step > map js script {f}
 refactor: readstream #refactor
 step: split functions #refactor {f} {start:2026-02-11T09:56:03} {cm:2026-02-12} {duration:1d_08h45m} {h}
 Plan > should stop on error (v1) {f} {start:2026-02-11T10:00:00} {cm:2026-02-12} {duration:1d_08h48m} {h}
-Step > add missing tests {f} {start:2026-02-12T18:49:54}
+Step > add missing tests {f} {start:2026-02-12T18:49:54} {cm:2026-02-12} {duration:44m} {h}

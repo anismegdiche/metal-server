@@ -9,7 +9,7 @@ import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
-import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
+import { HttpErrorNotFound } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { Schema } from "../../schema/Schema"
@@ -19,6 +19,7 @@ import type { TOptionalParameter } from "../../source/@types"
 import { DATAPROVIDER, STEP } from "../@consts"
 import { Plans } from "../Plans"
 import type { TStep } from "../types/TStep"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 
 
 //
@@ -75,10 +76,21 @@ async function _selectSchema(step: TStep): Promise<DataTable> {
         schema: schema ?? currentSchemaName
     })
 
-    if (_intResp.Body && Schema.IsSchemaResponse(_intResp.Body) && (await _intResp.Body.data.Count()) > 0)
-        return _intResp.Body.data
-    else
-        throw new HttpErrorInternalServerError(`${Logger.Out} ${STEP.SELECT}: Schema '${schema}' and entity '${entity}' are not valid`)
+    const _schemaResponse = _intResp?.Body
+
+    Assert.Var<TSchemaResponse>(
+        _schemaResponse,
+        Schema.IsSchemaResponse(_schemaResponse) == true,
+        `${STEP.SELECT}: Schema '${schema}' and entity '${entity}' are not valid`)
+
+    const _data = _schemaResponse?.data
+
+    Assert.Var<DataTable>(
+        _data,
+        DataTable.Is(_data) == true,
+        `${STEP.SELECT}: Schema '${schema}' and entity '${entity}' are not valid`)
+
+    return _data
 }
 
 async function _selectPlan(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
