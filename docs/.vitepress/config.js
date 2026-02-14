@@ -45,9 +45,10 @@ export default withMermaid({
         text: 'Documentation', items: [
           { text: 'Configuration file', link: '/documentation/config-yml' },
           { text: 'Data Providers Configurations', link: '/documentation/data-providers-config' },
+          { text: 'Container Provider Configurations', link: '/documentation/container-provider-config' },
+          { text: 'AI Engines Configurations', link: '/documentation/ai-engines' },
           { text: 'Optional Parameters', link: '/documentation/optional-parameters' },
           { text: 'Dynamic Expression Engine', link: '/documentation/dynamic-expression-engine' },
-          { text: 'AI Engines', link: '/documentation/ai-engines' },
           { text: 'Understanding Authentication', link: '/guides/authentication' },
           { text: 'Metal API', link: '/documentation/rest-api' },
         ],
@@ -78,7 +79,6 @@ export default withMermaid({
             { text: 'users', link: '/documentation/config-yml#users' },
             { text: 'sources', link: '/documentation/config-yml#sources' },
             { text: 'schemas', link: '/documentation/config-yml#schemas' },
-            { text: 'AI Engines', link: '/documentation/ai-engines' },
             { text: 'plans', link: '/documentation/config-yml#plans' },
             { text: 'schedules', link: '/documentation/config-yml#schedules' },
           ],
@@ -93,14 +93,6 @@ export default withMermaid({
             { text: 'Schema', link: '/documentation/rest-api#schema' },
             { text: 'Plan', link: '/documentation/rest-api#plan' },
             { text: 'Cache', link: '/documentation/rest-api#cache' },
-          ],
-        },
-        {
-          text: 'Advanced',
-          collapsible: false,
-          items: [
-            { text: 'Optional Parameters', link: '/documentation/optional-parameters' },
-            { text: 'Dynamic Expression Engine', link: '/documentation/dynamic-expression-engine' },
           ],
         },
         // {

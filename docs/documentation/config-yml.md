@@ -215,7 +215,7 @@ The parameters that can be configured inside the `ai-engines` section include:
 | `cors`.`allowed-headers`  | string  | `Content-Type,Authorization,X-Requested-With` | N        | CORS Allowed headers for AI Engine services.                                     | <Badge type="info" text="v0.5+" /> |
 
 ::: tip ℹ️ NOTE
-For more detailed information about how to configure a Container Provider in `params`, See: [Container Providers Configurations](./container-providers-config.md)
+For more detailed information about how to configure a Container Provider in `params`, See: [Container Provider Configurations](./container-provider-config.md)
 :::
 
 ## `roles` <Badge type="default" text="v0.3+" />
@@ -612,6 +612,7 @@ The steps that can be configured inside a plan can be:
 | `remove-duplicates` | to remove duplicated rows                                                                        | <Badge type="default" text="v0.3+" /> |
 | `pick`              | fields to keep from actual data                                                                  | <Badge type="info" text="v0.5+" />    |
 | `omit`              | to remove fields from actual data                                                                | <Badge type="info" text="v0.5+" />    |
+| `map`               | to transform data using custom JavaScript code                                                   | <Badge type="info" text="v0.5+" />    |
 
 ### `list-entities` <Badge type="default" text="v0.3+" />
 
@@ -919,7 +920,68 @@ plans:
           - display_name
 ```
 
-### 📜`run` <Badge type="info" text="v0.5+" />
+### 📜`map` <Badge type="info" text="v0.5+" />
+
+To transform data using custom JavaScript code. The script is executed for each row in the current data table, where `$row` represents the current row object.
+
+The parameters that can be configured inside `map` tag are :
+
+| Name       | Type   | Description                               | JS Context                              | Metal version                      |
+| ---------- | ------ | ----------------------------------------- | --------------------------------------- | ---------------------------------- |
+| 📜`script` | string | JavaScript code to transform each row     | [`$row`](dynamic-expression-engine#row) | <Badge type="info" text="v0.5+" /> |
+| `on-error` | enum   | Error handling strategy when script fails | -                                       | <Badge type="info" text="v0.5+" /> |
+
+> 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
+
+**`on-error` options:**
+
+- `throw` (default): Stop execution and throw error
+- `skip`: Skip the problematic row and continue processing
+- `mark`: Keep the row but add `__map_error__` field with error message
+
+
+**Example**
+
+```yaml
+plans:
+  my-plan:
+    my-entity:
+      - select:
+          schema: demo
+          entity: products
+      - map:
+          script: |
+            $row.total = $row.price * $row.quantity;
+            $row.category = $row.category.toUpperCase();
+            return $row;
+          on-error: skip
+```
+
+In this example:
+
+- Each row gets a new `total` field calculated as `price * quantity`
+- The `category` field is converted to uppercase
+- The modified row is returned
+- If any row processing fails, that row is skipped and processing continues
+
+::: tip ℹ️ TIP
+The script has access to:
+
+- `$row`: The current row object being processed
+- Standard JavaScript objects: `JSON`, `Math`, `_` (lodash)
+- `$utils`: Utility functions including `newUuid()`
+
+::: warning ⚠️ IMPORTANT
+
+- The script must return a valid object. If no valid object is returned, the original row will be used.
+- The script is executed in a secure sandbox environment.
+- Use `on-error` parameter to control error handling behavior:
+  - `throw` (default): Stops entire map operation on first error
+  - `skip`: Continues processing other rows, skipping problematic ones
+  - `mark`: Keeps problematic rows with `__map_error__` field containing error details
+    :::
+
+### `run` <Badge type="info" text="v0.5+" />
 
 To run an AI Engine on actual plan's entity data.
 

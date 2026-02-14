@@ -108,7 +108,7 @@ curl http://127.0.0.1:3000/server/info
 You sould receive the following response:
 
 ```json
-{ "server": "Metal", "version": "0.3" }
+{ "server": "Metal", "version": "0.5" }
 ```
 
 Congratulations! You have successfully configured and verified your Metal Server Sample Project.

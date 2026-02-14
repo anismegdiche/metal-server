@@ -24,7 +24,7 @@ server:
 For complete configuration, please see [AI Engines Server Configuration](config-yml#ai-engines)
 :::
 
-## AI Engine Images build
+## Engine Images build
 
 Upon initialization, Metal validates the availability of AI Engine images and automatically provisions any missing image.
 
@@ -34,10 +34,12 @@ To manually pre-build these images before starting the server, execute the follo
 npm run prod:build-all-images
 ```
 
-## AI Engines
+## Engines
 
 Metal supports multiple AI engines (text, image, audio, ocr) that can be run as separate services.
-When using `run` command in plans, you can specify the AI engine using `ai` parameter.Available AI engines:
+When using `run` command in plans, you can specify the AI engine using `ai` parameter.
+
+Available AI engines:
 
 | Value   | Description      |
 | ------- | ---------------- |
@@ -46,7 +48,7 @@ When using `run` command in plans, you can specify the AI engine using `ai` para
 | `audio` | Audio Processing |
 | `ocr`   | OCR Processing   |
 
-### Example Service Configuration
+**Example Service Configuration**
 
 Each AI service follows this basic configuration structure:
 
@@ -59,7 +61,7 @@ server:
     engines-url: http://127.0.0.1:5000
 ```
 
-## AI Tasks Configuration
+## Tasks Configuration
 
 Each AI Engine comes with a set of tasks that can be configured in `task` within the `run` command in plan.
 
@@ -75,7 +77,8 @@ OCR (Optical Character Recognition) is an AI Engine that can be used to extract 
 #### `image-to-string`
 
 Extract text from images with support for multiple languages.
-Supported Languages: Arabic (`ar_AR`), Chinese (Simplified) (`zh_CN`), Chinese (Traditional) (`zh_TW`), German (`de_DE`), English (`en_XX`), French (`fr_XX`), Italian (`it_IT`), Japanese (`ja_XX`), Korean (`ko_KR`), Portuguese (`pt_XX`), Russian (`ru_RU`), Spanish (`es_XX`)
+
+**Supported Languages:** Arabic (`ar_AR`), Chinese (Simplified) (`zh_CN`), Chinese (Traditional) (`zh_TW`), German (`de_DE`), English (`en_XX`), French (`fr_XX`), Italian (`it_IT`), Japanese (`ja_XX`), Korean (`ko_KR`), Portuguese (`pt_XX`), Russian (`ru_RU`), Spanish (`es_XX`)
 
 **Parameters**:
 
@@ -202,10 +205,6 @@ Detect emotions in text.
 | `fear`     | number | Probability score for fear     |
 | `disgust`  | number | Probability score for disgust  |
 
-::: tip ℹ️ NOTE
-If a particular emotion is not detected or has a probability score of zero, it will be excluded from the result object. This allows you to easily handle cases where certain emotions are not present in the input text.
-:::
-
 #### `fill-mask`
 
 Predict words in text using a placeholder `[MASK]`.
@@ -287,7 +286,8 @@ Extract important keywords from text.
 #### `language-detection`
 
 Detect the language of the text.
-Supported Languages: Arabic (`ar_AR`), Bulgarian (`bg_BG`), Chinese (Simplified) (`zh_CN`), German (`de_DE`), English (`en_XX`), French (`fr_XX`), Italian (`it_IT`), Japanese (`ja_XX`), Portuguese (`pt_XX`), Russian (`ru_RU`), Spanish (`es_XX`), Greek (`el_GR`), Hindi (`hi_IN`), Dutch (`nl_XX`), Polish (`pl_PL`), Swahili (`sw_KE`), Thai (`th_TH`), Turkish (`tr_TR`), Urdu (`ur_PK`), Vietnamese (`vi_VN`)
+
+**Supported Languages**: Arabic (`ar_AR`), Bulgarian (`bg_BG`), Chinese (Simplified) (`zh_CN`), German (`de_DE`), English (`en_XX`), French (`fr_XX`), Italian (`it_IT`), Japanese (`ja_XX`), Portuguese (`pt_XX`), Russian (`ru_RU`), Spanish (`es_XX`), Greek (`el_GR`), Hindi (`hi_IN`), Dutch (`nl_XX`), Polish (`pl_PL`), Swahili (`sw_KE`), Thai (`th_TH`), Turkish (`tr_TR`), Urdu (`ur_PK`), Vietnamese (`vi_VN`)
 
 **Example**
 
@@ -578,9 +578,10 @@ Generate new text.
 | `temperature` | float   | Controls randomness in generation (> 0.0 to 2.0)          |
 
 **Typical guidelines for `temperature`:**
-* **Low temperature (e.g., 0.2–0.5):** very focused, predictable, and fact‑like outputs; good for code, summaries, or technical content.
-* **Medium temperature (e.g., 0.5–0.9):** good balance between coherence and creativity; usually “best” for general writing and chat.
-* **High temperature (≥1.0-2.0):** much more random and creative, but also more likely to be incoherent, off‑topic, or nonsensical.
+
+- **Low temperature (e.g., 0.2–0.5):** very focused, predictable, and fact‑like outputs; good for code, summaries, or technical content.
+- **Medium temperature (e.g., 0.5–0.9):** good balance between coherence and creativity; usually “best” for general writing and chat.
+- **High temperature (≥1.0-2.0):** much more random and creative, but also more likely to be incoherent, off‑topic, or nonsensical.
 
 **Example**
 
@@ -620,7 +621,8 @@ Generate new text.
 #### `ner`
 
 Multilingual Named Entity Recognition (NER) identifies and classifies specific entities within text.
-Supported languages: German (`de_XX`), English (`en_XX`), Spanish (`es_XX`), French (`fr_XX`), Italian (`it_XX`), Dutch (`nl_XX`), Polish (`pl_XX`), Portuguese (`pt_XX`), and Russian (`ru_XX`).
+
+**Supported languages**: German (`de_XX`), English (`en_XX`), Spanish (`es_XX`), French (`fr_XX`), Italian (`it_XX`), Dutch (`nl_XX`), Polish (`pl_XX`), Portuguese (`pt_XX`), and Russian (`ru_XX`).
 
 **Parameters**
 
@@ -767,7 +769,8 @@ plans:
 #### `translation`
 
 Translate text between languages.
-Supported Language: Arabic (`ar_AR`), Bulgarian (`bg_BG`), Chinese (Simplified) (`zh_CN`), Chinese (Traditional) (`zh_TW`), German (`de_DE`), English (`en_XX`), French (`fr_XX`), Japanese (`ja_XX`), Korean (`ko_KR`), Portuguese (`pt_XX`), Russian (`ru_RU`), Spanish (`es_XX`)
+
+**Supported Language**: Arabic (`ar_AR`), Bulgarian (`bg_BG`), Chinese (Simplified) (`zh_CN`), Chinese (Traditional) (`zh_TW`), German (`de_DE`), English (`en_XX`), French (`fr_XX`), Japanese (`ja_XX`), Korean (`ko_KR`), Portuguese (`pt_XX`), Russian (`ru_RU`), Spanish (`es_XX`)
 
 **Parameters**
 
@@ -1119,26 +1122,91 @@ Answer questions about image content.
 
 ---
 
----
+<!-- // TODO: to fix -->
 
 ## Audio Processing
 
-Process and analyze audio data.
+Process and analyze audio data using machine learning models.
 
-### Available Tasks:
+::: tip ℹ️ NOTE
+In the plan, `run.input` is expected to be a Base 64 string.
+:::
 
-| Task                 | Engine Identifier                    | Description               |
-| -------------------- | ------------------------------------ | ------------------------- |
-| Audio Classification | `audio-audio-classification`         | Classify audio clips      |
-| Speech Recognition   | `audio-automatic-speech-recognition` | Transcribe speech to text |
+**Tasks**:
 
-**Example Configuration (Speech Recognition):**
+| Task Name                      | Description                     |
+| ------------------------------ | ------------------------------- |
+| `audio-classification`         | Classify audio clips by emotion |
+| `automatic-speech-recognition` | Transcribe speech to text       |
 
-```yaml
-ai-engines:
-  my-speech-recognition:
-    engine: "audio-automatic-speech-recognition"
+#### `audio-classification`
+
+Classify audio clips by emotion.
+
+**Example**
+
+> ```yaml
+> plans:
+>   my-plan:
+>     my-entity:
+>     ...
+>       - run:
+>           ai: audio
+>           task: audio-classification
+>           input: audio_data # Base64-encoded audio
+>           output:
+>             happy: ${{ $result.happy ?? 0 }}
+>             sad: ${{ $result.sad ?? 0 }}
+>             neutral: ${{ $result.neutral ?? 0 }}
+>             angry: ${{ $result.angry ?? 0 }}
+> ```
+
+**Output**
+
+```json
+{
+  "neutral": 0.5449906587600708,
+  "happy": 0.24226616322994232,
+  "angry": 0.17592576146125793,
+  "sad": 0.03681737929582596
+}
 ```
+
+`audio-classification` object contains emotion probabilities:
+
+| Property  | Type   | Description                     |
+| --------- | ------ | ------------------------------- |
+| `happy`   | number | Probability score for happiness |
+| `sad`     | number | Probability score for sadness   |
+| `neutral` | number | Probability score for neutral   |
+| `angry`   | number | Probability score for anger     |
+
+#### `automatic-speech-recognition`
+
+Transcribe speech to text.
+
+**Example**
+
+> ```yaml
+> plans:
+>   my-plan:
+>     my-entity:
+>     ...
+>       - run:
+>           ai: audio
+>           task: automatic-speech-recognition
+>           input: audio_data # Base64-encoded audio
+>           output:
+>             transcription: ${{ $result }}
+> ```
+
+**Output**
+
+```json
+"Hello, how are you today?"
+```
+
+The output is a string containing the transcribed text from the audio.
 
 ## Usage Example
 
@@ -1158,23 +1226,3 @@ pipeline:
     input: "{{steps['Process Document'].output}}"
     output: "sentiment-analysis"
 ```
-
-## Custom Models and Services
-
-You can specify custom model names or service URLs for any AI task:
-
-```yaml
-ai-engines:
-  custom-ocr:
-    engine: "ocr-image-to-string"
-    model: "custom-model-name"
-    url: "https://custom-ocr-service.example.com"
-```
-
-## Best Practices
-
-1. **Language Specification**: Always specify the language code when available for better accuracy
-2. **Error Handling**: Implement proper error handling for API rate limits and service availability
-3. **Caching**: Cache results when processing the same content multiple times
-4. **Batching**: For large volumes of data, consider batching requests when possible
-5. **Monitoring**: Monitor usage and performance of AI services to optimize costs and performance

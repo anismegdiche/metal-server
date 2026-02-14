@@ -301,12 +301,6 @@ sources:
       protocol: Tcp
 ```
 
-## ~~[REMOVED] Files~~ <Badge type="info" text="v0.5+" />
-
-::: warning ⚠️ Warning
-This feature has been replaced in v0.5 by [Storage data Provider](data-providers-config.md#storage).
-:::
-
 ## Storage <Badge type="info" text="v0.5+" />
 
 The Storage data provider allows you to manage file-based data or folders content as data.
@@ -616,12 +610,6 @@ sources:
       s3-endpoint: http://127.0.0.1:9000 # Optional for S3-compatible services
       …
 ```
-
-#### ~~[Removed] `smb` (SMB/CIFS)~~ <Badge type="info" text="v0.5+" />
-
-::: warning ⚠️ Warning
-This feature has been removed in v0.5.
-:::
 
 ### `content` <Badge type="default" text="v0.3+" />
 
