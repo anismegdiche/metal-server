@@ -36,7 +36,7 @@ Plan > for each
 Auth provider > Azure AD
 Plan > Data Transpose  (pivot H/V)
 AI Refactor
-step > map js script {f}
+step > map js script {f} {start:2026-02-12T19:40:50}
 refactor: readstream #refactor
 step: split functions #refactor {f} {start:2026-02-11T09:56:03} {cm:2026-02-12} {duration:1d_08h45m} {h}
 Plan > should stop on error (v1) {f} {start:2026-02-11T10:00:00} {cm:2026-02-12} {duration:1d_08h48m} {h}

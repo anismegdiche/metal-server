@@ -24,7 +24,9 @@
         "release": "standard-version",
         "release:dry": "standard-version --dry-run --skip.commit --skip.tag",
         "release:minor": "standard-version --release-as minor",
-        "release:major": "standard-version --release-as major"
+        "release:major": "standard-version --release-as madejor",
+        "tools:unused-modules": "madge --circular --extensions ts src --orphans --exclude __tests__",
+        "tools:dependency-graph": "npx madge --circular --extensions ts src -i circular.png --exclude __tests__"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.980.0",
@@ -104,7 +106,6 @@
         "@types/swagger-ui-express": "^4.1.8",
         "@vitest/coverage-v8": "^4.0.18",
         "crc-32": "^1.2.2",
-        "dependency-cruiser": "^17.3.8",
         "dprint": "^0.51.1",
         "eslint": "^9.39.2",
         "eslint-plugin-lodash": "^8.0.0",
