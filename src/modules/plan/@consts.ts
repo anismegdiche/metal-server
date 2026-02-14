@@ -1,6 +1,5 @@
 //
 
-import { MemoryData } from "../source/providers/MemoryData";
 
 
 export enum STEP {
@@ -19,7 +18,8 @@ export enum STEP {
     LIST_ENTITIES = "list-entities", // v0.3
     BREAK = "break", // v0.5
     PICK = "pick", // v0.5
-    OMIT = "omit" // v0.5
+    OMIT = "omit", // v0.5
+    MAP = "map" // v0.5
 }
 
 
@@ -30,4 +30,3 @@ export enum STEP_STATUS {
     FAILED = "failed"
 }
 
-export const DATAPROVIDER = new MemoryData()

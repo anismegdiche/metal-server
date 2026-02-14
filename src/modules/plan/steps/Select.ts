@@ -16,10 +16,11 @@ import { Schema } from "../../schema/Schema"
 import type { TSchemaRequestSelect } from '../../schema/types/TSchemaRequest'
 import { z_TSchemaRequestSelect } from "../../schema/types/TSchemaRequest"
 import type { TOptionalParameter } from "../../source/@types"
-import { DATAPROVIDER, STEP } from "../@consts"
+import { STEP } from "../@consts"
 import { Plans } from "../Plans"
 import type { TStep } from "../types/TStep"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
+import { DATAPROVIDER } from "../consts/DATAPROVIDER"
 
 
 //

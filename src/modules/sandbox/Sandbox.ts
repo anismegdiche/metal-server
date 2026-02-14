@@ -24,8 +24,7 @@ export class Sandbox {
         }
     }
 
-    // Example validation function
-    static #IsValidCode(code: string): boolean {
+    static _isValidCode(code: string): boolean {
         return !maliciousPatterns.some(pattern => pattern.test(code))
     }
 
@@ -42,12 +41,12 @@ export class Sandbox {
 
     // Evaluate dynamic code
     @Logger.LogFunction()
-    Evaluate<T>(code: string): T | undefined {
+    Evaluate<T>(code: string, throwError: boolean = false): T | undefined {
         const _code = code.trim()
         let isSuspicious = false
         try {
 
-            if (!Sandbox.#IsValidCode(_code)) {
+            if (!Sandbox._isValidCode(_code)) {
                 isSuspicious = true
                 throw new HttpErrorInternalServerError('Invalid code')
             }
@@ -59,7 +58,7 @@ export class Sandbox {
 
         } catch (err: unknown) {
             Logger.Error(`Error evaluating code: ${_code}, ${NormalizeError(err).message}`)
-            if (isSuspicious)
+            if (isSuspicious || throwError)
                 throw err
             return undefined
         }

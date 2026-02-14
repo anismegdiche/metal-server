@@ -19,7 +19,8 @@ import { z_TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
 import { z_TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import type { TDataListEntity } from "../../source/@types"
-import { DATAPROVIDER, STEP } from "../@consts"
+import { STEP } from "../@consts"
+import { DATAPROVIDER } from "../consts/DATAPROVIDER"
 import type { TStep } from "../types/TStep"
 
 

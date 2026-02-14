@@ -481,7 +481,6 @@ export class DataTable extends clsClonable {
     private _isAttached: boolean = false
     private _isDisposed: boolean = false
 
-
     constructor(
         name?: string,
         rows?: TRow | TRow[] | TJson | TJson[],
@@ -829,8 +828,12 @@ export class DataTable extends clsClonable {
 
     @Logger.LogFunction()
     async Count(): Promise<number> {
-        return this.Stats()
-            .then(stats => stats.row_count)
+        await this._dbEnsureInitialized()
+        const cnx = this._duckConnection!
+        const sql = `SELECT COUNT(*) as count FROM ${this.SafeName}`
+        const reader = await cnx.runAndReadAll(sql)
+        const rows = reader.getRowObjects()
+            return  Number(rows[0]?.count ?? 0)
     }
 
     @Logger.LogFunction(true)
@@ -911,8 +914,8 @@ export class DataTable extends clsClonable {
     }
 
     /**
- * Streaming async iterator (lazy) over DB rows - memory efficient
- */
+    * Streaming async iterator (lazy) over DB rows - memory efficient
+    */
     @Logger.LogFunction(true)
     async RowsIterator(params: TRowsIteratorParams = {}): Promise<AsyncIterableIterator<TRow>> {
         const {
@@ -979,7 +982,6 @@ export class DataTable extends clsClonable {
         await this._dbEnsureInitialized()
         await this.RowsDelete().catch()
         await this._dbPersistRows(__data__)
-
         return this.FieldsSet()
     }
 
@@ -994,7 +996,6 @@ export class DataTable extends clsClonable {
 
         await this._dbEnsureInitialized()
         await this._dbPersistRows(rows)
-        // update fields based on first row if empty or union fields
         return this.FieldsSet()
     }
 
@@ -1007,14 +1008,15 @@ export class DataTable extends clsClonable {
             ? ''
             : `WHERE ${dataTable_convertSql(condition)}`
 
-        return cnx.run(`DELETE FROM ${this.SafeName} ${_condition}`)
-            .then(() => this._rows = undefined)
-            .then(() => this._fields = {})
-            .then(() => this.FieldsSet())
-            .catch((error) => {
-                Logger.Error(`${Logger.Out} DataTable.RowsDelete: Failed to delete from '${this.SafeName}': ${JsonUtils.Stringify(error)}`)
-                return this
-            })
+        try {
+            await cnx.run(`DELETE FROM ${this.SafeName} ${_condition}`)
+            this._rows = undefined
+            this._fields = {}
+            await this.FieldsSet()
+        } catch (error) {
+            Logger.Error(`${Logger.Out} DataTable.RowsDelete: Failed to delete from '${this.SafeName}': ${JsonUtils.Stringify(error)}`)
+        }
+        return this
     }
 
     @Logger.LogFunction(true)
@@ -1041,12 +1043,22 @@ export class DataTable extends clsClonable {
         if (!index || !row)
             return this
 
-        await this._RowUpdateByIndex(index, row)
+        await this._rowUpdateByIndex(index, row)
 
         if (opt.skipFieldsSet)
             return this
 
         return this.FieldsSet()
+    }
+
+    @Logger.LogFunction(true)
+    async RowDeleteByIndex(index?: TUuidv7): Promise<this> {
+        if (!index)
+            return this
+
+        await this._rowDeleteByIndex(index)
+
+        return this
     }
 
     /**
@@ -1059,7 +1071,7 @@ export class DataTable extends clsClonable {
         return next;
     }
 
-    private async _RowUpdateByIndex(index: TUuidv7, row: TJson | TRow): Promise<void> {
+    private async _rowUpdateByIndex(index: TUuidv7, row: TJson | TRow): Promise<void> {
         await this._dbEnsureInitialized()
         const cnx = this._duckConnection!
         const __data__ = JsonUtils.Stringify(row)
@@ -1080,9 +1092,41 @@ export class DataTable extends clsClonable {
         })
     }
 
+    private async _rowDeleteByIndex(index: TUuidv7): Promise<void> {
+        await this._dbEnsureInitialized()
+        const cnx = this._duckConnection!
+
+        const sql = `
+            DELETE FROM ${this.SafeName}
+            WHERE __idx__ = ?
+            `
+
+        // Debug: Check if row exists before deletion
+        const checkSql = `SELECT __idx__, __data__ FROM ${this.SafeName} WHERE __idx__ = '${index}'`
+        const checkReader = await cnx.runAndReadAll(checkSql)
+        const existingRows = checkReader.getRowObjects()
+        Logger.Debug(`${Logger.Out} DataTable._RowDeleteByIndex: Rows with index ${index}: ${JsonUtils.Stringify(existingRows)}`)
+
+        try {
+            await cnx.run(sql, [index])
+            Logger.Debug(`${Logger.Out} DataTable._RowDeleteByIndex: Successfully deleted row with index: ${index}`)
+
+            // Debug: Check rows after deletion
+            const afterReader = await cnx.runAndReadAll(checkSql)
+            const afterRows = afterReader.getRowObjects()
+            Logger.Debug(`${Logger.Out} DataTable._RowDeleteByIndex: Rows after deletion: ${JsonUtils.Stringify(afterRows)}`)
+
+            // Reset cache after deletion
+            this._rows = undefined
+            this._fields = {}
+        } catch (error) {
+            Logger.Error(`${Logger.Out} DataTable._RowDeleteByIndex: Failed to delete row in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`)
+            throw error
+        }
+    }
 
     @Logger.LogFunction(true)
-    async RowsMap(fnMap: (row: Partial<TRow>) => Promise<TRow>, condition?: string): Promise<this> {
+    async RowsMap(fnMap: (row: Partial<TRow>) => Promise<TRow | undefined>, condition?: string): Promise<this> {
         if (!fnMap) {
             Logger.Warn(`${Logger.Out} DataTable.RowsMap: No map function provided`)
             return this
@@ -1110,10 +1154,13 @@ export class DataTable extends clsClonable {
 
             for await (const rowData of iterator) {
                 try {
-                    const updatedRow = await fnMap(rowData)
+                    const _updatedRow = await fnMap(rowData)
+
+                    if (_updatedRow === undefined)
+                        continue
 
                     if (rowData.__idx__) {
-                        const __data__ = JsonUtils.Stringify(updatedRow)
+                        const __data__ = JsonUtils.Stringify(_updatedRow)
                         await cnx.run(
                             `UPDATE ${this.SafeName} SET __data__ = ? WHERE __idx__ = ?`,
                             [__data__, rowData.__idx__]

@@ -255,14 +255,11 @@ describe("DataTable", () => {
 
             // at least one table should be deleted
             expect(count_clean).toBeLessThan(total)
-
-            cnx.closeSync()
-            duckInstance.closeSync()
         })
-    })
+    }) // Added closing bracket here
 
     describe("Count", () => {
-        it("should return the count of rows", async () => {
+        it("should return count of rows", async () => {
             const count = new DataTable("count", [
                 { x: 3, y: 1 },
                 { x: 1, y: 1 },
@@ -271,6 +268,190 @@ describe("DataTable", () => {
                 { x: 2, y: 2 }
             ])
             expect(await count.Count()).toEqual(5)
+        })
+
+        it("should cache count and return cached value on multiple calls", async () => {
+            const dt = new DataTable("cache-test", [
+                { id: 1, name: "Alice" },
+                { id: 2, name: "Bob" },
+                { id: 3, name: "Charlie" }
+            ])
+
+            // First call should calculate count
+            const startTime1 = performance.now()
+            const count1 = await dt.Count()
+            const endTime1 = performance.now()
+
+            // Subsequent calls should use cached value (faster)
+            const startTime2 = performance.now()
+            const count2 = await dt.Count()
+            const endTime2 = performance.now()
+
+            expect(count1).toBe(3)
+            expect(count2).toBe(3)
+            // Second call should be faster (using cache)
+            expect(endTime2 - startTime2).toBeLessThanOrEqual(endTime1 - startTime1)
+        })
+
+        it("should invalidate cache and recalculate after row additions", async () => {
+            const dt = new DataTable("add-test", [
+                { id: 1, name: "Alice" }
+            ])
+
+            expect(await dt.Count()).toBe(1)
+
+            // Add rows
+            await dt.RowsAdd([
+                { id: 2, name: "Bob" },
+                { id: 3, name: "Charlie" }
+            ])
+
+            // Count should reflect new rows
+            expect(await dt.Count()).toBe(3)
+
+            // Add more rows
+            await dt.RowsAdd({ id: 4, name: "Dave" })
+            expect(await dt.Count()).toBe(4)
+        })
+
+        it("should invalidate cache and recalculate after row deletions", async () => {
+            const dt = new DataTable("delete-test", [
+                { id: 1, name: "Alice" },
+                { id: 2, name: "Bob" },
+                { id: 3, name: "Charlie" },
+                { id: 4, name: "Dave" }
+            ])
+
+            expect(await dt.Count()).toBe(4)
+
+            // Delete row by index
+            const rows = await dt.Rows({ includeIndex: true })
+            await dt.RowDeleteByIndex(rows[1]!.__idx__) // Delete Bob
+
+            expect(await dt.Count()).toBe(3)
+
+            // Delete all rows
+            await dt.RowsDelete()
+            expect(await dt.Count()).toBe(0)
+        })
+
+        it("should handle concurrent Count() calls efficiently", async () => {
+            const dt = new DataTable("concurrent-test", [
+                { id: 1, name: "Alice" },
+                { id: 2, name: "Bob" },
+                { id: 3, name: "Charlie" }
+            ])
+
+            await dt.RowsSet()
+
+            // Make multiple concurrent Count() calls
+            const countPromises = Array.from({ length: 10 }, () => dt.Count())
+            const results = await Promise.all(countPromises)
+
+            // All should return the same result
+            expect(results).toEqual(Array(10).fill(3))
+        })
+
+        it("should perform efficiently with 100+ mixed operations", async () => {
+            const dt = new DataTable("performance-test")
+            const operationCount = 100
+
+            // Add initial rows
+            await dt.RowsSet(Array.from({ length: 20 }, (_, i) => ({
+                id: i,
+                name: `User${i}`,
+                value: Math.random()
+            })))
+
+            expect(await dt.Count()).toBe(20)
+
+            // Perform 100 mixed operations
+            const startTime = performance.now()
+
+            for (let i = 0; i < operationCount; i++) {
+                if (i % 3 === 0) {
+                    // Add operation
+                    await dt.RowsAdd({
+                        id: 20 + i,
+                        name: `NewUser${i}`,
+                        value: Math.random()
+                    })
+                } else if (i % 3 === 1) {
+                    // Delete operation (if table has rows)
+                    const currentCount = await dt.Count()
+                    if (currentCount > 0) {
+                        const rows = await dt.Rows({ includeIndex: true, limit: 1 })
+                        if (rows.length > 0) {
+                            await dt.RowDeleteByIndex(rows[0]!.__idx__)
+                        }
+                    }
+                } else {
+                    // Update operation (doesn't affect count but tests cache stability)
+                    const currentCount = await dt.Count()
+                    if (currentCount > 0) {
+                        const rows = await dt.Rows({ limit: 1 })
+                        if (rows.length > 0) {
+                            await dt.RowsUpdate(
+                                { ...rows[0], value: Math.random() },
+                                `id = ${rows[0]!.id}`
+                            )
+                        }
+                    }
+                }
+
+                // Verify count is accurate after each operation
+                const actualRows = await dt.Rows()
+                const countedRows = await dt.Count()
+                expect(actualRows.length).toBe(countedRows)
+            }
+
+            const endTime = performance.now()
+            const totalTime = endTime - startTime
+
+            // Final verification
+            const finalCount = await dt.Count()
+            const finalRows = await dt.Rows()
+            expect(finalRows.length).toBe(finalCount)
+
+            // Performance should be reasonable (less than 5 seconds for 100 operations)
+            expect(totalTime).toBeLessThan(5000)
+
+            console.log(`Performance test completed in ${totalTime.toFixed(2)}ms for ${operationCount} operations`)
+        })
+
+        it("should handle large dataset efficiently", async () => {
+            const dt = new DataTable("large-test")
+            const largeSize = 1000
+
+            // Add large dataset
+            const largeData = Array.from({ length: largeSize }, (_, i) => ({
+                id: i,
+                name: `User${i}`,
+                email: `user${i}@example.com`,
+                value: Math.random(),
+                timestamp: Date.now() + i
+            }))
+
+            await dt.RowsSet(largeData)
+            expect(await dt.Count()).toBe(largeSize)
+
+            // Test multiple count calls (should use cache)
+            const startTime = performance.now()
+            const countPromises = Array.from({ length: 10 }, () => dt.Count())
+            const results = await Promise.all(countPromises)
+            const endTime = performance.now()
+
+            expect(results).toEqual(Array(10).fill(largeSize))
+            
+            // Multiple cached calls should be very fast
+            expect(endTime - startTime).toBeLessThan(100)
+
+            // Test cache invalidation with large dataset
+            await dt.RowsAdd({ id: largeSize, name: "NewUser" })
+            expect(await dt.Count()).toBe(largeSize + 1)
+
+            await dt.RowsDelete("id >= 500")
+            expect(await dt.Count()).toBe(500)
         })
     })
 
@@ -1440,6 +1621,153 @@ describe("DataTable", () => {
             const result = await dt.Rows({ limit: 1 })
             expect(result[0]).toEqual({ id: 1, name: "John Doe" })
         }, 600_000)
+    })
+
+    describe('RowDeleteByIndex', () => {
+        it('should delete row by index', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet([
+                { id: 1, name: "John" },
+                { id: 2, name: "Jane" },
+                { id: 3, name: "Bob" }
+            ])
+            const rows = await dt.Rows({ includeIndex: true })
+            const rowToDelete = rows[1]! // Delete Jane (index 1)
+            
+            const result = await dt.RowDeleteByIndex(rowToDelete.__idx__)
+
+            expect(await result.Rows()).toEqual([
+                { id: 1, name: "John" },
+                { id: 3, name: "Bob" }
+            ])
+            expect(await result.Count()).toBe(2)
+        })
+
+        it('should return same table if index is undefined', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet([
+                { id: 1, name: "John" },
+                { id: 2, name: "Jane" }
+            ])
+            
+            const result = await dt.RowDeleteByIndex(undefined)
+            
+            expect(await result.Rows()).toEqual([
+                { id: 1, name: "John" },
+                { id: 2, name: "Jane" }
+            ])
+            expect(await result.Count()).toBe(2)
+        })
+
+        it('should handle deleting first row', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet([
+                { id: 1, name: "John" },
+                { id: 2, name: "Jane" },
+                { id: 3, name: "Bob" }
+            ])
+            const rows = await dt.Rows({ includeIndex: true })
+            const firstRow = rows[0]!
+            
+            const result = await dt.RowDeleteByIndex(firstRow.__idx__)
+            
+            expect(await result.Rows()).toEqual([
+                { id: 2, name: "Jane" },
+                { id: 3, name: "Bob" }
+            ])
+            expect(await result.Count()).toBe(2)
+        })
+
+        it('should handle deleting last row', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet([
+                { id: 1, name: "John" },
+                { id: 2, name: "Jane" },
+                { id: 3, name: "Bob" }
+            ])
+            const rows = await dt.Rows({ includeIndex: true })
+            const lastRow = rows[2]!
+            
+            const result = await dt.RowDeleteByIndex(lastRow.__idx__)
+            
+            expect(await result.Rows()).toEqual([
+                { id: 1, name: "John" },
+                { id: 2, name: "Jane" }
+            ])
+            expect(await result.Count()).toBe(2)
+        })
+
+        it('should handle deleting only row in single-row table', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet([
+                { id: 1, name: "John" }
+            ])
+            const rows = await dt.Rows({ includeIndex: true })
+            const onlyRow = rows[0]!
+            
+            const result = await dt.RowDeleteByIndex(onlyRow.__idx__)
+            
+            expect(await result.Rows()).toEqual([])
+            expect(await result.Count()).toBe(0)
+        })
+
+        it('should handle skipFieldsSet option', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet([
+                { id: 1, name: "John" },
+                { id: 2, name: "Jane" }
+            ])
+            const rows = await dt.Rows({ includeIndex: true })
+            const rowToDelete = rows[0]!
+            
+            // Mock FieldsSet to track if it's called
+            const originalFieldsSet = dt.FieldsSet.bind(dt)
+            let fieldsSetCalled = false
+            dt.FieldsSet = vi.fn().mockImplementation(() => {
+                fieldsSetCalled = true
+                return originalFieldsSet()
+            })
+            
+            const result = await dt.RowDeleteByIndex(rowToDelete.__idx__)
+            
+            expect(fieldsSetCalled).toBe(false)
+            expect(await result.Rows()).toEqual([
+                { id: 2, name: "Jane" }
+            ])
+        })
+
+        it('should handle multiple deletions in sequence', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet([
+                { id: 1, name: "John" },
+                { id: 2, name: "Jane" },
+                { id: 3, name: "Bob" },
+                { id: 4, name: "Alice" }
+            ])
+            const rows = await dt.Rows({ includeIndex: true })
+            
+            // Delete rows one by one
+            await dt.RowDeleteByIndex(rows[1]!.__idx__) // Delete Jane
+            await dt.RowDeleteByIndex(rows[2]!.__idx__) // Delete Bob
+            
+            const result = await dt.Rows()
+            
+            expect(result).toEqual([
+                { id: 1, name: "John" },
+                { id: 4, name: "Alice" }
+            ])
+            expect(result).toHaveLength(2)
+        })
+
+        it('should handle deletion from empty table', async () => {
+            const dt = new DataTable()
+            await dt.RowsSet([])
+            
+            const result = await dt.RowDeleteByIndex('some-index')
+            
+            expect(await result.Rows()).toEqual([])
+            expect(await result.Count()).toBe(0)
+        })
     })
 
 

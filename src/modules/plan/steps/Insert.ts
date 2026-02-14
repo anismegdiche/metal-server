@@ -16,7 +16,7 @@ import type { TSchemaRequestInsert } from '../../schema/types/TSchemaRequest'
 import { STEP } from "../@consts"
 import type { TStep } from "../types/TStep"
 import { z_TSchemaRequestInsert } from "../../schema/types/TSchemaRequest"
-import { DATAPROVIDER } from "../@consts"
+import { DATAPROVIDER } from "../consts/DATAPROVIDER"
 
 
 //

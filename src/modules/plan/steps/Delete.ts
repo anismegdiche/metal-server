@@ -14,7 +14,8 @@ import { Schema } from "../../schema/Schema"
 import type { TSchemaRequestDelete } from '../../schema/types/TSchemaRequest'
 import { z_TSchemaRequestDelete } from "../../schema/types/TSchemaRequest"
 import type { TOptionalParameter } from "../../source/@types"
-import { DATAPROVIDER, STEP } from "../@consts"
+import { STEP } from "../@consts"
+import { DATAPROVIDER } from "../consts/DATAPROVIDER"
 import type { TStep } from "../types/TStep"
 
 

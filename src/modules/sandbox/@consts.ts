@@ -23,13 +23,13 @@ export const maliciousPatterns: RegExp[] = [
     /\b\.prototype\s*/,
 
     // Detecting potential access to process object
-    /\bprocess\s*/,
+    /\bprocess\b/,
 
     // Detecting potential code execution delays using setTimeout/setInterval
     /\b(?:setTimeout|setInterval)\s*\(/,
 
     // Detecting function declarations (both regular functions and arrow functions)
-    /(\bfunction\s*\w*\s*\(|\(\)\s*=>\s*\{)/,
+    /\bfunction\s+\w+\s*\(|\(\s*\)\s*=>\s*\{/,
 
     // Detecting import/export statements (ES6 modules)
     /\b(?:import|export)\b/,

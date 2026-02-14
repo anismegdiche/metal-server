@@ -13,6 +13,7 @@ import { Delete } from "./steps/Delete"
 import { Insert } from "./steps/Insert"
 import { Join } from "./steps/Join"
 import { ListEntities } from "./steps/ListEntities"
+import { Map } from "./steps/Map"
 import { Omit } from "./steps/Omit"
 import { Pick } from "./steps/Pick"
 import { RemoveDuplicates } from "./steps/RemoveDuplicates"
@@ -48,6 +49,7 @@ export class Step {
         [STEP.LIST_ENTITIES]: ListEntities,
         [STEP.BREAK]: Break,
         [STEP.PICK]: Pick,
-        [STEP.OMIT]: Omit
+        [STEP.OMIT]: Omit,
+        [STEP.MAP]: Map
     }
 }

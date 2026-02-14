@@ -15,7 +15,8 @@ import { Schema } from "../../schema/Schema"
 import type { TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
 import type { TOptionalParameter } from "../../source/@types"
 import { z_TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
-import { DATAPROVIDER, STEP } from "../@consts"
+import { STEP } from "../@consts"
+import { DATAPROVIDER } from "../consts/DATAPROVIDER"
 import type { TStep } from "../types/TStep"
 
 
