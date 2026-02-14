@@ -1114,15 +1114,6 @@ Answer questions about image content.
 | `answer` | string | The predicted answer           |
 | `score`  | number | Confidence score of the answer |
 
----
-
----
-
----
-
----
-
-<!-- // TODO: to fix -->
 
 ## Audio Processing
 
@@ -1155,24 +1146,26 @@ Classify audio clips by emotion.
 >           task: audio-classification
 >           input: audio_data # Base64-encoded audio
 >           output:
->             happy: ${{ $result.happy ?? 0 }}
->             sad: ${{ $result.sad ?? 0 }}
->             neutral: ${{ $result.neutral ?? 0 }}
->             angry: ${{ $result.angry ?? 0 }}
+>             happy: ${{ $result.emotion.happy ?? 0 }}
+>             sad: ${{ $result.emotion.sad ?? 0 }}
+>             neutral: ${{ $result.emotion.neutral ?? 0 }}
+>             angry: ${{ $result.emotion.angry ?? 0 }}
 > ```
 
 **Output**
 
 ```json
 {
-  "neutral": 0.5449906587600708,
-  "happy": 0.24226616322994232,
-  "angry": 0.17592576146125793,
-  "sad": 0.03681737929582596
+  "emotion": {
+    "neutral": 0.5449906587600708,
+    "happy": 0.24226616322994232,
+    "angry": 0.17592576146125793,
+    "sad": 0.03681737929582596
+  }
 }
 ```
 
-`audio-classification` object contains emotion probabilities:
+`emotion` object contains emotion probabilities:
 
 | Property  | Type   | Description                     |
 | --------- | ------ | ------------------------------- |
@@ -1197,32 +1190,15 @@ Transcribe speech to text.
 >           task: automatic-speech-recognition
 >           input: audio_data # Base64-encoded audio
 >           output:
->             transcription: ${{ $result }}
+>             transcription: ${{ $result.text }}
 > ```
 
 **Output**
 
 ```json
-"Hello, how are you today?"
+{
+  "text": "Hello, how are you today?"
+}
 ```
 
-The output is a string containing the transcribed text from the audio.
-
-## Usage Example
-
-Here's an example of how to use the AI engines in your Metal pipeline:
-
-```yaml
-pipeline:
-  - name: "Process Document"
-    type: "ai"
-    engine: "ocr-image-to-string"
-    input: "{{steps.download-file.output.filepath}}"
-    output: "extracted-text"
-
-  - name: "Analyze Sentiment"
-    type: "ai"
-    engine: "text-sentiment-analysis"
-    input: "{{steps['Process Document'].output}}"
-    output: "sentiment-analysis"
-```
+The output contains the transcribed text from the audio in a `text` property.

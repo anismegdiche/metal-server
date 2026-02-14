@@ -43,10 +43,12 @@ describe('Audio', () => {
             });
 
             expect(result).toEqual({
-                neutral: expect.any(Number),
-                happy: expect.any(Number),
-                angry: expect.any(Number),
-                sad: expect.any(Number)
+                emotion: {
+                    neutral: expect.any(Number),
+                    happy: expect.any(Number),
+                    angry: expect.any(Number),
+                    sad: expect.any(Number)
+                }
             });
         });
     });
@@ -67,7 +69,9 @@ describe('Audio', () => {
                 data: "base64_audio_data"
             });
 
-            expect(result).toEqual(expect.any(String));
+            expect(result).toEqual({
+                text: expect.any(String)
+            });
         });
     });
 });

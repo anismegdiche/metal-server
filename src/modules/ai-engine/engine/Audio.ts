@@ -100,22 +100,24 @@ export class Audio extends absAiEngine implements IAiEngine {
                     throw new HttpErrorInternalServerError(`Audio processing failed: ${response.data.message}`)
                 }
 
-                const result = response.data.result.reduce((obj: { [x: string]: any }, item: { label: string; score: number }) => {
+                const emotion = response.data.result.reduce((obj: { [x: string]: any }, item: { label: string; score: number }) => {
                     const fullName: string = labelMap[item.label] || item.label // fallback to acronym if not found
                     obj[fullName] = item.score
                     return obj
                 }, {})
 
-                return result
+                return { emotion }
             })
 
         // response :
         // {
-        //     neutral: 0.5449906587600708,
-        //     happy: 0.24226616322994232,
-        //     angry: 0.17592576146125793,
-        //     sad: 0.03681737929582596,
-        //   }
+        //     emotion : {
+        //         neutral: 0.5449906587600708,
+        //         happy: 0.24226616322994232,
+        //         angry: 0.17592576146125793,
+        //         sad: 0.03681737929582596
+        //     }
+        // }
     }
 
     @Logger.LogFunction(true)
@@ -125,7 +127,9 @@ export class Audio extends absAiEngine implements IAiEngine {
 
         return this._postData(data, params)
             .then((response) => {
-                return response.data.result.text.trim()
+                return {
+                    text: response.data.result.text.trim()
+                }
             })
     }
 }
