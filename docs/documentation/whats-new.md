@@ -25,5 +25,11 @@ features:
     details: |
       We have extended File Data Provider and added a new mode to handle directory data allowing to read and write files in a directory and process them.
       <br><br><span class="VPBadge danger">Learn more...</span>
-    link: data-providers#storage
+    link: data-providers-config#storage
+
+  - title: New Parquet file handler
+    details: |
+      We have added a new ability to handle Parquet files, allowing for efficient columnar data processing and schema evolution.
+      <br><br><span class="VPBadge danger">Learn more...</span>
+    link: data-providers-config#parquet
 ---

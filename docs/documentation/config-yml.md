@@ -964,12 +964,9 @@ In this example:
 - The modified row is returned
 - If any row processing fails, that row is skipped and processing continues
 
-::: tip ℹ️ TIP
-The script has access to:
-
-- `$row`: The current row object being processed
-- Standard JavaScript objects: `JSON`, `Math`, `_` (lodash)
-- `$utils`: Utility functions including `newUuid()`
+::: tip ℹ️ INFO
+The script automatically includes a `return $row;` statement at the end if no explicit return statement is provided. This ensures that the modified row is returned and used further in the plan execution.
+:::
 
 ::: warning ⚠️ IMPORTANT
 
@@ -979,7 +976,7 @@ The script has access to:
   - `throw` (default): Stops entire map operation on first error
   - `skip`: Continues processing other rows, skipping problematic ones
   - `mark`: Keeps problematic rows with `__map_error__` field containing error details
-    :::
+:::
 
 ### `run` <Badge type="info" text="v0.5+" />
 

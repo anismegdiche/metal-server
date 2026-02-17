@@ -41,15 +41,20 @@ export class JsonContent extends absContentProvider {
         "json-path": undefined
     }
 
+    SetConfig(contentConfig: U__source_options_content_json): void {
+        super.SetConfig(contentConfig)
+        this.Config = merge(this.DEFAULT, this.Config) as U__source_options_content_json
+        this.Params = {
+            path: this.Config["json-path"]
+        }
+    }
+
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && z_U__source_options_content_json.safeParse(this.Config).success) {
-            this.Config = merge(this.DEFAULT,this.Config) as U__source_options_content_json
-            this.Params = {
-                path: this.Config["json-path"]
-            }
-        }
+        Assert.Var<U__source_options_content_json>(this.Config,
+            z_U__source_options_content_json.safeParse(this.Config).success,
+            'Config is not defined')
 
         this.Content.UploadFile(entity, content)
     }

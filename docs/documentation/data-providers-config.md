@@ -613,7 +613,7 @@ sources:
 
 ### `content` <Badge type="default" text="v0.3+" />
 
-Content types can be set with the parameter `options.content` where you can associate a content type to a file pattern, as shown in the example below. This feature allows for flexible data processing and supports various file formats, including JSON, CSV, and XLS.
+Content types can be set with the parameter `options.content` where you can associate a content type to a file pattern, as shown in the example below. This feature allows for flexible data processing and supports various file formats, including JSON, CSV, XLS, and Parquet.
 
 It acts also as a filter to determine the list of files to process (see: [REST API Entity Listing](rest-api#get)). By specifying the content type for each file pattern, you can efficiently manage and process your data.
 
@@ -647,6 +647,7 @@ List of managed content types:
 | `csv`     | CSV files                | <Badge type="default" text="v0.3+" /> |
 | `xls`     | XLSX files (Excel 2007+) | <Badge type="default" text="v0.3+" /> |
 | `xml`     | XML files                | <Badge type="default" text="v0.4+" /> |
+| `parquet` | Parquet files            | <Badge type="info" text="v0.5+" />    |
 
 #### `json` <Badge type="default" text="v0.3+" />
 
@@ -753,6 +754,29 @@ sources:
           xml-ignore-attributes: false
           xml-attribute-prefix: "@"
           xml-remove-ns-prefix: true
+```
+
+#### `parquet` <Badge type="info" text="v0.5+" />
+
+Parquet files using hyparquet library for in-memory operations. Supports columnar data format with efficient compression and schema evolution.
+
+| Parameter                  | Type          | Default   | Description                                                     |
+| -------------------------- | ------------- | --------- | --------------------------------------------------------------- |
+| `parquet-utf8`             | Boolean       | true      | Decode byte arrays as utf8 strings                              |
+
+
+**Example:**
+
+```yaml
+sources:
+  my-parquet-files:
+    provider: storage
+    options:
+      mode: files
+      content:
+        "*.parquet":
+          content-type: parquet
+          parquet-utf8: true
 ```
 
 ## WebService <Badge type="default" text="v0.4+" />

@@ -77,19 +77,25 @@ export class XlsContent extends absContentProvider {
         "xls-starting-cell": "A1"
     }
 
+    SetConfig(contentConfig: U__source_options_content_xls): void {
+        super.SetConfig(contentConfig)
+        this.Config = merge(this.DEFAULT, this.Config) as U__source_options_content_xls
+        this.Params = {
+            sheet: this.Config["xls-sheet"],
+            parseDates: this.Config["xls-parse-dates"],
+            default: this.Config["xls-default"],
+            dateFormat: this.Config["xls-date-format"],
+            startingCell: this.Config["xls-starting-cell"]
+        }
+    }
+
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && z_U__source_options_content_xls.safeParse(this.Config).success) {
-            this.Config = merge(this.DEFAULT, this.Config) as U__source_options_content_xls
-            this.Params = {
-                sheet: this.Config["xls-sheet"],
-                parseDates: this.Config["xls-parse-dates"],
-                default: this.Config["xls-default"],
-                dateFormat: this.Config["xls-date-format"],
-                startingCell: this.Config["xls-starting-cell"]
-            }
-        }
+        Assert.Var<U__source_options_content_xls>(this.Config,
+            z_U__source_options_content_xls.safeParse(this.Config).success,
+            'Config is not defined')
+
         this.Content.UploadFile(entity, content)
     }
 
@@ -215,14 +221,14 @@ export class XlsContent extends absContentProvider {
 
         // Set headers
         const fields: string[] = Object.keys((await data.Row(0)))
-        fields.forEach((field, colIdx) => {
-            worksheet.getCell(Number.parseInt(startRow, 10), colIndex + colIdx).value = field
+        fields.forEach((field, idx) => {
+            worksheet.getCell(Number.parseInt(startRow, 10), colIndex + idx).value = field
         })
 
             // Set data
-            ; (await data.Rows()).forEach((row, rowIndex) => {
+            ; (await data.Rows()).forEach((row, idx) => {
                 fields.forEach((field: string, fieldIdx: number) => {
-                    const _rowIdx = Number.parseInt(startRow, 10) + 1 + rowIndex
+                    const _rowIdx = Number.parseInt(startRow, 10) + 1 + idx
                     const _colIdx: number = colIndex + fieldIdx
 
                     let _valueToSet = row[field]

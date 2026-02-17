@@ -46,7 +46,7 @@ describe('CsvContent', () => {
         test('should override default values for Config when Options is provided', async () => {
             const name = 'test.csv'
             const content = Readable.from('idname\n1John\n2Jane')
-            const options = {
+            const options: U__source_options_content_csv = {
                 "csv-delimiter": '',
                 "csv-newline": '\r\n',
                 "csv-header": false,
@@ -54,8 +54,7 @@ describe('CsvContent', () => {
                 "csv-skip-empty": 'greedy'
             }
 
-            csvContent.Config = options as U__source_options_content_csv
-
+            csvContent.SetConfig(options)
             csvContent.InitContent(name, content)
 
             expect(csvContent.Params!.delimiter).toBe('')

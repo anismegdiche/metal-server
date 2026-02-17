@@ -271,7 +271,7 @@ export class Cache {
         }
 
         // return data
-        const { data } = (await intResp.Body.data.Rows()).at(0) as TCacheData
+        const { data } = await intResp.Body.data.Row(0) as TCacheData
 
         return HttpResponse.Ok(<TSchemaResponse>{
             entity,

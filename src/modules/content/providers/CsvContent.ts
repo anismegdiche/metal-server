@@ -67,26 +67,32 @@ export class CsvContent extends absContentProvider {
             .replace(/\\\\/g, '\\')
     }
 
+    SetConfig(contentConfig: U__source_options_content_csv): void {
+        super.SetConfig(contentConfig)
+        this.Config = merge(this.DEFAULT, this.Config) as U__source_options_content_csv
+
+        this.Params = {
+            delimiter: this.Config["csv-delimiter"],
+            newline: this.Config["csv-newline"],
+            header: this.Config["csv-header"],
+            skipEmptyLines: this.Config["csv-skip-empty"]
+        }
+
+        this.Params.quoteChar =
+            (this.Config["csv-quote"] == null || this.Config["csv-quote"] == undefined || this.Config["csv-quote"] == '')
+                ? undefined
+                : this.Config["csv-quote"]
+
+        this.Params.quotes = !StringUtils.IsEmpty(this.Config["csv-quote"])
+    }
+
     @Logger.LogFunction()
     InitContent(entity: string, content: Readable): void {
         this.EntityName = entity
-        if (this.Config && z_U__source_options_content_csv.safeParse(this.Config).success) {
-            this.Config = merge(this.DEFAULT, this.Config) as U__source_options_content_csv
 
-            this.Params = {
-                delimiter: this.Config["csv-delimiter"],
-                newline: this.Config["csv-newline"],
-                header: this.Config["csv-header"],
-                skipEmptyLines: this.Config["csv-skip-empty"]
-            }
-            
-            this.Params.quoteChar =
-                (this.Config["csv-quote"] == null || this.Config["csv-quote"] == undefined || this.Config["csv-quote"] == '')
-                    ? undefined
-                    : this.Config["csv-quote"]
-
-            this.Params.quotes = !StringUtils.IsEmpty(this.Config["csv-quote"])
-        }
+        Assert.Var<U__source_options_content_csv>(this.Config,
+            z_U__source_options_content_csv.safeParse(this.Config).success,
+            'Config is not defined')
 
         this.Content.UploadFile(entity, content)
     }

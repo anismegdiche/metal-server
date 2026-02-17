@@ -30,13 +30,13 @@ Plan > set/get a variable
 Content > text regex
 Plan > Data detection: use NLP/BrainJS for datatype detection based on RegExp string conversion
 Plan > merge duplicates: merge on, take
-Content > ExtractFromParquetExtracts data from a Parquet file format for high-efficiency storage and access. {f}
-Storage > SFTP
+Content > ExtractFromParquetExtracts data from a Parquet file format for high-efficiency storage and access. {f} {start:2026-02-15T18:02:37} {cm:2026-02-16} {duration:1d_01h47m} {h}
+Storage > SFTP {f}
 Plan > for each
 Auth provider > Azure AD
 Plan > Data Transpose  (pivot H/V)
-AI Refactor
-step > map js script {f} {start:2026-02-12T19:40:50}
+AI Refactor {cm:2026-02-15} {h}
+step > map js script {f} {start:2026-02-12T19:40:50} {cm:2026-02-14} {duration:1d_23h45m} {h}
 refactor: readstream #refactor
 step: split functions #refactor {f} {start:2026-02-11T09:56:03} {cm:2026-02-12} {duration:1d_08h45m} {h}
 Plan > should stop on error (v1) {f} {start:2026-02-11T10:00:00} {cm:2026-02-12} {duration:1d_08h48m} {h}

@@ -92,7 +92,7 @@ describe('Cache', () => {
                 Body: {
                     data: {
                         Count: () => 1,
-                        Rows: () => [{ data: mockData }]
+                        Row: (_index: number) => ({ data: mockData })
                     }
                 }
             });

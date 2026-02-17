@@ -82,13 +82,13 @@ describe('XlsContent', () => {
 
         it('should initialize with custom parameters', async () => {
             const inputStream = createReadableStream(mockWorkbookBuffer)
-            xlsContent.Config = {
+            xlsContent.SetConfig({
                 'xls-sheet': 'Sheet1',
                 'xls-parse-dates': true,
                 'xls-default': 0,
                 'xls-date-format': 'yyyy-mm-dd',
                 'xls-starting-cell': 'B2'
-            }
+            })
 
             xlsContent.InitContent('testEntity', inputStream)
 

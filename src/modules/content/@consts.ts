@@ -8,5 +8,6 @@ export enum CONTENT {
     JSON = "json",
     CSV = "csv",
     XLS = "xls",
-    XML = "xml"
+    XML = "xml",
+    PARQUET = "parquet"
 }

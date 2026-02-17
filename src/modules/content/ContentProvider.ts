@@ -23,6 +23,9 @@ export class ContentProvider {
         },
         [CONTENT.XML]: {
             import: () => import('./providers/XmlContent').then(m => m.XmlContent)
+        },
+        [CONTENT.PARQUET]: {
+            import: () => import('./providers/ParquetContent').then(m => m.ParquetContent)
         }
     } as const;
 
