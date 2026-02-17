@@ -17,7 +17,7 @@ export class Mutex extends Semaphore {
      * Decorator that creates a mutex-protected variable
      * Usage: @Mutex.Once() let x = 0
      */
-    static Set<T = unknown>() {
+    static Once<T = unknown>() {
         return function (target: object, propertyKey: string | symbol): void {
             const mutex = new Mutex()
             

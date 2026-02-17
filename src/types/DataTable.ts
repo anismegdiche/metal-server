@@ -1338,19 +1338,6 @@ export class DataTable extends clsClonable {
         })
     }
 
-    // @Logger.LogFunction(true)
-    // async Map(fnMap: (row: TRow) => TRow): Promise<this> {
-    //     const iterator = await this.RowsIterator({ includeIndex: true });
-
-    //     for await (const row of iterator) {
-    //         const __idx__ = row.__idx__;
-    //         const newData = fnMap(row);
-    //         await this.RowUpdateByIndex(__idx__, newData);
-    //     }
-
-    //     return this.FieldsSet()
-    // }
-
     @Logger.LogFunction(true)
     async ForEach<T>(fnForEach: (row: TRow) => T | Promise<T>, params: TRowsIteratorParams = {}): Promise<T[]> {
         const iterator = await this.RowsIterator(params);
