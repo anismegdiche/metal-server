@@ -43,7 +43,7 @@ For more information about authentication, see [Understanding Authentication, Us
 
 **Endpoint**
 
-> POST `/user/login`
+> **POST** /user/login
 
 **Body Parameters**
 
@@ -95,7 +95,7 @@ When a user logs out, it terminates their current session and invalidates the as
 
 **Endpoint**
 
-> POST `/user/logout`
+> **POST** /user/logout
 
 **Example**
 
@@ -127,7 +127,7 @@ This feature provides access to detailed information about the currently logged-
 
 **Endpoint**
 
-> GET `/user/info`
+> **GET** /user/info
 
 **Example**
 
@@ -177,7 +177,7 @@ Get informations about Metal server
 
 **Endpoint**
 
-> GET `/server/info`
+> **GET** /server/info
 
 **Example**
 
@@ -220,7 +220,7 @@ When reloading, all connections will be reset.
 
 **Endpoint**
 
-> POST `/server/reload`
+> **POST** /server/reload
 
 **Example**
 
@@ -272,7 +272,11 @@ Returns list of the entities of the schema provided in URL parameters.
 
 **Endpoint**
 
-> GET `/schema`/**`:schema`**
+<span style="font-family: 'Space Grotesk', monospace;">
+
+> **GET** /schema/**`:schema`**
+
+</span>
 
 **Path Parameters**
 
@@ -327,7 +331,11 @@ Returns data from the entity of the schema provided in URL parameters. By defaul
 
 **Endpoint**
 
-> GET `/schema`/**`:schema`**/**`:entity`**
+<span style="font-family: 'Space Grotesk', monospace;">
+
+> **GET** /schema/**`:schema`**/**`:entity`**
+
+</span>
 
 **Path Parameters**
 
@@ -388,15 +396,16 @@ Insert one or more objects in the entity of the schema provided in URL parameter
 
 **Endpoint**
 
-> POST `/schema`/**`:schema`**/**`:entity`**
->
-> Content-Type: application/json
->
-> {
->
->     `"data"`: **`:data`**
->
+<span style="font-family: 'Space Grotesk', monospace;">
+
+> **POST** /schema/**`:schema`**/**`:entity`** <br>
+> Content-Type: application/json <br>
+> { <br>
+>     `"data"` : **`:data`** <br>
 > }
+
+
+</span>
 
 **Parameters**
 
@@ -461,19 +470,17 @@ If no filtering is supplied in the body with `filter` or `filter-expression`, AL
 
 **Endpoint**
 
-> PATCH `/schema`/**`:schema`**/**`:entity`**
->
-> Content-Type: application/json
->
-> {
->
->     `"filter"`: **`:filter`**
->
->     `"filter-expression"`: **`:filter-expression`**
->
->     `"data"`: **`:data`**
->
+<span style="font-family: 'Space Grotesk', monospace;">
+
+> **PATCH** /schema/**`:schema`**/**`:entity`** <br>
+> Content-Type: application/json <br>
+> { <br>
+>     "filter" : **`:filter`** <br>
+>     "filter-expression" : **`:filter-expression`** <br>
+>     "data" : **`:data`** <br>
 > }
+
+</span>
 
 **Parameters**
 
@@ -537,16 +544,19 @@ If no filtering is supplied in the body with `filter` or `filter-expression`, AL
 
 **Endpoint**
 
-```http
-DELETE /schema/:schema/:entity
-Content-Type: application/json
+<span style="font-family: 'Space Grotesk', monospace;">
 
-{
-    "filter": ":filter"
-    OR
-    "filter-expression": ":filter-expression"
-}
-```
+> **DELETE** /schema/**`:schema`**/**`:entity`** <br>
+> Content-Type: application/json <br>
+> { <br>
+>     "filter": "**`:filter`**" <br>
+> } <br>
+> OR <br>
+> { <br>
+>     "filter-expression": "**`:filter-expression`**" <br>
+> }
+
+</span>
 
 **Parameters**
 
@@ -611,7 +621,7 @@ Reload the plan `:plan` definition as described in the configuration file.
 
 **Endpoint**
 
-> POST `/plan`/**`:plan`**/`reload`
+> **POST** /plan/**`:plan`**/reload
 
 **Path Parameters**
 
@@ -672,7 +682,7 @@ It returns the cached data in a readable format, providing insights into the sto
 
 **Endpoint**
 
-> GET `/cache/view`
+> **GET** /cache/view
 
 **Example**
 
@@ -711,7 +721,7 @@ It helps in maintaining the cache server's efficiency by eliminating outdated or
 
 **Endpoint**
 
-> POST `/cache/clean`
+> **POST** /cache/clean
 
 **Example**
 
@@ -751,7 +761,7 @@ This action can be useful when you need to clear the cache completely, such as d
 
 **Endpoint**
 
-> POST `/cache/purge`
+> **POST** /cache/purge
 
 **Example**
 

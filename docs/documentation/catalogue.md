@@ -1,0 +1,381 @@
+---
+title: Middleware - ETL - AI
+description: "Metal:Middleware, ETL & AI at the same place. Empower your projects with a free open-source data transformation solution"
+---
+
+<script setup>
+import FeatureCard from '../.vitepress/theme/components/FeatureCard.vue'
+</script>
+
+# Catalogue
+
+Browse, configure, and virtualize Metal data sources.
+
+## Data Providers
+
+<div class="feature-grid">
+  <FeatureCard 
+    title="Azure SQL Database" 
+    image="/logo/azure-sql-database.png" 
+    link="/documentation/data-providers-config#azure-sql-database-microsoft-sql-server" 
+    />
+
+  <FeatureCard 
+    title="MS SQL Server" 
+    image="/logo/sql-server.svg" 
+    link="/documentation/data-providers-config#azure-sql-database-microsoft-sql-server"
+    />
+
+  <FeatureCard 
+    title="Azure Cosmos DB" 
+    image="/logo/azure-cosmos-db.png" 
+    link="/documentation/data-providers-config#cosmosdb"
+    />
+
+  <FeatureCard 
+    title="PostgreSQL" 
+    image="/logo/postgres.png" 
+    link="/documentation/data-providers-config#postgresql"
+    />
+
+  <FeatureCard 
+    title="MongoDB" 
+    image="/logo/mongodb.png" 
+    link="/documentation/data-providers-config#mongodb"
+    />
+
+  <FeatureCard 
+    title="MySQL" 
+    image="/logo/mysql.png" 
+    link="/documentation/data-providers-config#mysql"
+    />
+
+  <FeatureCard 
+    title="In-Memory" 
+    image="/metal-logo-icon.png" 
+    link="/documentation/data-providers-config#memory"
+    />
+
+  <FeatureCard 
+    title="Web Service to data" 
+    image="/metal-logo-icon.png" 
+    link="/documentation/data-providers-config#webservice"
+    />
+
+  <FeatureCard 
+    title="Files to data" 
+    image="/metal-logo-icon.png" 
+    link="/documentation/data-providers-config#files"
+    />
+
+  <FeatureCard 
+    title="Folder to data" 
+    image="/metal-logo-icon.png" 
+    link="/documentation/data-providers-config#folders"
+    />
+
+  <FeatureCard 
+    title="Metal Plan" 
+    image="/metal-logo-icon.png" 
+    link="/documentation/data-providers-config#plan"
+    />
+
+  <FeatureCard 
+    title="Metal Server" 
+    image="/metal-logo-icon.png" 
+    link="/documentation/data-providers-config#metal-server"
+    />
+</div>
+
+
+## Storage Providers
+<div class="feature-grid">
+
+<FeatureCard 
+  title="Azure Blob Storage" 
+  image="/logo/azure-blob-storage.svg" 
+  link="#"
+   />
+
+<FeatureCard 
+  title="Azure File Storage" 
+  image="/logo/azure-file-storage.png" 
+  link="#"
+   />
+
+<FeatureCard 
+  title="Azure Datalake Gen2" 
+  image="/logo/azure-datalake.svg" 
+  link="#"
+   />
+
+<FeatureCard 
+  title="Amazon S3" 
+  image="/logo/s3.png" 
+  link="#"
+   />
+
+<FeatureCard 
+  title="FTP" 
+  image="/logo/ftp.svg" 
+  link="#"
+   />
+
+<FeatureCard 
+  title="SFTP" 
+  image="/logo/sftp.png" 
+  link="#"
+   />
+
+</div>
+
+## Content Providers
+
+<div class="feature-grid">
+
+<FeatureCard 
+  title="Parquet" 
+  image="/logo/parquet-logo.svg" 
+  link="#"
+   />
+<FeatureCard 
+  title="XML" 
+  image="/logo/xml.svg" 
+  link="#"
+   />
+
+<FeatureCard 
+  title="CSV" 
+  image="/logo/csv.svg" 
+  link="#"
+   />
+
+<FeatureCard 
+  title="JSON" 
+  image="/logo/json.png" 
+  link="#"
+   />
+
+<FeatureCard 
+  title="XLS" 
+  image="/logo/xls.svg" 
+  link="#"
+   />
+</div>
+
+## AI Tasks
+
+<div class="feature-grid">
+  <!-- OCR Tasks -->
+  <FeatureCard 
+    title="Image to String" 
+    image="/logo/ai-ocr.png" 
+    link="/documentation/ai-engines#image-to-string"
+    />
+  
+  <!-- Text Processing Tasks -->
+  <FeatureCard 
+    title="Emotion Detection" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#emotion-detection"
+    />
+  
+  <FeatureCard 
+    title="Feature Extraction" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#feature-extraction"
+    />
+  
+  <FeatureCard 
+    title="Fill Mask" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#fill-mask"
+    />
+  
+  <FeatureCard 
+    title="Keyword Extraction" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#keyword-extraction"
+    />
+  
+  <FeatureCard 
+    title="Language Detection" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#language-detection"
+    />
+  
+  <FeatureCard 
+    title="Paraphrase Detection" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#paraphrase-detection"
+    />
+  
+  <FeatureCard 
+    title="Question Answering" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#question-answering"
+    />
+  
+  <FeatureCard 
+    title="Sentence Similarity" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#sentence-similarity"
+    />
+  
+  <FeatureCard 
+    title="Sentiment Analysis" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#sentiment-analysis"
+    />
+  
+  <FeatureCard 
+    title="Text Summary" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#summarization"
+    />
+  
+  <FeatureCard 
+    title="Text Generation" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#text-generation"
+    />
+  
+  <FeatureCard 
+    title="Named Entity Recognition" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#ner"
+    />
+  
+  <FeatureCard 
+    title="Toxicity Detection" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#toxicity-detection"
+    />
+  
+  <FeatureCard 
+    title="Translation" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#translation"
+    />
+  
+  <FeatureCard 
+    title="Zero Shot Classification" 
+    image="/logo/ai-text.png" 
+    link="/documentation/ai-engines#zero-shot-classification"
+    />
+  
+  <!-- Image Processing Tasks -->
+  <FeatureCard 
+    title="Image Classification" 
+    image="/logo/ai-image.png" 
+    link="/documentation/ai-engines#image-classification"
+    />
+  
+  <FeatureCard 
+    title="Image Segmentation" 
+    image="/logo/ai-image.png" 
+    link="/documentation/ai-engines#image-segmentation"
+    />
+  
+  <FeatureCard 
+    title="Image to Text" 
+    image="/logo/ai-image.png" 
+    link="/documentation/ai-engines#image-to-text"
+    />
+  
+  <FeatureCard 
+    title="Object Detection" 
+    image="/logo/ai-image.png" 
+    link="/documentation/ai-engines#object-detection"
+    />
+  
+  <FeatureCard 
+    title="Visual Question Answering" 
+    image="/logo/ai-image.png" 
+    link="/documentation/ai-engines#visual-question-answering"
+    />
+  
+  <!-- Audio Processing Tasks -->
+  <FeatureCard 
+    title="Audio Classification" 
+    image="/logo/ai-audio.png" 
+    link="/documentation/ai-engines#audio-classification"
+    />
+  
+  <FeatureCard 
+    title="Speech to Text" 
+    image="/logo/ai-audio.png" 
+    link="/documentation/ai-engines#automatic-speech-recognition"
+    />
+</div>
+
+## Container Providers
+
+<div class="feature-grid">
+
+  <FeatureCard 
+    title="Kubernetes" 
+    image="/logo/k8s.png" 
+    link="#"
+    />
+
+  <FeatureCard 
+    title="Docker" 
+    image="/logo/docker.png" 
+    link="#"
+    />
+
+  <FeatureCard 
+    title="Azure AKS" 
+    image="/logo/azure-aks.svg" 
+    link="#"
+    />
+
+  <FeatureCard 
+    title="AWS ECS/EKS"  
+    image="/logo/aws.svg" 
+    link="#"
+    />
+
+  <FeatureCard 
+    title="Google Cloud Platform" 
+    image="/logo/gcp.svg" 
+    link="#"
+    />
+
+</div>
+
+## Authentication Providers
+
+<div class="feature-grid">
+  <FeatureCard 
+    title="OpenID Connect" 
+    image="/logo/openid.svg" 
+    link="#"
+    />
+
+  <FeatureCard 
+    title="Local" 
+    image="/metal-logo-icon.png" 
+    link="#"
+    />
+</div>
+
+
+
+
+<!--------------------------------------->
+
+<style>
+.feature-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.feature-grid > .feature-card {
+  flex: 0 0 calc(100% / 5);
+  width: calc(100% / 5);
+}
+
+</style>

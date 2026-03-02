@@ -70,17 +70,17 @@ users:
 	  password: myStr@ngpa$$w0rd
 ```
 
-Include a sources section with the source `az-csv-data` to connect to the Azure Blob Container `datacontainer1`:
+Include a sources section with the source `azure-csv-data` to connect to the Azure Blob Container `datacontainer1`:
 
 ```yaml
 sources:
-  az-csv-data:
+  azure-csv-data:
     provider: storage
     options:
-      mode: files
-      storage-type: az-blob
-      az-blob-connection-string: UseDevelopmentStorage=true
-      az-blob-container: datacontainer1
+      storage-mode: files
+      storage-type: azure-blob
+      connection-string: UseDevelopmentStorage=true
+      container: datacontainer1
       content:
         "*.csv":
           content-type: csv
@@ -94,12 +94,12 @@ In this configuration:
 - The Azure Blob Connection string is set to local Azurite.
 - The Azure Blob Container name is set to `datacontainer1`.
 
-To expose through an HTTP API, add a schema section with the schema `azcsv` that points to the source `az-csv-data`:
+To expose through an HTTP API, add a schema section with the schema `azcsv` that points to the source `azure-csv-data`:
 
 ```yaml
 schemas:
   azcsv:
-    source: az-csv-data
+    source: azure-csv-data
 ```
 
 The final configuration will be:
@@ -120,20 +120,20 @@ users:
 	  password: myStr@ngpa$$w0rd
 
 sources:
-  az-csv-data:
+  azure-csv-data:
     provider: storage
     options:
-      mode: files
-      storage-type: az-blob
-      az-blob-connection-string: UseDevelopmentStorage=true
-      az-blob-container: datacontainer1
+      storage-mode: files
+      storage-type: azure-blob
+      connection-string: UseDevelopmentStorage=true
+      container: datacontainer1
       content:
         '*.csv':
           content-type: csv
 
 schemas:
   azcsv:
-    source: az-csv-data
+    source: azure-csv-data
 ```
 
 With the configuration set, restart the Metal server:

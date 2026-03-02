@@ -544,11 +544,6 @@ schemas:
 When using `anonymize` in a schema and in a plan, data will be anonymized twice.
 :::
 
-## ~~ [Removed] `ai-engines`~~ <Badge type="info" text="v0.5+" />
-
-::: warning ⚠️ Warning
-Starting from v0.5, this configuration has been removed and managed automatically by Metal server.
-:::
 
 ## `plans` <Badge type="default" text="v0.1+" />
 
@@ -863,11 +858,6 @@ plans:
           name: desc
 ```
 
-### ~~[Removed] `fields`~~ <Badge type="info" text="v0.5+" />
-
-::: warning ⚠️ Warning
-Starting from v0.5, this configuration has been renamed to `pick`.
-:::
 
 ### `pick` <Badge type="info" text="v0.5+" />
 

@@ -70,6 +70,18 @@ export default withMermaid({
           ],
         },
         {
+          text: 'Catalogue',
+          collapsible: false,
+          items: [
+            { text: 'Data Providers', link: '/documentation/catalogue#data-providers' },
+            { text: 'Storage Providers', link: '/documentation/catalogue#storage-providers' },
+            { text: 'Content Providers', link: '/documentation/catalogue#content-providers' },
+            { text: 'AI Tasks', link: '/documentation/catalogue#ai-tasks' },
+            { text: 'Container Providers', link: '/documentation/catalogue#container-providers' },
+            { text: 'Authentication Providers', link: '/documentation/catalogue#auth-providers' },
+          ],
+        },
+        {
           text: 'Configuration file',
           collapsible: false,
           items: [

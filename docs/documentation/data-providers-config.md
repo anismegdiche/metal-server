@@ -306,7 +306,7 @@ sources:
 The Storage data provider allows you to manage file-based data or folders content as data.
 It provides a flexible solution to handle various content types and storage options.
 
-when using parameter `options.mode` you can switch between 2 modes :
+when using parameter `options.storage-mode` you can switch between 2 modes :
 
 - `files`: to work with files as data
 - `folders`: to work with folders as data
@@ -320,9 +320,9 @@ sources:
   my-files:
     provider: storage
     options:
-      mode: files
+      storage-mode: files
       storage-type: fs
-      fs-folder: ./data/
+      folder: ./data/
       content:
         "*.csv":
           content-type: csv
@@ -338,20 +338,20 @@ sources:
 | ---------- | ------ | -------- | ---------------------------------------- |
 | `provider` | String | Y        | Set to `storage` for Files data provider |
 
-### `mode`
+### `storage-mode`
 
-mode can be set using `options.mode`
+mode can be set using `options.storage-mode`
 
 #### `folders`
 
-The `folders` mode enables treating folders as data, returning subfolders as entities and contained files as entity data.
+The `folders` mode enables handle folders as data, returning subfolders as entities and contained files as entity data.
 
 **Optional parameters:**
 
 | Parameter      | Type    | Required | Description                                                                                                                                      |
 | -------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `mode`         | String  | Y        | Set to `folders` to work with folders as data                                                                                                    |
-| `storage`      | String  | Y        | The storage where the files are stored, see: [Storage Types](#storage-types)                                                                     |
+| `storage-mode` | String  | Y        | Set to `folders` to work with folders as data                                                                                                    |
+| `storage-type` | String  | Y        | The storage where the files are stored, see: [Storage Types](#storage-types)                                                                     |
 | `autocreate`   | Boolean | N        | if set to `true`, when interacting with entities that do not exist, files with same entity name will be created automatically (default: `false`) |
 | `allow-delete` | Boolean | N        | if set to `true`, allow deleting entities (default: `false`)                                                                                     |
 
@@ -369,7 +369,18 @@ Data returned from folders mode are:
 | `content`    | `string` | The Base64 content of the file. ❗By default it is not returned unless you specify it explicitly in fields |
 
 ::: warning ⚠️ IMPORTANT
-By Default, the `content` field is not returned unless you specify it explicitly in `select.fields`.
+By Default, the `content` field is not returned unless you specify it explicitly for example in `select.fields`.
+
+```yaml
+plans:
+  myplan:
+    myentity:
+      - select:
+        schema: fs
+        entity: images
+        fields: "*,content"
+```
+
 :::
 ::: tip ℹ️ NOTE
 When you perform Insert and Update, only fields `name` and `content` can be modified.
@@ -384,9 +395,9 @@ sources:
   src-fs:
     provider: storage
     options:
-      mode: folders
+      storage-mode: folders
       storage-type: fs
-      fs-folder: ./data/
+      folder: ./data/
       allow-delete: true
 ```
 
@@ -398,14 +409,14 @@ Each file can have its own associated content type with optional parameters for 
 
 **Optional parameters:**
 
-| Parameter    | Type    | Required | Description                                                                                                                                                                                    |
-| ------------ | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mode`       | String  | Y        | Set to `files` to work with files as data                                                                                                                                                      |
-| `storage`    | String  | Y        | The storage where the files are stored, see: [Storage Types](#storage-types)                                                                                                                   |
-| `content`    | Object  | Y        | Contains pattern of files and associated content type, including JSON, CSV, and XLS, with optional parameters for customizing the content type settings., see: [Content Types](#content-types) |
-| `autocreate` | Boolean | N        | if set to `true`, when interacting with entities that do not exist, files with same entity name will be created automatically (default: `false`)                                               |
+| Parameter      | Type    | Required | Description                                                                                                                                                                                    |
+| -------------- | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `storage-mode` | String  | Y        | Set to `files` to work with files as data                                                                                                                                                      |
+| `storage-type` | String  | Y        | The storage where the files are stored, see: [Storage Types](#storage-types)                                                                                                                   |
+| `content`      | Object  | Y        | Contains pattern of files and associated content type, including JSON, CSV, and XLS, with optional parameters for customizing the content type settings., see: [Content Types](#content-types) |
+| `autocreate`   | Boolean | N        | if set to `true`, when interacting with entities that do not exist, files with same entity name will be created automatically (default: `false`)                                               |
 
-### `storage` <Badge type="default" text="v0.3+" />
+### `storage-type` <Badge type="default" text="v0.3+" />
 
 Storage types can be set with the parameter `options.storage` as shown in the example below:
 
@@ -414,185 +425,126 @@ sources:
   my-files:
     provider: storage
     options:
-      mode: files
+      storage-mode: files
       storage-type: fs
-      fs-folder: ./data/
+      folder: ./data/
       …
 ```
 
 List of managed storage types:
 
-| Parameter     | Description                  | Metal version                         |
-| ------------- | ---------------------------- | ------------------------------------- |
-| `az-blob`     | Azure Blob Storage           | <Badge type="default" text="v0.3+" /> |
-| `az-file`     | Azure File Share             | <Badge type="default" text="v0.4+" /> |
-| `az-datalake` | Azure Data Lake Storage Gen2 | <Badge type="default" text="v0.4+" /> |
-| `fs`          | Local file system            | <Badge type="default" text="v0.3+" /> |
-| `ftp`         | FTP server                   | <Badge type="default" text="v0.3+" /> |
-| `s3`          | Amazon S3                    | <Badge type="default" text="v0.4+" /> |
+| Parameter        | Description                  | Metal version                         |
+| ---------------- | ---------------------------- | ------------------------------------- |
+| `azure-blob`     | Azure Blob Storage           | <Badge type="info" text="v0.5+" />    |
+| `azure-file`     | Azure File Share             | <Badge type="info" text="v0.5+" />    |
+| `azure-datalake` | Azure Data Lake Storage Gen2 | <Badge type="info" text="v0.5+" />    |
+| `aws-s3`         | Amazon S3                    | <Badge type="info" text="v0.5+" />    |
+| `fs`             | Local file system            | <Badge type="default" text="v0.3+" /> |
+| `ftp`            | FTP server                   | <Badge type="default" text="v0.3+" /> |
+| `sftp`           | SFTP server                  | <Badge type="info" text="v0.5+" />    |
 
-#### `fs` (Filesystem) <Badge type="default" text="v0.3+" />
 
-This refers to the local file system
-
-**Optional Parameters:**
-
-| Parameter    | Type    | Required | Description                                                               |
-| ------------ | ------- | -------- | ------------------------------------------------------------------------- |
-| `storage`    | String  | Y        | Set to `fs` for Local file system                                         |
-| `autocreate` | Boolean | N        | if set to `true`, entity will be created automatically (default: `false`) |
-| `fs-folder`  | String  | Y        | The path where files are stored (default: `.`)                            |
-
-**Example:**
-
-```yaml
-sources:
-  my-local-files:
-    provider: storage
-    options:
-      mode: files
-      storage-type: fs
-      fs-folder: ./data/
-      …
-```
-
-#### `ftp` (FTP Server) <Badge type="default" text="v0.3+" />
-
-This refers to use a FTP server
-
-**Optional Parameters:**
-
-| Parameter      | Type             | Required | Description                                                              |
-| -------------- | ---------------- | -------- | ------------------------------------------------------------------------ |
-| `storage`      | String           | Y        | Set to `ftp` for FTP server                                              |
-| `autocreate`   | Boolean          | N        | if set to `true`, entity will be created automatically, default: `false` |
-| `ftp-host`     | String           | Y        | FTP server host                                                          |
-| `ftp-port`     | Number (1-65535) | N        | FTP server port , default: 21                                            |
-| `ftp-user`     | String           | Y        | FTP server username                                                      |
-| `ftp-password` | String           | Y        | FTP server password                                                      |
-| `ftp-secure`   | Boolean          | N        | Enable Secure FTP connection (FTPS) , default: `false`                   |
-| `ftp-folder`   | String           | N        | Remote folder on the FTP server , default: `/`                           |
-
-**Example:**
-
-```yaml
-sources:
-  my-ftp-files:
-    provider: storage
-    options:
-      mode: files
-      storage-type: ftp
-      ftp-host: ftp.server.com
-      ftp-port: 21
-      ftp-user: ftp-user
-      ftp-password: ftppass
-      ftp-folder: /
-      …
-```
-
-#### `az-blob` (Azure Blob Storage) <Badge type="default" text="v0.3+" />
+#### `azure-blob` (Azure Blob Storage) <Badge type="info" text="v0.5+" />
 
 This refers to use a Azure Blob Storage
 
 **Optional Parameters:**
 
-| Parameter                   | Type   | Required | Description                                                                                 |
-| --------------------------- | ------ | -------- | ------------------------------------------------------------------------------------------- |
-| `storage`                   | String | Y        | Set to `az-blob` for Azure Blob Storage                                                     |
-| `az-blob-connection-string` | String | Y        | Azure Blob Connection String                                                                |
-| `az-blob-container`         | String | Y        | Azure Blob Container name                                                                   |
-| `az-blob-autocreate`        | String | N        | If set to `true` then the container will be created with the provided name, defult: `false` |
+| Parameter           | Type   | Required | Description                                                                                  |
+| ------------------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
+| `storage-type`      | String | Y        | Set to `azure-blob` for Azure Blob Storage                                                   |
+| `connection-string` | String | Y        | Azure Blob Connection String                                                                 |
+| `container`         | String | Y        | Azure Blob Container name                                                                    |
+| `autocreate`        | String | N        | If set to `true` then the container will be created with the provided name, default: `false` |
 
 **Example:**
 
 ```yaml
 sources:
-  my-az-blob-files:
+  my-azure-blob-files:
     provider: storage
     options:
-      mode: files
-      storage-type: az-blob
-      az-blob-connection-string: UseDevelopmentStorage=true
-      az-blob-container: datacontainer1
-      az-blob-autocreate: true
+      storage-mode: files
+      storage-type: azure-blob
+      connection-string: DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=accountKey;EndpointSuffix=core.windows.net
+      container: datacontainer1
+      autocreate: true
       …
 ```
 
-#### `az-file` (Azure File Share) <Badge type="default" text="v0.4+" />
+#### `azure-file` (Azure File Share) <Badge type="info" text="v0.5+" />
 
 This refers to use an Azure File Share storage.
 
 **Optional Parameters:**
 
-| Parameter                   | Type    | Required | Description                                                              |
-| --------------------------- | ------- | -------- | ------------------------------------------------------------------------ |
-| `storage`                   | String  | Y        | Set to `az-file` for Azure File Share                                    |
-| `autocreate`                | Boolean | N        | if set to `true`, entity will be created automatically, default: `false` |
-| `az-file-connection-string` | String  | Y        | Azure Storage connection string                                          |
-| `az-file-share-name`        | String  | Y        | Azure File Share name                                                    |
-| `az-file-folder`            | String  | N        | Remote folder in the share, default: `/`                                 |
+| Parameter           | Type    | Required | Description                                                              |
+| ------------------- | ------- | -------- | ------------------------------------------------------------------------ |
+| `storage-type`      | String  | Y        | Set to `azure-file` for Azure File Share                                 |
+| `connection-string` | String  | Y        | Azure Storage connection string                                          |
+| `share-name`        | String  | Y        | Azure File Share name                                                    |
+| `folder`            | String  | N        | Remote folder in the share, default: `/`                                 |
+| `autocreate`        | Boolean | N        | if set to `true`, entity will be created automatically, default: `false` |
 
 **Example:**
 
 ```yaml
 sources:
-  my-az-file-files:
+  my-azure-file-files:
     provider: storage
     options:
-      mode: files
-      storage-type: az-file
-      az-file-connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
-      az-file-share-name: myshare
-      az-file-folder: /path/to/files
+      storage-mode: files
+      storage-type: azure-file
+      connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
+      share-name: myshare
+      folder: /path/to/files
       …
 ```
 
-#### `az-datalake` (Azure Data Lake Storage Gen2) <Badge type="default" text="v0.4+" />
+#### `azure-datalake` (Azure Data Lake Storage Gen2) <Badge type="info" text="v0.5+" />
 
 This refers to use Azure Data Lake Storage Gen2
 
 **Required Parameters:**
 
-| Parameter                     | Type    | Required | Description                                                                            |
-| ----------------------------- | ------- | -------- | -------------------------------------------------------------------------------------- |
-| `storage`                     | String  | Y        | Set to `az-datalake` for Azure Data Lake Storage Gen2                                  |
-| `autocreate`                  | Boolean | N        | if set to `true`, entity will be created automatically, default: `false`               |
-| `az-datalake-storage-account` | String  | Y        | Azure storage account name for authentication                                          |
-| `az-datalake-storage-key`     | String  | Y        | Azure storage account key for authentication                                           |
-| `az-datalake-container-name`  | String  | Y        | Name of the container to store files in                                                |
-| `az-datalake-endpoint`        | String  | Y        | Azure endpoint (default: core.windows.net for Azure, can be different for Azure Stack) |
+| Parameter           | Type    | Required | Description                                                              |
+| ------------------- | ------- | -------- | ------------------------------------------------------------------------ |
+| `storage-type`      | String  | Y        | Set to `azure-datalake` for Azure Data Lake Storage Gen2                 |
+| `connection-string` | String  | Y        | Azure Storage connection string                                          |
+| `container`         | String  | Y        | Name of the container to store files in                                  |
+| `autocreate`        | Boolean | N        | if set to `true`, entity will be created automatically, default: `false` |
 
 **Example:**
 
 ```yaml
 sources:
-  my-az-datalake-files:
+  my-azure-datalake-files:
     provider: storage
     options:
-      mode: files
-      storage-type: az-datalake
-      az-datalake-storage-account: your-storage-account
-      az-datalake-storage-key: your-storage-key
-      az-datalake-container-name: your-container
-      az-datalake-endpoint: core.windows.net
+      storage-mode: files
+      storage-type: azure-datalake
+      connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
+      container: mycontainer
+      autocreate: true
       …
 ```
 
-#### `s3` (Amazon S3) <Badge type="default" text="v0.4+" />
+#### `aws-s3` (Amazon S3) <Badge type="info" text="v0.5+" />
 
 This refers to use Amazon S3 storage
 
 **Required Parameters:**
 
-| Parameter              | Type    | Required | Description                                                                 |
-| ---------------------- | ------- | -------- | --------------------------------------------------------------------------- |
-| `storage`              | String  | Y        | Set to `s3` for Amazon S3 storage                                           |
-| `autocreate`           | Boolean | N        | if set to `true`, entity will be created automatically, default: `false`    |
-| `s3-access-key-id`     | String  | Y        | AWS access key ID for authentication                                        |
-| `s3-secret-access-key` | String  | Y        | AWS secret access key for authentication                                    |
-| `s3-region`            | String  | Y        | AWS region where the S3 bucket is located                                   |
-| `s3-bucket`            | String  | Y        | Name of the S3 bucket to store files in                                     |
-| `s3-endpoint`          | String  | N        | Optional endpoint URL for S3-compatible services (default: AWS S3 endpoint) |
+| Parameter           | Type    | Required | Description                                                                 |
+| ------------------- | ------- | -------- | --------------------------------------------------------------------------- |
+| `storage-type`      | String  | Y        | Set to `aws-s3` for Amazon S3 storage                                       |
+| `region`            | String  | Y        | AWS region where the S3 bucket is located                                   |
+| `bucket`            | String  | Y        | Name of the S3 bucket to store files in                                     |
+| `access-key-id`     | String  | N        | AWS access key ID for authentication (optional, can use IAM roles)          |
+| `secret-access-key` | String  | N        | AWS secret access key for authentication (optional, can use IAM roles)      |
+| `endpoint`          | String  | N        | Optional endpoint URL for S3-compatible services (default: AWS S3 endpoint) |
+| `profile`           | String  | N        | AWS profile name for authentication (optional)                              |
+| `autocreate`        | Boolean | N        | if set to `true`, entity will be created automatically, default: `false`    |
 
 **Example:**
 
@@ -601,13 +553,142 @@ sources:
   my-s3-files:
     provider: storage
     options:
-      mode: files
-      storage-type: s3
-      s3-access-key-id: your-access-key-id
-      s3-secret-access-key: your-secret-access-key
-      s3-region: us-east-1
-      s3-bucket: your-bucket-name
-      s3-endpoint: http://127.0.0.1:9000 # Optional for S3-compatible services
+      storage-mode: files
+      storage-type: aws-s3
+      region: us-east-1
+      bucket: your-bucket-name
+      access-key-id: your-access-key-id  # Optional - can use IAM roles
+      secret-access-key: your-secret-access-key  # Optional - can use IAM roles
+      endpoint: http://127.0.0.1:9000  # Optional for S3-compatible services
+      profile: my-aws-profile  # Optional - use AWS profile
+      autocreate: true
+      …
+```
+
+**Authentication Methods:**
+
+1. **Explicit Credentials**: Provide `access-key-id` and `secret-access-key`
+2. **IAM Roles**: Omit credentials when running on EC2/ECS with IAM roles
+3. **AWS Profile**: Use `profile` to specify AWS profile from ~/.aws/config
+4. **Environment Variables**: Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
+
+#### `fs` (Filesystem) <Badge type="info" text="v0.5+" />
+
+This refers to the local file system
+
+**Optional Parameters:**
+
+| Parameter      | Type    | Required | Description                                                               |
+| -------------- | ------- | -------- | ------------------------------------------------------------------------- |
+| `storage-type` | String  | Y        | Set to `fs` for Local file system                                         |
+| `folder`       | String  | Y        | The path where files are stored                                           |
+| `autocreate`   | Boolean | N        | if set to `true`, entity will be created automatically (default: `false`) |
+
+**Example:**
+
+```yaml
+sources:
+  my-local-files:
+    provider: storage
+    options:
+      storage-mode: files
+      storage-type: fs
+      folder: ./data/
+      …
+```
+
+#### `ftp` (FTP Server) <Badge type="info" text="v0.5+" />
+
+This refers to use a FTP server
+
+**Optional Parameters:**
+
+| Parameter      | Type             | Required | Description                                                              |
+| -------------- | ---------------- | -------- | ------------------------------------------------------------------------ |
+| `storage-type` | String           | Y        | Set to `ftp` for FTP server                                              |
+| `host`         | String           | Y        | FTP server host                                                          |
+| `port`         | Number (1-65535) | N        | FTP server port , default: 21                                            |
+| `user`         | String           | Y        | FTP server username                                                      |
+| `password`     | String           | Y        | FTP server password                                                      |
+| `secure`       | Boolean          | N        | Enable Secure FTP connection (FTPS) , default: `false`                   |
+| `folder`       | String           | N        | Remote folder on the FTP server , default: `/`                           |
+| `autocreate`   | Boolean          | N        | if set to `true`, entity will be created automatically, default: `false` |
+
+**Example:**
+
+```yaml
+sources:
+  my-ftp-files:
+    provider: storage
+    options:
+      storage-mode: files
+      storage-type: ftp
+      host: ftp.server.com
+      port: 21
+      user: ftpuser
+      password: ftppass
+      folder: /
+      …
+```
+
+#### `sftp` (SFTP Server) <Badge type="info" text="v0.5+" />
+
+This refers to use a SFTP server
+
+**Optional Parameters:**
+
+| Parameter      | Type             | Required | Description                                                              |
+| -------------- | ---------------- | -------- | ------------------------------------------------------------------------ |
+| `storage-type` | String           | Y        | Set to `sftp` for SFTP server                                            |
+| `host`         | String           | Y        | SFTP server host                                                          |
+| `port`         | Number (1-65535) | N        | SFTP server port , default: 22                                           |
+| `user`         | String           | Y        | SFTP server username                                                      |
+| `password`     | String           | N        | SFTP server password (required if not using private key)                 |
+| `private-key`  | String           | N        | Private key for authentication (required if not using password)         |
+| `passphrase`   | String           | N        | Passphrase for private key (if encrypted)                                 |
+| `folder`       | String           | N        | Remote folder on the SFTP server , default: `/`                           |
+| `autocreate`   | Boolean          | N        | if set to `true`, entity will be created automatically, default: `false` |
+
+**Authentication Methods:**
+
+1. **Password Authentication**: Provide `password` parameter
+2. **Private Key Authentication**: Provide `private-key` parameter (optionally with `passphrase`)
+
+**Example:**
+
+```yaml
+sources:
+  my-sftp-files:
+    provider: storage
+    options:
+      storage-mode: files
+      storage-type: sftp
+      host: sftp.server.com
+      port: 22
+      user: sftpuser
+      password: sftppass
+      folder: /
+      …
+```
+
+**Example with Private Key Authentication:**
+
+```yaml
+sources:
+  my-sftp-files:
+    provider: storage
+    options:
+      storage-mode: files
+      storage-type: sftp
+      host: sftp.server.com
+      port: 22
+      user: sftpuser
+      private-key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEpAIBAAKCAQEA...
+        -----END RSA PRIVATE KEY-----
+      passphrase: my-secret-passphrase
+      folder: /data
       …
 ```
 
@@ -624,7 +705,7 @@ sources:
   my-files:
     provider: storage
     options:
-      mode: files
+      storage-mode: files
       content:
         "*.json":
           content-type: json
@@ -664,7 +745,7 @@ sources:
   my-json-files:
     provider: storage
     options:
-      mode: files
+      storage-mode: files
       content:
         "*.json":
           content-type: json
@@ -689,7 +770,7 @@ sources:
   my-csv-files:
     provider: storage
     options:
-      mode: files
+      storage-mode: files
       content:
         "*.csv":
           content-type: csv
@@ -721,7 +802,7 @@ sources:
   my-xls-files:
     provider: storage
     options:
-      mode: files
+      storage-mode: files
       content:
         "*.xlsx":
           content-type: xls
@@ -746,7 +827,7 @@ sources:
   my-xml-files:
     provider: storage
     options:
-      mode: files
+      storage-mode: files
       content:
         "*.xml":
           content-type: xml
@@ -760,10 +841,9 @@ sources:
 
 Parquet files using hyparquet library for in-memory operations. Supports columnar data format with efficient compression and schema evolution.
 
-| Parameter                  | Type          | Default   | Description                                                     |
-| -------------------------- | ------------- | --------- | --------------------------------------------------------------- |
-| `parquet-utf8`             | Boolean       | true      | Decode byte arrays as utf8 strings                              |
-
+| Parameter      | Type    | Default | Description                        |
+| -------------- | ------- | ------- | ---------------------------------- |
+| `parquet-utf8` | Boolean | true    | Decode byte arrays as utf8 strings |
 
 **Example:**
 
@@ -772,7 +852,7 @@ sources:
   my-parquet-files:
     provider: storage
     options:
-      mode: files
+      storage-mode: files
       content:
         "*.parquet":
           content-type: parquet
