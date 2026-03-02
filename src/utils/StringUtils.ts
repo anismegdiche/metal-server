@@ -23,7 +23,7 @@ export class StringUtils {
     }
 
     static IsEmpty(str: string | undefined | null): boolean {
-        return str == undefined || str == null || str == '' || str.trim() == ''
+        return !str?.trim()
     }
 
     static Url(...subPaths: Array<string | undefined>) {
@@ -85,5 +85,56 @@ export class StringUtils {
     static IsLatin(str: string) {
         // eslint-disable-next-line no-control-regex
         return /^[\u0000-\u024F]*$/.test(str);
+    }
+
+    static IsMaliciousPath(path?: string): boolean {
+        if (!path || typeof path !== 'string') {
+            return false;
+        }
+
+        // Normalize the path by decoding common encodings
+        let normalizedPath = path;
+        
+        // Decode URL encoding
+        try {
+            normalizedPath = decodeURIComponent(normalizedPath);
+        } catch {
+            // If decoding fails, continue with original path
+        }
+
+        // Check for null bytes (can be used to bypass validation)
+        if (normalizedPath.includes('\0') || normalizedPath.includes('%00')) {
+            return true;
+        }
+
+        // Check for absolute paths (starting with / or drive letters on Windows)
+        if (/^([a-zA-Z]:)?[\\/]/.test(normalizedPath)) {
+            return true;
+        }
+
+        // Check for path traversal patterns
+        const traversalPatterns = [
+            // Basic traversal patterns
+            /\.\.[\\/]/,           // ../ or ..\
+            /\.\.%2f/i,             // ..%2f
+            /\.\.%5c/i,             // ..%5c
+            /%2e%2e[\\/]/i,        // %2e%2e/ or %2e%2e\
+            /%2e%2e%2f/i,           // %2e%2e%2f
+            /%2e%2e%5c/i,           // %2e%2e%5c
+            
+            // Double encoded patterns
+            /%252e%252e[\\/]/i,    // %252e%252e/ or %252e%252e\
+            /%252e%252e%252f/i,     // %252e%252e%252f
+            /%252e%252e%255c/i,     // %252e%252e%255c
+            
+            // UTF-8 overlong encoding
+            /\.\.%c0%af/i,           // ..%c0%af
+            /\.\.%c1%9c/i,           // ..%c1%9c
+            
+            // Multiple consecutive dots (potential traversal)
+            /\.{3,}[\\/]/,          // .../ or ...\
+        ];
+
+        return traversalPatterns.some(pattern => pattern.test(normalizedPath));
     }
 }

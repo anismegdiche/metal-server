@@ -349,7 +349,7 @@ describe("DataTable", () => {
             const results = await Promise.all(countPromises)
 
             // All should return the same result
-            expect(results).toEqual(Array(10).fill(3))
+            expect(results).toEqual(new Array(10).fill(3))
         })
 
         it("should perform efficiently with 100+ mixed operations", async () => {
@@ -441,8 +441,8 @@ describe("DataTable", () => {
             const results = await Promise.all(countPromises)
             const endTime = performance.now()
 
-            expect(results).toEqual(Array(10).fill(largeSize))
-            
+            expect(results).toEqual(new Array(10).fill(largeSize))
+
             // Multiple cached calls should be very fast
             expect(endTime - startTime).toBeLessThan(100)
 
@@ -1633,7 +1633,7 @@ describe("DataTable", () => {
             ])
             const rows = await dt.Rows({ includeIndex: true })
             const rowToDelete = rows[1]! // Delete Jane (index 1)
-            
+
             const result = await dt.RowDeleteByIndex(rowToDelete.__idx__)
 
             expect(await result.Rows()).toEqual([
@@ -1649,9 +1649,9 @@ describe("DataTable", () => {
                 { id: 1, name: "John" },
                 { id: 2, name: "Jane" }
             ])
-            
-            const result = await dt.RowDeleteByIndex(undefined)
-            
+
+            const result = await dt.RowDeleteByIndex()
+
             expect(await result.Rows()).toEqual([
                 { id: 1, name: "John" },
                 { id: 2, name: "Jane" }
@@ -1668,9 +1668,9 @@ describe("DataTable", () => {
             ])
             const rows = await dt.Rows({ includeIndex: true })
             const firstRow = rows[0]!
-            
+
             const result = await dt.RowDeleteByIndex(firstRow.__idx__)
-            
+
             expect(await result.Rows()).toEqual([
                 { id: 2, name: "Jane" },
                 { id: 3, name: "Bob" }
@@ -1687,9 +1687,9 @@ describe("DataTable", () => {
             ])
             const rows = await dt.Rows({ includeIndex: true })
             const lastRow = rows[2]!
-            
+
             const result = await dt.RowDeleteByIndex(lastRow.__idx__)
-            
+
             expect(await result.Rows()).toEqual([
                 { id: 1, name: "John" },
                 { id: 2, name: "Jane" }
@@ -1704,9 +1704,9 @@ describe("DataTable", () => {
             ])
             const rows = await dt.Rows({ includeIndex: true })
             const onlyRow = rows[0]!
-            
+
             const result = await dt.RowDeleteByIndex(onlyRow.__idx__)
-            
+
             expect(await result.Rows()).toEqual([])
             expect(await result.Count()).toBe(0)
         })
@@ -1719,7 +1719,7 @@ describe("DataTable", () => {
             ])
             const rows = await dt.Rows({ includeIndex: true })
             const rowToDelete = rows[0]!
-            
+
             // Mock FieldsSet to track if it's called
             const originalFieldsSet = dt.FieldsSet.bind(dt)
             let fieldsSetCalled = false
@@ -1727,9 +1727,9 @@ describe("DataTable", () => {
                 fieldsSetCalled = true
                 return originalFieldsSet()
             })
-            
+
             const result = await dt.RowDeleteByIndex(rowToDelete.__idx__)
-            
+
             expect(fieldsSetCalled).toBe(false)
             expect(await result.Rows()).toEqual([
                 { id: 2, name: "Jane" }
@@ -1745,13 +1745,13 @@ describe("DataTable", () => {
                 { id: 4, name: "Alice" }
             ])
             const rows = await dt.Rows({ includeIndex: true })
-            
+
             // Delete rows one by one
             await dt.RowDeleteByIndex(rows[1]!.__idx__) // Delete Jane
             await dt.RowDeleteByIndex(rows[2]!.__idx__) // Delete Bob
-            
+
             const result = await dt.Rows()
-            
+
             expect(result).toEqual([
                 { id: 1, name: "John" },
                 { id: 4, name: "Alice" }
@@ -1762,14 +1762,92 @@ describe("DataTable", () => {
         it('should handle deletion from empty table', async () => {
             const dt = new DataTable()
             await dt.RowsSet([])
-            
+
             const result = await dt.RowDeleteByIndex('some-index')
-            
+
             expect(await result.Rows()).toEqual([])
             expect(await result.Count()).toBe(0)
         })
     })
 
+
+    describe('ForEach', () => {
+        it('should pass unique indices to callback function', async () => {
+            const testDt = new DataTable("forEachTest");
+
+            // Create 20 test rows
+            const testData = Array.from({ length: 20 }, (_, i) => ({
+                id: i + 1,
+                name: `Item ${i + 1}`,
+                value: Math.random() * 100
+            }));
+
+            await testDt.RowsSet(testData);
+
+            const results: { row: any, idx: number | undefined }[] = [];
+
+            // Use ForEach to process rows
+            await testDt.ForEach((row, idx) => {
+                results.push({ row, idx });
+                return row.name; // Return something to satisfy the function
+            });
+
+            // Verify we got exactly 20 results
+            expect(results).toHaveLength(20);
+
+            // Verify all indices are unique and sequential (0-19)
+            const indices = results.map(r => r.idx);
+            expect(indices).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
+
+            // Verify each result has correct row and corresponding index
+            results.forEach((result, expectedIdx) => {
+                expect(result.idx).toBe(expectedIdx);
+                expect(result.row.id).toBe(expectedIdx + 1);
+                expect(result.row.name).toBe(`Item ${expectedIdx + 1}`);
+            });
+
+            console.log(`ForEach processed ${results.length} rows with unique indices: ${indices.join(', ')}`);
+        });
+
+        it('should handle empty dataset', async () => {
+            const emptyDt = new DataTable("emptyTest");
+            await emptyDt.RowsSet([]);
+
+            const results: any[] = [];
+
+            await emptyDt.ForEach((row, idx) => {
+                results.push({ row, idx });
+                return row;
+            });
+
+            expect(results).toHaveLength(0);
+        });
+
+        it('should work with async callback functions', async () => {
+            const asyncDt = new DataTable("asyncTest");
+
+            const testData = Array.from({ length: 10 }, (_, i) => ({
+                id: i + 1,
+                name: `Async Item ${i + 1}`
+            }));
+
+            await asyncDt.RowsSet(testData);
+
+            const processedItems: string[] = [];
+
+            await asyncDt.ForEach(async (row, idx) => {
+                // Simulate async processing
+                await new Promise(resolve => setTimeout(resolve, 10));
+                processedItems.push(`Processed ${row.name} at index ${idx}`);
+                return row.name;
+            });
+
+            expect(processedItems).toHaveLength(10);
+            processedItems.forEach((item, expectedIdx) => {
+                expect(item).toBe(`Processed Async Item ${expectedIdx + 1} at index ${expectedIdx}`);
+            });
+        });
+    });
 
     // Executes a valid SQL query and returns a DataTable object with updated Rows and Fields properties
     // it('UC 1', async () => {

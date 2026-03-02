@@ -15,7 +15,7 @@ import type { TStep } from "../types/TStep"
 
 
 //
-enum MAP_ON_ERROR {
+export enum MAP_ON_ERROR {
     THROW = "throw",
     MARK = "mark",
     SKIP = "skip"
@@ -33,7 +33,7 @@ export type U_config_plans_plan_entity_map_Params = z.infer<typeof z_U_config_pl
 
 
 //
-export async function Map(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
+export async function MapRows(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
 
     Assert.Var<U_config_plans_plan_entity_map_Params>(
         step.stepArgs,
@@ -48,7 +48,7 @@ export async function Map(step: TStep, $context?: Partial<TContext>): Promise<Da
     const {
         script,
         "on-error": onError = DEFAULT["on-error"]
-    } = step.stepArgs as U_config_plans_plan_entity_map_Params
+    } = step.stepArgs
 
     const { currentDataTable } = step
 

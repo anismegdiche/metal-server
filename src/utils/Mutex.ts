@@ -54,4 +54,33 @@ export class Mutex extends Semaphore {
             })
         }
     }
+
+    /**
+     * Creates a mutex-protected variable that can be used inside functions
+     * Usage: const counter = Mutex.createMutexProtected(0);
+     *        const value = await counter.get();
+     *        counter.set(value + 1);
+     */
+    static CreateMutexProtected<T>(initialValue: T): {
+        get(): Promise<T>;
+        set(value: T): void;
+    } {
+        const mutex = new Mutex()
+        let value: T = initialValue
+
+        return {
+            async get(): Promise<T> {
+                await mutex.Acquire()
+                try {
+                    return value
+                } finally {
+                    mutex.Release()
+                }
+            },
+            
+            set(newValue: T): void {
+                value = newValue
+            }
+        }
+    }
 }

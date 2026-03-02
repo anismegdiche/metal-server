@@ -468,7 +468,7 @@ export class AiDocker {
 
             await AiDocker.PullImage(CaddyDockerService.ImageName).catch(Logger.Error)
 
-            const container = await AiDocker.docker.createContainer({
+            await AiDocker.docker.createContainer({
                 Image: CaddyDockerService.ImageName,
                 name: CaddyDockerService.Name,
                 Hostname: CaddyDockerService.Name,

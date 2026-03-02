@@ -21,7 +21,7 @@ export class StorageProvider {
         [STORAGE.AZURE_BLOB]: () => import('./providers/AzureBlobStorage').then(m => m.AzureBlobStorage),
         [STORAGE.AZURE_FILE]: () => import('./providers/AzureFileStorage').then(m => m.AzureFileStorage),
         [STORAGE.AZURE_DATALAKE_G2]: () => import('./providers/AzureDataLakeStorage').then(m => m.AzureDataLakeStorage),
-        [STORAGE.AMAZON_S3]: () => import('./providers/AmazonS3Storage').then(m => m.AmazonS3Storage)
+        [STORAGE.AWS_S3]: () => import('./providers/AmazonS3Storage').then(m => m.AmazonS3Storage)
     };
 
     static async GetProvider(providerName: STORAGE): Promise<absStorageProvider> {

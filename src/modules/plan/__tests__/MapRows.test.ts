@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { DataTable } from '../../../../types/DataTable'
-import { Map } from '../Map'
-import type { TStep } from '../../types/TStep'
+import { DataTable } from '../../../types/DataTable';
+import { MapRows, MAP_ON_ERROR } from '../steps/MapRows';
+import type { TStep } from '../types/TStep';
 
 vi.mock('../../../../utils/Logger', () => ({
     LOGGER_DEFAULT_LEVEL: 'debug',
@@ -41,7 +41,7 @@ describe('Map step', () => {
             }
         }
 
-        const result = await Map(step)
+        const result = await MapRows(step)
 
         expect(result).toBeInstanceOf(DataTable)
         expect(result.Name).toBe('test_mapped')
@@ -84,7 +84,7 @@ describe('Map step', () => {
             }
         }
 
-        const result = await Map(step)
+        const result = await MapRows(step)
         const rows = await result.Rows()
 
         expect(rows[0]).toEqual({
@@ -109,7 +109,7 @@ describe('Map step', () => {
             }
         }
 
-        const result = await Map(step)
+        const result = await MapRows(step)
         const rows = await result.Rows()
 
         expect(rows).toHaveLength(0)
@@ -133,7 +133,7 @@ describe('Map step', () => {
         }
 
         // Default behavior should throw an error
-        await expect(Map(step)).rejects.toThrow('Books are not allowed')
+        await expect(MapRows(step)).rejects.toThrow('Books are not allowed')
     })
 
     it('should skip rows when on-error is set to skip', async () => {
@@ -150,11 +150,11 @@ describe('Map step', () => {
                     $row.processed = true;
                     return $row;
                 `,
-                'on-error': 'skip'
+                'on-error': MAP_ON_ERROR.SKIP
             }
         }
 
-        const result = await Map(step)
+        const result = await MapRows(step)
         expect(result).toBeInstanceOf(DataTable)
         
         const rows = await result.Rows()
@@ -193,11 +193,11 @@ describe('Map step', () => {
                     $row.processed = true;
                     return $row;
                 `,
-                'on-error': 'mark'
+                'on-error': MAP_ON_ERROR.MARK
             }
         }
 
-        const result = await Map(step)
+        const result = await MapRows(step)
         expect(result).toBeInstanceOf(DataTable)
         
         const rows = await result.Rows()

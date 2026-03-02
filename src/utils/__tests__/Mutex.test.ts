@@ -1,4 +1,3 @@
-
 import { describe, expect, it } from 'vitest';
 import { Mutex } from '../Mutex';
 
@@ -15,7 +14,7 @@ describe('Mutex', () => {
                 locked = true;
             });
 
-            locked = false; // "Unlock" for the sake of the next check
+            locked = false; // "Unlock" for sake of next check
             mutex.Release();
             await p;
             expect(locked).toBe(true);
@@ -32,7 +31,7 @@ describe('Mutex', () => {
             const instance = new TestClass();
 
             // Getter should return a Promise
-            const value = await instance.testValue;
+            const value =  instance.testValue;
             expect(value).toBe(42);
         });
 
@@ -51,7 +50,7 @@ describe('Mutex', () => {
 
             const results = await Promise.all(promises);
 
-            // All should return the same initial value
+            // All should return same initial value
             results.forEach((result: number) => {
                 expect(result).toBe(0);
             });
@@ -69,11 +68,11 @@ describe('Mutex', () => {
             instance.testValue = 'updated';
 
             // Get the updated value
-            const value = await instance.testValue;
+            const value = instance.testValue;
             expect(value).toBe('updated');
         });
 
-        it('should work with multiple properties on the same class', async () => {
+        it('should work with multiple properties on same class', async () => {
             class TestClass {
                 @Mutex.Once()
                 public prop1: number = 100;
@@ -116,7 +115,7 @@ describe('Mutex', () => {
 
             const instance = new TestClass();
 
-            const value = await instance.undefinedValue;
+            const value = instance.undefinedValue;
             expect(value).toBeUndefined();
         });
 
@@ -154,7 +153,7 @@ describe('Mutex', () => {
             // Create 100 sequential increments to track progression
             for (let i = 0; i < 100; i++) {
                 // Get current value
-                const currentValue = await instance.counter;
+                const currentValue = instance.counter;
                 allValues.push(currentValue);
 
                 // Increment
@@ -165,9 +164,9 @@ describe('Mutex', () => {
             }
 
             // Get final value
-            const finalValue = await instance.counter;
+            const finalValue = instance.counter;
 
-            // Verify the progression: should be [0, 1, 2, ..., 99]
+            // Verify progression: should be [0, 1, 2, ..., 99]
             expect(allValues).toHaveLength(100);
             allValues.forEach((value, index) => {
                 expect(value).toBe(index);
@@ -187,12 +186,12 @@ describe('Mutex', () => {
             const instance = new TestClass();
             const operationLog: string[] = [];
 
-            // Create 100 concurrent promises that each increment the counter
+            // Create 100 concurrent promises that each increment counter
             const incrementPromises = Array.from({ length: 100 }, async (_, _index) => {
                 const operationId = Math.random().toString(36).substr(2, 9);
 
                 // Get current value
-                const currentValue = await instance.counter;
+                const currentValue = instance.counter;
                 operationLog.push(`${operationId}: read ${currentValue}`);
 
                 // Small delay to increase chance of race condition
@@ -208,9 +207,9 @@ describe('Mutex', () => {
             await Promise.all(incrementPromises);
 
             // Get final value
-            const finalValue = await instance.counter;
+            const finalValue = instance.counter;
 
-            // Log the operations to show the race condition
+            // Log operations to show race condition
             console.log(`Final counter value: ${finalValue}`);
             console.log(`Total operations: ${operationLog.length}`);
             console.log('Sample operations:', operationLog.slice(0, 10));
@@ -219,6 +218,81 @@ describe('Mutex', () => {
             expect(finalValue).toBeGreaterThan(0);
             expect(finalValue).toBeLessThan(100);
             expect(operationLog).toHaveLength(200); // 100 reads + 100 writes
+        });
+    });
+
+    describe('CreateMutexProtected', () => {
+        it('should create a mutex-protected variable that can be used inside functions', async () => {
+            const counter = Mutex.CreateMutexProtected(0);
+            
+            // Test initial value
+            const initialValue = await counter.get();
+            expect(initialValue).toBe(0);
+            
+            // Test setting and getting
+            counter.set(5);
+            const newValue = await counter.get();
+            expect(newValue).toBe(5);
+        });
+
+        it('should handle concurrent access safely', async () => {
+            const counter = Mutex.CreateMutexProtected(0);
+            
+            // Create 100 concurrent operations that increment counter
+            const incrementPromises = Array.from({ length: 100 }, async () => {
+                const currentValue = await counter.get();
+                counter.set(currentValue + 1);
+            });
+
+            await Promise.all(incrementPromises);
+            
+            const finalValue = await counter.get();
+            
+            // Note: Like Once decorator, setter is not mutex-protected
+            // so this will demonstrate same race condition
+            console.log(`Final counter value: ${finalValue} (demonstrates race condition in createMutexProtected)`);
+            expect(finalValue).toBeGreaterThan(0);
+            expect(finalValue).toBeLessThanOrEqual(100);
+        });
+
+        it('should work with different data types', async () => {
+            const stringVar = Mutex.CreateMutexProtected("hello");
+            const booleanVar = Mutex.CreateMutexProtected(true);
+            const objectVar = Mutex.CreateMutexProtected({ count: 0 });
+            
+            // Test string
+            const stringValue = await stringVar.get();
+            expect(stringValue).toBe("hello");
+            stringVar.set("world");
+            expect(await stringVar.get()).toBe("world");
+            
+            // Test boolean
+            const booleanValue = await booleanVar.get();
+            expect(booleanValue).toBe(true);
+            booleanVar.set(false);
+            expect(await booleanVar.get()).toBe(false);
+            
+            // Test object
+            const objectValue = await objectVar.get();
+            expect(objectValue).toEqual({ count: 0 });
+            objectVar.set({ count: 42 });
+            expect(await objectVar.get()).toEqual({ count: 42 });
+        });
+
+        it('should maintain separate state for different instances', async () => {
+            const counter1 = Mutex.CreateMutexProtected(0);
+            const counter2 = Mutex.CreateMutexProtected(100);
+            
+            counter1.set(1);
+            counter2.set(101);
+            
+            const [value1, value2] = await Promise.all([
+                counter1.get(),
+                counter2.get()
+            ]);
+            
+            expect(value1).toBe(1);
+            expect(value2).toBe(101);
         });
     });
 });

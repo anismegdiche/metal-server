@@ -27,8 +27,12 @@ export enum STORAGE_MODE {
 
 //
 export type U__source_storage_options =
-    ({ mode: STORAGE_MODE.FILES } & U__source_storage_file_options)
-    | ({ mode: STORAGE_MODE.FOLDERS } & U__source_storage_folder_options)
+    ({
+        "storage-mode": STORAGE_MODE.FILES
+    } & U__source_storage_file_options)
+    | ({
+        "storage-mode": STORAGE_MODE.FOLDERS
+    } & U__source_storage_folder_options)
 
 export type U__source_storage =
     U_config_sources_source & {
@@ -46,7 +50,7 @@ export class StorageData extends absDataProvider implements IDataProvider {
 
     DEFAULT = {
         options: {
-            mode: STORAGE_MODE.FILES
+            "storage-mode": STORAGE_MODE.FILES
         }
     }
 
@@ -59,9 +63,9 @@ export class StorageData extends absDataProvider implements IDataProvider {
 
         this.Config = merge(this.DEFAULT, sourceConfig)
 
-        const { mode } = this.Config.options as U__source_storage_options
+        const { "storage-mode": storageMode } = this.Config.options as U__source_storage_options
 
-        this.Connection = (mode === STORAGE_MODE.FILES)
+        this.Connection = (storageMode === STORAGE_MODE.FILES)
             ? new StorageFilesData()
             : new StorageFoldersData()
 

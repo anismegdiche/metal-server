@@ -25,7 +25,7 @@ sources:
   src-fs:
     provider: storage
     options:
-      mode: files
+      storage-mode: files
       storage-type: fs
       fs-folder: ./data/
       content:
@@ -47,13 +47,13 @@ sources:
         "sample*.xlsx":
           content-type: xls
           xls-starting-cell: E6
-  src-az-blob:
+  src-azure-blob:
     provider: storage
     options:
-      mode: files
-      storage-type: az-blob
-      az-blob-connection-string: UseDevelopmentStorage=true
-      az-blob-container: datacontainer1
+      storage-mode: files
+      storage-type: azure-blob
+      connection-string: UseDevelopmentStorage=true
+      container: datacontainer1
       content:
         "*.json":
           content-type: json
@@ -68,5 +68,5 @@ sources:
 schemas:
   fs:
     source: src-fs
-  az-blob:
-    source: src-az-blob
+  azure-blob:
+    source: src-azure-blob

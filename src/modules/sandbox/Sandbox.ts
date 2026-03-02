@@ -2,25 +2,25 @@
 //
 //
 import * as _ from 'lodash-es'
-import { createContext, Script } from 'node:vm'
+import { VM } from 'vm2'
 //
 import { Logger } from '../../utils/Logger'
-import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrors"
-import type { TContext } from "./types/TContext"
-import { maliciousPatterns } from "./@consts"
 import { Utils } from "../../utils/Utils"
+import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrors"
+import { maliciousPatterns } from "./@consts"
+import type { TContext } from "./types/TContext"
 
 
 //
 export class Sandbox {
 
-    #Context = createContext()
-    #KeepState: boolean = false //NOSONAR
+    _context: Partial<TContext> = {}
+    _keepState: boolean = false //NOSONAR
 
     constructor(context?: Partial<TContext>) {
         if (context) {
             this.SetContext(context) // Set the context
-            this.#KeepState = true
+            this._keepState = true
         }
     }
 
@@ -30,7 +30,7 @@ export class Sandbox {
 
     @Logger.LogFunction(true)
     SetContext(context?: object): void {
-        this.#Context = createContext(context)
+        this._context = context ?? {}
         this.AddSafeObjectsToContext()
     }
 
@@ -39,22 +39,27 @@ export class Sandbox {
         this.SetContext()
     }
 
-    // Evaluate dynamic code
     @Logger.LogFunction()
     Evaluate<T>(code: string, throwError: boolean = false): T | undefined {
         const _code = code.trim()
         let isSuspicious = false
-        try {
 
+        try {
+            // Layer 1: Pattern validation (fast)
             if (!Sandbox._isValidCode(_code)) {
                 isSuspicious = true
                 throw new HttpErrorInternalServerError('Invalid code')
             }
-            if (!this.#KeepState)
+
+            // Layer 2: vm2 sandbox (secure)
+            if (!this._keepState)
                 this.Reset()
 
-            const script = new Script(_code)
-            return script.runInContext(this.#Context)
+            const vm = new VM({
+                timeout: 5000,
+                sandbox: this._context
+            })
+            return vm.run(_code) as T
 
         } catch (err: unknown) {
             Logger.Error(`Error evaluating code: ${_code}, ${NormalizeError(err).message}`)
@@ -65,11 +70,7 @@ export class Sandbox {
     }
 
     AddSafeObjectsToContext(): void {
-        this.#Context.JSON = JSON
-        this.#Context.Math = Math
-        this.#Context._ = _
-
-        this.#Context.$utils = {
+        this._context.$utils = {
             JSON,
             Math,
             _,

@@ -63,7 +63,7 @@ sources:
     provider: storage
     database: ./data/
     options:
-      mode: files
+      storage-mode: files
       storage-type: fs
       content-type: json
       json-path: rows
@@ -71,19 +71,19 @@ sources:
     provider: storage
     database: ./data/
     options:
-      mode: files
+      storage-mode: files
       storage-type: fs
       content-type: csv
       csv-delimiter: ","
       csv-newline: "\n"
       csv-header: true
       csv-quote: '"'
-  az-json-data:
+  azure-json-data:
     provider: storage
     host: UseDevelopmentStorage=true
     database: datacontainer1
     options:
-      mode: files
+      storage-mode: files
       storage-type: azureBlob
       content-type: json
 

@@ -1,9 +1,10 @@
 //
 //
 //
-import * as Fs from 'fs'
+import * as fs from 'node:fs'
 import { merge } from 'lodash-es'
 import { Readable } from "node:stream"
+import z from 'zod'
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from '../../../utils/Assert'
@@ -12,7 +13,6 @@ import { Logger } from "../../../utils/Logger"
 import { ReadableUtils } from '../../../utils/ReadableUtils'
 import { StringUtils } from '../../../utils/StringUtils'
 import type { TConvertParams } from "../../../utils/TypeUtils"
-import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
@@ -21,45 +21,52 @@ import { absStorageProvider } from '../base/absStorageProvider'
 
 
 //
-export type U__source_storage_fs_options = {
-    "fs-folder"?: string
-    autocreate?: boolean
-}
+const z_U__source_storage_fs_options = z.object({
+    folder: z.string(),
+    autocreate: z.boolean().optional()
+})
 
-type TFsStorageParams = Required<{
-    [K in keyof U__source_storage_fs_options as K extends `fs-${infer U}` ? TConvertParams<U> : K]: U__source_storage_fs_options[K]
-}>
+
+//
+export type U__source_storage_fs_options = z.infer<typeof z_U__source_storage_fs_options>
+
+type TFsStorageParams = {
+    [K in keyof U__source_storage_fs_options as K extends `${infer U}` ? TConvertParams<U> : K]: U__source_storage_fs_options[K]
+}
 
 
 //
 export class FsStorage extends absStorageProvider {
-    ConfigSource?: U_config_sources_source
-    ConfigStorage?: U__source_storage_file_options
 
+    Config?: U__source_storage_file_options
     Params?: TFsStorageParams
 
-    DEFAULT: TFsStorageParams = {
-        folder: '',
+    DEFAULT: Partial<U__source_storage_fs_options> = {
         autocreate: false
+    }
+
+    IsConfigValid(): boolean {
+        return z_U__source_storage_fs_options.safeParse(this.Config).success
     }
 
     @Logger.LogFunction()
     Init(): void {
-        Assert.Var<U__source_storage_fs_options>(this.ConfigStorage, this.ConfigStorage !== undefined, 'No configuration defined')
+        Assert.Var<U__source_storage_fs_options>(this.Config, this.IsConfigValid(), 'No configuration defined')
+        this.Config = merge(this.DEFAULT, this.Config)
 
-        this.Params = merge(
-            this.DEFAULT, {
-            folder: this.ConfigStorage["fs-folder"],
-            autocreate: this.ConfigStorage.autocreate
-        })
+        this.Params = {
+            folder: this.Config.folder,
+            autocreate: this.Config.autocreate
+        }
+
+        Assert.Var<string>(this.Params.folder, 'No folder path defined')
+        Assert.Var<boolean>(this.Params.autocreate, 'No autocreate flag defined')
     }
-
 
     @Logger.LogFunction()
     async Connect(): Promise<void> {
-        Logger.Debug(`${Logger.Out} FsStorage.Connect: Connected`)
+        Logger.Debug(`${Logger.Out} FsStorage: Connected`)
     }
-
 
     @Logger.LogFunction()
     async Disconnect(): Promise<void> {
@@ -68,31 +75,42 @@ export class FsStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderIsExist(dirName: string): Promise<boolean> {
+        this.CheckPaths([dirName])
+
         Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
-        return Fs.existsSync(StringUtils.Path(this.Params.folder, dirName))
+
+        const _folderPath = StringUtils.Path(this.Params.folder, dirName)
+
+        return fs.existsSync(_folderPath)
     }
 
     @Logger.LogFunction()
     async FolderCreate(dirName: string): Promise<void> {
+        this.CheckPaths([dirName])
+
         Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
-        const folderPath = StringUtils.Path(this.Params.folder, dirName)
-        if (!Fs.existsSync(folderPath))
-            Fs.mkdirSync(folderPath)
+
+        const _folderPath = StringUtils.Path(this.Params.folder, dirName)
+
+        if (!fs.existsSync(_folderPath))
+            fs.mkdirSync(_folderPath)
     }
 
     @Logger.LogFunction()
     async FolderListFiles(dirName?: string): Promise<DataTable> {
+        this.CheckPaths([dirName])
+
         Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
 
-        const dirPath = dirName
+        const _folderPath = dirName
             ? StringUtils.Path(this.Params.folder, dirName)
             : this.Params.folder
 
-        const result = await Fs.promises.readdir(dirPath, { withFileTypes: true })
+        const data = await fs.promises.readdir(_folderPath, { withFileTypes: true })
             .then(files => files.filter(file => !file.isDirectory())
                 .map(file => {
                     const fullPath = StringUtils.Path(file.parentPath, file.name)
-                    const stats = Fs.statSync(fullPath)
+                    const stats = fs.statSync(fullPath)
                     return JsonUtils.RemoveUndefined(
                         <TStorageFile>{
                             name: file.name,
@@ -108,7 +126,7 @@ export class FsStorage extends absStorageProvider {
                 throw new HttpErrorInternalServerError(`Failed to read folder '${this.Params!.folder}': ${error.message}`)
             })
 
-        return new DataTable(dirName, result)
+        return new DataTable(dirName, data)
     }
 
     @Logger.LogFunction()
@@ -116,7 +134,7 @@ export class FsStorage extends absStorageProvider {
         Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
         Assert.Var<string>(this.Params.folder, this.Params.folder !== undefined, 'No folder defined')
 
-        const folders = await Fs.promises.readdir(this.Params.folder, { withFileTypes: true })
+        const _folders = await fs.promises.readdir(this.Params.folder, { withFileTypes: true })
             .then(folders => folders.filter(folder => folder.isDirectory())
                 .map(folder => {
                     return JsonUtils.RemoveUndefined(
@@ -129,60 +147,79 @@ export class FsStorage extends absStorageProvider {
                 throw new HttpErrorInternalServerError(`Failed to read folder '${this.Params!.folder}': ${error.message}`)
             })
 
-        return new DataTable(undefined, folders)
+        return new DataTable(undefined, _folders)
     }
 
     @Logger.LogFunction()
     async FileIsExist(dirName: string, fileName: string): Promise<boolean> {
+        this.CheckPaths([dirName, fileName])
+
         Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
-        return Fs.existsSync(StringUtils.Path(this.Params.folder, dirName, fileName))
+
+        const _fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
+
+        return fs.existsSync(_fileFullPath)
     }
 
     @Logger.LogFunction()
     async FileRead(dirName: string, fileName: string): Promise<Readable> {
+        this.CheckPaths([dirName, fileName])
+
         Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
 
-        const fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
+        const _fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
 
         if (this.Params.autocreate && !(await this.FileIsExist(dirName, fileName))) {
-            const _fd = Fs.openSync(fileFullPath, 'wx')
-            await Fs.promises.writeFile(fileFullPath, '', 'utf8')
-            Fs.closeSync(_fd)
+            const _fd = fs.openSync(_fileFullPath, 'wx')
+            await fs.promises.writeFile(_fileFullPath, '', 'utf8')
+            fs.closeSync(_fd)
         }
 
         if (await this.FileIsExist(dirName, fileName))
-            return ReadableUtils.FromReadStream(Fs.createReadStream(fileFullPath))
+            return ReadableUtils.FromReadStream(fs.createReadStream(_fileFullPath))
 
         throw new HttpErrorNotFound(`File '${fileName}' does not exist`)
     }
 
     @Logger.LogFunction(['content'])
     async FileWrite(dirName: string, fileName: string, content: Readable): Promise<void> {
+        this.CheckPaths([dirName, fileName])
+
         Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
 
-        const fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
+        const _fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
 
         if (this.Params.autocreate && !(await this.FileIsExist(dirName, fileName))) {
-            const _fd = Fs.openSync(fileFullPath, 'wx')
-            await Fs.promises.writeFile(fileFullPath, '', 'utf8')
-            Fs.closeSync(_fd)
+            const _fd = fs.openSync(_fileFullPath, 'wx')
+            await fs.promises.writeFile(_fileFullPath, '', 'utf8')
+            fs.closeSync(_fd)
         }
-        await Fs.promises.writeFile(fileFullPath, content, 'utf8')
+        await fs.promises.writeFile(_fileFullPath, content, 'utf8')
     }
 
     @Logger.LogFunction()
     async FileRename(dirName: string, oldFileName: string, newFileName: string): Promise<void> {
+        this.CheckPaths([dirName, oldFileName, newFileName])
+
         Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
-        const filePath = StringUtils.Path(this.Params.folder, dirName, oldFileName)
-        if (Fs.existsSync(filePath))
-            Fs.renameSync(filePath, StringUtils.Path(this.Params.folder, dirName, newFileName))
+        const _oldFileFullPath = StringUtils.Path(this.Params.folder, dirName, oldFileName)
+
+        if (fs.existsSync(_oldFileFullPath)) {
+            const _newFileFullPath = StringUtils.Path(this.Params.folder, dirName, newFileName)
+
+            fs.renameSync(_oldFileFullPath, _newFileFullPath)
+        }
     }
 
     @Logger.LogFunction()
     async FileDelete(dirName: string, fileName: string): Promise<void> {
+        this.CheckPaths([dirName, fileName])
+
         Assert.Var<TFsStorageParams>(this.Params, 'No params defined')
-        const filePath = StringUtils.Path(this.Params.folder, dirName, fileName)
-        if (Fs.existsSync(filePath))
-            Fs.unlinkSync(filePath)
+
+        const _fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
+
+        if (fs.existsSync(_fileFullPath))
+            fs.unlinkSync(_fileFullPath)
     }
 }

@@ -20,8 +20,7 @@ import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchem
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
-import type { TDataListEntity } from "../@types"
-import type { TOptionalParameter } from "../@types"
+import type { TDataListEntity, TOptionalParameter } from "../@types"
 import { CosmosDbHelper } from "./CosmosDbHelper"
 
 
@@ -405,7 +404,7 @@ export class CosmosDbData extends absDataProvider {
         } catch (err: unknown) {
             if (err instanceof HttpErrorNotFound)
                 throw err
-            
+
             const _err = NormalizeError(err)
             Logger.Error(`Failed to list entities: ${_err}`)
             throw new HttpErrorInternalServerError(`Failed to list entities: ${_err.message}`)

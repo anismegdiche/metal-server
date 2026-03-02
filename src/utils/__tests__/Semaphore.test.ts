@@ -1,5 +1,5 @@
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { Semaphore } from '../Semaphore';
 
 describe('Semaphore', () => {
@@ -12,7 +12,7 @@ describe('Semaphore', () => {
 
     it('should queue requests and release them in order', async () => {
         const sem = new Semaphore(1);
-        let order: number[] = [];
+        const order: number[] = [];
 
         await sem.Acquire();
 

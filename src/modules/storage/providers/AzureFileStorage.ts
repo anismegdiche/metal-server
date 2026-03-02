@@ -1,6 +1,9 @@
 //
-// Lazy-loaded @azure/storage-file-share module
-import { Readable } from "stream"
+//
+//
+import { merge } from "lodash-es"
+import { Readable } from "node:stream"
+import z from 'zod'
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -9,80 +12,85 @@ import { Logger } from "../../../utils/Logger"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TypeUtils"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
-import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
 import type { TStorageFile, TStorageFolder } from '../@types'
 import { absStorageProvider } from "../base/absStorageProvider"
 
+
 //
-export type U__source_storage_azfs_options = {
-    "az-file-connection-string"?: string
-    "az-file-share-name"?: string
-    "az-file-folder"?: string
-}
+const z_U__source_storage_azfs_options = z.object({
+    "connection-string": z.string(),
+    "share-name": z.string(),
+    folder: z.string().optional(),
+    autocreate: z.boolean().optional()
+})
+
+
+//
+export type U__source_storage_azfs_options = z.infer<typeof z_U__source_storage_azfs_options>
 
 type TAzureFileStorageParams = {
-    [K in keyof U__source_storage_azfs_options as K extends `az-file-${infer U}` ? TConvertParams<U> : K]: U__source_storage_azfs_options[K]
+    [K in keyof U__source_storage_azfs_options as K extends `${infer U}` ? TConvertParams<U> : K]: U__source_storage_azfs_options[K]
 }
+
 
 //
 export class AzureFileStorage extends absStorageProvider {
 
-    ConfigSource?: U_config_sources_source
-    ConfigStorage?: U__source_storage_file_options
+    Config?: U__source_storage_file_options
     Params?: TAzureFileStorageParams
 
-    DEFAULT: Partial<TAzureFileStorageParams> = {
-        folder: "/"
+    DEFAULT: Partial<U__source_storage_file_options> = {
+        folder: "/",
+        autocreate: false
     }
 
-    // Azure File
-    private _shareServiceClient?: import('@azure/storage-file-share').ShareServiceClient
+    static _libAzureStorageFileShare: typeof import('@azure/storage-file-share');
+    _shareServiceClient?: import('@azure/storage-file-share').ShareServiceClient
     _shareClient?: import('@azure/storage-file-share').ShareClient
-    private static _azureStorageFileShare: typeof import('@azure/storage-file-share');
 
-    private static async _loadAzureStorageFileShare(): Promise<typeof import('@azure/storage-file-share')> {
-        if (!this._azureStorageFileShare) {
-            this._azureStorageFileShare = await import('@azure/storage-file-share');
+    static async _loadLibAzureStorageFileShare(): Promise<typeof import('@azure/storage-file-share')> {
+        if (!this._libAzureStorageFileShare) {
+            this._libAzureStorageFileShare = await import('@azure/storage-file-share');
         }
-        return this._azureStorageFileShare;
+        return this._libAzureStorageFileShare;
     }
 
-    // -----------------------------
-    // Init
-    // -----------------------------
+    IsConfigValid(): boolean {
+        return z_U__source_storage_azfs_options.safeParse(this.Config).success
+    }
+    
     @Logger.LogFunction()
     Init(): void {
-        Assert.Var<U__source_storage_azfs_options>(this.ConfigStorage, 'No config storage defined')
+        Assert.Var<U__source_storage_file_options>(this.Config, this.IsConfigValid(), 'No config storage defined')
+        this.Config = merge(this.DEFAULT, this.Config)
 
         this.Params = {
-            ...this.DEFAULT,
-            connectionString: this.ConfigStorage["az-file-connection-string"],
-            shareName: this.ConfigStorage["az-file-share-name"],
-            folder: this.ConfigStorage["az-file-folder"]
+            connectionString: this.Config["connection-string"],
+            shareName: this.Config["share-name"],
+            folder: this.Config.folder
         }
 
-        Assert.Var<string>(this.Params?.connectionString, 'No connection string defined')
-        Assert.Var<string>(this.Params?.shareName, 'No share name defined')
-        Assert.Var<string>(this.Params?.folder, 'No folder path defined')
+        Assert.Var<string>(this.Params.connectionString, 'No connection string defined')
+        Assert.Var<string>(this.Params.shareName, 'No share name defined')
+        Assert.Var<string>(this.Params.folder, 'No folder path defined')
     }
 
-    // -----------------------------
-    // Connect / Disconnect
-    // -----------------------------
     @Logger.LogFunction()
     async Connect(): Promise<void> {
         Assert.Var<string>(this.Params?.connectionString, 'No connection string defined')
-        Assert.Var<string>(this.Params?.shareName, 'No share name defined')
+        Assert.Var<string>(this.Params.shareName, 'No share name defined')
 
         try {
-            const azureStorageFileShare = await AzureFileStorage._loadAzureStorageFileShare();
-            this._shareServiceClient = azureStorageFileShare.ShareServiceClient.fromConnectionString(this.Params?.connectionString)
-            this._shareClient = this._shareServiceClient.getShareClient(this.Params?.shareName)
-        } catch (error: unknown) {
-            throw new HttpErrorInternalServerError(`Connection failed - ${error instanceof Error ? error.message : 'Unknown error'}`)
+            const libAzureStorageFileShare = await AzureFileStorage._loadLibAzureStorageFileShare();
+            this._shareServiceClient = libAzureStorageFileShare.ShareServiceClient.fromConnectionString(this.Params.connectionString)
+            this._shareClient = this._shareServiceClient.getShareClient(this.Params.shareName)
+            
+        } catch (e: unknown) {
+            const _e = NormalizeError(e)
+            throw new HttpErrorInternalServerError(`Azure File Storage Error: ${_e.message}`)
         }
     }
 
@@ -92,11 +100,10 @@ export class AzureFileStorage extends absStorageProvider {
         this._shareClient = undefined
     }
 
-    // -----------------------------
-    // Folder Operations
-    // -----------------------------
     @Logger.LogFunction()
     async FolderIsExist(dirName: string): Promise<boolean> {
+        this.CheckPaths([dirName])
+
         Assert.Var<import('@azure/storage-file-share').ShareClient>(this._shareClient, 'Not connected')
         Assert.Var<string>(dirName, 'Directory name is required')
 
@@ -106,6 +113,8 @@ export class AzureFileStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderCreate(dirName: string): Promise<void> {
+        this.CheckPaths([dirName])
+
         Assert.Var<import('@azure/storage-file-share').ShareClient>(this._shareClient, 'Not connected')
         Assert.Var<string>(dirName, 'Directory name is required')
 
@@ -118,7 +127,7 @@ export class AzureFileStorage extends absStorageProvider {
         Assert.Var<string>(this.Params?.folder, 'No folder defined')
         Assert.Var<import('@azure/storage-file-share').ShareClient>(this._shareClient, 'Not connected')
 
-        const directoryClient = this._shareClient.getDirectoryClient(this.Params?.folder);
+        const directoryClient = this._shareClient.getDirectoryClient(this.Params.folder);
         const folders: TStorageFolder[] = [];
 
         for await (const _folder of directoryClient.listFilesAndDirectories()) {
@@ -134,10 +143,12 @@ export class AzureFileStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FolderListFiles(dirName?: string): Promise<DataTable> {
+        this.CheckPaths([dirName])
+
         Assert.Var<string>(this.Params?.folder, 'No folder defined')
         Assert.Var<import('@azure/storage-file-share').ShareClient>(this._shareClient, 'Not connected')
 
-        const targetFolder = dirName ? StringUtils.Path(this.Params?.folder, dirName) : this.Params?.folder;
+        const targetFolder = dirName ? StringUtils.Path(this.Params.folder, dirName) : this.Params.folder;
         const directoryClient = this._shareClient.getDirectoryClient(targetFolder);
         const result: TStorageFile[] = [];
 
@@ -158,16 +169,15 @@ export class AzureFileStorage extends absStorageProvider {
         return new DataTable(dirName, result);
     }
 
-    // -----------------------------
-    // File Operations
-    // -----------------------------
     @Logger.LogFunction()
     async FileIsExist(dirName: string, fileName: string): Promise<boolean> {
+        this.CheckPaths([dirName, fileName])
+
         Assert.Var<string>(this.Params?.folder, 'No folder defined')
         Assert.Var<import('@azure/storage-file-share').ShareClient>(this._shareClient, 'Not connected')
 
         try {
-            const directoryClient = this._shareClient.getDirectoryClient(StringUtils.Path(this.Params?.folder, dirName))
+            const directoryClient = this._shareClient.getDirectoryClient(StringUtils.Path(this.Params.folder, dirName))
             const fileClient = directoryClient.getFileClient(fileName)
             return await fileClient.exists()
         } catch (error) {
@@ -177,10 +187,12 @@ export class AzureFileStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileRead(dirName: string, fileName: string): Promise<Readable> {
+        this.CheckPaths([dirName, fileName])
+
         Assert.Var<string>(this.Params?.folder, 'No folder defined')
         Assert.Var<import('@azure/storage-file-share').ShareClient>(this._shareClient, 'Not connected')
 
-        const directoryClient = this._shareClient.getDirectoryClient(StringUtils.Path(this.Params?.folder, dirName))
+        const directoryClient = this._shareClient.getDirectoryClient(StringUtils.Path(this.Params.folder, dirName))
         const fileClient = directoryClient.getFileClient(fileName)
         const downloadResponse = await fileClient.download()
             .catch((error) => {
@@ -191,10 +203,12 @@ export class AzureFileStorage extends absStorageProvider {
 
     @Logger.LogFunction(['content'])
     async FileWrite(dirName: string, fileName: string, content: Readable): Promise<void> {
+        this.CheckPaths([dirName, fileName])
+
         Assert.Var<string>(this.Params?.folder, 'No folder defined')
         Assert.Var<import('@azure/storage-file-share').ShareClient>(this._shareClient, 'Not connected')
 
-        const directoryClient = this._shareClient.getDirectoryClient(StringUtils.Path(this.Params?.folder, dirName))
+        const directoryClient = this._shareClient.getDirectoryClient(StringUtils.Path(this.Params.folder, dirName))
         await directoryClient.createIfNotExists()
 
         const fileClient = directoryClient.getFileClient(fileName)
@@ -206,6 +220,8 @@ export class AzureFileStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileRename(dirName: string, oldFileName: string, newFileName: string): Promise<void> {
+        this.CheckPaths([dirName, oldFileName, newFileName])
+
         Assert.Var<import('@azure/storage-file-share').ShareClient>(this._shareClient, 'Not connected')
         Assert.Var<string>(oldFileName, 'Old file name is required')
         Assert.Var<string>(newFileName, 'New file name is required')
@@ -217,6 +233,8 @@ export class AzureFileStorage extends absStorageProvider {
 
     @Logger.LogFunction()
     async FileDelete(dirName: string, fileName: string): Promise<void> {
+        this.CheckPaths([dirName, fileName])
+
         Assert.Var<import('@azure/storage-file-share').ShareClient>(this._shareClient, 'Not connected')
         Assert.Var<string>(fileName, 'File name is required')
 

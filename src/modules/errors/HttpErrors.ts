@@ -26,11 +26,8 @@ export function NormalizeError(err: unknown): TJson<any> {
         }
     }
 
-    // rejected with string / object / whatever
-    return {
-        type: "UnknownThrownValue",
-        message: String(err),
-    }
+    // fail safe, return actual error as is
+    return err as TJson<any> 
 }
 
 

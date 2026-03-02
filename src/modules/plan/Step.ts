@@ -6,6 +6,7 @@ import type { TContext } from "../sandbox/types/TContext"
 import { STEP } from "./@consts"
 import type { TStep } from "./types/TStep"
 //
+import { Logger } from "../../utils/Logger"
 import { Anonymize } from "./steps/Anonymize"
 import { Break } from "./steps/Break"
 import { Debug } from "./steps/Debug"
@@ -13,7 +14,7 @@ import { Delete } from "./steps/Delete"
 import { Insert } from "./steps/Insert"
 import { Join } from "./steps/Join"
 import { ListEntities } from "./steps/ListEntities"
-import { Map } from "./steps/Map"
+import { MapRows } from "./steps/MapRows"
 import { Omit } from "./steps/Omit"
 import { Pick } from "./steps/Pick"
 import { RemoveDuplicates } from "./steps/RemoveDuplicates"
@@ -22,7 +23,6 @@ import { Select } from "./steps/Select"
 import { Sort } from "./steps/Sort"
 import { Sync } from "./steps/Sync"
 import { Update } from "./steps/Update"
-import { Logger } from "../../utils/Logger"
 
 
 //
@@ -50,6 +50,6 @@ export class Step {
         [STEP.BREAK]: Break,
         [STEP.PICK]: Pick,
         [STEP.OMIT]: Omit,
-        [STEP.MAP]: Map
+        [STEP.MAP]: MapRows
     }
 }

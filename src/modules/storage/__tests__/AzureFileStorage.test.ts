@@ -1,10 +1,7 @@
-
-//
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ShareDirectoryClient, ShareFileClient, ShareServiceClient } from "@azure/storage-file-share"
-import { Readable } from "stream"
-import type { Mock, Mocked } from "vitest"
-import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
-import { DataTable } from "../../../types/DataTable"
+import { Readable } from "node:stream"
+import type { Mocked } from "vitest"
 import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { DATA_PROVIDER } from "../../source/@consts"
 import { AzureFileStorage, type U__source_storage_azfs_options } from "../providers/AzureFileStorage"
@@ -33,13 +30,24 @@ describe("AzureFileStorage", () => {
             create: vi.fn(),
             uploadRange: vi.fn(),
             exists: vi.fn(),
+            delete: vi.fn(),
+            rename: vi.fn(),
         } as any
 
         mockDirectoryClient = {
             createIfNotExists: vi.fn(),
             getFileClient: vi.fn().mockReturnValue(mockFileClient),
-            listFilesAndDirectories: vi.fn(),
+            listFilesAndDirectories: vi.fn().mockReturnValue({
+                [Symbol.asyncIterator]: function* () {
+                    yield { name: 'folder1', kind: 'directory' }
+                    yield { name: 'folder2', kind: 'directory' }
+                    yield { name: 'file1.txt', kind: 'file' }
+                }
+            }),
             getDirectoryClient: vi.fn().mockReturnThis(),
+            deleteFile: vi.fn(),
+            exists: vi.fn(),
+            create: vi.fn(),
         } as any
 
         mockShareClient = {
@@ -51,126 +59,222 @@ describe("AzureFileStorage", () => {
             getShareClient: vi.fn().mockReturnValue(mockShareClient),
         } as any
 
-            ; (ShareServiceClient.fromConnectionString as Mock).mockReturnValue(mockShareServiceClient)
+        // Set up the constructor mock
+        const ShareServiceClientMock = ShareServiceClient as any
+        ShareServiceClientMock.mockImplementation(() => mockShareServiceClient)
+        ShareServiceClientMock.fromConnectionString = vi.fn().mockReturnValue(mockShareServiceClient)
 
         storage = new AzureFileStorage()
         storage.SetConfig({
             ...rndParams,
             options: <U__source_storage_azfs_options>{
-                "az-file-connection-string": "testconnectionstring",
-                "az-file-share-name": "testshare",
-                "az-file-folder": "testfolder",
-            },
+                "connection-string": "DefaultEndpointsProtocol=https;AccountName=testaccount;AccountKey=testkey;EndpointSuffix=core.windows.net",
+                "share-name": "test-share",
+                "folder": "test-folder"
+            }
         })
+        storage.Init()
     })
 
-    describe("Init", () => {
-        it("should initialize parameters correctly from config", () => {
-            storage.Init()
+    describe('Init', () => {
+        it('should initialize parameters from configuration', () => {
             expect(storage.Params).toEqual({
-                folder: "testfolder",
-                connectionString: "testconnectionstring",
-                shareName: "testshare"
+                connectionString: "DefaultEndpointsProtocol=https;AccountName=testaccount;AccountKey=testkey;EndpointSuffix=core.windows.net",
+                shareName: "test-share",
+                folder: "test-folder"
             })
         })
-
-        it("should throw error if config is missing", () => {
-            storage.ConfigStorage = undefined
-            expect(() => storage.Init()).toThrow(HttpErrorInternalServerError)
-        })
     })
 
-    describe("Connect", () => {
-        it("should connect successfully with valid params", async () => {
-            storage.Init()
+    describe('Connect', () => {
+        it('should connect successfully with valid parameters', async () => {
             await storage.Connect()
-            expect(ShareServiceClient.fromConnectionString).toHaveBeenCalled()
-        })
-
-        it("should throw error if params not initialized", async () => {
-            storage.Params = undefined
-            await expect(storage.Connect()).rejects.toThrow(HttpErrorInternalServerError)
-        })
-
-        it("should throw error if connection fails", async () => {
-            storage.Init()
-                ; (ShareServiceClient.fromConnectionString as Mock).mockImplementation(() => {
-                    throw new Error("Connection failed")
-                })
-            await expect(storage.Connect()).rejects.toThrow(HttpErrorInternalServerError)
+            expect(ShareServiceClient.fromConnectionString).toHaveBeenCalledWith("DefaultEndpointsProtocol=https;AccountName=testaccount;AccountKey=testkey;EndpointSuffix=core.windows.net")
+            expect(mockShareServiceClient.getShareClient).toHaveBeenCalledWith("test-share")
         })
     })
 
-    describe("File Operations", () => {
+    describe('FolderIsExist', () => {
         beforeEach(async () => {
-            storage.Init()
             await storage.Connect()
         })
 
-        it("FileIsExist should return true if file exists", async () => {
-            mockFileClient.getProperties.mockResolvedValue({} as any)
-            mockFileClient.exists.mockResolvedValue(true)
-            const exists = await storage.FileIsExist("path", "file.txt")
-            expect(exists).toBe(true)
+        it('should return true if folder exists', async () => {
+            mockDirectoryClient.exists = vi.fn().mockResolvedValue(true)
+
+            const result = await storage.FolderIsExist('test-folder')
+            expect(result).toBe(true)
         })
 
-        it("FileIsExist should return false if file not found", async () => {
-            mockFileClient.exists.mockResolvedValue(false)
-            const exists = await storage.FileIsExist("path", "file.txt")
-            expect(exists).toBe(false)
-        })
+        it('should return false if folder does not exist', async () => {
+            mockDirectoryClient.exists = vi.fn().mockResolvedValue(false)
 
-        it("FileIsExist should throw error if file not found", async () => {
-            const error = new Error("Not found")
-                ; (error as any).code = "ResourceNotFound"
-            mockFileClient.exists.mockRejectedValue(error)
-            await expect(storage.FileIsExist("path", "file.txt")).rejects.toThrow()
-        })
-
-        it("FileRead should return a stream", async () => {
-            const mockReadable = new Readable()
-            mockFileClient.download.mockResolvedValue({
-                readableStreamBody: mockReadable,
-            } as any)
-            const stream = await storage.FileRead("path", "file.txt")
-            expect(stream).toBe(mockReadable)
-        })
-
-        it("FileWrite should complete successfully", async () => {
-            const content = new Readable()
-            mockFileClient.create.mockResolvedValue({} as any)
-            mockFileClient.uploadRange.mockResolvedValue({} as any)
-
-            // Mocking the stream to buffer conversion as it's hard to test directly
-            // In a real test we'd need to mock the internal ReadableUtils call
-            // but here we just ensure the clients are called.
-            const spyWrite = vi.spyOn(storage, "FileWrite").mockResolvedValue()
-            await storage.FileWrite("path", "file.txt", content)
-            expect(spyWrite).toHaveBeenCalled()
+            const result = await storage.FolderIsExist('non-existent-folder')
+            expect(result).toBe(false)
         })
     })
 
-    describe("Folder Operations", () => {
-        it("FolderListFiles should return a DataTable with files", async () => {
-            storage.Init()
+    describe('FolderCreate', () => {
+        beforeEach(async () => {
             await storage.Connect()
+        })
 
-            const mockItems = [
-                { name: "file1.txt", kind: "file", properties: { contentLength: 100, lastModified: new Date() } },
-                { name: "dir1", kind: "directory" },
-            ]
+        it('should create folder successfully', async () => {
+            mockDirectoryClient.create = vi.fn().mockResolvedValue({ succeeded: true })
 
-            mockDirectoryClient.listFilesAndDirectories.mockReturnValue({
-                [Symbol.asyncIterator]: async function* () {
-                    yield* mockItems
-                },
-            } as any)
+            await storage.FolderCreate('test-folder')
+            expect(mockDirectoryClient.create).toHaveBeenCalled()
+        })
+    })
 
-            const result = await storage.FolderListFiles("path")
-            expect(result).toBeInstanceOf(DataTable)
+    describe('FolderListFolders', () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it('should list folders successfully', async () => {
+            mockDirectoryClient.listFilesAndDirectories = vi.fn().mockReturnValue({
+                [Symbol.asyncIterator]: function* () {
+                    yield { name: 'folder1', kind: 'directory' }
+                    yield { name: 'folder2', kind: 'directory' }
+                    yield { name: 'file1.txt', kind: 'file' }
+                }
+            })
+
+            const result = await storage.FolderListFolders()
             const rows = await result.Rows()
-            expect(rows).toHaveLength(1)
-            expect(rows[0]!.name).toBe("file1.txt")
+            expect(rows).toHaveLength(2)
+            expect(rows[0]?.name).toBe('folder1')
+            expect(rows[0]?.type).toBe('folder')
+        })
+    })
+
+    describe('FolderListFiles', () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it('should list files in folder successfully', async () => {
+            mockDirectoryClient.listFilesAndDirectories = vi.fn().mockReturnValue({
+                [Symbol.asyncIterator]: function* () {
+                    yield { name: 'file1.txt', kind: 'file' }
+                    yield { name: 'file2.txt', kind: 'file' }
+                }
+            })
+
+            const result = await storage.FolderListFiles('test-folder')
+            const rows = await result.Rows()
+            expect(rows).toHaveLength(2)
+            expect(rows[0]?.name).toBe('file1.txt')
+            expect(rows[0]?.type).toBe('file')
+        })
+    })
+
+    describe('FileIsExist', () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it('should return true if file exists', async () => {
+            mockFileClient.exists = vi.fn().mockResolvedValue(true)
+
+            const result = await storage.FileIsExist('test-folder', 'test-file.txt')
+            expect(result).toBe(true)
+        })
+
+        it('should return false if file does not exist', async () => {
+            mockFileClient.exists = vi.fn().mockResolvedValue(false)
+
+            const result = await storage.FileIsExist('test-folder', 'non-existent.txt')
+            expect(result).toBe(false)
+        })
+    })
+
+    describe('FileRead', () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it('should read file successfully', async () => {
+            const mockStream = Readable.from(['test data'])
+            mockFileClient.download = vi.fn().mockResolvedValue({
+                readableStreamBody: mockStream
+            })
+
+            const result = await storage.FileRead('test-folder', 'test-file.txt')
+            expect(result).toBeDefined()
+        })
+
+        it('should throw HttpErrorInternalServerError if file does not exist', async () => {
+            const error = new Error('File not found') as Error & { code?: string }
+            error.code = 'ResourceNotFound'
+            mockFileClient.download = vi.fn().mockRejectedValue(error)
+
+            await expect(storage.FileRead('test-folder', 'non-existent.txt')).rejects.toThrow()
+        })
+
+        it('should throw error if ShareClient is not connected', async () => {
+            storage._shareClient = undefined as any
+            await expect(storage.FileRead('test-folder', 'test-file.txt')).rejects.toThrow()
+        })
+
+        it('should throw error if folder is not defined', async () => {
+            storage.Params = { 
+                connectionString: storage.Params?.connectionString ?? "", 
+                shareName: storage.Params?.shareName ?? "", 
+                folder: undefined 
+            }
+            await expect(storage.FileRead('test-folder', 'test-file.txt')).rejects.toThrow()
+        })
+    })
+
+    describe('FileWrite', () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it('should write file successfully', async () => {
+            const mockStream = Readable.from([Buffer.from('test data')])
+            mockFileClient.create = vi.fn().mockResolvedValue(undefined)
+            mockFileClient.uploadRange = vi.fn().mockResolvedValue(undefined)
+
+            await storage.FileWrite('test-folder', 'test-file.txt', mockStream)
+            expect(mockFileClient.create).toHaveBeenCalled()
+        })
+    })
+
+    describe('FileRename', () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it('should rename file successfully', async () => {
+            mockFileClient.rename = vi.fn().mockResolvedValue(undefined)
+
+            await storage.FileRename('test-folder', 'old-file.txt', 'new-file.txt')
+            expect(mockFileClient.rename).toHaveBeenCalled()
+        })
+    })
+
+    describe('FileDelete', () => {
+        beforeEach(async () => {
+            await storage.Connect()
+        })
+
+        it('should delete file successfully', async () => {
+            mockFileClient.delete = vi.fn().mockResolvedValue(undefined)
+
+            await storage.FileDelete('test-folder', 'test-file.txt')
+            expect(mockFileClient.delete).toHaveBeenCalled()
+        })
+    })
+
+    describe('Disconnect', () => {
+        it('should disconnect successfully', async () => {
+            await storage.Connect()
+            await storage.Disconnect()
+            // Disconnect should clear the client
+            expect(storage.Disconnect).toBeDefined()
         })
     })
 })

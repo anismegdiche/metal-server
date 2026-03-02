@@ -833,7 +833,7 @@ export class DataTable extends clsClonable {
         const sql = `SELECT COUNT(*) as count FROM ${this.SafeName}`
         const reader = await cnx.runAndReadAll(sql)
         const rows = reader.getRowObjects()
-            return  Number(rows[0]?.count ?? 0)
+        return Number(rows[0]?.count ?? 0)
     }
 
     @Logger.LogFunction(true)
@@ -1183,14 +1183,14 @@ export class DataTable extends clsClonable {
 
             await cnx.run('COMMIT')
             Logger.Info(`${Logger.Out} DataTable.RowsMap: Processed ${processedCount} rows successfully`)
-        } catch (err) {
+        } catch (e) {
             try {
                 await cnx.run('ROLLBACK')
-            } catch (rbErr) {
-                Logger.Error(`DataTable.RowsMap: Rollback failed: ${(rbErr as Error).message}`)
+            } catch (e_rollback) {
+                Logger.Error(`DataTable.RowsMap: Rollback failed: ${(e_rollback as Error).message}`)
             }
-            Logger.Error(`${Logger.Out} DataTable.RowsMap: Error mapping rows: ${JsonUtils.Stringify(err)}`)
-            throw err
+            Logger.Error(`${Logger.Out} DataTable.RowsMap: Error mapping rows: ${JsonUtils.Stringify(e)}`)
+            throw e
         }
 
         return this.FieldsSet()
@@ -1339,12 +1339,19 @@ export class DataTable extends clsClonable {
     }
 
     @Logger.LogFunction(true)
-    async ForEach<T>(fnForEach: (row: TRow) => T | Promise<T>, params: TRowsIteratorParams = {}): Promise<T[]> {
+    async ForEach<T>(fnForEach: (row: TRow, idx?: number) => T | Promise<T>, params: TRowsIteratorParams = {}): Promise<T[]> {
         const iterator = await this.RowsIterator(params);
-
+        const idx = Mutex.CreateMutexProtected(0);
         const promises: (T | Promise<T>)[] = [];
         for await (const row of iterator) {
-            promises.push(fnForEach(row));
+            // Get current index value
+            const currentIdx = await idx.get();
+
+            // Increment index
+            idx.set(currentIdx + 1);
+
+            // Call function with row and index
+            promises.push(fnForEach(row, currentIdx));
         }
 
         return Promise.all(promises);

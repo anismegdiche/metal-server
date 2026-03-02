@@ -8,17 +8,19 @@ import { DataTable } from "../../../types/DataTable"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import type { U_config_sources_source } from '../../core/types/U_config_sources'
 import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
+import { StringUtils } from '../../../utils/StringUtils'
+import { Assert } from '../../../utils/Assert'
 
 
 //
 export abstract class absStorageProvider extends clsClonable {
 
-    abstract ConfigSource?: U_config_sources_source
-    abstract ConfigStorage?: U__source_storage_file_options
+    abstract Config?: U__source_storage_file_options
+
+    abstract IsConfigValid(): void
 
     SetConfig(configSource: U_config_sources_source) {
-        this.ConfigSource = configSource
-        this.ConfigStorage = configSource.options as U__source_storage_file_options
+        this.Config = configSource.options as U__source_storage_file_options
         this.Init()
     }
 
@@ -43,5 +45,11 @@ export abstract class absStorageProvider extends clsClonable {
             return 'application/x-unknown'
 
         return lookup(fileName) || 'application/octet-stream'
+    }
+
+    CheckPaths(paths: (string | undefined)[]) {
+        paths.forEach(path => {
+            Assert.Condition(!StringUtils.IsMaliciousPath(path), `Path '${path}' is malicious`)
+        })
     }
 }

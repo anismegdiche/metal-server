@@ -21,8 +21,7 @@ import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchem
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse";
 import { DATA_PROVIDER } from "../@consts";
 import { absDataProvider } from "../base/absDataProvider";
-import type { TDataListEntity } from "../@types";
-import type { TOptionalParameter } from '../@types';
+import type { TDataListEntity, TOptionalParameter } from '../@types';
 import { MongoDbHelper } from "./MongoDbHelper";
 
 

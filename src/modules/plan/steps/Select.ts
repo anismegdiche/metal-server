@@ -81,14 +81,14 @@ async function _selectSchema(step: TStep): Promise<DataTable> {
 
     Assert.Var<TSchemaResponse>(
         _schemaResponse,
-        Schema.IsSchemaResponse(_schemaResponse) == true,
+        Schema.IsSchemaResponse(_schemaResponse),
         `${STEP.SELECT}: Schema '${schema}' and entity '${entity}' are not valid`)
 
     const _data = _schemaResponse?.data
 
     Assert.Var<DataTable>(
         _data,
-        DataTable.Is(_data) == true,
+        DataTable.Is(_data),
         `${STEP.SELECT}: Schema '${schema}' and entity '${entity}' are not valid`)
 
     return _data

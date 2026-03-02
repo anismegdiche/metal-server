@@ -1,14 +1,13 @@
 //
 //
 //
-//
-//
 import { DataTable } from '../../../types/DataTable'
 import type { TJson } from '../../../types/TJson'
 import type { TAiOutput } from '../../ai-engine/@types'
 import { STEP, STEP_STATUS } from '../../plan/@consts'
 import type { U_config_plans_plan_entity_step_Params } from '../../plan/types/U_config_plans_plan_entity_step'
 import type { TSchemaRequest } from '../../schema/types/TSchemaRequest'
+
 
 //
 export type TContext = {
@@ -37,4 +36,5 @@ export type TContext = {
         }
     }
     $result?: TAiOutput
+    $utils?: TJson
 }

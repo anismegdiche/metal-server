@@ -70,88 +70,75 @@ describe('Sandbox', () => {
     it('should be valid for added functions', () => {
         const sandbox = new Sandbox()
         // Math
-        expect(sandbox.Evaluate("Math.abs(2 - 9)")).toEqual(7)
+        expect(sandbox.Evaluate("$utils.Math.abs(2 - 9)")).toEqual(7)
         // JSON
-        expect(sandbox.Evaluate("JSON.stringify({ a: 1 })")).toEqual('{"a":1}')
+        expect(sandbox.Evaluate("$utils.JSON.stringify({ a: 1 })")).toEqual('{"a":1}')
         // Lodash
-        expect(sandbox.Evaluate("_.sum([1, 2, 3])")).toEqual(6)
+        expect(sandbox.Evaluate("$utils._.sum([1, 2, 3])")).toEqual(6)
     })
 
 
     // Malicious tests separated
     describe('Malicious Code Tests', () => {
+        let sandbox = new Sandbox()
+
+        beforeEach(() => {
+            sandbox = new Sandbox()
+        })
+
         it('should reject code attempting to execute shell commands (exec)', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('require("child_process").execSync("rm -rf /")'))
                 .toThrow(HttpErrorInternalServerError)
         })
 
         it('should reject code attempting to access the file system', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('const fs = require("fs"); fs.writeFileSync("malicious.txt", "Malicious content")'))
                 .toThrow(HttpErrorInternalServerError)
         })
 
         it('should reject code attempting to make network requests', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('const http = require("http"); http.get("http://malicious-site.com")'))
                 .toThrow(HttpErrorInternalServerError)
         })
 
         it('should reject code attempting to modify global objects', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('Object.prototype.maliciousFunction = () => console.log("Malicious")'))
                 .toThrow(HttpErrorInternalServerError)
         })
 
         it('should reject code attempting to access sensitive environment variables', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('console.log(process.env.SENSITIVE_DATA)'))
                 .toThrow(HttpErrorInternalServerError)
         })
 
         it('should reject code attempting to spawn child processes', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('require("child_process").fork("maliciousScript.js")'))
                 .toThrow(HttpErrorInternalServerError)
         })
 
         it('should reject code attempting to use eval', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('eval("console.log(\'Eval is dangerous!\')")'))
                 .toThrow(HttpErrorInternalServerError)
         })
 
         it('should reject code attempting to access internal modules', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('const internalModule = require("internal-module")'))
                 .toThrow(HttpErrorInternalServerError)
         })
 
         it('should reject code attempting to manipulate the prototype chain', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('Array.prototype.customFunction = () => console.log("Manipulating prototype chain")'))
                 .toThrow(HttpErrorInternalServerError)
         })
 
         it('should reject code attempting to create infinite recursion', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('function infiniteRecursion() { infiniteRecursion() } infiniteRecursion()'))
                 .toThrow(HttpErrorInternalServerError)
         })
 
         it('should reject code attempting to access restricted APIs', () => {
-            const sandbox = new Sandbox()
             expect(() => sandbox.Evaluate('const crypto = require("crypto")'))
                 .toThrow(HttpErrorInternalServerError)
-        })
-    })
-
-    describe("Security Tests", () => {
-        let sandbox = new Sandbox()
-
-        beforeEach(() => {
-            sandbox = new Sandbox()
         })
 
         it("should reject code that executes shell commands (exec)", () => {
@@ -216,6 +203,16 @@ describe('Sandbox', () => {
 
         it("should reject accessing the Function constructor", () => {
             expect(() => sandbox.Evaluate("Function('return process')()"))
+                .toThrow(HttpErrorInternalServerError)
+        })
+
+        it("should reject this.constructor.constructor('return process')().exit()", () => {
+            expect(() => sandbox.Evaluate("this.constructor.constructor('return process')().exit()"))
+                .toThrow(HttpErrorInternalServerError)
+        })
+
+        it("should reject process.exit()", () => {
+            expect(() => sandbox.Evaluate("process.exit()"))
                 .toThrow(HttpErrorInternalServerError)
         })
     })
