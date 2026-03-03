@@ -13,32 +13,32 @@ async Audio.ts #dev {start:2026-01-23T18:08:07} {cm:2026-01-23} {duration:48m} {
 async Image.ts #dev {cm:2026-01-23} {h}
 async OCr.ts #dev  {cm:2026-01-23} {h}
 CSV file data test #test {start:2026-01-27T21:12:09} {cm:2026-01-30} {duration:2d_21h20m} {h}
-hot load after plan reload #fix
+hot load after plan reload #fix {f}
 
 plan should stop if error in step #feature {f} {start:2026-02-08T10:50:25} {cm:2026-02-08} {duration:50m} {h}
-plan should be configured on-error: stop/continue, can be a common template starting with _ that config is added for steps #feature
+plan should be configured on-error: stop/continue, can be a common template starting with _ that config is added for steps #feature {f}
 TconfigSource, U_config_sources infer and other U_config sections {start:2026-01-30T00:49:52} {cm:2026-01-31} {duration:1d_12h58m} {h}
 AiDocker HostConfig {start:2026-01-30T00:50:31} {cm:2026-01-31} {duration:1d_11h45m} {h}
 csv convert return lines {start:2026-01-30T18:32:52} {cm:2026-01-31} {duration:18h01m} {h}
 fix CI , bug with duckdb file mode {start:2026-02-01T13:05:12} {cm:2026-02-01} {duration:05h10m} {h}
 fix CI , bug with docker image build {start:2026-02-01T13:05:14} {cm:2026-02-01} {duration:05h14m} {h}
-plan > activate disk for storage #feature
+plan > activate disk for storage #feature {f}
 text ai engines with cors {f} {start:2026-02-06T19:44:27} {cm:2026-02-07} {duration:23h19m} {h}
-plan > history of transformation with which step did the processing, also flag keep history
+plan > history of transformation with which step did the processing, also flag keep history {f}
 finish zod migration {f} {start:2026-02-08T10:47:26} {cm:2026-02-10} {duration:2d_07h23m} {h}
-Plan > set/get a variable
+Plan > set/get a variable {f}
 Content > text regex
 Plan > Data detection: use NLP/BrainJS for datatype detection based on RegExp string conversion
-Plan > merge duplicates: merge on, take
+Plan > merge duplicates: merge on, take {f}
 Content > ExtractFromParquetExtracts data from a Parquet file format for high-efficiency storage and access. {f} {start:2026-02-15T18:02:37} {cm:2026-02-16} {duration:1d_01h47m} {h}
-Storage > SFTP {f} {start:2026-03-02T11:25:10} {cm:2026-03-02} {duration:05h27m}
-Plan > for each
+Storage > SFTP {f} {start:2026-03-02T11:25:10} {cm:2026-03-02} {duration:05h27m} {h}
+Plan > for each {f}
 Auth provider > Azure AD
-Plan > Data Transpose  (pivot H/V)
+Plan > Data Transpose  (pivot H/V) {f}
 AI Refactor {cm:2026-02-15} {h}
 step > map js script {f} {start:2026-02-12T19:40:50} {cm:2026-02-14} {duration:1d_23h45m} {h}
-refactor: readstream #refactor
+refactor: readstream #refactor {start:2026-03-02T16:56:44}
 step: split functions #refactor {f} {start:2026-02-11T09:56:03} {cm:2026-02-12} {duration:1d_08h45m} {h}
 Plan > should stop on error (v1) {f} {start:2026-02-11T10:00:00} {cm:2026-02-12} {duration:1d_08h48m} {h}
 Step > add missing tests {f} {start:2026-02-12T18:49:54} {cm:2026-02-12} {duration:44m} {h}
-clean storage options {f} {start:2026-02-21T13:24:53} {cm:2026-03-02} {duration:9d_03h28m}
+clean storage options {f} {start:2026-02-21T13:24:53} {cm:2026-03-02} {duration:9d_03h28m} {h}
