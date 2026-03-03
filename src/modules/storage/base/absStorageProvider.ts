@@ -13,7 +13,7 @@ import { Assert } from '../../../utils/Assert'
 
 
 //
-export abstract class absStorageProvider extends clsClonable {
+export abstract class absStorageProvider extends clsClonable { // NOSONAR
 
     abstract Config?: U__source_storage_file_options
 

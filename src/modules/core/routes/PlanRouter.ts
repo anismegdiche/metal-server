@@ -22,4 +22,4 @@ PlanRouter.route("/:plan")
 
 PlanRouter.route('/:plan/reload')
     .all(UserResponse.IsAuthenticated)
-    .post(PlanResponse.Reload)
+    .post(PlanResponse.ReloadPlan)

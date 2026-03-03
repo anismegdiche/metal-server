@@ -338,7 +338,7 @@ export class StorageFilesData extends absDataProvider {
             `(${Object.keys(this.ContentHandler)
                 .map(filePattern => Convert.PatternToRegex(filePattern)
                     .toString()
-                    .replaceAll(/\//g, '')
+                    .replaceAll('/', '')
                 ).join('|')})`)
 
         const data = await this.Connection.FolderListFiles()

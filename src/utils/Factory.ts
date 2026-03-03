@@ -1,5 +1,4 @@
 
-
 export class Factory<T> {
     readonly #Providers: Map<string, T> = new Map()
 
@@ -13,5 +12,9 @@ export class Factory<T> {
 
     Has(name: string) {
         return this.#Providers.has(name)
+    }
+
+    Clear(): void {
+        this.#Providers.clear()
     }
 }

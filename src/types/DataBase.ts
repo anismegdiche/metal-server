@@ -31,6 +31,21 @@ export class DataBase {
         this._duckInstance = await DuckDBInstance.create(this._dbPath)
     }
 
+    async Disconnect() {
+        if (this._duckInstance) {
+            try {
+                this._duckInstance.closeSync()
+            } catch (e) {
+                Logger.Error(`DataBase.Disconnect: Error closing DuckDB instance for '${this.Name}': ${e}`)
+            }
+            this._duckInstance = undefined
+        }
+        for (const table of Object.values(this.Tables)) {
+            table.Dispose()
+        }
+        this.Tables = {}
+    }
+
     @Logger.LogFunction()
     AddTable(entity: string, rows?: TRow[] | TJson[]) {
         Assert.Var(entity, "undefined DataTable name")

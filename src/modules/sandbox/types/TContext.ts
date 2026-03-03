@@ -37,4 +37,5 @@ export type TContext = {
     }
     $result?: TAiOutput
     $utils?: TJson
+    $vars: TJson
 }

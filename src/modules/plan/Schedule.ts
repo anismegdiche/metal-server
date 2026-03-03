@@ -122,5 +122,6 @@ export class Schedule {
         for (const job of this.Jobs) {
             job.cronJob.stop()
         }
+        this.Jobs = []
     }
 }

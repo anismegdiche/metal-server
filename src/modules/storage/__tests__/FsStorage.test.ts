@@ -7,7 +7,7 @@ import { DATA_PROVIDER } from "../../source/@consts"
 import { FsStorage } from '../providers/FsStorage'
 
 vi.mock('node:fs', async () => {
-    const actual = await vi.importActual<typeof import('fs')>('fs')
+    const actual = await vi.importActual<typeof import('node:fs')>('fs')
     return {
         ...actual,
         existsSync: vi.fn(),

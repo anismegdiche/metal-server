@@ -178,7 +178,7 @@ export class AmazonS3Storage extends absStorageProvider {
 
         const s3 = await AmazonS3Storage._loadS3Module();
         const prefix = dirName
-            ? `${dirName.replace(/^\/+/g, '').replace(/\/+$/g, '')}/`
+            ? `${dirName.replaceAll(/^\/+/g, '').replaceAll(/\/+$/g, '')}/`
             : ''
 
         const command = new s3.ListObjectsV2Command({
@@ -241,7 +241,7 @@ export class AmazonS3Storage extends absStorageProvider {
         const folders = response.CommonPrefixes
             .filter(prefixObj => prefixObj.Prefix && prefixObj.Prefix !== prefix)
             .map(prefixObj => {
-                const folderName = prefixObj.Prefix!.slice(prefix.length).replace(/\/$/g, '')
+                const folderName = prefixObj.Prefix!.slice(prefix.length).replaceAll(/\/$/g, '')
                 return JsonUtils.RemoveUndefined(
                     <TStorageFile>{
                         name: folderName,

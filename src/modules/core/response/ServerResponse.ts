@@ -23,4 +23,11 @@ export class ServerResponse {
             .then(intRes => Convert.InternalResponseToResponse(res, intRes))
             .catch((error: HttpError) => ResponseHandler.ResponseError(res, error))
     }
+
+    static async ReloadPlans(req: Request, res: Response): Promise<void> {
+        RequestHandler.CheckRequest(req)
+        ServerRuntime.ReloadPlans(req.__METAL_CURRENT_USER)
+            .then(intRes => Convert.InternalResponseToResponse(res, intRes))
+            .catch((error: HttpError) => ResponseHandler.ResponseError(res, error))
+    }
 }

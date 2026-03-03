@@ -59,6 +59,12 @@ export class Plan {
         this._isReady = true
     }
 
+    async Disconnect() {
+        this._isReady = false
+        await this._dataBase.Disconnect()
+        this.Entities.clear()
+    }
+
     async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery?: string) {
         await Utils.Wait(async () => this._isReady, 50, 60_000)
 
@@ -121,7 +127,8 @@ export class Plan {
                     stepCommand: undefined,
                     stepArgs: undefined
                 }
-            }
+            },
+            $vars: {}
         }
 
         try {
@@ -136,6 +143,7 @@ export class Plan {
                     stepArgs: values(<U_config_plans_plan_entity_step_Params>_step)[0] as U_config_plans_plan_entity_step_Params,
                     status: STEP_STATUS.RUNNING
                 }
+
 
                 Logger.Info(`${Logger.In} Plan.Run '${$context.$plan!.name}', Entity '${$context.$plan!.entity}', step ${$context.$plan!.$current.stepIndex}: ${JsonUtils.Stringify(_step)}`)
 
@@ -176,7 +184,7 @@ export class Plan {
                     executeStep,
                     `'${$context.$plan!.name}', Entity '${$context.$plan!.entity}': error have been encountered in step ${$context.$plan!.$current.stepIndex}`, new HttpErrorInternalServerError())
 
-                const __stepReturn = await executeStep(__stepArguments)
+                const __stepReturn = await executeStep(__stepArguments, $context)
                 if (__stepReturn) {
                     this._dataBase.Tables[currentEntityName] = __stepReturn
                 }
@@ -257,7 +265,12 @@ export class Plan {
         // check if plan exist
         if (ConfigManager.Has(`plans.${plan}`) && has(configFileJson.plans, plan)) {
             ConfigManager.Set(`plans.${plan}`, configFileJson.plans[plan])
+            if (configFileJson.schedules) {
+                ConfigManager.Set('schedules', configFileJson.schedules)
+            }
+            await this.Disconnect()
             await this.Init()
+
             return HttpResponse.Ok({
                 plan,
                 message: `Plan reloaded`

@@ -14,7 +14,7 @@ import type { IDataProviderOptions } from './IDataProviderOptions'
 
 
 //
-export abstract class absDataProviderOptions implements IDataProviderOptions {
+export abstract class absDataProviderOptions implements IDataProviderOptions { // NOSONAR
     @Logger.LogFunction(true)
     Parse(schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
         let options: TOptionalParameter = <TOptionalParameter>{}

@@ -23,6 +23,7 @@ import { Select } from "./steps/Select"
 import { Sort } from "./steps/Sort"
 import { Sync } from "./steps/Sync"
 import { Update } from "./steps/Update"
+import { SetVar } from "./steps/SetVar"
 
 
 //
@@ -50,6 +51,7 @@ export class Step {
         [STEP.BREAK]: Break,
         [STEP.PICK]: Pick,
         [STEP.OMIT]: Omit,
-        [STEP.MAP]: MapRows
+        [STEP.MAP]: MapRows,
+        [STEP.SET_VAR]: SetVar
     }
 }

@@ -73,4 +73,9 @@ export class DataProvider {
         const provider = await loadPromise;
         return provider.Clone();
     }
+
+    static Clear() {
+        DataProvider.#dataFactory.Clear()
+        DataProvider.#loadingPromises.clear()
+    }
 }

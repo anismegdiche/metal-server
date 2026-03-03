@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Readable } from "node:stream"
 import { DataTable } from '../../../types/DataTable'
 import { convertToArrayBuffer, ParquetContent } from '../providers/ParquetContent'
 import type { U__source_options_content_parquet } from "../providers/ParquetContent"
-import { ByteWriter } from "hyparquet-writer"
-import { parquetWrite } from "hyparquet-writer"
+import { ByteWriter , parquetWrite } from "hyparquet-writer"
 import { parquetReadObjects } from "hyparquet"
 
 describe('ParquetContent', () => {

@@ -55,16 +55,16 @@ export class CsvContent extends absContentProvider {
 
     static EscapeNewlines(value: string): string {
         return value
-            .replace(/\\/g, '\\\\')
-            .replace(/\r/g, '\\r')
-            .replace(/\n/g, '\\n')
+            .replaceAll('\\', '\\\\')
+            .replaceAll('\r', String.raw`\r`)
+            .replaceAll('\n', String.raw`\n`)
     }
 
     static UnescapeNewlines(value: string): string {
         return value
-            .replace(/\\n/g, '\n')
-            .replace(/\\r/g, '\r')
-            .replace(/\\\\/g, '\\')
+            .replaceAll(String.raw`\n`, '\n')
+            .replaceAll(String.raw`\r`, '\r')
+            .replaceAll('\\\\', '\\')
     }
 
     SetConfig(contentConfig: U__source_options_content_csv): void {

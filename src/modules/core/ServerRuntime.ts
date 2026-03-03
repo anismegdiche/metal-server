@@ -1,23 +1,29 @@
 //
 //
 //
-
 import chokidar from "chokidar"
 import type { FSWatcher } from "chokidar"
+//
 import type { TJson } from "../../types/TJson"
 import { Logger } from "../../utils/Logger"
+import { AiDocker } from "../ai-engine/AiDocker"
+import { AiEngine } from "../ai-engine/AiEngine"
 import { AUTH_PERMISSION } from "../auth/@consts"
 import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
 import { Cache } from "../cache/Cache"
-import { ServerShutdown } from './ServerShutdown'
+import { PlansManager } from "../plan/PlansManager"
 import { Schedule } from "../plan/Schedule"
-import type { TInternalResponse } from "./types/TInternalResponse"
+import { Schema } from "../schema/Schema"
+import { DataProvider } from "../source/DataProvider"
 import { Source } from "../source/Source"
 import { SERVER } from "./@consts"
 import { ConfigManager } from "./ConfigManager"
 import { ConfigStore } from "./ConfigStore"
 import { HttpResponse } from "./HttpResponse"
+import { ServerShutdown } from './ServerShutdown'
+import type { TInternalResponse } from "./types/TInternalResponse"
+
 
 //
 export class ServerRuntime {
@@ -36,18 +42,55 @@ export class ServerRuntime {
         })
     }
 
-    //FIXME server reload: not work to correct
-    //BUG server reload: error in plan DataProvider
     @Logger.LogFunction()
     static async Reload(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
-        Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
+        if (userToken) Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
 
+        Logger.Info(`${Logger.In} Reloading server configuration...`)
+
+        // Stop all active components
+        AiDocker.StopScaler()
         Schedule.StopAll()
         await Cache.Disconnect()
         await Source.DisconnectAll()
+
+        // Clear module states
+        await PlansManager.Clear()
+        AiEngine.Clear()
+        DataProvider.Clear()
+
+        // Reload configuration from disk and re-validate
         await ConfigManager.Init(new ConfigStore())
+
+        const { ServerCore } = await import("./ServerCore")
+        ServerCore.InitLogging()
+
+        // Re-initialize all modules in correct order (similar to ServerCore.Init)
+        await Source.Init()
+        await Cache.Init(DataProvider.GetProvider)
+        await Cache.Connect()
+        Schema.Init(Cache.Get)
+        await AiEngine.Init()
+        await PlansManager.Init()
+        await Schedule.Init()
+        await ServerCore.InitAuthentication()
+        ServerCore.InitResponse()
+
+        Logger.Info(`${Logger.Out} Server configuration reloaded successfully`)
+
         return HttpResponse.Ok({
             message: `Server reloaded`
+        })
+    }
+
+    @Logger.LogFunction()
+    static async ReloadPlans(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
+        if (userToken) Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
+
+        await PlansManager.Reload()
+
+        return HttpResponse.Ok({
+            message: `Plans and schedules reloaded successfully`
         })
     }
 

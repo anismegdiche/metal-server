@@ -1,0 +1,34 @@
+finish build mode #dev {start:2026-01-21T21:40:08} {cm:2026-01-22} {duration:21h59m} {h}
+base image audio #dev {start:2026-01-21T21:40:09} {cm:2026-01-22} {duration:21h57m} {h}
+test audio #test {start:2026-01-21T21:50:17} {cm:2026-01-22} {duration:21h47m} {h}
+check ocr #dev {start:2026-01-22T19:38:01} {cm:2026-01-22} {duration:31m} {h}
+update url post code for all ai services like Image.ts #dev {start:2026-01-22T19:38:14} {cm:2026-01-22} {duration:01m} {h}
+test build mode #test {start:2026-01-22T19:39:52} {cm:2026-01-22} {duration:01h42m} {h}
+test new ai images #test {start:2026-01-22T20:11:06} {cm:2026-01-27} {duration:5d_21m} {h}
+
+check docs ai services #doc {cm:2026-02-01} {h}
+check docs build mode #doc {cm:2026-02-01} {h}
+
+async Text.ts #dev {start:2026-01-23T17:52:55} {cm:2026-01-23} {duration:11m} {h}
+async Audio.ts #dev {start:2026-01-23T18:08:07} {cm:2026-01-23} {duration:48m} {h}
+async Image.ts #dev {cm:2026-01-23} {h}
+async OCr.ts #dev  {cm:2026-01-23} {h}
+CSV file data test #test {start:2026-01-27T21:12:09} {cm:2026-01-30} {duration:2d_21h20m} {h}
+
+plan should stop if error in step #feature {f} {start:2026-02-08T10:50:25} {cm:2026-02-08} {duration:50m} {h}
+plan should be configured on-error: stop/continue, can be a common template starting with _ that config is added for steps #feature {f}
+TconfigSource, U_config_sources infer and other U_config sections {start:2026-01-30T00:49:52} {cm:2026-01-31} {duration:1d_12h58m} {h}
+AiDocker HostConfig {start:2026-01-30T00:50:31} {cm:2026-01-31} {duration:1d_11h45m} {h}
+csv convert return lines {start:2026-01-30T18:32:52} {cm:2026-01-31} {duration:18h01m} {h}
+fix CI , bug with duckdb file mode {start:2026-02-01T13:05:12} {cm:2026-02-01} {duration:05h10m} {h}
+fix CI , bug with docker image build {start:2026-02-01T13:05:14} {cm:2026-02-01} {duration:05h14m} {h}
+text ai engines with cors {f} {start:2026-02-06T19:44:27} {cm:2026-02-07} {duration:23h19m} {h}
+finish zod migration {f} {start:2026-02-08T10:47:26} {cm:2026-02-10} {duration:2d_07h23m} {h}
+Content > ExtractFromParquetExtracts data from a Parquet file format for high-efficiency storage and access. {f} {start:2026-02-15T18:02:37} {cm:2026-02-16} {duration:1d_01h47m} {h}
+Storage > SFTP {f} {start:2026-03-02T11:25:10} {cm:2026-03-02} {duration:05h27m} {h}
+AI Refactor {cm:2026-02-15} {h}
+step > map js script {f} {start:2026-02-12T19:40:50} {cm:2026-02-14} {duration:1d_23h45m} {h}
+step: split functions #refactor {f} {start:2026-02-11T09:56:03} {cm:2026-02-12} {duration:1d_08h45m} {h}
+Plan > should stop on error (v1) {f} {start:2026-02-11T10:00:00} {cm:2026-02-12} {duration:1d_08h48m} {h}
+Step > add missing tests {f} {start:2026-02-12T18:49:54} {cm:2026-02-12} {duration:44m} {h}
+clean storage options {f} {start:2026-02-21T13:24:53} {cm:2026-03-02} {duration:9d_03h28m} {h}

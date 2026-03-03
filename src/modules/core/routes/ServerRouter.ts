@@ -3,6 +3,7 @@
 //
 //
 //
+//
 import { Router } from 'express'
 //
 import { UserResponse } from '../response/UserResponse'
@@ -17,3 +18,7 @@ ServerRouter.route('/info')
 ServerRouter.route('/reload')
     .all(UserResponse.IsAuthenticated)
     .post(ServerResponse.Reload)
+
+ServerRouter.route('/reload-plans')
+    .all(UserResponse.IsAuthenticated)
+    .post(ServerResponse.ReloadPlans)

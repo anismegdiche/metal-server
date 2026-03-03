@@ -51,4 +51,15 @@ describe('ServerResponse', () => {
         expect(ServerRuntime.Reload).toHaveBeenCalledWith(mockReq.__METAL_CURRENT_USER);
         expect(Convert.InternalResponseToResponse).toHaveBeenCalledWith(mockRes, intRes);
     });
+
+    it('should call ServerRuntime.ReloadPlans in ReloadPlans', async () => {
+        const intRes = { Body: { message: 'plans reloaded' } };
+        vi.mocked(ServerRuntime.ReloadPlans).mockResolvedValue(intRes as any);
+
+        await ServerResponse.ReloadPlans(mockReq, mockRes);
+
+        expect(RequestHandler.CheckRequest).toHaveBeenCalledWith(mockReq);
+        expect(ServerRuntime.ReloadPlans).toHaveBeenCalledWith(mockReq.__METAL_CURRENT_USER);
+        expect(Convert.InternalResponseToResponse).toHaveBeenCalledWith(mockRes, intRes);
+    });
 });

@@ -19,7 +19,8 @@ export enum STEP {
     BREAK = "break", // v0.5
     PICK = "pick", // v0.5
     OMIT = "omit", // v0.5
-    MAP = "map" // v0.5
+    MAP = "map", // v0.5
+    SET_VAR = "set-var" // v0.5
 }
 
 

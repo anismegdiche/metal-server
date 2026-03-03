@@ -17,6 +17,7 @@ import { z_U_config_plans_plan_entity_pick_Params } from "../steps/Pick"
 import { z_U_config_plans_plan_entity_remove_duplicates_Params } from "../steps/RemoveDuplicates"
 import { z_U_config_plans_plan_entity_run_Params } from "../steps/Run"
 import { z_U_config_plans_plan_entity_select_Params } from "../steps/Select"
+import { z_U_config_plans_plan_entity_set_var_Params } from "../steps/SetVar"
 import { z_U_config_plans_plan_entity_sort_Params } from "../steps/Sort"
 import { z_U_config_plans_plan_entity_sync_Params } from "../steps/Sync"
 import { z_U_config_plans_plan_entity_update_Params } from "../steps/Update"
@@ -40,6 +41,7 @@ export const z_U_config_plans_plan_entity_step_Params = z.union([
     z_U_config_plans_plan_entity_omit_Params,
     z_U_config_plans_plan_entity_map_Params,
     z_U_config_plans_plan_entity_run_Params,
+    z_U_config_plans_plan_entity_set_var_Params,
 ]);
 
 export const z_U_config_plans_plan_entity_step = z.union([
@@ -59,6 +61,7 @@ export const z_U_config_plans_plan_entity_step = z.union([
     z.object({ [STEP.PICK]: z_U_config_plans_plan_entity_pick_Params }),
     z.object({ [STEP.OMIT]: z_U_config_plans_plan_entity_omit_Params }),
     z.object({ [STEP.MAP]: z_U_config_plans_plan_entity_map_Params }),
+    z.object({ [STEP.SET_VAR]: z_U_config_plans_plan_entity_set_var_Params }),
 ]).describe("Plan entity step");
 
 

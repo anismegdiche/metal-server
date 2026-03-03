@@ -186,4 +186,11 @@ export class AiEngine {
             throw new HttpErrorInternalServerError(errorMessage);
         }
     }
+
+    static Clear() {
+        AiEngine.AiEnginesInstance.clear()
+        AiEngine._aiEnginesConfig = {}
+        AiEngine._aiEngineFactory.Clear()
+        AiEngine._loadingPromises.clear()
+    }
 }
