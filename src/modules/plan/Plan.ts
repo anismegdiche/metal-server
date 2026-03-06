@@ -83,7 +83,7 @@ export class Plan {
 			new HttpErrorNotFound(),
 		)
 
-		const currentDatatable = await this.Run(schema, source, entity, this.Entities.get(entity)!)
+		const currentDatatable = await this.Process(schema, source, entity, this.Entities.get(entity)!)
 		await currentDatatable.FreeSql({ sqlQuery })
 		Logger.Debug(`${Logger.Out} Plan.ProcessSchemaRequest: ${source}.${entity}`)
 		return currentDatatable
@@ -106,7 +106,7 @@ export class Plan {
 
 		Logger.Debug(`${Logger.In} Plan.ProcessSchedule: ${plan}.${entity}: ${JsonUtils.Stringify(entitySteps)}`)
 
-		this.Run(undefined, plan, entity, entitySteps)
+		this.Process(undefined, plan, entity, entitySteps)
 			.then((data) => {
 				data.FreeSql({ sqlQuery }).then(() => {
 					Logger.Debug(`${Logger.Out} Plan.ProcessSchedule: ${plan}.${entity}`)
@@ -119,7 +119,7 @@ export class Plan {
 
 	@Logger.LogFunction()
 	@SynchronizerManager.Synchronized()
-	async Run(
+	async Process(
 		currentSchemaName: string | undefined,
 		currentPlanName: string,
 		currentEntityName: string,

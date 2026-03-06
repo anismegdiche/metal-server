@@ -119,7 +119,7 @@ describe("Plan", () => {
 			const executeMock = vi.fn().mockResolvedValue(mockDataTable)
 			Step.ExecuteCaseMap["mock-cmd"] = executeMock
 
-			await plan.Run("s", "p", "e1", steps as any)
+			await plan.Process("s", "p", "e1", steps as any)
 
 			expect(executeMock).toHaveBeenCalled()
 		})
@@ -141,7 +141,7 @@ describe("Plan", () => {
 			Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
 			Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
 
-			await expect(plan.Run("s", "p", "e1", steps as any)).rejects.toThrow()
+			await expect(plan.Process("s", "p", "e1", steps as any)).rejects.toThrow()
 
 			expect(executeMock1).toHaveBeenCalled()
 			expect(executeMock2).toHaveBeenCalled()
@@ -165,7 +165,7 @@ describe("Plan", () => {
 			Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
 			Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
 
-			const result = await plan.Run("s", "p", "e1", steps as any)
+			const result = await plan.Process("s", "p", "e1", steps as any)
 
 			expect(executeMock1).toHaveBeenCalled()
 			expect(executeMock2).toHaveBeenCalled()
