@@ -1,243 +1,236 @@
 //
 //
 //
-import { merge } from 'lodash-es'
+import { merge } from "lodash-es"
 //
 import { DataTable } from "../../../types/DataTable"
 import type { TIpPort } from "../../../types/TIpPort"
-import { Assert } from '../../../utils/Assert'
+import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { Logger } from '../../../utils/Logger'
+import { Logger } from "../../../utils/Logger"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
-import { Cache } from '../../cache/Cache'
-import { RESPONSE } from '../../core/@consts'
+import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source, U_config_sources_source_options } from '../../core/types/U_config_sources'
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound, HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import type { U_config_sources_source, U_config_sources_source_options } from "../../core/types/U_config_sources"
+import {
+	HttpErrorBadRequest,
+	HttpErrorInternalServerError,
+	HttpErrorNotFound,
+	HttpErrorNotImplemented,
+} from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
-import type { TSchemaResponse } from '../../schema/types/TSchemaResponse'
+import type {
+	TSchemaRequest,
+	TSchemaRequestDelete,
+	TSchemaRequestInsert,
+	TSchemaRequestListEntities,
+	TSchemaRequestSelect,
+	TSchemaRequestUpdate,
+} from "../../schema/types/TSchemaRequest"
+import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
-import { absDataProvider } from "../base/absDataProvider"
 import type { TOptionalParameter } from "../@types"
-
+import { absDataProvider } from "../base/absDataProvider"
 
 //
 export type U__source_postgres = {
-    provider: DATA_PROVIDER.POSTGRES
-    host: string
-    port: TIpPort
-    user: string
-    password: string
-    database: string
-    options?: U_config_sources_source_options
+	provider: DATA_PROVIDER.POSTGRES
+	host: string
+	port: TIpPort
+	user: string
+	password: string
+	database: string
+	options?: U_config_sources_source_options
 }
-
 
 //
 export class PostgresData extends absDataProvider {
-    private static _pg: typeof import('pg');
-    private static async _loadPg(): Promise<typeof import('pg')> {
-        if (!this._pg) {
-            this._pg = await import('pg');
-        }
-        return this._pg;
-    }
+	private static _pg: typeof import("pg")
+	private static async _loadPg(): Promise<typeof import("pg")> {
+		if (!PostgresData._pg) {
+			PostgresData._pg = await import("pg")
+		}
+		return PostgresData._pg
+	}
 
-    SourceName?: string
-    ProviderName = DATA_PROVIDER.POSTGRES
-    Config: U__source_postgres = <U__source_postgres>{}
-    Connection?: import('pg').Pool
+	// biome-ignore lint/complexity/noUselessConstructor: compatibility
+	constructor() {
+		super()
+	}
 
-    DEFAULT: Partial<U__source_postgres> = {
-        host: '127.0.0.1',
-        port: 5432,
-        user: 'root',
-        password: '',
-        database: 'postgres'
-    }
+	SourceName?: string
+	ProviderName = DATA_PROVIDER.POSTGRES
+	Config: U__source_postgres = <U__source_postgres>{}
+	Connection?: import("pg").Pool
 
-    constructor() {
-        super()
-    }
+	DEFAULT: Partial<U__source_postgres> = {
+		host: "127.0.0.1",
+		port: 5432,
+		user: "root",
+		password: "",
+		database: "postgres",
+	}
 
-    @Logger.LogFunction()
-    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
-        await super.Init(source, sourceConfig)
-        this.Config = merge(this.DEFAULT, sourceConfig as U__source_postgres)
-    }
+	@Logger.LogFunction()
+	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+		await super.Init(source, sourceConfig)
+		this.Config = merge(this.DEFAULT, sourceConfig as U__source_postgres)
+	}
 
-    @Logger.LogFunction()
-    async Connect(): Promise<void> {
-        const source = this.SourceName
-        const { host, port, user, password, database, options } = this.Config
+	@Logger.LogFunction()
+	async Connect(): Promise<void> {
+		const source = this.SourceName
+		const { host, port, user, password, database, options } = this.Config
 
-        try {
-            const pg = await PostgresData._loadPg();
-            this.Connection = new pg.Pool({
-                user,
-                password,
-                database,
-                host,
-                port,
-                ...options
-            })
-            this.Connection.query('SELECT NOW()', async function (err) {
-                try {
-                    if (err)
-                        throw err
-                    else
-                        Logger.Info(`${Logger.Out} connected to '${source} (${database})'`)
+		try {
+			const pg = await PostgresData._loadPg()
+			this.Connection = new pg.Pool({
+				user,
+				password,
+				database,
+				host,
+				port,
+				...options,
+			})
+			this.Connection.query("SELECT NOW()", async (err) => {
+				try {
+					if (err) throw err
+					else Logger.Info(`${Logger.Out} connected to '${source} (${database})'`)
+				} catch (error: unknown) {
+					Logger.Error(`${Logger.Out} Failed to connect to '${source} (${database})'`)
+					Logger.Error(error)
+				}
+			})
+		} catch (error: unknown) {
+			Logger.Error(`${Logger.Out} Failed to connect to '${source} (${database})'`)
+			Logger.Error(error)
+		}
+	}
 
-                } catch (error: unknown) {
-                    Logger.Error(`${Logger.Out} Failed to connect to '${source} (${database})'`)
-                    Logger.Error(error)
-                }
-            })
-        } catch (error: unknown) {
-            Logger.Error(`${Logger.Out} Failed to connect to '${source} (${database})'`)
-            Logger.Error(error)
-        }
-    }
+	@Logger.LogFunction()
+	async Disconnect(): Promise<void> {
+		if (this.Connection !== undefined) await this.Connection.end()
+	}
 
-    @Logger.LogFunction()
-    async Disconnect(): Promise<void> {
-        if (this.Connection !== undefined)
-            await this.Connection.end()
+	@Logger.LogFunction()
+	@SynchronizerManager.Synchronized()
+	async Select(
+		schemaRequest: TSchemaRequestSelect,
+		$context?: Partial<TContext>,
+	): Promise<TInternalResponse<TSchemaResponse>> {
+		if (!this.Connection) throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-    }
+		const { schema, entity } = schemaRequest
 
-    @Logger.LogFunction()
-    @SynchronizerManager.Synchronized()
-    async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>): Promise<TInternalResponse<TSchemaResponse>> {
+		$context = merge($context, this.GetContext(schemaRequest))
 
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
+		const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        const { schema, entity } = schemaRequest
+		const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
+		const result = await this.Connection.query(sqlQueryHelper.Query())
 
-        $context = merge(
-            $context,
-            this.GetContext(schemaRequest)
-        )
+		const data = new DataTable(entity)
 
-        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+		if (result.rows.length > 0) {
+			await data.RowsSet(result.rows)
+			if (options?.Cache) await this.CacheSet(schemaRequest, data)
+		}
 
-        const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+		return HttpResponse.Ok(<TSchemaResponse>{
+			schema,
+			entity,
+			...RESPONSE.SELECT.SUCCESS.MESSAGE,
+			...RESPONSE.SELECT.SUCCESS.STATUS,
+			data,
+		})
+	}
 
-        const result = await this.Connection.query(sqlQueryHelper.Query())
+	@Logger.LogFunction()
+	async Insert(
+		schemaRequest: TSchemaRequestInsert,
+		$context?: Partial<TContext>,
+	): Promise<TInternalResponse<undefined>> {
+		if (!this.Connection) throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        const data = new DataTable(entity)
+		$context = merge($context, this.GetContext(schemaRequest))
 
-        if (result.rows.length > 0) {
-            await data.RowsSet(result.rows)
-            if (options?.Cache)
-                Cache.Set(schemaRequest, data)
-        }
+		const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        return HttpResponse.Ok(<TSchemaResponse>{
-            schema,
-            entity,
-            ...RESPONSE.SELECT.SUCCESS.MESSAGE,
-            ...RESPONSE.SELECT.SUCCESS.STATUS,
-            data
-        })
-    }
+		if (!DataTable.Is(options.Data)) throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-    @Logger.LogFunction()
-    async Insert(schemaRequest: TSchemaRequestInsert, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+		const sqlQueryHelper = await this.GenerateSqlInsert(schemaRequest, options)
 
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
+		await this.Connection.query(sqlQueryHelper.Query())
 
+		// clean cache
+		await this.CacheRemove(schemaRequest)
 
-        $context = merge(
-            $context,
-            this.GetContext(schemaRequest)
-        )
+		return HttpResponse.Created()
+	}
 
-        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+	@Logger.LogFunction()
+	async Update(
+		schemaRequest: TSchemaRequestUpdate,
+		$context?: Partial<TContext>,
+	): Promise<TInternalResponse<undefined>> {
+		if (!this.Connection) throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        if (!DataTable.Is(options.Data))
-            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+		$context = merge($context, this.GetContext(schemaRequest))
 
-        const sqlQueryHelper = await this.GenerateSqlInsert(schemaRequest, options)
+		const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        await this.Connection.query(sqlQueryHelper.Query())
+		if (!DataTable.Is(options.Data)) throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
-        // clean cache
-        Cache.Remove(schemaRequest)
+		const sqlQueryHelper = await this.GenerateSqlUpdate(schemaRequest, options)
 
-        return HttpResponse.Created()
-    }
+		await this.Connection.query(sqlQueryHelper.Query())
 
-    @Logger.LogFunction()
-    async Update(schemaRequest: TSchemaRequestUpdate, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+		// clean cache
+		await this.CacheRemove(schemaRequest)
 
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
+		return HttpResponse.NoContent()
+	}
 
+	@Logger.LogFunction()
+	async Delete(
+		schemaRequest: TSchemaRequestDelete,
+		$context?: Partial<TContext>,
+	): Promise<TInternalResponse<undefined>> {
+		if (!this.Connection) throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
 
-        $context = merge(
-            $context,
-            this.GetContext(schemaRequest)
-        )
+		$context = merge($context, this.GetContext(schemaRequest))
 
-        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
+		const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-        if (!DataTable.Is(options.Data))
-            throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
+		const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
 
-        const sqlQueryHelper = await this.GenerateSqlUpdate(schemaRequest, options)
+		await this.Connection.query(sqlQueryHelper.Query())
 
-        await this.Connection.query(sqlQueryHelper.Query())
+		// clean cache
+		await this.CacheRemove(schemaRequest)
 
-        // clean cache
-        Cache.Remove(schemaRequest)
+		return HttpResponse.NoContent()
+	}
 
-        return HttpResponse.NoContent()
-    }
+	@Logger.LogFunction()
+	async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
+		throw new HttpErrorNotImplemented()
+	}
 
-    @Logger.LogFunction()
-    async Delete(schemaRequest: TSchemaRequestDelete, $context?: Partial<TContext>): Promise<TInternalResponse<undefined>> {
+	@Logger.LogFunction()
+	async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
+		Assert.Var<import("pg").Pool>(
+			this.Connection,
+			this.Connection !== undefined,
+			`${this.SourceName}: Connection is undefined`,
+		)
 
-        if (!this.Connection)
-            throw new HttpErrorInternalServerError(JsonUtils.Stringify(schemaRequest))
+		const { schema, source } = schemaRequest
 
-
-        $context = merge(
-            $context,
-            this.GetContext(schemaRequest)
-        )
-
-        const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
-
-        const sqlQueryHelper = this.GenerateSqlDelete(schemaRequest, options)
-
-        await this.Connection.query(sqlQueryHelper.Query())
-
-        // clean cache
-        Cache.Remove(schemaRequest)
-
-        return HttpResponse.NoContent()
-    }
-
-
-    @Logger.LogFunction()
-    async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
-        throw new HttpErrorNotImplemented()
-    }
-
-    @Logger.LogFunction()
-    async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
-        Assert.Var<import('pg').Pool>(this.Connection, this.Connection !== undefined, `${this.SourceName}: Connection is undefined`)
-
-        const { schema, source } = schemaRequest
-
-        // Refresh analyze
-        let sqlQuery = `
+		// Refresh analyze
+		let sqlQuery = `
             DO $$ 
             DECLARE
                 r RECORD;
@@ -253,10 +246,10 @@ export class PostgresData extends absDataProvider {
             END $$;
             `
 
-        await this.Connection.query(sqlQuery)
+		await this.Connection.query(sqlQuery)
 
-        // Get Data
-        sqlQuery = `
+		// Get Data
+		sqlQuery = `
             SELECT 
                 t.table_name AS name, 
                 'table' AS type, 
@@ -276,28 +269,25 @@ export class PostgresData extends absDataProvider {
                 AND n.nspname = t.table_schema;
             `
 
-        const result = await this.Connection.query(sqlQuery)
+		const result = await this.Connection.query(sqlQuery)
 
-        if (result?.rows.length == 0)
-            throw new HttpErrorNotFound(`${schema}: No entities found`)
+		if (result?.rows.length === 0) throw new HttpErrorNotFound(`${schema}: No entities found`)
 
-        const data = new DataTable(source, result.rows)
+		const data = new DataTable(source, result.rows)
 
-        return HttpResponse.Ok(<TSchemaResponse>{
-            schema,
-            ...RESPONSE.LIST_ENTITIES.SUCCESS.MESSAGE,
-            ...RESPONSE.LIST_ENTITIES.SUCCESS.STATUS,
-            data
-        })
-    }
+		return HttpResponse.Ok(<TSchemaResponse>{
+			schema,
+			...RESPONSE.LIST_ENTITIES.SUCCESS.MESSAGE,
+			...RESPONSE.LIST_ENTITIES.SUCCESS.STATUS,
+			data,
+		})
+	}
 
+	EscapeEntity(entity: string): string {
+		return `"${entity}"`
+	}
 
-    EscapeEntity(entity: string): string {
-        return `"${entity}"`
-    }
-
-
-    EscapeField(field: string): string {
-        return `"${field}"`
-    }
+	EscapeField(field: string): string {
+		return `"${field}"`
+	}
 }

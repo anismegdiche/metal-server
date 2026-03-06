@@ -1,30 +1,30 @@
 //
 //
 //
-import type { TAiDockerService } from '../types/TAiDockerService';
-import { DOCKER } from '../consts/DOCKER';
 
+import { DOCKER } from "../consts/DOCKER"
+import type { TAiDockerService } from "../types/TAiDockerService"
 
 //
 
 export const AudioAudioClassificationDockerService: TAiDockerService = {
-    Name: 'audio-audio-classification',
-    Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-audio-audio-classification:1.0.0`,
-    ImageContext: {
-        context: `${process.cwd()}/.docker/ai-engines/services/audio/audio-classification`,
-        src: ['.', './requirements.txt']
-    },
-    InternalUrl: '/audio-audio-classification'
-};
+	Name: "audio-audio-classification",
+	Port: 5000,
+	ImageName: `${DOCKER.AI_ENGINE_PREFIX}-audio-audio-classification:1.0.0`,
+	ImageContext: {
+		context: `${process.cwd()}/.docker/ai-engines/services/audio/audio-classification`,
+		src: [".", "./requirements.txt"],
+	},
+	InternalUrl: "/audio-audio-classification",
+}
 
 export const AudioAutomaticSpeechRecognitionDockerService: TAiDockerService = {
-    Name: 'audio-automatic-speech-recognition',
-    Port: 5000,
-    ImageName: `${DOCKER.AI_ENGINE_PREFIX}-audio-automatic-speech-recognition:1.0.0`,
-    ImageContext: {
-        context: `${process.cwd()}/.docker/ai-engines/services/audio/automatic-speech-recognition`,
-        src: ['.', './requirements.txt']
-    },
-    InternalUrl: '/audio-automatic-speech-recognition'
-};
+	Name: "audio-automatic-speech-recognition",
+	Port: 5000,
+	ImageName: `${DOCKER.AI_ENGINE_PREFIX}-audio-automatic-speech-recognition:1.0.0`,
+	ImageContext: {
+		context: `${process.cwd()}/.docker/ai-engines/services/audio/automatic-speech-recognition`,
+		src: [".", "./requirements.txt"],
+	},
+	InternalUrl: "/audio-automatic-speech-recognition",
+}

@@ -28,13 +28,13 @@ sources:
     options:
       storage-mode: folders
       storage-type: fs
-      fs-folder: ./data/
+      folder: ./data/
   src-json:
     provider: storage
     options:
       storage-mode: files
       storage-type: fs
-      fs-folder: ./data/
+      folder: ./data/
       autocreate: true
       content:
         "*.json":

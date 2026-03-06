@@ -1,104 +1,101 @@
 //
 //
 //
-import type { LogLevelDesc } from 'loglevel'
-import os from 'node:os'
+
+import os from "node:os"
+import type { LogLevelDesc } from "loglevel"
 //
 import { Convert } from "../../utils/Convert"
-import { Logger } from '../../utils/Logger'
+import { Logger } from "../../utils/Logger"
 //
 //
-import { AiEngine } from '../ai-engine/AiEngine'
-import { AuthProvider } from '../auth/AuthProvider'
-import { Roles } from '../auth/Roles'
-import type { U_config_server_authentication } from '../auth/types/U_config_server_authentication'
-import { Cache } from '../cache/Cache'
-import { PlansManager } from '../plan/PlansManager'
-import { Schedule } from '../plan/Schedule'
-import { Schema } from '../schema/Schema'
-import { DataProvider } from '../source/DataProvider'
-import { Source } from '../source/Source'
-import { ConfigManager } from './ConfigManager'
-import { ConfigStore } from './ConfigStore'
-import { ServerEndpoint } from './ServerEndpoint'
-import { ServerRuntime } from './ServerRuntime'
+import { AiEngine } from "../ai-engine/AiEngine"
+import { AuthProvider } from "../auth/AuthProvider"
+import { Roles } from "../auth/Roles"
+import type { U_config_server_authentication } from "../auth/types/U_config_server_authentication"
+import { Cache } from "../cache/Cache"
+import { PlansManager } from "../plan/PlansManager"
+import { Schedule } from "../plan/Schedule"
+import { Schema } from "../schema/Schema"
+import { DataProvider } from "../source/DataProvider"
+import { Source } from "../source/Source"
+import { ConfigManager } from "./ConfigManager"
+import { ConfigStore } from "./ConfigStore"
+import { ServerEndpoint } from "./ServerEndpoint"
+import { ServerRuntime } from "./ServerRuntime"
 //
-
 
 //
 export class ServerCore {
-    static readonly CurrentPath = process.cwd()
-    static readonly Cpus = os.cpus().length ?? 1
-    static readonly Memory = os.freemem()
-    static readonly Platform = process.platform
+	static readonly CurrentPath = process.cwd()
+	static readonly Cpus = os.cpus().length ?? 1
+	static readonly Memory = os.freemem()
+	static readonly Platform = process.platform
 
+	@Logger.LogFunction()
+	static async Init(): Promise<void> {
+		// core
+		// ServerCore.RegisterProviders()
 
-    @Logger.LogFunction()
-    static async Init(): Promise<void> {
+		// config
+		await ConfigManager.Init(new ConfigStore())
+		ServerCore.InitLogging()
 
-        // core
-        // ServerCore.RegisterProviders()
+		// Start logger queue cleanup
+		Logger.StartQueueCleanup()
 
-        // config
-        await ConfigManager.Init(new ConfigStore())
-        ServerCore.InitLogging()
+		// sources
+		await Source.Init()
 
-        // Start logger queue cleanup
-        Logger.StartQueueCleanup()
+		// cache
+		await Cache.Init(DataProvider.GetProvider)
+		await Cache.Connect()
 
-        // sources
-        await Source.Init()
+		// schema
+		Schema.Init(Cache.Get)
 
-        // cache
-        await Cache.Init(DataProvider.GetProvider)
-        await Cache.Connect()
+		// AI
+		await AiEngine.Init()
 
-        // schema
-        Schema.Init(Cache.Get)
+		// plans
+		await PlansManager.Init()
+		await Schedule.Init()
 
-        // AI        
-        await AiEngine.Init()
+		await ServerCore.InitAuthentication()
 
-        // plans
-        await PlansManager.Init()
-        await Schedule.Init()
+		ServerCore.InitResponse()
+		ServerEndpoint.InitApi()
+		ServerRuntime.StartWatcher()
+	}
 
+	@Logger.LogFunction()
+	static async Shutdown(): Promise<void> {
+		Logger.Info("Server shutdown initiated")
 
-        await ServerCore.InitAuthentication()
+		// Stop logger queue cleanup
+		Logger.StopQueueCleanup()
 
-        ServerCore.InitResponse()
-        ServerEndpoint.InitApi()
-        ServerRuntime.StartWatcher()
-    }
+		// TODO: Add proper cleanup for other components
 
-    @Logger.LogFunction()
-    static async Shutdown(): Promise<void> {
-        Logger.Info('Server shutdown initiated')
-        
-        // Stop logger queue cleanup
-        Logger.StopQueueCleanup()
-        
-        // TODO: Add proper cleanup for other components
-        
-        Logger.Info('Server shutdown completed')
-    }
+		Logger.Info("Server shutdown completed")
+	}
 
-    @Logger.LogFunction()
-    static InitLogging(): void {
-        const verbosity = ConfigManager.Get<LogLevelDesc>("server.verbosity")
-        Logger.SetLevel(verbosity)
-    }
+	@Logger.LogFunction()
+	static InitLogging(): void {
+		const verbosity = ConfigManager.Get<LogLevelDesc>("server.verbosity")
+		Logger.SetLevel(verbosity)
+	}
 
-    @Logger.LogFunction()
-    static async InitAuthentication(): Promise<void> {
-        const authentication = ConfigManager.Get<U_config_server_authentication>("server.authentication")
-        await AuthProvider.SetCurrent(authentication.provider)
-        AuthProvider.Provider.Init()
-        Roles.Init()
-    }
+	@Logger.LogFunction()
+	static async InitAuthentication(): Promise<void> {
+		const authentication = ConfigManager.Get<U_config_server_authentication>("server.authentication")
+		await AuthProvider.SetCurrent(authentication.provider)
+		AuthProvider.Provider.Init()
+		Roles.Init()
+	}
 
-    @Logger.LogFunction()
-    static InitResponse(): void {
-        Logger.Debug(`Server Response Limit set to ${Convert.HumainSizeToBytes(ConfigManager.Get("server.response-limit"))}`)
-    }
+	@Logger.LogFunction()
+	static InitResponse(): void {
+		Logger.Debug(`Server Response Limit set to ${Convert.HumainSizeToBytes(ConfigManager.Get("server.response-limit"))}`)
+	}
 }

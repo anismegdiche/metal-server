@@ -13,20 +13,18 @@ import { z_U_config_sources } from "./U_config_sources"
 import { z_U_config_users } from "./U_config_users"
 import { z_U_config_version } from "./U_config_version"
 
-
 //
 export const z_U_config = z.strictObject({
-    version: z_U_config_version,
-    server: z_U_config_server.optional(),
-    roles: z_U_config_roles.optional(),
-    users: z_U_config_users.optional(),
-    sources: z_U_config_sources,
-    schemas: z_U_config_schemas.optional(),
-    "ai-engines": z_T_config_ai_engines.optional(),
-    plans: z_U_config_plans.optional(),
-    schedules: z_U_config_schedules.optional(),
-});
-
+	version: z_U_config_version,
+	server: z_U_config_server.optional(),
+	roles: z_U_config_roles.optional(),
+	users: z_U_config_users.optional(),
+	sources: z_U_config_sources,
+	schemas: z_U_config_schemas.optional(),
+	"ai-engines": z_T_config_ai_engines.optional(),
+	plans: z_U_config_plans.optional(),
+	schedules: z_U_config_schedules.optional(),
+})
 
 //
 export type U_config = z.infer<typeof z_U_config>

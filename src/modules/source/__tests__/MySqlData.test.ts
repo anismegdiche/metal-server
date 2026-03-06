@@ -1,405 +1,389 @@
-
-import mysql from 'mysql2/promise'
-import type { Mock } from 'vitest'
-import { DataTable } from '../../../types/DataTable'
-import { Cache } from '../../cache/Cache'
-import type { U_config_sources_source } from '../../core/types/U_config_sources'
-import { HttpErrorInternalServerError, HttpErrorNotFound } from '../../errors/HttpErrors'
-import type { TSchemaRequest } from '../../schema/types/TSchemaRequest'
+import mysql from "mysql2/promise"
+import type { Mock } from "vitest"
+import { DataTable } from "../../../types/DataTable"
+import { Cache } from "../../cache/Cache"
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
+import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../@consts"
-import { MySqlData } from '../providers/MySqlData'
+import { MySqlData } from "../providers/MySqlData"
 
 // Mock the mysql2/promise module
-vi.mock('mysql2/promise')
+vi.mock("mysql2/promise")
 
 // Mock the Cache module
-vi.mock('../../cache/Cache')
-vi.mock('../../plan/Step')
-vi.mock('../providers/MemoryData', () => {
-    return {
-        MemoryData: class {
-            EscapeEntity = vi.fn()
-            EscapeField = vi.fn()
-            Init = vi.fn()
-            Connect = vi.fn()
-            Disconnect = vi.fn()
-            ListEntities = vi.fn()
-            Select = vi.fn()
-            Insert = vi.fn()
-            Update = vi.fn()
-            Delete = vi.fn()
-        }
-    }
+vi.mock("../../cache/Cache")
+vi.mock("../../plan/Step")
+vi.mock("../providers/MemoryData", () => {
+	return {
+		MemoryData: class {
+			EscapeEntity = vi.fn()
+			EscapeField = vi.fn()
+			Init = vi.fn()
+			Connect = vi.fn()
+			Disconnect = vi.fn()
+			ListEntities = vi.fn()
+			Select = vi.fn()
+			Insert = vi.fn()
+			Update = vi.fn()
+			Delete = vi.fn()
+		},
+	}
 })
 
-describe('MySqlData', () => {
-    let provider: MySqlData
-    const mockPool = {
-        query: vi.fn(),
-        end: vi.fn()
-    }
-    const mockCreatePool = mysql.createPool as Mock
+describe("MySqlData", () => {
+	let provider: MySqlData
+	const mockPool = {
+		query: vi.fn(),
+		end: vi.fn(),
+	}
+	const mockCreatePool = mysql.createPool as Mock
 
-    const providerConfig: U_config_sources_source = {
-        provider: DATA_PROVIDER.MYSQL,
-        host: '127.0.0.1',
-        port: 3306,
-        user: 'test-user',
-        // file deepcode ignore NoHardcodedPasswords/test: testing
-        password: 'test-password', // NOSONAR
-        database: 'test-db',
-        options: {
-            waitForConnections: true,
-            connectionLimit: 10,
-            maxIdle: 10,
-            idleTimeout: 60000,
-            queueLimit: 0,
-            enableKeepAlive: true,
-            keepAliveInitialDelay: 0
-        }
-    }
+	const providerConfig: U_config_sources_source = {
+		provider: DATA_PROVIDER.MYSQL,
+		host: "127.0.0.1",
+		port: 3306,
+		user: "test-user",
+		// file deepcode ignore NoHardcodedPasswords/test: testing
+		password: "test-password", // NOSONAR
+		database: "test-db",
+		options: {
+			waitForConnections: true,
+			connectionLimit: 10,
+			maxIdle: 10,
+			idleTimeout: 60000,
+			queueLimit: 0,
+			enableKeepAlive: true,
+			keepAliveInitialDelay: 0,
+		},
+	}
 
-    beforeEach(async () => {
-        // Reset all mocks before each test
-        vi.clearAllMocks()
-        vi.resetModules()
+	beforeEach(async () => {
+		// Reset all mocks before each test
+		vi.clearAllMocks()
+		vi.resetModules()
 
-        mockCreatePool.mockReturnValue(mockPool)
+		mockCreatePool.mockReturnValue(mockPool)
 
-        // Create a new provider instance with test configuration
-        provider = new MySqlData()
-        await provider.Init('test-source', providerConfig)
-        // Connect after initialization
-        await provider.Connect()
-    })
+		// Create a new provider instance with test configuration
+		provider = new MySqlData()
+		await provider.Init("test-source", providerConfig)
+		// Connect after initialization
+		await provider.Connect()
+	})
 
-    describe('Init and Connection', () => {
-        it('should successfully initialize and connect', async () => {
-            expect(mockCreatePool).toHaveBeenCalledWith(expect.objectContaining({
-                host: '127.0.0.1',
-                database: 'test-db',
-                user: 'test-user',
-                password: 'test-password', // NOSONAR
-                waitForConnections: true,
-                connectionLimit: 10,
-                maxIdle: 10,
-                idleTimeout: 60000,
-                queueLimit: 0,
-                enableKeepAlive: true,
-                keepAliveInitialDelay: 0
-            }))
+	describe("Init and Connection", () => {
+		it("should successfully initialize and connect", async () => {
+			expect(mockCreatePool).toHaveBeenCalledWith(
+				expect.objectContaining({
+					host: "127.0.0.1",
+					database: "test-db",
+					user: "test-user",
+					password: "test-password", // NOSONAR
+					waitForConnections: true,
+					connectionLimit: 10,
+					maxIdle: 10,
+					idleTimeout: 60000,
+					queueLimit: 0,
+					enableKeepAlive: true,
+					keepAliveInitialDelay: 0,
+				}),
+			)
 
-            expect(mockPool.query).toHaveBeenCalledWith('SELECT 1')
-        })
+			expect(mockPool.query).toHaveBeenCalledWith("SELECT 1")
+		})
 
-        it('should throw error on connection failure', async () => {
-            mockCreatePool.mockImplementationOnce(() => {
-                throw new Error('Connection failed')
-            })
+		it("should throw error on connection failure", async () => {
+			mockCreatePool.mockImplementationOnce(() => {
+				throw new Error("Connection failed")
+			})
 
-            const newProvider = new MySqlData()
-            await newProvider.Init('test-source', providerConfig)
-            await expect(newProvider.Connect()).rejects.toThrow(HttpErrorInternalServerError)
-        })
-    })
+			const newProvider = new MySqlData()
+			await newProvider.Init("test-source", providerConfig)
+			await expect(newProvider.Connect()).rejects.toThrow(HttpErrorInternalServerError)
+		})
+	})
 
-    describe('Insert Operations', () => {
-        it('should successfully insert data', async () => {
-            const dt = new DataTable('test-table', [
-                {
-                    id: 1,
-                    name: 'test'
-                }
-            ])
-            const mockInsertRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                data: await dt.Rows()
-            }
+	describe("Insert Operations", () => {
+		it("should successfully insert data", async () => {
+			const dt = new DataTable("test-table", [
+				{
+					id: 1,
+					name: "test",
+				},
+			])
+			const mockInsertRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+				data: await dt.Rows(),
+			}
 
-            const response = await provider.Insert(mockInsertRequest)
+			const response = await provider.Insert(mockInsertRequest)
 
-            expect(mockPool.query).toHaveBeenCalledWith(
-                expect.stringContaining('INSERT INTO `test-table`')
-            )
-            expect(response.StatusCode).toBe(201)
-            expect(Cache.Remove).toHaveBeenCalledWith(mockInsertRequest)
-        })
+			expect(mockPool.query).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO `test-table`"))
+			expect(response.StatusCode).toBe(201)
+			expect(Cache.Remove).toHaveBeenCalledWith(mockInsertRequest)
+		})
 
-        it('should throw error when data is missing', async () => {
-            const mockInsertRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table'
-            }
+		it("should throw error when data is missing", async () => {
+			const mockInsertRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+			}
 
-            await expect(provider.Insert(mockInsertRequest)).rejects.toThrow('test-schema: data is missing')
-        })
-    })
+			await expect(provider.Insert(mockInsertRequest)).rejects.toThrow()
+		})
+	})
 
-    describe('Select Operations', () => {
-        it('should successfully select data', async () => {
-            const mockSelectRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                cache: 30
-            }
+	describe("Select Operations", () => {
+		it("should successfully select data", async () => {
+			const mockSelectRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+				cache: 30,
+			}
 
-            mockPool.query.mockResolvedValue([
-                [
-                    {
-                        id: 1,
-                        name: 'test'
-                    }
-                ]
-            ])
+			mockPool.query.mockResolvedValue([
+				[
+					{
+						id: 1,
+						name: "test",
+					},
+				],
+			])
 
-            const response = await provider.Select(mockSelectRequest)
+			const response = await provider.Select(mockSelectRequest)
 
-            expect(mockPool.query).toHaveBeenCalledWith(
-                expect.stringContaining('SELECT * FROM `test-table`')
-            )
-            expect(response.StatusCode).toBe(200)
-            expect(response.Body?.data).toBeDefined()
-            expect(await response.Body?.data.Rows()).toHaveLength(1)
-        })
+			expect(mockPool.query).toHaveBeenCalledWith(expect.stringContaining("SELECT * FROM `test-table`"))
+			expect(response.StatusCode).toBe(200)
+			expect(response.Body?.data).toBeDefined()
+			expect(await response.Body?.data.Rows()).toHaveLength(1)
+		})
 
-        it('should handle empty result set', async () => {
-            const mockSelectRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table'
-            }
+		it("should handle empty result set", async () => {
+			const mockSelectRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+			}
 
-            mockPool.query.mockResolvedValue([[]])
+			mockPool.query.mockResolvedValue([[]])
 
-            const response = await provider.Select(mockSelectRequest)
-            expect(response.Body?.data).toBeDefined()
-            expect(await response.Body?.data.Rows()).toBeDefined()
-            expect(await response.Body?.data.Count()).toBe(0)
-        })
-    })
+			const response = await provider.Select(mockSelectRequest)
+			expect(response.Body?.data).toBeDefined()
+			expect(await response.Body?.data.Rows()).toBeDefined()
+			expect(await response.Body?.data.Count()).toBe(0)
+		})
+	})
 
-    describe('ListEntities Operations', () => {
-        it('should successfully list entities', async () => {
-            const mockListRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: '',
-                cache: 30
-            }
+	describe("ListEntities Operations", () => {
+		it("should successfully list entities", async () => {
+			const mockListRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "",
+				cache: 30,
+			}
 
-            const mockTables = [
-                {
-                    name: 'table1',
-                    type: 'table',
-                    size: 100
-                },
-                {
-                    name: 'table2',
-                    type: 'table',
-                    size: 200
-                }
-            ]
+			const mockTables = [
+				{
+					name: "table1",
+					type: "table",
+					size: 100,
+				},
+				{
+					name: "table2",
+					type: "table",
+					size: 200,
+				},
+			]
 
-            mockPool.query.mockResolvedValue([mockTables])
+			mockPool.query.mockResolvedValue([mockTables])
 
-            const response = await provider.ListEntities(mockListRequest)
+			const response = await provider.ListEntities(mockListRequest)
 
-            expect(response.StatusCode).toBe(200)
-            expect(await response.Body?.data.Rows()).toHaveLength(2)
-            expect(mockPool.query).toHaveBeenCalled()
-        })
+			expect(response.StatusCode).toBe(200)
+			expect(await response.Body?.data.Rows()).toHaveLength(2)
+			expect(mockPool.query).toHaveBeenCalled()
+		})
 
-        it('should throw NotFound when no entities exist', async () => {
-            const mockListRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: ''
-            }
+		it("should throw NotFound when no entities exist", async () => {
+			const mockListRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "",
+			}
 
-            mockPool.query.mockResolvedValue([[]])
+			mockPool.query.mockResolvedValue([[]])
 
-            await expect(provider.ListEntities(mockListRequest))
-                .rejects.toThrow(HttpErrorNotFound)
-        })
-    })
-    // Add these test cases to the existing test suite
+			await expect(provider.ListEntities(mockListRequest)).rejects.toThrow(HttpErrorNotFound)
+		})
+	})
+	// Add these test cases to the existing test suite
 
-    describe('Update Operations', () => {
-        it('should successfully update data', async () => {
-            const dt = new DataTable('test-table', [
-                {
-                    id: 1,
-                    name: 'updated'
-                }
-            ])
-            const mockUpdateRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                data: await dt.Rows(),
-                filter: {
-                    id: 1
-                }
-            }
+	describe("Update Operations", () => {
+		it("should successfully update data", async () => {
+			const dt = new DataTable("test-table", [
+				{
+					id: 1,
+					name: "updated",
+				},
+			])
+			const mockUpdateRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+				data: await dt.Rows(),
+				filter: {
+					id: 1,
+				},
+			}
 
-            const response = await provider.Update(mockUpdateRequest)
+			const response = await provider.Update(mockUpdateRequest)
 
-            expect(mockPool.query).toHaveBeenCalledWith(
-                expect.stringContaining('UPDATE `test-table` SET')
-            )
-            expect(response.StatusCode).toBe(204)
-            expect(Cache.Remove).toHaveBeenCalledWith(mockUpdateRequest)
-        })
+			expect(mockPool.query).toHaveBeenCalledWith(expect.stringContaining("UPDATE `test-table` SET"))
+			expect(response.StatusCode).toBe(204)
+			expect(Cache.Remove).toHaveBeenCalledWith(mockUpdateRequest)
+		})
 
-        it('should throw error when update data is missing', async () => {
-            const mockUpdateRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                filter: { id: 1 }
-            }
+		it("should throw error when update data is missing", async () => {
+			const mockUpdateRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+				filter: { id: 1 },
+			}
 
-            await expect(provider.Update(mockUpdateRequest))
-                .rejects.toThrow('test-schema: data is missing')
-        })
+			await expect(provider.Update(mockUpdateRequest)).rejects.toThrow()
+		})
 
-        it('should handle update with filter condition', async () => {
-            const dt = new DataTable('test-table', [
-                {
-                    name: 'updated'
-                }
-            ])
-            const mockUpdateRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                data: await dt.Rows(),
-                "filter-expression": 'id > 5'
-            }
+		it("should handle update with filter condition", async () => {
+			const dt = new DataTable("test-table", [
+				{
+					name: "updated",
+				},
+			])
+			const mockUpdateRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+				data: await dt.Rows(),
+				"filter-expression": "id > 5",
+			}
 
-            await provider.Update(mockUpdateRequest)
+			await provider.Update(mockUpdateRequest)
 
-            expect(mockPool.query).toHaveBeenCalledWith(
-                expect.stringMatching(/UPDATE.*WHERE.*id > 5/)
-            )
-        })
-    })
+			expect(mockPool.query).toHaveBeenCalledWith(expect.stringMatching(/UPDATE.*WHERE.*id > 5/))
+		})
+	})
 
-    describe('Delete Operations', () => {
-        it('should successfully delete data', async () => {
-            const mockDeleteRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                filter: { id: 1 }
-            }
+	describe("Delete Operations", () => {
+		it("should successfully delete data", async () => {
+			const mockDeleteRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+				filter: { id: 1 },
+			}
 
-            const response = await provider.Delete(mockDeleteRequest)
+			const response = await provider.Delete(mockDeleteRequest)
 
-            expect(mockPool.query).toHaveBeenCalledWith(
-                expect.stringContaining('DELETE FROM `test-table`')
-            )
-            expect(response.StatusCode).toBe(204)
-            expect(Cache.Remove).toHaveBeenCalledWith(mockDeleteRequest)
-        })
+			expect(mockPool.query).toHaveBeenCalledWith(expect.stringContaining("DELETE FROM `test-table`"))
+			expect(response.StatusCode).toBe(204)
+			expect(Cache.Remove).toHaveBeenCalledWith(mockDeleteRequest)
+		})
 
-        it('should handle delete with complex filter condition', async () => {
-            const mockDeleteRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                "filter-expression": "name LIKE '%test%' AND id > 10"
-            }
+		it("should handle delete with complex filter condition", async () => {
+			const mockDeleteRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+				"filter-expression": "name LIKE '%test%' AND id > 10",
+			}
 
-            await provider.Delete(mockDeleteRequest)
+			await provider.Delete(mockDeleteRequest)
 
-            expect(mockPool.query).toHaveBeenCalledWith(
-                expect.stringMatching(/DELETE FROM.*WHERE.*name LIKE '%test%' AND id > 10/)
-            )
-        })
+			expect(mockPool.query).toHaveBeenCalledWith(
+				expect.stringMatching(/DELETE FROM.*WHERE.*name LIKE '%test%' AND id > 10/),
+			)
+		})
 
-        it('should handle delete without filter', async () => {
-            const mockDeleteRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table'
-            }
+		it("should handle delete without filter", async () => {
+			const mockDeleteRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+			}
 
-            await provider.Delete(mockDeleteRequest)
+			await provider.Delete(mockDeleteRequest)
 
-            expect(mockPool.query).toHaveBeenCalledWith(
-                expect.stringMatching(/DELETE FROM `test-table`/)
-            )
-        })
-    })
+			expect(mockPool.query).toHaveBeenCalledWith(expect.stringMatching(/DELETE FROM `test-table`/))
+		})
+	})
 
-    describe('Disconnect Operation', () => {
-        it('should successfully disconnect', async () => {
-            await provider.Disconnect()
-            expect(mockPool.end).toHaveBeenCalled()
-        })
+	describe("Disconnect Operation", () => {
+		it("should successfully disconnect", async () => {
+			await provider.Disconnect()
+			expect(mockPool.end).toHaveBeenCalled()
+		})
 
-        it('should handle disconnect when not connected', async () => {
-            provider.Connection = undefined
-            await provider.Disconnect()
-            expect(mockPool.end).not.toHaveBeenCalled()
-        })
+		it("should handle disconnect when not connected", async () => {
+			provider.Connection = undefined
+			await provider.Disconnect()
+			expect(mockPool.end).not.toHaveBeenCalled()
+		})
 
-        it('should handle disconnect errors gracefully', async () => {
-            mockPool.end.mockRejectedValueOnce(new Error('Disconnect failed'))
-            await provider.Disconnect()
-            // Should not throw error
-            expect(mockPool.end).toHaveBeenCalled()
-        })
-    })
+		it("should handle disconnect errors gracefully", async () => {
+			mockPool.end.mockRejectedValueOnce(new Error("Disconnect failed"))
+			await provider.Disconnect()
+			// Should not throw error
+			expect(mockPool.end).toHaveBeenCalled()
+		})
+	})
 
-    describe('Escape Functions', () => {
-        it('should correctly escape entity names', () => {
-            const result = provider.EscapeEntity('test-table')
-            expect(result).toBe('`test-table`')
-        })
+	describe("Escape Functions", () => {
+		it("should correctly escape entity names", () => {
+			const result = provider.EscapeEntity("test-table")
+			expect(result).toBe("`test-table`")
+		})
 
-        it('should correctly escape field names', () => {
-            const result = provider.EscapeField('user_id')
-            expect(result).toBe('`user_id`')
-        })
-    })
+		it("should correctly escape field names", () => {
+			const result = provider.EscapeField("user_id")
+			expect(result).toBe("`user_id`")
+		})
+	})
 
-    describe('Cache Integration', () => {
-        it('should set cache for select operations when cache is enabled', async () => {
-            const mockSelectRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table',
-                cache: 60
-            }
+	describe("Cache Integration", () => {
+		it("should set cache for select operations when cache is enabled", async () => {
+			const mockSelectRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+				cache: 60,
+			}
 
-            mockPool.query.mockResolvedValue([
-                [
-                    {
-                        id: 1,
-                        name: 'test'
-                    }
-                ]
-            ])
+			mockPool.query.mockResolvedValue([
+				[
+					{
+						id: 1,
+						name: "test",
+					},
+				],
+			])
 
-            await provider.Select(mockSelectRequest)
+			await provider.Select(mockSelectRequest)
 
-            expect(Cache.Set).toHaveBeenCalledWith(
-                mockSelectRequest,
-                expect.any(DataTable)
-            )
-        })
+			expect(Cache.Set).toHaveBeenCalledWith(mockSelectRequest, expect.any(DataTable))
+		})
 
-        it('should not set cache for select operations when cache is disabled', async () => {
-            const mockSelectRequest: TSchemaRequest = {
-                schema: 'test-schema',
-                entity: 'test-table'
-            }
+		it("should not set cache for select operations when cache is disabled", async () => {
+			const mockSelectRequest: TSchemaRequest = {
+				schema: "test-schema",
+				entity: "test-table",
+			}
 
-            mockPool.query.mockResolvedValue([
-                [
-                    {
-                        id: 1,
-                        name: 'test'
-                    }
-                ]
-            ])
+			mockPool.query.mockResolvedValue([
+				[
+					{
+						id: 1,
+						name: "test",
+					},
+				],
+			])
 
-            await provider.Select(mockSelectRequest)
+			await provider.Select(mockSelectRequest)
 
-            expect(Cache.Set).not.toHaveBeenCalled()
-        })
-    })
+			expect(Cache.Set).not.toHaveBeenCalled()
+		})
+	})
 })

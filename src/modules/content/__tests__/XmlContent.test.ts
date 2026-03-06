@@ -1,8 +1,7 @@
-
 import { Readable } from "node:stream"
-import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
+import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { XmlContent } from "../providers/XmlContent"
 
 const xmlUsers = `<?xml version="1.0" encoding="UTF-8"?>
@@ -53,192 +52,185 @@ const xmlUsersSoap = `<?xml version="1.0" encoding="UTF-8"?>
 </soap:Envelope>
 `
 
-describe('XmlContent', () => {
+describe("XmlContent", () => {
+	// InitContent successfully initializes XML content with valid entity and content stream
+	it("should initialize content with valid entity and stream", async () => {
+		const xmlContent = new XmlContent()
+		const entity = "users"
+		const content = Readable.from(xmlUsers)
+		const config = { "xml-path": "users.user" }
 
-    // InitContent successfully initializes XML content with valid entity and content stream
-    it('should initialize content with valid entity and stream', async () => {
-        const xmlContent = new XmlContent()
-        const entity = 'users'
-        const content = Readable.from(xmlUsers)
-        const config = { 'xml-path': 'users.user' }
+		xmlContent.SetConfig(config)
+		xmlContent.InitContent(entity, content)
 
-        xmlContent.SetConfig(config)
-        xmlContent.InitContent(entity, content)
+		expect(xmlContent.EntityName).toBe(entity)
+		expect(xmlContent.Params?.["xml-path"]).toBe("users.user")
+	})
 
-        expect(xmlContent.EntityName).toBe(entity)
-        expect(xmlContent.Params?.["xml-path"]).toBe('users.user')
-    })
+	// Get retrieves and parses XML data correctly with valid path
+	it("should retrieve and parse XML data with valid path", async () => {
+		const xmlContent = new XmlContent()
+		xmlContent.EntityName = "users"
+		xmlContent.Content.UploadFile("users", Readable.from(xmlUsers))
+		xmlContent.Params = { "xml-path": "users.user" }
 
-    // Get retrieves and parses XML data correctly with valid path
-    it('should retrieve and parse XML data with valid path', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.EntityName = 'users'
-        xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
-        xmlContent.Params = { "xml-path": 'users.user' }
+		const result = await xmlContent.Get({}, {})
 
-        const result = await xmlContent.Get({}, {})
+		expect(result).toBeInstanceOf(DataTable)
+		expect(await result.Rows()).toEqual([
+			{
+				id: 1,
+				firstname: "John",
+				lastname: "Doe",
+			},
+			{
+				id: 2,
+				firstname: "Jane",
+				lastname: "Smith",
+			},
+			{
+				id: 3,
+				firstname: "Emily",
+				lastname: "Johnson",
+			},
+		])
+	})
 
-        expect(result).toBeInstanceOf(DataTable)
-        expect(await result.Rows()).toEqual([
-            {
-                id: 1,
-                firstname: "John",
-                lastname: "Doe"
-            },
-            {
-                id: 2,
-                firstname: "Jane",
-                lastname: "Smith"
-            },
-            {
-                id: 3,
-                firstname: "Emily",
-                lastname: "Johnson"
-            }
-        ])
-    })
+	// Set updates XML content and saves changes successfully
+	it("should update XML content and save changes", async () => {
+		const xmlContent = new XmlContent()
+		const initialXml = "<root><data>old</data></root>"
+		xmlContent.Params = { "xml-path": "root.data" }
+		xmlContent.Content.UploadFile("test", Readable.from(initialXml))
+		xmlContent.EntityName = "test"
 
-    // Set updates XML content and saves changes successfully
-    it('should update XML content and save changes', async () => {
-        const xmlContent = new XmlContent()
-        const initialXml = '<root><data>old</data></root>'
-        xmlContent.Params = { "xml-path": 'root.data' }
-        xmlContent.Content.UploadFile('test', Readable.from(initialXml))
-        xmlContent.EntityName = 'test'
+		const newData = new DataTable("test", [{ data: "new" }])
+		const result = await xmlContent.Set(newData, {})
 
-        const newData = new DataTable('test', [{ data: 'new' }])
-        const result = await xmlContent.Set(newData, {})
+		const updatedContent = await ReadableUtils.ToString(result)
+		expect(updatedContent).toContain("<data>new</data>")
+	})
 
-        const updatedContent = await ReadableUtils.ToString(result)
-        expect(updatedContent).toContain('<data>new</data>')
-    })
+	// SQL queries execute correctly on retrieved XML data
+	it("should execute SQL queries on XML data", async () => {
+		const xmlContent = new XmlContent()
+		xmlContent.Params = { "xml-path": "users.user" }
+		xmlContent.Content.UploadFile("users", Readable.from(xmlUsers))
+		xmlContent.EntityName = "users"
 
-    // SQL queries execute correctly on retrieved XML data
-    it('should execute SQL queries on XML data', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.Params = { "xml-path": 'users.user' }
-        xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
-        xmlContent.EntityName = 'users'
+		const result = await xmlContent.Get(
+			{
+				filter: "id = 1",
+			},
+			{},
+		)
 
-        const result = await xmlContent.Get({
-            filter: 'id = 1'
-        }, {})
+		const rows = await result.Rows()
 
-        const rows = await result.Rows()
+		expect(rows).toHaveLength(1)
+		expect(rows).toEqual([
+			{
+				id: 1,
+				firstname: "John",
+				lastname: "Doe",
+			},
+		])
+	})
 
-        expect(rows).toHaveLength(1)
-        expect(rows).toEqual([
-            {
-                id: 1,
-                firstname: "John",
-                lastname: "Doe"
-            }
-        ])
-    })
+	// Handle undefined or missing Params configuration
+	it("should throw error when Params is undefined", async () => {
+		const xmlContent = new XmlContent()
+		xmlContent.Content.UploadFile("test", Readable.from("<root/>"))
+		xmlContent.EntityName = "test"
 
-    // Handle undefined or missing Params configuration
-    it('should throw error when Params is undefined', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.Content.UploadFile('test', Readable.from('<root/>'))
-        xmlContent.EntityName = 'test'
+		await expect(xmlContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
 
-        await expect(xmlContent.Get({}, {}))
-            .rejects
-            .toThrow(HttpErrorInternalServerError)
+		const dt = new DataTable("test")
+		await expect(xmlContent.Set(dt, {})).rejects.toThrow(HttpErrorInternalServerError)
+	})
 
-        const dt = new DataTable('test')
-        await expect(xmlContent.Set(dt, {}))
-            .rejects
-            .toThrow(HttpErrorInternalServerError)
-    })
+	it("should retrieve and parse SOAP XML data with valid path", async () => {
+		const xmlContent = new XmlContent()
+		xmlContent.EntityName = "users"
+		xmlContent.Content.UploadFile("users", Readable.from(xmlUsersSoap))
+		xmlContent.Params = { "xml-path": "soap:Envelope.soap:Body.GetUsersResponse.GetUsersResult.users.user" }
 
-    it('should retrieve and parse SOAP XML data with valid path', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.EntityName = 'users'
-        xmlContent.Content.UploadFile('users', Readable.from(xmlUsersSoap))
-        xmlContent.Params = { "xml-path": 'soap:Envelope.soap:Body.GetUsersResponse.GetUsersResult.users.user' }
+		const result = await xmlContent.Get({}, {})
 
-        const result = await xmlContent.Get({}, {})
+		expect(result).toBeInstanceOf(DataTable)
+		expect(await result.Rows()).toEqual([
+			{
+				id: 1,
+				firstname: "John",
+				lastname: "Doe",
+			},
+			{
+				id: 2,
+				firstname: "Jane",
+				lastname: "Smith",
+			},
+			{
+				id: 3,
+				firstname: "Emily",
+				lastname: "Johnson",
+			},
+		])
+	})
 
-        expect(result).toBeInstanceOf(DataTable)
-        expect(await result.Rows()).toEqual([
-            {
-                id: 1,
-                firstname: "John",
-                lastname: "Doe"
-            },
-            {
-                id: 2,
-                firstname: "Jane",
-                lastname: "Smith"
-            },
-            {
-                id: 3,
-                firstname: "Emily",
-                lastname: "Johnson"
-            }
-        ])
-    })
+	it("should execute SQL queries on SOAP XML data", async () => {
+		const xmlContent = new XmlContent()
+		xmlContent.Params = { "xml-path": "soap:Envelope.soap:Body.GetUsersResponse.GetUsersResult.users.user" }
+		xmlContent.Content.UploadFile("users", Readable.from(xmlUsersSoap))
+		xmlContent.EntityName = "users"
 
-    it('should execute SQL queries on SOAP XML data', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.Params = { "xml-path": 'soap:Envelope.soap:Body.GetUsersResponse.GetUsersResult.users.user' }
-        xmlContent.Content.UploadFile('users', Readable.from(xmlUsersSoap))
-        xmlContent.EntityName = 'users'
+		const result = await xmlContent.Get(
+			{
+				filter: "id = 1",
+			},
+			{},
+		)
 
-        const result = await xmlContent.Get({
-            filter: 'id = 1'
-        }, {})
+		expect(await result.Rows()).toHaveLength(1)
+		expect((await result.Rows())[0]).toEqual({
+			id: 1,
+			firstname: "John",
+			lastname: "Doe",
+		})
+	})
 
-        expect(await result.Rows()).toHaveLength(1)
-        expect((await result.Rows())[0]).toEqual({
-            id: 1,
-            firstname: "John",
-            lastname: "Doe"
-        })
-    })
+	it("should throw error when XML content is empty", async () => {
+		const xmlContent = new XmlContent()
+		xmlContent.EntityName = "users"
+		xmlContent.Content.UploadFile("users", Readable.from(""))
+		xmlContent.Params = { "xml-path": "users.user" }
 
-    it('should throw error when XML content is empty', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.EntityName = 'users'
-        xmlContent.Content.UploadFile('users', Readable.from(''))
-        xmlContent.Params = { "xml-path": 'users.user' }
+		await expect(xmlContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
+	})
 
-        await expect(xmlContent.Get({}, {}))
-            .rejects
-            .toThrow(HttpErrorInternalServerError)
-    })
+	it("should throw error when XML content is malformed", async () => {
+		const xmlContent = new XmlContent()
+		xmlContent.EntityName = "users"
+		xmlContent.Content.UploadFile("users", Readable.from("<root> invalid xml </root>"))
+		xmlContent.Params = { "xml-path": "users.user" }
 
-    it('should throw error when XML content is malformed', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.EntityName = 'users'
-        xmlContent.Content.UploadFile('users', Readable.from('<root> invalid xml </root>'))
-        xmlContent.Params = { "xml-path": 'users.user' }
+		await expect(xmlContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
+	})
 
-        await expect(xmlContent.Get({}, {}))
-            .rejects
-            .toThrow(HttpErrorInternalServerError)
-    })
+	it("should handle XML content with missing path", async () => {
+		const xmlContent = new XmlContent()
+		xmlContent.EntityName = "users"
+		xmlContent.Content.UploadFile("users", Readable.from(xmlUsers))
+		xmlContent.Params = { "xml-path": "missing.path" }
 
-    it('should handle XML content with missing path', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.EntityName = 'users'
-        xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
-        xmlContent.Params = { "xml-path": 'missing.path' }
+		await expect(xmlContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
+	})
 
-        await expect(xmlContent.Get({}, {}))
-            .rejects
-            .toThrow(HttpErrorInternalServerError)
-    })
+	it("should handle XML content with invalid path", async () => {
+		const xmlContent = new XmlContent()
+		xmlContent.EntityName = "users"
+		xmlContent.Content.UploadFile("users", Readable.from(xmlUsers))
+		xmlContent.Params = { "xml-path": "users invalid.path" }
 
-    it('should handle XML content with invalid path', async () => {
-        const xmlContent = new XmlContent()
-        xmlContent.EntityName = 'users'
-        xmlContent.Content.UploadFile('users', Readable.from(xmlUsers))
-        xmlContent.Params = { "xml-path": 'users invalid.path' }
-
-        await expect(xmlContent.Get({}, {}))
-            .rejects
-            .toThrow(HttpErrorInternalServerError)
-    })
+		await expect(xmlContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
+	})
 })

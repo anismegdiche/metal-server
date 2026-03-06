@@ -1,12 +1,11 @@
-
 //
 //
 //
-import * as Fs from 'node:fs'
+import * as Fs from "node:fs"
 import type { TJson } from "../types/TJson"
 
-const packageRaw = Fs.readFileSync('./package.json', 'utf8')
+const packageRaw = Fs.readFileSync("./package.json", "utf8")
 
 export class Package {
-    static readonly Json: TJson = JSON.parse(packageRaw)
+	static readonly Json: TJson = JSON.parse(packageRaw)
 }

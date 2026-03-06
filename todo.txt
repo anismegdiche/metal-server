@@ -1,11 +1,12 @@
-Plan > hot load after plan reload #fix {f} {start:2026-03-03T18:03:19}
-plan > activate disk for storage #feature {f}
+plan > hot load after plan reload #fix {f} {start:2026-03-06T16:44:30} {cm:2026-03-06} {duration:01h27m} {h}
+plan > activate disk for storage #feature
 plan > history of transformation with which step did the processing, also flag keep history {f}
-Plan > set-var {f} {start:2026-03-03T19:07:03} {cm:2026-03-03} {duration:01h18m}
-Content > text regex
-Plan > Data detection: use NLP/BrainJS for datatype detection based on RegExp string conversion
-Plan > merge duplicates: merge on, take {f}
-Plan > for each {f}
-Auth provider > Azure AD
-Plan > Data Transpose  (pivot H/V) {f}
+step > set-var {f} {start:2026-03-03T19:07:03} {cm:2026-03-03} {duration:01h18m} {h}
+content > text regex
+plan > Data detection: use NLP/BrainJS for datatype detection based on RegExp string conversion
+step > merge duplicates: merge on, take {f}
+step > for each {f}
+auth provider > Azure AD
+plan > Data Transpose  (pivot H/V) {f}
 refactor: readstream #refactor
+step > remove-empty-fields {f}

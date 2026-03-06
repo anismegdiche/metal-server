@@ -1,104 +1,104 @@
 import { Readable } from "node:stream"
-import { DataTable } from '../../../types/DataTable'
-import { JsonContent } from '../providers/JsonContent'
+import { DataTable } from "../../../types/DataTable"
 import type { U__source_options_content } from "../@types"
+import { JsonContent } from "../providers/JsonContent"
 
-describe('JsonContent', () => {
-    const contentConfig: U__source_options_content = {
-        "json-path": 'data'
-    }
+describe("JsonContent", () => {
+	const contentConfig: U__source_options_content = {
+		"json-path": "data",
+	}
 
-    const jsonContent = new JsonContent()
+	const jsonContent = new JsonContent()
 
-    beforeEach(() => {
-        jsonContent.SetConfig(contentConfig)
-    })
+	beforeEach(() => {
+		jsonContent.SetConfig(contentConfig)
+	})
 
-    describe('Init', () => {
-        it('should initialize the content and config correctly with empty options', async () => {
-            const name = 'test'
-            const content = Readable.from('{"key": "value"}')
+	describe("Init", () => {
+		it("should initialize the content and config correctly with empty options", async () => {
+			const name = "test"
+			const content = Readable.from('{"key": "value"}')
 
-            const jsonContentEmptyOptions = new JsonContent()
-            jsonContentEmptyOptions.SetConfig({})
+			const jsonContentEmptyOptions = new JsonContent()
+			jsonContentEmptyOptions.SetConfig({})
 
-            jsonContentEmptyOptions.InitContent(name, content)
-            expect(jsonContentEmptyOptions.Params).toEqual({ path: undefined })
-        })
+			jsonContentEmptyOptions.InitContent(name, content)
+			expect(jsonContentEmptyOptions.Params).toEqual({ path: undefined })
+		})
 
-        it('should initialize the content and config correctly', async () => {
-            const name = 'test'
-            const content = Readable.from('{"key": "value"}')
+		it("should initialize the content and config correctly", async () => {
+			const name = "test"
+			const content = Readable.from('{"key": "value"}')
 
-            jsonContent.InitContent(name, content)
+			jsonContent.InitContent(name, content)
 
-            expect(jsonContent.EntityName).toBe(name)
-            expect(jsonContent.Content.ReadFile(name)).toBe(content)
-        })
-    })
+			expect(jsonContent.EntityName).toBe(name)
+			expect(jsonContent.Content.ReadFile(name)).toBe(content)
+		})
+	})
 
-    describe('Get', () => {
-        beforeEach(async () => {
-            const name = 'test'
-            const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
+	describe("Get", () => {
+		beforeEach(async () => {
+			const name = "test"
+			const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
 
-            jsonContent.InitContent(name, content)
-        })
+			jsonContent.InitContent(name, content)
+		})
 
-        it('should return the data as a DataTable', async () => {
-            const dataTable = await jsonContent.Get({}, {})
+		it("should return the data as a DataTable", async () => {
+			const dataTable = await jsonContent.Get({}, {})
 
-            expect(dataTable).toBeInstanceOf(DataTable)
-            expect(dataTable.Name).toBe(jsonContent.EntityName)
-            expect(await dataTable.Rows()).toEqual([
-                {
-                    id: 1,
-                    name: 'John'
-                },
-                {
-                    id: 2,
-                    name: 'Jane'
-                }
-            ])
-        })
+			expect(dataTable).toBeInstanceOf(DataTable)
+			expect(dataTable.Name).toBe(jsonContent.EntityName)
+			expect(await dataTable.Rows()).toEqual([
+				{
+					id: 1,
+					name: "John",
+				},
+				{
+					id: 2,
+					name: "Jane",
+				},
+			])
+		})
 
-        it('should return an empty DataTable if arrayPath is not found', async () => {
-            jsonContent.Params!.path = 'nonexistent.path'
+		it("should return an empty DataTable if arrayPath is not found", async () => {
+			jsonContent.Params!.path = "nonexistent.path"
 
-            const dataTable = await jsonContent.Get({}, {})
+			const dataTable = await jsonContent.Get({}, {})
 
-            expect(dataTable).toBeInstanceOf(DataTable)
-            expect(dataTable.Name).toBe(jsonContent.EntityName)
-            expect(await dataTable.Rows()).toEqual([])
-        })
-    })
+			expect(dataTable).toBeInstanceOf(DataTable)
+			expect(dataTable.Name).toBe(jsonContent.EntityName)
+			expect(await dataTable.Rows()).toEqual([])
+		})
+	})
 
-    describe('Set', () => {
-        const name = 'test'
-        beforeEach(async () => {
-            const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
-            jsonContent.InitContent(name, content)
-        })
+	describe("Set", () => {
+		const name = "test"
+		beforeEach(async () => {
+			const content = Readable.from('{"data": [{"id": 1, "name": "John"}, {"id": 2, "name": "Jane"}]}')
+			jsonContent.InitContent(name, content)
+		})
 
-        it('should update the content and return the updated raw content', async () => {
-            const newData = new DataTable(name, [
-                {
-                    id: 3,
-                    name: 'Alice'
-                },
-                {
-                    id: 4,
-                    name: 'Bob'
-                }
-            ])
+		it("should update the content and return the updated raw content", async () => {
+			const newData = new DataTable(name, [
+				{
+					id: 3,
+					name: "Alice",
+				},
+				{
+					id: 4,
+					name: "Bob",
+				},
+			])
 
-            await newData.RowsSet()
+			await newData.RowsSet()
 
-            await jsonContent.Set(newData, {})
+			await jsonContent.Set(newData, {})
 
-            const content = await jsonContent.Get({}, {})
+			const content = await jsonContent.Get({}, {})
 
-            expect(await content.Rows()).toEqual(await newData.Rows())
-        })
-    })
+			expect(await content.Rows()).toEqual(await newData.Rows())
+		})
+	})
 })

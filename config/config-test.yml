@@ -65,19 +65,23 @@ sources:
     options:
       storage-mode: files
       storage-type: fs
-      content-type: json
-      json-path: rows
+      content:
+        "*.json":
+          content-type: json
+          json-path: rows
   fs-csv-data:
     provider: storage
     database: ./data/
     options:
       storage-mode: files
       storage-type: fs
-      content-type: csv
-      csv-delimiter: ","
-      csv-newline: "\n"
-      csv-header: true
-      csv-quote: '"'
+      content:
+        "*.csv":
+          content-type: csv
+          csv-delimiter: ","
+          csv-newline: "\n"
+          csv-header: true
+          csv-quote: '"'
   azure-json-data:
     provider: storage
     host: UseDevelopmentStorage=true
@@ -85,7 +89,9 @@ sources:
     options:
       storage-mode: files
       storage-type: azureBlob
-      content-type: json
+      content:
+        "*.json":
+          content-type: json
 
 schemas:
   json:

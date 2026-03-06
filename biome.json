@@ -1,0 +1,66 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.4.5/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"includes": ["**/*.{ts,tsx,js,jsx,json}"]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 1,
+		"lineWidth": 120
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"complexity": {
+				"noExcessiveCognitiveComplexity": "warn",
+				"noExtraBooleanCast": "error"
+			},
+			"correctness": {
+				"noUnusedVariables": "warn",
+				"noUndeclaredVariables": "error",
+				"noUnreachable": "error"
+			},
+			"style": {
+				"useImportType": "warn",
+				"useConsistentArrayType": "error",
+				"useLiteralEnumMembers": "off"
+			},
+			"suspicious": {
+				"noExplicitAny": "warn",
+				"noArrayIndexKey": "warn",
+				"noConfusingVoidType": "off"
+			},
+			"nursery": {
+				"useSortedClasses": "error"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			"semicolons": "asNeeded",
+			"bracketSpacing": true
+		},
+		"globals": ["vi", "describe", "it", "expect", "beforeEach", "afterEach", "beforeAll", "afterAll"]
+	},
+	"json": {
+		"formatter": {
+			"indentStyle": "tab"
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	}
+}

@@ -1,8 +1,7 @@
 //
 //
 //
-import { MemoryData } from "../../source/providers/MemoryData";
-
+import { MemoryData } from "../../source/providers/MemoryData"
 
 //
-export const DATAPROVIDER = new MemoryData();
+export const DATAPROVIDER = new MemoryData()

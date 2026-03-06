@@ -27,7 +27,7 @@ sources:
     provider: folder
     options:
       storage-type: fs
-      fs-folder: ./data/
+      folder: ./data/
   src-myplan:
     provider: plan
     database: myplan

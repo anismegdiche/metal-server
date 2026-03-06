@@ -1,528 +1,515 @@
 /* eslint-disable security/detect-non-literal-regexp */
-import axios from 'axios';
-import { Text } from '../Text';
-import type { TAiArguments } from '../../@types';
-import { TEXT_LANGUAGE_DETECTION_ISO } from '../../consts/TEXT';
+import axios from "axios"
+import type { TAiArguments } from "../../@types"
+import { TEXT_LANGUAGE_DETECTION_ISO } from "../../consts/TEXT"
+import { Text } from "../Text"
 
-const spyAxios = vi.spyOn(axios, 'post');
+const spyAxios = vi.spyOn(axios, "post")
 
-const text = new Text();
+const text = new Text()
 
-describe('Text', () => {
-    beforeEach(() => {
-        spyAxios.mockClear();
-    });
+describe("Text", () => {
+	beforeEach(() => {
+		spyAxios.mockClear()
+	})
 
-    // Text tasks
-    describe('EmotionDetection', () => {
+	// Text tasks
+	describe("EmotionDetection", () => {
+		it("should detect emotion", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							[
+								{
+									label: "joy",
+									score: "0.9658117294311523",
+								},
+								{
+									label: "surprise",
+									score: "0.02311941795051098",
+								},
+								{
+									label: "neutral",
+									score: "0.006501524709165096",
+								},
+								{
+									label: "anger",
+									score: "0.0017172531224787235",
+								},
+								{
+									label: "sadness",
+									score: "0.0012625681702047586",
+								},
+							],
+						],
+					},
+				})
+			})
 
-        it('should detect emotion', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            [
-                                {
-                                    "label": "joy",
-                                    "score": "0.9658117294311523"
-                                },
-                                {
-                                    "label": "surprise",
-                                    "score": "0.02311941795051098"
-                                },
-                                {
-                                    "label": "neutral",
-                                    "score": "0.006501524709165096"
-                                },
-                                {
-                                    "label": "anger",
-                                    "score": "0.0017172531224787235"
-                                },
-                                {
-                                    "label": "sadness",
-                                    "score": "0.0012625681702047586"
-                                }
-                            ]
-                        ]
-                    }
-                });
-            });
+			const result = await text.EmotionDetection(<TAiArguments>{
+				data: "I'm not confident with this project!",
+				params: {
+					top: 10,
+				},
+			})
 
-            const result = await text.EmotionDetection(<TAiArguments>{
-                data: "I'm not confident with this project!",
-                params: {
-                    top: 10
-                }
-            });
+			expect(result).toEqual({
+				emotion: expect.objectContaining({
+					joy: expect.any(Number),
+					surprise: expect.any(Number),
+					neutral: expect.any(Number),
+					anger: expect.any(Number),
+					sadness: expect.any(Number),
+					fear: expect.any(Number),
+					disgust: expect.any(Number),
+				}),
+			})
+		})
+	})
 
-            expect(result).toEqual({
-                emotion: expect.objectContaining({
-                    joy: expect.any(Number),
-                    surprise: expect.any(Number),
-                    neutral: expect.any(Number),
-                    anger: expect.any(Number),
-                    sadness: expect.any(Number),
-                    fear: expect.any(Number),
-                    disgust: expect.any(Number),
-                })
-            });
-        });
-    });
+	describe("FillMask", () => {
+		it("should fill in masked text", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							{
+								score: 0.9,
+								token: 3000,
+								token_str: "paris",
+								sequence: "the capital of france is paris.",
+							},
+						],
+					},
+				})
+			})
 
-    describe('FillMask', () => {
-        it('should fill in masked text', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            {
-                                score: 0.9,
-                                token: 3000,
-                                token_str: 'paris',
-                                sequence: 'the capital of france is paris.'
-                            }
-                        ]
-                    }
-                });
-            });
+			const result = await text.FillMask(<TAiArguments>{
+				data: "The capital of France is [MASK].",
+			})
 
-            const result = await text.FillMask(<TAiArguments>{
-                data: 'The capital of France is [MASK].'
-            });
+			expect(result).toEqual({
+				fillmask: expect.arrayContaining([
+					expect.objectContaining({
+						score: expect.any(Number),
+						word: expect.any(String),
+						text: expect.any(String),
+					}),
+				]),
+			})
+		})
+	})
 
-            expect(result).toEqual({
-                fillmask: expect.arrayContaining([
-                    expect.objectContaining({
-                        score: expect.any(Number),
-                        word: expect.any(String),
-                        text: expect.any(String)
-                    })
-                ])
-            });
-        });
-    });
+	describe("KeywordExtraction", () => {
+		it("should extract keywords", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [["cedric", "englishman", "mamma", "blue eyes", "long mustache"]],
+					},
+				})
+			})
 
-    describe('KeywordExtraction', () => {
+			const result = await text.KeywordExtraction(<TAiArguments>{
+				data:
+					"Title: The Importance of Testing\r\rTesting plays a critical role in many aspects of life, from education and technology to medicine and product development. At its core, testing is a method of evaluating performance, reliability, or understanding. It helps ensure that systems, individuals, or products meet specific standards and function as intended.\r\rIn education, testing allows teachers to assess students’ knowledge and identify areas that need improvement. It provides feedback for both learners and educators, helping to guide instruction and learning strategies.\r\rIn technology, testing is essential for building reliable software and hardware. Before a product is released, it undergoes various stages of testing—such as unit testing, integration testing, and user acceptance testing—to catch bugs and improve performance.\r\rIn the medical field, testing is crucial for diagnosing diseases, monitoring patient health, and determining the effectiveness of treatments. Accurate testing can save lives and prevent the spread of illnesses.\r\rOverall, testing is not just about finding faults—it's about improvement, validation, and progress. Whether in classrooms, laboratories, or development teams, testing helps us move forward with confidence.",
+			})
 
-        it('should extract keywords', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            [
-                                "cedric",
-                                "englishman",
-                                "mamma",
-                                "blue eyes",
-                                "long mustache"
-                            ]
-                        ]
-                    }
-                });
-            });
+			expect(result).toEqual({
+				keywords: expect.arrayContaining([expect.any(String)]),
+			})
+		})
+	})
 
-            const result = await text.KeywordExtraction(<TAiArguments>{
-                data: "Title: The Importance of Testing\r\rTesting plays a critical role in many aspects of life, from education and technology to medicine and product development. At its core, testing is a method of evaluating performance, reliability, or understanding. It helps ensure that systems, individuals, or products meet specific standards and function as intended.\r\rIn education, testing allows teachers to assess students’ knowledge and identify areas that need improvement. It provides feedback for both learners and educators, helping to guide instruction and learning strategies.\r\rIn technology, testing is essential for building reliable software and hardware. Before a product is released, it undergoes various stages of testing—such as unit testing, integration testing, and user acceptance testing—to catch bugs and improve performance.\r\rIn the medical field, testing is crucial for diagnosing diseases, monitoring patient health, and determining the effectiveness of treatments. Accurate testing can save lives and prevent the spread of illnesses.\r\rOverall, testing is not just about finding faults—it's about improvement, validation, and progress. Whether in classrooms, laboratories, or development teams, testing helps us move forward with confidence.",
-            });
+	describe("LanguageDetection", () => {
+		it("should detect language", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							{
+								label: "de",
+								score: "0.9953383207321167",
+							},
+						],
+					},
+				})
+			})
 
-            expect(result).toEqual({
-                keywords: expect.arrayContaining([
-                    expect.any(String)
-                ])
-            });
-        });
-    });
+			const result = await text.LanguageDetection(<TAiArguments>{
+				data: "Hallo, wie geht es dir?",
+			})
 
-    describe('LanguageDetection', () => {
+			expect(result).toEqual({
+				language: {
+					code: expect.stringMatching(new RegExp(`^(${Object.values(TEXT_LANGUAGE_DETECTION_ISO).join("|")})$`)),
+					score: expect.any(Number),
+				},
+			})
+		})
+	})
 
-        it('should detect language', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            {
-                                "label": "de",
-                                "score": "0.9953383207321167"
-                            }
-                        ]
-                    }
-                });
-            });
+	describe("ParaphraseDetection", () => {
+		it("should detect paraphrase", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: {
+							source_sentence: "The quick brown fox jumps over the lazy dog",
+							target_sentence: "A fast brown fox leaps over a sleepy dog",
+							similarity_score: 0.8476852774620056,
+						},
+					},
+				})
+			})
 
-            const result = await text.LanguageDetection(<TAiArguments>{
-                data: "Hallo, wie geht es dir?"
-            });
+			const result = await text.ParaphraseDetection(<TAiArguments>{
+				data: "The quick brown fox jumps over the lazy dog",
+				params: {
+					target: "A fast brown fox leaps over a sleepy dog",
+				},
+			})
 
-            expect(result).toEqual({
-                language: {
-                    code: expect.stringMatching(
-                        new RegExp(`^(${Object.values(TEXT_LANGUAGE_DETECTION_ISO).join("|")})$`)
-                    ),
-                    score: expect.any(Number)
-                }
-            });
-        });
-    });
+			expect(result).toEqual(
+				expect.objectContaining({
+					paraphrase: {
+						source: expect.any(String),
+						target: expect.any(String),
+						score: expect.any(Number),
+					},
+				}),
+			)
+		})
+	})
 
-    describe('ParaphraseDetection', () => {
+	describe("QuestionAnswering", () => {
+		it("should answer questions", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: {
+							answer: "Paris",
+							score: 0.998,
+							start: 0,
+							end: 5,
+						},
+					},
+				})
+			})
 
-        it('should detect paraphrase', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: {
-                            "source_sentence": "The quick brown fox jumps over the lazy dog",
-                            "target_sentence": "A fast brown fox leaps over a sleepy dog",
-                            "similarity_score": 0.8476852774620056
-                        }
-                    }
-                });
-            });
+			const result = await text.QuestionAnswering(<TAiArguments>{
+				data: "Paris is the capital of France. It is known for its beautiful architecture and rich history.",
+				params: {
+					question: "What is the capital of France?",
+				},
+			})
 
-            const result = await text.ParaphraseDetection(<TAiArguments>{
-                data: "The quick brown fox jumps over the lazy dog",
-                params: {
-                    target: "A fast brown fox leaps over a sleepy dog"
-                }
-            });
+			expect(result).toEqual(
+				expect.objectContaining({
+					answer: {
+						text: expect.any(String),
+						score: expect.any(Number),
+						start: expect.any(Number),
+						end: expect.any(Number),
+					},
+				}),
+			)
+		})
+	})
 
-            expect(result).toEqual(expect.objectContaining({
-                paraphrase: {
-                    source: expect.any(String),
-                    target: expect.any(String),
-                    score: expect.any(Number)
-                }
-            }));
-        });
-    });
+	describe("SentenceSimilarity", () => {
+		it("should compute sentence similarity", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							{
+								sentence1: "That is a happy person",
+								sentence2: "That is a very happy person",
+								similarity: "0.942915141582489",
+								rank: "1",
+							},
+							{
+								sentence1: "That is a happy person",
+								sentence2: "That is a happy dog",
+								similarity: "0.6945775151252747",
+								rank: "2",
+							},
+							{
+								sentence1: "That is a happy person",
+								sentence2: "Today is a sunny day",
+								similarity: "0.2568761706352234",
+								rank: "3",
+							},
+						],
+					},
+				})
+			})
 
-    describe('QuestionAnswering', () => {
-        it('should answer questions', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: {
-                            answer: 'Paris',
-                            score: 0.998,
-                            start: 0,
-                            end: 5
-                        }
-                    }
-                });
-            });
+			const result = await text.SentenceSimilarity(<TAiArguments>{
+				data: "That is a happy person",
+				params: {
+					sentences: ["That is a happy dog", "That is a very happy person", "Today is a sunny day"],
+				},
+			})
 
-            const result = await text.QuestionAnswering(<TAiArguments>{
-                data: 'Paris is the capital of France. It is known for its beautiful architecture and rich history.',
-                params: {
-                    question: 'What is the capital of France?'
-                }
-            });
+			expect(result).toEqual({
+				similarity: expect.arrayContaining([
+					expect.objectContaining({
+						sentence: expect.any(String),
+						score: expect.any(Number),
+						rank: expect.any(Number),
+					}),
+				]),
+			})
+		})
+	})
 
-            expect(result).toEqual(expect.objectContaining({
-                answer: {
-                    text: expect.any(String),
-                    score: expect.any(Number),
-                    start: expect.any(Number),
-                    end: expect.any(Number)
-                }
-            }));
-        });
-    });
+	describe("SentimentAnalysis", () => {
+		it("should perform sentiment analysis", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							{
+								label: "Positive",
+								score: 0.6533908843994141,
+							},
+						],
+					},
+				})
+			})
 
-    describe('SentenceSimilarity', () => {
+			const result = await text.SentimentAnalysis(<TAiArguments>{
+				data: "I love using this service!",
+			})
 
-        it('should compute sentence similarity', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            {
-                                "sentence1": "That is a happy person",
-                                "sentence2": "That is a very happy person",
-                                "similarity": "0.942915141582489",
-                                "rank": "1"
-                            },
-                            {
-                                "sentence1": "That is a happy person",
-                                "sentence2": "That is a happy dog",
-                                "similarity": "0.6945775151252747",
-                                "rank": "2"
-                            },
-                            {
-                                "sentence1": "That is a happy person",
-                                "sentence2": "Today is a sunny day",
-                                "similarity": "0.2568761706352234",
-                                "rank": "3"
-                            }
-                        ]
-                    }
-                });
-            });
+			expect(result).toEqual({
+				sentiment: {
+					label: expect.stringMatching(
+						new RegExp(`^(${["very negative", "negative", "neutral", "positive", "very positive"].join("|")})$`),
+					),
+					score: expect.any(Number),
+				},
+			})
+		})
+	})
 
-            const result = await text.SentenceSimilarity(<TAiArguments>{
-                data: "That is a happy person",
-                params: {
-                    sentences: [
-                        "That is a happy dog",
-                        "That is a very happy person",
-                        "Today is a sunny day"
-                    ]
-                }
-            });
+	describe("Summarization", () => {
+		it("should summarize text", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							{
+								summary_text:
+									"AI is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans.",
+							},
+						],
+					},
+				})
+			})
 
-            expect(result).toEqual({
-                similarity: expect.arrayContaining([
-                    expect.objectContaining({
-                        sentence: expect.any(String),
-                        score: expect.any(Number),
-                        rank: expect.any(Number)
-                    })
-                ])
-            });
-        });
-    });
+			const result = await text.Summarization(<TAiArguments>{
+				data:
+					"Artificial intelligence is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals.",
+				params: {
+					"min-length": 10,
+					"max-length": 20,
+				},
+			})
 
-    describe('SentimentAnalysis', () => {
-        it('should perform sentiment analysis', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [{
-                            "label": "Positive",
-                            "score": 0.6533908843994141
-                        }]
-                    }
-                });
-            });
+			expect(result).toEqual({
+				summary: {
+					text: expect.any(String),
+				},
+			})
+		})
+	})
 
-            const result = await text.SentimentAnalysis(<TAiArguments>{
-                data: 'I love using this service!'
-            });
+	describe("TextGeneration", () => {
+		it("should generate text", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							[
+								{
+									generated_text:
+										"Once upon a time in a land far away, there were many people who lived as a living legend.\n\nThe story of a small village in the north of England, named \"Humberland,\" began more than a century ago. The story was told by a poor peasant, who could no longer afford a house, and who had only a few possessions. He was so poor that he was unable to afford his own food, the only source of food for his family. He was forced to work as a labourer, and could not earn enough to feed his family.\n\nIn 1735, the king of England, Thomas I, granted the local lord, the Earl of York, permission to build a castle on the edge of the English Channel, at what was then known as St. John's. It was called St. John's, and it was built by the very same people who had built St. John's. The castle built by the local lord was called St. John's Castle, and the castle was called St. John's Castle.\n\nThe king granted the castle to two local lords, the Earl of Warwick, who were both local lords of the town of St. John's. Warwick was the lord of the castle, and the Earl of St. John's was the lord of",
+								},
+							],
+						],
+					},
+				})
+			})
 
-            expect(result).toEqual({
-                sentiment: {
-                    label: expect.stringMatching(new RegExp(`^(${['very negative', 'negative', 'neutral', 'positive', 'very positive'].join('|')})$`)),
-                    score: expect.any(Number)
-                }
-            });
-        });
-    });
+			const result = await text.TextGeneration(<TAiArguments>{
+				data: "The capital of France is",
+				params: {
+					"max-length": 50,
+					"do-sample": true,
+					temperature: 0.9,
+				},
+			})
 
-    describe('Summarization', () => {
-        it('should summarize text', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            {
-                                summary_text: "AI is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans."
-                            }
-                        ]
-                    }
-                });
-            });
+			expect(result).toEqual({
+				text: expect.any(String),
+			})
+		})
+	})
 
-            const result = await text.Summarization(<TAiArguments>{
-                data: 'Artificial intelligence is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals.',
-                params: {
-                    "min-length": 10,
-                    "max-length": 20
-                }
-            });
+	describe("Ner", () => {
+		it("should perform ner", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							[
+								{
+									entity_group: "PER",
+									score: 0.7927860021591187,
+									word: "John",
+									start: 11,
+									end: 15,
+								},
+								{
+									entity_group: "ORG",
+									score: 0.9791768193244934,
+									word: "Google",
+									start: 30,
+									end: 36,
+								},
+								{
+									entity_group: "LOC",
+									score: 0.9997129440307617,
+									word: "New York",
+									start: 40,
+									end: 48,
+								},
+							],
+						],
+					},
+				})
+			})
 
-            expect(result).toEqual({
-                summary: {
-                    text: expect.any(String)
-                }
-            });
-        });
-    });
+			const result = await text.Ner(<TAiArguments>{
+				data: "My name is John and I work at Google in New York.",
+				params: { grouped: true },
+			})
 
-    describe('TextGeneration', () => {
-        it('should generate text', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            [
-                                {
-                                    "generated_text": "Once upon a time in a land far away, there were many people who lived as a living legend.\n\nThe story of a small village in the north of England, named \"Humberland,\" began more than a century ago. The story was told by a poor peasant, who could no longer afford a house, and who had only a few possessions. He was so poor that he was unable to afford his own food, the only source of food for his family. He was forced to work as a labourer, and could not earn enough to feed his family.\n\nIn 1735, the king of England, Thomas I, granted the local lord, the Earl of York, permission to build a castle on the edge of the English Channel, at what was then known as St. John's. It was called St. John's, and it was built by the very same people who had built St. John's. The castle built by the local lord was called St. John's Castle, and the castle was called St. John's Castle.\n\nThe king granted the castle to two local lords, the Earl of Warwick, who were both local lords of the town of St. John's. Warwick was the lord of the castle, and the Earl of St. John's was the lord of"
-                                }
-                            ]
-                        ]
-                    }
-                });
-            });
+			expect(result).toEqual({
+				entities: expect.arrayContaining([
+					expect.objectContaining({
+						group: expect.any(String),
+						score: expect.any(Number),
+						word: expect.any(String),
+						start: expect.any(Number),
+						end: expect.any(Number),
+					}),
+				]),
+			})
+		})
+	})
 
-            const result = await text.TextGeneration(<TAiArguments>{
-                data: 'The capital of France is',
-                params: {
-                    "max-length": 50,
-                    "do-sample": true,
-                    temperature: 0.9
-                }
-            });
+	describe("ToxicityDetection", () => {
+		it("should perform toxicity detection", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							[
+								{
+									label: "toxic",
+									score: "0.9961523413658142",
+								},
+								{
+									label: "obscene",
+									score: "0.9740362763404846",
+								},
+								{
+									label: "insult",
+									score: "0.9055920839309692",
+								},
+								{
+									label: "threat",
+									score: "0.7695426940917969",
+								},
+								{
+									label: "severe_toxic",
+									score: "0.7240217924118042",
+								},
+								{
+									label: "identity_hate",
+									score: "0.08210677653551102",
+								},
+							],
+						],
+					},
+				})
+			})
 
-            expect(result).toEqual({
-                text: expect.any(String)
-            });
-        });
-    });
+			const result = await text.ToxicityDetection(<TAiArguments>{
+				data: "you bastard, i hate you so much!are you fucked up! i will kill you",
+				params: {
+					top: 10,
+				},
+			})
 
-    describe('Ner', () => {
-        it('should perform ner', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            [
-                                {
-                                    "entity_group": "PER",
-                                    "score": 0.7927860021591187,
-                                    "word": "John",
-                                    "start": 11,
-                                    "end": 15
-                                },
-                                {
-                                    "entity_group": "ORG",
-                                    "score": 0.9791768193244934,
-                                    "word": "Google",
-                                    "start": 30,
-                                    "end": 36
-                                },
-                                {
-                                    "entity_group": "LOC",
-                                    "score": 0.9997129440307617,
-                                    "word": "New York",
-                                    "start": 40,
-                                    "end": 48
-                                }
-                            ]
-                        ]
-                    }
-                });
-            });
+			expect(result).toEqual({
+				toxicity: {
+					identity_hate: expect.any(Number),
+					insult: expect.any(Number),
+					obscene: expect.any(Number),
+					severe_toxic: expect.any(Number),
+					threat: expect.any(Number),
+					toxic: expect.any(Number),
+				},
+			})
+		})
+	})
 
-            const result = await text.Ner(<TAiArguments>{
-                data: 'My name is John and I work at Google in New York.',
-                params: { grouped: true }
-            });
+	describe("Translation", () => {
+		it("should translate text", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							{
+								translation_text: "مرحبا كيف حالك؟",
+							},
+						],
+					},
+				})
+			})
 
-            expect(result).toEqual({
-                entities: expect.arrayContaining([
-                    expect.objectContaining({
-                        group: expect.any(String),
-                        score: expect.any(Number),
-                        word: expect.any(String),
-                        start: expect.any(Number),
-                        end: expect.any(Number)
-                    })
-                ])
-            });
-        });
-    });
+			const result = await text.Translation(<TAiArguments>{
+				data: "Hello, how are you?",
+				params: {
+					source: "en_XX",
+					target: "ar_AR",
+				},
+			})
 
-    describe('ToxicityDetection', () => {
-        it('should perform toxicity detection', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            [
-                                {
-                                    "label": "toxic",
-                                    "score": "0.9961523413658142"
-                                },
-                                {
-                                    "label": "obscene",
-                                    "score": "0.9740362763404846"
-                                },
-                                {
-                                    "label": "insult",
-                                    "score": "0.9055920839309692"
-                                },
-                                {
-                                    "label": "threat",
-                                    "score": "0.7695426940917969"
-                                },
-                                {
-                                    "label": "severe_toxic",
-                                    "score": "0.7240217924118042"
-                                },
-                                {
-                                    "label": "identity_hate",
-                                    "score": "0.08210677653551102"
-                                }
-                            ]
-                        ]
-                    }
-                });
-            });
+			expect(result).toEqual({
+				translation: {
+					text: expect.any(String),
+					source: expect.stringMatching(new RegExp(`^(${Object.values(TEXT_LANGUAGE_DETECTION_ISO).join("|")})$`)),
+					target: expect.stringMatching(new RegExp(`^(${Object.values(TEXT_LANGUAGE_DETECTION_ISO).join("|")})$`)),
+				},
+			})
+		})
+	})
 
-            const result = await text.ToxicityDetection(<TAiArguments>{
-                data: "you bastard, i hate you so much!are you fucked up! i will kill you",
-                params: {
-                    top: 10
-                }
-            });
-
-            expect(result).toEqual({
-                toxicity: {
-                    identity_hate: expect.any(Number),
-                    insult: expect.any(Number),
-                    obscene: expect.any(Number),
-                    severe_toxic: expect.any(Number),
-                    threat: expect.any(Number),
-                    toxic: expect.any(Number)
-                }
-            });
-        });
-    });
-
-    describe('Translation', () => {
-        it('should translate text', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            {
-                                translation_text: 'مرحبا كيف حالك؟'
-                            }
-                        ]
-                    }
-                });
-            });
-
-            const result = await text.Translation(<TAiArguments>{
-                data: 'Hello, how are you?',
-                params: {
-                    source: 'en_XX',
-                    target: 'ar_AR'
-                }
-            });
-
-            expect(result).toEqual({
-                translation: {
-                    text: expect.any(String),
-                    source: expect.stringMatching(
-                        new RegExp(`^(${Object.values(TEXT_LANGUAGE_DETECTION_ISO).join("|")})$`)
-                    ),
-                    target: expect.stringMatching(
-                        new RegExp(`^(${Object.values(TEXT_LANGUAGE_DETECTION_ISO).join("|")})$`)
-                    )
-                }
-            });
-        });
-    });
-
-    describe('ZeroShotClassification', () => {
-        it('should perform zero-shot classification', async () => {
-            spyAxios.mockImplementationOnce(() => {
-                return Promise.resolve({
-                    data: {
-                        result: [
-                            {
-                                sequence: `This is a lot of 12 point text to test the
+	describe("ZeroShotClassification", () => {
+		it("should perform zero-shot classification", async () => {
+			spyAxios.mockImplementationOnce(() => {
+				return Promise.resolve({
+					data: {
+						result: [
+							{
+								sequence: `This is a lot of 12 point text to test the
                                 ocr code and see if it works on all types
                                 of file format.
 
@@ -532,43 +519,29 @@ describe('Text', () => {
                                 jumped over the lazy fox. The quick
                                 brown dog jumped over the lazy fox.
                                 `,
-                                labels: [
-                                    "instruction",
-                                    "question",
-                                    "informative",
-                                    "narrative",
-                                    "opinion",
-                                    "promotional",
-                                ],
-                                scores: [
-                                    0.25470343232154846,
-                                    0.24146001040935516,
-                                    0.20922932028770447,
-                                    0.15585294365882874,
-                                    0.08678287267684937,
-                                    0.051971372216939926,
-                                ],
-                            },
-                        ]
-                    }
-                });
-            });
+								labels: ["instruction", "question", "informative", "narrative", "opinion", "promotional"],
+								scores: [
+									0.25470343232154846, 0.24146001040935516, 0.20922932028770447, 0.15585294365882874, 0.08678287267684937,
+									0.051971372216939926,
+								],
+							},
+						],
+					},
+				})
+			})
 
-            const result = await text.ZeroShotClassification(<TAiArguments>{
-                data: 'I have a problem with my order',
-                params: {
-                    labels: ['refund', 'technical support', 'billing']
-                }
-            });
+			const result = await text.ZeroShotClassification(<TAiArguments>{
+				data: "I have a problem with my order",
+				params: {
+					labels: ["refund", "technical support", "billing"],
+				},
+			})
 
-            expect(result).toEqual({
-                zeroshot: expect.objectContaining(
-                    Object.fromEntries(
-                        Object.entries((result as any).zeroshot ?? {}).map(([k]) => [k, expect.any(Number)])
-                    )
-                ),
-            });
-
-        });
-    });
+			expect(result).toEqual({
+				zeroshot: expect.objectContaining(
+					Object.fromEntries(Object.entries((result as any).zeroshot ?? {}).map(([k]) => [k, expect.any(Number)])),
+				),
+			})
+		})
+	})
 })

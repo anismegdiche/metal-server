@@ -5,355 +5,365 @@ import { Cache } from "../../cache/Cache"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
-import type { TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
+import type {
+	TSchemaRequestDelete,
+	TSchemaRequestInsert,
+	TSchemaRequestListEntities,
+	TSchemaRequestSelect,
+	TSchemaRequestUpdate,
+} from "../../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../@consts"
 import { MemoryData } from "../providers/MemoryData"
 
-describe('MemoryData', () => {
+describe("MemoryData", () => {
+	// Initializing with valid source and config creates a properly configured instance
+	it("should initialize with valid source and config", async () => {
+		const memoryData = new MemoryData()
+		const source = "test-source"
+		const sourceConfig: U_config_sources_source = {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+			options: { autocreate: true },
+		}
 
-    // Initializing with valid source and config creates a properly configured instance
-    it('should initialize with valid source and config', async () => {
-        const memoryData = new MemoryData()
-        const source = 'test-source'
-        const sourceConfig: U_config_sources_source = {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db',
-            options: { autocreate: true }
-        }
+		await memoryData.Init(source, sourceConfig)
 
-        await memoryData.Init(source, sourceConfig)
+		expect(memoryData.SourceName).toBe(source)
+		expect(memoryData.Config.database).toBe(sourceConfig.database)
+		expect(memoryData.Config.options).toEqual(sourceConfig.options)
+		expect(memoryData.ProviderName).toBe(DATA_PROVIDER.MEMORY)
+	})
 
-        expect(memoryData.SourceName).toBe(source)
-        expect(memoryData.Config.database).toBe(sourceConfig.database)
-        expect(memoryData.Config.options).toEqual(sourceConfig.options)
-        expect(memoryData.ProviderName).toBe(DATA_PROVIDER.MEMORY)
-    })
+	// Connecting to memory database creates a new DataBase instance
+	it("should create a new DataBase instance when connecting", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
 
-    // Connecting to memory database creates a new DataBase instance
-    it('should create a new DataBase instance when connecting', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db'
-        })
+		await memoryData.Connect()
 
-        await memoryData.Connect()
+		expect(memoryData.Connection).toBeInstanceOf(DataBase)
+		expect(memoryData.SourceName).toBe("test-source")
+		expect(memoryData.Connection?.Name).toBe("test-db")
+	})
 
-        expect(memoryData.Connection).toBeInstanceOf(DataBase)
-        expect(memoryData.SourceName).toBe('test-source')
-        expect(memoryData.Connection?.Name).toBe('test-db')
-    })
+	// Connecting to memory database creates a new DataBase instance
+	it("should create a new DataBase instance have sourcename when name not given", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+		})
 
-    // Connecting to memory database creates a new DataBase instance
-    it('should create a new DataBase instance have sourcename when name not given', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY
-        })
+		await memoryData.Connect()
 
-        await memoryData.Connect()
+		expect(memoryData.SourceName).toBe("test-source")
+		expect(memoryData.Connection?.Name).toBe("test-source")
+	})
 
-        expect(memoryData.SourceName).toBe('test-source')
-        expect(memoryData.Connection?.Name).toBe('test-source')
-    })
+	// Select operation with valid entity returns data in expected format
+	it("should return data in expected format when selecting from valid entity", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
+		await memoryData.Connect()
 
-    // Select operation with valid entity returns data in expected format
-    it('should return data in expected format when selecting from valid entity', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db'
-        })
-        await memoryData.Connect()
+		const testEntity = "test-table"
+		const testRows = [
+			{
+				id: 1,
+				name: "test",
+			},
+		]
+		memoryData.Connection?.AddTable(testEntity, testRows)
 
-        const testEntity = 'test-table'
-        const testRows = [
-            {
-                id: 1,
-                name: 'test'
-            }
-        ]
-        memoryData.Connection?.AddTable(testEntity, testRows)
+		const schemaRequest: TSchemaRequestSelect = {
+			schema: "test-schema",
+			entity: testEntity,
+		}
 
-        const schemaRequest: TSchemaRequestSelect = {
-            schema: 'test-schema',
-            entity: testEntity
-        }
+		const response = await memoryData.Select(schemaRequest)
 
-        const response = await memoryData.Select(schemaRequest)
+		const resultRows = await response.Body?.data.Rows()
 
-        const resultRows = await response.Body?.data.Rows()
+		expect(response.StatusCode).toBe(HTTP_STATUS_CODE.OK)
+		expect(response.Body?.schema).toBe(schemaRequest.schema)
+		expect(response.Body?.entity).toBe(schemaRequest.entity)
+		expect(resultRows).toEqual(testRows)
+	})
 
-        expect(response.StatusCode).toBe(HTTP_STATUS_CODE.OK)
-        expect(response.Body?.schema).toBe(schemaRequest.schema)
-        expect(response.Body?.entity).toBe(schemaRequest.entity)
-        expect(resultRows).toEqual(testRows)
-    })
+	// Insert operation adds rows to an existing entity
+	it("should add rows to an existing entity when inserting", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+			options: { autocreate: true },
+		})
+		await memoryData.Connect()
 
-    // Insert operation adds rows to an existing entity
-    it('should add rows to an existing entity when inserting', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db',
-            options: { autocreate: true }
-        })
-        await memoryData.Connect()
+		const testEntity = "test-table"
+		memoryData.Connection?.AddTable(testEntity)
 
-        const testEntity = 'test-table'
-        memoryData.Connection?.AddTable(testEntity)
+		const testRows = [
+			{
+				id: 1,
+				name: "test",
+			},
+		]
 
-        const testRows = [
-            {
-                id: 1,
-                name: 'test'
-            }
-        ]
+		const schemaRequest: TSchemaRequestInsert = {
+			schema: "test-schema",
+			entity: testEntity,
+			data: testRows,
+		}
 
-        const schemaRequest: TSchemaRequestInsert = {
-            schema: 'test-schema',
-            entity: testEntity,
-            data: testRows
-        }
+		Cache.Remove = vi.fn(async () => {})
 
-        Cache.Remove = vi.fn(async () => { })
+		const response = await memoryData.Insert(schemaRequest)
+		const resultRows = await memoryData.Connection?.Tables[testEntity]?.Rows()
 
-        const response = await memoryData.Insert(schemaRequest)
-        const resultRows = await memoryData.Connection?.Tables[testEntity]!.Rows()
+		expect(response.StatusCode).toBe(HTTP_STATUS_CODE.CREATED)
+		expect(resultRows).toEqual(testRows)
+		expect(Cache.Remove).toHaveBeenCalledWith(schemaRequest)
+	})
 
-        expect(response.StatusCode).toBe(HTTP_STATUS_CODE.CREATED)
-        expect(resultRows).toEqual(testRows)
-        expect(Cache.Remove).toHaveBeenCalledWith(schemaRequest)
-    })
+	// Update operation modifies rows based on filter criteria
+	it("should modify rows based on filter criteria when updating", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
+		await memoryData.Connect()
 
-    // Update operation modifies rows based on filter criteria
-    it('should modify rows based on filter criteria when updating', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db'
-        })
-        await memoryData.Connect()
+		const testEntity = "testTable"
+		const initialRows = [
+			{
+				id: 1,
+				name: "test1",
+			},
+			{
+				id: 2,
+				name: "test2",
+			},
+		]
+		memoryData.Connection?.AddTable(testEntity, initialRows)
 
-        const testEntity = 'testTable'
-        const initialRows = [
-            {
-                id: 1,
-                name: 'test1'
-            }, {
-                id: 2,
-                name: 'test2'
-            }
-        ]
-        memoryData.Connection?.AddTable(testEntity, initialRows)
+		const updatedRows = [
+			{
+				id: 1,
+				name: "updated",
+			},
+		]
 
-        const updatedRows = [
-            {
-                id: 1,
-                name: 'updated'
-            }
-        ]
+		const schemaRequest: TSchemaRequestUpdate = {
+			schema: "test-schema",
+			entity: testEntity,
+			filter: { id: 1 },
+			data: updatedRows,
+		}
 
-        const schemaRequest: TSchemaRequestUpdate = {
-            schema: 'test-schema',
-            entity: testEntity,
-            filter: { id: 1 },
-            data: updatedRows
-        }
+		vi.spyOn(Cache, "Remove").mockImplementation(async () => {})
+		vi.spyOn(memoryData.Connection?.Tables[testEntity]!, "FreeSql").mockResolvedValue(
+			new DataTable(testEntity, [
+				{
+					id: 1,
+					name: "updated",
+				},
+				{
+					id: 2,
+					name: "test2",
+				},
+			]),
+		)
 
-        vi.spyOn(Cache, 'Remove').mockImplementation(async () => { })
-        vi.spyOn(memoryData.Connection!.Tables[testEntity]!, 'FreeSql').mockResolvedValue(
-            new DataTable(testEntity, [
-                {
-                    id: 1,
-                    name: 'updated'
-                }, {
-                    id: 2,
-                    name: 'test2'
-                }
-            ])
-        )
+		const response = await memoryData.Update(schemaRequest)
 
-        const response = await memoryData.Update(schemaRequest)
+		expect(response.StatusCode).toBe(HTTP_STATUS_CODE.NO_CONTENT)
+		expect(Cache.Remove).toHaveBeenCalledWith(schemaRequest)
+	})
 
-        expect(response.StatusCode).toBe(HTTP_STATUS_CODE.NO_CONTENT)
-        expect(Cache.Remove).toHaveBeenCalledWith(schemaRequest)
-    })
+	// Delete operation removes rows based on filter criteria
+	it("should remove rows based on filter criteria when deleting", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
+		await memoryData.Connect()
 
-    // Delete operation removes rows based on filter criteria
-    it('should remove rows based on filter criteria when deleting', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db'
-        })
-        await memoryData.Connect()
+		const testEntity = "testTable"
+		const initialRows = [
+			{
+				id: 1,
+				name: "test1",
+			},
+			{
+				id: 2,
+				name: "test2",
+			},
+		]
+		memoryData.Connection?.AddTable(testEntity, initialRows)
 
-        const testEntity = 'testTable'
-        const initialRows = [
-            {
-                id: 1,
-                name: 'test1'
-            }, {
-                id: 2,
-                name: 'test2'
-            }
-        ]
-        memoryData.Connection?.AddTable(testEntity, initialRows)
+		const schemaRequest: TSchemaRequestDelete = {
+			schema: "test-schema",
+			entity: testEntity,
+			filter: { id: 1 },
+		}
 
-        const schemaRequest: TSchemaRequestDelete = {
-            schema: 'test-schema',
-            entity: testEntity,
-            filter: { id: 1 }
-        }
+		vi.spyOn(Cache, "Remove").mockImplementation(async () => {})
+		vi.spyOn(memoryData.Connection?.Tables[testEntity]!, "FreeSql").mockResolvedValue(
+			new DataTable(testEntity, [
+				{
+					id: 2,
+					name: "test2",
+				},
+			]),
+		)
 
-        vi.spyOn(Cache, 'Remove').mockImplementation(async () => { })
-        vi.spyOn(memoryData.Connection!.Tables[testEntity]!, 'FreeSql').mockResolvedValue(
-            new DataTable(testEntity, [
-                {
-                    id: 2,
-                    name: 'test2'
-                }
-            ])
-        )
+		const response = await memoryData.Delete(schemaRequest)
 
-        const response = await memoryData.Delete(schemaRequest)
+		expect(response.StatusCode).toBe(HTTP_STATUS_CODE.NO_CONTENT)
+		expect(Cache.Remove).toHaveBeenCalledWith(schemaRequest)
+	})
 
-        expect(response.StatusCode).toBe(HTTP_STATUS_CODE.NO_CONTENT)
-        expect(Cache.Remove).toHaveBeenCalledWith(schemaRequest)
-    })
+	// Attempting operations when not connected throws HttpErrorInternalServerError
+	it("should throw HttpErrorInternalServerError when not connected", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
+		// Not calling Connect()
 
-    // Attempting operations when not connected throws HttpErrorInternalServerError
-    it('should throw HttpErrorInternalServerError when not connected', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db'
-        })
-        // Not calling Connect()
+		const schemaRequest: TSchemaRequestSelect = {
+			schema: "test-schema",
+			entity: "testTable",
+		}
 
-        const schemaRequest: TSchemaRequestSelect = {
-            schema: 'test-schema',
-            entity: 'testTable'
-        }
+		await expect(memoryData.Select(schemaRequest)).rejects.toThrow(HttpErrorInternalServerError)
+		await expect(memoryData.Insert(schemaRequest as TSchemaRequestInsert)).rejects.toThrow(HttpErrorInternalServerError)
+		await expect(memoryData.Update(schemaRequest as TSchemaRequestUpdate)).rejects.toThrow(HttpErrorInternalServerError)
+		await expect(memoryData.Delete(schemaRequest as TSchemaRequestDelete)).rejects.toThrow(HttpErrorInternalServerError)
+		await expect(memoryData.ListEntities(schemaRequest as TSchemaRequestListEntities)).rejects.toThrow(
+			HttpErrorInternalServerError,
+		)
+	})
 
-        await expect(memoryData.Select(schemaRequest)).rejects.toThrow(HttpErrorInternalServerError)
-        await expect(memoryData.Insert(schemaRequest as TSchemaRequestInsert)).rejects.toThrow(HttpErrorInternalServerError)
-        await expect(memoryData.Update(schemaRequest as TSchemaRequestUpdate)).rejects.toThrow(HttpErrorInternalServerError)
-        await expect(memoryData.Delete(schemaRequest as TSchemaRequestDelete)).rejects.toThrow(HttpErrorInternalServerError)
-        await expect(memoryData.ListEntities(schemaRequest as TSchemaRequestListEntities)).rejects.toThrow(HttpErrorInternalServerError)
-    })
+	// Selecting from non-existent entity throws HttpErrorNotFound
+	it("should throw HttpErrorNotFound when selecting from non-existent entity", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
+		await memoryData.Connect()
 
-    // Selecting from non-existent entity throws HttpErrorNotFound
-    it('should throw HttpErrorNotFound when selecting from non-existent entity', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db'
-        })
-        await memoryData.Connect()
+		const schemaRequest: TSchemaRequestSelect = {
+			schema: "test-schema",
+			entity: "nonExistentTable",
+		}
 
-        const schemaRequest: TSchemaRequestSelect = {
-            schema: 'test-schema',
-            entity: 'nonExistentTable'
-        }
+		await expect(memoryData.Select(schemaRequest)).rejects.toThrow(HttpErrorNotFound)
+	})
 
-        await expect(memoryData.Select(schemaRequest)).rejects.toThrow(HttpErrorNotFound)
-    })
+	// Inserting without data throws HttpErrorBadRequest
+	it("should throw HttpErrorBadRequest when inserting without data", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+			options: { autocreate: true },
+		})
+		await memoryData.Connect()
 
-    // Inserting without data throws HttpErrorBadRequest
-    it('should throw HttpErrorBadRequest when inserting without data', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db',
-            options: { autocreate: true }
-        })
-        await memoryData.Connect()
+		const testEntity = "testTable"
+		memoryData.Connection?.AddTable(testEntity)
 
-        const testEntity = 'testTable'
-        memoryData.Connection?.AddTable(testEntity)
+		const schemaRequest: TSchemaRequestInsert = {
+			schema: "test-schema",
+			entity: testEntity,
+			// No data provided
+		}
 
-        const schemaRequest: TSchemaRequestInsert = {
-            schema: 'test-schema',
-            entity: testEntity
-            // No data provided
-        }
+		// No typia mock needed
+		await expect(memoryData.Insert(schemaRequest)).rejects.toThrow(HttpErrorBadRequest)
+	})
 
-        // No typia mock needed
-        await expect(memoryData.Insert(schemaRequest)).rejects.toThrow(HttpErrorBadRequest)
-    })
+	// Updating without data throws HttpErrorBadRequest
+	it("should throw HttpErrorBadRequest when updating without data", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
+		await memoryData.Connect()
 
-    // Updating without data throws HttpErrorBadRequest
-    it('should throw HttpErrorBadRequest when updating without data', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db'
-        })
-        await memoryData.Connect()
+		const testEntity = "testTable"
+		memoryData.Connection?.AddTable(testEntity)
 
-        const testEntity = 'testTable'
-        memoryData.Connection?.AddTable(testEntity)
+		const schemaRequest: TSchemaRequestUpdate = {
+			schema: "test-schema",
+			entity: testEntity,
+			filter: { id: 1 },
+			// No data provided
+		}
 
-        const schemaRequest: TSchemaRequestUpdate = {
-            schema: 'test-schema',
-            entity: testEntity,
-            filter: { id: 1 }
-            // No data provided
-        }
+		// No typia mock needed
+		await expect(memoryData.Update(schemaRequest)).rejects.toThrow(HttpErrorBadRequest)
+	})
 
-        // No typia mock needed
-        await expect(memoryData.Update(schemaRequest)).rejects.toThrow(HttpErrorBadRequest)
-    })
+	// Attempting operations on non-existent entity throws HttpErrorNotFound
+	it("should throw HttpErrorNotFound when operating on non-existent entity", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
+		await memoryData.Connect()
 
-    // Attempting operations on non-existent entity throws HttpErrorNotFound
-    it('should throw HttpErrorNotFound when operating on non-existent entity', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db'
-        })
-        await memoryData.Connect()
+		const nonExistentEntity = "nonExistentTable"
 
-        const nonExistentEntity = 'nonExistentTable'
+		const updateRequest: TSchemaRequestUpdate = {
+			schema: "test-schema",
+			entity: nonExistentEntity,
+			data: [
+				{
+					id: 1,
+					name: "test",
+				},
+			],
+		}
 
-        const updateRequest: TSchemaRequestUpdate = {
-            schema: 'test-schema',
-            entity: nonExistentEntity,
-            data: [
-                {
-                    id: 1,
-                    name: 'test'
-                }
-            ]
-        }
+		const deleteRequest: TSchemaRequestDelete = {
+			schema: "test-schema",
+			entity: nonExistentEntity,
+			filter: { id: 1 },
+		}
 
-        const deleteRequest: TSchemaRequestDelete = {
-            schema: 'test-schema',
-            entity: nonExistentEntity,
-            filter: { id: 1 }
-        }
+		await expect(memoryData.Update(updateRequest)).rejects.toThrow(HttpErrorNotFound)
+		await expect(memoryData.Delete(deleteRequest)).rejects.toThrow(HttpErrorNotFound)
+	})
 
-        await expect(memoryData.Update(updateRequest)).rejects.toThrow(HttpErrorNotFound)
-        await expect(memoryData.Delete(deleteRequest)).rejects.toThrow(HttpErrorNotFound)
-    })
+	// Listing entities when none exist throws HttpErrorNotFound
+	it("should throw HttpErrorNotFound when listing entities and none exist", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
+		await memoryData.Connect()
 
-    // Listing entities when none exist throws HttpErrorNotFound
-    it('should throw HttpErrorNotFound when listing entities and none exist', async () => {
-        const memoryData = new MemoryData()
-        await memoryData.Init('test-source', {
-            provider: DATA_PROVIDER.MEMORY,
-            database: 'test-db'
-        })
-        await memoryData.Connect()
+		// Connection exists but no tables added
 
-        // Connection exists but no tables added
+		const schemaRequest = <TSchemaRequestListEntities>{
+			schema: "test-schema",
+		}
 
-        const schemaRequest = <TSchemaRequestListEntities>{
-            schema: 'test-schema'
-        }
-
-        await expect(memoryData.ListEntities(schemaRequest)).rejects.toThrow(HttpErrorNotFound)
-    })
+		await expect(memoryData.ListEntities(schemaRequest)).rejects.toThrow(HttpErrorNotFound)
+	})
 })

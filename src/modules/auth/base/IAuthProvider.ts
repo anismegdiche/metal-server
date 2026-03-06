@@ -6,8 +6,8 @@ import type { TUserCredentials, TUserTokenInfo } from "../@types"
 
 //
 export interface IAuthProvider {
-    Init(): void
-    GetUsers(): U_config_users
-    Authenticate(userCredentials: TUserCredentials): Promise<TUserTokenInfo>
-    LogOut(username: string): Promise<void>
+	Init(): void
+	GetUsers(): U_config_users
+	Authenticate(userCredentials: TUserCredentials): Promise<TUserTokenInfo>
+	LogOut(username: string): Promise<void>
 }

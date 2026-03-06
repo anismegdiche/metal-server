@@ -1,158 +1,159 @@
 //
 //
 //
-import axios, { type AxiosInstance, type AxiosResponse } from "axios"
-import { merge } from 'lodash-es'
+
 import { Readable } from "node:stream"
+import axios, { type AxiosInstance, type AxiosResponse } from "axios"
+import { merge } from "lodash-es"
 //
 import type { TJson } from "../../../types/TJson"
-import { JsonUtils } from '../../../utils/JsonUtils'
+import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { StringUtils } from "../../../utils/StringUtils"
 import { CONTENT } from "../../content/@consts"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
-import { HttpErrorInternalServerError, HttpErrorSwitch, NormalizeError } from "../../errors/HttpErrors"
+import {
+	HttpErrorBadRequest,
+	HttpErrorInternalServerError,
+	HttpErrorSwitch,
+	NormalizeError,
+} from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import type { U__source_webservice, U__source_webservice_options } from "../../source/providers/WebServiceData"
 import { ENDPOINT, HEADER } from "../@consts"
-import { absWebServiceProvider } from '../base/absWebServiceProvider'
+import { absWebServiceProvider } from "../base/absWebServiceProvider"
 
 //
 export class RestWebService extends absWebServiceProvider {
+	DEFAULT: Partial<U__source_webservice_options> = {
+		content: CONTENT.JSON,
+	}
 
-    DEFAULT: Partial<U__source_webservice_options> = {
-        content: CONTENT.JSON
-    }
+	ConfigSource?: U__source_webservice
+	ConfigSourceOptions?: U__source_webservice_options
+	Client?: AxiosInstance
 
-    ConfigSource?: U__source_webservice
-    ConfigSourceOptions?: U__source_webservice_options
-    Client?: AxiosInstance
+	Headers: Record<string, string>[] = []
 
-    Headers: Record<string, string>[] = []
+	SetConfig(configSource: U__source_webservice): void {
+		super.SetConfig(configSource)
+	}
 
-    constructor() {
-        super()
-    }
+	@Logger.LogFunction()
+	async Init(): Promise<void> {
+		this.Client = axios.create()
 
-    SetConfig(configSource: U__source_webservice): void {
-        super.SetConfig(configSource)
-    }
+		this.Client.defaults.baseURL = this.ConfigSource?.host
 
-    @Logger.LogFunction()
-    async Init(): Promise<void> {
+		// set content type
+		const content = this.ConfigSourceOptions?.content
+		if (!content) throw new HttpErrorBadRequest("Content type is required")
 
-        this.Client = axios.create()
+		const headerObj = HEADER[content]
+		if (!headerObj) throw new HttpErrorBadRequest(`Invalid content type: ${content}`)
 
-        this.Client.defaults.baseURL = this.ConfigSource!.host
+		const [header] = Object.keys(headerObj)
+		const [value] = Object.values(headerObj)
 
-        // set content type
-        const [header] = Object.keys(HEADER[this.ConfigSourceOptions!.content]!)
-        const [value] = Object.values(HEADER[this.ConfigSourceOptions!.content]!)
+		if (typeof header === "string" && typeof value === "string") this.Client.defaults.headers.common[header] = value
+	}
 
-        if (typeof header == 'string' && typeof value == 'string')
-            this.Client.defaults.headers.common[header] = value
-    }
+	async RequestClient(
+		endpointType: ENDPOINT,
+		httpStatusSuccess: number[],
+		data?: TJson,
+		$context?: Partial<TContext>,
+	): Promise<Readable> {
+		if (!this.Endpoints.has(endpointType) || !this.Client)
+			throw new HttpErrorInternalServerError(`${endpointType}: undefined endpoint for ${endpointType}`)
 
-    async RequestClient(endpointType: ENDPOINT, httpStatusSuccess: number[], data?: TJson, $context?: Partial<TContext>): Promise<Readable> {
+		try {
+			const { Method, Url, Data, SessionHeaders, DataPath } = this.Endpoints.get(endpointType)!
 
-        if (!this.Endpoints.has(endpointType) || !this.Client)
-            throw new HttpErrorInternalServerError(`${endpointType}: undefined endpoint for ${endpointType}`)
+			const $__method = PlaceHolder.EvaluateJsCode<string>(Method, new Sandbox($context))
+			const $__url = PlaceHolder.EvaluateJsCode<string>(Url, new Sandbox($context))
+			const $__data = PlaceHolder.EvaluateJsCode<TJson>(Data, new Sandbox($context))
+			const $__dataPath = PlaceHolder.EvaluateJsCode<string>(DataPath, new Sandbox($context))
 
-        try {
-            const { Method, Url, Data, SessionHeaders, DataPath } = this.Endpoints.get(endpointType)!
+			Logger.Debug(`${Logger.In} ${endpointType}: ${StringUtils.Url(this.ConfigSource?.host, Url)}`)
 
-            const $__method = PlaceHolder.EvaluateJsCode<string>(Method, new Sandbox($context))
-            const $__url = PlaceHolder.EvaluateJsCode<string>(Url, new Sandbox($context))
-            const $__data = PlaceHolder.EvaluateJsCode<TJson>(Data, new Sandbox($context))
-            const $__dataPath = PlaceHolder.EvaluateJsCode<string>(DataPath, new Sandbox($context))
+			const wsResp: AxiosResponse = await this.Client({
+				method: ($__method ?? Method).toLowerCase(),
+				url: $__url,
+				data: JsonUtils.Stringify($__data ?? data),
+			})
 
-            Logger.Debug(`${Logger.In} ${endpointType}: ${StringUtils.Url(this.ConfigSource!.host, Url)}`)
+			if (!httpStatusSuccess.includes(wsResp.status))
+				throw HttpErrorSwitch(wsResp.status, `${endpointType}: ${wsResp.statusText}`)
 
-            const wsResp: AxiosResponse = await this.Client({
-                method: ($__method ?? Method).toLowerCase(),
-                url: $__url,
-                data: JsonUtils.Stringify($__data ?? data)
-            })
+			$context = merge($context, {
+				$request: {
+					"data-path": $__dataPath,
+				},
+				$response: {
+					url: wsResp.config.url,
+					host: wsResp.request.host,
+					body: wsResp.data,
+				},
+			})
 
-            if (!httpStatusSuccess.includes(wsResp.status))
-                throw HttpErrorSwitch(wsResp.status, `${endpointType}: ${wsResp.statusText}`)
+			// set session headers after request
+			if (SessionHeaders) {
+				const $__sessionHeaders = PlaceHolder.EvaluateJsCode(SessionHeaders, new Sandbox($context)) as Exclude<
+					TJson<string>,
+					undefined
+				>
+				for (const [_headerName, _headerValue] of Object.entries($__sessionHeaders)) {
+					this.Client.defaults.headers.common[_headerName] = _headerValue
+				}
+			}
 
+			return Readable.from(JsonUtils.Stringify(wsResp.data))
+		} catch (err: unknown) {
+			const _err = NormalizeError(err)
+			throw HttpErrorSwitch(
+				_err.status || HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,
+				JsonUtils.Stringify(
+					_err.response.data.message || _err.response.data || _err.errors || _err.message || "Unknown error",
+				),
+			)
+		}
+	}
 
-            $context = merge(
-                $context,
-                {
-                    $request: {
-                        "data-path": $__dataPath
-                    },
-                    $response: {
-                        url: wsResp.config.url,
-                        host: wsResp.request.host,
-                        body: wsResp.data
-                    }
-                }
-            )
+	@Logger.LogFunction()
+	async Connect(): Promise<void> {
+		if (this.Endpoints.has(ENDPOINT.SESSION)) await this.RequestClient(ENDPOINT.SESSION, [200])
+	}
 
-            // set session headers after request
-            if (SessionHeaders) {
-                const $__sessionHeaders = PlaceHolder.EvaluateJsCode(SessionHeaders, new Sandbox($context)) as Exclude<TJson<string>, undefined>
-                for (const [_headerName, _headerValue] of Object.entries($__sessionHeaders)) {
-                    this.Client.defaults.headers.common[_headerName] = _headerValue
-                }
-            }
+	@Logger.LogFunction()
+	async Disconnect(): Promise<void> {
+		Logger.Debug(`${Logger.Out} RestWebService disconnected`)
+	}
 
-            return Readable.from(JsonUtils.Stringify(wsResp.data))
+	@Logger.LogFunction()
+	async Create(data: TJson, $context: Partial<TContext>): Promise<Readable> {
+		return this.RequestClient(ENDPOINT.ITEM_CREATE, [200, 201], data, $context)
+	}
 
-        } catch (err: unknown) {
-            const _err = NormalizeError(err)
-            throw HttpErrorSwitch(
-                _err.status || HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,
-                JsonUtils.Stringify(
-                    _err.response.data.message ||
-                    _err.response.data ||
-                    _err.errors ||
-                    _err.message ||
-                    "Unknown error"
-                )
-            )
-        }
-    }
+	@Logger.LogFunction()
+	async Read($context: Partial<TContext>): Promise<Readable> {
+		return this.RequestClient(ENDPOINT.COLLECTION_READ, [200], undefined, $context)
+	}
 
-    @Logger.LogFunction()
-    async Connect(): Promise<void> {
-        if (this.Endpoints.has(ENDPOINT.SESSION))
-            await this.RequestClient(ENDPOINT.SESSION, [200])
-    }
+	@Logger.LogFunction()
+	async Update(data: TJson, $context: Partial<TContext>): Promise<Readable> {
+		return this.RequestClient(ENDPOINT.ITEM_UPDATE, [200, 204], data, $context)
+	}
 
+	@Logger.LogFunction()
+	async Delete($context: Partial<TContext>): Promise<Readable> {
+		return this.RequestClient(ENDPOINT.ITEM_DELETE, [200, 204], undefined, $context)
+	}
 
-    @Logger.LogFunction()
-    async Disconnect(): Promise<void> {
-        Logger.Debug(`${Logger.Out} RestWebService disconnected`)
-    }
-
-    @Logger.LogFunction()
-    async Create(data: TJson, $context: Partial<TContext>): Promise<Readable> {
-        return this.RequestClient(ENDPOINT.ITEM_CREATE, [200, 201], data, $context)
-    }
-
-    @Logger.LogFunction()
-    async Read($context: Partial<TContext>): Promise<Readable> {
-        return this.RequestClient(ENDPOINT.COLLECTION_READ, [200], undefined, $context)
-    }
-
-    @Logger.LogFunction()
-    async Update(data: TJson, $context: Partial<TContext>): Promise<Readable> {
-        return this.RequestClient(ENDPOINT.ITEM_UPDATE, [200, 204], data, $context)
-    }
-
-    @Logger.LogFunction()
-    async Delete($context: Partial<TContext>): Promise<Readable> {
-        return this.RequestClient(ENDPOINT.ITEM_DELETE, [200, 204], undefined, $context)
-    }
-
-    @Logger.LogFunction()
-    async ListEntities($context: Partial<TContext>): Promise<Readable> {
-        return this.RequestClient(ENDPOINT.COLLECTION_LIST, [200], undefined, $context)
-    }
+	@Logger.LogFunction()
+	async ListEntities($context: Partial<TContext>): Promise<Readable> {
+		return this.RequestClient(ENDPOINT.COLLECTION_LIST, [200], undefined, $context)
+	}
 }

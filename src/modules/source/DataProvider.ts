@@ -1,81 +1,83 @@
 //
 //
 //
-import { HttpErrorNotFound } from "../errors/HttpErrors"
+import { Assert } from "../../utils/Assert"
 import { Factory } from "../../utils/Factory"
-import type { IDataProvider } from "./base/IDataProvider"
+import { HttpErrorNotFound } from "../errors/HttpErrors"
 import { DATA_PROVIDER } from "./@consts"
-
+import type { IDataProvider } from "./base/IDataProvider"
 
 //
-type ProviderLoader = () => Promise<{ new(): IDataProvider }>;
+type ProviderLoader = () => Promise<{ new (): IDataProvider }>
 
 type ProviderMap = {
-    [key in DATA_PROVIDER]: ProviderLoader;
-};
-
+	[key in DATA_PROVIDER]: ProviderLoader
+}
 
 //
 export class DataProvider {
-    static readonly #dataFactory = new Factory<IDataProvider>();
-    static readonly #loadingPromises = new Map<DATA_PROVIDER, Promise<IDataProvider>>();
+	static readonly #dataFactory = new Factory<IDataProvider>()
+	static readonly #loadingPromises = new Map<DATA_PROVIDER, Promise<IDataProvider>>()
 
-    static readonly #providerMap: ProviderMap = {
-        [DATA_PROVIDER.POSTGRES]: () => import('./providers/PostgresData').then(m => m.PostgresData),
-        [DATA_PROVIDER.MONGODB]: () => import('./providers/MongoDbData').then(m => m.MongoDbData),
-        [DATA_PROVIDER.MSSQL]: () => import('./providers/SqlServerData').then(m => m.SqlServerData),
-        [DATA_PROVIDER.METAL]: () => import('./providers/MetalData').then(m => m.MetalData),
-        [DATA_PROVIDER.PLAN]: () => import('./providers/PlanData').then(m => m.PlanData),
-        [DATA_PROVIDER.MEMORY]: () => import('./providers/MemoryData').then(m => m.MemoryData),
-        [DATA_PROVIDER.MYSQL]: () => import('./providers/MySqlData').then(m => m.MySqlData),
-        [DATA_PROVIDER.WEBSERVICE]: () => import('./providers/WebServiceData').then(m => m.WebServiceData),
-        [DATA_PROVIDER.COSMOSDB]: () => import('./providers/CosmosDbData').then(m => m.CosmosDbData),
-        [DATA_PROVIDER.STORAGE]: () => import('./providers/StorageData').then(m => m.StorageData)
-    };
+	static readonly #providerMap: ProviderMap = {
+		[DATA_PROVIDER.POSTGRES]: () => import("./providers/PostgresData").then((m) => m.PostgresData),
+		[DATA_PROVIDER.MONGODB]: () => import("./providers/MongoDbData").then((m) => m.MongoDbData),
+		[DATA_PROVIDER.MSSQL]: () => import("./providers/SqlServerData").then((m) => m.SqlServerData),
+		[DATA_PROVIDER.METAL]: () => import("./providers/MetalData").then((m) => m.MetalData),
+		[DATA_PROVIDER.PLAN]: () => import("./providers/PlanData").then((m) => m.PlanData),
+		[DATA_PROVIDER.MEMORY]: () => import("./providers/MemoryData").then((m) => m.MemoryData),
+		[DATA_PROVIDER.MYSQL]: () => import("./providers/MySqlData").then((m) => m.MySqlData),
+		[DATA_PROVIDER.WEBSERVICE]: () => import("./providers/WebServiceData").then((m) => m.WebServiceData),
+		[DATA_PROVIDER.COSMOSDB]: () => import("./providers/CosmosDbData").then((m) => m.CosmosDbData),
+		[DATA_PROVIDER.STORAGE]: () => import("./providers/StorageData").then((m) => m.StorageData),
+	}
 
-    /**
-     * Get a data provider instance by name
-     * @param providerName Name of the data provider to get
-     * @returns A promise that resolves to a new instance of the requested data provider
-     */
-    static async GetProvider(providerName: DATA_PROVIDER): Promise<IDataProvider> {
-        // If already loaded, return from factory
-        if (DataProvider.#dataFactory.Has(providerName)) {
-            return DataProvider.#dataFactory.Get(providerName)!.Clone();
-        }
+	/**
+	 * Get a data provider instance by name
+	 * @param providerName Name of the data provider to get
+	 * @returns A promise that resolves to a new instance of the requested data provider
+	 */
+	static async GetProvider(providerName: DATA_PROVIDER): Promise<IDataProvider> {
+		// If already loaded, return from factory
+		if (DataProvider.#dataFactory.Has(providerName)) {
+			const provider = DataProvider.#dataFactory.Get(providerName)!
 
-        // If already loading, return the existing promise
-        const existingPromise = DataProvider.#loadingPromises.get(providerName);
-        if (existingPromise) {
-            return existingPromise.then(provider => provider.Clone());
-        }
+			Assert.Var<IDataProvider>(provider, `Provider not found: ${providerName}`)
+			return provider.Clone()
+		}
 
-        // Get the provider loader from the map
-        const providerLoader = DataProvider.#providerMap[providerName];
-        if (!providerLoader) {
-            throw new HttpErrorNotFound(`Data Provider '${providerName}' not found`);
-        }
+		// If already loading, return the existing promise
+		const existingPromise = DataProvider.#loadingPromises.get(providerName)
+		if (existingPromise) {
+			return existingPromise.then((provider) => provider.Clone())
+		}
 
-        // Create a loading promise
-        const loadPromise = (async () => {
-            try {
-                const ProviderClass = await providerLoader();
-                const provider = new ProviderClass();
-                DataProvider.#dataFactory.Register(providerName, provider);
-                return provider;
-            } finally {
-                DataProvider.#loadingPromises.delete(providerName);
-            }
-        })();
+		// Get the provider loader from the map
+		const providerLoader = DataProvider.#providerMap[providerName]
+		if (!providerLoader) {
+			throw new HttpErrorNotFound(`Data Provider '${providerName}' not found`)
+		}
 
-        // Store the loading promise to prevent duplicate loads
-        DataProvider.#loadingPromises.set(providerName, loadPromise);
-        const provider = await loadPromise;
-        return provider.Clone();
-    }
+		// Create a loading promise
+		const loadPromise = (async () => {
+			try {
+				const ProviderClass = await providerLoader()
+				const provider = new ProviderClass()
+				DataProvider.#dataFactory.Register(providerName, provider)
+				return provider
+			} finally {
+				DataProvider.#loadingPromises.delete(providerName)
+			}
+		})()
 
-    static Clear() {
-        DataProvider.#dataFactory.Clear()
-        DataProvider.#loadingPromises.clear()
-    }
+		// Store the loading promise to prevent duplicate loads
+		DataProvider.#loadingPromises.set(providerName, loadPromise)
+		const provider = await loadPromise
+		return provider.Clone()
+	}
+
+	static Clear() {
+		DataProvider.#dataFactory.Clear()
+		DataProvider.#loadingPromises.clear()
+	}
 }

@@ -4,83 +4,94 @@
 import { z } from "zod"
 //
 import { z_TOrderBy } from "../../../types/DataTable"
+import { z_T_IntPositive } from "../../../types/T_IntPositive"
 import { z_TJson } from "../../../types/TJson"
-import { z_T_IntPositive } from "../../../types/T_IntPositive";
-
 
 // SchemaRequestBase
-export const z_schema = z.string("schema must be a non empty string").trim().min(1, { message: "schema is required" });
-export const z_entity = z.string("entity must be a non empty string").trim().min(1, { message: "entity is required" });
-export const z_source = z.string("source must be a non empty string").trim().min(1, { message: "source is required" });
+export const z_schema = z.string("schema must be a non empty string").trim().min(1, { message: "schema is required" })
+export const z_entity = z.string("entity must be a non empty string").trim().min(1, { message: "entity is required" })
+export const z_source = z.string("source must be a non empty string").trim().min(1, { message: "source is required" })
 
 export const z_TSchemaRequestBase = z.object({
-    schema: z_schema,
-    entity: z_entity,
-    source: z_source.optional(),
-});
+	schema: z_schema,
+	entity: z_entity,
+	source: z_source.optional(),
+})
 // Options
 // fields
-const z_fields = z.string("fields must be a comma separated list of field names").optional();
+const z_fields = z.string("fields must be a comma separated list of field names").optional()
 // filter
-const z_filter = z_TJson.optional();
+const z_filter = z_TJson.optional()
 // filter-expression
-const z_filter_expression = z.string("filter-expression must be a valid expression").optional();
+const z_filter_expression = z.string("filter-expression must be a valid expression").optional()
 // sort
-const z_sort = z_TOrderBy.optional();
+const z_sort = z_TOrderBy.optional()
 // cache
-const z_cache = z_T_IntPositive.min(1, { message: "cache must be greater than 0" }).optional();
+const z_cache = z_T_IntPositive.min(1, { message: "cache must be greater than 0" }).optional()
 // data
-const z_data = z.union([z_TJson, z.array(z_TJson)], "data must be a valid json or an array of valid json").optional();
+const z_data = z.union([z_TJson, z.array(z_TJson)]).optional()
 // anonymize
-const z_anonymize = z.union([z.string("anonymize must be a comma separated list of field names"), z.array(z.string())]).optional();
+const z_anonymize = z
+	.union([z.string("anonymize must be a comma separated list of field names"), z.array(z.string())])
+	.optional()
 // TSchemaRequest
 
-
 export const z_TSchemaRequestSelect = z_TSchemaRequestBase.merge(
-    z.strictObject({
-        fields: z_fields,
-        filter: z_filter,
-        "filter-expression": z_filter_expression,
-        sort: z_sort,
-        cache: z_cache,
-        anonymize: z_anonymize
-    }, { message: "options must be one of the following: fields, filter, filter-expression, sort, cache, anonymize" })
-);
+	z.strictObject(
+		{
+			fields: z_fields,
+			filter: z_filter,
+			"filter-expression": z_filter_expression,
+			sort: z_sort,
+			cache: z_cache,
+			anonymize: z_anonymize,
+		},
+		{ message: "options must be one of the following: fields, filter, filter-expression, sort, cache, anonymize" },
+	),
+)
 
 export const z_TSchemaRequestUpdate = z_TSchemaRequestBase.merge(
-    z.strictObject({
-        filter: z_filter,
-        "filter-expression": z_filter_expression,
-        data: z_data
-    }, "options must be one of the following: filter, filter-expression, data")
-);
+	z.strictObject(
+		{
+			filter: z_filter,
+			"filter-expression": z_filter_expression,
+			data: z_data,
+		},
+		"options must be one of the following: filter, filter-expression, data",
+	),
+)
 
 export const z_TSchemaRequestDelete = z_TSchemaRequestBase.merge(
-    z.strictObject({
-        filter: z_filter,
-        "filter-expression": z_filter_expression,
-    }, "options must be one of the following: filter, filter-expression")
-);
+	z.strictObject(
+		{
+			filter: z_filter,
+			"filter-expression": z_filter_expression,
+		},
+		"options must be one of the following: filter, filter-expression",
+	),
+)
 
 export const z_TSchemaRequestInsert = z_TSchemaRequestBase.merge(
-    z.strictObject({
-        data: z_data
-    }, "options must be one of the following: data")
-);
+	z.strictObject(
+		{
+			data: z_data,
+		},
+		"options must be one of the following: data",
+	),
+)
 
-export const z_TSchemaRequestListEntities = z_TSchemaRequestBase.omit({ entity: true });
+export const z_TSchemaRequestListEntities = z_TSchemaRequestBase.omit({ entity: true })
 export const z_TSchemaRequestAddEntity = z_TSchemaRequestBase
 
-export const z_TSchemaRequest = z.union([
-    z_TSchemaRequestBase,
-    z_TSchemaRequestSelect,
-    z_TSchemaRequestUpdate,
-    z_TSchemaRequestDelete,
-    z_TSchemaRequestInsert,
-    z_TSchemaRequestListEntities,
-    z_TSchemaRequestAddEntity
-]);
-
+export const z_TSchemaRequest = z.discriminatedUnion("schema", [
+	z_TSchemaRequestBase,
+	z_TSchemaRequestSelect,
+	z_TSchemaRequestUpdate,
+	z_TSchemaRequestDelete,
+	z_TSchemaRequestInsert,
+	z_TSchemaRequestListEntities,
+	z_TSchemaRequestAddEntity,
+])
 
 //
 export type TSchemaRequestSelect = z.infer<typeof z_TSchemaRequestSelect>

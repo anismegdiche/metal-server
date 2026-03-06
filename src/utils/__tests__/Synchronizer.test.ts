@@ -1,76 +1,80 @@
-import { describe, expect, it, vi } from 'vitest'
-import { setTimeout } from 'timers'
-import { Synchronizer } from '../Synchronizer'
+import { setTimeout } from "node:timers"
+import { describe, expect, it, vi } from "vitest"
+import { Synchronizer } from "../Synchronizer"
 
-vi.mock('../Logger', () => ({
-    Logger: {
-        Debug: vi.fn(),
-        Out: 'out'
-    }
+vi.mock("../Logger", () => ({
+	Logger: {
+		Debug: vi.fn(),
+		Out: "out",
+	},
 }))
 
 vi.useFakeTimers()
 
-describe('Synchronizer', () => {
-    it('should return the same result for concurrent calls and than a different result after a delay', async () => {
-        const syncOnce = new Synchronizer()
-        const promises = Array(10).fill(0).map(() => syncOnce.Execute(async () => {
-            await new Promise(resolve => setTimeout(resolve, 2000)) //NOSONAR
-            return Math.random()
-        }))
+describe("Synchronizer", () => {
+	it("should return the same result for concurrent calls and than a different result after a delay", async () => {
+		const syncOnce = new Synchronizer()
+		const promises = Array(10)
+			.fill(0)
+			.map(() =>
+				syncOnce.Execute(async () => {
+					await new Promise((resolve) => setTimeout(resolve, 2000)) //NOSONAR
+					return Math.random()
+				}),
+			)
 
-        const results = await Promise.all(promises)
-        expect(results.every(result => result === results[0])).toBe(true)
+		const results = await Promise.all(promises)
+		expect(results.every((result) => result === results[0])).toBe(true)
 
-        const initialResult = results.at(0)
+		const initialResult = results.at(0)
 
-        const subsequentPromise = syncOnce.Execute(async () => {
-            await new Promise(resolve => setTimeout(resolve, 5000))
-            return Math.random()
-        })
+		const subsequentPromise = syncOnce.Execute(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 5000))
+			return Math.random()
+		})
 
-        const subsequentResult = await subsequentPromise
-        expect(subsequentResult).not.toBe(initialResult)
-    }, 30_000)
+		const subsequentResult = await subsequentPromise
+		expect(subsequentResult).not.toBe(initialResult)
+	}, 30_000)
 
-    it('should return a different result after the initial result has been resolved', async () => {
-        const syncOnce = new Synchronizer()
-        const initialPromise = syncOnce.Execute(async () => {
-            await new Promise(resolve => setTimeout(resolve, 5000))
-            return Math.random()
-        })
+	it("should return a different result after the initial result has been resolved", async () => {
+		const syncOnce = new Synchronizer()
+		const initialPromise = syncOnce.Execute(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 5000))
+			return Math.random()
+		})
 
-        const initialResult = await initialPromise
+		const initialResult = await initialPromise
 
-        vi.runOnlyPendingTimers()
+		vi.runOnlyPendingTimers()
 
-        const subsequentPromise = syncOnce.Execute(async () => {
-            await new Promise(resolve => setTimeout(resolve, 5000))
-            return Math.random()
-        })
+		const subsequentPromise = syncOnce.Execute(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 5000))
+			return Math.random()
+		})
 
-        const subsequentResult = await subsequentPromise
+		const subsequentResult = await subsequentPromise
 
-        expect(subsequentResult).not.toBe(initialResult)
-    }, 30_000)
+		expect(subsequentResult).not.toBe(initialResult)
+	}, 30_000)
 
-    it('should resolve pending callers with the first result', async () => {
-        const syncOnce = new Synchronizer()
-        let resolveFirst: (value: string) => void
+	it("should resolve pending callers with the first result", async () => {
+		const syncOnce = new Synchronizer()
+		let resolveFirst: (value: string) => void = () => {}
 
-        const firstPromise = syncOnce.Execute(async () => new Promise<string>(resolve => {
-            resolveFirst = resolve
-        }))
+		const firstPromise = syncOnce.Execute(
+			async () =>
+				new Promise<string>((resolve) => {
+					resolveFirst = resolve
+				}),
+		)
 
-        const queuedPromises = Array.from({ length: 3 }, () =>
-            syncOnce.Execute(async () => 'queued-result')
-        )
+		const queuedPromises = Array.from({ length: 3 }, () => syncOnce.Execute(async () => "queued-result"))
 
-        resolveFirst!('first-result')
+		resolveFirst?.("first-result")
 
-        const results = await Promise.all([firstPromise, ...queuedPromises])
+		const results = await Promise.all([firstPromise, ...queuedPromises])
 
-        expect(results).toEqual(['first-result', 'first-result', 'first-result', 'first-result'])
-    })
+		expect(results).toEqual(["first-result", "first-result", "first-result", "first-result"])
+	})
 })
-

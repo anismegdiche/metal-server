@@ -27,7 +27,7 @@ sources:
     options:
       storage-mode: files
       storage-type: fs
-      fs-folder: ./data/
+      folder: ./data/
       content:
         "homes*.csv":
           content-type: csv

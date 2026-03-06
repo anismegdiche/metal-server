@@ -31,7 +31,7 @@ sources:
     options:
       storage-mode: folders
       storage-type: fs
-      fs-folder: ./data/
+      folder: ./data/
       allow-delete: true
   # src-myplan:
   #   provider: plan
@@ -41,7 +41,7 @@ sources:
     options:
       storage-mode: files
       storage-type: fs
-      fs-folder: ./data/
+      folder: ./data/
       autocreate: true
       content:
         "*.csv":

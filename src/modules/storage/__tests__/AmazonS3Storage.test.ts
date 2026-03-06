@@ -1,247 +1,249 @@
-import { Readable } from 'node:stream'
-import { vi, type Mock } from 'vitest'
-import { HttpErrorInternalServerError } from '../../../modules/errors/HttpErrors'
-import { DataTable } from '../../../types/DataTable'
-import type { U_config_sources_source } from '../../core/types/U_config_sources'
+import { Readable } from "node:stream"
+import { vi } from "vitest"
+import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
+import { DataTable } from "../../../types/DataTable"
+import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { DATA_PROVIDER } from "../../source/@consts"
-import { AmazonS3Storage } from '../providers/AmazonS3Storage'
-import { S3Client } from '@aws-sdk/client-s3'
+import { AmazonS3Storage } from "../providers/AmazonS3Storage"
 
-vi.mock('@aws-sdk/client-s3')
+const mockS3Module = {
+	S3Client: vi.fn().mockImplementation(function() { return { send: vi.fn() } }),
+	ListObjectsV2Command: vi.fn().mockImplementation(function() { return {} }),
+	PutObjectCommand: vi.fn().mockImplementation(function() { return {} }),
+	GetObjectCommand: vi.fn().mockImplementation(function() { return {} }),
+	CopyObjectCommand: vi.fn().mockImplementation(function() { return {} }),
+	DeleteObjectCommand: vi.fn().mockImplementation(function() { return {} }),
+}
 
 const baseParams = {
-    provider: DATA_PROVIDER.STORAGE,
-    host: 's3.amazonaws.com',
+	provider: DATA_PROVIDER.STORAGE,
+	host: "s3.amazonaws.com",
 } as unknown as U_config_sources_source
 
-describe('AmazonS3Storage', () => {
-    let storage: AmazonS3Storage
-    const mockConfig: U_config_sources_source = {
-        ...baseParams,
-        provider: DATA_PROVIDER.STORAGE,
-        host: 's3.amazonaws.com',
-        options: {
-            bucket: 'test-bucket',
-            region: 'us-east-1',
-            "access-key-id": 'test-key',
-            "secret-access-key": 'test-secret',
-            endpoint: 'http://127.0.0.1:9000'
-        }
-    }
+describe("AmazonS3Storage", () => {
+	let storage: AmazonS3Storage
+	const mockConfig: U_config_sources_source = {
+		...baseParams,
+		provider: DATA_PROVIDER.STORAGE,
+		host: "s3.amazonaws.com",
+		options: {
+			bucket: "test-bucket",
+			region: "us-east-1",
+			"access-key-id": "test-key",
+			"secret-access-key": "test-secret",
+			endpoint: "http://127.0.0.1:9000",
+		},
+	}
 
-    beforeEach(() => {
-        vi.clearAllMocks()
-        storage = new AmazonS3Storage()
-        storage.SetConfig(mockConfig)
-    })
+	beforeEach(() => {
+		vi.clearAllMocks()
+		// Inject the mock S3 module for testing
+		AmazonS3Storage.setS3Module(mockS3Module as any)
+		storage = new AmazonS3Storage()
+		storage.SetConfig(mockConfig)
+	})
 
-    describe('Connect', () => {
-        it('should connect successfully with valid credentials', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockResolvedValue({})
-            } as unknown as S3Client
+	describe("Connect", () => {
+		it("should connect successfully with valid credentials", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockResolvedValue({}),
+			}
 
-            // Set up the S3Client mock
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
+			// Set up the S3Client mock
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
 
-            await storage.Connect()
-        })
+			await storage.Connect()
+		})
 
-        it('should throw error with missing configuration', async () => {
-            const storageWithoutConfig = new AmazonS3Storage()
-            await expect(storageWithoutConfig.Connect()).rejects
-                .toThrow(HttpErrorInternalServerError)
-        })
-    })
+		it("should throw error with missing configuration", async () => {
+			const storageWithoutConfig = new AmazonS3Storage()
+			await expect(storageWithoutConfig.Connect()).rejects.toThrow(HttpErrorInternalServerError)
+		})
+	})
 
-    describe('FileIsExist', () => {
-        it('should return true for existing file', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockResolvedValue({
-                    ContentLength: 1024
-                })
-            } as unknown as S3Client
+	describe("FileIsExist", () => {
+		it("should return true for existing file", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockResolvedValue({
+					ContentLength: 1024,
+				}),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            const result = await storage.FileIsExist('test-folder', 'test-file.txt')
-            expect(result).toBe(true)
-        })
+			const result = await storage.FileIsExist("test-folder", "test-file.txt")
+			expect(result).toBe(true)
+		})
 
-        it('should return false for non-existing file', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockRejectedValue({ name: 'NoSuchKey', code: 'NoSuchKey' })
-            } as unknown as S3Client
+		it("should return false for non-existing file", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockRejectedValue({ name: "NoSuchKey", code: "NoSuchKey" }),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            // The method should catch NoSuchKey errors and return false
-            const result = await storage.FileIsExist('test-folder', 'non-existent.txt')
-            expect(result).toBe(false)
-        })
-    })
+			// The method should catch NoSuchKey errors and return false
+			const result = await storage.FileIsExist("test-folder", "non-existent.txt")
+			expect(result).toBe(false)
+		})
+	})
 
-    describe('FileRead', () => {
-        it('should read file successfully', async () => {
-            const mockStream = Readable.from(['test data'])
-            const mockS3Client = {
-                send: vi.fn().mockResolvedValue({
-                    Body: mockStream
-                })
-            } as unknown as S3Client
+	describe("FileRead", () => {
+		it("should read file successfully", async () => {
+			const mockStream = Readable.from(["test data"])
+			const mockS3Client = {
+				send: vi.fn().mockResolvedValue({
+					Body: mockStream,
+				}),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            const result = await storage.FileRead('test-folder', 'test-file.txt')
-            expect(result).toBeDefined()
-        })
+			const result = await storage.FileRead("test-folder", "test-file.txt")
+			expect(result).toBeDefined()
+		})
 
-        it('should throw error if file does not exist', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockRejectedValue(new Error('NoSuchKey'))
-            } as unknown as S3Client
+		it("should throw error if file does not exist", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockRejectedValue(new Error("NoSuchKey")),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            await expect(storage.FileRead('test-folder', 'non-existent.txt')).rejects.toThrow()
-        })
-    })
+			await expect(storage.FileRead("test-folder", "non-existent.txt")).rejects.toThrow()
+		})
+	})
 
-    describe('FileWrite', () => {
-        it('should write file successfully', async () => {
-            const mockStream = Readable.from(['test data'])
-            const mockS3Client = {
-                send: vi.fn().mockResolvedValue({})
-            } as unknown as S3Client
+	describe("FileWrite", () => {
+		it("should write file successfully", async () => {
+			const mockStream = Readable.from(["test data"])
+			const mockS3Client = {
+				send: vi.fn().mockResolvedValue({}),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            await storage.FileWrite('test-folder', 'test-file.txt', mockStream)
-            expect(mockS3Client.send).toHaveBeenCalled()
-        })
-    })
+			await storage.FileWrite("test-folder", "test-file.txt", mockStream)
+			expect(mockS3Client.send).toHaveBeenCalled()
+		})
+	})
 
-    describe('FileDelete', () => {
-        it('should delete file successfully', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockResolvedValue({})
-            } as unknown as S3Client
+	describe("FileDelete", () => {
+		it("should delete file successfully", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockResolvedValue({}),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            await storage.FileDelete('test-folder', 'test-file.txt')
-            expect(mockS3Client.send).toHaveBeenCalled()
-        })
-    })
+			await storage.FileDelete("test-folder", "test-file.txt")
+			expect(mockS3Client.send).toHaveBeenCalled()
+		})
+	})
 
-    describe('FileRename', () => {
-        it('should rename file successfully', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockResolvedValue({})
-            } as unknown as S3Client
+	describe("FileRename", () => {
+		it("should rename file successfully", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockResolvedValue({}),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            await storage.FileRename('test-folder', 'old-file.txt', 'new-file.txt')
-            expect(mockS3Client.send).toHaveBeenCalled()
-        })
-    })
+			await storage.FileRename("test-folder", "old-file.txt", "new-file.txt")
+			expect(mockS3Client.send).toHaveBeenCalled()
+		})
+	})
 
-    describe('FolderIsExist', () => {
-        it('should return true for existing folder', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockResolvedValue({
-                    CommonPrefixes: [
-                        { Prefix: 'test-folder/' }
-                    ]
-                })
-            } as unknown as S3Client
+	describe("FolderIsExist", () => {
+		it("should return true for existing folder", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockResolvedValue({
+					CommonPrefixes: [{ Prefix: "test-folder/" }],
+				}),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            const result = await storage.FolderIsExist('test-folder')
-            expect(result).toBe(true)
-        })
+			const result = await storage.FolderIsExist("test-folder")
+			expect(result).toBe(true)
+		})
 
-        it('should return false for non-existing folder', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockRejectedValue(new Error('NotFound'))
-            } as unknown as S3Client
+		it("should return false for non-existing folder", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockRejectedValue(new Error("NotFound")),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            const result = await storage.FolderIsExist('non-existent-folder')
-            expect(result).toBe(false)
-        })
-    })
+			const result = await storage.FolderIsExist("non-existent-folder")
+			expect(result).toBe(false)
+		})
+	})
 
-    describe('FolderCreate', () => {
-        it('should create folder successfully', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockResolvedValue({})
-            } as unknown as S3Client
+	describe("FolderCreate", () => {
+		it("should create folder successfully", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockResolvedValue({}),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            await storage.FolderCreate('test-folder')
-            expect(mockS3Client.send).toHaveBeenCalled()
-        })
-    })
+			await storage.FolderCreate("test-folder")
+			expect(mockS3Client.send).toHaveBeenCalled()
+		})
+	})
 
-    describe('FolderListFiles', () => {
-        it('should list files successfully', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockResolvedValue({
-                    Contents: [
-                        { Key: 'test-folder/file1.txt', Size: 100 },
-                        { Key: 'test-folder/file2.txt', Size: 200 }
-                    ]
-                })
-            } as unknown as S3Client
+	describe("FolderListFiles", () => {
+		it("should list files successfully", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockResolvedValue({
+					Contents: [
+						{ Key: "test-folder/file1.txt", Size: 100 },
+						{ Key: "test-folder/file2.txt", Size: 200 },
+					],
+				}),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            const result = await storage.FolderListFiles('test-folder')
-            expect(result).toBeInstanceOf(DataTable)
-        })
-    })
+			const result = await storage.FolderListFiles("test-folder")
+			expect(result).toBeInstanceOf(DataTable)
+		})
+	})
 
-    describe('FolderListFolders', () => {
-        it('should list folders successfully', async () => {
-            const mockS3Client = {
-                send: vi.fn().mockResolvedValue({
-                    CommonPrefixes: [
-                        { Prefix: 'test-folder/subfolder1/' },
-                        { Prefix: 'test-folder/subfolder2/' }
-                    ]
-                })
-            } as unknown as S3Client
+	describe("FolderListFolders", () => {
+		it("should list folders successfully", async () => {
+			const mockS3Client = {
+				send: vi.fn().mockResolvedValue({
+					CommonPrefixes: [{ Prefix: "test-folder/subfolder1/" }, { Prefix: "test-folder/subfolder2/" }],
+				}),
+			}
 
-            (S3Client as Mock).mockImplementation(function () { return mockS3Client })
-            await storage.Connect()
+			mockS3Module.S3Client.mockImplementation(function() { return mockS3Client })
+			await storage.Connect()
 
-            const result = await storage.FolderListFolders()
-            expect(result).toBeInstanceOf(DataTable)
-        })
-    })
+			const result = await storage.FolderListFolders()
+			expect(result).toBeInstanceOf(DataTable)
+		})
+	})
 
-    describe('Disconnect', () => {
-        it('should disconnect successfully', async () => {
-            await storage.Connect()
-            await storage.Disconnect()
-            // Disconnect should clear the client
-            expect(storage.Disconnect).toBeDefined()
-        })
-    })
+	describe("Disconnect", () => {
+		it("should disconnect successfully", async () => {
+			await storage.Connect()
+			await storage.Disconnect()
+			// Disconnect should clear the client
+			expect(storage.Disconnect).toBeDefined()
+		})
+	})
 })

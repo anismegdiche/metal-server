@@ -1,75 +1,67 @@
 //
 //
 //
-import type { Request, Response } from 'express'
-import bytes from 'bytes'
+
+import bytes from "bytes"
+import type { Request, Response } from "express"
+import type { TInternalResponse } from "../modules/core/types/TInternalResponse"
+import { HttpErrorBadRequest } from "../modules/errors/HttpErrors"
 //
-import type { TSchemaRequest } from '../modules/schema/types/TSchemaRequest'
-import type { TJson } from '../types/TJson'
-import type { TInternalResponse } from '../modules/core/types/TInternalResponse'
-import { HttpErrorBadRequest } from '../modules/errors/HttpErrors'
-import { Assert } from './Assert'
+import type { TSchemaRequest } from "../modules/schema/types/TSchemaRequest"
+import type { TJson } from "../types/TJson"
+import { Assert } from "./Assert"
 
 const RX_SORT = /^(\w+:(asc|desc))(,\w+:(asc|desc))*$/
 
-
 export class Convert {
+	static HumainSizeToBytes(size: string): number {
+		return bytes(size) ?? 0
+	}
 
-    static HumainSizeToBytes(size: string): number {
-        return bytes(size) ?? 0
-    }
+	static RequestToSchemaRequest(req: Request): TSchemaRequest {
+		const { schema, entity } = req.params
+		const { sort } = req.query ?? {}
 
-    static RequestToSchemaRequest(req: Request): TSchemaRequest {
-        const { schema, entity } = req.params
-        const { sort } = req.query ?? {}
+		let _sort: TJson<string> | undefined
 
+		if (typeof sort === "string") {
+			if (!RX_SORT.test(sort)) throw new HttpErrorBadRequest(`Invalid sort format: ${sort}`)
 
-        let _sort: TJson<string> | undefined = undefined
+			_sort = sort.split(",").reduce<TJson<string>>((acc, curr) => {
+				const [key, value] = curr.split(":")
+				Assert.Var<string>(key, "undefined key")
+				Assert.Var<string>(value, "undefined value")
 
-        if (typeof sort === 'string') {
-            if (!RX_SORT.test(sort))
-                throw new HttpErrorBadRequest(`Invalid sort format: ${sort}`)
+				acc[key] = value
+				return acc
+			}, {})
+		}
 
-            _sort = sort
-                .split(',')
-                .reduce<TJson<string>>((acc, curr) => {
-                    const [key, value] = curr.split(':')
-                    Assert.Var<string>(key, "undefined key")
-                    Assert.Var<string>(value, "undefined value")
+		const schemaResponse: TSchemaRequest = {
+			schema,
+			entity,
+			...req.body,
+			...req.query,
+			sort: _sort ?? sort,
+		}
 
-                    acc[key] = value
-                    return acc
-                }, {})
-        }
+		return schemaResponse
+	}
 
-        const schemaResponse: TSchemaRequest = {
-            schema,
-            entity,
-            ...req.body,
-            ...req.query,
-            sort: _sort ?? sort
-        }
+	static InternalResponseToResponse(res: Response, intRes: TInternalResponse<any>): Response {
+		return res.status(intRes.StatusCode).json(intRes.Body).end()
+	}
 
-        return schemaResponse
-    }
+	static PatternToRegex(pattern: string): RegExp {
+		// Escape special regex characters except for * and ?
+		const escapedPattern = pattern.replaceAll(/([.+?^${}()|[\]\\])/g, "\\$1")
 
-    static InternalResponseToResponse(res: Response, intRes: TInternalResponse<any>): Response {
-        return res
-            .status(intRes.StatusCode)
-            .json(intRes.Body)
-            .end()
-    }
+		// Replace friendly wildcards with regex equivalents
+		const rxPattern = escapedPattern
+			.replaceAll(/\*/g, ".*") // NOSONAR  // Convert * to .*
+			.replaceAll(/\?/g, ".") // NOSONAR  // Convert ? to .
 
-    static PatternToRegex(pattern: string): RegExp {
-        // Escape special regex characters except for * and ?
-        const escapedPattern = pattern.replaceAll(/([.+?^${}()|[\]\\])/g, '\\$1')
-
-        // Replace friendly wildcards with regex equivalents
-        const rxPattern = escapedPattern
-            .replaceAll(/\*/g, '.*') // NOSONAR  // Convert * to .*  
-            .replaceAll(/\?/g, '.')  // NOSONAR  // Convert ? to .   
-
-        // Create and return the RegExp object
-        return new RegExp(`^${rxPattern}$`) // Anchored to match the whole string
-    }
+		// Create and return the RegExp object
+		return new RegExp(`^${rxPattern}$`) // Anchored to match the whole string
+	}
 }

@@ -1,40 +1,40 @@
 //
 //
 //
-import type { Request, Response } from 'express'
+import type { Request, Response } from "express"
+import { Assert } from "../../../utils/Assert"
 //
-import { Convert } from '../../../utils/Convert'
-import { Schedule } from '../../plan/Schedule'
-import { RequestHandler } from '../RequestHandler'
-import { ResponseHandler } from '../ResponseHandler'
-import { Assert } from '../../../utils/Assert'
+import { Convert } from "../../../utils/Convert"
+import { Schedule } from "../../plan/Schedule"
+import { RequestHandler } from "../RequestHandler"
+import { ResponseHandler } from "../ResponseHandler"
 
 export class ScheduleResponse {
-    static Start(req: Request, res: Response) {
-        RequestHandler.CheckRequest(req)
-        try {
-            const { jobName } = req.params
+	static Start(req: Request, res: Response) {
+		RequestHandler.CheckRequest(req)
+		try {
+			const { jobName } = req.params
 
-            Assert.Var<string>(jobName, 'jobName is not defined')
+			Assert.Var<string>(jobName, "jobName is not defined")
 
-            const intRes = Schedule.Start(jobName, req.__METAL_CURRENT_USER)
-            Convert.InternalResponseToResponse(res, intRes)
-        } catch (error: unknown) {
-            ResponseHandler.ResponseError(res, error as Error)
-        }
-    }
+			const intRes = Schedule.Start(jobName, req.__METAL_CURRENT_USER)
+			Convert.InternalResponseToResponse(res, intRes)
+		} catch (error: unknown) {
+			ResponseHandler.ResponseError(res, error as Error)
+		}
+	}
 
-    static Stop(req: Request, res: Response) {
-        RequestHandler.CheckRequest(req)
-        try {
-            const { jobName } = req.params
+	static Stop(req: Request, res: Response) {
+		RequestHandler.CheckRequest(req)
+		try {
+			const { jobName } = req.params
 
-            Assert.Var<string>(jobName, 'jobName is not defined')
+			Assert.Var<string>(jobName, "jobName is not defined")
 
-            const intRes = Schedule.Stop(jobName, req.__METAL_CURRENT_USER)
-            Convert.InternalResponseToResponse(res, intRes)
-        } catch (error: unknown) {
-            ResponseHandler.ResponseError(res, error as Error)
-        }
-    }
+			const intRes = Schedule.Stop(jobName, req.__METAL_CURRENT_USER)
+			Convert.InternalResponseToResponse(res, intRes)
+		} catch (error: unknown) {
+			ResponseHandler.ResponseError(res, error as Error)
+		}
+	}
 }

@@ -8,104 +8,124 @@ import { Assert } from "../../../utils/Assert"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { clsContext } from "../../../utils/base/clsContext"
 import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
-import { StringUtils } from '../../../utils/StringUtils'
-import type { TInternalResponse } from '../../core/types/TInternalResponse'
+import { StringUtils } from "../../../utils/StringUtils"
+import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import type { U_config_sources_source } from "../../core/types/U_config_sources"
 import { HttpErrorBadRequest } from "../../errors/HttpErrors"
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate } from '../../schema/types/TSchemaRequest'
+import type {
+	TSchemaRequest,
+	TSchemaRequestDelete,
+	TSchemaRequestInsert,
+	TSchemaRequestListEntities,
+	TSchemaRequestSelect,
+	TSchemaRequestUpdate,
+} from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { DATA_PROVIDER } from "../@consts"
+import type { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProviderOptions } from "./absDataProviderOptions"
 import type { IDataProvider } from "./IDataProvider"
 import type { IDataProviderOptions } from "./IDataProviderOptions"
 
-
 export class DataProviderOptions extends absDataProviderOptions implements IDataProviderOptions { }
 
-
 //
-export abstract class absDataProvider extends Mixin(clsClonable, clsContext) implements IDataProvider {// NOSONAR
+export abstract class absDataProvider extends Mixin(clsClonable, clsContext) implements IDataProvider {
+	// NOSONAR
 
-    abstract ProviderName: DATA_PROVIDER
-    abstract SourceName?: string
-    abstract Config: unknown
-    abstract Connection?: unknown
-    Options: IDataProviderOptions = new DataProviderOptions()
+	abstract ProviderName: DATA_PROVIDER
+	abstract SourceName?: string
+	abstract Config: unknown
+	abstract Connection?: unknown
+	Options: IDataProviderOptions = new DataProviderOptions()
 
-    protected constructor() {
-        super()
-    }
+	protected constructor() {
+		super()
+	}
 
-    // Init
-    async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
-        Assert.Condition(!StringUtils.IsEmpty(source), `${source}: source name is missing`)
-        Assert.Condition(sourceConfig != undefined, `${source}: source config is missing`)
-        this.SourceName = source
-    }
+	// Init
+	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+		Assert.Condition(!StringUtils.IsEmpty(source), `${source}: source name is missing`)
+		Assert.Condition(sourceConfig !== undefined, `${source}: source config is missing`)
+		this.SourceName = source
+	}
 
-    // Connection
-    abstract Connect(): Promise<void>
-    abstract Disconnect(): Promise<void>
+	// Connection
+	abstract Connect(): Promise<void>
+	abstract Disconnect(): Promise<void>
 
-    // Entities
-    abstract ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>>
-    abstract AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>>
-    //ROADMAP RenameEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>>
-    //ROADMAP DeleteEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>>
+	// Entities
+	abstract ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>>
+	abstract AddEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>>
+	//ROADMAP RenameEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>>
+	//ROADMAP DeleteEntity(schemaRequest: TSchemaRequest): Promise<TInternalResponse<TSchemaResponse>>
 
-    // Data
-    abstract Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>>
-    abstract Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>>
-    abstract Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>>
-    abstract Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>>
+	// Data
+	abstract Select(schemaRequest: TSchemaRequestSelect): Promise<TInternalResponse<TSchemaResponse>>
+	abstract Insert(schemaRequest: TSchemaRequestInsert): Promise<TInternalResponse<undefined>>
+	abstract Update(schemaRequest: TSchemaRequestUpdate): Promise<TInternalResponse<undefined>>
+	abstract Delete(schemaRequest: TSchemaRequestDelete): Promise<TInternalResponse<undefined>>
 
+	// Utils
+	abstract EscapeEntity(entity: string): string
+	abstract EscapeField(field: string): string
 
-    // Utils
-    abstract EscapeEntity(entity: string): string
-    abstract EscapeField(field: string): string
+	GetSqlQuery(sqlQueryHelper: SqlQueryUtils, options: TOptionalParameter): string | undefined {
+		return options.Fields?.join("") !== "*" || options.Filter !== undefined || options.Sort !== undefined
+			? sqlQueryHelper.Query()
+			: undefined
+	}
 
+	GenerateSqlSelect(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+		return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+			.Select(options.Fields)
+			.From((schemaRequest as TSchemaRequestSelect).entity)
+			.Where(options.Filter)
+			.OrderBy(options.Sort)
+	}
 
-    GetSqlQuery(sqlQueryHelper: SqlQueryUtils, options: TOptionalParameter): string | undefined {
-        return (options.Fields?.join('') !== '*' || options.Filter != undefined || options.Sort != undefined)
-            ? sqlQueryHelper.Query()
-            : undefined
-    }
+	async GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): Promise<SqlQueryUtils> {
+		Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
+		Assert.Condition(
+			(await options.Data.Count()) > 0,
+			`${schemaRequest.schema}: data is empty`,
+			new HttpErrorBadRequest(),
+		)
 
-    GenerateSqlSelect(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
-        return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
-            .Select(options.Fields)
-            .From((schemaRequest as TSchemaRequestSelect).entity)
-            .Where(options.Filter)
-            .OrderBy(options.Sort)
-    }
+		return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+			.Insert((schemaRequest as TSchemaRequestInsert).entity)
+			.Fields(options.Data.GetFieldsName())
+			.Values(await options.Data.Rows())
+	}
 
-    async GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): Promise<SqlQueryUtils> {
+	async GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): Promise<SqlQueryUtils> {
+		Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
+		Assert.Condition(
+			(await options.Data.Count()) > 0,
+			`${schemaRequest.schema}: data is empty`,
+			new HttpErrorBadRequest(),
+		)
 
-        Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
-        Assert.Condition(await options.Data.Count() > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
+		return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+			.Update((schemaRequest as TSchemaRequestUpdate).entity)
+			.Set(await options.Data.Rows())
+			.Where(options.Filter)
+	}
 
-        return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
-            .Insert((schemaRequest as TSchemaRequestInsert).entity)
-            .Fields(options.Data.GetFieldsName())
-            .Values(await options.Data.Rows())
-    }
+	GenerateSqlDelete(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+		return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+			.Delete()
+			.From((schemaRequest as TSchemaRequestDelete).entity)
+			.Where(options.Filter)
+	}
 
-    async GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): Promise<SqlQueryUtils> {
+	async CacheSet(schemaRequest: TSchemaRequestSelect, data: DataTable): Promise<void> {
+		const { Cache } = await import("../../cache/Cache")
+		await Cache.Set(schemaRequest, data)
+	}
 
-        Assert.Var<DataTable>(options.Data, `${schemaRequest.schema}: data is missing`, new HttpErrorBadRequest())
-        Assert.Condition(await options.Data.Count() > 0, `${schemaRequest.schema}: data is empty`, new HttpErrorBadRequest())
-
-        return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
-            .Update((schemaRequest as TSchemaRequestUpdate).entity)
-            .Set(await options.Data.Rows())
-            .Where(options.Filter)
-    }
-
-    GenerateSqlDelete(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
-        return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
-            .Delete()
-            .From((schemaRequest as TSchemaRequestDelete).entity)
-            .Where(options.Filter)
-    }
+	async CacheRemove(schemaRequest: TSchemaRequest): Promise<void> {
+		const { Cache } = await import("../../cache/Cache")
+		await Cache.Remove(schemaRequest)
+	}
 }

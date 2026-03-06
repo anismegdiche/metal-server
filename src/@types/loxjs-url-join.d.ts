@@ -1,1 +1,1 @@
-declare module '@loxjs/url-join';
+declare module "@loxjs/url-join"
