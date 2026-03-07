@@ -9,7 +9,7 @@ import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { Plans } from "../../plan/Plans"
 import type { TContext } from "../../sandbox/types/TContext"
@@ -31,7 +31,7 @@ import { Source } from "../Source"
 export class PlanData extends absDataProvider {
 	SourceName?: string
 	ProviderName = DATA_PROVIDER.PLAN
-	Config: U_config_sources_source = <U_config_sources_source>{}
+	Config: U__sources_source = <U__sources_source>{}
 	Connection: undefined
 
 	// biome-ignore lint/complexity/noUselessConstructor: compatibility
@@ -40,7 +40,7 @@ export class PlanData extends absDataProvider {
 	}
 
 	@Logger.LogFunction()
-	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
 		this.Config = sourceConfig
 	}

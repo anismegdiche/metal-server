@@ -3,7 +3,7 @@
 //
 import type { DataTable, TOrderBy } from "../../types/DataTable"
 import type { TJson } from "../../types/TJson"
-import type { U_config_sources_source } from "../core/types/U_config_sources"
+import type { U__sources_source } from "../core/types/U__sources"
 import type { DATA_ENTITY_TYPE } from "./@consts"
 import type { IDataProvider } from "./base/IDataProvider"
 
@@ -25,6 +25,6 @@ export type TOptionalParameter = {
 }
 
 export type TSource = {
-	SourceConfig: U_config_sources_source
+	SourceConfig: U__sources_source
 	DataProvider: IDataProvider
 }

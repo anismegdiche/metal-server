@@ -5,7 +5,7 @@ import { merge } from "lodash-es"
 //
 import { Assert } from "../../../utils/Assert"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import type { TContext } from "../../sandbox/types/TContext"
 import type {
 	TSchemaRequest,
@@ -39,7 +39,7 @@ export type U__source_storage_options =
 			"storage-mode": STORAGE_MODE.FOLDERS
 	  } & U__source_storage_folder_options)
 
-export type U__source_storage = U_config_sources_source & {
+export type U__source_storage = U__sources_source & {
 	options: U__source_storage_options
 }
 
@@ -47,7 +47,7 @@ export type U__source_storage = U_config_sources_source & {
 export class StorageData extends absDataProvider implements IDataProvider {
 	SourceName?: string
 	ProviderName = DATA_PROVIDER.STORAGE
-	Config: U_config_sources_source = <U_config_sources_source>{}
+	Config: U__sources_source = <U__sources_source>{}
 	Connection?: StorageFilesData | StorageFoldersData
 
 	// biome-ignore lint/complexity/noUselessConstructor: compatibility
@@ -61,7 +61,7 @@ export class StorageData extends absDataProvider implements IDataProvider {
 		},
 	}
 
-	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
 
 		this.Config = merge(this.DEFAULT, sourceConfig)

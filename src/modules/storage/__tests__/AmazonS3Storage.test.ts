@@ -2,7 +2,7 @@ import { Readable } from "node:stream"
 import { vi } from "vitest"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
 import { AmazonS3Storage } from "../providers/AmazonS3Storage"
 
@@ -18,11 +18,11 @@ const mockS3Module = {
 const baseParams = {
 	provider: DATA_PROVIDER.STORAGE,
 	host: "s3.amazonaws.com",
-} as unknown as U_config_sources_source
+} as unknown as U__sources_source
 
 describe("AmazonS3Storage", () => {
 	let storage: AmazonS3Storage
-	const mockConfig: U_config_sources_source = {
+	const mockConfig: U__sources_source = {
 		...baseParams,
 		provider: DATA_PROVIDER.STORAGE,
 		host: "s3.amazonaws.com",

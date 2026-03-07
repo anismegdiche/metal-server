@@ -5,7 +5,7 @@ import type { clsClonable } from "../../../utils/base/clsClonable"
 import type { clsContext } from "../../../utils/base/clsContext"
 import type { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import type {
 	TSchemaRequest,
 	TSchemaRequestDelete,
@@ -28,7 +28,7 @@ export interface IDataProvider extends clsClonable, clsContext {
 	Options: IDataProviderOptions
 
 	// Init
-	Init(source: string, sourceConfig: U_config_sources_source): Promise<void>
+	Init(source: string, sourceConfig: U__sources_source): Promise<void>
 
 	// Connection
 	Connect(): Promise<void>

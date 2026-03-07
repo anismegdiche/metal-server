@@ -30,21 +30,21 @@ import {
 	TextTranslationDockerService,
 	TextZeroShotClassificationDockerService,
 } from "../docker-services/TextDockerService"
-import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
+import type { T__ai_engines_ai_engine } from "../types/T__ai_engines_ai_engine"
 import type { TAiDockerService } from "../types/TAiDockerService"
 import type {
-	U_config_plans_plan_entity_run_ai_text_emotion_detection_Params,
-	U_config_plans_plan_entity_run_ai_text_Params,
-	U_config_plans_plan_entity_run_ai_text_paraphrase_detection_Params,
-	U_config_plans_plan_entity_run_ai_text_question_answering_Params,
-	U_config_plans_plan_entity_run_ai_text_sentence_similarity_Params,
-	U_config_plans_plan_entity_run_ai_text_sentiment_analysis_Params,
-	U_config_plans_plan_entity_run_ai_text_summarization_Params,
-	U_config_plans_plan_entity_run_ai_text_text_generation_Params,
-	U_config_plans_plan_entity_run_ai_text_toxicity_detection_Params,
-	U_config_plans_plan_entity_run_ai_text_translation_Params,
-	U_config_plans_plan_entity_run_ai_text_zero_shot_classification_Params,
-} from "../types/U_config_plans_plan_entity_run_ai_text_Params"
+	U__plans_plan_run_ai_text_emotion_detection_Params,
+	U__plans_plan_run_ai_text_Params,
+	U__plans_plan_run_ai_text_paraphrase_detection_Params,
+	U__plans_plan_run_ai_text_question_answering_Params,
+	U__plans_plan_run_ai_text_sentence_similarity_Params,
+	U__plans_plan_run_ai_text_sentiment_analysis_Params,
+	U__plans_plan_run_ai_text_summarization_Params,
+	U__plans_plan_run_ai_text_text_generation_Params,
+	U__plans_plan_run_ai_text_toxicity_detection_Params,
+	U__plans_plan_run_ai_text_translation_Params,
+	U__plans_plan_run_ai_text_zero_shot_classification_Params,
+} from "../types/U__plans_plan_run_ai_text_Params"
 
 //
 export class Text extends absAiEngine implements IAiEngine {
@@ -53,7 +53,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	AiDockerService: Record<string, TAiDockerService> = {}
 	RunTask: Record<string, (args: TAiArguments) => Promise<TAiOutput>> = {}
 
-	DEFAULT: U_config_plans_plan_entity_run_ai_text_Params = {
+	DEFAULT: U__plans_plan_run_ai_text_Params = {
 		task: TEXT_TASK.TRANSLATION,
 		params: {
 			source: LANG_ISO.en_XX,
@@ -99,7 +99,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	}
 
 	@Logger.LogFunction()
-	async Init(aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
+	async Init(aiName: string, aiConfig: T__ai_engines_ai_engine): Promise<void> {
 		await super.Init(aiName, aiConfig)
 		await this.Prepare()
 		await AiDocker.StartService({
@@ -118,7 +118,7 @@ export class Text extends absAiEngine implements IAiEngine {
 		Assert.Var<number>(_sleep, "server.ai-engines.sleep is not defined")
 		Assert.Var<number>(_timeout, "server.ai-engines.timeout is not defined")
 
-		const _args: U_config_plans_plan_entity_run_ai_text_Params = merge(this.DEFAULT, args)
+		const _args: U__plans_plan_run_ai_text_Params = merge(this.DEFAULT, args)
 		const { task } = _args
 
 		Assert.Condition(Object.values(TEXT_TASK).includes(task as TEXT_TASK), `Invalid text task: ${task}`)
@@ -130,7 +130,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async EmotionDetection(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_emotion_detection_Params
+		const { params } = args as U__plans_plan_run_ai_text_emotion_detection_Params
 
 		const _params = {
 			top_k: params?.top ?? null,
@@ -227,7 +227,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async ParaphraseDetection(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_paraphrase_detection_Params
+		const { params } = args as U__plans_plan_run_ai_text_paraphrase_detection_Params
 
 		Assert.Var(data, "data is required")
 		Assert.Var(params, "params is required")
@@ -256,7 +256,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async QuestionAnswering(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_question_answering_Params
+		const { params } = args as U__plans_plan_run_ai_text_question_answering_Params
 
 		Assert.Var(data, "data is required")
 		Assert.Var(params, "params is required")
@@ -286,7 +286,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async SentenceSimilarity(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_sentence_similarity_Params
+		const { params } = args as U__plans_plan_run_ai_text_sentence_similarity_Params
 
 		Assert.Var(data, "data is required")
 		Assert.Var(params, "params is required")
@@ -313,7 +313,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async SentimentAnalysis(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_sentiment_analysis_Params
+		const { params } = args as U__plans_plan_run_ai_text_sentiment_analysis_Params
 
 		Assert.Var(data, "data is required")
 
@@ -338,7 +338,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async Summarization(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_summarization_Params
+		const { params } = args as U__plans_plan_run_ai_text_summarization_Params
 
 		Assert.Var(data, "data is required")
 		Assert.Var(params, "params is required")
@@ -361,7 +361,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async TextGeneration(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_text_generation_Params
+		const { params } = args as U__plans_plan_run_ai_text_text_generation_Params
 
 		Assert.Var(data, "data is required")
 
@@ -383,7 +383,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async Ner(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_Params
+		const { params } = args as U__plans_plan_run_ai_text_Params
 
 		const DEFAULT = {
 			grouped: true,
@@ -416,7 +416,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async ToxicityDetection(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_toxicity_detection_Params
+		const { params } = args as U__plans_plan_run_ai_text_toxicity_detection_Params
 
 		Assert.Var(data, "data is required")
 
@@ -441,7 +441,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async Translation(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_translation_Params
+		const { params } = args as U__plans_plan_run_ai_text_translation_Params
 
 		const DEFAULT = {
 			src_lang: LANG_ISO.en_XX,
@@ -476,7 +476,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async ZeroShotClassification(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_text_zero_shot_classification_Params
+		const { params } = args as U__plans_plan_run_ai_text_zero_shot_classification_Params
 
 		Assert.Var(data, "data is required")
 		Assert.Var(params, "params is required")

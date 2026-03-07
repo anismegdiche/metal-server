@@ -29,8 +29,8 @@ vi.mock("../../../types/DataBase", async (importOriginal) => {
 		this.Init = vi.fn().mockResolvedValue(undefined)
 		this.Disconnect = vi.fn().mockResolvedValue(undefined)
 		this.Tables = {}
-		this.SetTable = vi.fn((name, data) => {
-			this.Tables[name] = data
+		this.SetTable = vi.fn((name, _data) => {
+			this.Tables[name] = new DataTable()
 		})
 	})
 	return { ...actual, DataBase }
@@ -41,7 +41,10 @@ vi.mock("../../../types/DataTable", async (importOriginal) => {
 	const DataTable = vi.fn(function (this: any) {
 		this.FreeSql = vi.fn().mockResolvedValue(undefined)
 		this.Rename = vi.fn().mockReturnThis()
-		this.MetaData = {}
+		this.RowsSet = vi.fn().mockReturnThis()
+		this.MetaData = {
+			__PLAN_ERRORS__: [],
+		}
 	})
 	return { ...actual, DataTable }
 })
@@ -49,6 +52,7 @@ vi.mock("../../../types/DataTable", async (importOriginal) => {
 vi.mock("../Step", () => ({
 	Step: {
 		ExecuteCaseMap: {},
+		ExecuteOnError: vi.fn((fn, args, ctx) => fn(args, ctx)),
 	},
 }))
 
@@ -108,13 +112,13 @@ describe("Plan", () => {
 		})
 	})
 
-	describe("Run", () => {
+	describe("Process", () => {
 		it("should execute steps in sequence", async () => {
 			const steps = {
 				"0": { "mock-cmd": { args: 1 } },
 			}
-			const mockDataTable = new DataTable() as any
-			;(plan._dataBase as any).Tables.e1 = mockDataTable
+			const mockDataTable = new DataTable()
+			plan._dataBase.Tables.e1 = mockDataTable
 
 			const executeMock = vi.fn().mockResolvedValue(mockDataTable)
 			Step.ExecuteCaseMap["mock-cmd"] = executeMock
@@ -130,8 +134,8 @@ describe("Plan", () => {
 				"1": { "mock-cmd-2": { args: 2 } },
 				"2": { "mock-cmd-3": { args: 3 } },
 			}
-			const mockDataTable = new DataTable() as any
-			;(plan._dataBase as any).Tables.e1 = mockDataTable
+			const mockDataTable = new DataTable()
+			plan._dataBase.Tables.e1 = mockDataTable
 
 			const executeMock1 = vi.fn().mockResolvedValue(mockDataTable)
 			const executeMock2 = vi.fn().mockRejectedValue(new Error("Test error"))
@@ -154,7 +158,7 @@ describe("Plan", () => {
 				"1": { "mock-cmd-2": { args: 2 } },
 				"2": { "mock-cmd-3": { args: 3 } },
 			}
-			const mockDataTable = new DataTable() as any
+			const mockDataTable = new DataTable()
 			plan._dataBase.Tables.e1 = mockDataTable
 
 			const executeMock1 = vi.fn().mockResolvedValue(mockDataTable)

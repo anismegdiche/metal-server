@@ -8,7 +8,7 @@ import { Assert } from "../../../utils/Assert"
 import { Logger } from "../../../utils/Logger"
 import { CONTENT } from "../../content/@consts"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import type {
 	TSchemaRequestAddEntity,
@@ -52,13 +52,13 @@ export class MetalData extends absDataProvider {
 	}
 
 	@Logger.LogFunction()
-	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
 		this.Config = merge(this.DEFAULT, sourceConfig, {
 			schema: sourceConfig.database,
 		})
 
-		const webServiceConfig: U_config_sources_source = {
+		const webServiceConfig: U__sources_source = {
 			provider: DATA_PROVIDER.WEBSERVICE,
 			host: this.Config.host,
 			options: {

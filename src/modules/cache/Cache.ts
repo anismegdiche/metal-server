@@ -18,8 +18,8 @@ import { ConfigManager } from "../core/ConfigManager"
 import { Global } from "../core/Global"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
-import type { U_config_schemas_schema } from "../core/types/U_config_schemas"
-import type { U_config_sources_source } from "../core/types/U_config_sources"
+import type { U__schemas_schema } from "../core/types/U__schemas"
+import type { U__sources_source } from "../core/types/U__sources"
 import { type HttpError, HttpErrorBadRequest, HttpErrorLog, HttpErrorNotFound } from "../errors/HttpErrors"
 import {
 	type TSchemaRequest,
@@ -43,7 +43,7 @@ export class Cache {
 	static Database = Cache.DEFAULT.database //NOSONAR
 	static Entity = Cache.DEFAULT.entity //NOSONAR
 	static DataSource: IDataProvider //NOSONAR
-	static DataSourceConfig: U_config_sources_source
+	static DataSourceConfig: U__sources_source
 	static __LOCK__: Semaphore = new Semaphore(1) //NOSONAR
 	static _cacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
 		//NOSNAR
@@ -63,7 +63,7 @@ export class Cache {
 		Cache.IsEnabled = ConfigManager.Has("server.cache")
 		if (!Cache.IsEnabled) return
 
-		Cache.DataSourceConfig = ConfigManager.Get<U_config_sources_source>("server.cache")
+		Cache.DataSourceConfig = ConfigManager.Get<U__sources_source>("server.cache")
 		Cache.Database = Cache.DataSourceConfig.database ?? Cache.DEFAULT.database
 		Cache._cacheSchemaRequest = <TSchemaRequest>{
 			schema: Cache.Database,
@@ -239,7 +239,7 @@ export class Cache {
 
 		const { schema, entity } = schemaRequest
 
-		const schemaConfig = ConfigManager.Get<U_config_schemas_schema>(`schemas.${schema}`)
+		const schemaConfig = ConfigManager.Get<U__schemas_schema>(`schemas.${schema}`)
 		if (!schemaConfig) throw new HttpErrorNotFound(`Schema '${schema}' not found`)
 
 		Roles.CheckPermission(userToken, schemaConfig?.roles, AUTH_PERMISSION.READ)

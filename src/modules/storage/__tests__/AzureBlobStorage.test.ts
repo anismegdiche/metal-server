@@ -4,7 +4,7 @@
 import { Readable } from "node:stream"
 import { BlobServiceClient, type BlockBlobClient, type ContainerClient } from "@azure/storage-blob"
 import type { Mock, Mocked } from "vitest"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
 import { AzureBlobStorage, type U__source_storage_azblob_options } from "../providers/AzureBlobStorage"
 
@@ -14,7 +14,7 @@ vi.mock("@azure/storage-blob")
 const rndParams = {
 	provider: DATA_PROVIDER.STORAGE,
 	host: "test.blob.core.windows.net",
-} as unknown as U_config_sources_source
+} as unknown as U__sources_source
 
 describe("AzureBlobStorage", () => {
 	let storage: AzureBlobStorage

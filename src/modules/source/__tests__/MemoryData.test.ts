@@ -3,7 +3,7 @@ import { DataBase } from "../../../types/DataBase"
 import { DataTable } from "../../../types/DataTable"
 import { Cache } from "../../cache/Cache"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import type {
 	TSchemaRequestDelete,
@@ -20,7 +20,7 @@ describe("MemoryData", () => {
 	it("should initialize with valid source and config", async () => {
 		const memoryData = new MemoryData()
 		const source = "test-source"
-		const sourceConfig: U_config_sources_source = {
+		const sourceConfig: U__sources_source = {
 			provider: DATA_PROVIDER.MEMORY,
 			database: "test-db",
 			options: { autocreate: true },

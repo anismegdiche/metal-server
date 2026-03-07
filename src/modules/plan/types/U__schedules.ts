@@ -4,7 +4,7 @@
 import z from "zod"
 
 //
-export const z_U_config_schedules_schedule = z
+export const z_U__schedules_schedule = z
 	.object({
 		plan: z.string().describe("Plan name"),
 		entity: z.string().describe("Entity name"),
@@ -18,10 +18,10 @@ export const z_U_config_schedules_schedule = z
 	})
 	.describe("Schedule")
 
-export const z_U_config_schedules = z
-	.record(z.string().describe("Schedule name"), z_U_config_schedules_schedule)
+export const z_U__schedules = z
+	.record(z.string().describe("Schedule name"), z_U__schedules_schedule)
 	.describe("Schedules")
 
 //
-export type U_config_schedules_schedule = z.infer<typeof z_U_config_schedules_schedule>
-export type U_config_schedules = z.infer<typeof z_U_config_schedules>
+export type U__schedules_schedule = z.infer<typeof z_U__schedules_schedule>
+export type U__schedules = z.infer<typeof z_U__schedules>

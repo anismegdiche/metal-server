@@ -20,14 +20,14 @@ enum OIDC_ERROR_MESSAGE {
 }
 
 import {
-	type U_config_server_authentication_oidc,
-	z_U_config_server_authentication_oidc,
-} from "../types/U_config_server_authentication_oidc"
+	type U__server_authentication_oidc,
+	z_U__server_authentication_oidc,
+} from "../types/U__server_authentication_oidc"
 
 //
 export class OidcAuth extends absAuthProvider {
 	#OidcClient: Client | null = null
-	#Config?: U_config_server_authentication_oidc
+	#Config?: U__server_authentication_oidc
 	readonly #TokenCache: Map<string, TokenSet> = new Map()
 
 	GetUsers() {
@@ -35,7 +35,7 @@ export class OidcAuth extends absAuthProvider {
 		return {}
 	}
 
-	readonly DEFAULT: Partial<U_config_server_authentication_oidc> = {
+	readonly DEFAULT: Partial<U__server_authentication_oidc> = {
 		scope: "openid roles",
 		"roles-path": "realm_access.roles",
 	}
@@ -45,7 +45,7 @@ export class OidcAuth extends absAuthProvider {
 		//TODO workaround for SSL/TLS errors
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
-		this.#Config = merge(this.DEFAULT, ConfigManager.Get<U_config_server_authentication_oidc>("server.authentication"))
+		this.#Config = merge(this.DEFAULT, ConfigManager.Get<U__server_authentication_oidc>("server.authentication"))
 
 		if (this.#Config.issuer) this.#Config.issuer = `${this.#Config.issuer}/.well-known/openid-configuration`
 

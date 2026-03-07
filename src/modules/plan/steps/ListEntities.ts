@@ -2,7 +2,6 @@
 //
 //
 import { keys, merge } from "lodash-es"
-import z from "zod"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -15,24 +14,20 @@ import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { Schema } from "../../schema/Schema"
 import type { TSchemaRequestListEntities, TSchemaRequestSelect } from "../../schema/types/TSchemaRequest"
-import { z_TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
 import { z_TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import type { TDataListEntity } from "../../source/@types"
 import { STEP } from "../@consts"
 import { DATAPROVIDER } from "../consts/DATAPROVIDER"
 import type { TStep } from "../types/TStep"
+import { type U__plans_plan_list_entities_Params, z_U__plans_plan_list_entities_Params, } from "../types/U__plans_params"
 
-import {
-	type U_config_plans_plan_entity_list_entities_Params,
-	z_U_config_plans_plan_entity_list_entities_Params,
-} from "../types/U_config_plans_params"
 
 //
 export async function ListEntities(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
-	Assert.Var<U_config_plans_plan_entity_list_entities_Params>(
+	Assert.Var<U__plans_plan_list_entities_Params>(
 		step.stepArgs,
-		z_U_config_plans_plan_entity_list_entities_Params.safeParse(step.stepArgs).success,
+		z_U__plans_plan_list_entities_Params.safeParse(step.stepArgs).success,
 		`${STEP.LIST_ENTITIES}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`,
 	)
 

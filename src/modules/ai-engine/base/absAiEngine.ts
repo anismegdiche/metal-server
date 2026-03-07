@@ -10,11 +10,11 @@ import { StringUtils } from "../../../utils/StringUtils"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Utils } from "../../../utils/Utils"
 import { ConfigManager } from "../../core/ConfigManager"
-import type { U_config_server_ai_engines } from "../../core/types/U_config_server"
+import type { U__server_ai_engines } from "../../core/types/U__server"
 import { NormalizeError } from "../../errors/HttpErrors"
 import type { AI_ENGINE } from "../@consts"
 import type { TAiArguments, TAiOutput } from "../@types"
-import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
+import type { T__ai_engines_ai_engine } from "../types/T__ai_engines_ai_engine"
 import type { TAiDockerService } from "../types/TAiDockerService"
 import type { IAiEngine } from "./IAiEngine"
 
@@ -30,8 +30,8 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
 	abstract AiEngineName: AI_ENGINE
 	InstanceName!: string
 	InstanceApiUrl!: string
-	InstanceConfig!: T_config_ai_engines_ai_engine
-	InstanceCommonConfig!: U_config_server_ai_engines
+	InstanceConfig!: T__ai_engines_ai_engine
+	InstanceCommonConfig!: U__server_ai_engines
 	abstract AiDockerService: Record<string, TAiDockerService>
 	abstract RunTask: Record<string, (args: TAiArguments) => Promise<TAiOutput>>
 
@@ -60,10 +60,10 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
 		}
 	}
 
-	async Init(aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
+	async Init(aiName: string, aiConfig: T__ai_engines_ai_engine): Promise<void> {
 		this.InstanceName = aiName
 		this.InstanceConfig = aiConfig
-		this.InstanceCommonConfig = ConfigManager.Get<U_config_server_ai_engines>("server.ai-engines")
+		this.InstanceCommonConfig = ConfigManager.Get<U__server_ai_engines>("server.ai-engines")
 		this.InstanceApiUrl = StringUtils.Url(aiConfig.url || this.InstanceCommonConfig["engines-url"], this.InstanceName)
 	}
 

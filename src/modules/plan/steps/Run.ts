@@ -19,15 +19,15 @@ import { STEP } from "../@consts"
 import type { TStep } from "../types/TStep"
 
 import {
-	type U_config_plans_plan_entity_run_Params,
-	z_U_config_plans_plan_entity_run_Params,
-} from "../types/U_config_plans_params"
+	type U__plans_plan_run_Params,
+	z_U__plans_plan_run_Params,
+} from "../types/U__plans_params"
 
 //
 export async function Run(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
-	Assert.Var<U_config_plans_plan_entity_run_Params>(
+	Assert.Var<U__plans_plan_run_Params>(
 		step.stepArgs,
-		z_U_config_plans_plan_entity_run_Params.safeParse(step.stepArgs).success,
+		z_U__plans_plan_run_Params.safeParse(step.stepArgs).success,
 		`${STEP.RUN}: Wrong argument passed`,
 	)
 
@@ -40,7 +40,7 @@ export async function Run(step: TStep, $context?: Partial<TContext>): Promise<Da
 		$result: undefined,
 	})
 
-	const stepArgs = merge(DEFAULT, step.stepArgs) as U_config_plans_plan_entity_run_Params
+	const stepArgs = merge(DEFAULT, step.stepArgs) as U__plans_plan_run_Params
 
 	const { ai, task, input, output } = stepArgs
 	const aiTask = `${ai}-${task}`
@@ -68,7 +68,7 @@ export async function Run(step: TStep, $context?: Partial<TContext>): Promise<Da
 
 				const __result = <Record<string, any>>await aiEngine.Run({
 					data: $__data,
-					...(step.stepArgs as U_config_plans_plan_entity_run_Params),
+					...(step.stepArgs as U__plans_plan_run_Params),
 				} as TAiArguments)
 
 				if (isEmpty(__result)) return

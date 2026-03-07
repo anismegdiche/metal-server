@@ -11,21 +11,21 @@ import { STEP } from "../@consts"
 import type { TStep } from "../types/TStep"
 
 import {
-	type U_config_plans_plan_entity_set_var_Params,
-	z_U_config_plans_plan_entity_set_var_Params,
-} from "../types/U_config_plans_params"
+	type U__plans_plan_set_var_Params,
+	z_U__plans_plan_set_var_Params,
+} from "../types/U__plans_params"
 
 //
 export async function SetVar(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
-	Assert.Var<U_config_plans_plan_entity_set_var_Params>(
+	Assert.Var<U__plans_plan_set_var_Params>(
 		step.stepArgs,
-		z_U_config_plans_plan_entity_set_var_Params.safeParse(step.stepArgs).success,
+		z_U__plans_plan_set_var_Params.safeParse(step.stepArgs).success,
 		`${STEP.SET_VAR}: Wrong argument passed. Expected an object of variables.`,
 	)
 
 	Assert.Var<TContext>($context, `${STEP.SET_VAR}: Context is not initialized.`)
 
-	const varsToSet = <U_config_plans_plan_entity_set_var_Params>step.stepArgs
+	const varsToSet = <U__plans_plan_set_var_Params>step.stepArgs
 	const sandbox = new Sandbox($context)
 
 	for (const [key, value] of Object.entries(varsToSet)) {

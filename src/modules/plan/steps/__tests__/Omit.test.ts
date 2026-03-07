@@ -32,7 +32,7 @@ describe("Omit", () => {
 	it("should call DataTable.Omit with arguments", async () => {
 		const step = {
 			currentDataTable: myPlanEntity1,
-			stepArgs: ["f1"],
+			stepArgs: { fields: ["f1"] }
 		}
 		await Omit(step as any)
 		expect(myPlanEntity1.Omit).toHaveBeenCalledWith(["f1"])

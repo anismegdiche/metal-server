@@ -1,13 +1,13 @@
 //
 //
 //
-import type { U_config_users } from "../../core/types/U_config_users"
+import type { U__users } from "../../core/types/U__users"
 import type { TUserCredentials, TUserTokenInfo } from "../@types"
 
 //
 export interface IAuthProvider {
 	Init(): void
-	GetUsers(): U_config_users
+	GetUsers(): U__users
 	Authenticate(userCredentials: TUserCredentials): Promise<TUserTokenInfo>
 	LogOut(username: string): Promise<void>
 }

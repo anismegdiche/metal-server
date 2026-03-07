@@ -15,7 +15,7 @@ import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../errors/HttpErrors"
 import { Plans } from "./Plans"
 import type { TSchedule } from "./types/TSchedule"
-import type { U_config_schedules, U_config_schedules_schedule } from "./types/U_config_schedules"
+import type { U__schedules, U__schedules_schedule } from "./types/U__schedules"
 
 //
 const ON_START = "@start"
@@ -35,8 +35,8 @@ export class Schedule {
 			return undefined
 		}
 
-		const scheduleConfig: [string, U_config_schedules_schedule][] = Object.entries(
-			ConfigManager.Get<U_config_schedules>("schedules"),
+		const scheduleConfig: [string, U__schedules_schedule][] = Object.entries(
+			ConfigManager.Get<U__schedules>("schedules"),
 		)
 
 		for (const [_jobName, _scheduleParams] of scheduleConfig) {
@@ -62,7 +62,7 @@ export class Schedule {
 		}
 	}
 
-	static JobProcess(jobName: string, scheduleParams: U_config_schedules_schedule) {
+	static JobProcess(jobName: string, scheduleParams: U__schedules_schedule) {
 		Logger.Info(`${Logger.In} Schedule.JobProcess: Running job '${jobName}'`)
 
 		const { plan } = scheduleParams

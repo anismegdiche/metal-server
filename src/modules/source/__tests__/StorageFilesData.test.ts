@@ -8,7 +8,7 @@ import { Cache } from "../../cache/Cache"
 import { CONTENT } from "../../content/@consts"
 import { ContentProvider } from "../../content/ContentProvider"
 import { HttpResponse } from "../../core/HttpResponse"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
 import { STORAGE } from "../../storage/@consts"
 import { StorageProvider } from "../../storage/StorageProvider"
@@ -71,7 +71,7 @@ describe("StorageFilesData", () => {
 	})
 
 	describe("Init", () => {
-		const sourceConfig: U_config_sources_source = {
+		const sourceConfig: U__sources_source = {
 			provider: DATA_PROVIDER.STORAGE,
 			options: {
 				storage: STORAGE.FILESYSTEM,
@@ -81,7 +81,7 @@ describe("StorageFilesData", () => {
 					},
 				},
 			},
-		} as U_config_sources_source
+		} as U__sources_source
 
 		it("should initialize correctly with valid config", async () => {
 			await storageFilesData.Init("testSource", sourceConfig)

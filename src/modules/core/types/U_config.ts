@@ -3,27 +3,27 @@
 //
 import z from "zod"
 //
-import { z_T_config_ai_engines } from "../../ai-engine/types/T_config_ai_engines"
-import { z_U_config_plans } from "../../plan/types/U_config_plans"
-import { z_U_config_schedules } from "../../plan/types/U_config_schedules"
-import { z_U_config_roles } from "./U_config_roles"
-import { z_U_config_schemas } from "./U_config_schemas"
-import { z_U_config_server } from "./U_config_server"
-import { z_U_config_sources } from "./U_config_sources"
-import { z_U_config_users } from "./U_config_users"
-import { z_U_config_version } from "./U_config_version"
+import { z_T__ai_engines } from "../../ai-engine/types/T__ai_engines"
+import { z_U__plans } from "../../plan/types/U__plans"
+import { z_U__schedules } from "../../plan/types/U__schedules"
+import { z_U__roles } from "./U__roles"
+import { z_U__schemas } from "./U__schemas"
+import { z_U__server } from "./U__server"
+import { z_U__sources } from "./U__sources"
+import { z_U__users } from "./U__users"
+import { z_U__version } from "./U__version"
 
 //
 export const z_U_config = z.strictObject({
-	version: z_U_config_version,
-	server: z_U_config_server.optional(),
-	roles: z_U_config_roles.optional(),
-	users: z_U_config_users.optional(),
-	sources: z_U_config_sources,
-	schemas: z_U_config_schemas.optional(),
-	"ai-engines": z_T_config_ai_engines.optional(),
-	plans: z_U_config_plans.optional(),
-	schedules: z_U_config_schedules.optional(),
+	version: z_U__version,
+	server: z_U__server.optional(),
+	roles: z_U__roles.optional(),
+	users: z_U__users.optional(),
+	sources: z_U__sources,
+	schemas: z_U__schemas.optional(),
+	"ai-engines": z_T__ai_engines.optional(),
+	plans: z_U__plans.optional(),
+	schedules: z_U__schedules.optional(),
 })
 
 //

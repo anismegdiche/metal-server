@@ -14,7 +14,7 @@ import { Roles } from "../auth/Roles"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
-import type { U_config_schemas_schema, U_config_schemas_schema_entities_entity } from "../core/types/U_config_schemas"
+import type { U__schemas_schema, U__schemas_schema_entities_entity } from "../core/types/U__schemas"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../errors/HttpErrors"
 import { SourceRegistry } from "../source/SourceRegistry"
 import type {
@@ -383,7 +383,7 @@ export class Schema {
 		let schemaResponse = {} as TSchemaResponse
 
 		if (entitiesSources.has("*")) {
-			const _source = (<U_config_schemas_schema_entities_entity>entitiesSources.get("*")).source
+			const _source = (<U__schemas_schema_entities_entity>entitiesSources.get("*")).source
 			const _intResp = await SourceRegistry.Sources.get(_source)?.DataProvider.ListEntities(<TSchemaRequestListEntities>{
 				...schemaRequest,
 				source: _source,
@@ -393,7 +393,7 @@ export class Schema {
 		}
 
 		for (const [entity, entitySource] of entitiesSources) {
-			const _source = (<U_config_schemas_schema_entities_entity>entitySource).source
+			const _source = (<U__schemas_schema_entities_entity>entitySource).source
 			if (Schema.IsSchemaResponse(schemaResponse) && (await schemaResponse.data.Count()) > 0)
 				await schemaResponse.data.RowsDelete(`name = '${entity}'`)
 
@@ -421,7 +421,7 @@ export class Schema {
 			})
 
 		if (schemaConfig?.entities)
-			forEach(schemaConfig.entities, (entityConfig: U_config_schemas_schema_entities_entity, entity: string) => {
+			forEach(schemaConfig.entities, (entityConfig: U__schemas_schema_entities_entity, entity: string) => {
 				entities.set(entity, {
 					source: entityConfig.source,
 					database: ConfigManager.Get<string | undefined>(`sources.${entityConfig.source}.database`),
@@ -431,8 +431,8 @@ export class Schema {
 		return entities
 	}
 
-	static GetSchemaConfig(schema: string): U_config_schemas_schema {
-		const schemaConfig = ConfigManager.Get<U_config_schemas_schema>(`schemas.${schema}`)
+	static GetSchemaConfig(schema: string): U__schemas_schema {
+		const schemaConfig = ConfigManager.Get<U__schemas_schema>(`schemas.${schema}`)
 		if (!schemaConfig) throw new HttpErrorNotFound(`Schema '${schema}' not found`)
 
 		return schemaConfig

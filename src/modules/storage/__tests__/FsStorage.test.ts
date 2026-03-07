@@ -2,7 +2,7 @@ import * as Fs from "node:fs"
 import { Readable } from "node:stream"
 import { type Mock, vi } from "vitest"
 import { HttpErrorNotFound } from "../../../modules/errors/HttpErrors"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
 import { FsStorage } from "../providers/FsStorage"
 
@@ -41,7 +41,7 @@ const fsMock = Fs as unknown as FsMock
 
 describe("FsStorage", () => {
 	let fsStorage: FsStorage
-	const sourceConfig = <U_config_sources_source>{
+	const sourceConfig = <U__sources_source>{
 		provider: DATA_PROVIDER.STORAGE,
 		options: {
 			folder: "./",

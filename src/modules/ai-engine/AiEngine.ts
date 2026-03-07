@@ -14,11 +14,11 @@ import { AI_ENGINE } from "./@consts"
 import { AiDocker } from "./AiDocker"
 import type { IAiEngine } from "./base/IAiEngine"
 import { BaseImageDockerService, BaseTextDockerService } from "./docker-services/BaseDockerService"
-import type { T_config_ai_engines_ai_engine } from "./types/T_config_ai_engines_ai_engine"
-import type { U_config_plans_plan_entity_run_Params } from "../plan/types/U_config_plans_params"
+import type { T__ai_engines_ai_engine } from "./types/T__ai_engines_ai_engine"
+import type { U__plans_plan_run_Params } from "../plan/types/U__plans_params"
 
 //
-type TPlanStep = { [STEP.RUN]: U_config_plans_plan_entity_run_Params }
+type TPlanStep = { [STEP.RUN]: U__plans_plan_run_Params }
 type TPlanEntity = TPlanStep[]
 type TAiTask = {
 	ai: string
@@ -38,11 +38,11 @@ const engineLoaders: Record<string, ProviderLoader> = {
 export class AiEngine {
 	static readonly _aiEngineFactory = new Factory<IAiEngine>()
 	static readonly _loadingPromises = new Map<string, Promise<IAiEngine>>()
-	static _aiEnginesConfig: TJson<T_config_ai_engines_ai_engine> = {}
+	static _aiEnginesConfig: TJson<T__ai_engines_ai_engine> = {}
 	static AiEnginesInstance: Map<string, IAiEngine> = new Map()
 
 	// Build a list of AI engines from the configuration
-	static BuildAiEnginesList(): TJson<T_config_ai_engines_ai_engine> {
+	static BuildAiEnginesList(): TJson<T__ai_engines_ai_engine> {
 		if (!PlansManager.Config) {
 			return {}
 		}
@@ -66,11 +66,11 @@ export class AiEngine {
 			.value() as unknown as TAiTask[]
 
 		return aiTasks.reduce(
-			(acc: TJson<T_config_ai_engines_ai_engine>, { ai, task }: TAiTask) => {
-				acc[`${ai}-${task}`] = { engine: `${ai}-${task}` } as T_config_ai_engines_ai_engine
+			(acc: TJson<T__ai_engines_ai_engine>, { ai, task }: TAiTask) => {
+				acc[`${ai}-${task}`] = { engine: `${ai}-${task}` } as T__ai_engines_ai_engine
 				return acc
 			},
-			{} as TJson<T_config_ai_engines_ai_engine>,
+			{} as TJson<T__ai_engines_ai_engine>,
 		)
 	}
 

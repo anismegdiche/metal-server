@@ -11,26 +11,27 @@ import { STEP } from "../@consts"
 import type { TStep } from "../types/TStep"
 
 import {
-	type U_config_plans_plan_entity_pick_Params,
-	z_U_config_plans_plan_entity_pick_Params,
-} from "../types/U_config_plans_params"
+	type U__plans_plan_pick_Params,
+	z_U__plans_plan_pick_Params,
+} from "../types/U__plans_params"
 
 //
 export async function Pick(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
-	Assert.Var<U_config_plans_plan_entity_pick_Params>(
+	Assert.Var<U__plans_plan_pick_Params>(
 		step.stepArgs,
-		z_U_config_plans_plan_entity_pick_Params.safeParse(step.stepArgs).success,
+		z_U__plans_plan_pick_Params.safeParse(step.stepArgs).success,
 		`${STEP.PICK}: Wrong argument passed`,
 	)
 
-	const params = step.stepArgs
+	const { fields } = step.stepArgs as U__plans_plan_pick_Params
 
-	if (params.join("") === "*") return step.currentDataTable
+	if (fields.join("") === "*") 
+		return step.currentDataTable
 
-	if (Array.isArray(params)) {
-		return step.currentDataTable.Pick(params)
+	if (Array.isArray(fields)) {
+		return step.currentDataTable.Pick(fields)
 	} else {
-		Assert.Condition(!StringUtils.IsEmpty(params), `${[STEP.PICK]}: params cannot be empty`)
-		return step.currentDataTable.Pick(StringUtils.Split(params, ","))
+		Assert.Condition(!StringUtils.IsEmpty(fields), `${[STEP.PICK]}: fields cannot be empty`)
+		return step.currentDataTable.Pick(StringUtils.Split(fields, ","))
 	}
 }

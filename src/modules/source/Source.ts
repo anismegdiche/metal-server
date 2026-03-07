@@ -5,7 +5,7 @@
 import type { TJson } from "../../types/TJson"
 import { Logger } from "../../utils/Logger"
 import { ConfigManager } from "../core/ConfigManager"
-import type { U_config_sources_source } from "../core/types/U_config_sources"
+import type { U__sources_source } from "../core/types/U__sources"
 import { HttpErrorLog } from "../errors/HttpErrors"
 import { DATA_PROVIDER } from "./@consts"
 import type { TSource } from "./@types"
@@ -24,7 +24,7 @@ export class Source {
 	}
 
 	@Logger.LogFunction()
-	static async Connect(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+	static async Connect(source: string, sourceConfig: U__sources_source): Promise<void> {
 		const { provider } = sourceConfig
 
 		if (!Object.values(DATA_PROVIDER).includes(provider)) {
@@ -48,7 +48,7 @@ export class Source {
 		for (const _source in ConfigManager.Get<TJson>("sources")) {
 			if (Object.hasOwn(ConfigManager.Get<TJson>("sources"), _source)) {
 				Logger.Info(`${Logger.Out} found source '${_source}'`)
-				const __sourceConfig = ConfigManager.Get<U_config_sources_source>(`sources.${_source}`)
+				const __sourceConfig = ConfigManager.Get<U__sources_source>(`sources.${_source}`)
 				Source.Connect(_source, __sourceConfig)
 			}
 		}

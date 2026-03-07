@@ -2,7 +2,7 @@ import { Readable } from "node:stream"
 import { DataLakeServiceClient } from "@azure/storage-file-datalake"
 import { type Mock, vi } from "vitest"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
 import { AzureDataLakeStorage } from "../providers/AzureDataLakeStorage"
 
@@ -11,7 +11,7 @@ vi.mock("@azure/storage-file-datalake")
 const baseParams = {
 	provider: DATA_PROVIDER.STORAGE,
 	host: "test.datalake.core.windows.net",
-} as unknown as U_config_sources_source
+} as unknown as U__sources_source
 
 describe("AzureDataLakeStorage", () => {
 	let storage: AzureDataLakeStorage
@@ -36,7 +36,7 @@ describe("AzureDataLakeStorage", () => {
 		exists: Mock
 		flush: Mock
 	}
-	const mockConfig: U_config_sources_source = {
+	const mockConfig: U__sources_source = {
 		...baseParams,
 		provider: DATA_PROVIDER.STORAGE,
 		host: "test.datalake.core.windows.net",

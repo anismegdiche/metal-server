@@ -31,7 +31,9 @@ describe("Pick", () => {
 	it("should call DataTable.Pick with arguments", async () => {
 		const step = {
 			currentDataTable: myPlanEntity1,
-			stepArgs: ["f1", "f2"],
+			stepArgs: {
+				fields: ["f1", "f2"]
+			},
 		}
 		await Pick(step as any)
 		expect(myPlanEntity1.Pick).toHaveBeenCalledWith(["f1", "f2"])
@@ -40,7 +42,9 @@ describe("Pick", () => {
 	it("should return original table if *", async () => {
 		const step = {
 			currentDataTable: myPlanEntity1,
-			stepArgs: ["*"],
+			stepArgs:{
+				fields: ["*"]
+			},
 		}
 		const result = await Pick(step as any)
 		expect(result).toBe(myPlanEntity1)

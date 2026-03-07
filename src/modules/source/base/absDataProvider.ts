@@ -10,7 +10,7 @@ import { clsContext } from "../../../utils/base/clsContext"
 import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 import { StringUtils } from "../../../utils/StringUtils"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorBadRequest } from "../../errors/HttpErrors"
 import type {
 	TSchemaRequest,
@@ -44,7 +44,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
 	}
 
 	// Init
-	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		Assert.Condition(!StringUtils.IsEmpty(source), `${source}: source name is missing`)
 		Assert.Condition(sourceConfig !== undefined, `${source}: source config is missing`)
 		this.SourceName = source

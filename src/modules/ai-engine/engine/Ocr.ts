@@ -10,7 +10,7 @@ import { Logger } from "../../../utils/Logger"
 import { StringUtils } from "../../../utils/StringUtils"
 import { Utils } from "../../../utils/Utils"
 import { ConfigManager } from "../../core/ConfigManager"
-import type { U_config_server_ai_engines } from "../../core/types/U_config_server"
+import type { U__server_ai_engines } from "../../core/types/U__server"
 import { NormalizeError } from "../../errors/HttpErrors"
 import { AI_ENGINE } from "../@consts"
 import type { TAiArguments, TAiOutput } from "../@types"
@@ -19,9 +19,9 @@ import { absAiEngine } from "../base/absAiEngine"
 import type { IAiEngine } from "../base/IAiEngine"
 import { OCR_LANG, OCR_LANG_ISO, OCR_TASK } from "../consts/OCR"
 import { OcrDockerService } from "../docker-services/OcrDockerService"
-import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
+import type { T__ai_engines_ai_engine } from "../types/T__ai_engines_ai_engine"
 import type { TAiDockerService } from "../types/TAiDockerService"
-import type { U_config_plans_plan_entity_run_ai_ocr_Params } from "../types/U_config_plans_plan_entity_run_ai_ocr_Params"
+import type { U__plans_plan_run_ai_ocr_Params } from "../types/U__plans_plan_run_ai_ocr_Params"
 
 //
 const OCR_DEFAULT_HEADERS = {
@@ -36,7 +36,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
 	AiDockerService: Record<string, TAiDockerService> = {}
 	RunTask: Record<string, (args: TAiArguments) => Promise<TAiOutput>> = {}
 
-	DEFAULT: U_config_plans_plan_entity_run_ai_ocr_Params = {
+	DEFAULT: U__plans_plan_run_ai_ocr_Params = {
 		task: OCR_TASK.IMAGE_TO_STRING,
 		params: {
 			lang: OCR_LANG_ISO.ENG,
@@ -71,10 +71,10 @@ export class Ocr extends absAiEngine implements IAiEngine {
 	}
 
 	@Logger.LogFunction()
-	async Init(_aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
+	async Init(_aiName: string, aiConfig: T__ai_engines_ai_engine): Promise<void> {
 		this.InstanceName = this.AiEngineName
 		this.InstanceConfig = aiConfig
-		this.InstanceCommonConfig = ConfigManager.Get<U_config_server_ai_engines>("server.ai-engines")
+		this.InstanceCommonConfig = ConfigManager.Get<U__server_ai_engines>("server.ai-engines")
 		this.InstanceApiUrl = StringUtils.Url(aiConfig.url || this.InstanceCommonConfig["engines-url"], this.InstanceName)
 
 		await this.Prepare()
@@ -93,7 +93,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
 		Assert.Var<number>(_sleep, "server.ai-engines.sleep is not defined")
 		Assert.Var<number>(_timeout, "server.ai-engines.timeout is not defined")
 
-		const _args: U_config_plans_plan_entity_run_ai_ocr_Params = merge(this.DEFAULT, args)
+		const _args: U__plans_plan_run_ai_ocr_Params = merge(this.DEFAULT, args)
 		const { task } = _args
 
 		Assert.Condition(Object.values(OCR_TASK).includes(task as OCR_TASK), `Invalid ocr task: ${task}`)
@@ -105,7 +105,7 @@ export class Ocr extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async ImageToString(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { task, params } = args as U_config_plans_plan_entity_run_ai_ocr_Params
+		const { task, params } = args as U__plans_plan_run_ai_ocr_Params
 
 		Assert.Var(data, "data is required")
 

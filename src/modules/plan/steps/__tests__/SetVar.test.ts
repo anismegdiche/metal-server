@@ -3,7 +3,7 @@ import type { TContext } from "../../../../modules/sandbox/types/TContext"
 import { DataTable } from "../../../../types/DataTable"
 import { STEP } from "../../@consts"
 import type { TStep } from "../../types/TStep"
-import type { U_config_plans_plan_entity_set_var_Params } from "../../types/U_config_plans_params"
+import type { U__plans_plan_set_var_Params } from "../../types/U__plans_params"
 import { SetVar } from "../SetVar"
 
 // Mock Logger to avoid decorator issues
@@ -37,7 +37,7 @@ describe("SetVar", () => {
 			currentSchemaName: "s1",
 			currentPlanName: "p1",
 			currentDataTable: mockDataTable,
-			stepArgs: <U_config_plans_plan_entity_set_var_Params>{
+			stepArgs: <U__plans_plan_set_var_Params>{
 				var1: "value1",
 				var2: "${{ 1 + 1 }}",
 			},
@@ -61,7 +61,7 @@ describe("SetVar", () => {
 			currentSchemaName: "s1",
 			currentPlanName: "p1",
 			currentDataTable: mockDataTable,
-			stepArgs: <U_config_plans_plan_entity_set_var_Params>{
+			stepArgs: <U__plans_plan_set_var_Params>{
 				var1: "newValue", // Should overwrite
 				var2: "${{ 1 + 1 }}", // Should add
 			},
@@ -83,7 +83,7 @@ describe("SetVar", () => {
 			currentSchemaName: "s1",
 			currentPlanName: "p1",
 			currentDataTable: mockDataTable,
-			stepArgs: <U_config_plans_plan_entity_set_var_Params>{
+			stepArgs: <U__plans_plan_set_var_Params>{
 				var1: "value1",
 			},
 		}
@@ -100,7 +100,7 @@ describe("SetVar", () => {
 			currentSchemaName: "s1",
 			currentPlanName: "p1",
 			currentDataTable: mockDataTable,
-			stepArgs: <U_config_plans_plan_entity_set_var_Params>{
+			stepArgs: <U__plans_plan_set_var_Params>{
 				stringExpr: "${{ test }}",
 				numberExpr: "${{ 1 + 1 }}",
 				plainString: "no evaluation",
@@ -125,7 +125,7 @@ describe("SetVar", () => {
 			currentSchemaName: "s1",
 			currentPlanName: "p1",
 			currentDataTable: mockDataTable,
-			stepArgs: <U_config_plans_plan_entity_set_var_Params>{
+			stepArgs: <U__plans_plan_set_var_Params>{
 				"valid-name": "value1",
 				"123invalid": "value2", // Invalid: starts with number
 				"invalid-name!": "value3", // Invalid: contains special character
@@ -148,7 +148,7 @@ describe("SetVar", () => {
 			currentSchemaName: "s1",
 			currentPlanName: "p1",
 			currentDataTable: mockDataTable,
-			stepArgs: <U_config_plans_plan_entity_set_var_Params>{
+			stepArgs: <U__plans_plan_set_var_Params>{
 				newVar: "newValue",
 			},
 		}
@@ -171,7 +171,7 @@ describe("SetVar", () => {
 			currentSchemaName: "s1",
 			currentPlanName: "p1",
 			currentDataTable: mockDataTable,
-			stepArgs: <U_config_plans_plan_entity_set_var_Params>{ a: 1 },
+			stepArgs: <U__plans_plan_set_var_Params>{ a: 1 },
 		}
 
 		await expect(SetVar(step, undefined as unknown as Partial<TContext>)).rejects.toThrow()
@@ -182,7 +182,7 @@ describe("SetVar", () => {
 			currentSchemaName: "s1",
 			currentPlanName: "p1",
 			currentDataTable: mockDataTable,
-			stepArgs: "invalid-args" as unknown as U_config_plans_plan_entity_set_var_Params, // Not an object
+			stepArgs: "invalid-args" as unknown as U__plans_plan_set_var_Params, // Not an object
 		}
 
 		await expect(SetVar(step, mockContext)).rejects.toThrow()
@@ -194,7 +194,7 @@ describe("SetVar", () => {
 			currentSchemaName: "s1",
 			currentPlanName: "p1",
 			currentDataTable: mockDataTable,
-			stepArgs: <U_config_plans_plan_entity_set_var_Params>{
+			stepArgs: <U__plans_plan_set_var_Params>{
 				var1: "value1",
 				var2: "${{ 1 + 1 }}",
 			},
@@ -212,7 +212,7 @@ describe("SetVar", () => {
 			currentSchemaName: "s1",
 			currentPlanName: "p1",
 			currentDataTable: mockDataTable,
-			stepArgs: <U_config_plans_plan_entity_set_var_Params>{
+			stepArgs: <U__plans_plan_set_var_Params>{
 				var3: "value3",
 				var1: "updated-value1", // Update existing
 			},
@@ -264,7 +264,7 @@ describe("SetVar - $vars Usage Across Operations", () => {
 				currentSchemaName: "s1",
 				currentPlanName: "p1",
 				currentDataTable: mockDataTable,
-				stepArgs: <U_config_plans_plan_entity_set_var_Params>{
+				stepArgs: <U__plans_plan_set_var_Params>{
 					var1: "active",
 					threshold: 100,
 				},
@@ -280,7 +280,7 @@ describe("SetVar - $vars Usage Across Operations", () => {
 				currentSchemaName: "s1",
 				currentPlanName: "p1",
 				currentDataTable: mockDataTable,
-				stepArgs: <U_config_plans_plan_entity_set_var_Params>{
+				stepArgs: <U__plans_plan_set_var_Params>{
 					var2: "${{ $vars.var1 === 'active' ? 'enabled' : 'disabled' }}",
 					limit: "${{ $vars.threshold * 0.5 }}",
 				},

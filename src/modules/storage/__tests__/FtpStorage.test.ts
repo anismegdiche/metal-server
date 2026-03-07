@@ -1,7 +1,7 @@
 import { Readable } from "node:stream"
 import { vi } from "vitest"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../../modules/errors/HttpErrors"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
 import { FtpStorage } from "../providers/FtpStorage"
 
@@ -12,7 +12,7 @@ vi.mock("../../../utils/Convert")
 const rndParams = {
 	provider: DATA_PROVIDER.STORAGE,
 	host: "127.0.0.1",
-} as unknown as U_config_sources_source
+} as unknown as U__sources_source
 
 describe("FtpStorage", () => {
 	let ftpStorage: FtpStorage

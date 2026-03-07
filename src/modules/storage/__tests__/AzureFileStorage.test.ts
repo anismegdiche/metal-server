@@ -3,7 +3,7 @@
 import { Readable } from "node:stream"
 import { type ShareDirectoryClient, type ShareFileClient, ShareServiceClient } from "@azure/storage-file-share"
 import type { Mocked } from "vitest"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
 import { AzureFileStorage, type U__source_storage_azfs_options } from "../providers/AzureFileStorage"
 
@@ -13,7 +13,7 @@ vi.mock("@azure/storage-file-share")
 const rndParams = {
 	provider: DATA_PROVIDER.STORAGE,
 	host: "test.file.core.windows.net",
-} as unknown as U_config_sources_source
+} as unknown as U__sources_source
 
 describe("AzureFileStorage", () => {
 	let storage: AzureFileStorage

@@ -19,23 +19,23 @@ import {
 	ImageObjectDetectionDockerService,
 	ImageVisualQuestionAnsweringDockerService,
 } from "../docker-services/ImageDockerService"
-import type { T_config_ai_engines_ai_engine } from "../types/T_config_ai_engines_ai_engine"
+import type { T__ai_engines_ai_engine } from "../types/T__ai_engines_ai_engine"
 import type { TAiDockerService } from "../types/TAiDockerService"
 import type {
-	U_config_plans_plan_entity_run_ai_image_image_classification_Params,
-	U_config_plans_plan_entity_run_ai_image_image_segmentation_Params,
-	U_config_plans_plan_entity_run_ai_image_image_to_text_Params,
-	U_config_plans_plan_entity_run_ai_image_object_detection_Params,
-	U_config_plans_plan_entity_run_ai_image_Params,
-	U_config_plans_plan_entity_run_ai_image_visual_question_answering_Params,
-} from "../types/U_config_plans_plan_entity_run_ai_image_Params"
+	U__plans_plan_run_ai_image_image_classification_Params,
+	U__plans_plan_run_ai_image_image_segmentation_Params,
+	U__plans_plan_run_ai_image_image_to_text_Params,
+	U__plans_plan_run_ai_image_object_detection_Params,
+	U__plans_plan_run_ai_image_Params,
+	U__plans_plan_run_ai_image_visual_question_answering_Params,
+} from "../types/U__plans_plan_run_ai_image_Params"
 
 //
 export class Image extends absAiEngine implements IAiEngine {
 	AiEngineName = AI_ENGINE.IMAGE
 	AiDockerService: Record<string, TAiDockerService> = {}
 	RunTask: Record<string, (args: TAiArguments) => Promise<TAiOutput>> = {}
-	DEFAULT: U_config_plans_plan_entity_run_ai_image_Params = {
+	DEFAULT: U__plans_plan_run_ai_image_Params = {
 		task: IMAGE_TASK.IMAGE_CLASSIFICATION,
 		params: undefined,
 	}
@@ -60,7 +60,7 @@ export class Image extends absAiEngine implements IAiEngine {
 	}
 
 	@Logger.LogFunction()
-	async Init(aiName: string, aiConfig: T_config_ai_engines_ai_engine): Promise<void> {
+	async Init(aiName: string, aiConfig: T__ai_engines_ai_engine): Promise<void> {
 		await super.Init(aiName, aiConfig)
 		await this.Prepare()
 		await AiDocker.StartService({
@@ -79,7 +79,7 @@ export class Image extends absAiEngine implements IAiEngine {
 		Assert.Var<number>(_sleep, "server.ai-engines.sleep is not defined")
 		Assert.Var<number>(_timeout, "server.ai-engines.timeout is not defined")
 
-		const _args: U_config_plans_plan_entity_run_ai_image_Params = merge(this.DEFAULT, args)
+		const _args: U__plans_plan_run_ai_image_Params = merge(this.DEFAULT, args)
 		const { task } = _args
 
 		Assert.Condition(Object.values(IMAGE_TASK).includes(task as IMAGE_TASK), `Invalid image task: ${task}`)
@@ -91,7 +91,7 @@ export class Image extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async ImageClassification(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_image_image_classification_Params
+		const { params } = args as U__plans_plan_run_ai_image_image_classification_Params
 
 		Assert.Var(data, "data is required")
 
@@ -106,7 +106,7 @@ export class Image extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async ImageSegmentation(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_image_image_segmentation_Params
+		const { params } = args as U__plans_plan_run_ai_image_image_segmentation_Params
 
 		Assert.Var(data, "data is required")
 
@@ -121,7 +121,7 @@ export class Image extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async ImageToText(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_image_image_to_text_Params
+		const { params } = args as U__plans_plan_run_ai_image_image_to_text_Params
 
 		Assert.Var(data, "data is required")
 
@@ -136,7 +136,7 @@ export class Image extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async ObjectDetection(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_image_object_detection_Params
+		const { params } = args as U__plans_plan_run_ai_image_object_detection_Params
 
 		Assert.Var(data, "data is required")
 
@@ -151,7 +151,7 @@ export class Image extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async VisualQuestionAnswering(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U_config_plans_plan_entity_run_ai_image_visual_question_answering_Params
+		const { params } = args as U__plans_plan_run_ai_image_visual_question_answering_Params
 
 		Assert.Var(data, "data is required")
 		Assert.Var(params.question, "params.question is required")

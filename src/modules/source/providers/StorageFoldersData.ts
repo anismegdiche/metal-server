@@ -15,7 +15,7 @@ import { StringUtils } from "../../../utils/StringUtils"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import {
 	HttpErrorBadRequest,
 	HttpErrorForbidden,
@@ -134,7 +134,7 @@ export class StorageFoldersData extends absDataProvider {
 	}
 
 	@Logger.LogFunction(true)
-	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
 		this.Config = merge(this.DEFAULT, sourceConfig as TStorageFoldersDataConfig)
 

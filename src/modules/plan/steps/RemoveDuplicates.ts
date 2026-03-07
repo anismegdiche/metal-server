@@ -15,15 +15,15 @@ import type { TStep } from "../types/TStep"
 import {
 	REMOVE_DUPLICATES_METHOD,
 	REMOVE_DUPLICATES_STRATEGY,
-	type U_config_plans_plan_entity_remove_duplicates_Params,
-	z_U_config_plans_plan_entity_remove_duplicates_Params,
-} from "../types/U_config_plans_params"
+	type U__plans_plan_remove_duplicates_Params,
+	z_U__plans_plan_remove_duplicates_Params,
+} from "../types/U__plans_params"
 
 //
 export async function RemoveDuplicates(step: TStep, _$context?: Partial<TContext>): Promise<DataTable> {
-	Assert.Var<U_config_plans_plan_entity_remove_duplicates_Params>(
+	Assert.Var<U__plans_plan_remove_duplicates_Params>(
 		step.stepArgs,
-		z_U_config_plans_plan_entity_remove_duplicates_Params.safeParse(step.stepArgs).success,
+		z_U__plans_plan_remove_duplicates_Params.safeParse(step.stepArgs).success,
 		`${STEP.REMOVE_DUPLICATE}: Wrong argument passed`,
 	)
 

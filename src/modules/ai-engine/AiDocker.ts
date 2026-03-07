@@ -13,7 +13,7 @@ import { Logger } from "../../utils/Logger"
 import { Mutex } from "../../utils/Mutex"
 import { StringUtils } from "../../utils/StringUtils"
 import { ConfigManager } from "../core/ConfigManager"
-import type { U_config_server_ai_engines } from "../core/types/U_config_server"
+import type { U__server_ai_engines } from "../core/types/U__server"
 import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrors"
 import { DOCKER } from "./consts/DOCKER"
 import { CaddyDockerService } from "./docker-services/CaddyDockerService"
@@ -25,7 +25,7 @@ export class AiDocker {
 	static AutoScaleWorker: NodeJS.Timeout | undefined
 	static Instances: Map<string, TAiDockerService> = new Map()
 
-	static Config: U_config_server_ai_engines
+	static Config: U__server_ai_engines
 
 	static _convertStreamToLog(streamString: string): string[] {
 		if (!streamString) return []
@@ -48,7 +48,7 @@ export class AiDocker {
 
 	@Logger.LogFunction()
 	static async Init(isBuildMode = false) {
-		AiDocker.Config = ConfigManager.Get<U_config_server_ai_engines>("server.ai-engines")
+		AiDocker.Config = ConfigManager.Get<U__server_ai_engines>("server.ai-engines")
 
 		const _dockerOptions = AiDocker.Config.params
 

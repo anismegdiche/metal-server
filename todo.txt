@@ -10,3 +10,5 @@ auth provider > Azure AD
 plan > Data Transpose  (pivot H/V) {f}
 refactor: readstream #refactor
 step > remove-empty-fields {f}
+step > on-error {f} {start:2026-03-07T14:00:59}
+plan > use of 'source' in stead of 'schema' {f}

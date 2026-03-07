@@ -2,7 +2,7 @@
 import { PassThrough, Readable } from "node:stream"
 import type SftpClient from "ssh2-sftp-client"
 import type { Mocked } from "vitest"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
 import { SftpStorage, type U__source_storage_sftp_options } from "../providers/SftpStorage"
 
@@ -12,7 +12,7 @@ vi.mock("ssh2-sftp-client")
 const rndParams = {
 	provider: DATA_PROVIDER.STORAGE,
 	host: "test.sftp.server.com",
-} as unknown as U_config_sources_source
+} as unknown as U__sources_source
 
 describe("SftpStorage", () => {
 	let storage: SftpStorage

@@ -27,3 +27,23 @@ export enum STEP_STATUS {
 	COMPLETED = "completed",
 	FAILED = "failed",
 }
+
+
+export enum STEP_ON_ERROR_STRATEGY {
+	THROW = "throw",
+	SKIP = "skip",
+	RETRY = "retry",
+	SINK = "sink",
+	RETRY_THEN_SINK = "retry-then-sink"
+}
+
+export enum STEP_ON_ERROR_SCOPE {
+	STEP = "step",
+	ROW = "row"
+}
+
+export enum STEP_ON_ERROR_RETRY_BACKOFF {
+	FIXED = "fixed",
+	LINEAR = "linear",
+	EXPONENTIAL = "exponential"
+}

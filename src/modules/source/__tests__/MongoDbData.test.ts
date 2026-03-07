@@ -1,4 +1,4 @@
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorNotFound } from "../../errors/HttpErrors"
 import type { TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../@consts"
@@ -41,7 +41,7 @@ vi.mock("../../cache/Cache")
 describe("MongoDbData", () => {
 	let provider: MongoDbData
 
-	const providerConfig: U_config_sources_source = {
+	const providerConfig: U__sources_source = {
 		provider: DATA_PROVIDER.MONGODB,
 		host: "mongodb://127.0.0.1:27017/",
 		database: "test-db",

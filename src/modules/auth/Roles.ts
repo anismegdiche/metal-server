@@ -6,17 +6,17 @@ import * as _ from "lodash-es"
 import { Assert } from "../../utils/Assert"
 import { StringUtils } from "../../utils/StringUtils"
 import { ConfigManager } from "../core/ConfigManager"
-import type { U_config_roles } from "../core/types/U_config_roles"
+import type { U__roles } from "../core/types/U__roles"
 import { HttpErrorForbidden } from "../errors/HttpErrors"
 import type { TUserTokenInfo } from "./@types"
 
 //
 export class Roles {
-	static _serverRoles: U_config_roles
+	static _serverRoles: U__roles
 	static UserDefaultRole?: string
 
 	static Init(): void {
-		Roles._serverRoles = ConfigManager.Get<U_config_roles>("roles") ?? <U_config_roles>{}
+		Roles._serverRoles = ConfigManager.Get<U__roles>("roles") ?? <U__roles>{}
 		Roles.UserDefaultRole = ConfigManager.Get("server.authentication.default-role")
 	}
 

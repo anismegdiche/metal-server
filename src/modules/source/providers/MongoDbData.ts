@@ -12,7 +12,7 @@ import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import {
 	HttpErrorBadRequest,
 	HttpErrorInternalServerError,
@@ -84,7 +84,7 @@ export class MongoDbData extends absDataProvider {
 	}
 
 	@Logger.LogFunction()
-	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
 		this.Config = merge(this.DEFAULT, sourceConfig as U__source_mongodb)
 		// Just load the module to ensure it's available

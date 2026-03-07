@@ -3,7 +3,7 @@ import type { TIpPort } from "../../../types/TIpPort"
 import type { TJson } from "../../../types/TJson"
 import { Cache } from "../../cache/Cache"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import type {
 	TSchemaRequestDelete,
@@ -36,7 +36,7 @@ vi.mock("../../cache/Cache", () => ({
 	},
 }))
 
-const mockConfig: U_config_sources_source = {
+const mockConfig: U__sources_source = {
 	provider: DATA_PROVIDER.MSSQL,
 	host: "127.0.0.1",
 	port: 1433 as TIpPort,
@@ -83,13 +83,13 @@ describe("SqlServerData", () => {
 		})
 
 		it("should throw error when configuration is missing", async () => {
-			await expect(sqlServerData.Init("test", undefined as unknown as U_config_sources_source)).rejects.toThrow(
+			await expect(sqlServerData.Init("test", undefined as unknown as U__sources_source)).rejects.toThrow(
 				"source config is missing",
 			)
 		})
 
 		it("should merge configuration with defaults", async () => {
-			const partialConfig: U_config_sources_source = {
+			const partialConfig: U__sources_source = {
 				provider: DATA_PROVIDER.MSSQL,
 				host: "127.0.0.1",
 				database: "testdb",
@@ -109,7 +109,7 @@ describe("SqlServerData", () => {
 		})
 
 		it("should throw error when configuration is null", async () => {
-			await expect(sqlServerData.Init("test", undefined as unknown as U_config_sources_source)).rejects.toThrow(
+			await expect(sqlServerData.Init("test", undefined as unknown as U__sources_source)).rejects.toThrow(
 				"test: source config is missing",
 			)
 		})
@@ -152,7 +152,7 @@ describe("SqlServerData", () => {
 		})
 
 		it("should handle connection configuration properly", async () => {
-			const customConfig: U_config_sources_source = {
+			const customConfig: U__sources_source = {
 				...mockConfig,
 				host: "custom-host",
 				database: "custom-db",

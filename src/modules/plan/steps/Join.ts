@@ -1,8 +1,6 @@
 //
 //
 //
-import z from "zod"
-//
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { DataTableUtils, JOIN_TYPE } from "../../../utils/DataTableUtils"
@@ -13,6 +11,7 @@ import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { STEP } from "../@consts"
 import type { TStep } from "../types/TStep"
+import { type U__plans_plan_join_Params, z_U__plans_plan_join_Params } from "../types/U__plans_params"
 import { Select } from "./Select"
 
 //
@@ -31,16 +30,11 @@ const _joinCaseMap: Record<
 	[JOIN_TYPE.CROSS]: async (dtLeft: DataTable, dtRight: DataTable) => DataTableUtils.CrossJoin(dtLeft, dtRight),
 }
 
-import {
-	type U_config_plans_plan_entity_join_Params,
-	z_U_config_plans_plan_entity_join_Params,
-} from "../types/U_config_plans_params"
-
 //
 export async function Join(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
-	Assert.Var<U_config_plans_plan_entity_join_Params>(
+	Assert.Var<U__plans_plan_join_Params>(
 		step.stepArgs,
-		z_U_config_plans_plan_entity_join_Params.safeParse(step.stepArgs).success,
+		z_U__plans_plan_join_Params.safeParse(step.stepArgs).success,
 		`${STEP.JOIN}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`,
 	)
 

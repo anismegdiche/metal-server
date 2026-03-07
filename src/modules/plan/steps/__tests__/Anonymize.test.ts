@@ -4,6 +4,7 @@ import { DataTable } from "../../../../types/DataTable"
 import { DataTableUtils } from "../../../../utils/DataTableUtils"
 import { Anonymize } from "../Anonymize"
 import type { TStep } from "../../types/TStep"
+import type { U__plans_plan_anonymize_Params } from "../../types/U__plans_params"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -37,7 +38,9 @@ describe("Anonymize", () => {
 			currentSchemaName: "mySchema",
 			currentPlanName: "myPlan",
 			currentDataTable: myPlanEntity1,
-			stepArgs: ["name"],
+			stepArgs: <U__plans_plan_anonymize_Params>{
+				fields:["name"]
+			},
 		}
 
 		const result = await Anonymize(step)

@@ -12,7 +12,7 @@ import { Logger } from "../../utils/Logger"
 import { AiEngine } from "../ai-engine/AiEngine"
 import { AuthProvider } from "../auth/AuthProvider"
 import { Roles } from "../auth/Roles"
-import type { U_config_server_authentication } from "../auth/types/U_config_server_authentication"
+import type { U__server_authentication } from "../auth/types/U__server_authentication"
 import { Cache } from "../cache/Cache"
 import { PlansManager } from "../plan/PlansManager"
 import { Schedule } from "../plan/Schedule"
@@ -88,7 +88,7 @@ export class ServerCore {
 
 	@Logger.LogFunction()
 	static async InitAuthentication(): Promise<void> {
-		const authentication = ConfigManager.Get<U_config_server_authentication>("server.authentication")
+		const authentication = ConfigManager.Get<U__server_authentication>("server.authentication")
 		await AuthProvider.SetCurrent(authentication.provider)
 		AuthProvider.Provider.Init()
 		Roles.Init()

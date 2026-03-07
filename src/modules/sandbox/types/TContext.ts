@@ -5,7 +5,7 @@ import type { DataTable } from "../../../types/DataTable"
 import type { TJson } from "../../../types/TJson"
 import type { TAiOutput } from "../../ai-engine/@types"
 import type { STEP, STEP_STATUS } from "../../plan/@consts"
-import type { U_config_plans_plan_entity_step_Params } from "../../plan/types/U_config_plans_plan_entity_step"
+import type { U__plans_plan__step_Params } from "../../plan/types/U__plans_plan__step"
 import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 
 //
@@ -29,7 +29,7 @@ export type TContext = {
 		$current: {
 			stepIndex?: number
 			stepCommand?: STEP
-			stepArgs?: U_config_plans_plan_entity_step_Params
+			stepArgs?: U__plans_plan__step_Params
 			data?: DataTable
 			status?: STEP_STATUS
 		}

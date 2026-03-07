@@ -11,17 +11,17 @@ import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { Plan } from "./Plan"
 import { Plans } from "./Plans"
 import { Schedule } from "./Schedule"
-import type { U_config_plans } from "./types/U_config_plans"
+import type { U__plans } from "./types/U__plans"
 
 //
 export class PlansManager {
-	static Config: U_config_plans = {}
+	static Config: U__plans = {}
 
 	@Logger.LogFunction()
 	static async Init() {
 		if (!ConfigManager.Has("plans")) return
 
-		PlansManager.Config = ConfigManager.Get<U_config_plans>("plans") ?? {}
+		PlansManager.Config = ConfigManager.Get<U__plans>("plans") ?? {}
 
 		const plans = Object.keys(PlansManager.Config)
 

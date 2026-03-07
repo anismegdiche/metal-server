@@ -16,7 +16,7 @@ import { ContentProvider } from "../../content/ContentProvider"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import {
 	HttpErrorBadRequest,
 	HttpErrorInternalServerError,
@@ -82,7 +82,7 @@ export class WebServiceData extends absDataProvider {
 	File = new Map<string, IContentProvider>() // Files
 
 	@Logger.LogFunction(["sourceConfig"])
-	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
 		this.Config = merge(this.Config, sourceConfig)
 

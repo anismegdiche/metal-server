@@ -9,7 +9,7 @@ import type { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { StringUtils } from "../../../utils/StringUtils"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
 import type { IStorageProvider } from "./IStorageProvider"
 
@@ -21,7 +21,7 @@ export abstract class absStorageProvider extends clsClonable implements IStorage
 
 	abstract IsConfigValid(): void
 
-	SetConfig(configSource: U_config_sources_source) {
+	SetConfig(configSource: U__sources_source) {
 		this.Config = configSource.options as U__source_storage_file_options
 		this.Init()
 	}

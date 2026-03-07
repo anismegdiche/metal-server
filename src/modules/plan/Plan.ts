@@ -34,14 +34,14 @@ import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from ".
 import { type STEP, STEP_STATUS } from "./@consts"
 import { Step, type TFunctionStep } from "./Step"
 import type { TStep } from "./types/TStep"
-import type { U_config_plans_plan_entity_steps } from "./types/U_config_plans"
-import type { U_config_plans_plan_entity_step_Params } from "./types/U_config_plans_plan_entity_step"
-import type { U_config_schedules_schedule } from "./types/U_config_schedules"
+import type { U__plans_plan__steps } from "./types/U__plans"
+import type { U__plans_plan__step_Params } from "./types/U__plans_plan__step"
+import type { U__schedules_schedule } from "./types/U__schedules"
 
 //
 export class Plan {
 	Name: string // Plan name
-	Entities = new Map<string, U_config_plans_plan_entity_steps>() // Plan entities and associated steps
+	Entities = new Map<string, U__plans_plan__steps>() // Plan entities and associated steps
 	_dataBase: DataBase // Plan entities rendered data
 	_isReady = false
 
@@ -56,9 +56,9 @@ export class Plan {
 			throw new HttpErrorInternalServerError(`Unable to set temporary database for plan ${this.Name}: ${_e.message}`)
 		})
 
-		const entities = ConfigManager.Get<TJson<U_config_plans_plan_entity_steps>>(`plans.${this.Name}`) ?? {}
+		const entities = ConfigManager.Get<TJson<U__plans_plan__steps>>(`plans.${this.Name}`) ?? {}
 
-		forEach(entities, (steps: U_config_plans_plan_entity_steps, entity: string) => {
+		forEach(entities, (steps: U__plans_plan__steps, entity: string) => {
 			this.Entities.set(entity, steps)
 			// this.#__LOCK__.set(entity, new Semaphore(this.SemaphoreSize))
 		})
@@ -89,7 +89,7 @@ export class Plan {
 		return currentDatatable
 	}
 
-	async ProcessSchedule(schemaRequest: U_config_schedules_schedule, sqlQuery?: string): Promise<void> {
+	async ProcessSchedule(schemaRequest: U__schedules_schedule, sqlQuery?: string): Promise<void> {
 		await Utils.Wait(async () => this._isReady, 50, 60_000)
 
 		const { plan, entity } = schemaRequest
@@ -102,7 +102,7 @@ export class Plan {
 			new HttpErrorBadRequest(),
 		)
 
-		const entitySteps = ConfigManager.Get<U_config_plans_plan_entity_steps>(`plans.${plan}.${entity}`)
+		const entitySteps = ConfigManager.Get<U__plans_plan__steps>(`plans.${plan}.${entity}`)
 
 		Logger.Debug(`${Logger.In} Plan.ProcessSchedule: ${plan}.${entity}: ${JsonUtils.Stringify(entitySteps)}`)
 
@@ -123,7 +123,7 @@ export class Plan {
 		currentSchemaName: string | undefined,
 		currentPlanName: string,
 		currentEntityName: string,
-		steps: U_config_plans_plan_entity_steps,
+		steps: U__plans_plan__steps,
 	): Promise<DataTable> {
 		this._dataBase.SetTable(currentEntityName, [])
 
@@ -151,7 +151,7 @@ export class Plan {
 					...$context.$plan?.$current,
 					stepIndex: __stepIndex,
 					stepCommand: keys(_step)[0] as STEP,
-					stepArgs: values(<U_config_plans_plan_entity_step_Params>_step)[0] as U_config_plans_plan_entity_step_Params,
+					stepArgs: values(<U__plans_plan__step_Params>_step)[0] as U__plans_plan__step_Params,
 					status: STEP_STATUS.RUNNING,
 				}
 
@@ -190,17 +190,23 @@ export class Plan {
 					stepArgs: $context.$plan?.$current.stepArgs!,
 				}
 
-				const executeStep =
+				const __executeStep =
 					Step.ExecuteCaseMap[$context.$plan?.$current.stepCommand!] ??
 					Helper.CaseMapNotFound($context.$plan?.$current.stepCommand!)
 
 				Assert.Var<TFunctionStep>(
-					executeStep,
+					__executeStep,
 					`'${$context.$plan?.name}', Entity '${$context.$plan?.entity}': error have been encountered in step ${$context.$plan?.$current.stepIndex}`,
 					new HttpErrorInternalServerError(),
 				)
 
-				const __stepReturn = await executeStep(__stepArguments, $context)
+				const __stepReturn = await Step.ExecuteOnError(
+					__executeStep,
+					__stepArguments,
+					$context,
+					_step
+				)
+				
 				if (__stepReturn) {
 					this._dataBase.Tables[currentEntityName] = __stepReturn
 				}
@@ -218,7 +224,7 @@ export class Plan {
 			const _e = NormalizeError(e)
 
 			switch (
-				true // NOSONAR
+			true // NOSONAR
 			) {
 				case _e.message === "__BREAK__":
 					Logger.Info(

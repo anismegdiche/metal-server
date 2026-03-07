@@ -2,7 +2,7 @@ import mysql from "mysql2/promise"
 import type { Mock } from "vitest"
 import { DataTable } from "../../../types/DataTable"
 import { Cache } from "../../cache/Cache"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../@consts"
@@ -39,7 +39,7 @@ describe("MySqlData", () => {
 	}
 	const mockCreatePool = mysql.createPool as Mock
 
-	const providerConfig: U_config_sources_source = {
+	const providerConfig: U__sources_source = {
 		provider: DATA_PROVIDER.MYSQL,
 		host: "127.0.0.1",
 		port: 3306,

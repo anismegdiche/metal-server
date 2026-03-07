@@ -4,15 +4,15 @@
 import z from "zod"
 //
 import { Logger } from "../../../utils/Logger"
-import type { U_config_users } from "../../core/types/U_config_users"
+import type { U__users } from "../../core/types/U__users"
 import { AUTH_PROVIDER } from "../@consts"
 import type { TUserCredentials, TUserTokenInfo } from "../@types"
 import { absAuthProvider } from "../base/absAuthProvider"
 
 import {
-	type U_config_server_authentication_demo,
-	z_U_config_server_authentication_demo,
-} from "../types/U_config_server_authentication_demo"
+	type U__server_authentication_demo,
+	z_U__server_authentication_demo,
+} from "../types/U__server_authentication_demo"
 
 //
 export class DemoAuth extends absAuthProvider {
@@ -20,7 +20,7 @@ export class DemoAuth extends absAuthProvider {
 		Logger.Debug("DemoAuthProvider.Init")
 	}
 
-	GetUsers(): U_config_users {
+	GetUsers(): U__users {
 		return {
 			admin: {
 				password: "password", // NOSONAR

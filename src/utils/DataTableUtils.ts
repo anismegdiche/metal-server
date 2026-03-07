@@ -1,4 +1,5 @@
 /* eslint-disable security/detect-non-literal-fs-filename */
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
 //

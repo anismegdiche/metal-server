@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
+import { STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../../@consts"
 import type { TStep } from "../../types/TStep"
-import { MAP_ON_ERROR } from "../../types/U_config_plans_params"
 import { MapRows } from "../MapRows"
+import type { U__plans_plan_map_Params } from "../../types/U__plans_params"
 
 vi.mock("../../../../utils/Logger", () => ({
 	LOGGER_DEFAULT_LEVEL: "debug",
@@ -17,6 +18,15 @@ vi.mock("../../../../utils/Logger", () => ({
 	},
 }))
 
+vi.mock("../../Step", () => ({
+	Step: {
+		ExtractOnErrorConfig: vi.fn(),
+		ExecuteRowWithErrorHandling: vi.fn(),
+	},
+}))
+
+const { Step } = await import("../../Step")
+
 describe("Map step", () => {
 	let testDataTable: DataTable
 
@@ -26,6 +36,7 @@ describe("Map step", () => {
 			{ price: 5, quantity: 3, category: "books" },
 			{ price: 20, quantity: 1, category: "clothing" },
 		])
+		vi.clearAllMocks()
 	})
 
 	it("should transform data using custom JavaScript code", async () => {
@@ -137,7 +148,72 @@ describe("Map step", () => {
 		await expect(MapRows(step)).rejects.toThrow()
 	})
 
-	it("should skip rows when on-error is set to skip", async () => {
+	it("should skip rows when using new error handling with skip strategy", async () => {
+		vi.mocked(Step.ExtractOnErrorConfig).mockReturnValue({
+			strategy: STEP_ON_ERROR_STRATEGY.SKIP,
+			scope: STEP_ON_ERROR_SCOPE.ROW,
+		})
+
+		// Create a mock implementation that simulates row processing with skipping
+		const processedRows: any[] = []
+		vi.mocked(Step.ExecuteRowWithErrorHandling).mockImplementation(async (row: any, rowFunction: any) => {
+			// Simulate row processing with error handling
+			if (row.category === 'books') {
+				return undefined // Skip this row
+			}
+			const result = await rowFunction(row)
+			processedRows.push(result)
+			return result
+		})
+
+		const step: TStep = {
+			currentPlanName: "test-plan",
+			currentSchemaName: "test-schema",
+			currentDataTable: testDataTable,
+			stepArgs: {
+				script: `
+                    $row.processed = true;
+                    return $row;
+                `,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.SKIP,
+					scope: STEP_ON_ERROR_SCOPE.ROW,
+				},
+			},
+		}
+
+		const result = await MapRows(step)
+		expect(result).toBeInstanceOf(DataTable)
+
+		const rows = await result.Rows()
+
+		expect(rows).toHaveLength(3)
+
+		expect(rows).toEqual([
+			{
+				price: 10,
+				quantity: 2,
+				category: "electronics",
+				processed: true,
+			},
+			// books is skipped and same as origin
+			{
+				price: 5,
+				quantity: 3,
+				category: "books",
+			},
+			{
+				price: 20,
+				quantity: 1,
+				category: "clothing",
+				processed: true,
+			},
+		])
+	})
+
+	it("should use legacy error handling when no new error config is present", async () => {
+		vi.mocked(Step.ExtractOnErrorConfig).mockReturnValue(undefined)
+
 		const step: TStep = {
 			currentPlanName: "test-plan",
 			currentSchemaName: "test-schema",
@@ -151,7 +227,9 @@ describe("Map step", () => {
                     $row.processed = true;
                     return $row;
                 `,
-				"on-error": MAP_ON_ERROR.SKIP,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.SKIP,
+				},
 			},
 		}
 
@@ -180,54 +258,29 @@ describe("Map step", () => {
 		})
 	})
 
-	it("should mark rows with error when on-error is set to mark", async () => {
+	it("should validate that throw strategy is not compatible with row scope", async () => {
+		vi.mocked(Step.ExtractOnErrorConfig).mockReturnValue({
+			strategy: STEP_ON_ERROR_STRATEGY.THROW,
+			scope: STEP_ON_ERROR_SCOPE.STEP,
+		})
+
 		const step: TStep = {
 			currentPlanName: "test-plan",
 			currentSchemaName: "test-schema",
 			currentDataTable: testDataTable,
 			stepArgs: {
 				script: `
-                    // This will cause an error for the second row
-                    if ($row.category === 'books') {
-                        throw new Error('Books are not allowed');
-                    }
                     $row.processed = true;
                     return $row;
                 `,
-				"on-error": MAP_ON_ERROR.MARK,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.ROW,
+				},
 			},
 		}
 
-		const result = await MapRows(step)
-		expect(result).toBeInstanceOf(DataTable)
-
-		const rows = await result.Rows()
-
-		// Should have all 3 rows
-		expect(rows).toHaveLength(3)
-
-		// First row (electronics) should be processed successfully
-		expect(rows[0]).toEqual({
-			price: 10,
-			quantity: 2,
-			category: "electronics",
-			processed: true,
-		})
-
-		// Second row (books) should be marked with error
-		expect(rows[1]).toEqual({
-			price: 5,
-			quantity: 3,
-			category: "books",
-			__map_error__: "Error: Books are not allowed",
-		})
-
-		// Third row (clothing) should be processed successfully
-		expect(rows[2]).toEqual({
-			price: 20,
-			quantity: 1,
-			category: "clothing",
-			processed: true,
-		})
+		// Should fallback to legacy handling since throw + row is invalid
+		await expect(MapRows(step)).rejects.toThrow()
 	})
 })

@@ -12,7 +12,7 @@ import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source, U_config_sources_source_options } from "../../core/types/U_config_sources"
+import type { U__sources_source, U__sources_source_options } from "../../core/types/U__sources"
 import {
 	HttpErrorBadRequest,
 	HttpErrorInternalServerError,
@@ -41,7 +41,7 @@ export type U__source_postgres = {
 	user: string
 	password: string
 	database: string
-	options?: U_config_sources_source_options
+	options?: U__sources_source_options
 }
 
 //
@@ -73,7 +73,7 @@ export class PostgresData extends absDataProvider {
 	}
 
 	@Logger.LogFunction()
-	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
 		this.Config = merge(this.DEFAULT, sourceConfig as U__source_postgres)
 	}

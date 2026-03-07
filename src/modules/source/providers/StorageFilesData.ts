@@ -17,7 +17,7 @@ import { ContentProvider } from "../../content/ContentProvider"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U_config_sources_source } from "../../core/types/U_config_sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import {
 	HttpErrorBadRequest,
 	HttpErrorInternalServerError,
@@ -66,7 +66,7 @@ export type U__source_storage_file_options = {
 export class StorageFilesData extends absDataProvider {
 	SourceName?: string
 	ProviderName = DATA_PROVIDER.STORAGE
-	Config: U_config_sources_source = <U_config_sources_source>{}
+	Config: U__sources_source = <U__sources_source>{}
 	Connection?: absStorageProvider = undefined
 
 	// biome-ignore lint/complexity/noUselessConstructor: compatibility
@@ -92,7 +92,7 @@ export class StorageFilesData extends absDataProvider {
 	}
 
 	@Logger.LogFunction()
-	async Init(source: string, sourceConfig: U_config_sources_source): Promise<void> {
+	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
 		this.Config = sourceConfig
 		const { "storage-type": storage = STORAGE.FILESYSTEM, content } = this.Config
