@@ -42,35 +42,37 @@ schedules:
 plans:
   sync:
     members-up:
-      - sync:
-          source:
-            schema: pg
-            entity: members
-          destination:
+      steps:
+        - sync:
+            source:
+              schema: pg
+              entity: members
+            destination:
+              schema: mem
+              entity: members
+            on: memid
+
+        - update:
             schema: mem
             entity: members
-          on: memid
+            data:
+              address: XXXXXXXXXX
 
-      - update:
-          schema: mem
-          entity: members
-          data:
-            address: XXXXXXXXXX
-
-      - sync:
-          source:
-            schema: mem
-            entity: members
-          destination:
-            schema: pg
-            entity: members
-          on: memid
+        - sync:
+            source:
+              schema: mem
+              entity: members
+            destination:
+              schema: pg
+              entity: members
+            on: memid
     members-down:
-      - sync:
-          source:
-            schema: mem
-            entity: members
-          destination:
-            schema: pg
-            entity: members
-          on: memid
+      steps:
+        - sync:
+            source:
+              schema: mem
+              entity: members
+            destination:
+              schema: pg
+              entity: members
+            on: memid

@@ -98,6 +98,7 @@ Next, configure a plan section with the plan `p-order-countries` with an entity 
 plans:
   p-order-countries:
     order-countries:
+      steps:
 ```
 
 Inside `order-countries`, add the steps as presented in the article to achieve the view:
@@ -106,19 +107,20 @@ Inside `order-countries`, add the steps as presented in the article to achieve t
 plans:
   p-order-countries:
     order-countries:
-      - select:
-          schema: northwind
-          entity: orders
-          fields: customer_id, order_id, order_date
-      - join:
-          type: left
-          schema: northwind
-          entity: customers
-          left-field: customer_id
-          right-field: customer_id
-      - fields: order_id, order_date, country
-      - sort:
-          order_date: asc
+      steps:
+        - select:
+            schema: northwind
+            entity: orders
+            fields: customer_id, order_id, order_date
+        - join:
+            type: left
+            schema: northwind
+            entity: customers
+            left-field: customer_id
+            right-field: customer_id
+        - fields: order_id, order_date, country
+        - sort:
+            order_date: asc
 ```
 
 | Block                                                                                                                                                                                                                                                                                                     | Step command                                                                                                                           |
@@ -191,19 +193,20 @@ schemas:
 plans:
   p-order-countries:
     order-countries:
-      - select:
-          schema: northwind
-          entity: orders
-          fields: customer_id, order_id, order_date
-      - join:
-          type: left
-          schema: northwind
-          entity: customers
-          left-field: customer_id
-          right-field: customer_id
-      - fields: order_id, order_date, country
-      - sort:
-          order_date: asc
+      steps:
+        - select:
+            schema: northwind
+            entity: orders
+            fields: customer_id, order_id, order_date
+        - join:
+            type: left
+            schema: northwind
+            entity: customers
+            left-field: customer_id
+            right-field: customer_id
+        - fields: order_id, order_date, country
+        - sort:
+            order_date: asc
 ```
 
 With the configuration set, restart the Metal server:

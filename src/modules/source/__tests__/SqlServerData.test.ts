@@ -365,7 +365,7 @@ describe("SqlServerData", () => {
 			await sqlServerData.Init("test", mockConfig)
 			await sqlServerData.Connect()
 
-			const mockInsertRequest: TSchemaRequestInsert = {
+			const mockInsertRequest: any = {
 				...mockSchemaRequest,
 				data: undefined as TJson | undefined,
 			}
@@ -439,7 +439,7 @@ describe("SqlServerData", () => {
 			await sqlServerData.Init("test", mockConfig)
 			await sqlServerData.Connect()
 
-			const mockUpdateRequest: TSchemaRequestUpdate = {
+			const mockUpdateRequest: any = {
 				...mockSchemaRequest,
 				data: undefined as TJson | undefined,
 				filter: { id: 1 },

@@ -45,15 +45,15 @@ plans:
 
 ## Error Strategies
 
-### `throw` <Badge type="default" text="v0.1+" />
+### `throw` <Badge type="info" text="v0.5+" />
 
 Default behavior. Stops plan execution and throws the error.
 
 **Parameters:**
 
-| Parameter | Type   | Required | Description                                        | Metal Version                         |
-| --------- | ------ | -------- | -------------------------------------------------- | ------------------------------------- |
-| `scope`   | String | N        | Error scope: "step" only (row scope not supported) | <Badge type="default" text="v0.1+" /> |
+| Parameter | Type   | Required | Description                                        | Metal Version                      |
+| --------- | ------ | -------- | -------------------------------------------------- | ---------------------------------- |
+| `scope`   | String | N        | Error scope: "step" only (row scope not supported) | <Badge type="info" text="v0.5+" /> |
 
 **Example:**
 
@@ -65,7 +65,7 @@ on-error:
 
 **Important:** The `throw` strategy is only compatible with `scope: "step"`. When using `scope: "row"`, use `skip`, `sink`, or `retry` strategies instead.
 
-### `skip` <Badge type="default" text="v0.1+" />
+### `skip` <Badge type="info" text="v0.5+" />
 
 Skips the failed operation and continues with next steps. For row-level operations, skips problematic rows.
 
@@ -78,19 +78,19 @@ on-error:
   strategy: "skip"
 ```
 
-### `sink` <Badge type="default" text="v0.1+" />
+### `sink` <Badge type="info" text="v0.5+" />
 
 Moves failed data to a specified error destination for later analysis and reprocessing.
 
 **Parameters:**
 
-| Parameter            | Type    | Required | Description                                                | Metal Version                         |
-| -------------------- | ------- | -------- | ---------------------------------------------------------- | ------------------------------------- |
-| `scope`              | String  | N        | Error scope: "step" or "row" (default varies by step type) | <Badge type="default" text="v0.1+" /> |
-| `sink.schema`        | String  | Y        | Error destination schema                                   | <Badge type="default" text="v0.1+" /> |
-| `sink.entity`        | String  | Y        | Error destination entity                                   | <Badge type="default" text="v0.1+" /> |
-| `sink.include-error` | Boolean | N        | Include error details in sink (default: true)              | <Badge type="default" text="v0.1+" /> |
-| `sink.error-field`   | String  | N        | Field name for error details (default: "error_details")    | <Badge type="default" text="v0.1+" /> |
+| Parameter            | Type    | Required | Description                                                | Metal Version                      |
+| -------------------- | ------- | -------- | ---------------------------------------------------------- | ---------------------------------- |
+| `scope`              | String  | N        | Error scope: "step" or "row" (default varies by step type) | <Badge type="info" text="v0.5+" /> |
+| `sink.schema`        | String  | Y        | Error destination schema                                   | <Badge type="info" text="v0.5+" /> |
+| `sink.entity`        | String  | Y        | Error destination entity                                   | <Badge type="info" text="v0.5+" /> |
+| `sink.include-error` | Boolean | N        | Include error details in sink (default: true)              | <Badge type="info" text="v0.5+" /> |
+| `sink.error-field`   | String  | N        | Field name for error details (default: "error_details")    | <Badge type="info" text="v0.5+" /> |
 
 **Example:**
 
@@ -105,19 +105,19 @@ on-error:
     error-field: error_message
 ```
 
-### `retry` <Badge type="default" text="v0.1+" />
+### `retry` <Badge type="info" text="v0.5+" />
 
 Attempts to retry the failed operation before giving up.
 
 **Parameters:**
 
-| Parameter         | Type    | Required | Description                                                                   | Metal Version                         |
-| ----------------- | ------- | -------- | ----------------------------------------------------------------------------- | ------------------------------------- |
-| `scope`           | String  | N        | Error scope: "step" or "row" (default varies by step type)                    | <Badge type="default" text="v0.1+" /> |
-| `retry.attempts`  | Integer | Y        | Maximum retry attempts (default: 3)                                           | <Badge type="default" text="v0.1+" /> |
-| `retry.delay`     | Integer | N        | Delay between retries in milliseconds (default: 1000)                         | <Badge type="default" text="v0.1+" /> |
-| `retry.backoff`   | String  | N        | Backoff strategy: "fixed", "linear", "exponential" (default: "fixed")         | <Badge type="default" text="v0.1+" /> |
-| `retry.max-delay` | Integer | N        | Maximum delay for exponential/linear backoff in milliseconds (default: 30000) | <Badge type="default" text="v0.1+" /> |
+| Parameter         | Type    | Required | Description                                                                   | Metal Version                      |
+| ----------------- | ------- | -------- | ----------------------------------------------------------------------------- | ---------------------------------- |
+| `scope`           | String  | N        | Error scope: "step" or "row" (default varies by step type)                    | <Badge type="info" text="v0.5+" /> |
+| `retry.attempts`  | Integer | Y        | Maximum retry attempts (default: 3)                                           | <Badge type="info" text="v0.5+" /> |
+| `retry.delay`     | Integer | N        | Delay between retries in milliseconds (default: 1000)                         | <Badge type="info" text="v0.5+" /> |
+| `retry.backoff`   | String  | N        | Backoff strategy: "fixed", "linear", "exponential" (default: "fixed")         | <Badge type="info" text="v0.5+" /> |
+| `retry.max-delay` | Integer | N        | Maximum delay for exponential/linear backoff in milliseconds (default: 30000) | <Badge type="info" text="v0.5+" /> |
 
 **Example:**
 
@@ -163,13 +163,13 @@ Error handling applies to individual rows within the step. Failed rows are handl
 - Retry applies to individual rows
 
 **Strategy Compatibility:**
-| Strategy | Compatible with Row Scope | Reason |
-|----------|--------------------------|--------|
-| `throw` | ❌ No | Would stop processing all rows |
-| `skip` | ✅ Yes | Skips failed rows, continues processing |
-| `sink` | ✅ Yes | Sinks failed rows, continues processing |
-| `retry` | ✅ Yes | Retries failed rows, continues processing |
-| `retry-then-sink` | ✅ Yes | Retries then sinks failed rows, continues processing |
+| Strategy          | Compatible with Row Scope | Reason                                               |
+| ----------------- | ------------------------- | ---------------------------------------------------- |
+| `throw`           | ❌ No                      | Would stop processing all rows                       |
+| `skip`            | ✅ Yes                     | Skips failed rows, continues processing              |
+| `sink`            | ✅ Yes                     | Sinks failed rows, continues processing              |
+| `retry`           | ✅ Yes                     | Retries failed rows, continues processing            |
+| `retry-then-sink` | ✅ Yes                     | Retries then sinks failed rows, continues processing |
 
 **Example with explicit scope:**
 
@@ -229,7 +229,7 @@ Delay increases exponentially with each attempt.
 
 **Example:** `delay: 1000` → 1s, 2s, 4s, 8s, 16s (capped at `max-delay`)
 
-### `retry-then-sink` <Badge type="default" text="v0.1+" />
+### `retry-then-sink` <Badge type="info" text="v0.5+" />
 
 Combines retry strategy with sink fallback. Retries specified attempts, then sinks failed data.
 

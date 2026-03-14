@@ -1,4 +1,6 @@
 //
+//
+//
 
 export enum STEP {
 	DEBUG = "debug",
@@ -28,22 +30,28 @@ export enum STEP_STATUS {
 	FAILED = "failed",
 }
 
-
 export enum STEP_ON_ERROR_STRATEGY {
 	THROW = "throw",
 	SKIP = "skip",
 	RETRY = "retry",
-	SINK = "sink",
-	RETRY_THEN_SINK = "retry-then-sink"
+	SINK = "sink"
 }
 
 export enum STEP_ON_ERROR_SCOPE {
 	STEP = "step",
-	ROW = "row"
+	ROW = "row",
+	PLAN = "plan",
+	ENTITY = "entity"
 }
 
 export enum STEP_ON_ERROR_RETRY_BACKOFF {
 	FIXED = "fixed",
 	LINEAR = "linear",
 	EXPONENTIAL = "exponential"
+}
+
+export enum STEP_ON_ERROR_RETRY_THEN {
+	THROW = STEP_ON_ERROR_STRATEGY.THROW,
+	SKIP = STEP_ON_ERROR_STRATEGY.SKIP,
+	SINK = STEP_ON_ERROR_STRATEGY.SINK
 }

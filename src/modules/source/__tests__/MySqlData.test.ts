@@ -126,7 +126,7 @@ describe("MySqlData", () => {
 		})
 
 		it("should throw error when data is missing", async () => {
-			const mockInsertRequest: TSchemaRequest = {
+			const mockInsertRequest: any = {
 				schema: "test-schema",
 				entity: "test-table",
 			}
@@ -243,7 +243,7 @@ describe("MySqlData", () => {
 		})
 
 		it("should throw error when update data is missing", async () => {
-			const mockUpdateRequest: TSchemaRequest = {
+			const mockUpdateRequest: any = {
 				schema: "test-schema",
 				entity: "test-table",
 				filter: { id: 1 },

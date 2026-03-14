@@ -73,7 +73,7 @@ describe("Plan", () => {
 
 	it("should initialize and load entities", async () => {
 		vi.mocked(ConfigManager.Get).mockReturnValue({
-			entity1: [{ step1: {} }],
+			entity1: { steps: [{ step1: {} }] },
 		})
 
 		await plan.Init()
@@ -123,7 +123,7 @@ describe("Plan", () => {
 			const executeMock = vi.fn().mockResolvedValue(mockDataTable)
 			Step.ExecuteCaseMap["mock-cmd"] = executeMock
 
-			await plan.Process("s", "p", "e1", steps as any)
+			await plan.Process("s", "p", "e1", { steps } as any)
 
 			expect(executeMock).toHaveBeenCalled()
 		})
@@ -145,7 +145,7 @@ describe("Plan", () => {
 			Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
 			Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
 
-			await expect(plan.Process("s", "p", "e1", steps as any)).rejects.toThrow()
+			await expect(plan.Process("s", "p", "e1", { steps } as any)).rejects.toThrow()
 
 			expect(executeMock1).toHaveBeenCalled()
 			expect(executeMock2).toHaveBeenCalled()
@@ -169,7 +169,7 @@ describe("Plan", () => {
 			Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
 			Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
 
-			const result = await plan.Process("s", "p", "e1", steps as any)
+			const result = await plan.Process("s", "p", "e1", { steps } as any)
 
 			expect(executeMock1).toHaveBeenCalled()
 			expect(executeMock2).toHaveBeenCalled()

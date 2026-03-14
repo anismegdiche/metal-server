@@ -284,7 +284,7 @@ describe("MemoryData", () => {
 		const testEntity = "testTable"
 		memoryData.Connection?.AddTable(testEntity)
 
-		const schemaRequest: TSchemaRequestInsert = {
+		const schemaRequest: any = {
 			schema: "test-schema",
 			entity: testEntity,
 			// No data provided
@@ -306,7 +306,7 @@ describe("MemoryData", () => {
 		const testEntity = "testTable"
 		memoryData.Connection?.AddTable(testEntity)
 
-		const schemaRequest: TSchemaRequestUpdate = {
+		const schemaRequest: any = {
 			schema: "test-schema",
 			entity: testEntity,
 			filter: { id: 1 },

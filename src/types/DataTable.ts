@@ -5,10 +5,9 @@
 //
 //
 //
+import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
 import fs from "node:fs"
 import { cpus } from "node:os"
-import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
-import { z } from "zod"
 //
 
 import { SERVER } from "../modules/core/@consts"
@@ -22,23 +21,12 @@ import { SQL_TYPE, SqlQueryUtils } from "../utils/SqlQueryUtils"
 import { StringUtils } from "../utils/StringUtils"
 import { TypeUtils } from "../utils/TypeUtils"
 import { Utils } from "../utils/Utils"
-import { z_T_IntPositive } from "./T_IntPositive"
+import type { TFields, TMetaData, TOrderBy, TRow, } from "./DataTableTypes"
+import { SORT_ORDER, z_SORT_ORDER, z_TOrderBy, z_TRow, } from "./DataTableTypes"
 import type { TAny } from "./TAny"
-import { type TJson, z_TJson } from "./TJson"
-import { type TUuidv7, z_TUuidv7 } from "./TUuidv7"
+import type { TJson } from "./TJson"
+import type { TUuidv7 } from "./TUuidv7"
 
-import type {
-	TFields,
-	TMetaData,
-	TOrderBy,
-	TRow,
-} from "./DataTableTypes"
-import {
-	SORT_ORDER,
-	z_SORT_ORDER,
-	z_TOrderBy,
-	z_TRow,
-} from "./DataTableTypes"
 
 // constants
 export { SORT_ORDER }
@@ -1093,7 +1081,8 @@ export class DataTable extends clsClonable {
 				try {
 					const _updatedRow = await fnMap(rowData)
 
-					if (_updatedRow === undefined) continue
+					if (_updatedRow === undefined)
+						continue
 
 					if (rowData.__idx__) {
 						const __data__ = JsonUtils.Stringify(_updatedRow)

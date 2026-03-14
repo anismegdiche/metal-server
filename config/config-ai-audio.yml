@@ -51,19 +51,22 @@ schedules:
 plans:
   myplan:
     myentity:
-      - select:
-          schema: fs
-          entity: audio
+      steps:
+        - select:
+            schema: fs
+            entity: audio
 
-      - run:
-          ai: audio
-          task: audio-classification
-          input: content
+        - run:
+            ai: audio
+            task: audio-classification
+            input: content
 
-      - run:
-          ai: audio
-          task: automatic-speech-recognition
-          input: content
-          output: text
+        - run:
+            ai: audio
+            task: automatic-speech-recognition
+            input: content
+            output: text
 
-      - omit: [content]
+        - omit: 
+            fields:
+              - content

@@ -4,7 +4,6 @@
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { DataTableUtils, JOIN_TYPE } from "../../../utils/DataTableUtils"
-import { Helper } from "../../../utils/Helper"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
@@ -31,7 +30,7 @@ const _joinCaseMap: Record<
 }
 
 //
-export async function Join(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
+export async function Join(step: TStep, $context?: Partial<TContext>): Promise<DataTable | undefined> {
 	Assert.Var<U__plans_plan_join_Params>(
 		step.stepArgs,
 		z_U__plans_plan_join_Params.safeParse(step.stepArgs).success,
@@ -40,7 +39,8 @@ export async function Join(step: TStep, $context?: Partial<TContext>): Promise<D
 
 	const { currentPlanName, currentDataTable: dtLeft, currentSchemaName, stepArgs } = step
 
-	if (stepArgs === null) return dtLeft
+	if (stepArgs === null) 
+		return dtLeft
 
 	const $__stepArgs = PlaceHolder.EvaluateJsCode<Record<string, string>>(stepArgs, new Sandbox($context)) as Record<
 		string,
@@ -66,6 +66,6 @@ export async function Join(step: TStep, $context?: Partial<TContext>): Promise<D
 
 	using dtRight = await Select(requestToSchema)
 	return (
-		_joinCaseMap[type]?.(dtLeft, dtRight, leftField, rightField) ?? (Helper.CaseMapNotFound(type) && dtLeft) ?? dtLeft
+		_joinCaseMap[type]?.(dtLeft, dtRight, leftField, rightField)
 	)
 }

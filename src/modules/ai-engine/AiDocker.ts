@@ -62,25 +62,29 @@ export class AiDocker {
 			AiDocker.docker = new Docker(_dockerOptions)
 			Logger.Info(`${Logger.Out} Docker client initialized`)
 
-			await AiDocker.docker.ping().catch((e) => {
-				throw new HttpErrorInternalServerError(`Docker daemon is unreachable: ${e.message}`)
-			})
+			await AiDocker.docker.ping()
+				.catch((e) => {
+					throw new HttpErrorInternalServerError(`Docker daemon is unreachable: ${e.message}`)
+				})
 			Logger.Info(`${Logger.Out} Docker daemon is reachable`)
 
 			if (!isBuildMode) {
 				Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
 
-				await AiDocker.CleanStack().catch((e) => {
-					throw new HttpErrorInternalServerError(`Unable to clean stack: ${e.message}`)
-				})
+				await AiDocker.CleanStack()
+					.catch((e) => {
+						throw new HttpErrorInternalServerError(`Unable to clean stack: ${e.message}`)
+					})
 
-				await AiDocker.CreateNetwork().catch((e) => {
-					throw new HttpErrorInternalServerError(`Unable to create network: ${e.message}`)
-				})
+				await AiDocker.CreateNetwork()
+					.catch((e) => {
+						throw new HttpErrorInternalServerError(`Unable to create network: ${e.message}`)
+					})
 
-				await AiDocker.StartCaddy().catch((e) => {
-					throw new HttpErrorInternalServerError(`Unable to start reverse proxy: ${e.message}`)
-				})
+				await AiDocker.StartCaddy()
+					.catch((e) => {
+						throw new HttpErrorInternalServerError(`Unable to start reverse proxy: ${e.message}`)
+					})
 
 				AiDocker.StartScaler()
 
@@ -658,8 +662,7 @@ export class AiDocker {
 						return percentages.reduce((sum, p) => sum + p, 0) / percentages.length
 					} catch (error) {
 						Logger.Warn(
-							`Failed to get CPU stats for container '${service.Name}/${containerInfo.Names[0]}' returning 0: ${
-								error instanceof Error ? error?.message : String(error)
+							`Failed to get CPU stats for container '${service.Name}/${containerInfo.Names[0]}' returning 0: ${error instanceof Error ? error?.message : String(error)
 							}`,
 						)
 						return 0 //NaN
@@ -675,8 +678,7 @@ export class AiDocker {
 			return totalCpuUsage / validUsages.length
 		} catch (error) {
 			Logger.Error(
-				`Error getting average CPU usage for service ${service.Name}: ${
-					error instanceof Error ? error.message : String(error)
+				`Error getting average CPU usage for service ${service.Name}: ${error instanceof Error ? error.message : String(error)
 				}`,
 			)
 			return 0

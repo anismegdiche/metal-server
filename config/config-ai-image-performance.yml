@@ -66,22 +66,25 @@ schedules:
 plans:
   myplan:
     myentity:
-      - select:
-          schema: fs
-          entity: rec
-          fields: "*,content"
-          sort:
-            name: asc
+      steps:
+        - select:
+            schema: fs
+            entity: rec
+            fields: "*,content"
+            sort:
+              name: asc
 
-      - run:
-          ai: image
-          task: image-to-text
-          input: content
-          output:
-            description: ${{ $result.text }}
+        - run:
+            ai: image
+            task: image-to-text
+            input: content
+            output:
+              description: ${{ $result.text }}
 
-      - omit: [content]
+        - omit: 
+            fields:
+              - content
 
-      - insert:
-          schema: json
-          entity: recovered.json
+        - insert:
+            schema: json
+            entity: recovered.json

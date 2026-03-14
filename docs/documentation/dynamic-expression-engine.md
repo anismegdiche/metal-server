@@ -101,11 +101,12 @@ You can also mix JavaScript Expression Engine and field value escape.
 plans:
   my-plan:
     my-entity:
-      - update:
-          filter-expression: "id < 10"
-          data:
-            display_name: $> first_name + ' ' + last_name # <-- escape field value
-            unique_id: $>  last_name + '-${{ $utils.newUuid() }}' # <-- mixed usage
+      steps:
+        - update:
+            filter-expression: "id < 10"
+            data:
+              display_name: $> first_name + ' ' + last_name # <-- escape field value
+              unique_id: $>  last_name + '-${{ $utils.newUuid() }}' # <-- mixed usage
 ```
 
 ::: tip ℹ️ NOTE

@@ -2,13 +2,16 @@
 //
 //
 //
-import type { DataTable } from "../../types/DataTable"
+import type z from "zod"
+import type { DataTable, TRow } from "../../types/DataTable"
 import { Logger } from "../../utils/Logger"
+import { Utils } from "../../utils/Utils"
 import type { TContext } from "../sandbox/types/TContext"
 import { STEP, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_STRATEGY } from "./@consts"
 import type { TStep } from "./types/TStep"
 import type { U__plans_plan__step, U__plans_plan__step_Params } from "./types/U__plans_plan__step"
-import type { U__step_on_error_Params, U__step_on_error_strategy_retry, U__step_on_error_strategy_retry_then_sink, U__step_on_error_strategy_sink } from "./types/U__plans_plan_on_error"
+import type { U__on_error, U__on_error_Params, U__on_error_strategy_retry, U__on_error_strategy_sink, z__on_error_retry, z__on_error_sink } from "./types/U__plans_plan_on_error"
+import { isEmpty } from "lodash-es"
 
 
 //
@@ -40,13 +43,13 @@ export class Step {
 		[STEP.SET_VAR]: async (step, $context) => (await import('./steps/SetVar')).SetVar(step, $context),
 	}
 
-	private static async _onErrorRetryRow(
-		rowFunction: (row: any) => Promise<any>,
-		row: any,
-		onErrorConfig: U__step_on_error_strategy_retry | U__step_on_error_strategy_retry_then_sink
-	): Promise<any> {
+	private static async _onErrorRowRetry(
+		rowFunction: (row: TRow) => Promise<TRow>,
+		row: TRow,
+		onErrorConfig: U__on_error_strategy_retry
+	): Promise<TRow> {
 
-		const retryConfig = onErrorConfig.retry
+		const retryConfig = onErrorConfig.retry 
 		if (!retryConfig) {
 			throw new Error("Retry configuration not found")
 		}
@@ -61,7 +64,7 @@ export class Step {
 				lastError = error
 				if (attempt < attempts) {
 					const retryDelay = Step._calculateRetryDelay(attempt, delay, backoff, maxDelay)
-					await Step._sleep(retryDelay)
+					await Utils.Sleep(retryDelay)
 				}
 			}
 		}
@@ -69,11 +72,11 @@ export class Step {
 		throw lastError
 	}
 
-	private static async _onErrorSinkRow(
+	private static async _onErrorRowSink(
 		error: any,
-		row: any,
+		row: TRow,
 		_$context: Partial<TContext>,
-		onErrorConfig: U__step_on_error_strategy_sink | U__step_on_error_strategy_retry_then_sink
+		onErrorConfig: U__on_error_strategy_sink | U__on_error_strategy_retry
 	): Promise<void> {
 		const sinkConfig = onErrorConfig.sink
 		if (!sinkConfig) {
@@ -89,34 +92,17 @@ export class Step {
 		// 2. Insert into sink destination
 	}
 
-	private static async _applyOnErrorStrategy(
-		stepFunction: TFunctionStep,
-		stepArgs: TStep,
-		$context: Partial<TContext>,
-		onErrorConfig: U__step_on_error_Params
-	): Promise<DataTable | undefined> {
-		const { strategy } = onErrorConfig
-
-		switch (strategy) {
-			case STEP_ON_ERROR_STRATEGY.SKIP:
-				return await Step._onErrorSkip(stepFunction, stepArgs, $context)
-			case STEP_ON_ERROR_STRATEGY.SINK:
-				return await Step._onErrorSink(stepFunction, stepArgs, $context, onErrorConfig)
-			case STEP_ON_ERROR_STRATEGY.RETRY:
-				return await Step._onErrorRetry(stepFunction, stepArgs, $context, onErrorConfig)
-			case STEP_ON_ERROR_STRATEGY.RETRY_THEN_SINK:
-				return await Step._onErrorRetryThenSink(stepFunction, stepArgs, $context, onErrorConfig)
-			case STEP_ON_ERROR_STRATEGY.THROW:
-			default:
-				return await Step._onErrorThrow(stepFunction, stepArgs, $context)
+	private static async _applyOnErrorStrategy(stepFunction: TFunctionStep, stepArgs: TStep, $context: Partial<TContext>, onErrorConfig: U__on_error): Promise<DataTable | undefined> {
+		// Check for unified error config
+		if (onErrorConfig["on-error"]) {
+			return await Step._applyUnifiedErrorStrategy(stepFunction, stepArgs, $context, onErrorConfig["on-error"]);
 		}
+
+		// Default behavior (backward compatibility)
+		return await stepFunction(stepArgs, $context);
 	}
 
-	private static async _onErrorThrow(
-		stepFunction: TFunctionStep,
-		stepArgs: TStep,
-		$context: Partial<TContext>
-	): Promise<DataTable | undefined> {
+	private static async _onErrorThrow(stepFunction: TFunctionStep, stepArgs: TStep, $context: Partial<TContext>): Promise<DataTable | undefined> {
 		return await stepFunction(stepArgs, $context)
 	}
 
@@ -134,12 +120,13 @@ export class Step {
 		stepFunction: TFunctionStep,
 		stepArgs: TStep,
 		$context: Partial<TContext>,
-		onErrorConfig: U__step_on_error_strategy_sink | U__step_on_error_strategy_retry_then_sink
+		sinkConfig: U__on_error_strategy_sink | U__on_error_strategy_retry
 	): Promise<DataTable | undefined> {
+
 		try {
 			return await stepFunction(stepArgs, $context)
 		} catch (error) {
-			await Step._sinkError(error, stepArgs, $context, onErrorConfig)
+			await Step._sinkError(error, stepArgs, $context, sinkConfig)
 			return undefined
 		}
 	}
@@ -148,14 +135,23 @@ export class Step {
 		stepFunction: TFunctionStep,
 		stepArgs: TStep,
 		$context: Partial<TContext>,
-		onErrorConfig: U__step_on_error_strategy_retry | U__step_on_error_strategy_retry_then_sink
+		retryConfig:U__on_error_strategy_retry
 	): Promise<DataTable | undefined> {
-		const retryConfig = onErrorConfig.retry
-		if (!retryConfig) {
+
+		const retry = retryConfig.retry
+
+		if (!retry) {
 			return await Step._onErrorThrow(stepFunction, stepArgs, $context)
 		}
 
-		const { attempts, delay, backoff, "max-delay": maxDelay } = retryConfig
+		const {
+			attempts,
+			delay,
+			backoff,
+			then,
+			"max-delay": maxDelay
+		} = retry
+
 		let lastError: any
 
 		for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -165,25 +161,48 @@ export class Step {
 				lastError = error
 				if (attempt < attempts) {
 					const retryDelay = Step._calculateRetryDelay(attempt, delay, backoff, maxDelay)
-					await Step._sleep(retryDelay)
+					await Utils.Sleep(retryDelay)
 				}
 			}
 		}
 
-		throw lastError
+		// Apply fallback strategy after retries are exhausted
+		switch (then) {
+			case "sink":
+				if (!isEmpty(retryConfig.sink)) {
+					await Step._sinkError(lastError, stepArgs, $context, retryConfig)
+				}
+				return undefined
+			case "skip":
+				return undefined
+			case "throw":
+			default:
+				throw lastError
+		}
 	}
 
-	private static async _onErrorRetryThenSink(
-		stepFunction: TFunctionStep,
-		stepArgs: TStep,
-		$context: Partial<TContext>,
-		onErrorConfig: U__step_on_error_strategy_retry_then_sink
-	): Promise<DataTable | undefined> {
-		try {
-			return await Step._onErrorRetry(stepFunction, stepArgs, $context, onErrorConfig)
-		} catch (error) {
-			await Step._sinkError(error, stepArgs, $context, onErrorConfig)
-			return undefined
+	private static async _applyUnifiedErrorStrategy(stepFunction: TFunctionStep, stepArgs: TStep, $context: Partial<TContext>, errorConfig: U__on_error_Params): Promise<DataTable | undefined> {
+		const { strategy } = errorConfig;
+
+		// Apply scope-specific logic
+		switch (strategy) {
+			case STEP_ON_ERROR_STRATEGY.THROW:
+				return await Step._onErrorThrow(stepFunction, stepArgs, $context);
+
+			case STEP_ON_ERROR_STRATEGY.SKIP:
+				return await Step._onErrorSkip(stepFunction, stepArgs, $context);
+
+			case STEP_ON_ERROR_STRATEGY.SINK:
+				if (errorConfig?.sink) {
+					return await Step._onErrorSink(stepFunction, stepArgs, $context, errorConfig);
+				}
+				throw new Error('Sink strategy requires sink configuration');
+
+			case STEP_ON_ERROR_STRATEGY.RETRY:
+				return await Step._onErrorRetry(stepFunction, stepArgs, $context, errorConfig);
+
+			default:
+				throw new Error(`Unsupported error strategy: ${strategy}`);
 		}
 	}
 
@@ -194,12 +213,15 @@ export class Step {
 			case STEP_ON_ERROR_RETRY_BACKOFF.LINEAR:
 				delay = baseDelay * attempt
 				break
+
 			case STEP_ON_ERROR_RETRY_BACKOFF.EXPONENTIAL:
 				delay = baseDelay * 2 ** (attempt - 1)
 				break
+
 			case STEP_ON_ERROR_RETRY_BACKOFF.FIXED:
 			default: // fixed
 				delay = baseDelay
+				break
 		}
 
 		return Math.min(delay, maxDelay)
@@ -209,7 +231,7 @@ export class Step {
 		error: any,
 		stepArgs: TStep,
 		$context: Partial<TContext>,
-		onErrorConfig: U__step_on_error_strategy_sink | U__step_on_error_strategy_retry_then_sink
+		onErrorConfig: U__on_error_strategy_sink | U__on_error_strategy_retry
 	): Promise<void> {
 		const sinkConfig = onErrorConfig.sink
 		if (!sinkConfig) {
@@ -225,67 +247,33 @@ export class Step {
 		// 2. Insert into sink destination
 	}
 
-	private static _sleep(ms: number): Promise<void> {
-		return new Promise(resolve => setTimeout(resolve, ms))
-	}
-
 	static GetStepParams(stepConfig: U__plans_plan__step): U__plans_plan__step_Params {
 		return Object.values(stepConfig)[0]
 	}
 
-	static async ExecuteRowWithErrorHandling(
-		row: any,
-		rowFunction: (row: any) => Promise<any>,
-		$context: Partial<TContext>,
-		onErrorConfig: U__step_on_error_Params
-	): Promise<any> {
-		try {
-			return await rowFunction(row)
-		} catch (error) {
-			const { strategy } = onErrorConfig
-
-			switch (strategy) {
-				case STEP_ON_ERROR_STRATEGY.SKIP:
-					return undefined // Signal to skip this row
-				case STEP_ON_ERROR_STRATEGY.SINK:
-					await Step._onErrorSinkRow(error, row, $context, onErrorConfig)
-					return undefined // Signal to skip this row
-				case STEP_ON_ERROR_STRATEGY.RETRY:
-					return await Step._onErrorRetryRow(rowFunction, row, onErrorConfig)
-				case STEP_ON_ERROR_STRATEGY.RETRY_THEN_SINK:
-					try {
-						return await Step._onErrorRetryRow(rowFunction, row, onErrorConfig)
-					} catch (retryError) {
-						await Step._onErrorSinkRow(retryError, row, $context, onErrorConfig)
-						return undefined
-					}
-				case STEP_ON_ERROR_STRATEGY.THROW:
-				default:
-					throw error
-			}
-		}
-	}
-
-	static ExtractOnErrorConfig(stepConfig: U__plans_plan__step): U__step_on_error_Params | undefined {
+	static GetOnErrorConfig(stepConfig: U__plans_plan__step): U__on_error_Params | undefined {
 		const stepParams = Step.GetStepParams(stepConfig)
 		return stepParams && typeof stepParams === 'object' && 'on-error' in stepParams
 			? stepParams['on-error']
 			: undefined
 	}
 
-	static async ExecuteOnError(stepFunction: TFunctionStep, stepArgs: TStep, $context: Partial<TContext>, stepConfig: U__plans_plan__step): Promise<DataTable | undefined> {
+	static async ExecuteOnError(
+		stepFunction: TFunctionStep,
+		stepArgs: TStep,
+		$context: Partial<TContext>,
+		stepConfig: U__plans_plan__step,
+		entityOnErrorConfig?: U__on_error_Params
+	): Promise<DataTable | undefined> {
 
 		const stepParams = Step.GetStepParams(stepConfig)
 
 		// Check if this step type supports on-error (data processing steps)
 		const stepHasOnError = stepParams && typeof stepParams === 'object' && 'on-error' in stepParams
 
-		if (!stepHasOnError) {
-			// Step doesn't support error handling, execute normally
-			return await stepFunction(stepArgs, $context)
-		}
-
-		const { "on-error": onErrorConfig } = stepParams
+		let onErrorConfig = stepHasOnError
+			? stepParams['on-error']
+			: entityOnErrorConfig
 
 		if (!onErrorConfig) {
 			// No error handling, execute normally
@@ -299,5 +287,34 @@ export class Step {
 			$context,
 			onErrorConfig
 		)
+	}
+
+	static async ExecuteRowWithErrorHandling(
+		row: TRow,
+		rowFunction: (row: TRow) => Promise<TRow>,
+		$context: Partial<TContext>,
+		onErrorConfig: U__on_error_Params
+	): Promise<TRow | undefined> {
+		try {
+			return await rowFunction(row)
+		} catch (error) {
+			const { strategy } = onErrorConfig
+
+			switch (strategy) {
+				case STEP_ON_ERROR_STRATEGY.SKIP:
+					return undefined // Signal to skip this row
+
+				case STEP_ON_ERROR_STRATEGY.SINK:
+					await Step._onErrorRowSink(error, row, $context, onErrorConfig)
+					return undefined // Signal to skip this row
+
+				case STEP_ON_ERROR_STRATEGY.RETRY:
+					return await Step._onErrorRowRetry(rowFunction, row, onErrorConfig)
+
+				case STEP_ON_ERROR_STRATEGY.THROW:
+				default:
+					throw error
+			}
+		}
 	}
 }

@@ -153,29 +153,31 @@ ai-engines:
 plans:
   etl1:
     sandbox:
-      - newContext: false
-      - set:
-          var: startTimer
-          value: ${{ Date.now() }}
-      - select:
-          schema: mflix
-          entity: movies
-          filter:
-            year: 2001
-      - set:
-          var: time
-          value: ${{ Date.now() - startTimer }}
-      - set:
-          var: count
-          value: $ROWS.length
-      - update:
-          filter:
-            year: 2001
-          data:
-            time: ${{ time }}
-            count: ${{ count }}
+      steps:
+        - newContext: false
+        - set:
+            var: startTimer
+            value: ${{ Date.now() }}
+        - select:
+            schema: mflix
+            entity: movies
+            filter:
+              year: 2001
+        - set:
+            var: time
+            value: ${{ Date.now() - startTimer }}
+        - set:
+            var: count
+            value: $ROWS.length
+        - update:
+            filter:
+              year: 2001
+            data:
+              time: ${{ time }}
+              count: ${{ count }}
 
-    aitest2:
+  aitest2:
+    steps:
       - debug:
       - select:
           schema: mflix
@@ -188,7 +190,8 @@ plans:
           input: title
           output:
           vote: sentiment
-    aitest:
+  aitest:
+    steps:
       - debug:
       - insert:
           data:
@@ -221,7 +224,8 @@ plans:
           input: ocr_text
           output:
 
-    contact:
+  contact:
+    steps:
       - debug:
       - select:
           schema: demo
@@ -245,7 +249,8 @@ plans:
             display_name: Mr. John
       # - bad-step-test3: "***TEST***"
 
-    login:
+  login:
+    steps:
       - debug:
       - select:
           schema: demo

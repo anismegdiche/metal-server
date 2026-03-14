@@ -72,40 +72,43 @@ schedules:
 plans:
   myplan:
     myentity:
-      - select:
-          schema: fs
-          entity: csv
-          fields: "*, content"
+      steps:
+        - select:
+            schema: fs
+            entity: csv
+            fields: "*, content"
 
-      - insert:
-          schema: fs
-          entity: csv3
+        - insert:
+            schema: fs
+            entity: csv3
 
-      - update:
-          schema: fs
-          entity: csv3
-          filter:
-            name: csv.csv
-          data:
-            name: $> '2_' + name
-            content: SGVsbG8=
+        - update:
+            schema: fs
+            entity: csv3
+            filter:
+              name: csv.csv
+            data:
+              name: $> '2_' + name
+              content: SGVsbG8=
 
-      # - break:
+        # - break:
 
-      - delete:
-          schema: fs
-          entity: csv3
-          filter-expression: name NOT LIKE 'c%' AND name NOT LIKE '2_%'
+        - delete:
+            schema: fs
+            entity: csv3
+            filter-expression: name NOT LIKE 'c%' AND name NOT LIKE '2_%'
 
-      - select:
-          schema: fs
-          entity: csv3
+        - select:
+            schema: fs
+            entity: csv3
 
-      - omit: [content]
+        - omit: 
+            fields:
+              - content
 
-      - insert:
-          schema: csv
-          entity: csv.csv
+        - insert:
+            schema: csv
+            entity: csv.csv
 
       # - select:
       #     schema: fs
@@ -122,7 +125,9 @@ plans:
       #     input: content
       #     output: text
 
-      # - omit: [content]
+      # - omit: 
+            fields:
+              - content
 
       # - insert:
       #     schema: csv

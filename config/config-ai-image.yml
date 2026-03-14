@@ -66,45 +66,48 @@ schedules:
 plans:
   myplan:
     myentity:
-      - select:
-          schema: fs
-          entity: pic
-          fields: "*,content"
+      steps:
+        - select:
+            schema: fs
+            entity: pic
+            fields: "*,content"
 
-      - run:
-          ai: image
-          task: image-classification
-          input: content
-          output:
+        - run:
+            ai: image
+            task: image-classification
+            input: content
+            output:
 
-      - run:
-          ai: image
-          task: image-segmentation
-          input: content
-          output:
+        - run:
+            ai: image
+            task: image-segmentation
+            input: content
+            output:
 
-      - run:
-          ai: image
-          task: image-to-text
-          input: content
-          output:
+        - run:
+            ai: image
+            task: image-to-text
+            input: content
+            output:
 
-      - run:
-          ai: image
-          task: object-detection
-          input: content
-          output:
+        - run:
+            ai: image
+            task: object-detection
+            input: content
+            output:
 
-      - run:
-          ai: image
-          task: visual-question-answering
-          params:
-            question: How many people are in the image?
-          input: content
-          output:
+        - run:
+            ai: image
+            task: visual-question-answering
+            params:
+              question: How many people are in the image?
+            input: content
+            output:
 
-      - omit: [content]
+        - omit: 
+            fields:
+              - content
 
-      - insert:
-          schema: json
-          entity: image.json
+        - insert:
+            schema: json
+            entity: image.json

@@ -380,7 +380,8 @@ export class SqlQueryUtils {
 	}
 
 	Query(): string {
-		if (this._detectSqlInjection()) throw new HttpErrorBadRequest("SQL Injection detected")
+		if (this._detectSqlInjection()) 
+			throw new HttpErrorBadRequest("SQL Injection detected")
 
 		return this._query
 	}

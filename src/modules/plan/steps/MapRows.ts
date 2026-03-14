@@ -12,7 +12,7 @@ import { STEP, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../@consts"
 import { Step } from "../Step"
 import type { TStep } from "../types/TStep"
 import { type U__plans_plan_map_Params, z_U__plans_plan_map_Params, } from "../types/U__plans_params"
-import type { U__step_on_error_Params } from "../types/U__plans_plan_on_error"
+import type { U__on_error_Params } from "../types/U__plans_plan_on_error"
 
 
 //
@@ -46,14 +46,14 @@ export async function MapRows(step: TStep, $context?: Partial<TContext>): Promis
 
 		// Extract error configuration
 		const stepConfig = { [STEP.MAP]: step.stepArgs }
-		const onErrorConfig = Step.ExtractOnErrorConfig(stepConfig)
+		const onErrorConfig = Step.GetOnErrorConfig(stepConfig)
 
 		// If error handling is configured for row-level scope, use it
 		if (onErrorConfig?.scope === "row") {
 			await _mapRowsScopeRow(mappedDataTable, $context, script, onErrorConfig)
 		} else {
 			// Use legacy error handling for backward compatibility
-			await _mapRowsScopTopLevel(step, mappedDataTable, $context, script)
+			await _mapRowsScopeStep(step, mappedDataTable, $context, script)
 		}
 
 		return mappedDataTable
@@ -63,7 +63,7 @@ export async function MapRows(step: TStep, $context?: Partial<TContext>): Promis
 	}
 }
 
-async function _mapRowsScopTopLevel(step: TStep, mappedDataTable: DataTable, $context: Partial<TContext> | undefined, script: string) {
+async function _mapRowsScopeStep(step: TStep, mappedDataTable: DataTable, $context: Partial<TContext> | undefined, script: string) {
 
 	const { "on-error": onError = DEFAULT["on-error"] } = step.stepArgs as U__plans_plan_map_Params
 
@@ -103,7 +103,7 @@ async function _mapRowsScopeRow(
 	mappedDataTable: DataTable,
 	$context: Partial<TContext> | undefined,
 	script: string,
-	onErrorConfig: U__step_on_error_Params) {
+	onErrorConfig: U__on_error_Params) {
 	await mappedDataTable.RowsMap(async (row: TRow) => {
 		return await Step.ExecuteRowWithErrorHandling(
 			row,

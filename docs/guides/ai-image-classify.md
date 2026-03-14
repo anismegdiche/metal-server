@@ -79,16 +79,17 @@ Configure the `plans` section with the plan `p-image-classify` containing an ent
 plans:
   p-image-classify:
     img2class:
-      - insert:
-          data:
-            - img: https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg
-            - img: https://img.freepik.com/premium-photo/golden-retriever-lying-panting-isolated-white_191971-16974.jpg
-            - img: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpDgjJjrakUj3VlDC0K6XtdCRu5TK7CPXr7QHVjiL&s
-      - run:
-          ai: img-class
-          input: img
-          output:
-            class: class
+      steps:
+        - insert:
+            data:
+              - img: https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg
+              - img: https://img.freepik.com/premium-photo/golden-retriever-lying-panting-isolated-white_191971-16974.jpg
+              - img: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpDgjJjrakUj3VlDC0K6XtdCRu5TK7CPXr7QHVjiL&s
+        - run:
+            ai: img-class
+            input: img
+            output:
+              class: class
 ```
 
 | Step Command                                                                                                                                          | Block                                                                                      |
@@ -151,16 +152,17 @@ ai-engines:
 plans:
   p-image-classify:
     img2class:
-      - insert:
-          data:
-            - img: https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg
-            - img: https://img.freepik.com/premium-photo/golden-retriever-lying-panting-isolated-white_191971-16974.jpg
-            - img: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpDgjJjrakUj3VlDC0K6XtdCRu5TK7CPXr7QHVjiL&s
-      - run:
-          ai: img-class
-          input: img
-          output:
-            class: class
+      steps:
+        - insert:
+            data:
+              - img: https://thumbs.dreamstime.com/b/isolated-classical-guitar-photo-png-format-available-full-transparent-background-54363220.jpg
+              - img: https://img.freepik.com/premium-photo/golden-retriever-lying-panting-isolated-white_191971-16974.jpg
+              - img: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPpDgjJjrakUj3VlDC0K6XtdCRu5TK7CPXr7QHVjiL&s
+        - run:
+            ai: img-class
+            input: img
+            output:
+              class: class
 ```
 
 With the configuration set, restart the Metal server:

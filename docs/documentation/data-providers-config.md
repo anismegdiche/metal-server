@@ -375,10 +375,11 @@ By Default, the `content` field is not returned unless you specify it explicitly
 plans:
   myplan:
     myentity:
-      - select:
-        schema: fs
-        entity: images
-        fields: "*,content"
+      steps:
+        - select:
+            schema: fs
+            entity: images
+            fields: "*,content"
 ```
 
 :::

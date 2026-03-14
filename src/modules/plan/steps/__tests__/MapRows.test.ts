@@ -149,7 +149,7 @@ describe("Map step", () => {
 	})
 
 	it("should skip rows when using new error handling with skip strategy", async () => {
-		vi.mocked(Step.ExtractOnErrorConfig).mockReturnValue({
+		vi.mocked(Step.GetOnErrorConfig).mockReturnValue({
 			strategy: STEP_ON_ERROR_STRATEGY.SKIP,
 			scope: STEP_ON_ERROR_SCOPE.ROW,
 		})
@@ -212,7 +212,7 @@ describe("Map step", () => {
 	})
 
 	it("should use legacy error handling when no new error config is present", async () => {
-		vi.mocked(Step.ExtractOnErrorConfig).mockReturnValue(undefined)
+		vi.mocked(Step.GetOnErrorConfig).mockReturnValue(undefined)
 
 		const step: TStep = {
 			currentPlanName: "test-plan",
@@ -259,7 +259,7 @@ describe("Map step", () => {
 	})
 
 	it("should validate that throw strategy is not compatible with row scope", async () => {
-		vi.mocked(Step.ExtractOnErrorConfig).mockReturnValue({
+		vi.mocked(Step.GetOnErrorConfig).mockReturnValue({
 			strategy: STEP_ON_ERROR_STRATEGY.THROW,
 			scope: STEP_ON_ERROR_SCOPE.STEP,
 		})

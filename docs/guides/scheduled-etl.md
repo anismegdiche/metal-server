@@ -110,13 +110,14 @@ Configure a plan **fake-data** to populate the **mflix.log** table:
 plans:
   fake-data:
     log:
-      - insert:
-          schema: mflix
-          entity: log
-          data:
-            ts: ${{Date.now()}}
-            message: This is a fake message ${{Math.random()}}
-            etl_status: new
+      steps:
+        - insert:
+            schema: mflix
+            entity: log
+            data:
+              ts: ${{Date.now()}}
+              message: This is a fake message ${{Math.random()}}
+              etl_status: new
 ```
 
 Now, add the plan **move-data** to set the transfer:
@@ -126,27 +127,28 @@ plans:
   fake-data: …
   move-data:
     mflix_log:
-      - update:
-          schema: mflix
-          entity: log
-          filter:
-            etl_status: new
-          data:
-            etl_status: locked
-      - select:
-          schema: mflix
-          entity: log
-          filter:
-            etl_status: locked
-      - fields: ts, message
-      - insert:
-          schema: clubdata
-          entity: mflix_log
-      - delete:
-          schema: mflix
-          entity: log
-          filter:
-            etl_status: locked
+      steps:
+        - update:
+            schema: mflix
+            entity: log
+            filter:
+              etl_status: new
+            data:
+              etl_status: locked
+        - select:
+            schema: mflix
+            entity: log
+            filter:
+              etl_status: locked
+        - fields: ts, message
+        - insert:
+            schema: clubdata
+            entity: mflix_log
+        - delete:
+            schema: mflix
+            entity: log
+            filter:
+              etl_status: locked
 ```
 
 | Block                                                                                                    | Step command                                                                                                            |
@@ -228,36 +230,38 @@ schedules:
 plans:
   fake-data:
     log:
-      - insert:
-          schema: mflix
-          entity: log
-          data:
-            ts: ${{Date.now()}}
-            message: This is a fake message ${{Math.random()}}
-            etl_status: new
+      steps:
+        - insert:
+            schema: mflix
+            entity: log
+            data:
+              ts: ${{Date.now()}}
+              message: This is a fake message ${{Math.random()}}
+              etl_status: new
   move-data:
     mflix_log:
-      - update:
-          schema: mflix
-          entity: log
-          filter:
-            etl_status: new
-          data:
-            etl_status: locked
-      - select:
-          schema: mflix
-          entity: log
-          filter:
-            etl_status: locked
-      - fields: ts, message
-      - insert:
-          schema: clubdata
-          entity: mflix_log
-      - delete:
-          schema: mflix
-          entity: log
-          filter:
-            etl_status: locked
+      steps:
+        - update:
+            schema: mflix
+            entity: log
+            filter:
+              etl_status: new
+            data:
+              etl_status: locked
+        - select:
+            schema: mflix
+            entity: log
+            filter:
+              etl_status: locked
+        - fields: ts, message
+        - insert:
+            schema: clubdata
+            entity: mflix_log
+        - delete:
+            schema: mflix
+            entity: log
+            filter:
+              etl_status: locked
 ```
 
 With the configuration set, restart the Metal server:
