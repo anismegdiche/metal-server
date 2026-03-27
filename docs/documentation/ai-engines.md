@@ -91,17 +91,16 @@ Extract text from images with support for multiple languages.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: ocr
->             task: image-to-string
->             params:
->               lang: en_XX
->             input: content
->             output:
->               text: ${{ $result.ocr.text }}
+>     steps:
+>       ...
+>       - run:
+>           ai: ocr
+>           task: image-to-string
+>           params:
+>             lang: en_XX
+>           input: content
+>           output:
+>             text: ${{ $result.ocr.text }}
 > ```
 
 **Output:**
@@ -165,18 +164,17 @@ Detect emotions in text.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: text
->             task: emotion-detection
->             params:
->               top: 7
->             input: content # "I'm not confident with this project!"
->             output:
->               positive: ${{ $result.emotion.joy ?? 0 }}
->               negative: ${{ $result.emotion.anger ?? 0 }}
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: emotion-detection
+>           params:
+>             top: 7
+>           input: content # "I'm not confident with this project!"
+>           output:
+>             positive: ${{ $result.emotion.joy ?? 0 }}
+>             negative: ${{ $result.emotion.anger ?? 0 }}
 > ```
 
 **Output**
@@ -216,16 +214,15 @@ Predict words in text using a placeholder `[MASK]`.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: text
->             task: fill-mask
->             input: "${{ $row.content }} [MASK]." # "The capital of France is [MASK]."
->             output:
->               word: ${{ $result.fillmask[0].word }}
->               text: ${{ $result.fillmask[0].text }}
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: fill-mask
+>           input: "${{ $row.content }} [MASK]." # "The capital of France is [MASK]."
+>           output:
+>             word: ${{ $result.fillmask[0].word }}
+>             text: ${{ $result.fillmask[0].text }}
 > ```
 
 **Output**
@@ -264,15 +261,14 @@ Extract important keywords from text.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: text
->             task: keyword-extraction
->             input: content # The Importance of Testing in the Medical Field and Product Development
->             output:
->               keywords: ${{ $result.keywords.join(',') }}
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: keyword-extraction
+>           input: content # The Importance of Testing in the Medical Field and Product Development
+>           output:
+>             keywords: ${{ $result.keywords.join(',') }}
 > ```
 
 **Output**
@@ -298,15 +294,14 @@ Detect the language of the text.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: text
->             task: language-detection
->             input: content # "Hallo, wie geht es dir?"
->             output:
->               lang_code: ${{ result.language.code }}
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: language-detection
+>           input: content # "Hallo, wie geht es dir?"
+>           output:
+>             lang_code: ${{ result.language.code }}
 > ```
 
 **Output**
@@ -342,17 +337,16 @@ Detect if two texts are paraphrases.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: text
->             task: paraphrase-detection
->             input: content # "The quick brown fox jumps over the lazy dog"
->             params:
->               target: "A fast brown fox leaps over a sleepy dog"
->             output:
->               score: ${{ result.paraphrase.score }}
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: paraphrase-detection
+>           input: content # "The quick brown fox jumps over the lazy dog"
+>           params:
+>             target: "A fast brown fox leaps over a sleepy dog"
+>           output:
+>             score: ${{ result.paraphrase.score }}
 > ```
 
 **Output**
@@ -390,18 +384,17 @@ Answer questions based on a given context.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: text
->             task: question-answering
->             input: question # Paris is the capital of France. It is known for its beautiful architecture and rich history.
->             params:
->               question: What is the capital of France?
->             output:
->               answer: ${{ $result.answer.text }}
->               score: ${{ $result.answer.score }}
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: question-answering
+>           input: question # Paris is the capital of France. It is known for its beautiful architecture and rich history.
+>           params:
+>             question: What is the capital of France?
+>           output:
+>             answer: ${{ $result.answer.text }}
+>             score: ${{ $result.answer.score }}
 > ```
 
 **Output**
@@ -442,21 +435,20 @@ Compare the similarity between a source sentence and a list of target sentences.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: text
->             task: sentence-similarity
->             input: source_sentence # "That is a happy person"
->             params:
->               sentences:
->                 - That is a happy dog
->                 - That is a very happy person
->                 - Today is a sunny day
->             output:
->               score1: ${{ $result.similarity[0].score }}
->               score2: ${{ $result.similarity[1].score }}
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: sentence-similarity
+>           input: source_sentence # "That is a happy person"
+>           params:
+>             sentences:
+>               - That is a happy dog
+>               - That is a very happy person
+>               - Today is a sunny day
+>           output:
+>             score1: ${{ $result.similarity[0].score }}
+>             score2: ${{ $result.similarity[1].score }}
 > ```
 
 **Output**
@@ -495,16 +487,15 @@ Analyze sentiment in text.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: text
->             task: sentiment-analysis
->             input: content  # I love using this service!
->             output:
->               sentiment_label: ${{ $result.sentiment.label }}
->               sentiment_score: ${{ $result.sentiment.score }}
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: sentiment-analysis
+>           input: content  # I love using this service!
+>           output:
+>             sentiment_label: ${{ $result.sentiment.label }}
+>             sentiment_score: ${{ $result.sentiment.score }}
 > ```
 
 **Output**
@@ -543,18 +534,17 @@ Generate text summaries.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: text
->             task: summarization
->             params:
->               min-length: 10
->               max-length: 20
->             input: long_text_content # "Artificial intelligence is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals."
->             output:
->               summary: ${{ $result.summary.text }}
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: summarization
+>           params:
+>             min-length: 10
+>             max-length: 20
+>           input: long_text_content # "Artificial intelligence is intelligence demonstrated by machines, as opposed to natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals."
+>           output:
+>             summary: ${{ $result.summary.text }}
 > ```
 
 **Output**
@@ -598,19 +588,18 @@ Generate new text.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: text
->             task: text-generation
->             params:
->               max-length: 50
->               do-sample: true
->               temperature: 0.9
->             input: content # "The capital of France is"
->             output:
->               generated: text
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: text-generation
+>           params:
+>             max-length: 50
+>             do-sample: true
+>             temperature: 0.9
+>           input: content # "The capital of France is"
+>           output:
+>             generated: text
 > ```
 
 **Output**
@@ -643,21 +632,20 @@ Multilingual Named Entity Recognition (NER) identifies and classifies specific e
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        ...
-        - run:
-            ai: text
-            task: ner
-            params:
-              grouped: true
-            input: content # "My name is John and I work at Google in New York."
-            output:
-              entities: entities
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: ner
+>           params:
+>             grouped: true
+>           input: content # "My name is John and I work at Google in New York."
+>           output:
+>             entities: entities
+> ```
 
 **Output**
 
@@ -735,21 +723,20 @@ Detect toxic content in text with the following types of toxicity:
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        ...
-        - run:
-            ai: text
-            task: toxicity-detection
-            params:
-              top: 3
-            input: content
-            output:
-              toxicity: toxicity
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: toxicity-detection
+>           params:
+>             top: 3
+>           input: content
+>           output:
+>             toxicity: toxicity
+> ```
 
 **Output**
 
@@ -794,22 +781,21 @@ Translate text between languages.
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        ...
-        - run:
-            ai: text
-            task: translation
-            params:
-              source: en_XX
-              target: ar_AR
-            input: content # "Hello, how are you?"
-            output:
-              translated: ${{ $result.translation.text }}
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: translation
+>           params:
+>             source: en_XX
+>             target: ar_AR
+>           input: content # "Hello, how are you?"
+>           output:
+>             translated: ${{ $result.translation.text }}
+> ```
 
 **Output**
 
@@ -845,21 +831,20 @@ Zero-shot text classification.
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        ...
-        - run:
-            ai: text
-            task: zero-shot-classification
-            params:
-              labels: ["refund", "technical support", "billing"]
-            input: content # "I have a problem with my order"
-            output:
-              category: text_category
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       ...
+>       - run:
+>           ai: text
+>           task: zero-shot-classification
+>           params:
+>             labels: ["refund", "technical support", "billing"]
+>           input: content # "I have a problem with my order"
+>           output:
+>             category: text_category
+> ```
 
 **Output**
 
@@ -908,14 +893,13 @@ Classify images into various categories.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         - run:
->             ai: image
->             task: image-classification
->             input: image_data # Base64-encoded image
->             output:
->               objects: ${{ $result.objects }}
+>     steps:
+>       - run:
+>           ai: image
+>           task: image-classification
+>           input: image_data # Base64-encoded image
+>           output:
+>             objects: ${{ $result.objects }}
 > ```
 
 **Output**
@@ -951,14 +935,13 @@ Perform semantic segmentation on images.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         - run:
->             ai: image
->             task: image-segmentation
->             input: image_data # Base64-encoded image
->             output:
->               masks: ${{ $result.masks }}
+>     steps:
+>       - run:
+>           ai: image
+>           task: image-segmentation
+>           input: image_data # Base64-encoded image
+>           output:
+>             masks: ${{ $result.masks }}
 > ```
 
 **Output**
@@ -998,14 +981,13 @@ Generate text descriptions of images.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         - run:
->             ai: image
->             task: image-to-text
->             input: image_data # Base64-encoded image
->             output:
->               description: ${{ $result.result[0].generated_text }}
+>     steps:
+>       - run:
+>           ai: image
+>           task: image-to-text
+>           input: image_data # Base64-encoded image
+>           output:
+>             description: ${{ $result.result[0].generated_text }}
 > ```
 
 **Output**
@@ -1035,14 +1017,13 @@ Detect and locate objects in images.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         - run:
->             ai: image
->             task: object-detection
->             input: image_data # Base64-encoded image
->             output:
->               objects: ${{ $result.result }}
+>     steps:
+>       - run:
+>           ai: image
+>           task: object-detection
+>           input: image_data # Base64-encoded image
+>           output:
+>             objects: ${{ $result.result }}
 > ```
 
 **Output**
@@ -1097,17 +1078,16 @@ Answer questions about image content.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         - run:
->             ai: image
->             task: visual-question-answering
->             params:
->               question: "How many people are in the image?"
->             input: image_data # Base64-encoded image
->             output:
->               answer: ${{ $result.result[0].answer }}
->               confidence: ${{ $result.result[0].score }}
+>     steps:
+>       - run:
+>           ai: image
+>           task: visual-question-answering
+>           params:
+>             question: "How many people are in the image?"
+>           input: image_data # Base64-encoded image
+>           output:
+>             answer: ${{ $result.result[0].answer }}
+>             confidence: ${{ $result.result[0].score }}
 > ```
 
 **Output**
@@ -1158,18 +1138,17 @@ Classify audio clips by emotion.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: audio
->             task: audio-classification
->             input: audio_data # Base64-encoded audio
->             output:
->               happy: ${{ $result.emotion.happy ?? 0 }}
->               sad: ${{ $result.emotion.sad ?? 0 }}
->               neutral: ${{ $result.emotion.neutral ?? 0 }}
->               angry: ${{ $result.emotion.angry ?? 0 }}
+>     steps:
+>       ...
+>       - run:
+>           ai: audio
+>           task: audio-classification
+>           input: audio_data # Base64-encoded audio
+>           output:
+>             happy: ${{ $result.emotion.happy ?? 0 }}
+>             sad: ${{ $result.emotion.sad ?? 0 }}
+>             neutral: ${{ $result.emotion.neutral ?? 0 }}
+>             angry: ${{ $result.emotion.angry ?? 0 }}
 > ```
 
 **Output**
@@ -1203,15 +1182,14 @@ Transcribe speech to text.
 > ```yaml
 > plans:
 >   my-plan:
->     my-entity:
->       steps:
->         ...
->         - run:
->             ai: audio
->             task: automatic-speech-recognition
->             input: audio_data # Base64-encoded audio
->             output:
->               transcription: ${{ $result.text }}
+>     steps:
+>       ...
+>       - run:
+>           ai: audio
+>           task: automatic-speech-recognition
+>           input: audio_data # Base64-encoded audio
+>           output:
+>             transcription: ${{ $result.text }}
 > ```
 
 **Output**

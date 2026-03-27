@@ -74,9 +74,10 @@ The source represents the wellspring of data in Metal's ecosystem. It can take t
 
 ```mermaid
 graph LR
-Source -- Interact --> DBMS
-Source -- Access --> Files
-Source -- Request --> WebService
+    Source(Source) -- Connect --> DBMS(DBMS)
+    Source(Source) -- Access --> Files(Files)
+    Source(Source) -- Request --> WebService(WebService)
+    Source(Source) -- Execute --> Plans(Plans)
 ```
 
 **Schema**
@@ -85,9 +86,8 @@ The schema, in Metal's context, acts as the facade that encompasses the database
 
 ```mermaid
 graph LR
-Schema -- Connect --> Sources
-Schema -- Expose --> Entities
-Schema -- Execute --> Plans
+    Schema(Schema) -- Connect --> Sources(Sources)
+    Schema(Schema) -- Expose --> Entities(Entities)
 ```
 
 
@@ -97,7 +97,7 @@ Entities, akin to tables in traditional database terminology, are the building b
 
 ```mermaid
 graph LR
-Schema -- Parent --> Entities
+    Schema(Schema) -- Parent --> Entities(Entities)
 ```
 
 **Field**
@@ -106,7 +106,7 @@ Fields, equivalent to columns in conventional databases, are the individual data
 
 ```mermaid
 graph LR
-Entity -- Parent --> Fields
+    Entity(Entity) -- Parent --> Fields(Fields)
 ```
 
 **Plan**
@@ -115,7 +115,7 @@ Plans within Metal encapsulate a predefined sequence of steps for conducting ETL
 
 ```mermaid
 graph LR
-Plan -- Parent --> Entities -- Parent --> Steps
+    Plan(Plan) -- Parent --> Steps(Steps)
 ```
 
 **AI Engine**
@@ -124,63 +124,6 @@ The AI Engine is a sophisticated component integrated into Metal's architecture.
 
 ```mermaid
 graph LR
-Step -- Run --> AI-Engine -- Transform/Produce --> Data
+    Step(Step) -- Run --> AI-Engine(AI Engine) -- Transform/Produce --> Data(Data)
 ```
 
-Here's below the whole Metal system :
-
-```mermaid
-graph TD
-Metal((Metal)) --> Sources
-Sources -- Interact --> DBMS
-Sources -- Access --> Files
-Sources -- Request --> WebService
-Metal((Metal)) --> Schemas
-Metal((Metal)) --> Plans
-Metal((Metal)) --> AI-Engines
-Schemas -- Connect --> Sources
-Schemas -- Expose --> Entities --> Data
-Schemas -- Execute --> Plans
-Plans -- Expose --> Entities --Execute --> Steps
-Steps -- Run --> AI-Engines -- Transform/Produce --> Data
-```
-
-
-## How it works
-
-```mermaid
-mindmap
-root)"`**Metal**`"(
-  ((**Source**))
-    Connect to DBMS
-      SQL
-      NoSQL
-    Access to files as tables
-      Flat Files
-      JSON files
-      XLSX files
-    Request to WebServices
-      REST
-      SOAP
-  ((**Schema**))
-    Expose Databases    
-    Expose Tables
-    Merge Databases
-    Alternative access
-    Execute Plans on the fly
-    ((**Entity**))
-      ((**Field**))
-        Access Data
-  ((**Plan**))
-    Execute ETL Steps
-    ((**Step**))
-      Perform CRUD Operations
-      Run AI Engine
-  ((**AI Engine**))
-    Tranform Data
-    Produce Data
-  ((**Schedule**))
-    Run ETL Plans
-  ((**Cache**))
-    Cache Data
-```

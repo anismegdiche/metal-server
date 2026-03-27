@@ -1,27 +1,27 @@
-/* eslint-disable security/detect-non-literal-fs-filename */
+
 /** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
 //
 
-import { createHash, createHmac, randomUUID } from "node:crypto"
-import fs from "node:fs"
 import DataType, { DuckDBScalarFunction } from "@duckdb/node-api"
 import { omit } from "lodash-es"
+import { createHash, createHmac, randomUUID } from "node:crypto"
+import fs from "node:fs"
 //
 import {
-	DATATABLE_TEMP_PATH,
-	type DataTable,
 	dataTable_convertSql,
+	DATATABLE_TEMP_PATH,
 	duckDb_Sql_CreateTable,
 	duckDb_Sql_DropTable,
 	duckDb_Sql_RenameTable,
+	type DataTable,
 	type TRow,
 } from "../types/DataTable"
+import { Assert } from "./Assert"
 import { JsonUtils } from "./JsonUtils"
 import { Logger } from "./Logger"
 import { StringUtils } from "./StringUtils"
-import { Assert } from "./Assert"
 
 //
 export enum JOIN_TYPE {
@@ -462,7 +462,7 @@ export class DataTableUtils {
 		const conn = dt._duckConnection!
 
 		// If no fields specified, use all fields from the first row
-		const _fields = fields && fields.length > 0 ? fields : dt.GetFieldsName()
+		const _fields = fields && fields.length > 0 ? fields : dt.GetFieldNames()
 
 		// Skip if no fields to deduplicate on
 		if (_fields.length === 0) {
@@ -583,7 +583,7 @@ export class DataTableUtils {
 
 		if (_fields.length === 1 && _fields[0] === "*") {
 			await dt.FieldsSet()
-			_fields = dt.GetFieldsName() ?? []
+			_fields = dt.GetFieldNames() ?? []
 		}
 
 		await dt._dbEnsureInitialized()

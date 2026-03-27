@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Readable } from "node:stream"
 import { parquetReadObjects } from "hyparquet"
 import { ByteWriter, parquetWrite } from "hyparquet-writer"

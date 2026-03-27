@@ -2,59 +2,124 @@
 //
 //
 //
-import type z from "zod"
+import { isEmpty } from "lodash-es"
+//
 import type { DataTable, TRow } from "../../types/DataTable"
 import { Logger } from "../../utils/Logger"
 import { Utils } from "../../utils/Utils"
 import type { TContext } from "../sandbox/types/TContext"
 import { STEP, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_STRATEGY } from "./@consts"
-import type { TStep } from "./types/TStep"
+import type { T_StepResult } from "./types/T_StepResult"
 import type { U__plans_plan__step, U__plans_plan__step_Params } from "./types/U__plans_plan__step"
-import type { U__on_error, U__on_error_Params, U__on_error_strategy_retry, U__on_error_strategy_sink, z__on_error_retry, z__on_error_sink } from "./types/U__plans_plan_on_error"
-import { isEmpty } from "lodash-es"
+import type { U__on_error_Params, U__on_error_strategy_retry, U__on_error_strategy_sink } from "./types/U__plans_plan_on_error"
 
 
 //
-export type TFunctionStep = (step: TStep, $context?: Partial<TContext>) => Promise<DataTable | undefined>
+export enum STEP_SIGNAL {
+	NEXT = "next",
+	STOP = "stop"
+}
 
+export enum STEP_OUTCOME {
+	SUCCESS = "success",
+	FAILED = "failed"
+}
+//
+export type T_StepFunctionWithSignal = (stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>) => Promise<T_StepResult>
+export type T_StepFunctionBase = (stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>) => Promise<DataTable | undefined>
 
 //
 export class Step {
 
-	@Logger.LogFunction()
-	static readonly ExecuteCaseMap: Record<string, TFunctionStep> = {
-		[STEP.DEBUG]: async (step, $context) => (await import('./steps/Debug')).Debug(step, $context),
-		[STEP.SELECT]: async (step, $context) => (await import('./steps/Select')).Select(step, $context),
-		[STEP.UPDATE]: async (step, $context) => (await import('./steps/Update')).Update(step, $context),
-		[STEP.DELETE]: async (step, $context) => (await import('./steps/Delete')).Delete(step, $context),
-		[STEP.INSERT]: async (step, $context) => (await import('./steps/Insert')).Insert(step, $context),
-		[STEP.JOIN]: async (step, $context) => (await import('./steps/Join')).Join(step, $context),
-		[STEP.FIELDS]: async (step, $context) => (await import('./steps/Pick')).Pick(step, $context),
-		[STEP.SORT]: async (step, $context) => (await import('./steps/Sort')).Sort(step, $context),
-		[STEP.RUN]: async (step, $context) => (await import('./steps/Run')).Run(step, $context),
-		[STEP.SYNC]: async (step, $context) => (await import('./steps/Sync')).Sync(step, $context),
-		[STEP.ANONYMIZE]: async (step, $context) => (await import('./steps/Anonymize')).Anonymize(step, $context),
-		[STEP.REMOVE_DUPLICATE]: async (step, $context) => (await import('./steps/RemoveDuplicates')).RemoveDuplicates(step, $context),
-		[STEP.LIST_ENTITIES]: async (step, $context) => (await import('./steps/ListEntities')).ListEntities(step, $context),
-		[STEP.BREAK]: async (step, $context) => (await import('./steps/Break')).Break(step, $context),
-		[STEP.PICK]: async (step, $context) => (await import('./steps/Pick')).Pick(step, $context),
-		[STEP.OMIT]: async (step, $context) => (await import('./steps/Omit')).Omit(step, $context),
-		[STEP.MAP]: async (step, $context) => (await import('./steps/MapRows')).MapRows(step, $context),
-		[STEP.SET_VAR]: async (step, $context) => (await import('./steps/SetVar')).SetVar(step, $context),
+	static WrapStepWithSignal(stepFunction: T_StepFunctionBase, signal: STEP_SIGNAL = STEP_SIGNAL.NEXT)
+		: T_StepFunctionWithSignal {
+		return async (stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<T_StepResult> => {
+			const onError = (stepParams as Record<string, unknown>)['on-error'] as U__on_error_Params
+
+			if (!onError) {
+				// Original behavior - no error handling
+				return await stepFunction(stepParams, $context)
+					.then(data => ({
+						data,
+						signal,
+						outcome: STEP_OUTCOME.SUCCESS,
+						$context: $context as TContext
+					}))
+					.catch(() => ({
+						data: undefined,
+						signal,
+						outcome: STEP_OUTCOME.FAILED,
+						$context: $context as TContext
+					}))
+			}
+
+			// Apply error handling strategies
+			const result = await Step._applyUnifiedErrorStrategy(
+				async (params, context) => {
+					const stepResult = await stepFunction(params, context || {})
+					return {
+						data: stepResult,
+						signal,
+						outcome: STEP_OUTCOME.SUCCESS,
+						$context: (context || {}) as TContext
+					}
+				},
+				stepParams,
+				$context || {},
+				onError
+			)
+
+			// Return the result (already in T_StepResult format) or handle undefined
+			return result ?? {
+				data: undefined,
+				signal,
+				outcome: STEP_OUTCOME.FAILED,
+				$context: $context as TContext
+			}
+		}
 	}
 
-	private static async _onErrorRowRetry(
+	@Logger.LogFunction()
+	static readonly ExecuteCaseMap: Record<string, T_StepFunctionWithSignal> = {
+		[STEP.DEBUG]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Debug')).Debug(stepParams, $context)),
+		[STEP.SELECT]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Select')).Select(stepParams, $context)),
+		[STEP.UPDATE]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Update')).Update(stepParams, $context)),
+		[STEP.DELETE]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Delete')).Delete(stepParams, $context)),
+		[STEP.INSERT]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Insert')).Insert(stepParams, $context)),
+		[STEP.JOIN]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Join')).Join(stepParams, $context)),
+		[STEP.FIELDS]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Pick')).Pick(stepParams, $context)),
+		[STEP.SORT]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Sort')).Sort(stepParams, $context)),
+		[STEP.RUN]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Run')).Run(stepParams, $context)),
+		[STEP.SYNC]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Sync')).Sync(stepParams, $context)),
+		[STEP.ANONYMIZE]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Anonymize')).Anonymize(stepParams, $context)),
+		[STEP.REMOVE_DUPLICATE]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/RemoveDuplicates')).RemoveDuplicates(stepParams, $context)),
+		[STEP.LIST_ENTITIES]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/ListEntities')).ListEntities(stepParams, $context)),
+		[STEP.BREAK]: Step.WrapStepWithSignal(async (stepParams, _$context) => (await import('./steps/Break')).Break(stepParams), STEP_SIGNAL.STOP),
+		[STEP.PICK]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Pick')).Pick(stepParams, $context)),
+		[STEP.OMIT]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/Omit')).Omit(stepParams, $context)),
+		[STEP.MAP]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/MapRows')).MapRows(stepParams, $context)),
+		[STEP.SET_VAR]: Step.WrapStepWithSignal(async (stepParams, $context) => (await import('./steps/SetVar')).SetVar(stepParams, $context)),
+	}
+
+	static async _onErrorRowRetry(
 		rowFunction: (row: TRow) => Promise<TRow>,
 		row: TRow,
-		onErrorConfig: U__on_error_strategy_retry
+		onError: U__on_error_strategy_retry
 	): Promise<TRow> {
 
-		const retryConfig = onErrorConfig.retry 
+		const retryConfig = onError.retry
+
 		if (!retryConfig) {
 			throw new Error("Retry configuration not found")
 		}
 
-		const { attempts, delay, backoff, "max-delay": maxDelay } = retryConfig
+		const {
+			attempts,
+			delay,
+			backoff,
+			"max-delay": maxDelay
+		} = retryConfig
+
 		let lastError: any
 
 		for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -72,13 +137,13 @@ export class Step {
 		throw lastError
 	}
 
-	private static async _onErrorRowSink(
+	static async _onErrorRowSink(
 		error: any,
 		row: TRow,
 		_$context: Partial<TContext>,
-		onErrorConfig: U__on_error_strategy_sink | U__on_error_strategy_retry
+		onError: U__on_error_strategy_sink | U__on_error_strategy_retry
 	): Promise<void> {
-		const sinkConfig = onErrorConfig.sink
+		const sinkConfig = onError.sink
 		if (!sinkConfig) {
 			throw error
 		}
@@ -92,63 +157,53 @@ export class Step {
 		// 2. Insert into sink destination
 	}
 
-	private static async _applyOnErrorStrategy(stepFunction: TFunctionStep, stepArgs: TStep, $context: Partial<TContext>, onErrorConfig: U__on_error): Promise<DataTable | undefined> {
-		// Check for unified error config
-		if (onErrorConfig["on-error"]) {
-			return await Step._applyUnifiedErrorStrategy(stepFunction, stepArgs, $context, onErrorConfig["on-error"]);
-		}
-
-		// Default behavior (backward compatibility)
-		return await stepFunction(stepArgs, $context);
+	static async _onErrorThrow(stepFunction: T_StepFunctionWithSignal, stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<T_StepResult> {
+		return await stepFunction(stepParams, $context)
 	}
 
-	private static async _onErrorThrow(stepFunction: TFunctionStep, stepArgs: TStep, $context: Partial<TContext>): Promise<DataTable | undefined> {
-		return await stepFunction(stepArgs, $context)
-	}
-
-	private static async _onErrorSkip(
-		stepFunction: TFunctionStep,
-		stepArgs: TStep,
+	static async _onErrorSkip(
+		stepFunction: T_StepFunctionWithSignal,
+		stepParams: U__plans_plan__step_Params,
 		$context: Partial<TContext>
-	): Promise<DataTable | undefined> {
+	): Promise<T_StepResult | undefined> {
 		// For step-level, skip means return undefined (no data change)
 		// Row-level skip will be handled in individual steps
 		return undefined
 	}
 
-	private static async _onErrorSink(
-		stepFunction: TFunctionStep,
-		stepArgs: TStep,
+	static async _onErrorSink(
+		stepFunction: T_StepFunctionWithSignal,
+		stepParams: U__plans_plan__step_Params,
 		$context: Partial<TContext>,
 		sinkConfig: U__on_error_strategy_sink | U__on_error_strategy_retry
-	): Promise<DataTable | undefined> {
+	): Promise<T_StepResult | undefined> {
 
 		try {
-			return await stepFunction(stepArgs, $context)
+			return await stepFunction(stepParams, $context)
 		} catch (error) {
-			await Step._sinkError(error, stepArgs, $context, sinkConfig)
+			await Step._sinkError(error, stepParams, $context, sinkConfig)
 			return undefined
 		}
 	}
 
-	private static async _onErrorRetry(
-		stepFunction: TFunctionStep,
-		stepArgs: TStep,
+	static async _onErrorRetry(
+		stepFunction: T_StepFunctionWithSignal,
+		stepParams: U__plans_plan__step_Params,
 		$context: Partial<TContext>,
-		retryConfig:U__on_error_strategy_retry
-	): Promise<DataTable | undefined> {
+		retryConfig: U__on_error_strategy_retry
+	): Promise<T_StepResult | undefined> {
 
 		const retry = retryConfig.retry
 
 		if (!retry) {
-			return await Step._onErrorThrow(stepFunction, stepArgs, $context)
+			return await Step._onErrorThrow(stepFunction, stepParams, $context)
 		}
 
 		const {
 			attempts,
 			delay,
 			backoff,
-			then,
+			"after-retries": afterRetries,
 			"max-delay": maxDelay
 		} = retry
 
@@ -156,7 +211,7 @@ export class Step {
 
 		for (let attempt = 1; attempt <= attempts; attempt++) {
 			try {
-				return await stepFunction(stepArgs, $context)
+				return await stepFunction(stepParams, $context)
 			} catch (error) {
 				lastError = error
 				if (attempt < attempts) {
@@ -167,10 +222,10 @@ export class Step {
 		}
 
 		// Apply fallback strategy after retries are exhausted
-		switch (then) {
+		switch (afterRetries) {
 			case "sink":
 				if (!isEmpty(retryConfig.sink)) {
-					await Step._sinkError(lastError, stepArgs, $context, retryConfig)
+					await Step._sinkError(lastError, stepParams, $context, retryConfig)
 				}
 				return undefined
 			case "skip":
@@ -181,32 +236,32 @@ export class Step {
 		}
 	}
 
-	private static async _applyUnifiedErrorStrategy(stepFunction: TFunctionStep, stepArgs: TStep, $context: Partial<TContext>, errorConfig: U__on_error_Params): Promise<DataTable | undefined> {
+	static async _applyUnifiedErrorStrategy(stepFunction: T_StepFunctionWithSignal, stepParams: U__plans_plan__step_Params, $context: Partial<TContext>, errorConfig: U__on_error_Params): Promise<T_StepResult | undefined> {
 		const { strategy } = errorConfig;
 
 		// Apply scope-specific logic
 		switch (strategy) {
 			case STEP_ON_ERROR_STRATEGY.THROW:
-				return await Step._onErrorThrow(stepFunction, stepArgs, $context);
+				return await Step._onErrorThrow(stepFunction, stepParams, $context);
 
 			case STEP_ON_ERROR_STRATEGY.SKIP:
-				return await Step._onErrorSkip(stepFunction, stepArgs, $context);
+				return await Step._onErrorSkip(stepFunction, stepParams, $context);
 
 			case STEP_ON_ERROR_STRATEGY.SINK:
 				if (errorConfig?.sink) {
-					return await Step._onErrorSink(stepFunction, stepArgs, $context, errorConfig);
+					return await Step._onErrorSink(stepFunction, stepParams, $context, errorConfig);
 				}
 				throw new Error('Sink strategy requires sink configuration');
 
 			case STEP_ON_ERROR_STRATEGY.RETRY:
-				return await Step._onErrorRetry(stepFunction, stepArgs, $context, errorConfig);
+				return await Step._onErrorRetry(stepFunction, stepParams, $context, errorConfig);
 
 			default:
 				throw new Error(`Unsupported error strategy: ${strategy}`);
 		}
 	}
 
-	private static _calculateRetryDelay(attempt: number, baseDelay: number, backoff: STEP_ON_ERROR_RETRY_BACKOFF, maxDelay: number): number {
+	static _calculateRetryDelay(attempt: number, baseDelay: number, backoff: STEP_ON_ERROR_RETRY_BACKOFF, maxDelay: number): number {
 		let delay: number
 
 		switch (backoff) {
@@ -227,13 +282,13 @@ export class Step {
 		return Math.min(delay, maxDelay)
 	}
 
-	private static async _sinkError(
+	static async _sinkError(
 		error: any,
-		stepArgs: TStep,
+		stepParams: U__plans_plan__step_Params,
 		$context: Partial<TContext>,
-		onErrorConfig: U__on_error_strategy_sink | U__on_error_strategy_retry
+		onError: U__on_error_strategy_sink | U__on_error_strategy_retry
 	): Promise<void> {
-		const sinkConfig = onErrorConfig.sink
+		const sinkConfig = onError.sink
 		if (!sinkConfig) {
 			throw error
 		}
@@ -247,69 +302,39 @@ export class Step {
 		// 2. Insert into sink destination
 	}
 
-	static GetStepParams(stepConfig: U__plans_plan__step): U__plans_plan__step_Params {
-		return Object.values(stepConfig)[0]
-	}
-
-	static GetOnErrorConfig(stepConfig: U__plans_plan__step): U__on_error_Params | undefined {
-		const stepParams = Step.GetStepParams(stepConfig)
-		return stepParams && typeof stepParams === 'object' && 'on-error' in stepParams
-			? stepParams['on-error']
-			: undefined
-	}
-
-	static async ExecuteOnError(
-		stepFunction: TFunctionStep,
-		stepArgs: TStep,
-		$context: Partial<TContext>,
-		stepConfig: U__plans_plan__step,
-		entityOnErrorConfig?: U__on_error_Params
-	): Promise<DataTable | undefined> {
-
-		const stepParams = Step.GetStepParams(stepConfig)
-
-		// Check if this step type supports on-error (data processing steps)
-		const stepHasOnError = stepParams && typeof stepParams === 'object' && 'on-error' in stepParams
-
-		let onErrorConfig = stepHasOnError
-			? stepParams['on-error']
-			: entityOnErrorConfig
-
-		if (!onErrorConfig) {
-			// No error handling, execute normally
-			return await stepFunction(stepArgs, $context)
+	static GetStepParams(step: U__plans_plan__step) {
+		return {
+			command: Object.keys(step)[0] as STEP,
+			params: Object.values(step)[0] as U__plans_plan__step_Params
 		}
-
-		// Apply error handling strategies
-		return await Step._applyOnErrorStrategy(
-			stepFunction,
-			stepArgs,
-			$context,
-			onErrorConfig
-		)
 	}
 
-	static async ExecuteRowWithErrorHandling(
+	static GetOnError(step: U__plans_plan__step): U__on_error_Params {
+		const { params } = Step.GetStepParams(step)
+		return (params as Record<string, unknown>)['on-error'] as U__on_error_Params
+	}
+
+	static async OnErrorRow(
 		row: TRow,
 		rowFunction: (row: TRow) => Promise<TRow>,
 		$context: Partial<TContext>,
-		onErrorConfig: U__on_error_Params
+		onError: U__on_error_Params
 	): Promise<TRow | undefined> {
 		try {
 			return await rowFunction(row)
 		} catch (error) {
-			const { strategy } = onErrorConfig
+			const { strategy } = onError
 
 			switch (strategy) {
 				case STEP_ON_ERROR_STRATEGY.SKIP:
 					return undefined // Signal to skip this row
 
 				case STEP_ON_ERROR_STRATEGY.SINK:
-					await Step._onErrorRowSink(error, row, $context, onErrorConfig)
+					await Step._onErrorRowSink(error, row, $context, onError)
 					return undefined // Signal to skip this row
 
 				case STEP_ON_ERROR_STRATEGY.RETRY:
-					return await Step._onErrorRowRetry(rowFunction, row, onErrorConfig)
+					return await Step._onErrorRowRetry(rowFunction, row, onError)
 
 				case STEP_ON_ERROR_STRATEGY.THROW:
 				default:

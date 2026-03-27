@@ -27,7 +27,7 @@ All parameters are described in the table below:
 | Metal Server                            |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |
 | MongoDB                                 |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
 | MySql                                   |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
-| Plan                                    |   -    |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
+| Plans                                   |   -    |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
 | PostgreSQL                              |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
 | WebService                              |   🟡   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
 | Cosmos DB                               |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |

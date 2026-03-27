@@ -1,5 +1,6 @@
-/* eslint-disable no-async-promise-executor */
+
 //
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
 

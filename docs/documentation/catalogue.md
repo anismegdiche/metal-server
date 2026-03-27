@@ -75,13 +75,13 @@ Browse, configure, and virtualize Metal data sources.
     />
 
   <FeatureCard 
-    title="Metal Plan" 
+    title="Metal Plans" 
     image="/metal-logo-icon.png" 
-    link="/documentation/data-providers-config#plan"
+    link="/documentation/data-providers-config#plans"
     />
 
   <FeatureCard 
-    title="Metal Server" 
+    title="Remote Metal Server" 
     image="/metal-logo-icon.png" 
     link="/documentation/data-providers-config#metal-server"
     />

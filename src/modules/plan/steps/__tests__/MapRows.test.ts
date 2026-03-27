@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
-import { STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../../@consts"
-import type { TStep } from "../../types/TStep"
-import { MapRows } from "../MapRows"
+import type { TContext } from "../../../sandbox/types/TContext"
+import { STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY, STEP_STATUS } from "../../@consts"
 import type { U__plans_plan_map_Params } from "../../types/U__plans_params"
+import { MapRows } from "../MapRows"
 
 vi.mock("../../../../utils/Logger", () => ({
 	LOGGER_DEFAULT_LEVEL: "debug",
@@ -20,8 +20,11 @@ vi.mock("../../../../utils/Logger", () => ({
 
 vi.mock("../../Step", () => ({
 	Step: {
-		ExtractOnErrorConfig: vi.fn(),
-		ExecuteRowWithErrorHandling: vi.fn(),
+		GetOnError: vi.fn((step: any) => {
+			const params = step && Object.values(step)[0]
+			return params?.["on-error"] ?? undefined
+		}),
+		OnErrorRow: vi.fn(),
 	},
 }))
 
@@ -40,20 +43,30 @@ describe("Map step", () => {
 	})
 
 	it("should transform data using custom JavaScript code", async () => {
-		const step: TStep = {
-			currentPlanName: "test-plan",
-			currentSchemaName: "test-schema",
-			currentDataTable: testDataTable,
-			stepArgs: {
-				script: `
-                    $row.total = $row.price * $row.quantity;
-                    $row.category = $row.category.toUpperCase();
-                    return $row;
-                `,
+		const $context: Partial<TContext> = {
+			$schema: "test-schema",
+			$plan: {
+				name: "test-plan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: testDataTable,
 			},
+			$vars: {},
 		}
 
-		const result = await MapRows(step)
+		const stepParams = <U__plans_plan_map_Params>{
+			script: `
+                $row.total = $row.price * $row.quantity;
+                $row.category = $row.category.toUpperCase();
+                return $row;
+            `,
+		}
+
+		const result = await MapRows(stepParams, $context)
 
 		expect(result).toBeInstanceOf(DataTable)
 		expect(result.Name).toBe("test_mapped")
@@ -84,19 +97,29 @@ describe("Map step", () => {
 	})
 
 	it("should return original row if script does not return anything", async () => {
-		const step: TStep = {
-			currentPlanName: "test-plan",
-			currentSchemaName: "test-schema",
-			currentDataTable: testDataTable,
-			stepArgs: {
-				script: `
-                    $row.processed = true;
-                    // No return statement
-                `,
+		const $context: Partial<TContext> = {
+			$schema: "test-schema",
+			$plan: {
+				name: "test-plan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: testDataTable,
 			},
+			$vars: {},
 		}
 
-		const result = await MapRows(step)
+		const stepParams = <U__plans_plan_map_Params>{
+			script: `
+                $row.processed = true;
+                // No return statement
+            `,
+		}
+
+		const result = await MapRows(stepParams, $context)
 		const rows = await result.Rows()
 
 		expect(rows[0]).toEqual({
@@ -109,139 +132,100 @@ describe("Map step", () => {
 
 	it("should handle empty data table", async () => {
 		const emptyDataTable = new DataTable("empty", [])
-		const step: TStep = {
-			currentPlanName: "test-plan",
-			currentSchemaName: "test-schema",
-			currentDataTable: emptyDataTable,
-			stepArgs: {
-				script: `
-                    $row.total = $row.price * $row.quantity;
-                    return $row;
-                `,
+
+		const $context: Partial<TContext> = {
+			$schema: "test-schema",
+			$plan: {
+				name: "test-plan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: emptyDataTable,
 			},
+			$vars: {},
 		}
 
-		const result = await MapRows(step)
+		const stepParams = <U__plans_plan_map_Params>{
+			script: `
+                $row.total = $row.price * $row.quantity;
+                return $row;
+            `,
+		}
+
+		const result = await MapRows(stepParams, $context)
 		const rows = await result.Rows()
 
 		expect(rows).toHaveLength(0)
 	})
 
 	it("should throw error by default when script fails", async () => {
-		const step: TStep = {
-			currentPlanName: "test-plan",
-			currentSchemaName: "test-schema",
-			currentDataTable: testDataTable,
-			stepArgs: {
-				script: `
-                    // This will cause an error for the second row
-                    if ($row.category === 'books') {
-                        throw new Error('Books are not allowed');
-                    }
-                    $row.processed = true;
-                    return $row;
-                `,
+		const $context: Partial<TContext> = {
+			$schema: "test-schema",
+			$plan: {
+				name: "test-plan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: testDataTable,
 			},
+			$vars: {},
 		}
 
-		// Default behavior should throw an error
-		await expect(MapRows(step)).rejects.toThrow()
+		const stepParams = <U__plans_plan_map_Params>{
+			script: `
+                if ($row.category === 'books') {
+                    throw new Error('Books are not allowed');
+                }
+                $row.processed = true;
+                return $row;
+            `,
+		}
+
+		await expect(MapRows(stepParams, $context)).rejects.toThrow()
 	})
 
-	it("should skip rows when using new error handling with skip strategy", async () => {
-		vi.mocked(Step.GetOnErrorConfig).mockReturnValue({
-			strategy: STEP_ON_ERROR_STRATEGY.SKIP,
-			scope: STEP_ON_ERROR_SCOPE.ROW,
-		})
-
-		// Create a mock implementation that simulates row processing with skipping
-		const processedRows: any[] = []
-		vi.mocked(Step.ExecuteRowWithErrorHandling).mockImplementation(async (row: any, rowFunction: any) => {
-			// Simulate row processing with error handling
-			if (row.category === 'books') {
-				return undefined // Skip this row
-			}
-			const result = await rowFunction(row)
-			processedRows.push(result)
-			return result
-		})
-
-		const step: TStep = {
-			currentPlanName: "test-plan",
-			currentSchemaName: "test-schema",
-			currentDataTable: testDataTable,
-			stepArgs: {
-				script: `
-                    $row.processed = true;
-                    return $row;
-                `,
-				"on-error": {
-					strategy: STEP_ON_ERROR_STRATEGY.SKIP,
-					scope: STEP_ON_ERROR_SCOPE.ROW,
+	it("should skip rows when using step scope with skip strategy", async () => {
+		const $context: Partial<TContext> = {
+			$schema: "test-schema",
+			$plan: {
+				name: "test-plan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
 				},
+				data: testDataTable,
+			},
+			$vars: {},
+		}
+
+		const stepParams = <U__plans_plan_map_Params>{
+			script: `
+                if ($row.category === 'books') {
+                    throw new Error('Books are not allowed');
+                }
+                $row.processed = true;
+                return $row;
+            `,
+			"on-error": {
+				strategy: STEP_ON_ERROR_STRATEGY.SKIP,
+				scope: STEP_ON_ERROR_SCOPE.STEP,
 			},
 		}
 
-		const result = await MapRows(step)
+		const result = await MapRows(stepParams, $context)
 		expect(result).toBeInstanceOf(DataTable)
 
 		const rows = await result.Rows()
-
-		expect(rows).toHaveLength(3)
-
-		expect(rows).toEqual([
-			{
-				price: 10,
-				quantity: 2,
-				category: "electronics",
-				processed: true,
-			},
-			// books is skipped and same as origin
-			{
-				price: 5,
-				quantity: 3,
-				category: "books",
-			},
-			{
-				price: 20,
-				quantity: 1,
-				category: "clothing",
-				processed: true,
-			},
-		])
-	})
-
-	it("should use legacy error handling when no new error config is present", async () => {
-		vi.mocked(Step.GetOnErrorConfig).mockReturnValue(undefined)
-
-		const step: TStep = {
-			currentPlanName: "test-plan",
-			currentSchemaName: "test-schema",
-			currentDataTable: testDataTable,
-			stepArgs: {
-				script: `
-                    // This will cause an error for the second row
-                    if ($row.category === 'books') {
-                        throw new Error('Books are not allowed');
-                    }
-                    $row.processed = true;
-                    return $row;
-                `,
-				"on-error": {
-					strategy: STEP_ON_ERROR_STRATEGY.SKIP,
-				},
-			},
-		}
-
-		const result = await MapRows(step)
-		expect(result).toBeInstanceOf(DataTable)
-
-		const rows = await result.Rows()
-
-		// Should have only 2 rows (books row skipped)
 		expect(rows).toHaveLength(2)
 
-		// First row (electronics) should be processed successfully
 		expect(rows[0]).toEqual({
 			price: 10,
 			quantity: 2,
@@ -249,38 +233,11 @@ describe("Map step", () => {
 			processed: true,
 		})
 
-		// Third row (clothing) should be processed successfully (skipped books row)
 		expect(rows[1]).toEqual({
 			price: 20,
 			quantity: 1,
 			category: "clothing",
 			processed: true,
 		})
-	})
-
-	it("should validate that throw strategy is not compatible with row scope", async () => {
-		vi.mocked(Step.GetOnErrorConfig).mockReturnValue({
-			strategy: STEP_ON_ERROR_STRATEGY.THROW,
-			scope: STEP_ON_ERROR_SCOPE.STEP,
-		})
-
-		const step: TStep = {
-			currentPlanName: "test-plan",
-			currentSchemaName: "test-schema",
-			currentDataTable: testDataTable,
-			stepArgs: {
-				script: `
-                    $row.processed = true;
-                    return $row;
-                `,
-				"on-error": {
-					strategy: STEP_ON_ERROR_STRATEGY.THROW,
-					scope: STEP_ON_ERROR_SCOPE.ROW,
-				},
-			},
-		}
-
-		// Should fallback to legacy handling since throw + row is invalid
-		await expect(MapRows(step)).rejects.toThrow()
 	})
 })

@@ -1,8 +1,9 @@
+/** biome-ignore-all lint/suspicious/noTemplateCurlyInString: <explanation> */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { TContext } from "../../../../modules/sandbox/types/TContext"
 import { DataTable } from "../../../../types/DataTable"
-import { STEP } from "../../@consts"
-import type { TStep } from "../../types/TStep"
+import { STEP_STATUS } from "../../@consts"
+
 import type { U__plans_plan_set_var_Params } from "../../types/U__plans_params"
 import { SetVar } from "../SetVar"
 
@@ -29,21 +30,26 @@ describe("SetVar", () => {
 		mockDataTable = new DataTable()
 		mockContext = {
 			$vars: {},
+			$plan: {
+				name: "test-plan",
+				currentStep: {
+					index: 0,
+					command: undefined,
+					params: {},
+					status: STEP_STATUS.PENDING,
+				},
+				data: mockDataTable,
+			},
 		}
 	})
 
 	it("should set variables in context", async () => {
-		const step: TStep = {
-			currentSchemaName: "s1",
-			currentPlanName: "p1",
-			currentDataTable: mockDataTable,
-			stepArgs: <U__plans_plan_set_var_Params>{
-				var1: "value1",
-				var2: "${{ 1 + 1 }}",
-			},
+		const stepParams = <U__plans_plan_set_var_Params>{
+			var1: "value1",
+			var2: "${{ 1 + 1 }}",
 		}
 
-		await SetVar(step, mockContext)
+		await SetVar(stepParams, mockContext)
 
 		expect(mockContext.$vars).toEqual({
 			var1: "value1",
@@ -57,38 +63,40 @@ describe("SetVar", () => {
 			var1: "oldValue",
 		}
 
-		const step: TStep = {
-			currentSchemaName: "s1",
-			currentPlanName: "p1",
-			currentDataTable: mockDataTable,
-			stepArgs: <U__plans_plan_set_var_Params>{
-				var1: "newValue", // Should overwrite
-				var2: "${{ 1 + 1 }}", // Should add
-			},
+		const stepParams = <U__plans_plan_set_var_Params>{
+			var1: "newValue",
+			var2: "${{ 1 + 1 }}",
 		}
 
-		await SetVar(step, mockContext)
+		await SetVar(stepParams, mockContext)
 
 		expect(mockContext.$vars).toEqual({
-			existingVar: "existingValue", // Preserved
-			var1: "newValue", // Overwritten
-			var2: 2, // Added
+			existingVar: "existingValue",
+			var1: "newValue",
+			var2: 2,
 		})
 	})
 
 	it("should initialize $vars if it does not exist", async () => {
-		mockContext = {} // No $vars initially
-
-		const step: TStep = {
-			currentSchemaName: "s1",
-			currentPlanName: "p1",
-			currentDataTable: mockDataTable,
-			stepArgs: <U__plans_plan_set_var_Params>{
-				var1: "value1",
+		mockContext = {
+			$vars: {},
+			$plan: {
+				name: "test-plan",
+				currentStep: {
+					index: 0,
+					command: undefined,
+					params: {},
+					status: STEP_STATUS.PENDING,
+				},
+				data: mockDataTable,
 			},
 		}
 
-		await SetVar(step, mockContext)
+		const stepParams = <U__plans_plan_set_var_Params>{
+			var1: "value1",
+		}
+
+		await SetVar(stepParams, mockContext)
 
 		expect(mockContext.$vars).toEqual({
 			var1: "value1",
@@ -96,20 +104,15 @@ describe("SetVar", () => {
 	})
 
 	it("should handle complex expressions", async () => {
-		const step: TStep = {
-			currentSchemaName: "s1",
-			currentPlanName: "p1",
-			currentDataTable: mockDataTable,
-			stepArgs: <U__plans_plan_set_var_Params>{
-				stringExpr: "${{ test }}",
-				numberExpr: "${{ 1 + 1 }}",
-				plainString: "no evaluation",
-				plainNumber: 42,
-				plainObject: { key: "value" },
-			},
+		const stepParams = <U__plans_plan_set_var_Params>{
+			stringExpr: "${{ test }}",
+			numberExpr: "${{ 1 + 1 }}",
+			plainString: "no evaluation",
+			plainNumber: 42,
+			plainObject: { key: "value" },
 		}
 
-		await SetVar(step, mockContext)
+		await SetVar(stepParams, mockContext)
 
 		expect(mockContext.$vars).toEqual({
 			stringExpr: undefined,
@@ -121,45 +124,47 @@ describe("SetVar", () => {
 	})
 
 	it("should validate variable names", async () => {
-		const step: TStep = {
-			currentSchemaName: "s1",
-			currentPlanName: "p1",
-			currentDataTable: mockDataTable,
-			stepArgs: <U__plans_plan_set_var_Params>{
-				"valid-name": "value1",
-				"123invalid": "value2", // Invalid: starts with number
-				"invalid-name!": "value3", // Invalid: contains special character
-				valid_name: "value4", // Valid
-			},
+		const stepParams = <U__plans_plan_set_var_Params>{
+			"valid-name": "value1",
+			"123invalid": "value2",
+			"invalid-name!": "value3",
+			valid_name: "value4",
 		}
 
-		await expect(SetVar(step, mockContext)).rejects.toThrow()
+		await expect(SetVar(stepParams, mockContext)).rejects.toThrow()
 	})
 
 	it("should not mutate other context namespaces", async () => {
 		mockContext = {
 			$vars: { existing: "value" },
-			$plan: { name: "test-plan", entity: "myentity", $current: {} },
+			$plan: {
+				name: "test-plan",
+				currentStep: {
+					index: 0,
+					command: undefined,
+					params: {},
+					status: STEP_STATUS.PENDING,
+				},
+				data: mockDataTable,
+			},
 			$entity: "test-entity",
 			$schema: "test-schema",
 		}
 
-		const step: TStep = {
-			currentSchemaName: "s1",
-			currentPlanName: "p1",
-			currentDataTable: mockDataTable,
-			stepArgs: <U__plans_plan_set_var_Params>{
-				newVar: "newValue",
-			},
+		const stepParams = <U__plans_plan_set_var_Params>{
+			newVar: "newValue",
 		}
 
-		await SetVar(step, mockContext)
+		await SetVar(stepParams, mockContext)
 
-		expect(mockContext.$plan).toEqual({ name: "test-plan", entity: "myentity", $current: {} })
+		expect(mockContext.$plan).toEqual({
+			name: "test-plan",
+			currentStep: { index: 0, command: undefined, params: {}, status: STEP_STATUS.PENDING },
+			data: mockDataTable,
+		})
 		expect(mockContext.$entity).toBe("test-entity")
 		expect(mockContext.$schema).toBe("test-schema")
 
-		// Only $vars should be modified
 		expect(mockContext.$vars).toEqual({
 			existing: "value",
 			newVar: "newValue",
@@ -167,37 +172,21 @@ describe("SetVar", () => {
 	})
 
 	it("should throw error if context is missing", async () => {
-		const step: TStep = {
-			currentSchemaName: "s1",
-			currentPlanName: "p1",
-			currentDataTable: mockDataTable,
-			stepArgs: <U__plans_plan_set_var_Params>{ a: 1 },
-		}
+		const stepParams = <U__plans_plan_set_var_Params>{ a: 1 }
 
-		await expect(SetVar(step, undefined as unknown as Partial<TContext>)).rejects.toThrow()
+		await expect(SetVar(stepParams, undefined as unknown as Partial<TContext>)).rejects.toThrow()
 	})
 
 	it("should throw error if stepArgs is invalid", async () => {
-		const step: TStep = {
-			currentSchemaName: "s1",
-			currentPlanName: "p1",
-			currentDataTable: mockDataTable,
-			stepArgs: "invalid-args" as unknown as U__plans_plan_set_var_Params, // Not an object
-		}
+		const stepParams = "invalid-args" as unknown as U__plans_plan_set_var_Params
 
-		await expect(SetVar(step, mockContext)).rejects.toThrow()
+		await expect(SetVar(stepParams, mockContext)).rejects.toThrow()
 	})
 
 	it("should persist variables across multiple SetVar calls", async () => {
-		// First SetVar call
-		const step1: TStep = {
-			currentSchemaName: "s1",
-			currentPlanName: "p1",
-			currentDataTable: mockDataTable,
-			stepArgs: <U__plans_plan_set_var_Params>{
-				var1: "value1",
-				var2: "${{ 1 + 1 }}",
-			},
+		const step1 = <U__plans_plan_set_var_Params>{
+			var1: "value1",
+			var2: "${{ 1 + 1 }}",
 		}
 
 		await SetVar(step1, mockContext)
@@ -207,23 +196,17 @@ describe("SetVar", () => {
 			var2: 2,
 		})
 
-		// Second SetVar call
-		const step2: TStep = {
-			currentSchemaName: "s1",
-			currentPlanName: "p1",
-			currentDataTable: mockDataTable,
-			stepArgs: <U__plans_plan_set_var_Params>{
-				var3: "value3",
-				var1: "updated-value1", // Update existing
-			},
+		const step2 = <U__plans_plan_set_var_Params>{
+			var3: "value3",
+			var1: "updated-value1",
 		}
 
 		await SetVar(step2, mockContext)
 
 		expect(mockContext.$vars).toEqual({
-			var1: "updated-value1", // Updated
-			var2: 2, // Preserved
-			var3: "value3", // Added
+			var1: "updated-value1",
+			var2: 2,
+			var3: "value3",
 		})
 	})
 })
@@ -245,29 +228,22 @@ describe("SetVar - $vars Usage Across Operations", () => {
 			},
 			$plan: {
 				name: "test-plan",
-				entity: "test-entity",
-				$current: {
-					stepIndex: 1,
-					stepCommand: STEP.SELECT,
-					stepArgs: {},
-					status: "running" as any,
-					data: mockDataTable,
+				currentStep: {
+					index: 1,
+					command: undefined,
+					params: {},
+					status: STEP_STATUS.RUNNING,
 				},
+				data: mockDataTable,
 			},
 		}
 	})
 
 	describe("Real-world variable workflow", () => {
 		it("should maintain and evaluate variables across multiple steps", async () => {
-			// Step 1: Set var1
-			const setVar1Step: TStep = {
-				currentSchemaName: "s1",
-				currentPlanName: "p1",
-				currentDataTable: mockDataTable,
-				stepArgs: <U__plans_plan_set_var_Params>{
-					var1: "active",
-					threshold: 100,
-				},
+			const setVar1Step = <U__plans_plan_set_var_Params>{
+				var1: "active",
+				threshold: 100,
 			}
 
 			await SetVar(setVar1Step, mockContext)
@@ -275,15 +251,9 @@ describe("SetVar - $vars Usage Across Operations", () => {
 			expect(mockContext.$vars?.var1).toBe("active")
 			expect(mockContext.$vars?.threshold).toBe(100)
 
-			// Step 2: Set var2 based on var1
-			const setVar2Step: TStep = {
-				currentSchemaName: "s1",
-				currentPlanName: "p1",
-				currentDataTable: mockDataTable,
-				stepArgs: <U__plans_plan_set_var_Params>{
-					var2: "${{ $vars.var1 === 'active' ? 'enabled' : 'disabled' }}",
-					limit: "${{ $vars.threshold * 0.5 }}",
-				},
+			const setVar2Step = <U__plans_plan_set_var_Params>{
+				var2: "${{ $vars.var1 === 'active' ? 'enabled' : 'disabled' }}",
+				limit: "${{ $vars.threshold * 0.5 }}",
 			}
 
 			await SetVar(setVar2Step, mockContext)

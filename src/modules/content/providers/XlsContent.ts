@@ -22,11 +22,20 @@ import { absContentProvider } from "../base/absContentProvider"
 
 //
 export const z_U__source_options_content_xls = z.object({
-	"xls-sheet": z.string().describe("Specify which sheet to use, default first sheet").optional(),
-	"xls-starting-cell": z.string().describe("Specify the starting cell (e.g., 'B2'), default 'A1'").optional(),
-	"xls-default": z.union([z.number(), z.string(), z.null()]).describe("Default value for empty cells").optional(),
-	"xls-parse-dates": z.boolean().describe("Parse dates from cells, default false").optional(),
-	"xls-date-format": z.string().describe("Specify the date format for parsing dates").optional(),
+	"xls-sheet": z.string()
+		.optional(),
+	"xls-starting-cell": z.string()
+		.optional(),
+	"xls-default": z.union([
+		z.number(),
+		z.string(),
+		z.null()
+	])
+		.optional(),
+	"xls-parse-dates": z.boolean()
+		.optional(),
+	"xls-date-format": z.string()
+		.optional(),
 })
 
 //
@@ -202,24 +211,24 @@ export class XlsContent extends absContentProvider {
 			worksheet.getCell(Number.parseInt(startRow, 10), colIndex + idx).value = field
 		})
 
-		// Set data
-		;(await data.Rows()).forEach((row, idx) => {
-			fields.forEach((field: string, fieldIdx: number) => {
-				const _rowIdx = Number.parseInt(startRow, 10) + 1 + idx
-				const _colIdx: number = colIndex + fieldIdx
+			// Set data
+			; (await data.Rows()).forEach((row, idx) => {
+				fields.forEach((field: string, fieldIdx: number) => {
+					const _rowIdx = Number.parseInt(startRow, 10) + 1 + idx
+					const _colIdx: number = colIndex + fieldIdx
 
-				let _valueToSet = row[field]
+					let _valueToSet = row[field]
 
-				if (_valueToSet === null) {
-					_valueToSet = $__evalParams?.default
-				}
+					if (_valueToSet === null) {
+						_valueToSet = $__evalParams?.default
+					}
 
-				if ($__evalParams?.parseDates && _valueToSet instanceof Date) {
-					worksheet.getCell(_rowIdx, _colIdx).numFmt = $__evalParams?.dateFormat as string
-				}
-				worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet as import("exceljs").ValueType
+					if ($__evalParams?.parseDates && _valueToSet instanceof Date) {
+						worksheet.getCell(_rowIdx, _colIdx).numFmt = $__evalParams?.dateFormat as string
+					}
+					worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet as import("exceljs").ValueType
+				})
 			})
-		})
 
 		// Create a new buffer and stream
 		const buffer = await workbook.xlsx.writeBuffer()

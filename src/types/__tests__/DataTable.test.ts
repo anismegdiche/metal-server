@@ -1,5 +1,5 @@
-/* eslint-disable security/detect-non-literal-fs-filename */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 
 import fs from "node:fs"
 import { DuckDBInstance } from "@duckdb/node-api"
@@ -632,12 +632,12 @@ describe("DataTable", () => {
 
 	describe("GetFieldsNames", () => {
 		it("should return an array of field names", () => {
-			const fields = dt.GetFieldsName()
+			const fields = dt.GetFieldNames()
 			expect(fields).toEqual(["name", "age"])
 		})
 
 		it("should return empty array for empty Datatable", () => {
-			const fields = new DataTable("empty").GetFieldsName()
+			const fields = new DataTable("empty").GetFieldNames()
 			expect(fields).toEqual([])
 		})
 	})

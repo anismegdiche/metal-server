@@ -1,7 +1,6 @@
 //
 //
 //
-
 import { isEmpty, isObject, isString, merge, omitBy } from "lodash-es"
 //
 import { type DataTable, dataTable_fieldIsSystem } from "../../../types/DataTable"
@@ -16,18 +15,15 @@ import type { IAiEngine } from "../../ai-engine/base/IAiEngine"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { STEP } from "../@consts"
-import type { TStep } from "../types/TStep"
+import { type U__plans_plan_run_Params, z_U__plans_plan_run_Params, } from "../types/U__plans_params"
+import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
-import {
-	type U__plans_plan_run_Params,
-	z_U__plans_plan_run_Params,
-} from "../types/U__plans_params"
 
 //
-export async function Run(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
+export async function Run(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
 	Assert.Var<U__plans_plan_run_Params>(
-		step.stepArgs,
-		z_U__plans_plan_run_Params.safeParse(step.stepArgs).success,
+		stepParams,
+		z_U__plans_plan_run_Params.safeParse(stepParams).success,
 		`${STEP.RUN}: Wrong argument passed`,
 	)
 
@@ -40,9 +36,14 @@ export async function Run(step: TStep, $context?: Partial<TContext>): Promise<Da
 		$result: undefined,
 	})
 
-	const stepArgs = merge(DEFAULT, step.stepArgs) as U__plans_plan_run_Params
+	const {
+		data: planData
+	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
 
-	const { ai, task, input, output } = stepArgs
+	const _step = merge(DEFAULT, stepParams) as U__plans_plan_run_Params
+
+	const { ai, task, input, output } = _step
 	const aiTask = `${ai}-${task}`
 	const aiEngine = AiEngine.AiEnginesInstance.get(aiTask)
 
@@ -50,7 +51,7 @@ export async function Run(step: TStep, $context?: Partial<TContext>): Promise<Da
 
 	const rowPromises: Promise<void>[] = []
 
-	for (const _row of await step.currentDataTable.Rows({ includeIndex: true })) {
+	for (const _row of await planData.Rows({ includeIndex: true })) {
 		rowPromises.push(
 			(async () => {
 				Assert.Var<string>(_row.__idx__, `${STEP.RUN}: data index is not defined`)
@@ -68,7 +69,7 @@ export async function Run(step: TStep, $context?: Partial<TContext>): Promise<Da
 
 				const __result = <Record<string, any>>await aiEngine.Run({
 					data: $__data,
-					...(step.stepArgs as U__plans_plan_run_Params),
+					...(stepParams as U__plans_plan_run_Params),
 				} as TAiArguments)
 
 				if (isEmpty(__result)) return
@@ -93,11 +94,11 @@ export async function Run(step: TStep, $context?: Partial<TContext>): Promise<Da
 						__row[aiTask] = JsonUtils.SafeCopy(__result)
 						break
 				}
-				await step.currentDataTable.RowUpdateByIndex(__idx__, __row)
+				await planData.RowUpdateByIndex(__idx__, __row)
 			})(),
 		)
 	}
 
 	await Promise.all(rowPromises)
-	return step.currentDataTable.FieldsSet()
+	return planData.FieldsSet()
 }

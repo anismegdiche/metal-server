@@ -94,7 +94,7 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
 
 		return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
 			.Insert((schemaRequest as TSchemaRequestInsert).entity)
-			.Fields(options.Data.GetFieldsName())
+			.Fields(options.Data.GetFieldNames())
 			.Values(await options.Data.Rows())
 	}
 

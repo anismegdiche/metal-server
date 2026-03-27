@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
 import { DataTableUtils } from "../../../../utils/DataTableUtils"
-import { Schema } from "../../../schema/Schema"
-import { Sync } from "../Sync"
-import type { TStep } from "../../types/TStep"
 import { HttpErrorInternalServerError } from "../../../errors/HttpErrors"
+import type { TContext } from "../../../sandbox/types/TContext"
+import { Schema } from "../../../schema/Schema"
+import { STEP_STATUS } from "../../@consts"
+import type { U__plans_plan_sync_Params } from "../../types/U__plans_params"
+import { Sync } from "../Sync"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -54,24 +55,34 @@ describe("Sync", () => {
 			AddedRows: [],
 		})
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				from: {
-					schema: "sourceSchema",
-					entity: "sourceEntity",
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
 				},
-				to: {
-					schema: "targetSchema",
-					entity: "targetEntity",
-				},
-				id: "name",
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		const result = await Sync(step)
+		const stepParams = <U__plans_plan_sync_Params>{
+			from: {
+				schema: "sourceSchema",
+				entity: "sourceEntity",
+			},
+			to: {
+				schema: "targetSchema",
+				entity: "targetEntity",
+			},
+			id: "name",
+		}
+
+		const result = await Sync(stepParams, $context)
 		expect(spySchemaSelect).toHaveBeenCalled()
 		expect(spyUpsert).toHaveBeenCalled()
 		expect(result).toBe(myPlanEntity1)
@@ -80,13 +91,23 @@ describe("Sync", () => {
 	})
 
 	it("should throw error for invalid sync parameters", async () => {
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {} as any,
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
 		}
 
-		await expect(Sync(step)).rejects.toThrow(HttpErrorInternalServerError)
+		const stepParams = <U__plans_plan_sync_Params>{}
+
+		await expect(Sync(stepParams, $context)).rejects.toThrow(HttpErrorInternalServerError)
 	})
 })

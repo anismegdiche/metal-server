@@ -6,9 +6,9 @@ import { Logger } from "./Logger"
 //
 export class Synchronizer {
 	#IsExecuting = false
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 	#Result: any
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 	#PendingPromises: ((result: any) => void)[] //NOSONAR
 
 	#Waiters = 0

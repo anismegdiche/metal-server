@@ -306,25 +306,12 @@ The table below describes the different values that can be configured in the `pr
 | `postgres` | PostgreSQL                               | <Badge type="default" text="v0.1+" /> |
 | `mssql`    | Azure Sql Database, Microsoft SQL Server | <Badge type="default" text="v0.1+" /> |
 | `mongodb`  | MongoDB                                  | <Badge type="default" text="v0.1+" /> |
-| `plan`     | Connect to Metal Plan                    | <Badge type="default" text="v0.2+" /> |
+| `plans`    | Connect to Metal Plans                   | <Badge type="info" text="v0.5+" />    |
 | `storage`  | Storage abstraction data provider        | <Badge type="info" text="v0.5+" />    |
 | `metal`    | Metal Server via REST                    | <Badge type="default" text="v0.2+" /> |
 | `memory`   | Local Memory storage (Non-persistant)    | <Badge type="default" text="v0.2+" /> |
 
 For more detailed information about how to configure a data provider, See: [Data Providers Configurations](./data-providers-config.md)
-
-::: tip ℹ️ NOTE
-When using `plan` as a data provider, you only need to provide the name of the plan as `database` parameter.
-Example:
-
-```yaml
-sources:
-  my-source-from-plan:
-    provider: plan
-    database: my-plan
-```
-
-:::
 
 **Example:**
 
@@ -499,8 +486,8 @@ schemas:
         source: my-mongodb-source
         entity: entity1
       my-entity2:
-        source: my-plan
-        entity: entity2
+        source: my-plans
+        entity: plan1
 ```
 
 ::: tip ℹ️ TIP
@@ -547,80 +534,98 @@ When using `anonymize` in a schema and in a plan, data will be anonymized twice.
 ## `plans` <Badge type="info" text="v0.5+" />
 
 ::: warning ⚠️ Breaking changes!
-Plan step declarations have changed. They must now be defined under the `steps` key.
+Plan structure has changed. Entity declarations have been removed. Plans now contain direct step declarations in `steps` parameter.
 :::
 
-This section is used to declare plans which are an ETL steps.
-It can be used on the fly by calling a schema conneted to a plan or by scheduling as a job.
+This section is used to declare plans which are ETL steps.
+Processing can be called on the fly by using a schema connected to a plan source; or by scheduling it as a job.
 
-In each plan you must declare at least one entity in which the steps will be executed
+Each plan must declare at least one step under the `steps` key.
+
+The parameters that can be configured inside `update` tag are :
+
+| Name               | Type   | Required | Description                                                                | Metal version                      |
+| ------------------ | ------ | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
+| `steps`            | object | Y        | Section to declare plan's steps                                            | <Badge type="info" text="v0.5+" /> |
+| `on-error`         | object | N        | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+| `failure-strategy` | string | N        | Plan's output whene failure happen                                         | <Badge type="info" text="v0.5+" /> |
 
 **Example**
 
 ```yaml
 plans:
   my-plan:
-    my-first-entity:
-      steps:
-    my-second-entity:
-      steps:
+    steps:
+      - select:
+          schema: demo
+          entity: users
+          fields: login, partner_id
+      - join:
+          type: left
+          entity: my-first-entity
+          left-field: partner_id
+          right-field: id
 ```
 
 ::: tip ℹ️ TIP
-You may call a declared entity in the plan, in that case the steps hocked to the second entity will be executed
+Steps are executed sequentially in the order they are declared. Each step can access data from previous steps.
 
 **Example**
 
 ```yaml
 plans:
   my-plan:
-    my-first-entity:
-      steps:
-        - select:
-            schema: demo
-            entity: users
-            fields: login, partner_id
-    my-second-entity:
-      steps:
-        - select:
-            schema: demo
-            entity: contacts
-            fields: id, name, display_name
-        - join:
-            type: left
-            entity: my-first-entity
-            left-field: partner_id
-            right-field: id
+    steps:
+      - select:
+          schema: demo
+          entity: users
+          fields: id, name, display_name
+      - join: # <-- join is performed on selected data from demo.users
+          schema: demo
+          entity: messages
+          type: left
+          left-field: id
+          right-field: user_id
 ```
 
 :::
 
-`steps` that can be configured inside a plan can be:
+### `failure-strategy` <Badge type="info" text="v0.5+" />
 
-| Step command        | Decription                                                                                       | Metal version                         |
-| ------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------- |
-| `select`            | to select data from an entity. If schema is not provided, actual plan's entity data will be used | <Badge type="info" text="v0.5+" />    |
-| `insert`            | to insert data to an entity. If schema is not provided, actual plan's entity data will be used   | <Badge type="info" text="v0.5+" />    |
-| `delete`            | to delete data from an entity. If schema is not provided, actual plan's entity data will be used | <Badge type="info" text="v0.5+" />    |
-| `update`            | to update data of an entity. If schema is not provided, actual plan's entity data will be used   | <Badge type="info" text="v0.5+" />    |
-| `debug`             | to enable steps debug                                                                            | <Badge type="default" text="v0.1+" /> |
-| `break`             | to stop plan execution at this step                                                              | <Badge type="default" text="v0.1+" /> |
-| `join`              | to perform data joins (Left,Right,Inner,Full outer and Cross)                                    | <Badge type="info" text="v0.5+" />    |
-| `sort`              | to sort actual data                                                                              | <Badge type="info" text="v0.5+" />    |
-| `run`               | to run an AI Engine                                                                              | <Badge type="info" text="v0.5+" />    |
-| `sync`              | to synchronize data from data source to a data destination                                       | <Badge type="info" text="v0.5+" />    |
-| `anonymize`         | to anonymize data of given fields                                                                | <Badge type="info" text="v0.5+" />    |
-| `list-entities`     | to list entities in a schema                                                                     | <Badge type="info" text="v0.5+" />    |
-| `remove-duplicates` | to remove duplicated rows                                                                        | <Badge type="info" text="v0.5+" />    |
-| `pick`              | fields to keep from actual data                                                                  | <Badge type="info" text="v0.5+" />    |
-| `omit`              | to remove fields from actual data                                                                | <Badge type="info" text="v0.5+" />    |
-| `map`               | to transform data using custom JavaScript code                                                   | <Badge type="info" text="v0.5+" />    |
-| `set-var`           | to set persistent variables in the execution context                                             | <Badge type="info" text="v0.5+" />    |
+Defines how the plan behaves when a failure occurs:
 
-### `list-entities` <Badge type="info" text="v0.5+" />
+- `return-data`: Returns the data produced up to the step where the failure happened.
+- `return-errors`: Returns only the error details without any partial data.
+
+
+
+### `steps` <Badge type="info" text="v0.5+" />
+
+Steps that can be configured inside a plan are:
+
+| Step command        | Decription                                                                                        | Metal version                         |
+| ------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `select`            | Select data from a schema. If schema and entity are not provided, actual plan's data will be used | <Badge type="info" text="v0.5+" />    |
+| `insert`            | Insert data to a schema. If schema and entity are not provided, actual plan's data will be used   | <Badge type="info" text="v0.5+" />    |
+| `delete`            | Delete data from a schema. If schema and entity are not provided, actual plan's data will be used | <Badge type="info" text="v0.5+" />    |
+| `update`            | Update data of a schema. If schema and entity are not provided, actual plan's data will be used   | <Badge type="info" text="v0.5+" />    |
+| `list-entities`     | List entities in a schema.                                                                        | <Badge type="info" text="v0.5+" />    |
+| `debug`             | Enable steps debug                                                                                | <Badge type="default" text="v0.1+" /> |
+| `break`             | Stop plan execution at this step                                                                  | <Badge type="default" text="v0.1+" /> |
+| `join`              | Perform data joins with actual plan's data (Left,Right,Inner,Full outer and Cross)                | <Badge type="info" text="v0.5+" />    |
+| `sort`              | Sort actual data                                                                                  | <Badge type="info" text="v0.5+" />    |
+| `run`               | Run an AI tasks                                                                                   | <Badge type="info" text="v0.5+" />    |
+| `sync`              | Synchronize data from data source to a data destination                                           | <Badge type="info" text="v0.5+" />    |
+| `anonymize`         | Anonymize data of given fields                                                                    | <Badge type="info" text="v0.5+" />    |
+| `remove-duplicates` | Remove duplicated rows                                                                            | <Badge type="info" text="v0.5+" />    |
+| `pick`              | Fields to keep from actual data                                                                   | <Badge type="info" text="v0.5+" />    |
+| `omit`              | Remove fields from actual data                                                                    | <Badge type="info" text="v0.5+" />    |
+| `map`               | Rransform data using custom JavaScript code                                                       | <Badge type="info" text="v0.5+" />    |
+| `set-var`           | Set persistent variables in the execution context                                                 | <Badge type="info" text="v0.5+" />    |
+
+#### `list-entities` <Badge type="info" text="v0.5+" />
 
 To list entities in a schema.
-If schema is not provided, a list of actual plan's entities will be returned.
 
 The parameters that can be configured inside `select` tag are :
 
@@ -631,19 +636,18 @@ The parameters that can be configured inside `select` tag are :
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        - list-entities:
-            schema: my-schema
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - list-entities:
+>           schema: my-schema
+> ```
 
-### 📜`select` <Badge type="info" text="v0.5+" />
+#### 📜`select` <Badge type="info" text="v0.5+" />
 
 To select data from an entity.
-If schema is not provided, actual plan's entity data will be returned.
+If schema and entity are not provided, actual plan's data will be returned.
 
 The parameters that can be configured inside `select` tag are :
 
@@ -662,21 +666,20 @@ The parameters that can be configured inside `select` tag are :
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        - select:
-            schema: demo
-            entity: users
-            fields: login, partner_id
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - select:
+>           schema: demo
+>           entity: users
+>           fields: login, partner_id
+> ```
 
-### 📜`insert` <Badge type="info" text="v0.5+" />
+#### 📜`insert` <Badge type="info" text="v0.5+" />
 
 To insert data to an entity.
-If schema is not provided, actual plan's entity data will be modified
+If schema and entity are not provided, actual plan's data will be modified
 
 The parameters that can be configured inside `insert` tag are :
 
@@ -691,27 +694,26 @@ The parameters that can be configured inside `insert` tag are :
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        - insert:
-            schema: my-schema
-            entity: search-engine
-            data:
-              - name: Google
-                url: https://www.google.com
-              - name: Yahoo
-                url: https://www.yahoo.com
-              - name: Bing
-                url: https://www.bing.com
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - insert:
+>           schema: my-schema
+>           entity: search-engine
+>           data:
+>             - name: Google
+>               url: https://www.google.com
+>             - name: Yahoo
+>               url: https://www.yahoo.com
+>             - name: Bing
+>               url: https://www.bing.com
+> ```
 
-### 📜`delete` <Badge type="default" text="v0.1+" />
+#### 📜`delete` <Badge type="default" text="v0.1+" />
 
 To delete data from an entity.
-If schema is not provided, actual plan's entity data will be modified
+If schema and entity are not provided, actual plan's data will be modified
 
 The parameters that can be configured inside `delete` tag are :
 
@@ -727,21 +729,20 @@ The parameters that can be configured inside `delete` tag are :
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        - delete:
-            schema: my-schema
-            entity: users
-            filter-expression: "id >= 100"
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - delete:
+>           schema: my-schema
+>           entity: users
+>           filter-expression: "id >= 100"
+> ```
 
-### 📜`update` <Badge type="info" text="v0.5+" />
+#### 📜`update` <Badge type="info" text="v0.5+" />
 
 To update data of an entity.
-If schema is not provided, actual plan's entity data will be modified
+If schema and entity are not provided, actual plan's data will be modified
 
 The parameters that can be configured inside `update` tag are :
 
@@ -760,21 +761,20 @@ The parameters that can be configured inside `update` tag are :
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        - update:
-            schema: my-schema
-            entity: users
-            filter:
-              is_anonymized: true
-            data:
-              name: "******"
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - update:
+>           schema: my-schema
+>           entity: users
+>           filter:
+>             is_anonymized: true
+>           data:
+>             name: "******"
+> ```
 
-### `debug` <Badge type="default" text="v0.1+" />
+#### `debug` <Badge type="default" text="v0.1+" />
 
 Enable plan steps debugging to be visible in the metadata of the JSON return.
 It can be one of the following values :
@@ -782,29 +782,27 @@ nothing, `error`
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        - debug:
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - debug:
+> ```
 
-### `break` <Badge type="default" text="v0.1+" />
+#### `break` <Badge type="default" text="v0.1+" />
 
 To stop execution of the plan at this step.
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        - break:
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - break:
+> ```
 
-### 📜`join` <Badge type="info" text="v0.5+" />
+#### 📜`join` <Badge type="info" text="v0.5+" />
 
 To perform data joins (Left,Right,Inner,Full outer and Cross)
 
@@ -812,8 +810,8 @@ The parameters that can be configured inside `join` tag are :
 
 | Name            | Description                                                                | JS Context                                                                                                                                  | Metal version                         |
 | --------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| 📜`schema`      | name of schema. If not provided actual plan will be used as a schema       | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars) | <Badge type="info" text="v0.5+" />    |
-| 📜`entity`      | name of entity in the `schema`                                             | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars) | <Badge type="info" text="v0.5+" />    |
+| 📜`schema`      | Schema name to join with.                                                  | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars) | <Badge type="info" text="v0.5+" />    |
+| 📜`entity`      | Entity name to join with                                                   | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars) | <Badge type="info" text="v0.5+" />    |
 | `type`          | Join type can be `left`,`right`,`inner`,`full-outer`,`cross`               | N/A                                                                                                                                         | <Badge type="default" text="v0.1+" /> |
 | 📜`left-field`  | Left field for equality with `right-field`                                 | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars) | <Badge type="info" text="v0.5+" />    |
 | 📜`right-field` | Right field                                                                | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars) | <Badge type="info" text="v0.5+" />    |
@@ -833,122 +831,94 @@ The `type` parameter can be :
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-first-entity:
-      - select:
-          schema: demo
-          entity: users
-          fields: login, partner_id
-    my-second-entity:
-      - select:
-          schema: demo
-          entity: contacts
-          fields: id, name, display_name
-      - join:
-          type: left
-          entity: my-first-entity
-          left-field: partner_id
-          right-field: id
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - select:
+>           schema: demo
+>           entity: users
+>           fields: login, partner_id
+>       - join:
+>           schema: erp
+>           entity: orders
+>           type: left
+>           left-field: partner_id
+>           right-field: id
+> ```
 
-### `sort` <Badge type="default" text="v0.1+" />
+#### `sort` <Badge type="default" text="v0.1+" />
 
-To sort actual plan's entity data
+To sort actual plan's data
 
-This command accept a list of one or many entity's fields and sorting order :
+This command accept a list of one or many fields and sorting order :
 
 - `asc` for ascending
 - `desc` for descending
 
 If sorting order is not provided, ascending order will be used
 
-**Error Handling:**
-
-| Parameter  | Type   | Description                                                                | Metal Version                      |
-| ---------- | ------ | -------------------------------------------------------------------------- | ---------------------------------- |
-| `on-error` | Object | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
-
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-second-entity:
-      - select:
-          schema: my-schema
-          entity: contacts
-          fields: id, name, display_name
-      - sort:
-          id: asc
-          name: desc
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - select:
+>           schema: my-schema
+>           entity: contacts
+>           fields: id, name, display_name
+>       - sort:
+>           id: asc
+>           name: desc
+> ```
 
-### `pick` <Badge type="info" text="v0.5+" />
+#### `pick` <Badge type="info" text="v0.5+" />
 
-To keep fields from actual plan's entity data
-
-| Parameters | Type          | Required | Description                                                                | Metal version                      |
-| ---------- | ------------- | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| `fields`   | Array(String) | yes      | List of key(s) used for comparison                                         | <Badge type="info" text="v0.5+" /> |
-| `on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
-
-```yaml
-plans:
-  my-plan:
-    my-first-entity:
-      - select:
-          schema: demo
-          entity: users
-    my-second-entity:
-      - select:
-          schema: demo
-          entity: contacts
-      - join:
-          type: left
-          entity: my-first-entity
-          left-field: partner_id
-          right-field: id
-      - pick:
-          fields:
-            - id
-            - name
-            - display_name
-```
-
-### `omit` <Badge type="info" text="v0.5+" />
-
-To remove fields from actual plan's entity data
+Select fields to keep from actual plan's data
 
 | Parameters | Type          | Required | Description                                                                | Metal version                      |
 | ---------- | ------------- | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
 | `fields`   | Array(String) | yes      | List of key(s) used for comparison                                         | <Badge type="info" text="v0.5+" /> |
 | `on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
 
-```yaml
-plans:
-  my-plan:
-    my-first-entity:
-      - select:
-          schema: demo
-          entity: users
-    my-second-entity:
-      - select:
-          schema: demo
-          entity: contacts
-      - join:
-          type: left
-          entity: my-first-entity
-          left-field: partner_id
-          right-field: id
-      - omit:
-          fields:
-            - name
-            - display_name
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - select:
+>           schema: demo
+>           entity: users
+>       - pick:
+>           fields:
+>             - id
+>             - name
+>             - display_name
+> ```
 
-### 📜`map` <Badge type="info" text="v0.5+" />
+#### `omit` <Badge type="info" text="v0.5+" />
+
+Select fields to remove from actual plan's data
+
+| Parameters | Type          | Required | Description                                                                | Metal version                      |
+| ---------- | ------------- | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
+| `fields`   | Array(String) | yes      | List of key(s) used for comparison                                         | <Badge type="info" text="v0.5+" /> |
+| `on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - select:
+>           schema: demo
+>           entity: users
+>       - omit:
+>           fields:
+>             - name
+>             - display_name
+> ```
+
+#### 📜`map` <Badge type="info" text="v0.5+" />
 
 To transform data using custom JavaScript code. The script is executed for each row in the current data table, where `$row` represents the current row object.
 
@@ -961,28 +931,24 @@ The parameters that can be configured inside `map` tag are :
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
-**`on-error` options:**
-
-- `throw` (default): Stop execution and throw error
-- `skip`: Skip the problematic row and continue processing
-- `mark`: Keep the row but add `__map_error__` field with error message
-
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      - select:
-          schema: demo
-          entity: products
-      - map:
-          script: |
-            $row.total = $row.price * $row.quantity;
-            $row.category = $row.category.toUpperCase();
-            return $row;
-          on-error: skip
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - select:
+>           schema: demo
+>           entity: products
+>       - map:
+>           script: |
+>             $row.total = $row.price * $row.quantity;
+>             $row.category = $row.category.toUpperCase();
+>             return $row;
+>           on-error:
+>             scope: row
+>             strategy: skip
+> ```
 
 In this example:
 
@@ -999,13 +965,11 @@ The script automatically includes a `return $row;` statement at the end if no ex
 
 - The script must return a valid object. If no valid object is returned, the original row will be used.
 - The script is executed in a secure sandbox environment.
-- Use `on-error` parameter to control error handling behavior:
-  - `throw` (default): Stops entire map operation on first error
-  - `skip`: Continues processing other rows, skipping problematic ones
-  - `mark`: Keeps problematic rows with `__map_error__` field containing error details
-    :::
+- Use `on-error` parameter to control error handling behavior
 
-### 📜`set-var` <Badge type="info" text="v0.5+" />
+:::
+
+#### 📜`set-var` <Badge type="info" text="v0.5+" />
 
 To set persistent variables in the execution context that can be reused in subsequent steps.
 
@@ -1018,33 +982,32 @@ The parameters that can be configured inside `set-var` tag are key-value pairs w
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      - set-var:
-          base_url: "https://api.example.com"
-          threshold: ${{ 10 * 5 }}
-      - select:
-          schema: remote
-          entity: data
-          filter-expression: "value > ${{ $vars.threshold }}"
-```
+> ```yaml
+> plans:
+>   steps:
+>     - set-var:
+>         base_url: "https://api.example.com"
+>         threshold: ${{ 10 * 5 }}
+>     - select:
+>         schema: remote
+>         entity: data
+>         filter-expression: "value > ${{ $vars.threshold }}"
+> ```
 
-### `run` <Badge type="info" text="v0.5+" />
+#### `run` <Badge type="info" text="v0.5+" />
 
-To run an AI Engine on actual plan's entity data.
+To run an AI Task on actual plan's data.
 
 The parameters that can be configured inside `run` tag are :
 
-| Name       | Type            | Description                                                                | JS Context                                                                                                                                                                                   | Metal version                         |
-| ---------- | --------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `ai`       | string          | AI Engine name (see: [AI Engines](ai-engines))                             |                                                                                                                                                                                              | <Badge type="default" text="v0.1+" /> |
-| `task`     | string          | AI Engine task (see: [AI Engines](ai-engines))                             |                                                                                                                                                                                              | <Badge type="info" text="v0.5+" />    |
-| `params`   | object          | AI Engine parameters (see: [AI Engines](ai-engines))                       |                                                                                                                                                                                              | <Badge type="info" text="v0.5+" />    |
-| 📜`input`  | string          | input field to perform the processing                                      | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars)<br>[`$row`](dynamic-expression-engine#row)       | <Badge type="default" text="v0.1+" /> |
-| 📜`output` | object / string | Output result to be stored. (see: output)                                  | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars)<br>[`$result`](dynamic-expression-engine#result) | <Badge type="info" text="v0.5+" />    |
-| `on-error` | Object          | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | N/A                                                                                                                                                                                          | <Badge type="info" text="v0.5+" />    |
+| Name       | Type   | Description                                                                | JS Context                                                                                                                                                                                   | Metal version                         |
+| ---------- | ------ | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `ai`       | string | AI Engine name (see: [AI Engines](ai-engines))                             |                                                                                                                                                                                              | <Badge type="default" text="v0.1+" /> |
+| `task`     | string | AI Engine task (see: [AI Engines](ai-engines))                             |                                                                                                                                                                                              | <Badge type="info" text="v0.5+" />    |
+| `params`   | object | AI Engine parameters (see: [AI Engines](ai-engines))                       |                                                                                                                                                                                              | <Badge type="info" text="v0.5+" />    |
+| 📜`input`  | string | input field to perform the processing                                      | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars)<br>[`$row`](dynamic-expression-engine#row)       | <Badge type="default" text="v0.1+" /> |
+| 📜`output` | object | Output result to be stored. (see: output)                                  | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars)<br>[`$result`](dynamic-expression-engine#result) | <Badge type="info" text="v0.5+" />    |
+| `on-error` | Object | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | N/A                                                                                                                                                                                          | <Badge type="info" text="v0.5+" />    |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1057,29 +1020,26 @@ It can be:
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      - insert:
-          data:
-            - url: https://tesseract.projectnaptha.com/img/eng_bw.png
-            - url: https://jeroen.github.io/images/testocr.png
-            - url: https://www.srcmake.com/uploads/5/3/9/0/5390645/ocr_orig.png
-      - run:
-          ai: ocr
-          task: image-to-string
-          params:
-            lang: en_XX
-          input: content
-          output:
-            ocr_text: { { $result.ocr.text } } # stores the $result.ocr.text in the `ocr_text` field
-            ocr_lang_code: ${{ $result.ocr.lang.split('_')[0] }} # using JavaScript Expression Engine to transform result
-          on-error:
-            strategy: skip
-```
+> ```yaml
+> plans:
+>   steps:
+>     - insert:
+>         data:
+>           - url: https://tesseract.projectnaptha.com/img/eng_bw.png
+>           - url: https://jeroen.github.io/images/testocr.png
+>           - url: https://www.srcmake.com/uploads/5/3/9/0/5390645/ocr_orig.png
+>     - run:
+>         ai: ocr
+>         task: image-to-string
+>         params:
+>           lang: en_XX
+>         input: content
+>         output:
+>           ocr_text: { { $result.ocr.text } } # stores the $result.ocr.text in the `ocr_text` field
+>           ocr_lang_code: ${{ $result.ocr.lang.split('_')[0] }} # using JavaScript Expression Engine to transform result
+> ```
 
-### 📜`sync` <Badge type="info" text="v0.5+" />
+#### 📜`sync` <Badge type="info" text="v0.5+" />
 
 To synchronize data from source to destination. This will performs Update, Insert and Delete operations on the destination entity to be the exact copy of the data source.
 
@@ -1098,23 +1058,21 @@ The parameters that can be configured inside `sync` tag are :
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      - sync:
-          from:
-            schema: srcschema
-            entity: users
-          to:
-            schema: destschema
-            entity: users
-          id: user_id
-          on-error:
-            strategy: skip
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - sync:
+>           from:
+>             schema: src_schema
+>             entity: users
+>           to:
+>             schema: dest_schema
+>             entity: users
+>           id: user_id
+> ```
 
-### `anonymize` <Badge type="info" text="v0.5+" />
+#### `anonymize` <Badge type="info" text="v0.5+" />
 
 To anonymize data of given list of fields.
 
@@ -1125,19 +1083,17 @@ To anonymize data of given list of fields.
 
 **Example**
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      - anonymize:
-          fields:
-            - contact_name
-            - company_name
-          on-error:
-            strategy: skip
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - anonymize:
+>           fields:
+>             - contact_name
+>             - company_name
+> ```
 
-### `remove-duplicates` <Badge type="info" text="v0.5+" />
+#### `remove-duplicates` <Badge type="info" text="v0.5+" />
 
 The `remove-duplicates` function is designed to remove duplicate rows from a dataset based on specified parameters. Here are the details:
 
@@ -1188,51 +1144,61 @@ These parameters provide flexible options for removing duplicates based on speci
 
 If we want to check duplicates with hash method for the rows that have the same `id`, `contact_name` adn then we keep the first row:
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      - remove-duplicates:
-          keys: # <- fields in the row to be used for comparison
-            - id
-            - contact_name
-          method: hash # <-  method of comparison
-          strategy: first # <-  'first' for keeping the first found row
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - remove-duplicates:
+>           keys: # <- fields in the row to be used for comparison
+>             - id
+>             - contact_name
+>           method: hash # <-  method of comparison
+>           strategy: first # <-  'first' for keeping the first found row
+> ```
 
-## `schedules` <Badge type="default" text="v0.1+" />
+## `schedules` <Badge type="info" text="v0.5+" />
 
 This section defines the scheduled execution of plans according to a Cron expression.
 
 The parameters that can be configured inside schedule are :
 
-| Name     | Type   | Required | Description                                                            | Metal version                         |
-| -------- | ------ | -------- | ---------------------------------------------------------------------- | ------------------------------------- |
-| `plan`   | String | Y        | name of the plan                                                       | <Badge type="default" text="v0.1+" /> |
-| `entity` | String | Y        | name of the entity in the `plan`                                       | <Badge type="default" text="v0.1+" /> |
-| `cron`   | String | Y        | A cron expression string, or `@start` for once at Metal server startup | <Badge type="default" text="v0.1+" /> |
+| Name   | Type   | Required | Description                                       | Metal version                         |
+| ------ | ------ | -------- | ------------------------------------------------- | ------------------------------------- |
+| `plan` | string | Y        | name of the plan                                  | <Badge type="default" text="v0.1+" /> |
+| `cron` | string | Y        | A cron expression string, or predefined schedules | <Badge type="default" text="v0.1+" /> |
 
 **Example**
 
-```yaml
-schedules:
-  run my-plan every 5 minutes:
-    plan: my-plan
-    entity: contact
-    cron: "*/5 * * * * *"
-```
+> ```yaml
+> schedules:
+>   run my-plan every 5 minutes:
+>     plan: my-plan
+>     cron: "*/5 * * * *"
+> ```
 
-::: tip ℹ️ TIP
-By using `@start` as a cron expression, you can start the job once at Metal server startup.
+The cron expression supports multiple formats:
 
-Example:
+- **Predefined schedules**: `@annually`, `@yearly`, `@monthly`, `@weekly`, `@daily`, `@hourly`, `@start`
+- **Interval schedules**: `@every` followed by duration (e.g., `@every 1h30m`, `@every 2s`, `@every 500ms`)
+- **Standard cron expressions**: 5-7 field cron format (e.g., `*/5 * * * *`, `0 9 * * 1-5`)
 
-```yaml
-schedules:
-  run at startup:
-    plan: my-plan
-    entity: contact
-    cron: "@start"
-```
+**Examples:**
 
-:::
+> ```yaml
+> schedules:
+>   "run at startup":
+>     plan: my-plan
+>     cron: "@start"
+>
+>   "run every hour":
+>     plan: my-plan
+>     cron: "@hourly"
+>
+>   "run every 30 minutes":
+>     plan: my-plan
+>     cron: "@every 30m"
+>
+>   "run weekdays at 9 AM":
+>     plan: my-plan
+>     cron: "0 9 * * 1-5"
+> ```

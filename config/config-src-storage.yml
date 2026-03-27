@@ -34,8 +34,7 @@ sources:
       folder: ./data/
       allow-delete: true
   # src-myplan:
-  #   provider: plan
-  #   database: myplan
+  #   provider: plans
   src-csv:
     provider: storage
     options:

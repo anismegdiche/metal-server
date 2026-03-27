@@ -33,5 +33,6 @@
   "errorLens.statusBarColorsEnabled": true,
   "errorLens.statusBarIconsEnabled": true,
   "snyk.advanced.autoSelectOrganization": false,
-  "vitest.applyDiagnostic": true
+  "vitest.applyDiagnostic": true,
+  "codium.codeCompletion.enable": false
 }

@@ -12,3 +12,12 @@ refactor: readstream #refactor
 step > remove-empty-fields {f}
 step > on-error {f} {start:2026-03-07T14:00:59}
 plan > use of 'source' in stead of 'schema' {f}
+step > flush :  delete all data, vars in plan {f}
+step > clear data, context etc {f}
+TODO:: check if fields from schemarequest can works with array, if true then update docs {f}
+TODO:: sort add fields to be compatible with on-error {f}
+schedule >  run-as   ,  to fix who is running the plan {f}
+plan > test if user is not allowed to access schema, what is happening {f}
+source > split sql and azure {f}
+guides, sample project : update
+remove source from schemarequest if possible

@@ -2,133 +2,102 @@
 //
 //
 import { merge } from "lodash-es"
-import z from "zod"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
-import { HttpErrorNotFound } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { Schema } from "../../schema/Schema"
 import type { TSchemaRequestSelect } from "../../schema/types/TSchemaRequest"
-import { z_TSchemaRequestSelect } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import type { TOptionalParameter } from "../../source/@types"
 import { STEP } from "../@consts"
 import { DATAPROVIDER } from "../consts/DATAPROVIDER"
-import { Plans } from "../Plans"
-import type { TStep } from "../types/TStep"
+import { type U__plans_plan_select_Params, z_U__plans_plan_select_Params, } from "../types/U__plans_params"
+import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
-import {
-	type U__plans_plan_select_Params,
-	z_U__plans_plan_select_Params,
-} from "../types/U__plans_params"
 
 //
-export async function Select(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
+export async function Select(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+
 	Assert.Var<U__plans_plan_select_Params>(
-		step.stepArgs,
-		z_U__plans_plan_select_Params.safeParse(step.stepArgs).success,
-		`${STEP.SELECT}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`,
+		stepParams,
+		z_U__plans_plan_select_Params.safeParse(stepParams).success,
+		`${STEP.SELECT}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`,
 	)
 
-	const { stepArgs } = step
+	const {
+		data: planData
+	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestSelect>(
-		stepArgs,
+		stepParams,
 		new Sandbox($context),
 	) as TSchemaRequestSelect
 
 	$context = merge($context, DATAPROVIDER.GetContext($__schemaRequest))
 
-	const $__step: TStep = {
-		...step,
-		stepArgs: $__schemaRequest,
-	}
-
 	return $__schemaRequest.schema !== undefined && $__schemaRequest.entity !== undefined
-		? await _selectSchema($__step)
-		: await _selectPlan($__step, $context)
+		? await _selectSchema($__schemaRequest, $context)
+		: await _selectPlan($__schemaRequest, $context)
 }
 
-export async function _selectSchema(step: TStep): Promise<DataTable> {
-	const { currentSchemaName, stepArgs } = step
-	const schemaRequest = stepArgs as TSchemaRequestSelect
+export async function _selectSchema(stepParams: U__plans_plan_select_Params, $context?: Partial<TContext>): Promise<DataTable> {
+
+	const schemaRequest = stepParams as TSchemaRequestSelect
 	const { schema, entity } = schemaRequest
 
-	// only schema --> error
-	Assert.Var<string>(entity, `${STEP.SELECT}: entity is required`)
-	Assert.Var<string>(schema, `${STEP.SELECT}: schema is required`)
+	const { $schema } = $context!
+	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	// data from schema
-	const _intResp = await Schema.Select(<TSchemaRequestSelect>{
+	const intResp = await Schema.Select(<TSchemaRequestSelect>{
 		...schemaRequest,
-		schema: schema ?? currentSchemaName,
+		schema: schema ?? $schema,
 	})
 
-	const _schemaResponse = _intResp?.Body
+	const schemaResponse = intResp?.Body
 
 	Assert.Var<TSchemaResponse>(
-		_schemaResponse,
-		Schema.IsSchemaResponse(_schemaResponse),
+		schemaResponse,
+		Schema.IsSchemaResponse(schemaResponse),
 		`${STEP.SELECT}: Schema '${schema}' and entity '${entity}' are not valid`,
 	)
 
-	const _data = _schemaResponse?.data
+	const data = schemaResponse?.data
 
 	Assert.Var<DataTable>(
-		_data,
-		DataTable.Is(_data),
+		data,
+		DataTable.Is(data),
 		`${STEP.SELECT}: Schema '${schema}' and entity '${entity}' are not valid`,
 	)
 
-	return _data
+	return data
 }
 
-export async function _selectPlan(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
-	const { currentSchemaName, currentDataTable, stepArgs } = step
-	const schemaRequest = stepArgs as TSchemaRequestSelect
-	const { entity } = schemaRequest
+export async function _selectPlan(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+	const schemaRequest = stepParams as TSchemaRequestSelect
 
-	const _options: TOptionalParameter = DATAPROVIDER.Options.Parse(schemaRequest, $context)
+	const {
+		data: planData
+	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
 
-	if (entity) {
-		// data from current plan entity
-		const data = await Plans.get(step.currentPlanName)?.ProcessSchemaRequest(<TSchemaRequestSelect>{
-			...schemaRequest,
-			schema: currentSchemaName,
-			entity: entity,
-		})
+	const options: TOptionalParameter = DATAPROVIDER.Options.Parse(schemaRequest, $context)
 
-		if (!data)
-			throw new HttpErrorNotFound(
-				`${Logger.Out} ${STEP.SELECT}: Entity ${entity} not found in plan ${step.currentPlanName}`,
-			)
+	const sqlQueryHelper = DATAPROVIDER.GenerateSqlSelect(
+		<TSchemaRequestSelect>{
+			entity: planData.Name,
+		},
+		options
+	)
 
-		const sqlQueryHelper = DATAPROVIDER.GenerateSqlSelect(
-			<TSchemaRequestSelect>{
-				entity: data.Name,
-			},
-			_options,
-		)
-
-		const sqlQuery = DATAPROVIDER.GetSqlQuery(sqlQueryHelper, _options)
-		return data.FreeSql({ sqlQuery, queryParams: sqlQueryHelper.QueryParams })
-	} else {
-		// data from current datatable
-		const sqlQueryHelper = DATAPROVIDER.GenerateSqlSelect(
-			<TSchemaRequestSelect>{
-				entity: currentDataTable.Name,
-			},
-			_options,
-		)
-
-		const sqlQuery = DATAPROVIDER.GetSqlQuery(sqlQueryHelper, _options)
-		return currentDataTable.FreeSql({ sqlQuery, queryParams: sqlQueryHelper.QueryParams })
-	}
+	const sqlQuery = DATAPROVIDER.GetSqlQuery(sqlQueryHelper, options)
+	return planData.FreeSql({ sqlQuery, queryParams: sqlQueryHelper.QueryParams })
 }
 
 export async function _select(schema: string, entity: string): Promise<DataTable | undefined> {

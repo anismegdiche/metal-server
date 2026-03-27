@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ConfigManager } from "../../core/ConfigManager"
@@ -13,7 +13,7 @@ vi.mock("../Plan", () => {
 	const Plan = vi.fn(function (this: any, name: string) {
 		this.Name = name
 		this.Init = vi.fn().mockResolvedValue(undefined)
-		this.Disconnect = vi.fn().mockResolvedValue(undefined)
+		this.Dispose = vi.fn().mockResolvedValue(undefined)
 		this.Reload = vi.fn().mockResolvedValue({ Body: { plan: name } })
 	})
 	return { Plan }

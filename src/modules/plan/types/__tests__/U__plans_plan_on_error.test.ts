@@ -1,19 +1,21 @@
 import { describe, expect, it } from "vitest"
+import { STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../../@consts"
 import {
 	z_U__on_error,
 	z_U__on_error_Params,
-	z_U__on_error_strategy_throw,
-	z_U__on_error_strategy_skip,
 	z_U__on_error_strategy_retry,
 	z_U__on_error_strategy_sink,
-	z__on_error_scope,
+	z_U__on_error_strategy_skip,
+	z_U__on_error_strategy_throw,
 	z__on_error_retry,
+	z__on_error_scope,
 	z__on_error_sink
 } from "../U__plans_plan_on_error"
-import { STEP_ON_ERROR_STRATEGY, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_RETRY_THEN } from "../../@consts"
+import { z_U__plans_plan, type U__plans_plan } from "../U__plans"
 
-describe("U__plans_plan_on_error schema validation", () => {
+describe("z_U__on_error schema validation", () => {
 	describe("z_U__on_error (main schema)", () => {
+
 		it("should accept valid on-error configuration", () => {
 			const validConfig = {
 				"on-error": {
@@ -28,20 +30,55 @@ describe("U__plans_plan_on_error schema validation", () => {
 				}
 			})
 		})
+	})
 
-		it("should throw error when no on-error provided", () => {
-			const result = z_U__on_error.safeParse({})
-			expect(result.success).toEqual(false)
-		})
+	describe("defaults", () => {
+		it("should generate default on-error in plan level if not specified", () => {
+			const planValid: U__plans_plan = {
+				steps: [
+					{
+						select: {
+							schema: "my-schema",
+							entity: "my-entity"
+						}
+					},
+					{
+						delete: {
+							schema: "my-schema",
+							entity: "my-entity",
+							"on-error": {
+								strategy: STEP_ON_ERROR_STRATEGY.SKIP,
+								scope: STEP_ON_ERROR_SCOPE.ROW
+							}
+						}
+					},
+					{
+						insert: {
+							schema: "my-schema",
+							entity: "my-entity",
+							"on-error": {
+								strategy: STEP_ON_ERROR_STRATEGY.SINK,
+								sink: {
+									schema: "my-error-schema",
+									entity: "my-error-entity",
+									"include-error": true,
+									"error-field": "error"
+								}
+							}
+						}
+					},
+					{
+						break: null
+					}
+				]
+			}
 
-		it("should throw error when on-error undefined", () => {
-			const result = z_U__on_error.safeParse({ "on-error": undefined })
-			expect(result.success).toEqual(false)
-		})
+			const result = z_U__plans_plan.parse(planValid)
 
-		it("should throw error when on-error null", () => {
-			const result = z_U__on_error.safeParse({ "on-error": null })
-			expect(result.success).toEqual(false)
+			expect(result["on-error"]).toEqual({
+				strategy: STEP_ON_ERROR_STRATEGY.THROW,
+				scope: STEP_ON_ERROR_SCOPE.STEP
+			})
 		})
 	})
 
@@ -97,8 +134,6 @@ describe("U__plans_plan_on_error schema validation", () => {
 				const validScopes = [
 					STEP_ON_ERROR_SCOPE.STEP,
 					STEP_ON_ERROR_SCOPE.ROW,
-					STEP_ON_ERROR_SCOPE.PLAN,
-					STEP_ON_ERROR_SCOPE.ENTITY
 				]
 
 				validScopes.forEach(scope => {
@@ -120,7 +155,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 						delay: 1000,
 						backoff: STEP_ON_ERROR_RETRY_BACKOFF.FIXED,
 						"max-delay": 30000,
-						then: STEP_ON_ERROR_RETRY_THEN.THROW
+						"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW
 					}
 				}
 				const result = z_U__on_error_Params.parse(config)
@@ -132,7 +167,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 						delay: 1000,
 						backoff: STEP_ON_ERROR_RETRY_BACKOFF.FIXED,
 						"max-delay": 30000,
-						then: STEP_ON_ERROR_RETRY_THEN.THROW
+						"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW
 					}
 				})
 			})
@@ -146,7 +181,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 						delay: 2000,
 						backoff: STEP_ON_ERROR_RETRY_BACKOFF.EXPONENTIAL,
 						"max-delay": 60000,
-						then: STEP_ON_ERROR_RETRY_THEN.SKIP
+						"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.SKIP
 					}
 				}
 				const result = z_U__on_error_Params.parse(config)
@@ -161,7 +196,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 						delay: 500,
 						backoff: STEP_ON_ERROR_RETRY_BACKOFF.LINEAR,
 						"max-delay": 10000,
-						then: STEP_ON_ERROR_RETRY_THEN.THROW
+						"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW
 					},
 					sink: {
 						schema: "error_schema",
@@ -190,7 +225,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 						delay: 1000,
 						backoff: STEP_ON_ERROR_RETRY_BACKOFF.FIXED,
 						"max-delay": 30000,
-						then: STEP_ON_ERROR_RETRY_THEN.THROW
+						"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW
 					}
 				}
 				expect(() => z_U__on_error_Params.parse(config)).toThrow()
@@ -204,7 +239,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 						delay: -100,
 						backoff: STEP_ON_ERROR_RETRY_BACKOFF.FIXED,
 						"max-delay": 30000,
-						then: STEP_ON_ERROR_RETRY_THEN.THROW
+						"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW
 					}
 				}
 				expect(() => z_U__on_error_Params.parse(config)).toThrow()
@@ -235,7 +270,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 			it("should accept sink strategy with scope", () => {
 				const config = {
 					strategy: STEP_ON_ERROR_STRATEGY.SINK,
-					scope: STEP_ON_ERROR_SCOPE.ENTITY,
+					scope: STEP_ON_ERROR_SCOPE.STEP,
 					sink: {
 						schema: "error_schema",
 						entity: "error_entity",
@@ -308,7 +343,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 					delay: 1000,
 					backoff: STEP_ON_ERROR_RETRY_BACKOFF.FIXED,
 					"max-delay": 30000,
-					then: STEP_ON_ERROR_RETRY_THEN.THROW
+					"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW
 				}
 			}
 			expect(() => z_U__on_error_strategy_retry.parse(valid)).not.toThrow()
@@ -331,9 +366,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 			it("should accept all valid scope values", () => {
 				const validScopes = [
 					STEP_ON_ERROR_SCOPE.STEP,
-					STEP_ON_ERROR_SCOPE.ROW,
-					STEP_ON_ERROR_SCOPE.PLAN,
-					STEP_ON_ERROR_SCOPE.ENTITY
+					STEP_ON_ERROR_SCOPE.ROW
 				]
 
 				validScopes.forEach(scope => {
@@ -359,7 +392,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 					delay: 1000,
 					backoff: STEP_ON_ERROR_RETRY_BACKOFF.FIXED,
 					"max-delay": 30000,
-					then: STEP_ON_ERROR_RETRY_THEN.THROW
+					"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW
 				})
 			})
 
@@ -376,15 +409,15 @@ describe("U__plans_plan_on_error schema validation", () => {
 				})
 			})
 
-			it("should accept all valid then strategies", () => {
-				const validThens = [
-					STEP_ON_ERROR_RETRY_THEN.THROW,
-					STEP_ON_ERROR_RETRY_THEN.SKIP,
-					STEP_ON_ERROR_RETRY_THEN.SINK
+			it("should accept all valid after-retries strategies", () => {
+				const validAfterRetries = [
+					STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW,
+					STEP_ON_ERROR_RETRY_AFTER_RETRIES.SKIP,
+					STEP_ON_ERROR_RETRY_AFTER_RETRIES.SINK
 				]
 
-				validThens.forEach(then => {
-					const config = { then }
+				validAfterRetries.forEach(afterRetries => {
+					const config = { "after-retries": afterRetries }
 					expect(() => z__on_error_retry.parse(config)).not.toThrow()
 				})
 			})
@@ -429,7 +462,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 						delay: 5000,
 						backoff: STEP_ON_ERROR_RETRY_BACKOFF.EXPONENTIAL,
 						"max-delay": 120000,
-						then: STEP_ON_ERROR_RETRY_THEN.SINK
+						"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.SINK
 					},
 					sink: {
 						schema: "error_logs",
@@ -447,7 +480,7 @@ describe("U__plans_plan_on_error schema validation", () => {
 			const complexConfig = {
 				"on-error": {
 					strategy: STEP_ON_ERROR_STRATEGY.SINK,
-					scope: STEP_ON_ERROR_SCOPE.PLAN,
+					scope: STEP_ON_ERROR_SCOPE.STEP,
 					sink: {
 						schema: "plan_errors",
 						entity: "failed_plans",

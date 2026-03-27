@@ -1,59 +1,49 @@
 //
 //
 //
-import type { TRow } from "../../../types/DataTable"
-import { DataTable } from "../../../types/DataTable"
+import type { DataTable } from "../../../types/DataTable"
+import type { TRow } from "../../../types/DataTableTypes"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
-import { STEP, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../@consts"
+import { STEP, STEP_ON_ERROR_STRATEGY } from "../@consts"
 import { Step } from "../Step"
-import type { TStep } from "../types/TStep"
 import { type U__plans_plan_map_Params, z_U__plans_plan_map_Params, } from "../types/U__plans_params"
+import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 import type { U__on_error_Params } from "../types/U__plans_plan_on_error"
 
 
 //
-const DEFAULT: Partial<U__plans_plan_map_Params> = {
-	"on-error": {
-		strategy: STEP_ON_ERROR_STRATEGY.THROW,
-		scope: STEP_ON_ERROR_SCOPE.STEP
-	}
-}
-
-
-//
-export async function MapRows(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
+export async function MapRows(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+	
 	Assert.Var<U__plans_plan_map_Params>(
-		step.stepArgs,
-		z_U__plans_plan_map_Params.safeParse(step.stepArgs).success,
-		`${STEP.MAP}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`,
+		stepParams,
+		z_U__plans_plan_map_Params.safeParse(stepParams).success,
+		`${STEP.MAP}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`,
 	)
 
-	const { script } = step.stepArgs
-	const { currentDataTable } = step
+	const { script } = stepParams
 
-	Assert.Var<DataTable>(
-		currentDataTable,
-		DataTable.Is(currentDataTable) === true,
-		`${STEP.MAP}: Current data table is required`,
-	)
+	const {
+		data: planData
+	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	try {
-		const mappedDataTable = await currentDataTable.Copy(`${currentDataTable.Name}_mapped`)
+		const mappedDataTable = await planData.Copy(`${planData.Name}_mapped`)
 
 		// Extract error configuration
-		const stepConfig = { [STEP.MAP]: step.stepArgs }
-		const onErrorConfig = Step.GetOnErrorConfig(stepConfig)
+		const stepConfig = { [STEP.MAP]: stepParams }
+		const onError = Step.GetOnError(stepConfig)
 
 		// If error handling is configured for row-level scope, use it
-		if (onErrorConfig?.scope === "row") {
-			await _mapRowsScopeRow(mappedDataTable, $context, script, onErrorConfig)
+		if (onError?.scope === "row") {
+			await _mapRowsScopeRow(mappedDataTable, $context, script, onError)
 		} else {
 			// Use legacy error handling for backward compatibility
-			await _mapRowsScopeStep(step, mappedDataTable, $context, script)
+			await _mapRowsScopeStep(stepParams, mappedDataTable, $context, script)
 		}
 
 		return mappedDataTable
@@ -63,9 +53,9 @@ export async function MapRows(step: TStep, $context?: Partial<TContext>): Promis
 	}
 }
 
-async function _mapRowsScopeStep(step: TStep, mappedDataTable: DataTable, $context: Partial<TContext> | undefined, script: string) {
+async function _mapRowsScopeStep(step: U__plans_plan__step_Params, mappedDataTable: DataTable, $context: Partial<TContext> | undefined, script: string) {
 
-	const { "on-error": onError = DEFAULT["on-error"] } = step.stepArgs as U__plans_plan_map_Params
+	const { "on-error": onError } = step as U__plans_plan_map_Params
 
 	await mappedDataTable.RowsMap(async (row: TRow) => {
 		const rowContext = { ...$context, $row: row }
@@ -103,9 +93,9 @@ async function _mapRowsScopeRow(
 	mappedDataTable: DataTable,
 	$context: Partial<TContext> | undefined,
 	script: string,
-	onErrorConfig: U__on_error_Params) {
+	onError: U__on_error_Params) {
 	await mappedDataTable.RowsMap(async (row: TRow) => {
-		return await Step.ExecuteRowWithErrorHandling(
+		return await Step.OnErrorRow(
 			row,
 			async (rowData: TRow) => {
 				const rowContext = { ...$context, $row: rowData }
@@ -126,7 +116,7 @@ async function _mapRowsScopeRow(
 				return rowContext.$row
 			},
 			$context!,
-			onErrorConfig
+			onError
 		)
 	})
 }

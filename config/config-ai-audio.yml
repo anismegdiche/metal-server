@@ -29,8 +29,7 @@ sources:
       storage-type: fs
       folder: ./data/
   src-myplan:
-    provider: plan
-    database: myplan
+    provider: plans
 
 schemas:
   fs:

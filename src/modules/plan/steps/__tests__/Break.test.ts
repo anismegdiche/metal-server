@@ -1,15 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
+import { STEP } from "../../@consts"
+import type { U__plans_plan_break_Params } from "../../types/U__plans_params"
 import { Break } from "../Break"
-import type { TStep } from "../../types/TStep"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
 	LOGGER_DEFAULT_LEVEL: "info",
 	VERBOSITY: { DEBUG: "debug" },
 	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
+		LogFunction: () => (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
 		Info: vi.fn(),
 		Error: vi.fn(),
 		Debug: vi.fn(),
@@ -29,14 +29,18 @@ const myPlanEntity1 = new DataTable("myPlanEntity1", [
 await myPlanEntity1.RowsSet()
 
 describe("Break", () => {
-	it("should throw __BREAK__ error", async () => {
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: null,
-		}
+	it("should return undefined to signal break", async () => {
+		const stepParams = null // Valid null for break parameters
 
-		await expect(Break(step)).rejects.toThrow("__BREAK__")
+		const result = await Break(stepParams)
+
+		expect(result).toBeUndefined()
+	})
+
+	it("should validate step parameters", async () => {
+		const stepParams = "invalid" // Invalid type
+
+		// Should throw assertion error for invalid parameters
+		await expect(Break(stepParams)).rejects.toThrow("Wrong argument passed")
 	})
 })

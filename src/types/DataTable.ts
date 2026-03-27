@@ -1,6 +1,6 @@
-/* eslint-disable unused-imports/no-unused-vars */
+
 /** biome-ignore-all lint/suspicious/useIterableCallbackReturn: <explanation> */
-/* eslint-disable security/detect-object-injection */
+
 
 //
 //
@@ -771,8 +771,13 @@ export class DataTable extends clsClonable {
 	}
 
 	@Logger.LogFunction()
-	GetFieldsName(): string[] {
+	GetFieldNames(): string[] {
 		return Object.keys(this.Fields)
+	}
+
+	async GetFieldValues<T>(fieldName: string): Promise<T[]> {
+		return this.Rows()
+			.then((rows) => rows.map((row) => row[fieldName]) as T[])
 	}
 
 	@Logger.LogFunction()
@@ -1215,7 +1220,7 @@ export class DataTable extends clsClonable {
 
 			// Keep only the specified fields
 			for (const field of fields) {
-				// eslint-disable-next-line no-prototype-builtins
+
 				if (Object.hasOwn(row, field)) {
 					filtered[field] = (row as any)[field]
 				}

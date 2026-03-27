@@ -1,9 +1,7 @@
 //
 //
 //
-
 import { merge } from "lodash-es"
-import z from "zod"
 //
 import type { DataTable, TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -13,29 +11,26 @@ import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { Schema } from "../../schema/Schema"
 import type { TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
-import { z_TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
 import type { TOptionalParameter } from "../../source/@types"
 import { STEP } from "../@consts"
 import { DATAPROVIDER } from "../consts/DATAPROVIDER"
-import type { TStep } from "../types/TStep"
+import { type U__plans_plan_update_Params, z_U__plans_plan_update_Params, } from "../types/U__plans_params"
+import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
-import {
-	type U__plans_plan_update_Params,
-	z_U__plans_plan_update_Params,
-} from "../types/U__plans_params"
 
 //
-export async function Update(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
+export async function Update(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
 	Assert.Var<U__plans_plan_update_Params>(
-		step.stepArgs,
-		z_U__plans_plan_update_Params.safeParse(step.stepArgs).success,
-		`${STEP.UPDATE}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`,
+		stepParams,
+		z_U__plans_plan_update_Params.safeParse(stepParams).success,
+		`${STEP.UPDATE}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`,
 	)
 
-	const { currentDataTable, stepArgs } = step
+	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestUpdate>(
-		stepArgs,
+		stepParams,
 		new Sandbox($context),
 	) as TSchemaRequestUpdate
 
@@ -45,37 +40,44 @@ export async function Update(step: TStep, $context?: Partial<TContext>): Promise
 
 	// case schema
 	if (schema) {
-		await _updateSchema(step)
-		return currentDataTable
+		await _updateSchema(stepParams, $context)
+		return planData
 	} else {
-		return _updatePlan(step)
+		return _updatePlan(stepParams, $context)
 	}
 }
 
-async function _updateSchema(step: TStep, _$context?: Partial<TContext>): Promise<void> {
-	const { currentSchemaName, currentDataTable, stepArgs } = step
-	const $__schemaRequest = stepArgs as TSchemaRequestUpdate
-	const { schema, entity, data } = $__schemaRequest
+async function _updateSchema(step: U__plans_plan_update_Params, $context?: Partial<TContext>): Promise<void> {
+	const schemaRequest = step as TSchemaRequestUpdate
+	const { schema, entity, data } = schemaRequest
+
+	const { $schema } = $context!
+	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	// only schema --> error
 	Assert.Var<string>(entity, `${STEP.UPDATE}: entity is required`)
 	// At least one have data
 	Assert.Condition(
-		(data as TRow[])?.length > 0 || (await currentDataTable.Count()) > 0,
-		`${STEP.UPDATE}: No data to insert ${JsonUtils.Stringify(step.stepArgs)}`,
+		(data as TRow[])?.length > 0 || (await planData.Count()) > 0,
+		`${STEP.UPDATE}: No data to insert ${JsonUtils.Stringify(step)}`,
 	)
 
 	await Schema.Update(<TSchemaRequestUpdate>{
-		...$__schemaRequest,
-		schema: schema ?? currentSchemaName,
-		data: data ?? (await currentDataTable.Rows()),
+		...schemaRequest,
+		schema: schema ?? $schema,
+		data: data ?? (await planData.Rows()),
 	})
 }
 
-async function _updatePlan(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
-	const { currentDataTable, stepArgs } = step
-	const $__schemaRequest = stepArgs as TSchemaRequestUpdate
-	const { entity, data } = $__schemaRequest
+async function _updatePlan(step: U__plans_plan_update_Params, $context?: Partial<TContext>): Promise<DataTable> {
+	const schemaRequest = step as TSchemaRequestUpdate
+	const { entity, data } = schemaRequest
+
+	const {
+		data: planData
+	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	// entity given --> error
 	Assert.Var<string>(entity, !entity, `${STEP.UPDATE}: entity should not be given`)
@@ -83,16 +85,17 @@ async function _updatePlan(step: TStep, $context?: Partial<TContext>): Promise<D
 	// At least one have data
 	Assert.Condition(
 		(data as TRow[])?.length > 0,
-		`${STEP.UPDATE}: No data to update ${JsonUtils.Stringify(step.stepArgs)}`,
+		`${STEP.UPDATE}: No data to update ${JsonUtils.Stringify(step)}`,
 	)
 
-	const _options: TOptionalParameter = DATAPROVIDER.Options.Parse($__schemaRequest, $context)
+	const _options: TOptionalParameter = DATAPROVIDER.Options.Parse(schemaRequest, $context)
+
 	const _sqlQueryHelper = await DATAPROVIDER.GenerateSqlUpdate(
 		<TSchemaRequestUpdate>{
-			entity: currentDataTable.Name,
+			entity: planData.Name,
 		},
-		_options,
+		_options
 	)
 
-	return currentDataTable.FreeSql({ sqlQuery: _sqlQueryHelper.Query(), queryParams: _sqlQueryHelper.QueryParams })
+	return planData.FreeSql({ sqlQuery: _sqlQueryHelper.Query(), queryParams: _sqlQueryHelper.QueryParams })
 }

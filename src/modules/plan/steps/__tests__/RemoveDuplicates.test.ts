@@ -1,13 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
-import {
-	DataTableUtils,
-	REMOVE_DUPLICATES_METHOD,
-	REMOVE_DUPLICATES_STRATEGY,
-} from "../../../../utils/DataTableUtils"
+import { DataTableUtils, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../../../utils/DataTableUtils"
+import type { TContext } from "../../../sandbox/types/TContext"
+import { STEP_STATUS } from "../../@consts"
+import type { U__plans_plan_remove_duplicates_Params } from "../../types/U__plans_params"
 import { RemoveDuplicates } from "../RemoveDuplicates"
-import type { TStep } from "../../types/TStep"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -35,32 +32,52 @@ await myPlanEntity1.RowsSet()
 
 describe("RemoveDuplicates", () => {
 	it("should remove duplicates with default settings", async () => {
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {},
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
 		}
 
-		const result = await RemoveDuplicates(step)
+		const stepParams = <U__plans_plan_remove_duplicates_Params>{}
+
+		const result = await RemoveDuplicates(stepParams, $context)
 		expect(result).toBe(await DataTableUtils.RemoveDuplicates(myPlanEntity1))
 	})
 
 	it("should remove duplicates with specified parameters", async () => {
 		const spyRemoveDuplicates = vi.spyOn(DataTableUtils, "RemoveDuplicates").mockResolvedValue(myPlanEntity1)
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				keys: ["name"],
-				method: REMOVE_DUPLICATES_METHOD.HASH,
-				strategy: REMOVE_DUPLICATES_STRATEGY.LAST,
-			} as any,
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
 		}
 
-		const result = await RemoveDuplicates(step)
+		const stepParams = <U__plans_plan_remove_duplicates_Params>{
+			keys: ["name"],
+			method: REMOVE_DUPLICATES_METHOD.HASH,
+			strategy: REMOVE_DUPLICATES_STRATEGY.LAST,
+		}
+
+		const result = await RemoveDuplicates(stepParams, $context)
 		expect(spyRemoveDuplicates).toHaveBeenCalledWith(myPlanEntity1, ["name"], "hash", "last", undefined)
 		expect(result).toBe(myPlanEntity1)
 		spyRemoveDuplicates.mockRestore()

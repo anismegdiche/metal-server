@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
 import { AiEngine } from "../../../ai-engine/AiEngine"
-import { Run } from "../Run"
-import type { TStep } from "../../types/TStep"
 import { HttpErrorInternalServerError } from "../../../errors/HttpErrors"
+import type { TContext } from "../../../sandbox/types/TContext"
+import { STEP_STATUS } from "../../@consts"
+import type { U__plans_plan_run_Params } from "../../types/U__plans_params"
+import { Run } from "../Run"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -42,19 +43,29 @@ describe("Run", () => {
 			.fn()
 			.mockResolvedValue([{ __idx__: "test-id", name: "David", age: 28, content: "Generate summary" }])
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				ai: "openai",
-				input: "name",
-				output: "summary",
-				task: "sentiment-analysis",
-			} as any,
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
 		}
 
-		const result = await Run(step)
+		const stepParams = <U__plans_plan_run_Params>{
+			ai: "openai",
+			input: "name",
+			output: "summary",
+			task: "sentiment-analysis",
+		}
+
+		const result = await Run(stepParams, $context)
 		expect(mockAiEngine.Run).toHaveBeenCalledWith({
 			data: "David",
 			ai: "openai",
@@ -66,13 +77,23 @@ describe("Run", () => {
 	})
 
 	it("should throw error for invalid run parameters", async () => {
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {} as any,
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
 		}
 
-		await expect(Run(step)).rejects.toThrow(HttpErrorInternalServerError)
+		const stepParams = <U__plans_plan_run_Params>{}
+
+		await expect(Run(stepParams, $context)).rejects.toThrow(HttpErrorInternalServerError)
 	})
 })

@@ -15,7 +15,7 @@ ${{ /* JS code here */ }}
 
 Consider the following example, where JS code is applied to filter dates before the current date:
 
-```http
+```js
 POST /schema/my-schema/my-entity
 Content-Type: application/json
 
@@ -55,6 +55,8 @@ The current request being processed (exclusive to web services data providers), 
 | `body`      | object | The request body.                     |
 | `data-path` | String | Path of json data to find in response |
 
+
+
 #### `$response` <Badge type="default" text="v0.4+" />
 
 The response object for web services (exclusive to web services data providers), containing the following properties:
@@ -65,30 +67,45 @@ The response object for web services (exclusive to web services data providers),
 | `host`   | String | Requested host         |
 | `body`   | Object | Returned response body |
 
+
+
 #### `$row` <Badge type="default" text="v0.4+" />
 
 The current row being processed (exclusive to web services data providers).
 These object contains returned fields of the row
 
+
+
 #### `$result` <Badge type="info" text="v0.5+" />
 
 The result of the AI Engine processing. (see: [AI Engines](ai-engines))
 
+
+
 #### `$vars` <Badge type="info" text="v0.5+" />
 
 An object containing persistent variables set using the `set-var` step in a plan. These variables are available across different steps and entities within the same plan execution context.
+
+
+
+#### `$error` <Badge type="info" text="v0.5+" />
+
+The Returned error whene processing a plan step. (see: [Error Handling Configuration](on-error-yml))
+
+
 
 #### `$utils` <Badge type="default" text="v0.4+" />
 
 The `$utils` object, containing various utility functions and methods, including data manipulation, string operations, and more.
 
 Implemented Utils:
-| variable | description |
-| -------- | ----------- |
-| `$utils._` | lodash utility functions |
-| `$utils.JSON` | JSON utility functions |
-| `$utils.Math` | Math utility functions |
-| `$utils.newUuid()` | generates a new UUID |
+
+| variable           | description              |
+| ------------------ | ------------------------ |
+| `$utils._`         | lodash utility functions |
+| `$utils.JSON`      | JSON utility functions   |
+| `$utils.Math`      | Math utility functions   |
+| `$utils.newUuid()` | generates a new UUID     |
 
 ## Field Escape Engine <Badge type="default" text="v0.4+" />
 
@@ -97,17 +114,16 @@ You can also mix JavaScript Expression Engine and field value escape.
 
 **Example**:
 
-```yaml
-plans:
-  my-plan:
-    my-entity:
-      steps:
-        - update:
-            filter-expression: "id < 10"
-            data:
-              display_name: $> first_name + ' ' + last_name # <-- escape field value
-              unique_id: $>  last_name + '-${{ $utils.newUuid() }}' # <-- mixed usage
-```
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - update:
+>           filter-expression: "id < 10"
+>           data:
+>             display_name: $> first_name + ' ' + last_name # <-- escape field value
+>             unique_id: $>  last_name + '-${{ $utils.newUuid() }}' # <-- mixed usage
+> ```
 
 ::: tip ℹ️ NOTE
 This funtionnality is only available for data updates such as Metal REST API `PATCH` or plan `update` command.

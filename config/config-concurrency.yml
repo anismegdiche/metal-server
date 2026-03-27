@@ -106,8 +106,7 @@ sources:
   #   password: "123456"
   #   database: clubdata
   plan-etl1:
-    provider: plan
-    database: etl1
+    provider: plans
 
 schemas:
   #   # northwind:

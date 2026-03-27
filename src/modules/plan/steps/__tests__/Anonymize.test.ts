@@ -1,10 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { beforeEach, describe, expect, it, vi } from "vitest"
+
+import { describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
 import { DataTableUtils } from "../../../../utils/DataTableUtils"
-import { Anonymize } from "../Anonymize"
-import type { TStep } from "../../types/TStep"
+
 import type { U__plans_plan_anonymize_Params } from "../../types/U__plans_params"
+import { Anonymize } from "../Anonymize"
+import type { TContext } from "../../../sandbox/types/TContext"
+import { STEP_STATUS } from "../../@consts"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -34,16 +36,26 @@ describe("Anonymize", () => {
 	it("should anonymize specified fields", async () => {
 		const spyAnonymize = vi.spyOn(DataTableUtils, "Anonymize").mockResolvedValue(myPlanEntity1)
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: <U__plans_plan_anonymize_Params>{
-				fields:["name"]
+		let $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		const result = await Anonymize(step)
+		const stepParams = <U__plans_plan_anonymize_Params>{
+			fields: ["name"]
+		}
+
+		const result = await Anonymize(stepParams, $context)
 
 		expect(spyAnonymize).toHaveBeenCalledWith(myPlanEntity1, ["name"])
 		expect(result).toBe(myPlanEntity1)

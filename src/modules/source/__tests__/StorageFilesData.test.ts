@@ -1,5 +1,5 @@
-/* eslint-disable security/detect-non-literal-regexp */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 
 import type { Mock } from "vitest"
 import { DataTable } from "../../../types/DataTable"

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 
 import { Readable } from "node:stream"
 import { type ShareDirectoryClient, type ShareFileClient, ShareServiceClient } from "@azure/storage-file-share"

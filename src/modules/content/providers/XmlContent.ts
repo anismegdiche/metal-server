@@ -23,12 +23,13 @@ import { absContentProvider } from "../base/absContentProvider"
 //
 
 export const z_U__source_options_content_xml = z.object({
-	"xml-path": z.string().describe("XML path, if undefined will return the whole XML").optional(),
-	"xml-ignore-attributes": z.boolean().describe("Ignore XML attributes, default is true").optional(),
-	"xml-attribute-prefix": z.string().describe("Prefix for XML attributes, default is `@`").optional(),
-	"xml-remove-ns-prefix": z
-		.boolean()
-		.describe("remove namespace string from tag and attribute names, default `true`")
+	"xml-path": z.string()
+		.optional(),
+	"xml-ignore-attributes": z.boolean()
+		.optional(),
+	"xml-attribute-prefix": z.string()
+		.optional(),
+	"xml-remove-ns-prefix": z.boolean()
 		.optional(),
 })
 

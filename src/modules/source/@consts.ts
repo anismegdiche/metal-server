@@ -5,7 +5,7 @@
 //
 export enum DATA_PROVIDER {
 	METAL = "metal",
-	PLAN = "plan",
+	PLANS = "plans",
 	MEMORY = "memory",
 	POSTGRES = "postgres",
 	MONGODB = "mongodb",

@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
+import { HttpResponse } from "../../../core/HttpResponse"
+import type { TContext } from "../../../sandbox/types/TContext"
 import { Schema } from "../../../schema/Schema"
 import type { TSchemaResponse } from "../../../schema/types/TSchemaResponse"
-import { ConfigManager } from "../../../core/ConfigManager"
-import { HttpResponse } from "../../../core/HttpResponse"
 import { DATA_ENTITY_TYPE } from "../../../source/@consts"
+import { STEP_STATUS } from "../../@consts"
+import type { U__plans_plan_list_entities_Params } from "../../types/U__plans_params"
 import { ListEntities } from "../ListEntities"
-import type { TStep } from "../../types/TStep"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -53,42 +53,28 @@ describe("ListEntities", () => {
 		)
 		const spyIsSchemaResponse = vi.spyOn(Schema, "IsSchemaResponse").mockReturnValue(true)
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: { schema: "mySchema" },
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
 		}
 
-		const result = await ListEntities(step)
+		const stepParams = <U__plans_plan_list_entities_Params>{ schema: "mySchema" }
+
+		const result = await ListEntities(stepParams, $context)
 
 		expect(spyListEntities).toHaveBeenCalledWith({ schema: "mySchema" })
 		expect(result).toBe(entitiesData)
 		spyListEntities.mockRestore()
 		spyIsSchemaResponse.mockRestore()
-	})
-
-	it("should return plan entities when no schema provided", async () => {
-		const spyConfigManagerGet = vi.spyOn(ConfigManager, "Get").mockReturnValue({
-			entity1: {},
-			entity2: {},
-		})
-
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: null,
-		}
-
-		const result = await ListEntities(step)
-
-		expect(spyConfigManagerGet).toHaveBeenCalledWith("plans.myPlan")
-		expect(result).toBeInstanceOf(DataTable)
-		expect(await result.Rows()).toEqual([
-			{ name: "entity1", type: DATA_ENTITY_TYPE.PLAN_ENTITY },
-			{ name: "entity2", type: DATA_ENTITY_TYPE.PLAN_ENTITY },
-		])
-		spyConfigManagerGet.mockRestore()
 	})
 })

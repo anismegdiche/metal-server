@@ -18,5 +18,6 @@ export default defineConfig({
         clearMocks: true,
         setupFiles: ['vitest.setup.ts'],
         globals: true,
+        testNamePattern: undefined, // force-reset any inherited pattern
     },
 });

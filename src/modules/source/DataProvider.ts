@@ -24,7 +24,7 @@ export class DataProvider {
 		[DATA_PROVIDER.MONGODB]: () => import("./providers/MongoDbData").then((m) => m.MongoDbData),
 		[DATA_PROVIDER.MSSQL]: () => import("./providers/SqlServerData").then((m) => m.SqlServerData),
 		[DATA_PROVIDER.METAL]: () => import("./providers/MetalData").then((m) => m.MetalData),
-		[DATA_PROVIDER.PLAN]: () => import("./providers/PlanData").then((m) => m.PlanData),
+		[DATA_PROVIDER.PLANS]: () => import("./providers/PlanData").then((m) => m.PlanData),
 		[DATA_PROVIDER.MEMORY]: () => import("./providers/MemoryData").then((m) => m.MemoryData),
 		[DATA_PROVIDER.MYSQL]: () => import("./providers/MySqlData").then((m) => m.MySqlData),
 		[DATA_PROVIDER.WEBSERVICE]: () => import("./providers/WebServiceData").then((m) => m.WebServiceData),

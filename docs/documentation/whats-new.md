@@ -13,6 +13,12 @@ features:
       <br><br><span class="VPBadge danger">Learn more...</span>
     link: /documentation/config-yml
 
+  - title: Plans Refactor
+    details: |
+      We have completely refactored the plans structure. Plans now contain direct step declarations with error management. This change makes plans more flexible and more powerful. You can now easily mix different operations in a single plan.
+      <br><br><span class="VPBadge danger">Learn more...</span>
+    link: /documentation/config-yml#plans
+
   - title: New Refactored AI Engines
     details: |
       We have refactored the AI engines to be more powerful and flexible. 

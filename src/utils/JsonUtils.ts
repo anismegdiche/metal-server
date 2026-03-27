@@ -73,7 +73,7 @@ export class JsonUtils {
 	static SafeCopy<T>(json: T): T {
 		try {
 			return JSON.parse(JSON.stringify(json))
-			// eslint-disable-next-line unused-imports/no-unused-vars
+
 		} catch (_error) {
 			const _json = JSON.parse(JsonUtils.Stringify(json))
 			JsonUtils.RemoveUselessKeys(_json)

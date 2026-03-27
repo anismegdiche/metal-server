@@ -1,7 +1,7 @@
 //
 //
 //
-import { DataTable } from "../../../types/DataTable"
+import type { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { DataTableUtils, JOIN_TYPE } from "../../../utils/DataTableUtils"
 import { JsonUtils } from "../../../utils/JsonUtils"
@@ -9,9 +9,10 @@ import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { STEP } from "../@consts"
-import type { TStep } from "../types/TStep"
-import { type U__plans_plan_join_Params, z_U__plans_plan_join_Params } from "../types/U__plans_params"
+import { type U__plans_plan_join_Params, type U__plans_plan_select_Params, z_U__plans_plan_join_Params } from "../types/U__plans_params"
+import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 import { Select } from "./Select"
+
 
 //
 const _joinCaseMap: Record<
@@ -30,41 +31,37 @@ const _joinCaseMap: Record<
 }
 
 //
-export async function Join(step: TStep, $context?: Partial<TContext>): Promise<DataTable | undefined> {
+export async function Join(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable | undefined> {
+	
 	Assert.Var<U__plans_plan_join_Params>(
-		step.stepArgs,
-		z_U__plans_plan_join_Params.safeParse(step.stepArgs).success,
-		`${STEP.JOIN}: Wrong argument passed ${JsonUtils.Stringify(step.stepArgs)}`,
+		stepParams,
+		z_U__plans_plan_join_Params.safeParse(stepParams).success,
+		`${STEP.JOIN}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`,
 	)
 
-	const { currentPlanName, currentDataTable: dtLeft, currentSchemaName, stepArgs } = step
+	const {
+		data: dtLeft
+	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(dtLeft, "Data is not initialized")
 
-	if (stepArgs === null) 
+	if (stepParams === null)
 		return dtLeft
 
-	const $__stepArgs = PlaceHolder.EvaluateJsCode<Record<string, string>>(stepArgs, new Sandbox($context)) as Record<
-		string,
-		string
-	>
+	const $__step = PlaceHolder.EvaluateJsCode<U__plans_plan_join_Params>(stepParams, new Sandbox($context)) as U__plans_plan_join_Params
 
-	const { schema, entity, type, "left-field": leftField, "right-field": rightField } = $__stepArgs
+	const { schema, entity, type, "left-field": leftField, "right-field": rightField } = $__step
 
 	Assert.Var<string>(entity, `${STEP.JOIN}: entity is required`)
 	Assert.Var<string>(type, `${STEP.JOIN}: type is required`)
 	Assert.Var<string>(leftField, `${STEP.JOIN}: left-field is required`)
 	Assert.Var<string>(rightField, `${STEP.JOIN}: right-field is required`)
 
-	const requestToSchema: TStep = {
-		currentPlanName,
-		currentSchemaName,
-		currentDataTable: new DataTable(),
-		stepArgs: {
-			schema,
-			entity,
-		},
+	const stepSelect: U__plans_plan_select_Params = {
+		schema,
+		entity
 	}
 
-	using dtRight = await Select(requestToSchema)
+	using dtRight = await Select(stepSelect, $context)
 	return (
 		_joinCaseMap[type]?.(dtLeft, dtRight, leftField, rightField)
 	)

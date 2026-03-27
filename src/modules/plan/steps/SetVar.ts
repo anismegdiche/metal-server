@@ -1,31 +1,32 @@
 //
 //
 //
-//
 import type { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { STEP } from "../@consts"
-import type { TStep } from "../types/TStep"
+import { type U__plans_plan_set_var_Params, z_U__plans_plan_set_var_Params, } from "../types/U__plans_params"
+import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
-import {
-	type U__plans_plan_set_var_Params,
-	z_U__plans_plan_set_var_Params,
-} from "../types/U__plans_params"
 
 //
-export async function SetVar(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
+export async function SetVar(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
 	Assert.Var<U__plans_plan_set_var_Params>(
-		step.stepArgs,
-		z_U__plans_plan_set_var_Params.safeParse(step.stepArgs).success,
+		stepParams,
+		z_U__plans_plan_set_var_Params.safeParse(stepParams).success,
 		`${STEP.SET_VAR}: Wrong argument passed. Expected an object of variables.`,
 	)
 
 	Assert.Var<TContext>($context, `${STEP.SET_VAR}: Context is not initialized.`)
 
-	const varsToSet = <U__plans_plan_set_var_Params>step.stepArgs
+	const {
+		data: planData
+	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
+
+	const varsToSet = <U__plans_plan_set_var_Params>stepParams
 	const sandbox = new Sandbox($context)
 
 	for (const [key, value] of Object.entries(varsToSet)) {
@@ -45,5 +46,5 @@ export async function SetVar(step: TStep, $context?: Partial<TContext>): Promise
 			[key]: evaluatedValue,
 		}
 	}
-	return step.currentDataTable
+	return planData
 }

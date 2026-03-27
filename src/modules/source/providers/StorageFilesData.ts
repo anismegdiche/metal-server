@@ -45,11 +45,10 @@ import { absDataProvider } from "../base/absDataProvider"
 
 //
 export const z_U__source_storage_file_content = z.record(
-	z.string().describe("File pattern (e.g., '*.csv')"),
-	z
-		.object({
-			"content-type": z.enum(CONTENT),
-		})
+	z.string(),
+	z.object({
+		"content-type": z.enum(CONTENT),
+	})
 		.and(z_U__source_options_content),
 )
 
@@ -321,7 +320,7 @@ export class StorageFilesData extends absDataProvider {
 	}
 
 	@Logger.LogFunction()
-	// eslint-disable-next-line unused-imports/no-unused-vars
+
 	async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 		throw new HttpErrorNotImplemented()
 	}

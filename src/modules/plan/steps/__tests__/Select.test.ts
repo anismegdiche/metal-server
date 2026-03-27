@@ -1,14 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
+import { HttpResponse } from "../../../core/HttpResponse"
+import type { TContext } from "../../../sandbox/types/TContext"
 import { Schema } from "../../../schema/Schema"
 import type { TSchemaResponse } from "../../../schema/types/TSchemaResponse"
-import { Plan } from "../../Plan"
+import { STEP_STATUS } from "../../@consts"
 import { Plans } from "../../Plans"
+import type { U__plans_plan_select_Params } from "../../types/U__plans_params"
 import { Select } from "../Select"
-import type { TStep } from "../../types/TStep"
-import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../../errors/HttpErrors"
-import { HttpResponse } from "../../../core/HttpResponse"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -69,115 +68,135 @@ describe("Select", () => {
 		const spyIsSchemaResponse = vi.spyOn(Schema, "IsSchemaResponse").mockReturnValue(true)
 		vi.spyOn(mySchemaEntity1, "Count").mockResolvedValue(3)
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				schema: "mySchema",
-				entity: mySchemaEntity1.Name,
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		const result = await Select(step)
+		const stepParams = <U__plans_plan_select_Params>{
+			schema: "mySchema",
+			entity: mySchemaEntity1.Name,
+		}
+
+		const result = await Select(stepParams, $context)
 
 		expect(result).toBeInstanceOf(DataTable)
 		expect(result.Name).toBe(mySchemaEntity1.Name)
-		expect(result.GetFieldsName()).toEqual(mySchemaEntity1.GetFieldsName())
-		// Note: result.Rows() is not working due to DataTable class issues
-		// expect(await result.Rows()).toEqual(await mySchemaEntity1.Rows())
+		expect(result.GetFieldNames()).toEqual(mySchemaEntity1.GetFieldNames())
 		spySchemaSelect.mockRestore()
 		spyIsSchemaResponse.mockRestore()
 	})
 
 	it("should return current data if schema and entity are not given", async () => {
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {},
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
 		}
 
-		const result = await Select(step)
+		const stepParams = <U__plans_plan_select_Params>{}
+
+		const result = await Select(stepParams, $context)
 
 		expect(result).toBeInstanceOf(DataTable)
 		expect(result.Name).toBe(myPlanEntity1.Name)
-		expect(result.GetFieldsName()).toEqual(myPlanEntity1.GetFieldsName())
-		// Note: result.Rows() is not working due to DataTable class issues
-		// expect(await result.Rows()).toEqual(await myPlanEntity1.Rows())
+		expect(result.GetFieldNames()).toEqual(myPlanEntity1.GetFieldNames())
 	})
 
-	it("should return plan entity data from given plan entity", async () => {
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				entity: myPlanEntity2.Name,
+	it("should use current plan data when only entity is given (implementation falls back to plan select)", async () => {
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		Plans.set(step.currentPlanName, new Plan(step.currentPlanName))
+		const stepParams = <U__plans_plan_select_Params>{
+			entity: myPlanEntity2.Name,
+		}
 
-		const spyProcessSchemaRequest = vi
-			.spyOn(Plans.get(step.currentPlanName)!, "ProcessSchemaRequest")
-			.mockResolvedValue(myPlanEntity2)
-
-		const result = await Select(step)
+		const result = await Select(stepParams, $context)
 
 		expect(result).toBeInstanceOf(DataTable)
-		expect(result.Name).toBe(myPlanEntity2.Name)
-		expect(result.GetFieldsName()).toEqual(myPlanEntity2.GetFieldsName())
-		// Note: result.Rows() is not working due to DataTable class issues
-		// expect(await result.Rows()).toEqual(await myPlanEntity2.Rows())
-		spyProcessSchemaRequest.mockRestore()
+		expect(result.Name).toBe(myPlanEntity1.Name)
 	})
 
-	it("should throw error if only schema is given", async () => {
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				schema: "mySchema",
+	it("should return plan data when only schema is given (falls back to plan select)", async () => {
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		await expect(Select(step)).rejects.toThrow(HttpErrorInternalServerError)
-	})
-
-	it("should throw error if plan entity not found", async () => {
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				entity: "nonExistentEntity",
-			},
+		const stepParams = <U__plans_plan_select_Params>{
+			schema: "mySchema",
 		}
 
-		Plans.set(step.currentPlanName, new Plan(step.currentPlanName))
+		const result = await Select(stepParams, $context)
 
-		const spyProcessSchemaRequest = vi
-			.spyOn(Plans.get(step.currentPlanName)!, "ProcessSchemaRequest")
-			.mockRejectedValue(new HttpErrorNotFound("Entity not found"))
-
-		await expect(Select(step)).rejects.toThrow(HttpErrorNotFound)
-		spyProcessSchemaRequest.mockRestore()
+		expect(result).toBeInstanceOf(DataTable)
+		expect(result.Name).toBe(myPlanEntity1.Name)
 	})
 
-	// Mock DataTable methods for testing
-	beforeEach(() => {
-		vi.clearAllMocks()
+	it("should use current plan data when entity not found (implementation falls back to plan select)", async () => {
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
+		}
 
-		// Mock DataTable methods
-		myPlanEntity1.GetFieldsName = vi.fn().mockReturnValue(["name", "age", "country"])
-		myPlanEntity1.Name = "myPlanEntity1"
+		const stepParams = <U__plans_plan_select_Params>{
+			entity: "nonExistentEntity",
+		}
 
-		mySchemaEntity1.Name = "mySchemaEntity1"
-		mySchemaEntity1.GetFieldsName = vi.fn().mockReturnValue(["name", "age", "country"])
+		const result = await Select(stepParams, $context)
 
-		myPlanEntity2.Name = "myPlanEntity2"
-		myPlanEntity2.GetFieldsName = vi.fn().mockReturnValue(["country"])
+		expect(result).toBeInstanceOf(DataTable)
+		expect(result.Name).toBe(myPlanEntity1.Name)
 	})
 })

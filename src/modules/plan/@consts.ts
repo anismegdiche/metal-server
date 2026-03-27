@@ -2,6 +2,11 @@
 //
 //
 
+export enum PLAN_FAILURE_STRATEGY_RETURN {
+	RETURN_DATA = "return-data",
+	RETURN_ERRORS = "return-errors"
+}
+
 export enum STEP {
 	DEBUG = "debug",
 	SELECT = "select",
@@ -39,9 +44,7 @@ export enum STEP_ON_ERROR_STRATEGY {
 
 export enum STEP_ON_ERROR_SCOPE {
 	STEP = "step",
-	ROW = "row",
-	PLAN = "plan",
-	ENTITY = "entity"
+	ROW = "row"
 }
 
 export enum STEP_ON_ERROR_RETRY_BACKOFF {
@@ -50,7 +53,7 @@ export enum STEP_ON_ERROR_RETRY_BACKOFF {
 	EXPONENTIAL = "exponential"
 }
 
-export enum STEP_ON_ERROR_RETRY_THEN {
+export enum STEP_ON_ERROR_RETRY_AFTER_RETRIES {
 	THROW = STEP_ON_ERROR_STRATEGY.THROW,
 	SKIP = STEP_ON_ERROR_STRATEGY.SKIP,
 	SINK = STEP_ON_ERROR_STRATEGY.SINK

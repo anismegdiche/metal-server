@@ -10,8 +10,8 @@ import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
 
 //
 export type TContext = {
-	$entity?: string // requested entity name
 	$schema?: string // requested schema name
+	$entity?: string // requested entity name
 	$options: Omit<TSchemaRequest, "schema" | "entity" | "source">
 	$request?: {
 		"data-path"?: string // requested JSON path, if undefined will return the whole JSON
@@ -24,15 +24,13 @@ export type TContext = {
 	}
 	$plan: {
 		name: string
-		schema?: string
-		entity: string
-		$current: {
-			stepIndex?: number
-			stepCommand?: STEP
-			stepArgs?: U__plans_plan__step_Params
-			data?: DataTable
+		currentStep: {
+			index?: number
+			command?: STEP
+			params?: U__plans_plan__step_Params
 			status?: STEP_STATUS
-		}
+		},
+		data?: DataTable
 	}
 	$result?: TAiOutput
 	$utils?: TJson

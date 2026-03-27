@@ -19,7 +19,8 @@ import { absContentProvider } from "../base/absContentProvider"
 
 //
 export const z_U__source_options_content_parquet = z.object({
-	"parquet-utf8": z.boolean().optional().describe("Decode byte arrays as utf8 strings (default true)"),
+	"parquet-utf8": z.boolean()
+		.optional(),
 })
 
 //

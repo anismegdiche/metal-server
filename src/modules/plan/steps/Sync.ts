@@ -1,11 +1,9 @@
 //
 //
 //
-
 import { map, omit } from "lodash-es"
-import z from "zod"
-import type { TRow } from "../../../types/DataTable"
 //
+import type { TRow } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { DataTableUtils } from "../../../utils/DataTableUtils"
@@ -14,41 +12,42 @@ import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { Schema } from "../../schema/Schema"
 import { STEP } from "../@consts"
-import type { TStep } from "../types/TStep"
+import { type U__plans_plan_sync_Params, z_U__plans_plan_sync_Params, } from "../types/U__plans_params"
+import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 import { _select } from "./Select"
 
-import {
-	type U__plans_plan_sync_Params,
-	z_U__plans_plan_sync_Params,
-} from "../types/U__plans_params"
 
 //
-export async function Sync(step: TStep, $context?: Partial<TContext>): Promise<DataTable> {
+export async function Sync(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+
 	Assert.Var<U__plans_plan_sync_Params>(
-		step.stepArgs,
-		z_U__plans_plan_sync_Params.safeParse(step.stepArgs).success,
+		stepParams,
+		z_U__plans_plan_sync_Params.safeParse(stepParams).success,
 		`${[STEP.SYNC]}: Wrong argument passed`,
 	)
 
-	const stepArgs = step.stepArgs
+	const {
+		data: planData
+	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
 
-	const $__stepArgs = PlaceHolder.EvaluateJsCode<U__plans_plan_sync_Params>(
-		stepArgs,
+	const $__step = PlaceHolder.EvaluateJsCode<U__plans_plan_sync_Params>(
+		stepParams,
 		new Sandbox($context),
 	) as U__plans_plan_sync_Params
 
-	const { from, to, id } = $__stepArgs
+	const { from, to, id } = $__step
 
 	Assert.Var<string>(id, "'id' must be provided")
 	Assert.Condition(from !== undefined || to !== undefined, "Either 'from' and 'to' must be provided")
 
 	const dtSource: DataTable = from
 		? ((await _select(from.schema, from.entity)) ?? new DataTable(from.entity))
-		: step.currentDataTable
+		: planData
 
 	const dtDestination: DataTable = to
 		? ((await _select(to.schema, to.entity)) ?? new DataTable(to.entity))
-		: step.currentDataTable
+		: planData
 
 	const syncReport = await DataTableUtils.SyncReport({
 		source: dtSource,
@@ -59,7 +58,7 @@ export async function Sync(step: TStep, $context?: Partial<TContext>): Promise<D
 	// Apply transformations
 	//// Delete
 
-	map(syncReport.DeletedRows, id).forEach((value: unknown) =>
+	map(syncReport.DeletedRows, id).map((value: unknown) =>
 		Schema.Delete({
 			schema: to.schema,
 			entity: to.entity,
@@ -70,7 +69,7 @@ export async function Sync(step: TStep, $context?: Partial<TContext>): Promise<D
 	)
 
 	//// Update
-	syncReport.UpdatedRows.forEach((row: TRow) =>
+	syncReport.UpdatedRows.map((row: TRow) =>
 		Schema.Update({
 			schema: to.schema,
 			entity: to.entity,
@@ -93,8 +92,8 @@ export async function Sync(step: TStep, $context?: Partial<TContext>): Promise<D
 
 	// if no destination
 	if (!to) {
-		await step.currentDataTable.RowsSet([...syncReport.DeletedRows, ...syncReport.UpdatedRows, ...syncReport.AddedRows])
+		await planData.RowsSet([...syncReport.DeletedRows, ...syncReport.UpdatedRows, ...syncReport.AddedRows])
 	}
 
-	return step.currentDataTable.FieldsSet()
+	return planData.FieldsSet()
 }

@@ -1,4 +1,5 @@
 //
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
 import type { TJson } from "../../types/TJson"
@@ -19,17 +20,31 @@ export class PlansManager {
 
 	@Logger.LogFunction()
 	static async Init() {
-		if (!ConfigManager.Has("plans")) return
+		if (!ConfigManager.Has("plans")) 
+			return
 
 		PlansManager.Config = ConfigManager.Get<U__plans>("plans") ?? {}
 
 		const plans = Object.keys(PlansManager.Config)
 
-		for (const plan of plans) {
-			Plans.set(plan, new Plan(plan))
-			Assert.Var<Plan>(Plans.get(plan), `Plan '${plan}' not set`)
-			await Plans.get(plan)?.Init()
-		}
+		plans.forEach((planName) => {
+			PlansManager.AddPlan(planName)
+		})
+	}
+
+	@Logger.LogFunction()
+	static AddPlan(planName: string) {
+		const _plan = new Plan(planName)
+		_plan.Init()
+		Plans.set(planName, _plan)
+	}
+
+
+	@Logger.LogFunction()
+	static RemovePlan(planName: string) {
+		const _plan = new Plan(planName)
+		_plan.Dispose()
+		Plans.delete(planName)
 	}
 
 	@Logger.LogFunction()
@@ -52,22 +67,18 @@ export class PlansManager {
 		// 4. Remove plans no longer in config
 		for (const name of currentPlanNames) {
 			if (!newPlanNames.includes(name)) {
-				Logger.Debug(`Removing plan '${name}'`)
-				await Plans.get(name)?.Disconnect()
-				Plans.delete(name)
+				PlansManager.RemovePlan(name)
 			}
 		}
-
+		
 		// 5. Update or Add plans
 		for (const name of newPlanNames) {
 			if (Plans.has(name)) {
 				Logger.Debug(`Updating plan '${name}'`)
-				await Plans.get(name)?.Disconnect()
-				await Plans.get(name)?.Init()
+				PlansManager.RemovePlan(name)
+				PlansManager.AddPlan(name)
 			} else {
-				Logger.Debug(`Adding new plan '${name}'`)
-				Plans.set(name, new Plan(name))
-				await Plans.get(name)?.Init()
+				PlansManager.AddPlan(name)
 			}
 		}
 
@@ -97,7 +108,7 @@ export class PlansManager {
 
 	static async Clear() {
 		for (const plan of Plans.values()) {
-			await plan.Disconnect()
+			await plan.Dispose()
 		}
 		Plans.clear()
 		PlansManager.Config = {}

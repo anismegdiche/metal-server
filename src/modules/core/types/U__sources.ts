@@ -10,20 +10,34 @@ import { DATA_PROVIDER } from "../../source/@consts"
 //
 export const z_U__sources_source_options = z.record(
 	z.string(),
-	z.union([z.string(), z.number(), z_TJson, z.boolean()]),
+	z.union([
+		z.string(),
+		z.number(),
+		z_TJson,
+		z.boolean()
+	]),
 )
 
 export const z_U__sources_source = z.object({
-	provider: z.enum(DATA_PROVIDER).describe("Provider type"),
-	database: z.string().optional().describe("Database name"),
-	host: z.string().optional().describe("Host name"),
-	port: z_TIpPort.optional().describe("Port number"),
-	user: z.string().optional().describe("User name"),
-	password: z.string().optional().describe("Password"),
-	options: z_U__sources_source_options.optional().describe("Options"),
+	provider: z.enum(DATA_PROVIDER),
+	database: z.string()
+		.optional(),
+	host: z.string()
+		.optional(),
+	port: z_TIpPort
+		.optional(),
+	user: z.string()
+		.optional(),
+	password: z.string()
+		.optional(),
+	options: z_U__sources_source_options
+		.optional(),
 })
 
-export const z_U__sources = z.record(z.string(), z_U__sources_source)
+export const z_U__sources = z.record(
+	z.string(),
+	z_U__sources_source
+)
 
 //
 export type U__sources_source_options = z.infer<typeof z_U__sources_source_options>

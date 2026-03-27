@@ -1,16 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
-import {
-	DataTableUtils,
-	JOIN_TYPE,
-} from "../../../../utils/DataTableUtils"
+import { DataTableUtils, JOIN_TYPE } from "../../../../utils/DataTableUtils"
+import { HttpResponse } from "../../../core/HttpResponse"
+import { HttpErrorInternalServerError } from "../../../errors/HttpErrors"
+import type { TContext } from "../../../sandbox/types/TContext"
 import { Schema } from "../../../schema/Schema"
 import type { TSchemaResponse } from "../../../schema/types/TSchemaResponse"
-import { HttpResponse } from "../../../core/HttpResponse"
+import { STEP_STATUS } from "../../@consts"
+import type { U__plans_plan_join_Params } from "../../types/U__plans_params"
 import { Join } from "../Join"
-import type { TStep } from "../../types/TStep"
-import { HttpErrorInternalServerError } from "../../../errors/HttpErrors"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -60,20 +58,30 @@ describe("Join", () => {
 		vi.spyOn(Schema, "IsSchemaResponse").mockReturnValue(true)
 		vi.spyOn(myPlanEntity2, "Count").mockResolvedValue(3)
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				type: JOIN_TYPE.LEFT,
-				schema: "mySchema",
-				entity: "myPlanEntity2",
-				"left-field": "name",
-				"right-field": "name",
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		const result = await Join(step)
+		const stepParams = <U__plans_plan_join_Params>{
+			type: JOIN_TYPE.LEFT,
+			schema: "mySchema",
+			entity: "myPlanEntity2",
+			"left-field": "name",
+			"right-field": "name",
+		}
+
+		const result = await Join(stepParams, $context)
 		expect(spySchemaSelect).toHaveBeenCalled()
 		expect(spyLeftJoin).toHaveBeenCalledWith(myPlanEntity1, myPlanEntity2, "name", "name")
 		expect(result).toBe(myPlanEntity1)
@@ -82,15 +90,25 @@ describe("Join", () => {
 	})
 
 	it("should throw error for invalid join parameters", async () => {
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				type: "invalid-type" as any,
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		await expect(Join(step)).rejects.toThrow(HttpErrorInternalServerError)
+		const stepParams = <U__plans_plan_join_Params>{
+			type: "invalid-type" as any,
+		}
+
+		await expect(Join(stepParams, $context)).rejects.toThrow(HttpErrorInternalServerError)
 	})
 })

@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
+import type { TContext } from "../../../sandbox/types/TContext"
+import { STEP_STATUS } from "../../@consts"
+import type { U__plans_plan_omit_Params } from "../../types/U__plans_params"
 import { Omit } from "../Omit"
-import type { TStep } from "../../types/TStep"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -29,20 +30,30 @@ const myPlanEntity1 = new DataTable("myPlanEntity1", [
 await myPlanEntity1.RowsSet()
 
 describe("Omit", () => {
-	it("should call DataTable.Omit with arguments", async () => {
-		const step = {
-			currentDataTable: myPlanEntity1,
-			stepArgs: { fields: ["f1"] }
-		}
-		await Omit(step as any)
-		expect(myPlanEntity1.Omit).toHaveBeenCalledWith(["f1"])
-	})
-
-	// Mock DataTable methods for testing
 	beforeEach(() => {
 		vi.clearAllMocks()
-
-		// Mock DataTable methods
 		myPlanEntity1.Omit = vi.fn().mockReturnThis()
+	})
+
+	it("should call DataTable.Omit with arguments", async () => {
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
+		}
+
+		const stepParams = <U__plans_plan_omit_Params>{ fields: ["f1"] }
+
+		await Omit(stepParams, $context)
+		expect(myPlanEntity1.Omit).toHaveBeenCalledWith(["f1"])
 	})
 })

@@ -1,4 +1,5 @@
 //
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
 import { uuidv7 } from "uuidv7"
@@ -50,7 +51,7 @@ export class Utils {
 
 	static Uuid(safe: boolean = false): string {
 		return safe
-			? uuidv7().replaceAll(/-/g, "") // NOSONAR
+			? uuidv7().replaceAll("-", "")
 			: uuidv7()
 	}
 }

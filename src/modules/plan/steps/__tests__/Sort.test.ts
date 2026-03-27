@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
+import type { TContext } from "../../../sandbox/types/TContext"
+import { STEP_STATUS } from "../../@consts"
+import type { U__plans_plan_sort_Params } from "../../types/U__plans_params"
 import { Sort } from "../Sort"
-import type { TStep } from "../../types/TStep"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -29,28 +30,35 @@ const myPlanEntity1 = new DataTable("myPlanEntity1", [
 await myPlanEntity1.RowsSet()
 
 describe("Sort", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		myPlanEntity1.Sort = vi.fn().mockReturnThis()
+	})
+
 	it("should sort datatable by specified criteria", async () => {
 		const spySort = vi.spyOn(myPlanEntity1, "Sort").mockResolvedValue(myPlanEntity1)
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: { age: "asc" },
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
 		}
 
-		const result = await Sort(step)
+		const stepParams = <U__plans_plan_sort_Params>{ age: "asc" }
+
+		const result = await Sort(stepParams, $context)
 
 		expect(spySort).toHaveBeenCalledWith({ age: "asc" })
 		expect(result).toBe(myPlanEntity1)
 		spySort.mockRestore()
-	})
-
-	// Mock DataTable methods for testing
-	beforeEach(() => {
-		vi.clearAllMocks()
-
-		// Mock DataTable methods
-		myPlanEntity1.Sort = vi.fn().mockReturnThis()
 	})
 })

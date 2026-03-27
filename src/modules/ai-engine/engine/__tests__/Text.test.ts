@@ -1,4 +1,4 @@
-/* eslint-disable security/detect-non-literal-regexp */
+
 import axios from "axios"
 import type { TAiArguments } from "../../@types"
 import { TEXT_LANGUAGE_DETECTION_ISO } from "../../consts/TEXT"

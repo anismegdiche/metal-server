@@ -12,14 +12,14 @@ Each configuration specifies the necessary parameters such as host, port, user c
 
 **Primary parameters:**
 
-| Parameter  | Type    | Required | Description                                                                      |
-| ---------- | ------- | -------- | -------------------------------------------------------------------------------- |
-| `provider` | String  | Y        | Set to `mssql` for Azure SQL Database/Microsoft SQL Server                       |
-| `host`     | String  | Y        | Server to connect to. Use `127.0.0.1\instance` for named instances.              |
-| `port`     | Integer | N        | Port to connect to (default: 1433). Don't set when connecting to named instance. |
-| `user`     | String  | Y        | User name for authentication.                                                    |
-| `password` | String  | Y        | Password for authentication.                                                     |
-| `database` | String  | Y        | Database to connect to (default: dependent on server configuration).             |
+| Parameter  | Type    | Required | Description                                                                          |
+| ---------- | ------- | -------- | ------------------------------------------------------------------------------------ |
+| `provider` | String  | Y        | Set to `mssql` for Azure SQL Database/Microsoft SQL Server                           |
+| `host`     | String  | Y        | Server to connect to.                                                                |
+| `port`     | Integer | N        | Port to connect to (default: 1433). Not to be set when connecting to named instance. |
+| `user`     | String  | Y        | User name for authentication.                                                        |
+| `password` | String  | Y        | Password for authentication.                                                         |
+| `database` | String  | Y        | Database to connect to (default: dependent on server configuration).                 |
 
 **Optional parameters:**
 
@@ -167,24 +167,22 @@ sources:
       connectTimeoutMS: 5000
 ```
 
-## Plan <Badge type="default" text="v0.2+" />
+## Plans <Badge type="info" text="v0.5+" />
 
-Used to connect to a Metal ETL Plan
+Used to connect to Metal ETL Plans
 
 **Parameters:**
 
-| Parameter  | Type   | Required | Description                     |
-| ---------- | ------ | -------- | ------------------------------- |
-| `provider` | String | Y        | Set to `plan` for plan          |
-| `database` | String | Y        | Name of the plan to connect to. |
+| Parameter  | Type   | Required | Description             |
+| ---------- | ------ | -------- | ----------------------- |
+| `provider` | String | Y        | Set to `plans` for plan |
 
 **Example:**
 
 ```yaml
 sources:
   my-plan-source:
-    provider: plan
-    database: my-plan
+    provider: plans
 ```
 
 ## Memory <Badge type="default" text="v0.2+" />
@@ -371,16 +369,15 @@ Data returned from folders mode are:
 ::: warning ⚠️ IMPORTANT
 By Default, the `content` field is not returned unless you specify it explicitly for example in `select.fields`.
 
-```yaml
-plans:
-  myplan:
-    myentity:
-      steps:
-        - select:
-            schema: fs
-            entity: images
-            fields: "*,content"
-```
+> ```yaml
+> plans:
+>   myplan:
+>     steps:
+>       - select:
+>           schema: fs
+>           entity: images
+>           fields: "*,content"
+> ```
 
 :::
 ::: tip ℹ️ NOTE

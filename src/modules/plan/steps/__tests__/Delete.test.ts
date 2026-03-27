@@ -1,12 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
+import type { TInternalResponse } from "../../../core/types/TInternalResponse"
+import { HttpErrorInternalServerError } from "../../../errors/HttpErrors"
+import type { TContext } from "../../../sandbox/types/TContext"
 import { Schema } from "../../../schema/Schema"
 import type { TSchemaResponse } from "../../../schema/types/TSchemaResponse"
-import type { TInternalResponse } from "../../../core/types/TInternalResponse"
+import { STEP_STATUS } from "../../@consts"
+import type { U__plans_plan_delete_Params } from "../../types/U__plans_params"
 import { Delete } from "../Delete"
-import type { TStep } from "../../types/TStep"
-import { HttpErrorInternalServerError } from "../../../errors/HttpErrors"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -42,6 +43,11 @@ const myPlanEntity1 = new DataTable("myPlanEntity1", [
 await myPlanEntity1.RowsSet()
 
 describe("Delete", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		myPlanEntity1.RowsDelete = vi.fn().mockReturnThis()
+	})
+
 	it("should delete data to schema when entity is provided", async () => {
 		const spySchemaDelete = vi.spyOn(Schema, "Delete").mockResolvedValue(<TInternalResponse<TSchemaResponse>>(<unknown>{
 			success: true,
@@ -53,18 +59,28 @@ describe("Delete", () => {
 			},
 		}))
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				schema: "mySchema",
-				entity: "users",
-				filter: { name: "John" },
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		const result = await Delete(step)
+		const stepParams = <U__plans_plan_delete_Params>{
+			schema: "mySchema",
+			entity: "users",
+			filter: { name: "John" },
+		}
+
+		const result = await Delete(stepParams, $context)
 		expect(result).toBe(myPlanEntity1)
 		spySchemaDelete.mockRestore()
 	})
@@ -80,16 +96,26 @@ describe("Delete", () => {
 			},
 		}))
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				entity: "users",
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		await expect(Delete(step)).rejects.toThrow(HttpErrorInternalServerError)
+		const stepParams = <U__plans_plan_delete_Params>{
+			entity: "users",
+		}
+
+		await expect(Delete(stepParams, $context)).rejects.toThrow(HttpErrorInternalServerError)
 		spySchemaDelete.mockRestore()
 	})
 
@@ -104,54 +130,76 @@ describe("Delete", () => {
 			},
 		}))
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				schema: "mySchema",
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		await expect(Delete(step)).rejects.toThrow(HttpErrorInternalServerError)
+		const stepParams = <U__plans_plan_delete_Params>{
+			schema: "mySchema",
+		}
+
+		await expect(Delete(stepParams, $context)).rejects.toThrow(HttpErrorInternalServerError)
 		spySchemaDelete.mockRestore()
 	})
 
 	it("should delete current datatable when no schema and no entity", async () => {
 		const output = await myPlanEntity1.RowsDelete("name = 'David'")
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				filter: { name: "David" },
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		const result = await Delete(step)
+		const stepParams = <U__plans_plan_delete_Params>{
+			filter: { name: "David" },
+		}
+
+		const result = await Delete(stepParams, $context)
 		expect(result).toEqual(output)
 	})
 
 	it("should remove all data from plan when no args are given", async () => {
 		const emptyDataTable = new DataTable("empty", [])
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: emptyDataTable,
-			stepArgs: {},
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: emptyDataTable,
+			},
+			$vars: {},
 		}
 
-		const result = await Delete(step)
+		const stepParams = <U__plans_plan_delete_Params>{}
+
+		const result = await Delete(stepParams, $context)
 		expect(result).toEqual(emptyDataTable)
-	})
-
-	// Mock DataTable methods for testing
-	beforeEach(() => {
-		vi.clearAllMocks()
-
-		// Mock DataTable methods
-		myPlanEntity1.RowsDelete = vi.fn().mockReturnThis()
 	})
 })

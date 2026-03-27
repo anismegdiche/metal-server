@@ -20,11 +20,13 @@ import { absContentProvider } from "../base/absContentProvider"
 
 //
 export const z_U__source_options_content_json = z.object({
-	"json-path": z.string().describe("JSON path, if undefined will return the whole JSON").optional(),
+	"json-path": z.string()
+	.optional(),
 })
 
 export const z_T_JsonContentParams = z.object({
-	path: z.string().optional(),
+	path: z.string()
+	.optional(),
 })
 
 //

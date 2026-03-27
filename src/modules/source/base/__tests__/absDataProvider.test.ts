@@ -106,7 +106,7 @@ describe("absDataProvider", () => {
 		const schemaRequest = { schema: "s", entity: "e" }
 		const dataTable = {
 			Count: async () => 1,
-			GetFieldsName: () => ["id"],
+			GetFieldNames: () => ["id"],
 			Rows: async () => [{ id: 1 }],
 		} as const
 		const options = { Fields: ["id"], Data: dataTable } as unknown as TOptionalParameter

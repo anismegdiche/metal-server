@@ -64,7 +64,6 @@ export const z_U__plans_plan__step = z.union([
 	z.object({ [STEP.MAP]: z_U__plans_plan_map_Params }),
 	z.object({ [STEP.SET_VAR]: z_U__plans_plan_set_var_Params }),
 ])
-	.describe("Plan entity step")
 
 //
 export type U__plans_plan__step_Params = z.infer<typeof z_U__plans_plan__step_Params>

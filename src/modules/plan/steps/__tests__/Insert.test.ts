@@ -1,12 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
+import type { TInternalResponse } from "../../../core/types/TInternalResponse"
+import { HttpErrorInternalServerError } from "../../../errors/HttpErrors"
+import type { TContext } from "../../../sandbox/types/TContext"
 import { Schema } from "../../../schema/Schema"
 import type { TSchemaResponse } from "../../../schema/types/TSchemaResponse"
-import type { TInternalResponse } from "../../../core/types/TInternalResponse"
+import { STEP_STATUS } from "../../@consts"
+import type { U__plans_plan_insert_Params } from "../../types/U__plans_params"
 import { Insert } from "../Insert"
-import type { TStep } from "../../types/TStep"
-import { HttpErrorInternalServerError } from "../../../errors/HttpErrors"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -42,6 +43,11 @@ const myPlanEntity1 = new DataTable("myPlanEntity1", [
 await myPlanEntity1.RowsSet()
 
 describe("Insert", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		myPlanEntity1.RowsAdd = vi.fn().mockReturnThis()
+	})
+
 	it("should insert with schema, entity and data then return current datatable", async () => {
 		const spySchemaInsert = vi.spyOn(Schema, "Insert").mockResolvedValue(<TInternalResponse<TSchemaResponse>>(<unknown>{
 			success: true,
@@ -53,18 +59,28 @@ describe("Insert", () => {
 			},
 		}))
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				schema: "mySchema",
-				entity: mySchemaEntity1.Name,
-				data: [{ name: "John", age: 25 }],
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		const result = await Insert(step)
+		const stepParams = <U__plans_plan_insert_Params>{
+			schema: "mySchema",
+			entity: mySchemaEntity1.Name,
+			data: [{ name: "John", age: 25 }],
+		}
+
+		const result = await Insert(stepParams, $context)
 
 		expect(result).toBe(myPlanEntity1)
 		spySchemaInsert.mockRestore()
@@ -81,16 +97,26 @@ describe("Insert", () => {
 			},
 		}))
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				entity: "users",
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		await expect(Insert(step)).rejects.toThrow(HttpErrorInternalServerError)
+		const stepParams = <U__plans_plan_insert_Params>{
+			entity: "users",
+		}
+
+		await expect(Insert(stepParams, $context)).rejects.toThrow(HttpErrorInternalServerError)
 		spySchemaInsert.mockRestore()
 	})
 
@@ -105,16 +131,26 @@ describe("Insert", () => {
 			},
 		}))
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				schema: "mySchema",
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		await expect(Insert(step)).rejects.toThrow(HttpErrorInternalServerError)
+		const stepParams = <U__plans_plan_insert_Params>{
+			schema: "mySchema",
+		}
+
+		await expect(Insert(stepParams, $context)).rejects.toThrow(HttpErrorInternalServerError)
 		spySchemaInsert.mockRestore()
 	})
 
@@ -123,16 +159,26 @@ describe("Insert", () => {
 
 		const data = [{ name: "John", age: 25 }]
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				data,
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
 
-		const result = await Insert(step)
+		const stepParams = <U__plans_plan_insert_Params>{
+			data,
+		}
+
+		const result = await Insert(stepParams, $context)
 		expect(result).toBe(await myPlanEntity1.RowsAdd(data))
 		spyRowsAdd.mockRestore()
 	})
@@ -140,37 +186,49 @@ describe("Insert", () => {
 	it("should throw error when no args are given", async () => {
 		const emptyDataTable = new DataTable("empty", [])
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: emptyDataTable,
-			stepArgs: {},
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: emptyDataTable,
+			},
+			$vars: {},
 		}
 
-		await expect(Insert(step)).rejects.toThrow(HttpErrorInternalServerError)
+		const stepParams = <U__plans_plan_insert_Params>{}
+
+		await expect(Insert(stepParams, $context)).rejects.toThrow(HttpErrorInternalServerError)
 	})
 
 	it("should throw error when no data is given", async () => {
 		const emptyDataTable = new DataTable("empty", [])
 
-		const step: TStep = {
-			currentSchemaName: "mySchema",
-			currentPlanName: "myPlan",
-			currentDataTable: emptyDataTable,
-			stepArgs: {
-				schema: "mySchema",
-				entity: mySchemaEntity1.Name,
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: emptyDataTable,
 			},
+			$vars: {},
 		}
 
-		await expect(Insert(step)).rejects.toThrow(HttpErrorInternalServerError)
-	})
+		const stepParams = <U__plans_plan_insert_Params>{
+			schema: "mySchema",
+			entity: mySchemaEntity1.Name,
+		}
 
-	// Mock DataTable methods for testing
-	beforeEach(() => {
-		vi.clearAllMocks()
-
-		// Mock DataTable methods
-		myPlanEntity1.RowsAdd = vi.fn().mockReturnThis()
+		await expect(Insert(stepParams, $context)).rejects.toThrow(HttpErrorInternalServerError)
 	})
 })

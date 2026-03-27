@@ -1,6 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
+import type { TContext } from "../../../sandbox/types/TContext"
+import { STEP_STATUS } from "../../@consts"
+import type { U__plans_plan_pick_Params } from "../../types/U__plans_params"
 import { Pick } from "../Pick"
 
 // Mock setup
@@ -28,34 +30,57 @@ const myPlanEntity1 = new DataTable("myPlanEntity1", [
 await myPlanEntity1.RowsSet()
 
 describe("Pick", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		myPlanEntity1.Pick = vi.fn().mockReturnThis()
+	})
+
 	it("should call DataTable.Pick with arguments", async () => {
-		const step = {
-			currentDataTable: myPlanEntity1,
-			stepArgs: {
-				fields: ["f1", "f2"]
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
-		await Pick(step as any)
+
+		const stepParams = <U__plans_plan_pick_Params>{
+			fields: ["f1", "f2"],
+		}
+
+		await Pick(stepParams, $context)
 		expect(myPlanEntity1.Pick).toHaveBeenCalledWith(["f1", "f2"])
 	})
 
 	it("should return original table if *", async () => {
-		const step = {
-			currentDataTable: myPlanEntity1,
-			stepArgs:{
-				fields: ["*"]
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
 			},
+			$vars: {},
 		}
-		const result = await Pick(step as any)
+
+		const stepParams = <U__plans_plan_pick_Params>{
+			fields: ["*"],
+		}
+
+		const result = await Pick(stepParams, $context)
 		expect(result).toBe(myPlanEntity1)
 		expect(myPlanEntity1.Pick).not.toHaveBeenCalled()
-	})
-
-	// Mock DataTable methods for testing
-	beforeEach(() => {
-		vi.clearAllMocks()
-
-		// Mock DataTable methods
-		myPlanEntity1.Pick = vi.fn().mockReturnThis()
 	})
 })

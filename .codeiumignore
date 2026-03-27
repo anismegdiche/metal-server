@@ -1,4 +1,6 @@
-**/.git
-**/build
-**/dist
-**/node_modules
+.git/
+.venv/
+node_modules/
+venv/
+dist/
+build/
