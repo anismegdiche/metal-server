@@ -21,3 +21,4 @@ plan > test if user is not allowed to access schema, what is happening {f}
 source > split sql and azure {f}
 guides, sample project : update
 remove source from schemarequest if possible
+routing bad data to an error sink implicitly removes it from the plan data for downstream steps. The row exists in the error sink, but it's no longer in the main processing stream. {f} {start:2026-03-28T11:10:04}
