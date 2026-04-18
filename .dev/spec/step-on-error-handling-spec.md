@@ -129,7 +129,7 @@ Moves failed data to a specified error destination for later analysis and reproc
 | `sink.schema`        | String  | Y        | Error destination schema                                |
 | `sink.entity`        | String  | Y        | Error destination entity                                |
 | `sink.include-error` | Boolean | N        | Include error details in sink (default: `true`)         |
-| `sink.error-field`   | String  | N        | Field name for error details (default: `error_details`) |
+| `sink.error-field`   | String  | N        | Field name for error details (default: `error-details`) |
 
 **Example:**
 
@@ -271,18 +271,18 @@ Error sink destinations automatically receive these fields:
 | Field           | Type         | Description                                                             |
 | --------------- | ------------ | ----------------------------------------------------------------------- |
 | `original_data` | Object/Array | The data that failed processing (varies by step type)                   |
-| `error_details` | Object       | Error information matching context variables (if `include-error: true`) |
+| `error-details` | Object       | Error information matching context variables (if `include-error: true`) |
 | `step_info`     | Object       | Step context (step index, command, etc.)                                |
 | `timestamp`     | String       | When the error occurred                                                 |
 | `attempt`       | Integer      | Retry attempt number (if applicable)                                    |
 
-### `error_details` Field Structure
+### `error-details` Field Structure
 
-The `error_details` field contains the same structure as the context variables:
+The `error-details` field contains the same structure as the context variables:
 
 ```json
 {
-  "error_details": {
+  "error-details": {
     "message": "Invalid email format",
     "type": "validation-error",
     "step": "map",
@@ -294,11 +294,11 @@ The `error_details` field contains the same structure as the context variables:
 
 **Mapping to context variables:**
 
-- `error_details.message` → `$error.message`
-- `error_details.type` → `$error.type`
-- `error_details.step` → `$error.step`
-- `error_details.timestamp` → `$error.timestamp`
-- `error_details.attempt` → `$error.attempt`
+- `error-details.message` → `$error.message`
+- `error-details.type` → `$error.type`
+- `error-details.step` → `$error.step`
+- `error-details.timestamp` → `$error.timestamp`
+- `error-details.attempt` → `$error.attempt`
 
 ### Implementation Examples
 

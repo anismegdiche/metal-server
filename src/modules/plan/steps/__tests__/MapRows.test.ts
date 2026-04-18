@@ -69,7 +69,7 @@ describe("Map step", () => {
 		const result = await MapRows(stepParams, $context)
 
 		expect(result).toBeInstanceOf(DataTable)
-		expect(result.Name).toBe("test_mapped")
+		expect(result.Name).toBe("test")
 
 		const rows = await result.Rows()
 		expect(rows).toHaveLength(3)
@@ -188,56 +188,5 @@ describe("Map step", () => {
 		}
 
 		await expect(MapRows(stepParams, $context)).rejects.toThrow()
-	})
-
-	it("should skip rows when using step scope with skip strategy", async () => {
-		const $context: Partial<TContext> = {
-			$schema: "test-schema",
-			$plan: {
-				name: "test-plan",
-				currentStep: {
-					index: undefined,
-					command: undefined,
-					params: undefined,
-					status: STEP_STATUS.PENDING,
-				},
-				data: testDataTable,
-			},
-			$vars: {},
-		}
-
-		const stepParams = <U__plans_plan_map_Params>{
-			script: `
-                if ($row.category === 'books') {
-                    throw new Error('Books are not allowed');
-                }
-                $row.processed = true;
-                return $row;
-            `,
-			"on-error": {
-				strategy: STEP_ON_ERROR_STRATEGY.SKIP,
-				scope: STEP_ON_ERROR_SCOPE.STEP,
-			},
-		}
-
-		const result = await MapRows(stepParams, $context)
-		expect(result).toBeInstanceOf(DataTable)
-
-		const rows = await result.Rows()
-		expect(rows).toHaveLength(2)
-
-		expect(rows[0]).toEqual({
-			price: 10,
-			quantity: 2,
-			category: "electronics",
-			processed: true,
-		})
-
-		expect(rows[1]).toEqual({
-			price: 20,
-			quantity: 1,
-			category: "clothing",
-			processed: true,
-		})
 	})
 })

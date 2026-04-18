@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../../@consts"
+import { STEP, STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../../@consts"
 import {
 	z_U__on_error,
 	z_U__on_error_Params,
@@ -58,6 +58,7 @@ describe("z_U__on_error schema validation", () => {
 							entity: "my-entity",
 							"on-error": {
 								strategy: STEP_ON_ERROR_STRATEGY.SINK,
+								scope: STEP_ON_ERROR_SCOPE.ROW,
 								sink: {
 									schema: "my-error-schema",
 									entity: "my-error-entity",
@@ -150,12 +151,9 @@ describe("z_U__on_error schema validation", () => {
 			it("should accept minimal retry strategy", () => {
 				const config = {
 					strategy: STEP_ON_ERROR_STRATEGY.RETRY,
+					scope: STEP_ON_ERROR_SCOPE.STEP,  // Required for discriminated union
 					retry: {
-						attempts: 3,
-						delay: 1000,
-						backoff: STEP_ON_ERROR_RETRY_BACKOFF.FIXED,
-						"max-delay": 30000,
-						"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW
+						attempts: 3  // Only provide minimal required field
 					}
 				}
 				const result = z_U__on_error_Params.parse(config)
@@ -164,10 +162,10 @@ describe("z_U__on_error schema validation", () => {
 					scope: STEP_ON_ERROR_SCOPE.STEP,
 					retry: {
 						attempts: 3,
-						delay: 1000,
-						backoff: STEP_ON_ERROR_RETRY_BACKOFF.FIXED,
-						"max-delay": 30000,
-						"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW
+						delay: 1000,  // Default should be applied
+						backoff: STEP_ON_ERROR_RETRY_BACKOFF.FIXED,  // Default should be applied
+						"max-delay": 30000,  // Default should be applied
+						"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.THROW  // Default should be applied
 					}
 				})
 			})
@@ -191,6 +189,7 @@ describe("z_U__on_error schema validation", () => {
 			it("should accept retry strategy with sink", () => {
 				const config = {
 					strategy: STEP_ON_ERROR_STRATEGY.RETRY,
+					scope: STEP_ON_ERROR_SCOPE.ROW,  // ROW scope required for sink
 					retry: {
 						attempts: 2,
 						delay: 500,
@@ -206,10 +205,7 @@ describe("z_U__on_error schema validation", () => {
 					}
 				}
 				const result = z_U__on_error_Params.parse(config)
-				expect(result).toEqual({
-					scope: STEP_ON_ERROR_SCOPE.STEP,
-					...config
-				})
+				expect(result).toEqual(config)
 			})
 
 			it("should reject retry strategy without retry configuration", () => {
@@ -257,11 +253,11 @@ describe("z_U__on_error schema validation", () => {
 				}
 				const result = z_U__on_error_Params.parse(config)
 				expect(result).toEqual({
-					scope: STEP_ON_ERROR_SCOPE.STEP,
+					scope: STEP_ON_ERROR_SCOPE.ROW,
 					...config,
 					sink: {
 						...config.sink,
-						"error-field": "error_details",
+						"error-field": "error-details",
 						"include-error": true
 					}
 				})
@@ -270,12 +266,12 @@ describe("z_U__on_error schema validation", () => {
 			it("should accept sink strategy with scope", () => {
 				const config = {
 					strategy: STEP_ON_ERROR_STRATEGY.SINK,
-					scope: STEP_ON_ERROR_SCOPE.STEP,
+					scope: STEP_ON_ERROR_SCOPE.ROW,
 					sink: {
 						schema: "error_schema",
 						entity: "error_entity",
 						"include-error": true,
-						"error-field": "error_details"
+						"error-field": "error-details"
 					}
 				}
 				const result = z_U__on_error_Params.parse(config)
@@ -338,6 +334,7 @@ describe("z_U__on_error schema validation", () => {
 		it("z_U__on_error_strategy_retry should validate correctly", () => {
 			const valid = {
 				strategy: STEP_ON_ERROR_STRATEGY.RETRY,
+				scope: STEP_ON_ERROR_SCOPE.STEP,  // Required for discriminated union
 				retry: {
 					attempts: 3,
 					delay: 1000,
@@ -388,7 +385,7 @@ describe("z_U__on_error schema validation", () => {
 			it("should use default values", () => {
 				const result = z__on_error_retry.parse({})
 				expect(result).toEqual({
-					attempts: 3,
+					attempts: 1,
 					delay: 1000,
 					backoff: STEP_ON_ERROR_RETRY_BACKOFF.FIXED,
 					"max-delay": 30000,
@@ -434,7 +431,7 @@ describe("z_U__on_error schema validation", () => {
 					schema: "test_schema",
 					entity: "test_entity",
 					"include-error": true,
-					"error-field": "error_details"
+					"error-field": "error-details"
 				})
 			})
 
@@ -480,7 +477,7 @@ describe("z_U__on_error schema validation", () => {
 			const complexConfig = {
 				"on-error": {
 					strategy: STEP_ON_ERROR_STRATEGY.SINK,
-					scope: STEP_ON_ERROR_SCOPE.STEP,
+					scope: STEP_ON_ERROR_SCOPE.ROW,
 					sink: {
 						schema: "plan_errors",
 						entity: "failed_plans",

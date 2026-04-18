@@ -6,7 +6,7 @@
 
 import DataType, { DuckDBScalarFunction } from "@duckdb/node-api"
 import { omit } from "lodash-es"
-import { createHash, createHmac, randomUUID } from "node:crypto"
+import { randomUUID } from "node:crypto"
 import fs from "node:fs"
 //
 import {
@@ -18,9 +18,11 @@ import {
 	type DataTable,
 	type TRow,
 } from "../types/DataTable"
+import { DT_SYS_FIELDS } from "../types/DataTableTypes"
 import { Assert } from "./Assert"
 import { JsonUtils } from "./JsonUtils"
 import { Logger } from "./Logger"
+import { RowUtils } from "./RowUtils"
 import { StringUtils } from "./StringUtils"
 
 //
@@ -46,39 +48,11 @@ export enum REMOVE_DUPLICATES_STRATEGY {
 	CUSTOM = "custom",
 }
 
-const HASH_ALGO = "sha256"
-const HASH_DIGEST = "base64"
-const HASH_PEPPER = process.env.HASH_PEPPER || "m3t4l-m!l!t!4"
-
 //
 export type TSyncReport = {
 	AddedRows: TRow[]
 	DeletedRows: TRow[]
 	UpdatedRows: TRow[]
-}
-
-//
-function pseudonymize(value: string): string {
-	return createHmac(HASH_ALGO, HASH_PEPPER).update(value).digest(HASH_DIGEST)
-}
-
-function anonymize(value: string): string {
-	return createHash(HASH_ALGO)
-		.update(value + randomUUID())
-		.digest(HASH_DIGEST)
-}
-
-function normalizeValue(val: unknown): string {
-	if (val === null || val === undefined) return ""
-	if (val instanceof Date) return val.toISOString()
-	if (typeof val === "object") {
-		try {
-			return JsonUtils.Stringify(val)
-		} catch {
-			return String(val)
-		}
-	}
-	return String(val)
 }
 
 //
@@ -96,23 +70,23 @@ export class DataTableUtils {
                 UPDATE 
                     ${dt.SafeName}
                 SET 
-                    __data__ = CAST(sub.new_data AS VARCHAR)
+                    ${DT_SYS_FIELDS.data} = CAST(sub.new_data AS VARCHAR)
                 FROM (
                 SELECT
-                    __idx__,
+                    ${DT_SYS_FIELDS.idx},
                     json_group_object(
                     CONCAT(?, key),                                           -- prefixed key
-                    json_extract(CAST(__data__ AS JSON), '$.' || key)         -- original value
+                    json_extract(CAST(${DT_SYS_FIELDS.data} AS JSON), '$.' || key)         -- original value
                     ) AS new_data
                 FROM ${dt.SafeName},
-                    UNNEST(json_keys(CAST(__data__ AS JSON))) AS t(key)       -- explode top-level keys
+                    UNNEST(json_keys(CAST(${DT_SYS_FIELDS.data} AS JSON))) AS t(key)       -- explode top-level keys
                 WHERE 
-                    json_type(CAST(__data__ AS JSON)) = 'OBJECT'              -- only object rows
+                    json_type(CAST(${DT_SYS_FIELDS.data} AS JSON)) = 'OBJECT'              -- only object rows
                 GROUP BY 
-                    __idx__
+                    ${DT_SYS_FIELDS.idx}
                 ) AS sub
                 WHERE 
-                    ${dt.SafeName}.__idx__ = sub.__idx__;
+                    ${dt.SafeName}.${DT_SYS_FIELDS.idx} = sub.${DT_SYS_FIELDS.idx};
                 `
 
 		// bind the normalized prefix once (positional parameter)
@@ -127,7 +101,7 @@ export class DataTableUtils {
 	static async UnPrefixAllfields(dt: DataTable): Promise<DataTable> {
 		for await (const row of await dt.RowsIterator({ batchSize: dt.BatchSize, includeIndex: true })) {
 			const __data__: TRow = {}
-			for (const [key, value] of Object.entries(omit(row, ["__idx__"]))) {
+			for (const [key, value] of Object.entries(omit(row, [DT_SYS_FIELDS.idx]))) {
 				const _unprefixedKey = key.includes(".") ? key.substring(key.indexOf(".") + 1) : key
 				__data__[_unprefixedKey] = value
 			}
@@ -157,7 +131,7 @@ export class DataTableUtils {
 			await conn.run(
 				`
                     INSERT INTO ${dtB.SafeName}
-                        (__data__) 
+                        (${DT_SYS_FIELDS.data}) 
                     VALUES 
                         (?)`,
 				[JsonUtils.Stringify(row)],
@@ -168,26 +142,27 @@ export class DataTableUtils {
 		await conn.run(`
                 CREATE TABLE ${resultTable} AS
                     SELECT 
-                        l.__seq__,
-                        l.__idx__,
+                        l.${DT_SYS_FIELDS.seq},
+                        l.${DT_SYS_FIELDS.idx},
                         CAST(
                             CASE 
-                            WHEN r.__data__ IS NULL THEN l.__data__
+                            WHEN r.${DT_SYS_FIELDS.data} IS NULL THEN l.${DT_SYS_FIELDS.data}
                             ELSE json_merge_patch(
-                                CAST(l.__data__ AS JSON),
-                                CAST(r.__data__ AS JSON)
+                                CAST(l.${DT_SYS_FIELDS.data} AS JSON),
+                                CAST(r.${DT_SYS_FIELDS.data} AS JSON)
                             )
                             END 
-                        AS VARCHAR) as __data__,
-                        l.created_at
+                        AS VARCHAR) as ${DT_SYS_FIELDS.data},
+                        l.${DT_SYS_FIELDS.created_at},
+                        l.${DT_SYS_FIELDS.deleted}
                     FROM 
                         ${dtA.SafeName} l
                     LEFT JOIN 
                         ${dtB.SafeName} r
                     ON 
-                        json_extract(CAST(l.__data__ AS JSON), '$.${leftField}') = json_extract(CAST(r.__data__ AS JSON), '$.${rightField}')
+                        json_extract(CAST(l.${DT_SYS_FIELDS.data} AS JSON), '$.${leftField}') = json_extract(CAST(r.${DT_SYS_FIELDS.data} AS JSON), '$.${rightField}')
                     ORDER BY 
-                        l.__seq__
+                        l.${DT_SYS_FIELDS.seq}
             `)
 
 		// Cleanup
@@ -219,7 +194,7 @@ export class DataTableUtils {
 			await conn.run(
 				`
                     INSERT INTO ${dtB.SafeName}
-                        (__data__) 
+                        (${DT_SYS_FIELDS.data}) 
                     VALUES 
                         (?)`,
 				[JsonUtils.Stringify(row)],
@@ -230,23 +205,24 @@ export class DataTableUtils {
 		await conn.run(`
                 CREATE TABLE ${resultTable} AS
                     SELECT 
-                        l.__seq__,
-                        l.__idx__,
+                        l.${DT_SYS_FIELDS.seq},
+                        l.${DT_SYS_FIELDS.idx},
                         CAST(
                             json_merge_patch(
-                                CAST(l.__data__ AS JSON),
-                                CAST(r.__data__ AS JSON)
+                                CAST(l.${DT_SYS_FIELDS.data} AS JSON),
+                                CAST(r.${DT_SYS_FIELDS.data} AS JSON)
                             ) AS VARCHAR
-                        ) as __data__,
-                        l.created_at
+                        ) as ${DT_SYS_FIELDS.data},
+                        l.${DT_SYS_FIELDS.created_at},
+                        l.${DT_SYS_FIELDS.deleted}
                     FROM 
                         ${dtA.SafeName} l
                     INNER JOIN 
                         ${dtB.SafeName} r
                     ON 
-                        json_extract(CAST(l.__data__ AS JSON), '$.${leftField}') = json_extract(CAST(r.__data__ AS JSON), '$.${rightField}')
+                        json_extract(CAST(l.${DT_SYS_FIELDS.data} AS JSON), '$.${leftField}') = json_extract(CAST(r.${DT_SYS_FIELDS.data} AS JSON), '$.${rightField}')
                     ORDER BY 
-                        l.__seq__
+                        l.${DT_SYS_FIELDS.seq}
             `)
 
 		// Cleanup temp tables and replace original table with result
@@ -278,7 +254,7 @@ export class DataTableUtils {
 			await conn.run(
 				`
                     INSERT INTO ${dtB.SafeName}
-                        (__data__) 
+                        (${DT_SYS_FIELDS.data}) 
                     VALUES 
                         (?)`,
 				[JsonUtils.Stringify(row)],
@@ -289,26 +265,27 @@ export class DataTableUtils {
 		await conn.run(`
                 CREATE TABLE ${resultTable} AS
                     SELECT 
-                        r.__seq__,  -- use right table sequence for ordering
-                        r.__idx__,  -- keep right table UUID
+                        r.${DT_SYS_FIELDS.seq},  -- use right table sequence for ordering
+                        r.${DT_SYS_FIELDS.idx},  -- keep right table UUID
                         CAST(
                             CASE 
-                            WHEN l.__data__ IS NULL THEN r.__data__
+                            WHEN l.${DT_SYS_FIELDS.data} IS NULL THEN r.${DT_SYS_FIELDS.data}
                             ELSE json_merge_patch(
-                                CAST(l.__data__ AS JSON),
-                                CAST(r.__data__ AS JSON)
+                                CAST(l.${DT_SYS_FIELDS.data} AS JSON),
+                                CAST(r.${DT_SYS_FIELDS.data} AS JSON)
                             )
                             END 
-                        AS VARCHAR) as __data__,
-                        COALESCE(r.created_at, l.created_at) as created_at
+                        AS VARCHAR) as ${DT_SYS_FIELDS.data},
+                        COALESCE(r.${DT_SYS_FIELDS.created_at}, l.${DT_SYS_FIELDS.created_at}) as ${DT_SYS_FIELDS.created_at},
+                        r.${DT_SYS_FIELDS.deleted}
                     FROM 
                         ${dtB.SafeName} r  -- right table first
                     LEFT JOIN 
                         ${dtA.SafeName} l  -- left table second
                     ON 
-                        json_extract(CAST(r.__data__ AS JSON), '$.${rightField}') = json_extract(CAST(l.__data__ AS JSON), '$.${leftField}')
+                        json_extract(CAST(r.${DT_SYS_FIELDS.data} AS JSON), '$.${rightField}') = json_extract(CAST(l.${DT_SYS_FIELDS.data} AS JSON), '$.${leftField}')
                     ORDER BY 
-                        r.__seq__
+                        r.${DT_SYS_FIELDS.seq}
             `)
 
 		// Cleanup temp tables and replace original table with result
@@ -340,7 +317,7 @@ export class DataTableUtils {
 			await conn.run(
 				`
                     INSERT INTO ${dtB.SafeName}
-                        (__data__) 
+                        (${DT_SYS_FIELDS.data}) 
                     VALUES 
                         (?)`,
 				[JsonUtils.Stringify(row)],
@@ -352,29 +329,30 @@ export class DataTableUtils {
                 CREATE TABLE ${resultTable} AS
                     WITH joined AS (
                         SELECT 
-                            COALESCE(l.__seq__, r.__seq__) as __seq__,
-                            COALESCE(l.__idx__, r.__idx__) as __idx__,
+                            COALESCE(l.${DT_SYS_FIELDS.seq}, r.${DT_SYS_FIELDS.seq}) as ${DT_SYS_FIELDS.seq},
+                            COALESCE(l.${DT_SYS_FIELDS.idx}, r.${DT_SYS_FIELDS.idx}) as ${DT_SYS_FIELDS.idx},
                             CAST(
                                 CASE 
-                                WHEN l.__data__ IS NULL THEN r.__data__
-                                WHEN r.__data__ IS NULL THEN l.__data__
+                                WHEN l.${DT_SYS_FIELDS.data} IS NULL THEN r.${DT_SYS_FIELDS.data}
+                                WHEN r.${DT_SYS_FIELDS.data} IS NULL THEN l.${DT_SYS_FIELDS.data}
                                 ELSE json_merge_patch(
-                                    CAST(l.__data__ AS JSON),
-                                    CAST(r.__data__ AS JSON)
+                                    CAST(l.${DT_SYS_FIELDS.data} AS JSON),
+                                    CAST(r.${DT_SYS_FIELDS.data} AS JSON)
                                 )
                                 END 
-                            AS VARCHAR) as __data__,
-                            COALESCE(l.created_at, r.created_at) as created_at
+                            AS VARCHAR) as ${DT_SYS_FIELDS.data},
+                            COALESCE(l.${DT_SYS_FIELDS.created_at}, r.${DT_SYS_FIELDS.created_at}) as ${DT_SYS_FIELDS.created_at},
+                            COALESCE(l.${DT_SYS_FIELDS.deleted}, r.${DT_SYS_FIELDS.deleted}) as ${DT_SYS_FIELDS.deleted}
                         FROM 
                             ${dtA.SafeName} l
                         FULL OUTER JOIN 
                             ${dtB.SafeName} r
                         ON 
-                            json_extract(CAST(l.__data__ AS JSON), '$.${leftField}') = json_extract(CAST(r.__data__ AS JSON), '$.${rightField}')
+                            json_extract(CAST(l.${DT_SYS_FIELDS.data} AS JSON), '$.${leftField}') = json_extract(CAST(r.${DT_SYS_FIELDS.data} AS JSON), '$.${rightField}')
                     )
                     SELECT 
                         *,
-                        ROW_NUMBER() OVER (ORDER BY __seq__) as new_seq
+                        ROW_NUMBER() OVER (ORDER BY ${DT_SYS_FIELDS.seq}) as new_seq
                     FROM 
                         joined
             `)
@@ -382,7 +360,7 @@ export class DataTableUtils {
 		// Fix sequence numbers to be continuous
 		await conn.run(`
                 UPDATE ${resultTable} 
-                SET __seq__ = new_seq;
+                SET ${DT_SYS_FIELDS.seq} = new_seq;
             `)
 
 		// Cleanup temp tables and replace original table with result
@@ -414,7 +392,7 @@ export class DataTableUtils {
 			await conn.run(
 				`
                     INSERT INTO ${dtB.SafeName}
-                        (__data__) 
+                        (${DT_SYS_FIELDS.data}) 
                     VALUES 
                         (?)`,
 				[JsonUtils.Stringify(row)],
@@ -425,15 +403,16 @@ export class DataTableUtils {
 		await conn.run(`
                 CREATE TABLE ${resultTable} AS
                     SELECT 
-                        ROW_NUMBER() OVER () as __seq__,    -- new sequential IDs
-                        uuidv7() as __idx__,                -- new UUIDs for crossed rows
+                        ROW_NUMBER() OVER () as ${DT_SYS_FIELDS.seq},    -- new sequential IDs
+                        uuidv7() as ${DT_SYS_FIELDS.idx},                -- new UUIDs for crossed rows
                         CAST(
                             json_merge_patch(
-                                CAST(l.__data__ AS JSON),
-                                CAST(r.__data__ AS JSON)
+                                CAST(l.${DT_SYS_FIELDS.data} AS JSON),
+                                CAST(r.${DT_SYS_FIELDS.data} AS JSON)
                             )
-                        AS VARCHAR) as __data__,
-                        COALESCE(l.created_at, r.created_at) as created_at
+                        AS VARCHAR) as ${DT_SYS_FIELDS.data},
+                        COALESCE(l.${DT_SYS_FIELDS.created_at}, r.${DT_SYS_FIELDS.created_at}) as ${DT_SYS_FIELDS.created_at},
+                        COALESCE(l.${DT_SYS_FIELDS.deleted}, r.${DT_SYS_FIELDS.deleted}) as ${DT_SYS_FIELDS.deleted}
                     FROM 
                         ${dtA.SafeName} l
                     CROSS JOIN 
@@ -481,57 +460,57 @@ export class DataTableUtils {
 			await conn.run(sqlCreateTempTable)
 
 			// Build the deduplication query based on method and strategy
-			const fieldList = _fields.map((f) => `(__data__->>'$.${f}')`)
+			const fieldList = _fields.map((f) => `(${DT_SYS_FIELDS.data}->>'$.${f}')`)
 			let orderByClause = ""
 			let whereClause = ""
 			let methodClause = ""
 			switch (strategy) {
 				case REMOVE_DUPLICATES_STRATEGY.LAST:
-					orderByClause = "ORDER BY __seq__ DESC"
+					orderByClause = `ORDER BY ${DT_SYS_FIELDS.seq} DESC`
 					break
 
 				case REMOVE_DUPLICATES_STRATEGY.HIGHEST:
 				case REMOVE_DUPLICATES_STRATEGY.LOWEST: {
 					if (!condition || condition.trim() === "") {
 						// If no condition given, fallback to seq ordering
-						orderByClause = "ORDER BY __seq__ ASC"
+						orderByClause = `ORDER BY ${DT_SYS_FIELDS.seq} ASC`
 						break
 					}
 
 					// Normalization expression: tries numeric conversion, maps textual booleans to numbers, otherwise NULL
 					const valueNormExpr = `
                         CASE
-                            WHEN TRY_CAST(__data__->>'$.${condition}' AS DOUBLE) IS NOT NULL
-                                THEN TRY_CAST(__data__->>'$.${condition}' AS DOUBLE)
-                            WHEN LOWER(__data__->>'$.${condition}') = 'true'  THEN 1.0
-                            WHEN LOWER(__data__->>'$.${condition}') = 'false' THEN 0.0
+                            WHEN TRY_CAST(${DT_SYS_FIELDS.data}->>'$.${condition}' AS DOUBLE) IS NOT NULL
+                                THEN TRY_CAST(${DT_SYS_FIELDS.data}->>'$.${condition}' AS DOUBLE)
+                            WHEN LOWER(${DT_SYS_FIELDS.data}->>'$.${condition}') = 'true'  THEN 1.0
+                            WHEN LOWER(${DT_SYS_FIELDS.data}->>'$.${condition}') = 'false' THEN 0.0
                             ELSE NULL
                         END`.replaceAll(/\s+/g, " ") // remove excessive whitespace for readability in SQL
 
 					// A small helper: prefer rows with a defined value (0) before undefined (1)
 					const definedFirstExpr = `
                         CASE
-                            WHEN TRY_CAST(__data__->>'$.${condition}' AS DOUBLE) IS NOT NULL THEN 0
-                            WHEN LOWER(__data__->>'$.${condition}') IN ('true','false') THEN 0
+                            WHEN TRY_CAST(${DT_SYS_FIELDS.data}->>'$.${condition}' AS DOUBLE) IS NOT NULL THEN 0
+                            WHEN LOWER(${DT_SYS_FIELDS.data}->>'$.${condition}') IN ('true','false') THEN 0
                             ELSE 1
                         END`.replaceAll(/\s+/g, " ")
 
 					if (strategy === REMOVE_DUPLICATES_STRATEGY.HIGHEST) {
 						// prefer defined rows, then highest normalized value
-						orderByClause = `ORDER BY ${definedFirstExpr}, (${valueNormExpr}) DESC, __seq__ ASC`
+						orderByClause = `ORDER BY ${definedFirstExpr}, (${valueNormExpr}) DESC, ${DT_SYS_FIELDS.seq} ASC`
 					} else {
 						// LOWEST
 						// prefer defined rows, then lowest normalized value
-						orderByClause = `ORDER BY ${definedFirstExpr}, (${valueNormExpr}) ASC, __seq__ ASC`
+						orderByClause = `ORDER BY ${definedFirstExpr}, (${valueNormExpr}) ASC, ${DT_SYS_FIELDS.seq} ASC`
 					}
 					break
 				}
 				case REMOVE_DUPLICATES_STRATEGY.CUSTOM:
 					whereClause = `CASE WHEN ${dataTable_convertSql(condition)} THEN 0 ELSE 1 END`
-					orderByClause = `ORDER BY ${whereClause}, __seq__ ASC` // Default order for custom strategy
+					orderByClause = `ORDER BY ${whereClause}, ${DT_SYS_FIELDS.seq} ASC` // Default order for custom strategy
 					break
 				default:
-					orderByClause = "ORDER BY __seq__ ASC"
+					orderByClause = `ORDER BY ${DT_SYS_FIELDS.seq} ASC`
 					break
 			}
 
@@ -546,13 +525,13 @@ export class DataTableUtils {
 			}
 
 			const dedupQuery = `
-                INSERT INTO ${tempTableName}(__data__)
-                SELECT __data__ FROM ${dt.SafeName}
+                INSERT INTO ${tempTableName}(${DT_SYS_FIELDS.data})
+                SELECT ${DT_SYS_FIELDS.data} FROM ${dt.SafeName}
                 QUALIFY ROW_NUMBER() OVER (
                     PARTITION BY ${methodClause}
                     ${orderByClause}
                 ) = 1
-                ORDER BY __seq__ ASC
+                ORDER BY ${DT_SYS_FIELDS.seq} ASC
                 `
 
 			// Execute the deduplication
@@ -560,7 +539,7 @@ export class DataTableUtils {
 
 			// Replace the original table with the deduplicated data
 			await conn.run(`DELETE FROM ${dt.SafeName}`)
-			await conn.run(`INSERT INTO ${dt.SafeName}(__data__) SELECT __data__ FROM ${tempTableName}`)
+			await conn.run(`INSERT INTO ${dt.SafeName}(${DT_SYS_FIELDS.data}) SELECT ${DT_SYS_FIELDS.data} FROM ${tempTableName}`)
 		} catch (error) {
 			Logger.Error(`${Logger.Out} DataTableUtils.RemoveDuplicates: Failed to remove duplicates: ${error}`)
 			throw error
@@ -572,8 +551,8 @@ export class DataTableUtils {
 	}
 
 	@Logger.LogFunction(true)
-	static async Anonymize(dt: DataTable, fields: string | string[], pseudo = true): Promise<DataTable> {
-		let _fields: string[] =
+	static async Anonymize(dt: DataTable, fields: string | string[], pseudo: boolean = true): Promise<DataTable> {
+		let aFields: string[] =
 			typeof fields === "string"
 				? fields
 					.split(",")
@@ -581,52 +560,43 @@ export class DataTableUtils {
 					.filter(Boolean)
 				: fields.map((f) => f.trim())
 
-		if (_fields.length === 1 && _fields[0] === "*") {
+		if (aFields.length === 1 && aFields[0] === "*") {
 			await dt.FieldsSet()
-			_fields = dt.GetFieldNames() ?? []
+			aFields = dt.GetFieldNames() ?? []
 		}
 
 		await dt._dbEnsureInitialized()
 		const cnx = dt._duckConnection!
 
-		const funcName = "anonymize"
+		const anonymizeFnName = "anonymize"
 
 		// Register only the transformation functions (pseudonymize/anonymize)
 		try {
 			cnx.registerScalarFunction(
 				DuckDBScalarFunction.create({
-					name: funcName,
+					name: anonymizeFnName,
 					parameterTypes: [DataType.VARCHAR],
 					returnType: DataType.VARCHAR,
 					mainFunction: (_info, input, output) => {
 						const inputVector = input.getColumnVector(0)
-						const fieldsSet = new Set(_fields) // ✅ Cache field lookup
+						const fieldsSet = new Set<string>(aFields) // ✅ Cache field lookup
 
 						for (let i = 0; i < input.rowCount; i++) {
-							const item = inputVector.getItem(i)
-							if (item === null) {
+							const rawRow = inputVector.getItem(i)
+							if (rawRow === null) {
 								output.setItem(i, null)
 								continue
 							}
 
-							const row: TRow = JsonUtils.TryParse(item as string, {})
-							let modified = false // ✅ Track if changes were made
+							const row: TRow = JsonUtils.TryParse(rawRow as string, {})
+							const rowAnonymized = RowUtils.Anonymize(row, fieldsSet, pseudo)
 
-							for (const field of fieldsSet) {
-								// Use Set for O(1) lookup
-								if (field in row) {
-									const val = normalizeValue(row[field])
-									const newVal = pseudo ? pseudonymize(val) : anonymize(val)
-
-									if (val !== newVal) {
-										row[field] = newVal
-										modified = true
-									}
-								}
-							}
-
-							// ✅ Only stringify if modified
-							output.setItem(i, modified ? JsonUtils.Stringify(row) : item)
+							// Only stringify if modified
+							output.setItem(i,
+								JsonUtils.IsEqual(row, rowAnonymized)
+									? rawRow
+									: JsonUtils.Stringify(rowAnonymized)
+							)
 						}
 						output.flush()
 					},
@@ -637,13 +607,17 @@ export class DataTableUtils {
 		}
 
 		const whereClause =
-			_fields.length > 0 ? `WHERE ${_fields.map((f) => `json_exists(__data__, '${f}')`).join(" OR ")}` : ""
+			aFields.length > 0
+				? `WHERE ${aFields.map((f) => `json_exists(${DT_SYS_FIELDS.data}, '${f}')`).join(" OR ")}`
+				: ""
 
 		const sql = `UPDATE 
                     ${dt.SafeName} 
                 SET 
-                    __data__ = ${funcName}(__data__)
+                    ${DT_SYS_FIELDS.data} = ${anonymizeFnName}(${DT_SYS_FIELDS.data})
                 ${whereClause}`
+
+		Logger.Debug(`DataTableUtils.Anonymize: Executing SQL: ${sql}`)
 
 		// Update the table with the anonymized rows
 		await cnx.run(sql)
@@ -687,7 +661,7 @@ export class DataTableUtils {
 			await conn.run(
 				`
                 INSERT INTO ${destination.SafeName}
-                    (__data__) 
+                    (${DT_SYS_FIELDS.data}) 
                 VALUES 
                     (?)`,
 				[JsonUtils.Stringify(row)],
@@ -703,14 +677,14 @@ export class DataTableUtils {
 
 		const addedSql = `
             INSERT INTO ${addedName}
-                (__data__) 
+                (${DT_SYS_FIELDS.data}) 
             SELECT
-                s.__data__
+                s.${DT_SYS_FIELDS.data}
             FROM
                 ${sourceName} s
             WHERE
-                (s.__data__->'${on}') NOT IN (
-                    SELECT (d.__data__->'${on}')
+                (s.${DT_SYS_FIELDS.data}->'${on}') NOT IN (
+                    SELECT (d.${DT_SYS_FIELDS.data}->'${on}')
                     FROM ${destinationName} d
                 )
             ;
@@ -726,14 +700,14 @@ export class DataTableUtils {
 
 		const deletedSql = `
             INSERT INTO ${deletedName}
-                (__data__) 
+                (${DT_SYS_FIELDS.data}) 
             SELECT
-                d.__data__
+                d.${DT_SYS_FIELDS.data}
             FROM
                 ${destinationName} d
             WHERE
-                (d.__data__->'${on}') NOT IN (
-                    SELECT (s.__data__->'${on}')
+                (d.${DT_SYS_FIELDS.data}->'${on}') NOT IN (
+                    SELECT (s.${DT_SYS_FIELDS.data}->'${on}')
                     FROM ${sourceName} s
                 )
             ;
@@ -749,16 +723,16 @@ export class DataTableUtils {
 
 		const updatedSql = `
             INSERT INTO ${updatedName}
-                (__data__) 
+                (${DT_SYS_FIELDS.data}) 
             SELECT
-                s.__data__
+                s.${DT_SYS_FIELDS.data}
             FROM
                 ${sourceName} s
             WHERE
-                s.__data__ != (
-                    SELECT d.__data__ 
+                s.${DT_SYS_FIELDS.data} != (
+                    SELECT d.${DT_SYS_FIELDS.data} 
                     FROM ${destinationName} d
-                    WHERE (d.__data__->'${on}') = (s.__data__->'${on}')
+                    WHERE (d.${DT_SYS_FIELDS.data}->'${on}') = (s.${DT_SYS_FIELDS.data}->'${on}')
                 )
             ;
             SELECT
@@ -819,8 +793,12 @@ export class DataTableUtils {
 			// So we should probably replace everything.
 
 			await targetConn.run(`
-                INSERT INTO ${target.SafeName} (__idx__, __data__, created_at)
-                SELECT __idx__, __data__, created_at FROM read_parquet('${tempFile}')
+                INSERT INTO 
+					${target.SafeName}
+                SELECT 
+					*
+				FROM 
+					read_parquet('${tempFile}')
             `)
 
 			// Update fields

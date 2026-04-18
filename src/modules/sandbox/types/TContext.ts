@@ -5,8 +5,10 @@ import type { DataTable } from "../../../types/DataTable"
 import type { TJson } from "../../../types/TJson"
 import type { TAiOutput } from "../../ai-engine/@types"
 import type { STEP, STEP_STATUS } from "../../plan/@consts"
+import type { T_StepErrorDetails } from "../../plan/Step"
 import type { U__plans_plan__step_Params } from "../../plan/types/U__plans_plan__step"
 import type { TSchemaRequest } from "../../schema/types/TSchemaRequest"
+
 
 //
 export type TContext = {
@@ -35,4 +37,5 @@ export type TContext = {
 	$result?: TAiOutput
 	$utils?: TJson
 	$vars: TJson
+	$error?: T_StepErrorDetails // Error information from previous step execution
 }

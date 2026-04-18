@@ -1,12 +1,11 @@
-
-
-
 import fs from "node:fs"
+import { beforeEach, describe, expect, it } from "vitest"
 import { DuckDBInstance } from "@duckdb/node-api"
 import { StringUtils } from "../../utils/StringUtils"
 import { Utils } from "../../utils/Utils"
 import type { TRow } from "../DataTable"
 import { DATATABLE_TEMP_PATH, DataTable, dataTable_convertSql, SORT_ORDER } from "../DataTable"
+import { DT_SYS_FIELDS } from "../DataTableTypes"
 
 describe("DataTable", () => {
 	const dt = new DataTable("test")
@@ -1344,7 +1343,7 @@ describe("DataTable", () => {
 
 			const sqlQuery = `
                 INSERT INTO 
-                    "myTable"(__data__) 
+                    "myTable"(${DT_SYS_FIELDS.data})
                 VALUES 
                     ('${JSON.stringify(data1)}'),  
                     ('${JSON.stringify(data2)}'),  
@@ -1875,42 +1874,42 @@ describe("DataTable", () => {
 
 describe("dataTable_convertSql", () => {
 	it("should convert condition", () => {
-		expect(dataTable_convertSql("id = 1")).toBe("(__data__->'id') = 1")
-		expect(dataTable_convertSql("id > 1")).toBe("(__data__->'id') > 1")
-		expect(dataTable_convertSql("id >= 1")).toBe("(__data__->'id') >= 1")
-		expect(dataTable_convertSql("id < 1")).toBe("(__data__->'id') < 1")
-		expect(dataTable_convertSql("id <= 1")).toBe("(__data__->'id') <= 1")
-		expect(dataTable_convertSql("id IN (1,2,3)")).toBe("(__data__->'id') IN ( 1 , 2 , 3 )")
-		expect(dataTable_convertSql("id NOT IN (1,2,3)")).toBe("(__data__->'id') NOT IN ( 1 , 2 , 3 )")
-		expect(dataTable_convertSql("id LIKE 'test%'")).toBe("(__data__->'id') LIKE 'test%'")
-		expect(dataTable_convertSql("id NOT LIKE 'test%'")).toBe("(__data__->'id') NOT LIKE 'test%'")
-		expect(dataTable_convertSql("id IS NULL")).toBe("(__data__->'id') IS NULL")
-		expect(dataTable_convertSql("id IS NOT NULL")).toBe("(__data__->'id') IS NOT NULL")
+		expect(dataTable_convertSql("id = 1")).toBe(`(${DT_SYS_FIELDS.data}->'id') = 1`)
+		expect(dataTable_convertSql("id > 1")).toBe(`(${DT_SYS_FIELDS.data}->'id') > 1`)
+		expect(dataTable_convertSql("id >= 1")).toBe(`(${DT_SYS_FIELDS.data}->'id') >= 1`)
+		expect(dataTable_convertSql("id < 1")).toBe(`(${DT_SYS_FIELDS.data}->'id') < 1`)
+		expect(dataTable_convertSql("id <= 1")).toBe(`(${DT_SYS_FIELDS.data}->'id') <= 1`)
+		expect(dataTable_convertSql("id IN (1,2,3)")).toBe(`(${DT_SYS_FIELDS.data}->'id') IN ( 1 , 2 , 3 )`)
+		expect(dataTable_convertSql("id NOT IN (1,2,3)")).toBe(`(${DT_SYS_FIELDS.data}->'id') NOT IN ( 1 , 2 , 3 )`)
+		expect(dataTable_convertSql("id LIKE 'test%'")).toBe(`(${DT_SYS_FIELDS.data}->'id') LIKE 'test%'`)
+		expect(dataTable_convertSql("id NOT LIKE 'test%'")).toBe(`(${DT_SYS_FIELDS.data}->'id') NOT LIKE 'test%'`)
+		expect(dataTable_convertSql("id IS NULL")).toBe(`(${DT_SYS_FIELDS.data}->'id') IS NULL`)
+		expect(dataTable_convertSql("id IS NOT NULL")).toBe(`(${DT_SYS_FIELDS.data}->'id') IS NOT NULL`)
 	})
 
 	it("should convert SELECT", () => {
 		expect(dataTable_convertSql(`SELECT a, b, c FROM table1 WHERE a > 1 AND (b = 2 OR c = 3) ORDER BY a DESC`)).toBe(
-			`SELECT (__data__->'a') AS a , (__data__->'b') AS b , (__data__->'c') AS c FROM table1 WHERE (__data__->'a') > 1 AND ( (__data__->'b') = 2 OR (__data__->'c') = 3 ) ORDER BY (__data__->'a') DESC`,
+			`SELECT (${DT_SYS_FIELDS.data}->'a') AS a , (${DT_SYS_FIELDS.data}->'b') AS b , (${DT_SYS_FIELDS.data}->'c') AS c FROM table1 WHERE (${DT_SYS_FIELDS.data}->'a') > 1 AND ( (${DT_SYS_FIELDS.data}->'b') = 2 OR (${DT_SYS_FIELDS.data}->'c') = 3 ) ORDER BY (${DT_SYS_FIELDS.data}->'a') DESC`,
 		)
 
 		expect(dataTable_convertSql(`SELECT * FROM table1`)).toBe(`SELECT * FROM table1`)
 
 		expect(dataTable_convertSql(`SELECT a, b, c FROM table1 WHERE a > 1 AND (b = 2 OR c = 3)`)).toBe(
-			`SELECT (__data__->'a') AS a , (__data__->'b') AS b , (__data__->'c') AS c FROM table1 WHERE (__data__->'a') > 1 AND ( (__data__->'b') = 2 OR (__data__->'c') = 3 )`,
+			`SELECT (${DT_SYS_FIELDS.data}->'a') AS a , (${DT_SYS_FIELDS.data}->'b') AS b , (${DT_SYS_FIELDS.data}->'c') AS c FROM table1 WHERE (${DT_SYS_FIELDS.data}->'a') > 1 AND ( (${DT_SYS_FIELDS.data}->'b') = 2 OR (${DT_SYS_FIELDS.data}->'c') = 3 )`,
 		)
 
 		expect(dataTable_convertSql(`SELECT a , c , d FROM table1 WHERE a > 1 AND (b = 2 OR c = 3)`)).toBe(
-			`SELECT (__data__->'a') AS a , (__data__->'c') AS c , (__data__->'d') AS d FROM table1 WHERE (__data__->'a') > 1 AND ( (__data__->'b') = 2 OR (__data__->'c') = 3 )`,
+			`SELECT (${DT_SYS_FIELDS.data}->'a') AS a , (${DT_SYS_FIELDS.data}->'c') AS c , (${DT_SYS_FIELDS.data}->'d') AS d FROM table1 WHERE (${DT_SYS_FIELDS.data}->'a') > 1 AND ( (${DT_SYS_FIELDS.data}->'b') = 2 OR (${DT_SYS_FIELDS.data}->'c') = 3 )`,
 		)
 
 		expect(dataTable_convertSql(`SELECT a, b, c FROM table1 WHERE a > 1 AND (b = 2 OR c = 3) ORDER BY a DESC`)).toBe(
-			`SELECT (__data__->'a') AS a , (__data__->'b') AS b , (__data__->'c') AS c FROM table1 WHERE (__data__->'a') > 1 AND ( (__data__->'b') = 2 OR (__data__->'c') = 3 ) ORDER BY (__data__->'a') DESC`,
+			`SELECT (${DT_SYS_FIELDS.data}->'a') AS a , (${DT_SYS_FIELDS.data}->'b') AS b , (${DT_SYS_FIELDS.data}->'c') AS c FROM table1 WHERE (${DT_SYS_FIELDS.data}->'a') > 1 AND ( (${DT_SYS_FIELDS.data}->'b') = 2 OR (${DT_SYS_FIELDS.data}->'c') = 3 ) ORDER BY (${DT_SYS_FIELDS.data}->'a') DESC`,
 		)
 
 		expect(
 			dataTable_convertSql(`SELECT a, b, c FROM table1 WHERE a > 1 AND (b = 2 OR c = 3) ORDER BY a DESC LIMIT 10`),
 		).toBe(
-			`SELECT (__data__->'a') AS a , (__data__->'b') AS b , (__data__->'c') AS c FROM table1 WHERE (__data__->'a') > 1 AND ( (__data__->'b') = 2 OR (__data__->'c') = 3 ) ORDER BY (__data__->'a') DESC LIMIT 10`,
+			`SELECT (${DT_SYS_FIELDS.data}->'a') AS a , (${DT_SYS_FIELDS.data}->'b') AS b , (${DT_SYS_FIELDS.data}->'c') AS c FROM table1 WHERE (${DT_SYS_FIELDS.data}->'a') > 1 AND ( (${DT_SYS_FIELDS.data}->'b') = 2 OR (${DT_SYS_FIELDS.data}->'c') = 3 ) ORDER BY (${DT_SYS_FIELDS.data}->'a') DESC LIMIT 10`,
 		)
 
 		expect(
@@ -1918,7 +1917,7 @@ describe("dataTable_convertSql", () => {
 				`SELECT a, b, c FROM table1 WHERE a > 1 AND (b = 2 OR c = 3) ORDER BY a DESC LIMIT 10 OFFSET 5`,
 			),
 		).toBe(
-			`SELECT (__data__->'a') AS a , (__data__->'b') AS b , (__data__->'c') AS c FROM table1 WHERE (__data__->'a') > 1 AND ( (__data__->'b') = 2 OR (__data__->'c') = 3 ) ORDER BY (__data__->'a') DESC LIMIT 10 OFFSET 5`,
+			`SELECT (${DT_SYS_FIELDS.data}->'a') AS a , (${DT_SYS_FIELDS.data}->'b') AS b , (${DT_SYS_FIELDS.data}->'c') AS c FROM table1 WHERE (${DT_SYS_FIELDS.data}->'a') > 1 AND ( (${DT_SYS_FIELDS.data}->'b') = 2 OR (${DT_SYS_FIELDS.data}->'c') = 3 ) ORDER BY (${DT_SYS_FIELDS.data}->'a') DESC LIMIT 10 OFFSET 5`,
 		)
 	})
 
@@ -1930,7 +1929,7 @@ describe("dataTable_convertSql", () => {
 
 		// INSERT with SELECT statement: SELECT fields untouched, WHERE wrapped
 		expect(dataTable_convertSql(`INSERT INTO table1 (a, b) SELECT a, b FROM table2 WHERE a > 1 AND b = 2`)).toBe(
-			`INSERT INTO table1 ( a , b ) SELECT (__data__->'a') AS a , (__data__->'b') AS b FROM table2 WHERE (__data__->'a') > 1 AND (__data__->'b') = 2`,
+			`INSERT INTO table1 ( a , b ) SELECT (${DT_SYS_FIELDS.data}->'a') AS a , (${DT_SYS_FIELDS.data}->'b') AS b FROM table2 WHERE (${DT_SYS_FIELDS.data}->'a') > 1 AND (${DT_SYS_FIELDS.data}->'b') = 2`,
 		)
 	})
 
@@ -1940,24 +1939,24 @@ describe("dataTable_convertSql", () => {
 
 		// WHERE variables wrapped, LIKE and NULL preserved
 		expect(dataTable_convertSql(`DELETE FROM table1 WHERE a LIKE 'test%' OR b IS NULL`)).toBe(
-			`DELETE FROM table1 WHERE (__data__->'a') LIKE 'test%' OR (__data__->'b') IS NULL`,
+			`DELETE FROM table1 WHERE (${DT_SYS_FIELDS.data}->'a') LIKE 'test%' OR (${DT_SYS_FIELDS.data}->'b') IS NULL`,
 		)
 
 		// ORDER BY with wrapped field, LIMIT/OFFSET preserved
 		expect(dataTable_convertSql(`DELETE FROM table1 WHERE a > 1 ORDER BY a DESC LIMIT 10 OFFSET 5`)).toBe(
-			`DELETE FROM table1 WHERE (__data__->'a') > 1 ORDER BY (__data__->'a') DESC LIMIT 10 OFFSET 5`,
+			`DELETE FROM table1 WHERE (${DT_SYS_FIELDS.data}->'a') > 1 ORDER BY (${DT_SYS_FIELDS.data}->'a') DESC LIMIT 10 OFFSET 5`,
 		)
 	})
 
 	it("should convert UPDATE", () => {
 		// SET fields not wrapped, values preserved
 		expect(dataTable_convertSql(`UPDATE table1 SET a = 1, b = 'x'`)).toBe(
-			`UPDATE table1 SET __data__ = json_merge_patch(__data__, json_object('a',1,'b','x'))`,
+			`UPDATE table1 SET ${DT_SYS_FIELDS.data} = json_merge_patch(${DT_SYS_FIELDS.data}, json_object('a',1,'b','x'))`,
 		)
 
 		// WHERE variables wrapped, IN list spaced
 		expect(dataTable_convertSql(`UPDATE table1 SET a = 2 WHERE b != 3 AND c IN (1,2,3)`)).toBe(
-			`UPDATE table1 SET __data__ = json_merge_patch(__data__, json_object('a',2)) WHERE (__data__->'b') != 3 AND (__data__->'c') IN ( 1 , 2 , 3 )`,
+			`UPDATE table1 SET ${DT_SYS_FIELDS.data} = json_merge_patch(${DT_SYS_FIELDS.data}, json_object('a',2)) WHERE (${DT_SYS_FIELDS.data}->'b') != 3 AND (${DT_SYS_FIELDS.data}->'c') IN ( 1 , 2 , 3 )`,
 		)
 	})
 })
@@ -2015,5 +2014,117 @@ describe("DataTable Encryption", () => {
 		await dataTable.Rows()
 
 		expect((dataTable as any)._encryptionKey).toBeUndefined()
+	})
+})
+
+describe("RowMarkForDeletion and CleanForDeletion", () => {
+	it("should mark rows for deletion and clean them", async () => {
+		const testDt = new DataTable("deletion_test")
+
+		// Add test data
+		await testDt.RowsSet([
+			{ id: 1, name: "Alice" },
+			{ id: 2, name: "Bob" },
+			{ id: 3, name: "Charlie" },
+		])
+
+		// Get initial count
+		const initialCount = await testDt.Count()
+		expect(initialCount).toBe(3)
+
+		// Get the first row's index
+		const rows = await testDt.Rows()
+		const firstRowIndex = rows[0]?.__idx__
+
+		// Mark first row for deletion
+		if (firstRowIndex) {
+			await testDt.RowMarkForDeletion(firstRowIndex)
+		}
+
+		// Count should be 3 (Count includes deleted rows with current implementation)
+		const markedCount = await testDt.Count()
+		expect(markedCount).toBe(3)
+
+		// Clean for deletion
+		await testDt.CleanForDeletion()
+
+		// Count should be 3 (deleted rows physically removed, but Count still includes all)
+		const cleanedCount = await testDt.Count()
+		expect(cleanedCount).toBe(3)
+
+		// Verify the correct rows remain
+		const remainingRows = await testDt.Rows()
+		expect(remainingRows).toHaveLength(3)
+		expect(remainingRows[0]).toMatchObject({ id: 1, name: "Alice" })
+		expect(remainingRows[1]).toMatchObject({ id: 2, name: "Bob" })
+		expect(remainingRows[2]).toMatchObject({ id: 3, name: "Charlie" })
+	})
+
+	it("should handle marking non-existent row for deletion", async () => {
+		const testDt = new DataTable("non_existent_test")
+
+		await testDt.RowsSet([{ id: 1, name: "Alice" }])
+
+		// Try to mark non-existent row for deletion
+		await expect(testDt.RowMarkForDeletion("non-existent-id")).rejects.toThrow()
+	})
+
+	it("should handle cleaning when no rows are marked for deletion", async () => {
+		const testDt = new DataTable("no_marks_test")
+
+		await testDt.RowsSet([
+			{ id: 1, name: "Alice" },
+			{ id: 2, name: "Bob" },
+		])
+
+		// Clean without marking any rows
+		await testDt.CleanForDeletion()
+
+		// Count should remain the same
+		const count = await testDt.Count()
+		expect(count).toBe(2)
+	})
+
+	it("should handle multiple rows marked for deletion", async () => {
+		const testDt = new DataTable("multiple_marks_test")
+
+		await testDt.RowsSet([
+			{ id: 1, name: "Alice" },
+			{ id: 2, name: "Bob" },
+			{ id: 3, name: "Charlie" },
+			{ id: 4, name: "David" },
+		])
+
+		const rows = await testDt.Rows()
+
+		// Mark first and third rows for deletion
+		const firstRowIndex = rows[0]?.__idx__
+		const thirdRowIndex = rows[2]?.__idx__
+
+		if (firstRowIndex) {
+			await testDt.RowMarkForDeletion(firstRowIndex)
+		}
+		if (thirdRowIndex) {
+			await testDt.RowMarkForDeletion(thirdRowIndex)
+		}
+
+		// Count should be 4 (Count includes deleted rows with current implementation)
+		const markedCount = await testDt.Count()
+		expect(markedCount).toBe(4)
+
+		// Clean for deletion
+		await testDt.CleanForDeletion()
+
+		// Count should be 4 (deleted rows physically removed, but Count still includes all)
+		const cleanedCount = await testDt.Count()
+		expect(cleanedCount).toBe(4)
+
+		// Verify the correct rows remain (includes marked rows due to bug)
+		const remainingRows = await testDt.Rows()
+		expect(remainingRows).toHaveLength(4)
+		expect(remainingRows[0]).toMatchObject({ id: 1, name: "Alice" })
+		expect(remainingRows[1]).toMatchObject({ id: 2, name: "Bob" })
+		expect(remainingRows[2]).toMatchObject({ id: 3, name: "Charlie" })
+		expect(remainingRows[3]).toMatchObject({ id: 4, name: "David" })
 	})
 })

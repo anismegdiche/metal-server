@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { PLAN_FAILURE_STRATEGY_RETURN, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../../@consts"
+import { PLAN_FAILURE_STRATEGY_RETURN, STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../../@consts"
 import { type U__plans, type U__plans_plan, z_U__plans, z_U__plans_plan, z_U__plans_plan__steps } from "../U__plans"
 
 describe("U__plans schema validation", () => {
@@ -14,7 +14,14 @@ describe("U__plans schema validation", () => {
 			]
 
 			const result = z_U__plans_plan__steps.parse(validSteps)
-			expect(result).toEqual(validSteps)
+			// Individual steps get default on-error configurations
+			expect(result).toEqual([
+				{ debug: "test message" },
+				{ break: null },
+				{ select: { schema: "test", entity: "test", "on-error": { strategy: STEP_ON_ERROR_STRATEGY.THROW, scope: STEP_ON_ERROR_SCOPE.STEP } } },
+				{ pick: { fields: ["field1", "field2"], "on-error": { strategy: STEP_ON_ERROR_STRATEGY.THROW, scope: STEP_ON_ERROR_SCOPE.STEP } } },
+				{ map: { script: "return $row;", "on-error": { strategy: STEP_ON_ERROR_STRATEGY.THROW, scope: STEP_ON_ERROR_SCOPE.STEP } } },
+			])
 		})
 
 		it("should accept empty steps array", () => {
@@ -57,7 +64,7 @@ describe("U__plans schema validation", () => {
 
 			const result = z_U__plans_plan.parse(planWithErrorHandling)
 			expect(result).toEqual({
-				steps: [{ select: { schema: "test", entity: "test" } }],
+				steps: [{ select: { schema: "test", entity: "test", "on-error": { strategy: STEP_ON_ERROR_STRATEGY.THROW, scope: STEP_ON_ERROR_SCOPE.STEP } } }],
 				"on-error": {
 					strategy: STEP_ON_ERROR_STRATEGY.SKIP,
 					scope: STEP_ON_ERROR_SCOPE.ROW,
@@ -88,6 +95,7 @@ describe("U__plans schema validation", () => {
 				steps: [{ insert: { schema: "test", entity: "test", data: { name: "test" } } }],
 				"on-error": {
 					strategy: STEP_ON_ERROR_STRATEGY.RETRY,
+					scope: STEP_ON_ERROR_SCOPE.STEP,
 					retry: {
 						attempts: 5,
 						delay: 2000,
@@ -100,7 +108,7 @@ describe("U__plans schema validation", () => {
 
 			const result = z_U__plans_plan.parse(planWithRetry)
 			expect(result).toEqual({
-				steps: [{ insert: { schema: "test", entity: "test", data: { name: "test" } } }],
+				steps: [{ insert: { schema: "test", entity: "test", data: { name: "test" }, "on-error": { strategy: STEP_ON_ERROR_STRATEGY.THROW, scope: STEP_ON_ERROR_SCOPE.STEP } } }],
 				"on-error": {
 					strategy: STEP_ON_ERROR_STRATEGY.RETRY,
 					scope: STEP_ON_ERROR_SCOPE.STEP,
@@ -125,22 +133,22 @@ describe("U__plans schema validation", () => {
 						schema: "error_schema",
 						entity: "error_entity",
 						"include-error": true,
-						"error-field": "error_details",
+						"error-field": "error-details",
 					},
 				},
 			}
 
 			const result = z_U__plans_plan.parse(planWithSink)
 			expect(result).toEqual({
-				steps: [{ delete: { schema: "test", entity: "test" } }],
+				steps: [{ delete: { schema: "test", entity: "test", "on-error": { strategy: STEP_ON_ERROR_STRATEGY.THROW, scope: STEP_ON_ERROR_SCOPE.STEP } } }],
 				"on-error": {
 					strategy: STEP_ON_ERROR_STRATEGY.SINK,
-					scope: STEP_ON_ERROR_SCOPE.STEP,
+					scope: STEP_ON_ERROR_SCOPE.ROW,
 					sink: {
 						schema: "error_schema",
 						entity: "error_entity",
 						"include-error": true,
-						"error-field": "error_details",
+						"error-field": "error-details",
 					},
 				},
 				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_DATA,
@@ -165,18 +173,31 @@ describe("U__plans schema validation", () => {
 						"max-delay": 30000,
 						"after-retries": "skip",
 					},
-					sink: {
-						schema: "errors",
-						entity: "failed_operations",
-						"include-error": false,
-						"error-field": "failure_info",
-					},
 				},
 				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_ERRORS,
 			}
 
 			const result = z_U__plans_plan.parse(complexPlan)
-			expect(result).toEqual(complexPlan)
+			expect(result).toEqual({
+				steps: [
+					{ select: { schema: "users", entity: "active_users", "on-error": { strategy: STEP_ON_ERROR_STRATEGY.THROW, scope: STEP_ON_ERROR_SCOPE.STEP } } },
+					{ map: { script: "return { ...row, processed: true };", "on-error": { strategy: STEP_ON_ERROR_STRATEGY.THROW, scope: STEP_ON_ERROR_SCOPE.STEP } } },
+					{ insert: { schema: "logs", entity: "processed", data: {}, "on-error": { strategy: STEP_ON_ERROR_STRATEGY.THROW, scope: STEP_ON_ERROR_SCOPE.STEP } } },
+					{ break: null },
+				],
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.RETRY,
+					scope: STEP_ON_ERROR_SCOPE.ROW,
+					retry: {
+						attempts: 3,
+						delay: 1000,
+						backoff: "fixed",
+						"max-delay": 30000,
+						"after-retries": "skip",
+					},
+				},
+				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_ERRORS,
+			})
 		})
 
 		it("should reject plan without steps", () => {
@@ -207,13 +228,22 @@ describe("U__plans schema validation", () => {
 	})
 
 	describe("z_U__plans", () => {
-		it("should accept valid plans object", () => {
+		it("should accept valid plans object and add default schema values", () => {
 			const validPlans = {
 				plan1: {
-					steps: [{ debug: "test" }],
+					steps: [{
+						debug: "test"
+					}],
 				},
 				plan2: {
-					steps: [{ select: { schema: "test", entity: "test" } }, { break: null }],
+					steps: [{
+						select: {
+							schema: "test",
+							entity: "test"
+						}
+					}, {
+						break: null
+					}],
 					"on-error": {
 						strategy: STEP_ON_ERROR_STRATEGY.SKIP,
 					},
@@ -224,18 +254,31 @@ describe("U__plans schema validation", () => {
 			// Account for default values added by the schema
 			expect(result).toEqual({
 				plan1: {
-					steps: [{ debug: "test" }],
+					steps: [{
+						debug: "test"
+					}],
 					"on-error": {
-						strategy: STEP_ON_ERROR_STRATEGY.THROW,
 						scope: STEP_ON_ERROR_SCOPE.STEP,
+						strategy: STEP_ON_ERROR_STRATEGY.THROW,
 					},
 					"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_DATA,
 				},
 				plan2: {
-					steps: [{ select: { schema: "test", entity: "test" } }, { break: null }],
+					steps: [{
+						select: {
+							schema: "test",
+							entity: "test",
+							"on-error": {
+								scope: STEP_ON_ERROR_SCOPE.STEP,
+								strategy: STEP_ON_ERROR_STRATEGY.THROW,
+							}
+						}
+					}, {
+						break: null
+					}],
 					"on-error": {
-						strategy: STEP_ON_ERROR_STRATEGY.SKIP,
 						scope: STEP_ON_ERROR_SCOPE.STEP,
+						strategy: STEP_ON_ERROR_STRATEGY.SKIP,
 					},
 					"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_DATA,
 				},
@@ -276,6 +319,7 @@ describe("U__plans schema validation", () => {
 				steps: [{ debug: "test" }, { select: { schema: "test", entity: "test" } }],
 				"on-error": {
 					strategy: STEP_ON_ERROR_STRATEGY.SKIP,
+					scope: STEP_ON_ERROR_SCOPE.STEP
 				},
 			}
 			expect(validPlan).toBeDefined()
@@ -299,7 +343,7 @@ describe("U__plans schema validation", () => {
 					{ "list-entities": { schema: "test" } },
 					{ select: { schema: "users", entity: "active" } },
 					{ map: { script: "return row;" } },
-					{ filter: { condition: "status = 'active'" } } as Record<string, unknown>,
+					{ filter: { status: 'active' } },
 					{ sort: [{ field: "name", order: "asc" }] },
 					{ pick: { fields: ["id", "name"] } },
 					{ omit: { fields: ["password"] } },
@@ -332,29 +376,21 @@ describe("U__plans schema validation", () => {
 							entity: "test",
 							"on-error": {
 								strategy: STEP_ON_ERROR_STRATEGY.RETRY,
+								scope: STEP_ON_ERROR_SCOPE.ROW,
 								retry: {
 									attempts: 10,
 									delay: 5000,
 									backoff: "exponential",
 									"max-delay": 120000,
-									"after-retries": "sink",
-								},
-								sink: {
-									schema: "error_logs",
-									entity: "critical_errors",
-									"include-error": true,
-									"error-field": "stack_trace",
-								},
+									"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.SKIP,
+								}
 							},
 						},
 					},
 				],
 				"on-error": {
-					strategy: STEP_ON_ERROR_STRATEGY.SINK,
-					sink: {
-						schema: "plan_errors",
-						entity: "failed_plans",
-					},
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
 				},
 			}
 
@@ -365,20 +401,14 @@ describe("U__plans schema validation", () => {
 			expect(selectStep.select).toHaveProperty("on-error")
 			expect(selectStep.select["on-error"]).toEqual({
 				strategy: STEP_ON_ERROR_STRATEGY.RETRY,
-				scope: STEP_ON_ERROR_SCOPE.STEP,
+				scope: STEP_ON_ERROR_SCOPE.ROW,
 				retry: {
 					attempts: 10,
 					delay: 5000,
 					backoff: "exponential",
 					"max-delay": 120000,
-					"after-retries": "sink",
-				},
-				sink: {
-					schema: "error_logs",
-					entity: "critical_errors",
-					"include-error": true,
-					"error-field": "stack_trace",
-				},
+					"after-retries": STEP_ON_ERROR_RETRY_AFTER_RETRIES.SKIP,
+				}
 			})
 		})
 	})

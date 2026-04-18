@@ -16,13 +16,14 @@ import { clsClonable } from "../utils/base/clsClonable"
 import { JsonUtils } from "../utils/JsonUtils"
 import { Logger } from "../utils/Logger"
 import { Mutex } from "../utils/Mutex"
+import { RowUtils } from "../utils/RowUtils"
 import type { TSqlToken } from "../utils/SqlQueryUtils"
 import { SQL_TYPE, SqlQueryUtils } from "../utils/SqlQueryUtils"
 import { StringUtils } from "../utils/StringUtils"
 import { TypeUtils } from "../utils/TypeUtils"
 import { Utils } from "../utils/Utils"
 import type { TFields, TMetaData, TOrderBy, TRow, } from "./DataTableTypes"
-import { SORT_ORDER, z_SORT_ORDER, z_TOrderBy, z_TRow, } from "./DataTableTypes"
+import { DT_SYS_FIELDS, SORT_ORDER, z_SORT_ORDER, z_TOrderBy, z_TRow, } from "./DataTableTypes"
 import type { TAny } from "./TAny"
 import type { TJson } from "./TJson"
 import type { TUuidv7 } from "./TUuidv7"
@@ -30,14 +31,15 @@ import type { TUuidv7 } from "./TUuidv7"
 
 // constants
 export { SORT_ORDER }
-export const DATATABLE_SYS_FIELDS = ["__seq__", "__idx__", "__data__", "created_at"]
-export const DATATABLE_TEMP_PATH = StringUtils.Path(SERVER.TEMP_PATH, "data")
 
-// schemas
-export { z_SORT_ORDER, z_TOrderBy, z_TRow }
+export const DATATABLE_SYS_FIELDS: string[] = Object.values(DT_SYS_FIELDS)
+export const DATATABLE_TEMP_PATH = StringUtils.Path(SERVER.TEMP_PATH, "data")
 
 // types
 export type { TFields, TMetaData, TOrderBy, TRow }
+// schemas
+export { z_SORT_ORDER, z_TOrderBy, z_TRow }
+
 type TStats = {
 	row_count: number
 	field_count: number
@@ -87,10 +89,20 @@ export function duckDb_Sql_CreateTable(table: string): string {
     CREATE SEQUENCE IF NOT EXISTS ${duckDb_Sql_SafeSeqName(table)} START 1;
 
     CREATE TABLE IF NOT EXISTS ${duckDb_Sql_SafeName(table)} (
-        __seq__     INTEGER     PRIMARY KEY DEFAULT nextval('${duckDb_Sql_SafeSeqName(table)}'),
-        __idx__     TEXT        DEFAULT uuidv7(),
-        __data__    JSON,
-        created_at  TIMESTAMP   DEFAULT CURRENT_TIMESTAMP
+        ${DT_SYS_FIELDS.seq}
+			INTEGER     PRIMARY KEY DEFAULT nextval('${duckDb_Sql_SafeSeqName(table)}'),
+        
+		${DT_SYS_FIELDS.idx}
+			TEXT        DEFAULT uuidv7(),
+        
+		${DT_SYS_FIELDS.deleted}     
+			BOOLEAN     DEFAULT false,
+        
+		${DT_SYS_FIELDS.data}     
+			JSON,
+        
+		${DT_SYS_FIELDS.created_at}
+			TIMESTAMP   DEFAULT CURRENT_TIMESTAMP
     );
     `
 }
@@ -113,12 +125,14 @@ function dataTable_constructSql({
 	filter,
 	limit,
 	skip,
-	sort = "__seq__",
+	sort = DT_SYS_FIELDS.seq,
 	safeName,
 }: TRowsConstructSqlParams): string {
-	const sqlIndex = includeIndex ? "__idx__," : ""
+	const sqlIndex = includeIndex
+		? `${DT_SYS_FIELDS.idx},`
+		: ""
 
-	let sqlWhere = "WHERE 1=1"
+	let sqlWhere = `WHERE ${DT_SYS_FIELDS.deleted} = false`
 
 	if (filter) {
 		const _filter =
@@ -129,35 +143,33 @@ function dataTable_constructSql({
 						return `${key} = '${value}'`
 					})
 					.join(" AND ")
-
-		sqlWhere = `WHERE ${dataTable_convertSql(_filter)}`
+		sqlWhere = `WHERE ${DT_SYS_FIELDS.deleted} = false AND ${dataTable_convertSql(_filter)}`
 	}
 
 	let sqlOrderBy = ""
 
 	if (sort && sort !== null) {
 		const _sort = typeof sort === "string" ? sort : JsonUtils.Join(sort, " ", ", ")
-
 		sqlOrderBy = `ORDER BY ${dataTable_convertSql(_sort)}`
 	}
 
 	const sqlOffset = skip ? `OFFSET ${skip}` : ""
-
 	const sqlLimit = limit ? `LIMIT ${limit}` : ""
 
 	const sql = `
-            SELECT
-                __seq__,
+		SELECT
+                ${DT_SYS_FIELDS.seq},
                 ${sqlIndex}
-                __data__,
-                created_at
-            FROM
-                ${safeName}
-            ${sqlWhere}
-            ${sqlOrderBy}
-            ${sqlOffset}
-            ${sqlLimit}
-            `
+                ${DT_SYS_FIELDS.data},
+                ${DT_SYS_FIELDS.created_at},
+				${DT_SYS_FIELDS.deleted}
+		FROM
+			${safeName}
+		${sqlWhere}
+		${sqlOrderBy}
+		${sqlOffset}
+		${sqlLimit}
+		`
 
 	return sql
 }
@@ -174,7 +186,7 @@ export function dataTable_convertSql(sql?: string): string {
 			case token.type === SQL_TYPE.VARIABLE &&
 				!dataTable_fieldIsSystem(token.token) &&
 				!["FROM", "INTO", "SET"].includes(token.context):
-				token.token = `(__data__->'${token.token.replaceAll(/"/g, "")}')`
+				token.token = `(${DT_SYS_FIELDS.data}->'${token.token.replaceAll(/"/g, "")}')`
 				break
 
 			case token.type === SQL_TYPE.STRING &&
@@ -185,7 +197,7 @@ export function dataTable_convertSql(sql?: string): string {
 				token.token = `'"${token.token.slice(1, -1)}"'`
 				break
 			case token.type === SQL_TYPE.FIELD && !dataTable_fieldIsSystem(token.token) && token.context === "SELECT":
-				token.token = `(__data__->'${token.token.replaceAll(/"/g, "")}') AS ${token.token}`
+				token.token = `(${DT_SYS_FIELDS.data}->'${token.token.replaceAll(/"/g, "")}') AS ${token.token}`
 				break
 			default:
 				break
@@ -194,7 +206,7 @@ export function dataTable_convertSql(sql?: string): string {
 		return token
 	})
 
-	let setToken: string = "__data__ = json_merge_patch(__data__, json_object("
+	let setToken: string = `${DT_SYS_FIELDS.data} = json_merge_patch(${DT_SYS_FIELDS.data}, json_object(`
 	tokens.filter((token) => {
 		if (token.context === "SET") {
 			switch (true) {
@@ -593,16 +605,16 @@ export class DataTable extends clsClonable {
 						// Prefer sequence-based insert (if sequence available)
 						await cnx.runAndReadAll(
 							`INSERT INTO ${this.SafeName}
-                                (__data__)
+                                (${DT_SYS_FIELDS.data})
                              VALUES
                                 (?)
-                             RETURNING __seq__`,
+                             RETURNING ${DT_SYS_FIELDS.seq}`,
 							[__data__],
 						)
 					} catch {
 						// Fallback if sequence not supported or insertWithSeq failed: compute max(__seq__)+1
 						const r2 = await cnx.runAndReadAll(
-							`SELECT MAX(__seq__) as maxSeq
+							`SELECT MAX(${DT_SYS_FIELDS.seq}) as maxSeq
                             FROM ${this.SafeName}`,
 							[],
 						)
@@ -610,7 +622,10 @@ export class DataTable extends clsClonable {
 						const newSeq = maxSeq + 1
 						await cnx.run(
 							`INSERT INTO ${this.SafeName}
-                                (__seq__, __data__)
+                                (
+									${DT_SYS_FIELDS.seq}, 
+									${DT_SYS_FIELDS.data}
+								)
                              VALUES
                                 (?, ?)`,
 							[newSeq, __data__],
@@ -758,7 +773,15 @@ export class DataTable extends clsClonable {
 	async Count(): Promise<number> {
 		await this._dbEnsureInitialized()
 		const cnx = this._duckConnection!
-		const sql = `SELECT COUNT(*) as count FROM ${this.SafeName}`
+
+		const sql = `
+			SELECT 
+				COUNT(*) as count 
+			FROM 
+				${this.SafeName}
+			WHERE
+				${DT_SYS_FIELDS.deleted} = false`
+
 		const reader = await cnx.runAndReadAll(sql)
 		const rows = reader.getRowObjects()
 		return Number(rows[0]?.count ?? 0)
@@ -776,8 +799,7 @@ export class DataTable extends clsClonable {
 	}
 
 	async GetFieldValues<T>(fieldName: string): Promise<T[]> {
-		return this.Rows()
-			.then((rows) => rows.map((row) => row[fieldName]) as T[])
+		return this.Rows().then((rows) => rows.map((row) => row[fieldName]) as T[])
 	}
 
 	@Logger.LogFunction()
@@ -872,7 +894,7 @@ export class DataTable extends clsClonable {
 			filter,
 			skip: undefined,
 			limit: undefined,
-			sort: "__seq__", // Always sort by __seq__ for consistent ordering
+			sort: DT_SYS_FIELDS.seq, // Always sort by __seq__ for consistent ordering
 			safeName: this.SafeName,
 		})
 
@@ -910,10 +932,10 @@ export class DataTable extends clsClonable {
 
 		const __data__ = rowOrRows ? (Array.isArray(rowOrRows) ? rowOrRows : [rowOrRows]) : (this._rows ?? [])
 
-		await this._dbEnsureInitialized()
-		await this.RowsDelete().catch()
-		await this._dbPersistRows(__data__)
-		return this.FieldsSet()
+		return this._dbEnsureInitialized()
+			.then(() => this.RowsDelete().catch())
+			.then(() => this._dbPersistRows(__data__))
+			.then(() => this.FieldsSet())
 	}
 
 	@Logger.LogFunction(true)
@@ -955,11 +977,12 @@ export class DataTable extends clsClonable {
 
 		const _condition = condition ? `WHERE ${dataTable_convertSql(condition)}` : ""
 
-		await cnx.run(
-			`
-        UPDATE ${this.SafeName}
-        SET __data__ = ?
-        ${_condition}`,
+		await cnx.run(`
+			UPDATE 
+				${this.SafeName}
+			SET 
+				${DT_SYS_FIELDS.data} = ?
+			${_condition}`,
 			[__data__],
 		)
 		return this.FieldsSet()
@@ -1003,15 +1026,18 @@ export class DataTable extends clsClonable {
 		// Use single-writer queue for high-throughput updates
 		await this._enqueue(async () => {
 			const sql = `
-                UPDATE ${this.SafeName}
-                SET __data__ = ?
-                WHERE __idx__ = ?
+                UPDATE 
+                    ${this.SafeName}
+                SET 
+                    ${DT_SYS_FIELDS.data} = ?
+                WHERE 
+                    ${DT_SYS_FIELDS.idx} = ?
                 `
 			try {
 				await cnx.run(sql, [__data__, index])
 			} catch (error) {
 				Logger.Error(
-					`${Logger.Out} DataTable._RowUpdateByIndex: Failed to update row in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`,
+					`${Logger.Out} DataTable._rowUpdateByIndex: Failed to update row in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`,
 				)
 				throw error
 			}
@@ -1024,35 +1050,100 @@ export class DataTable extends clsClonable {
 
 		const sql = `
             DELETE FROM ${this.SafeName}
-            WHERE __idx__ = ?
+            WHERE ${DT_SYS_FIELDS.idx} = ?
             `
 
 		// Debug: Check if row exists before deletion
-		const checkSql = `SELECT __idx__, __data__ FROM ${this.SafeName} WHERE __idx__ = '${index}'`
+		const checkSql = `
+			SELECT 
+				${DT_SYS_FIELDS.idx}, 
+				${DT_SYS_FIELDS.data} 
+			FROM 
+				${this.SafeName} 
+			WHERE 
+				${DT_SYS_FIELDS.idx} = '${index}'`
 		const checkReader = await cnx.runAndReadAll(checkSql)
 		const existingRows = checkReader.getRowObjects()
 		Logger.Debug(
-			`${Logger.Out} DataTable._RowDeleteByIndex: Rows with index ${index}: ${JsonUtils.Stringify(existingRows)}`,
+			`${Logger.Out} DataTable._rowDeleteByIndex: Rows with index ${index}: ${JsonUtils.Stringify(existingRows)}`,
 		)
 
 		try {
 			await cnx.run(sql, [index])
-			Logger.Debug(`${Logger.Out} DataTable._RowDeleteByIndex: Successfully deleted row with index: ${index}`)
+			Logger.Debug(`${Logger.Out} DataTable._rowDeleteByIndex: Successfully deleted row with index: ${index}`)
 
 			// Debug: Check rows after deletion
 			const afterReader = await cnx.runAndReadAll(checkSql)
 			const afterRows = afterReader.getRowObjects()
-			Logger.Debug(`${Logger.Out} DataTable._RowDeleteByIndex: Rows after deletion: ${JsonUtils.Stringify(afterRows)}`)
+			Logger.Debug(`${Logger.Out} DataTable._rowDeleteByIndex: Rows after deletion: ${JsonUtils.Stringify(afterRows)}`)
 
 			// Reset cache after deletion
 			this._rows = undefined
 			this._fields = {}
 		} catch (error) {
 			Logger.Error(
-				`${Logger.Out} DataTable._RowDeleteByIndex: Failed to delete row in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`,
+				`${Logger.Out} DataTable._rowDeleteByIndex: Failed to delete row in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`,
 			)
 			throw error
 		}
+	}
+
+	async RowMarkForDeletion(index: TUuidv7): Promise<void> {
+		await this._dbEnsureInitialized()
+		const cnx = this._duckConnection!
+
+		const sql = `
+			UPDATE 
+				${this.SafeName} 
+			SET 
+				${DT_SYS_FIELDS.deleted} = true 
+			WHERE 
+				${DT_SYS_FIELDS.idx} = '${index}'`
+		try {
+			await cnx.run(sql)
+
+			const checkSql = `
+				SELECT 
+					count(*) as cnt 
+				FROM 
+					${this.SafeName} 
+				WHERE 
+					${DT_SYS_FIELDS.idx} = '${index}' 
+				AND 
+					${DT_SYS_FIELDS.deleted} = true`
+			const reader = await cnx.runAndReadAll(checkSql)
+			const rows = reader.getRowObjects()
+			if (Number(rows[0]?.cnt ?? 0) === 0) {
+				throw new Error(`Row with index '${index}' not found`)
+			}
+		} catch (error) {
+			Logger.Error(
+				`${Logger.Out} DataTable.RowMarkForDeletion: Failed to mark row for deletion in '${this.SafeName}' with index '${index}': ${JsonUtils.Stringify(error)}`,
+			)
+			throw error
+		}
+	}
+
+	async CleanForDeletion(): Promise<this> {
+		await this._dbEnsureInitialized()
+		const cnx = this._duckConnection!
+
+		const sql = `
+			DELETE FROM 
+				${this.SafeName} 
+			WHERE 
+				${DT_SYS_FIELDS.deleted} = true`
+
+		try {
+			await cnx.run(sql)
+		} catch (error) {
+			Logger.Error(
+				`${Logger.Out} DataTable.CleanForDeletion: Failed to clean rows in '${this.SafeName}': ${JsonUtils.Stringify(error)}`,
+			)
+			throw error
+		}
+
+		return this
 	}
 
 	@Logger.LogFunction(true)
@@ -1084,23 +1175,32 @@ export class DataTable extends clsClonable {
 
 			for await (const rowData of iterator) {
 				try {
+					const { __idx__ } = rowData
+
+					Assert.Var<string>(__idx__, "Row missing index")
+
 					const _updatedRow = await fnMap(rowData)
 
-					if (_updatedRow === undefined)
-						continue
+					if (_updatedRow === undefined) continue
 
-					if (rowData.__idx__) {
-						const __data__ = JsonUtils.Stringify(_updatedRow)
-						await cnx.run(`UPDATE ${this.SafeName} SET __data__ = ? WHERE __idx__ = ?`, [__data__, rowData.__idx__])
-						processedCount++
+					const __data__ = JsonUtils.Stringify(_updatedRow)
+					await cnx.run(
+						`
+						UPDATE 
+							${this.SafeName} 
+						SET 
+							${DT_SYS_FIELDS.data} = ? 
+						WHERE 
+							${DT_SYS_FIELDS.idx} = ?`,
+						[__data__, __idx__],
+					)
 
-						// Commit in batches to avoid transaction getting too large
-						if (processedCount % batchSize === 0) {
-							await cnx.run("COMMIT")
-							await cnx.run("BEGIN TRANSACTION")
-						}
-					} else {
-						Logger.Warn(`DataTable.RowsMap: Row missing __idx__`)
+					processedCount++
+
+					// Commit in batches to avoid transaction getting too large
+					if (processedCount % batchSize === 0) {
+						await cnx.run("COMMIT")
+						await cnx.run("BEGIN TRANSACTION")
 					}
 				} catch (err) {
 					Logger.Error(`DataTable.RowsMap: Error processing row: ${JsonUtils.Stringify(err)}`)
@@ -1174,21 +1274,21 @@ export class DataTable extends clsClonable {
 			.join(", ")
 
 		const sqlSort = Object.keys(sorts)
-			.map((field) => `(__data__->'${field}') as "${field}"`)
+			.map((field) => `(${DT_SYS_FIELDS.data}->'${field}') as "${field}"`)
 			.join(",\n        ")
 
 		const sql = `
             WITH data_view AS (
                 SELECT
-                    __idx__,
-                    __data__,
+                    ${DT_SYS_FIELDS.idx},
+                    ${DT_SYS_FIELDS.data},
                     ${sqlSort}
                 FROM
                     ${this.SafeName}
             ),
             ranked AS (
                 SELECT
-                    __idx__,
+                    ${DT_SYS_FIELDS.idx},
                     ROW_NUMBER() OVER (
                         ORDER BY ${sqlOrderBy}
                     ) AS new_seq
@@ -1198,36 +1298,29 @@ export class DataTable extends clsClonable {
             UPDATE
                 ${this.SafeName} AS t
             SET
-                __seq__ = r.new_seq
+                ${DT_SYS_FIELDS.seq} = r.new_seq
             FROM
                 ranked r
             WHERE
-                t.__idx__ = r.__idx__;
+                t.${DT_SYS_FIELDS.idx} = r.${DT_SYS_FIELDS.idx};
             `
 
-		await this._runSqlAndGetRows(sql)
-		return this
+		return this._runSqlAndGetRows(sql)
+			.then(() => this)
 	}
 
 	@Logger.LogFunction(true)
 	async Pick(fields: string[]): Promise<this> {
-		if (!fields || fields.length === 0) return this
+		if (!fields || fields.length === 0)
+			return this
 
 		Logger.Info(`${Logger.Out} DataTable.Pick: Starting to pick fields ${fields.join(", ")}`)
 
-		return this.RowsMap(async (row: TRow) => {
-			const filtered: TRow = {}
-
-			// Keep only the specified fields
-			for (const field of fields) {
-
-				if (Object.hasOwn(row, field)) {
-					filtered[field] = (row as any)[field]
-				}
-			}
-
-			return filtered
-		}).then(() => {
+		return this.RowsMap((row: TRow) =>
+			Promise.resolve(
+				RowUtils.Pick(row, fields)
+			)
+		).then(() => {
 			Logger.Info(`${Logger.Out} DataTable.Pick: Successfully picked ${fields.length} fields`)
 			return this
 		})
@@ -1235,22 +1328,16 @@ export class DataTable extends clsClonable {
 
 	@Logger.LogFunction(true)
 	async Omit(fields: string[]): Promise<this> {
-		if (!fields || fields.length === 0) return this
+		if (!fields || fields.length === 0)
+			return this
 
 		Logger.Info(`${Logger.Out} DataTable.Omit: Starting to omit fields ${fields.join(", ")}`)
 
-		return this.RowsMap(async (row: TRow) => {
-			const filtered: TRow = {}
-
-			// Keep all fields except the ones to omit
-			for (const [key, value] of Object.entries(row)) {
-				if (!fields.includes(key)) {
-					filtered[key] = value
-				}
-			}
-
-			return filtered
-		}).then(() => {
+		return this.RowsMap((row: TRow) =>
+			Promise.resolve(
+				RowUtils.Omit(row, fields)
+			)
+		).then(() => {
 			Logger.Info(`${Logger.Out} DataTable.Omit: Successfully omitted ${fields.length} fields`)
 			return this
 		})

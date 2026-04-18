@@ -12,6 +12,7 @@ import {
 	type U__plans_plan_delete_Params,
 	type U__plans_plan_list_entities_Params,
 } from "../U__plans_params"
+import { DT_SYS_FIELDS } from "../../../../types/DataTableTypes"
 
 describe("CRUD operation schema validation", () => {
 	describe("z_U__plans_plan_select_Params", () => {
@@ -38,7 +39,13 @@ describe("CRUD operation schema validation", () => {
 				fields: "field1,field2"
 			}
 			const result = z_U__plans_plan_select_Params.parse(config)
-			expect(result).toEqual(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
 		})
 
 		it("should accept omitted schema request", () => {
@@ -47,7 +54,13 @@ describe("CRUD operation schema validation", () => {
 				filter: { status: "active" }
 			}
 			const result = z_U__plans_plan_select_Params.parse(config)
-			expect(result).toEqual(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
 		})
 
 		it("should accept partial with error handling", () => {
@@ -96,7 +109,13 @@ describe("CRUD operation schema validation", () => {
 				data: { name: "test", value: 123 }
 			}
 			const result = z_U__plans_plan_insert_Params.parse(config)
-			expect(result).toEqual(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
 		})
 
 		it("should accept omitted schema request", () => {
@@ -104,7 +123,13 @@ describe("CRUD operation schema validation", () => {
 				data: { name: "test", value: 123 }
 			}
 			const result = z_U__plans_plan_insert_Params.parse(config)
-			expect(result).toEqual(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
 		})
 
 		it("should accept partial with error handling", () => {
@@ -113,12 +138,12 @@ describe("CRUD operation schema validation", () => {
 				entity: "test_entity",
 				data: { name: "test" },
 				"on-error": {
+					scope: STEP_ON_ERROR_SCOPE.ROW,
 					strategy: STEP_ON_ERROR_STRATEGY.SINK,
-					scope: STEP_ON_ERROR_SCOPE.STEP,
 					sink: {
 						schema: "error_schema",
 						entity: "error_entity",
-						"error-field": "error_details",
+						"error-field": "error-details",
 						"include-error": true,
 					}
 				}
@@ -153,7 +178,13 @@ describe("CRUD operation schema validation", () => {
 				filter: { id: 123 }
 			}
 			const result = z_U__plans_plan_update_Params.parse(config)
-			expect(result).toEqual(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
 		})
 
 		it("should accept omitted schema request", () => {
@@ -162,7 +193,13 @@ describe("CRUD operation schema validation", () => {
 				"filter-expression": "id > 100"
 			}
 			const result = z_U__plans_plan_update_Params.parse(config)
-			expect(result).toEqual(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
 		})
 
 		it("should accept partial with error handling", () => {
@@ -196,12 +233,12 @@ describe("CRUD operation schema validation", () => {
 		it("should accept error handling only", () => {
 			const config = {
 				"on-error": {
+					scope: STEP_ON_ERROR_SCOPE.ROW,
 					strategy: STEP_ON_ERROR_STRATEGY.SINK,
-					"scope": "step",
 					sink: {
 						schema: "error_schema",
 						entity: "error_entity",
-						"error-field": "error_details",
+						"error-field": "error-details",
 						"include-error": true,
 					}
 				}
@@ -217,15 +254,27 @@ describe("CRUD operation schema validation", () => {
 				filter: { status: "inactive" }
 			}
 			const result = z_U__plans_plan_delete_Params.parse(config)
-			expect(result).toEqual(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
 		})
 
 		it("should accept omitted schema request", () => {
 			const config = {
-				"filter-expression": "created_at < '2024-01-01'"
+				"filter-expression": `${DT_SYS_FIELDS.created_at} < '2024-01-01'`
 			}
 			const result = z_U__plans_plan_delete_Params.parse(config)
-			expect(result).toEqual(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
 		})
 
 		it("should accept partial with error handling", () => {
@@ -265,7 +314,13 @@ describe("CRUD operation schema validation", () => {
 				schema: "test_schema"
 			}
 			const result = z_U__plans_plan_list_entities_Params.parse(config)
-			expect(result).toEqual(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
 		})
 
 		it("should accept schema request with source", () => {
@@ -274,7 +329,13 @@ describe("CRUD operation schema validation", () => {
 				source: "test_source"
 			}
 			const result = z_U__plans_plan_list_entities_Params.parse(config)
-			expect(result).toEqual(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
 		})
 
 		it("should accept schema request with error handling", () => {

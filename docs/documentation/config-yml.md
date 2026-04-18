@@ -590,6 +590,13 @@ plans:
 
 :::
 
+### `on-error` <Badge type="info" text="v0.5+" />
+::: note ℹ️ TIP
+For detailed configuration, please see article [on-error](on-error-yml.md).
+:::
+
+
+
 ### `failure-strategy` <Badge type="info" text="v0.5+" />
 
 Defines how the plan behaves when a failure occurs:

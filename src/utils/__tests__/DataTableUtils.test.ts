@@ -221,7 +221,7 @@ describe("DataTableUtils", () => {
 					{ emp_id: 2, name: "Bob", dept_id: 102, dept_name: "IT", location: "SF" },
 					{ emp_id: 3, name: "Charlie", dept_id: 101, dept_name: "HR", location: "NY" },
 				])
-			})
+			})  
 
 			it("should return empty result when no matches found", async () => {
 				const noMatchTable = new DataTable("no_match")

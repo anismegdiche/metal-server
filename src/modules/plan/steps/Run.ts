@@ -1,10 +1,9 @@
 //
 //
 //
-import { isEmpty, isObject, isString, merge, omitBy } from "lodash-es"
+import { isEmpty, isObject, isString, merge } from "lodash-es"
 //
-import { type DataTable, dataTable_fieldIsSystem } from "../../../types/DataTable"
-import type { TJson } from "../../../types/TJson"
+import type { DataTable, TRow } from "../../../types/DataTable"
 import type { TUuidv7 } from "../../../types/TUuidv7"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
@@ -43,7 +42,7 @@ export async function Run(stepParams: U__plans_plan__step_Params, $context?: Par
 
 	const _step = merge(DEFAULT, stepParams) as U__plans_plan_run_Params
 
-	const { ai, task, input, output } = _step
+	const { ai, task } = _step
 	const aiTask = `${ai}-${task}`
 	const aiEngine = AiEngine.AiEnginesInstance.get(aiTask)
 
@@ -55,50 +54,74 @@ export async function Run(stepParams: U__plans_plan__step_Params, $context?: Par
 		rowPromises.push(
 			(async () => {
 				Assert.Var<string>(_row.__idx__, `${STEP.RUN}: data index is not defined`)
-				Assert.Condition(_row?.content, `${STEP.RUN}: content is not defined`)
 
 				const __idx__: TUuidv7 = _row.__idx__
-				const __row = omitBy(_row, dataTable_fieldIsSystem) as TJson
-
-				$context.$row = __row
-
-				const $__data =
-					RX_JS_CODE.exec(input) === null ? $context.$row[input] : PlaceHolder.EvaluateJsCode(input, new Sandbox($context))
-
-				Assert.Condition($__data !== undefined, `${STEP.RUN}: Input ${input} is not defined`)
-
-				const __result = <Record<string, any>>await aiEngine.Run({
-					data: $__data,
-					...(stepParams as U__plans_plan_run_Params),
-				} as TAiArguments)
-
-				if (isEmpty(__result)) return
-
-				$context.$result = __result
-
-				switch (true) {
-					case isString(output):
-						__row[output] = __result
-						break
-
-					case isObject(output):
-						for (const [___outField, ___inField] of Object.entries(output)) {
-							const $__value =
-								RX_JS_CODE.exec(<string>___inField) === null
-									? __result[___inField as string]
-									: PlaceHolder.EvaluateJsCode(<string>___inField, new Sandbox($context))
-							__row[___outField] = $__value
-						}
-						break
-					default:
-						__row[aiTask] = JsonUtils.SafeCopy(__result)
-						break
-				}
+				const __row = await _runRow(_row, stepParams, $context)
 				await planData.RowUpdateByIndex(__idx__, __row)
 			})(),
 		)
 	}
 
-	await Promise.all(rowPromises)
-	return planData.FieldsSet()
+	return Promise.all(rowPromises)
+		.then(() => planData.FieldsSet())
+}
+
+export async function _runRow(row: TRow, stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<TRow> {
+	Assert.Var<U__plans_plan_run_Params>(
+		stepParams,
+		z_U__plans_plan_run_Params.safeParse(stepParams).success,
+		`${STEP.RUN}: Wrong argument passed`,
+	)
+
+	$context = merge($context, {
+		$row: undefined,
+		$result: undefined,
+	})
+
+	const { ai, task, input, output } = stepParams
+	const aiTask = `${ai}-${task}`
+	const aiEngine = AiEngine.AiEnginesInstance.get(aiTask)
+
+	Assert.Var<IAiEngine>(aiEngine, aiEngine !== undefined, `${STEP.RUN}: AI Engine ${aiTask} not found`)
+
+	Assert.Var<string>(row.__idx__, `${STEP.RUN}: data index is not defined`)
+	Assert.Condition(row?.content, `${STEP.RUN}: content is not defined`)
+
+	$context.$row = row
+
+	const $__data = RX_JS_CODE.exec(input) === null
+		? $context.$row[input]
+		: PlaceHolder.EvaluateJsCode(input, new Sandbox($context))
+
+	Assert.Condition($__data !== undefined, `${STEP.RUN}: Input ${input} is not defined`)
+
+	const aiResult = <Record<string, any>>await aiEngine.Run({
+		data: $__data,
+		...(stepParams as U__plans_plan_run_Params),
+	} as TAiArguments)
+
+	if (isEmpty(aiResult))
+		return row
+
+	$context.$result = aiResult
+
+	switch (true) {
+		case isString(output):
+			row[output] = aiResult
+			break
+
+		case isObject(output):
+			for (const [_outField, _inField] of Object.entries(output)) {
+				const $__value =
+					RX_JS_CODE.exec(<string>_inField) === null
+						? aiResult[_inField as string]
+						: PlaceHolder.EvaluateJsCode(<string>_inField, new Sandbox($context))
+				row[_outField] = $__value
+			}
+			break
+		default:
+			row[aiTask] = JsonUtils.SafeCopy(aiResult)
+			break
+	}
+	return row
 }

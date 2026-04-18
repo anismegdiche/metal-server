@@ -1,9 +1,11 @@
 //
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
 import * as chrono from "chrono-node"
 import { forEach, forOwn, get, isEmpty, isObject, isString, pickBy, set } from "lodash-es"
 import objectPath from "object-path"
+import equal from "fast-deep-equal";
 //
 import type { TJson } from "../types/TJson"
 import { Stringify } from "./JsonUtils/Stringify"
@@ -186,5 +188,9 @@ export class JsonUtils {
 		Object.keys(json).forEach((key, index) => {
 			callback(key, json[key], index)
 		})
+	}
+
+	static IsEqual<T = TJson>(json1: T, json2: T): boolean {
+		return equal(json1, json2)
 	}
 }

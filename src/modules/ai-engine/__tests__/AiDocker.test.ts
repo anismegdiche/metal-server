@@ -17,7 +17,7 @@ const mockDockerInstance = vi.hoisted(() => ({
 vi.mock("dockerode", () => ({
 	default: class MockDocker {
 		constructor() {
-			return mockDockerInstance
+			Object.assign(this, mockDockerInstance)
 		}
 	},
 }))
@@ -69,13 +69,6 @@ describe("AiDocker", () => {
 			expect(createNetworkSpy).toHaveBeenCalled()
 			expect(startCaddySpy).toHaveBeenCalled()
 			expect(startScalerSpy).toHaveBeenCalled()
-		})
-	})
-
-	// Skipping Scaler tests for now due to decorator/timer mocking issues
-	describe.skip("Scaler", () => {
-		it("should start and stop the scaler", () => {
-			// ...
 		})
 	})
 })

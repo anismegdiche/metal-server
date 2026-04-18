@@ -19,7 +19,7 @@ import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
 //
 export async function Insert(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
-	
+
 	Assert.Var<U__plans_plan_insert_Params>(
 		stepParams,
 		z_U__plans_plan_insert_Params.safeParse(stepParams).success,
@@ -72,7 +72,7 @@ async function _insertSchema(stepParams: U__plans_plan_insert_Params, $context?:
 }
 
 async function _insertPlan(stepParams: U__plans_plan_insert_Params, $context?: Partial<TContext>): Promise<DataTable> {
-	
+
 	const schemaRequest = stepParams as TSchemaRequestInsert
 	const { entity, data } = schemaRequest
 
@@ -90,4 +90,14 @@ async function _insertPlan(stepParams: U__plans_plan_insert_Params, $context?: P
 	)
 
 	return planData.RowsAdd(data)
+}
+
+export function _insertRow(row: TRow, stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<TRow> {
+	return Insert(
+		{
+			...stepParams as TSchemaRequestInsert,
+			data: row
+		},
+		$context
+	)
 }

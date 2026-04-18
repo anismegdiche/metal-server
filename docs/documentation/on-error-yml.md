@@ -13,8 +13,7 @@ Error handling can be configured at two levels:
 | **Plan-Level** | Default for entire plan execution.                    |
 | **Step-Level** | Specific to an individual step. Overrides plan-level. |
 
-
-**Examples:** 
+**Examples:**
 
 Plan-Level Error Handling
 
@@ -56,18 +55,38 @@ If `on-error` is not specified in a plan, Metal will default to `throw` strategy
 >   my-plan:
 >     on-error:             // [!code warning]
 >       strategy: throw     // [!code warning]
->       scope: step         // [!code warning] 
+>       scope: step         // [!code warning]
 > ```
+
+## `scope`
+
+The `scope` parameter determines whether error handling applies to the entire step or individual rows:
+
+- **`step`**: Error handling applies to the entire step operation. If the step fails, the whole step is retried/failed.
+- **`row`**: Error handling applies to individual rows within the step. Failed rows are handled separately, successful rows continue.
 
 ## `strategy` <Badge type="info" text="v0.5+" />
 
 The `strategy` parameter defines how Metal should handle errors when they occur during plan execution:
 
-- `throw`: Stops plan execution and throws the error.
+- `throw`: Stops plan execution and throws the error, allowed at step scope because row‑level errors are expected and should not abort the whole step.
+- `sink`: Moves failed data to a specified error destination for later analysis and reprocessing, only allowed at row scope because error sinks are intended to capture individual failing rows, not entire step states.
+- `retry`: Retries the failed operation with configurable settings, allowed at both scopes, but the behavior differs (step‑retry vs row‑retry).
 - `skip`: Skips the failed operation and continues with next steps.
-- `sink`: Moves failed data to a specified error destination for later analysis and reprocessing.
-- `retry`: Retries the failed operation with configurable settings.
 
+Here how strategy can be matched with scopes:
+
+| Strategy | Step             | Row              |
+| -------- | ---------------- | ---------------- |
+| `throw`  | ✅               | ❌               |
+| `skip`   | ✅               | ✅               |
+| `sink`   | ❌               | ✅               |
+| `retry`  | ✅<sup>(1)</sup> | ✅<sup>(2)</sup> |
+
+> ✅: Supported
+> ❌: Not supported
+> (1): retry with sink is not supported
+> (2): retry with throw is not supported
 
 ### `throw` <Badge type="info" text="v0.5+" />
 
@@ -106,7 +125,7 @@ Moves failed data to a specified error destination for later analysis and reproc
 | `schema`        | String  | Y        | Error destination schema                                | <Badge type="info" text="v0.5+" /> |
 | `entity`        | String  | Y        | Error destination entity                                | <Badge type="info" text="v0.5+" /> |
 | `include-error` | Boolean | N        | Include error details in sink (default: `true`)         | <Badge type="info" text="v0.5+" /> |
-| `error-field`   | String  | N        | Field name for error details (default: `error_details`) | <Badge type="info" text="v0.5+" /> |
+| `error-field`   | String  | N        | Field name for error details (default: `error-details`) | <Badge type="info" text="v0.5+" /> |
 
 **Example:**
 
@@ -129,7 +148,7 @@ Attempts to retry the failed operation, then applies a fallback strategy after r
 
 | Parameter       | Type    | Required | Description                                                                     | Metal Version                      |
 | --------------- | ------- | -------- | ------------------------------------------------------------------------------- | ---------------------------------- |
-| `attempts`      | Integer | Y        | Maximum retry attempts (default: `3`)                                           | <Badge type="info" text="v0.5+" /> |
+| `attempts`      | Integer | Y        | Maximum retry attempts including initial calls (default: `1`)                   | <Badge type="info" text="v0.5+" /> |
 | `delay`         | Integer | N        | Delay between retries in milliseconds (default: `1000`)                         | <Badge type="info" text="v0.5+" /> |
 | `backoff`       | String  | N        | Backoff strategy: `fixed`, `linear`, `exponential` (default: `fixed`)           | <Badge type="info" text="v0.5+" /> |
 | `max-delay`     | Integer | N        | Maximum delay for exponential/linear backoff in milliseconds (default: `30000`) | <Badge type="info" text="v0.5+" /> |
@@ -138,7 +157,6 @@ Attempts to retry the failed operation, then applies a fallback strategy after r
 ::: warning ⚠️ IMPORTANT
 For `after-retries`=`sink`, you need to complete the sink configuration. Please see [sink](#sink)
 :::
-
 
 **Example:**
 
@@ -157,60 +175,60 @@ For `after-retries`=`sink`, you need to complete the sink configuration. Please 
 >     entity: retry_failures
 > ```
 
-## `scope`
-
-The `scope` parameter determines whether error handling applies to the entire step or individual rows:
-
-- **`step`**: Error handling applies to the entire step operation. If the step fails, the whole step is retried/failed.
-- **`row`**: Error handling applies to individual rows within the step. Failed rows are handled separately, successful rows continue.
-
 ## Error Context Variable
 
 When errors occur, context variable `$error` is available with the following properties:
 
-| Variable    | Description               | Available In                          |
-| ----------- | ------------------------- | ------------------------------------- |
-| `message`   | Error message text        | All strategies and scopes             |
-| `type`      | Error type/classification | All strategies and scopes             |
-| `step`      | Step that failed          | All strategies and scopes             |
-| `timestamp` | When error occurred       | All strategies and scopes             |
-| `attempt`   | Current retry attempt     | Retry strategies (step and row scope) |
+| Variable       | Description                 | Available In                          |
+| -------------- | --------------------------- | ------------------------------------- |
+| `message`      | Error message text          | All strategies and scopes             |
+| `type`         | Error type/classification   | All strategies and scopes             |
+| `step.index`   | Step index that failed      | All strategies and scopes             |
+| `step.command` | Step command that failed    | All strategies and scopes             |
+| `step.params`  | Step parameters that failed | All strategies and scopes             |
+| `timestamp`    | When error occurred         | All strategies and scopes             |
+| `attempt`      | Number of retry attempts    | Retry strategies (step and row scope) |
 
 ## Error Sink Schema
 
-Error sink destinations automatically receive these fields:
+Error sink destinations receive the original row fields plus error metadata:
 
-| Field           | Type         | Description                                                             |
-| --------------- | ------------ | ----------------------------------------------------------------------- |
-| `original_data` | Object/Array | The data that failed processing (varies by step type)                   |
-| `error_details` | Object       | Error information matching context variables (if `include-error: true`) |
-| `step_info`     | Object       | Step context (step index, command, etc.)                                |
-| `timestamp`     | String       | When the error occurred                                                 |
-| `attempt`       | Integer      | Retry attempt number (if applicable)                                    |
+| Field               | Type   | Description                                                                                            |
+| ------------------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| _[original fields]_ | Mixed  | All original row fields are preserved directly                                                         |
+| `error-details`     | Object | Error information including message, type, step context, timestamp, attempt (if `include-error: true`) |
 
-### `error_details` Field Structure
+### `error-details`
 
-The `error_details` field contains the same structure as the context variables:
+The `error-details` field contains the same structure as the context variable `$error`:
 
 ```json
 {
-  "error_details": {
+  "error-details": {
     "message": "Invalid email format",
-    "type": "validation-error",
-    "step": "map",
+    "type": "ValidationError",
     "timestamp": "2024-01-15T10:30:45.123Z",
-    "attempt": 2
+    "attempt": 2,
+    "step": {
+      "index": 1,
+      "command": "map",
+      "params": {
+        "script": "$row.email = $row.email.toLowerCase();"
+      }
+    }
   }
 }
 ```
 
 **Mapping to context variables:**
 
-- `error_details.message` → `$error.message`
-- `error_details.type` → `$error.type`
-- `error_details.step` → `$error.step`
-- `error_details.timestamp` → `$error.timestamp`
-- `error_details.attempt` → `$error.attempt`
+- `error-details.message` → Error message text
+- `error-details.type` → Error type/classification
+- `error-details.step.index` → Step that failed (index)
+- `error-details.step.command` → Step that failed (command)
+- `error-details.step.params` → Step parameters that failed
+- `error-details.timestamp` → When error occurred
+- `error-details.attempt` → Current retry attempt
 
 ## Implementation Examples
 
@@ -231,7 +249,7 @@ The `error_details` field contains the same structure as the context variables:
 >               attempts: 3
 >               delay: 1000
 >               after-retries: throw
-> 
+>
 >       # If database connection fails, entire select operation
 >       # is retried 3 times, then execution stops
 > ```
@@ -255,7 +273,7 @@ The `error_details` field contains the same structure as the context variables:
 >             sink:
 >               schema: errors
 >               entity: invalid_emails
-> 
+>
 >       # Individual rows with invalid emails are sunk,
 >       # valid rows continue processing
 > ```
@@ -271,7 +289,7 @@ The `error_details` field contains the same structure as the context variables:
 >           entity: raw_data
 >           on-error:
 >             strategy: skip
-> 
+>
 >       - map:
 >           script: |
 >             $row.processed_at = new Date().toISOString();
@@ -281,7 +299,7 @@ The `error_details` field contains the same structure as the context variables:
 >             sink:
 >               schema: errors
 >               entity: map_failures
-> 
+>
 >       - insert:
 >           schema: target
 >           entity: processed_data
@@ -314,7 +332,7 @@ The `error_details` field contains the same structure as the context variables:
 >               schema: errors
 >               entity: api_failures
 >               include-error: true
-> 
+>
 >       - map:
 >           script: |
 >             $row.normalized = $row.value.toLowerCase().trim();

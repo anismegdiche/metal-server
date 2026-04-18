@@ -58,3 +58,13 @@ export enum STEP_ON_ERROR_RETRY_AFTER_RETRIES {
 	SKIP = STEP_ON_ERROR_STRATEGY.SKIP,
 	SINK = STEP_ON_ERROR_STRATEGY.SINK
 }
+
+export enum STEP_SIGNAL {
+	NEXT = "next",
+	STOP = "stop"
+}
+
+export enum STEP_OUTCOME {
+	SUCCESS = "success",
+	FAILED = "failed"
+}
