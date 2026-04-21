@@ -371,6 +371,7 @@ export class Step {
 		return $context?.$plan?.data
 			.RowsMap(async (row: Partial<TRow>) => {
 				return fnRow(row, stepParams, $context)
+					.then(row => row)
 					.catch((caughtError) => {
 						// Apply scope-specific logic
 						switch (strategy) {
@@ -590,8 +591,8 @@ export class Step {
 		const currentStep = $context?.$plan?.currentStep
 
 		return {
-			message: normalizedError.message,
-			type: normalizedError.name,
+			message: normalizedError?.message,
+			type: normalizedError?.name,
 			timestamp: new Date().toISOString(),
 			attempt: attempt,
 			step: {

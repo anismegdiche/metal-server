@@ -2,9 +2,10 @@
 //
 //
 
-export enum PLAN_FAILURE_STRATEGY_RETURN {
-	RETURN_DATA = "return-data",
-	RETURN_ERRORS = "return-errors"
+export enum PLAN_FAILURE_STRATEGY {
+	DATA = "data",
+	DATA_ERRORS = "data-errors",
+	THROW = "throw"
 }
 
 export enum STEP {

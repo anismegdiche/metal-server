@@ -3,7 +3,7 @@
 //
 import z from "zod"
 //
-import { PLAN_FAILURE_STRATEGY_RETURN, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../@consts"
+import { PLAN_FAILURE_STRATEGY, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../@consts"
 import { z_U__plans_plan__step } from "./U__plans_plan__step"
 import { z_U__on_error_Params } from "./U__plans_plan_on_error"
 import { z_U__failure_strategy_Params } from "./U__plans_plan_failure_strategy"
@@ -23,7 +23,7 @@ export const z_U__plans_plan = z.object({
 		})
 		.optional(),
 	"failure-strategy": z_U__failure_strategy_Params
-		.default(PLAN_FAILURE_STRATEGY_RETURN.RETURN_DATA)
+		.default(PLAN_FAILURE_STRATEGY.THROW)
 		.optional()
 })
 

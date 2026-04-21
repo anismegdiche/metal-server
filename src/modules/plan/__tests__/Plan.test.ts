@@ -6,6 +6,8 @@ import { ConfigManager } from "../../core/ConfigManager"
 import { Plan } from "../Plan"
 import { Step } from "../Step"
 import { z_U__plans_plan } from "../types/U__plans"
+import { METADATA } from "../../core/@consts"
+import { PLAN_FAILURE_STRATEGY } from "../@consts"
 
 vi.mock("../../core/ConfigManager")
 vi.mock("../../auth/Roles")
@@ -84,7 +86,7 @@ describe("Plan", () => {
 
 	it("should initialize and load plan configuration", async () => {
 		const mockConfig = { steps: [{ step1: {} }] }
-		
+
 		vi.mocked(ConfigManager.Get).mockReturnValue(mockConfig)
 		// Mock the Zod parse to return the config without validation
 		const parseSpy = mockZodValidation(mockConfig)
@@ -95,7 +97,7 @@ describe("Plan", () => {
 		expect(plan.Config).toEqual(mockConfig)
 		expect(plan._data).toBeInstanceOf(DataTable)
 		expect(plan._data.Name).toBe("test-plan")
-		
+
 		// Restore the mock
 		parseSpy.mockRestore()
 	})
@@ -114,7 +116,7 @@ describe("Plan", () => {
 				{ another_custom: null }
 			]
 		}
-		
+
 		vi.mocked(ConfigManager.Get).mockReturnValue(customConfig)
 		const parseSpy = mockZodValidation(customConfig)
 
@@ -123,7 +125,7 @@ describe("Plan", () => {
 		expect(parseSpy).toHaveBeenCalledWith(customConfig)
 		expect(plan.Config).toEqual(customConfig)
 		expect(plan.Config?.steps).toHaveLength(3)
-		
+
 		parseSpy.mockRestore()
 	})
 
@@ -140,7 +142,7 @@ describe("Plan", () => {
 			},
 			"failure-strategy": "custom_failure" as any
 		}
-		
+
 		vi.mocked(ConfigManager.Get).mockReturnValue(complexConfig)
 		const parseSpy = mockZodValidation(complexConfig)
 
@@ -151,7 +153,7 @@ describe("Plan", () => {
 		expect(plan.Config?.steps).toHaveLength(3)
 		expect(plan.Config?.["on-error"]).toBeDefined()
 		expect(plan.Config?.["failure-strategy"]).toBeDefined()
-		
+
 		parseSpy.mockRestore()
 	})
 
@@ -159,13 +161,13 @@ describe("Plan", () => {
 		it("should reload plan configuration and re-init", async () => {
 			const userToken: any = { roles: ["admin"] }
 			const planConfig = { steps: [{ debug: "reloaded" }] }
-			
+
 			vi.mocked(ConfigManager.Load).mockResolvedValue({
 				plans: { "test-plan": planConfig },
 				schedules: {},
 			} as any)
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
-			
+
 			// Mock Zod validation for the reload process
 			const parseSpy = mockZodValidation(planConfig)
 
@@ -211,85 +213,166 @@ describe("Plan", () => {
 			expect(wrappedMock).toHaveBeenCalled()
 		})
 
-		it("should stop execution when step fails (not break)", async () => {
-			const steps = [{ "mock-cmd": { args: 1 } }, { "mock-cmd-2": { args: 2 } }, { "mock-cmd-3": { args: 3 } }]
-			const mockDataTable = new DataTable()
-			plan._data = mockDataTable
-			// Set up plan configuration
-			plan.Config = { steps } as any
+		describe("Failure Strategy", () => {
+			it("should handle 'throw' strategy - stop execution and throw error", async () => {
+				const steps = [{ "mock-cmd": { args: 1 } }, { "mock-cmd-2": { args: 2 } }]
+				const mockDataTable = new DataTable()
+				plan._data = mockDataTable
 
-			const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-				return {
-					data: mockDataTable,
-					signal: "next" as const,
-					outcome: "success" as const,
-					$context: $context as any,
-				}
-			})
-			const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-				throw new Error("Test error")
-			})
-			const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-				return {
-					data: mockDataTable,
-					signal: "next" as const,
-					outcome: "success" as const,
-					$context: $context as any,
-				}
-			})
+				// Set up plan with throw failure strategy
+				plan.Config = {
+					steps,
+					"failure-strategy": PLAN_FAILURE_STRATEGY.THROW
+				} as any
 
-			// Mock WrapStepWithSignal to not catch errors when there's no on-error config
-			vi.mocked(Step.WrapStepWithSignal).mockImplementation((fn: any) => fn)
+				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
+					return {
+						data: mockDataTable,
+						signal: "next" as const,
+						outcome: "success" as const,
+						$context: _context as any,
+					}
+				})
+				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
+					throw new Error("Test error for throw strategy")
+				})
+				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
+					return {
+						data: mockDataTable,
+						signal: "next" as const,
+						outcome: "success" as const,
+						$context: _context as any,
+					}
+				})
 
-			Step.ExecuteCaseMap["mock-cmd"] = executeMock1
-			Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
-			Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
+				Step.ExecuteCaseMap["mock-cmd"] = executeMock1
+				Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
+				Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
 
-			const result = await plan.Process("s")
+				await expect(plan.Process("s")).rejects.toThrow("Test error for throw strategy")
 
-			expect(executeMock1).toHaveBeenCalled()
-			expect(executeMock2).toHaveBeenCalled()
-			expect(executeMock3).not.toHaveBeenCalled()
-			expect(result).toBe(mockDataTable)
-		})
-
-		it("should continue execution when break is encountered", async () => {
-			const steps = [{ "mock-cmd": { args: 1 } }, { "mock-cmd-2": { args: 2 } }, { "mock-cmd-3": { args: 3 } }]
-			const mockDataTable = new DataTable()
-			plan._data = mockDataTable
-			// Set up plan configuration
-			plan.Config = { steps } as any
-
-			const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-				return {
-					data: mockDataTable,
-					signal: "next" as const,
-					outcome: "success" as const,
-					$context: $context as any,
-				}
-			})
-			const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-				return undefined
-			})
-			const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-				return {
-					data: mockDataTable,
-					signal: "next" as const,
-					outcome: "success" as const,
-					$context: $context as any,
-				}
+				expect(executeMock1).toHaveBeenCalled()
+				expect(executeMock2).toHaveBeenCalled()
+				expect(executeMock3).not.toHaveBeenCalled()
 			})
 
-			Step.ExecuteCaseMap["mock-cmd"] = executeMock1
-			Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
-			Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
+			it("should handle 'data' strategy - return current data and stop", async () => {
+				const steps = [{ "mock-cmd": { args: 1 } }, { "mock-cmd-2": { args: 2 } }, { "mock-cmd-3": { args: 3 } }]
+				const mockDataTable = new DataTable()
+				plan._data = mockDataTable
 
-			const result = await plan.Process("s")
+				// Set up plan with data failure strategy
+				plan.Config = {
+					steps,
+					"failure-strategy": PLAN_FAILURE_STRATEGY.DATA
+				} as any
 
-			expect(executeMock1).toHaveBeenCalled()
-			expect(executeMock2).toHaveBeenCalled()
-			expect(executeMock3).not.toHaveBeenCalled()
-			expect(result).toBe(mockDataTable)
+				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
+					return {
+						data: mockDataTable,
+						signal: "next" as const,
+						outcome: "success" as const,
+						$context: _context as any,
+					}
+				})
+				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
+					throw new Error("Test error for data strategy")
+				})
+				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
+					return {
+						data: mockDataTable,
+						signal: "next" as const,
+						outcome: "success" as const,
+						$context: _context as any,
+					}
+				})
+
+				Step.ExecuteCaseMap["mock-cmd"] = executeMock1
+				Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
+				Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
+
+				const result = await plan.Process("s")
+
+				expect(executeMock1).toHaveBeenCalled()
+				expect(executeMock2).toHaveBeenCalled()
+				expect(executeMock3).toHaveBeenCalled()
+				expect(result).toBe(mockDataTable)
+				expect(result.MetaData).toEqual({})
+			})
+
+			it("should handle 'data-errors' strategy - collect errors and continue", async () => {
+				const steps = [{ "mock-cmd": { args: 1 } }, { "mock-cmd-2": { args: 2 } }, { "mock-cmd-3": { args: 3 } }]
+				const mockDataTable = new DataTable()
+				plan._data = mockDataTable
+
+				// Set up plan with data-errors failure strategy
+				plan.Config = {
+					steps,
+					"failure-strategy": PLAN_FAILURE_STRATEGY.DATA_ERRORS
+				} as any
+
+				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
+					return {
+						data: mockDataTable,
+						signal: "next" as const,
+						outcome: "success" as const,
+						$context: _context as any,
+					}
+				})
+				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
+					throw new Error("First error for data-errors strategy")
+				})
+				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
+					return {
+						data: mockDataTable,
+						signal: "next" as const,
+						outcome: "success" as const,
+						$context: _context as any,
+					}
+				})
+
+				Step.ExecuteCaseMap["mock-cmd"] = executeMock1
+				Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
+				Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
+
+				const result = await plan.Process("s")
+
+				expect(executeMock1).toHaveBeenCalled()
+				expect(executeMock2).toHaveBeenCalled()
+				expect(executeMock3).toHaveBeenCalled()
+				expect(result).toBe(mockDataTable)
+
+				// Verify error metadata was collected
+				expect(result.MetaData[METADATA.PLAN_ERRORS]).toBeDefined()
+				expect((result.MetaData[METADATA.PLAN_ERRORS] as any[])).toHaveLength(1)
+				expect((result.MetaData[METADATA.PLAN_ERRORS] as any[])[0]).toMatchObject({
+					step: 1,
+					command: "mock-cmd-2",
+					error: "First error for data-errors strategy",
+					timestamp: expect.any(String)
+				})
+			})
+
+			it("should default to 'throw' strategy when none specified", async () => {
+				const steps = [{ "mock-cmd": { args: 1 } }]
+				const mockDataTable = new DataTable()
+				plan._data = mockDataTable
+
+				// Set up plan without failure strategy (should default to throw)
+				plan.Config = {
+					steps
+				} as any
+
+				const executeMock = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
+					throw new Error("Test error for default strategy")
+				})
+
+				Step.ExecuteCaseMap["mock-cmd"] = executeMock
+
+				await expect(plan.Process("s")).rejects.toThrow("Test error for default strategy")
+
+				expect(executeMock).toHaveBeenCalled()
+			})
 		})
 
 		describe("Signal Handling", () => {
@@ -500,12 +583,12 @@ describe("Plan", () => {
 				]
 				const mockDataTable = new DataTable()
 				plan._data = mockDataTable
-				
+
 				const planConfig = {
 					steps,
 					"on-error": { strategy: "retry" as const, retry: { attempts: 3, delay: 100 } },
 				}
-				
+
 				// Mock Zod validation to accept the config
 				const parseSpy = mockZodValidation(planConfig)
 				plan.Config = planConfig as any
@@ -541,12 +624,12 @@ describe("Plan", () => {
 				]
 				const mockDataTable = new DataTable()
 				plan._data = mockDataTable
-				
+
 				const planConfig = {
 					steps,
 					"on-error": { strategy: "retry" as const, retry: { attempts: 3, delay: 100 } },
 				}
-				
+
 				// Mock Zod validation to accept the config
 				const parseSpy = mockZodValidation(planConfig)
 				plan.Config = planConfig as any

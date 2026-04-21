@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { PLAN_FAILURE_STRATEGY_RETURN, STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../../@consts"
+import { PLAN_FAILURE_STRATEGY, STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../../@consts"
 import { type U__plans, type U__plans_plan, z_U__plans, z_U__plans_plan, z_U__plans_plan__steps } from "../U__plans"
 
 describe("U__plans schema validation", () => {
@@ -49,7 +49,7 @@ describe("U__plans schema validation", () => {
 					strategy: STEP_ON_ERROR_STRATEGY.THROW,
 					scope: STEP_ON_ERROR_SCOPE.STEP,
 				},
-				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_DATA,
+				"failure-strategy": PLAN_FAILURE_STRATEGY.THROW,
 			})
 		})
 
@@ -69,14 +69,14 @@ describe("U__plans schema validation", () => {
 					strategy: STEP_ON_ERROR_STRATEGY.SKIP,
 					scope: STEP_ON_ERROR_SCOPE.ROW,
 				},
-				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_DATA,
+				"failure-strategy": PLAN_FAILURE_STRATEGY.THROW,
 			})
 		})
 
 		it("should accept plan with custom failure strategy", () => {
 			const planWithFailureStrategy = {
 				steps: [{ break: null }],
-				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_ERRORS,
+				"failure-strategy": PLAN_FAILURE_STRATEGY.DATA_ERRORS,
 			}
 
 			const result = z_U__plans_plan.parse(planWithFailureStrategy)
@@ -86,7 +86,7 @@ describe("U__plans schema validation", () => {
 					strategy: STEP_ON_ERROR_STRATEGY.THROW,
 					scope: STEP_ON_ERROR_SCOPE.STEP,
 				},
-				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_ERRORS,
+				"failure-strategy": PLAN_FAILURE_STRATEGY.DATA_ERRORS,
 			})
 		})
 
@@ -120,7 +120,7 @@ describe("U__plans schema validation", () => {
 						"after-retries": "throw",
 					},
 				},
-				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_DATA,
+				"failure-strategy": PLAN_FAILURE_STRATEGY.THROW,
 			})
 		})
 
@@ -151,7 +151,7 @@ describe("U__plans schema validation", () => {
 						"error-field": "error-details",
 					},
 				},
-				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_DATA,
+				"failure-strategy": PLAN_FAILURE_STRATEGY.THROW,
 			})
 		})
 
@@ -174,7 +174,7 @@ describe("U__plans schema validation", () => {
 						"after-retries": "skip",
 					},
 				},
-				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_ERRORS,
+				"failure-strategy": PLAN_FAILURE_STRATEGY.DATA_ERRORS,
 			}
 
 			const result = z_U__plans_plan.parse(complexPlan)
@@ -196,7 +196,7 @@ describe("U__plans schema validation", () => {
 						"after-retries": "skip",
 					},
 				},
-				"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_ERRORS,
+				"failure-strategy": PLAN_FAILURE_STRATEGY.DATA_ERRORS,
 			})
 		})
 
@@ -261,7 +261,7 @@ describe("U__plans schema validation", () => {
 						scope: STEP_ON_ERROR_SCOPE.STEP,
 						strategy: STEP_ON_ERROR_STRATEGY.THROW,
 					},
-					"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_DATA,
+					"failure-strategy": PLAN_FAILURE_STRATEGY.THROW,
 				},
 				plan2: {
 					steps: [{
@@ -280,7 +280,7 @@ describe("U__plans schema validation", () => {
 						scope: STEP_ON_ERROR_SCOPE.STEP,
 						strategy: STEP_ON_ERROR_STRATEGY.SKIP,
 					},
-					"failure-strategy": PLAN_FAILURE_STRATEGY_RETURN.RETURN_DATA,
+					"failure-strategy": PLAN_FAILURE_STRATEGY.THROW,
 				},
 			})
 		})

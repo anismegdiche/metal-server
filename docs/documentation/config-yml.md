@@ -548,7 +548,7 @@ The parameters that can be configured inside `update` tag are :
 | ------------------ | ------ | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
 | `steps`            | object | Y        | Section to declare plan's steps                                            | <Badge type="info" text="v0.5+" /> |
 | `on-error`         | object | N        | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
-| `failure-strategy` | string | N        | Plan's output whene failure happen                                         | <Badge type="info" text="v0.5+" /> |
+| `failure-strategy` | string | N        | Plan's output whene failure happen (default: `throw`)                      | <Badge type="info" text="v0.5+" /> |
 
 **Example**
 
@@ -591,20 +591,20 @@ plans:
 :::
 
 ### `on-error` <Badge type="info" text="v0.5+" />
+
 ::: note ℹ️ TIP
 For detailed configuration, please see article [on-error](on-error-yml.md).
 :::
-
-
 
 ### `failure-strategy` <Badge type="info" text="v0.5+" />
 
 Defines how the plan behaves when a failure occurs:
 
-- `return-data`: Returns the data produced up to the step where the failure happened.
-- `return-errors`: Returns only the error details without any partial data.
+- `data`: Returns only the data produced up to the step where the failure happened.
+- `data-errors`: Returns the data produced up to the step where the failure happened, along with error details in metadata.
+- `throw`: Halts execution and throws an error immediately when a failure occurs.
 
-
+default: `throw`
 
 ### `steps` <Badge type="info" text="v0.5+" />
 

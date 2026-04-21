@@ -20,7 +20,7 @@ import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from 
 import type { TContext } from "../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../source/@consts"
-import { PLAN_FAILURE_STRATEGY_RETURN, STEP_STATUS } from "./@consts"
+import { PLAN_FAILURE_STRATEGY, STEP_STATUS } from "./@consts"
 import { Step, type T_StepFunctionWithSignal } from "./Step"
 import { z_U__plans_plan, type U__plans_plan } from "./types/U__plans"
 import type { U__plans_plan__step } from "./types/U__plans_plan__step"
@@ -97,11 +97,11 @@ export class Plan {
 
 		Assert.Var<NonNullable<U__plans_plan>>(this.Config, `plan '${this.Name}' not found or not configured`)
 
-		const { 
+		const {
 			steps,
-			 "on-error": planOnError,
-			 "failure-strategy": planFailureStrategy
-			 } = this.Config
+			"on-error": planOnError,
+			"failure-strategy": planFailureStrategy
+		} = this.Config
 
 		let $context: Partial<TContext> = {
 			$schema: callerSchema,
@@ -119,8 +119,8 @@ export class Plan {
 		}
 
 		let stepIndex = 0
-		try {
-			while (stepIndex < steps.length) {
+		while (stepIndex < steps.length) {
+			try {
 
 				const _step = steps[stepIndex]
 
@@ -191,53 +191,66 @@ export class Plan {
 					)
 					break
 				}
+			} catch (e: unknown) {
+				const _e = NormalizeError(e)
 
-				stepIndex++
-			}
-		} catch (e: unknown) {
-			const _e = NormalizeError(e)
+				Assert.Var<NonNullable<typeof $context.$plan>>($context.$plan, "Plan context is not defined")
+				Assert.Var<DataTable>(this._data, `'${this.Name}': Data is not set`)
 
-			Assert.Var<NonNullable<typeof $context.$plan>>($context.$plan, "Plan context is not defined")
-			Assert.Var<DataTable>(this._data, `'${this.Name}': Data is not set`)
+				const {
+					command: _stepCommand,
+					params: _stepParams
+				} = $context.$plan.currentStep
 
-			const {
-				command: _stepCommand,
-				params: _stepParams
-			} = $context.$plan.currentStep
+				// trace error if debug enabled
+				if (this._data.MetaData[METADATA.PLAN_DEBUG] === "error") {
+					// TODO In case of cross entities, only errors in the final entity are returned.  Console log is working fine.
+					const _planErrors: TJson = {
+						[`plan(${this.Name}), step(${stepIndex})`]: _stepCommand,
+					}
 
-			// trace error if debug enabled
-			if (this._data.MetaData[METADATA.PLAN_DEBUG] === "error") {
-				// TODO In case of cross entities, only errors in the final entity are returned.  Console log is working fine.
-				const _planErrors: TJson = {
-					[`plan(${this.Name}), step(${stepIndex})`]: _stepCommand,
+					Logger.Debug(
+						`${Logger.Out} Plan.Process '${this.Name}': step '${stepIndex},${JsonUtils.Stringify(_stepParams)}' added error ${JsonUtils.Stringify((<TJson[]>this._data.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`
+					)
 				}
 
-				Logger.Debug(
-					`${Logger.Out} Plan.Process '${this.Name}': step '${stepIndex},${JsonUtils.Stringify(_stepParams)}' added error ${JsonUtils.Stringify((<TJson[]>this._data.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`
-				)
-			}
-
-			$context = merge($context, <Partial<TContext>>{
-				$plan: {
-					currentStep: {
-						status: STEP_STATUS.FAILED,
+				$context = merge($context, <Partial<TContext>>{
+					$plan: {
+						currentStep: {
+							status: STEP_STATUS.FAILED,
+						},
+						data: this._data,
 					},
-					data: this._data,
-				},
-			})
+				})
 
-			const _errMessage = `'${this.Name}': error have been encountered in step ${stepIndex}, ${_stepCommand}, ${JsonUtils.Stringify(_stepParams)}': ${JsonUtils.Stringify(_e.message)}`
+				const _errMessage = `'${this.Name}': error have been encountered in step ${stepIndex}, ${_stepCommand}, ${JsonUtils.Stringify(_stepParams)}': ${JsonUtils.Stringify(_e.message)}`
 
-			Logger.Error(_errMessage)
+				Logger.Error(_errMessage)
 
+				switch (planFailureStrategy) {
+					case PLAN_FAILURE_STRATEGY.DATA_ERRORS:
+						// Add error metadata to data before returning
+						if (!this._data.MetaData[METADATA.PLAN_ERRORS]) {
+							this._data.MetaData[METADATA.PLAN_ERRORS] = []
+						}
+						(this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
+							step: stepIndex,
+							command: _stepCommand,
+							error: _e.message,
+							timestamp: new Date().toISOString()
+						})
+						break;
 
-			if (planFailureStrategy === PLAN_FAILURE_STRATEGY_RETURN.RETURN_ERRORS) {
-				throw new HttpErrorInternalServerError(_errMessage)
-			} else {
-				return this._data
+					case PLAN_FAILURE_STRATEGY.DATA:
+						break;
+
+					case PLAN_FAILURE_STRATEGY.THROW:
+					default:
+						throw new HttpErrorInternalServerError(_errMessage)
+				}
 			}
+			stepIndex++
 		}
-
 		return this._data
 	}
 

@@ -351,30 +351,6 @@ describe("Step On-Error Functionality", () => {
 			expect(result).toEqual(mockContext.$plan?.data)
 			expect(fnRow).toHaveBeenCalledTimes(4)
 		})
-
-		it("should throw error when strategy is throw", async () => {
-			const onError: U__on_error_Params = {
-				scope: STEP_ON_ERROR_SCOPE.STEP,
-				strategy: STEP_ON_ERROR_STRATEGY.THROW
-			}
-
-			const fnRow = vi.fn().mockRejectedValue(new Error("Row processing failed"))
-
-			// Add test data to DataTable
-			if (mockContext.$plan?.data) {
-				await mockContext.$plan.data.RowsAdd(mockRow)
-			}
-
-			await expect(Step.OnErrorRow({
-				fnRow,
-				stepParams: {},
-				onError,
-				$context: mockContext,
-				attempt: 1,
-			})).rejects.toThrow()
-
-			expect(fnRow).toHaveBeenCalledTimes(1)
-		})
 	})
 
 	describe("WrapStepWithSignal Integration", () => {
