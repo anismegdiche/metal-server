@@ -10,7 +10,7 @@ auth provider > Azure AD
 plan > Data Transpose  (pivot H/V) {f}
 refactor: readstream #refactor
 step > remove-empty-fields {f}
-step > on-error {f} {start:2026-03-07T14:00:59}
+step > on-error {f} {start:2026-03-07T14:00:59} {cm:2026-04-21} {duration:1m-14d_14h44m}
 plan > use of 'source' in stead of 'schema' {f}
 step > flush :  delete all data, vars in plan {f}
 step > clear data, context etc {f}
@@ -22,3 +22,4 @@ source > split sql and azure {f}
 guides, sample project : update
 remove source from schemarequest if possible
 routing bad data to an error sink implicitly removes it from the plan data for downstream steps. The row exists in the error sink, but it's no longer in the main processing stream. {f} {start:2026-03-28T11:10:04}
+step: fake data with faker js {f}

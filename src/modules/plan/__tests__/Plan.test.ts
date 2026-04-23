@@ -2,28 +2,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../types/DataTable"
 import { Roles } from "../../auth/Roles"
+import { METADATA } from "../../core/@consts"
 import { ConfigManager } from "../../core/ConfigManager"
+import { PLAN_FAILURE_STRATEGY } from "../@consts"
 import { Plan } from "../Plan"
 import { Step } from "../Step"
 import { z_U__plans_plan } from "../types/U__plans"
-import { METADATA } from "../../core/@consts"
-import { PLAN_FAILURE_STRATEGY } from "../@consts"
 
 vi.mock("../../core/ConfigManager")
 vi.mock("../../auth/Roles")
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		Warn: vi.fn(),
-		Debug: vi.fn(),
-		In: "",
-		Out: "",
-	},
-}))
 
 vi.mock("../Step", () => ({
 	Step: {
@@ -74,12 +61,15 @@ describe("Plan", () => {
 	let plan: Plan
 
 	// Helper function to mock Zod validation for tests
+	// This mocks the original z_U__plans_plan.parse to accept mock commands
 	const mockZodValidation = (config: any) => {
 		return vi.spyOn(z_U__plans_plan, 'parse').mockReturnValue(config as any)
 	}
 
 	beforeEach(async () => {
 		vi.clearAllMocks()
+		// Mock Zod validation before creating plan to avoid validation errors during Init
+		mockZodValidation({ steps: [] })
 		plan = new Plan("test-plan")
 		plan.Init()
 	})
