@@ -1,15 +1,16 @@
-//
 /** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
-import * as chrono from "chrono-node"
-import { forEach, forOwn, get, isEmpty, isObject, isString, pickBy, set } from "lodash-es"
-import objectPath from "object-path"
-import equal from "fast-deep-equal";
 //
-import type { TJson } from "../types/TJson"
-import { Stringify } from "./JsonUtils/Stringify"
-import { ToTextList as _ToTextList } from "./JsonUtils/ToTextList"
+import * as chrono from "chrono-node";
+import equal from "fast-deep-equal";
+import { forEach, forOwn, get, isEmpty, isObject, isString, pickBy, set } from "lodash-es";
+import objectPath from "object-path";
+//
+import type { TJson } from "../types/TJson";
+import { Stringify } from "./JsonUtils/Stringify";
+import { ToTextList as _ToTextList } from "./JsonUtils/ToTextList";
+
 
 //
 const BASE64_REGEX = /^[A-Za-z0-9+/]+={0,2}$/
@@ -17,8 +18,10 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-
 const HEX_REGEX = /^[0-9a-f]{20,}$/i // long hex strings (tokens, hashes)
 const JSON_USELESS_KEYS = new Set(["[Object]", "[Array]"])
 
+
 //
 type Dictionary<T> = Record<string, T>
+
 
 //
 export class JsonUtils {
@@ -49,8 +52,9 @@ export class JsonUtils {
 		}
 	}
 
-	static Get<T>(json: TJson, jsonPath?: string, defaultValue?: T): T {
-		if (!jsonPath) return json as T
+	static Get<T>(json: TJson, jsonPath?: string | null, defaultValue?: T): T {
+		if (!jsonPath || jsonPath === null) 
+			return json as T
 
 		const _jsonPath = jsonPath.replaceAll(/\[(\d+)\]/g, ".$1")
 
@@ -59,8 +63,8 @@ export class JsonUtils {
 		return extractedData ? (extractedData as T) : (defaultValue as T)
 	}
 
-	static Set<T extends object>(json: T, jsonPath?: string, data?: any): T {
-		if (jsonPath) {
+	static Set<T extends object>(json: T, jsonPath?: string | null, data?: any): T {
+		if (jsonPath && jsonPath !== null) {
 			json = set(json, jsonPath, data)
 		} else {
 			json = data as T

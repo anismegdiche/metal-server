@@ -1,7 +1,7 @@
 //
 //
 //
-import { merge } from "lodash-es"
+import { merge, omit } from "lodash-es"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -20,7 +20,7 @@ import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
 
 //
-export async function Select(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+export async function Select(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
 
 	Assert.Var<U__plans_plan_select_Params>(
 		stepParams,
@@ -28,24 +28,30 @@ export async function Select(stepParams: U__plans_plan__step_Params, $context?: 
 		`${STEP.SELECT}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`,
 	)
 
+	const $__stepParams = PlaceHolder.EvaluateJsCode<U__plans_plan_select_Params>(
+		stepParams,
+		new Sandbox($context),
+	) as U__plans_plan_select_Params
+
 	const {
 		data: planData
 	} = $context?.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
-	const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestSelect>(
-		stepParams,
-		new Sandbox($context),
-	) as TSchemaRequestSelect
 
-	$context = merge($context, DATAPROVIDER.GetContext($__schemaRequest))
+	const $__schemaRequest = omit($__stepParams, "on-error") as TSchemaRequestSelect
 
-	return $__schemaRequest.schema !== undefined && $__schemaRequest.entity !== undefined
+	$context = merge(
+		$context,
+		DATAPROVIDER.GetContext($__schemaRequest)
+	)
+
+	return ($__schemaRequest.schema !== undefined && $__schemaRequest.entity !== undefined)
 		? await _selectSchema($__schemaRequest, $context)
 		: await _selectPlan($__schemaRequest, $context)
 }
 
-export async function _selectSchema(stepParams: U__plans_plan_select_Params, $context?: Partial<TContext>): Promise<DataTable> {
+async function _selectSchema(stepParams: U__plans_plan_select_Params, $context: Partial<TContext>): Promise<DataTable> {
 
 	const schemaRequest = stepParams as TSchemaRequestSelect
 	const { schema, entity } = schemaRequest
@@ -79,7 +85,7 @@ export async function _selectSchema(stepParams: U__plans_plan_select_Params, $co
 	return data
 }
 
-export async function _selectPlan(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+async function _selectPlan(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
 	const schemaRequest = stepParams as TSchemaRequestSelect
 
 	const {
@@ -100,14 +106,3 @@ export async function _selectPlan(stepParams: U__plans_plan__step_Params, $conte
 	return planData.FreeSql({ sqlQuery, queryParams: sqlQueryHelper.QueryParams })
 }
 
-export async function _select(schema: string, entity: string): Promise<DataTable | undefined> {
-	const intResp = await Schema.Select({
-		schema,
-		entity,
-	})
-
-	if (intResp.Body && Schema.IsSchemaResponse(intResp.Body) && (await intResp.Body.data.Count()) > 0)
-		return intResp.Body.data
-
-	return undefined
-}

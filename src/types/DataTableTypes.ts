@@ -4,6 +4,7 @@
 import { z } from "zod"
 //
 import { z_T_IntPositive } from "./T_IntPositive"
+import { z_T_JsPattern } from "./T_JsPattern"
 import { type TJson, z_TJson } from "./TJson"
 import { z_TUuidv7 } from "./TUuidv7"
 
@@ -26,9 +27,17 @@ export enum DT_SYS_FIELDS {
 export const z_SORT_ORDER = z.enum(SORT_ORDER)
 
 export const z_TOrderBy = z.record(
-	z.string(),
-	z_SORT_ORDER.optional()
+	z.union([
+		z.string(),
+		z_T_JsPattern
+	]),
+	z.union([
+		z_SORT_ORDER,
+		z_T_JsPattern,
+		z.null()
+	])
 )
+export type TOrderBy = z.infer<typeof z_TOrderBy>
 
 export const z_TRow = z_TJson
 	.and(
@@ -44,4 +53,3 @@ export const z_TRow = z_TJson
 export type TRow = z.infer<typeof z_TRow>
 export type TFields = TJson
 export type TMetaData = Record<string, unknown>
-export type TOrderBy = Record<string, SORT_ORDER | undefined>

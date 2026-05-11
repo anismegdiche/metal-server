@@ -12,7 +12,7 @@ import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
 
 //
-export async function SetVar(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+export async function SetVar(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
 	Assert.Var<U__plans_plan_set_var_Params>(
 		stepParams,
 		z_U__plans_plan_set_var_Params.safeParse(stepParams).success,

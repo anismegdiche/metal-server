@@ -4,16 +4,15 @@ plan > history of transformation with which step did the processing, also flag k
 step > set-var {f} {start:2026-03-03T19:07:03} {cm:2026-03-03} {duration:01h18m} {h}
 content > text regex
 plan > Data detection: use NLP/BrainJS for datatype detection based on RegExp string conversion
-step > merge duplicates: merge on, take {f}
-step > for each {f}
+step > merge duplicates: merge on, take
+step > for each
 auth provider > Azure AD
-plan > Data Transpose  (pivot H/V) {f}
+plan > Data Transpose  (pivot H/V)
 refactor: readstream #refactor
-step > remove-empty-fields {f}
-step > on-error {f} {start:2026-03-07T14:00:59} {cm:2026-04-21} {duration:1m-14d_14h44m}
-plan > use of 'source' in stead of 'schema' {f}
-step > flush :  delete all data, vars in plan {f}
-step > clear data, context etc {f}
+step > remove-empty-fields {f} {start:2026-04-23T09:55:42} {cm:2026-05-11} {duration:18d_05h11m} {h}
+step > on-error {f} {start:2026-03-07T14:00:59} {cm:2026-04-21} {duration:1m-14d_14h44m} {h}
+plan > use of 'source' in stead of 'schema'
+step > clear data, context etc {f} {start:2026-04-26T19:56:52} {cm:2026-05-11} {duration:14d_19h10m} {h}
 TODO:: check if fields from schemarequest can works with array, if true then update docs {f}
 TODO:: sort add fields to be compatible with on-error {f}
 schedule >  run-as   ,  to fix who is running the plan {f}
@@ -23,3 +22,7 @@ guides, sample project : update
 remove source from schemarequest if possible
 routing bad data to an error sink implicitly removes it from the plan data for downstream steps. The row exists in the error sink, but it's no longer in the main processing stream. {f} {start:2026-03-28T11:10:04}
 step: fake data with faker js {f}
+core > use threads (piscina)
+core > step metrics {f}
+core > dashboard {f}
+step > break > add boolean condition to break {f}

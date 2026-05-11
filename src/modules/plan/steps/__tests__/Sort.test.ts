@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { DataTable } from "../../../../types/DataTable"
+import { DataTable, SORT_ORDER } from "../../../../types/DataTable"
 import type { TContext } from "../../../sandbox/types/TContext"
 import { STEP_STATUS } from "../../@consts"
 import type { U__plans_plan_sort_Params } from "../../types/U__plans_params"
@@ -53,11 +53,11 @@ describe("Sort", () => {
 			$vars: {},
 		}
 
-		const stepParams = <U__plans_plan_sort_Params>{ age: "asc" }
+		const stepParams = <U__plans_plan_sort_Params>{ fields: { age: SORT_ORDER.ASC } }
 
 		const result = await Sort(stepParams, $context)
 
-		expect(spySort).toHaveBeenCalledWith({ age: "asc" })
+		expect(spySort).toHaveBeenCalledWith({ age: SORT_ORDER.ASC })
 		expect(result).toBe(myPlanEntity1)
 		spySort.mockRestore()
 	})

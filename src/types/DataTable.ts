@@ -1,13 +1,14 @@
 
+
 /** biome-ignore-all lint/suspicious/useIterableCallbackReturn: <explanation> */
 
 
 //
 //
 //
-import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
 import fs from "node:fs"
 import { cpus } from "node:os"
+import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
 //
 
 import { SERVER } from "../modules/core/@consts"
@@ -928,9 +929,14 @@ export class DataTable extends clsClonable {
 
 	@Logger.LogFunction(true)
 	async RowsSet(rowOrRows?: TJson | TRow | TJson[] | TRow[]): Promise<this> {
-		if (rowOrRows === undefined && this._rows === undefined) return this
+		if (rowOrRows === undefined && this._rows === undefined)
+			return this
 
-		const __data__ = rowOrRows ? (Array.isArray(rowOrRows) ? rowOrRows : [rowOrRows]) : (this._rows ?? [])
+		const __data__ = rowOrRows
+			? (Array.isArray(rowOrRows)
+				? rowOrRows
+				: [rowOrRows])
+			: (this._rows ?? [])
 
 		return this._dbEnsureInitialized()
 			.then(() => this.RowsDelete().catch())
@@ -1263,13 +1269,19 @@ export class DataTable extends clsClonable {
 
 	@Logger.LogFunction(true)
 	async Sort(sorts: TOrderBy): Promise<this> {
-		if (Object.keys(sorts).length === 0) return this
+		if (!sorts || Object.keys(sorts).length === 0) 
+			return this
 
 		const sqlOrderBy = Object.entries(sorts)
 			.map(([field, order]) => {
 				// Extract field value from JSON data to a typed column
 				const col = `"${field}"`
-				return `${col} ${order ?? SORT_ORDER.ASC}`
+				let _order: SORT_ORDER = SORT_ORDER.ASC
+				
+				if (order && order !== null)
+					_order = order as SORT_ORDER
+
+				return `${col} ${_order}`
 			})
 			.join(", ")
 

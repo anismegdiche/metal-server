@@ -27,6 +27,8 @@ export enum STEP {
 	OMIT = "omit", // v0.5
 	MAP = "map", // v0.5
 	SET_VAR = "set-var", // v0.5
+	CLEAR = "clear", // v0.5
+	REMOVE_EMPTY_FIELDS = "remove-empty-fields", // v0.5
 }
 
 export enum STEP_STATUS {

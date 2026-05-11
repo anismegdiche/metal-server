@@ -1,3 +1,4 @@
+import z from "zod"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../modules/errors/HttpErrors"
 import { Assert } from "../Assert"
 
@@ -206,6 +207,203 @@ describe("Assert", () => {
 			const maybeBool: unknown = true
 			Assert.Var<boolean>(maybeBool, true, "Boolean type assertion")
 			expect(typeof maybeBool).toBe("boolean")
+		})
+	})
+
+	describe("ZodSchema", () => {
+		interface User {
+			id: number
+			name: string
+			email?: string
+		}
+
+		const userSchema: z.ZodSchema<User> = z.object({
+			id: z.number(),
+			name: z.string(),
+			email: z.string().optional(),
+		})
+
+		it("should return parsed value when validation succeeds", () => {
+			const validUser = {
+				id: 1,
+				name: "John Doe",
+				email: "john@example.com",
+			}
+
+			const result = Assert.ZodSchema(validUser, userSchema, "Validation failed")
+
+			expect(result).toEqual(validUser)
+			expect(result.id).toBe(1)
+			expect(result.name).toBe("John Doe")
+			expect(result.email).toBe("john@example.com")
+		})
+
+		it("should return parsed value with inferred type when validation succeeds", () => {
+			const validUser = {
+				id: 2,
+				name: "Jane Smith",
+			}
+
+			const result = Assert.ZodSchema(validUser, userSchema, "Validation failed")
+
+			// TypeScript should infer the correct type
+			expect(typeof result.id).toBe("number")
+			expect(typeof result.name).toBe("string")
+			expect(result.email).toBeUndefined()
+		})
+
+		it("should throw HttpErrorInternalServerError when validation fails", () => {
+			const invalidUser = {
+				id: "not-a-number",
+				name: "Invalid User",
+			}
+
+			expect(() => {
+				Assert.ZodSchema(invalidUser, userSchema, "User validation failed")
+			}).toThrow(HttpErrorInternalServerError)
+		})
+
+		it("should concatenate custom message before zod error message", () => {
+			const invalidUser = {
+				id: "invalid",
+				name: 123, // wrong type
+			}
+
+			try {
+				Assert.ZodSchema(invalidUser, userSchema, "Custom prefix message")
+			} catch (error: unknown) {
+				expect(error).toBeInstanceOf(HttpErrorInternalServerError)
+				const errorMessage = (error as Error).message
+				expect(errorMessage).toContain("Custom prefix message")
+				expect(errorMessage).toContain("Invalid input: expected number, received string")
+				expect(errorMessage).toContain("Invalid input: expected string, received number")
+			}
+		})
+
+		it("should handle missing required fields", () => {
+			const incompleteUser = {
+				name: "Missing ID",
+			}
+
+			try {
+				Assert.ZodSchema(incompleteUser, userSchema, "Incomplete user data")
+			} catch (error: unknown) {
+				expect(error).toBeInstanceOf(HttpErrorInternalServerError)
+				const errorMessage = (error as Error).message
+				expect(errorMessage).toContain("Incomplete user data")
+				expect(errorMessage).toContain("id")
+			}
+		})
+
+		it("should handle primitive string schema", () => {
+			const stringSchema = z.string()
+
+			const result = Assert.ZodSchema("valid string", stringSchema, "String validation failed")
+			expect(result).toBe("valid string")
+			expect(typeof result).toBe("string")
+		})
+
+		it("should handle primitive number schema", () => {
+			const numberSchema = z.number()
+
+			const result = Assert.ZodSchema(42, numberSchema, "Number validation failed")
+			expect(result).toBe(42)
+			expect(typeof result).toBe("number")
+		})
+
+		it("should handle array schema", () => {
+			const arraySchema = z.array(z.string())
+
+			const validArray = ["item1", "item2", "item3"]
+			const result = Assert.ZodSchema(validArray, arraySchema, "Array validation failed")
+
+			expect(result).toEqual(validArray)
+			expect(Array.isArray(result)).toBe(true)
+		})
+
+		it("should handle union schema", () => {
+			const unionSchema = z.union([z.string(), z.number()])
+
+			const stringResult = Assert.ZodSchema("test", unionSchema, "Union validation failed")
+			expect(stringResult).toBe("test")
+
+			const numberResult = Assert.ZodSchema(123, unionSchema, "Union validation failed")
+			expect(numberResult).toBe(123)
+		})
+
+		it("should throw when union schema validation fails", () => {
+			const unionSchema = z.union([z.string(), z.number()])
+
+			expect(() => {
+				Assert.ZodSchema({ invalid: "object" }, unionSchema, "Union validation failed")
+			}).toThrow(HttpErrorInternalServerError)
+		})
+
+		it("should handle optional fields correctly", () => {
+			const userWithoutEmail = {
+				id: 3,
+				name: "User without email",
+			}
+
+			const result = Assert.ZodSchema(userWithoutEmail, userSchema, "User validation failed")
+			expect(result.email).toBeUndefined()
+		})
+
+		it("should handle null and undefined values appropriately", () => {
+			const nullableStringSchema = z.string().nullable()
+
+			const result = Assert.ZodSchema(null, nullableStringSchema, "Nullable validation failed")
+			expect(result).toBeNull()
+		})
+
+		it("should handle complex nested schemas", () => {
+			const addressSchema = z.object({
+				street: z.string(),
+				city: z.string(),
+				zipCode: z.string(),
+			})
+
+			const userWithAddressSchema = z.object({
+				id: z.number(),
+				name: z.string(),
+				address: addressSchema,
+			})
+
+			const validUserWithAddress = {
+				id: 4,
+				name: "User with address",
+				address: {
+					street: "123 Main St",
+					city: "Anytown",
+					zipCode: "12345",
+				},
+			}
+
+			const result = Assert.ZodSchema(validUserWithAddress, userWithAddressSchema, "Complex validation failed")
+
+			expect(result).toEqual(validUserWithAddress)
+			expect(result.address.city).toBe("Anytown")
+		})
+
+		it("should handle error when zod throws non-Error object", () => {
+			// Mock a scenario where zod might throw something that's not an Error
+			const mockSchema = {
+				parse: () => {
+					throw "String error instead of Error object"
+				},
+			} as unknown as z.ZodSchema<string>
+
+			expect(() => {
+				Assert.ZodSchema("test", mockSchema, "Mock schema validation")
+			}).toThrow(HttpErrorInternalServerError)
+		})
+
+		it("should preserve type inference for complex transformations", () => {
+			const transformSchema = z.string().transform((val) => val.toUpperCase())
+
+			const result = Assert.ZodSchema("lowercase", transformSchema, "Transform validation failed")
+			expect(result).toBe("LOWERCASE")
+			expect(typeof result).toBe("string")
 		})
 	})
 })

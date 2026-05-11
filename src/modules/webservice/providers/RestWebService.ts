@@ -60,17 +60,18 @@ export class RestWebService extends absWebServiceProvider {
 		if (typeof header === "string" && typeof value === "string") this.Client.defaults.headers.common[header] = value
 	}
 
-	async RequestClient(
-		endpointType: ENDPOINT,
-		httpStatusSuccess: number[],
-		data?: TJson,
-		$context?: Partial<TContext>,
-	): Promise<Readable> {
+	async RequestClient(endpointType: ENDPOINT, httpStatusSuccess: number[], data?: TJson, $context?: Partial<TContext>,): Promise<Readable> {
 		if (!this.Endpoints.has(endpointType) || !this.Client)
 			throw new HttpErrorInternalServerError(`${endpointType}: undefined endpoint for ${endpointType}`)
 
 		try {
-			const { Method, Url, Data, SessionHeaders, DataPath } = this.Endpoints.get(endpointType)!
+			const {
+				Method,
+				Url,
+				Data,
+				SessionHeaders,
+				DataPath
+			} = this.Endpoints.get(endpointType)!
 
 			const $__method = PlaceHolder.EvaluateJsCode<string>(Method, new Sandbox($context))
 			const $__url = PlaceHolder.EvaluateJsCode<string>(Url, new Sandbox($context))
@@ -81,7 +82,7 @@ export class RestWebService extends absWebServiceProvider {
 
 			const wsResp: AxiosResponse = await this.Client({
 				method: ($__method ?? Method).toLowerCase(),
-				url: $__url,
+				url: $__url as NonNullable<string>,
 				data: JsonUtils.Stringify($__data ?? data),
 			})
 

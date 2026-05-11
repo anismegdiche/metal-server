@@ -1,7 +1,7 @@
 //
 //
 //
-import { merge } from "lodash-es"
+import { merge, omit } from "lodash-es"
 //
 import type { DataTable, TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -19,22 +19,27 @@ import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
 
 //
-export async function Update(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+export async function Update(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
 	Assert.Var<U__plans_plan_update_Params>(
 		stepParams,
 		z_U__plans_plan_update_Params.safeParse(stepParams).success,
 		`${STEP.UPDATE}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`,
 	)
 
+	const $__stepParams = PlaceHolder.EvaluateJsCode<U__plans_plan_update_Params>(
+		stepParams,
+		new Sandbox($context),
+	) as U__plans_plan_update_Params
+
 	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
-	const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestUpdate>(
-		stepParams,
-		new Sandbox($context),
-	) as TSchemaRequestUpdate
+	const $__schemaRequest = omit($__stepParams, "on-error") as TSchemaRequestUpdate
 
-	$context = merge($context, DATAPROVIDER.GetContext($__schemaRequest))
+	$context = merge(
+		$context,
+		DATAPROVIDER.GetContext($__schemaRequest)
+	)
 
 	const { schema } = $__schemaRequest
 
@@ -47,7 +52,7 @@ export async function Update(stepParams: U__plans_plan__step_Params, $context?: 
 	}
 }
 
-async function _updateSchema(step: U__plans_plan_update_Params, $context?: Partial<TContext>): Promise<void> {
+async function _updateSchema(step: U__plans_plan_update_Params, $context: Partial<TContext>): Promise<void> {
 	const schemaRequest = step as TSchemaRequestUpdate
 	const { schema, entity, data } = schemaRequest
 
@@ -70,7 +75,7 @@ async function _updateSchema(step: U__plans_plan_update_Params, $context?: Parti
 	})
 }
 
-async function _updatePlan(step: U__plans_plan_update_Params, $context?: Partial<TContext>): Promise<DataTable> {
+async function _updatePlan(step: U__plans_plan_update_Params, $context: Partial<TContext>): Promise<DataTable> {
 	const schemaRequest = step as TSchemaRequestUpdate
 	const { entity, data } = schemaRequest
 

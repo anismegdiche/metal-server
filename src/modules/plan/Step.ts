@@ -19,9 +19,9 @@ import type { U__on_error_Params, U__on_error_strategy_retry, U__on_error_strate
 
 
 //
-export type T_StepFunctionWithSignal = (stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>) => Promise<T_StepResult>
-export type T_StepFunction = (stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>) => Promise<DataTable | undefined>
-export type T_RowFunction = (row: TRow, stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>) => Promise<TRow>
+export type T_StepFunctionWithSignal = (stepParams: U__plans_plan__step_Params, $context: Partial<TContext>) => Promise<T_StepResult>
+export type T_StepFunction = (stepParams: U__plans_plan__step_Params, $context: Partial<TContext>) => Promise<DataTable | undefined>
+export type T_RowFunction = (row: TRow, stepParams: U__plans_plan__step_Params, $context: Partial<TContext>) => Promise<TRow>
 
 export type T_StepErrorDetails = {
 	message: string;
@@ -40,7 +40,7 @@ type T_StepOnErrorArgs = {
 	fnRow?: T_RowFunction,
 	stepParams: U__plans_plan__step_Params,
 	onError?: U__on_error_Params,
-	$context?: Partial<TContext>,
+	$context: Partial<TContext>,
 	attempt: number,
 	row?: TRow,
 	error?: Error,
@@ -85,7 +85,9 @@ export class Step {
 		),
 		[STEP.SORT]: Step.WrapStepWithSignal(
 			async (stepParams, $context) => (await import('./steps/Sort')).Sort(stepParams, $context)
-			// SORT cannot have row processor - it's a table-level operation
+		),
+		[STEP.CLEAR]: Step.WrapStepWithSignal(
+			async (stepParams, $context) => (await import('./steps/Clear')).Clear(stepParams, $context)
 		),
 
 		// with row function
@@ -117,6 +119,10 @@ export class Step {
 			async (stepParams, $context) => (await import('./steps/MapRows')).MapRows(stepParams, $context),
 			async (row, stepParams, $context) => (await import('./steps/MapRows'))._mapRow(row, stepParams, $context)
 		),
+		[STEP.REMOVE_EMPTY_FIELDS]: Step.WrapStepWithSignal(
+			async (stepParams, $context) => (await import('./steps/RemoveEmptyFields')).RemoveEmptyFields(stepParams, $context),
+			async (row, stepParams, $context) => (await import('./steps/RemoveEmptyFields'))._removeEmptyFieldsRow(row, stepParams, $context)
+		),
 	}
 
 	static WrapStepWithSignal(
@@ -124,7 +130,7 @@ export class Step {
 		fnRow?: T_RowFunction,
 		signal: STEP_SIGNAL = STEP_SIGNAL.NEXT
 	): T_StepFunctionWithSignal {
-		return async (stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<T_StepResult> => {
+		return async (stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<T_StepResult> => {
 			const onError = (stepParams as Record<string, unknown>)['on-error'] as U__on_error_Params | undefined
 
 			const _fnStepRouter = async () => {
@@ -168,13 +174,13 @@ export class Step {
 		fnRow = undefined,
 		stepParams,
 		onError,
-		$context = undefined,
+		$context,
 		attempt,
 		error
 	}: T_StepOnErrorArgs): Promise<DataTable | undefined> {
 
 		if (!onError)
-			return $context?.$plan?.data
+			return $context.$plan?.data
 
 		switch (onError.scope) {
 			case STEP_ON_ERROR_SCOPE.ROW:
@@ -251,8 +257,8 @@ export class Step {
 		error
 	}: Pick<T_StepOnErrorArgs, '$context' | 'attempt' | 'error'>): Promise<DataTable | undefined> {
 
-		const planName = $context?.$plan?.name
-		const currentStep = $context?.$plan?.currentStep
+		const planName = $context.$plan?.name
+		const currentStep = $context.$plan?.currentStep
 
 		// Inject $error into context for next step
 		const errorDetails = Step._errorToJson(error, attempt, $context)
@@ -270,9 +276,9 @@ export class Step {
 		error
 	}: Pick<T_StepOnErrorArgs, '$context' | 'attempt' | 'error'>): Promise<DataTable> {
 
-		const planName = $context?.$plan?.name
-		const currentStep = $context?.$plan?.currentStep
-		const data = $context?.$plan?.data
+		const planName = $context.$plan?.name
+		const currentStep = $context.$plan?.currentStep
+		const data = $context.$plan?.data
 
 		Assert.Var<DataTable>(data, "data is not defined")
 
@@ -313,8 +319,8 @@ export class Step {
 			"max-delay": maxDelay
 		} = retry
 
-		const planName = $context?.$plan?.name
-		const currentStep = $context?.$plan?.currentStep
+		const planName = $context.$plan?.name
+		const currentStep = $context.$plan?.currentStep
 
 		const retryDelay = Step._calculateRetryDelay(attempt, delay, backoff, maxDelay)
 
@@ -360,7 +366,7 @@ export class Step {
 		error
 	}: Pick<T_StepOnErrorArgs, 'fnRow' | 'stepParams' | 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<DataTable | undefined> {
 
-		Assert.Var<DataTable>($context?.$plan?.data, "Plan data is undefined")
+		Assert.Var<DataTable>($context.$plan?.data, "Plan data is undefined")
 
 		if (!fnRow) {
 			return $context.$plan.data
@@ -368,7 +374,7 @@ export class Step {
 
 		const strategy = onError?.strategy ?? undefined
 
-		return $context?.$plan?.data
+		return $context.$plan?.data
 			.RowsMap(async (row: Partial<TRow>) => {
 				return fnRow(row, stepParams, $context)
 					.then(row => row)
@@ -415,8 +421,8 @@ export class Step {
 		row
 	}: Pick<T_StepOnErrorArgs, '$context' | 'attempt' | 'row'>): Promise<TRow> {
 
-		const planName = $context?.$plan?.name
-		const currentStep = $context?.$plan?.currentStep
+		const planName = $context.$plan?.name
+		const currentStep = $context.$plan?.currentStep
 
 		// Inject $error into context for next step (row-level errors also set context)
 		if ($context) {
@@ -485,7 +491,9 @@ export class Step {
 
 		return Insert(_insertParams, $context)
 			.then(() => {
-				$context?.$plan?.data?.RowMarkForDeletion(__idx__)
+				if ($context.$plan?.data) {
+					$context.$plan.data.RowMarkForDeletion(__idx__)
+				}
 			})
 			.catch(() => row)
 			.then(() => row)
@@ -513,8 +521,8 @@ export class Step {
 			"max-delay": maxDelay
 		} = retry
 
-		const planName = $context?.$plan?.name
-		const currentStep = $context?.$plan?.currentStep
+		const planName = $context.$plan?.name
+		const currentStep = $context.$plan?.currentStep
 
 		const retryDelay = Step._calculateRetryDelay(attempt, delay, backoff, maxDelay)
 
@@ -586,9 +594,9 @@ export class Step {
 		return Math.min(delay, maxDelay)
 	}
 
-	static _errorToJson(error: Error | undefined, attempt: number, $context?: Partial<TContext>): T_StepErrorDetails {
+	static _errorToJson(error: Error | undefined, attempt: number, $context: Partial<TContext>): T_StepErrorDetails {
 		const normalizedError = NormalizeError(error)
-		const currentStep = $context?.$plan?.currentStep
+		const currentStep = $context.$plan?.currentStep
 
 		return {
 			message: normalizedError?.message,

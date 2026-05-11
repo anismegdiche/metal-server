@@ -32,6 +32,62 @@ const myPlanEntity1 = new DataTable("myPlanEntity1", [
 await myPlanEntity1.RowsSet()
 
 describe("Run", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();   // mockClear() on every mock
+		vi.resetAllMocks();   // mockReset() on every mock
+		vi.restoreAllMocks(); // mockRestore() on every spy
+
+		// Reset myPlanEntity1.Rows to its original state
+		myPlanEntity1.Rows = myPlanEntity1.constructor.prototype.Rows
+	})
+
+	it("should use default AI task name when output is not specified", async () => {
+		const mockAiEngine = {
+			Run: vi.fn().mockResolvedValue({ result: "default output" }),
+		}
+		vi.spyOn(AiEngine.AiEnginesInstance, "get").mockReturnValue(mockAiEngine as any)
+
+		const mockRowUpdateByIndex = vi.fn()
+		myPlanEntity1.Rows = vi.fn().mockResolvedValue([
+			{ __idx__: "row1", name: "David", age: 28, content: "Process data" }
+		])
+		myPlanEntity1.RowUpdateByIndex = mockRowUpdateByIndex
+		myPlanEntity1.FieldsSet = vi.fn().mockResolvedValue(undefined)
+
+		const $context: Partial<TContext> = {
+			$schema: "mySchema",
+			$plan: {
+				name: "myPlan",
+				currentStep: {
+					index: undefined,
+					command: undefined,
+					params: undefined,
+					status: STEP_STATUS.PENDING,
+				},
+				data: myPlanEntity1,
+			},
+			$vars: {},
+		}
+
+		const stepParams = <U__plans_plan_run_Params>{
+			ai: "openai",
+			input: "name",
+			task: "text-generation",
+		}
+
+		await Run(stepParams, $context)
+
+		expect(mockRowUpdateByIndex).toHaveBeenCalledWith("row1",
+			expect.objectContaining({
+				__idx__: "row1",
+				name: "David",
+				age: 28,
+				content: "Process data",
+				"openai-text-generation": { result: "default output" }
+			})
+		)
+	})
+
 	it("should execute AI engine with specified parameters", async () => {
 		const mockAiEngine = {
 			Run: vi.fn().mockResolvedValue({ result: "AI response" }),
@@ -39,7 +95,10 @@ describe("Run", () => {
 		const mockMap = new Map()
 		mockMap.set("openai-default", mockAiEngine)
 		vi.spyOn(AiEngine.AiEnginesInstance, "get").mockReturnValue(mockAiEngine as any)
-		myPlanEntity1.Rows = vi
+
+		const mockDT = new DataTable("mockDT")
+
+		mockDT.Rows = vi
 			.fn()
 			.mockResolvedValue([{ __idx__: "test-id", name: "David", age: 28, content: "Generate summary" }])
 
@@ -53,7 +112,7 @@ describe("Run", () => {
 					params: undefined,
 					status: STEP_STATUS.PENDING,
 				},
-				data: myPlanEntity1,
+				data: mockDT,
 			},
 			$vars: {},
 		}
@@ -77,6 +136,9 @@ describe("Run", () => {
 	})
 
 	it("should throw error for invalid run parameters", async () => {
+		// Reset all mocks to ensure isolation
+		vi.restoreAllMocks()
+
 		const $context: Partial<TContext> = {
 			$schema: "mySchema",
 			$plan: {
@@ -102,7 +164,7 @@ describe("Run", () => {
 			Run: vi.fn().mockResolvedValue({ sentiment: "positive", confidence: 0.95 }),
 		}
 		vi.spyOn(AiEngine.AiEnginesInstance, "get").mockReturnValue(mockAiEngine as any)
-		
+
 		const mockRowUpdateByIndex = vi.fn()
 		myPlanEntity1.Rows = vi.fn().mockResolvedValue([
 			{ __idx__: "row1", name: "David", age: 28, content: "Analyze sentiment" },
@@ -111,7 +173,7 @@ describe("Run", () => {
 		myPlanEntity1.RowUpdateByIndex = mockRowUpdateByIndex
 		myPlanEntity1.FieldsSet = vi.fn().mockResolvedValue(undefined)
 
-		
+
 		const $context: Partial<TContext> = {
 			$schema: "mySchema",
 			$plan: {
@@ -137,7 +199,7 @@ describe("Run", () => {
 		await Run(stepParams, $context)
 
 		expect(mockRowUpdateByIndex).toHaveBeenCalledTimes(2)
-		expect(mockRowUpdateByIndex).toHaveBeenCalledWith("row1", 
+		expect(mockRowUpdateByIndex).toHaveBeenCalledWith("row1",
 			expect.objectContaining({
 				__idx__: "row1",
 				name: "David",
@@ -146,7 +208,7 @@ describe("Run", () => {
 				sentiment_result: { sentiment: "positive", confidence: 0.95 }
 			})
 		)
-		expect(mockRowUpdateByIndex).toHaveBeenCalledWith("row2", 
+		expect(mockRowUpdateByIndex).toHaveBeenCalledWith("row2",
 			expect.objectContaining({
 				__idx__: "row2",
 				name: "Eve",
@@ -159,14 +221,14 @@ describe("Run", () => {
 
 	it("should correctly map AI response using object output configuration", async () => {
 		const mockAiEngine = {
-			Run: vi.fn().mockResolvedValue({ 
-				sentiment: "positive", 
+			Run: vi.fn().mockResolvedValue({
+				sentiment: "positive",
 				confidence: 0.95,
 				analysis: "very positive tone"
 			}),
 		}
 		vi.spyOn(AiEngine.AiEnginesInstance, "get").mockReturnValue(mockAiEngine as any)
-		
+
 		const mockRowUpdateByIndex = vi.fn()
 		myPlanEntity1.Rows = vi.fn().mockResolvedValue([
 			{ __idx__: "row1", name: "David", age: 28, content: "Analyze sentiment" }
@@ -201,7 +263,7 @@ describe("Run", () => {
 
 		await Run(stepParams, $context)
 
-		expect(mockRowUpdateByIndex).toHaveBeenCalledWith("row1", 
+		expect(mockRowUpdateByIndex).toHaveBeenCalledWith("row1",
 			expect.objectContaining({
 				__idx__: "row1",
 				name: "David",
@@ -213,59 +275,12 @@ describe("Run", () => {
 		)
 	})
 
-	it("should use default AI task name when output is not specified", async () => {
-		const mockAiEngine = {
-			Run: vi.fn().mockResolvedValue({ result: "default output" }),
-		}
-		vi.spyOn(AiEngine.AiEnginesInstance, "get").mockReturnValue(mockAiEngine as any)
-		
-		const mockRowUpdateByIndex = vi.fn()
-		myPlanEntity1.Rows = vi.fn().mockResolvedValue([
-			{ __idx__: "row1", name: "David", age: 28, content: "Process data" }
-		])
-		myPlanEntity1.RowUpdateByIndex = mockRowUpdateByIndex
-		myPlanEntity1.FieldsSet = vi.fn().mockResolvedValue(undefined)
-
-		const $context: Partial<TContext> = {
-			$schema: "mySchema",
-			$plan: {
-				name: "myPlan",
-				currentStep: {
-					index: undefined,
-					command: undefined,
-					params: undefined,
-					status: STEP_STATUS.PENDING,
-				},
-				data: myPlanEntity1,
-			},
-			$vars: {},
-		}
-
-		const stepParams = <U__plans_plan_run_Params>{
-			ai: "openai",
-			input: "name",
-			task: "text-generation",
-		}
-
-		await Run(stepParams, $context)
-
-		expect(mockRowUpdateByIndex).toHaveBeenCalledWith("row1", 
-			expect.objectContaining({
-				__idx__: "row1",
-				name: "David",
-				age: 28,
-				content: "Process data",
-				"openai-text-generation": { result: "default output" }
-			})
-		)
-	})
-
 	it("should return original row when AI response is empty", async () => {
 		const mockAiEngine = {
 			Run: vi.fn().mockResolvedValue({}),
 		}
 		vi.spyOn(AiEngine.AiEnginesInstance, "get").mockReturnValue(mockAiEngine as any)
-		
+
 		const mockRowUpdateByIndex = vi.fn()
 		const originalRow = { __idx__: "row1", name: "David", age: 28, content: "Process data" }
 		myPlanEntity1.Rows = vi.fn().mockResolvedValue([originalRow])
@@ -304,7 +319,7 @@ describe("Run", () => {
 			Run: vi.fn().mockResolvedValue({ result: "processed" }),
 		}
 		vi.spyOn(AiEngine.AiEnginesInstance, "get").mockReturnValue(mockAiEngine as any)
-		
+
 		const mockRowUpdateByIndex = vi.fn()
 		myPlanEntity1.Rows = vi.fn().mockResolvedValue([
 			{ __idx__: "row1", name: "David", age: 28, content: "Process data" }
@@ -340,7 +355,7 @@ describe("Run", () => {
 		expect(mockAiEngine.Run).toHaveBeenCalledWith({
 			data: "David - 28",
 			ai: "openai",
-			input: "${{ $row.name + ' - ' + $row.age }}",
+			input: "David - 28",
 			output: "result",
 			task: "text-generation",
 		})

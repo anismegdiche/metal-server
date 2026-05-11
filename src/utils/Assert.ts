@@ -1,11 +1,22 @@
 //
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: This is a utility class with only static methods */
 //
 //
+import type z from "zod"
 import { HttpError, HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
 import { Logger } from "./Logger"
 
 //
 export class Assert {
+	static ZodSchema<T>(value: unknown, zodSchema: z.ZodSchema<T>, message: string): T {
+		try {
+			return zodSchema.parse(value)
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			throw new HttpErrorInternalServerError(`${message}: ${errorMessage}`)
+		}
+	}
+
 	static Condition(
 		condition: boolean,
 		message: string,

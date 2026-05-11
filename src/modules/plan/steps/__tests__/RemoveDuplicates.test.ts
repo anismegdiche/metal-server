@@ -72,7 +72,7 @@ describe("RemoveDuplicates", () => {
 		}
 
 		const stepParams = <U__plans_plan_remove_duplicates_Params>{
-			keys: ["name"],
+			key: ["name"],
 			method: REMOVE_DUPLICATES_METHOD.HASH,
 			strategy: REMOVE_DUPLICATES_STRATEGY.LAST,
 		}

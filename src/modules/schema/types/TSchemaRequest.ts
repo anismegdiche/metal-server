@@ -7,36 +7,32 @@ import { z_TOrderBy } from "../../../types/DataTable"
 import { z_T_IntPositive } from "../../../types/T_IntPositive"
 import { z_TJson } from "../../../types/TJson"
 
+
 // SchemaRequestBase
-export const z_schema = z
-	.string()
+export const z_schema = z.string()
 	.trim()
-	.min(1,{ message: "schema must be a non empty string" })
+	.min(1, { message: "schema must be a non empty string" })
 
-export const z_entity = z
-	.string()
+export const z_entity = z.string()
 	.trim()
-	.min(1,{ message: "entity must be a non empty string" })
+	.min(1, { message: "entity must be a non empty string" })
 
-export const z_source = z
-	.string({ message: "source must be a non empty string" })
+export const z_source = z.string({ message: "source must be a non empty string" })
 	.trim()
 
-export const z_TSchemaRequestBase = z
-	.object({
-		schema: z_schema,
-		entity: z_entity,
-		source: z_source
-			.optional()
-	})
+export const z_TSchemaRequestBase = z.object({
+	schema: z_schema,
+	entity: z_entity,
+	source: z_source
+		.optional()
+})
 
 
 
 // Options
 
 // fields
-const z_fields = z
-	.string({ message: "fields must be a comma separated list of field names" })
+const z_fields = z.string({ message: "fields must be a comma separated list of field names" })
 	.optional()
 
 // filter
@@ -53,22 +49,20 @@ const z_cache = z_T_IntPositive
 	.min(1, { message: "cache must be greater than 0" })
 
 // data
-const z_data = z
-	.union([
-		z_TJson,
-		z.array(
-			z_TJson
-		)
-	])
+const z_data = z.union([
+	z_TJson,
+	z.array(
+		z_TJson
+	)
+])
 
 // anonymize
-const z_anonymize = z
-	.union([
-		z.string({ message: "anonymize must be a comma separated list of field names" }),
-		z.array(
-			z.string()
-		)
-	])
+const z_anonymize = z.union([
+	z.string({ message: "anonymize must be a comma separated list of field names" }),
+	z.array(
+		z.string()
+	)
+])
 
 
 // TSchemaRequest
@@ -132,18 +126,19 @@ export const z_TSchemaRequestInsert = z_TSchemaRequestBase
 
 export const z_TSchemaRequestListEntities = z_TSchemaRequestBase
 	.omit({ entity: true })
+
 export const z_TSchemaRequestAddEntity = z_TSchemaRequestBase
 
-export const z_TSchemaRequest = z
-	.discriminatedUnion("schema", [
-		z_TSchemaRequestBase,
-		z_TSchemaRequestSelect,
-		z_TSchemaRequestUpdate,
-		z_TSchemaRequestDelete,
-		z_TSchemaRequestInsert,
-		z_TSchemaRequestListEntities,
-		z_TSchemaRequestAddEntity,
-	])
+export const z_TSchemaRequest = z.discriminatedUnion("schema", [
+	z_TSchemaRequestBase,
+	z_TSchemaRequestSelect,
+	z_TSchemaRequestUpdate,
+	z_TSchemaRequestDelete,
+	z_TSchemaRequestInsert,
+	z_TSchemaRequestListEntities,
+	z_TSchemaRequestAddEntity,
+])
+
 
 //
 export type TSchemaRequestSelect = z.infer<typeof z_TSchemaRequestSelect>

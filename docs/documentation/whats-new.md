@@ -38,4 +38,10 @@ features:
       We have added a new ability to handle Parquet files, allowing for efficient columnar data processing and schema evolution.
       <br><br><span class="VPBadge danger">Learn more...</span>
     link: data-providers-config#parquet
+
+  - title: New on error handler per step
+    details: |
+      Introducing the new and powerful step-level error handling. With this feature, you can now handle errors that occur during the execution of individual steps in your Metal plans. This means you can now customize how your plans handle errors, whether you want to retry, skip, or even sink the error data into a separate entity. This feature expands the flexibility of Metal and enables you to handle errors in a more granular and precise manner.
+      <br><br><span class="VPBadge danger">Learn more...</span>
+    link: on-error
 ---

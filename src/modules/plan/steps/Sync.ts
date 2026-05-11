@@ -14,11 +14,10 @@ import { Schema } from "../../schema/Schema"
 import { STEP } from "../@consts"
 import { type U__plans_plan_sync_Params, z_U__plans_plan_sync_Params, } from "../types/U__plans_params"
 import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
-import { _select } from "./Select"
 
 
 //
-export async function Sync(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+export async function Sync(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
 
 	Assert.Var<U__plans_plan_sync_Params>(
 		stepParams,
@@ -36,7 +35,11 @@ export async function Sync(stepParams: U__plans_plan__step_Params, $context?: Pa
 		new Sandbox($context),
 	) as U__plans_plan_sync_Params
 
-	const { from, to, id } = $__step
+	const {
+		from,
+		to,
+		id
+	} = $__step
 
 	Assert.Var<string>(id, "'id' must be provided")
 	Assert.Condition(from !== undefined || to !== undefined, "Either 'from' and 'to' must be provided")
@@ -96,4 +99,16 @@ export async function Sync(stepParams: U__plans_plan__step_Params, $context?: Pa
 	}
 
 	return planData.FieldsSet()
+}
+
+async function _select(schema: string, entity: string): Promise<DataTable | undefined> {
+	const intResp = await Schema.Select({
+		schema,
+		entity,
+	})
+
+	if (intResp.Body && Schema.IsSchemaResponse(intResp.Body) && (await intResp.Body.data.Count()) > 0)
+		return intResp.Body.data
+
+	return undefined
 }

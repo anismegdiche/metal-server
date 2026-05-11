@@ -12,7 +12,7 @@ import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
 
 //
-export async function Debug(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+export async function Debug(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
 
 	Assert.Var<U__plans_plan_debug_Params>(
 		stepParams,

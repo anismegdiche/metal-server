@@ -1,7 +1,7 @@
 //
 //
 //
-import { merge } from "lodash-es"
+import { merge, omit } from "lodash-es"
 //
 import type { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -19,29 +19,32 @@ import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
 
 //
-export async function Delete(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+export async function Delete(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
 	Assert.Var<U__plans_plan_delete_Params>(
 		stepParams,
 		z_U__plans_plan_delete_Params.safeParse(stepParams).success,
 		`${STEP.DELETE}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`,
 	)
 
-	const {
-		data: planData
-	} = $context?.$plan as NonNullable<Record<string, unknown>>
-	Assert.Var<DataTable>(planData, "Data is not initialized")
-
-	const $__schemaRequest = PlaceHolder.EvaluateJsCode<TSchemaRequestDelete>(
+	const $__stepParams = PlaceHolder.EvaluateJsCode<U__plans_plan_delete_Params>(
 		stepParams,
 		new Sandbox($context),
-	) as TSchemaRequestDelete
+	) as U__plans_plan_delete_Params
 
-	$context = merge($context, DATAPROVIDER.GetContext($__schemaRequest))
+	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
+	Assert.Var<DataTable>(planData, "Data is not initialized")
+
+	const $__schemaRequest = omit($__stepParams, "on-error") as TSchemaRequestDelete
+
+	$context = merge(
+		$context,
+		DATAPROVIDER.GetContext($__schemaRequest)
+	)
 
 	const { schema } = $__schemaRequest
 
-	// case schema
 	if (schema) {
+		// case schema
 		await _deleteSchema(stepParams, $context)
 		return planData
 	} else {
@@ -49,7 +52,7 @@ export async function Delete(stepParams: U__plans_plan__step_Params, $context?: 
 	}
 }
 
-async function _deleteSchema(stepParams: U__plans_plan_delete_Params, $context?: Partial<TContext>): Promise<void> {
+async function _deleteSchema(stepParams: U__plans_plan_delete_Params, $context: Partial<TContext>): Promise<void> {
 
 	const schemaRequest = stepParams as TSchemaRequestDelete
 	const { schema, entity } = schemaRequest
@@ -67,7 +70,7 @@ async function _deleteSchema(stepParams: U__plans_plan_delete_Params, $context?:
 	})
 }
 
-async function _deletePlan(stepParams: U__plans_plan_delete_Params, $context?: Partial<TContext>): Promise<DataTable> {
+async function _deletePlan(stepParams: U__plans_plan_delete_Params, $context: Partial<TContext>): Promise<DataTable> {
 
 	const $__schemaRequest = stepParams as TSchemaRequestDelete
 	const { entity } = $__schemaRequest

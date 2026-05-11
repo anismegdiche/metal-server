@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noTemplateCurlyInString: metal feat */
 import { Sandbox } from "../../modules/sandbox/Sandbox"
 import type { TJson } from "../../types/TJson"
 import { PlaceHolder } from "../PlaceHolder"
@@ -74,11 +75,21 @@ describe("PlaceHolder", () => {
 
 		it("should handle null input", () => {
 			const result = PlaceHolder.EvaluateJsCode(null, new Sandbox())
-			expect(result).toBeUndefined()
+			expect(result).toEqual(null)
+		})
+
+		it("should handle null pattern input", () => {
+			const result = PlaceHolder.EvaluateJsCode("${{null}}", new Sandbox())
+			expect(result).toEqual(null)
 		})
 
 		it("should handle undefined input", () => {
 			const result = PlaceHolder.EvaluateJsCode(undefined, new Sandbox())
+			expect(result).toBeUndefined()
+		})
+
+		it("should handle undefined input", () => {
+			const result = PlaceHolder.EvaluateJsCode("${{undefined}}", new Sandbox())
 			expect(result).toBeUndefined()
 		})
 

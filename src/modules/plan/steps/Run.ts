@@ -16,37 +16,33 @@ import type { TContext } from "../../sandbox/types/TContext"
 import { STEP } from "../@consts"
 import { type U__plans_plan_run_Params, z_U__plans_plan_run_Params, } from "../types/U__plans_params"
 import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
+import type { TAny } from "../../../types/TAny"
 
 
 //
-export async function Run(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+const DEFAULT = {
+	output: null,
+}
+
+
+//
+export async function Run(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
+
+	const _stepParam = merge(DEFAULT, stepParams)
+
 	Assert.Var<U__plans_plan_run_Params>(
-		stepParams,
-		z_U__plans_plan_run_Params.safeParse(stepParams).success,
+		_stepParam,
+		z_U__plans_plan_run_Params.safeParse(_stepParam).success,
 		`${STEP.RUN}: Wrong argument passed`,
 	)
 
-	const DEFAULT = {
-		output: null,
-	}
-
-	$context = merge($context, {
-		$row: undefined,
-		$result: undefined,
-	})
+	$context.$row = undefined
+	$context.$result = undefined
 
 	const {
 		data: planData
 	} = $context?.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
-
-	const _step = merge(DEFAULT, stepParams) as U__plans_plan_run_Params
-
-	const { ai, task } = _step
-	const aiTask = `${ai}-${task}`
-	const aiEngine = AiEngine.AiEnginesInstance.get(aiTask)
-
-	Assert.Var<IAiEngine>(aiEngine, aiEngine !== undefined, `${STEP.RUN}: AI Engine ${aiTask} not found`)
 
 	const rowPromises: Promise<void>[] = []
 
@@ -56,7 +52,7 @@ export async function Run(stepParams: U__plans_plan__step_Params, $context?: Par
 				Assert.Var<string>(_row.__idx__, `${STEP.RUN}: data index is not defined`)
 
 				const __idx__: TUuidv7 = _row.__idx__
-				const __row = await _runRow(_row, stepParams, $context)
+				const __row = await _runRow(_row, _stepParam, $context)
 				await planData.RowUpdateByIndex(__idx__, __row)
 			})(),
 		)
@@ -66,38 +62,49 @@ export async function Run(stepParams: U__plans_plan__step_Params, $context?: Par
 		.then(() => planData.FieldsSet())
 }
 
-export async function _runRow(row: TRow, stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<TRow> {
+export async function _runRow(row: TRow, stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<TRow> {
 	Assert.Var<U__plans_plan_run_Params>(
 		stepParams,
 		z_U__plans_plan_run_Params.safeParse(stepParams).success,
 		`${STEP.RUN}: Wrong argument passed`,
 	)
 
-	$context = merge($context, {
-		$row: undefined,
-		$result: undefined,
-	})
+	Assert.Var<string>(row.__idx__, `${STEP.RUN}: data index is not defined`)
+	Assert.Condition(row?.content, `${STEP.RUN}: content is not defined`)
 
-	const { ai, task, input, output } = stepParams
+	// reset $context
+	$context.$row = row
+	$context.$result = undefined
+
+	const {
+		input,
+		output
+	} = stepParams
+
+	const $__fieldValue = RX_JS_CODE.exec(input) === null
+		? $context.$row[input]
+		: PlaceHolder.EvaluateJsCode(input, new Sandbox($context))
+
+	const $__stepParams = PlaceHolder.EvaluateJsCode<U__plans_plan_run_Params>(
+		merge(DEFAULT, stepParams),
+		new Sandbox($context),
+	) as U__plans_plan_run_Params
+
+	const {
+		ai,
+		task,
+	} = $__stepParams
+
 	const aiTask = `${ai}-${task}`
 	const aiEngine = AiEngine.AiEnginesInstance.get(aiTask)
 
 	Assert.Var<IAiEngine>(aiEngine, aiEngine !== undefined, `${STEP.RUN}: AI Engine ${aiTask} not found`)
 
-	Assert.Var<string>(row.__idx__, `${STEP.RUN}: data index is not defined`)
-	Assert.Condition(row?.content, `${STEP.RUN}: content is not defined`)
+	Assert.Condition($__fieldValue !== undefined, `${STEP.RUN}: Input ${input} is not defined`)
 
-	$context.$row = row
-
-	const $__data = RX_JS_CODE.exec(input) === null
-		? $context.$row[input]
-		: PlaceHolder.EvaluateJsCode(input, new Sandbox($context))
-
-	Assert.Condition($__data !== undefined, `${STEP.RUN}: Input ${input} is not defined`)
-
-	const aiResult = <Record<string, any>>await aiEngine.Run({
-		data: $__data,
-		...(stepParams as U__plans_plan_run_Params),
+	const aiResult = <Record<string, TAny>>await aiEngine.Run({
+		data: $__fieldValue,
+		...($__stepParams as U__plans_plan_run_Params),
 	} as TAiArguments)
 
 	if (isEmpty(aiResult))
@@ -105,13 +112,15 @@ export async function _runRow(row: TRow, stepParams: U__plans_plan__step_Params,
 
 	$context.$result = aiResult
 
+	const $__output = PlaceHolder.EvaluateJsCode(output, new Sandbox($context))
+
 	switch (true) {
-		case isString(output):
-			row[output] = aiResult
+		case isString($__output):
+			row[$__output] = aiResult
 			break
 
-		case isObject(output):
-			for (const [_outField, _inField] of Object.entries(output)) {
+		case isObject($__output) && $__output !== null && $__output !== undefined:
+			for (const [_outField, _inField] of Object.entries($__output)) {
 				const $__value =
 					RX_JS_CODE.exec(<string>_inField) === null
 						? aiResult[_inField as string]
@@ -119,6 +128,7 @@ export async function _runRow(row: TRow, stepParams: U__plans_plan__step_Params,
 				row[_outField] = $__value
 			}
 			break
+			
 		default:
 			row[aiTask] = JsonUtils.SafeCopy(aiResult)
 			break

@@ -2,8 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
 import type { TContext } from "../../../sandbox/types/TContext"
 import { STEP_STATUS } from "../../@consts"
-import type { U__plans_plan_pick_Params } from "../../types/U__plans_params"
-import { Pick } from "../Pick"
+import { Clear } from "../Clear"
 
 // Mock setup
 vi.mock("../../../utils/Logger", () => ({
@@ -29,58 +28,63 @@ const myPlanEntity1 = new DataTable("myPlanEntity1", [
 ])
 await myPlanEntity1.RowsSet()
 
-describe("Pick", () => {
+describe("Clear", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
-		myPlanEntity1.Pick = vi.fn().mockReturnThis()
+		myPlanEntity1.MetaDataSet = vi.fn().mockReturnThis()
 	})
 
-	it("should call DataTable.Pick with arguments", async () => {
+	it("should clear plan data and reset context", async () => {
 		const $context: Partial<TContext> = {
 			$schema: "mySchema",
+			$entity: "myEntity",
 			$plan: {
 				name: "myPlan",
 				currentStep: {
-					index: undefined,
+					index: 0,
 					command: undefined,
 					params: undefined,
 					status: STEP_STATUS.PENDING,
 				},
 				data: myPlanEntity1,
 			},
-			$vars: {},
+			$vars: { testVar: "testValue" },
+			$row: { name: "test" },
+			$response: { url: "test.com" },
 		}
 
-		const stepParams = <U__plans_plan_pick_Params>{
-			fields: ["f1", "f2"],
-		}
+		const result = await Clear(null, $context)
 
-		await Pick(stepParams, $context)
-		expect(myPlanEntity1.Pick).toHaveBeenCalledWith(["f1", "f2"])
+		// Verify data is cleared
+		expect(await result.Count()).toBe(0)
+
+		// Verify context is reset
+		expect($context.$vars).toEqual({})
+		expect($context.$row).toBeUndefined()
+		expect($context.$response).toBeUndefined()
+		expect($context.$result).toBeUndefined()
+		expect($context.$utils).toBeUndefined()
+		expect($context.$error).toBeUndefined()
+		expect($context.$request).toBeUndefined()
 	})
 
-	it("should ignore unknown fields", async () => {
+	it("should handle empty context gracefully", async () => {
 		const $context: Partial<TContext> = {
-			$schema: "mySchema",
 			$plan: {
 				name: "myPlan",
 				currentStep: {
-					index: undefined,
+					index: 0,
 					command: undefined,
 					params: undefined,
 					status: STEP_STATUS.PENDING,
 				},
 				data: myPlanEntity1,
 			},
-			$vars: {},
 		}
 
-		const stepParams = <U__plans_plan_pick_Params>{
-			fields: ["name", "unknownField"],
-		}
+		const result = await Clear(null, $context)
 
-		const result = await Pick(stepParams, $context)
-		expect(myPlanEntity1.Pick).toHaveBeenCalledWith(["name", "unknownField"])
-		expect(result).toBe(myPlanEntity1)
+		expect(await result.Count()).toBe(0)
+		expect($context.$vars).toEqual({})
 	})
 })

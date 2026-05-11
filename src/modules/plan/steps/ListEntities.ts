@@ -19,7 +19,7 @@ import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
 
 //
-export async function ListEntities(stepParams: U__plans_plan__step_Params, $context?: Partial<TContext>): Promise<DataTable> {
+export async function ListEntities(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
 
 	Assert.Var<U__plans_plan_list_entities_Params>(
 		stepParams,
@@ -27,12 +27,12 @@ export async function ListEntities(stepParams: U__plans_plan__step_Params, $cont
 		`${STEP.LIST_ENTITIES}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`,
 	)
 
-	const $__step: U__plans_plan_list_entities_Params = PlaceHolder.EvaluateJsCode<U__plans_plan_list_entities_Params>(
+	const $__stepParams: U__plans_plan_list_entities_Params = PlaceHolder.EvaluateJsCode<U__plans_plan_list_entities_Params>(
 		stepParams,
 		new Sandbox($context),
 	) as U__plans_plan_list_entities_Params
 
-	const $__schemaRequest: TSchemaRequestListEntities = omit($__step, 'on-error') as TSchemaRequestListEntities
+	const $__schemaRequest: TSchemaRequestListEntities = omit($__stepParams, 'on-error') as TSchemaRequestListEntities
 
 	$context = merge(
 		$context,
@@ -47,7 +47,7 @@ export async function ListEntities(stepParams: U__plans_plan__step_Params, $cont
 
 	// data from schema
 	const _intResp = await Schema.ListEntities(<TSchemaRequestListEntities>{
-		...$__step,
+		...$__stepParams,
 		schema: schema ?? $schema,
 	})
 

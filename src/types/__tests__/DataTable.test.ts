@@ -523,6 +523,42 @@ describe("DataTable", () => {
 				age: "number",
 			})
 		})
+		
+		it("should replace existing rows in the table", async () => {
+			await dt.RowsSet([
+				{
+					name: "Charlie",
+					age: 12,
+				},
+			])
+
+			expect(await dt.Count()).toEqual(1)
+
+			await dt.RowsSet([
+				{
+					name: "John",
+					age: 23,
+				},
+			])
+
+			expect(await dt.Count()).toEqual(1)
+
+			await dt.RowsSet([
+				{
+					name: "Doe",
+					age: 34,
+				},
+			])
+
+			expect(await dt.Count()).toEqual(1)
+			
+			expect(await dt.Rows()).toEqual([
+				{
+					name: "Doe",
+					age: 34,
+				},
+			])
+		})
 
 		it("should not modify the table if rows are undefined", async () => {
 			await dt.RowsSet()
