@@ -6,40 +6,19 @@ import z from "zod"
 import { z_TOrderBy } from "../../../types/DataTable"
 import { z_T_JsPattern } from "../../../types/T_JsPattern"
 import { z_TJson } from "../../../types/TJson"
+import { JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../../utils/DataTableUtils"
 import { z_U__plans_plan_run_ai_Params } from "../../ai-engine/types/U__plans_plan_run_ai_Params"
 import { z_entity, z_schema, z_TSchemaRequestDelete, z_TSchemaRequestInsert, z_TSchemaRequestListEntities, z_TSchemaRequestSelect, z_TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
 import { z_U__on_error } from "./U__plans_plan_on_error"
 
 
-//
-export enum JOIN_TYPE {
-    LEFT = "left",
-    RIGHT = "right",
-    INNER = "inner",
-    FULL_OUTER = "full-outer",
-    CROSS = "cross",
-}
-
-export enum REMOVE_DUPLICATES_METHOD {
-    HASH = "hash",
-    EXACT = "exact",
-    IGNORE_CASE = "ignorecase",
-}
-
-export enum REMOVE_DUPLICATES_STRATEGY {
-    FIRST = "first",
-    LAST = "last",
-    HIGHEST = "highest",
-    LOWEST = "lowest",
-    CUSTOM = "custom",
-}
-
-
 ////// Flow control
 
 // Break
-export const z_U__plans_plan_break_Params = z
-    .null()
+export const z_U__plans_plan_break_Params = z.union([
+    z.null(),
+    z_T_JsPattern,
+])
 
 export type U__plans_plan_break_Params = z.infer<typeof z_U__plans_plan_break_Params>
 
@@ -345,7 +324,7 @@ export const z_U__plans_plan_sync_Params = z.object({
         ]),
     }),
     id: z.union([
-        z_TOrderBy,
+        z.string(),
         z_T_JsPattern
     ]),
 })

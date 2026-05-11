@@ -2,7 +2,7 @@
 //
 //
 //
-import * as chrono from "chrono-node";
+import { strict } from "chrono-node";
 import equal from "fast-deep-equal";
 import { forEach, forOwn, get, isEmpty, isObject, isString, pickBy, set } from "lodash-es";
 import objectPath from "object-path";
@@ -41,7 +41,7 @@ export class JsonUtils {
 				if (value.length < 4) return value
 
 				// 4. Try parsing with chrono STRICT
-				const parsed = chrono.strict.parseDate(value)
+				const parsed = strict.parseDate(value)
 				if (parsed !== null && !Number.isNaN(parsed.getTime())) return parsed
 
 				return value

@@ -834,17 +834,34 @@ nothing, `error`
 >       - debug:
 > ```
 
-#### `break` <Badge type="default" text="v0.1+" />
+#### `break` 📜 <Badge type="default" text="v0.1+" />
 
 To stop execution of the plan at this step.
+it accepts empty value or a JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
-**Example**
+**Available context variables**
+
+- [`$schema`](dynamic-expression-engine#schema)
+- [`$entity`](dynamic-expression-engine#entity)
+- [`$vars`](dynamic-expression-engine#vars)
+- [`$utils`](dynamic-expression-engine#utils)
+
+**Example with empty value**
 
 > ```yaml
 > plans:
 >   my-plan:
 >     steps:
 >       - break:
+> ```
+
+**Example with JavaScript Expression Engine**
+
+> ```yaml
+> plans:
+>   my-plan:
+>     steps:
+>       - break: ${{ $vars.myVar == true }}
 > ```
 
 #### `join` 📜 <Badge type="default" text="v0.1+" />
@@ -1442,7 +1459,8 @@ This step removes all data from the current plan, clears all variables, and rese
 > ```yaml
 > plans:
 >   my-plan:
->     clear:
+>     steps:
+>       - clear:
 > ```
 
 ## `schedules` <Badge type="info" text="v0.5+" />

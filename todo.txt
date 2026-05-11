@@ -1,6 +1,6 @@
 plan > hot load after plan reload #fix {f} {start:2026-03-06T16:44:30} {cm:2026-03-06} {duration:01h27m} {h}
 plan > activate disk for storage #feature
-plan > history of transformation with which step did the processing, also flag keep history {f}
+(A) plan > history of transformation with which step did the processing, also flag keep history {f}
 step > set-var {f} {start:2026-03-03T19:07:03} {cm:2026-03-03} {duration:01h18m} {h}
 content > text regex
 plan > Data detection: use NLP/BrainJS for datatype detection based on RegExp string conversion
@@ -20,9 +20,9 @@ plan > test if user is not allowed to access schema, what is happening {f}
 source > split sql and azure {f}
 guides, sample project : update
 remove source from schemarequest if possible
-routing bad data to an error sink implicitly removes it from the plan data for downstream steps. The row exists in the error sink, but it's no longer in the main processing stream. {f} {start:2026-03-28T11:10:04}
+(A) routing bad data to an error sink implicitly removes it from the plan data for downstream steps. The row exists in the error sink, but it's no longer in the main processing stream. {f} {start:2026-03-28T11:10:04} {cm:2026-05-11} {duration:1m-13d_17h11m} {h}
 step: fake data with faker js {f}
 core > use threads (piscina)
-core > step metrics {f}
+(A) core > step metrics {f}
 core > dashboard {f}
-step > break > add boolean condition to break {f}
+(A) step > break > add boolean condition to break {f} {start:2026-05-11T15:23:00} {cm:2026-05-11} {duration:01h17m}

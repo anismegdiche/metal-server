@@ -1,5 +1,5 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
-/** biome-ignore-all lint/complexity/noUselessSwitchCase: <explanation> */
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: This class is designed to be a static utility class */
+/** biome-ignore-all lint/complexity/noUselessSwitchCase: All cases are intentionally handled for completeness */
 //
 //
 //
@@ -51,11 +51,20 @@ export class Step {
 
 	@Logger.LogFunction()
 	static readonly ExecuteCaseMap: Record<string, T_StepFunctionWithSignal> = {
-		[STEP.BREAK]: Step.WrapStepWithSignal(
-			async (stepParams, _$context) => (await import('./steps/Break')).Break(stepParams),
-			undefined,
-			STEP_SIGNAL.STOP
-		),
+		[STEP.BREAK]: async (stepParams, $context) => {
+			const result = await (await import('./steps/Break')).Break(stepParams, $context)
+
+			const signal = (result)
+				? STEP_SIGNAL.STOP
+				: STEP_SIGNAL.NEXT
+
+			return {
+				data: undefined,
+				signal,
+				outcome: STEP_OUTCOME.SUCCESS,
+				$context: $context as TContext
+			}
+		},
 		[STEP.DEBUG]: Step.WrapStepWithSignal(
 			async (stepParams, $context) => (await import('./steps/Debug')).Debug(stepParams, $context)
 		),
@@ -212,8 +221,7 @@ export class Step {
 		stepParams,
 		onError,
 		$context,
-		attempt,
-		error
+		attempt
 	}: T_StepOnErrorArgs): Promise<DataTable | undefined> {
 
 		Assert.Var<T_StepFunction>(fnStep, "fnStep is undefined")
