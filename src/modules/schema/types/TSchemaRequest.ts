@@ -67,28 +67,29 @@ const z_anonymize = z.union([
 
 // TSchemaRequest
 
-export const z_TSchemaRequestSelect = z_TSchemaRequestBase.merge(
-	z.strictObject(
-		{
-			fields: z_fields
-				.optional(),
-			filter: z_filter
-				.optional(),
-			"filter-expression": z_filter_expression
-				.optional(),
-			sort: z_sort
-				.optional(),
-			cache: z_cache
-				.optional(),
-			anonymize: z_anonymize
-				.optional(),
-		},
-		{ message: "options must be one of the following: fields, filter, filter-expression, sort, cache, anonymize" },
-	),
-)
+export const z_TSchemaRequestSelect = z_TSchemaRequestBase
+	.extend(
+		z.strictObject(
+			{
+				fields: z_fields
+					.optional(),
+				filter: z_filter
+					.optional(),
+				"filter-expression": z_filter_expression
+					.optional(),
+				sort: z_sort
+					.optional(),
+				cache: z_cache
+					.optional(),
+				anonymize: z_anonymize
+					.optional(),
+			},
+			{ message: "options must be one of the following: fields, filter, filter-expression, sort, cache, anonymize" },
+		).shape,
+	)
 
 export const z_TSchemaRequestUpdate = z_TSchemaRequestBase
-	.merge(
+	.extend(
 		z.strictObject(
 			{
 				filter: z_filter
@@ -98,11 +99,11 @@ export const z_TSchemaRequestUpdate = z_TSchemaRequestBase
 				data: z_data,
 			},
 			{ message: "options must be one of the following: filter, filter-expression, data" },
-		),
+		).shape,
 	)
 
 export const z_TSchemaRequestDelete = z_TSchemaRequestBase
-	.merge(
+	.extend(
 		z.strictObject(
 			{
 				filter: z_filter
@@ -111,17 +112,17 @@ export const z_TSchemaRequestDelete = z_TSchemaRequestBase
 					.optional(),
 			},
 			{ message: "options must be one of the following: filter, filter-expression" },
-		),
+		).shape,
 	)
 
 export const z_TSchemaRequestInsert = z_TSchemaRequestBase
-	.merge(
+	.extend(
 		z.strictObject(
 			{
 				data: z_data,
 			},
 			{ message: "options must be one of the following: data" },
-		),
+		).shape,
 	)
 
 export const z_TSchemaRequestListEntities = z_TSchemaRequestBase

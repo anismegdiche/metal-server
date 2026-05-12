@@ -15,33 +15,37 @@ import { z_U__on_error } from "./U__plans_plan_on_error"
 ////// Flow control
 
 // Break
-export const z_U__plans_plan_break_Params = z.union([
-    z.null(),
-    z_T_JsPattern,
-])
+export const z_U__plans_plan_break_Params = z.union(
+    [
+        z.null(),
+        z_T_JsPattern,
+    ])
 
 export type U__plans_plan_break_Params = z.infer<typeof z_U__plans_plan_break_Params>
 
 // Debug
-export const z_U__plans_plan_debug_Params = z.union([
-    z.string(),
-    z.null(),
-])
+export const z_U__plans_plan_debug_Params = z.union(
+    [
+        z.string(),
+        z.null(),
+    ])
 
 export type U__plans_plan_debug_Params = z.infer<typeof z_U__plans_plan_debug_Params>
 
 // SetVar
 export const z_U__plans_plan_set_var_Params = z.record(
-    z.union([
-        z.string(),
-        z_T_JsPattern
-    ]),
-    z.union([
-        z.string(),
-        z.number(),
-        z_TJson,
-        z_T_JsPattern
-    ])
+    z.union(
+        [
+            z.string(),
+            z_T_JsPattern
+        ]),
+    z.union(
+        [
+            z.string(),
+            z.number(),
+            z_TJson,
+            z_T_JsPattern
+        ])
 )
 
 export type U__plans_plan_set_var_Params = z.infer<typeof z_U__plans_plan_set_var_Params>
@@ -51,77 +55,82 @@ export type U__plans_plan_set_var_Params = z.infer<typeof z_U__plans_plan_set_va
 ////// Source & CRUD
 
 // Select
-export const z_U__plans_plan_select_Params = z.union([
-    z_TSchemaRequestSelect
-        .partial()
-        .merge(z_U__on_error),
-    z_TSchemaRequestSelect
-        .omit({ schema: true, entity: true })
-        .partial()
-        .merge(z_U__on_error),
-    z_U__on_error
-        .required(),
-    z.null(),
-])
+export const z_U__plans_plan_select_Params = z.union(
+    [
+        z_TSchemaRequestSelect
+            .partial()
+            .extend(z_U__on_error.shape),
+        z_TSchemaRequestSelect
+            .omit({ schema: true, entity: true })
+            .partial()
+            .extend(z_U__on_error.shape),
+        z_U__on_error
+            .required(),
+        z.null(),
+    ])
 
 export type U__plans_plan_select_Params = z.infer<typeof z_U__plans_plan_select_Params>
 
 // Insert
-export const z_U__plans_plan_insert_Params = z.union([
-    z_TSchemaRequestInsert
-        .partial()
-        .merge(z_U__on_error),
-    z_TSchemaRequestInsert
-        .omit({ schema: true, entity: true })
-        .partial()
-        .merge(z_U__on_error),
-    z_U__on_error
-        .required(),
-    z.null(),
-])
+export const z_U__plans_plan_insert_Params = z.union(
+    [
+        z_TSchemaRequestInsert
+            .partial()
+            .extend(z_U__on_error.shape),
+        z_TSchemaRequestInsert
+            .omit({ schema: true, entity: true })
+            .partial()
+            .extend(z_U__on_error.shape),
+        z_U__on_error
+            .required(),
+        z.null(),
+    ])
 
 export type U__plans_plan_insert_Params = z.infer<typeof z_U__plans_plan_insert_Params>
 
 // Update
-export const z_U__plans_plan_update_Params = z.union([
-    z_TSchemaRequestUpdate
-        .partial()
-        .merge(z_U__on_error),
-    z_TSchemaRequestUpdate
-        .omit({ schema: true, entity: true })
-        .partial()
-        .merge(z_U__on_error),
-    z_U__on_error
-        .required(),
-    z.null(),
-])
+export const z_U__plans_plan_update_Params = z.union(
+    [
+        z_TSchemaRequestUpdate
+            .partial()
+            .extend(z_U__on_error.shape),
+        z_TSchemaRequestUpdate
+            .omit({ schema: true, entity: true })
+            .partial()
+            .extend(z_U__on_error.shape),
+        z_U__on_error
+            .required(),
+        z.null(),
+    ])
 
 export type U__plans_plan_update_Params = z.infer<typeof z_U__plans_plan_update_Params>
 
 // Delete
-export const z_U__plans_plan_delete_Params = z.union([
-    z_TSchemaRequestDelete
-        .partial()
-        .merge(z_U__on_error),
-    z_TSchemaRequestDelete
-        .omit({ schema: true, entity: true })
-        .partial()
-        .merge(z_U__on_error),
-    z_U__on_error
-        .required(),
-    z.null(),
-])
+export const z_U__plans_plan_delete_Params = z.union(
+    [
+        z_TSchemaRequestDelete
+            .partial()
+            .extend(z_U__on_error.shape),
+        z_TSchemaRequestDelete
+            .omit({ schema: true, entity: true })
+            .partial()
+            .extend(z_U__on_error.shape),
+        z_U__on_error
+            .required(),
+        z.null(),
+    ])
 
 export type U__plans_plan_delete_Params = z.infer<typeof z_U__plans_plan_delete_Params>
 
 // ListEntities
-export const z_U__plans_plan_list_entities_Params = z.union([
-    z_TSchemaRequestListEntities
-        .merge(z_U__on_error),
-    z_U__on_error
-        .required(),
-    z.null(),
-])
+export const z_U__plans_plan_list_entities_Params = z.union(
+    [
+        z_TSchemaRequestListEntities
+            .extend(z_U__on_error.shape),
+        z_U__on_error
+            .required(),
+        z.null(),
+    ])
 
 export type U__plans_plan_list_entities_Params = z.infer<typeof z_U__plans_plan_list_entities_Params>
 
@@ -131,55 +140,62 @@ export type U__plans_plan_list_entities_Params = z.infer<typeof z_U__plans_plan_
 export const z_U__plans_plan_anonymize_Params = z
     .object({
         fields: z.array(
-            z.union([
-                z.string(),
-                z_T_JsPattern
-            ])
+            z.union(
+                [
+                    z.string(),
+                    z_T_JsPattern
+                ])
         )
             .min(1, "At least one field must be specified")
     })
-    .merge(z_U__on_error)
+    .extend(z_U__on_error.shape)
 
 export type U__plans_plan_anonymize_Params = z.infer<typeof z_U__plans_plan_anonymize_Params>
 
 // Join
 export const z_U__plans_plan_join_Params = z
     .object({
-        type: z.union([
-            z.enum(JOIN_TYPE),
-            z_T_JsPattern
-        ]),
-        schema: z.union([
-            z_schema,
-            z_T_JsPattern
-        ]),
-        entity: z.union([
-            z_entity,
-            z_T_JsPattern
-        ]),
-        "left-field": z.union([
-            z.string(),
-            z_T_JsPattern
-        ]),
-        "right-field": z.union([
-            z.string(),
-            z_T_JsPattern
-        ]),
+        type: z.union(
+            [
+                z.enum(JOIN_TYPE),
+                z_T_JsPattern
+            ]),
+        schema: z.union(
+            [
+                z_schema,
+                z_T_JsPattern
+            ]),
+        entity: z.union(
+            [
+                z_entity,
+                z_T_JsPattern
+            ]),
+        "left-field": z.union(
+            [
+                z.string(),
+                z_T_JsPattern
+            ]),
+        "right-field": z.union(
+            [
+                z.string(),
+                z_T_JsPattern
+            ]),
     })
-    .merge(z_U__on_error)
+    .extend(z_U__on_error.shape)
 
 export type U__plans_plan_join_Params = z.infer<typeof z_U__plans_plan_join_Params>
 
 // MapRows (Map)
 export const z_U__plans_plan_map_Params = z
     .object({
-        script: z.union([
-            z.string()
-                .min(1, "Script is required for map operation"),
-            z_T_JsPattern
-        ])
+        script: z.union(
+            [
+                z.string()
+                    .min(1, "Script is required for map operation"),
+                z_T_JsPattern
+            ])
     })
-    .merge(z_U__on_error)
+    .extend(z_U__on_error.shape)
 
 export type U__plans_plan_map_Params = z.infer<typeof z_U__plans_plan_map_Params>
 
@@ -187,14 +203,15 @@ export type U__plans_plan_map_Params = z.infer<typeof z_U__plans_plan_map_Params
 export const z_U__plans_plan_omit_Params = z
     .object({
         fields: z.array(
-            z.union([
-                z.string(),
-                z_T_JsPattern
-            ])
+            z.union(
+                [
+                    z.string(),
+                    z_T_JsPattern
+                ])
         )
             .min(1, { message: "At least one field must be specified" })
     })
-    .merge(z_U__on_error)
+    .extend(z_U__on_error.shape)
 
 export type U__plans_plan_omit_Params = z.infer<typeof z_U__plans_plan_omit_Params>
 
@@ -202,67 +219,77 @@ export type U__plans_plan_omit_Params = z.infer<typeof z_U__plans_plan_omit_Para
 export const z_U__plans_plan_pick_Params = z
     .object({
         fields: z.array(
-            z.union([
-                z.string(),
-                z_T_JsPattern
-            ])
+            z.union(
+                [
+                    z.string(),
+                    z_T_JsPattern
+                ])
         )
             .min(1, { message: "At least one field must be specified" })
     })
-    .merge(z_U__on_error)
+    .extend(z_U__on_error.shape)
 
 export type U__plans_plan_pick_Params = z.infer<typeof z_U__plans_plan_pick_Params>
 
 // RemoveDuplicates
 export const z_U__plans_plan_remove_duplicates_Params = z
-    .union([
-        z.object({
-            key: z.array(
-                z.union([
-                    z.string(),
-                    z_T_JsPattern
-                ])
-            )
-                .optional(),
-            method: z.union([
-                z.enum(REMOVE_DUPLICATES_METHOD),
-                z_T_JsPattern
-            ])
-                .optional(),
-            strategy: z.union([
-                z.literal(REMOVE_DUPLICATES_STRATEGY.FIRST),
-                z.literal(REMOVE_DUPLICATES_STRATEGY.LAST),
-                z_T_JsPattern
-            ])
-                .optional(),
-            condition: z.undefined(),
-        }),
-        z.object({
-            key: z.array(
-                z.union([
-                    z.string(),
-                    z_T_JsPattern
-                ])
-            )
-                .optional(),
-            method: z.union([
-                z.enum(REMOVE_DUPLICATES_METHOD),
-                z_T_JsPattern
-            ])
-                .optional(),
-            strategy: z.union([
-                z.literal(REMOVE_DUPLICATES_STRATEGY.LOWEST),
-                z.literal(REMOVE_DUPLICATES_STRATEGY.HIGHEST),
-                z.literal(REMOVE_DUPLICATES_STRATEGY.CUSTOM),
-                z_T_JsPattern
-            ])
-                .optional(),
-            condition: z.union([
-                z.string(),
-                z_T_JsPattern
-            ]),
-        }),
-    ])
+    .union(
+        [
+            z.object({
+                key: z.array(
+                    z.union(
+                        [
+                            z.string(),
+                            z_T_JsPattern
+                        ])
+                )
+                    .optional(),
+                method: z.union(
+                    [
+                        z.enum(REMOVE_DUPLICATES_METHOD),
+                        z_T_JsPattern
+                    ])
+                    .optional(),
+                strategy: z.union(
+                    [
+                        z.literal(REMOVE_DUPLICATES_STRATEGY.FIRST),
+                        z.literal(REMOVE_DUPLICATES_STRATEGY.LAST),
+                        z_T_JsPattern
+                    ])
+                    .optional(),
+                condition: z.undefined(),
+            }),
+            
+            z.object({
+                key: z.array(
+                    z.union(
+                        [
+                            z.string(),
+                            z_T_JsPattern
+                        ])
+                )
+                    .optional(),
+                method: z.union(
+                    [
+                        z.enum(REMOVE_DUPLICATES_METHOD),
+                        z_T_JsPattern
+                    ])
+                    .optional(),
+                strategy: z.union(
+                    [
+                        z.literal(REMOVE_DUPLICATES_STRATEGY.LOWEST),
+                        z.literal(REMOVE_DUPLICATES_STRATEGY.HIGHEST),
+                        z.literal(REMOVE_DUPLICATES_STRATEGY.CUSTOM),
+                        z_T_JsPattern
+                    ])
+                    .optional(),
+                condition: z.union(
+                    [
+                        z.string(),
+                        z_T_JsPattern
+                    ]),
+            }),
+        ])
     .and(z_U__on_error)
 
 export type U__plans_plan_remove_duplicates_Params = z.infer<typeof z_U__plans_plan_remove_duplicates_Params>
@@ -270,20 +297,23 @@ export type U__plans_plan_remove_duplicates_Params = z.infer<typeof z_U__plans_p
 
 // Run
 export const z_U__plans_plan_run_Params = z.object({
-    ai: z.union([
-        z.string(),
-        z_T_JsPattern
-    ]),
-    input: z.union([
-        z.string(),
-        z_T_JsPattern
-    ]),
-    output: z.union([
-        z.string(),
-        z_T_JsPattern,
-        z_TJson,
-        z.null()
-    ])
+    ai: z.union(
+        [
+            z.string(),
+            z_T_JsPattern
+        ]),
+    input: z.union(
+        [
+            z.string(),
+            z_T_JsPattern
+        ]),
+    output: z.union(
+        [
+            z.string(),
+            z_T_JsPattern,
+            z_TJson,
+            z.null()
+        ])
         .default(null),
 })
     .and(z_U__plans_plan_run_ai_Params)
@@ -296,7 +326,7 @@ export type U__plans_plan_run_Params = z.infer<typeof z_U__plans_plan_run_Params
 export const z_U__plans_plan_sort_Params = z.object({
     fields: z_TOrderBy
 })
-    .merge(z_U__on_error)
+    .extend(z_U__on_error.shape)
 
 export type U__plans_plan_sort_Params = z.infer<typeof z_U__plans_plan_sort_Params>
 
@@ -304,31 +334,36 @@ export type U__plans_plan_sort_Params = z.infer<typeof z_U__plans_plan_sort_Para
 // Sync
 export const z_U__plans_plan_sync_Params = z.object({
     from: z.object({
-        schema: z.union([
-            z_schema,
-            z_T_JsPattern
-        ]),
-        entity: z.union([
-            z_entity,
-            z_T_JsPattern
-        ]),
+        schema: z.union(
+            [
+                z_schema,
+                z_T_JsPattern
+            ]),
+        entity: z.union(
+            [
+                z_entity,
+                z_T_JsPattern
+            ]),
     }),
     to: z.object({
-        schema: z.union([
-            z_schema,
-            z_T_JsPattern
-        ]),
-        entity: z.union([
-            z_entity,
-            z_T_JsPattern
-        ]),
+        schema: z.union(
+            [
+                z_schema,
+                z_T_JsPattern
+            ]),
+        entity: z.union(
+            [
+                z_entity,
+                z_T_JsPattern
+            ]),
     }),
-    id: z.union([
-        z.string(),
-        z_T_JsPattern
-    ]),
+    id: z.union(
+        [
+            z.string(),
+            z_T_JsPattern
+        ]),
 })
-    .merge(z_U__on_error)
+    .extend(z_U__on_error.shape)
 
 export type U__plans_plan_sync_Params = z.infer<typeof z_U__plans_plan_sync_Params>
 
@@ -363,19 +398,21 @@ export const z_U__plans_plan_remove_empty_fields_Params = z.object({
             "empty-object": false,
         }),
     fields: z.record(
-        z.union([
-            z.string(),
-            z_T_JsPattern
-        ]),
-        z.union([
-            z.null(),
-            z_U__plans_plan_remove_empty_fields_field_Params
-        ]),
+        z.union(
+            [
+                z.string(),
+                z_T_JsPattern
+            ]),
+        z.union(
+            [
+                z.null(),
+                z_U__plans_plan_remove_empty_fields_field_Params
+            ]),
     )
         .optional()
 })
     .strict()
-    .merge(z_U__on_error)
+    .extend(z_U__on_error.shape)
 
 
 export type U__plans_plan_remove_empty_fields_Params = z.infer<typeof z_U__plans_plan_remove_empty_fields_Params>
