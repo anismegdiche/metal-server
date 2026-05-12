@@ -7,20 +7,6 @@ import { STEP_STATUS } from "../../@consts"
 import type { U__plans_plan_set_var_Params } from "../../types/U__plans_params"
 import { SetVar } from "../SetVar"
 
-// Mock Logger to avoid decorator issues
-vi.mock("../../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "warn",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		LogFunction: () => (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		Warn: vi.fn(),
-		Debug: vi.fn(),
-		In: "",
-		Out: "",
-	},
-}))
 
 describe("SetVar", () => {
 	let mockDataTable: DataTable

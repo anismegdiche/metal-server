@@ -8,18 +8,6 @@ import type { U__plans_plan_run_Params } from "../../types/U__plans_params"
 import { Run } from "../Run"
 
 // Mock setup
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		Debug: vi.fn(),
-		In: "",
-		Out: "",
-	},
-}))
 
 // Test data setup
 const myPlanEntity1 = new DataTable("myPlanEntity1", [

@@ -3,24 +3,10 @@ import { describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
 import { DataTableUtils } from "../../../../utils/DataTableUtils"
 
-import type { U__plans_plan_anonymize_Params } from "../../types/U__plans_params"
-import { Anonymize } from "../Anonymize"
 import type { TContext } from "../../../sandbox/types/TContext"
 import { STEP_STATUS } from "../../@consts"
-
-// Mock setup
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		Debug: vi.fn(),
-		In: "",
-		Out: "",
-	},
-}))
+import type { U__plans_plan_anonymize_Params } from "../../types/U__plans_params"
+import { Anonymize } from "../Anonymize"
 
 // Test data setup
 const myPlanEntity1 = new DataTable("myPlanEntity1", [

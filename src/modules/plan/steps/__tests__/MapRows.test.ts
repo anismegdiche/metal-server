@@ -1,22 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../../types/DataTable"
 import type { TContext } from "../../../sandbox/types/TContext"
-import { STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY, STEP_STATUS } from "../../@consts"
+import { STEP_STATUS } from "../../@consts"
 import type { U__plans_plan_map_Params } from "../../types/U__plans_params"
 import { MapRows } from "../MapRows"
-
-vi.mock("../../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "debug",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		LogFunction: () => (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: console.log,
-		Error: console.error,
-		Debug: console.log,
-		In: "",
-		Out: "",
-	},
-}))
 
 vi.mock("../../Step", () => ({
 	Step: {
