@@ -8,17 +8,6 @@ vi.mock("js-yaml")
 vi.mock("dotenv", () => ({
 	config: vi.fn(),
 }))
-vi.mock("../../../utils/Logger", () => ({
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		Debug: vi.fn(),
-		In: "",
-		Out: "",
-	},
-	LOGGER_DEFAULT_LEVEL: "info",
-}))
 
 describe("ConfigManager", () => {
 	beforeEach(() => {

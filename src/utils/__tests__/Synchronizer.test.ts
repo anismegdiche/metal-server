@@ -2,13 +2,6 @@ import { setTimeout } from "node:timers"
 import { describe, expect, it, vi } from "vitest"
 import { Synchronizer } from "../Synchronizer"
 
-vi.mock("../Logger", () => ({
-	Logger: {
-		Debug: vi.fn(),
-		Out: "out",
-	},
-}))
-
 vi.useFakeTimers()
 
 describe("Synchronizer", () => {

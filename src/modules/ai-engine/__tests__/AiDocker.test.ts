@@ -23,21 +23,6 @@ vi.mock("dockerode", () => ({
 }))
 
 vi.mock("../../core/ConfigManager")
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Warn: vi.fn(),
-		Error: vi.fn(),
-		Debug: vi.fn(),
-		In: "",
-		Out: "",
-	},
-	VERBOSITY: {
-		WARN: "warn",
-	},
-}))
 
 // Import after mocking
 import { ConfigManager } from "../../core/ConfigManager"

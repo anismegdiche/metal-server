@@ -40,21 +40,6 @@ vi.mock("response-time", () => ({ default: () => (_req: any, _res: any, next: an
 
 vi.mock("../ConfigManager")
 vi.mock("../../cache/Cache")
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: {
-		DEBUG: "debug",
-	},
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		Message: vi.fn(),
-		RequestMiddleware: (_req: any, _res: any, next: any) => next(),
-		In: "",
-		Out: "",
-	},
-}))
 vi.mock("../../../utils/Swagger", () => ({
 	Swagger: {
 		Load: vi.fn().mockResolvedValue(undefined),

@@ -7,17 +7,6 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { ResponseHandler } from "../ResponseHandler"
 
 vi.mock("../ConfigManager")
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		Debug: vi.fn(),
-		Error: vi.fn(),
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		In: "",
-		Out: "",
-	},
-}))
 vi.mock("../../schema/Schema")
 vi.mock("../errors/HttpErrors")
 

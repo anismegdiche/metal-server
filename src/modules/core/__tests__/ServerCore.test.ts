@@ -12,20 +12,6 @@ import { ServerRuntime } from "../ServerRuntime"
 
 vi.mock("../ConfigManager")
 vi.mock("../ConfigStore")
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		Debug: vi.fn(),
-		SetLevel: vi.fn(),
-		StartQueueCleanup: vi.fn(),
-		In: "",
-		Out: "",
-	},
-}))
 vi.mock("../../schema/Schema")
 vi.mock("../../source/Source")
 vi.mock("../../source/DataProvider")

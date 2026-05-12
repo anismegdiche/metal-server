@@ -6,17 +6,6 @@ import { ServerResponse } from "../ServerResponse"
 
 vi.mock("../../ServerRuntime")
 vi.mock("../../../../utils/Convert")
-vi.mock("../../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		In: "",
-		Out: "",
-	},
-}))
 vi.mock("../../RequestHandler")
 vi.mock("../../ResponseHandler")
 

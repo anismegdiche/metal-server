@@ -3,12 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ROUTE } from "../../modules/core/@consts"
 import { Swagger } from "../Swagger"
 
-vi.mock("../Logger", () => ({
-	Logger: {
-		LogFunction: () => (_target: object, _key: string, descriptor: PropertyDescriptor) => descriptor,
-	},
-}))
-
 vi.mock("fs", () => ({
 	readFileSync: vi.fn().mockReturnValue("openapi: 3.0.0"),
 }))

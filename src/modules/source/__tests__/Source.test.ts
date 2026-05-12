@@ -2,17 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataProvider } from "../DataProvider"
 import { Source } from "../Source"
 
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		In: "",
-		Out: "",
-	},
-}))
 vi.mock("../DataProvider")
 vi.mock("../errors/HttpErrors")
 

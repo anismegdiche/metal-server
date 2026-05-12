@@ -5,21 +5,6 @@ import { Schedule } from "../../plan/Schedule"
 import { Source } from "../../source/Source"
 import { ServerShutdown } from "../ServerShutdown"
 
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		Warn: vi.fn(),
-		Debug: vi.fn(),
-		In: "",
-		Out: "",
-	},
-	VERBOSITY: {
-		DEBUG: "debug",
-	},
-}))
 vi.mock("../../plan/Schedule")
 vi.mock("../../ai-engine/AiDocker")
 vi.mock("../../source/Source")

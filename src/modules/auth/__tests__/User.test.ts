@@ -18,12 +18,6 @@ vi.mock("../Roles", () => ({
 		UserDefaultRole: "user",
 	},
 }))
-vi.mock("../../../utils/Logger", () => ({
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-	},
-}))
 
 describe("User", () => {
 	beforeEach(() => {

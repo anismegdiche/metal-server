@@ -2,17 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { AiBuilder } from "../AiBuilder"
 import { AiDocker } from "../AiDocker"
 
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		In: "",
-		Out: "",
-	},
-}))
+
 vi.mock("../AiDocker")
 vi.mock("../engine/Ocr", () => ({
 	Ocr: class {

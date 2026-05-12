@@ -16,18 +16,6 @@ vi.mock("../../../../utils/Utils", () => ({
 	},
 }))
 
-vi.mock("../../../../utils/Logger", () => ({
-	Logger: {
-		Info: vi.fn(),
-		Warn: vi.fn(),
-		Debug: vi.fn(),
-		In: "in",
-		Out: "out",
-		LogFunction: () => (_target: object, _key: string, descriptor: PropertyDescriptor) => descriptor,
-	},
-	LOGGER_DEFAULT_LEVEL: "warn",
-}))
-
 class TestAiEngine extends absAiEngine {
 	AiEngineName = AI_ENGINE.OCR
 	AiDockerService = {}

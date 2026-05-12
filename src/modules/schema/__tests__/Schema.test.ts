@@ -1,28 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { DataTable } from "../../../types/DataTable"
 import { Roles } from "../../auth/Roles"
+import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { ConfigManager } from "../../core/ConfigManager"
+import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
+import type { TSource } from "../../source/@types"
 import { SourceRegistry } from "../../source/SourceRegistry"
 import { Schema } from "../Schema"
-import { HTTP_STATUS_CODE } from "../../core/@consts"
-import { DataTable } from "../../../types/DataTable"
-import { HttpErrorNotFound, HttpErrorBadRequest } from "../../errors/HttpErrors"
-import type { TSource } from "../../source/@types"
-import { z_entity, type TSchemaRequestSelect } from "../types/TSchemaRequest"
+import type { TSchemaRequestSelect } from "../types/TSchemaRequest"
 
 vi.mock("../../core/ConfigManager")
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: { DEBUG: "debug" },
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Warn: vi.fn(),
-		Error: vi.fn(),
-		Debug: vi.fn(),
-		In: "",
-		Out: "",
-	},
-}))
 vi.mock("../../auth/Roles")
 
 describe("Schema", () => {
@@ -171,7 +158,7 @@ describe("Schema", () => {
 			}
 			expect(Schema.IsSchemaResponse(validResponse)).toBe(true)
 		})
-		
+
 		it("should return true for valid schema response with entity", () => {
 			const validResponse = {
 				schema: "test",
@@ -216,7 +203,7 @@ describe("Schema", () => {
 
 			const mockDataTable = new DataTable()
 			const mockDataProvider = {
-				Select: vi.fn().mockResolvedValue({ 
+				Select: vi.fn().mockResolvedValue({
 					Body: {
 						schema: "test-schema",
 						entity: "test-entity",
@@ -279,7 +266,7 @@ describe("Schema", () => {
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
 
 			const mockDataProvider = {
-				ListEntities: vi.fn().mockResolvedValue({ 
+				ListEntities: vi.fn().mockResolvedValue({
 					Body: {
 						schema: "test-schema",
 						status: HTTP_STATUS_CODE.OK,
@@ -293,14 +280,14 @@ describe("Schema", () => {
 				Init: vi.fn(),
 				Options: {}
 			}
-			SourceRegistry.Sources.set("db1", { 
-				DataProvider: mockDataProvider, 
-				SourceConfig: { provider: "mongodb" as any } 
+			SourceRegistry.Sources.set("db1", {
+				DataProvider: mockDataProvider,
+				SourceConfig: { provider: "mongodb" as any }
 			} as any)
 
 			Schema.Init(vi.fn())
 			Schema.fnCacheGet = vi.fn().mockResolvedValue(undefined)
-			
+
 			const result = await Schema.ListEntities({ schema: "test-schema" } as any)
 
 			expect(mockDataProvider.ListEntities).toHaveBeenCalled()
@@ -329,7 +316,7 @@ describe("Schema", () => {
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
 
 			const mockDataProvider1 = {
-				ListEntities: vi.fn().mockResolvedValue({ 
+				ListEntities: vi.fn().mockResolvedValue({
 					Body: {
 						schema: "test-schema",
 						status: HTTP_STATUS_CODE.OK,
@@ -344,7 +331,7 @@ describe("Schema", () => {
 				Options: {}
 			}
 			const mockDataProvider2 = {
-				ListEntities: vi.fn().mockResolvedValue({ 
+				ListEntities: vi.fn().mockResolvedValue({
 					Body: {
 						schema: "test-schema",
 						status: HTTP_STATUS_CODE.OK,
@@ -358,13 +345,13 @@ describe("Schema", () => {
 				Init: vi.fn(),
 				Options: {}
 			}
-			SourceRegistry.Sources.set("db1", { 
-				DataProvider: mockDataProvider1, 
-				SourceConfig: { provider: "mongodb" as any } 
+			SourceRegistry.Sources.set("db1", {
+				DataProvider: mockDataProvider1,
+				SourceConfig: { provider: "mongodb" as any }
 			} as any)
-			SourceRegistry.Sources.set("db2", { 
-				DataProvider: mockDataProvider2, 
-				SourceConfig: { provider: "mongodb" as any } 
+			SourceRegistry.Sources.set("db2", {
+				DataProvider: mockDataProvider2,
+				SourceConfig: { provider: "mongodb" as any }
 			} as any)
 
 			Schema.Init(vi.fn())
@@ -424,15 +411,15 @@ describe("Schema", () => {
 				Init: vi.fn(),
 				Options: {}
 			}
-			SourceRegistry.Sources.set("db1", { 
-				DataProvider: mockDataProvider, 
-				SourceConfig: { provider: "mongodb" as any } 
+			SourceRegistry.Sources.set("db1", {
+				DataProvider: mockDataProvider,
+				SourceConfig: { provider: "mongodb" as any }
 			} as any)
 
 			Schema.Init(vi.fn())
 			Schema.fnCacheGet = vi.fn().mockResolvedValue(undefined)
-			await Schema.Insert({ 
-				schema: "test-schema", 
+			await Schema.Insert({
+				schema: "test-schema",
 				entity: "test-entity",
 				data: { name: "test" }
 			} as { schema: string; entity: string; data: Record<string, unknown> })
@@ -470,15 +457,15 @@ describe("Schema", () => {
 				Init: vi.fn(),
 				Options: {}
 			}
-			SourceRegistry.Sources.set("db1", { 
-				DataProvider: mockDataProvider, 
-				SourceConfig: { provider: "mongodb" as any } 
+			SourceRegistry.Sources.set("db1", {
+				DataProvider: mockDataProvider,
+				SourceConfig: { provider: "mongodb" as any }
 			} as any)
 
 			Schema.Init(vi.fn())
 			Schema.fnCacheGet = vi.fn().mockResolvedValue(undefined)
-			await Schema.Update({ 
-				schema: "test-schema", 
+			await Schema.Update({
+				schema: "test-schema",
 				entity: "test-entity",
 				data: { name: "updated" },
 				filter: { id: 1 }
@@ -518,15 +505,15 @@ describe("Schema", () => {
 				Init: vi.fn(),
 				Options: {}
 			}
-			SourceRegistry.Sources.set("db1", { 
-				DataProvider: mockDataProvider, 
-				SourceConfig: { provider: "mongodb" as any } 
+			SourceRegistry.Sources.set("db1", {
+				DataProvider: mockDataProvider,
+				SourceConfig: { provider: "mongodb" as any }
 			} as any)
 
 			Schema.Init(vi.fn())
 			Schema.fnCacheGet = vi.fn().mockResolvedValue(undefined)
-			await Schema.Delete({ 
-				schema: "test-schema", 
+			await Schema.Delete({
+				schema: "test-schema",
 				entity: "test-entity",
 				filter: { id: 1 }
 			} as { schema: string; entity: string; filter: Record<string, unknown> })
