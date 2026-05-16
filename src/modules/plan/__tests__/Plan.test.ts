@@ -4,7 +4,7 @@ import { DataTable } from "../../../types/DataTable"
 import { Roles } from "../../auth/Roles"
 import { METADATA } from "../../core/@consts"
 import { ConfigManager } from "../../core/ConfigManager"
-import { PLAN_FAILURE_STRATEGY } from "../@consts"
+import { PLAN_FAILURE_STRATEGY, STEP_OUTCOME, STEP_SIGNAL } from "../@consts"
 import { Plan } from "../Plan"
 import { Step } from "../Step"
 import { z_U__plans_plan } from "../types/U__plans"
@@ -28,21 +28,21 @@ vi.mock("../Step", () => ({
 			return result?.data
 		}),
 		OnErrorRow: vi.fn(),
-		WrapStepWithSignal: vi.fn((fn: any, signal: "next" | "stop" = "next") => {
+		WrapStepWithSignal: vi.fn((fn: any, signal: STEP_SIGNAL = STEP_SIGNAL.NEXT) => {
 			return async (stepParams: any, $context: any) => {
 				try {
 					const data = await fn(stepParams, $context)
 					return {
 						data,
 						signal,
-						outcome: "success" as const,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: $context as any,
 					}
 				} catch (_error) {
 					return {
 						data: undefined,
 						signal,
-						outcome: "failed" as const,
+						outcome: STEP_OUTCOME.FAILED,
 						$context: $context as any,
 					}
 				}
@@ -191,8 +191,8 @@ describe("Plan", () => {
 				const result = await executeMock(stepParams, $context)
 				return {
 					data: result,
-					signal: "next" as const,
-					outcome: "success" as const,
+					signal: STEP_SIGNAL.NEXT,
+					outcome: STEP_OUTCOME.SUCCESS,
 					$context: $context as any,
 				}
 			})
@@ -218,8 +218,8 @@ describe("Plan", () => {
 				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: _context as any,
 					}
 				})
@@ -229,8 +229,8 @@ describe("Plan", () => {
 				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: _context as any,
 					}
 				})
@@ -260,8 +260,8 @@ describe("Plan", () => {
 				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: _context as any,
 					}
 				})
@@ -271,8 +271,8 @@ describe("Plan", () => {
 				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: _context as any,
 					}
 				})
@@ -304,8 +304,8 @@ describe("Plan", () => {
 				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: _context as any,
 					}
 				})
@@ -315,8 +315,8 @@ describe("Plan", () => {
 				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: _context as any,
 					}
 				})
@@ -375,16 +375,16 @@ describe("Plan", () => {
 				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: $context as any,
 					}
 				})
 				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: $context as any,
 					}
 				})
@@ -408,24 +408,24 @@ describe("Plan", () => {
 				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: $context as any,
 					}
 				})
 				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "stop" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.STOP,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: $context as any,
 					}
 				})
 				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: $context as any,
 					}
 				})
@@ -451,16 +451,16 @@ describe("Plan", () => {
 				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: $context as any,
 					}
 				})
 				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
 					return {
 						data: undefined,
-						signal: "next" as const,
-						outcome: "failed" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.FAILED,
 						$context: $context as any,
 					}
 				})
@@ -485,16 +485,16 @@ describe("Plan", () => {
 				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: $context as any,
 					}
 				})
 				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
 					return {
 						data: undefined,
-						signal: "stop" as const,
-						outcome: "failed" as const,
+						signal: STEP_SIGNAL.STOP,
+						outcome: STEP_OUTCOME.FAILED,
 						$context: $context as any,
 					}
 				})
@@ -533,8 +533,8 @@ describe("Plan", () => {
 						const result = await executeMock(stepParams, $context)
 						return {
 							data: result,
-							signal: "next" as const,
-							outcome: "success" as const,
+							signal: STEP_SIGNAL.NEXT,
+							outcome: STEP_OUTCOME.SUCCESS,
 							$context: $context as any,
 						}
 					} catch (error) {
@@ -543,8 +543,8 @@ describe("Plan", () => {
 						if (onError?.strategy === "skip") {
 							return {
 								data: undefined,
-								signal: "next" as const,
-								outcome: "failed" as const,
+								signal: STEP_SIGNAL.NEXT,
+								outcome: STEP_OUTCOME.FAILED,
 								$context: $context as any,
 							}
 						}
@@ -589,8 +589,8 @@ describe("Plan", () => {
 					expect(stepParams["on-error"]).toEqual({ strategy: "retry", retry: { attempts: 3, delay: 100 } })
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: $context as any,
 					}
 				})
@@ -630,8 +630,8 @@ describe("Plan", () => {
 					expect(stepParams["on-error"]).toEqual({ strategy: "skip" })
 					return {
 						data: mockDataTable,
-						signal: "next" as const,
-						outcome: "success" as const,
+						signal: STEP_SIGNAL.NEXT,
+						outcome: STEP_OUTCOME.SUCCESS,
 						$context: $context as any,
 					}
 				})

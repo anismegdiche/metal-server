@@ -12,7 +12,7 @@ import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErro
 import type { TContext } from "../sandbox/types/TContext"
 import { STEP, STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY, STEP_OUTCOME, STEP_SIGNAL } from "./@consts"
 import { Insert } from "./steps/Insert"
-import type { T_StepResult } from "./types/T_StepResult"
+import type { T_StepMetrics, T_StepResult } from "./types/T_StepResult"
 import type { U__plans_plan_insert_Params } from "./types/U__plans_params"
 import type { U__plans_plan__step, U__plans_plan__step_Params } from "./types/U__plans_plan__step"
 import type { U__on_error_Params, U__on_error_strategy_retry, U__on_error_strategy_sink } from "./types/U__plans_plan_on_error"
@@ -35,6 +35,16 @@ export type T_StepErrorDetails = {
 	};
 }
 
+export type TRowWResult = {
+	data: TRow
+	metrics: {
+		passed?: number
+		skipped?: number
+		sunk?: number
+		failed?: number
+	}
+}
+
 type T_StepOnErrorArgs = {
 	fnStep?: T_StepFunction,
 	fnRow?: T_RowFunction,
@@ -44,6 +54,7 @@ type T_StepOnErrorArgs = {
 	attempt: number,
 	row?: TRow,
 	error?: Error,
+	rowMetrics?: { passed: number; skipped: number; sunk: number; failed: number }
 }
 
 //
@@ -51,6 +62,7 @@ export class Step {
 
 	@Logger.LogFunction()
 	static readonly ExecuteCaseMap: Record<string, T_StepFunctionWithSignal> = {
+		// flow functions
 		[STEP.BREAK]: async (stepParams, $context) => {
 			const result = await (await import('./steps/Break')).Break(stepParams, $context)
 
@@ -58,11 +70,12 @@ export class Step {
 				? STEP_SIGNAL.STOP
 				: STEP_SIGNAL.NEXT
 
-			return {
+			return <T_StepResult>{
 				data: undefined,
 				signal,
 				outcome: STEP_OUTCOME.SUCCESS,
-				$context: $context as TContext
+				$context,
+				metrics: {},
 			}
 		},
 		[STEP.DEBUG]: Step.WrapStepWithSignal(
@@ -71,6 +84,11 @@ export class Step {
 		[STEP.SET_VAR]: Step.WrapStepWithSignal(
 			async (stepParams, $context) => (await import('./steps/SetVar')).SetVar(stepParams, $context)
 		),
+		[STEP.CLEAR]: Step.WrapStepWithSignal(
+			async (stepParams, $context) => (await import('./steps/Clear')).Clear(stepParams, $context)
+		),
+
+		// data functions
 		[STEP.LIST_ENTITIES]: Step.WrapStepWithSignal(
 			async (stepParams, $context) => (await import('./steps/ListEntities')).ListEntities(stepParams, $context)
 		),
@@ -94,9 +112,6 @@ export class Step {
 		),
 		[STEP.SORT]: Step.WrapStepWithSignal(
 			async (stepParams, $context) => (await import('./steps/Sort')).Sort(stepParams, $context)
-		),
-		[STEP.CLEAR]: Step.WrapStepWithSignal(
-			async (stepParams, $context) => (await import('./steps/Clear')).Clear(stepParams, $context)
 		),
 
 		// with row function
@@ -140,7 +155,33 @@ export class Step {
 		signal: STEP_SIGNAL = STEP_SIGNAL.NEXT
 	): T_StepFunctionWithSignal {
 		return async (stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<T_StepResult> => {
+
+			const stepStartTime = new Date()
 			const onError = (stepParams as Record<string, unknown>)['on-error'] as U__on_error_Params | undefined
+
+			// Initialize metrics
+			const metrics: T_StepMetrics = {
+				rows: {
+					input: 0,
+					passed: 0,
+					skipped: 0,
+					sunk: 0,
+					failed: 0
+				},
+				step: {
+					startTime: stepStartTime
+				},
+				attemptCount: 1
+			}
+
+			// Track input row count
+			const inputRowCount = $context.$plan?.data
+				? await $context.$plan.data.Count()
+				: 0
+
+			metrics.rows.input = inputRowCount
+
+			const rowMetrics = { passed: 0, skipped: 0, sunk: 0, failed: 0 }
 
 			const _fnStepRouter = async () => {
 				if (!onError) {
@@ -153,31 +194,74 @@ export class Step {
 					stepParams,
 					onError,
 					$context,
-					attempt: 1
+					attempt: 1,
+					rowMetrics
+
 				})
+
 			}
 
-			return _fnStepRouter()
-				.then((data) => {
-					return <T_StepResult>{
-						data,
-						signal,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: $context as TContext
-					}
-				})
-				.catch((error) => {
-					return <T_StepResult>{
-						data: undefined,
-						signal,
-						outcome: STEP_OUTCOME.FAILED,
-						$context: $context as TContext,
-						error
-					}
-				})
+			try {
+				const data = await _fnStepRouter()
+				const stepEndTime = new Date()
+				const stepDurationMs = stepEndTime.getTime() - stepStartTime.getTime()
+
+				// Update metrics with timing and success status
+				metrics.step.endTime = stepEndTime
+				metrics.step.durationMs = stepDurationMs
+				metrics.step.status = 'success'
+
+				// Extract final attempt count from error context if available (for successful retries)
+				if ($context.$error?.attempt) {
+					metrics.attemptCount = $context.$error.attempt
+				}
+
+				// Track row metrics if data is available
+				if (data) {
+					const outputRowCount = await data.Count()
+
+					metrics.rows.passed = outputRowCount
+					metrics.rows.sunk = rowMetrics.sunk
+					metrics.rows.failed = rowMetrics.failed
+					metrics.rows.skipped = Math.max(0, inputRowCount - outputRowCount - rowMetrics.sunk - rowMetrics.failed)
+				} else {
+					// For row-level operations, ensure row metrics are set to 0
+					metrics.rows.passed = 0
+				}
+
+				return <T_StepResult>{
+					data,
+					signal,
+					outcome: STEP_OUTCOME.SUCCESS,
+					$context: $context as TContext,
+					metrics
+				}
+
+			} catch (error) {
+				const stepEndTime = new Date()
+				const stepDurationMs = stepEndTime.getTime() - stepStartTime.getTime()
+
+				// Update metrics with timing and failure status
+				metrics.step.endTime = stepEndTime
+				metrics.step.durationMs = stepDurationMs
+				metrics.step.status = 'failed'
+
+				// Extract attempt count from error context if available
+				if ($context.$error?.attempt) {
+					metrics.attemptCount = $context.$error.attempt
+				}
+
+				return <T_StepResult>{
+					data: undefined,
+					signal,
+					outcome: STEP_OUTCOME.FAILED,
+					$context: $context as TContext,
+					error: error as Error,
+					metrics
+				}
+			}
 		}
 	}
-
 	static async OnError({
 		fnStep,
 		fnRow = undefined,
@@ -185,11 +269,23 @@ export class Step {
 		onError,
 		$context,
 		attempt,
-		error
+		error,
+		rowMetrics
 	}: T_StepOnErrorArgs): Promise<DataTable | undefined> {
-
 		if (!onError)
 			return $context.$plan?.data
+
+		// Update error context with current attempt for metrics tracking
+		if ($context) {
+			const existingError = $context.$error
+			$context.$error = {
+				message: existingError?.message || '',
+				type: existingError?.type || '',
+				timestamp: existingError?.timestamp || new Date().toISOString(),
+				attempt,
+				step: existingError?.step
+			}
+		}
 
 		switch (onError.scope) {
 			case STEP_ON_ERROR_SCOPE.ROW:
@@ -199,9 +295,19 @@ export class Step {
 					onError,
 					$context,
 					attempt,
-					error
-				})
-					.then(data => data?.CleanForDeletion())
+					error,
+					rowMetrics
+				} as T_StepOnErrorArgs)
+					.then(result => {
+						if (!result) return undefined
+						if (rowMetrics && result.rowMetrics) {
+							rowMetrics.passed = result.rowMetrics.passed
+							rowMetrics.skipped = result.rowMetrics.skipped
+							rowMetrics.sunk = result.rowMetrics.sunk
+							rowMetrics.failed = result.rowMetrics.failed
+						}
+						return result.data?.CleanForDeletion()
+					})
 
 			case STEP_ON_ERROR_SCOPE.STEP:
 			default:
@@ -223,6 +329,10 @@ export class Step {
 		$context,
 		attempt
 	}: T_StepOnErrorArgs): Promise<DataTable | undefined> {
+
+		if ($context?.$error) {
+			$context.$error.attempt = attempt
+		}
 
 		Assert.Var<T_StepFunction>(fnStep, "fnStep is undefined")
 
@@ -372,22 +482,22 @@ export class Step {
 		attempt,
 		row,
 		error
-	}: Pick<T_StepOnErrorArgs, 'fnRow' | 'stepParams' | 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<DataTable | undefined> {
+	}: Pick<T_StepOnErrorArgs, 'fnRow' | 'stepParams' | 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<{ data: DataTable | undefined; rowMetrics: { passed: number; skipped: number; sunk: number; failed: number } } | undefined> {
 
 		Assert.Var<DataTable>($context.$plan?.data, "Plan data is undefined")
 
 		if (!fnRow) {
-			return $context.$plan.data
+			return { data: $context.$plan.data, rowMetrics: { passed: 0, skipped: 0, sunk: 0, failed: 0 } }
 		}
 
 		const strategy = onError?.strategy ?? undefined
+		const rowMetrics = { passed: 0, skipped: 0, sunk: 0, failed: 0 }
 
-		return $context.$plan?.data
+		const data = await $context.$plan?.data
 			.RowsMap(async (row: Partial<TRow>) => {
 				return fnRow(row, stepParams, $context)
-					.then(row => row)
+					.then(row => ({ data: row, metrics: { passed: 1 } } as TRowWResult))
 					.catch((caughtError) => {
-						// Apply scope-specific logic
 						switch (strategy) {
 
 							case STEP_ON_ERROR_STRATEGY.SINK:
@@ -420,14 +530,23 @@ export class Step {
 						}
 
 					})
+					.then((result: TRowWResult) => {
+						rowMetrics.passed += result.metrics.passed || 0
+						rowMetrics.skipped += result.metrics.skipped || 0
+						rowMetrics.sunk += result.metrics.sunk || 0
+						rowMetrics.failed += result.metrics.failed || 0
+						return result.data
+					})
 			})
+
+		return { data, rowMetrics }
 	}
 
 	static async _onErrorRowSkip({
 		$context,
 		attempt,
 		row
-	}: Pick<T_StepOnErrorArgs, '$context' | 'attempt' | 'row'>): Promise<TRow> {
+	}: Pick<T_StepOnErrorArgs, '$context' | 'attempt' | 'row'>): Promise<TRowWResult> {
 
 		const planName = $context.$plan?.name
 		const currentStep = $context.$plan?.currentStep
@@ -440,16 +559,18 @@ export class Step {
 				type: "RowProcessingError",
 				timestamp: new Date().toISOString(),
 				attempt: attempt,
-				step: currentStep ? {
-					index: currentStep.index,
-					command: currentStep.command,
-					params: currentStep.params
-				} : undefined
+				step: (currentStep)
+					? {
+						index: currentStep.index,
+						command: currentStep.command,
+						params: currentStep.params
+					}
+					: undefined
 			}
 		}
 
 		Logger.Warn(`Plan '${planName}', step ${currentStep?.index} skipped row after ${attempt} attempt(s)`);
-		return row as TRow
+		return { data: row as TRow, metrics: { passed: 1 } }
 	}
 
 	static async _onErrorRowSink({
@@ -458,7 +579,7 @@ export class Step {
 		attempt,
 		row,
 		error
-	}: Pick<T_StepOnErrorArgs, 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<TRow> {
+	}: Pick<T_StepOnErrorArgs, 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<TRowWResult> {
 
 		const { sink } = onError as U__on_error_strategy_sink
 
@@ -504,7 +625,7 @@ export class Step {
 				}
 			})
 			.catch(() => row)
-			.then(() => row)
+			.then(() => ({ data: row as TRow, metrics: { sunk: 1 } }))
 	}
 
 	static async _onErrorRowRetry({
@@ -515,7 +636,7 @@ export class Step {
 		attempt,
 		row,
 		error
-	}: Pick<T_StepOnErrorArgs, 'fnRow' | 'stepParams' | 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<TRow | undefined> {
+	}: Pick<T_StepOnErrorArgs, 'fnRow' | 'stepParams' | 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<TRowWResult> {
 
 		const { retry } = onError as U__on_error_strategy_retry
 
@@ -544,7 +665,8 @@ export class Step {
 
 			try {
 				Assert.Var<TRow>(row, "row is undefined during retry")
-				return await fnRow(row, stepParams, $context)
+				const retryRow = await fnRow(row, stepParams, $context)
+				return { data: retryRow, metrics: { passed: 1 } }
 			} catch (retryError) {
 				// If retry still fails, recursively call to continue retry logic
 				return Step._onErrorRowRetry({

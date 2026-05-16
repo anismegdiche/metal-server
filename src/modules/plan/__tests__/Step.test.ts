@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../types/DataTable"
 import type { TContext } from "../../sandbox/types/TContext"
-import { STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY } from "../@consts"
+import { STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY, STEP_SIGNAL, STEP_STATUS } from "../@consts"
 import { Step } from "../Step"
 import { STEP_OUTCOME } from "../@consts"
 import type { U__on_error_Params } from "../types/U__plans_plan_on_error"
@@ -142,10 +142,10 @@ describe("Step On-Error Functionality", () => {
 
 			expect(fnRow).toHaveBeenCalledTimes(3)
 
-			const resultCount = await result?.Count()
+			const resultCount = await result?.data?.Count()
 			expect(resultCount).equals(3)
-			
-			const resultRows = await result?.Rows()
+
+			const resultRows = await result?.data?.Rows()
 			expect(resultRows).toEqual([
 				mockRow,
 				resultRow2,
@@ -192,9 +192,9 @@ describe("Step On-Error Functionality", () => {
 				attempt: 1
 			})
 
-			const resultCount = await result?.Count()
+			const resultCount = await result?.data?.Count()
 
-			expect(resultCount).toEqual(2) 
+			expect(resultCount).toEqual(2)
 			expect(fnRow).toHaveBeenCalledTimes(3)
 			expect(fnRow).toHaveBeenNthCalledWith(1, expect.objectContaining(mockRow), {}, mockContext)
 			expect(fnRow).toHaveBeenNthCalledWith(2, expect.objectContaining(mockRow2), {}, mockContext)
@@ -233,7 +233,7 @@ describe("Step On-Error Functionality", () => {
 			})
 
 			// Should return DataTable (not undefined)
-			expect(result).toEqual(mockContext.$plan?.data)
+			expect(result?.data).toEqual(mockContext.$plan?.data)
 			expect(fnRow).toHaveBeenCalledTimes(3)
 		})
 
@@ -269,7 +269,7 @@ describe("Step On-Error Functionality", () => {
 			})
 
 			// Should return DataTable (not undefined)
-			expect(result).toEqual(mockContext.$plan?.data)
+			expect(result?.data).toEqual(mockContext.$plan?.data)
 			expect(fnRow).toHaveBeenCalledTimes(3)
 		})
 
@@ -311,7 +311,7 @@ describe("Step On-Error Functionality", () => {
 			})
 
 			// Should return DataTable (not undefined)
-			expect(result).toEqual(mockContext.$plan?.data)
+			expect(result?.data).toEqual(mockContext.$plan?.data)
 			expect(fnRow).toHaveBeenCalledTimes(3)
 		})
 
@@ -348,7 +348,7 @@ describe("Step On-Error Functionality", () => {
 			})
 
 			// Should return DataTable (not undefined)
-			expect(result).toEqual(mockContext.$plan?.data)
+			expect(result?.data).toEqual(mockContext.$plan?.data)
 			expect(fnRow).toHaveBeenCalledTimes(4)
 		})
 	})
@@ -364,9 +364,25 @@ describe("Step On-Error Functionality", () => {
 
 			expect(result).toEqual({
 				data: mockData,
-				signal: "next",
+				signal: STEP_SIGNAL.NEXT,
 				outcome: STEP_OUTCOME.SUCCESS,
-				$context: mockContext
+				$context: mockContext,
+				metrics: {
+					attemptCount: expect.any(Number),
+					rows: {
+						input: expect.any(Number),
+						passed: expect.any(Number),
+						skipped: expect.any(Number),
+						sunk: expect.any(Number),
+						failed: expect.any(Number),
+					},
+					step: {
+						startTime: expect.any(Date),
+						endTime: expect.any(Date),
+						durationMs: expect.any(Number),
+						status: expect.any(String),
+					},
+				},
 			})
 			expect(baseFunction).toHaveBeenCalledWith(stepParams, mockContext)
 		})
