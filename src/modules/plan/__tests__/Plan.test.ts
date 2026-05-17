@@ -4,7 +4,7 @@ import { DataTable } from "../../../types/DataTable"
 import { Roles } from "../../auth/Roles"
 import { METADATA } from "../../core/@consts"
 import { ConfigManager } from "../../core/ConfigManager"
-import { PLAN_FAILURE_STRATEGY, STEP_OUTCOME, STEP_SIGNAL } from "../@consts"
+import { PLAN_FAILURE_STRATEGY, STEP_OUTCOME, STEP_SIGNAL, STEP_STATUS } from "../@consts"
 import { Plan } from "../Plan"
 import { Step } from "../Step"
 import { z_U__plans_plan } from "../types/U__plans"
@@ -64,6 +64,22 @@ describe("Plan", () => {
 	// This mocks the original z_U__plans_plan.parse to accept mock commands
 	const mockZodValidation = (config: any) => {
 		return vi.spyOn(z_U__plans_plan, 'parse').mockReturnValue(config as any)
+	}
+
+	const expectValidMetrics = (metrics: any, expectedStepCount: number) => {
+		expect(metrics).toBeDefined()
+		expect(metrics.startTime).toBeInstanceOf(Date)
+		expect(metrics.endTime).toBeInstanceOf(Date)
+		expect(metrics.durationMs).toBeGreaterThanOrEqual(0)
+		expect(metrics.steps).toHaveLength(expectedStepCount)
+		expect(metrics.status).toMatch(/^(success|failed|completed_with_errors)$/)
+	}
+
+	const expectValidStepEntry = (entry: any, expectedIndex: number, expectedCommand: string, expectedStatus: string) => {
+		expect(entry).toBeDefined()
+		expect(entry.index).toBe(expectedIndex)
+		expect(entry.command).toBe(expectedCommand)
+		expect(entry.status).toBe(expectedStatus)
 	}
 
 	beforeEach(async () => {
@@ -201,6 +217,8 @@ describe("Plan", () => {
 			await plan.Process("s")
 
 			expect(wrappedMock).toHaveBeenCalled()
+			expectValidMetrics(plan.Metrics, 1)
+			expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
 		})
 
 		describe("Failure Strategy", () => {
@@ -244,6 +262,7 @@ describe("Plan", () => {
 				expect(executeMock1).toHaveBeenCalled()
 				expect(executeMock2).toHaveBeenCalled()
 				expect(executeMock3).not.toHaveBeenCalled()
+				expect(plan.Metrics).toBeUndefined()
 			})
 
 			it("should handle 'data' strategy - return current data and stop", async () => {
@@ -288,6 +307,14 @@ describe("Plan", () => {
 				expect(executeMock3).toHaveBeenCalled()
 				expect(result).toBe(mockDataTable)
 				expect(result.MetaData).toEqual({})
+
+				expectValidMetrics(plan.Metrics, 3)
+				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.FAILED)
+				expect(plan.Metrics!.steps[1].error).toBeDefined()
+				expect(plan.Metrics!.steps[1].error!.message).toBe("Test error for data strategy")
+				expectValidStepEntry(plan.Metrics!.steps[2], 2, "mock-cmd-3", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics!.status).toBe("completed_with_errors")
 			})
 
 			it("should handle 'data-errors' strategy - collect errors and continue", async () => {
@@ -341,6 +368,14 @@ describe("Plan", () => {
 					error: "First error for data-errors strategy",
 					timestamp: expect.any(String)
 				})
+
+				expectValidMetrics(plan.Metrics, 3)
+				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.FAILED)
+				expect(plan.Metrics!.steps[1].error).toBeDefined()
+				expect(plan.Metrics!.steps[1].error!.message).toBe("First error for data-errors strategy")
+				expectValidStepEntry(plan.Metrics!.steps[2], 2, "mock-cmd-3", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics!.status).toBe("completed_with_errors")
 			})
 
 			it("should default to 'throw' strategy when none specified", async () => {
@@ -362,6 +397,7 @@ describe("Plan", () => {
 				await expect(plan.Process("s")).rejects.toThrow("Test error for default strategy")
 
 				expect(executeMock).toHaveBeenCalled()
+				expect(plan.Metrics).toBeUndefined()
 			})
 		})
 
@@ -397,6 +433,10 @@ describe("Plan", () => {
 				expect(executeMock1).toHaveBeenCalled()
 				expect(executeMock2).toHaveBeenCalled()
 				expect(result).toBe(mockDataTable)
+
+				expectValidMetrics(plan.Metrics, 2)
+				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
 			})
 
 			it("should handle 'stop' signal and halt execution", async () => {
@@ -440,6 +480,10 @@ describe("Plan", () => {
 				expect(executeMock2).toHaveBeenCalled()
 				expect(executeMock3).not.toHaveBeenCalled()
 				expect(result).toBe(mockDataTable)
+
+				expectValidMetrics(plan.Metrics, 2)
+				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
 			})
 
 			it("should handle failed outcome with 'next' signal", async () => {
@@ -474,6 +518,12 @@ describe("Plan", () => {
 				expect(executeMock2).toHaveBeenCalled()
 				// Should continue even with failed outcome when signal is 'next'
 				expect(result).toBe(mockDataTable)
+
+				expectValidMetrics(plan.Metrics, 2)
+				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics!.steps[0].outcome).toBe(STEP_OUTCOME.SUCCESS)
+				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics!.steps[1].outcome).toBe(STEP_OUTCOME.FAILED)
 			})
 
 			it("should handle failed outcome with 'stop' signal", async () => {
@@ -507,6 +557,13 @@ describe("Plan", () => {
 				expect(executeMock1).toHaveBeenCalled()
 				expect(executeMock2).toHaveBeenCalled()
 				expect(result).toBe(mockDataTable)
+
+				expectValidMetrics(plan.Metrics, 2)
+				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics!.steps[0].outcome).toBe(STEP_OUTCOME.SUCCESS)
+				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics!.steps[1].outcome).toBe(STEP_OUTCOME.FAILED)
+				expect(plan.Metrics!.status).toBe("success")
 			})
 
 			it("should handle error handling with signal wrapping", async () => {
@@ -560,6 +617,10 @@ describe("Plan", () => {
 				expect(wrappedExecuteMock).toHaveBeenCalled()
 				// Should handle the error through the wrapped function
 				expect(result).toBe(mockDataTable)
+
+				expectValidMetrics(plan.Metrics, 1)
+				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics!.steps[0].outcome).toBe(STEP_OUTCOME.FAILED)
 			})
 
 			it("should merge plan-level error config with step when missing", async () => {
@@ -600,6 +661,9 @@ describe("Plan", () => {
 				await plan.Process("s")
 
 				expect(executeMock).toHaveBeenCalled()
+				expectValidMetrics(plan.Metrics, 1)
+				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics!.steps[0].outcome).toBe(STEP_OUTCOME.SUCCESS)
 				parseSpy.mockRestore()
 			})
 
@@ -641,6 +705,9 @@ describe("Plan", () => {
 				await plan.Process("s")
 
 				expect(executeMock).toHaveBeenCalled()
+				expectValidMetrics(plan.Metrics, 1)
+				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics!.steps[0].outcome).toBe(STEP_OUTCOME.SUCCESS)
 				parseSpy.mockRestore()
 			})
 		})

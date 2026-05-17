@@ -21,6 +21,7 @@ import type { TContext } from "../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../source/@consts"
 import { PLAN_FAILURE_STRATEGY, STEP_STATUS } from "./@consts"
+import type { T_PlanMetrics } from "./types/T_StepResult"
 import { Step, type T_StepFunctionWithSignal } from "./Step"
 import { z_U__plans_plan, type U__plans_plan } from "./types/U__plans"
 import type { U__plans_plan__step } from "./types/U__plans_plan__step"
@@ -35,6 +36,11 @@ export class Plan {
 	Config: U__plans_plan | null = null // Plan configuration
 
 	_data: DataTable = new DataTable()
+	private _metrics?: T_PlanMetrics
+
+	get Metrics(): T_PlanMetrics | undefined {
+		return this._metrics
+	}
 
 	constructor(name: string) {
 		this.Name = name
@@ -118,6 +124,13 @@ export class Plan {
 			$vars: {},
 		}
 
+		const planStartTime = new Date()
+		const planMetrics: T_PlanMetrics = {
+			startTime: planStartTime,
+			status: "success",
+			steps: []
+		}
+
 		let stepIndex = 0
 		while (stepIndex < steps.length) {
 			try {
@@ -184,6 +197,15 @@ export class Plan {
 					},
 				})
 
+				planMetrics.steps.push({
+					index: stepIndex,
+					command: _stepCommand,
+					status: STEP_STATUS.COMPLETED,
+					outcome: _stepOutput.outcome,
+					durationMs: _stepOutput.metrics?.step?.durationMs,
+					metrics: _stepOutput.metrics,
+				})
+
 				// Check for stop signal to halt execution
 				if (_stepOutput.signal === 'stop') {
 					Logger.Info(
@@ -223,6 +245,13 @@ export class Plan {
 					},
 				})
 
+				planMetrics.steps.push({
+					index: stepIndex,
+					command: _stepCommand ?? 'unknown',
+					status: STEP_STATUS.FAILED,
+					error: { message: _e.message, timestamp: new Date().toISOString() }
+				})
+
 				const _errMessage = `'${this.Name}': error have been encountered in step ${stepIndex}, ${_stepCommand}, ${JsonUtils.Stringify(_stepParams)}': ${JsonUtils.Stringify(_e.message)}`
 
 				Logger.Error(_errMessage)
@@ -251,6 +280,19 @@ export class Plan {
 			}
 			stepIndex++
 		}
+
+		const planEndTime = new Date()
+		planMetrics.endTime = planEndTime
+		planMetrics.durationMs = planEndTime.getTime() - planStartTime.getTime()
+
+		const failedSteps = planMetrics.steps.filter(s => s.status === STEP_STATUS.FAILED)
+		if (failedSteps.length > 0) {
+			planMetrics.status = failedSteps.length === planMetrics.steps.length ? "failed" : "completed_with_errors"
+		}
+
+		Logger.Info(`${Logger.Out} Plan.Process '${this.Name}': completed in ${planMetrics.durationMs}ms, ${planMetrics.steps.length} steps (${planMetrics.steps.filter(s => s.status === STEP_STATUS.COMPLETED).length} succeeded, ${failedSteps.length} failed)`)
+
+		this._metrics = planMetrics
 		return this._data
 	}
 
