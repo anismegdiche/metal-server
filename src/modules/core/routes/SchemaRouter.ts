@@ -13,7 +13,9 @@ import { UserResponse } from "../response/UserResponse"
 export const SchemaRouter = Router()
 
 //
-SchemaRouter.route("/:schema").all(UserResponse.IsAuthenticated).get(SchemaResponse.ListEntities)
+SchemaRouter.route("/:schema")
+	.all(UserResponse.IsAuthenticated)
+	.get(SchemaResponse.ListEntities)
 
 //
 SchemaRouter.route("/:schema/:entity")
