@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: test usage */
+/** biome-ignore-all lint/style/noNonNullAssertion: guarded by expectValidMetrics */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../types/DataTable"
 import { Roles } from "../../auth/Roles"
@@ -63,7 +64,7 @@ describe("Plan", () => {
 	// Helper function to mock Zod validation for tests
 	// This mocks the original z_U__plans_plan.parse to accept mock commands
 	const mockZodValidation = (config: any) => {
-		return vi.spyOn(z_U__plans_plan, 'parse').mockReturnValue(config as any)
+		return vi.spyOn(z_U__plans_plan, "parse").mockReturnValue(config as any)
 	}
 
 	const expectValidMetrics = (metrics: any, expectedStepCount: number) => {
@@ -116,11 +117,7 @@ describe("Plan", () => {
 
 	it("should load plan with custom step commands using mocked validation", async () => {
 		const customConfig = {
-			steps: [
-				{ custom_step_1: { param1: "value1" } },
-				{ custom_step_2: { param2: 42 } },
-				{ another_custom: null }
-			]
+			steps: [{ custom_step_1: { param1: "value1" } }, { custom_step_2: { param2: 42 } }, { another_custom: null }],
 		}
 
 		vi.mocked(ConfigManager.Get).mockReturnValue(customConfig)
@@ -137,16 +134,12 @@ describe("Plan", () => {
 
 	it("should handle complex plan configuration with mocked validation", async () => {
 		const complexConfig = {
-			steps: [
-				{ step1: { data: "test" } },
-				{ step2: { nested: { prop: "value" } } },
-				{ step3: null }
-			],
+			steps: [{ step1: { data: "test" } }, { step2: { nested: { prop: "value" } } }, { step3: null }],
 			"on-error": {
 				strategy: "custom_strategy" as any,
-				scope: "custom_scope" as any
+				scope: "custom_scope" as any,
 			},
-			"failure-strategy": "custom_failure" as any
+			"failure-strategy": "custom_failure" as any,
 		}
 
 		vi.mocked(ConfigManager.Get).mockReturnValue(complexConfig)
@@ -218,7 +211,7 @@ describe("Plan", () => {
 
 			expect(wrappedMock).toHaveBeenCalled()
 			expectValidMetrics(plan.Metrics, 1)
-			expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+			expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
 		})
 
 		describe("Failure Strategy", () => {
@@ -230,7 +223,7 @@ describe("Plan", () => {
 				// Set up plan with throw failure strategy
 				plan.Config = {
 					steps,
-					"failure-strategy": PLAN_FAILURE_STRATEGY.THROW
+					"failure-strategy": PLAN_FAILURE_STRATEGY.THROW,
 				} as any
 
 				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
@@ -273,7 +266,7 @@ describe("Plan", () => {
 				// Set up plan with data failure strategy
 				plan.Config = {
 					steps,
-					"failure-strategy": PLAN_FAILURE_STRATEGY.DATA
+					"failure-strategy": PLAN_FAILURE_STRATEGY.DATA,
 				} as any
 
 				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
@@ -309,12 +302,12 @@ describe("Plan", () => {
 				expect(result.MetaData).toEqual({})
 
 				expectValidMetrics(plan.Metrics, 3)
-				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.FAILED)
-				expect(plan.Metrics!.steps[1].error).toBeDefined()
-				expect(plan.Metrics!.steps[1].error!.message).toBe("Test error for data strategy")
-				expectValidStepEntry(plan.Metrics!.steps[2], 2, "mock-cmd-3", STEP_STATUS.COMPLETED)
-				expect(plan.Metrics!.status).toBe("completed_with_errors")
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.FAILED)
+				expect(plan.Metrics?.steps[1]?.error).toBeDefined()
+				expect(plan.Metrics?.steps[1]?.error?.message).toBe("Test error for data strategy")
+				expectValidStepEntry(plan.Metrics?.steps[2], 2, "mock-cmd-3", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics?.status).toBe("completed_with_errors")
 			})
 
 			it("should handle 'data-errors' strategy - collect errors and continue", async () => {
@@ -325,7 +318,7 @@ describe("Plan", () => {
 				// Set up plan with data-errors failure strategy
 				plan.Config = {
 					steps,
-					"failure-strategy": PLAN_FAILURE_STRATEGY.DATA_ERRORS
+					"failure-strategy": PLAN_FAILURE_STRATEGY.DATA_ERRORS,
 				} as any
 
 				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
@@ -361,21 +354,21 @@ describe("Plan", () => {
 
 				// Verify error metadata was collected
 				expect(result.MetaData[METADATA.PLAN_ERRORS]).toBeDefined()
-				expect((result.MetaData[METADATA.PLAN_ERRORS] as any[])).toHaveLength(1)
+				expect(result.MetaData[METADATA.PLAN_ERRORS] as any[]).toHaveLength(1)
 				expect((result.MetaData[METADATA.PLAN_ERRORS] as any[])[0]).toMatchObject({
 					step: 1,
 					command: "mock-cmd-2",
 					error: "First error for data-errors strategy",
-					timestamp: expect.any(String)
+					timestamp: expect.any(String),
 				})
 
 				expectValidMetrics(plan.Metrics, 3)
-				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.FAILED)
-				expect(plan.Metrics!.steps[1].error).toBeDefined()
-				expect(plan.Metrics!.steps[1].error!.message).toBe("First error for data-errors strategy")
-				expectValidStepEntry(plan.Metrics!.steps[2], 2, "mock-cmd-3", STEP_STATUS.COMPLETED)
-				expect(plan.Metrics!.status).toBe("completed_with_errors")
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.FAILED)
+				expect(plan.Metrics?.steps[1]?.error).toBeDefined()
+				expect(plan.Metrics?.steps[1]?.error?.message).toBe("First error for data-errors strategy")
+				expectValidStepEntry(plan.Metrics?.steps[2], 2, "mock-cmd-3", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics?.status).toBe("completed_with_errors")
 			})
 
 			it("should default to 'throw' strategy when none specified", async () => {
@@ -385,7 +378,7 @@ describe("Plan", () => {
 
 				// Set up plan without failure strategy (should default to throw)
 				plan.Config = {
-					steps
+					steps,
 				} as any
 
 				const executeMock = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
@@ -435,8 +428,8 @@ describe("Plan", () => {
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
 			})
 
 			it("should handle 'stop' signal and halt execution", async () => {
@@ -482,8 +475,8 @@ describe("Plan", () => {
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
 			})
 
 			it("should handle failed outcome with 'next' signal", async () => {
@@ -520,10 +513,10 @@ describe("Plan", () => {
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expect(plan.Metrics!.steps[0].outcome).toBe(STEP_OUTCOME.SUCCESS)
-				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
-				expect(plan.Metrics!.steps[1].outcome).toBe(STEP_OUTCOME.FAILED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics?.steps[1]?.outcome).toBe(STEP_OUTCOME.FAILED)
 			})
 
 			it("should handle failed outcome with 'stop' signal", async () => {
@@ -559,11 +552,11 @@ describe("Plan", () => {
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expect(plan.Metrics!.steps[0].outcome).toBe(STEP_OUTCOME.SUCCESS)
-				expectValidStepEntry(plan.Metrics!.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
-				expect(plan.Metrics!.steps[1].outcome).toBe(STEP_OUTCOME.FAILED)
-				expect(plan.Metrics!.status).toBe("success")
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics?.steps[1]?.outcome).toBe(STEP_OUTCOME.FAILED)
+				expect(plan.Metrics?.status).toBe("success")
 			})
 
 			it("should handle error handling with signal wrapping", async () => {
@@ -619,8 +612,8 @@ describe("Plan", () => {
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 1)
-				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expect(plan.Metrics!.steps[0].outcome).toBe(STEP_OUTCOME.FAILED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.FAILED)
 			})
 
 			it("should merge plan-level error config with step when missing", async () => {
@@ -662,8 +655,8 @@ describe("Plan", () => {
 
 				expect(executeMock).toHaveBeenCalled()
 				expectValidMetrics(plan.Metrics, 1)
-				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expect(plan.Metrics!.steps[0].outcome).toBe(STEP_OUTCOME.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
 				parseSpy.mockRestore()
 			})
 
@@ -706,8 +699,8 @@ describe("Plan", () => {
 
 				expect(executeMock).toHaveBeenCalled()
 				expectValidMetrics(plan.Metrics, 1)
-				expectValidStepEntry(plan.Metrics!.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expect(plan.Metrics!.steps[0].outcome).toBe(STEP_OUTCOME.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
 				parseSpy.mockRestore()
 			})
 		})
