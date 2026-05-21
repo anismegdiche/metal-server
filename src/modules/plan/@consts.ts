@@ -7,6 +7,8 @@ export enum PLAN_STATUS {
 	RUNNING = "running",
 	SUCCESS = "success",
 	FAILED = "failed",
+	COMPLETED = "completed",
+	COMPLETED_WITH_ERRORS = "completed_with_errors"
 }
 
 export enum PLAN_FAILURE_STRATEGY {

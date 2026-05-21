@@ -41,24 +41,3 @@ export type T_StepResult = {
 	$context: TContext
 	error?: Error
 }
-
-export type T_PlanStepEntry = {
-	index: number
-	command: string
-	status: string
-	outcome?: STEP_OUTCOME
-	durationMs?: number
-	metrics?: T_StepMetrics
-	error?: {
-		message: string
-		timestamp: string
-	}
-}
-
-export type T_PlanMetrics = {
-	startTime: Date
-	endTime?: Date
-	durationMs?: number
-	status: "success" | "failed" | "completed_with_errors"
-	steps: T_PlanStepEntry[]
-}

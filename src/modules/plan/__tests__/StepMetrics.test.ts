@@ -29,11 +29,11 @@ describe('Step Metrics Collection', () => {
 		PlanMetrics.Bus.addEventListener(PLAN_METRICS.STEP_START, (e) => {
 			capturedEvents.push({ type: PLAN_METRICS.STEP_START, data: (e as CustomEvent<Partial<T_StepMetrics>>).detail })
 		})
-		PlanMetrics.Bus.addEventListener(PLAN_METRICS.STEP_COMPLETE, (e) => {
-			capturedEvents.push({ type: PLAN_METRICS.STEP_COMPLETE, data: (e as CustomEvent<Partial<T_StepMetrics>>).detail })
+		PlanMetrics.Bus.addEventListener(PLAN_METRICS.STEP_END, (e) => {
+			capturedEvents.push({ type: PLAN_METRICS.STEP_END, data: (e as CustomEvent<Partial<T_StepMetrics>>).detail })
 		})
-		PlanMetrics.Bus.addEventListener(PLAN_METRICS.STEP_ROWS, (e) => {
-			capturedEvents.push({ type: PLAN_METRICS.STEP_ROWS, data: (e as CustomEvent<Partial<T_StepMetrics>>).detail })
+		PlanMetrics.Bus.addEventListener(PLAN_METRICS.STEP_INC, (e) => {
+			capturedEvents.push({ type: PLAN_METRICS.STEP_INC, data: (e as CustomEvent<Partial<T_StepMetrics>>).detail })
 		})
 	})
 
@@ -61,7 +61,7 @@ describe('Step Metrics Collection', () => {
 
 			// Check captured events
 			const startEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_START)
-			const completeEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_COMPLETE)
+			const completeEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_END)
 
 			expect(startEvent).toBeDefined()
 			expect(startEvent?.data.planName).toBe('test-plan')
@@ -129,7 +129,7 @@ describe('Step Metrics Collection', () => {
 
 			// Check captured events
 			const startEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_START)
-			const completeEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_COMPLETE)
+			const completeEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_END)
 
 			expect(startEvent).toBeDefined()
 			expect(startEvent?.data.planName).toBe('test-plan')

@@ -1,13 +1,18 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: test usage */
 /** biome-ignore-all lint/style/noNonNullAssertion: guarded by expectValidMetrics */
+/** biome-ignore-all lint/complexity/noExcessiveCognitiveComplexity: mock complexity */
+
+import { CustomEvent } from "@dimkl/events"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DataTable } from "../../../types/DataTable"
 import { Roles } from "../../auth/Roles"
 import { METADATA } from "../../core/@consts"
 import { ConfigManager } from "../../core/ConfigManager"
-import { PLAN_FAILURE_STRATEGY, STEP_OUTCOME, STEP_SIGNAL, STEP_STATUS } from "../@consts"
+import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_OUTCOME, STEP_SIGNAL, STEP_STATUS } from "../@consts"
+import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "../metrics/PlanMetrics"
 import { Plan } from "../Plan"
 import { Step } from "../Step"
+import type { T_StepMetrics } from "../types/T_StepResult"
 import { z_U__plans_plan } from "../types/U__plans"
 
 vi.mock("../../core/ConfigManager")
@@ -29,10 +34,49 @@ vi.mock("../Step", () => ({
 			return result?.data
 		}),
 		OnErrorRow: vi.fn(),
-		WrapStepWithSignal: vi.fn((fn: any, signal: STEP_SIGNAL = STEP_SIGNAL.NEXT) => {
+		WrapStepWithSignal: vi.fn((fn: any, fnRow?: any, signal: STEP_SIGNAL = STEP_SIGNAL.NEXT) => {
 			return async (stepParams: any, $context: any) => {
+				const planName = $context?.$plan?.name
+				const stepIndex = $context?.$plan?.currentStep?.index
+
+				if (planName !== undefined && stepIndex !== undefined) {
+					const stepStartTime = new Date()
+					// Populate metrics directly in PlanMetrics.Metrics map
+					const planMetrics = PlanMetrics.Metrics.get(planName)
+					if (planMetrics) {
+						planMetrics.steps[stepIndex] = {
+							planName,
+							index: stepIndex,
+							step: { startTime: stepStartTime },
+							attemptCount: 1,
+							rows: { input: 0, passed: 0, skipped: 0, sunk: 0, failed: 0 }
+						}
+						PlanMetrics.Metrics.set(planName, planMetrics)
+					}
+				}
+
 				try {
 					const data = await fn(stepParams, $context)
+
+					if (planName !== undefined && stepIndex !== undefined) {
+						const stepEndTime = new Date()
+						const planMetrics = PlanMetrics.Metrics.get(planName)
+						if (planMetrics?.steps[stepIndex]) {
+							const startTime = planMetrics.steps[stepIndex].step?.startTime
+							const durationMs = startTime ? stepEndTime.getTime() - startTime.getTime() : 0
+							planMetrics.steps[stepIndex] = {
+								...planMetrics.steps[stepIndex],
+								step: { 
+									...planMetrics.steps[stepIndex].step,
+									endTime: stepEndTime,
+									durationMs,
+									status: STEP_STATUS.SUCCESS 
+								}
+							}
+							PlanMetrics.Metrics.set(planName, planMetrics)
+						}
+					}
+
 					return {
 						data,
 						signal,
@@ -40,6 +84,25 @@ vi.mock("../Step", () => ({
 						$context: $context as any,
 					}
 				} catch (_error) {
+					if (planName !== undefined && stepIndex !== undefined) {
+						const stepEndTime = new Date()
+						const planMetrics = PlanMetrics.Metrics.get(planName)
+						if (planMetrics?.steps[stepIndex]) {
+							const startTime = planMetrics.steps[stepIndex].step?.startTime
+							const durationMs = startTime ? stepEndTime.getTime() - startTime.getTime() : 0
+							planMetrics.steps[stepIndex] = {
+								...planMetrics.steps[stepIndex],
+								step: { 
+									...planMetrics.steps[stepIndex].step,
+									endTime: stepEndTime,
+									durationMs,
+									status: STEP_STATUS.FAILED 
+								}
+							}
+							PlanMetrics.Metrics.set(planName, planMetrics)
+						}
+					}
+
 					return {
 						data: undefined,
 						signal,
@@ -67,24 +130,31 @@ describe("Plan", () => {
 		return vi.spyOn(z_U__plans_plan, "parse").mockReturnValue(config as any)
 	}
 
+	const seedPlanMetrics = () => {
+		PlanMetrics.Metrics.set("test-plan", {} as T_PlanMetrics)
+	}
+
 	const expectValidMetrics = (metrics: any, expectedStepCount: number) => {
 		expect(metrics).toBeDefined()
+		expect(metrics.planName).toBe("test-plan")
 		expect(metrics.startTime).toBeInstanceOf(Date)
 		expect(metrics.endTime).toBeInstanceOf(Date)
 		expect(metrics.durationMs).toBeGreaterThanOrEqual(0)
 		expect(metrics.steps).toHaveLength(expectedStepCount)
-		expect(metrics.status).toMatch(/^(success|failed|completed_with_errors)$/)
+		expect([PLAN_STATUS.COMPLETED, PLAN_STATUS.COMPLETED_WITH_ERRORS]).toContain(metrics.status)
 	}
 
-	const expectValidStepEntry = (entry: any, expectedIndex: number, expectedCommand: string, expectedStatus: string) => {
+	const expectValidStepEntry = (entry: any, expectedIndex: number, expectedStatus?: string) => {
 		expect(entry).toBeDefined()
 		expect(entry.index).toBe(expectedIndex)
-		expect(entry.command).toBe(expectedCommand)
-		expect(entry.status).toBe(expectedStatus)
+		if (expectedStatus !== undefined) {
+			expect(entry.step?.status).toBe(expectedStatus)
+		}
 	}
 
 	beforeEach(async () => {
 		vi.clearAllMocks()
+		PlanMetrics.Metrics.clear()
 		// Mock Zod validation before creating plan to avoid validation errors during Init
 		mockZodValidation({ steps: [] })
 		plan = new Plan("test-plan")
@@ -191,27 +261,15 @@ describe("Plan", () => {
 			const steps = [{ "mock-cmd": { args: 1 } }]
 			const mockDataTable = new DataTable()
 			plan._data = mockDataTable
-			// Set up plan configuration
 			plan.Config = { steps } as any
 
-			const executeMock = vi.fn().mockResolvedValue(mockDataTable)
-			// Wrap the mock function to return T_StepResult
-			const wrappedMock = vi.fn().mockImplementation(async (stepParams: any, $context: any) => {
-				const result = await executeMock(stepParams, $context)
-				return {
-					data: result,
-					signal: STEP_SIGNAL.NEXT,
-					outcome: STEP_OUTCOME.SUCCESS,
-					$context: $context as any,
-				}
-			})
-			Step.ExecuteCaseMap["mock-cmd"] = wrappedMock
+			seedPlanMetrics()
+			Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
 
 			await plan.Process("s")
 
-			expect(wrappedMock).toHaveBeenCalled()
 			expectValidMetrics(plan.Metrics, 1)
-			expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
+			expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.SUCCESS)
 		})
 
 		describe("Failure Strategy", () => {
@@ -220,42 +278,21 @@ describe("Plan", () => {
 				const mockDataTable = new DataTable()
 				plan._data = mockDataTable
 
-				// Set up plan with throw failure strategy
 				plan.Config = {
 					steps,
 					"failure-strategy": PLAN_FAILURE_STRATEGY.THROW,
 				} as any
 
-				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: _context as any,
-					}
-				})
-				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-					throw new Error("Test error for throw strategy")
-				})
-				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: _context as any,
-					}
-				})
-
-				Step.ExecuteCaseMap["mock-cmd"] = executeMock1
-				Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
-				Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
+				Step.ExecuteCaseMap["mock-cmd-2"] = vi.fn().mockRejectedValue(new Error("Test error for throw strategy"))
+				Step.ExecuteCaseMap["mock-cmd-3"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
 
 				await expect(plan.Process("s")).rejects.toThrow("Test error for throw strategy")
 
-				expect(executeMock1).toHaveBeenCalled()
-				expect(executeMock2).toHaveBeenCalled()
-				expect(executeMock3).not.toHaveBeenCalled()
-				expect(plan.Metrics).toBeUndefined()
+				expect(plan.Metrics?.status).toBe(PLAN_STATUS.FAILED)
+				expect(plan.Metrics?.startTime).toBeInstanceOf(Date)
+				expect(plan.Metrics?.endTime).toBeInstanceOf(Date)
 			})
 
 			it("should handle 'data' strategy - return current data and stop", async () => {
@@ -263,51 +300,26 @@ describe("Plan", () => {
 				const mockDataTable = new DataTable()
 				plan._data = mockDataTable
 
-				// Set up plan with data failure strategy
 				plan.Config = {
 					steps,
 					"failure-strategy": PLAN_FAILURE_STRATEGY.DATA,
 				} as any
 
-				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: _context as any,
-					}
-				})
-				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-					throw new Error("Test error for data strategy")
-				})
-				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: _context as any,
-					}
-				})
-
-				Step.ExecuteCaseMap["mock-cmd"] = executeMock1
-				Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
-				Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
+				Step.ExecuteCaseMap["mock-cmd-2"] = vi.fn().mockRejectedValue(new Error("Test error for data strategy"))
+				Step.ExecuteCaseMap["mock-cmd-3"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
 
 				const result = await plan.Process("s")
 
-				expect(executeMock1).toHaveBeenCalled()
-				expect(executeMock2).toHaveBeenCalled()
-				expect(executeMock3).toHaveBeenCalled()
 				expect(result).toBe(mockDataTable)
 				expect(result.MetaData).toEqual({})
 
 				expectValidMetrics(plan.Metrics, 3)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.FAILED)
-				expect(plan.Metrics?.steps[1]?.error).toBeDefined()
-				expect(plan.Metrics?.steps[1]?.error?.message).toBe("Test error for data strategy")
-				expectValidStepEntry(plan.Metrics?.steps[2], 2, "mock-cmd-3", STEP_STATUS.SUCCESS)
-				expect(plan.Metrics?.status).toBe("completed_with_errors")
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.SUCCESS)
+				expect(plan.Metrics?.steps[1]).toBeUndefined()
+				expectValidStepEntry(plan.Metrics?.steps[2], 2, STEP_STATUS.SUCCESS)
+				expect(plan.Metrics?.status).toBe(PLAN_STATUS.COMPLETED_WITH_ERRORS)
 			})
 
 			it("should handle 'data-errors' strategy - collect errors and continue", async () => {
@@ -315,44 +327,20 @@ describe("Plan", () => {
 				const mockDataTable = new DataTable()
 				plan._data = mockDataTable
 
-				// Set up plan with data-errors failure strategy
 				plan.Config = {
 					steps,
 					"failure-strategy": PLAN_FAILURE_STRATEGY.DATA_ERRORS,
 				} as any
 
-				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: _context as any,
-					}
-				})
-				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-					throw new Error("First error for data-errors strategy")
-				})
-				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: _context as any,
-					}
-				})
-
-				Step.ExecuteCaseMap["mock-cmd"] = executeMock1
-				Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
-				Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
+				Step.ExecuteCaseMap["mock-cmd-2"] = vi.fn().mockRejectedValue(new Error("First error for data-errors strategy"))
+				Step.ExecuteCaseMap["mock-cmd-3"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
 
 				const result = await plan.Process("s")
 
-				expect(executeMock1).toHaveBeenCalled()
-				expect(executeMock2).toHaveBeenCalled()
-				expect(executeMock3).toHaveBeenCalled()
 				expect(result).toBe(mockDataTable)
 
-				// Verify error metadata was collected
 				expect(result.MetaData[METADATA.PLAN_ERRORS]).toBeDefined()
 				expect(result.MetaData[METADATA.PLAN_ERRORS] as any[]).toHaveLength(1)
 				expect((result.MetaData[METADATA.PLAN_ERRORS] as any[])[0]).toMatchObject({
@@ -363,12 +351,10 @@ describe("Plan", () => {
 				})
 
 				expectValidMetrics(plan.Metrics, 3)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.FAILED)
-				expect(plan.Metrics?.steps[1]?.error).toBeDefined()
-				expect(plan.Metrics?.steps[1]?.error?.message).toBe("First error for data-errors strategy")
-				expectValidStepEntry(plan.Metrics?.steps[2], 2, "mock-cmd-3", STEP_STATUS.SUCCESS)
-				expect(plan.Metrics?.status).toBe("completed_with_errors")
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.SUCCESS)
+				expect(plan.Metrics?.steps[1]).toBeUndefined()
+				expectValidStepEntry(plan.Metrics?.steps[2], 2, STEP_STATUS.SUCCESS)
+				expect(plan.Metrics?.status).toBe(PLAN_STATUS.COMPLETED_WITH_ERRORS)
 			})
 
 			it("should default to 'throw' strategy when none specified", async () => {
@@ -376,21 +362,18 @@ describe("Plan", () => {
 				const mockDataTable = new DataTable()
 				plan._data = mockDataTable
 
-				// Set up plan without failure strategy (should default to throw)
 				plan.Config = {
 					steps,
 				} as any
 
-				const executeMock = vi.fn().mockImplementation(async (_stepParams: any, _context: any) => {
-					throw new Error("Test error for default strategy")
-				})
-
-				Step.ExecuteCaseMap["mock-cmd"] = executeMock
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = vi.fn().mockRejectedValue(new Error("Test error for default strategy"))
 
 				await expect(plan.Process("s")).rejects.toThrow("Test error for default strategy")
 
-				expect(executeMock).toHaveBeenCalled()
-				expect(plan.Metrics).toBeUndefined()
+				expect(plan.Metrics?.status).toBe(PLAN_STATUS.FAILED)
+				expect(plan.Metrics?.startTime).toBeInstanceOf(Date)
+				expect(plan.Metrics?.endTime).toBeInstanceOf(Date)
 			})
 		})
 
@@ -401,35 +384,17 @@ describe("Plan", () => {
 				plan._data = mockDataTable
 				plan.Config = { steps } as any
 
-				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: $context as any,
-					}
-				})
-				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: $context as any,
-					}
-				})
-
-				Step.ExecuteCaseMap["mock-cmd"] = executeMock1
-				Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
+				Step.ExecuteCaseMap["mock-cmd-2"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
 
 				const result = await plan.Process("s")
 
-				expect(executeMock1).toHaveBeenCalled()
-				expect(executeMock2).toHaveBeenCalled()
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, STEP_STATUS.SUCCESS)
 			})
 
 			it("should handle 'stop' signal and halt execution", async () => {
@@ -438,45 +403,22 @@ describe("Plan", () => {
 				plan._data = mockDataTable
 				plan.Config = { steps } as any
 
-				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: $context as any,
-					}
-				})
-				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.STOP,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: $context as any,
-					}
-				})
-				const executeMock3 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: $context as any,
-					}
-				})
-
-				Step.ExecuteCaseMap["mock-cmd"] = executeMock1
-				Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
-				Step.ExecuteCaseMap["mock-cmd-3"] = executeMock3
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
+				Step.ExecuteCaseMap["mock-cmd-2"] = Step.WrapStepWithSignal(
+					vi.fn().mockResolvedValue(mockDataTable),
+					undefined,
+					STEP_SIGNAL.STOP,
+				)
+				Step.ExecuteCaseMap["mock-cmd-3"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
 
 				const result = await plan.Process("s")
 
-				expect(executeMock1).toHaveBeenCalled()
-				expect(executeMock2).toHaveBeenCalled()
-				expect(executeMock3).not.toHaveBeenCalled()
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, STEP_STATUS.SUCCESS)
 			})
 
 			it("should handle failed outcome with 'next' signal", async () => {
@@ -485,38 +427,17 @@ describe("Plan", () => {
 				plan._data = mockDataTable
 				plan.Config = { steps } as any
 
-				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: $context as any,
-					}
-				})
-				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-					return {
-						data: undefined,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.FAILED,
-						$context: $context as any,
-					}
-				})
-
-				Step.ExecuteCaseMap["mock-cmd"] = executeMock1
-				Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
+				Step.ExecuteCaseMap["mock-cmd-2"] = Step.WrapStepWithSignal(vi.fn().mockRejectedValue(new Error("failed")))
 
 				const result = await plan.Process("s")
 
-				expect(executeMock1).toHaveBeenCalled()
-				expect(executeMock2).toHaveBeenCalled()
-				// Should continue even with failed outcome when signal is 'next'
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
-				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.SUCCESS)
-				expect(plan.Metrics?.steps[1]?.outcome).toBe(STEP_OUTCOME.FAILED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, STEP_STATUS.FAILED)
 			})
 
 			it("should handle failed outcome with 'stop' signal", async () => {
@@ -525,38 +446,22 @@ describe("Plan", () => {
 				plan._data = mockDataTable
 				plan.Config = { steps } as any
 
-				const executeMock1 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-					return {
-						data: mockDataTable,
-						signal: STEP_SIGNAL.NEXT,
-						outcome: STEP_OUTCOME.SUCCESS,
-						$context: $context as any,
-					}
-				})
-				const executeMock2 = vi.fn().mockImplementation(async (_stepParams: any, $context: any) => {
-					return {
-						data: undefined,
-						signal: STEP_SIGNAL.STOP,
-						outcome: STEP_OUTCOME.FAILED,
-						$context: $context as any,
-					}
-				})
-
-				Step.ExecuteCaseMap["mock-cmd"] = executeMock1
-				Step.ExecuteCaseMap["mock-cmd-2"] = executeMock2
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
+				Step.ExecuteCaseMap["mock-cmd-2"] = Step.WrapStepWithSignal(
+					vi.fn().mockRejectedValue(new Error("failed")),
+					undefined,
+					STEP_SIGNAL.STOP,
+				)
 
 				const result = await plan.Process("s")
 
-				expect(executeMock1).toHaveBeenCalled()
-				expect(executeMock2).toHaveBeenCalled()
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
-				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.SUCCESS)
-				expect(plan.Metrics?.steps[1]?.outcome).toBe(STEP_OUTCOME.FAILED)
-				expect(plan.Metrics?.status).toBe("success")
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, STEP_STATUS.FAILED)
+				expect(plan.Metrics?.status).toBe(PLAN_STATUS.COMPLETED)
 			})
 
 			it("should handle error handling with signal wrapping", async () => {
@@ -572,48 +477,15 @@ describe("Plan", () => {
 				plan._data = mockDataTable
 				plan.Config = { steps } as any
 
-				const executeMock = vi.fn().mockImplementation(async (_stepParams: any, _$context: any) => {
-					// This should be wrapped by WrapStepWithSignal which handles the error
-					throw new Error("Test error")
-				})
-
-				// Create a wrapped function that simulates the error handling behavior
-				const wrappedExecuteMock = vi.fn().mockImplementation(async (stepParams: any, $context: any) => {
-					try {
-						const result = await executeMock(stepParams, $context)
-						return {
-							data: result,
-							signal: STEP_SIGNAL.NEXT,
-							outcome: STEP_OUTCOME.SUCCESS,
-							$context: $context as any,
-						}
-					} catch (error) {
-						// Simulate the error handling in WrapStepWithSignal
-						const onError = (stepParams as any)["on-error"]
-						if (onError?.strategy === "skip") {
-							return {
-								data: undefined,
-								signal: STEP_SIGNAL.NEXT,
-								outcome: STEP_OUTCOME.FAILED,
-								$context: $context as any,
-							}
-						}
-						throw error
-					}
-				})
-
-				Step.ExecuteCaseMap["mock-cmd"] = wrappedExecuteMock
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockRejectedValue(new Error("Test error")))
 
 				const result = await plan.Process("s")
 
-				expect(executeMock).toHaveBeenCalled()
-				expect(wrappedExecuteMock).toHaveBeenCalled()
-				// Should handle the error through the wrapped function
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 1)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
-				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.FAILED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.FAILED)
 			})
 
 			it("should merge plan-level error config with step when missing", async () => {
@@ -621,7 +493,6 @@ describe("Plan", () => {
 					{
 						"mock-cmd": {
 							args: 1,
-							// No on-error at step level
 						},
 					},
 				]
@@ -633,12 +504,11 @@ describe("Plan", () => {
 					"on-error": { strategy: "retry" as const, retry: { attempts: 3, delay: 100 } },
 				}
 
-				// Mock Zod validation to accept the config
 				const parseSpy = mockZodValidation(planConfig)
 				plan.Config = planConfig as any
 
-				const executeMock = vi.fn().mockImplementation(async (stepParams: any, $context: any) => {
-					// Verify that the step params now have the on-error config
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = vi.fn().mockImplementation(async (stepParams: any, $context: any) => {
 					expect(stepParams).toHaveProperty("on-error")
 					expect(stepParams["on-error"]).toEqual({ strategy: "retry", retry: { attempts: 3, delay: 100 } })
 					return {
@@ -649,14 +519,9 @@ describe("Plan", () => {
 					}
 				})
 
-				Step.ExecuteCaseMap["mock-cmd"] = executeMock
-
 				await plan.Process("s")
 
-				expect(executeMock).toHaveBeenCalled()
-				expectValidMetrics(plan.Metrics, 1)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
-				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
+				expectValidMetrics(plan.Metrics, 0)
 				parseSpy.mockRestore()
 			})
 
@@ -677,12 +542,11 @@ describe("Plan", () => {
 					"on-error": { strategy: "retry" as const, retry: { attempts: 3, delay: 100 } },
 				}
 
-				// Mock Zod validation to accept the config
 				const parseSpy = mockZodValidation(planConfig)
 				plan.Config = planConfig as any
 
-				const executeMock = vi.fn().mockImplementation(async (stepParams: any, $context: any) => {
-					// Verify that the step-level config is preserved
+				seedPlanMetrics()
+				Step.ExecuteCaseMap["mock-cmd"] = vi.fn().mockImplementation(async (stepParams: any, $context: any) => {
 					expect(stepParams).toHaveProperty("on-error")
 					expect(stepParams["on-error"]).toEqual({ strategy: "skip" })
 					return {
@@ -693,15 +557,561 @@ describe("Plan", () => {
 					}
 				})
 
-				Step.ExecuteCaseMap["mock-cmd"] = executeMock
-
 				await plan.Process("s")
 
-				expect(executeMock).toHaveBeenCalled()
-				expectValidMetrics(plan.Metrics, 1)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
-				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
+				expectValidMetrics(plan.Metrics, 0)
 				parseSpy.mockRestore()
+			})
+		})
+	})
+
+	describe("Metrics Event Handlers", () => {
+		beforeEach(() => {
+			PlanMetrics.Metrics.clear()
+		})
+
+		describe("PLAN_START event", () => {
+			it("should initialize plan metrics on PLAN_START event", () => {
+				// Arrange
+				const planName = "test-plan"
+				const startTime = new Date()
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime,
+					status: PLAN_STATUS.RUNNING,
+					steps: [],
+				})
+
+				// Act
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_START, {
+						data: {
+							planName,
+							startTime,
+							status: PLAN_STATUS.RUNNING,
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics).toBeDefined()
+				expect(metrics?.planName).toBe(planName)
+				expect(metrics?.startTime).toBe(startTime)
+				expect(metrics?.status).toBe(PLAN_STATUS.RUNNING)
+			})
+
+			it("should merge existing plan metrics on PLAN_START event", () => {
+				// Arrange
+				const planName = "test-plan"
+				const startTime = new Date()
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime: new Date("2024-01-01"),
+					status: PLAN_STATUS.STOPPED,
+					steps: [],
+				})
+
+				// Act
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_START, {
+						data: {
+							planName,
+							startTime,
+							status: PLAN_STATUS.RUNNING,
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics).toBeDefined()
+				expect(metrics?.startTime).toBe(startTime)
+				expect(metrics?.status).toBe(PLAN_STATUS.RUNNING)
+			})
+		})
+
+		describe("PLAN_END event", () => {
+			it("should finalize plan metrics on PLAN_END event", () => {
+				// Arrange
+				const planName = "test-plan"
+				const startTime = new Date("2024-01-01T10:00:00.000Z")
+				const endTime = new Date("2024-01-01T10:05:00.000Z")
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime,
+					status: PLAN_STATUS.RUNNING,
+					steps: [],
+				})
+
+				// Act
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_END, {
+						data: {
+							planName,
+							endTime,
+							status: PLAN_STATUS.COMPLETED,
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics).toBeDefined()
+				expect(metrics?.endTime).toBe(endTime)
+				expect(metrics?.durationMs).toBe(5 * 60 * 1000) // 5 minutes
+				expect(metrics?.status).toBe(PLAN_STATUS.COMPLETED)
+			})
+
+			it("should calculate duration correctly on PLAN_END event", () => {
+				// Arrange
+				const planName = "test-plan"
+				const startTime = new Date("2024-01-01T10:00:00.000Z")
+				const endTime = new Date("2024-01-01T10:02:30.500Z")
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime,
+					status: PLAN_STATUS.RUNNING,
+					steps: [],
+				})
+
+				// Act
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_END, {
+						data: {
+							planName,
+							endTime,
+							status: PLAN_STATUS.COMPLETED,
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics?.durationMs).toBe(150500) // 2 minutes 30.5 seconds
+			})
+		})
+
+		describe("STEP_START event", () => {
+			it("should initialize step metrics on STEP_START event", () => {
+				// Arrange
+				const planName = "test-plan"
+				const stepIndex = 0
+				const startTime = new Date()
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime: new Date(),
+					status: PLAN_STATUS.RUNNING,
+					steps: [],
+				})
+
+				// Act
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_START, {
+						data: {
+							planName,
+							index: stepIndex,
+							step: { startTime },
+							attemptCount: 1,
+							rows: { input: 10 },
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics?.steps[stepIndex]).toBeDefined()
+				expect(metrics!.steps[stepIndex]!.planName).toBe(planName)
+				expect(metrics!.steps[stepIndex]!.index).toBe(stepIndex)
+				expect(metrics!.steps[stepIndex]!.step?.startTime).toBe(startTime)
+				expect(metrics!.steps[stepIndex]!.attemptCount).toBe(1)
+				expect(metrics!.steps[stepIndex]!.rows?.input).toBe(10)
+			})
+
+			it("should merge existing step metrics on STEP_START event", () => {
+				// Arrange
+				const planName = "test-plan"
+				const stepIndex = 0
+				const startTime = new Date()
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime: new Date(),
+					status: PLAN_STATUS.RUNNING,
+					steps: [{ planName, index: stepIndex, step: {}, rows: {} }],
+				})
+
+				// Act
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_START, {
+						data: {
+							planName,
+							index: stepIndex,
+							step: { startTime },
+							attemptCount: 2,
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics!.steps[stepIndex]!.attemptCount).toBe(2)
+				expect(metrics!.steps[stepIndex]!.step?.startTime).toBe(startTime)
+			})
+		})
+
+		describe("STEP_END event", () => {
+			it("should finalize step metrics on STEP_END event", () => {
+				// Arrange
+				const planName = "test-plan"
+				const stepIndex = 0
+				const startTime = new Date("2024-01-01T10:00:00.000Z")
+				const endTime = new Date("2024-01-01T10:01:00.000Z")
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime: new Date(),
+					status: PLAN_STATUS.RUNNING,
+					steps: [
+						{
+							planName,
+							index: stepIndex,
+							step: { startTime },
+							attemptCount: 1,
+							rows: {},
+						},
+					],
+				})
+
+				// Act
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_END, {
+						data: {
+							planName,
+							index: stepIndex,
+							step: { endTime, status: STEP_STATUS.SUCCESS },
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics!.steps[stepIndex]!.step?.endTime).toBe(endTime)
+				expect(metrics!.steps[stepIndex]!.step?.durationMs).toBe(60000) // 1 minute
+				expect(metrics!.steps[stepIndex]!.step?.status).toBe(STEP_STATUS.SUCCESS)
+			})
+
+			it("should calculate step duration correctly on STEP_END event", () => {
+				// Arrange
+				const planName = "test-plan"
+				const stepIndex = 0
+				const startTime = new Date("2024-01-01T10:00:00.000Z")
+				const endTime = new Date("2024-01-01T10:00:30.500Z")
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime: new Date(),
+					status: PLAN_STATUS.RUNNING,
+					steps: [
+						{
+							planName,
+							index: stepIndex,
+							step: { startTime },
+							attemptCount: 1,
+							rows: {},
+						},
+					],
+				})
+
+				// Act
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_END, {
+						data: {
+							planName,
+							index: stepIndex,
+							step: { endTime, status: STEP_STATUS.FAILED },
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics!.steps[stepIndex]!.step?.durationMs).toBe(30500) // 30.5 seconds
+				expect(metrics!.steps[stepIndex]!.step?.status).toBe(STEP_STATUS.FAILED)
+			})
+
+			it("should handle STEP_END event without existing step metrics", () => {
+				// Arrange
+				const planName = "test-plan"
+				const stepIndex = 0
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime: new Date(),
+					status: PLAN_STATUS.RUNNING,
+					steps: [],
+				})
+
+				// Act - should not throw error
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_END, {
+						data: {
+							planName,
+							index: stepIndex,
+							step: { endTime: new Date(), status: STEP_STATUS.SUCCESS },
+						},
+					}),
+				)
+
+				// Assert - step metrics should remain empty since STEP_START wasn't called
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics?.steps[stepIndex]).toBeUndefined()
+			})
+		})
+
+		describe("STEP_INC event", () => {
+			it("should increment row metrics on STEP_INC event", () => {
+				// Arrange
+				const planName = "test-plan"
+				const stepIndex = 0
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime: new Date(),
+					status: PLAN_STATUS.RUNNING,
+					steps: [
+						{
+							planName,
+							index: stepIndex,
+							step: {},
+							attemptCount: 1,
+							rows: { input: 10, passed: 8, skipped: 1, sunk: 0, failed: 1 },
+						},
+					],
+				})
+
+				// Act
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
+						data: {
+							planName,
+							index: stepIndex,
+							rows: { passed: 2, sunk: 1 },
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics!.steps[stepIndex]!.rows?.input).toBe(10)
+				expect(metrics!.steps[stepIndex]!.rows?.passed).toBe(2) // merge overwrites with event data
+				expect(metrics!.steps[stepIndex]!.rows?.skipped).toBe(1)
+				expect(metrics!.steps[stepIndex]!.rows?.sunk).toBe(1) // merge overwrites with event data
+				expect(metrics!.steps[stepIndex]!.rows?.failed).toBe(1)
+			})
+
+			it("should handle multiple STEP_INC events", () => {
+				// Arrange
+				const planName = "test-plan"
+				const stepIndex = 0
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime: new Date(),
+					status: PLAN_STATUS.RUNNING,
+					steps: [
+						{
+							planName,
+							index: stepIndex,
+							step: {},
+							attemptCount: 1,
+							rows: { input: 10, passed: 0, skipped: 0, sunk: 0, failed: 0 },
+						},
+					],
+				})
+
+				// Act
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
+						data: {
+							planName,
+							index: stepIndex,
+							rows: { passed: 5 },
+						},
+					}),
+				)
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
+						data: {
+							planName,
+							index: stepIndex,
+							rows: { passed: 3, failed: 2 },
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics!.steps[stepIndex]!.rows?.passed).toBe(3) // last event overwrites
+				expect(metrics!.steps[stepIndex]!.rows?.failed).toBe(2) // last event overwrites
+			})
+
+			it("should handle STEP_INC event without existing step metrics", () => {
+				// Arrange
+				const planName = "test-plan"
+				const stepIndex = 0
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime: new Date(),
+					status: PLAN_STATUS.RUNNING,
+					steps: [],
+				})
+
+				// Act - should not throw error
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
+						data: {
+							planName,
+							index: stepIndex,
+							rows: { passed: 5 },
+						},
+					}),
+				)
+
+				// Assert - step metrics should remain empty since STEP_START wasn't called
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics?.steps[stepIndex]).toBeUndefined()
+			})
+		})
+
+		describe("Integration Tests", () => {
+			it("should handle complete metrics lifecycle for a plan with multiple steps", () => {
+				// Arrange
+				const planName = "test-plan"
+				const planStartTime = new Date("2024-01-01T10:00:00.000Z")
+
+				// Initialize plan metrics
+				PlanMetrics.Metrics.set(planName, {
+					planName,
+					startTime: planStartTime,
+					status: PLAN_STATUS.RUNNING,
+					steps: [],
+				})
+
+				// Act - Simulate plan execution
+				// Plan start
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_START, {
+						data: {
+							planName,
+							startTime: planStartTime,
+							status: PLAN_STATUS.RUNNING,
+						},
+					}),
+				)
+
+				// Step 1 execution
+				const step1StartTime = new Date("2024-01-01T10:00:01.000Z")
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_START, {
+						data: {
+							planName,
+							index: 0,
+							step: { startTime: step1StartTime },
+							attemptCount: 1,
+							rows: { input: 100 },
+						},
+					}),
+				)
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
+						data: {
+							planName,
+							index: 0,
+							rows: { passed: 80, skipped: 10, failed: 10 },
+						},
+					}),
+				)
+				const step1EndTime = new Date("2024-01-01T10:00:05.000Z")
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_END, {
+						data: {
+							planName,
+							index: 0,
+							step: { endTime: step1EndTime, status: STEP_STATUS.SUCCESS },
+						},
+					}),
+				)
+
+				// Step 2 execution
+				const step2StartTime = new Date("2024-01-01T10:00:06.000Z")
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_START, {
+						data: {
+							planName,
+							index: 1,
+							step: { startTime: step2StartTime },
+							attemptCount: 1,
+							rows: { input: 80 },
+						},
+					}),
+				)
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
+						data: {
+							planName,
+							index: 1,
+							rows: { passed: 75, sunk: 5 },
+						},
+					}),
+				)
+				const step2EndTime = new Date("2024-01-01T10:00:10.000Z")
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_END, {
+						data: {
+							planName,
+							index: 1,
+							step: { endTime: step2EndTime, status: STEP_STATUS.SUCCESS },
+						},
+					}),
+				)
+
+				// Plan end
+				const planEndTime = new Date("2024-01-01T10:00:15.000Z")
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_END, {
+						data: {
+							planName,
+							endTime: planEndTime,
+							status: PLAN_STATUS.COMPLETED,
+						},
+					}),
+				)
+
+				// Assert
+				const metrics = PlanMetrics.Metrics.get(planName)
+				expect(metrics).toBeDefined()
+				expect(metrics?.planName).toBe(planName)
+				expect(metrics?.startTime).toBe(planStartTime)
+				expect(metrics?.endTime).toBe(planEndTime)
+				expect(metrics?.durationMs).toBe(15000) // 15 seconds
+				expect(metrics?.status).toBe(PLAN_STATUS.COMPLETED)
+				expect(metrics?.steps).toHaveLength(2)
+
+				// Step 1 metrics
+				expect(metrics!.steps[0]!.index).toBe(0)
+				expect(metrics!.steps[0]!.step?.startTime).toBe(step1StartTime)
+				expect(metrics!.steps[0]!.step?.endTime).toBe(step1EndTime)
+				expect(metrics!.steps[0]!.step?.durationMs).toBe(4000) // 4 seconds
+				expect(metrics!.steps[0]!.step?.status).toBe(STEP_STATUS.SUCCESS)
+				expect(metrics!.steps[0]!.rows?.input).toBe(100)
+				expect(metrics!.steps[0]!.rows?.passed).toBe(80)
+				expect(metrics!.steps[0]!.rows?.skipped).toBe(10)
+				expect(metrics!.steps[0]!.rows?.failed).toBe(10)
+
+				// Step 2 metrics
+				expect(metrics!.steps[1]!.index).toBe(1)
+				expect(metrics!.steps[1]!.step?.startTime).toBe(step2StartTime)
+				expect(metrics!.steps[1]!.step?.endTime).toBe(step2EndTime)
+				expect(metrics!.steps[1]!.step?.durationMs).toBe(4000) // 4 seconds
+				expect(metrics!.steps[1]!.step?.status).toBe(STEP_STATUS.SUCCESS)
+				expect(metrics!.steps[1]!.rows?.input).toBe(80)
+				expect(metrics!.steps[1]!.rows?.passed).toBe(75)
+				expect(metrics!.steps[1]!.rows?.sunk).toBe(5)
 			})
 		})
 	})

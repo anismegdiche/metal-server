@@ -188,7 +188,7 @@ export class Step {
 				const data = await _fnStepRouter()
 
 				PlanMetrics.Bus.dispatchEvent(
-					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_COMPLETE, {
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_END, {
 						detail: {
 							planName,
 							index: stepIndex,
@@ -209,7 +209,7 @@ export class Step {
 
 			} catch (error) {
 				PlanMetrics.Bus.dispatchEvent(
-					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_COMPLETE, {
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_END, {
 						detail: {
 							planName,
 							index: stepIndex,
@@ -299,7 +299,7 @@ export class Step {
 		return fnStep(stepParams, $context)
 			.then(async (data) => {
 				PlanMetrics.Bus.dispatchEvent(
-					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_ROWS, {
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
 						detail: {
 							planName: $context.$plan?.name,
 							index: $context.$plan?.currentStep?.index,
@@ -357,7 +357,7 @@ export class Step {
 		}
 
 		PlanMetrics.Bus.dispatchEvent(
-			new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_ROWS, {
+			new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
 				detail: {
 					planName,
 					index: currentStep?.index,
@@ -496,7 +496,7 @@ export class Step {
 				return fnRow(row, stepParams, $context)
 					.then((row) => {
 						PlanMetrics.Bus.dispatchEvent(
-							new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_ROWS, {
+							new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
 								detail: {
 									planName: $context.$plan?.name,
 									index: $context.$plan?.currentStep?.index,
@@ -573,7 +573,7 @@ export class Step {
 		}
 
 		PlanMetrics.Bus.dispatchEvent(
-			new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_ROWS, {
+			new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
 				detail: {
 					planName,
 					index: currentStep?.index,
@@ -642,7 +642,7 @@ export class Step {
 			})
 			.then(() => {
 				PlanMetrics.Bus.dispatchEvent(
-					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_ROWS, {
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
 						detail: {
 							planName: $context.$plan?.name,
 							index: $context.$plan?.currentStep?.index,
