@@ -1,18 +1,21 @@
-//
 /** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
-import type { TJson } from "../../types/TJson"
-import { Assert } from "../../utils/Assert"
-import { Logger } from "../../utils/Logger"
-import type { TUserTokenInfo } from "../auth/@types"
-import { ConfigManager } from "../core/ConfigManager"
-import { HttpResponse } from "../core/HttpResponse"
-import type { TInternalResponse } from "../core/types/TInternalResponse"
-import { Plan } from "./Plan"
-import { Plans } from "./Plans"
-import { Schedule } from "./Schedule"
-import type { U__plans } from "./types/U__plans"
+//
+import type { TJson } from "../../types/TJson";
+import { Assert } from "../../utils/Assert";
+import { Logger } from "../../utils/Logger";
+import type { TUserTokenInfo } from "../auth/@types";
+import { ConfigManager } from "../core/ConfigManager";
+import { HttpResponse } from "../core/HttpResponse";
+import type { TInternalResponse } from "../core/types/TInternalResponse";
+import { HttpErrorNotFound } from "../errors/HttpErrors";
+import { PlanMetrics } from "./metrics/PlanMetrics";
+import { Plan } from "./Plan";
+import { Plans } from "./Plans";
+import { Schedule } from "./Schedule";
+import type { U__plans } from "./types/U__plans";
+
 
 //
 export class PlansManager {
@@ -20,7 +23,7 @@ export class PlansManager {
 
 	@Logger.LogFunction()
 	static async Init() {
-		if (!ConfigManager.Has("plans")) 
+		if (!ConfigManager.Has("plans"))
 			return
 
 		PlansManager.Config = ConfigManager.Get<U__plans>("plans") ?? {}
@@ -37,6 +40,7 @@ export class PlansManager {
 		const _plan = new Plan(planName)
 		_plan.Init()
 		Plans.set(planName, _plan)
+		PlanMetrics.Metrics.set(planName, undefined)
 	}
 
 
@@ -70,7 +74,7 @@ export class PlansManager {
 				PlansManager.RemovePlan(name)
 			}
 		}
-		
+
 		// 5. Update or Add plans
 		for (const name of newPlanNames) {
 			if (Plans.has(name)) {
@@ -106,9 +110,35 @@ export class PlansManager {
 		})
 	}
 
-	static async Clear() {
+	@Logger.LogFunction()
+	static GetPlanMetrics(planName: string): TInternalResponse<TJson> {
+		const plan = Plans.get(planName)
+		Assert.Var<Plan>(plan, `Plan '${planName}' not found`, new HttpErrorNotFound())
+
+		const metrics = plan?.Metrics
+		if (!metrics) {
+			throw new HttpErrorNotFound(`No metrics available for plan '${planName}' (plan may not have been executed yet)`)
+		}
+
+		const computed: TJson = {
+			startTime: metrics.startTime,
+			status: metrics.status,
+			steps: metrics.steps,
+		}
+
+		if (metrics.endTime) {
+			computed.endTime = metrics.endTime
+			computed.durationMs = metrics.durationMs
+		} else {
+			computed.durationMs = Date.now() - metrics.startTime.getTime()
+		}
+
+		return HttpResponse.Ok(computed)
+	}
+
+	static Clear(): void {
 		for (const plan of Plans.values()) {
-			await plan.Dispose()
+			plan.Dispose()
 		}
 		Plans.clear()
 		PlansManager.Config = {}

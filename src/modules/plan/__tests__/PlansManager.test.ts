@@ -87,4 +87,66 @@ describe("PlansManager", () => {
 			await expect(PlansManager.ReloadPlan("missing", {} as any)).rejects.toThrow()
 		})
 	})
+
+	describe("GetPlanMetrics", () => {
+		it("should return metrics for a completed plan", () => {
+			const mockMetrics = {
+				startTime: new Date("2025-01-01T00:00:00.000Z"),
+				endTime: new Date("2025-01-01T00:00:01.500Z"),
+				durationMs: 1500,
+				status: "success",
+				steps: [
+					{ index: 0, command: "select", status: "completed", outcome: "success", durationMs: 200 },
+				],
+			}
+			const mockPlan = new Plan("test-plan") as any
+			mockPlan.Metrics = mockMetrics
+			Plans.set("test-plan", mockPlan)
+
+			const result = PlansManager.GetPlanMetrics("test-plan")
+
+			expect(result.StatusCode).toBe(200)
+			expect(result.Body).toEqual({
+				startTime: mockMetrics.startTime,
+				endTime: mockMetrics.endTime,
+				durationMs: 1500,
+				status: "success",
+				steps: mockMetrics.steps,
+			})
+		})
+
+		it("should compute live durationMs when plan is still running", () => {
+			const startTime = new Date(Date.now() - 5000)
+			const mockMetrics = {
+				startTime,
+				status: "success",
+				steps: [
+					{ index: 0, command: "select", status: "completed", outcome: "success", durationMs: 200 },
+					{ index: 1, command: "update", status: "running" },
+				],
+			}
+			const mockPlan = new Plan("test-plan") as any
+			mockPlan.Metrics = mockMetrics
+			Plans.set("test-plan", mockPlan)
+
+			const result = PlansManager.GetPlanMetrics("test-plan")
+
+			expect(result.Body).not.toHaveProperty("endTime")
+			expect(result.Body).toHaveProperty("durationMs")
+			expect(typeof (result.Body as any).durationMs).toBe("number")
+			expect((result.Body as any).durationMs).toBeGreaterThanOrEqual(5000)
+		})
+
+		it("should throw error if plan not found", () => {
+			expect(() => PlansManager.GetPlanMetrics("missing")).toThrow()
+		})
+
+		it("should throw error if plan has no metrics", () => {
+			const mockPlan = new Plan("test-plan") as any
+			mockPlan.Metrics = undefined
+			Plans.set("test-plan", mockPlan)
+
+			expect(() => PlansManager.GetPlanMetrics("test-plan")).toThrow()
+		})
+	})
 })

@@ -2,6 +2,13 @@
 //
 //
 
+export enum PLAN_STATUS {
+	STOPPED = "stopped",
+	RUNNING = "running",
+	SUCCESS = "success",
+	FAILED = "failed",
+}
+
 export enum PLAN_FAILURE_STRATEGY {
 	DATA = "data",
 	DATA_ERRORS = "data-errors",
@@ -34,7 +41,7 @@ export enum STEP {
 export enum STEP_STATUS {
 	PENDING = "pending",
 	RUNNING = "running",
-	COMPLETED = "completed",
+	SUCCESS = "success",
 	FAILED = "failed",
 }
 

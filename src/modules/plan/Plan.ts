@@ -21,8 +21,8 @@ import type { TContext } from "../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../source/@consts"
 import { PLAN_FAILURE_STRATEGY, STEP_STATUS } from "./@consts"
-import type { T_PlanMetrics } from "./types/T_StepResult"
 import { Step, type T_StepFunctionWithSignal } from "./Step"
+import type { T_PlanMetrics } from "./types/T_StepResult"
 import { z_U__plans_plan, type U__plans_plan } from "./types/U__plans"
 import type { U__plans_plan__step } from "./types/U__plans_plan__step"
 import type { U__on_error_Params } from "./types/U__plans_plan_on_error"
@@ -191,7 +191,7 @@ export class Plan {
 				$context = merge($context, <Partial<TContext>>{
 					$plan: {
 						currentStep: {
-							status: STEP_STATUS.COMPLETED,
+							status: STEP_STATUS.SUCCESS,
 						},
 						data: this._data,
 					},
@@ -200,7 +200,7 @@ export class Plan {
 				planMetrics.steps.push({
 					index: stepIndex,
 					command: _stepCommand,
-					status: STEP_STATUS.COMPLETED,
+					status: STEP_STATUS.SUCCESS,
 					outcome: _stepOutput.outcome,
 					durationMs: _stepOutput.metrics?.step?.durationMs,
 					metrics: _stepOutput.metrics,
@@ -290,7 +290,7 @@ export class Plan {
 			planMetrics.status = failedSteps.length === planMetrics.steps.length ? "failed" : "completed_with_errors"
 		}
 
-		Logger.Info(`${Logger.Out} Plan.Process '${this.Name}': completed in ${planMetrics.durationMs}ms, ${planMetrics.steps.length} steps (${planMetrics.steps.filter(s => s.status === STEP_STATUS.COMPLETED).length} succeeded, ${failedSteps.length} failed)`)
+		Logger.Info(`${Logger.Out} Plan.Process '${this.Name}': completed in ${planMetrics.durationMs}ms, ${planMetrics.steps.length} steps (${planMetrics.steps.filter(s => s.status === STEP_STATUS.SUCCESS).length} succeeded, ${failedSteps.length} failed)`)
 
 		this._metrics = planMetrics
 		return this._data

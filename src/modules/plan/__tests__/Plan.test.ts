@@ -211,7 +211,7 @@ describe("Plan", () => {
 
 			expect(wrappedMock).toHaveBeenCalled()
 			expectValidMetrics(plan.Metrics, 1)
-			expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+			expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
 		})
 
 		describe("Failure Strategy", () => {
@@ -302,11 +302,11 @@ describe("Plan", () => {
 				expect(result.MetaData).toEqual({})
 
 				expectValidMetrics(plan.Metrics, 3)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
 				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.FAILED)
 				expect(plan.Metrics?.steps[1]?.error).toBeDefined()
 				expect(plan.Metrics?.steps[1]?.error?.message).toBe("Test error for data strategy")
-				expectValidStepEntry(plan.Metrics?.steps[2], 2, "mock-cmd-3", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[2], 2, "mock-cmd-3", STEP_STATUS.SUCCESS)
 				expect(plan.Metrics?.status).toBe("completed_with_errors")
 			})
 
@@ -363,11 +363,11 @@ describe("Plan", () => {
 				})
 
 				expectValidMetrics(plan.Metrics, 3)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
 				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.FAILED)
 				expect(plan.Metrics?.steps[1]?.error).toBeDefined()
 				expect(plan.Metrics?.steps[1]?.error?.message).toBe("First error for data-errors strategy")
-				expectValidStepEntry(plan.Metrics?.steps[2], 2, "mock-cmd-3", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[2], 2, "mock-cmd-3", STEP_STATUS.SUCCESS)
 				expect(plan.Metrics?.status).toBe("completed_with_errors")
 			})
 
@@ -428,8 +428,8 @@ describe("Plan", () => {
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.SUCCESS)
 			})
 
 			it("should handle 'stop' signal and halt execution", async () => {
@@ -475,8 +475,8 @@ describe("Plan", () => {
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.SUCCESS)
 			})
 
 			it("should handle failed outcome with 'next' signal", async () => {
@@ -513,9 +513,9 @@ describe("Plan", () => {
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
 				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.SUCCESS)
 				expect(plan.Metrics?.steps[1]?.outcome).toBe(STEP_OUTCOME.FAILED)
 			})
 
@@ -552,9 +552,9 @@ describe("Plan", () => {
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
 				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[1], 1, "mock-cmd-2", STEP_STATUS.SUCCESS)
 				expect(plan.Metrics?.steps[1]?.outcome).toBe(STEP_OUTCOME.FAILED)
 				expect(plan.Metrics?.status).toBe("success")
 			})
@@ -612,7 +612,7 @@ describe("Plan", () => {
 				expect(result).toBe(mockDataTable)
 
 				expectValidMetrics(plan.Metrics, 1)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
 				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.FAILED)
 			})
 
@@ -655,7 +655,7 @@ describe("Plan", () => {
 
 				expect(executeMock).toHaveBeenCalled()
 				expectValidMetrics(plan.Metrics, 1)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
 				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
 				parseSpy.mockRestore()
 			})
@@ -699,7 +699,7 @@ describe("Plan", () => {
 
 				expect(executeMock).toHaveBeenCalled()
 				expectValidMetrics(plan.Metrics, 1)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.COMPLETED)
+				expectValidStepEntry(plan.Metrics?.steps[0], 0, "mock-cmd", STEP_STATUS.SUCCESS)
 				expect(plan.Metrics?.steps[0]?.outcome).toBe(STEP_OUTCOME.SUCCESS)
 				parseSpy.mockRestore()
 			})

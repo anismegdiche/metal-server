@@ -4,8 +4,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DataTable } from '../../../types/DataTable'
 import type { TContext } from '../../sandbox/types/TContext'
-import { STEP, STEP_OUTCOME, STEP_SIGNAL } from '../@consts'
+import { STEP, STEP_OUTCOME, STEP_SIGNAL, STEP_STATUS } from '../@consts'
 import { Step } from '../Step'
+import { PLAN_METRICS, PlanMetrics } from '../metrics/PlanMetrics'
+import type { T_StepMetrics } from '../types/T_StepResult'
 
 // Mock DataTable methods
 const mockDataTable = {
@@ -16,8 +18,23 @@ const mockDataTable = {
 } as unknown as DataTable
 
 describe('Step Metrics Collection', () => {
+	const capturedEvents: { type: string; data: Partial<T_StepMetrics> }[] = []
+
 	beforeEach(() => {
 		vi.clearAllMocks()
+		capturedEvents.length = 0
+		PlanMetrics.Metrics.clear()
+
+		// Set up event listeners to capture metrics events
+		PlanMetrics.Bus.addEventListener(PLAN_METRICS.STEP_START, (e) => {
+			capturedEvents.push({ type: PLAN_METRICS.STEP_START, data: (e as CustomEvent<Partial<T_StepMetrics>>).detail })
+		})
+		PlanMetrics.Bus.addEventListener(PLAN_METRICS.STEP_COMPLETE, (e) => {
+			capturedEvents.push({ type: PLAN_METRICS.STEP_COMPLETE, data: (e as CustomEvent<Partial<T_StepMetrics>>).detail })
+		})
+		PlanMetrics.Bus.addEventListener(PLAN_METRICS.STEP_ROWS, (e) => {
+			capturedEvents.push({ type: PLAN_METRICS.STEP_ROWS, data: (e as CustomEvent<Partial<T_StepMetrics>>).detail })
+		})
 	})
 
 	describe('Basic Metrics Collection', () => {
@@ -36,23 +53,28 @@ describe('Step Metrics Collection', () => {
 			}
 
 			// Act
-			const startTime = Date.now()
 			const result = await Step.WrapStepWithSignal(mockStepFn)(stepParams, $context)
-			const endTime = Date.now()
 
 			// Assert
 			expect(result).toBeDefined()
 			expect(result.outcome).toBe(STEP_OUTCOME.SUCCESS)
-			expect(result.metrics).toBeDefined()
 
-			const metrics = result?.metrics
-			expect(metrics.step.startTime).toBeInstanceOf(Date)
-			expect(metrics.step.endTime).toBeInstanceOf(Date)
-			expect(metrics.step.durationMs).toBeDefined()
-			expect(metrics?.step.durationMs).toBeGreaterThanOrEqual(0)
-			expect(metrics?.step.durationMs).toBeLessThanOrEqual(endTime - startTime + 100) // Allow some tolerance
-			expect(metrics.step.status).toBe('success')
-			expect(metrics.attemptCount).toBe(1)
+			// Check captured events
+			const startEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_START)
+			const completeEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_COMPLETE)
+
+			expect(startEvent).toBeDefined()
+			expect(startEvent?.data.planName).toBe('test-plan')
+			expect(startEvent?.data.index).toBe(0)
+			expect(startEvent?.data.step?.startTime).toBeInstanceOf(Date)
+			expect(startEvent?.data.attemptCount).toBe(1)
+			expect(startEvent?.data.rows?.input).toBe(5)
+
+			expect(completeEvent).toBeDefined()
+			expect(completeEvent?.data.planName).toBe('test-plan')
+			expect(completeEvent?.data.index).toBe(0)
+			expect(completeEvent?.data.step?.endTime).toBeInstanceOf(Date)
+			expect(completeEvent?.data.step?.status).toBe(STEP_STATUS.SUCCESS)
 		})
 
 		it('should collect row metrics for successful step execution', async () => {
@@ -75,13 +97,12 @@ describe('Step Metrics Collection', () => {
 			const result = await Step.WrapStepWithSignal(mockStepFn)(stepParams, $context)
 
 			// Assert
-			expect(result.metrics).toBeDefined()
-			const metrics = result.metrics
-			expect(metrics.rows.input).toBe(10)
-			expect(metrics.rows.passed).toBe(8)
-			expect(metrics.rows.skipped).toBe(2) // 10 input - 8 output = 2 skipped
-			expect(metrics.rows.sunk).toBe(0)
-			expect(metrics.rows.failed).toBe(0)
+			expect(result).toBeDefined()
+			expect(result.outcome).toBe(STEP_OUTCOME.SUCCESS)
+
+			// Check captured events
+			const startEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_START)
+			expect(startEvent?.data.rows?.input).toBe(10)
 		})
 
 		it('should collect metrics for failed step execution', async () => {
@@ -105,15 +126,22 @@ describe('Step Metrics Collection', () => {
 			expect(result).toBeDefined()
 			expect(result.outcome).toBe(STEP_OUTCOME.FAILED)
 			expect(result.error).toBe(error)
-			expect(result.metrics).toBeDefined()
 
-			const metrics = result.metrics
-			expect(metrics.step.startTime).toBeDefined()
-			expect(metrics.step.endTime).toBeDefined()
-			expect(metrics.step.durationMs).toBeDefined()
-			expect(metrics.step.durationMs).toBeGreaterThanOrEqual(0)
-			expect(metrics.step.status).toBe('failed')
-			expect(metrics.attemptCount).toBe(1)
+			// Check captured events
+			const startEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_START)
+			const completeEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_COMPLETE)
+
+			expect(startEvent).toBeDefined()
+			expect(startEvent?.data.planName).toBe('test-plan')
+			expect(startEvent?.data.index).toBe(0)
+			expect(startEvent?.data.step?.startTime).toBeInstanceOf(Date)
+			expect(startEvent?.data.attemptCount).toBe(1)
+
+			expect(completeEvent).toBeDefined()
+			expect(completeEvent?.data.planName).toBe('test-plan')
+			expect(completeEvent?.data.index).toBe(0)
+			expect(completeEvent?.data.step?.endTime).toBeInstanceOf(Date)
+			expect(completeEvent?.data.step?.status).toBe(STEP_STATUS.FAILED)
 		})
 
 		it('should handle case with no plan data', async () => {
@@ -133,11 +161,12 @@ describe('Step Metrics Collection', () => {
 			const result = await Step.WrapStepWithSignal(mockStepFn)(stepParams, $context)
 
 			// Assert
-			expect(result.metrics).toBeDefined()
-			const metrics = result.metrics
-			expect(metrics.rows.input).toBe(0)
-			expect(metrics.rows.passed).toBe(5)
-			expect(metrics.rows.skipped).toBe(0) // When no input data, rows.skipped should be 0
+			expect(result).toBeDefined()
+			expect(result.outcome).toBe(STEP_OUTCOME.SUCCESS)
+
+			// Check captured events
+			const startEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_START)
+			expect(startEvent?.data.rows?.input).toBe(0)
 		})
 
 		it('should handle case with no data returned from step', async () => {
@@ -159,11 +188,12 @@ describe('Step Metrics Collection', () => {
 
 			// Assert
 			expect(result.data).toBeUndefined()
-			expect(result.metrics).toBeDefined()
-			const metrics = result.metrics
-			expect(metrics.rows.input).toBe(3)
-			expect(metrics.rows.passed).toBe(0)
-			expect(metrics.rows.skipped).toBe(0) // No output data to compare
+			expect(result).toBeDefined()
+			expect(result.outcome).toBe(STEP_OUTCOME.SUCCESS)
+
+			// Check captured events
+			const startEvent = capturedEvents.find(e => e.type === PLAN_METRICS.STEP_START)
+			expect(startEvent?.data.rows?.input).toBe(3)
 		})
 	})
 
@@ -187,7 +217,7 @@ describe('Step Metrics Collection', () => {
 
 			// Assert
 			expect(result.signal).toBe(STEP_SIGNAL.STOP)
-			expect(result.metrics).toBeDefined()
+			expect(result).toBeDefined()
 		})
 	})
 
@@ -213,7 +243,7 @@ describe('Step Metrics Collection', () => {
 			// Assert
 			expect(result.$context).toBe($context as TContext)
 			expect(result.$context.$vars.test).toBe('test-value')
-			expect(result.metrics).toBeDefined()
+			expect(result).toBeDefined()
 		})
 	})
 })

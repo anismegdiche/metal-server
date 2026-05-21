@@ -19,4 +19,10 @@ PlanRouter.route("/:plan")
 	.patch(ResponseHandler.ResponseNotImplemented)
 	.delete(ResponseHandler.ResponseNotImplemented)
 
-PlanRouter.route("/:plan/reload").all(UserResponse.IsAuthenticated).post(PlanResponse.ReloadPlan)
+PlanRouter.route("/:plan/reload")
+	.all(UserResponse.IsAuthenticated)
+	.post(PlanResponse.ReloadPlan)
+
+PlanRouter.route("/:plan/metrics")
+	.all(UserResponse.IsAuthenticated)
+	.post(PlanResponse.GetPlanMetrics)

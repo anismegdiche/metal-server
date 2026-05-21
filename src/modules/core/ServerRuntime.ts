@@ -1,7 +1,7 @@
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
 //
-
 import type { FSWatcher } from "chokidar"
 import chokidar from "chokidar"
 //
@@ -54,7 +54,7 @@ export class ServerRuntime {
 		await Source.DisconnectAll()
 
 		// Clear module states
-		await PlansManager.Clear()
+		PlansManager.Clear()
 		AiEngine.Clear()
 		DataProvider.Clear()
 

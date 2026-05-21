@@ -3,19 +3,21 @@
 //
 //
 //
-import type { DataTable, TRow } from "../../types/DataTable"
-import type { TUuidv7 } from "../../types/TUuidv7"
-import { Assert } from "../../utils/Assert"
-import { Logger } from "../../utils/Logger"
-import { Utils } from "../../utils/Utils"
-import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrorBase"
-import type { TContext } from "../sandbox/types/TContext"
-import { STEP, STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY, STEP_OUTCOME, STEP_SIGNAL } from "./@consts"
-import { Insert } from "./steps/Insert"
-import type { T_StepMetrics, T_StepResult } from "./types/T_StepResult"
-import type { U__plans_plan_insert_Params } from "./types/U__plans_params"
-import type { U__plans_plan__step, U__plans_plan__step_Params } from "./types/U__plans_plan__step"
-import type { U__on_error_Params, U__on_error_strategy_retry, U__on_error_strategy_sink } from "./types/U__plans_plan_on_error"
+//
+import type { DataTable, TRow } from "../../types/DataTable";
+import type { TUuidv7 } from "../../types/TUuidv7";
+import { Assert } from "../../utils/Assert";
+import { Logger } from "../../utils/Logger";
+import { Utils } from "../../utils/Utils";
+import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrorBase";
+import type { TContext } from "../sandbox/types/TContext";
+import { STEP, STEP_ON_ERROR_RETRY_AFTER_RETRIES, STEP_ON_ERROR_RETRY_BACKOFF, STEP_ON_ERROR_SCOPE, STEP_ON_ERROR_STRATEGY, STEP_OUTCOME, STEP_SIGNAL, STEP_STATUS } from "./@consts";
+import { PLAN_METRICS, PlanMetrics } from "./metrics/PlanMetrics";
+import { Insert } from "./steps/Insert";
+import type { T_StepMetrics, T_StepResult } from "./types/T_StepResult";
+import type { U__plans_plan_insert_Params } from "./types/U__plans_params";
+import type { U__plans_plan__step, U__plans_plan__step_Params } from "./types/U__plans_plan__step";
+import type { U__on_error_Params, U__on_error_strategy_retry, U__on_error_strategy_sink } from "./types/U__plans_plan_on_error";
 
 
 //
@@ -35,16 +37,6 @@ export type T_StepErrorDetails = {
 	};
 }
 
-export type TRowWResult = {
-	data: TRow
-	metrics: {
-		passed?: number
-		skipped?: number
-		sunk?: number
-		failed?: number
-	}
-}
-
 type T_StepOnErrorArgs = {
 	fnStep?: T_StepFunction,
 	fnRow?: T_RowFunction,
@@ -53,8 +45,7 @@ type T_StepOnErrorArgs = {
 	$context: Partial<TContext>,
 	attempt: number,
 	row?: TRow,
-	error?: Error,
-	rowMetrics?: { passed: number; skipped: number; sunk: number; failed: number }
+	error?: Error
 }
 
 //
@@ -75,7 +66,6 @@ export class Step {
 				signal,
 				outcome: STEP_OUTCOME.SUCCESS,
 				$context,
-				metrics: {},
 			}
 		},
 		[STEP.DEBUG]: Step.WrapStepWithSignal(
@@ -156,32 +146,27 @@ export class Step {
 	): T_StepFunctionWithSignal {
 		return async (stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<T_StepResult> => {
 
-			const stepStartTime = new Date()
+
 			const onError = (stepParams as Record<string, unknown>)['on-error'] as U__on_error_Params | undefined
 
-			// Initialize metrics
-			const metrics: T_StepMetrics = {
-				rows: {
-					input: 0,
-					passed: 0,
-					skipped: 0,
-					sunk: 0,
-					failed: 0
-				},
-				step: {
-					startTime: stepStartTime
-				},
-				attemptCount: 1
-			}
+			const stepIndex = $context.$plan?.currentStep.index
+			const planName = $context.$plan?.name
 
-			// Track input row count
-			const inputRowCount = $context.$plan?.data
-				? await $context.$plan.data.Count()
-				: 0
-
-			metrics.rows.input = inputRowCount
-
-			const rowMetrics = { passed: 0, skipped: 0, sunk: 0, failed: 0 }
+			PlanMetrics.Bus.dispatchEvent(
+				new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_START, {
+					detail: {
+						planName,
+						index: stepIndex,
+						step: {
+							startTime: new Date()
+						},
+						attemptCount: 1,
+						rows: {
+							input: await $context.$plan?.data?.Count() ?? 0
+						},
+					}
+				})
+			);
 
 			const _fnStepRouter = async () => {
 				if (!onError) {
@@ -195,69 +180,53 @@ export class Step {
 					onError,
 					$context,
 					attempt: 1,
-					rowMetrics
-
 				})
 
 			}
 
 			try {
 				const data = await _fnStepRouter()
-				const stepEndTime = new Date()
-				const stepDurationMs = stepEndTime.getTime() - stepStartTime.getTime()
 
-				// Update metrics with timing and success status
-				metrics.step.endTime = stepEndTime
-				metrics.step.durationMs = stepDurationMs
-				metrics.step.status = 'success'
-
-				// Extract final attempt count from error context if available (for successful retries)
-				if ($context.$error?.attempt) {
-					metrics.attemptCount = $context.$error.attempt
-				}
-
-				// Track row metrics if data is available
-				if (data) {
-					const outputRowCount = await data.Count()
-
-					metrics.rows.passed = outputRowCount
-					metrics.rows.sunk = rowMetrics.sunk
-					metrics.rows.failed = rowMetrics.failed
-					metrics.rows.skipped = Math.max(0, inputRowCount - outputRowCount - rowMetrics.sunk - rowMetrics.failed)
-				} else {
-					// For row-level operations, ensure row metrics are set to 0
-					metrics.rows.passed = 0
-				}
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_COMPLETE, {
+						detail: {
+							planName,
+							index: stepIndex,
+							step: {
+								endTime: new Date(),
+								status: STEP_STATUS.SUCCESS,
+							},
+						}
+					})
+				);
 
 				return <T_StepResult>{
 					data,
 					signal,
 					outcome: STEP_OUTCOME.SUCCESS,
-					$context: $context as TContext,
-					metrics
+					$context,
 				}
 
 			} catch (error) {
-				const stepEndTime = new Date()
-				const stepDurationMs = stepEndTime.getTime() - stepStartTime.getTime()
-
-				// Update metrics with timing and failure status
-				metrics.step.endTime = stepEndTime
-				metrics.step.durationMs = stepDurationMs
-				metrics.step.status = 'failed'
-
-				// Extract attempt count from error context if available
-				if ($context.$error?.attempt) {
-					metrics.attemptCount = $context.$error.attempt
-				}
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_COMPLETE, {
+						detail: {
+							planName,
+							index: stepIndex,
+							step: {
+								endTime: new Date(),
+								status: STEP_STATUS.FAILED,
+							},
+						}
+					})
+				);
 
 				return <T_StepResult>{
 					data: undefined,
 					signal,
 					outcome: STEP_OUTCOME.FAILED,
-					$context: $context as TContext,
-					error: error as Error,
-					metrics
+					$context,
+					error,
 				}
 			}
 		}
@@ -270,7 +239,6 @@ export class Step {
 		$context,
 		attempt,
 		error,
-		rowMetrics
 	}: T_StepOnErrorArgs): Promise<DataTable | undefined> {
 		if (!onError)
 			return $context.$plan?.data
@@ -296,18 +264,8 @@ export class Step {
 					$context,
 					attempt,
 					error,
-					rowMetrics
 				} as T_StepOnErrorArgs)
-					.then(result => {
-						if (!result) return undefined
-						if (rowMetrics && result.rowMetrics) {
-							rowMetrics.passed = result.rowMetrics.passed
-							rowMetrics.skipped = result.rowMetrics.skipped
-							rowMetrics.sunk = result.rowMetrics.sunk
-							rowMetrics.failed = result.rowMetrics.failed
-						}
-						return result.data?.CleanForDeletion()
-					})
+					.then((result) => result.CleanForDeletion())
 
 			case STEP_ON_ERROR_SCOPE.STEP:
 			default:
@@ -339,6 +297,20 @@ export class Step {
 		const strategy = onError?.strategy ?? undefined
 
 		return fnStep(stepParams, $context)
+			.then(async (data) => {
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_ROWS, {
+						detail: {
+							planName: $context.$plan?.name,
+							index: $context.$plan?.currentStep?.index,
+							rows: {
+								passed: await data?.Count()
+							},
+						}
+					})
+				);
+				return data
+			})
 			.catch((caughtError) => {
 				// Apply scope-specific logic
 				switch (strategy) {
@@ -384,6 +356,19 @@ export class Step {
 			$context.$error = errorDetails
 		}
 
+		PlanMetrics.Bus.dispatchEvent(
+			new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_ROWS, {
+				detail: {
+					planName,
+					index: currentStep?.index,
+					attemptCount: attempt,
+					rows: {
+						failed: await $context.$plan?.data?.Count() ?? 0
+					},
+				}
+			})
+		);
+
 		Logger.Warn(`Plan '${planName}', step ${currentStep?.index} threw an error after ${attempt} attempt(s): ${errorDetails}`);
 		throw new HttpErrorInternalServerError(`Plan '${planName}', step ${currentStep?.index} threw an error after ${attempt} attempt(s): ${errorDetails}`);
 	}
@@ -405,6 +390,19 @@ export class Step {
 		if ($context) {
 			$context.$error = errorDetails
 		}
+
+		PlanMetrics.Bus.dispatchEvent(
+			new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_START, {
+				detail: {
+					planName,
+					index: currentStep?.index,
+					attemptCount: attempt,
+					rows: {
+						skipped: await $context.$plan?.data?.Count() ?? 0
+					},
+				}
+			})
+		);
 
 		Logger.Warn(`Plan '${planName}', step ${currentStep?.index} skipped after ${attempt} attempt(s) ${errorDetails}`);
 		return data
@@ -482,21 +480,35 @@ export class Step {
 		attempt,
 		row,
 		error
-	}: Pick<T_StepOnErrorArgs, 'fnRow' | 'stepParams' | 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<{ data: DataTable | undefined; rowMetrics: { passed: number; skipped: number; sunk: number; failed: number } } | undefined> {
+	}: Pick<T_StepOnErrorArgs, 'fnRow' | 'stepParams' | 'onError' | '$context' | 'attempt' | 'row' | 'error'>)
+		: Promise<DataTable> {
 
 		Assert.Var<DataTable>($context.$plan?.data, "Plan data is undefined")
 
 		if (!fnRow) {
-			return { data: $context.$plan.data, rowMetrics: { passed: 0, skipped: 0, sunk: 0, failed: 0 } }
+			return $context.$plan?.data
 		}
 
-		const strategy = onError?.strategy ?? undefined
-		const rowMetrics = { passed: 0, skipped: 0, sunk: 0, failed: 0 }
+		const strategy = onError?.strategy
 
-		const data = await $context.$plan?.data
-			.RowsMap(async (row: Partial<TRow>) => {
+		return await $context.$plan?.data
+			.RowsMap(async (row) => {
 				return fnRow(row, stepParams, $context)
-					.then(row => ({ data: row, metrics: { passed: 1 } } as TRowWResult))
+					.then((row) => {
+						PlanMetrics.Bus.dispatchEvent(
+							new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_ROWS, {
+								detail: {
+									planName: $context.$plan?.name,
+									index: $context.$plan?.currentStep?.index,
+									attemptCount: attempt,
+									rows: {
+										passed: 1
+									},
+								}
+							})
+						);
+						return row;
+					})
 					.catch((caughtError) => {
 						switch (strategy) {
 
@@ -506,7 +518,7 @@ export class Step {
 									$context,
 									attempt,
 									row,
-									error: caughtError as Error
+									error: caughtError
 								})
 
 							case STEP_ON_ERROR_STRATEGY.RETRY:
@@ -517,7 +529,7 @@ export class Step {
 									$context,
 									attempt,
 									row,
-									error: caughtError as Error
+									error: caughtError
 								});
 
 							case STEP_ON_ERROR_STRATEGY.SKIP:
@@ -530,23 +542,14 @@ export class Step {
 						}
 
 					})
-					.then((result: TRowWResult) => {
-						rowMetrics.passed += result.metrics.passed || 0
-						rowMetrics.skipped += result.metrics.skipped || 0
-						rowMetrics.sunk += result.metrics.sunk || 0
-						rowMetrics.failed += result.metrics.failed || 0
-						return result.data
-					})
 			})
-
-		return { data, rowMetrics }
 	}
 
 	static async _onErrorRowSkip({
 		$context,
 		attempt,
 		row
-	}: Pick<T_StepOnErrorArgs, '$context' | 'attempt' | 'row'>): Promise<TRowWResult> {
+	}: Pick<T_StepOnErrorArgs, '$context' | 'attempt' | 'row'>): Promise<TRow> {
 
 		const planName = $context.$plan?.name
 		const currentStep = $context.$plan?.currentStep
@@ -569,8 +572,21 @@ export class Step {
 			}
 		}
 
+		PlanMetrics.Bus.dispatchEvent(
+			new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_ROWS, {
+				detail: {
+					planName,
+					index: currentStep?.index,
+					attemptCount: attempt,
+					rows: {
+						skipped: 1
+					},
+				}
+			})
+		);
+
 		Logger.Warn(`Plan '${planName}', step ${currentStep?.index} skipped row after ${attempt} attempt(s)`);
-		return { data: row as TRow, metrics: { passed: 1 } }
+		return row!
 	}
 
 	static async _onErrorRowSink({
@@ -579,7 +595,7 @@ export class Step {
 		attempt,
 		row,
 		error
-	}: Pick<T_StepOnErrorArgs, 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<TRowWResult> {
+	}: Pick<T_StepOnErrorArgs, 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<TRow> {
 
 		const { sink } = onError as U__on_error_strategy_sink
 
@@ -624,8 +640,21 @@ export class Step {
 					$context.$plan.data.RowMarkForDeletion(__idx__)
 				}
 			})
+			.then(() => {
+				PlanMetrics.Bus.dispatchEvent(
+					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_ROWS, {
+						detail: {
+							planName: $context.$plan?.name,
+							index: $context.$plan?.currentStep?.index,
+							rows: {
+								sunk: 1
+							},
+						}
+					})
+				);
+				return row
+			})
 			.catch(() => row)
-			.then(() => ({ data: row as TRow, metrics: { sunk: 1 } }))
 	}
 
 	static async _onErrorRowRetry({
@@ -636,7 +665,7 @@ export class Step {
 		attempt,
 		row,
 		error
-	}: Pick<T_StepOnErrorArgs, 'fnRow' | 'stepParams' | 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<TRowWResult> {
+	}: Pick<T_StepOnErrorArgs, 'fnRow' | 'stepParams' | 'onError' | '$context' | 'attempt' | 'row' | 'error'>): Promise<TRow> {
 
 		const { retry } = onError as U__on_error_strategy_retry
 
