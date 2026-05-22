@@ -1,6 +1,8 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: false positive */
 //
 //
+//
+import z from "zod";
 //
 import type { TJson } from "../../types/TJson";
 import { Assert } from "../../utils/Assert";
@@ -10,7 +12,8 @@ import { ConfigManager } from "../core/ConfigManager";
 import { HttpResponse } from "../core/HttpResponse";
 import type { TInternalResponse } from "../core/types/TInternalResponse";
 import { HttpErrorNotFound } from "../errors/HttpErrors";
-import { PlanMetrics } from "./metrics/PlanMetrics";
+import { PLAN_STATUS } from "./@consts";
+import { PlanMetrics, type T_PlanMetrics } from "./metrics/PlanMetrics";
 import { Plan } from "./Plan";
 import { Plans } from "./Plans";
 import { Schedule } from "./Schedule";
@@ -40,7 +43,11 @@ export class PlansManager {
 		const _plan = new Plan(planName)
 		_plan.Init()
 		Plans.set(planName, _plan)
-		PlanMetrics.Metrics.set(planName, undefined)
+		PlanMetrics.Metrics.set(planName, <T_PlanMetrics>{
+			planName,
+			status: PLAN_STATUS.NOT_STARTED,
+			steps: []
+		})
 	}
 
 
@@ -115,25 +122,14 @@ export class PlansManager {
 		const plan = Plans.get(planName)
 		Assert.Var<Plan>(plan, `Plan '${planName}' not found`, new HttpErrorNotFound())
 
-		const metrics = plan?.Metrics
-		if (!metrics) {
-			throw new HttpErrorNotFound(`No metrics available for plan '${planName}' (plan may not have been executed yet)`)
+		const planMetrics = PlanMetrics.Get(planName)
+
+		if (!planMetrics.durationMs) {
+			const startTime = Assert.ZodSchema<Date>(planMetrics?.startTime, z.date(), "startTime is undefined")
+			planMetrics.durationMs = Date.now() - startTime.getTime()
 		}
 
-		const computed: TJson = {
-			startTime: metrics.startTime,
-			status: metrics.status,
-			steps: metrics.steps,
-		}
-
-		if (metrics.endTime) {
-			computed.endTime = metrics.endTime
-			computed.durationMs = metrics.durationMs
-		} else {
-			computed.durationMs = Date.now() - metrics.startTime.getTime()
-		}
-
-		return HttpResponse.Ok(computed)
+		return HttpResponse.Ok(plan.Metrics)
 	}
 
 	static Clear(): void {

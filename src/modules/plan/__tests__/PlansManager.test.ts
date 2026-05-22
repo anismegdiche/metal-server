@@ -5,6 +5,7 @@ import { ConfigManager } from "../../core/ConfigManager"
 import { Plan } from "../Plan"
 import { Plans } from "../Plans"
 import { PlansManager } from "../PlansManager"
+import { PlanMetrics } from "../metrics/PlanMetrics"
 import { Schedule } from "../Schedule"
 
 vi.mock("../../core/ConfigManager")
@@ -23,6 +24,7 @@ describe("PlansManager", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		Plans.clear()
+		PlanMetrics.Metrics.clear()
 	})
 
 	describe("Init", () => {
@@ -102,6 +104,7 @@ describe("PlansManager", () => {
 			const mockPlan = new Plan("test-plan") as any
 			mockPlan.Metrics = mockMetrics
 			Plans.set("test-plan", mockPlan)
+			PlanMetrics.Metrics.set("test-plan", mockMetrics as any)
 
 			const result = PlansManager.GetPlanMetrics("test-plan")
 
@@ -128,6 +131,7 @@ describe("PlansManager", () => {
 			const mockPlan = new Plan("test-plan") as any
 			mockPlan.Metrics = mockMetrics
 			Plans.set("test-plan", mockPlan)
+			PlanMetrics.Metrics.set("test-plan", mockMetrics as any)
 
 			const result = PlansManager.GetPlanMetrics("test-plan")
 

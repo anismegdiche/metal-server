@@ -38,8 +38,8 @@ export class Plan {
 
 	_data: DataTable = new DataTable()
 
-	get Metrics(): T_PlanMetrics | undefined {
-		return PlanMetrics.Metrics.get(this.Name)
+	get Metrics(): T_PlanMetrics {
+		return PlanMetrics.Get(this.Name)
 	}
 
 	constructor(name: string) {

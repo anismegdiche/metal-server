@@ -7,6 +7,9 @@ import { merge } from "lodash-es";
 //
 import { JsonUtils } from "../../../utils/JsonUtils";
 import type { PLAN_STATUS, STEP_STATUS } from "../@consts";
+import { Assert } from "../../../utils/Assert";
+import z from "zod";
+import { HttpErrorInternalServerError } from "../../errors/HttpErrorBase";
 
 
 //
@@ -43,7 +46,7 @@ export type T_StepMetrics = {
 
 export type T_PlanMetrics = {
     planName: string
-    startTime: Date
+    startTime?: Date
     endTime?: Date
     durationMs?: number
     status: PLAN_STATUS
@@ -93,7 +96,14 @@ export class PlanMetrics {
 
     static Bus = new EventBus()
 
-    static Metrics: Map<string, T_PlanMetrics | undefined> = new Map()
+    static Metrics: Map<string, T_PlanMetrics> = new Map()
+
+    static Get(planName: string): T_PlanMetrics {
+        if (!PlanMetrics.Metrics.has(planName))
+            throw new HttpErrorInternalServerError(`plan '${planName}' metrics not found`)
+
+        return PlanMetrics.Metrics.get(planName) as T_PlanMetrics
+    }
 
     @on({ eventName: PLAN_METRICS.STEP_START, eventBus: PlanMetrics.Bus })
     static _handlePlanStepStart(event: CustomEvent<Partial<T_StepMetrics>>) {
@@ -103,11 +113,7 @@ export class PlanMetrics {
         const stepIndex = metrics.index || 0
 
         // get old metrics
-        const planMetrics: T_PlanMetrics | undefined = PlanMetrics.Metrics.get(planName)
-
-        if (!planMetrics) {
-            return
-        }
+        const planMetrics = PlanMetrics.Get(planName)
 
         // update metrics
         planMetrics.steps[stepIndex] = merge(
@@ -125,26 +131,18 @@ export class PlanMetrics {
         const metrics = event.data ?? {}
         const planName = metrics.planName ?? ""
         const stepIndex = metrics.index ?? 0
-        const stepEndTime = metrics.step?.endTime
-
+        
         // get old metrics
-        const planMetrics: T_PlanMetrics | undefined = PlanMetrics.Metrics.get(planName)
-
-        if (!planMetrics) {
-            return
-        }
-
+        const planMetrics = PlanMetrics.Get(planName)
+        
         const stepMetrics = planMetrics.steps[stepIndex]
-
+        
         if (!stepMetrics) {
             return
         }
 
-        const startTime = stepMetrics.step?.startTime
-
-        if (!startTime || !stepEndTime) {
-            return
-        }
+        const startTime = Assert.ZodSchema<Date>(stepMetrics.step?.startTime, z.date(), "startTime is undefined")
+        const stepEndTime = Assert.ZodSchema<Date>(metrics.step?.endTime, z.date(), "endTime is undefined")
 
         const durationMs = stepEndTime.getTime() - startTime.getTime()
 
@@ -168,11 +166,7 @@ export class PlanMetrics {
         const stepIndex = metrics.index || 0
 
         // get old metrics
-        const planMetrics: T_PlanMetrics | undefined = PlanMetrics.Metrics.get(planName)
-
-        if (!planMetrics) {
-            return
-        }
+        const planMetrics = PlanMetrics.Get(planName)
 
         const stepMetrics = planMetrics.steps[stepIndex]
 
@@ -205,11 +199,7 @@ export class PlanMetrics {
         const planName = metrics.planName ?? ""
 
         // get old metrics
-        let planMetrics: T_PlanMetrics | undefined = PlanMetrics.Metrics.get(planName)
-
-        if (!planMetrics) {
-            return
-        }
+        let planMetrics = PlanMetrics.Get(planName)
 
         // update metrics
         planMetrics = merge(
@@ -229,13 +219,9 @@ export class PlanMetrics {
         const planEndTime = metrics.endTime ?? new Date()
 
         // get old metrics
-        let planMetrics: T_PlanMetrics | undefined = PlanMetrics.Metrics.get(planName)
+        let planMetrics = PlanMetrics.Get(planName)
 
-        if (!planMetrics) {
-            return
-        }
-
-        const startTime = planMetrics.startTime
+        const startTime = Assert.ZodSchema<Date>(planMetrics.startTime, z.date(), "startTime is undefined")
 
         const durationMs = planEndTime.getTime() - startTime.getTime()
 

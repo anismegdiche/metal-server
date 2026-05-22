@@ -3,6 +3,7 @@
 //
 
 export enum PLAN_STATUS {
+	NOT_STARTED = "not_started",
 	STOPPED = "stopped",
 	RUNNING = "running",
 	SUCCESS = "success",
