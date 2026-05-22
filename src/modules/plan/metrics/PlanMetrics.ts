@@ -4,11 +4,9 @@
 //
 import { type CustomEvent, EventBus, type IEvent, on } from "@dimkl/events";
 import { merge } from "lodash-es";
+//
 import { JsonUtils } from "../../../utils/JsonUtils";
-import type { PLAN_STATUS } from "../@consts";
-//
-import type { T_StepMetrics } from "../types/T_StepResult";
-//
+import type { PLAN_STATUS, STEP_STATUS } from "../@consts";
 
 
 //
@@ -22,13 +20,44 @@ export enum PLAN_METRICS {
 
 
 //
+export type T_StepRowsMetrics = {
+    input?: number
+    passed?: number
+    skipped?: number
+    sunk?: number
+    failed?: number
+}
+
+export type T_StepMetrics = {
+    planName: string
+    index: number
+    step?: {
+        startTime?: Date
+        endTime?: Date
+        durationMs?: number
+        status?: STEP_STATUS
+    }
+    rows?: T_StepRowsMetrics
+    attemptCount?: number
+}
+
+export type T_PlanMetrics = {
+    planName: string
+    startTime: Date
+    endTime?: Date
+    durationMs?: number
+    status: PLAN_STATUS
+    steps: T_StepMetrics[]
+}
+
+//
 declare global {
 
     interface PlanStart extends IEvent {
         type: PLAN_METRICS.PLAN_START
         data: Partial<T_PlanMetrics>
     }
-    
+
     interface PlanEnd extends IEvent {
         type: PLAN_METRICS.PLAN_END
         data: Partial<T_PlanMetrics>
@@ -52,23 +81,14 @@ declare global {
     interface Events {
         [PLAN_METRICS.PLAN_START]: PlanStart
         [PLAN_METRICS.PLAN_END]: PlanEnd
-
         [PLAN_METRICS.STEP_START]: StepStart
         [PLAN_METRICS.STEP_END]: StepEnd
         [PLAN_METRICS.STEP_INC]: StepInc
     }
 }
 
-export type T_PlanMetrics = {
-    planName: string
-    startTime: Date
-    endTime?: Date
-    durationMs?: number
-    status: PLAN_STATUS
-    steps: T_StepMetrics[]
-}
 
-
+//
 export class PlanMetrics {
 
     static Bus = new EventBus()
@@ -177,7 +197,7 @@ export class PlanMetrics {
         // save metrics
         PlanMetrics.Metrics.set(planName, planMetrics)
     }
-    
+
     @on({ eventName: PLAN_METRICS.PLAN_START, eventBus: PlanMetrics.Bus })
     static _handlePlanStart(event: CustomEvent<Partial<T_PlanMetrics>>) {
 
@@ -200,7 +220,7 @@ export class PlanMetrics {
         // save metrics
         PlanMetrics.Metrics.set(planName, planMetrics)
     }
-    
+
     @on({ eventName: PLAN_METRICS.PLAN_END, eventBus: PlanMetrics.Bus })
     static _handlePlanEnd(event: CustomEvent<Partial<T_PlanMetrics>>) {
 
@@ -230,5 +250,4 @@ export class PlanMetrics {
         // save metrics
         PlanMetrics.Metrics.set(planName, planMetrics)
     }
-    
 }

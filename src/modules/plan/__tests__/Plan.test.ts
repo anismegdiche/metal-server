@@ -12,7 +12,7 @@ import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_OUTCOME, STEP_SIGNAL, STEP_STA
 import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "../metrics/PlanMetrics"
 import { Plan } from "../Plan"
 import { Step } from "../Step"
-import type { T_StepMetrics } from "../types/T_StepResult"
+import type { T_StepMetrics } from "../metrics/PlanMetrics"
 import { z_U__plans_plan } from "../types/U__plans"
 
 vi.mock("../../core/ConfigManager")

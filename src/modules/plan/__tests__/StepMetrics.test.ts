@@ -7,7 +7,7 @@ import type { TContext } from '../../sandbox/types/TContext'
 import { STEP, STEP_OUTCOME, STEP_SIGNAL, STEP_STATUS } from '../@consts'
 import { Step } from '../Step'
 import { PLAN_METRICS, PlanMetrics } from '../metrics/PlanMetrics'
-import type { T_StepMetrics } from '../types/T_StepResult'
+import type { T_StepMetrics } from "../metrics/PlanMetrics"
 
 // Mock DataTable methods
 const mockDataTable = {
