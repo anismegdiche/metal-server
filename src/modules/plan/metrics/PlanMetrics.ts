@@ -4,12 +4,13 @@
 //
 import { type CustomEvent, EventBus, type IEvent, on } from "@dimkl/events";
 import { merge } from "lodash-es";
-//
-import { JsonUtils } from "../../../utils/JsonUtils";
-import type { PLAN_STATUS, STEP_STATUS } from "../@consts";
-import { Assert } from "../../../utils/Assert";
 import z from "zod";
+//
+import { Assert } from "../../../utils/Assert";
+import { JsonUtils } from "../../../utils/JsonUtils";
 import { HttpErrorInternalServerError } from "../../errors/HttpErrorBase";
+import type { PLAN_STATUS, STEP_STATUS } from "../@consts";
+import { Logger } from "../../../utils/Logger";
 
 
 //
@@ -105,6 +106,11 @@ export class PlanMetrics {
         return PlanMetrics.Metrics.get(planName) as T_PlanMetrics
     }
 
+    static Set(planName: string, planMetrics: T_PlanMetrics) {
+        Logger.Info(`metrics plan '${planName}': ${JsonUtils.Stringify(planMetrics)}`)
+        PlanMetrics.Metrics.set(planName, planMetrics)
+    }
+
     @on({ eventName: PLAN_METRICS.STEP_START, eventBus: PlanMetrics.Bus })
     static _handlePlanStepStart(event: CustomEvent<Partial<T_StepMetrics>>) {
 
@@ -122,7 +128,7 @@ export class PlanMetrics {
         )
 
         // save metrics
-        PlanMetrics.Metrics.set(planName, planMetrics)
+        PlanMetrics.Set(planName, planMetrics)
     }
 
     @on({ eventName: PLAN_METRICS.STEP_END, eventBus: PlanMetrics.Bus })
@@ -131,12 +137,12 @@ export class PlanMetrics {
         const metrics = event.data ?? {}
         const planName = metrics.planName ?? ""
         const stepIndex = metrics.index ?? 0
-        
+
         // get old metrics
         const planMetrics = PlanMetrics.Get(planName)
-        
+
         const stepMetrics = planMetrics.steps[stepIndex]
-        
+
         if (!stepMetrics) {
             return
         }
@@ -155,7 +161,7 @@ export class PlanMetrics {
         )
 
         // save metrics
-        PlanMetrics.Metrics.set(planName, planMetrics)
+        PlanMetrics.Set(planName, planMetrics)
     }
 
     @on({ eventName: PLAN_METRICS.STEP_INC, eventBus: PlanMetrics.Bus })
@@ -189,7 +195,7 @@ export class PlanMetrics {
         )
 
         // save metrics
-        PlanMetrics.Metrics.set(planName, planMetrics)
+        PlanMetrics.Set(planName, planMetrics)
     }
 
     @on({ eventName: PLAN_METRICS.PLAN_START, eventBus: PlanMetrics.Bus })
@@ -208,7 +214,7 @@ export class PlanMetrics {
         )
 
         // save metrics
-        PlanMetrics.Metrics.set(planName, planMetrics)
+        PlanMetrics.Set(planName, planMetrics)
     }
 
     @on({ eventName: PLAN_METRICS.PLAN_END, eventBus: PlanMetrics.Bus })
@@ -234,6 +240,6 @@ export class PlanMetrics {
         )
 
         // save metrics
-        PlanMetrics.Metrics.set(planName, planMetrics)
+        PlanMetrics.Set(planName, planMetrics)
     }
 }
