@@ -9,10 +9,10 @@ import { Roles } from "../../auth/Roles"
 import { METADATA } from "../../core/@consts"
 import { ConfigManager } from "../../core/ConfigManager"
 import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_OUTCOME, STEP_SIGNAL, STEP_STATUS } from "../@consts"
-import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "../metrics/PlanMetrics"
+import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "../PlanMetrics"
 import { Plan } from "../Plan"
 import { Step } from "../Step"
-import type { T_StepMetrics } from "../metrics/PlanMetrics"
+import type { T_StepMetrics } from "../PlanMetrics"
 import { z_U__plans_plan } from "../types/U__plans"
 
 vi.mock("../../core/ConfigManager")

@@ -5,7 +5,7 @@ import { ConfigManager } from "../../core/ConfigManager"
 import { Plan } from "../Plan"
 import { Plans } from "../Plans"
 import { PlansManager } from "../PlansManager"
-import { PlanMetrics } from "../metrics/PlanMetrics"
+import { PlanMetrics } from "../PlanMetrics"
 import { Schedule } from "../Schedule"
 
 vi.mock("../../core/ConfigManager")

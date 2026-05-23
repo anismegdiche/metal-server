@@ -13,7 +13,7 @@ import { HttpResponse } from "../core/HttpResponse";
 import type { TInternalResponse } from "../core/types/TInternalResponse";
 import { HttpErrorNotFound } from "../errors/HttpErrors";
 import { PLAN_STATUS } from "./@consts";
-import { PlanMetrics, type T_PlanMetrics } from "./metrics/PlanMetrics";
+import { PlanMetrics, type T_PlanMetrics } from "./PlanMetrics";
 import { Plan } from "./Plan";
 import { Plans } from "./Plans";
 import { Schedule } from "./Schedule";
