@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: testing */
 
 
 import { beforeEach, describe, expect, it, vi } from "vitest"

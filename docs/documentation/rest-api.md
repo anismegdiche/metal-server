@@ -16,6 +16,7 @@ Metal offers a REST API specifically crafted to execute a range of functions:
 | `/server/`…       | Server operations  | <Badge type="default" text="v0.1+" /> |
 | `/schema/`…       | Schemas operations | <Badge type="default" text="v0.1+" /> |
 | `/plan/`…         | Plans operations   | <Badge type="default" text="v0.1+" /> |
+| `/schedule/`…     | Schedule operations| <Badge type="default" text="v0.5+" /> |
 | `/cache/`…        | Cache operations   | <Badge type="default" text="v0.1+" /> |
 
 ## `/user/`…
@@ -164,10 +165,11 @@ This feature provides access to detailed information about the currently logged-
 This endpoint serves as the entry point for Server operations.
 The table below describes available endpoints and methods to use for request :
 
-| Endpoint         | Method | Usage                                  | Metal version                         |
-| ---------------- | ------ | -------------------------------------- | ------------------------------------- |
-| `/server/info`   | GET    | Get informations about Metal server    | <Badge type="default" text="v0.1+" /> |
-| `/server/reload` | POST   | Reload configuration file and apply it | <Badge type="default" text="v0.1+" /> |
+| Endpoint                | Method | Usage                                  | Metal version                         |
+| ----------------------- | ------ | -------------------------------------- | ------------------------------------- |
+| `/server/info`          | GET    | Get informations about Metal server    | <Badge type="default" text="v0.1+" /> |
+| `/server/reload`        | POST   | Reload configuration file and apply it | <Badge type="default" text="v0.1+" /> |
+| `/server/reload-plans`  | POST   | Reload plans from configuration file   | <Badge type="default" text="v0.5+" /> |
 
 ---
 
@@ -238,6 +240,42 @@ When reloading, all connections will be reset.
 >
 > {
 >   "message": "Server reloaded"
+> }
+> ```
+
+**Response Errors**
+
+| HTTP Code | Message                      |
+| --------- | ---------------------------- |
+| 400       | Bad Request                  |
+| 401       | Invalid username or password |
+| 403       | Forbidden                    |
+| 500       | Something Went Wrong         |
+
+### `/server/reload-plans`
+
+Reloads all plans from the configuration file without restarting the server.
+
+**Endpoint**
+
+> **POST** /server/reload-plans
+
+**Example**
+
+> **Request**
+>
+> ```http
+> POST http://127.0.0.1:3000/server/reload-plans
+> ```
+>
+> **Response**
+>
+> ```http
+> HTTP/1.1 200 OK
+> Content-Type: application/json
+>
+> {
+>   "message": "Plans and schedules reloaded successfully"
 > }
 > ```
 
@@ -611,9 +649,10 @@ For detailed description of `filter` and `filter-expression` usage, please refer
 This endpoint serves as the entry point for Plans operations.
 The table below describes available endpoints and methods to use for request :
 
-| Endpoint                     | Method | Usage                                                                     | Metal version                         |
-| ---------------------------- | ------ | ------------------------------------------------------------------------- | ------------------------------------- |
-| `/plan`/**`:plan`**/`reload` | POST   | Reload the plan `:plan` definition as described in the configuration file | <Badge type="default" text="v0.1+" /> |
+| Endpoint                      | Method | Usage                                                                     | Metal version                         |
+| ----------------------------- | ------ | ------------------------------------------------------------------------- | ------------------------------------- |
+| `/plan`/**`:plan`**/`reload`  | POST   | Reload the plan `:plan` definition as described in the configuration file | <Badge type="default" text="v0.1+" /> |
+| `/plan`/**`:plan`**/`metrics` | POST   | Get execution metrics for the plan `:plan`                                | <Badge type="default" text="v0.5+" /> |
 
 ### `/plan`/**`:plan`**/`reload`
 
@@ -647,6 +686,164 @@ Reload the plan `:plan` definition as described in the configuration file.
 > {
 >    "plan": "my-plan",
 >    "message": "Plan reloaded"
+> }
+> ```
+
+**Response Errors**
+
+| HTTP Code | Message                      |
+| --------- | ---------------------------- |
+| 400       | Bad Request                  |
+| 401       | Invalid username or password |
+| 403       | Forbidden                    |
+| 404       | Not found                    |
+| 500       | Something Went Wrong         |
+
+### `/plan`/**`:plan`**/`metrics`
+
+Returns execution metrics for the plan `:plan`.
+
+**Endpoint**
+
+> **POST** /plan/**`:plan`**/metrics
+
+**Path Parameters**
+
+| Name    | type   | Required | Description               |
+| ------- | ------ | -------- | ------------------------- |
+| `:plan` | string | Y        | name of the selected plan |
+
+**Example**
+
+> **Request**
+>
+> ```http
+> POST  http://127.0.0.1:3000/plan/my-plan/metrics
+> ```
+>
+> **Response**
+>
+> ```http
+> HTTP/1.1 200 OK
+> Content-Type: application/json; charset=utf-8
+>
+> {
+>    "planName": "my-plan",
+>    "startTime": "2025-01-01T00:00:00.000Z",
+>    "endTime": "2025-01-01T00:00:01.500Z",
+>    "durationMs": 1500,
+>    "status": "success",
+>    "steps": [
+>        {
+>            "index": 0,
+>            "command": "select",
+>            "status": "completed",
+>            "outcome": "success",
+>            "durationMs": 200
+>        }
+>    ]
+> }
+> ```
+
+**Response Errors**
+
+| HTTP Code | Message                      |
+| --------- | ---------------------------- |
+| 400       | Bad Request                  |
+| 401       | Invalid username or password |
+| 403       | Forbidden                    |
+| 404       | Not found                    |
+| 500       | Something Went Wrong         |
+
+---
+
+## `/schedule/`…
+
+This endpoint serves as the entry point for Schedule operations.
+The table below describes available endpoints and methods to use for request :
+
+| Endpoint                              | Method | Usage                         | Metal version                         |
+| ------------------------------------- | ------ | ----------------------------- | ------------------------------------- |
+| `/schedule`/**`:jobName`**/`start`    | POST   | Start a scheduled job         | <Badge type="default" text="v0.5+" /> |
+| `/schedule`/**`:jobName`**/`stop`     | POST   | Stop a scheduled job          | <Badge type="default" text="v0.5+" /> |
+
+---
+
+### `/schedule`/**`:jobName`**/`start`
+
+Starts a scheduled job by name.
+
+**Endpoint**
+
+> **POST** /schedule/**`:jobName`**/start
+
+**Path Parameters**
+
+| Name       | type   | Required | Description              |
+| ---------- | ------ | -------- | ------------------------ |
+| `:jobName` | string | Y        | name of the job to start |
+
+**Example**
+
+> **Request**
+>
+> ```http
+> POST  http://127.0.0.1:3000/schedule/my-job/start
+> ```
+>
+> **Response**
+>
+> ```http
+> HTTP/1.1 200 OK
+> Content-Type: application/json
+>
+> {
+>   "message": "Job 'my-job' started"
+> }
+> ```
+
+**Response Errors**
+
+| HTTP Code | Message                      |
+| --------- | ---------------------------- |
+| 400       | Bad Request                  |
+| 401       | Invalid username or password |
+| 403       | Forbidden                    |
+| 404       | Not found                    |
+| 500       | Something Went Wrong         |
+
+---
+
+### `/schedule`/**`:jobName`**/`stop`
+
+Stops a scheduled job by name.
+
+**Endpoint**
+
+> **POST** /schedule/**`:jobName`**/stop
+
+**Path Parameters**
+
+| Name       | type   | Required | Description             |
+| ---------- | ------ | -------- | ----------------------- |
+| `:jobName` | string | Y        | name of the job to stop |
+
+**Example**
+
+> **Request**
+>
+> ```http
+> POST  http://127.0.0.1:3000/schedule/my-job/stop
+> ```
+>
+> **Response**
+>
+> ```http
+> HTTP/1.1 200 OK
+> Content-Type: application/json
+>
+> {
+>   "message": "Job 'my-job' stopped"
 > }
 > ```
 
