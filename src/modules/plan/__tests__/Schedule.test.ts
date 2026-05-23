@@ -35,14 +35,14 @@ describe("Schedule", () => {
 			await Schedule.Init()
 
 			expect(Schedule.Jobs.length).toBe(1)
-			expect(Schedule.Jobs[0]?.schedule).toBe("job1")
+			expect(Schedule.Jobs[0]?.name).toBe("job1")
 		})
 	})
 
 	describe("StopAll", () => {
 		it("should stop all registered jobs", () => {
 			const stopMock = vi.fn()
-			Schedule.Jobs = [{ schedule: "j1", cronJob: { stop: stopMock } as any }]
+			Schedule.Jobs = [{ name: "j1", cronJob: { stop: stopMock } as any }]
 
 			Schedule.StopAll()
 			expect(stopMock).toHaveBeenCalled()

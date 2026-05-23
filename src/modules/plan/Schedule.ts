@@ -56,7 +56,7 @@ export class Schedule {
 			)
 
 			Schedule.Jobs.push(<TSchedule>{
-				schedule: _jobName,
+				name: _jobName,
 				cronJob: _cronJob,
 			})
 		}
