@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 info:
   title: Metal Server API Docs
-  version: "0.3.1"
+  version: "0.5"
 
 components:
   schemas:
@@ -287,6 +287,32 @@ paths:
           $ref: '#/components/responses/DefaultError'
         200:
           description: Server reloaded
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /server/reload-plans:
+    post:
+      tags:
+        - Server
+      summary: Reload plans
+      description: Reloads all plans without restarting the server
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Plans reloaded
           content:
             application/json:
               schema:
@@ -639,6 +665,58 @@ paths:
             application/json:
               schema:
                 type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /plan/{plan}/metrics:
+    post:
+      summary: Get plan metrics
+      description: Returns execution metrics for a plan by name
+      tags:
+        - Plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: plan
+          schema:
+            type: string
+          required: true
+          description: Plan name
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Plan metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  planName:
+                    type: string
+                  startTime:
+                    type: string
+                    format: date-time
+                  endTime:
+                    type: string
+                    format: date-time
+                  durationMs:
+                    type: number
+                  status:
+                    type: string
+                  steps:
+                    type: array
+                    items:
+                      type: object
         400:
           $ref: "#/components/responses/http400"
         401:
