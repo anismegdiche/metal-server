@@ -31,11 +31,8 @@ export class PlanResponse {
 
 		Assert.Var<string>(plan, "plan is not defined")
 
-		try {
-			const intRes = PlansManager.GetPlanMetrics(plan)
-			Convert.InternalResponseToResponse(res, intRes)
-		} catch (error) {
-			ResponseHandler.ResponseError(res, error as HttpError)
-		}
+		PlansManager.GetPlanMetrics(plan)
+			.then((intRes) => Convert.InternalResponseToResponse(res, intRes))
+			.catch((error: HttpError) => ResponseHandler.ResponseError(res, error))
 	}
 }

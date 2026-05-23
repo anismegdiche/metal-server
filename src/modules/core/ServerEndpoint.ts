@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: !+ */
 //
 //
 //
@@ -20,6 +21,7 @@ import { SchemaRouter } from "./routes/SchemaRouter"
 import { ServerRouter } from "./routes/ServerRouter"
 import { UserRouter } from "./routes/UserRouter"
 import { ServerShutdown } from "./ServerShutdown"
+
 
 //
 export class ServerEndpoint {

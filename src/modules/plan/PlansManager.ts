@@ -118,7 +118,7 @@ export class PlansManager {
 	}
 
 	@Logger.LogFunction()
-	static GetPlanMetrics(planName: string): TInternalResponse<TJson> {
+	static async GetPlanMetrics(planName: string): Promise<TInternalResponse<TJson>> {
 		const plan = Plans.get(planName)
 		Assert.Var<Plan>(plan, `Plan '${planName}' not found`, new HttpErrorNotFound())
 
