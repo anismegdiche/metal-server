@@ -1,9 +1,12 @@
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: false positive */
 //
 //
 //
 import { HTTP_STATUS_CODE } from "./@consts"
 import type { TInternalResponse } from "./types/TInternalResponse"
 
+
+//
 export class HttpResponse {
 	static Ok<T>(data: T): TInternalResponse<T> {
 		return <TInternalResponse<T>>{
