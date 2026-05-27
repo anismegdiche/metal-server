@@ -6,27 +6,42 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import rateLimit from "express-rate-limit"
 import helmet from "helmet"
 import responseTime from "response-time"
-import { JsonUtils } from "../../utils/JsonUtils"
 //
+import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
 import { Swagger } from "../../utils/Swagger"
-import { Cache } from "../cache/Cache"
 import { HTTP_STATUS_CODE, ROUTE, SERVER } from "./@consts"
 import { ConfigManager } from "./ConfigManager"
-import { ResponseHandler } from "./ResponseHandler"
-import { CacheRouter } from "./routes/CacheRouter"
-import { PlanRouter } from "./routes/PlanRouter"
-import { ScheduleRouter } from "./routes/ScheduleRouter"
-import { SchemaRouter } from "./routes/SchemaRouter"
-import { ServerRouter } from "./routes/ServerRouter"
-import { UserRouter } from "./routes/UserRouter"
+import { ServerCore } from "./ServerCore"
 import { ServerShutdown } from "./ServerShutdown"
+import { ResponseHandler } from "./ResponseHandler"
+import { ServerRouter } from "./routes/ServerRouter"
 
 
 //
 export class ServerEndpoint {
 	static readonly Api: Express = express()
 	static Port: number
+
+	// Queue for module middleware registration
+	private static readonly _middlewareHooksQueue: Array<() => void> = []
+
+	static RegisterMiddleware(registrationFn: () => void): void {
+		ServerEndpoint._middlewareHooksQueue.push(registrationFn)
+	}
+
+	static ExecuteMiddlewareHooksQueue(): void {
+		ServerEndpoint._middlewareHooksQueue.forEach(fn => {
+			fn()
+		})
+	}
+
+	static RegisterServerMiddleware(): void {
+		ServerEndpoint.RegisterMiddleware(() => {
+			Logger.Info(`Route: Enabling API, URL= ${ROUTE.SERVER_PATH}`)
+			ServerEndpoint.Api.use(`${ROUTE.SERVER_PATH}/`, ResponseHandler.SetContentJson, ServerRouter)
+		})
+	}
 
 	static InitApi() {
 		ServerEndpoint.Port = ConfigManager.Get<number>("server.port")
@@ -60,33 +75,8 @@ export class ServerEndpoint {
 			res.status(HTTP_STATUS_CODE.OK).send(SERVER.BANNER)
 		})
 
-		// path: /user
-		if (ConfigManager.Get("server.authentication")) {
-			Logger.Info(`Route: Enabling API, URL= ${ROUTE.USER_PATH}`)
-			ServerEndpoint.Api.use(`${ROUTE.USER_PATH}/`, ResponseHandler.SetContentJson, UserRouter)
-		}
-
-		// path: /server
-		Logger.Info(`Route: Enabling API, URL= ${ROUTE.SERVER_PATH}`)
-		ServerEndpoint.Api.use(`${ROUTE.SERVER_PATH}/`, ResponseHandler.SetContentJson, ServerRouter)
-
-		// path: /schema
-		Logger.Info(`Route: Enabling API, URL= ${ROUTE.SCHEMA_PATH}`)
-		ServerEndpoint.Api.use(`${ROUTE.SCHEMA_PATH}/`, ResponseHandler.SetContentJson, SchemaRouter)
-
-		// path: /plan
-		Logger.Info(`Route: Enabling API, URL= ${ROUTE.PLAN_PATH}`)
-		ServerEndpoint.Api.use(`${ROUTE.PLAN_PATH}/`, ResponseHandler.SetContentJson, PlanRouter)
-
-		// path: /cache
-		if (Cache.IsEnabled) {
-			Logger.Info(`Route: Enabling API, URL= ${ROUTE.CACHE_PATH}`)
-			ServerEndpoint.Api.use(`${ROUTE.CACHE_PATH}/`, ResponseHandler.SetContentJson, CacheRouter)
-		}
-
-		// path: /schedule
-		Logger.Info(`Route: Enabling API, URL= ${ROUTE.SCHEDULE_PATH}`)
-		ServerEndpoint.Api.use(`${ROUTE.SCHEDULE_PATH}/`, ResponseHandler.SetContentJson, ScheduleRouter)
+		// Execute module middleware registration queue
+		ServerEndpoint.ExecuteMiddlewareHooksQueue()
 
 		// path: /api-docs
 		Logger.Info(`Route: Enabling Swagger UI, URL= ${ROUTE.SWAGGER_UI_PATH}`)

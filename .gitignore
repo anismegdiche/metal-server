@@ -9,7 +9,6 @@ node_modules/
 build/
 data/
 coverage/
-cache/
 tmp/data/
 tmp/models/
 dist/

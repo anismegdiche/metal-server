@@ -3,7 +3,7 @@ import type { Mock } from "vitest"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { HttpErrorInternalServerError } from "../../../errors/HttpErrors"
 import { HTTP_STATUS_CODE } from "../../@consts"
-import { SchemaResponse } from "../SchemaResponse"
+import { SchemaResponse } from "../../../schema/response/SchemaResponse"
 
 type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> }
 

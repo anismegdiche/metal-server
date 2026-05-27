@@ -1,0 +1,17 @@
+//
+//
+//
+import { Logger } from "../../utils/Logger"
+import { ROUTE } from "../core/@consts"
+import { ResponseHandler } from "../core/ResponseHandler"
+import { ServerEndpoint } from "../core/ServerEndpoint"
+import { SchemaRouter } from "./routes/SchemaRouter"
+
+
+//
+export function RegisterMiddleware(): void {
+	ServerEndpoint.RegisterMiddleware(() => {
+		Logger.Info(`Route: Enabling API, URL= ${ROUTE.SCHEMA_PATH}`)
+		ServerEndpoint.Api.use(`${ROUTE.SCHEMA_PATH}/`, ResponseHandler.SetContentJson, SchemaRouter)
+	})
+}

@@ -5,16 +5,16 @@ import type { Request, Response } from "express"
 //
 import { Convert } from "../../../utils/Convert"
 import { type HttpError, HttpErrorInternalServerError } from "../../errors/HttpErrors"
-import { Schema } from "../../schema/Schema"
+import { Schema } from "../Schema"
 import type {
 	TSchemaRequestDelete,
 	TSchemaRequestInsert,
 	TSchemaRequestSelect,
 	TSchemaRequestUpdate,
-} from "../../schema/types/TSchemaRequest"
-import { HTTP_STATUS_CODE } from "../@consts"
-import { RequestHandler } from "../RequestHandler"
-import { ResponseHandler } from "../ResponseHandler"
+} from "../types/TSchemaRequest"
+import { HTTP_STATUS_CODE } from "../../core/@consts"
+import { RequestHandler } from "../../core/RequestHandler"
+import { ResponseHandler } from "../../core/ResponseHandler"
 
 export class SchemaResponse {
 	static Select(req: Request, res: Response): void {

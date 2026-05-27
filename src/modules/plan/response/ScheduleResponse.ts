@@ -5,9 +5,9 @@ import type { Request, Response } from "express"
 import { Assert } from "../../../utils/Assert"
 //
 import { Convert } from "../../../utils/Convert"
-import { Schedule } from "../../plan/Schedule"
-import { RequestHandler } from "../RequestHandler"
-import { ResponseHandler } from "../ResponseHandler"
+import { Schedule } from "../Schedule"
+import { RequestHandler } from "../../core/RequestHandler"
+import { ResponseHandler } from "../../core/ResponseHandler"
 
 export class ScheduleResponse {
 	static Start(req: Request, res: Response) {

@@ -12,7 +12,11 @@ import { ServerRuntime } from "../ServerRuntime"
 
 vi.mock("../ConfigManager")
 vi.mock("../ConfigStore")
-vi.mock("../../schema/Schema")
+vi.mock("../../schema/Schema", () => ({
+	Schema: {
+		Init: vi.fn(),
+	},
+}))
 vi.mock("../../source/Source")
 vi.mock("../../source/DataProvider")
 vi.mock("../../cache/Cache", () => ({
@@ -24,7 +28,11 @@ vi.mock("../../cache/Cache", () => ({
 	},
 }))
 vi.mock("../../ai-engine/AiEngine")
-vi.mock("../../plan/PlansManager")
+vi.mock("../../plan/PlansManager", () => ({
+	PlansManager: {
+		Init: vi.fn(),
+	},
+}))
 vi.mock("../../plan/Schedule")
 vi.mock("../../auth/AuthProvider", () => ({
 	AuthProvider: {
@@ -56,6 +64,7 @@ describe("ServerCore", () => {
 				if (key === "server.response-limit") return "10mb"
 				return undefined
 			})
+			vi.spyOn(ServerCore, "LoadModuleHooks").mockResolvedValue()
 
 			await ServerCore.Init()
 
@@ -67,6 +76,8 @@ describe("ServerCore", () => {
 			expect(PlansManager.Init).toHaveBeenCalled()
 			expect(Schedule.Init).toHaveBeenCalled()
 			expect(AuthProvider.SetCurrent).toHaveBeenCalledWith("local")
+			expect(ServerEndpoint.RegisterMiddleware).toHaveBeenCalled()
+			expect(ServerCore.LoadModuleHooks).toHaveBeenCalled()
 			expect(ServerEndpoint.InitApi).toHaveBeenCalled()
 			expect(ServerRuntime.StartWatcher).toHaveBeenCalled()
 		})

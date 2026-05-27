@@ -4,10 +4,10 @@
 import type { Request, Response } from "express"
 //
 import { Convert } from "../../../utils/Convert"
-import { Cache } from "../../cache/Cache"
+import { Cache } from "../Cache"
 import type { HttpError } from "../../errors/HttpErrors"
-import { RequestHandler } from "../RequestHandler"
-import { ResponseHandler } from "../ResponseHandler"
+import { RequestHandler } from "../../core/RequestHandler"
+import { ResponseHandler } from "../../core/ResponseHandler"
 
 //
 export class CacheResponse {

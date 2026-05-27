@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: !+ */
 //
 //
 //
@@ -7,12 +7,12 @@ import type { Request, Response } from "express"
 import { Assert } from "../../../utils/Assert"
 import { Convert } from "../../../utils/Convert"
 import type { HttpError } from "../../errors/HttpErrors"
-import { PlansManager } from "../../plan/PlansManager"
-import { RequestHandler } from "../RequestHandler"
-import { ResponseHandler } from "../ResponseHandler"
+import { PlansManager } from "../PlansManager"
+import { RequestHandler } from "../../core/RequestHandler"
+import { ResponseHandler } from "../../core/ResponseHandler"
 
 export class PlanResponse {
-	static ReloadPlan(req: Request, res: Response): void {
+	static async ReloadPlan(req: Request, res: Response): Promise<void> {
 		RequestHandler.CheckRequest(req)
 
 		const { plan } = req.params
@@ -24,7 +24,7 @@ export class PlanResponse {
 			.catch((error: HttpError) => ResponseHandler.ResponseError(res, error))
 	}
 
-	static GetPlanMetrics(req: Request, res: Response): void {
+	static async GetPlanMetrics(req: Request, res: Response): Promise<void> {
 		RequestHandler.CheckRequest(req)
 
 		const { plan } = req.params

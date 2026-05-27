@@ -4,10 +4,10 @@
 //
 //
 import { Router } from "express"
-import { ResponseHandler } from "../ResponseHandler"
+import { ResponseHandler } from "../../core/ResponseHandler"
 import { ScheduleResponse } from "../response/ScheduleResponse"
 //
-import { UserResponse } from "../response/UserResponse"
+import { UserResponse } from "../../core/response/UserResponse"
 
 export const ScheduleRouter = Router()
 

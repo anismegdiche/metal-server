@@ -1,8 +1,10 @@
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: !+ */
 //
 //
 //
-
+import { readdirSync } from "node:fs"
 import os from "node:os"
+import path from "node:path"
 import type { LogLevelDesc } from "loglevel"
 //
 import { Convert } from "../../utils/Convert"
@@ -19,11 +21,14 @@ import { Schedule } from "../plan/Schedule"
 import { Schema } from "../schema/Schema"
 import { DataProvider } from "../source/DataProvider"
 import { Source } from "../source/Source"
+import { ROUTE } from "./@consts"
 import { ConfigManager } from "./ConfigManager"
 import { ConfigStore } from "./ConfigStore"
+import { ResponseHandler } from "./ResponseHandler"
+import { ServerRouter } from "./routes/ServerRouter"
 import { ServerEndpoint } from "./ServerEndpoint"
 import { ServerRuntime } from "./ServerRuntime"
-//
+
 
 //
 export class ServerCore {
@@ -31,6 +36,35 @@ export class ServerCore {
 	static readonly Cpus = os.cpus().length ?? 1
 	static readonly Memory = os.freemem()
 	static readonly Platform = process.platform
+
+	static RegisterServerMiddleware(): void {
+		ServerEndpoint.RegisterMiddleware(() => {
+			Logger.Info(`Route: Enabling API, URL= ${ROUTE.SERVER_PATH}`)
+			ServerEndpoint.Api.use(`${ROUTE.SERVER_PATH}/`, ResponseHandler.SetContentJson, ServerRouter)
+		})
+	}
+
+	@Logger.LogFunction()
+	static async LoadModuleHooks(): Promise<void> {
+		const modulesPath = path.join(__dirname, "..")
+		const moduleDirs = readdirSync(modulesPath, { withFileTypes: true })
+			.filter((dirent) => dirent.isDirectory())
+			.map((dirent) => dirent.name)
+
+		for (const moduleName of moduleDirs) {
+			const hookPath = path.join(modulesPath, moduleName, "_hook.ts")
+			try {
+				const hookModule = await import(hookPath)
+				if (hookModule.RegisterMiddleware && typeof hookModule.RegisterMiddleware === "function") {
+					Logger.Info(`Loading hook for module: ${moduleName}`)
+					hookModule.RegisterMiddleware()
+				}
+			} catch {
+				// Hook file doesn't exist or can't be loaded - that's fine
+				Logger.Debug(`No hook found for module: ${moduleName}`)
+			}
+		}
+	}
 
 	@Logger.LogFunction()
 	static async Init(): Promise<void> {
@@ -64,6 +98,13 @@ export class ServerCore {
 		await ServerCore.InitAuthentication()
 
 		ServerCore.InitResponse()
+
+		// Register server middleware
+		ServerCore.RegisterServerMiddleware()
+
+		// Load module hooks dynamically
+		await ServerCore.LoadModuleHooks()
+
 		ServerEndpoint.InitApi()
 		ServerRuntime.StartWatcher()
 	}
