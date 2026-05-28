@@ -1,4 +1,6 @@
 //
+/** biome-ignore-all lint/suspicious/noNonNullAssertedOptionalChain: <explanation> */
+/** biome-ignore-all lint/style/noNonNullAssertion: <explanation> */
 import { DataBase } from "../../../types/DataBase"
 import { DataTable } from "../../../types/DataTable"
 import { Cache } from "../../cache/Cache"
@@ -121,7 +123,7 @@ describe("MemoryData", () => {
 			data: testRows,
 		}
 
-		Cache.Remove = vi.fn(async () => {})
+		Cache.Remove = vi.fn(async () => { })
 
 		const response = await memoryData.Insert(schemaRequest)
 		const resultRows = await memoryData.Connection?.Tables[testEntity]?.Rows()
@@ -167,7 +169,7 @@ describe("MemoryData", () => {
 			data: updatedRows,
 		}
 
-		vi.spyOn(Cache, "Remove").mockImplementation(async () => {})
+		vi.spyOn(Cache, "Remove").mockImplementation(async () => { })
 		vi.spyOn(memoryData.Connection?.Tables[testEntity]!, "FreeSql").mockResolvedValue(
 			new DataTable(testEntity, [
 				{
@@ -215,7 +217,7 @@ describe("MemoryData", () => {
 			filter: { id: 1 },
 		}
 
-		vi.spyOn(Cache, "Remove").mockImplementation(async () => {})
+		vi.spyOn(Cache, "Remove").mockImplementation(async () => { })
 		vi.spyOn(memoryData.Connection?.Tables[testEntity]!, "FreeSql").mockResolvedValue(
 			new DataTable(testEntity, [
 				{

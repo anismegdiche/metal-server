@@ -1,10 +1,11 @@
-//
 /** biome-ignore-all lint/complexity/noStaticOnlyClass: This is a utility class with only static methods */
+//
 //
 //
 import type z from "zod"
 import { HttpError, HttpErrorInternalServerError } from "../modules/errors/HttpErrors"
 import { Logger } from "./Logger"
+
 
 //
 export class Assert {
@@ -73,5 +74,29 @@ export class Assert {
 			_httpError.message = `${Logger.Out} ${messageOrHttpError as string}`
 			throw _httpError
 		}
+	}
+
+	// Overload: check undefined
+	static Get<T>(variable: unknown, message: string, httpError?: HttpError): T
+	// Overload: check condition manually
+	static Get<T>(variable: unknown, condition: boolean, message: string, httpError?: HttpError): T
+	// Overload: check with runtime type guard
+	static Get<T>(variable: unknown, guard: (v: unknown) => v is T, message: string, httpError?: HttpError): T
+	static Get<T>(
+		variable: unknown,
+		conditionOrMessageOrGuard: boolean | string | ((v: unknown) => v is T),
+		messageOrHttpError?: string | HttpError,
+		httpError?: HttpError,
+	): T {
+		if (typeof conditionOrMessageOrGuard === "string") {
+			Assert.Var(variable, conditionOrMessageOrGuard, httpError)
+			return variable as T
+		}
+		if (typeof conditionOrMessageOrGuard === "function") {
+			Assert.Var(variable, conditionOrMessageOrGuard, messageOrHttpError as string, httpError)
+			return variable as T
+		}
+		Assert.Var(variable, conditionOrMessageOrGuard as boolean, messageOrHttpError as string, httpError)
+		return variable as T
 	}
 }

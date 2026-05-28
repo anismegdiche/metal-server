@@ -2163,4 +2163,43 @@ describe("RowMarkForDeletion and CleanForDeletion", () => {
 		expect(remainingRows[2]).toMatchObject({ id: 3, name: "Charlie" })
 		expect(remainingRows[3]).toMatchObject({ id: 4, name: "David" })
 	})
+
+	// describe("MoveToDisk", () => {
+	// 	it("should successfully move in-memory DataTable to disk", async () => {
+	// 		const data = new DataTable("move_test_table")
+	// 		await data.RowsSet([
+	// 			{ id: 10, val: "X" },
+	// 			{ id: 20, val: "Y" },
+	// 		])
+
+	// 		// Verify it starts in-memory
+	// 		expect((data as any)._persistent).toBeFalsy()
+	// 		expect(fs.existsSync((data as any)._dbPath)).toBeFalsy()
+
+	// 		// Call MoveToDisk
+	// 		await data.MoveToDisk()
+
+	// 		// Verify it is now persistent
+	// 		expect((data as any)._persistent).toBeTruthy()
+	// 		expect(fs.existsSync((data as any)._dbPath)).toBeTruthy()
+
+	// 		// Verify the rows are preserved correctly
+	// 		const rows = await data.Rows()
+	// 		expect(rows).toHaveLength(2)
+	// 		expect(rows[0]).toMatchObject({ id: 10, val: "X" })
+	// 		expect(rows[1]).toMatchObject({ id: 20, val: "Y" })
+
+	// 		// Verify inserting new rows works on disk
+	// 		await data.RowsAdd({ id: 30, val: "Z" })
+	// 		const count = await data.Count()
+	// 		expect(count).toBe(3)
+
+	// 		const allRows = await data.Rows()
+	// 		expect(allRows[2]).toMatchObject({ id: 30, val: "Z" })
+
+	// 		// Clean up
+	// 		data.Dispose()
+	// 		expect(fs.existsSync((data as any)._dbPath)).toBeFalsy()
+	// 	})
+	// })
 })

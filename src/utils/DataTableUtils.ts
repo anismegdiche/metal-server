@@ -1,21 +1,22 @@
 
+
 /** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
 //
 
-import DataType, { DuckDBScalarFunction } from "@duckdb/node-api"
-import { omit } from "lodash-es"
 import { randomUUID } from "node:crypto"
 import fs from "node:fs"
+import DataType, { DuckDBScalarFunction } from "@duckdb/node-api"
+import { omit } from "lodash-es"
 //
 import {
-	dataTable_convertSql,
 	DATATABLE_TEMP_PATH,
+	type DataTable,
+	dataTable_convertSql,
 	duckDb_Sql_CreateTable,
 	duckDb_Sql_DropTable,
 	duckDb_Sql_RenameTable,
-	type DataTable,
 	type TRow,
 } from "../types/DataTable"
 import { DT_SYS_FIELDS } from "../types/DataTableTypes"
@@ -60,8 +61,7 @@ export class DataTableUtils {
 	@Logger.LogFunction(true)
 	static async PrefixAllFields(dt: DataTable, prefix: string): Promise<DataTable> {
 		// transform every row in DB by prefixing field names (done inside DuckDB)
-		await dt._dbEnsureInitialized()
-		const conn = dt._duckConnection!
+		const conn = await dt.DuckConnection()
 
 		// ensure prefix ends with dot like your original code did: `${prefix}.${k}`
 		const normalizedPrefix = prefix.endsWith(".") ? prefix : `${prefix}.`
@@ -114,9 +114,7 @@ export class DataTableUtils {
 
 	@Logger.LogFunction(true)
 	static async LeftJoin(dtA: DataTable, dtB: DataTable, leftField: string, rightField: string): Promise<DataTable> {
-		await dtA._dbEnsureInitialized()
-		await dtB._dbEnsureInitialized()
-		const conn = dtA._duckConnection!
+		const conn = await dtA.DuckConnection()
 
 		// Create result table
 		const resultTable = `result`
@@ -177,9 +175,7 @@ export class DataTableUtils {
 
 	@Logger.LogFunction(true)
 	static async InnerJoin(dtA: DataTable, dtB: DataTable, leftField: string, rightField: string): Promise<DataTable> {
-		await dtA._dbEnsureInitialized()
-		await dtB._dbEnsureInitialized()
-		const conn = dtA._duckConnection!
+		const conn = await dtA.DuckConnection()
 
 		// Create result table
 		const resultTable = `result`
@@ -237,9 +233,7 @@ export class DataTableUtils {
 
 	@Logger.LogFunction(true)
 	static async RightJoin(dtA: DataTable, dtB: DataTable, leftField: string, rightField: string): Promise<DataTable> {
-		await dtA._dbEnsureInitialized()
-		await dtB._dbEnsureInitialized()
-		const conn = dtA._duckConnection!
+		const conn = await dtA.DuckConnection()
 
 		// Create result table
 		const resultTable = `result`
@@ -300,9 +294,7 @@ export class DataTableUtils {
 
 	@Logger.LogFunction(true)
 	static async FullOuterJoin(dtA: DataTable, dtB: DataTable, leftField: string, rightField: string): Promise<DataTable> {
-		await dtA._dbEnsureInitialized()
-		await dtB._dbEnsureInitialized()
-		const conn = dtA._duckConnection!
+		const conn = await dtA.DuckConnection()
 
 		// Create result table
 		const resultTable = `result`
@@ -375,9 +367,7 @@ export class DataTableUtils {
 
 	@Logger.LogFunction(true)
 	static async CrossJoin(dtA: DataTable, dtB: DataTable): Promise<DataTable> {
-		await dtA._dbEnsureInitialized()
-		await dtB._dbEnsureInitialized()
-		const conn = dtA._duckConnection!
+		const conn = await dtA.DuckConnection()
 
 		// Create result table
 		const resultTable = `result`
@@ -437,11 +427,12 @@ export class DataTableUtils {
 		strategy: string = REMOVE_DUPLICATES_STRATEGY.FIRST,
 		condition: string | undefined = undefined,
 	): Promise<DataTable> {
-		await dt._dbEnsureInitialized()
-		const conn = dt._duckConnection!
+		const conn = await dt.DuckConnection()
 
 		// If no fields specified, use all fields from the first row
-		const _fields = fields && fields.length > 0 ? fields : dt.GetFieldNames()
+		const _fields = (fields && fields.length > 0)
+			? fields
+			: dt.GetFieldNames()
 
 		// Skip if no fields to deduplicate on
 		if (_fields.length === 0) {
@@ -565,8 +556,7 @@ export class DataTableUtils {
 			aFields = dt.GetFieldNames() ?? []
 		}
 
-		await dt._dbEnsureInitialized()
-		const cnx = dt._duckConnection!
+		const cnx = await dt.DuckConnection()
 
 		const anonymizeFnName = "anonymize"
 
@@ -645,8 +635,7 @@ export class DataTableUtils {
 			`Field ${on} not found in destination table`
 		)
 
-		await source._dbEnsureInitialized()
-		const conn = source._duckConnection!
+		const conn = await source.DuckConnection()
 
 		const addedName = `added`
 		const deletedName = `deleted`
@@ -759,11 +748,9 @@ export class DataTableUtils {
 
 	@Logger.LogFunction(true)
 	static async SetFromDataTable(target: DataTable, source: DataTable): Promise<DataTable> {
-		await source._dbEnsureInitialized()
-		await target._dbEnsureInitialized()
 
-		const sourceConn = source._duckConnection!
-		const targetConn = target._duckConnection!
+		const sourceConn = await source.DuckConnection()
+		const targetConn = await target.DuckConnection()
 
 		// Use a temp file for transfer to avoid memory pressure
 		const tempFile = StringUtils.Path(DATATABLE_TEMP_PATH, `${randomUUID()}.parquet`)
@@ -820,7 +807,7 @@ export class DataTableUtils {
 	// @Logger.LogFunction(true)
 	// async Transpose(renamedColumns?: string[]): Promise<this> {
 	//     await this._dbEnsureInitialized()
-	//     const conn = this._duckConnection!
+	//     const conn = this.DuckConnection()
 	//     const tableName = this._safeName()
 
 	//     // Get all column names excluding internal ones
