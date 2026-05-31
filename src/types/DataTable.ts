@@ -6,6 +6,7 @@ import { cpus } from "node:os"
 import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
 //
 import { SERVER } from "../modules/core/@consts"
+import { HttpErrorBadRequest, HttpErrorNotFound } from "../modules/errors/HttpErrors"
 import { Assert } from "../utils/Assert"
 import { clsClonable } from "../utils/base/clsClonable"
 import { JsonUtils } from "../utils/JsonUtils"
@@ -17,12 +18,11 @@ import { SQL_TYPE, SqlQueryUtils } from "../utils/SqlQueryUtils"
 import { StringUtils } from "../utils/StringUtils"
 import { TypeUtils } from "../utils/TypeUtils"
 import { Utils } from "../utils/Utils"
-import type { TFields, TMetaData, TOrderBy, TRow, } from "./DataTableTypes"
-import { DT_SYS_FIELDS, SORT_ORDER, z_SORT_ORDER, z_TOrderBy, z_TRow, } from "./DataTableTypes"
+import type { TFields, TMetaData, TOrderBy, TRow, TSnapshotInfo } from "./DataTableTypes"
+import { DT_SYS_FIELDS, SORT_ORDER, z_SORT_ORDER, z_TOrderBy, z_TRow } from "./DataTableTypes"
 import type { TAny } from "./TAny"
 import type { TJson } from "./TJson"
 import type { TUuidv7 } from "./TUuidv7"
-
 
 // constants
 export { SORT_ORDER }
@@ -31,7 +31,7 @@ export const DATATABLE_SYS_FIELDS: string[] = Object.values(DT_SYS_FIELDS)
 export const DATATABLE_TEMP_PATH = StringUtils.Path(SERVER.TEMP_PATH, "data")
 
 // types
-export type { TFields, TMetaData, TOrderBy, TRow }
+export type { TFields, TMetaData, TOrderBy, TRow, TSnapshotInfo }
 // schemas
 export { z_SORT_ORDER, z_TOrderBy, z_TRow }
 
@@ -412,20 +412,14 @@ class LazyResult<T> {
 }
 
 export class DataTable extends clsClonable {
-	// static
-
-	@Logger.LogFunction(true)
-	static Is(dataTable: unknown): dataTable is DataTable {
-		return dataTable instanceof DataTable
-	}
-
 	Name: string
 	MetaData: TMetaData = {}
+	SnapShots: Map<string, TSnapshotInfo> = new Map()
 	BatchSize: number
 
 	private _fields: TFields = {}
 	private _duckInstance?: DuckDBInstance
-	_duckConnection?: DuckDBConnection
+	private _duckConnection?: DuckDBConnection
 	private _tableInitialized: boolean = false
 	private _dbPath?: string
 	private _persistent?: boolean
@@ -436,6 +430,13 @@ export class DataTable extends clsClonable {
 	private _rows?: TRow[]
 	private _isAttached: boolean = false
 	private _isDisposed: boolean = false
+
+	// static
+	@Logger.LogFunction(true)
+	static Is(dataTable: unknown): dataTable is DataTable {
+		return dataTable instanceof DataTable
+	}
+	//
 
 	constructor(
 		name?: string,
@@ -475,6 +476,7 @@ export class DataTable extends clsClonable {
 		if (this._isDisposed) return
 
 		this.MetaData = {}
+		this.SnapShots.clear()
 
 		if (this._isAttached) {
 			this._duckConnection?.run(duckDb_Sql_DropTable(this.Name))
@@ -519,8 +521,8 @@ export class DataTable extends clsClonable {
 
 	async DuckConnection(): Promise<DuckDBConnection> {
 		return this._dbEnsureInitialized()
-			.then(() => {
-				return this._duckConnection as DuckDBConnection
+			.then(() => {				
+				return Assert.Get<DuckDBConnection>(this._duckConnection,`data '${this.Name}': DB Connection is not initialized`)
 			})
 	}
 
@@ -576,6 +578,27 @@ export class DataTable extends clsClonable {
 		// create table
 		await cnx.run(duckDb_Sql_DropTable(this.Name))
 		await cnx.run(duckDb_Sql_CreateTable(this.Name))
+
+		// create __snapshots__ catalog table if not exists
+		await cnx.run(`
+			CREATE TABLE IF NOT EXISTS ${duckDb_Sql_SafeName("__snapshots__")} (
+				name TEXT PRIMARY KEY,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			)
+		`)
+
+		// hydrate in-memory SnapShots cache from catalog
+		this.SnapShots.clear()
+		const snapReader = await cnx.runAndReadAll(
+			`SELECT name, created_at FROM ${duckDb_Sql_SafeName("__snapshots__")} ORDER BY created_at`,
+		)
+		for (const row of snapReader.getRowObjects()) {
+			const name = row.name as string
+			this.SnapShots.set(name, {
+				name,
+				created_at: new Date(`${(row.created_at as string).replace(" ", "T")}Z`),
+			})
+		}
 
 		this._tableInitialized = true
 
@@ -965,8 +988,6 @@ export class DataTable extends clsClonable {
 			safeName: this.SafeName,
 		})
 
-		await this._dbEnsureInitialized()
-
 		const lazy = new LazyResult<TRow>(
 			await this.DuckConnection(),
 			sql,
@@ -1047,7 +1068,8 @@ export class DataTable extends clsClonable {
 
 		const _condition = condition ? `WHERE ${dataTable_convertSql(condition)}` : ""
 
-		await cnx.run(`
+		await cnx.run(
+			`
 			UPDATE 
 				${this.SafeName}
 			SET 
@@ -1380,6 +1402,106 @@ export class DataTable extends clsClonable {
 
 		return Promise.all(promises)
 	}
+
+	// Snapshots
+
+	@Logger.LogFunction(true)
+	async SnapshotSave(name: string): Promise<this> {
+		if (!name) throw new HttpErrorBadRequest("Snapshot name must not be empty")
+
+		const cnx = await this.DuckConnection()
+
+		if (this.SnapShots.has(name)) {
+			throw new HttpErrorBadRequest(`Snapshot '${name}' already exists`)
+		}
+
+		const snapTableRaw = `__snapshot_${name}`
+		const snapTableSafe = duckDb_Sql_SafeName(snapTableRaw)
+
+		await cnx.run(duckDb_Sql_DropTable(snapTableRaw))
+		await cnx.run(duckDb_Sql_CreateTable(snapTableRaw))
+
+		await cnx.run(`
+			INSERT INTO ${snapTableSafe}
+			SELECT * FROM ${this.SafeName}
+		`)
+
+		await cnx.run(
+			`
+			INSERT INTO ${duckDb_Sql_SafeName("__snapshots__")} (name)
+			VALUES (?)
+		`,
+			[name],
+		)
+
+		const info: TSnapshotInfo = {
+			name,
+			created_at: new Date(),
+		}
+		this.SnapShots.set(name, info)
+
+		return this
+	}
+
+	@Logger.LogFunction(true)
+	async SnapshotLoad(name: string): Promise<this> {
+		if (!name) throw new HttpErrorBadRequest("Snapshot name must not be empty")
+		if (!this.SnapShots.has(name)) {
+			throw new HttpErrorNotFound(`Snapshot '${name}' not found`)
+		}
+
+		const snapTableRaw = `__snapshot_${name}`
+		const snapTableSafe = duckDb_Sql_SafeName(snapTableRaw)
+		const cnx = await this.DuckConnection()
+
+		await cnx.run(`DELETE FROM ${this.SafeName}`)
+		await cnx.run(`
+			INSERT INTO ${this.SafeName}
+			SELECT * FROM ${snapTableSafe}
+		`)
+
+		await this.FieldsSet()
+
+		return this
+	}
+
+	@Logger.LogFunction(true)
+	async SnapshotDelete(name: string): Promise<this> {
+		if (!name) throw new HttpErrorBadRequest("Snapshot name must not be empty")
+		if (!this.SnapShots.has(name)) {
+			throw new HttpErrorNotFound(`Snapshot '${name}' not found`)
+		}
+
+		const snapTableRaw = `__snapshot_${name}`
+		const cnx = await this.DuckConnection()
+
+		await cnx.run(duckDb_Sql_DropTable(snapTableRaw))
+
+		await cnx.run(
+			`
+			DELETE FROM ${duckDb_Sql_SafeName("__snapshots__")}
+			WHERE name = ?
+		`,
+			[name],
+		)
+
+		this.SnapShots.delete(name)
+
+		return this
+	}
+
+	@Logger.LogFunction(true)
+	async SnapshotList(): Promise<TSnapshotInfo[]> {
+		return Array.from(this.SnapShots.values())
+		.sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
+	}
+
+	@Logger.LogFunction(true)
+	SnapshotExists(name: string): boolean {
+		return this.SnapShots.has(name)
+	}
+
+	// MoveToDisk
 
 	@Logger.LogFunction(true)
 	async MoveToDisk() {

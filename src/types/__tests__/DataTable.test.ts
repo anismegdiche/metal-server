@@ -1,6 +1,11 @@
+/** biome-ignore-all lint/complexity/noExcessiveCognitiveComplexity: !+ */
+/** biome-ignore-all lint/suspicious/noExplicitAny: !+ */
+/** biome-ignore-all lint/style/noNonNullAssertion: !+ */
+
 import fs from "node:fs"
-import { beforeEach, describe, expect, it } from "vitest"
 import { DuckDBInstance } from "@duckdb/node-api"
+import { beforeEach, describe, expect, it } from "vitest"
+import { HttpErrorBadRequest, HttpErrorNotFound } from "../../modules/errors/HttpErrors"
 import { StringUtils } from "../../utils/StringUtils"
 import { Utils } from "../../utils/Utils"
 import type { TRow } from "../DataTable"
@@ -249,7 +254,7 @@ describe("DataTable", () => {
 
 			const count_after = (await cnx.runAndReadAll(`SHOW TABLES;`)).getRowObjects().length
 
-			expect(count_after).toEqual(total)
+			expect(count_after).toEqual(total + 1) // +1 for __snapshots__ catalog
 
 			for (let i = 0; i < total; i++) {
 				const rows = await tables[i]?.Rows()
@@ -523,7 +528,7 @@ describe("DataTable", () => {
 				age: "number",
 			})
 		})
-		
+
 		it("should replace existing rows in the table", async () => {
 			await dt.RowsSet([
 				{
@@ -551,7 +556,7 @@ describe("DataTable", () => {
 			])
 
 			expect(await dt.Count()).toEqual(1)
-			
+
 			expect(await dt.Rows()).toEqual([
 				{
 					name: "Doe",
@@ -2202,4 +2207,110 @@ describe("RowMarkForDeletion and CleanForDeletion", () => {
 	// 		expect(fs.existsSync((data as any)._dbPath)).toBeFalsy()
 	// 	})
 	// })
+})
+
+describe("Snapshots", () => {
+	let snapDt: DataTable
+
+	beforeEach(async () => {
+		snapDt = new DataTable("snap_test")
+		await snapDt.RowsSet([
+			{ name: "Alice", age: 25 },
+			{ name: "Bob", age: 30 },
+		])
+	})
+
+	it("should save a snapshot", async () => {
+		await snapDt.SnapshotSave("snap1")
+		expect(snapDt.SnapshotExists("snap1")).toBe(true)
+		const list = await snapDt.SnapshotList()
+		expect(list).toHaveLength(1)
+		expect(list[0]?.name).toBe("snap1")
+	})
+
+	it("should reject empty snapshot name", async () => {
+		await expect(snapDt.SnapshotSave("")).rejects.toThrow(HttpErrorBadRequest)
+		await expect(snapDt.SnapshotLoad("")).rejects.toThrow(HttpErrorBadRequest)
+		await expect(snapDt.SnapshotDelete("")).rejects.toThrow(HttpErrorBadRequest)
+	})
+
+	it("should reject duplicate snapshot save", async () => {
+		await snapDt.SnapshotSave("snap1")
+		await expect(snapDt.SnapshotSave("snap1")).rejects.toThrow(HttpErrorBadRequest)
+	})
+
+	it("should reject loading a non-existent snapshot", async () => {
+		await expect(snapDt.SnapshotLoad("nonexistent")).rejects.toThrow(HttpErrorNotFound)
+	})
+
+	it("should reject deleting a non-existent snapshot", async () => {
+		await expect(snapDt.SnapshotDelete("nonexistent")).rejects.toThrow(HttpErrorNotFound)
+	})
+
+	it("should load a snapshot restoring original data", async () => {
+		await snapDt.SnapshotSave("snap1")
+
+		await snapDt.RowsSet([{ name: "Charlie", age: 35 }])
+		expect(await snapDt.Count()).toBe(1)
+
+		await snapDt.SnapshotLoad("snap1")
+		expect(await snapDt.Count()).toBe(2)
+		const rows = await snapDt.Rows()
+		expect(rows[0]).toMatchObject({ name: "Alice", age: 25 })
+		expect(rows[1]).toMatchObject({ name: "Bob", age: 30 })
+	})
+
+	it("should delete a snapshot", async () => {
+		await snapDt.SnapshotSave("snap1")
+		expect(snapDt.SnapshotExists("snap1")).toBe(true)
+
+		await snapDt.SnapshotDelete("snap1")
+		expect(snapDt.SnapshotExists("snap1")).toBe(false)
+		const list = await snapDt.SnapshotList()
+		expect(list).toHaveLength(0)
+	})
+
+	it("should list multiple snapshots in creation order", async () => {
+		const dt = new DataTable("snap_list_test")
+		await dt.RowsSet([{ x: 1 }])
+		await dt.SnapshotSave("first")
+		await dt.RowsAdd({ x: 2 })
+		await dt.SnapshotSave("second")
+
+		const list = await dt.SnapshotList()
+		expect(list).toHaveLength(2)
+		expect(list[0]?.name).toBe("first")
+		expect(list[1]?.name).toBe("second")
+	})
+
+	it("should return SnapshotExists false for non-existent snapshot", async () => {
+		expect(snapDt.SnapshotExists("nope")).toBe(false)
+	})
+
+	it("should handle multiple saves and loads independently", async () => {
+		const dt = new DataTable("snap_independent_test")
+		await dt.RowsSet([{ v: 1 }])
+		await dt.SnapshotSave("s1")
+		await dt.RowsSet([{ v: 2 }])
+		await dt.SnapshotSave("s2")
+
+		await dt.SnapshotLoad("s1")
+		expect(await dt.Rows()).toMatchObject([{ v: 1 }])
+
+		await dt.SnapshotLoad("s2")
+		expect(await dt.Rows()).toMatchObject([{ v: 2 }])
+
+		await dt.SnapshotDelete("s1")
+		await dt.SnapshotDelete("s2")
+		expect(await dt.SnapshotList()).toHaveLength(0)
+	})
+
+	it("should report correct TSnapshotInfo shape", async () => {
+		await snapDt.SnapshotSave("info_test")
+		const list = await snapDt.SnapshotList()
+		expect(list[0]).toHaveProperty("name")
+		expect(list[0]).toHaveProperty("created_at")
+		expect(list[0]?.created_at).toBeInstanceOf(Date)
+		expect(typeof list[0]?.name).toBe("string")
+	})
 })

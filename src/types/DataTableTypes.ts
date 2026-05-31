@@ -8,7 +8,6 @@ import { z_T_JsPattern } from "./T_JsPattern"
 import { type TJson, z_TJson } from "./TJson"
 import { z_TUuidv7 } from "./TUuidv7"
 
-
 // Constants
 export enum SORT_ORDER {
 	ASC = "asc",
@@ -20,7 +19,7 @@ export enum DT_SYS_FIELDS {
 	idx = "__idx__",
 	data = "__data__",
 	deleted = "__deleted__",
-	created_at = "__created_at__"
+	created_at = "__created_at__",
 }
 
 // Schemas
@@ -48,6 +47,11 @@ export const z_TRow = z_TJson
 			[DT_SYS_FIELDS.created_at]: z.date().optional(),
 		}),
 	)
+
+export type TSnapshotInfo = {
+	name: string
+	created_at: Date
+}
 
 // Types
 export type TRow = z.infer<typeof z_TRow>

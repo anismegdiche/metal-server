@@ -1,5 +1,3 @@
-
-
 /** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
 //
 //
@@ -530,7 +528,9 @@ export class DataTableUtils {
 
 			// Replace the original table with the deduplicated data
 			await conn.run(`DELETE FROM ${dt.SafeName}`)
-			await conn.run(`INSERT INTO ${dt.SafeName}(${DT_SYS_FIELDS.data}) SELECT ${DT_SYS_FIELDS.data} FROM ${tempTableName}`)
+			await conn.run(
+				`INSERT INTO ${dt.SafeName}(${DT_SYS_FIELDS.data}) SELECT ${DT_SYS_FIELDS.data} FROM ${tempTableName}`,
+			)
 		} catch (error) {
 			Logger.Error(`${Logger.Out} DataTableUtils.RemoveDuplicates: Failed to remove duplicates: ${error}`)
 			throw error
@@ -632,7 +632,7 @@ export class DataTableUtils {
 
 		Assert.Condition(
 			Object.keys(destination.Fields).includes(on) || (await destination.Count()) === 0,
-			`Field ${on} not found in destination table`
+			`Field ${on} not found in destination table`,
 		)
 
 		const conn = await source.DuckConnection()
