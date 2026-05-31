@@ -1,38 +1,42 @@
 {
-  "todo-tree.tree.showCountsInTree": true,
-  "todo-tree.tree.scanMode": "workspace",
-  "prettier.singleQuote": false,
-  "sonarlint.connectedMode.project": {
-    "connectionId": "anismegdiche",
-    "projectKey": "anismegdiche_metal-server"
-  },
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
-  "eslint.workingDirectories": [{ "mode": "auto" }],
-  "editor.codeActionsOnSave": {
-    
-    "source.fixAll.eslint": "always"
-  },
-  "errorLens.alignMessage": {
-    "start": 0,
-    "end": 0,
-    "minimumMargin": 4,
-    "padding": [0, 0],
-    "useFixedPosition": false
-  },
-  "errorLens.codeLensEnabled": false,
-  "errorLens.codeLensTemplate": "$severity $message",
-  "errorLens.messageBackgroundMode": "line",
-  "errorLens.messageEnabled": true,
-  "errorLens.problemRangeDecorationEnabled": true,
-  "errorLens.removeLinebreaks": false,
-  "errorLens.statusBarColorsEnabled": true,
-  "errorLens.statusBarIconsEnabled": true,
-  "snyk.advanced.autoSelectOrganization": false,
-  "vitest.applyDiagnostic": true,
-  "codium.codeCompletion.enable": false
+	"todo-tree.tree.showCountsInTree": true,
+	"todo-tree.tree.scanMode": "workspace",
+	"editor.codeActionsOnSave": {
+		"source.fixAll.biome": "always"
+	},
+	"errorLens.alignMessage": {
+		"start": 0,
+		"end": 0,
+		"minimumMargin": 4,
+		"padding": [0, 0],
+		"useFixedPosition": false
+	},
+	"errorLens.codeLensEnabled": false,
+	"errorLens.codeLensTemplate": "$severity $message",
+	"errorLens.messageBackgroundMode": "line",
+	"errorLens.messageEnabled": true,
+	"errorLens.problemRangeDecorationEnabled": true,
+	"errorLens.removeLinebreaks": false,
+	"errorLens.statusBarColorsEnabled": true,
+	"errorLens.statusBarIconsEnabled": true,
+	"vitest.applyDiagnostic": true,
+	"codium.codeCompletion.enable": false,
+	"[javascript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[javascriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	}
 }
