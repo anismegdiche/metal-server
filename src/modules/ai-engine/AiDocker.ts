@@ -1,6 +1,5 @@
-
 //
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: class contains only static methods as a utility/manager namespace */
 //
 //
 
@@ -63,29 +62,25 @@ export class AiDocker {
 			AiDocker.docker = new Docker(_dockerOptions)
 			Logger.Info(`${Logger.Out} Docker client initialized`)
 
-			await AiDocker.docker.ping()
-				.catch((e) => {
-					throw new HttpErrorInternalServerError(`Docker daemon is unreachable: ${e.message}`)
-				})
+			await AiDocker.docker.ping().catch((e) => {
+				throw new HttpErrorInternalServerError(`Docker daemon is unreachable: ${e.message}`)
+			})
 			Logger.Info(`${Logger.Out} Docker daemon is reachable`)
 
 			if (!isBuildMode) {
 				Logger.Info(`${Logger.In} Starting AI Engine stack manager`)
 
-				await AiDocker.CleanStack()
-					.catch((e) => {
-						throw new HttpErrorInternalServerError(`Unable to clean stack: ${e.message}`)
-					})
+				await AiDocker.CleanStack().catch((e) => {
+					throw new HttpErrorInternalServerError(`Unable to clean stack: ${e.message}`)
+				})
 
-				await AiDocker.CreateNetwork()
-					.catch((e) => {
-						throw new HttpErrorInternalServerError(`Unable to create network: ${e.message}`)
-					})
+				await AiDocker.CreateNetwork().catch((e) => {
+					throw new HttpErrorInternalServerError(`Unable to create network: ${e.message}`)
+				})
 
-				await AiDocker.StartCaddy()
-					.catch((e) => {
-						throw new HttpErrorInternalServerError(`Unable to start reverse proxy: ${e.message}`)
-					})
+				await AiDocker.StartCaddy().catch((e) => {
+					throw new HttpErrorInternalServerError(`Unable to start reverse proxy: ${e.message}`)
+				})
 
 				AiDocker.StartScaler()
 
@@ -185,21 +180,17 @@ export class AiDocker {
 			},
 		})
 
-		const promisesNetworks = networks.map(
-			(network) =>
-				new Promise<void>(async (resolve, reject) => {
-					try {
-						Logger.Info(`${Logger.In} Removing docker network '${network.Name}'...`)
-						const n = AiDocker.docker.getNetwork(network.Id)
-						await n.remove()
-						Logger.Info(`${Logger.Out} Removed docker network '${network.Name}'`)
-						resolve()
-					} catch (e: unknown) {
-						Logger.Error((e as Error).message)
-						reject(e)
-					}
-				}),
-		)
+		const promisesNetworks = networks.map(async (network) => {
+			try {
+				Logger.Info(`${Logger.In} Removing docker network '${network.Name}'...`)
+				const n = AiDocker.docker.getNetwork(network.Id)
+				await n.remove()
+				Logger.Info(`${Logger.Out} Removed docker network '${network.Name}'`)
+			} catch (e: unknown) {
+				Logger.Error((e as Error).message)
+				throw e
+			}
+		})
 
 		await Promise.allSettled(promisesNetworks)
 
@@ -211,8 +202,8 @@ export class AiDocker {
 		try {
 			await AiDocker.docker.createNetwork({ Name: DOCKER.AI_NETWORK })
 			Logger.Info(`Docker network created: ${DOCKER.AI_NETWORK}`)
-		} catch (e: any) {
-			if (e.statusCode === 409) {
+		} catch (e: unknown) {
+			if (e && typeof e === "object" && "statusCode" in e && e.statusCode === 409) {
 				Logger.Info(`Docker network already exists: ${DOCKER.AI_NETWORK}`)
 			} else {
 				throw e
@@ -221,112 +212,105 @@ export class AiDocker {
 	}
 
 	@Logger.LogFunction()
-	static async PullImage(image: string) {
+	static async PullImage(image: string): Promise<void> {
+		const stream = await AiDocker.docker.pull(image)
 		return new Promise<void>((resolve, reject) => {
-			AiDocker.docker.pull(image, (err: any, stream: any) => {
-				if (err) {
-					Logger.Error(`Error pulling image ${image}: ${err.message}`)
-					return reject(err)
-				}
-
-				AiDocker.docker.modem.followProgress(
-					stream,
-					(err: any, _output: unknown) => {
-						if (err) {
-							Logger.Error(`Error in pull progress for ${image}: ${err.message}`)
-							return reject(err)
-						}
-						Logger.Debug(`${Logger.Out} AiDocker.PullImage: 📦 Pulling ${image}...`)
-						resolve()
-					},
-					(event: any) => {
-						if (event.status === "Downloading") {
-							Logger.Debug(`${Logger.Out} AiDocker.PullImage: 📦 Pulling ${image}... ${event.progress}`)
-						} else {
-							Logger.Debug(`${Logger.Out} AiDocker.PullImage: 📦 Pulling ${image}... ${event.status}`)
-						}
-					},
-				)
-			})
+			AiDocker.docker.modem.followProgress(
+				stream,
+				(err: Error | null, _output: unknown) => {
+					if (err) {
+						Logger.Error(`Error in pull progress for ${image}: ${err.message}`)
+						return reject(err)
+					}
+					Logger.Debug(`${Logger.Out} AiDocker.PullImage: 📦 Pulling ${image}...`)
+					resolve()
+				},
+				(event: { status: string; progress?: string }) => {
+					if (event.status === "Downloading") {
+						Logger.Debug(`${Logger.Out} AiDocker.PullImage: 📦 Pulling ${image}... ${event.progress}`)
+					} else {
+						Logger.Debug(`${Logger.Out} AiDocker.PullImage: 📦 Pulling ${image}... ${event.status}`)
+					}
+				},
+			)
 		})
 	}
 
 	@Logger.LogFunction()
 	static async BuildServiceImage(service: TAiDockerService): Promise<void> {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const existingImages = await AiDocker.docker
-					.listImages({
-						filters: {
-							reference: [service.ImageName],
-						},
-					})
-					.catch((error) => {
-						Logger.Error(`Error listing images: ${error.message}`)
-						return [] as Docker.ImageInfo[]
-					})
+		const existingImages = await AiDocker.docker
+			.listImages({
+				filters: {
+					reference: [service.ImageName],
+				},
+			})
+			.catch((error) => {
+				Logger.Error(`Error listing images: ${error.message}`)
+				return [] as Docker.ImageInfo[]
+			})
 
-				if (existingImages.length > 0) {
-					Logger.Info(`${Logger.Out} 📦 Image ${service.ImageName} already exists. Skipping build.`)
-					return resolve()
-				}
+		if (existingImages.length > 0) {
+			Logger.Info(`${Logger.Out} 📦 Image ${service.ImageName} already exists. Skipping build.`)
+			return
+		}
 
-				const stream = await AiDocker.docker.buildImage(service.ImageContext as Docker.ImageBuildContext, {
-					t: service.ImageName,
-				})
+		const stream = await AiDocker.docker.buildImage(service.ImageContext as Docker.ImageBuildContext, {
+			t: service.ImageName,
+		})
 
-				let _streamData: string = ""
+		return new Promise<void>((resolve, reject) => {
+			let _streamData = ""
 
-				const onData = (data: Buffer) => {
-					const __data = data.toString()
-					_streamData += __data
+			const onData = (data: Buffer) => {
+				const __data = data.toString()
+				_streamData += __data
 
-					const parts = _streamData.split("}")
+				const parts = _streamData.split("}")
 
-					// Last part may be incomplete, keep it in buffer
-					_streamData = parts.pop() || ""
+				// Last part may be incomplete, keep it in buffer
+				_streamData = parts.pop() || ""
 
-					for (const part of parts) {
-						const complete = `${part}}`
-						try {
-							const ___aLog = AiDocker._convertStreamToLog(complete)
-							___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image... ${item}`))
-						} catch {
-							Logger.Warn(`${Logger.Out} ⚠️ Failed to parse log part: ${complete}`)
-						}
+				for (const part of parts) {
+					const complete = `${part}}`
+					try {
+						const ___aLog = AiDocker._convertStreamToLog(complete)
+						___aLog.forEach((item: string) => {
+							Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image... ${item}`)
+						})
+					} catch {
+						Logger.Warn(`${Logger.Out} ⚠️ Failed to parse log part: ${complete}`)
 					}
 				}
+			}
 
-				const cleanup = () => {
-					stream.removeListener("data", onData)
-					stream.removeListener("end", onEnd)
-					stream.removeListener("error", onError)
+			const cleanup = () => {
+				stream.removeListener("data", onData)
+				stream.removeListener("end", onEnd)
+				stream.removeListener("error", onError)
+			}
+
+			const onEnd = () => {
+				cleanup()
+				if (_streamData.length > 0) {
+					const ___aLog = AiDocker._convertStreamToLog(_streamData)
+					___aLog.forEach((item: string) => {
+						Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image: ${item}`)
+					})
+					_streamData = ""
 				}
+				Logger.Info(`${Logger.Out} 🔨 Built '${service.ImageName}' image`)
+				resolve()
+			}
 
-				const onEnd = () => {
-					cleanup()
-					if (_streamData.length > 0) {
-						const ___aLog = AiDocker._convertStreamToLog(_streamData)
-						___aLog.forEach((item) => Logger.Debug(`${Logger.Out} 🔨 Building '${service.ImageName}' image: ${item}`))
-						_streamData = ""
-					}
-					Logger.Info(`${Logger.Out} 🔨 Built '${service.ImageName}' image`)
-					resolve()
-				}
-
-				const onError = (err: Error) => {
-					cleanup()
-					Logger.Error(`${Logger.Out} 🔨 ❌ Error building '${service.ImageName}' image: ${err}`)
-					reject(err)
-				}
-
-				stream.on("data", onData)
-				stream.on("end", onEnd)
-				stream.on("error", onError)
-			} catch (err) {
-				Logger.Error(`${Logger.Out} 🔨 ❌ Failed to build '${service.ImageName}' image: ${err}`)
+			const onError = (err: Error) => {
+				cleanup()
+				Logger.Error(`${Logger.Out} 🔨 ❌ Error building '${service.ImageName}' image: ${err}`)
 				reject(err)
 			}
+
+			stream.on("data", onData)
+			stream.on("end", onEnd)
+			stream.on("error", onError)
 		})
 	}
 
@@ -461,14 +445,17 @@ export class AiDocker {
 				filters: { name: [CaddyDockerService.Name] },
 			})
 			if (containers.length > 0) {
-				caddyContainer = containers[0]!
-				if (caddyContainer.State === "running") {
-					Logger.Info(`${Logger.Out} Caddy container already running`)
+				const firstContainer = containers[0]
+				if (firstContainer) {
+					caddyContainer = firstContainer
+					if (caddyContainer.State === "running") {
+						Logger.Info(`${Logger.Out} Caddy container already running`)
+						return
+					}
+					await AiDocker.docker.getContainer(caddyContainer.Id).start()
+					Logger.Info(`${Logger.Out} Caddy container started`)
 					return
 				}
-				await AiDocker.docker.getContainer(caddyContainer.Id).start()
-				Logger.Info(`${Logger.Out} Caddy container started`)
-				return
 			}
 			Logger.Info(`${Logger.In} Starting Caddy container`)
 			Logger.Info(`${Logger.In} '${CaddyDockerService.ImageName}' pull started`)
@@ -497,14 +484,17 @@ export class AiDocker {
 				},
 			})
 
-			caddyContainer = (
-				await AiDocker.docker.listContainers({
-					all: true,
-					filters: { name: [CaddyDockerService.Name] },
-				})
-			)[0]
+			const containersList = await AiDocker.docker.listContainers({
+				all: true,
+				filters: { name: [CaddyDockerService.Name] },
+			})
+			caddyContainer = containersList[0]
 
-			const { Id } = caddyContainer as Docker.ContainerInfo
+			if (!caddyContainer) {
+				throw new HttpErrorInternalServerError("Caddy container not found after creation")
+			}
+
+			const { Id } = caddyContainer
 			Assert.Var<string>(Id, "Caddy container not found")
 
 			await AiDocker.docker.getContainer(Id).start().catch(Logger.Error)
@@ -528,6 +518,7 @@ export class AiDocker {
 	}
 
 	@Logger.LogFunction()
+	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: autoScale monitors and adjusts the active docker instance counts based on average CPU usage
 	static async AutoScale() {
 		const _cpuScaleUp = AiDocker.Config["cpu-scale-up"]
 		const _cpuScaleDown = AiDocker.Config["cpu-scale-down"]
@@ -627,6 +618,7 @@ export class AiDocker {
 
 			// Process all containers in parallel
 			const cpuUsages = await Promise.all(
+				// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: maps containers to measure CPU usage over multiple snapshot intervals
 				containers.map(async (containerInfo) => {
 					try {
 						const container = AiDocker.docker.getContainer(containerInfo.Id)
@@ -663,7 +655,8 @@ export class AiDocker {
 						return percentages.reduce((sum, p) => sum + p, 0) / percentages.length
 					} catch (error) {
 						Logger.Warn(
-							`Failed to get CPU stats for container '${service.Name}/${containerInfo.Names[0]}' returning 0: ${error instanceof Error ? error?.message : String(error)
+							`Failed to get CPU stats for container '${service.Name}/${containerInfo.Names[0]}' returning 0: ${
+								error instanceof Error ? error?.message : String(error)
 							}`,
 						)
 						return 0 //NaN
@@ -679,7 +672,8 @@ export class AiDocker {
 			return totalCpuUsage / validUsages.length
 		} catch (error) {
 			Logger.Error(
-				`Error getting average CPU usage for service ${service.Name}: ${error instanceof Error ? error.message : String(error)
+				`Error getting average CPU usage for service ${service.Name}: ${
+					error instanceof Error ? error.message : String(error)
 				}`,
 			)
 			return 0
@@ -687,6 +681,7 @@ export class AiDocker {
 	}
 
 	@Logger.LogFunction()
+	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: waitForService executes curl checks inside docker containers to wait for service availability
 	static async WaitForService(service: TAiDockerService, interval = 3000): Promise<void> {
 		if (!service.InternalUrl) {
 			return
@@ -742,7 +737,7 @@ export class AiDocker {
 							resolve(undefined)
 						}
 
-						const onError = (err: any) => {
+						const onError = (err: unknown) => {
 							cleanup()
 							reject(err)
 						}

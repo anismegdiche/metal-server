@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: class contains only static methods as a utility/manager namespace */
 //
 //
 //
@@ -11,12 +11,12 @@ import { ConfigManager } from "../core/ConfigManager"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
 import { STEP } from "../plan/@consts"
 import { PlansManager } from "../plan/PlansManager"
+import type { U__plans_plan_run_Params } from "../plan/types/U__plans_params"
 import { AI_ENGINE } from "./@consts"
 import { AiDocker } from "./AiDocker"
 import type { IAiEngine } from "./base/IAiEngine"
 import { BaseImageDockerService, BaseTextDockerService } from "./docker-services/BaseDockerService"
 import type { T__ai_engines_ai_engine } from "./types/T__ai_engines_ai_engine"
-import type { U__plans_plan_run_Params } from "../plan/types/U__plans_params"
 
 //
 type TPlanStep = { [STEP.RUN]: U__plans_plan_run_Params }
@@ -36,6 +36,7 @@ const engineLoaders: Record<string, ProviderLoader> = {
 	[AI_ENGINE.AUDIO]: () => import("./engine/Audio").then((m) => m.Audio),
 }
 
+//
 export class AiEngine {
 	static readonly _aiEngineFactory = new Factory<IAiEngine>()
 	static readonly _loadingPromises = new Map<string, Promise<IAiEngine>>()
@@ -82,7 +83,10 @@ export class AiEngine {
 	static async GetProvider(providerName: string): Promise<IAiEngine> {
 		// If already loaded, return from factory
 		if (AiEngine._aiEngineFactory.Has(providerName)) {
-			return AiEngine._aiEngineFactory.Get(providerName)!.Clone()
+			const provider = AiEngine._aiEngineFactory.Get(providerName)
+			if (provider) {
+				return provider.Clone()
+			}
 		}
 
 		// If already loading, return the existing promise
@@ -101,7 +105,7 @@ export class AiEngine {
 		if (!Object.hasOwn(engineLoaders, engineType)) {
 			throw new HttpErrorNotFound(`AI Engine type '${engineType}' not found`)
 		}
-		const engineLoader = engineLoaders[engineType]!
+		const engineLoader = engineLoaders[engineType]
 		if (!engineLoader) {
 			throw new HttpErrorNotFound(`AI Engine type '${engineType}' not found`)
 		}

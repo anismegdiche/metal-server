@@ -40,8 +40,4 @@
     "__tests__/**/*",
     "docs/**/*"
   ],
-  "ts-node": {
-    "files": true,
-    "esm": true
-  }
 }

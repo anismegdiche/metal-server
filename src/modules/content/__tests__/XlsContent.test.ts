@@ -1,10 +1,22 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: testing */
 import { Readable } from "node:stream"
-import * as crc32 from "crc-32"
 import * as ExcelJS from "exceljs"
 //
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
 import { ColumnLetterToNumber, type T_XlsContentParams, XlsContent } from "../providers/XlsContent"
+
+
+const crc32Table = new Uint32Array(256).map((_, i) => {
+	let c = i
+	for (let j = 0; j < 8; j++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1
+	return c
+})
+function crc32(buf: Buffer): number {
+	let crc = 0xFFFFFFFF
+	for (const byte of buf) crc = crc32Table[(crc ^ byte) & 0xFF]! ^ (crc >>> 8)
+	return (crc ^ 0xFFFFFFFF) >>> 0
+}
 
 describe("ColumnLetterToNumber", () => {
 	it("should convert a single letter column 'A' to 1", () => {
@@ -35,7 +47,9 @@ function createReadableStream(data: string | Buffer): Readable {
 async function createMockWorkbook(data: any[][]): Promise<Buffer> {
 	const workbook = new ExcelJS.Workbook()
 	const worksheet = workbook.addWorksheet("Sheet1")
-	data.forEach((row) => worksheet.addRow(row))
+	data.forEach((rowData) => {
+		worksheet.addRow(rowData)
+	})
 
 	const buffer = await workbook.xlsx.writeBuffer()
 	return buffer as unknown as Buffer<ArrayBufferLike>
@@ -188,7 +202,7 @@ describe("XlsContent", () => {
 						const filenameBuffer = Buffer.from(filename)
 
 						// Calculate CRC-32 and file sizes
-						const crc32Value = crc32.buf(data)
+						const crc32Value = crc32(data)
 						const compressedSize = data.length
 						const uncompressedSize = data.length
 
@@ -280,8 +294,12 @@ describe("XlsContent", () => {
 					])
 
 					// Push all parts in order
-					fileHeaders.forEach((header) => this.push(header))
-					centralDirHeaders.forEach((header) => this.push(header))
+					fileHeaders.forEach((header) => {
+						this.push(header)
+					})
+					centralDirHeaders.forEach((header) => {
+						this.push(header)
+					})
 					this.push(endOfCentralDir)
 					this.push(null)
 				},

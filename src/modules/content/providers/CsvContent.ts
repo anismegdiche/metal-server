@@ -135,7 +135,9 @@ export class CsvContent extends absContentProvider {
 		const allColumns = new Set<string>()
 		const rows = await data.Rows()
 		rows.forEach((row: TRow) => {
-			Object.keys(row).forEach((key) => allColumns.add(key))
+			Object.keys(row).forEach((key) => {
+				allColumns.add(key)
+			})
 		})
 
 		const _columns = Array.from(allColumns)
