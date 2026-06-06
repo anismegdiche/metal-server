@@ -8,7 +8,7 @@ import type { IAuthProvider } from "./IAuthProvider"
 
 //
 export abstract class absAuthProvider implements IAuthProvider {
-	//NOSONAR
+	
 	abstract Init(): void
 	abstract GetUsers(): U__users
 	abstract Authenticate(userCredentials: TUserCredentials): Promise<TUserTokenInfo>

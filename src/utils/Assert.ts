@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: This is a utility class with only static methods */
+
 //
 //
 //

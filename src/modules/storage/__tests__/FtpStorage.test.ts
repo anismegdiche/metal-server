@@ -42,14 +42,14 @@ describe("FtpStorage", () => {
 			options: {
 				host: "127.0.0.1",
 				user: "user",
-				password: "password", // NOSONAR
+				password: "password", 
 			},
 		})
 		ftpStorage.Params = {
 			host: "127.0.0.1",
 			port: 21,
 			user: "user",
-			password: "password", // NOSONAR
+			password: "password", 
 			secure: false,
 		}
 	})
@@ -75,7 +75,7 @@ describe("FtpStorage", () => {
 				host: "127.0.0.1",
 				port: 21,
 				user: "user",
-				password: "password", // NOSONAR
+				password: "password", 
 				secure: false,
 			})
 		})

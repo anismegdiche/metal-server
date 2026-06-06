@@ -11,7 +11,7 @@ describe("Synchronizer", () => {
 			.fill(0)
 			.map(() =>
 				syncOnce.Execute(async () => {
-					await new Promise((resolve) => setTimeout(resolve, 2000)) //NOSONAR
+					await new Promise((resolve) => setTimeout(resolve, 2000)) 
 					return Math.random()
 				}),
 			)

@@ -16,7 +16,7 @@ import type { IWebServiceProvider } from "./IWebServiceProvider"
 
 //
 export abstract class absWebServiceProvider extends clsClonable implements IWebServiceProvider {
-	//NOSONAR
+	
 
 	abstract DEFAULT: unknown
 	abstract ConfigSource?: U__source_webservice

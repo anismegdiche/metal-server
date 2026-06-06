@@ -1,24 +1,22 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: false positive */
 //
 //
 //
-import z from "zod";
+import z from "zod"
 //
-import type { TJson } from "../../types/TJson";
-import { Assert } from "../../utils/Assert";
-import { Logger } from "../../utils/Logger";
-import type { TUserTokenInfo } from "../auth/@types";
-import { ConfigManager } from "../core/ConfigManager";
-import { HttpResponse } from "../core/HttpResponse";
-import type { TInternalResponse } from "../core/types/TInternalResponse";
-import { HttpErrorNotFound } from "../errors/HttpErrors";
-import { PLAN_STATUS } from "./@consts";
-import { PlanMetrics, type T_PlanMetrics } from "./PlanMetrics";
-import { Plan } from "./Plan";
-import { Plans } from "./Plans";
-import { Schedule } from "./Schedule";
-import type { U__plans } from "./types/U__plans";
-
+import type { TJson } from "../../types/TJson"
+import { Assert } from "../../utils/Assert"
+import { Logger } from "../../utils/Logger"
+import type { TUserTokenInfo } from "../auth/@types"
+import { ConfigManager } from "../core/ConfigManager"
+import { HttpResponse } from "../core/HttpResponse"
+import type { TInternalResponse } from "../core/types/TInternalResponse"
+import { HttpErrorNotFound } from "../errors/HttpErrors"
+import { PLAN_STATUS } from "./@consts"
+import { Plan } from "./Plan"
+import { PlanMetrics, type T_PlanMetrics } from "./PlanMetrics"
+import { Plans } from "./Plans"
+import { Schedule } from "./Schedule"
+import type { U__plans } from "./types/U__plans"
 
 //
 export class PlansManager {
@@ -26,8 +24,7 @@ export class PlansManager {
 
 	@Logger.LogFunction()
 	static async Init() {
-		if (!ConfigManager.Has("plans"))
-			return
+		if (!ConfigManager.Has("plans")) return
 
 		PlansManager.Config = ConfigManager.Get<U__plans>("plans") ?? {}
 
@@ -46,10 +43,9 @@ export class PlansManager {
 		PlanMetrics.Metrics.set(planName, <T_PlanMetrics>{
 			planName,
 			status: PLAN_STATUS.NOT_STARTED,
-			steps: []
+			steps: [],
 		})
 	}
-
 
 	@Logger.LogFunction()
 	static RemovePlan(planName: string) {

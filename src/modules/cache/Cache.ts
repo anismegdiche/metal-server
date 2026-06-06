@@ -1,5 +1,5 @@
 //
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
+
 //
 //
 import * as Sha512 from "js-sha512"
@@ -40,18 +40,18 @@ export class Cache {
 		entity: "cache",
 	}
 
-	static Database = Cache.DEFAULT.database //NOSONAR
-	static Entity = Cache.DEFAULT.entity //NOSONAR
-	static DataSource: IDataProvider //NOSONAR
+	static Database = Cache.DEFAULT.database 
+	static Entity = Cache.DEFAULT.entity 
+	static DataSource: IDataProvider 
 	static DataSourceConfig: U__sources_source
-	static __LOCK__: Semaphore = new Semaphore(1) //NOSONAR
+	static __LOCK__: Semaphore = new Semaphore(1) 
 	static _cacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
 		//NOSNAR
 		schema: Cache.Database,
 		entity: Cache.Entity,
 	}
 
-	static IsEnabled = false //NOSONAR
+	static IsEnabled = false 
 
 	static Index = new Map<string, number>()
 	static AutoCleanupInterval: NodeJS.Timeout | undefined

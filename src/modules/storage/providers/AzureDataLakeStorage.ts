@@ -2,9 +2,9 @@
 //
 //
 
+import type { Readable } from "node:stream"
 import type { DataLakeFileSystemClient } from "@azure/storage-file-datalake"
 import { merge } from "lodash-es"
-import type { Readable } from "node:stream"
 import z from "zod"
 //
 import { DataTable } from "../../../types/DataTable"
@@ -16,7 +16,7 @@ import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
+import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
 import type { TStorageFile } from "../@types"
 import { absStorageProvider } from "../base/absStorageProvider"
 

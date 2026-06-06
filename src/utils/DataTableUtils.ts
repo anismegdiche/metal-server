@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
+
 //
 //
 //

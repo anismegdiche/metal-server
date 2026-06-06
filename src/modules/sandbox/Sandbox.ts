@@ -13,7 +13,7 @@ import type { TContext } from "./types/TContext"
 //
 export class Sandbox {
 	_context: Partial<TContext> = {}
-	_keepState: boolean = false //NOSONAR
+	_keepState: boolean = false 
 
 	constructor(context?: Partial<TContext>) {
 		if (context) {

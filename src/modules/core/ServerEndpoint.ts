@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: !+ */
 //
 //
 //
@@ -12,11 +11,10 @@ import { Logger } from "../../utils/Logger"
 import { Swagger } from "../../utils/Swagger"
 import { HTTP_STATUS_CODE, ROUTE, SERVER } from "./@consts"
 import { ConfigManager } from "./ConfigManager"
-import { ServerCore } from "./ServerCore"
-import { ServerShutdown } from "./ServerShutdown"
 import { ResponseHandler } from "./ResponseHandler"
 import { ServerRouter } from "./routes/ServerRouter"
-
+import { ServerCore } from "./ServerCore"
+import { ServerShutdown } from "./ServerShutdown"
 
 //
 export class ServerEndpoint {
@@ -31,7 +29,7 @@ export class ServerEndpoint {
 	}
 
 	static ExecuteMiddlewareHooksQueue(): void {
-		ServerEndpoint._middlewareHooksQueue.forEach(fn => {
+		ServerEndpoint._middlewareHooksQueue.forEach((fn) => {
 			fn()
 		})
 	}

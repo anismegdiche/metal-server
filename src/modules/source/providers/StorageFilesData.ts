@@ -2,7 +2,6 @@
 //
 //
 import { has, merge } from "lodash-es"
-import z from "zod"
 //
 import type { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -10,8 +9,6 @@ import { Convert } from "../../../utils/Convert"
 import { Logger, VERBOSITY } from "../../../utils/Logger"
 import { Mutex } from "../../../utils/Mutex"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
-import { CONTENT } from "../../content/@consts"
-import { z_U__source_options_content } from "../../content/@types"
 import type { IContentProvider } from "../../content/base/IContentProvider"
 import { ContentProvider } from "../../content/ContentProvider"
 import { RESPONSE } from "../../core/@consts"
@@ -36,30 +33,17 @@ import type {
 } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { STORAGE } from "../../storage/@consts"
-import type { U__source_storage_options } from "../../storage/@types"
 import type { absStorageProvider } from "../../storage/base/absStorageProvider"
 import { StorageProvider } from "../../storage/StorageProvider"
 import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
+import {
+	type U__source_storage_file_content,
+	z_U__source_storage_file_content,
+} from "../types/U__source_storage_file_content"
+import type { U__source_storage_file_options } from "../types/U__source_storage_file_options"
 
-//
-export const z_U__source_storage_file_content = z.record(
-	z.string(),
-	z.object({
-		"content-type": z.enum(CONTENT),
-	})
-		.and(z_U__source_options_content),
-)
-
-//
-export type U__source_storage_file_content = z.infer<typeof z_U__source_storage_file_content>
-export type U__source_storage_file_options = {
-	// Common
-	"storage-type"?: STORAGE
-	content?: U__source_storage_file_content
-	autocreate?: boolean
-} & U__source_storage_options
 
 //
 export class StorageFilesData extends absDataProvider {
@@ -320,7 +304,6 @@ export class StorageFilesData extends absDataProvider {
 	}
 
 	@Logger.LogFunction()
-
 	async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 		throw new HttpErrorNotImplemented()
 	}

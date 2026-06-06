@@ -37,7 +37,7 @@ if (ARG_build_all_images) {
 ServerCore.Init()
 	.then(ServerEndpoint.Start)
 	.catch(async () => {
-		// NOSONAR
+		
 		Logger.Info("✅ flushing log")
 		await Logger.FlushQueue()
 	})

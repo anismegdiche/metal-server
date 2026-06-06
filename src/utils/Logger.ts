@@ -1,5 +1,5 @@
 //
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
+
 //
 import { bold, cyan, gray, green, magenta, red, whiteBright, yellow } from "colorette"
 import * as _ from "lodash-es"

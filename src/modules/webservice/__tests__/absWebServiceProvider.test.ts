@@ -8,7 +8,7 @@ import type { U__source_webservice, U__source_webservice_options } from "../../s
 import { absWebServiceProvider } from "../base/absWebServiceProvider"
 
 class mockWS extends absWebServiceProvider {
-	// NOSONAR
+	
 	DEFAULT: unknown
 	ConfigSource?: U__source_webservice
 	ConfigSourceOptions?: U__source_webservice_options
@@ -44,7 +44,7 @@ describe("absWebServiceProvider", () => {
 				Url: "http://example.com",
 				Data: {},
 			}
-			const mockInstance = new mockWS() // NOSONAR
+			const mockInstance = new mockWS() 
 			expect(mockInstance.IsEndpoint(valid)).toBe(true)
 		})
 
@@ -54,7 +54,7 @@ describe("absWebServiceProvider", () => {
 				// missing Url
 				Data: {},
 			}
-			const mockInstance = new mockWS() // NOSONAR
+			const mockInstance = new mockWS() 
 			expect(mockInstance.IsEndpoint(invalid)).toBe(false)
 		})
 	})

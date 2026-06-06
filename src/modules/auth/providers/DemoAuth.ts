@@ -23,7 +23,7 @@ export class DemoAuth extends absAuthProvider {
 	GetUsers(): U__users {
 		return {
 			admin: {
-				password: "password", // NOSONAR
+				password: "password", 
 				roles: ["admin"],
 			},
 		}

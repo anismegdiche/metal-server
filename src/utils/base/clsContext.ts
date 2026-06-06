@@ -12,7 +12,7 @@ import type {
 
 //
 export class clsContext {
-	// NOSONAR
+	
 	GetContext(schemaRequest: TSchemaRequest): Partial<TContext> {
 		let $entity: string | undefined
 		let $schema: string | undefined

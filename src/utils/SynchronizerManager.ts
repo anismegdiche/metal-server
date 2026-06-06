@@ -11,7 +11,7 @@ import { Synchronizer } from "./Synchronizer"
 
 //
 export class SynchronizerManager {
-	static #SyncMap: Map<string, Synchronizer> = new Map() //NOSONAR
+	static #SyncMap: Map<string, Synchronizer> = new Map() 
 
 	static async Execute<T>(signature: string, fn: () => Promise<T>, ..._args: any[]): Promise<T> {
 		let sync = SynchronizerManager.#SyncMap.get(signature)

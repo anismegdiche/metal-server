@@ -112,7 +112,7 @@ describe("CsvContent", () => {
 					"",
 					"Single line",
 					"Multiple\nlines\r\nwith\rdifferent\nendings",
-					`Complex\\and mixed\\r\\ncontent\\nhere`, // NOSONAR
+					`Complex\\and mixed\\r\\ncontent\\nhere`, 
 					String.raw`Complex\and mixed\r\ncontent\nhere`,
 				]
 

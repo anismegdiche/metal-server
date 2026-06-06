@@ -4,8 +4,8 @@ import { Roles } from "../../auth/Roles"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import { ConfigManager } from "../../core/ConfigManager"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
-import type { TSource } from "../../source/@types"
 import { SourceRegistry } from "../../source/SourceRegistry"
+import type { TSource } from "../../source/types/TSource"
 import { Schema } from "../Schema"
 import type { TSchemaRequestSelect } from "../types/TSchemaRequest"
 
@@ -24,8 +24,8 @@ describe("Schema", () => {
 			const mockSchemas = {
 				"test-schema": {
 					source: "test-source",
-					roles: ["admin"]
-				}
+					roles: ["admin"],
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
@@ -47,8 +47,8 @@ describe("Schema", () => {
 		it("should build routes for schema with source only", () => {
 			const mockSchemas = {
 				"schema-with-source": {
-					source: "db1"
-				}
+					source: "db1",
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
@@ -59,7 +59,7 @@ describe("Schema", () => {
 			expect(routes?.has("*")).toBe(true)
 			expect(routes?.get("*")).toEqual({
 				sourceName: "db1",
-				sourceEntityName: undefined
+				sourceEntityName: undefined,
 			})
 		})
 
@@ -67,16 +67,16 @@ describe("Schema", () => {
 			const mockSchemas = {
 				"schema-with-entities": {
 					entities: {
-						"entity1": {
+						entity1: {
 							source: "db1",
-							entity: "table1"
+							entity: "table1",
 						},
-						"entity2": {
+						entity2: {
 							source: "db2",
-							entity: "table2"
-						}
-					}
-				}
+							entity: "table2",
+						},
+					},
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
@@ -88,11 +88,11 @@ describe("Schema", () => {
 			expect(routes?.has("entity2")).toBe(true)
 			expect(routes?.get("entity1")).toEqual({
 				sourceName: "db1",
-				sourceEntityName: "table1"
+				sourceEntityName: "table1",
 			})
 			expect(routes?.get("entity2")).toEqual({
 				sourceName: "db2",
-				sourceEntityName: "table2"
+				sourceEntityName: "table2",
 			})
 		})
 
@@ -103,10 +103,10 @@ describe("Schema", () => {
 					entities: {
 						"special-entity": {
 							source: "special-db",
-							entity: "special-table"
-						}
-					}
-				}
+							entity: "special-table",
+						},
+					},
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
@@ -118,11 +118,11 @@ describe("Schema", () => {
 			expect(routes?.has("special-entity")).toBe(true)
 			expect(routes?.get("*")).toEqual({
 				sourceName: "default-db",
-				sourceEntityName: undefined
+				sourceEntityName: undefined,
 			})
 			expect(routes?.get("special-entity")).toEqual({
 				sourceName: "special-db",
-				sourceEntityName: "special-table"
+				sourceEntityName: "special-table",
 			})
 		})
 	})
@@ -132,11 +132,11 @@ describe("Schema", () => {
 			const mockSchemas = {
 				"schema-with-roles": {
 					source: "db1",
-					roles: ["admin", "user"]
+					roles: ["admin", "user"],
 				},
 				"schema-without-roles": {
-					source: "db2"
-				}
+					source: "db2",
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
@@ -154,7 +154,7 @@ describe("Schema", () => {
 				schema: "test",
 				status: HTTP_STATUS_CODE.OK,
 				metadata: {},
-				data: new DataTable()
+				data: new DataTable(),
 			}
 			expect(Schema.IsSchemaResponse(validResponse)).toBe(true)
 		})
@@ -165,7 +165,7 @@ describe("Schema", () => {
 				entity: "myentity",
 				status: HTTP_STATUS_CODE.OK,
 				metadata: {},
-				data: new DataTable()
+				data: new DataTable(),
 			}
 			expect(Schema.IsSchemaResponse(validResponse)).toBe(true)
 		})
@@ -174,7 +174,7 @@ describe("Schema", () => {
 			const invalidResponse = {
 				schema: "test",
 				status: 400,
-				data: null
+				data: null,
 			}
 			expect(Schema.IsSchemaResponse(invalidResponse)).toBe(false)
 		})
@@ -188,11 +188,11 @@ describe("Schema", () => {
 					entities: {
 						"test-entity": {
 							source: "db1",
-							entity: "table1"
-						}
+							entity: "table1",
+						},
 					},
-					roles: ["admin"]
-				}
+					roles: ["admin"],
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockImplementation((key: string) => {
@@ -210,11 +210,14 @@ describe("Schema", () => {
 						status: HTTP_STATUS_CODE.OK,
 						metadata: {},
 						rows: [],
-						data: mockDataTable
-					}
+						data: mockDataTable,
+					},
 				}),
 			}
-			SourceRegistry.Sources.set("db1", { DataProvider: mockDataProvider, SourceConfig: { provider: "mongodb" as any } } as unknown as TSource)
+			SourceRegistry.Sources.set("db1", {
+				DataProvider: mockDataProvider,
+				SourceConfig: { provider: "mongodb" as any },
+			} as unknown as TSource)
 
 			Schema.Init(vi.fn())
 			Schema.fnCacheGet = vi.fn().mockResolvedValue(undefined)
@@ -231,11 +234,14 @@ describe("Schema", () => {
 				entity: "test-entity",
 				status: HTTP_STATUS_CODE.OK,
 				metadata: {},
-				rows: [{ id: 1, name: "cached" }]
+				rows: [{ id: 1, name: "cached" }],
 			}
 			Schema.fnCacheGet = vi.fn().mockResolvedValue({ Body: cachedResponse })
 
-			const result = await Schema.Select({ schema: "test-schema", entity: "test-entity" } as { schema: string; entity: string })
+			const result = await Schema.Select({ schema: "test-schema", entity: "test-entity" } as {
+				schema: string
+				entity: string
+			})
 
 			expect(Schema.fnCacheGet).toHaveBeenCalled()
 			expect(result.Body).toEqual(cachedResponse)
@@ -249,8 +255,9 @@ describe("Schema", () => {
 			Schema.Init(vi.fn())
 			Schema.fnCacheGet = vi.fn().mockResolvedValue(undefined)
 
-			await expect(Schema.Select({ schema: "nonexistent", entity: "test" } as { schema: string; entity: string }))
-				.rejects.toThrow()
+			await expect(
+				Schema.Select({ schema: "nonexistent", entity: "test" } as { schema: string; entity: string }),
+			).rejects.toThrow()
 		})
 	})
 
@@ -259,8 +266,8 @@ describe("Schema", () => {
 			const mockSchemas = {
 				"test-schema": {
 					source: "db1",
-					roles: ["admin"]
-				}
+					roles: ["admin"],
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
@@ -272,17 +279,17 @@ describe("Schema", () => {
 						status: HTTP_STATUS_CODE.OK,
 						metadata: {},
 						rows: [],
-						data: new DataTable()
-					}
+						data: new DataTable(),
+					},
 				}),
 				ProviderName: "db1",
 				Config: {},
 				Init: vi.fn(),
-				Options: {}
+				Options: {},
 			}
 			SourceRegistry.Sources.set("db1", {
 				DataProvider: mockDataProvider,
-				SourceConfig: { provider: "mongodb" as any }
+				SourceConfig: { provider: "mongodb" as any },
 			} as any)
 
 			Schema.Init(vi.fn())
@@ -300,17 +307,17 @@ describe("Schema", () => {
 			const mockSchemas = {
 				"test-schema": {
 					entities: {
-						"entity1": {
+						entity1: {
 							source: "db1",
-							entity: "table1"
+							entity: "table1",
 						},
-						"entity2": {
+						entity2: {
 							source: "db2",
-							entity: "table2"
-						}
+							entity: "table2",
+						},
 					},
-					roles: ["admin"]
-				}
+					roles: ["admin"],
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
@@ -322,13 +329,13 @@ describe("Schema", () => {
 						status: HTTP_STATUS_CODE.OK,
 						metadata: {},
 						rows: [],
-						data: new DataTable()
-					}
+						data: new DataTable(),
+					},
 				}),
 				ProviderName: "db1",
 				Config: {},
 				Init: vi.fn(),
-				Options: {}
+				Options: {},
 			}
 			const mockDataProvider2 = {
 				ListEntities: vi.fn().mockResolvedValue({
@@ -337,21 +344,21 @@ describe("Schema", () => {
 						status: HTTP_STATUS_CODE.OK,
 						metadata: {},
 						rows: [],
-						data: new DataTable()
-					}
+						data: new DataTable(),
+					},
 				}),
 				ProviderName: "db2",
 				Config: {},
 				Init: vi.fn(),
-				Options: {}
+				Options: {},
 			}
 			SourceRegistry.Sources.set("db1", {
 				DataProvider: mockDataProvider1,
-				SourceConfig: { provider: "mongodb" as any }
+				SourceConfig: { provider: "mongodb" as any },
 			} as any)
 			SourceRegistry.Sources.set("db2", {
 				DataProvider: mockDataProvider2,
-				SourceConfig: { provider: "mongodb" as any }
+				SourceConfig: { provider: "mongodb" as any },
 			} as any)
 
 			Schema.Init(vi.fn())
@@ -372,8 +379,7 @@ describe("Schema", () => {
 			Schema.Init(vi.fn())
 			Schema.fnCacheGet = vi.fn().mockResolvedValue(undefined)
 
-			await expect(Schema.ListEntities({ schema: "nonexistent" } as { schema: string }))
-				.rejects.toThrow(HttpErrorNotFound)
+			await expect(Schema.ListEntities({ schema: "nonexistent" } as { schema: string })).rejects.toThrow(HttpErrorNotFound)
 		})
 
 		it("should throw if invalid request", async () => {
@@ -383,8 +389,7 @@ describe("Schema", () => {
 			Schema.Init(vi.fn())
 			Schema.fnCacheGet = vi.fn().mockResolvedValue(undefined)
 
-			await expect(Schema.ListEntities({} as { schema: string }))
-				.rejects.toThrow(HttpErrorBadRequest)
+			await expect(Schema.ListEntities({} as { schema: string })).rejects.toThrow(HttpErrorBadRequest)
 		})
 	})
 
@@ -395,11 +400,11 @@ describe("Schema", () => {
 					entities: {
 						"test-entity": {
 							source: "db1",
-							entity: "table1"
-						}
+							entity: "table1",
+						},
 					},
-					roles: ["admin"]
-				}
+					roles: ["admin"],
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
@@ -409,11 +414,11 @@ describe("Schema", () => {
 				ProviderName: "db1",
 				Config: {},
 				Init: vi.fn(),
-				Options: {}
+				Options: {},
 			}
 			SourceRegistry.Sources.set("db1", {
 				DataProvider: mockDataProvider,
-				SourceConfig: { provider: "mongodb" as any }
+				SourceConfig: { provider: "mongodb" as any },
 			} as any)
 
 			Schema.Init(vi.fn())
@@ -421,14 +426,14 @@ describe("Schema", () => {
 			await Schema.Insert({
 				schema: "test-schema",
 				entity: "test-entity",
-				data: { name: "test" }
+				data: { name: "test" },
 			} as { schema: string; entity: string; data: Record<string, unknown> })
 
 			expect(mockDataProvider.Insert).toHaveBeenCalledWith({
 				schema: "test-schema",
 				entity: "table1",
 				source: "db1",
-				data: { name: "test" }
+				data: { name: "test" },
 			})
 			expect(Roles.CheckPermission).toHaveBeenCalled()
 		})
@@ -441,11 +446,11 @@ describe("Schema", () => {
 					entities: {
 						"test-entity": {
 							source: "db1",
-							entity: "table1"
-						}
+							entity: "table1",
+						},
 					},
-					roles: ["admin"]
-				}
+					roles: ["admin"],
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
@@ -455,11 +460,11 @@ describe("Schema", () => {
 				ProviderName: "db1",
 				Config: {},
 				Init: vi.fn(),
-				Options: {}
+				Options: {},
 			}
 			SourceRegistry.Sources.set("db1", {
 				DataProvider: mockDataProvider,
-				SourceConfig: { provider: "mongodb" as any }
+				SourceConfig: { provider: "mongodb" as any },
 			} as any)
 
 			Schema.Init(vi.fn())
@@ -468,7 +473,7 @@ describe("Schema", () => {
 				schema: "test-schema",
 				entity: "test-entity",
 				data: { name: "updated" },
-				filter: { id: 1 }
+				filter: { id: 1 },
 			} as { schema: string; entity: string; data: Record<string, unknown>; filter: Record<string, unknown> })
 
 			expect(mockDataProvider.Update).toHaveBeenCalledWith({
@@ -476,7 +481,7 @@ describe("Schema", () => {
 				entity: "table1",
 				source: "db1",
 				data: { name: "updated" },
-				filter: { id: 1 }
+				filter: { id: 1 },
 			})
 			expect(Roles.CheckPermission).toHaveBeenCalled()
 		})
@@ -489,11 +494,11 @@ describe("Schema", () => {
 					entities: {
 						"test-entity": {
 							source: "db1",
-							entity: "table1"
-						}
+							entity: "table1",
+						},
 					},
-					roles: ["admin"]
-				}
+					roles: ["admin"],
+				},
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockReturnValue(mockSchemas)
@@ -503,11 +508,11 @@ describe("Schema", () => {
 				ProviderName: "db1",
 				Config: {},
 				Init: vi.fn(),
-				Options: {}
+				Options: {},
 			}
 			SourceRegistry.Sources.set("db1", {
 				DataProvider: mockDataProvider,
-				SourceConfig: { provider: "mongodb" as any }
+				SourceConfig: { provider: "mongodb" as any },
 			} as any)
 
 			Schema.Init(vi.fn())
@@ -515,7 +520,7 @@ describe("Schema", () => {
 			await Schema.Delete({
 				schema: "test-schema",
 				entity: "test-entity",
-				filter: { id: 1 }
+				filter: { id: 1 },
 			} as { schema: string; entity: string; filter: Record<string, unknown> })
 
 			expect(mockDataProvider.Delete).toHaveBeenCalledWith({
@@ -523,7 +528,7 @@ describe("Schema", () => {
 				entity: "test-entity",
 				source: "db1",
 				sourceEntity: "table1",
-				filter: { id: 1 }
+				filter: { id: 1 },
 			})
 			expect(Roles.CheckPermission).toHaveBeenCalled()
 		})

@@ -1,5 +1,5 @@
 //
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
+
 //
 //
 import { uuidv7 } from "uuidv7"

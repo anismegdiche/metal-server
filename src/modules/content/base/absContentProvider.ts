@@ -15,7 +15,7 @@ import type { IContentProvider } from "./IContentProvider"
 
 //
 export abstract class absContentProvider extends clsClonable implements IContentProvider {
-	//NOSONAR
+	
 
 	abstract Params: unknown // TS transformed configuration
 	EntityName: string = "DEFAULT"

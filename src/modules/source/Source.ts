@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <explanation> */
+
 //
 //
 //
@@ -8,9 +8,9 @@ import { ConfigManager } from "../core/ConfigManager"
 import type { U__sources_source } from "../core/types/U__sources"
 import { HttpErrorLog } from "../errors/HttpErrors"
 import { DATA_PROVIDER } from "./@consts"
-import type { TSource } from "./@types"
 import { DataProvider } from "./DataProvider"
 import { SourceRegistry } from "./SourceRegistry"
+import type { TSource } from "./types/TSource"
 
 //
 export class Source {

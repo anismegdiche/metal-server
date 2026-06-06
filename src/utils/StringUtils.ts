@@ -29,7 +29,7 @@ export class StringUtils {
 		const cleanSubPaths = subPaths.filter((path: string | undefined) => !StringUtils.IsEmpty(path)) as string[]
 		if (cleanSubPaths.length === 0) return ""
 
-		return urlJoin(...cleanSubPaths).replaceAll(/\\/g, "/") // NOSONAR
+		return urlJoin(...cleanSubPaths).replaceAll(/\\/g, "/") 
 	}
 
 	static Path(...subPaths: Array<string | undefined>) {

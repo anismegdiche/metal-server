@@ -22,7 +22,7 @@ const ON_START = "@start"
 
 //
 export class Schedule {
-	static Jobs: TSchedule[] = [] //NOSONAR
+	static Jobs: TSchedule[] = [] 
 
 	@Logger.LogFunction()
 	static async Init() {

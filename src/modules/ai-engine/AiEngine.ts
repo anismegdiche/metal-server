@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: class contains only static methods as a utility/manager namespace */
+
 //
 //
 //

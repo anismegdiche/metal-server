@@ -267,16 +267,6 @@ import { HttpErrorBadRequest, HttpErrorNotFound, NormalizeError } from "../error
 
 // lodash
 import { merge, omit, has } from "lodash-es"
-```
-
-## 12. Static-Only Utility Classes
-
-When all methods are static, add biome ignore comments:
-
-```ts
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: <reason> */
-export class Step { ... }
-```
 
 ## 13. Authentication & Authorization
 

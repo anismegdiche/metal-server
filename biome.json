@@ -20,7 +20,8 @@
 			"recommended": true,
 			"complexity": {
 				"noExcessiveCognitiveComplexity": "warn",
-				"noExtraBooleanCast": "error"
+				"noExtraBooleanCast": "error",
+
 			},
 			"correctness": {
 				"noUnusedVariables": "warn",

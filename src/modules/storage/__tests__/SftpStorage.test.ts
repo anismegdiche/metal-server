@@ -45,7 +45,7 @@ describe("SftpStorage", () => {
 				host: "test.sftp.server.com",
 				port: 22,
 				user: "testuser",
-				password: "testpassword", // NOSONAR
+				password: "testpassword", 
 				folder: "/uploads",
 			},
 		})
@@ -67,7 +67,7 @@ describe("SftpStorage", () => {
 				options: <U__source_storage_sftp_options>{
 					host: "test.sftp.server.com",
 					user: "testuser",
-					password: "testpassword", // NOSONAR
+					password: "testpassword", 
 				},
 			})
 			storage.Init()
@@ -81,7 +81,7 @@ describe("SftpStorage", () => {
 				options: <U__source_storage_sftp_options>{
 					host: "test.sftp.server.com",
 					user: "testuser",
-					password: "testpassword", // NOSONAR
+					password: "testpassword", 
 				},
 			})
 			freshStorage.Init()
@@ -98,7 +98,7 @@ describe("SftpStorage", () => {
 				host: "test.sftp.server.com",
 				port: 22,
 				user: "testuser",
-				password: "testpassword", // NOSONAR
+				password: "testpassword", 
 			})
 		})
 
@@ -108,9 +108,9 @@ describe("SftpStorage", () => {
 				options: <U__source_storage_sftp_options>{
 					host: "test.sftp.server.com",
 					user: "testuser",
-					password: "testpassword", // NOSONAR
+					password: "testpassword", 
 					"private-key": "-----BEGIN RSA PRIVATE KEY-----\n...",
-					passphrase: "testpassphrase", // NOSONAR
+					passphrase: "testpassphrase", 
 				},
 			})
 			storage.Init()
@@ -120,9 +120,9 @@ describe("SftpStorage", () => {
 				host: "test.sftp.server.com",
 				port: 22,
 				user: "testuser",
-				password: "testpassword", // NOSONAR
+				password: "testpassword", 
 				privateKey: "-----BEGIN RSA PRIVATE KEY-----\n...",
-				passphrase: "testpassphrase", // NOSONAR
+				passphrase: "testpassphrase", 
 			})
 		})
 

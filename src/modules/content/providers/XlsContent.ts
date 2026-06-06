@@ -57,7 +57,7 @@ export function ColumnLetterToNumber(letter: string): number {
 	const { length } = letter
 
 	for (let i = 0; i < length; i++) {
-		column += (letter.charCodeAt(i) - 64) * 26 ** (length - i - 1) // NOSONAR
+		column += (letter.charCodeAt(i) - 64) * 26 ** (length - i - 1) 
 	}
 
 	return column

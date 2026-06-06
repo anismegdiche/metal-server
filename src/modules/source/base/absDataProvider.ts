@@ -31,7 +31,7 @@ export class DataProviderOptions extends absDataProviderOptions implements IData
 
 //
 export abstract class absDataProvider extends Mixin(clsClonable, clsContext) implements IDataProvider {
-	// NOSONAR
+	
 
 	abstract ProviderName: DATA_PROVIDER
 	abstract SourceName?: string

@@ -5,7 +5,7 @@
 import { Logger } from "./Logger"
 
 export class Semaphore {
-	#Tasks: (() => void)[] = [] //NOSONAR
+	#Tasks: (() => void)[] = [] 
 	#Available: number = 0
 
 	constructor(maxConcurrency: number) {

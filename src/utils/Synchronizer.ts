@@ -9,7 +9,7 @@ export class Synchronizer {
 
 	#Result: any
 
-	#PendingPromises: ((result: any) => void)[] //NOSONAR
+	#PendingPromises: ((result: any) => void)[] 
 
 	#Waiters = 0
 

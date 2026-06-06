@@ -1,7 +1,6 @@
 //
 //
 //
-
 import type { Readable } from "node:stream"
 import { lookup } from "mime-types"
 //
@@ -10,12 +9,12 @@ import { Assert } from "../../../utils/Assert"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { StringUtils } from "../../../utils/StringUtils"
 import type { U__sources_source } from "../../core/types/U__sources"
-import type { U__source_storage_file_options } from "../../source/providers/StorageFilesData"
+import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
 import type { IStorageProvider } from "./IStorageProvider"
+
 
 //
 export abstract class absStorageProvider extends clsClonable implements IStorageProvider {
-	// NOSONAR
 
 	abstract Config?: U__source_storage_file_options
 

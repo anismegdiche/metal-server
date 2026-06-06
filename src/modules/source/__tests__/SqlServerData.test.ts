@@ -41,7 +41,7 @@ const mockConfig: U__sources_source = {
 	host: "127.0.0.1",
 	port: 1433 as TIpPort,
 	user: "testuser",
-	password: "testpass", // NOSONAR
+	password: "testpass", 
 	database: "testdb",
 	options: {
 		encrypt: false,

@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/complexity/noStaticOnlyClass: !+ */
 //
 //
 //
@@ -6,10 +5,10 @@ import type { Request, Response } from "express"
 //
 import { Assert } from "../../../utils/Assert"
 import { Convert } from "../../../utils/Convert"
-import type { HttpError } from "../../errors/HttpErrors"
-import { PlansManager } from "../PlansManager"
 import { RequestHandler } from "../../core/RequestHandler"
 import { ResponseHandler } from "../../core/ResponseHandler"
+import type { HttpError } from "../../errors/HttpErrors"
+import { PlansManager } from "../PlansManager"
 
 export class PlanResponse {
 	static async ReloadPlan(req: Request, res: Response): Promise<void> {

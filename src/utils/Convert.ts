@@ -58,8 +58,8 @@ export class Convert {
 
 		// Replace friendly wildcards with regex equivalents
 		const rxPattern = escapedPattern
-			.replaceAll(/\*/g, ".*") // NOSONAR  // Convert * to .*
-			.replaceAll(/\?/g, ".") // NOSONAR  // Convert ? to .
+			.replaceAll(/\*/g, ".*")   // Convert * to .*
+			.replaceAll(/\?/g, ".")   // Convert ? to .
 
 		// Create and return the RegExp object
 		return new RegExp(`^${rxPattern}$`) // Anchored to match the whole string
