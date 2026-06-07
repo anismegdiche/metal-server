@@ -1,9 +1,8 @@
 //
 //
 //
-
-import { PassThrough, Readable } from "node:stream"
 import { merge, omit } from "lodash-es"
+import { PassThrough, Readable } from "node:stream"
 import SftpClient from "ssh2-sftp-client"
 import z from "zod"
 //
@@ -16,8 +15,10 @@ import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
-import type { TStorageFile, TStorageFolder } from "../@types"
 import { absStorageProvider } from "../base/absStorageProvider"
+import type { TStorageFile } from "../types/TStorageFile"
+import type { TStorageFolder } from "../types/TStorageFolder"
+
 
 //
 const z_U__source_storage_sftp_options = z.object({

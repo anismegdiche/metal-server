@@ -94,7 +94,8 @@ export class PlanMetrics {
 	static Metrics: Map<string, T_PlanMetrics> = new Map()
 
 	static Get(planName: string): T_PlanMetrics {
-		if (!PlanMetrics.Metrics.has(planName)) throw new HttpErrorInternalServerError(`plan '${planName}' metrics not found`)
+		if (!PlanMetrics.Metrics.has(planName)) 
+            throw new HttpErrorInternalServerError(`plan '${planName}' metrics not found`)
 
 		return PlanMetrics.Metrics.get(planName) as T_PlanMetrics
 	}
@@ -131,9 +132,8 @@ export class PlanMetrics {
 
 		const stepMetrics = planMetrics.steps[stepIndex]
 
-		if (!stepMetrics) {
+		if (!stepMetrics)
 			return
-		}
 
 		const startTime = Assert.ZodSchema<Date>(stepMetrics.step?.startTime, z.date(), "startTime is undefined")
 		const stepEndTime = Assert.ZodSchema<Date>(metrics.step?.endTime, z.date(), "endTime is undefined")

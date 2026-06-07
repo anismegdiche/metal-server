@@ -6,8 +6,10 @@ import type { TJson } from "../../../types/TJson"
 import type { clsClonable } from "../../../utils/base/clsClonable"
 import type { TContext } from "../../sandbox/types/TContext"
 //
-import type { U__source_webservice, U__source_webservice_options } from "../../source/providers/WebServiceData"
+import type { U__source_webservice } from "../../source/types/U__source_webservice"
+import type { U__source_webservice_options } from "../../source/types/U__source_webservice_options"
 import type { TEndpoint, TWebServiceEndpoint } from "../@types"
+
 
 //
 export interface IWebServiceProvider extends clsClonable {

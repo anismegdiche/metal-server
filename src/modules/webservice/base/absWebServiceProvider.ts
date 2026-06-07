@@ -1,23 +1,23 @@
 //
 //
 //
-
-import type { Readable } from "node:stream"
 import { merge, omit } from "lodash-es"
+import type { Readable } from "node:stream"
 //
 import type { TJson } from "../../../types/TJson"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { U__source_webservice, U__source_webservice_options } from "../../source/providers/WebServiceData"
+import type { U__source_webservice_options } from "../../source/types/U__source_webservice_options"
+import type { U__source_webservice } from "../../source/types/U__source_webservice"
 import { ENDPOINT } from "../@consts"
 import { type TEndpoint, type TWebServiceEndpoint, z_TEndpoint } from "../@types"
 import type { IWebServiceProvider } from "./IWebServiceProvider"
 
+
 //
 export abstract class absWebServiceProvider extends clsClonable implements IWebServiceProvider {
 	
-
 	abstract DEFAULT: unknown
 	abstract ConfigSource?: U__source_webservice
 	abstract ConfigSourceOptions?: U__source_webservice_options

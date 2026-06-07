@@ -5,12 +5,9 @@ import { merge } from "lodash-es"
 //
 import { DataTable, type TRowsCopyParams } from "../../../types/DataTable"
 import type { TJson } from "../../../types/TJson"
-import type { TUrl } from "../../../types/TUrl"
 import { Assert } from "../../../utils/Assert"
 import { Logger, VERBOSITY } from "../../../utils/Logger"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
-import type { CONTENT } from "../../content/@consts"
-import type { U__source_options_content } from "../../content/@types"
 import type { IContentProvider } from "../../content/base/IContentProvider"
 import { ContentProvider } from "../../content/ContentProvider"
 import { RESPONSE } from "../../core/@consts"
@@ -33,37 +30,15 @@ import type {
 	TSchemaRequestUpdate,
 } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { ENDPOINT, type WEBSERVICE } from "../../webservice/@consts"
-import type { TEndpoint, TWebServiceEndpoint } from "../../webservice/@types"
+import { ENDPOINT } from "../../webservice/@consts"
+import type { TEndpoint } from "../../webservice/@types"
 import type { absWebServiceProvider } from "../../webservice/base/absWebServiceProvider"
 import { WebServiceProvider } from "../../webservice/WebServiceProvider"
 import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
+import type { U__source_webservice } from "../types/U__source_webservice"
 
-//
-export type U__source_webservice_options = {
-	type: WEBSERVICE
-	content: CONTENT
-	endpoints: {
-		[ENDPOINT.SESSION]?: TWebServiceEndpoint
-		[ENDPOINT.COLLECTION_READ]: TWebServiceEndpoint
-		[ENDPOINT.COLLECTION_CREATE]?: TWebServiceEndpoint
-		[ENDPOINT.COLLECTION_UPDATE]?: TWebServiceEndpoint
-		[ENDPOINT.COLLECTION_DELETE]?: TWebServiceEndpoint
-		[ENDPOINT.COLLECTION_LIST]?: TWebServiceEndpoint
-		[ENDPOINT.ITEM_READ]?: TWebServiceEndpoint
-		[ENDPOINT.ITEM_CREATE]?: TWebServiceEndpoint
-		[ENDPOINT.ITEM_UPDATE]?: TWebServiceEndpoint
-		[ENDPOINT.ITEM_DELETE]?: TWebServiceEndpoint
-	}
-} & U__source_options_content
-
-export type U__source_webservice = {
-	provider: DATA_PROVIDER.WEBSERVICE
-	host: TUrl
-	options: U__source_webservice_options
-}
 
 //
 export class WebServiceData extends absDataProvider {

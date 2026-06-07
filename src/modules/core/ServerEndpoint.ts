@@ -13,7 +13,6 @@ import { HTTP_STATUS_CODE, ROUTE, SERVER } from "./@consts"
 import { ConfigManager } from "./ConfigManager"
 import { ResponseHandler } from "./ResponseHandler"
 import { ServerRouter } from "./routes/ServerRouter"
-import { ServerCore } from "./ServerCore"
 import { ServerShutdown } from "./ServerShutdown"
 
 //

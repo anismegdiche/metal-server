@@ -1,8 +1,9 @@
 //
-
-import { PassThrough, Readable } from "node:stream"
+//
+//
 import * as Ftp from "basic-ftp"
 import { merge } from "lodash-es"
+import { PassThrough, Readable } from "node:stream"
 import z from "zod"
 //
 import { DataTable, type TRow } from "../../../types/DataTable"
@@ -13,8 +14,10 @@ import { StringUtils } from "../../../utils/StringUtils"
 import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
-import type { TStorageFile, TStorageFolder } from "../@types"
 import { absStorageProvider } from "../base/absStorageProvider"
+import type { TStorageFile } from "../types/TStorageFile"
+import type { TStorageFolder } from "../types/TStorageFolder"
+
 
 //
 const z_U__source_storage_ftp_options = z.object({

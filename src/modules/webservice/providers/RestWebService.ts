@@ -1,10 +1,9 @@
 //
 //
 //
-
-import { Readable } from "node:stream"
 import axios, { type AxiosInstance, type AxiosResponse } from "axios"
 import { merge } from "lodash-es"
+import { Readable } from "node:stream"
 //
 import type { TJson } from "../../../types/TJson"
 import { JsonUtils } from "../../../utils/JsonUtils"
@@ -21,9 +20,11 @@ import {
 } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { U__source_webservice, U__source_webservice_options } from "../../source/providers/WebServiceData"
+import type { U__source_webservice } from "../../source/types/U__source_webservice"
+import type { U__source_webservice_options } from "../../source/types/U__source_webservice_options"
 import { ENDPOINT, HEADER } from "../@consts"
 import { absWebServiceProvider } from "../base/absWebServiceProvider"
+
 
 //
 export class RestWebService extends absWebServiceProvider {

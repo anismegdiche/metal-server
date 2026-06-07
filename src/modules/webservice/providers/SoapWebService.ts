@@ -1,12 +1,12 @@
 //
 //
 //
-
-import { Readable } from "node:stream"
 import { merge } from "lodash-es"
+import { Readable } from "node:stream"
 // Lazy-loaded soap module
 //
 import type { TJson } from "../../../types/TJson"
+import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
@@ -15,10 +15,11 @@ import { CONTENT } from "../../content/@consts"
 import { HttpErrorInternalServerError, HttpErrorSwitch, NormalizeError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { U__source_webservice, U__source_webservice_options } from "../../source/providers/WebServiceData"
+import type { U__source_webservice } from "../../source/types/U__source_webservice"
+import type { U__source_webservice_options } from "../../source/types/U__source_webservice_options"
 import { ENDPOINT, HEADER } from "../@consts"
 import { absWebServiceProvider } from "../base/absWebServiceProvider"
-import { Assert } from "../../../utils/Assert"
+
 
 //
 export class SoapWebService extends absWebServiceProvider {

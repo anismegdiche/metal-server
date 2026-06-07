@@ -2,9 +2,9 @@
 //
 //
 
+import { merge } from "lodash-es"
 import * as fs from "node:fs"
 import type { Readable } from "node:stream"
-import { merge } from "lodash-es"
 import z from "zod"
 //
 import { DataTable } from "../../../types/DataTable"
@@ -17,8 +17,10 @@ import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
-import type { TStorageFile, TStorageFolder } from "../@types"
 import { absStorageProvider } from "../base/absStorageProvider"
+import type { TStorageFile } from "../types/TStorageFile"
+import type { TStorageFolder } from "../types/TStorageFolder"
+
 
 //
 const z_U__source_storage_fs_options = z.object({
