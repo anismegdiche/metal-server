@@ -13,4 +13,4 @@ export enum AI_ENGINE {
 	DOCUMENT = "document",
 }
 
-export const AI_DOCKER_MODEL_PATH = StringUtils.Path(SERVER.TEMP_PATH, "models")
+export const AI_DOCKER_MODEL_PATH = StringUtils.FsPath(SERVER.TEMP_PATH, "models")

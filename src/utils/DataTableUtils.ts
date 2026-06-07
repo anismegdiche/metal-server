@@ -753,7 +753,7 @@ export class DataTableUtils {
 		const targetConn = await target.DuckConnection()
 
 		// Use a temp file for transfer to avoid memory pressure
-		const tempFile = StringUtils.Path(DATATABLE_TEMP_PATH, `${randomUUID()}.parquet`)
+		const tempFile = StringUtils.FsPath(DATATABLE_TEMP_PATH, `${randomUUID()}.parquet`)
 
 		try {
 			// Export source to parquet

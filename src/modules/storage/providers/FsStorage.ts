@@ -78,7 +78,7 @@ export class FsStorage extends absStorageProvider {
 
 		Assert.Var<TFsStorageParams>(this.Params, "No params defined")
 
-		const _folderPath = StringUtils.Path(this.Params.folder, dirName)
+		const _folderPath = StringUtils.FsPath(this.Params.folder, dirName)
 
 		return fs.existsSync(_folderPath)
 	}
@@ -89,7 +89,7 @@ export class FsStorage extends absStorageProvider {
 
 		Assert.Var<TFsStorageParams>(this.Params, "No params defined")
 
-		const _folderPath = StringUtils.Path(this.Params.folder, dirName)
+		const _folderPath = StringUtils.FsPath(this.Params.folder, dirName)
 
 		if (!fs.existsSync(_folderPath)) fs.mkdirSync(_folderPath)
 	}
@@ -100,7 +100,7 @@ export class FsStorage extends absStorageProvider {
 
 		Assert.Var<TFsStorageParams>(this.Params, "No params defined")
 
-		const _folderPath = dirName ? StringUtils.Path(this.Params.folder, dirName) : this.Params.folder
+		const _folderPath = dirName ? StringUtils.FsPath(this.Params.folder, dirName) : this.Params.folder
 
 		const data = await fs.promises
 			.readdir(_folderPath, { withFileTypes: true })
@@ -108,7 +108,7 @@ export class FsStorage extends absStorageProvider {
 				files
 					.filter((file) => !file.isDirectory())
 					.map((file) => {
-						const fullPath = StringUtils.Path(file.parentPath, file.name)
+						const fullPath = StringUtils.FsPath(file.parentPath, file.name)
 						const stats = fs.statSync(fullPath)
 						return JsonUtils.RemoveUndefined(<TStorageFile>{
 							name: file.name,
@@ -158,7 +158,7 @@ export class FsStorage extends absStorageProvider {
 
 		Assert.Var<TFsStorageParams>(this.Params, "No params defined")
 
-		const _fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
+		const _fileFullPath = StringUtils.FsPath(this.Params.folder, dirName, fileName)
 
 		return fs.existsSync(_fileFullPath)
 	}
@@ -169,7 +169,7 @@ export class FsStorage extends absStorageProvider {
 
 		Assert.Var<TFsStorageParams>(this.Params, "No params defined")
 
-		const _fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
+		const _fileFullPath = StringUtils.FsPath(this.Params.folder, dirName, fileName)
 
 		if (this.Params.autocreate && !(await this.FileIsExist(dirName, fileName))) {
 			const _fd = fs.openSync(_fileFullPath, "wx")
@@ -188,7 +188,7 @@ export class FsStorage extends absStorageProvider {
 
 		Assert.Var<TFsStorageParams>(this.Params, "No params defined")
 
-		const _fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
+		const _fileFullPath = StringUtils.FsPath(this.Params.folder, dirName, fileName)
 
 		if (this.Params.autocreate && !(await this.FileIsExist(dirName, fileName))) {
 			const _fd = fs.openSync(_fileFullPath, "wx")
@@ -203,10 +203,10 @@ export class FsStorage extends absStorageProvider {
 		this.CheckPaths([dirName, oldFileName, newFileName])
 
 		Assert.Var<TFsStorageParams>(this.Params, "No params defined")
-		const _oldFileFullPath = StringUtils.Path(this.Params.folder, dirName, oldFileName)
+		const _oldFileFullPath = StringUtils.FsPath(this.Params.folder, dirName, oldFileName)
 
 		if (fs.existsSync(_oldFileFullPath)) {
-			const _newFileFullPath = StringUtils.Path(this.Params.folder, dirName, newFileName)
+			const _newFileFullPath = StringUtils.FsPath(this.Params.folder, dirName, newFileName)
 
 			fs.renameSync(_oldFileFullPath, _newFileFullPath)
 		}
@@ -218,7 +218,7 @@ export class FsStorage extends absStorageProvider {
 
 		Assert.Var<TFsStorageParams>(this.Params, "No params defined")
 
-		const _fileFullPath = StringUtils.Path(this.Params.folder, dirName, fileName)
+		const _fileFullPath = StringUtils.FsPath(this.Params.folder, dirName, fileName)
 
 		if (fs.existsSync(_fileFullPath)) fs.unlinkSync(_fileFullPath)
 	}

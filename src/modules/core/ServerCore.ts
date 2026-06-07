@@ -28,11 +28,13 @@ import { ResponseHandler } from "./ResponseHandler"
 import { ServerRouter } from "./routes/ServerRouter"
 import { ServerEndpoint } from "./ServerEndpoint"
 import { ServerRuntime } from "./ServerRuntime"
+import { StringUtils } from "../../utils/StringUtils"
 
 
 //
 export class ServerCore {
-	static readonly CurrentPath = process.cwd()
+	static readonly NodeJsProcessPath = process.cwd()
+	static IndexPath = process.cwd()
 	static readonly Cpus = os.cpus().length ?? 1
 	static readonly Memory = os.freemem()
 	static readonly Platform = process.platform
@@ -46,13 +48,13 @@ export class ServerCore {
 
 	@Logger.LogFunction()
 	static async LoadModuleHooks(): Promise<void> {
-		const modulesPath = path.join(__dirname, "..")
+		const modulesPath = StringUtils.FsPath(ServerCore.IndexPath, 'modules')
 		const moduleDirs = readdirSync(modulesPath, { withFileTypes: true })
 			.filter((dirent) => dirent.isDirectory())
 			.map((dirent) => dirent.name)
 
 		for (const moduleName of moduleDirs) {
-			const hookPath = path.join(modulesPath, moduleName, "_hook.ts")
+			const hookPath = StringUtils.FsPath(modulesPath, moduleName, "_hook.ts")
 			try {
 				const hookModule = await import(hookPath)
 				if (hookModule.RegisterMiddleware && typeof hookModule.RegisterMiddleware === "function") {

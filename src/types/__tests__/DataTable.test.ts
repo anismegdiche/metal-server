@@ -222,7 +222,7 @@ describe("DataTable", () => {
 		it("should share the same duck instance", async () => {
 			const tables: DataTable[] = []
 			const total = 10
-			const db_name = StringUtils.Path(DATATABLE_TEMP_PATH, `share_${Utils.Uuid(true)}.db`)
+			const db_name = StringUtils.FsPath(DATATABLE_TEMP_PATH, `share_${Utils.Uuid(true)}.db`)
 			const duckInstance = await DuckDBInstance.create(db_name)
 			const cnx = await duckInstance.connect()
 

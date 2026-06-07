@@ -47,6 +47,7 @@ describe("FsStorage", () => {
 			folder: "./",
 		},
 	}
+	vi.spyOn(process, "platform", "get").mockReturnValue("linux")
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -58,6 +59,8 @@ describe("FsStorage", () => {
 		fsMock.promises.stat.mockReset()
 		fsMock.promises.unlink.mockReset()
 		fsMock.promises.rename.mockReset()
+
+		
 
 		fsStorage = new FsStorage()
 		fsStorage.SetConfig(sourceConfig)

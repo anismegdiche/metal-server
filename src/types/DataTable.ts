@@ -28,7 +28,7 @@ import type { TUuidv7 } from "./TUuidv7"
 export { SORT_ORDER }
 
 export const DATATABLE_SYS_FIELDS: string[] = Object.values(DT_SYS_FIELDS)
-export const DATATABLE_TEMP_PATH = StringUtils.Path(SERVER.TEMP_PATH, "data")
+export const DATATABLE_TEMP_PATH = StringUtils.FsPath(SERVER.TEMP_PATH, "data")
 
 // types
 export type { TFields, TMetaData, TOrderBy, TRow, TSnapshotInfo }
@@ -457,7 +457,7 @@ export class DataTable extends clsClonable {
 			this._duckInstance = opt.duckInstance
 			this._isAttached = true
 		} else {
-			this._dbPath = StringUtils.Path(DATATABLE_TEMP_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
+			this._dbPath = StringUtils.FsPath(DATATABLE_TEMP_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
 			this._persistent = opt.persistant ?? false
 
 			// Generate encryption key for persistent databases

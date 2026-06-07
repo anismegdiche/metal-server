@@ -22,7 +22,7 @@ export const SERVER = {
           ▀███████   ▐██▀ 
              ▀▀▀▀▀   ▀        \x1b[0m M i d d l e w a r e     -     E T L    -    A I \x1b[31m
 `,
-	TEMP_PATH: StringUtils.Path(process.cwd(), "./tmp"),
+	TEMP_PATH: StringUtils.FsPath(process.cwd(), "./tmp"),
 }
 
 export enum ROUTE {

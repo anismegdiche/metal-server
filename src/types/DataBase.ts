@@ -25,7 +25,7 @@ export class DataBase {
 		Assert.Var<string>(name, "undefined DataBase name")
 		this.Name = name
 		this._dbPath =
-			isPersistant === true ? StringUtils.Path(DATATABLE_TEMP_PATH, `${this.Name}_${Utils.Uuid(true)}.db`) : ":memory:"
+			isPersistant === true ? StringUtils.FsPath(DATATABLE_TEMP_PATH, `${this.Name}_${Utils.Uuid(true)}.db`) : ":memory:"
 
 		// Generate encryption key for persistent databases
 		if (isPersistant === true) {

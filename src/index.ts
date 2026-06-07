@@ -2,6 +2,8 @@
 //
 //  Metal Server
 //
+import path from 'path';
+import { fileURLToPath } from 'url';
 //
 import { AiBuilder } from "./modules/ai-engine/AiBuilder"
 import { AiDocker } from "./modules/ai-engine/AiDocker"
@@ -11,6 +13,11 @@ import { ServerCore } from "./modules/core/ServerCore"
 import { ServerEndpoint } from "./modules/core/ServerEndpoint"
 import { ServerShutdown } from "./modules/core/ServerShutdown"
 import { Logger } from "./utils/Logger"
+
+// Current Path
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+ServerCore.IndexPath = __dirname
 
 // params
 const args = new Set(process.argv.slice(2))
