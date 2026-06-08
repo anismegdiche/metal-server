@@ -2,7 +2,7 @@ version: "0.5"
 
 server:
   port: 3000
-  verbosity: debug
+  verbosity: info
   timezone: UTC
   request-limit: 100mb
   response-limit: 100mb
