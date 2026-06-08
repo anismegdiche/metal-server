@@ -101,7 +101,7 @@ export class PlanMetrics {
 	}
 
 	static Set(planName: string, planMetrics: T_PlanMetrics) {
-		Logger.Info(`metrics plan '${planName}': ${JsonUtils.Stringify(planMetrics)}`)
+		Logger.Info(`Plan '${planName}' metrics: ${JsonUtils.Stringify(planMetrics)}`)
 		PlanMetrics.Metrics.set(planName, planMetrics)
 	}
 

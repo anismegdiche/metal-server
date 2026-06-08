@@ -1,9 +1,10 @@
 //
 //
 //
+
+import { Readable } from "node:stream"
 import axios, { type AxiosInstance, type AxiosResponse } from "axios"
 import { merge } from "lodash-es"
-import { Readable } from "node:stream"
 //
 import type { TJson } from "../../../types/TJson"
 import { JsonUtils } from "../../../utils/JsonUtils"
@@ -24,7 +25,6 @@ import type { U__source_webservice } from "../../source/types/U__source_webservi
 import type { U__source_webservice_options } from "../../source/types/U__source_webservice_options"
 import { ENDPOINT, HEADER } from "../@consts"
 import { absWebServiceProvider } from "../base/absWebServiceProvider"
-
 
 //
 export class RestWebService extends absWebServiceProvider {
@@ -61,18 +61,17 @@ export class RestWebService extends absWebServiceProvider {
 		if (typeof header === "string" && typeof value === "string") this.Client.defaults.headers.common[header] = value
 	}
 
-	async RequestClient(endpointType: ENDPOINT, httpStatusSuccess: number[], data?: TJson, $context?: Partial<TContext>,): Promise<Readable> {
+	async RequestClient(
+		endpointType: ENDPOINT,
+		httpStatusSuccess: number[],
+		data?: TJson,
+		$context?: Partial<TContext>,
+	): Promise<Readable> {
 		if (!this.Endpoints.has(endpointType) || !this.Client)
 			throw new HttpErrorInternalServerError(`${endpointType}: undefined endpoint for ${endpointType}`)
 
 		try {
-			const {
-				Method,
-				Url,
-				Data,
-				SessionHeaders,
-				DataPath
-			} = this.Endpoints.get(endpointType)!
+			const { Method, Url, Data, SessionHeaders, DataPath } = this.Endpoints.get(endpointType)!
 
 			const $__method = PlaceHolder.EvaluateJsCode<string>(Method, new Sandbox($context))
 			const $__url = PlaceHolder.EvaluateJsCode<string>(Url, new Sandbox($context))

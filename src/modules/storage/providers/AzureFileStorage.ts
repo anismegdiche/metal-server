@@ -1,6 +1,7 @@
 //
 //
 //
+
 import type { Readable } from "node:stream"
 import { merge } from "lodash-es"
 import z from "zod"
@@ -15,10 +16,9 @@ import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
-import type { TStorageFolder } from "../types/TStorageFolder"
-import type { TStorageFile } from "../types/TStorageFile"
 import { absStorageProvider } from "../base/absStorageProvider"
-
+import type { TStorageFile } from "../types/TStorageFile"
+import type { TStorageFolder } from "../types/TStorageFolder"
 
 //
 const z_U__source_storage_azfs_options = z.object({
@@ -33,8 +33,8 @@ export type U__source_storage_azfs_options = z.infer<typeof z_U__source_storage_
 
 type TAzureFileStorageParams = {
 	[K in keyof U__source_storage_azfs_options as K extends `${infer U}`
-	? TConvertParams<U>
-	: K]: U__source_storage_azfs_options[K]
+		? TConvertParams<U>
+		: K]: U__source_storage_azfs_options[K]
 }
 
 //

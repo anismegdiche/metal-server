@@ -12,7 +12,6 @@ vi.spyOn(Logger, 'Error').mockImplementation(noop)
 vi.spyOn(Logger, 'Message').mockImplementation(noop)
 vi.spyOn(Logger, 'SetLevel').mockImplementation(noop)
 vi.spyOn(Logger, 'EnableAll').mockImplementation(noop)
-vi.spyOn(Logger, 'FlushQueue').mockResolvedValue()
 
 // Morgan middleware must still call next()
 Logger.RequestMiddleware = (_req: any, _res: any, next: any) => next()

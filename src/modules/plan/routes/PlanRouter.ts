@@ -1,15 +1,16 @@
 //
 //
 //
-//
-//
 import { Router } from "express"
-import { ResponseHandler } from "../../core/ResponseHandler"
-import { PlanResponse } from "../response/PlanResponse"
 //
+import { ResponseHandler } from "../../core/ResponseHandler"
 import { UserResponse } from "../../core/response/UserResponse"
+import { PlanResponse } from "../response/PlanResponse"
 
+
+//
 export const PlanRouter = Router()
+
 
 //ROADMAP
 PlanRouter.route("/:plan")
@@ -25,4 +26,4 @@ PlanRouter.route("/:plan/reload")
 
 PlanRouter.route("/:plan/metrics")
 	.all(UserResponse.IsAuthenticated)
-	.post(PlanResponse.GetPlanMetrics)
+	.get(PlanResponse.GetPlanMetrics)

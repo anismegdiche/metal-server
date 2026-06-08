@@ -1,9 +1,11 @@
 //
 //
 //
-import type { LogLevelDesc } from "loglevel"
-import { readdirSync } from "node:fs"
+
+import { existsSync, readdirSync } from "node:fs"
 import os from "node:os"
+import { pathToFileURL } from "node:url"
+import type { LogLevelDesc } from "loglevel"
 //
 import { Convert } from "../../utils/Convert"
 import { Logger } from "../../utils/Logger"
@@ -26,7 +28,6 @@ import { ServerRouter } from "./routes/ServerRouter"
 import { ServerEndpoint } from "./ServerEndpoint"
 import { ServerRuntime } from "./ServerRuntime"
 
-
 //
 export class ServerCore {
 	static readonly NodeJsProcessPath = process.cwd()
@@ -44,22 +45,29 @@ export class ServerCore {
 
 	@Logger.LogFunction()
 	static async LoadModuleHooks(): Promise<void> {
-		const modulesPath = StringUtils.FsPath(ServerCore.IndexPath, 'modules')
+		const modulesPath = StringUtils.FsPath(ServerCore.IndexPath, "modules")
 		const moduleDirs = readdirSync(modulesPath, { withFileTypes: true })
 			.filter((dirent) => dirent.isDirectory())
 			.map((dirent) => dirent.name)
 
 		for (const moduleName of moduleDirs) {
-			const hookPath = StringUtils.FsPath(modulesPath, moduleName, "_hook.ts")
+			const hookJs = StringUtils.FsPath(modulesPath, moduleName, "_hook.js")
+			const hookTs = StringUtils.FsPath(modulesPath, moduleName, "_hook.ts")
+			const hookPath = existsSync(hookJs)
+				? hookJs
+				: hookTs
+
+			if (!existsSync(hookPath))
+				continue
+
 			try {
-				const hookModule = await import(hookPath)
+				const hookModule = await import(pathToFileURL(hookPath).href)
 				if (hookModule.RegisterMiddleware && typeof hookModule.RegisterMiddleware === "function") {
 					Logger.Info(`Loading hook for module: ${moduleName}`)
 					hookModule.RegisterMiddleware()
 				}
-			} catch {
-				// Hook file doesn't exist or can't be loaded - that's fine
-				Logger.Debug(`No hook found for module: ${moduleName}`)
+			} catch (e) {
+				Logger.Warn(`Failed to load hook for module '${moduleName}': ${e instanceof Error ? e.message : String(e)}`)
 			}
 		}
 	}
@@ -72,9 +80,6 @@ export class ServerCore {
 		// config
 		await ConfigManager.Init(new ConfigStore())
 		ServerCore.InitLogging()
-
-		// Start logger queue cleanup
-		Logger.StartQueueCleanup()
 
 		// sources
 		await Source.Init()
@@ -110,9 +115,6 @@ export class ServerCore {
 	@Logger.LogFunction()
 	static async Shutdown(): Promise<void> {
 		Logger.Info("Server shutdown initiated")
-
-		// Stop logger queue cleanup
-		Logger.StopQueueCleanup()
 
 		// TODO: Add proper cleanup for other components
 

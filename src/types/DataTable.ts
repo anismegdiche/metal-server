@@ -1142,7 +1142,7 @@ export class DataTable extends clsClonable {
 			}
 
 			await cnx.run("COMMIT")
-			Logger.Info(`${Logger.Out} DataTable.RowsMap: Processed ${processedCount} rows successfully`)
+			Logger.Debug(`${Logger.Out} DataTable.RowsMap: Processed ${processedCount} rows successfully`)
 		} catch (e) {
 			try {
 				await cnx.run("ROLLBACK")
@@ -1352,14 +1352,14 @@ export class DataTable extends clsClonable {
 		if (!fields || fields.length === 0)
 			return this
 
-		Logger.Info(`${Logger.Out} DataTable.Pick: Starting to pick fields ${fields.join(", ")}`)
+		Logger.Debug(`${Logger.Out} DataTable.Pick: Starting to pick fields ${fields.join(", ")}`)
 
 		return this.RowsMap((row: TRow) =>
 			Promise.resolve(
 				RowUtils.Pick(row, fields)
 			)
 		).then(() => {
-			Logger.Info(`${Logger.Out} DataTable.Pick: Successfully picked ${fields.length} fields`)
+			Logger.Debug(`${Logger.Out} DataTable.Pick: Successfully picked ${fields.length} fields`)
 			return this
 		})
 	}
@@ -1369,14 +1369,14 @@ export class DataTable extends clsClonable {
 		if (!fields || fields.length === 0)
 			return this
 
-		Logger.Info(`${Logger.Out} DataTable.Omit: Starting to omit fields ${fields.join(", ")}`)
+		Logger.Debug(`${Logger.Out} DataTable.Omit: Starting to omit fields ${fields.join(", ")}`)
 
 		return this.RowsMap((row: TRow) =>
 			Promise.resolve(
 				RowUtils.Omit(row, fields)
 			)
 		).then(() => {
-			Logger.Info(`${Logger.Out} DataTable.Omit: Successfully omitted ${fields.length} fields`)
+			Logger.Debug(`${Logger.Out} DataTable.Omit: Successfully omitted ${fields.length} fields`)
 			return this
 		})
 	}

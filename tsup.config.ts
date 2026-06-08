@@ -1,11 +1,25 @@
-import { defineConfig } from 'tsup'
+import { existsSync, readdirSync } from "node:fs"
+import { join } from "node:path"
+import { defineConfig } from "tsup"
+
+//
+const modulesPath = "src/modules"
+const entry: Record<string, string> = { index: "src/index.ts" }
+
+for (const dirent of readdirSync(modulesPath, { withFileTypes: true })) {
+	if (!dirent.isDirectory()) continue
+	const hookPath = join(modulesPath, dirent.name, "_hook.ts")
+	if (existsSync(hookPath)) {
+		entry[`modules/${dirent.name}/_hook`] = hookPath
+	}
+}
 
 export default defineConfig({
-    entry: ['src/index.ts'],
-    format: ['esm'],
-    target: 'node24',
-    outDir: 'dist',
-    splitting: true,
-    sourcemap: true,
-    clean: true
+	entry,
+	format: ["esm"],
+	target: "node24",
+	outDir: "dist",
+	splitting: true,
+	sourcemap: true,
+	clean: true,
 })

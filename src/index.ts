@@ -2,8 +2,8 @@
 //
 //  Metal Server
 //
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "node:path"
+import { fileURLToPath } from "node:url"
 //
 import { AiBuilder } from "./modules/ai-engine/AiBuilder"
 import { AiDocker } from "./modules/ai-engine/AiDocker"
@@ -15,8 +15,8 @@ import { ServerShutdown } from "./modules/core/ServerShutdown"
 import { Logger } from "./utils/Logger"
 
 // Current Path
-const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-const __dirname = path.dirname(__filename); // get the name of the directory
+const __filename = fileURLToPath(import.meta.url) // get the resolved path to the file
+const __dirname = path.dirname(__filename) // get the name of the directory
 ServerCore.IndexPath = __dirname
 
 // params
@@ -35,16 +35,12 @@ if (ARG_build_all_images) {
 	//
 	await AiBuilder.PrepareImages()
 	Logger.Info(`${Logger.Out} 🔨 Exiting build mode`)
-	Logger.Info(`${Logger.Out} 🔨 Flushing log`)
-	await Logger.FlushQueue()
 	process.exit(0)
 }
 
 // Initialize and start server
 ServerCore.Init()
 	.then(ServerEndpoint.Start)
-	.catch(async () => {
-		
-		Logger.Info("✅ flushing log")
-		await Logger.FlushQueue()
+	.catch((err) => {
+		console.error(err)
 	})

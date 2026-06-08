@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/style/noNonNullAssertion: <explanation> */
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("loglevel", () => ({
@@ -31,14 +32,6 @@ vi.mock("colorette", () => ({
 	whiteBright: (text: string) => text,
 	bold: (text: string) => text,
 }))
-vi.mock("../Queue", () => ({
-	Queue: class {
-		Tasks: unknown[] = []
-		Enqueue = vi.fn()
-		ProcessQueue = vi.fn().mockResolvedValue(undefined)
-	},
-}))
-
 const loadLogger = async () => {
 	const LogLevel = await import("loglevel")
 	const { Logger } = await import("../Logger")
@@ -67,12 +60,15 @@ describe("Logger", () => {
 	})
 
 	it("should wrap sync and async functions with LogFunction", async () => {
-		const { Logger } = await loadLogger()
+		const { LogLevel, Logger } = await loadLogger()
+
 		class Example {
 			value = 1
+
 			syncMethod(add: number) {
 				return this.value + add
 			}
+
 			async asyncMethod(mult: number) {
 				return this.value * mult
 			}
@@ -92,6 +88,7 @@ describe("Logger", () => {
 		expect(instance.syncMethod(2)).toBe(3)
 		await expect(instance.asyncMethod(3)).resolves.toBe(3)
 
-		expect((Logger as unknown as { _queue: { Enqueue: ReturnType<typeof vi.fn> } })._queue.Enqueue).toHaveBeenCalled()
+		expect(LogLevel.debug).toHaveBeenCalled()
+		expect(LogLevel.error).not.toHaveBeenCalled()
 	})
 })

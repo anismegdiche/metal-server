@@ -6,7 +6,9 @@ import z from "zod"
 import type { TJson } from "../../types/TJson"
 import { Assert } from "../../utils/Assert"
 import { Logger } from "../../utils/Logger"
+import { AUTH_PERMISSION } from "../auth/@consts"
 import type { TUserTokenInfo } from "../auth/@types"
+import { Roles } from "../auth/Roles"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
@@ -98,6 +100,8 @@ export class PlansManager {
 
 	@Logger.LogFunction()
 	static async ReloadPlan(planName: string, userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
+		Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
+
 		const plan = Plans.get(planName)
 		Assert.Var<Plan>(plan, `Plan '${planName}' not found`)
 
@@ -114,7 +118,9 @@ export class PlansManager {
 	}
 
 	@Logger.LogFunction()
-	static async GetPlanMetrics(planName: string): Promise<TInternalResponse<TJson>> {
+	static async GetPlanMetrics(planName: string, userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
+		Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
+
 		const plan = Plans.get(planName)
 		Assert.Var<Plan>(plan, `Plan '${planName}' not found`, new HttpErrorNotFound())
 

@@ -1,8 +1,9 @@
 //
 //
 //
-import { merge } from "lodash-es"
+
 import { Readable } from "node:stream"
+import { merge } from "lodash-es"
 // Lazy-loaded soap module
 //
 import type { TJson } from "../../../types/TJson"
@@ -19,7 +20,6 @@ import type { U__source_webservice } from "../../source/types/U__source_webservi
 import type { U__source_webservice_options } from "../../source/types/U__source_webservice_options"
 import { ENDPOINT, HEADER } from "../@consts"
 import { absWebServiceProvider } from "../base/absWebServiceProvider"
-
 
 //
 export class SoapWebService extends absWebServiceProvider {

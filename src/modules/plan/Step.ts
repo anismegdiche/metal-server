@@ -22,6 +22,7 @@ import {
 } from "./@consts"
 import type { T_StepMetrics } from "./PlanMetrics"
 import { PLAN_METRICS, PlanMetrics } from "./PlanMetrics"
+import { CustomEvent } from "@dimkl/events"
 import { Insert } from "./steps/Insert"
 import type { T_StepErrorDetails } from "./T_StepErrorDetails"
 import type { T_StepResult } from "./types/T_StepResult"
@@ -161,7 +162,7 @@ export class Step {
 
 			PlanMetrics.Bus.dispatchEvent(
 				new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_START, {
-					detail: {
+					data: {
 						planName,
 						index: stepIndex,
 						step: {
@@ -195,7 +196,7 @@ export class Step {
 
 				PlanMetrics.Bus.dispatchEvent(
 					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_END, {
-						detail: {
+						data: {
 							planName,
 							index: stepIndex,
 							step: {
@@ -215,7 +216,7 @@ export class Step {
 			} catch (error) {
 				PlanMetrics.Bus.dispatchEvent(
 					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_END, {
-						detail: {
+						data: {
 							planName,
 							index: stepIndex,
 							step: {
@@ -302,7 +303,7 @@ export class Step {
 			.then(async (data) => {
 				PlanMetrics.Bus.dispatchEvent(
 					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
-						detail: {
+						data: {
 							planName: $context.$plan?.name,
 							index: $context.$plan?.currentStep?.index,
 							rows: {
@@ -359,7 +360,7 @@ export class Step {
 
 		PlanMetrics.Bus.dispatchEvent(
 			new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
-				detail: {
+				data: {
 					planName,
 					index: currentStep?.index,
 					attemptCount: attempt,
@@ -397,7 +398,7 @@ export class Step {
 
 		PlanMetrics.Bus.dispatchEvent(
 			new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_START, {
-				detail: {
+				data: {
 					planName,
 					index: currentStep?.index,
 					attemptCount: attempt,
@@ -496,7 +497,7 @@ export class Step {
 				.then((row) => {
 					PlanMetrics.Bus.dispatchEvent(
 						new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
-							detail: {
+							data: {
 								planName: $context.$plan?.name,
 								index: $context.$plan?.currentStep?.index,
 								attemptCount: attempt,
@@ -570,7 +571,7 @@ export class Step {
 
 		PlanMetrics.Bus.dispatchEvent(
 			new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
-				detail: {
+				data: {
 					planName,
 					index: currentStep?.index,
 					attemptCount: attempt,
@@ -633,7 +634,7 @@ export class Step {
 			.then(() => {
 				PlanMetrics.Bus.dispatchEvent(
 					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
-						detail: {
+						data: {
 							planName: $context.$plan?.name,
 							index: $context.$plan?.currentStep?.index,
 							rows: {

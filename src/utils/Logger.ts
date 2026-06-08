@@ -1,6 +1,7 @@
 //
 //
 //
+import { CustomEvent, EventBus, type IEvent, on } from "@dimkl/events"
 import { bold, cyan, gray, green, magenta, red, whiteBright, yellow } from "colorette"
 import * as _ from "lodash-es"
 import LogLevel from "loglevel"
@@ -12,7 +13,6 @@ import { NormalizeError } from "../modules/errors/HttpErrorBase"
 import { DecoratorUtils } from "./DecoratorUtils"
 import { Stringify } from "./JsonUtils/Stringify"
 import { ToTextList } from "./JsonUtils/ToTextList"
-import { Queue } from "./Queue"
 
 //
 export enum VERBOSITY {
@@ -21,6 +21,58 @@ export enum VERBOSITY {
 	INFO = "info",
 	WARN = "warn",
 	ERROR = "error",
+}
+
+//
+export enum LOG_EVENT {
+	TRACE = "log:trace",
+	DEBUG = "log:debug",
+	INFO = "log:info",
+	WARN = "log:warn",
+	ERROR = "log:error",
+	FUNC_REGISTER = "log:func:register",
+}
+
+//
+declare global {
+	interface LogTrace extends IEvent {
+		type: LOG_EVENT.TRACE
+		data: { message: any }
+	}
+
+	interface LogDebug extends IEvent {
+		type: LOG_EVENT.DEBUG
+		data: { message: any }
+	}
+
+	interface LogInfo extends IEvent {
+		type: LOG_EVENT.INFO
+		data: { message: any }
+	}
+
+	interface LogWarn extends IEvent {
+		type: LOG_EVENT.WARN
+		data: { message: any }
+	}
+
+	interface LogError extends IEvent {
+		type: LOG_EVENT.ERROR
+		data: { message: any }
+	}
+
+	interface LogFuncRegister extends IEvent {
+		type: LOG_EVENT.FUNC_REGISTER
+		data: { hide: string[] | boolean; target: any; propertyKey: string; descriptor: PropertyDescriptor }
+	}
+
+	interface Events {
+		[LOG_EVENT.TRACE]: LogTrace
+		[LOG_EVENT.DEBUG]: LogDebug
+		[LOG_EVENT.INFO]: LogInfo
+		[LOG_EVENT.WARN]: LogWarn
+		[LOG_EVENT.ERROR]: LogError
+		[LOG_EVENT.FUNC_REGISTER]: LogFuncRegister
+	}
 }
 
 //
@@ -54,9 +106,7 @@ export class Logger {
 	static readonly In = magenta("▶ ")
 	static readonly Out = yellow("◀ ")
 	static Level: LogLevel.LogLevelDesc = LOGGER_DEFAULT_LEVEL
-	private static readonly _queue = new Queue()
-	private static readonly _maxQueueSize = 1_000
-	private static _cleanupInterval: NodeJS.Timeout | undefined
+	static Bus = new EventBus()
 
 	static RequestMiddleware = morgan(":remote-addr, :method :url, :status, :res[content-length], :response-time ms", {
 		stream: {
@@ -75,63 +125,28 @@ export class Logger {
 		}
 	}
 
-	static StartQueueCleanup(): void {
-		if (Logger._cleanupInterval) {
-			clearInterval(Logger._cleanupInterval)
-		}
-
-		Logger._cleanupInterval = setInterval(() => {
-			Logger._cleanupQueue()
-		}, 60000) // Clean up every minute
-	}
-
-	static StopQueueCleanup(): void {
-		if (Logger._cleanupInterval) {
-			clearInterval(Logger._cleanupInterval)
-			Logger._cleanupInterval = undefined
-		}
-	}
-
-	private static _cleanupQueue(): void {
-		try {
-			const currentSize = Logger._queue.Tasks.length
-			if (currentSize > Logger._maxQueueSize) {
-				const excess = currentSize - Logger._maxQueueSize
-				Logger.Warn(
-					`Logger queue size (${currentSize}) exceeds maximum (${Logger._maxQueueSize}), removing ${excess} oldest entries`,
-				)
-
-				// Remove oldest entries from the front of the array
-				Logger._queue.Tasks.splice(0, excess)
-			}
-		} catch (error) {
-			Logger.Error(`Failed to cleanup logger queue: ${error instanceof Error ? error.message : String(error)}`)
-		}
-	}
-
 	static EnableAll(): void {
 		LogLevel.enableAll()
 	}
 
-	// Non-blocking queued log methods
 	static Trace(msg: any): void {
-		Logger._queue.Enqueue(LogLevel.trace(msg), false)
+		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any }>(LOG_EVENT.TRACE, { data: { message: msg } }))
 	}
 
 	static Debug(msg: any): void {
-		Logger._queue.Enqueue(LogLevel.debug(msg), false)
+		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any }>(LOG_EVENT.DEBUG, { data: { message: msg } }))
 	}
 
 	static Info(msg: any): void {
-		Logger._queue.Enqueue(LogLevel.info(msg), false)
+		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any }>(LOG_EVENT.INFO, { data: { message: msg } }))
 	}
 
 	static Warn(msg: any): void {
-		Logger._queue.Enqueue(LogLevel.warn(msg), false)
+		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any }>(LOG_EVENT.WARN, { data: { message: msg } }))
 	}
 
 	static Error(msg: any): void {
-		Logger._queue.Enqueue(LogLevel.error(msg), false)
+		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, { data: { message: msg } }))
 	}
 
 	static Message(msg: any): void {
@@ -140,74 +155,116 @@ export class Logger {
 		Logger.SetLevel()
 	}
 
+	@on({ eventName: LOG_EVENT.TRACE, eventBus: Logger.Bus })
+	static _handleTrace(event: CustomEvent<{ message: any }>): void {
+		LogLevel.trace(event.data?.message)
+	}
+
+	@on({ eventName: LOG_EVENT.DEBUG, eventBus: Logger.Bus })
+	static _handleDebug(event: CustomEvent<{ message: any }>): void {
+		LogLevel.debug(event.data?.message)
+	}
+
+	@on({ eventName: LOG_EVENT.INFO, eventBus: Logger.Bus })
+	static _handleInfo(event: CustomEvent<{ message: any }>): void {
+		LogLevel.info(event.data?.message)
+	}
+
+	@on({ eventName: LOG_EVENT.WARN, eventBus: Logger.Bus })
+	static _handleWarn(event: CustomEvent<{ message: any }>): void {
+		LogLevel.warn(event.data?.message)
+	}
+
+	@on({ eventName: LOG_EVENT.ERROR, eventBus: Logger.Bus })
+	static _handleError(event: CustomEvent<{ message: any }>): void {
+		LogLevel.error(event.data?.message)
+	}
+
 	static LogFunction(hide: string[] | boolean = []): any {
 		return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-			const wrap = (originalMethod?: (...args: any[]) => any) => {
-				if (!originalMethod) return undefined
-
-				return function (this: unknown, ...args: any[]) {
-					// ---------- BEFORE CALL ----------
-					const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args)
-					const _hide = typeof hide === "boolean" ? Object.keys(_paramObject) : hide
-
-					const _filteredParams: Record<string, any> = _.chain(_paramObject)
-						.omitBy((v) => _.isNil(v) || _.isEmpty(v))
-						.omit(_hide)
-						.value()
-
-					const _argsString = _.isEmpty(_filteredParams) ? "" : ` ${Stringify(_filteredParams)}`
-
-					const ctorName = target.name ?? (this as any)?.constructor?.name ?? "Anonymous"
-
-					Logger.Debug(`${Logger.In} ${ctorName}.${propertyKey}${_argsString}`)
-					// ---------- CALL ORIGINAL ----------
-					let result
-					try {
-						result = originalMethod.apply(this, args)
-					} catch (err: unknown) {
-						Logger.Error(
-							`${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${ToTextList(NormalizeError(err))}`,
-						)
-						throw err // rethrow
-					}
-					// ---------- ASYNC HANDLING ----------
-					if (result instanceof Promise) {
-						return result
-							.then((res) => {
-								Logger.Debug(`${Logger.Out} ${ctorName}.${propertyKey}`)
-								return res
-							})
-							.catch((err: unknown) => {
-								Logger.Error(
-									`${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${ToTextList(NormalizeError(err))}`,
-								)
-								throw err // rethrow async error
-							})
-					}
-					// ---------- SYNC SUCCESS ----------
-					Logger.Debug(`${Logger.Out} ${ctorName}.${propertyKey}`)
-					return result
-				}
-			}
-
-			// wrap function / getter / setter
-			if (typeof descriptor?.value === "function") {
-				descriptor.value = wrap(descriptor.value)
-			}
-			if (typeof descriptor?.get === "function") {
-				descriptor.get = wrap(descriptor.get)
-			}
-			if (typeof descriptor?.set === "function") {
-				descriptor.set = wrap(descriptor.set)
-			}
-
+			Logger.Bus.dispatchEvent(
+				new CustomEvent<{ hide: string[] | boolean; target: any; propertyKey: string; descriptor: PropertyDescriptor }>(
+					LOG_EVENT.FUNC_REGISTER,
+					{ data: { hide, target, propertyKey, descriptor } },
+				),
+			)
 			return descriptor
 		}
 	}
 
-	static async FlushQueue(): Promise<void> {
-		while (Logger._queue.Tasks.length > 0) {
-			await Logger._queue.ProcessQueue()
+	@on({ eventName: LOG_EVENT.FUNC_REGISTER, eventBus: Logger.Bus })
+	static _handleLogFunction(event: CustomEvent<{ hide: string[] | boolean; target: any; propertyKey: string; descriptor: PropertyDescriptor }>): void {
+		const { hide, target, propertyKey, descriptor } = event.data!
+
+		const wrap = (originalMethod?: (...args: any[]) => any) => {
+			if (!originalMethod) return undefined
+
+			return function (this: unknown, ...args: any[]) {
+				const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args)
+				const _hide = typeof hide === "boolean" ? Object.keys(_paramObject) : hide
+
+				const _filteredParams: Record<string, any> = _.chain(_paramObject)
+					.omitBy((v) => _.isNil(v) || _.isEmpty(v))
+					.omit(_hide)
+					.value()
+
+				const _argsString = _.isEmpty(_filteredParams) ? "" : ` ${Stringify(_filteredParams)}`
+
+				const ctorName = target.name ?? (this as any)?.constructor?.name ?? "Anonymous"
+
+				Logger.Bus.dispatchEvent(
+					new CustomEvent<{ message: any }>(LOG_EVENT.DEBUG, {
+						data: { message: `${Logger.In} ${ctorName}.${propertyKey}${_argsString}` },
+					}),
+				)
+				// biome-ignore lint/suspicious/noImplicitAnyLet: any
+				let result
+				try {
+					result = originalMethod.apply(this, args)
+				} catch (err: unknown) {
+					Logger.Bus.dispatchEvent(
+						new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, {
+							data: { message: `${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${ToTextList(NormalizeError(err))}` },
+						}),
+					)
+					throw err
+				}
+				if (result instanceof Promise) {
+					return result
+						.then((res) => {
+							Logger.Bus.dispatchEvent(
+								new CustomEvent<{ message: any }>(LOG_EVENT.DEBUG, {
+									data: { message: `${Logger.Out} ${ctorName}.${propertyKey}` },
+								}),
+							)
+							return res
+						})
+						.catch((err: unknown) => {
+							Logger.Bus.dispatchEvent(
+								new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, {
+									data: { message: `${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${ToTextList(NormalizeError(err))}` },
+								}),
+							)
+							throw err
+						})
+				}
+				Logger.Bus.dispatchEvent(
+					new CustomEvent<{ message: any }>(LOG_EVENT.DEBUG, {
+						data: { message: `${Logger.Out} ${ctorName}.${propertyKey}` },
+					}),
+				)
+				return result
+			}
+		}
+
+		if (typeof descriptor?.value === "function") {
+			descriptor.value = wrap(descriptor.value)
+		}
+		if (typeof descriptor?.get === "function") {
+			descriptor.get = wrap(descriptor.get)
+		}
+		if (typeof descriptor?.set === "function") {
+			descriptor.set = wrap(descriptor.set)
 		}
 	}
 }
