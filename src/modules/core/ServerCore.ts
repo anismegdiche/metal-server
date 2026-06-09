@@ -1,32 +1,18 @@
 //
 //
 //
-
 import { existsSync, readdirSync } from "node:fs"
 import os from "node:os"
 import { pathToFileURL } from "node:url"
-import type { LogLevelDesc } from "loglevel"
 //
-import { Convert } from "../../utils/Convert"
 import { Logger } from "../../utils/Logger"
 import { StringUtils } from "../../utils/StringUtils"
-import { AiEngine } from "../ai-engine/AiEngine"
-import { AuthProvider } from "../auth/AuthProvider"
-import { Roles } from "../auth/Roles"
-import type { U__server_authentication } from "../auth/types/U__server_authentication"
-import { Cache } from "../cache/Cache"
-import { PlansManager } from "../plan/PlansManager"
-import { Schedule } from "../plan/Schedule"
-import { Schema } from "../schema/Schema"
-import { DataProvider } from "../source/DataProvider"
-import { Source } from "../source/Source"
 import { ROUTE } from "./@consts"
-import { ConfigManager } from "./ConfigManager"
-import { ConfigStore } from "./ConfigStore"
 import { ResponseHandler } from "./ResponseHandler"
 import { ServerRouter } from "./routes/ServerRouter"
 import { ServerEndpoint } from "./ServerEndpoint"
-import { ServerRuntime } from "./ServerRuntime"
+import { ServerInitializer } from "./ServerInitializer"
+
 
 //
 export class ServerCore {
@@ -74,42 +60,13 @@ export class ServerCore {
 
 	@Logger.LogFunction()
 	static async Init(): Promise<void> {
-		// core
-		// ServerCore.RegisterProviders()
+		await ServerInitializer.InitAll()
 
-		// config
-		await ConfigManager.Init(new ConfigStore())
-		ServerCore.InitLogging()
-
-		// sources
-		await Source.Init()
-
-		// cache
-		await Cache.Init(DataProvider.GetProvider)
-		await Cache.Connect()
-
-		// schema
-		Schema.Init(Cache.Get)
-
-		// AI
-		await AiEngine.Init()
-
-		// plans
-		await PlansManager.Init()
-		await Schedule.Init()
-
-		await ServerCore.InitAuthentication()
-
-		ServerCore.InitResponse()
-
-		// Register server middleware
 		ServerCore.RegisterServerMiddleware()
-
-		// Load module hooks dynamically
 		await ServerCore.LoadModuleHooks()
 
 		ServerEndpoint.InitApi()
-		ServerRuntime.StartWatcher()
+		ServerInitializer.StartWatcher()
 	}
 
 	@Logger.LogFunction()
@@ -119,24 +76,5 @@ export class ServerCore {
 		// TODO: Add proper cleanup for other components
 
 		Logger.Info("Server shutdown completed")
-	}
-
-	@Logger.LogFunction()
-	static InitLogging(): void {
-		const verbosity = ConfigManager.Get<LogLevelDesc>("server.verbosity")
-		Logger.SetLevel(verbosity)
-	}
-
-	@Logger.LogFunction()
-	static async InitAuthentication(): Promise<void> {
-		const authentication = ConfigManager.Get<U__server_authentication>("server.authentication")
-		await AuthProvider.SetCurrent(authentication.provider)
-		AuthProvider.Provider.Init()
-		Roles.Init()
-	}
-
-	@Logger.LogFunction()
-	static InitResponse(): void {
-		Logger.Debug(`Server Response Limit set to ${Convert.HumainSizeToBytes(ConfigManager.Get("server.response-limit"))}`)
 	}
 }

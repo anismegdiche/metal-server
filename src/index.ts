@@ -11,6 +11,7 @@ import { ConfigManager } from "./modules/core/ConfigManager"
 import { ConfigStore } from "./modules/core/ConfigStore"
 import { ServerCore } from "./modules/core/ServerCore"
 import { ServerEndpoint } from "./modules/core/ServerEndpoint"
+import { ServerInitializer } from "./modules/core/ServerInitializer"
 import { ServerShutdown } from "./modules/core/ServerShutdown"
 import { Logger } from "./utils/Logger"
 
@@ -28,7 +29,7 @@ if (!ARG_build_all_images) ServerShutdown.SetupSignalHandlers()
 
 if (ARG_build_all_images) {
 	await ConfigManager.Init(new ConfigStore())
-	ServerCore.InitLogging()
+	ServerInitializer.InitLogging()
 	Logger.Info(`${Logger.In} 🔨 Entering build mode`)
 	await AiDocker.Init(true)
 

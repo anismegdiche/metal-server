@@ -9,6 +9,7 @@ import { DataProvider } from "../../source/DataProvider"
 import { Source } from "../../source/Source"
 import { SERVER } from "../@consts"
 import { ConfigManager } from "../ConfigManager"
+import { ServerInitializer } from "../ServerInitializer"
 import { ServerRuntime } from "../ServerRuntime"
 import { ServerShutdown } from "../ServerShutdown"
 
@@ -21,7 +22,24 @@ vi.mock("../../plan/PlansManager")
 vi.mock("../../ai-engine/AiEngine")
 vi.mock("../../source/DataProvider")
 vi.mock("../../ai-engine/AiDocker")
-vi.mock("../ServerCore")
+vi.mock("../../schema/Schema", () => ({
+	Schema: {
+		Init: vi.fn(),
+	},
+}))
+vi.mock("../../auth/AuthProvider", () => ({
+	AuthProvider: {
+		SetCurrent: vi.fn(),
+		Provider: {
+			Init: vi.fn(),
+		},
+	},
+}))
+vi.mock("../../../utils/Convert", () => ({
+	Convert: {
+		HumainSizeToBytes: vi.fn().mockReturnValue(1024),
+	},
+}))
 vi.mock("../ConfigManager", () => ({
 	ConfigManager: {
 		Init: vi.fn(),
@@ -52,8 +70,10 @@ describe("ServerRuntime", () => {
 	describe("Reload", () => {
 		it("should check permission and reload all components", async () => {
 			const userToken = { user: "admin" }
+			vi.spyOn(ServerInitializer, "InitAll")
 			await ServerRuntime.Reload(userToken as any)
 
+			expect(ServerInitializer.InitAll).toHaveBeenCalled()
 			expect(Roles.CheckPermission).toHaveBeenCalled()
 			expect(AiDocker.StopScaler).toHaveBeenCalled()
 			expect(Schedule.StopAll).toHaveBeenCalled()

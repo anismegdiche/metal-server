@@ -1,9 +1,5 @@
-
 //
 //
-//
-import type { FSWatcher } from "chokidar"
-import chokidar from "chokidar"
 //
 import type { TJson } from "../../types/TJson"
 import { Logger } from "../../utils/Logger"
@@ -15,20 +11,15 @@ import { Roles } from "../auth/Roles"
 import { Cache } from "../cache/Cache"
 import { PlansManager } from "../plan/PlansManager"
 import { Schedule } from "../plan/Schedule"
-import { Schema } from "../schema/Schema"
 import { DataProvider } from "../source/DataProvider"
 import { Source } from "../source/Source"
 import { SERVER } from "./@consts"
-import { ConfigManager } from "./ConfigManager"
-import { ConfigStore } from "./ConfigStore"
 import { HttpResponse } from "./HttpResponse"
-import { ServerShutdown } from "./ServerShutdown"
+import { ServerInitializer } from "./ServerInitializer"
 import type { TInternalResponse } from "./types/TInternalResponse"
 
 //
 export class ServerRuntime {
-	private static configWatcher?: FSWatcher
-
 	@Logger.LogFunction()
 	static async Stop(userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
 		Roles.CheckPermission(userToken, undefined, AUTH_PERMISSION.ADMIN)
@@ -58,22 +49,8 @@ export class ServerRuntime {
 		AiEngine.Clear()
 		DataProvider.Clear()
 
-		// Reload configuration from disk and re-validate
-		await ConfigManager.Init(new ConfigStore())
-
-		const { ServerCore } = await import("./ServerCore")
-		ServerCore.InitLogging()
-
-		// Re-initialize all modules in correct order (similar to ServerCore.Init)
-		await Source.Init()
-		await Cache.Init(DataProvider.GetProvider)
-		await Cache.Connect()
-		Schema.Init(Cache.Get)
-		await AiEngine.Init()
-		await PlansManager.Init()
-		await Schedule.Init()
-		await ServerCore.InitAuthentication()
-		ServerCore.InitResponse()
+		// Re-initialize all modules
+		await ServerInitializer.InitAll()
 
 		Logger.Info(`${Logger.Out} Server configuration reloaded successfully`)
 
@@ -99,17 +76,5 @@ export class ServerRuntime {
 			server: SERVER.NAME,
 			version: SERVER.VERSION,
 		})
-	}
-
-	@Logger.LogFunction()
-	static StartWatcher(): void {
-		// Config
-		ServerRuntime.configWatcher = chokidar.watch(ConfigManager.ConfigFilePath).on("change", () => {
-			Logger.Info("Config file changed. Reloading...")
-			ServerRuntime.Reload().catch((err: Error) => Logger.Error(err.message))
-		})
-
-		// Register watcher for shutdown
-		ServerShutdown.RegisterConfigWatcher(ServerRuntime.configWatcher)
 	}
 }

@@ -2,6 +2,7 @@
 //
 //
 //
+import { CustomEvent } from "@dimkl/events"
 //
 import type { DataTable, TRow } from "../../types/DataTable"
 import type { TUuidv7 } from "../../types/TUuidv7"
@@ -22,7 +23,6 @@ import {
 } from "./@consts"
 import type { T_StepMetrics } from "./PlanMetrics"
 import { PLAN_METRICS, PlanMetrics } from "./PlanMetrics"
-import { CustomEvent } from "@dimkl/events"
 import { Insert } from "./steps/Insert"
 import type { T_StepErrorDetails } from "./T_StepErrorDetails"
 import type { T_StepResult } from "./types/T_StepResult"

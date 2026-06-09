@@ -8,7 +8,7 @@ import { Source } from "../../source/Source"
 import { ConfigManager } from "../ConfigManager"
 import { ServerCore } from "../ServerCore"
 import { ServerEndpoint } from "../ServerEndpoint"
-import { ServerRuntime } from "../ServerRuntime"
+import { ServerInitializer } from "../ServerInitializer"
 
 vi.mock("../ConfigManager")
 vi.mock("../ConfigStore")
@@ -44,7 +44,6 @@ vi.mock("../../auth/AuthProvider", () => ({
 }))
 vi.mock("../../auth/Roles")
 vi.mock("../ServerEndpoint")
-vi.mock("../ServerRuntime")
 vi.mock("../../../utils/Convert", () => ({
 	Convert: {
 		HumainSizeToBytes: vi.fn().mockReturnValue(1024),
@@ -65,6 +64,7 @@ describe("ServerCore", () => {
 				return undefined
 			})
 			vi.spyOn(ServerCore, "LoadModuleHooks").mockResolvedValue()
+			vi.spyOn(ServerInitializer, "StartWatcher").mockImplementation(() => {})
 
 			await ServerCore.Init()
 
@@ -79,7 +79,7 @@ describe("ServerCore", () => {
 			expect(ServerEndpoint.RegisterMiddleware).toHaveBeenCalled()
 			expect(ServerCore.LoadModuleHooks).toHaveBeenCalled()
 			expect(ServerEndpoint.InitApi).toHaveBeenCalled()
-			expect(ServerRuntime.StartWatcher).toHaveBeenCalled()
+			expect(ServerInitializer.StartWatcher).toHaveBeenCalled()
 		})
 	})
 })

@@ -3,6 +3,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ConfigManager } from "../../core/ConfigManager"
+import { Roles } from "../../auth/Roles"
 import { Plan } from "../Plan"
 import { Plans } from "../Plans"
 import { PlansManager } from "../PlansManager"
@@ -75,6 +76,7 @@ describe("PlansManager", () => {
 
 	describe("ReloadPlan", () => {
 		it("should reload a specific plan and refresh schedules", async () => {
+			Roles._serverRoles = { admin: "a" } as any
 			const mockPlan = new Plan("test-plan") as any
 			Plans.set("test-plan", mockPlan)
 
