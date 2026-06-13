@@ -8,10 +8,15 @@
 	"author": "Anis Megdiche",
 	"license": "GPL-3.0-or-later",
 	"type": "module",
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
 	"scripts": {
 		"dev": "tsx watch --inspect=0.0.0.0:9229 src/index.ts",
 		"dev:build-all-images": "tsx watch --inspect=0.0.0.0:9229 src/index.ts --build-all-images",
 		"build": "tsup-node",
+		"build:workspaces": "npm run build --workspaces --if-present",
 		"build:watch": "tsc --watch",
 		"start": "node dist/index.js",
 		"prod": "npm run build && npm run start",

@@ -1,0 +1,24 @@
+{
+	"name": "@metal/messaging",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./auto-discover": "./src/auto-discover.ts",
+		"./publisher": "./src/publisher.ts",
+		"./registry": "./src/registry.ts",
+		"./subscriber": "./src/subscriber.ts",
+		"./di/container": "./src/di/container.ts",
+		"./decorators/message": "./src/decorators/message.ts",
+		"./decorators/retry": "./src/decorators/retry.ts",
+		"./decorators/timeout": "./src/decorators/timeout.ts",
+		"./decorators/validate": "./src/decorators/validate.ts"
+	},
+	"scripts": {
+		"build": "tsc"
+	},
+	"dependencies": {
+		"reflect-metadata": "^0.2.2",
+		"zeromq": "^6.5.0"
+	}
+}

@@ -1,0 +1,16 @@
+{
+	"name": "@metal/example-zmq",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc",
+		"worker": "tsx src/worker/main.ts",
+		"api": "tsx src/api/main.ts"
+	},
+	"dependencies": {
+		"@metal/messaging": "*",
+		"@metal/persistent-map": "*",
+		"reflect-metadata": "^0.2.2"
+	}
+}
