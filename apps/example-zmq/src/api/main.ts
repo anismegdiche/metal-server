@@ -11,13 +11,13 @@ async function main() {
 	await new Promise((r) => setTimeout(r, 1000))
 
 	// Valid event — passes Validate schema
-	await publisher.publish("metrics.created", {
+	await publisher.publish("METRICS:ADD", {
 		id: "123",
 		cpu: 0.75,
 		ram: 16,
 	})
 
-	console.log("Published metrics.created event")
+	console.log("Published METRICS:ADD event")
 
 	// Keep process alive to allow ZMQ to flush the send buffer
 	await new Promise((r) => setTimeout(r, 1000))

@@ -5,7 +5,7 @@ import { Validate, type ValidationSchema } from "@metal/messaging/decorators/val
 import { Injectable } from "@metal/messaging/di/container"
 import type { MetricsRepository } from "./metrics.repository"
 
-const metricsCreatedSchema: ValidationSchema = (data: unknown) => {
+const metricsSavedSchema: ValidationSchema = (data: unknown) => {
 	if (typeof data !== "object" || data === null) {
 		return { valid: false, errors: ["payload must be an object"] }
 	}
@@ -16,10 +16,6 @@ const metricsCreatedSchema: ValidationSchema = (data: unknown) => {
 		return { valid: false, errors: ["id must be a string"] }
 	}
 
-	if (typeof d.cpu !== "number") {
-		return { valid: false, errors: ["cpu must be a number"] }
-	}
-
 	return { valid: true }
 }
 
@@ -28,17 +24,17 @@ export class MetricsConsumer {
 	constructor(private readonly repository: MetricsRepository) {}
 
 	@Message("METRICS:ADD")
-	@Validate(metricsCreatedSchema)
+	// @Validate(metricsSavedSchema)
 	@Retry(3, 200)
 	@Timeout(5000)
 	async handleMetricsCreated(data: any) {
 		console.log("received metrics", data)
-
 		await this.repository.save(data)
 	}
 
 	@Message("METRICS:DELETE")
 	async handleMetricsDeleted(data: any) {
 		console.log("deleted metrics", data)
+		await this.repository.delete(data.id)
 	}
 }
