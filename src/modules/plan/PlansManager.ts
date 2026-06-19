@@ -1,6 +1,7 @@
 //
 //
 //
+import { CustomEvent } from "@dimkl/events"
 import z from "zod"
 //
 import type { TJson } from "../../types/TJson"
@@ -15,7 +16,7 @@ import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { HttpErrorNotFound } from "../errors/HttpErrors"
 import { PLAN_STATUS } from "./@consts"
 import { Plan } from "./Plan"
-import { PlanMetrics, type T_PlanMetrics } from "./PlanMetrics"
+import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "./PlanMetrics"
 import { Plans } from "./Plans"
 import { Schedule } from "./Schedule"
 import type { U__plans } from "./types/U__plans"
@@ -42,11 +43,16 @@ export class PlansManager {
 		const _plan = new Plan(planName)
 		_plan.Init()
 		Plans.set(planName, _plan)
-		PlanMetrics.Metrics.set(planName, <T_PlanMetrics>{
-			planName,
-			status: PLAN_STATUS.NOT_STARTED,
-			steps: [],
-		})
+
+		PlanMetrics.Bus.dispatchEvent(
+			new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_SET, {
+				data: {
+					planName,
+					status: PLAN_STATUS.NOT_STARTED,
+					steps: [],
+				} as Partial<T_PlanMetrics>
+			})
+		)
 	}
 
 	@Logger.LogFunction()

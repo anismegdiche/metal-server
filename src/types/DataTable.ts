@@ -5,7 +5,8 @@ import fs from "node:fs"
 import { cpus } from "node:os"
 import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
 //
-import { SERVER } from "../modules/core/@consts"
+import { DataTablesGetDataPath } from "@metal/config"
+//
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../modules/errors/HttpErrors"
 import { Assert } from "../utils/Assert"
 import { clsClonable } from "../utils/base/clsClonable"
@@ -24,11 +25,12 @@ import type { TAny } from "./TAny"
 import type { TJson } from "./TJson"
 import type { TUuidv7 } from "./TUuidv7"
 
+
 // constants
 export { SORT_ORDER }
 
 export const DATATABLE_SYS_FIELDS: string[] = Object.values(DT_SYS_FIELDS)
-export const DATATABLE_TEMP_PATH = StringUtils.FsPath(SERVER.TEMP_PATH, "data")
+export const DATATABLES_PATH = DataTablesGetDataPath()
 
 // types
 export type { TFields, TMetaData, TOrderBy, TRow, TSnapshotInfo }
@@ -457,7 +459,7 @@ export class DataTable extends clsClonable {
 			this._duckInstance = opt.duckInstance
 			this._isAttached = true
 		} else {
-			this._dbPath = StringUtils.FsPath(DATATABLE_TEMP_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
+			this._dbPath = StringUtils.FsPath(DATATABLES_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
 			this._persistent = opt.persistant ?? false
 
 			// Generate encryption key for persistent databases
@@ -521,8 +523,8 @@ export class DataTable extends clsClonable {
 
 	async DuckConnection(): Promise<DuckDBConnection> {
 		return this._dbEnsureInitialized()
-			.then(() => {				
-				return Assert.Get<DuckDBConnection>(this._duckConnection,`data '${this.Name}': DB Connection is not initialized`)
+			.then(() => {
+				return Assert.Get<DuckDBConnection>(this._duckConnection, `data '${this.Name}': DB Connection is not initialized`)
 			})
 	}
 
@@ -544,6 +546,9 @@ export class DataTable extends clsClonable {
 				// Create in-memory instance first
 				const cnx = await this._duckInstance.connect()
 				try {
+					// create folder
+					fs.mkdirSync(DATATABLES_PATH, { recursive: true })
+
 					// Attach encrypted database
 					await cnx.run(`
                         ATTACH '${this._dbPath}' AS ${this.SafeName}
@@ -570,7 +575,7 @@ export class DataTable extends clsClonable {
 		// tune performance
 		await cnx.run(`
                 SET memory_limit = '8GB';
-                SET temp_directory = '${DATATABLE_TEMP_PATH}';
+                SET temp_directory = '${DATATABLES_PATH}';
                 SET threads = ${Math.max(1, Math.floor((cpus().length ?? 1) / 2))};
                 SET preserve_insertion_order=false;
             `)
@@ -1267,6 +1272,7 @@ export class DataTable extends clsClonable {
 		returnData?: boolean
 		convertCondition?: boolean
 	} = {}): Promise<DataTable | this> {
+
 		if (!sqlQuery)
 			return this
 
@@ -1493,7 +1499,7 @@ export class DataTable extends clsClonable {
 	@Logger.LogFunction(true)
 	async SnapshotList(): Promise<TSnapshotInfo[]> {
 		return Array.from(this.SnapShots.values())
-		.sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
+			.sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
 	}
 
 	@Logger.LogFunction(true)

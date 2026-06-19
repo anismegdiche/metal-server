@@ -7,7 +7,7 @@ import { Assert } from "../utils/Assert"
 import { Logger } from "../utils/Logger"
 import { StringUtils } from "../utils/StringUtils"
 import { Utils } from "../utils/Utils"
-import { DATATABLE_TEMP_PATH, DataTable, dataTable_convertSql, type TRow } from "./DataTable"
+import { DATATABLES_PATH, DataTable, dataTable_convertSql, type TRow } from "./DataTable"
 import type { TAny } from "./TAny"
 import type { TJson } from "./TJson"
 
@@ -25,7 +25,9 @@ export class DataBase {
 		Assert.Var<string>(name, "undefined DataBase name")
 		this.Name = name
 		this._dbPath =
-			isPersistant === true ? StringUtils.FsPath(DATATABLE_TEMP_PATH, `${this.Name}_${Utils.Uuid(true)}.db`) : ":memory:"
+			isPersistant === true
+				? StringUtils.FsPath(DATATABLES_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
+				: ":memory:"
 
 		// Generate encryption key for persistent databases
 		if (isPersistant === true) {

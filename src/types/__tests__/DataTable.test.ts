@@ -9,7 +9,7 @@ import { HttpErrorBadRequest, HttpErrorNotFound } from "../../modules/errors/Htt
 import { StringUtils } from "../../utils/StringUtils"
 import { Utils } from "../../utils/Utils"
 import type { TRow } from "../DataTable"
-import { DATATABLE_TEMP_PATH, DataTable, dataTable_convertSql, SORT_ORDER } from "../DataTable"
+import { DATATABLES_PATH, DataTable, dataTable_convertSql, SORT_ORDER } from "../DataTable"
 import { DT_SYS_FIELDS } from "../DataTableTypes"
 
 describe("DataTable", () => {
@@ -222,7 +222,7 @@ describe("DataTable", () => {
 		it("should share the same duck instance", async () => {
 			const tables: DataTable[] = []
 			const total = 10
-			const db_name = StringUtils.FsPath(DATATABLE_TEMP_PATH, `share_${Utils.Uuid(true)}.db`)
+			const db_name = StringUtils.FsPath(DATATABLES_PATH, `share_${Utils.Uuid(true)}.db`)
 			const duckInstance = await DuckDBInstance.create(db_name)
 			const cnx = await duckInstance.connect()
 

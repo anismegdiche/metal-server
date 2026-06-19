@@ -1,9 +1,9 @@
 //
 //
 //
+import { CustomEvent } from "@dimkl/events"
 import { has, merge } from "lodash-es"
 //
-import { CustomEvent } from "@dimkl/events"
 import { DataTable } from "../../types/DataTable"
 import type { TJson } from "../../types/TJson"
 import { Assert } from "../../utils/Assert"
@@ -24,15 +24,13 @@ import { DATA_PROVIDER } from "../source/@consts"
 import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_STATUS } from "./@consts"
 import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "./PlanMetrics"
 import { Step, type T_StepFunctionWithSignal } from "./Step"
-import { z_U__plans_plan, type U__plans_plan } from "./types/U__plans"
+import { type U__plans_plan, z_U__plans_plan } from "./types/U__plans"
 import type { U__plans_plan__step } from "./types/U__plans_plan__step"
 import type { U__on_error_Params } from "./types/U__plans_plan_on_error"
 import type { U__schedules_schedule } from "./types/U__schedules"
 
-
 //
 export class Plan {
-
 	Name: string // Plan name
 	Config: U__plans_plan | null = null // Plan configuration
 
@@ -50,7 +48,7 @@ export class Plan {
 	async Init() {
 		this._data = new DataTable(this.Name, undefined, undefined, {
 			persistant: true,
-			batchSize: 100
+			batchSize: 100,
 		})
 
 		const planConfig = ConfigManager.Get<U__plans_plan>(`plans.${this.Name}`)
@@ -64,11 +62,9 @@ export class Plan {
 		this.Config = null
 	}
 
-
-	@Logger.LogFunction(['sqlQuery'])
+	@Logger.LogFunction(["sqlQuery"])
 	@SynchronizerManager.Synchronized()
 	async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery?: string) {
-
 		const { schema: callerSchema, source } = schemaRequest as TSchemaRequestSelect
 
 		Assert.Var<string>(source, `no source found for ${callerSchema}`, new HttpErrorNotFound())
@@ -80,10 +76,9 @@ export class Plan {
 		return planData
 	}
 
-	@Logger.LogFunction(['sqlQuery'])
+	@Logger.LogFunction(["sqlQuery"])
 	@SynchronizerManager.Synchronized()
 	async ProcessSchedule(schedule: U__schedules_schedule, sqlQuery?: string): Promise<void> {
-
 		const { plan } = schedule
 
 		Assert.Condition(plan !== null, `plan '${plan}' is not defined`)
@@ -98,7 +93,6 @@ export class Plan {
 	@Logger.LogFunction()
 	@SynchronizerManager.Synchronized()
 	async Process(callerSchema?: string): Promise<DataTable> {
-
 		await this._data.RowsSet([])
 
 		Assert.Var<NonNullable<U__plans_plan>>(this.Config, `plan '${this.Name}' not found or not configured`)
@@ -117,7 +111,7 @@ export class Plan {
 					index: undefined,
 					command: undefined,
 					params: undefined,
-					status: STEP_STATUS.PENDING
+					status: STEP_STATUS.PENDING,
 				},
 				data: this._data,
 			},
@@ -130,17 +124,16 @@ export class Plan {
 					planName: this.Name,
 					startTime: new Date(),
 					status: PLAN_STATUS.RUNNING,
-					steps: []
-				}
-			})
-		);
+					steps: [],
+				},
+			}),
+		)
 
 		let stepIndex = 0
 		let isPlanCompletedWithErrors = false
 
 		while (stepIndex < steps.length) {
 			try {
-
 				const _step = steps[stepIndex]
 
 				Assert.Var<U__plans_plan__step>(_step, "Step is not defined")
@@ -150,7 +143,7 @@ export class Plan {
 
 				// if step has no on-error, merge with plan.on-error
 				if (_stepParams && (_stepParams as Record<string, unknown>)["on-error"] === undefined && planOnError) {
-					(_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
+					;(_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
 				}
 
 				$context.$plan.currentStep = {
@@ -158,23 +151,24 @@ export class Plan {
 					index: stepIndex,
 					command: _stepCommand,
 					params: _stepParams,
-					status: STEP_STATUS.RUNNING
+					status: STEP_STATUS.RUNNING,
 				}
 
 				Logger.Info(`${Logger.In} Plan.Process '${$context.$plan.name}', step ${stepIndex}: ${JsonUtils.Stringify(_step)}`)
 
 				// check loop detection
 				// TODO: recheck
-				const { schema: _stepParamSchema, entity: _stepParamEntity } = $context.$plan.currentStep.params as TSchemaRequestBase
+				const { schema: _stepParamSchema, entity: _stepParamEntity } = $context.$plan.currentStep
+					.params as TSchemaRequestBase
 
 				Assert.Condition(
 					_stepParamSchema !== DATA_PROVIDER.PLANS && _stepParamEntity !== this.Name,
-					`'${$context.$plan.name}': loop detected in step ${$context.$plan.currentStep.index}`
+					`'${$context.$plan.name}': loop detected in step ${$context.$plan.currentStep.index}`,
 				)
 
 				Assert.Var<DataTable>(
 					this._data,
-					`'${$context.$plan.name}': error have been encountered in step ${$context.$plan.currentStep.index}`
+					`'${$context.$plan.name}': error have been encountered in step ${$context.$plan.currentStep.index}`,
 				)
 
 				const _stepFunction = Step.ExecuteCaseMap[_stepCommand]
@@ -185,10 +179,7 @@ export class Plan {
 					new HttpErrorInternalServerError(),
 				)
 
-				const _stepOutput = await _stepFunction(
-					_stepParams,
-					$context
-				)
+				const _stepOutput = await _stepFunction(_stepParams, $context)
 
 				if (_stepOutput.data) {
 					this._data = _stepOutput.data
@@ -203,18 +194,17 @@ export class Plan {
 					},
 				})
 
-			// Check for stop signal to halt execution
-			if (_stepOutput.signal === 'stop') {
-
-				PlanMetrics.Bus.dispatchEvent(
-					new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_END, {
-						data: {
-							planName: this.Name,
-							endTime: new Date(),
-							status: PLAN_STATUS.COMPLETED,
-						}
-					})
-				);
+				// Check for stop signal to halt execution
+				if (_stepOutput.signal === "stop") {
+					PlanMetrics.Bus.dispatchEvent(
+						new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_END, {
+							data: {
+								planName: this.Name,
+								endTime: new Date(),
+								status: PLAN_STATUS.COMPLETED,
+							},
+						}),
+					)
 
 					Logger.Info(
 						`${Logger.Out} Plan.Process '${this.Name}': stop signal at step '${stepIndex}', ${JsonUtils.Stringify(_stepCommand)}`,
@@ -240,7 +230,7 @@ export class Plan {
 					}
 
 					Logger.Debug(
-						`${Logger.Out} Plan.Process '${this.Name}': step '${stepIndex},${JsonUtils.Stringify(_stepParams)}' added error ${JsonUtils.Stringify((<TJson[]>this._data.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`
+						`${Logger.Out} Plan.Process '${this.Name}': step '${stepIndex},${JsonUtils.Stringify(_stepParams)}' added error ${JsonUtils.Stringify((<TJson[]>this._data.MetaData[METADATA.PLAN_ERRORS]).push(_planErrors))}`,
 					)
 				}
 
@@ -263,31 +253,30 @@ export class Plan {
 						if (!this._data.MetaData[METADATA.PLAN_ERRORS]) {
 							this._data.MetaData[METADATA.PLAN_ERRORS] = []
 						}
-						(this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
+						;(this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
 							step: stepIndex,
 							command: _stepCommand,
 							error: _e.message,
-							timestamp: new Date().toISOString()
+							timestamp: new Date().toISOString(),
 						})
 						isPlanCompletedWithErrors = true
-						break;
+						break
 
 					case PLAN_FAILURE_STRATEGY.DATA:
 						isPlanCompletedWithErrors = true
-						break;
+						break
 
 					case PLAN_FAILURE_STRATEGY.THROW:
 					default:
-
 						PlanMetrics.Bus.dispatchEvent(
 							new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_END, {
 								data: {
 									planName: this.Name,
 									endTime: new Date(),
 									status: PLAN_STATUS.FAILED,
-								}
-							})
-						);
+								},
+							}),
+						)
 
 						throw new HttpErrorInternalServerError(_errMessage)
 				}

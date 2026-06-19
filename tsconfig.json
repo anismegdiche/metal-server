@@ -18,7 +18,7 @@
     "module": "es2022",
     "outDir": "./build",
     "sourceMap": true,
-    "lib": ["es2022", "esnext.disposable"],
+    "lib": ["es2022"],
 
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true, // Typing support for this case

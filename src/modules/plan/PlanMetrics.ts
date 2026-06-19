@@ -2,17 +2,18 @@
 //
 //
 import { type CustomEvent, EventBus, type IEvent, on } from "@dimkl/events"
+import PersistentMap from "@metal/persistent-map"
 import { merge } from "lodash-es"
 import z from "zod"
 //
 import { Assert } from "../../utils/Assert"
 import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
-import { HttpErrorInternalServerError } from "../errors/HttpErrorBase"
 import type { PLAN_STATUS, STEP_STATUS } from "./@consts"
 
 //
 export enum PLAN_METRICS {
+	PLAN_SET = "plan:metrics:set",
 	PLAN_START = "plan:metrics:start",
 	PLAN_END = "plan:metrics:end",
 	STEP_START = "plan:metrics:step:start",
@@ -53,6 +54,11 @@ export type T_PlanMetrics = {
 
 //
 declare global {
+	interface PlanSet extends IEvent {
+		type: PLAN_METRICS.PLAN_SET
+		data: Partial<T_PlanMetrics>
+	}
+
 	interface PlanStart extends IEvent {
 		type: PLAN_METRICS.PLAN_START
 		data: Partial<T_PlanMetrics>
@@ -79,6 +85,7 @@ declare global {
 	}
 
 	interface Events {
+		[PLAN_METRICS.PLAN_SET]: PlanSet
 		[PLAN_METRICS.PLAN_START]: PlanStart
 		[PLAN_METRICS.PLAN_END]: PlanEnd
 		[PLAN_METRICS.STEP_START]: StepStart
@@ -91,19 +98,33 @@ declare global {
 export class PlanMetrics {
 	static Bus = new EventBus()
 
-	static Metrics: Map<string, T_PlanMetrics> = new Map()
+	static Metrics = new PersistentMap<T_PlanMetrics>(process.env.METRICS_DB_PATH ?? "../../data/metrics")
 
 	static Get(planName: string): T_PlanMetrics {
-		if (!PlanMetrics.Metrics.has(planName)) 
-            throw new HttpErrorInternalServerError(`plan '${planName}' metrics not found`)
+		const METRIC_NAME = `plan:${planName}:metrics`
 
-		return PlanMetrics.Metrics.get(planName) as T_PlanMetrics
+		if (!PlanMetrics.Metrics.has(METRIC_NAME)) {
+			Logger.Debug(`plan '${planName}' metrics not found`)
+			return {} as T_PlanMetrics
+		}
+		return PlanMetrics.Metrics.get(METRIC_NAME) as T_PlanMetrics
 	}
 
 	static Set(planName: string, planMetrics: T_PlanMetrics) {
+		const METRIC_NAME = `plan:${planName}:metrics`
 		Logger.Info(`Plan '${planName}' metrics: ${JsonUtils.Stringify(planMetrics)}`)
-		PlanMetrics.Metrics.set(planName, planMetrics)
+		PlanMetrics.Metrics.set(METRIC_NAME, planMetrics)
 	}
+
+	@on({ eventName: PLAN_METRICS.PLAN_SET, eventBus: PlanMetrics.Bus })
+	static _handlePlanSet(event: CustomEvent<Partial<T_PlanMetrics>>) {
+		const metrics = (event.data || {}) as T_PlanMetrics
+		const planName = metrics.planName || ""
+
+		// save metrics
+		PlanMetrics.Set(planName, metrics)
+	}
+
 
 	@on({ eventName: PLAN_METRICS.STEP_START, eventBus: PlanMetrics.Bus })
 	static _handlePlanStepStart(event: CustomEvent<Partial<T_StepMetrics>>) {

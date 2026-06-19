@@ -7,6 +7,7 @@ import { CustomEvent } from "@dimkl/events"
 import type { DataTable, TRow } from "../../types/DataTable"
 import type { TUuidv7 } from "../../types/TUuidv7"
 import { Assert } from "../../utils/Assert"
+import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
 import { Utils } from "../../utils/Utils"
 import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrorBase"
@@ -372,10 +373,12 @@ export class Step {
 		)
 
 		Logger.Warn(
-			`Plan '${planName}', step ${currentStep?.index} threw an error after ${attempt} attempt(s): ${errorDetails}`,
+			`Plan '${planName}', step ${currentStep?.index} threw an error after ${attempt} attempt(s): ${JsonUtils.Stringify(errorDetails)}`,
 		)
 		throw new HttpErrorInternalServerError(
-			`Plan '${planName}', step ${currentStep?.index} threw an error after ${attempt} attempt(s): ${errorDetails}`,
+			`Plan '${planName}', step ${currentStep?.index} threw an error after ${attempt} attempt(s): ${JsonUtils.Stringify(errorDetails)
+				
+			}`,
 		)
 	}
 

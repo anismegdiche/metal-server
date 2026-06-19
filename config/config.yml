@@ -28,13 +28,13 @@ sources:
     options:
       storage-mode: folders
       storage-type: fs
-      folder: ./data/
+      folder: ../metal-tests/fs-storage
   src-json:
     provider: storage
     options:
       storage-mode: files
       storage-type: fs
-      folder: ./data/
+      folder: ../metal-tests/fs-storage
       autocreate: true
       content:
         "*.json":

@@ -1,4 +1,5 @@
 //
+/** biome-ignore-all lint/suspicious/noControlCharactersInRegex: <explanation> */
 //
 //
 import path from "node:path"
@@ -46,7 +47,7 @@ export class StringUtils {
 		if (cleanSubPaths.length === 0)
 			return ""
 
-		return (process.platform == 'win32')
+		return (process.platform === 'win32')
 			? path.join(...cleanSubPaths)
 			: path.posix.join(...cleanSubPaths)
 	}
@@ -89,7 +90,6 @@ export class StringUtils {
 	}
 
 	static IsLatin(str: string) {
-
 		return /^[\u0000-\u024F]*$/.test(str)
 	}
 

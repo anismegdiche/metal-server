@@ -9,7 +9,7 @@ import DataType, { DuckDBScalarFunction } from "@duckdb/node-api"
 import { omit } from "lodash-es"
 //
 import {
-	DATATABLE_TEMP_PATH,
+	DATATABLES_PATH,
 	type DataTable,
 	dataTable_convertSql,
 	duckDb_Sql_CreateTable,
@@ -753,7 +753,7 @@ export class DataTableUtils {
 		const targetConn = await target.DuckConnection()
 
 		// Use a temp file for transfer to avoid memory pressure
-		const tempFile = StringUtils.FsPath(DATATABLE_TEMP_PATH, `${randomUUID()}.parquet`)
+		const tempFile = StringUtils.FsPath(DATATABLES_PATH, `${randomUUID()}.parquet`)
 
 		try {
 			// Export source to parquet
