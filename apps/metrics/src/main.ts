@@ -1,5 +1,5 @@
 import "reflect-metadata"
-import { GetMetricsTcpAddress } from "@metal/config"
+import { MetricsGetTcpAddress } from "@metal/config"
 import { autoDiscover } from "@metal/messaging/auto-discover"
 import { ZmqSubscriber } from "@metal/messaging/subscriber"
 import { MetricsConsumer } from "./metrics.consumer"
@@ -9,7 +9,7 @@ import { MetricsRepository } from "./metrics.repository"
 
 async function bootstrap() {
 	
-	const METRICS_ADDRESS = GetMetricsTcpAddress()
+	const METRICS_ADDRESS = MetricsGetTcpAddress()
 	const subscriber = new ZmqSubscriber()
 
 	const repository = new MetricsRepository()

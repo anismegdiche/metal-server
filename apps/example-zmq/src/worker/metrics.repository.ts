@@ -1,7 +1,7 @@
 // for testing
 // for testing
 // for testing
-import { GetMetricsDataPath } from "@metal/config"
+import { MetricsGetDataPath } from "@metal/config"
 import { Injectable } from "@metal/messaging/di/container"
 import PersistentMap from "@metal/persistent-map"
 
@@ -12,7 +12,7 @@ export interface MetricsData {
 	ram?: number
 }
 
-const db = new PersistentMap<MetricsData>(GetMetricsDataPath())
+const db = new PersistentMap<MetricsData>(MetricsGetDataPath())
 
 for (const [key, value] of await db.entries()) {
 	console.log(`[MetricsRepository] Key: ${key}, Value:`, value)
