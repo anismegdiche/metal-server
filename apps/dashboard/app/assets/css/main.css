@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme static {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --color-red-50: #fff0f3;
+  --color-red-100: #ffe0e8;
+  --color-red-200: #ffc1d1;
+  --color-red-300: #ff8ba8;
+  --color-red-400: #ff4d78;
+  --color-red-500: #ff2367;
+  --color-red-600: #e81852;
+  --color-red-700: #c30d40;
+  --color-red-800: #a30f39;
+  --color-red-900: #8b1034;
+  --color-red-950: #4d0419;
+}

@@ -9,8 +9,8 @@
 		"api": "tsx src/api/main.ts"
 	},
 	"dependencies": {
-		"@metal/messaging": "*",
-		"@metal/persistent-map": "*",
+		"@metal/messaging": "workspace:*",
+		"@metal/persistent-map": "workspace:*",
 		"reflect-metadata": "^0.2.2"
 	},
 	"devDependencies": {

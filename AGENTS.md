@@ -1,5 +1,7 @@
 # Metal Server — Coding Conventions & Patterns
 
+> **2026-06-20: Migrated from npm to pnpm.** Use `pnpm` instead of `npm` for all package management commands. See `.npmrc` and `pnpm-workspace.yaml` at root.
+
 ## Project Overview
 Metal Server is an Express-based TypeScript middleware/ETL/AI server using DuckDB as its in-memory tabular engine (see `src/types/DataTable.ts`). It exposes a unified REST API over multiple database, storage, and web service backends, with a plan-based ETL pipeline and Docker-based AI task execution.
 
@@ -30,7 +32,7 @@ Repeating files across modules (same naming) is normal and intentional.
 - Use `type` keyword for type-only imports: `import type { X } from "./path"`
 - **Strict TS** — `strict: true`, `noUncheckedCheckedIndexAccess: true`
 - **Decorators enabled** — `experimentalDecorators: true`
-- **Biome** for linting + formatting (run `npm run lint` and `npm run check`)
+- **Biome** for linting + formatting (run `pnpm lint` and `pnpm check`)
 - No semicolons (Biome default is `"semicolons": "asNeeded"`)
 
 ## 3. Naming Conventions

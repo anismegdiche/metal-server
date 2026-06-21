@@ -8,19 +8,16 @@
 	"author": "Anis Megdiche",
 	"license": "GPL-3.0-or-later",
 	"type": "module",
-	"workspaces": [
-		"apps/*",
-		"packages/*"
-	],
+
 	"scripts": {
 		"dev": "tsx watch --inspect=0.0.0.0:9229 src/index.ts",
 		"dev:build-all-images": "tsx watch --inspect=0.0.0.0:9229 src/index.ts --build-all-images",
 		"build": "tsup-node",
-		"build:workspaces": "npm run build --workspaces --if-present",
+		"build:workspaces": "pnpm -r build",
 		"build:watch": "tsc --watch",
 		"start": "node dist/index.js",
-		"prod": "npm run build && npm run start",
-		"prod:build-all-images": "npm run build && node dist/index.js --build-all-images",
+		"prod": "pnpm build && pnpm start",
+		"prod:build-all-images": "pnpm build && node dist/index.js --build-all-images",
 		"test": "vitest run",
 		"lint": "biome lint --write src",
 		"lint:check": "biome lint src",
@@ -117,6 +114,9 @@
 		"tsx": "^4.22.4",
 		"typescript": "~6.0.3",
 		"vitest": "^4.1.8"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": ["@parcel/watcher", "@scarf/scarf", "@swc/core", "cpu-features", "esbuild", "lmdb", "msgpackr-extract", "protobufjs", "ssh2", "unrs-resolver", "vue-demi", "zeromq"]
 	},
 	"standard.options": {
 		"ignore": [
