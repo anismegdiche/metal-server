@@ -4,13 +4,11 @@ __pycache__
 
 .idea/
 .vagrant/
-test/
 node_modules/
 build/
 data/
 coverage/
-tmp/data/
-tmp/models/
+tmp/
 dist/
 
 *.traineddata

@@ -27,3 +27,4 @@ core > use threads (piscina)
 core > dashboard {f}
 (A) step > break > add boolean condition to break {f} {start:2026-05-11T15:23:00} {cm:2026-05-11} {duration:01h17m} {h}
 (A) make modules api registration dynamic {f} {start:2026-05-24T11:17:43} {cm:2026-05-24} {duration:01h49m}
+(A) move to monorepo {f} {start:2026-06-22T14:14:12}
