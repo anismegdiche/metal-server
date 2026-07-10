@@ -1,6 +1,6 @@
 # Metal Server — Coding Conventions & Patterns
 
-> **Monorepo (pnpm workspaces).** Workspaces defined in `pnpm-workspace.yaml`: `apps/*` and `packages/*`. Use `pnpm` for all package management. Use `workspace:*` protocol for inter-package dependencies. All paths in this file are relative to `apps/server/` unless noted.
+> **Monorepo (yarn workspaces).** Workspaces defined in root `package.json` `workspaces` field: `apps/*` and `packages/*`. Use `yarn` for all package management. Use `workspace:*` protocol for inter-package dependencies. All paths in this file are relative to `apps/server/` unless noted.
 
 ## Project Overview
 
@@ -30,14 +30,14 @@
 - If you need to add a new export from a package, add it to that package's `package.json` `"exports"` field.
 
 ### Building workspaces
-- `pnpm -r build` builds all workspaces that have a `build` script (in dependency order).
+- `yarn workspaces foreach -A yarn build` builds all workspaces that have a `build` script (in dependency order).
 - Each workspace manages its own `tsconfig.json`. To add a new dependency between workspaces, add `workspace:*` to the consumer's `package.json` dependencies.
 
 ### Linting & formatting
 - **Biome** is configured at root (`biome.json`) and applies to all workspaces. Run from root:
   ```sh
-  pnpm --filter @metal/server lint          # just server
-  pnpm -r lint                              # all workspaces with a `lint` script
+  yarn workspace @metal/server lint          # just server
+  yarn workspaces foreach -A yarn lint       # all workspaces with a `lint` script
   ```
 - **Dashboard** (Nuxt 4) uses ESLint (`@nuxt/eslint`) for linting — check `apps/dashboard/` for Nuxt-specific tooling.
 
@@ -68,7 +68,7 @@ Repeating files across modules (same naming) is normal and intentional.
 - Use `type` keyword for type-only imports: `import type { X } from "./path"`
 - **Strict TS** — `strict: true`, `noUncheckedCheckedIndexAccess: true`
 - **Decorators enabled** — `experimentalDecorators: true`
-- **Biome** for linting + formatting (run `pnpm lint` from root or `pnpm --filter @metal/server lint`)
+- **Biome** for linting + formatting (run `yarn lint` from root or `yarn workspace @metal/server lint`)
 - No semicolons (Biome default is `"semicolons": "asNeeded"`)
 - Each workspace manages its own `tsconfig.json` — root-level settings may vary per workspace
 
@@ -376,8 +376,8 @@ import { PersistentMap } from "@metal/persistent-map"
    - `"scripts"` with a `"build"` script if it needs to be built
 3. Add workspace dependencies using `"workspace:*"` protocol for `@metal/*` packages
 4. Add `tsconfig.json` if TypeScript is used (extends root or standalone)
-5. Add it to `pnpm-workspace.yaml` if needed — already covered by `apps/*` glob
-6. If using Biome, run `pnpm --filter @metal/<name> lint` to verify
+5. Add it to root `package.json` `workspaces` field if needed — already covered by `apps/*` glob
+6. If using Biome, run `yarn workspace @metal/<name> lint` to verify
 
 ### Adding a new `packages/` workspace
 
