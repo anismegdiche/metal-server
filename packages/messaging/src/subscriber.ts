@@ -44,8 +44,8 @@ export class ZmqSubscriber {
 		try {
 			console.log(`[Subscriber] Starting to listen for messages...`)
 			for await (const [topicBuf, msgBuf] of this.socket) {
-				const topic = topicBuf.toString()
-				const payload = JSON.parse(msgBuf.toString())
+				const topic = topicBuf!.toString()
+				const payload = JSON.parse(msgBuf!.toString())
 				const handlers = this.handlers.get(topic) ?? []
 
 				console.log(`[Subscriber] Received message on topic: ${topic}, handlers: ${handlers.length}`)

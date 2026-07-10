@@ -1,143 +1,132 @@
+<script setup lang="ts">
+const systemStatus = ref({
+  server: 'online',
+  uptime: '14d 6h 32m',
+  version: '1.0.0',
+  activePlans: 3,
+  activeSchedules: 5,
+  dataSources: 4,
+  aiEngines: 2
+})
+
+const recentPlanRuns = [
+  { plan: 'nightly-sync', status: 'completed', duration: '1m 24s', rows: 15420, time: '10min ago' },
+  { plan: 'user-import', status: 'completed', duration: '32s', rows: 890, time: '1h ago' },
+  { plan: 'data-cleanup', status: 'failed', duration: '12s', rows: 0, time: '3h ago' },
+  { plan: 'report-gen', status: 'running', duration: '2m 10s', rows: 4300, time: 'now' },
+  { plan: 'db-backup', status: 'completed', duration: '4m 5s', rows: 0, time: '6h ago' }
+]
+
+const systemMetrics = [
+  { label: 'Plans Executed Today', value: '47', icon: 'i-lucide-play', color: 'primary' },
+  { label: 'Rows Processed', value: '1.2M', icon: 'i-lucide-table', color: 'success' },
+  { label: 'Error Rate', value: '2.3%', icon: 'i-lucide-alert-triangle', color: 'warning' },
+  { label: 'Avg Duration', value: '18s', icon: 'i-lucide-clock', color: 'info' }
+]
+</script>
+
 <template>
-  <div>
-    <div class="page-header">
-      <div class="page-header-text">
-        <h1>Plans</h1>
-        <p class="page-desc">Monitor and manage your ETL pipelines</p>
+  <div class="flex flex-col gap-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold"><UIcon name="i-lucide-layout-dashboard ml-0 mr-2" />Overview</h1>
+        <p class="text-sm text-muted">Monitor your Metal Server health and activity</p>
       </div>
-      <div class="page-header-side">
-        <span class="count-badge">{{ plans.length }} plan{{ plans.length !== 1 ? 's' : '' }}</span>
-      </div>
+      <UBadge
+        :color="systemStatus.server === 'online' ? 'success' : 'error'"
+        variant="subtle"
+        size="lg"
+      >
+        <template #leading>
+          <div
+            class="size-1.5 rounded-full"
+            :class="systemStatus.server === 'online' ? 'bg-success' : 'bg-error'"
+          />
+        </template>
+        {{ systemStatus.server === 'online' ? 'Online' : 'Offline' }}
+      </UBadge>
     </div>
 
-    <div v-if="loading" class="state-msg">
-      <div class="spinner" />
-      <span>Loading plans...</span>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <UCard v-for="metric in systemMetrics" :key="metric.label" class="bg-metal-gradient">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-muted">{{ metric.label }}</span>
+            <UIcon :name="metric.icon" class="size-5" :class="`text-${metric.color}`" />
+          </div>
+        </template>
+        <p class="text-2xl font-bold">{{ metric.value }}</p>
+      </UCard>
     </div>
 
-    <div v-else-if="error" class="state-msg error">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="8" x2="12" y2="12" />
-        <line x1="12" y1="16" x2="12.01" y2="16" />
-      </svg>
-      <span>{{ error }}</span>
-    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <UCard class="lg:col-span-2 bg-metal-gradient">
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h2 class="font-semibold">Recent Plan Runs</h2>
+            <NuxtLink to="/plans" class="text-sm text-primary hover:underline">
+              View all
+            </NuxtLink>
+          </div>
+        </template>
+        <UTable
+          :columns="[
+            { accessorKey: 'plan', header: 'Plan' },
+            { accessorKey: 'rows', header: 'Rows' },
+            { accessorKey: 'duration', header: 'Duration' },
+            { accessorKey: 'time', header: 'When' },
+            { accessorKey: 'status', header: 'Status' }
+          ]"
+          :rows="recentPlanRuns"
+        >
+          <template #status-cell="{ row }">
+            <UBadge
+              :color="row.status === 'completed' ? 'success' : row.status === 'running' ? 'info' : 'error'"
+              variant="subtle"
+              size="sm"
+            >
+              {{ row.status }}
+            </UBadge>
+          </template>
+        </UTable>
+      </UCard>
 
-    <div v-else-if="plans.length === 0" class="state-msg empty">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="12" y1="18" x2="12" y2="12" />
-        <line x1="9" y1="15" x2="15" y2="15" />
-      </svg>
-      <span>No plans found</span>
-    </div>
-
-    <div v-else class="plan-grid">
-      <PlanCard
-        v-for="plan in plans"
-        :key="plan.name"
-        :plan="plan"
-        @click="navigateTo(`/plan/${plan.name}`)"
-      />
+      <UCard class="bg-metal-gradient">
+        <template #header>
+          <h2 class="font-semibold">System Info</h2>
+        </template>
+        <div class="flex flex-col gap-3">
+          <div class="flex justify-between text-sm">
+            <span class="text-muted">Version</span>
+            <span class="font-medium">{{ systemStatus.version }}</span>
+          </div>
+          <USeparator />
+          <div class="flex justify-between text-sm">
+            <span class="text-muted">Uptime</span>
+            <span class="font-medium">{{ systemStatus.uptime }}</span>
+          </div>
+          <USeparator />
+          <div class="flex justify-between text-sm">
+            <span class="text-muted">Active Plans</span>
+            <span class="font-medium">{{ systemStatus.activePlans }}</span>
+          </div>
+          <USeparator />
+          <div class="flex justify-between text-sm">
+            <span class="text-muted">Schedules</span>
+            <span class="font-medium">{{ systemStatus.activeSchedules }}</span>
+          </div>
+          <USeparator />
+          <div class="flex justify-between text-sm">
+            <span class="text-muted">Data Sources</span>
+            <span class="font-medium">{{ systemStatus.dataSources }}</span>
+          </div>
+          <USeparator />
+          <div class="flex justify-between text-sm">
+            <span class="text-muted">AI Engines</span>
+            <span class="font-medium">{{ systemStatus.aiEngines }}</span>
+          </div>
+        </div>
+      </UCard>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-const { data: plans, pending: loading, error } = await useFetch("/api/plans")
-</script>
-
-<style scoped>
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--vp-c-divider);
-}
-
-.page-header-text h1 {
-  font-size: 1.65rem;
-  font-weight: 700;
-  color: var(--vp-c-text-1);
-  letter-spacing: -0.02em;
-  line-height: 1.3;
-}
-
-.page-desc {
-  font-size: 0.875rem;
-  color: var(--vp-c-text-3);
-  margin-top: 4px;
-}
-
-.page-header-side {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-  margin-top: 4px;
-}
-
-.count-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--vp-c-red);
-  background: var(--vp-c-red-lighter);
-  padding: 4px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 35, 103, 0.15);
-  white-space: nowrap;
-}
-
-.plan-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 12px;
-}
-
-.state-msg {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 56px 24px;
-  color: var(--vp-c-text-3);
-  font-size: 0.9rem;
-  background: var(--vp-c-bg-soft);
-  border: 1px solid var(--vp-c-border);
-  border-radius: 12px;
-}
-
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--vp-c-border);
-  border-top-color: var(--vp-c-text-3);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.state-msg.error {
-  color: var(--vp-c-text-1);
-  border-color: rgba(255, 35, 103, 0.25);
-  background: rgba(255, 35, 103, 0.06);
-}
-
-.state-msg.error svg {
-  color: var(--vp-c-red);
-  flex-shrink: 0;
-}
-
-.state-msg.empty svg {
-  color: var(--vp-c-text-3);
-  flex-shrink: 0;
-}
-</style>

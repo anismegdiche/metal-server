@@ -1,9 +1,45 @@
 # Metal Server — Coding Conventions & Patterns
 
-> **2026-06-20: Migrated from npm to pnpm.** Use `pnpm` instead of `npm` for all package management commands. See `.npmrc` and `pnpm-workspace.yaml` at root.
+> **Monorepo (pnpm workspaces).** Workspaces defined in `pnpm-workspace.yaml`: `apps/*` and `packages/*`. Use `pnpm` for all package management. Use `workspace:*` protocol for inter-package dependencies. All paths in this file are relative to `apps/server/` unless noted.
 
 ## Project Overview
-Metal Server is an Express-based TypeScript middleware/ETL/AI server using DuckDB as its in-memory tabular engine (see `src/types/DataTable.ts`). It exposes a unified REST API over multiple database, storage, and web service backends, with a plan-based ETL pipeline and Docker-based AI task execution.
+
+- **`apps/server/`** — Express-based TypeScript middleware/ETL/AI server using DuckDB (see `src/types/DataTable.ts`). REST API over multiple database/storage/web backends, plan-based ETL pipeline, Docker-based AI task execution.
+- **`apps/dashboard/`** — Nuxt 4 / Vue 3 dashboard frontend.
+- **`apps/metrics/`** — Metrics collection service (`@metal/metrics`).
+- **`packages/config/`** — Shared config handling (`@metal/config`).
+- **`packages/messaging/`** — ZeroMQ-based pub/sub messaging with DI, decorators (`@metal/messaging`).
+- **`packages/persistent-map/`** — LMDB-backed persistent map (`@metal/persistent-map`).
+
+---
+
+## 0. Workspace Conventions
+
+### Package naming
+- **Apps** use `@metal/<name>` scope (e.g., `@metal/server`, `@metal/metrics`). Exception: `dashboard` (Nuxt project, no scope).
+- **Packages** use `@metal/<name>` scope (e.g., `@metal/config`, `@metal/messaging`).
+- Inter-package dependencies use `"workspace:*"` protocol — never pin local versions.
+
+### Cross-package imports
+- Packages expose entry points via `"exports"` field in their `package.json`. Import by package name, not relative path:
+  ```ts
+  import { Config } from "@metal/config"
+  import { Publisher } from "@metal/messaging/publisher"
+  ```
+- Apps within `apps/` should **not** use relative imports to reach other apps or packages — always use the package name.
+- If you need to add a new export from a package, add it to that package's `package.json` `"exports"` field.
+
+### Building workspaces
+- `pnpm -r build` builds all workspaces that have a `build` script (in dependency order).
+- Each workspace manages its own `tsconfig.json`. To add a new dependency between workspaces, add `workspace:*` to the consumer's `package.json` dependencies.
+
+### Linting & formatting
+- **Biome** is configured at root (`biome.json`) and applies to all workspaces. Run from root:
+  ```sh
+  pnpm --filter @metal/server lint          # just server
+  pnpm -r lint                              # all workspaces with a `lint` script
+  ```
+- **Dashboard** (Nuxt 4) uses ESLint (`@nuxt/eslint`) for linting — check `apps/dashboard/` for Nuxt-specific tooling.
 
 ---
 
@@ -32,8 +68,9 @@ Repeating files across modules (same naming) is normal and intentional.
 - Use `type` keyword for type-only imports: `import type { X } from "./path"`
 - **Strict TS** — `strict: true`, `noUncheckedCheckedIndexAccess: true`
 - **Decorators enabled** — `experimentalDecorators: true`
-- **Biome** for linting + formatting (run `pnpm lint` and `pnpm check`)
+- **Biome** for linting + formatting (run `pnpm lint` from root or `pnpm --filter @metal/server lint`)
 - No semicolons (Biome default is `"semicolons": "asNeeded"`)
+- Each workspace manages its own `tsconfig.json` — root-level settings may vary per workspace
 
 ## 3. Naming Conventions
 
@@ -243,8 +280,9 @@ describe("FeatureName", () => {
 - Test both success and error paths
 - Clean up DataTable instances in `afterEach` when reusing across tests
 
-## 11. Key Imports Reference
+## 11. Key Imports Reference (Server)
 
+### Internal (server-specific)
 ```ts
 // Types
 import { DataTable } from "../../types/DataTable"
@@ -269,6 +307,15 @@ import { HttpErrorBadRequest, HttpErrorNotFound, NormalizeError } from "../error
 
 // lodash
 import { merge, omit, has } from "lodash-es"
+```
+
+### Cross-workspace (shared packages)
+```ts
+import { Config } from "@metal/config"
+import { Publisher } from "@metal/messaging/publisher"
+import { Subscriber } from "@metal/messaging/subscriber"
+import { PersistentMap } from "@metal/persistent-map"
+```
 
 ## 13. Authentication & Authorization
 
@@ -287,32 +334,59 @@ import { merge, omit, has } from "lodash-es"
 
 ## 15. Adding a New Data Provider
 
-1. Create `src/modules/source/providers/YourData.ts`
+1. Create `apps/server/src/modules/source/providers/YourData.ts`
    - Extend `absDataProvider`
    - Implement all abstract methods (`Connect`, `Disconnect`, `Select`, `Insert`, `Update`, `Delete`, `ListEntities`, `AddEntity`, `EscapeEntity`, `EscapeField`)
    - Use `Assert` for validation, `HttpError*` for errors
 2. Export the class
-3. Add it to `DataProvider.#providerMap` in `src/modules/source/DataProvider.ts`
-4. Add enum value to `DATA_PROVIDER` in `src/modules/source/@consts.ts`
+3. Add it to `DataProvider.#providerMap` in `apps/server/src/modules/source/DataProvider.ts`
+4. Add enum value to `DATA_PROVIDER` in `apps/server/src/modules/source/@consts.ts`
 
 ## 16. Adding a New Storage Provider
 
-1. Create `src/modules/storage/providers/YourStorage.ts`
+1. Create `apps/server/src/modules/storage/providers/YourStorage.ts`
    - Extend `absStorageProvider`
    - Implement: `Init`, `Connect`, `Disconnect`, `FolderIsExist`, `FolderCreate`, `FolderListFolders`, `FolderListFiles`, `FileIsExist`, `FileRead`, `FileWrite`, `FileRename`, `FileDelete`
-2. Register in `StorageProvider.#providerMap` in `src/modules/storage/StorageProvider.ts`
-3. Add enum value to `STORAGE` in `src/modules/storage/@consts.ts`
+2. Register in `StorageProvider.#providerMap` in `apps/server/src/modules/storage/StorageProvider.ts`
+3. Add enum value to `STORAGE` in `apps/server/src/modules/storage/@consts.ts`
 
 ## 17. Adding a New AI Engine
 
-1. Add an `AITASK` enum value in `src/modules/ai-engine/@consts.ts`
-2. Add engine type constant in `src/modules/ai-engine/consts/`
-3. Create engine class in `src/modules/ai-engine/engine/`
-4. Create Docker service class in `src/modules/ai-engine/docker-services/`
+1. Add an `AITASK` enum value in `apps/server/src/modules/ai-engine/@consts.ts`
+2. Add engine type constant in `apps/server/src/modules/ai-engine/consts/`
+3. Create engine class in `apps/server/src/modules/ai-engine/engine/`
+4. Create Docker service class in `apps/server/src/modules/ai-engine/docker-services/`
 5. Register in `AiBuilder` or `AiEngine` factory
 
 ## 18. Configuration Files
 
-- Main config: YAML (zod validated by `U_config` schema in `src/modules/core/U_config.ts`)
+- Main config: YAML (zod validated by `U_config` schema in `apps/server/src/modules/core/U_config.ts`)
 - Config sections: `version`, `server`, `roles`, `users`, `sources`, `schemas`, `plans`, `schedules`
 - Config loaded by `ConfigManager` from `ConfigStore` (disk-cached)
+
+## 19. Adding a New Workspace
+
+### Adding a new `apps/` workspace
+
+1. Create the app directory: `apps/<name>/`
+2. Create `package.json` with:
+   - `"name": "@metal/<name>"` (or plain `"<name>"` for non-scoped projects like dashboards)
+   - `"type": "module"`
+   - `"private": true`
+   - `"scripts"` with a `"build"` script if it needs to be built
+3. Add workspace dependencies using `"workspace:*"` protocol for `@metal/*` packages
+4. Add `tsconfig.json` if TypeScript is used (extends root or standalone)
+5. Add it to `pnpm-workspace.yaml` if needed — already covered by `apps/*` glob
+6. If using Biome, run `pnpm --filter @metal/<name> lint` to verify
+
+### Adding a new `packages/` workspace
+
+1. Create the package directory: `packages/<name>/`
+2. Create `package.json` with:
+   - `"name": "@metal/<name>"`
+   - `"type": "module"`
+   - `"private": true`
+   - `"exports"` field defining public entry points
+   - `"scripts"` with `"build": "tsc"`
+3. Add `tsconfig.json`
+4. Reference from other workspaces via `"@metal/<name>": "workspace:*"`

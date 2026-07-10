@@ -1,0 +1,1 @@
+rclone sync . OD:\Projets\Metal\metal-server -P  --transfers 8 --checkers 64

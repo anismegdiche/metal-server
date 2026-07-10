@@ -1,0 +1,1 @@
+rclone sync OD:\Projets\Metal\metal-server . --exclude-from rclone-exclude.txt -P  --transfers 64 --checkers 16

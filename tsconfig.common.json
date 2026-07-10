@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		"target": "ES2022",
-		"module": "ES2022",
+		"target": "ESNext",
+		"module": "ESNext",
 		"moduleResolution": "bundler",
 		"strict": true,
 		"esModuleInterop": true,
@@ -9,6 +9,17 @@
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
 		"sourceMap": true,
+		"verbatimModuleSyntax": true,
+		"noUncheckedIndexedAccess": true,
+		"lib": ["esnext"],
+		"forceConsistentCasingInFileNames": true,
+		"allowSyntheticDefaultImports": true,
+		"strictNullChecks": true,
+		"declaration": true,
+		"declarationMap": true,
+		"removeComments": false,
+		"inlineSourceMap": false,
+		"inlineSources": true,
 		"types": ["node"]
 	}
 }

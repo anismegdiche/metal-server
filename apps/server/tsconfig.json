@@ -1,0 +1,11 @@
+{
+	"extends": "../../tsconfig.common.json",
+	"compilerOptions": {
+		"outDir": "build",
+		"rootDir": "src",
+		"types": ["node", "vitest/globals"],
+		"typeRoots": ["./node_modules", "./node_modules/@types", "./src/@types"]
+	},
+	"include": ["src"],
+	"exclude": ["node_modules", "build", "dist"]
+}

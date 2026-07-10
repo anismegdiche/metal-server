@@ -3,13 +3,14 @@
 //
 import { loadEnvFile } from 'node:process'
 
-
+//
+const ENV_PATH = "../../.env"
 //
 let _EnvLoaded = false
 
 
 //
-export function LoadEnv(path: string = './.env') {
+export function LoadEnv(path: string = ENV_PATH): void {
     try {
         if (_EnvLoaded)
             return
@@ -22,27 +23,27 @@ export function LoadEnv(path: string = './.env') {
 }
 
 export function MetricsGetDataPath(): string {
-    LoadEnv("./.env")
+    LoadEnv()
     return process.env.METRICS_DB_PATH
         ?? "/data/metrics"
 }
 
 export function MetricsGetTcpAddress(): string {
-    LoadEnv("./.env")
+    LoadEnv()
     return process.env.METRICS_ADDRESS
         ?? "tcp://localhost:5555"
 }
 
 
 export function DataTablesGetDataPath(): string {
-    LoadEnv("./.env")
+    LoadEnv()
     return process.env.DATATABLES_PATH
         ?? "/data/tables"
 }
 
 
 export function AiEnginesGetModelsPath(): string {
-    LoadEnv("./.env")
+    LoadEnv()
     return process.env.AI_MODELS_PATH
         ?? "/data/models"
 }

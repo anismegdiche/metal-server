@@ -1,22 +1,37 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+/** biome-ignore-all lint/correctness/noUndeclaredVariables: <nuxt> */
 export default defineNuxtConfig({
-  modules: [
-    '@nuxt/ui'
-  ],
+    compatibilityDate: '2026-06-30',
 
-  devtools: {
-    enabled: true
-  },
+    modules: [
+        '@nuxt/eslint',
+        '@nuxt/ui'
+    ],
 
-  devServer: {
-    port: 5000
-  },
+    colorMode: {
+        preference: 'light',
+        fallback: 'light'
+    },
 
-  css: ['~/assets/css/main.css'],
+    devtools: {
+        enabled: true
+    },
 
-  routeRules: {
-    '/': { prerender: true }
-  },
+    devServer: {
+        port: 5000
+    },
 
-  compatibilityDate: '2025-01-15'
+    css: ['~/assets/css/main.css'],
+
+    routeRules: {
+    },
+
+    eslint: {
+        config: {
+            stylistic: {
+                commaDangle: 'never',
+                braceStyle: '1tbs'
+            }
+        }
+    }
 })

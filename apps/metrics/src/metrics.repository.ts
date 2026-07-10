@@ -1,7 +1,7 @@
 //
 //
 //
-import { GetMetricsDataPath } from "@metal/config"
+import { MetricsGetDataPath } from "@metal/config"
 import { Injectable } from "@metal/messaging/di/container"
 import PersistentMap from "@metal/persistent-map"
 
@@ -14,7 +14,7 @@ export interface MetricsData {
 
 
 //
-const db = new PersistentMap<MetricsData>(GetMetricsDataPath())
+const db = new PersistentMap<MetricsData>(MetricsGetDataPath())
 
 
 //

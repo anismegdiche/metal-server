@@ -8,8 +8,12 @@
 		"start": "tsx src/main.ts"
 	},
 	"dependencies": {
+		"@metal/config": "workspace:*",
 		"@metal/messaging": "workspace:*",
 		"@metal/persistent-map": "workspace:*",
 		"reflect-metadata": "^0.2.2"
+	},
+	"devDependencies": {
+		"typescript": "^6.0.3"
 	}
 }

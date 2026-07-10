@@ -2,17 +2,60 @@
 @import "@nuxt/ui";
 
 @theme static {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Open Sans", "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
-  --color-red-50: #fff0f3;
-  --color-red-100: #ffe0e8;
-  --color-red-200: #ffc1d1;
-  --color-red-300: #ff8ba8;
-  --color-red-400: #ff4d78;
-  --color-red-500: #ff2367;
-  --color-red-600: #e81852;
-  --color-red-700: #c30d40;
-  --color-red-800: #a30f39;
-  --color-red-900: #8b1034;
-  --color-red-950: #4d0419;
+  --color-green-50: #EFFDF5;
+  --color-green-100: #D9FBE8;
+  --color-green-200: #B3F5D1;
+  --color-green-300: #75EDAE;
+  --color-green-400: #00DC82;
+  --color-green-500: #00C16A;
+  --color-green-600: #00A155;
+  --color-green-700: #007F45;
+  --color-green-800: #016538;
+  --color-green-900: #0A5331;
+  --color-green-950: #052E16;
+
+  --color-metal-primary-50: #fff0f4;
+  --color-metal-primary-100: #ffe0ea;
+  --color-metal-primary-200: #ffb8ce;
+  --color-metal-primary-300: #ff7aa3;
+  --color-metal-primary-400: #ff3372;
+  --color-metal-primary-500: #FF2367;
+  --color-metal-primary-600: #e60047;
+  --color-metal-primary-700: #a30032;
+  --color-metal-primary-800: #750024;
+  --color-metal-primary-900: #4d0018;
+  --color-metal-primary-950: #330010;
+  
+  --color-metal-secondary-50: #fff5f0;
+  --color-metal-secondary-100: #ffebe0;
+  --color-metal-secondary-200: #ffd1b8;
+  --color-metal-secondary-300: #ffaa7a;
+  --color-metal-secondary-400: #ff7d33;
+  --color-metal-secondary-500: #FF7527;
+  --color-metal-secondary-600: #e65300;
+  --color-metal-secondary-700: #a33b00;
+  --color-metal-secondary-800: #752a00;
+  --color-metal-secondary-900: #4d1c00;
+  --color-metal-secondary-950: #331200;
+  
+  --color-metal-success-50: #fafff0;
+  --color-metal-success-100: #f5ffe0;
+  --color-metal-success-200: #e7ffb8;
+  --color-metal-success-300: #d3ff7a;
+  --color-metal-success-400: #bbff33;
+  --color-metal-success-500: #7BB900;
+  --color-metal-success-600: #99e600;
+  --color-metal-success-700: #6da300;
+  --color-metal-success-800: #4e7500;
+  --color-metal-success-900: #334d00;
+  --color-metal-success-950: #223300;
+}
+
+
+@layer components {
+  .bg-metal-gradient {
+    @apply bg-linear-to-bl from-metal-primary-300/5 to-transparent;
+  }
 }
