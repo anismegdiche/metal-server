@@ -2,6 +2,7 @@
 //
 //
 import { CustomEvent } from "@dimkl/events"
+import { _MTR_ } from "@metal/config"
 import z from "zod"
 //
 import type { TJson } from "../../types/TJson"
@@ -14,6 +15,7 @@ import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { HttpErrorNotFound } from "../errors/HttpErrors"
+import { MetricsCollector } from "../metrics/MetricsCollector"
 import { PLAN_STATUS } from "./@consts"
 import { Plan } from "./Plan"
 import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "./PlanMetrics"
@@ -27,7 +29,8 @@ export class PlansManager {
 
 	@Logger.LogFunction()
 	static async Init() {
-		if (!ConfigManager.Has("plans")) return
+		if (!ConfigManager.Has("plans"))
+			return
 
 		PlansManager.Config = ConfigManager.Get<U__plans>("plans") ?? {}
 
@@ -36,6 +39,9 @@ export class PlansManager {
 		plans.forEach((planName) => {
 			PlansManager.AddPlan(planName)
 		})
+
+		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_ACTIVE, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_EXECUTION, 0)
 	}
 
 	@Logger.LogFunction()

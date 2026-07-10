@@ -3,7 +3,6 @@
 //
 import { Router } from "express"
 //
-import { ResponseHandler } from "../../core/ResponseHandler"
 import { MetricsResponse } from "../response/MetricsResponse"
 
 
@@ -18,3 +17,7 @@ MetricsRouter.route("/")
 //
 MetricsRouter.route("/:metric")
 	.get(MetricsResponse.GetMetric)
+
+//
+MetricsRouter.route("/:metricFrom/:metricTo")
+	.get(MetricsResponse.GetMetricsRange)

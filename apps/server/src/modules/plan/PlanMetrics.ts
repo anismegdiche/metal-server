@@ -2,6 +2,7 @@
 //
 //
 import { type CustomEvent, EventBus, type IEvent, on } from "@dimkl/events"
+import { _MTR_ } from "@metal/config"
 import { merge } from "lodash-es"
 import z from "zod"
 //
@@ -99,7 +100,7 @@ export class PlanMetrics {
 	static Bus = new EventBus()
 
 	static Get(planName: string): T_PlanMetrics {
-		const METRIC_NAME = `plan:${planName}`
+		const METRIC_NAME = _MTR_.PLAN + planName
 
 		if (!MetricsCollector.Data.has(METRIC_NAME)) {
 			Logger.Debug(`plan '${planName}' metrics not found`)
@@ -109,7 +110,7 @@ export class PlanMetrics {
 	}
 
 	static Set(planName: string, planMetrics: T_PlanMetrics) {
-		const METRIC_NAME = `plan:${planName}`
+		const METRIC_NAME = _MTR_.PLAN + planName
 		Logger.Info(`Plan '${planName}' metrics: ${JsonUtils.Stringify(planMetrics)}`)
 		MetricsCollector.Data.set<T_PlanMetrics>(METRIC_NAME, planMetrics)
 	}

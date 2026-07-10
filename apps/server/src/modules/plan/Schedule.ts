@@ -1,6 +1,7 @@
 //
 //
 //
+import { _MTR_ } from "@metal/config"
 import { CronJob } from "cron"
 import { findKey } from "lodash-es"
 //
@@ -13,6 +14,7 @@ import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../errors/HttpErrors"
+import { MetricsCollector } from "../metrics/MetricsCollector"
 import { Plans } from "./Plans"
 import type { TSchedule } from "./types/TSchedule"
 import type { U__schedules, U__schedules_schedule } from "./types/U__schedules"
@@ -22,7 +24,7 @@ const ON_START = "@start"
 
 //
 export class Schedule {
-	static Jobs: TSchedule[] = [] 
+	static Jobs: TSchedule[] = []
 
 	@Logger.LogFunction()
 	static async Init() {
@@ -35,9 +37,13 @@ export class Schedule {
 			return undefined
 		}
 
-		const scheduleConfig: [string, U__schedules_schedule][] = Object.entries(
-			ConfigManager.Get<U__schedules>("schedules"),
-		)
+		const scheduleConfig: [string, U__schedules_schedule][] = Object.entries(ConfigManager.Get<U__schedules>("schedules"))
+
+		// metrics schedules
+		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES, scheduleConfig.map(([jobName]) => jobName))
+
+		// metrics schedules active
+		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES_ACTIVE, 0)
 
 		for (const [_jobName, _scheduleParams] of scheduleConfig) {
 			Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_jobName}'`)
@@ -65,12 +71,20 @@ export class Schedule {
 	static JobProcess(jobName: string, scheduleParams: U__schedules_schedule) {
 		Logger.Info(`${Logger.In} Schedule.JobProcess: Running job '${jobName}'`)
 
+		// metrics schedules active inc
+		const _mtr_schedules_active: number = MetricsCollector.Get(_MTR_.SCHEDULES_ACTIVE, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES_ACTIVE, _mtr_schedules_active + 1)
+
 		const { plan } = scheduleParams
 
 		Plans.get(plan)
 			?.ProcessSchedule(scheduleParams)
 			.then(() => {
 				Logger.Info(`${Logger.Out} Schedule.JobProcess: job '${jobName}' terminated`)
+
+				// metrics schedules active dec
+				const _mtr_schedules_active: number = MetricsCollector.Get(_MTR_.SCHEDULES_ACTIVE, 0)
+				MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES_ACTIVE, _mtr_schedules_active - 1)
 			})
 			.catch((e: unknown) => {
 				const _e = NormalizeError(e)

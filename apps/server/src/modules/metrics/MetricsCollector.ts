@@ -1,33 +1,15 @@
-//
 /** biome-ignore-all lint/suspicious/noExplicitAny: <explanation> */
 //
 //
-import { CustomEvent, EventBus, type IEvent, on } from "@dimkl/events"
+//
+import { CustomEvent, EventBus, on } from "@dimkl/events"
 //
 import { MetricsGetDataPath } from "@metal/config"
 import PersistentMap from "@metal/persistent-map"
 import { Logger } from "../../utils/Logger"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
-
-
-//
-export enum METRIC_EVENT {
-    SET = "metric:set",
-}
-
-
-//
-declare global {
-    interface MetricSet extends IEvent {
-        type: METRIC_EVENT.SET
-        data: any
-    }
-
-    interface Events {
-        [METRIC_EVENT.SET]: MetricSet
-    }
-}
+import { METRIC_EVENT } from "./@events"
 
 
 //
@@ -36,9 +18,9 @@ export class MetricsCollector {
     static Bus = new EventBus()
     static Data = new PersistentMap<any>(MetricsGetDataPath())
 
-    static Get(metricName: string): any {
+    static Get(metricName: string, defaultValue: any = undefined): any {
         if (!MetricsCollector.Data.has(metricName)) {
-            return undefined
+            return defaultValue
         }
         return MetricsCollector.Data.get(metricName)
     }
@@ -52,6 +34,13 @@ export class MetricsCollector {
     @Logger.LogFunction()
     static async GetMetric(metricName: string): Promise<TInternalResponse<any>> {
         return HttpResponse.Ok(MetricsCollector.Get(metricName))
+    }
+
+    static async GetMetricsRange(metricFrom: string, metricTo: string): Promise<TInternalResponse<any>> {
+        const metrics = MetricsCollector.Data.findRange(metricFrom, metricTo)
+        return HttpResponse.Ok(
+            Object.fromEntries(metrics)
+        )
     }
 
     @Logger.LogFunction()

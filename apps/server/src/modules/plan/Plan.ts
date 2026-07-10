@@ -2,6 +2,7 @@
 //
 //
 import { CustomEvent } from "@dimkl/events"
+import { _MTR_ } from "@metal/config"
 import { has, merge } from "lodash-es"
 //
 import { DataTable } from "../../types/DataTable"
@@ -29,6 +30,7 @@ import { type U__plans_plan, z_U__plans_plan } from "./types/U__plans"
 import type { U__plans_plan__step } from "./types/U__plans_plan__step"
 import type { U__on_error_Params } from "./types/U__plans_plan_on_error"
 import type { U__schedules_schedule } from "./types/U__schedules"
+
 
 //
 export class Plan {
@@ -97,11 +99,20 @@ export class Plan {
 
 		Assert.Var<NonNullable<U__plans_plan>>(this.Config, `plan '${this.Name}' not found or not configured`)
 
-		const _metricsPlans: string[] = await MetricsCollector.Get("plans") ?? []
-		if (!_metricsPlans.includes(this.Name)) {
-			_metricsPlans.push(this.Name)
+		// metrics plans
+		const _mtr_plans: string[] = await MetricsCollector.Get(_MTR_.PLANS, [])
+		if (!_mtr_plans.includes(this.Name)) {
+			_mtr_plans.push(this.Name)
 		}
-		MetricsCollector.DispatchSetEvent("plans", _metricsPlans)
+		MetricsCollector.DispatchSetEvent(_MTR_.PLANS, _mtr_plans)
+
+		// metrics plans active inc
+		let _mtr_plans_active: number = await MetricsCollector.Get(_MTR_.PLANS_ACTIVE, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_ACTIVE, _mtr_plans_active + 1)
+
+		// metrics plans execution inc
+		const _mtr_plans_execution: number = await MetricsCollector.Get(_MTR_.PLANS_EXECUTION, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_EXECUTION, _mtr_plans_execution + 1)
 
 		const { steps, "on-error": planOnError, "failure-strategy": planFailureStrategy } = this.Config
 
@@ -145,7 +156,7 @@ export class Plan {
 
 				// if step has no on-error, merge with plan.on-error
 				if (_stepParams && (_stepParams as Record<string, unknown>)["on-error"] === undefined && planOnError) {
-					;(_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
+					; (_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
 				}
 
 				$context.$plan.currentStep = {
@@ -252,7 +263,7 @@ export class Plan {
 						if (!this._data.MetaData[METADATA.PLAN_ERRORS]) {
 							this._data.MetaData[METADATA.PLAN_ERRORS] = []
 						}
-						;(this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
+						; (this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
 							step: stepIndex,
 							command: _stepCommand,
 							error: _e.message,
@@ -294,6 +305,10 @@ export class Plan {
 		)
 
 		Logger.Info(`${Logger.Out} Plan.Process '${this.Name}': completed`)
+
+		// metrics plans active dec
+		_mtr_plans_active = await MetricsCollector.Get(_MTR_.PLANS_ACTIVE, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_ACTIVE, _mtr_plans_active - 1)
 
 		return this._data
 	}

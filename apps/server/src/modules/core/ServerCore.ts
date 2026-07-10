@@ -4,15 +4,16 @@
 import { existsSync, readdirSync } from "node:fs"
 import os from "node:os"
 import { pathToFileURL } from "node:url"
+import { _MTR_ } from "@metal/config"
 //
 import { Logger } from "../../utils/Logger"
 import { StringUtils } from "../../utils/StringUtils"
-import { ROUTE } from "./@consts"
+import { MetricsCollector } from "../metrics/MetricsCollector"
+import { ROUTE, SERVER } from "./@consts"
 import { ResponseHandler } from "./ResponseHandler"
 import { ServerRouter } from "./routes/ServerRouter"
 import { ServerEndpoint } from "./ServerEndpoint"
 import { ServerInitializer } from "./ServerInitializer"
-
 
 //
 export class ServerCore {
@@ -39,12 +40,9 @@ export class ServerCore {
 		for (const moduleName of moduleDirs) {
 			const hookJs = StringUtils.FsPath(modulesPath, moduleName, "_hook.js")
 			const hookTs = StringUtils.FsPath(modulesPath, moduleName, "_hook.ts")
-			const hookPath = existsSync(hookJs)
-				? hookJs
-				: hookTs
+			const hookPath = existsSync(hookJs) ? hookJs : hookTs
 
-			if (!existsSync(hookPath))
-				continue
+			if (!existsSync(hookPath)) continue
 
 			try {
 				const hookModule = await import(pathToFileURL(hookPath).href)
@@ -67,6 +65,21 @@ export class ServerCore {
 
 		ServerEndpoint.InitApi()
 		ServerInitializer.StartWatcher()
+		
+		// metrics
+		MetricsCollector.DispatchSetEvent(_MTR_.SERVER_VERSION, SERVER.VERSION)
+		MetricsCollector.DispatchSetEvent(_MTR_.SERVER_UPTIME, Date.now())
+
+		let lastCpuUsage = process.cpuUsage()
+		const metricsIntervalMs = 5000
+		setInterval(() => {
+			const cpuUsageDelta = process.cpuUsage(lastCpuUsage)
+			lastCpuUsage = process.cpuUsage()
+			const cpuUsagePercent = ((cpuUsageDelta.user + cpuUsageDelta.system) / (metricsIntervalMs * 1000 * ServerCore.Cpus)) * 100
+
+			MetricsCollector.DispatchSetEvent(_MTR_.SERVER_MEMORY_USAGE, process.memoryUsage().heapUsed)
+			MetricsCollector.DispatchSetEvent(_MTR_.SERVER_CPU_USAGE, Number(cpuUsagePercent.toFixed(2)))
+		}, metricsIntervalMs)
 	}
 
 	@Logger.LogFunction()

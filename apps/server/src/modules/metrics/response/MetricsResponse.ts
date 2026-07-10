@@ -27,4 +27,13 @@ export class MetricsResponse {
 			.then((intRes) => Convert.InternalResponseToResponse(res, intRes))
 			.catch((error: HttpError) => ResponseHandler.ResponseError(res, error))
 	}
+
+	static async GetMetricsRange(req: Request, res: Response): Promise<void> {
+
+		const { metricFrom, metricTo } = req.params
+
+		MetricsCollector.GetMetricsRange(metricFrom as string, metricTo as string)
+			.then((intRes) => Convert.InternalResponseToResponse(res, intRes))
+			.catch((error: HttpError) => ResponseHandler.ResponseError(res, error))
+	}
 }

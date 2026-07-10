@@ -18,12 +18,12 @@ export class PersistentMap<T> {
 		return this._path
 	}
 
-	set(key: string | number, value: unknown): this {
+	set<T>(key: string | number, value: T | unknown): this {
 		this.db.putSync(String(key), value)
 		return this
 	}
 
-	get(key: string | number): T {
+	get<T>(key: string | number): T {
 		return this.db.get(String(key)) as T
 	}
 

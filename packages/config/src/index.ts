@@ -2,9 +2,19 @@
 //
 //
 import { loadEnvFile } from 'node:process'
+import { _MTR_ } from './metrics'
+
+
+//
+export {
+    _MTR_
+}
+
 
 //
 const ENV_PATH = "../../.env"
+
+
 //
 let _EnvLoaded = false
 
