@@ -40,6 +40,7 @@ export class PlansManager {
 			PlansManager.AddPlan(planName)
 		})
 
+		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_TOTAL, plans.length)
 		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_ACTIVE, 0)
 		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_EXECUTION, 0)
 	}

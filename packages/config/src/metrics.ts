@@ -9,6 +9,7 @@ export enum _MTR_ {
     //
     PLAN = "plan:",
     PLANS = "plans",
+    PLANS_TOTAL = "plans:total",
     PLANS_ACTIVE = "plans:active",
     PLANS_EXECUTION = "plans:execution",
 

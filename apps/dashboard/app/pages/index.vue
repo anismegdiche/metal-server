@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { data: serverInfo, refresh: refreshInfo } = useFetch<Record<string, any>>('/server-api/server/info')
-const { data: metrics, refresh: refreshServer } = useFetch<Record<string, any>>('/server-api/metrics/server/server:~')
+const { data: serverMetrics, refresh: refreshServer } = useFetch<Record<string, any>>('/server-api/metrics/server/server:~')
 const { data: planMetrics, refresh: refreshPlans } = useFetch<Record<string, any>>('/server-api/metrics/plan:/plan:~')
 const { data: plansSummary, refresh: refreshPlansSummary } = useFetch<Record<string, any>>('/server-api/metrics/plans:/plans:~')
 
@@ -16,8 +16,8 @@ onMounted(() => {
     }, 5000)
     const tickInterval = setInterval(() => {
         now.value = Date.now()
-        if (metrics.value?.['server:uptime']) {
-            uptimeSeconds.value = Math.floor((now.value - metrics.value['server:uptime']) / 1000)
+        if (serverMetrics.value?.['server:uptime']) {
+            uptimeSeconds.value = Math.floor((now.value - serverMetrics.value['server:uptime']) / 1000)
         }
     }, 1000)
     onUnmounted(() => {
@@ -37,22 +37,22 @@ const formattedUptime = computed(() => {
 })
 
 const formattedMemory = computed(() => {
-    const bytes = metrics.value?.['server:memory:usage'] ?? 0
+    const bytes = serverMetrics.value?.['server:memory:usage'] ?? 0
     if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`
     if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(0)} MB`
     return `${(bytes / 1024).toFixed(0)} KB`
 })
 
 const formattedCpu = computed(() => {
-    const usage = metrics.value?.['server:cpu:usage'] ?? 0
+    const usage = serverMetrics.value?.['server:cpu:usage'] ?? 0
     return `${Number(usage).toFixed(1)}%`
 })
 
 const systemStatus = computed(() => ({
-    activePlans: plansSummary.value?.['plans:active'] ?? 0,
+    plans_total: plansSummary.value?.['plans:total'] ?? 0,
     activeSchedules: 5,
-    dataSources: 4,
-    aiEngines: 2
+    sources: 4,
+    schemas: 3,
 }))
 
 function formatDuration(ms: number): string {
@@ -94,10 +94,10 @@ const recentPlanRuns = computed(() => {
 })
 
 const systemMetrics = computed(() => [
-    { label: 'Plans Execution', value: String(plansSummary.value?.['plans:execution'] ?? 0), icon: 'i-lucide-play', color: 'primary' },
-    { label: 'Rows Processed', value: '1.2M', icon: 'i-lucide-table', color: 'success' },
-    { label: 'Error Rate', value: '2.3%', icon: 'i-lucide-alert-triangle', color: 'warning' },
-    { label: 'Avg Duration', value: '18s', icon: 'i-lucide-clock', color: 'info' }
+    { label: 'Active Plans', value: String(plansSummary.value?.['plans:active'] ?? 0), icon: 'i-lucide-play', color: 'primary' },
+    { label: 'Plans Execution', value: String(plansSummary.value?.['plans:execution'] ?? 0), icon: 'i-lucide-activity', color: 'primary' },
+    { label: 'Rows Processed', value: '1.2M', icon: 'i-lucide-table', color: 'primary' },
+    { label: 'Error Rate', value: '2.3%', icon: 'i-lucide-circle-x', color: 'primary' },
 ])
 </script>
 
@@ -157,52 +157,61 @@ const systemMetrics = computed(() => [
                 </UTable>
             </UCard>
 
-            <UCard class="bg-metal-gradient">
-                <template #header>
-                    <h2 class="font-semibold">System Info</h2>
-                </template>
-                <div class="flex flex-col gap-3">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Version</span>
-                        <span class="font-medium">{{ metrics?.['server:version'] ?? '—' }}</span>
+            <div class="flex flex-col gap-4">
+                <UCard class="bg-metal-gradient">
+                    <template #header>
+                        <h2 class="font-semibold">System Info</h2>
+                    </template>
+                    <div class="flex flex-col gap-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted">Version</span>
+                            <span class="font-medium">{{ serverMetrics?.['server:version'] ?? '—' }}</span>
+                        </div>
+                        <USeparator />
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted">Uptime</span>
+                            <span class="font-medium">{{ formattedUptime }}</span>
+                        </div>
+                        <USeparator />
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted">CPU Usage</span>
+                            <span class="font-medium">{{ formattedCpu }}</span>
+                        </div>
+                        <USeparator />
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted">Memory Usage</span>
+                            <span class="font-medium">{{ formattedMemory }}</span>
+                        </div>
                     </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Uptime</span>
-                        <span class="font-medium">{{ formattedUptime }}</span>
+                </UCard>
+
+                <UCard class="bg-metal-gradient">
+                    <template #header>
+                        <h2 class="font-semibold">Resources</h2>
+                    </template>
+                    <div class="flex flex-col gap-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted">Sources</span>
+                            <span class="font-medium">{{ systemStatus.sources }}</span>
+                        </div>
+                        <USeparator />
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted">Schemas</span>
+                            <span class="font-medium">{{ systemStatus.schemas }}</span>
+                        </div>
+                        <USeparator />
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted">Plans</span>
+                            <span class="font-medium">{{ systemStatus.plans_total }}</span>
+                        </div>
+                        <USeparator />
+                        <div class="flex justify-between text-sm">
+                            <span class="text-muted">Schedules</span>
+                            <span class="font-medium">{{ systemStatus.activeSchedules }}</span>
+                        </div>
                     </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">CPU Usage</span>
-                        <span class="font-medium">{{ formattedCpu }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Memory Usage</span>
-                        <span class="font-medium">{{ formattedMemory }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Active Plans</span>
-                        <span class="font-medium">{{ systemStatus.activePlans }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Schedules</span>
-                        <span class="font-medium">{{ systemStatus.activeSchedules }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Data Sources</span>
-                        <span class="font-medium">{{ systemStatus.dataSources }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">AI Engines</span>
-                        <span class="font-medium">{{ systemStatus.aiEngines }}</span>
-                    </div>
-                </div>
-            </UCard>
+                </UCard>
+            </div>
         </div>
     </div>
 </template>
