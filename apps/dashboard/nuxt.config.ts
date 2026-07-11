@@ -24,6 +24,7 @@ export default defineNuxtConfig({
     css: ['~/assets/css/main.css'],
 
     routeRules: {
+        '/api/metrics/**': { proxy: 'http://localhost:3000/metrics/**' }
     },
 
     eslint: {
