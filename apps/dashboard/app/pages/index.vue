@@ -18,7 +18,7 @@ const recentPlanRuns = [
 ]
 
 const systemMetrics = [
-  { label: 'Plans Executed Today', value: '47', icon: 'i-lucide-play', color: 'primary' },
+  { label: 'Plans Execution', value: '47', icon: 'i-lucide-play', color: 'primary' },
   { label: 'Rows Processed', value: '1.2M', icon: 'i-lucide-table', color: 'success' },
   { label: 'Error Rate', value: '2.3%', icon: 'i-lucide-alert-triangle', color: 'warning' },
   { label: 'Avg Duration', value: '18s', icon: 'i-lucide-clock', color: 'info' }
@@ -77,15 +77,15 @@ const systemMetrics = [
             { accessorKey: 'time', header: 'When' },
             { accessorKey: 'status', header: 'Status' }
           ]"
-          :rows="recentPlanRuns"
+          :data="recentPlanRuns"
         >
           <template #status-cell="{ row }">
             <UBadge
-              :color="row.status === 'completed' ? 'success' : row.status === 'running' ? 'info' : 'error'"
+              :color="row.original.status === 'completed' ? 'success' : row.original.status === 'running' ? 'info' : 'error'"
               variant="subtle"
               size="sm"
             >
-              {{ row.status }}
+              {{ row.original.status }}
             </UBadge>
           </template>
         </UTable>

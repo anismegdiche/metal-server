@@ -61,32 +61,32 @@ const configColumns = [
     <UTabs
       v-model="activeTab"
       :items="[
-        { label: 'Users', icon: 'i-lucide-users' },
-        { label: 'Logs', icon: 'i-lucide-scroll-text' },
-        { label: 'Config', icon: 'i-lucide-settings' }
+        { label: 'Users', icon: 'i-lucide-users', slot: 'Users', value: 'users' },
+        { label: 'Logs', icon: 'i-lucide-scroll-text', slot: 'Logs', value: 'logs' },
+        { label: 'Config', icon: 'i-lucide-settings', slot: 'Config', value: 'config' }
       ]"
     >
       <template #Users>
         <UCard>
-          <UTable :columns="userColumns" :rows="users">
+          <UTable :columns="userColumns" :data="users">
             <template #status-cell="{ row }">
               <UBadge
-                :color="row.status === 'active' ? 'success' : 'neutral'"
+                :color="row.original.status === 'active' ? 'success' : 'neutral'"
                 variant="subtle"
                 size="sm"
               >
-                {{ row.status }}
+                {{ row.original.status }}
               </UBadge>
             </template>
             <template #permissions-cell="{ row }">
               <div class="flex gap-1">
-                <UKbd v-for="perm in row.permissions.split(' ')" :key="perm" variant="subtle" size="sm">
+                <UKbd v-for="perm in row.original.permissions.split(' ')" :key="perm" variant="subtle" size="sm">
                   {{ perm }}
                 </UKbd>
               </div>
             </template>
             <template #lastLogin-cell="{ row }">
-              <span class="text-sm">{{ new Date(row.lastLogin).toLocaleString() }}</span>
+              <span class="text-sm">{{ new Date(row.original.lastLogin).toLocaleString() }}</span>
             </template>
           </UTable>
         </UCard>
@@ -94,18 +94,18 @@ const configColumns = [
 
       <template #Logs>
         <UCard>
-          <UTable :columns="logColumns" :rows="logEntries">
+          <UTable :columns="logColumns" :data="logEntries">
             <template #level-cell="{ row }">
               <UBadge
-                :color="row.level === 'error' ? 'error' : row.level === 'warn' ? 'warning' : 'info'"
+                :color="row.original.level === 'error' ? 'error' : row.original.level === 'warn' ? 'warning' : 'info'"
                 variant="subtle"
                 size="sm"
               >
-                {{ row.level }}
+                {{ row.original.level }}
               </UBadge>
             </template>
             <template #time-cell="{ row }">
-              <span class="text-sm">{{ new Date(row.time).toLocaleString() }}</span>
+              <span class="text-sm">{{ new Date(row.original.time).toLocaleString() }}</span>
             </template>
           </UTable>
         </UCard>
@@ -119,7 +119,7 @@ const configColumns = [
               Reload Config
             </UButton>
           </div>
-          <UTable :columns="configColumns" :rows="configSections" />
+          <UTable :columns="configColumns" :data="configSections" />
         </UCard>
       </template>
     </UTabs>

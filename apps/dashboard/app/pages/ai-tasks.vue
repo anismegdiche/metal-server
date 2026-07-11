@@ -42,28 +42,28 @@ const columns = [
     </div>
 
     <UCard>
-      <UTable :columns="columns" :rows="aiTasks">
+      <UTable :columns="columns" :data="aiTasks">
         <template #status-cell="{ row }">
           <UBadge
-            :color="row.status === 'completed' ? 'success' : row.status === 'running' ? 'info' : row.status === 'failed' ? 'error' : 'neutral'"
+            :color="row.original.status === 'completed' ? 'success' : row.original.status === 'running' ? 'info' : row.original.status === 'failed' ? 'error' : 'neutral'"
             variant="subtle"
             size="sm"
           >
-            {{ row.status }}
+            {{ row.original.status }}
           </UBadge>
         </template>
         <template #progress-cell="{ row }">
           <div class="flex items-center gap-2">
             <UProgress
-              :value="row.progress"
-              :color="row.status === 'failed' ? 'error' : row.status === 'completed' ? 'success' : 'primary'"
+              :value="row.original.progress"
+              :color="row.original.status === 'failed' ? 'error' : row.original.status === 'completed' ? 'success' : 'primary'"
               class="flex-1"
             />
-            <span class="text-xs text-muted w-8 text-right">{{ row.progress }}%</span>
+            <span class="text-xs text-muted w-8 text-right">{{ row.original.progress }}%</span>
           </div>
         </template>
         <template #started-cell="{ row }">
-          <span class="text-sm">{{ row.started ? new Date(row.started).toLocaleString() : '—' }}</span>
+          <span class="text-sm">{{ row.original.started ? new Date(row.original.started).toLocaleString() : '—' }}</span>
         </template>
       </UTable>
     </UCard>

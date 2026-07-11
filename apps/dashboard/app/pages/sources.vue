@@ -67,20 +67,20 @@ const columns = [
     </div>
 
     <UCard>
-      <UTable :columns="columns" :rows="sources">
+      <UTable :columns="columns" :data="sources">
         <template #type-cell="{ row }">
           <div class="flex items-center gap-2">
-            <UIcon :name="row.typeIcon" class="size-4 text-muted" />
-            <span>{{ row.type }}</span>
+            <UIcon :name="row.original.typeIcon" class="size-4 text-muted" />
+            <span>{{ row.original.type }}</span>
           </div>
         </template>
         <template #status-cell="{ row }">
           <div class="flex items-center gap-2">
             <div
               class="size-2 rounded-full"
-              :class="row.status === 'connected' ? 'bg-success' : 'bg-error'"
+              :class="row.original.status === 'connected' ? 'bg-success' : 'bg-error'"
             />
-            <span class="text-sm">{{ row.status }}</span>
+            <span class="text-sm">{{ row.original.status }}</span>
           </div>
         </template>
       </UTable>

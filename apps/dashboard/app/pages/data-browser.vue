@@ -109,7 +109,7 @@ watch(selectedSchema, (schemaName) => {
 
           <UTable
             :columns="currentEntity.columns.map(c => ({ accessorKey: c, header: c }))"
-            :rows="previewRows"
+            :data="previewRows"
             class="max-h-96"
           />
         </div>

@@ -109,15 +109,15 @@ const fileColumns = [
           </div>
         </div>
       </template>
-      <UTable :columns="fileColumns" :rows="files">
+      <UTable :columns="fileColumns" :data="files">
         <template #name-cell="{ row }">
           <div class="flex items-center gap-2">
             <UIcon
-              :name="row.type === 'folder' ? 'i-lucide-folder' : 'i-lucide-file'"
+              :name="row.original.type === 'folder' ? 'i-lucide-folder' : 'i-lucide-file'"
               class="size-4"
-              :class="row.type === 'folder' ? 'text-warning' : 'text-info'"
+              :class="row.original.type === 'folder' ? 'text-warning' : 'text-info'"
             />
-            <span :class="row.type === 'folder' ? 'font-medium' : ''">{{ row.name }}</span>
+            <span :class="row.original.type === 'folder' ? 'font-medium' : ''">{{ row.original.name }}</span>
           </div>
         </template>
       </UTable>

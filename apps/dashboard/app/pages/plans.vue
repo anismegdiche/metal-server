@@ -138,29 +138,29 @@ function statusColor(status: string) {
       </template>
       <UTable
         :columns="planColumns"
-        :rows="allPlans"
+        :data="allPlans"
       >
         <template #status-cell="{ row }">
-          <UBadge :color="statusColor(row.status)" variant="subtle" size="sm">
-            {{ row.status }}
+          <UBadge :color="statusColor(row.original.status)" variant="subtle" size="sm">
+            {{ row.original.status }}
           </UBadge>
         </template>
         <template #duration-cell="{ row }">
-          {{ formatDuration(row.duration) }}
+          {{ formatDuration(row.original.duration) }}
         </template>
         <template #lastRun-cell="{ row }">
-          <span class="text-sm">{{ new Date(row.lastRun).toLocaleString() }}</span>
+          <span class="text-sm">{{ new Date(row.original.lastRun).toLocaleString() }}</span>
         </template>
         <template #nextRun-cell="{ row }">
-          <span class="text-sm">{{ row.nextRun ? new Date(row.nextRun).toLocaleString() : '—' }}</span>
+          <span class="text-sm">{{ row.original.nextRun ? new Date(row.original.nextRun).toLocaleString() : '—' }}</span>
         </template>
         <template #name-cell="{ row }">
           <UButton
             variant="link"
             color="primary"
-            @click="selectedPlan = row.name"
+            @click="selectedPlan = row.original.name"
           >
-            {{ row.name }}
+            {{ row.original.name }}
           </UButton>
         </template>
       </UTable>
@@ -222,24 +222,24 @@ function statusColor(status: string) {
         <USeparator />
 
         <div class="overflow-auto">
-          <UTable :columns="stepColumns" :rows="planMetrics.steps">
+          <UTable :columns="stepColumns" :data="planMetrics.steps">
             <template #status-cell="{ row }">
-              <UBadge :color="statusColor(row.step.status)" variant="subtle" size="xs">
-                {{ row.step.status || 'pending' }}
+              <UBadge :color="statusColor(row.original.step.status)" variant="subtle" size="xs">
+                {{ row.original.step.status || 'pending' }}
               </UBadge>
             </template>
             <template #startTime-cell="{ row }">
-              {{ formatTime(row.step.startTime) }}
+              {{ formatTime(row.original.step.startTime) }}
             </template>
             <template #endTime-cell="{ row }">
-              {{ row.step.endTime ? formatTime(row.step.endTime) : '—' }}
+              {{ row.original.step.endTime ? formatTime(row.original.step.endTime) : '—' }}
             </template>
             <template #durationMs-cell="{ row }">
-              {{ row.step.durationMs ? formatDuration(row.step.durationMs) : '—' }}
+              {{ row.original.step.durationMs ? formatDuration(row.original.step.durationMs) : '—' }}
             </template>
             <template #rows-cell="{ row }">
-              <span v-if="row.rows.input !== undefined">
-                {{ row.rows.input }} / {{ row.rows.passed ?? '—' }}
+              <span v-if="row.original.rows.input !== undefined">
+                {{ row.original.rows.input }} / {{ row.original.rows.passed ?? '—' }}
               </span>
               <span v-else>—</span>
             </template>

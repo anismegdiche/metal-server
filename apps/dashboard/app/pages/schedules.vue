@@ -45,28 +45,28 @@ const columns = [
         </div>
       </UCard>
 
-      <UTable :columns="columns" :rows="schedules">
+      <UTable :columns="columns" :data="schedules">
         <template #status-cell="{ row }">
           <UBadge
-            :color="row.status === 'running' ? 'success' : 'neutral'"
+            :color="row.original.status === 'running' ? 'success' : 'neutral'"
             variant="subtle"
             size="sm"
           >
-            {{ row.status }}
+            {{ row.original.status }}
           </UBadge>
         </template>
         <template #lastFire-cell="{ row }">
-          <span class="text-sm">{{ new Date(row.lastFire).toLocaleString() }}</span>
+          <span class="text-sm">{{ new Date(row.original.lastFire).toLocaleString() }}</span>
         </template>
         <template #nextFire-cell="{ row }">
-          <span class="text-sm">{{ new Date(row.nextFire).toLocaleString() }}</span>
+          <span class="text-sm">{{ new Date(row.original.nextFire).toLocaleString() }}</span>
         </template>
         <template #actions-cell="{ row }">
           <UButton
-            :color="row.status === 'running' ? 'error' : 'success'"
+            :color="row.original.status === 'running' ? 'error' : 'success'"
             variant="ghost"
             size="sm"
-            :icon="row.status === 'running' ? 'i-lucide-square' : 'i-lucide-play'"
+            :icon="row.original.status === 'running' ? 'i-lucide-square' : 'i-lucide-play'"
           />
         </template>
       </UTable>

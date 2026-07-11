@@ -89,9 +89,9 @@ const columns = [
       <template #header>
         <h2 class="font-semibold">Recent Cache Entries</h2>
       </template>
-      <UTable :columns="columns" :rows="recentEntries">
+      <UTable :columns="columns" :data="recentEntries">
         <template #created-cell="{ row }">
-          <span class="text-sm">{{ new Date(row.created).toLocaleString() }}</span>
+          <span class="text-sm">{{ new Date(row.original.created).toLocaleString() }}</span>
         </template>
       </UTable>
     </UCard>
