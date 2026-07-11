@@ -1,22 +1,32 @@
 <script setup lang="ts">
-const { data: metrics, refresh } = useFetch<Record<string, any>>('/api/metrics/server/server:~')
+const { data: serverInfo, refresh: refreshInfo } = useFetch<Record<string, any>>('/server-api/server/info')
+const { data: metrics, refresh: refreshServer } = useFetch<Record<string, any>>('/server-api/metrics/server/server:~')
+const { data: planMetrics, refresh: refreshPlans } = useFetch<Record<string, any>>('/server-api/metrics/plan:/plan:~')
+const { data: plansSummary, refresh: refreshPlansSummary } = useFetch<Record<string, any>>('/server-api/metrics/plans:/plans:~')
 
+const now = ref(Date.now())
 const uptimeSeconds = ref(0)
 
 onMounted(() => {
-    const pollInterval = setInterval(refresh, 5000)
-    const uptimeInterval = setInterval(() => {
+    const pollInterval = setInterval(() => {
+        refreshInfo()
+        refreshServer()
+        refreshPlans()
+        refreshPlansSummary()
+    }, 5000)
+    const tickInterval = setInterval(() => {
+        now.value = Date.now()
         if (metrics.value?.['server:uptime']) {
-            uptimeSeconds.value = Math.floor((Date.now() - metrics.value['server:uptime']) / 1000)
+            uptimeSeconds.value = Math.floor((now.value - metrics.value['server:uptime']) / 1000)
         }
     }, 1000)
     onUnmounted(() => {
         clearInterval(pollInterval)
-        clearInterval(uptimeInterval)
+        clearInterval(tickInterval)
     })
 })
 
-const serverOnline = computed(() => !!metrics.value)
+const serverOnline = computed(() => !!serverInfo.value)
 
 const formattedUptime = computed(() => {
     const s = uptimeSeconds.value
@@ -38,27 +48,57 @@ const formattedCpu = computed(() => {
     return `${Number(usage).toFixed(1)}%`
 })
 
-const systemStatus = ref({
-    activePlans: 3,
+const systemStatus = computed(() => ({
+    activePlans: plansSummary.value?.['plans:active'] ?? 0,
     activeSchedules: 5,
     dataSources: 4,
     aiEngines: 2
+}))
+
+function formatDuration(ms: number): string {
+    if (ms < 1000) return `${ms}ms`
+    const totalSeconds = Math.floor(ms / 1000)
+    if (totalSeconds < 60) return `${totalSeconds}s`
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+    return `${minutes}m ${seconds}s`
+}
+
+function formatRelativeTime(isoString: string): string {
+    const diff = Date.now() - new Date(isoString).getTime()
+    const seconds = Math.floor(diff / 1000)
+    if (seconds < 60) return 'just now'
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}min ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    return `${days}d ago`
+}
+
+const recentPlanRuns = computed(() => {
+    now.value // trigger reactivity for live relative time
+    if (!planMetrics.value) return []
+    return Object.entries(planMetrics.value)
+        .filter(([key]) => key.startsWith('plan:'))
+        .map(([key, plan]: [string, any]) => ({
+            plan: plan.planName ?? key.replace('plan:', ''),
+            status: plan.status ?? 'unknown',
+            duration: formatDuration(plan.durationMs ?? 0),
+            rows: '—',
+            time: plan.endTime ? formatRelativeTime(plan.endTime) : 'now',
+            _endTime: new Date(plan.endTime ?? 0).getTime()
+        }))
+        .sort((a, b) => b._endTime - a._endTime)
+        .map(({ _endTime, ...rest }) => rest)
 })
 
-const recentPlanRuns = [
-    { plan: 'nightly-sync', status: 'completed', duration: '1m 24s', rows: 15420, time: '10min ago' },
-    { plan: 'user-import', status: 'completed', duration: '32s', rows: 890, time: '1h ago' },
-    { plan: 'data-cleanup', status: 'failed', duration: '12s', rows: 0, time: '3h ago' },
-    { plan: 'report-gen', status: 'running', duration: '2m 10s', rows: 4300, time: 'now' },
-    { plan: 'db-backup', status: 'completed', duration: '4m 5s', rows: 0, time: '6h ago' }
-]
-
-const systemMetrics = [
-    { label: 'Plans Execution', value: '47', icon: 'i-lucide-play', color: 'primary' },
+const systemMetrics = computed(() => [
+    { label: 'Plans Execution', value: String(plansSummary.value?.['plans:execution'] ?? 0), icon: 'i-lucide-play', color: 'primary' },
     { label: 'Rows Processed', value: '1.2M', icon: 'i-lucide-table', color: 'success' },
     { label: 'Error Rate', value: '2.3%', icon: 'i-lucide-alert-triangle', color: 'warning' },
     { label: 'Avg Duration', value: '18s', icon: 'i-lucide-clock', color: 'info' }
-]
+])
 </script>
 
 <template>
