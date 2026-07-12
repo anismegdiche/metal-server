@@ -291,6 +291,15 @@ export class Plan {
 						throw new HttpErrorInternalServerError(_errMessage)
 				}
 			}
+
+			PlanMetrics.Bus.dispatchEvent(
+				new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_SET, {
+					data: {
+						planName: this.Name,
+						totalRows: await this._data.Count()
+					},
+				}),
+			)
 			stepIndex++
 		}
 

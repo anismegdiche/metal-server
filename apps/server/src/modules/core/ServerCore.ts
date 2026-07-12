@@ -56,8 +56,26 @@ export class ServerCore {
 		}
 	}
 
+	static ResetMetrics(): void {
+		MetricsCollector.DispatchSetEvent(_MTR_.SERVER_VERSION, SERVER.VERSION)
+		MetricsCollector.DispatchSetEvent(_MTR_.SERVER_UPTIME, Date.now())
+		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_TOTAL, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_ACTIVE, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_2XX, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_3XX, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_4XX, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_5XX, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_AVG_DURATION, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.SOURCES_TOTAL, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.SOURCES_ACTIVE, 0)
+		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES_TOTAL, 0)
+	}
+
 	@Logger.LogFunction()
 	static async Init(): Promise<void> {
+		
+		ServerCore.ResetMetrics()		
+
 		await ServerInitializer.InitAll()
 
 		ServerCore.RegisterServerMiddleware()
@@ -65,10 +83,6 @@ export class ServerCore {
 
 		ServerEndpoint.InitApi()
 		ServerInitializer.StartWatcher()
-		
-		// metrics
-		MetricsCollector.DispatchSetEvent(_MTR_.SERVER_VERSION, SERVER.VERSION)
-		MetricsCollector.DispatchSetEvent(_MTR_.SERVER_UPTIME, Date.now())
 
 		let lastCpuUsage = process.cpuUsage()
 		const metricsIntervalMs = 5000

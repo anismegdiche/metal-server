@@ -2,11 +2,13 @@
 //
 //
 //
+import { _MTR_ } from "@metal/config"
 import type { TJson } from "../../types/TJson"
 import { Logger } from "../../utils/Logger"
 import { ConfigManager } from "../core/ConfigManager"
 import type { U__sources_source } from "../core/types/U__sources"
 import { HttpErrorLog } from "../errors/HttpErrors"
+import { MetricsCollector } from "../metrics/MetricsCollector"
 import { DATA_PROVIDER } from "./@consts"
 import { DataProvider } from "./DataProvider"
 import { SourceRegistry } from "./SourceRegistry"
@@ -21,6 +23,16 @@ export class Source {
 
 	static async Init(): Promise<void> {
 		if (ConfigManager.Has("sources")) await Source.ConnectAll()
+		Source.DispatchMetrics()
+	}
+
+	static DispatchMetrics(): void {
+		const sources = ConfigManager.Has("sources")
+			? Object.keys(ConfigManager.Get<TJson>("sources"))
+			: []
+		MetricsCollector.DispatchSetEvent(_MTR_.SOURCES, sources)
+		MetricsCollector.DispatchSetEvent(_MTR_.SOURCES_TOTAL, sources.length)
+		MetricsCollector.DispatchSetEvent(_MTR_.SOURCES_ACTIVE, Source.Sources.size)
 	}
 
 	@Logger.LogFunction()
@@ -38,6 +50,7 @@ export class Source {
 			})
 			await Source.Sources.get(source)?.DataProvider.Init(source, sourceConfig)
 			Source.Sources.get(source)?.DataProvider.Connect()
+			Source.DispatchMetrics()
 		} catch (error: unknown) {
 			HttpErrorLog(error)
 		}
@@ -58,6 +71,7 @@ export class Source {
 		if (source !== undefined && Source.Sources.has(source)) {
 			await Source.Sources.get(source)?.DataProvider.Disconnect()
 			Source.Sources.delete(source)
+			Source.DispatchMetrics()
 		}
 	}
 

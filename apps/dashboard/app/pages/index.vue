@@ -1,18 +1,22 @@
 <script setup lang="ts">
-const { data: serverInfo, refresh: refreshInfo } = useFetch<Record<string, any>>('/server-api/server/info')
 const { data: serverMetrics, refresh: refreshServer } = useFetch<Record<string, any>>('/server-api/metrics/server/server:~')
 const { data: planMetrics, refresh: refreshPlans } = useFetch<Record<string, any>>('/server-api/metrics/plan:/plan:~')
 const { data: plansSummary, refresh: refreshPlansSummary } = useFetch<Record<string, any>>('/server-api/metrics/plans:/plans:~')
+const { data: httpMetrics, refresh: refreshHttp } = useFetch<Record<string, any>>('/server-api/metrics/http/http:~')
+const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:~')
+const { data: schedulesMetrics, refresh: refreshSchedules } = useFetch<Record<string, any>>('/server-api/metrics/schedules/schedules:~')
 
 const now = ref(Date.now())
 const uptimeSeconds = ref(0)
 
 onMounted(() => {
     const pollInterval = setInterval(() => {
-        refreshInfo()
         refreshServer()
         refreshPlans()
         refreshPlansSummary()
+        refreshHttp()
+        refreshSources()
+        refreshSchedules()
     }, 5000)
     const tickInterval = setInterval(() => {
         now.value = Date.now()
@@ -26,7 +30,7 @@ onMounted(() => {
     })
 })
 
-const serverOnline = computed(() => !!serverInfo.value)
+const serverOnline = computed(() => !!serverMetrics.value)
 
 const formattedUptime = computed(() => {
     const s = uptimeSeconds.value
@@ -50,8 +54,6 @@ const formattedCpu = computed(() => {
 
 const systemStatus = computed(() => ({
     plans_total: plansSummary.value?.['plans:total'] ?? 0,
-    activeSchedules: 5,
-    sources: 4,
     schemas: 3,
 }))
 
@@ -85,7 +87,7 @@ const recentPlanRuns = computed(() => {
             plan: plan.planName ?? key.replace('plan:', ''),
             status: plan.status ?? 'unknown',
             duration: formatDuration(plan.durationMs ?? 0),
-            rows: '—',
+            rows: plan.totalRows ?? 0,
             time: plan.endTime ? formatRelativeTime(plan.endTime) : 'now',
             _endTime: new Date(plan.endTime ?? 0).getTime()
         }))
@@ -93,12 +95,12 @@ const recentPlanRuns = computed(() => {
         .map(({ _endTime, ...rest }) => rest)
 })
 
-const systemMetrics = computed(() => [
-    { label: 'Active Plans', value: String(plansSummary.value?.['plans:active'] ?? 0), icon: 'i-lucide-play', color: 'primary' },
-    { label: 'Plans Execution', value: String(plansSummary.value?.['plans:execution'] ?? 0), icon: 'i-lucide-activity', color: 'primary' },
-    { label: 'Rows Processed', value: '1.2M', icon: 'i-lucide-table', color: 'primary' },
-    { label: 'Error Rate', value: '2.3%', icon: 'i-lucide-circle-x', color: 'primary' },
-])
+const totalRowsProcessed = computed(() => {
+    if (!planMetrics.value) return 0
+    return Object.entries(planMetrics.value)
+        .filter(([key]) => key.startsWith('plan:'))
+        .reduce((sum, [, plan]: [string, any]) => sum + (plan.totalRows ?? 0), 0)
+})
 </script>
 
 <template>
@@ -119,14 +121,104 @@ const systemMetrics = computed(() => [
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <UCard v-for="metric in systemMetrics" :key="metric.label" class="bg-metal-gradient">
+            <UCard class="bg-metal-gradient">
                 <template #header>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-muted">{{ metric.label }}</span>
-                        <UIcon :name="metric.icon" class="size-5" :class="`text-${metric.color}`" />
+                    <div class="flex items-center gap-2">
+                        <UIcon name="i-lucide-globe" class="size-5 text-info" />
+                        <h2 class="font-semibold">HTTP</h2>
                     </div>
                 </template>
-                <p class="text-2xl font-bold">{{ metric.value }}</p>
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Total Requests</span>
+                        <span class="font-medium">{{ httpMetrics?.['http:requests:total'] ?? '-' }}</span>
+                    </div>
+                    <USeparator />
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Active Requests</span>
+                        <span class="font-medium">{{ httpMetrics?.['http:requests:active'] ?? '-' }}</span>
+                    </div>
+                    <USeparator />
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Avg Duration</span>
+                        <span class="font-medium">{{ httpMetrics?.['http:requests:avg_duration'] ?? '-' }}ms</span>
+                    </div>
+                    <USeparator />
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Errors (4xx/5xx)</span>
+                        <span class="font-medium">{{ (httpMetrics?.['http:requests:4xx'] ?? 0) + (httpMetrics?.['http:requests:5xx'] ?? 0) }}</span>
+                    </div>
+                </div>
+            </UCard>
+
+            <UCard class="bg-metal-gradient">
+                <template #header>
+                    <div class="flex items-center gap-2">
+                        <UIcon name="i-lucide-plug" class="size-5 text-warning" />
+                        <h2 class="font-semibold">Sources</h2>
+                    </div>
+                </template>
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Total Sources</span>
+                        <span class="font-medium">{{ sourcesMetrics?.['sources:total'] ?? '-' }}</span>
+                    </div>
+                    <USeparator />
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Active Connections</span>
+                        <span class="font-medium">{{ sourcesMetrics?.['sources:active'] ?? '-' }}</span>
+                    </div>
+                </div>
+            </UCard>
+
+            <UCard class="bg-metal-gradient">
+                <template #header>
+                    <div class="flex items-center gap-2">
+                        <UIcon name="i-lucide-workflow" class="size-5 text-success" />
+                        <h2 class="font-semibold">Plans</h2>
+                    </div>
+                </template>
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Active Plans</span>
+                        <span class="font-medium">{{ plansSummary?.['plans:active'] ?? '-' }}</span>
+                    </div>
+                    <USeparator />
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Total Executions</span>
+                        <span class="font-medium">{{ plansSummary?.['plans:execution'] ?? '-' }}</span>
+                    </div>
+                    <USeparator />
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Rows Processed</span>
+                        <span class="font-medium">{{ totalRowsProcessed }}</span>
+                    </div>
+                    <USeparator />
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Error Rate</span>
+                        <span class="font-medium">—</span>
+                    </div>
+                </div>
+            </UCard>
+
+            <UCard class="bg-metal-gradient">
+                <template #header>
+                    <div class="flex items-center gap-2">
+                        <UIcon name="i-lucide-calendar-clock" class="size-5 text-primary" />
+                        <h2 class="font-semibold">Schedules</h2>
+                    </div>
+                </template>
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Total Schedules</span>
+                        <span class="font-medium">{{ schedulesMetrics?.['schedules:total'] ?? '-' }}</span>
+                    </div>
+                    <USeparator />
+                    <div class="flex justify-between text-sm">
+                        <span class="text-muted">Active Jobs</span>
+                        <span class="font-medium">{{ schedulesMetrics?.['schedules:active'] ?? '-' }}</span>
+                    </div>
+                </div>
             </UCard>
         </div>
 
@@ -160,7 +252,10 @@ const systemMetrics = computed(() => [
             <div class="flex flex-col gap-4">
                 <UCard class="bg-metal-gradient">
                     <template #header>
-                        <h2 class="font-semibold">System Info</h2>
+                        <div class="flex items-center gap-2">
+                            <UIcon name="i-lucide-server" class="size-5 text-primary" />
+                            <h2 class="font-semibold">System Info</h2>
+                        </div>
                     </template>
                     <div class="flex flex-col gap-3">
                         <div class="flex justify-between text-sm">
@@ -187,14 +282,12 @@ const systemMetrics = computed(() => [
 
                 <UCard class="bg-metal-gradient">
                     <template #header>
-                        <h2 class="font-semibold">Resources</h2>
+                        <div class="flex items-center gap-2">
+                            <UIcon name="i-lucide-layers" class="size-5 text-warning" />
+                            <h2 class="font-semibold">Resources</h2>
+                        </div>
                     </template>
                     <div class="flex flex-col gap-3">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted">Sources</span>
-                            <span class="font-medium">{{ systemStatus.sources }}</span>
-                        </div>
-                        <USeparator />
                         <div class="flex justify-between text-sm">
                             <span class="text-muted">Schemas</span>
                             <span class="font-medium">{{ systemStatus.schemas }}</span>
@@ -203,11 +296,6 @@ const systemMetrics = computed(() => [
                         <div class="flex justify-between text-sm">
                             <span class="text-muted">Plans</span>
                             <span class="font-medium">{{ systemStatus.plans_total }}</span>
-                        </div>
-                        <USeparator />
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted">Schedules</span>
-                            <span class="font-medium">{{ systemStatus.activeSchedules }}</span>
                         </div>
                     </div>
                 </UCard>

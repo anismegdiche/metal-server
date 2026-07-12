@@ -51,6 +51,7 @@ export type T_PlanMetrics = {
 	durationMs?: number
 	status: PLAN_STATUS
 	steps: T_StepMetrics[]
+	totalRows?: number
 }
 
 //
@@ -117,11 +118,20 @@ export class PlanMetrics {
 
 	@on({ eventName: PLAN_METRICS.PLAN_SET, eventBus: PlanMetrics.Bus })
 	static _handlePlanSet(event: CustomEvent<Partial<T_PlanMetrics>>) {
-		const metrics = (event.data || {}) as T_PlanMetrics
-		const planName = metrics.planName || ""
+		const metrics = event.data
+		Assert.Var<Partial<T_PlanMetrics>>(metrics, "metrics are undefined")
+
+		const planName = metrics.planName
+		Assert.Var<string>(planName, "planName is undefined")
+
+		// get old metrics
+		let planMetrics = PlanMetrics.Get(planName)
+
+		// update metrics
+		planMetrics = merge(planMetrics, metrics)
 
 		// save metrics
-		PlanMetrics.Set(planName, metrics)
+		PlanMetrics.Set(planName, planMetrics)
 	}
 
 	@on({ eventName: PLAN_METRICS.STEP_START, eventBus: PlanMetrics.Bus })
@@ -199,8 +209,11 @@ export class PlanMetrics {
 
 	@on({ eventName: PLAN_METRICS.PLAN_START, eventBus: PlanMetrics.Bus })
 	static _handlePlanStart(event: CustomEvent<Partial<T_PlanMetrics>>) {
-		const metrics = event.data ?? {}
-		const planName = metrics.planName ?? ""
+		const metrics = event.data
+		Assert.Var<Partial<T_PlanMetrics>>(metrics, "metrics are undefined")
+
+		const planName = metrics.planName
+		Assert.Var<string>(planName, "planName is undefined")
 
 		// get old metrics
 		let planMetrics = PlanMetrics.Get(planName)

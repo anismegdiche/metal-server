@@ -1,14 +1,17 @@
 //
 //
 //
+
+//
+import { _MTR_ } from "@metal/config"
 import express, { type Express, type NextFunction, type Request, type Response } from "express"
 import rateLimit from "express-rate-limit"
 import helmet from "helmet"
 import responseTime from "response-time"
-//
 import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
 import { Swagger } from "../../utils/Swagger"
+import { MetricsCollector } from "../metrics/MetricsCollector"
 import { HTTP_STATUS_CODE, ROUTE, SERVER } from "./@consts"
 import { ConfigManager } from "./ConfigManager"
 import { ResponseHandler } from "./ResponseHandler"
@@ -57,6 +60,52 @@ export class ServerEndpoint {
 
 		ServerEndpoint.Api.use((_req: Request, res: Response, next: NextFunction) => {
 			res.setHeader("X-Powered-By", "Metal")
+			next()
+		})
+
+		// HTTP metrics middleware
+		let totalRequests = 0
+		let activeRequests = 0
+		let totalDuration = 0
+		let count2xx = 0
+		let count3xx = 0
+		let count4xx = 0
+		let count5xx = 0
+
+		ServerEndpoint.Api.use((req: Request, res: Response, next: NextFunction) => {
+			if (req.path.startsWith(ROUTE.METRICS_PATH)) 
+				return next()
+
+			activeRequests++
+			totalRequests++
+
+			MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_TOTAL, totalRequests)
+			MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_ACTIVE, activeRequests)
+
+			const startTime = Date.now()
+
+			res.on("finish", () => {
+				activeRequests--
+				const duration = Date.now() - startTime
+				totalDuration += duration
+
+				const status = res.statusCode
+				if (status >= 200 && status < 300) count2xx++
+				else if (status >= 300 && status < 400) count3xx++
+				else if (status >= 400 && status < 500) count4xx++
+				else if (status >= 500) count5xx++
+
+				MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_ACTIVE, activeRequests)
+				MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_2XX, count2xx)
+				MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_3XX, count3xx)
+				MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_4XX, count4xx)
+				MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_5XX, count5xx)
+				MetricsCollector.DispatchSetEvent(
+					_MTR_.HTTP_REQUESTS_AVG_DURATION,
+					Number((totalDuration / totalRequests).toFixed(2)),
+				)
+			})
+
 			next()
 		})
 

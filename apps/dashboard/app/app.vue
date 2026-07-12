@@ -3,6 +3,7 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 
 const navItems: NavigationMenuItem[] = [
   { label: 'Overview', icon: 'i-lucide-layout-dashboard', to: '/' },
+  { label: 'HTTP', icon: 'i-lucide-globe', to: '/http' },
   { label: 'Plans', icon: 'i-lucide-workflow', to: '/plans' },
   { label: 'Schedules', icon: 'i-lucide-calendar-clock', to: '/schedules' },
   { label: 'Data Browser', icon: 'i-lucide-database', to: '/data-browser' },
@@ -56,7 +57,7 @@ useSeoMeta({
     <UFooter>
       <template #left>
         <p class="text-sm text-muted">
-          Built with Nuxt UI • © {{ new Date().getFullYear() }}
+          Released under the GNU v3 License. Copyright © 2026-present Anis Megdiche
         </p>
       </template>
     </UFooter>

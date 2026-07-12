@@ -41,6 +41,7 @@ export class Schedule {
 
 		// metrics schedules
 		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES, scheduleConfig.map(([jobName]) => jobName))
+		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES_TOTAL, scheduleConfig.length)
 
 		// metrics schedules active
 		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES_ACTIVE, 0)

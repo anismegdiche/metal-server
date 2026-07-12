@@ -7,6 +7,10 @@ const items: NavigationMenuItem[][] = [
     icon: 'i-lucide-layout-dashboard',
     to: '/'
   }, {
+    label: 'HTTP',
+    icon: 'i-lucide-globe',
+    to: '/http'
+  }, {
     label: 'Plans',
     icon: 'i-lucide-workflow',
     to: '/plans'
