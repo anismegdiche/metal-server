@@ -23,7 +23,7 @@ import { MetricsCollector } from "../metrics/MetricsCollector"
 import type { TContext } from "../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../source/@consts"
-import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_OUTCOME, STEP_STATUS } from "./@consts"
+import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_OUTCOME, STEP_SIGNAL, STEP_STATUS } from "./@consts"
 import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "./PlanMetrics"
 import { Step, type T_StepFunctionWithSignal } from "./Step"
 import { type U__plans_plan, z_U__plans_plan } from "./types/U__plans"
@@ -75,7 +75,7 @@ export class Plan {
 
 		return this.Process(callerSchema)
 			.then((planData) => planData.FreeSql({ sqlQuery })
-			.then(() => planData))
+				.then(() => planData))
 			.catch((err) => {
 				Logger.Error(`Error occurred while processing schema request for plan '${this.Name}': ${err.message}`)
 			})

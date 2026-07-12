@@ -185,9 +185,37 @@ function statusColor(status: string) {
           :default-value="activeStepIndex"
         >
           <template #step-description="{ item }">
-            <div class="flex gap-4 text-xs text-muted">
-              <span v-if="item.rows?.input !== undefined">Rows in: {{ item.rows.input }}</span>
-              <span v-if="item.rows?.passed !== undefined">Rows out: {{ item.rows.passed }}</span>
+            <div class="flex gap-2 text-xs flex-wrap">
+              <UTooltip v-if="item.rows?.input !== undefined" :text="`${item.rows.input} rows in`">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/50 cursor-default">
+                  <UIcon name="i-lucide-arrow-right" class="size-3" />
+                  {{ item.rows.input }}
+                </span>
+              </UTooltip>
+              <UTooltip v-if="item.rows?.passed !== undefined" :text="`${item.rows.passed} rows passed`">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/15 text-success cursor-default">
+                  <UIcon name="i-lucide-check" class="size-3" />
+                  {{ item.rows.passed }}
+                </span>
+              </UTooltip>
+              <UTooltip v-if="item.rows?.failed !== undefined" :text="`${item.rows.failed} rows failed`">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error/15 text-error cursor-default">
+                  <UIcon name="i-lucide-x" class="size-3" />
+                  {{ item.rows.failed }}
+                </span>
+              </UTooltip>
+              <UTooltip v-if="item.rows?.skipped !== undefined" :text="`${item.rows.skipped} rows skipped`">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-warning/15 text-warning cursor-default">
+                  <UIcon name="i-lucide-forward" class="size-3" />
+                  {{ item.rows.skipped }}
+                </span>
+              </UTooltip>
+              <UTooltip v-if="item.rows?.sunk !== undefined" :text="`${item.rows.sunk} rows sunk`">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-info/15 text-info cursor-default">
+                  <UIcon name="i-lucide-database" class="size-3" />
+                  {{ item.rows.sunk }}
+                </span>
+              </UTooltip>
             </div>
           </template>
         </UTimeline>
