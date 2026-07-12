@@ -57,9 +57,9 @@ schedules:
   #   plan: myplan
   #   entity: myentity
   #   cron: "*/1 * * * *"
-  # "sch-myplan":
-  #   plan: myplan
-  #   cron: "@start"
+  "sch-myplan":
+    plan: myplan
+    cron: "@start"
   "sch-failed":
     plan: plan-failed
     cron: "@start"

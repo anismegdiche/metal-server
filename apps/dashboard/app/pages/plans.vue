@@ -1,9 +1,12 @@
 <script setup lang="ts">
 const { data: planMetrics, refresh: refreshPlans } = useFetch<Record<string, any>>('/server-api/metrics/plan:/plan:~')
-const { data: plansSummary } = useFetch<Record<string, any>>('/server-api/metrics/plans:/plans:~')
+const { data: plansSummary, refresh: refreshPlansSummary } = useFetch<Record<string, any>>('/server-api/metrics/plans:/plans:~')
 
 onMounted(() => {
-  const interval = setInterval(refreshPlans, 5000)
+  const interval = setInterval(() => {
+    refreshPlans()
+    refreshPlansSummary()
+  }, 5000)
   onUnmounted(() => clearInterval(interval))
 })
 
