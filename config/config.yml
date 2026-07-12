@@ -57,12 +57,24 @@ schedules:
   #   plan: myplan
   #   entity: myentity
   #   cron: "*/1 * * * *"
-  "ocr2":
+  "sch-myplan":
     plan: myplan
-    entity: myentity
+    cron: "@start"
+  "sch-failed":
+    plan: plan-failed
     cron: "@start"
 
 plans:
+  plan-failed:
+    steps:
+      - select:
+          schema: fs
+          entity: img
+          fields: "*,content"
+      - select:
+          schema: fs
+          entity: imgsss
+          fields: "*,content"
   myplan:
     steps:
       - select:

@@ -50,6 +50,7 @@ export class ServerEndpoint {
 
 		ServerEndpoint.Api.use(responseTime())
 		ServerEndpoint.Api.use(Logger.RequestMiddleware)
+		ServerEndpoint.Api.set("trust proxy", 1)
 		ServerEndpoint.Api.use(rateLimit(ConfigManager.Get<object>("server.response-rate")))
 
 		ServerEndpoint.Api.use(

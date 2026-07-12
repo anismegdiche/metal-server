@@ -55,7 +55,6 @@ export class PlansManager {
 			new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_SET, {
 				data: {
 					planName,
-					status: PLAN_STATUS.NOT_STARTED,
 					steps: [],
 				} as Partial<T_PlanMetrics>
 			})

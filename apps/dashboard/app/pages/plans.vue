@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { data: planMetrics, refresh: refreshPlans } = useFetch<Record<string, any>>('/server-api/metrics/plan:/plan:~')
+const { data: plansSummary } = useFetch<Record<string, any>>('/server-api/metrics/plans:/plans:~')
 
 onMounted(() => {
   const interval = setInterval(refreshPlans, 5000)
@@ -28,6 +29,58 @@ const selectedPlanData = computed(() => {
   const key = `plan:${selectedPlan.value}`
   return planMetrics.value[key] ?? null
 })
+
+function stepIndicatorClass(status: string) {
+  if (status === 'success') return 'text-inverted bg-success group-data-[state=completed]:bg-success group-data-[state=active]:bg-success'
+  if (status === 'failed') return 'text-inverted bg-error group-data-[state=completed]:bg-error group-data-[state=active]:bg-error'
+  if (status === 'running') return 'text-inverted bg-info group-data-[state=completed]:bg-info group-data-[state=active]:bg-info'
+  return ''
+}
+
+const timelineItems = computed(() => {
+  if (!selectedPlanData.value?.steps) return []
+  return selectedPlanData.value.steps.map((step: any) => ({
+    icon: step.step.status === 'success' ? 'i-lucide-check-circle'
+         : step.step.status === 'failed' ? 'i-lucide-x-circle'
+         : step.step.status === 'running' ? 'i-lucide-loader'
+         : 'i-lucide-circle',
+    date: formatTime(step.step.startTime),
+    title: `Step ${step.index + 1} — ${formatDuration(step.step.durationMs ?? 0)}`,
+    rows: step.rows,
+    slot: 'step',
+    ui: {
+      indicator: stepIndicatorClass(step.step.status),
+      separator: 'group-data-[state=completed]:bg-elevated'
+    }
+  }))
+})
+
+const activeStepIndex = computed(() => {
+  if (!selectedPlanData.value?.steps) return undefined
+  const steps = selectedPlanData.value.steps
+  for (let i = steps.length - 1; i >= 0; i--) {
+    if (steps[i].step.status === 'running' || steps[i].step.status === 'success') return i
+  }
+  return undefined
+})
+
+const totalPlans = computed(() => plansSummary.value?.['plans:total'] ?? 0)
+const activePlans = computed(() => plansSummary.value?.['plans:active'] ?? 0)
+const totalExecutions = computed(() => plansSummary.value?.['plans:execution'] ?? 0)
+
+const totalRowsProcessed = computed(() => {
+  if (!planMetrics.value) return 0
+  return Object.entries(planMetrics.value)
+    .filter(([key]) => key.startsWith('plan:'))
+    .reduce((sum, [, plan]: [string, any]) => sum + (plan.totalRows ?? 0), 0)
+})
+
+const planMetricCards = computed(() => [
+  { label: 'Total Plans', value: totalPlans.value, icon: 'i-lucide-layers', iconClass: 'text-primary' },
+  { label: 'Active', value: activePlans.value, icon: 'i-lucide-play', iconClass: 'text-info' },
+  { label: 'Executions', value: totalExecutions.value, icon: 'i-lucide-repeat', iconClass: 'text-warning' },
+  { label: 'Rows Processed', value: totalRowsProcessed.value, icon: 'i-lucide-database', iconClass: 'text-success' }
+])
 
 function formatDuration(ms: number) {
   if (ms < 1000) return `${ms}ms`
@@ -67,6 +120,18 @@ function statusColor(status: string) {
     <div>
       <h1 class="text-2xl font-bold"><UIcon name="i-lucide-workflow ml-0 mr-2" />Plans</h1>
       <p class="text-sm text-muted">Monitor and manage ETL pipeline executions</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <UCard v-for="metric in planMetricCards" :key="metric.label">
+        <div class="flex items-center gap-3">
+          <UIcon :name="metric.icon" class="size-5" :class="metric.iconClass" />
+          <div>
+            <p class="text-2xl font-bold">{{ metric.value }}</p>
+            <p class="text-xs text-muted">{{ metric.label }}</p>
+          </div>
+        </div>
+      </UCard>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -115,42 +180,17 @@ function statusColor(status: string) {
         </div>
       </template>
 
-        <div class="flex flex-col gap-4">
-          <div v-for="step in selectedPlanData.steps" :key="step.index" class="flex items-start gap-4 p-3 rounded-lg bg-elevated/50">
-            <div class="flex flex-col items-center gap-1">
-              <div
-                class="size-3 rounded-full"
-                :class="step.step.status === 'success' ? 'bg-success' : step.step.status === 'running' ? 'bg-info animate-pulse' : 'bg-muted'"
-              />
-              <div v-if="step.index < selectedPlanData.steps.length - 1" class="w-px h-full min-h-8 bg-default" />
+        <UTimeline
+          :items="timelineItems"
+          :default-value="activeStepIndex"
+        >
+          <template #step-description="{ item }">
+            <div class="flex gap-4 text-xs text-muted">
+              <span v-if="item.rows?.input !== undefined">Rows in: {{ item.rows.input }}</span>
+              <span v-if="item.rows?.passed !== undefined">Rows out: {{ item.rows.passed }}</span>
             </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between">
-                <span class="font-medium text-sm">Step {{ step.index + 1 }}</span>
-                <span class="text-xs text-muted">
-                  <template v-if="step.step.durationMs">
-                    {{ formatDuration(step.step.durationMs) }}
-                  </template>
-                  <template v-else>in progress...</template>
-                </span>
-              </div>
-              <div class="flex items-center gap-4 mt-1 text-xs text-muted">
-                <span>Start: {{ formatTime(step.step.startTime) }}</span>
-                <span v-if="step.step.endTime">End: {{ formatTime(step.step.endTime) }}</span>
-                <span v-if="step.step.status">Status:
-                  <UBadge :color="statusColor(step.step.status)" variant="subtle" size="xs">
-                    {{ step.step.status }}
-                  </UBadge>
-                </span>
-              </div>
-              <div class="flex items-center gap-4 mt-1 text-xs text-muted">
-                <span>Attempt #{{ step.attemptCount }}</span>
-                <span v-if="step.rows?.input !== undefined">Rows in: {{ step.rows.input }}</span>
-                <span v-if="step.rows?.passed !== undefined">Rows out: {{ step.rows.passed }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+          </template>
+        </UTimeline>
       </UCard>
     </div>
   </div>

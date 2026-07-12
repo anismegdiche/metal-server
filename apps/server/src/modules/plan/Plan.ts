@@ -23,7 +23,7 @@ import { MetricsCollector } from "../metrics/MetricsCollector"
 import type { TContext } from "../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../source/@consts"
-import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_STATUS } from "./@consts"
+import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_OUTCOME, STEP_STATUS } from "./@consts"
 import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "./PlanMetrics"
 import { Step, type T_StepFunctionWithSignal } from "./Step"
 import { type U__plans_plan, z_U__plans_plan } from "./types/U__plans"
@@ -73,10 +73,12 @@ export class Plan {
 		Assert.Var<string>(source, `no source found for ${callerSchema}`, new HttpErrorNotFound())
 		Assert.Var<U__plans_plan>(this.Config, `plan '${this.Name}' not found or not configured`, new HttpErrorNotFound())
 
-		const planData = await this.Process(callerSchema)
-		await planData.FreeSql({ sqlQuery })
-
-		return planData
+		return this.Process(callerSchema)
+			.then((planData) => planData.FreeSql({ sqlQuery })
+			.then(() => planData))
+			.catch((err) => {
+				Logger.Error(`Error occurred while processing schema request for plan '${this.Name}': ${err.message}`)
+			})
 	}
 
 	@Logger.LogFunction(["sqlQuery"])
@@ -87,9 +89,13 @@ export class Plan {
 		Assert.Condition(plan !== null, `plan '${plan}' is not defined`)
 		Assert.Var<U__plans_plan>(this.Config, `plan '${this.Name}' not found or not configured`)
 
-		this.Process().then((data) => {
-			data.FreeSql({ sqlQuery })
-		})
+		this.Process()
+			.then((data) => {
+				data.FreeSql({ sqlQuery })
+			})
+			.catch((err) => {
+				Logger.Error(`Error occurred while processing schedule '${plan}': ${err.message}`)
+			})
 	}
 
 	@Logger.LogFunction()
@@ -193,6 +199,19 @@ export class Plan {
 				)
 
 				const _stepOutput = await _stepFunction(_stepParams, $context)
+
+				if (_stepOutput.outcome === STEP_OUTCOME.FAILED) {
+					$context = merge($context, <Partial<TContext>>{
+						$plan: {
+							currentStep: {
+								status: STEP_STATUS.FAILED,
+							},
+							data: this._data,
+						},
+					})
+
+					throw new HttpErrorInternalServerError(`'${this.Name}': error have been encountered in step ${stepIndex}, ${_stepCommand}, ${JsonUtils.Stringify(_stepParams)}'`)
+				}
 
 				if (_stepOutput.data) {
 					this._data = _stepOutput.data
