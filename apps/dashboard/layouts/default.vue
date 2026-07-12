@@ -11,6 +11,10 @@ const items: NavigationMenuItem[][] = [
     icon: 'i-lucide-globe',
     to: '/http'
   }, {
+    label: 'Sources',
+    icon: 'i-lucide-plug',
+    to: '/sources'
+  }, {
     label: 'Plans',
     icon: 'i-lucide-workflow',
     to: '/plans'
@@ -24,10 +28,6 @@ const items: NavigationMenuItem[][] = [
     to: '/data-browser'
   }],
   [{
-    label: 'Sources',
-    icon: 'i-lucide-plug',
-    to: '/sources'
-  }, {
     label: 'Storage',
     icon: 'i-lucide-folder-tree',
     to: '/storage'
