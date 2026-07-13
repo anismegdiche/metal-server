@@ -22,7 +22,7 @@ describe("Anonymize", () => {
 	it("should anonymize specified fields", async () => {
 		const spyAnonymize = vi.spyOn(DataTableUtils, "Anonymize").mockResolvedValue(myPlanEntity1)
 
-		let $context: Partial<TContext> = {
+		const $context: Partial<TContext> = {
 			$schema: "mySchema",
 			$plan: {
 				name: "myPlan",

@@ -7,6 +7,7 @@ import { CustomEvent, EventBus, on } from "@dimkl/events"
 import { MetricsGetDataPath } from "@metal/config"
 import PersistentMap from "@metal/persistent-map"
 import { Logger } from "../../utils/Logger"
+import { Queue } from "../../utils/Queue"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { METRIC_EVENT } from "./@events"
@@ -17,6 +18,7 @@ export class MetricsCollector {
 
     static Bus = new EventBus()
     static Data = new PersistentMap<any>(MetricsGetDataPath())
+    static _queue = new Queue()
 
     static Get(metricName: string, defaultValue: any = undefined): any {
         if (!MetricsCollector.Data.has(metricName)) {
@@ -26,9 +28,14 @@ export class MetricsCollector {
     }
 
     @on({ eventName: METRIC_EVENT.SET, eventBus: MetricsCollector.Bus })
+    @Queue.AddToQueue(MetricsCollector._queue)
     static Set(event: CustomEvent<any>) {
         const { metricName, metricData } = event.data
         MetricsCollector.Data.set(metricName, metricData)
+    }
+
+    static Clear() {
+        MetricsCollector.Data.clear()
     }
 
     @Logger.LogFunction()

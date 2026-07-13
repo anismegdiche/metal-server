@@ -1,10 +1,11 @@
-
 //
 //
 //
 
-//
+
+// biome-ignore lint/complexity/noBannedTypes: ignore
 type TQueueFunction = Function | undefined | void
+
 
 //
 export class Queue {
@@ -35,5 +36,25 @@ export class Queue {
 
 		this.Tasks.push(task)
 		if (!this.IsRunning) this.ProcessQueue(wait)
+	}
+
+	static AddToQueue(queue: Queue) {
+		return (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => {
+			const originalMethod = descriptor.value
+
+			descriptor.value = function (...args: any[]) {
+				return new Promise((resolve, reject) => {
+					queue.Enqueue(async () => {
+						try {
+							resolve(await originalMethod.apply(this, args))
+						} catch (error) {
+							reject(error)
+						}
+					})
+				})
+			}
+
+			return descriptor
+		}
 	}
 }

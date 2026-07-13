@@ -89,13 +89,13 @@ export class Plan {
 		Assert.Condition(plan !== null, `plan '${plan}' is not defined`)
 		Assert.Var<U__plans_plan>(this.Config, `plan '${this.Name}' not found or not configured`)
 
-		this.Process()
-			.then((data) => {
-				data.FreeSql({ sqlQuery })
-			})
-			.catch((err) => {
-				Logger.Error(`Error occurred while processing schedule '${plan}': ${err.message}`)
-			})
+		try {
+			const data = await this.Process()
+			await data.FreeSql({ sqlQuery })
+		} catch (err) {
+			const _e = NormalizeError(err)
+			Logger.Error(`Error occurred while processing schedule '${plan}': ${_e.message}`)
+		}
 	}
 
 	@Logger.LogFunction()

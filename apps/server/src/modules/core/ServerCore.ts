@@ -57,6 +57,7 @@ export class ServerCore {
 	}
 
 	static ResetMetrics(): void {
+		MetricsCollector.Clear()
 		MetricsCollector.DispatchSetEvent(_MTR_.SERVER_VERSION, SERVER.VERSION)
 		MetricsCollector.DispatchSetEvent(_MTR_.SERVER_UPTIME, Date.now())
 		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_TOTAL, 0)

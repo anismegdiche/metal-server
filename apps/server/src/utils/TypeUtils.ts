@@ -3,8 +3,8 @@
 //
 //
 
-import { type ZodSafeParseResult, type ZodIssue } from "zod"
-import { HttpError, HttpErrorInternalServerError } from "../modules/errors/HttpErrorBase"
+import type { ZodIssue, ZodSafeParseResult } from "zod"
+import { type HttpError, HttpErrorInternalServerError } from "../modules/errors/HttpErrorBase"
 import { Logger } from "./Logger"
 
 //

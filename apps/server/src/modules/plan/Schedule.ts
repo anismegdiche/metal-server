@@ -49,13 +49,14 @@ export class Schedule {
 		for (const [_jobName, _scheduleParams] of scheduleConfig) {
 			Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_jobName}'`)
 
-			const _currentDate = new Date()
-			_currentDate.setSeconds(_currentDate.getSeconds() + 1)
-			const _cron = _scheduleParams.cron === ON_START ? _currentDate : _scheduleParams.cron
+			if (_scheduleParams.cron === ON_START) {
+				await Schedule.JobProcess(_jobName, _scheduleParams)
+				continue
+			}
 
 			const _timezone = ConfigManager.Get<string>("server.timezone")
 			const _cronJob = new CronJob(
-				_cron,
+				_scheduleParams.cron,
 				Schedule.JobProcess.bind(Schedule, _jobName, _scheduleParams),
 				null,
 				true,
@@ -69,7 +70,7 @@ export class Schedule {
 		}
 	}
 
-	static JobProcess(jobName: string, scheduleParams: U__schedules_schedule) {
+	static async JobProcess(jobName: string, scheduleParams: U__schedules_schedule) {
 		Logger.Info(`${Logger.In} Schedule.JobProcess: Running job '${jobName}'`)
 
 		// metrics schedules active inc
@@ -78,7 +79,7 @@ export class Schedule {
 
 		const { plan } = scheduleParams
 
-		Plans.get(plan)
+		await Plans.get(plan)
 			?.ProcessSchedule(scheduleParams)
 			.then(() => {
 				Logger.Info(`${Logger.Out} Schedule.JobProcess: job '${jobName}' terminated`)

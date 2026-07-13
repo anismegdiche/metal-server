@@ -9,6 +9,7 @@ import z from "zod"
 import { Assert } from "../../utils/Assert"
 import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
+import { Queue } from "../../utils/Queue"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import type { PLAN_STATUS, STEP_STATUS } from "./@consts"
 
@@ -100,6 +101,8 @@ declare global {
 export class PlanMetrics {
 	static Bus = new EventBus()
 
+	static _queue = new Queue()
+
 	static Get(planName: string): T_PlanMetrics {
 		const METRIC_NAME = _MTR_.PLAN + planName
 
@@ -117,6 +120,7 @@ export class PlanMetrics {
 	}
 
 	@on({ eventName: PLAN_METRICS.PLAN_SET, eventBus: PlanMetrics.Bus })
+	@Queue.AddToQueue(PlanMetrics._queue)
 	static _handlePlanSet(event: CustomEvent<Partial<T_PlanMetrics>>) {
 		const metrics = event.data
 		Assert.Var<Partial<T_PlanMetrics>>(metrics, "metrics are undefined")
@@ -135,6 +139,7 @@ export class PlanMetrics {
 	}
 
 	@on({ eventName: PLAN_METRICS.STEP_START, eventBus: PlanMetrics.Bus })
+	@Queue.AddToQueue(PlanMetrics._queue)
 	static _handlePlanStepStart(event: CustomEvent<Partial<T_StepMetrics>>) {
 		const metrics = event.data || {}
 		const planName = metrics.planName || ""
@@ -151,6 +156,7 @@ export class PlanMetrics {
 	}
 
 	@on({ eventName: PLAN_METRICS.STEP_END, eventBus: PlanMetrics.Bus })
+	@Queue.AddToQueue(PlanMetrics._queue)
 	static _handlePlanStepEnd(event: CustomEvent<Partial<T_StepMetrics>>) {
 		const metrics = event.data ?? {}
 		const planName = metrics.planName ?? ""
@@ -178,6 +184,7 @@ export class PlanMetrics {
 	}
 
 	@on({ eventName: PLAN_METRICS.STEP_INC, eventBus: PlanMetrics.Bus })
+	@Queue.AddToQueue(PlanMetrics._queue)
 	static _handlePlanStepInc(event: CustomEvent<Partial<T_StepMetrics>>) {
 		const metrics = event.data || {}
 		const planName = metrics.planName || ""
@@ -208,6 +215,7 @@ export class PlanMetrics {
 	}
 
 	@on({ eventName: PLAN_METRICS.PLAN_START, eventBus: PlanMetrics.Bus })
+	@Queue.AddToQueue(PlanMetrics._queue)
 	static _handlePlanStart(event: CustomEvent<Partial<T_PlanMetrics>>) {
 		const metrics = event.data
 		Assert.Var<Partial<T_PlanMetrics>>(metrics, "metrics are undefined")
@@ -226,6 +234,7 @@ export class PlanMetrics {
 	}
 
 	@on({ eventName: PLAN_METRICS.PLAN_END, eventBus: PlanMetrics.Bus })
+	@Queue.AddToQueue(PlanMetrics._queue)
 	static _handlePlanEnd(event: CustomEvent<Partial<T_PlanMetrics>>) {
 		const metrics = event.data ?? {}
 		const planName = metrics.planName ?? ""

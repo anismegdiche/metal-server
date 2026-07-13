@@ -63,6 +63,9 @@ schedules:
   "sch-failed":
     plan: plan-failed
     cron: "@start"
+  "sch-2":
+    plan: plan-2
+    cron: "@start"
 
 plans:
   plan-failed:
@@ -80,6 +83,13 @@ plans:
       - select:
           schema: fs
           entity: fake-failed
+
+  plan-2:
+    steps:
+      - select:
+          schema: fs
+          entity: img
+          fields: "*,content"
 
   myplan:
     steps:
