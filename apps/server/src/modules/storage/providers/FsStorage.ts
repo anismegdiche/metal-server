@@ -32,8 +32,8 @@ export type U__source_storage_fs_options = z.infer<typeof z_U__source_storage_fs
 
 type TFsStorageParams = {
 	[K in keyof U__source_storage_fs_options as K extends `${infer U}`
-		? TConvertParams<U>
-		: K]: U__source_storage_fs_options[K]
+	? TConvertParams<U>
+	: K]: U__source_storage_fs_options[K]
 }
 
 //
@@ -65,6 +65,10 @@ export class FsStorage extends absStorageProvider {
 
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
+		const isFolderExists = await this.FolderIsExist("")
+		if (!isFolderExists) {
+			throw new HttpErrorInternalServerError(`Folder '${this.Params?.folder}' does not exist`)
+		}
 		Logger.Debug(`${Logger.Out} FsStorage: Connected`)
 	}
 

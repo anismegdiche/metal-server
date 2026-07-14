@@ -110,15 +110,15 @@ export class Plan {
 		if (!_mtr_plans.includes(this.Name)) {
 			_mtr_plans.push(this.Name)
 		}
-		MetricsCollector.DispatchSetEvent(_MTR_.PLANS, _mtr_plans)
+		MetricsCollector.DispatchEvent_set(_MTR_.PLANS, _mtr_plans)
 
 		// metrics plans active inc
 		let _mtr_plans_active: number = await MetricsCollector.Get(_MTR_.PLANS_ACTIVE, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_ACTIVE, _mtr_plans_active + 1)
+		MetricsCollector.DispatchEvent_set(_MTR_.PLANS_ACTIVE, _mtr_plans_active + 1)
 
 		// metrics plans execution inc
 		const _mtr_plans_execution: number = await MetricsCollector.Get(_MTR_.PLANS_EXECUTION, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_EXECUTION, _mtr_plans_execution + 1)
+		MetricsCollector.DispatchEvent_set(_MTR_.PLANS_EXECUTION, _mtr_plans_execution + 1)
 
 		const { steps, "on-error": planOnError, "failure-strategy": planFailureStrategy } = this.Config
 
@@ -298,7 +298,7 @@ export class Plan {
 					case PLAN_FAILURE_STRATEGY.THROW:
 					default:
 						_mtr_plans_active = await MetricsCollector.Get(_MTR_.PLANS_ACTIVE, 0)
-						MetricsCollector.DispatchSetEvent(_MTR_.PLANS_ACTIVE, _mtr_plans_active - 1)
+						MetricsCollector.DispatchEvent_set(_MTR_.PLANS_ACTIVE, _mtr_plans_active - 1)
 						Logger.Info(`${Logger.Out} Plan.Process '${this.Name}': completed`)
 						PlanMetrics.Bus.dispatchEvent(
 							new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_END, {
@@ -339,7 +339,7 @@ export class Plan {
 
 		// metrics plans active dec
 		_mtr_plans_active = await MetricsCollector.Get(_MTR_.PLANS_ACTIVE, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_ACTIVE, _mtr_plans_active - 1)
+		MetricsCollector.DispatchEvent_set(_MTR_.PLANS_ACTIVE, _mtr_plans_active - 1)
 
 		return this._data.Rename(this.Name)
 	}

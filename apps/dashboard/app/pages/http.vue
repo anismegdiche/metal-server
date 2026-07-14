@@ -14,11 +14,11 @@ const count4xx = computed(() => httpMetrics.value?.['http:requests:4xx'] ?? 0)
 const count5xx = computed(() => httpMetrics.value?.['http:requests:5xx'] ?? 0)
 const avgDuration = computed(() => httpMetrics.value?.['http:requests:avg_duration'] ?? 0)
 
-const summaryCards = computed(() => [
-    { label: 'Total Requests', value: String(totalRequests.value), icon: 'i-lucide-globe', color: 'primary' },
-    { label: 'Active Requests', value: String(activeRequests.value), icon: 'i-lucide-zap', color: 'info' },
-    { label: 'Avg Duration', value: `${avgDuration.value}ms`, icon: 'i-lucide-clock', color: 'success' },
-    { label: 'Error Rate', value: totalRequests.value > 0 ? `${(((count4xx.value + count5xx.value) / totalRequests.value) * 100).toFixed(1)}%` : '0%', icon: 'i-lucide-alert-triangle', color: 'warning' },
+const httpMetricCards = computed(() => [
+    { label: 'Total Requests', value: totalRequests.value, icon: 'i-lucide-globe', iconClass: 'text-primary' },
+    { label: 'Active', value: activeRequests.value, icon: 'i-lucide-zap', iconClass: 'text-info' },
+    { label: 'Avg Duration', value: `${avgDuration.value}ms`, icon: 'i-lucide-clock', iconClass: 'text-success' },
+    { label: 'Errors', value: count4xx.value + count5xx.value, icon: 'i-lucide-alert-triangle', iconClass: 'text-warning' }
 ])
 
 const statusBreakdown = computed(() => [
@@ -38,15 +38,15 @@ const statusBreakdown = computed(() => [
             <p class="text-sm text-muted">Monitor HTTP request activity and performance</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <UCard v-for="card in summaryCards" :key="card.label" class="bg-metal-gradient">
-                <template #header>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-muted">{{ card.label }}</span>
-                        <UIcon :name="card.icon" class="size-5" :class="`text-${card.color}`" />
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <UCard v-for="card in httpMetricCards" :key="card.label">
+                <div class="flex items-center gap-3">
+                    <UIcon :name="card.icon" class="size-5" :class="card.iconClass" />
+                    <div>
+                        <p class="text-2xl font-bold">{{ card.value }}</p>
+                        <p class="text-xs text-muted">{{ card.label }}</p>
                     </div>
-                </template>
-                <p class="text-2xl font-bold">{{ card.value }}</p>
+                </div>
             </UCard>
         </div>
 

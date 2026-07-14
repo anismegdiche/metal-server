@@ -22,6 +22,7 @@ export enum _MTR_ {
     SOURCES = "sources",
     SOURCES_TOTAL = "sources:total",
     SOURCES_ACTIVE = "sources:active",
+    SOURCES_DETAILS = "sources:details",
 
     //
     HTTP_REQUESTS_TOTAL = "http:requests:total",

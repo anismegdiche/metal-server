@@ -80,8 +80,8 @@ export class ServerEndpoint {
 			activeRequests++
 			totalRequests++
 
-			MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_TOTAL, totalRequests)
-			MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_ACTIVE, activeRequests)
+			MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_TOTAL, totalRequests)
+			MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_ACTIVE, activeRequests)
 
 			const startTime = Date.now()
 
@@ -96,12 +96,12 @@ export class ServerEndpoint {
 				else if (status >= 400 && status < 500) count4xx++
 				else if (status >= 500) count5xx++
 
-				MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_ACTIVE, activeRequests)
-				MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_2XX, count2xx)
-				MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_3XX, count3xx)
-				MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_4XX, count4xx)
-				MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_5XX, count5xx)
-				MetricsCollector.DispatchSetEvent(
+				MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_ACTIVE, activeRequests)
+				MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_2XX, count2xx)
+				MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_3XX, count3xx)
+				MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_4XX, count4xx)
+				MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_5XX, count5xx)
+				MetricsCollector.DispatchEvent_set(
 					_MTR_.HTTP_REQUESTS_AVG_DURATION,
 					Number((totalDuration / totalRequests).toFixed(2)),
 				)

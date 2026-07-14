@@ -58,18 +58,19 @@ export class ServerCore {
 
 	static ResetMetrics(): void {
 		MetricsCollector.Clear()
-		MetricsCollector.DispatchSetEvent(_MTR_.SERVER_VERSION, SERVER.VERSION)
-		MetricsCollector.DispatchSetEvent(_MTR_.SERVER_UPTIME, Date.now())
-		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_TOTAL, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_ACTIVE, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_2XX, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_3XX, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_4XX, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_5XX, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.HTTP_REQUESTS_AVG_DURATION, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.SOURCES_TOTAL, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.SOURCES_ACTIVE, 0)
-		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES_TOTAL, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.SERVER_VERSION, SERVER.VERSION)
+		MetricsCollector.DispatchEvent_set(_MTR_.SERVER_UPTIME, Date.now())
+		MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_TOTAL, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_ACTIVE, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_2XX, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_3XX, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_4XX, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_5XX, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_AVG_DURATION, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_TOTAL, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_ACTIVE, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_DETAILS, [])
+		MetricsCollector.DispatchEvent_set(_MTR_.SCHEDULES_TOTAL, 0)
 	}
 
 	@Logger.LogFunction()
@@ -92,8 +93,8 @@ export class ServerCore {
 			lastCpuUsage = process.cpuUsage()
 			const cpuUsagePercent = ((cpuUsageDelta.user + cpuUsageDelta.system) / (metricsIntervalMs * 1000 * ServerCore.Cpus)) * 100
 
-			MetricsCollector.DispatchSetEvent(_MTR_.SERVER_MEMORY_USAGE, process.memoryUsage().heapUsed)
-			MetricsCollector.DispatchSetEvent(_MTR_.SERVER_CPU_USAGE, Number(cpuUsagePercent.toFixed(2)))
+			MetricsCollector.DispatchEvent_set(_MTR_.SERVER_MEMORY_USAGE, process.memoryUsage().heapUsed)
+			MetricsCollector.DispatchEvent_set(_MTR_.SERVER_CPU_USAGE, Number(cpuUsagePercent.toFixed(2)))
 		}, metricsIntervalMs)
 	}
 

@@ -1,4 +1,3 @@
-
 //
 //
 //
@@ -27,12 +26,28 @@ export class Source {
 	}
 
 	static DispatchMetrics(): void {
-		const sources = ConfigManager.Has("sources")
-			? Object.keys(ConfigManager.Get<TJson>("sources"))
-			: []
-		MetricsCollector.DispatchSetEvent(_MTR_.SOURCES, sources)
-		MetricsCollector.DispatchSetEvent(_MTR_.SOURCES_TOTAL, sources.length)
-		MetricsCollector.DispatchSetEvent(_MTR_.SOURCES_ACTIVE, Source.Sources.size)
+		const allSourceNames = ConfigManager.Has("sources") ? Object.keys(ConfigManager.Get<TJson>("sources")) : []
+
+		const allSourcesConfig = ConfigManager.Has("sources")
+			? ConfigManager.Get<Record<string, U__sources_source>>("sources")
+			: {}
+
+		const details: Record<string, { provider: string; host: string; port: number | null; database: string | null; status: string }> = {}
+		for (const name of allSourceNames) {
+			const config = allSourcesConfig[name]
+			details[name] = {
+				provider: config?.provider ?? "unknown",
+				host: config?.host ?? "local",
+				port: config?.port ?? null,
+				database: config?.database ?? null,
+				status: "unknown",
+			}
+		}
+
+		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES, allSourceNames)
+		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_TOTAL, allSourceNames.length)
+		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_ACTIVE, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_DETAILS, details)
 	}
 
 	@Logger.LogFunction()
@@ -49,8 +64,17 @@ export class Source {
 				DataProvider: await DataProvider.GetProvider(provider),
 			})
 			await Source.Sources.get(source)?.DataProvider.Init(source, sourceConfig)
-			Source.Sources.get(source)?.DataProvider.Connect()
-			Source.DispatchMetrics()
+			Source.Sources.get(source)
+				?.DataProvider.Connect()
+				.then(() => {
+					Logger.Info(`${Logger.Out} Source.Connect '${source}': connected`)
+					MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_ACTIVE, MetricsCollector.Get(_MTR_.SOURCES_ACTIVE, 0) + 1)
+					MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "connected" } })
+				})
+				.catch((error) => {
+					Logger.Error(`${Logger.Out} Error connecting to source '${source}': ${error.message}`)
+					MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "disconnected" } })
+				})
 		} catch (error: unknown) {
 			HttpErrorLog(error)
 		}

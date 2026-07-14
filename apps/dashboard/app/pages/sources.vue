@@ -1,23 +1,56 @@
 <script setup lang="ts">
-const sources = ref([
-  { name: 'production-pg', type: 'PostgreSQL', typeIcon: 'i-lucide-database', status: 'connected', host: 'pg-prod.internal:5432', entities: 24, lastActive: 'now' },
-  { name: 'analytics-mongo', type: 'MongoDB', typeIcon: 'i-lucide-database', status: 'connected', host: 'mongo-analytics:27017', entities: 12, lastActive: '2min ago' },
-  { name: 'legacy-mssql', type: 'SQL Server', typeIcon: 'i-lucide-database', status: 'connected', host: 'sql-legacy.corp.net:1433', entities: 56, lastActive: '5min ago' },
-  { name: 'staging-mysql', type: 'MySQL', typeIcon: 'i-lucide-database', status: 'disconnected', host: 'mysql-staging:3306', entities: 18, lastActive: '1h ago' },
-  { name: 'user-profiles', type: 'Metal', typeIcon: 'i-lucide-server', status: 'connected', host: 'local', entities: 3, lastActive: 'now' },
-  { name: 'in-memory-cache', type: 'Memory', typeIcon: 'i-lucide-cpu', status: 'connected', host: 'local', entities: 1, lastActive: 'now' },
-  { name: 'salesforce-api', type: 'Web Service', typeIcon: 'i-lucide-globe', status: 'connected', host: 'api.salesforce.com', entities: 8, lastActive: '30s ago' },
-  { name: 'adventure-works', type: 'Cosmos DB', typeIcon: 'i-lucide-database', status: 'disconnected', host: 'cosmos-account.documents.azure.com:443', entities: 0, lastActive: '1d ago' }
+const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:~')
+
+onMounted(() => {
+  const interval = setInterval(refreshSources, 5000)
+  onUnmounted(() => clearInterval(interval))
+})
+
+const totalSources = computed(() => sourcesMetrics.value?.['sources:total'] ?? 0)
+const activeSources = computed(() => sourcesMetrics.value?.['sources:active'] ?? 0)
+const disconnectedSources = computed(() => totalSources.value - activeSources.value)
+
+const sourceMetricCards = computed(() => [
+  { label: 'Total Sources', value: totalSources.value, icon: 'i-lucide-layers', iconClass: 'text-primary' },
+  { label: 'Active', value: activeSources.value, icon: 'i-lucide-plug', iconClass: 'text-success' },
+  { label: 'Disconnected', value: disconnectedSources.value, icon: 'i-lucide-plug-off', iconClass: 'text-error' }
 ])
 
-const columns = [
+const allSources = computed(() => {
+  if (!sourcesMetrics.value) return []
+  const details = sourcesMetrics.value['sources:details'] ?? {}
+  return Object.entries(details).map(([name, info]: [string, any]) => ({
+    name,
+    provider: info.provider ?? 'unknown',
+    host: info.host ?? 'local',
+    port: info.port ?? null,
+    database: info.database ?? null,
+    status: info.status ?? 'unknown'
+  }))
+})
+
+const sourceColumns = [
   { accessorKey: 'name', header: 'Name' },
-  { accessorKey: 'type', header: 'Type' },
+  { accessorKey: 'provider', header: 'Type' },
   { accessorKey: 'host', header: 'Host' },
-  { accessorKey: 'entities', header: 'Entities' },
-  { accessorKey: 'lastActive', header: 'Last Active' },
   { accessorKey: 'status', header: 'Status' }
 ]
+
+function providerIcon(provider: string) {
+  const map: Record<string, string> = {
+    postgres: 'i-lucide-database',
+    mongodb: 'i-lucide-database',
+    mssql: 'i-lucide-database',
+    mysql: 'i-lucide-database',
+    cosmosdb: 'i-lucide-database',
+    webservice: 'i-lucide-globe',
+    storage: 'i-lucide-hard-drive',
+    metal: 'i-lucide-server',
+    memory: 'i-lucide-cpu',
+    plans: 'i-lucide-workflow'
+  }
+  return map[provider] ?? 'i-lucide-database'
+}
 </script>
 
 <template>
@@ -27,51 +60,27 @@ const columns = [
       <p class="text-sm text-muted">Data source connections and their status</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <UCard>
-        <template #header>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-muted">Connected</span>
-            <UIcon name="i-lucide-plug" class="size-4 text-success" />
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <UCard v-for="metric in sourceMetricCards" :key="metric.label">
+        <div class="flex items-center gap-3">
+          <UIcon :name="metric.icon" class="size-5" :class="metric.iconClass" />
+          <div>
+            <p class="text-2xl font-bold">{{ metric.value }}</p>
+            <p class="text-xs text-muted">{{ metric.label }}</p>
           </div>
-        </template>
-        <p class="text-2xl font-bold">{{ sources.filter(s => s.status === 'connected').length }}</p>
-      </UCard>
-      <UCard>
-        <template #header>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-muted">Disconnected</span>
-            <UIcon name="i-lucide-plug-off" class="size-4 text-error" />
-          </div>
-        </template>
-        <p class="text-2xl font-bold">{{ sources.filter(s => s.status !== 'connected').length }}</p>
-      </UCard>
-      <UCard>
-        <template #header>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-muted">Total Entities</span>
-            <UIcon name="i-lucide-table" class="size-4 text-info" />
-          </div>
-        </template>
-        <p class="text-2xl font-bold">{{ sources.reduce((a, s) => a + s.entities, 0) }}</p>
-      </UCard>
-      <UCard>
-        <template #header>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-muted">Source Types</span>
-            <UIcon name="i-lucide-layers" class="size-4 text-primary" />
-          </div>
-        </template>
-        <p class="text-2xl font-bold">{{ new Set(sources.map(s => s.type)).size }}</p>
+        </div>
       </UCard>
     </div>
 
     <UCard>
-      <UTable :columns="columns" :data="sources">
-        <template #type-cell="{ row }">
+      <template #header>
+        <h2 class="font-semibold">All Sources</h2>
+      </template>
+      <UTable :columns="sourceColumns" :data="allSources">
+        <template #provider-cell="{ row }">
           <div class="flex items-center gap-2">
-            <UIcon :name="row.original.typeIcon" class="size-4 text-muted" />
-            <span>{{ row.original.type }}</span>
+            <UIcon :name="providerIcon(row.original.provider)" class="size-4 text-muted" />
+            <span>{{ row.original.provider }}</span>
           </div>
         </template>
         <template #status-cell="{ row }">

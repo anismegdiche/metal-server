@@ -2,10 +2,12 @@
 //
 //
 //
-import { CustomEvent, EventBus, on } from "@dimkl/events"
 //
+import { CustomEvent, EventBus, on } from "@dimkl/events"
 import { MetricsGetDataPath } from "@metal/config"
 import PersistentMap from "@metal/persistent-map"
+import { merge } from "lodash-es"
+//
 import { Logger } from "../../utils/Logger"
 import { Queue } from "../../utils/Queue"
 import { HttpResponse } from "../core/HttpResponse"
@@ -34,6 +36,14 @@ export class MetricsCollector {
         MetricsCollector.Data.set(metricName, metricData)
     }
 
+    @on({ eventName: METRIC_EVENT.UPDATE, eventBus: MetricsCollector.Bus })
+    @Queue.AddToQueue(MetricsCollector._queue)
+    static Update(event: CustomEvent<any>) {
+        const { metricName, metricData } = event.data
+        const oldData = MetricsCollector.Get(metricName)
+        MetricsCollector.Data.set(metricName, merge(oldData, metricData))
+    }
+
     static Clear() {
         MetricsCollector.Data.clear()
     }
@@ -58,9 +68,20 @@ export class MetricsCollector {
         )
     }
 
-    static DispatchSetEvent(metricName: string, metricData: any) {
+    static DispatchEvent_set(metricName: string, metricData: any) {
         MetricsCollector.Bus.dispatchEvent(
             new CustomEvent<any>(METRIC_EVENT.SET, {
+                data: {
+                    metricName,
+                    metricData
+                },
+            }),
+        )
+    }
+
+    static DispatchEvent_update(metricName: string, metricData: any) {
+        MetricsCollector.Bus.dispatchEvent(
+            new CustomEvent<any>(METRIC_EVENT.UPDATE, {
                 data: {
                     metricName,
                     metricData
