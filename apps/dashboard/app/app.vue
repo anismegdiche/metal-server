@@ -5,6 +5,7 @@ const navItems: NavigationMenuItem[] = [
   { label: 'Overview', icon: 'i-lucide-layout-dashboard', to: '/' },
   { label: 'HTTP', icon: 'i-lucide-globe', to: '/http' },
   { label: 'Sources', icon: 'i-lucide-plug', to: '/sources' },
+  { label: 'Schemas', icon: 'i-lucide-book-open', to: '/schemas' },
   { label: 'Plans', icon: 'i-lucide-workflow', to: '/plans' },
   { label: 'Schedules', icon: 'i-lucide-calendar-clock', to: '/schedules' },
   { label: 'Data Browser', icon: 'i-lucide-database', to: '/data-browser' },

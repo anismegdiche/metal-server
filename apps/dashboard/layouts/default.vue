@@ -15,6 +15,10 @@ const items: NavigationMenuItem[][] = [
     icon: 'i-lucide-plug',
     to: '/sources'
   }, {
+    label: 'Schemas',
+    icon: 'i-lucide-book-open',
+    to: '/schemas'
+  }, {
     label: 'Plans',
     icon: 'i-lucide-workflow',
     to: '/plans'

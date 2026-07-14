@@ -59,6 +59,8 @@ schemas:
     source: src-myplan
   json:
     source: src-json
+  failed:
+    source: src-fs-failed
 
 schedules:
   # "ocr":
