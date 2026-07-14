@@ -41,7 +41,7 @@ export class Swagger {
 	@Logger.LogFunction(true)
 	static async StartUi(app: Express) {
 		const swaggerUi = await Swagger._loadSwaggerUiModule()
-		app.use(ROUTE.SWAGGER_UI_PATH, swaggerUi.serve, swaggerUi.setup(Swagger.Spec))
+		app.use(ROUTE.SWAGGER_UI_PATH, Logger.RequestMiddleware, swaggerUi.serve, swaggerUi.setup(Swagger.Spec))
 		app.use((req: Request, _res: Response, next: NextFunction) => {
 			if (req.path.startsWith(ROUTE.SWAGGER_UI_PATH)) {
 				return next() // Skip validation for /api-docs

@@ -13,11 +13,11 @@ import { ScheduleRouter } from "./routes/ScheduleRouter"
 export function RegisterMiddleware(): void {
 	ServerEndpoint.RegisterMiddleware(() => {
 		Logger.Info(`Route: Enabling API, URL= ${ROUTE.PLAN_PATH}`)
-		ServerEndpoint.Api.use(`${ROUTE.PLAN_PATH}/`, ResponseHandler.SetContentJson, PlanRouter)
+		ServerEndpoint.Api.use(`${ROUTE.PLAN_PATH}/`, Logger.RequestMiddleware, ResponseHandler.SetContentJson, PlanRouter)
 	})
 
 	ServerEndpoint.RegisterMiddleware(() => {
 		Logger.Info(`Route: Enabling API, URL= ${ROUTE.SCHEDULE_PATH}`)
-		ServerEndpoint.Api.use(`${ROUTE.SCHEDULE_PATH}/`, ResponseHandler.SetContentJson, ScheduleRouter)
+		ServerEndpoint.Api.use(`${ROUTE.SCHEDULE_PATH}/`, Logger.RequestMiddleware, ResponseHandler.SetContentJson, ScheduleRouter)
 	})
 }

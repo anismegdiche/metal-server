@@ -12,6 +12,6 @@ import { SchemaRouter } from "./routes/SchemaRouter"
 export function RegisterMiddleware(): void {
 	ServerEndpoint.RegisterMiddleware(() => {
 		Logger.Info(`Route: Enabling API, URL= ${ROUTE.SCHEMA_PATH}`)
-		ServerEndpoint.Api.use(`${ROUTE.SCHEMA_PATH}/`, ResponseHandler.SetContentJson, SchemaRouter)
+		ServerEndpoint.Api.use(`${ROUTE.SCHEMA_PATH}/`, Logger.RequestMiddleware, ResponseHandler.SetContentJson, SchemaRouter)
 	})
 }

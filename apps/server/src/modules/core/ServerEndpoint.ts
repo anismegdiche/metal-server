@@ -39,7 +39,7 @@ export class ServerEndpoint {
 	static RegisterServerMiddleware(): void {
 		ServerEndpoint.RegisterMiddleware(() => {
 			Logger.Info(`Route: Enabling API, URL= ${ROUTE.SERVER_PATH}`)
-			ServerEndpoint.Api.use(`${ROUTE.SERVER_PATH}/`, ResponseHandler.SetContentJson, ServerRouter)
+			ServerEndpoint.Api.use(`${ROUTE.SERVER_PATH}/`, Logger.RequestMiddleware, ResponseHandler.SetContentJson, ServerRouter)
 		})
 	}
 
@@ -49,7 +49,6 @@ export class ServerEndpoint {
 		ServerEndpoint.Api.use(helmet())
 
 		ServerEndpoint.Api.use(responseTime())
-		ServerEndpoint.Api.use(Logger.RequestMiddleware)
 		ServerEndpoint.Api.set("trust proxy", 1)
 		ServerEndpoint.Api.use(rateLimit(ConfigManager.Get<object>("server.response-rate")))
 
@@ -74,7 +73,7 @@ export class ServerEndpoint {
 		let count5xx = 0
 
 		ServerEndpoint.Api.use((req: Request, res: Response, next: NextFunction) => {
-			if (req.path.startsWith(ROUTE.METRICS_PATH)) 
+			if (req.path.startsWith(ROUTE.METRICS_PATH))
 				return next()
 
 			activeRequests++
