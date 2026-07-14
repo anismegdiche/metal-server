@@ -71,6 +71,7 @@ export class ServerCore {
 		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_ACTIVE, 0)
 		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_DETAILS, [])
 		MetricsCollector.DispatchEvent_set(_MTR_.SCHEDULES_TOTAL, 0)
+		MetricsCollector.DispatchEvent_set(_MTR_.SCHEDULES_DETAILS, {})
 	}
 
 	@Logger.LogFunction()

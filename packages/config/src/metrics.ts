@@ -17,6 +17,7 @@ export enum _MTR_ {
     SCHEDULES = "schedules",
     SCHEDULES_TOTAL = "schedules:total",
     SCHEDULES_ACTIVE = "schedules:active",
+    SCHEDULES_DETAILS = "schedules:details",
 
     //
     SOURCES = "sources",

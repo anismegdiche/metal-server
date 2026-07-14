@@ -1,54 +1,91 @@
 <script setup lang="ts">
-const schedules = ref([
-  { jobName: 'nightly-sync', cron: '0 18 * * *', status: 'running', lastFire: '2026-07-07T18:00:00Z', nextFire: '2026-07-08T18:00:00Z', plan: 'nightly-sync' },
-  { jobName: 'user-import', cron: '0 0 * * *', status: 'running', lastFire: '2026-07-07T00:00:00Z', nextFire: '2026-07-08T00:00:00Z', plan: 'user-import' },
-  { jobName: 'hourly-metrics', cron: '0 * * * *', status: 'running', lastFire: '2026-07-07T19:00:00Z', nextFire: '2026-07-07T20:00:00Z', plan: 'collect-metrics' },
-  { jobName: 'weekly-report', cron: '0 9 * * 1', status: 'stopped', lastFire: '2026-07-06T09:00:00Z', nextFire: '2026-07-13T09:00:00Z', plan: 'report-gen' },
-  { jobName: 'data-cleanup', cron: '*/30 * * * *', status: 'running', lastFire: '2026-07-07T19:00:00Z', nextFire: '2026-07-07T19:30:00Z', plan: 'cleanup-old-records' },
-  { jobName: 'db-backup', cron: '0 2 * * *', status: 'running', lastFire: '2026-07-07T02:00:00Z', nextFire: '2026-07-08T02:00:00Z', plan: 'backup-databases' },
-  { jobName: 'cache-clean', cron: '0 4 * * 0', status: 'running', lastFire: '2026-07-06T04:00:00Z', nextFire: '2026-07-13T04:00:00Z', plan: 'purge-cache' }
-])
+const { data: metrics, refresh } = useFetch<Record<string, any>>('/server-api/metrics/schedules/schedules:~')
+
+onMounted(() => {
+  const interval = setInterval(refresh, 5000)
+  onUnmounted(() => clearInterval(interval))
+})
+
+const schedules = computed(() => {
+  if (!metrics.value) return []
+  const details = metrics.value['schedules:details'] ?? {}
+  return Object.entries(details).map(([jobName, d]: [string, any]) => ({
+    jobName,
+    plan: d.plan ?? '',
+    cron: d.cron ?? '',
+    status: d.status ?? 'active',
+    lastFire: d.lastFire,
+    nextFire: d.nextFire,
+  }))
+})
+
+const totalActive = computed(() => metrics.value?.['schedules:active'] ?? 0)
+const totalSchedules = computed(() => metrics.value?.['schedules:total'] ?? 0)
+const totalCompleted = computed(() => schedules.value.filter(s => s.status === 'completed').length)
 
 const columns = [
   { accessorKey: 'jobName', header: 'Job Name' },
   { accessorKey: 'plan', header: 'Plan' },
-  { accessorKey: 'cron', header: 'Cron Expression' },
+  { accessorKey: 'cron', header: 'Cron' },
   { accessorKey: 'status', header: 'Status' },
   { accessorKey: 'lastFire', header: 'Last Fire' },
   { accessorKey: 'nextFire', header: 'Next Fire' },
-  { id: 'actions', header: '' }
 ]
+
+function formatDateTime(iso: string | null): string {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleString()
+}
+
+function formatNextFire(cron: string, iso: string | null): string {
+  if (cron === '@start') return 'Never'
+  if (!iso) return '—'
+  return new Date(iso).toLocaleString()
+}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-calendar-clock ml-0 mr-2" />Schedules</h1>
+      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-calendar-clock" class="ml-0 mr-2" />Schedules</h1>
       <p class="text-sm text-muted">Cron-based job scheduling for plan execution</p>
     </div>
 
-    <UCard>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <UCard>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="flex flex-col items-center p-4 rounded-lg bg-elevated/50">
-            <span class="text-2xl font-bold">{{ schedules.filter(s => s.status === 'running').length }}</span>
-            <span class="text-sm text-muted">Active</span>
-          </div>
-          <div class="flex flex-col items-center p-4 rounded-lg bg-elevated/50">
-            <span class="text-2xl font-bold">{{ schedules.length }}</span>
-            <span class="text-sm text-muted">Total</span>
-          </div>
-          <div class="flex flex-col items-center p-4 rounded-lg bg-elevated/50">
-            <span class="text-2xl font-bold">{{ schedules.filter(s => s.status === 'stopped').length }}</span>
-            <span class="text-sm text-muted">Stopped</span>
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-play" class="size-5 text-success" />
+          <div>
+            <p class="text-2xl font-bold">{{ totalActive }}</p>
+            <p class="text-xs text-muted">Active</p>
           </div>
         </div>
       </UCard>
+      <UCard>
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-calendar" class="size-5 text-primary" />
+          <div>
+            <p class="text-2xl font-bold">{{ totalSchedules }}</p>
+            <p class="text-xs text-muted">Total</p>
+          </div>
+        </div>
+      </UCard>
+      <UCard>
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-check-circle" class="size-5 text-muted" />
+          <div>
+            <p class="text-2xl font-bold">{{ totalCompleted }}</p>
+            <p class="text-xs text-muted">Completed</p>
+          </div>
+        </div>
+      </UCard>
+    </div>
 
+    <UCard>
       <UTable :columns="columns" :data="schedules">
         <template #status-cell="{ row }">
           <UBadge
-            :color="row.original.status === 'running' ? 'success' : 'neutral'"
+            :color="row.original.status === 'active' ? 'success' : 'neutral'"
             variant="subtle"
             size="sm"
           >
@@ -56,18 +93,12 @@ const columns = [
           </UBadge>
         </template>
         <template #lastFire-cell="{ row }">
-          <span class="text-sm">{{ new Date(row.original.lastFire).toLocaleString() }}</span>
+          <span class="text-sm">{{ formatDateTime(row.original.lastFire) }}</span>
         </template>
         <template #nextFire-cell="{ row }">
-          <span class="text-sm">{{ new Date(row.original.nextFire).toLocaleString() }}</span>
-        </template>
-        <template #actions-cell="{ row }">
-          <UButton
-            :color="row.original.status === 'running' ? 'error' : 'success'"
-            variant="ghost"
-            size="sm"
-            :icon="row.original.status === 'running' ? 'i-lucide-square' : 'i-lucide-play'"
-          />
+          <span class="text-sm" :class="row.original.cron === '@start' ? 'text-muted italic' : ''">
+            {{ formatNextFire(row.original.cron, row.original.nextFire) }}
+          </span>
         </template>
       </UTable>
     </UCard>

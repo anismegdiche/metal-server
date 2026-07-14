@@ -55,6 +55,14 @@ export class Schedule {
 
 		const _timezone = ConfigManager.Get<string>("server.timezone")
 
+		const details: Record<string, {
+			plan: string
+			cron: string
+			status: "active" | "completed"
+			lastFire: string | null
+			nextFire: string | null
+		}> = {}
+
 		for (const [_jobName, _scheduleParams] of scheduleConfig) {
 			Logger.Info(
 				`${Logger.In} Schedule.CreateAndStartAll: Creating job '${_jobName}'`
@@ -139,7 +147,19 @@ export class Schedule {
 				cron: _scheduleParams.cron,
 				cronJob: _cronJob,
 			})
+
+			// 4) Build metrics detail
+			const nextFire = _cronJob ? _cronJob.nextDate()?.toISO() ?? null : null
+			details[_jobName] = {
+				plan: _scheduleParams.plan,
+				cron: _scheduleParams.cron,
+				status: isOnStart ? "completed" : "active",
+				lastFire: isOnStart ? new Date().toISOString() : null,
+				nextFire,
+			}
 		}
+
+		MetricsCollector.DispatchEvent_set(_MTR_.SCHEDULES_DETAILS, details)
 	}
 
 
@@ -149,6 +169,18 @@ export class Schedule {
 		// metrics schedules active inc
 		const _mtr_schedules_active: number = MetricsCollector.Get(_MTR_.SCHEDULES_ACTIVE, 0)
 		MetricsCollector.DispatchEvent_set(_MTR_.SCHEDULES_ACTIVE, _mtr_schedules_active + 1)
+
+		// update lastFire
+		const details = MetricsCollector.Get(_MTR_.SCHEDULES_DETAILS, {}) as any
+		if (details[jobName]) {
+			const job = Schedule.Jobs.find(j => j.name === jobName)
+			MetricsCollector.DispatchEvent_update(_MTR_.SCHEDULES_DETAILS, {
+				[jobName]: {
+					lastFire: new Date().toISOString(),
+					nextFire: job?.cronJob ? job.cronJob.nextDate()?.toISO() ?? null : null
+				}
+			})
+		}
 
 		const { plan } = scheduleParams
 
