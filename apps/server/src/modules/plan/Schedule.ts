@@ -33,42 +33,115 @@ export class Schedule {
 
 	@Logger.LogFunction()
 	static async CreateAndStartAll() {
-		if (!ConfigManager.Has("schedules")) {
-			return undefined
-		}
+    if (!ConfigManager.Has("schedules")) {
+        return undefined;
+    }
 
-		const scheduleConfig: [string, U__schedules_schedule][] = Object.entries(ConfigManager.Get<U__schedules>("schedules"))
+    const scheduleConfig: [string, U__schedules_schedule][] =
+        Object.entries(ConfigManager.Get<U__schedules>("schedules"));
 
-		// metrics schedules
-		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES, scheduleConfig.map(([jobName]) => jobName))
-		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES_TOTAL, scheduleConfig.length)
+    // metrics schedules
+    MetricsCollector.DispatchSetEvent(
+        _MTR_.SCHEDULES,
+        scheduleConfig.map(([jobName]) => jobName)
+    );
+    MetricsCollector.DispatchSetEvent(
+        _MTR_.SCHEDULES_TOTAL,
+        scheduleConfig.length
+    );
 
-		// metrics schedules active
-		MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES_ACTIVE, 0)
+    // metrics schedules active (we'll increment per active cron job)
+    MetricsCollector.DispatchSetEvent(_MTR_.SCHEDULES_ACTIVE, 0);
 
-		for (const [_jobName, _scheduleParams] of scheduleConfig) {
-			Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating and Starting job '${_jobName}'`)
+    const _timezone = ConfigManager.Get<string>("server.timezone");
 
-			if (_scheduleParams.cron === ON_START) {
-				await Schedule.JobProcess(_jobName, _scheduleParams)
-				continue
-			}
+    for (const [_jobName, _scheduleParams] of scheduleConfig) {
+        Logger.Info(
+            `${Logger.In} Schedule.CreateAndStartAll: Creating job '${_jobName}'`
+        );
 
-			const _timezone = ConfigManager.Get<string>("server.timezone")
-			const _cronJob = new CronJob(
-				_scheduleParams.cron,
-				Schedule.JobProcess.bind(Schedule, _jobName, _scheduleParams),
-				null,
-				true,
-				_timezone,
-			)
+        const isOnStart = _scheduleParams.cron === ON_START;
+        const hasCronExpression =
+            _scheduleParams.cron &&
+            _scheduleParams.cron !== ON_START;
 
-			Schedule.Jobs.push(<TSchedule>{
-				name: _jobName,
-				cronJob: _cronJob,
-			})
-		}
-	}
+        // 1) If ON_START: run once immediately on server start
+        if (isOnStart) {
+            Logger.Info(
+                `${Logger.In} Schedule.CreateAndStartAll: Running ON_START job '${_jobName}'`
+            );
+            try {
+                await Schedule.JobProcess(_jobName, _scheduleParams);
+            } catch (e) {
+                const _e = NormalizeError(e);
+                Logger.Error(
+                    `${Logger.Out} Error in ON_START job '${_jobName}': ${_e.message}`
+                );
+            }
+        }
+
+        // 2) If there is a real cron expression, create and start a CronJob
+        let _cronJob: CronJob | undefined;
+
+        if (hasCronExpression) {
+            Logger.Info(
+                `${Logger.In} Schedule.CreateAndStartAll: Starting cron job '${_jobName}' with expression '${_scheduleParams.cron}'`
+            );
+
+            _cronJob = new CronJob(
+                // cronTime
+                _scheduleParams.cron,
+                // onTick
+                async () => {
+                    try {
+                        await Schedule.JobProcess(_jobName, _scheduleParams);
+                    } catch (e) {
+                        const _e = NormalizeError(e);
+                        Logger.Error(
+                            `${Logger.Out} Error in job '${_jobName}': ${_e.message}`
+                        );
+                    }
+                },
+                // onComplete
+                null,
+                // start
+                true,                // start the scheduler immediately
+                // timeZone
+                _timezone,
+                // context
+                null,
+                // runOnInit
+                false,               // we already handled ON_START manually above
+                // utcOffset
+                null,
+                // unrefTimeout
+                true,
+                // waitForCompletion
+                true,
+                // errorHandler
+                (e: unknown) => {
+                    const _e = NormalizeError(e);
+                    Logger.Error(
+                        `${Logger.Out} Error in job '${_jobName}': ${_e.message}`
+                    );
+                },
+                // name
+                _jobName,
+                // threshold
+                10000
+            );
+
+        }
+
+        // 3) Register job (even ON_START-only jobs, with cronJob undefined)
+        Schedule.Jobs.push(<TSchedule>{
+            name: _jobName,
+            cron: _scheduleParams.cron,
+            cronJob: _cronJob,
+        });
+    }
+}
+
 
 	static async JobProcess(jobName: string, scheduleParams: U__schedules_schedule) {
 		Logger.Info(`${Logger.In} Schedule.JobProcess: Running job '${jobName}'`)

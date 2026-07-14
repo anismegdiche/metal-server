@@ -38,13 +38,7 @@ export class SynchronizerManager {
 				const signature = `${target.name ?? this.constructor.name}.${propertyKey}, ${JsonUtils.Stringify(_filteredParams)}`
 				Logger.Debug(`${Logger.In} SynchronizerManager: syncing ${target.name ?? this.constructor.name}.${propertyKey}`)
 
-				const result = await SynchronizerManager.Execute(signature, originalMethod.bind(this, ...args))
-
-				if (result !== undefined) {
-					return result
-				}
-
-				return originalMethod.apply(this, args)
+				return await SynchronizerManager.Execute(signature, originalMethod.bind(this, ...args))
 			}
 
 			return descriptor

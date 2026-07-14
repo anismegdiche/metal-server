@@ -206,7 +206,7 @@ export class Plan {
 							currentStep: {
 								status: STEP_STATUS.FAILED,
 							},
-							data: this._data,
+							data: await this._data.Rename(this.Name),
 						},
 					})
 
@@ -214,7 +214,7 @@ export class Plan {
 				}
 
 				if (_stepOutput.data) {
-					this._data = _stepOutput.data
+					this._data = await _stepOutput.data.Rename(this.Name)
 				}
 
 				$context = merge($context, <Partial<TContext>>{
@@ -297,6 +297,9 @@ export class Plan {
 
 					case PLAN_FAILURE_STRATEGY.THROW:
 					default:
+						_mtr_plans_active = await MetricsCollector.Get(_MTR_.PLANS_ACTIVE, 0)
+						MetricsCollector.DispatchSetEvent(_MTR_.PLANS_ACTIVE, _mtr_plans_active - 1)
+						Logger.Info(`${Logger.Out} Plan.Process '${this.Name}': completed`)
 						PlanMetrics.Bus.dispatchEvent(
 							new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_END, {
 								data: {
@@ -338,7 +341,7 @@ export class Plan {
 		_mtr_plans_active = await MetricsCollector.Get(_MTR_.PLANS_ACTIVE, 0)
 		MetricsCollector.DispatchSetEvent(_MTR_.PLANS_ACTIVE, _mtr_plans_active - 1)
 
-		return this._data
+		return this._data.Rename(this.Name)
 	}
 
 	@Logger.LogFunction()
