@@ -1,6 +1,7 @@
 <script setup lang="ts">
-const { data: schemaMetrics, refresh: refreshSchemas } = useFetch<Record<string, any>>('/server-api/metrics/schemas/schemas:~')
-const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:~')
+
+const { data: schemaMetrics, refresh: refreshSchemas } = useFetch<Record<string, any>>('/server-api/metrics/schemas/schemas:%7E')
+const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:%7E')
 
 onMounted(() => {
   const interval = setInterval(() => {
@@ -153,18 +154,18 @@ function sourceTotal(s: any): number {
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <UCard>
+      <UCard class="bg-metal-gradient">
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-layers" class="size-5 text-primary" />
+          <UIcon name="i-lucide-book-open" class="size-12 text-primary" />
           <div>
             <p class="text-2xl font-bold">{{ schemasList.length }}</p>
             <p class="text-xs text-muted">Total Schemas</p>
           </div>
         </div>
       </UCard>
-      <UCard>
+      <UCard class="bg-metal-gradient">
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-activity" class="size-5 text-info" />
+          <UIcon name="i-lucide-activity" class="size-12 text-success" />
           <div>
             <p class="text-2xl font-bold">{{ formatNumber(totalRequests) }}</p>
             <p class="text-xs text-muted">Total Operations</p>
@@ -172,18 +173,18 @@ function sourceTotal(s: any): number {
           </div>
         </div>
       </UCard>
-      <UCard>
+      <UCard class="bg-metal-gradient">
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-clock" class="size-5 text-warning" />
+          <UIcon name="i-lucide-clock" class="size-12 text-info" />
           <div>
             <p class="text-2xl font-bold">{{ avgDuration }}ms</p>
             <p class="text-xs text-muted">Avg Duration</p>
           </div>
         </div>
       </UCard>
-      <UCard>
+      <UCard class="bg-metal-gradient">
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-alert-triangle" class="size-5 text-error" />
+          <UIcon name="i-lucide-alert-triangle" class="size-12 text-warning" />
           <div>
             <p class="text-2xl font-bold">{{ errorRate }}%</p>
             <p class="text-xs text-muted">Error Rate</p>
@@ -193,7 +194,7 @@ function sourceTotal(s: any): number {
       </UCard>
     </div>
 
-    <UCard>
+    <UCard class="bg-metal-gradient">
       <template #header>
         <h2 class="font-semibold">All Schemas</h2>
       </template>
@@ -248,7 +249,7 @@ function sourceTotal(s: any): number {
       </UTable>
     </UCard>
 
-    <UCard v-if="selectedSchema">
+    <UCard class="bg-metal-gradient" v-if="selectedSchema">
       <template #header>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">

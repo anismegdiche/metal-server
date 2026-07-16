@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { data: metrics, refresh } = useFetch<Record<string, any>>('/server-api/metrics/schedules/schedules:~')
+
+const { data: metrics, refresh } = useFetch<Record<string, any>>('/server-api/metrics/schedules/schedules:%7E')
 
 onMounted(() => {
   const interval = setInterval(refresh, 5000)
@@ -52,27 +53,27 @@ function formatNextFire(cron: string, iso: string | null): string {
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <UCard>
+      <UCard class="bg-metal-gradient">
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-play" class="size-5 text-success" />
-          <div>
-            <p class="text-2xl font-bold">{{ totalActive }}</p>
-            <p class="text-xs text-muted">Active</p>
-          </div>
-        </div>
-      </UCard>
-      <UCard>
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-calendar" class="size-5 text-primary" />
+          <UIcon name="i-lucide-calendar-clock" class="size-12 text-primary" />
           <div>
             <p class="text-2xl font-bold">{{ totalSchedules }}</p>
             <p class="text-xs text-muted">Total</p>
           </div>
         </div>
       </UCard>
-      <UCard>
+      <UCard class="bg-metal-gradient">
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-check-circle" class="size-5 text-muted" />
+          <UIcon name="i-lucide-zap" class="size-12 text-info" />
+          <div>
+            <p class="text-2xl font-bold">{{ totalActive }}</p>
+            <p class="text-xs text-muted">Active</p>
+          </div>
+        </div>
+      </UCard>
+      <UCard class="bg-metal-gradient">
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-check-circle" class="size-12 text-success" />
           <div>
             <p class="text-2xl font-bold">{{ totalCompleted }}</p>
             <p class="text-xs text-muted">Completed</p>
@@ -81,7 +82,7 @@ function formatNextFire(cron: string, iso: string | null): string {
       </UCard>
     </div>
 
-    <UCard>
+    <UCard class="bg-metal-gradient">
       <UTable :columns="columns" :data="schedules">
         <template #status-cell="{ row }">
           <UBadge

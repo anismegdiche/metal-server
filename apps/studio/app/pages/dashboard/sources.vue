@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:~')
+
+const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:%7E')
 
 onMounted(() => {
   const interval = setInterval(refreshSources, 5000)
@@ -11,9 +12,9 @@ const activeSources = computed(() => sourcesMetrics.value?.['sources:active'] ??
 const disconnectedSources = computed(() => totalSources.value - activeSources.value)
 
 const sourceMetricCards = computed(() => [
-  { label: 'Total Sources', value: totalSources.value, icon: 'i-lucide-layers', iconClass: 'text-primary' },
-  { label: 'Active', value: activeSources.value, icon: 'i-lucide-plug', iconClass: 'text-success' },
-  { label: 'Disconnected', value: disconnectedSources.value, icon: 'i-lucide-plug-off', iconClass: 'text-error' }
+  { label: 'Total Sources', value: totalSources.value, icon: 'i-lucide-plug', iconClass: 'text-primary' },
+  { label: 'Active', value: activeSources.value, icon: 'i-lucide-zap', iconClass: 'text-success' },
+  { label: 'Disconnected', value: disconnectedSources.value, icon: 'i-lucide-alert-triangle', iconClass: 'text-warning' }
 ])
 
 const allSources = computed(() => {
@@ -56,14 +57,14 @@ function providerIcon(provider: string) {
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-plug ml-0 mr-2" />Sources</h1>
+      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-plug" class="ml-0 mr-2" />Sources</h1>
       <p class="text-sm text-muted">Data source connections and their status</p>
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <UCard v-for="metric in sourceMetricCards" :key="metric.label">
+      <UCard v-for="metric in sourceMetricCards" :key="metric.label" class="bg-metal-gradient">
         <div class="flex items-center gap-3">
-          <UIcon :name="metric.icon" class="size-5" :class="metric.iconClass" />
+          <UIcon :name="metric.icon" class="size-12" :class="metric.iconClass" />
           <div>
             <p class="text-2xl font-bold">{{ metric.value }}</p>
             <p class="text-xs text-muted">{{ metric.label }}</p>
@@ -72,7 +73,7 @@ function providerIcon(provider: string) {
       </UCard>
     </div>
 
-    <UCard>
+    <UCard class="bg-metal-gradient">
       <template #header>
         <h2 class="font-semibold">All Sources</h2>
       </template>

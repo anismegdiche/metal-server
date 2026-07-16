@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 const aiTasks = ref([
   { id: 'ocr-001', engine: 'OCR', input: 'invoice-2026-07-07.pdf', status: 'running', progress: 65, started: '2026-07-07T19:00:00Z', duration: '1m 12s' },
   { id: 'txt-002', engine: 'Text', input: 'customer-complaint-42.txt', status: 'completed', progress: 100, started: '2026-07-07T18:55:00Z', duration: '34s' },
@@ -23,7 +24,7 @@ const columns = [
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-bot ml-0 mr-2" />AI Tasks</h1>
+      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-bot" class="ml-0 mr-2" />AI Tasks</h1>
       <p class="text-sm text-muted">Docker-based AI engine task execution</p>
     </div>
 

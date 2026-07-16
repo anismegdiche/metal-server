@@ -24,7 +24,7 @@ remove source from schemarequest if possible
 step: fake data with faker js {f}
 core > use threads (piscina)
 (A) core > step metrics {f} {start:2026-05-12T10:04:10} {cm:2026-05-23} {duration:11d_07h05m}
-core > dashboard {f}
+core > studio {f}
 (A) step > break > add boolean condition to break {f} {start:2026-05-11T15:23:00} {cm:2026-05-11} {duration:01h17m} {h}
 (A) make modules api registration dynamic {f} {start:2026-05-24T11:17:43} {cm:2026-05-24} {duration:01h49m}
 (A) move to monorepo {f} {start:2026-06-22T14:14:12}

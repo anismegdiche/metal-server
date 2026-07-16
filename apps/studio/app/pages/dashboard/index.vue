@@ -1,10 +1,10 @@
 <script setup lang="ts">
-const { data: serverMetrics, refresh: refreshServer } = useFetch<Record<string, any>>('/server-api/metrics/server/server:~')
-const { data: planMetrics, refresh: refreshPlans } = useFetch<Record<string, any>>('/server-api/metrics/plan:/plan:~')
-const { data: plansSummary, refresh: refreshPlansSummary } = useFetch<Record<string, any>>('/server-api/metrics/plans:/plans:~')
-const { data: httpMetrics, refresh: refreshHttp } = useFetch<Record<string, any>>('/server-api/metrics/http/http:~')
-const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:~')
-const { data: schedulesMetrics, refresh: refreshSchedules } = useFetch<Record<string, any>>('/server-api/metrics/schedules/schedules:~')
+const { data: serverMetrics, refresh: refreshServer } = useFetch<Record<string, any>>('/server-api/metrics/server/server:%7E')
+const { data: planMetrics, refresh: refreshPlans } = useFetch<Record<string, any>>('/server-api/metrics/plan:/plan:%7E')
+const { data: plansSummary, refresh: refreshPlansSummary } = useFetch<Record<string, any>>('/server-api/metrics/plans:/plans:%7E')
+const { data: httpMetrics, refresh: refreshHttp } = useFetch<Record<string, any>>('/server-api/metrics/http/http:%7E')
+const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:%7E')
+const { data: schedulesMetrics, refresh: refreshSchedules } = useFetch<Record<string, any>>('/server-api/metrics/schedules/schedules:%7E')
 
 const now = ref(Date.now())
 const uptimeSeconds = ref(0)
@@ -104,11 +104,11 @@ const totalRowsProcessed = computed(() => {
 </script>
 
 <template>
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6 p-0">
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold">
-                    <UIcon name="i-lucide-layout-dashboard ml-0 mr-2" />Overview
+                    <UIcon name="i-lucide-layout-dashboard" class="ml-0 mr-2" />Dashboard
                 </h1>
                 <p class="text-sm text-muted">Monitor your Metal Server health and activity</p>
             </div>
@@ -227,7 +227,7 @@ const totalRowsProcessed = computed(() => {
                 <template #header>
                     <div class="flex items-center justify-between">
                         <h2 class="font-semibold">Recent Plan Runs</h2>
-                        <NuxtLink to="/plans" class="text-sm text-primary hover:underline">
+                        <NuxtLink to="/dashboard/plans" class="text-sm text-primary hover:underline">
                             View all
                         </NuxtLink>
                     </div>

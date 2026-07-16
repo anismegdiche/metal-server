@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 const storageProviders = ref([
   {
     name: 'Local Filesystem',
@@ -61,7 +62,7 @@ const fileColumns = [
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-folder-tree ml-0 mr-2" />Storage</h1>
+      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-folder-tree" class="ml-0 mr-2" />Storage</h1>
       <p class="text-sm text-muted">File storage providers and file browser</p>
     </div>
 

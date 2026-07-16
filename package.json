@@ -10,7 +10,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "yarn workspace @metal/server dev",
-		"dashboard:dev": "yarn workspace dashboard dev",
+		"studio:dev": "yarn workspace studio dev",
 		"dev:build-all-images": "yarn workspace @metal/server dev:build-all-images",
 		"build": "yarn workspace @metal/server build",
 		"build:watch": "yarn workspace @metal/server build:watch",

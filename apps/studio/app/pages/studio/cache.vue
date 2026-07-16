@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 const cacheStats = ref({
   entries: 2847,
   memoryEstimate: '~12.4 MB',
@@ -33,7 +34,7 @@ const columns = [
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-zap ml-0 mr-2" />Cache</h1>
+      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-zap" class="ml-0 mr-2" />Cache</h1>
       <p class="text-sm text-muted">Response cache layer overview and management</p>
     </div>
 

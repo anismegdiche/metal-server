@@ -1,5 +1,6 @@
 <script setup lang="ts">
-const { data: httpMetrics, refresh: refreshHttp } = useFetch<Record<string, any>>('/server-api/metrics/http/http:~')
+
+const { data: httpMetrics, refresh: refreshHttp } = useFetch<Record<string, any>>('/server-api/metrics/http/http:%7E')
 
 onMounted(() => {
     const interval = setInterval(refreshHttp, 5000)
@@ -16,8 +17,8 @@ const avgDuration = computed(() => httpMetrics.value?.['http:requests:avg_durati
 
 const httpMetricCards = computed(() => [
     { label: 'Total Requests', value: totalRequests.value, icon: 'i-lucide-globe', iconClass: 'text-primary' },
-    { label: 'Active', value: activeRequests.value, icon: 'i-lucide-zap', iconClass: 'text-info' },
-    { label: 'Avg Duration', value: `${avgDuration.value}ms`, icon: 'i-lucide-clock', iconClass: 'text-success' },
+    { label: 'Active', value: activeRequests.value, icon: 'i-lucide-zap', iconClass: 'text-success' },
+    { label: 'Avg Duration', value: `${avgDuration.value}ms`, icon: 'i-lucide-clock', iconClass: 'text-info' },
     { label: 'Errors', value: count4xx.value + count5xx.value, icon: 'i-lucide-alert-triangle', iconClass: 'text-warning' }
 ])
 
@@ -30,18 +31,18 @@ const statusBreakdown = computed(() => [
 </script>
 
 <template>
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6 p-0">
         <div>
             <h1 class="text-2xl font-bold">
-                <UIcon name="i-lucide-globe ml-0 mr-2" />HTTP Metrics
+                <UIcon name="i-lucide-globe" class="ml-0 mr-2" />HTTP
             </h1>
             <p class="text-sm text-muted">Monitor HTTP request activity and performance</p>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <UCard v-for="card in httpMetricCards" :key="card.label">
+            <UCard v-for="card in httpMetricCards" :key="card.label" class="bg-metal-gradient">
                 <div class="flex items-center gap-3">
-                    <UIcon :name="card.icon" class="size-5" :class="card.iconClass" />
+                    <UIcon :name="card.icon" class="size-12" :class="card.iconClass" />
                     <div>
                         <p class="text-2xl font-bold">{{ card.value }}</p>
                         <p class="text-xs text-muted">{{ card.label }}</p>

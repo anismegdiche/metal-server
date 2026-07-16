@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 const activeTab = ref('users')
 
 const users = ref([
@@ -54,7 +55,7 @@ const configColumns = [
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-shield ml-0 mr-2" />Admin</h1>
+      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-shield" class="ml-0 mr-2" />Admin</h1>
       <p class="text-sm text-muted">User management, logs, and server configuration</p>
     </div>
 

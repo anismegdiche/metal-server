@@ -5,7 +5,7 @@
 ## Project Overview
 
 - **`apps/server/`** — Express-based TypeScript middleware/ETL/AI server using DuckDB (see `src/types/DataTable.ts`). REST API over multiple database/storage/web backends, plan-based ETL pipeline, Docker-based AI task execution.
-- **`apps/dashboard/`** — Nuxt 4 / Vue 3 dashboard frontend.
+- **`apps/studio/`** — Nuxt 4 / Vue 3 studio frontend.
 - **`apps/metrics/`** — Metrics collection service (`@metal/metrics`).
 - **`packages/config/`** — Shared config handling (`@metal/config`).
 - **`packages/messaging/`** — ZeroMQ-based pub/sub messaging with DI, decorators (`@metal/messaging`).
@@ -16,7 +16,7 @@
 ## 0. Workspace Conventions
 
 ### Package naming
-- **Apps** use `@metal/<name>` scope (e.g., `@metal/server`, `@metal/metrics`). Exception: `dashboard` (Nuxt project, no scope).
+- **Apps** use `@metal/<name>` scope (e.g., `@metal/server`, `@metal/metrics`). Exception: `studio` (Nuxt project, no scope).
 - **Packages** use `@metal/<name>` scope (e.g., `@metal/config`, `@metal/messaging`).
 - Inter-package dependencies use `"workspace:*"` protocol — never pin local versions.
 
@@ -39,7 +39,7 @@
   yarn workspace @metal/server lint          # just server
   yarn workspaces foreach -A yarn lint       # all workspaces with a `lint` script
   ```
-- **Dashboard** (Nuxt 4) uses ESLint (`@nuxt/eslint`) for linting — check `apps/dashboard/` for Nuxt-specific tooling.
+- **Studio** (Nuxt 4) uses ESLint (`@nuxt/eslint`) for linting — check `apps/studio/` for Nuxt-specific tooling.
 
 ---
 

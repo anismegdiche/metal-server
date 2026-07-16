@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 const schemas = ref([
   {
     name: 'public',
@@ -55,7 +56,7 @@ watch(selectedSchema, (schemaName) => {
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-database ml-0 mr-2" />Data Browser</h1>
+      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-database" class="ml-0 mr-2" />Data Browser</h1>
       <p class="text-sm text-muted">Browse and preview data across schemas and entities</p>
     </div>
 
