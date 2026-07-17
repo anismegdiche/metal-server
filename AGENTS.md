@@ -5,7 +5,7 @@
 ## Project Overview
 
 - **`apps/server/`** — Express-based TypeScript middleware/ETL/AI server using DuckDB (see `src/types/DataTable.ts`). REST API over multiple database/storage/web backends, plan-based ETL pipeline, Docker-based AI task execution.
-- **`apps/studio/`** — Nuxt 4 / Vue 3 studio frontend.
+- **`apps/studio/`** — Nuxt 4 / Vue 3 studio frontend. Single `default.vue` layout with sidebar + header tabs. All pages at root level (no `/studio/` prefix).
 - **`apps/metrics/`** — Metrics collection service (`@metal/metrics`).
 - **`packages/config/`** — Shared config handling (`@metal/config`).
 - **`packages/messaging/`** — ZeroMQ-based pub/sub messaging with DI, decorators (`@metal/messaging`).
@@ -40,6 +40,13 @@
   yarn workspaces foreach -A yarn lint       # all workspaces with a `lint` script
   ```
 - **Studio** (Nuxt 4) uses ESLint (`@nuxt/eslint`) for linting — check `apps/studio/` for Nuxt-specific tooling.
+
+### Studio page structure
+- **Single layout**: `app/layouts/default.vue` — sidebar nav + header with conditional tabs
+- **Routes**: All pages at root level: `/dashboard/*`, `/data`, `/designer`, `/scheduler`, `/config/*`, `/logs`, `/docs`
+- **Folder pattern**: Each sidebar item is a folder (e.g., `pages/data/index.vue`, `pages/config/info.vue`)
+- **Header tabs**: Dashboard, Data, and Config show sub-navigation tabs in the header bar
+- **Static data**: Pages use static `ref()` data during layout development — API integration comes later
 
 ---
 
@@ -370,7 +377,7 @@ import { PersistentMap } from "@metal/persistent-map"
 
 1. Create the app directory: `apps/<name>/`
 2. Create `package.json` with:
-   - `"name": "@metal/<name>"` (or plain `"<name>"` for non-scoped projects like dashboards)
+   - `"name": "@metal/<name>"` (or plain `"<name>"` for non-scoped projects like studio)
    - `"type": "module"`
    - `"private": true`
    - `"scripts"` with a `"build"` script if it needs to be built

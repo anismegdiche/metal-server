@@ -45,7 +45,7 @@ const authProviderItems = [
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <UCard>
+      <UCard class="bg-metal-gradient">
         <template #header>
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-server" class="size-4 text-primary" />
@@ -71,7 +71,7 @@ const authProviderItems = [
         </div>
       </UCard>
 
-      <UCard>
+      <UCard class="bg-metal-gradient">
         <template #header>
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-shield" class="size-4 text-success" />
@@ -91,7 +91,7 @@ const authProviderItems = [
         </div>
       </UCard>
 
-      <UCard>
+      <UCard class="bg-metal-gradient">
         <template #header>
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-gauge" class="size-4 text-warning" />

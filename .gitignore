@@ -6,7 +6,6 @@ __pycache__
 .vagrant/
 node_modules/
 build/
-data/
 coverage/
 tmp/
 dist/
