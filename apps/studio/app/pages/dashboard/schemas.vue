@@ -218,15 +218,15 @@ function sourceTotal(s: any): number {
           <UBadge
             :color="(schemaTypeBadge[row.original.type]?.color as any) ?? 'neutral'"
             variant="subtle"
-            size="xs"
+            size="md"
           >
             {{ schemaTypeBadge[row.original.type]?.label }}
           </UBadge>
         </template>
         <template #status-cell="{ row }">
           <div class="flex items-center gap-1.5">
-            <span class="size-2 rounded-full" :class="statusDot[row.original.status]" />
-            <span class="text-xs">{{ statusLabel[row.original.status] }}</span>
+            <span class="size-3 rounded-full" :class="statusDot[row.original.status]" />
+            <span class="text-md">{{ statusLabel[row.original.status] }}</span>
           </div>
         </template>
         <template #reads-cell="{ row }">

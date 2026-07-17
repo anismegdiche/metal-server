@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 const { data: serverInfo, refresh } = useFetch<Record<string, any>>('/server-api/server/info')
 
 onMounted(() => {
@@ -14,27 +13,27 @@ const sections = computed(() => {
     {
       title: 'Server',
       items: [
-        { label: 'Version', value: info.version ?? '—' },
-        { label: 'Platform', value: `${info.platform ?? '—'} ${info.arch ?? ''}` },
-        { label: 'Node.js', value: info.nodeVersion ?? '—' },
-        { label: 'Uptime', value: info.uptime ?? '—' },
+        { label: 'Version', value: info.version ?? '\u2014' },
+        { label: 'Platform', value: `${info.platform ?? '\u2014'} ${info.arch ?? ''}` },
+        { label: 'Node.js', value: info.nodeVersion ?? '\u2014' },
+        { label: 'Uptime', value: info.uptime ?? '\u2014' },
       ]
     },
     {
       title: 'System',
       items: [
-        { label: 'Hostname', value: info.hostname ?? '—' },
-        { label: 'CPU Cores', value: info.cpus ?? '—' },
-        { label: 'Total Memory', value: info.totalMemory ?? '—' },
-        { label: 'Free Memory', value: info.freeMemory ?? '—' },
+        { label: 'Hostname', value: info.hostname ?? '\u2014' },
+        { label: 'CPU Cores', value: info.cpus ?? '\u2014' },
+        { label: 'Total Memory', value: info.totalMemory ?? '\u2014' },
+        { label: 'Free Memory', value: info.freeMemory ?? '\u2014' },
       ]
     },
     {
       title: 'Config',
       items: [
-        { label: 'Port', value: info.port ?? '—' },
+        { label: 'Port', value: info.port ?? '\u2014' },
         { label: 'Authentication', value: info.authentication ? 'Enabled' : 'Disabled' },
-        { label: 'Timezone', value: info.timezone ?? '—' },
+        { label: 'Timezone', value: info.timezone ?? '\u2014' },
         { label: 'Response Chunk', value: info.responseChunk ? 'Enabled' : 'Disabled' },
       ]
     }
@@ -45,12 +44,14 @@ const sections = computed(() => {
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-server" class="ml-0 mr-2" />Server Info</h1>
+      <h1 class="text-2xl font-bold">
+        <UIcon name="i-lucide-server" class="ml-0 mr-2" />Server Info
+      </h1>
       <p class="text-sm text-muted">Server configuration and system information</p>
     </div>
 
     <div v-if="serverInfo" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <UCard v-for="section in sections" :key="section.title">
+      <UCard class="bg-metal-gradient" v-for="section in sections" :key="section.title">
         <template #header>
           <h3 class="font-semibold text-sm">{{ section.title }}</h3>
         </template>
@@ -63,7 +64,7 @@ const sections = computed(() => {
       </UCard>
     </div>
 
-    <UCard v-else>
+    <UCard class="bg-metal-gradient" v-else>
       <p class="text-sm text-muted">Loading server info...</p>
     </UCard>
   </div>

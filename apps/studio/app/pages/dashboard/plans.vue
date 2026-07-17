@@ -149,7 +149,7 @@ function statusColor(status: string) {
         </template>
         <UTable :columns="planColumns" :data="allPlans">
           <template #status-cell="{ row }">
-            <UBadge :color="statusColor(row.original.status)" variant="subtle" size="sm">
+            <UBadge :color="statusColor(row.original.status)" variant="subtle" size="md">
               {{ row.original.status }}
             </UBadge>
           </template>

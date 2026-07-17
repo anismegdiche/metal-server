@@ -85,13 +85,13 @@ function providerIcon(provider: string) {
           </div>
         </template>
         <template #status-cell="{ row }">
-          <div class="flex items-center gap-2">
-            <div
-              class="size-2 rounded-full"
-              :class="row.original.status === 'connected' ? 'bg-success' : 'bg-error'"
-            />
-            <span class="text-sm">{{ row.original.status }}</span>
-          </div>
+          <UBadge
+            :color="row.original.status === 'connected' ? 'success' : 'error'"
+            variant="subtle"
+            size="md"
+          >
+            {{ row.original.status }}
+          </UBadge>
         </template>
       </UTable>
     </UCard>

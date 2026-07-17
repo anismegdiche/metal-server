@@ -10,39 +10,34 @@ const sidebarItems: NavigationMenuItem[] = [
     to: '/dashboard'
   },
   {
-    label: 'Data Browser',
+    label: 'Data',
     icon: 'i-lucide-database',
-    to: '/studio/data-browser'
+    to: '/data'
   },
   {
-    label: 'Storage',
-    icon: 'i-lucide-folder-tree',
-    to: '/studio/storage'
+    label: 'Designer',
+    icon: 'i-lucide-workflow',
+    to: '/designer'
   },
   {
-    label: 'AI Tasks',
-    icon: 'i-lucide-bot',
-    to: '/studio/ai-tasks'
-  },
-  {
-    label: 'Cache',
-    icon: 'i-lucide-zap',
-    to: '/studio/cache'
+    label: 'Scheduler',
+    icon: 'i-lucide-calendar-clock',
+    to: '/scheduler'
   },
   {
     label: 'Config',
     icon: 'i-lucide-file-cog',
-    to: '/studio/config'
+    to: '/config/info'
   },
   {
-    label: 'Admin',
-    icon: 'i-lucide-shield',
-    to: '/studio/admin'
+    label: 'Logs',
+    icon: 'i-lucide-scroll-text',
+    to: '/logs'
   },
   {
     label: 'API Docs',
     icon: 'i-lucide-book-open',
-    to: '/studio/docs'
+    to: '/docs'
   }
 ]
 
@@ -55,7 +50,20 @@ const dashboardTabs: NavigationMenuItem[] = [
   { label: 'Schedules', to: '/dashboard/schedules' }
 ]
 
+const configTabs: NavigationMenuItem[] = [
+  { label: 'Info', to: '/config/info' },
+  { label: 'Server', to: '/config/server' },
+  { label: 'Users & Roles', to: '/config/users' }
+]
+
 const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
+const isConfigRoute = computed(() => route.path.startsWith('/config'))
+
+const headerTabs = computed(() => {
+  if (isDashboardRoute.value) return dashboardTabs
+  if (isConfigRoute.value) return configTabs
+  return null
+})
 </script>
 
 <template>
@@ -89,7 +97,7 @@ const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
 
           <template #trailing>
             <div class="flex-1 flex justify-center">
-              <UNavigationMenu v-if="isDashboardRoute" :items="dashboardTabs" highlight query :ui="{ list: 'gap-0' }" />
+              <UNavigationMenu v-if="headerTabs" :items="headerTabs" highlight query :ui="{ list: 'gap-0' }" />
             </div>
           </template>
 
@@ -97,15 +105,14 @@ const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
             <UButton icon="i-lucide-user" color="neutral" variant="ghost" size="sm" />
             <UColorModeButton />
           </template>
-
         </UDashboardNavbar>
       </template>
 
       <template #body>
         <div class="overflow-auto h-full p-4">
           <slot />
-          <p class="text-[0.7rem] text-muted text-center p-6">Released under the GNU v3 License. Copyright © 2026-present Anis Megdiche
-          </p>
+          <p class="text-[0.7rem] text-muted text-center p-6">Released under the GNU v3 License. Copyright &copy;
+            2026-present Anis Megdiche</p>
         </div>
       </template>
     </UDashboardPanel>

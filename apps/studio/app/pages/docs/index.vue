@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 const routes = [
   { method: 'GET', path: '/schema/:schema', description: 'List entities in a schema', auth: true },
   { method: 'GET', path: '/schema/:schema/:entity', description: 'Query entity data', auth: true },
@@ -36,7 +35,7 @@ const methodColor: Record<string, string> = {
       <p class="text-sm text-muted">Available REST API endpoints</p>
     </div>
 
-    <UCard>
+    <UCard class="bg-metal-gradient">
       <UTable
         :columns="[
           { accessorKey: 'method', header: 'Method' },

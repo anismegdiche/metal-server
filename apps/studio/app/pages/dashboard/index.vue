@@ -242,7 +242,7 @@ const totalRowsProcessed = computed(() => {
                     <template #status-cell="{ row }">
                         <UBadge
                             :color="row.original.status === 'completed' ? 'success' : row.original.status === 'running' ? 'info' : 'error'"
-                            variant="subtle" size="sm">
+                            variant="subtle" size="md">
                             {{ row.original.status }}
                         </UBadge>
                     </template>

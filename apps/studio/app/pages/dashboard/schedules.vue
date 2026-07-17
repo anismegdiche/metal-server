@@ -88,7 +88,7 @@ function formatNextFire(cron: string, iso: string | null): string {
           <UBadge
             :color="row.original.status === 'active' ? 'success' : 'neutral'"
             variant="subtle"
-            size="sm"
+            size="md"
           >
             {{ row.original.status }}
           </UBadge>

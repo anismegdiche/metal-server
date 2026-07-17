@@ -160,6 +160,9 @@ tags:
       description: "Find out more"
       url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#schedule"
 
+  - name: "Config"
+    description: "Operations about Configuration"
+
 paths:
   /user/login:
     post:
@@ -727,7 +730,300 @@ paths:
           $ref: "#/components/responses/http404"
         500:
           $ref: "#/components/responses/http500"
+  
+  /api/config:
+    get:
+      summary: Get full configuration
+      description: Returns the entire server configuration
+      tags:
+        - Config
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Full configuration object
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
 
+    put:
+      summary: Replace full configuration
+      description: Replaces the entire server configuration after validation
+      tags:
+        - Config
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Configuration saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/config/reload:
+    post:
+      summary: Reload server from config
+      description: Reloads the server after a configuration change
+      tags:
+        - Config
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Server reloaded
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/config/{section}:
+    get:
+      summary: Get config section
+      description: Returns a specific configuration section (e.g. server, sources, schemas, plans, schedules)
+      tags:
+        - Config
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: section
+          schema:
+            type: string
+            enum: [server, sources, schemas, plans, schedules, roles, users, ai-engines]
+          required: true
+          description: The configuration section name
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Section data
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+    patch:
+      summary: Patch config section
+      description: Merges data into an existing configuration section
+      tags:
+        - Config
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: section
+          schema:
+            type: string
+            enum: [server, sources, schemas, plans, schedules, roles, users, ai-engines]
+          required: true
+          description: The configuration section name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Section patched
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/config/{section}/{name}:
+    get:
+      summary: Get config item
+      description: Returns a named item within a configuration section
+      tags:
+        - Config
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: section
+          schema:
+            type: string
+            enum: [server, sources, schemas, plans, schedules, roles, users, ai-engines]
+          required: true
+          description: The configuration section name
+        - in: path
+          name: name
+          schema:
+            type: string
+          required: true
+          description: The item name within the section
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Item data
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+    put:
+      summary: Create or update config item
+      description: Creates or updates a named item within a configuration section
+      tags:
+        - Config
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: section
+          schema:
+            type: string
+            enum: [server, sources, schemas, plans, schedules, roles, users, ai-engines]
+          required: true
+          description: The configuration section name
+        - in: path
+          name: name
+          schema:
+            type: string
+          required: true
+          description: The item name within the section
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Item saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+    delete:
+      summary: Delete config item
+      description: Deletes a named item from a configuration section
+      tags:
+        - Config
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: section
+          schema:
+            type: string
+            enum: [server, sources, schemas, plans, schedules, roles, users, ai-engines]
+          required: true
+          description: The configuration section name
+        - in: path
+          name: name
+          schema:
+            type: string
+          required: true
+          description: The item name within the section
+      responses:
+        default:
+          $ref: '#/components/responses/DefaultError'
+        200:
+          description: Item deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
 
   /schedule/{jobName}/start:
     post:

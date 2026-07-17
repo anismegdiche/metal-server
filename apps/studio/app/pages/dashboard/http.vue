@@ -59,7 +59,7 @@ const statusBreakdown = computed(() => [
                 <div class="flex flex-col gap-3">
                     <div v-for="status in statusBreakdown" :key="status.label" class="flex items-center justify-between text-sm">
                         <div class="flex items-center gap-2">
-                            <UBadge :color="status.color" variant="subtle" size="sm">{{ status.label }}</UBadge>
+                            <UBadge :color="status.color" variant="subtle" size="md">{{ status.label }}</UBadge>
                         </div>
                         <span class="font-medium">{{ status.value }}</span>
                     </div>
