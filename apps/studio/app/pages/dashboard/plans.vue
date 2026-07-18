@@ -1,15 +1,9 @@
 <script setup lang="ts">
+const { formatDuration, formatTime, formatDateTime, getStatusColor } = useFormatting()
 
-const { data: planMetrics, refresh: refreshPlans } = useFetch<Record<string, any>>('/server-api/metrics/plan:/plan:%7E')
-const { data: plansSummary, refresh: refreshPlansSummary } = useFetch<Record<string, any>>('/server-api/metrics/plans:/plans:%7E')
-
-onMounted(() => {
-  const interval = setInterval(() => {
-    refreshPlans()
-    refreshPlansSummary()
-  }, 5000)
-  onUnmounted(() => clearInterval(interval))
-})
+const { data: planMetrics, refresh: refreshPlans } = useMetricsPolling('/server-api/metrics/plan:/plan:%7E')
+const { data: plansSummary, refresh: refreshPlansSummary } = useMetricsPolling('/server-api/metrics/plans:/plans:%7E')
+useMultiMetricsPolling([{ refresh: refreshPlans }, { refresh: refreshPlansSummary }])
 
 const selectedPlan = ref<string | null>(null)
 
@@ -86,22 +80,6 @@ const planMetricCards = computed(() => [
   { label: 'Rows Processed', value: totalRowsProcessed.value, icon: 'i-lucide-rows-4', iconClass: 'text-secondary' }
 ])
 
-function formatDuration(ms: number) {
-  if (ms < 1000) return `${ms}ms`
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
-  return `${Math.floor(ms / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`
-}
-
-function formatTime(iso: string | undefined) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleTimeString()
-}
-
-function formatDateTime(iso: string | undefined) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString()
-}
-
 const planColumns = [
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'status', header: 'Status' },
@@ -110,34 +88,14 @@ const planColumns = [
   { accessorKey: 'startTime', header: 'Start Time' },
   { accessorKey: 'durationMs', header: 'Duration' }
 ]
-
-function statusColor(status: string) {
-  if (status === 'completed' || status === 'success') return 'success' as const
-  if (status === 'running') return 'info' as const
-  if (status === 'failed') return 'error' as const
-  return 'neutral' as const
-}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
-    <div>
-      <h1 class="text-2xl font-bold">
-        <UIcon name="i-lucide-workflow" class="ml-0 mr-2" />Plans
-      </h1>
-      <p class="text-sm text-muted">Monitor and manage ETL pipeline executions</p>
-    </div>
+    <PageHeader icon="i-lucide-workflow" title="Plans" description="Monitor and manage ETL pipeline executions" />
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <UCard v-for="metric in planMetricCards" :key="metric.label" class="bg-metal-gradient">
-        <div class="flex items-center gap-3">
-          <UIcon :name="metric.icon" class="size-12" :class="metric.iconClass" />
-          <div>
-            <p class="text-2xl font-bold">{{ metric.value }}</p>
-            <p class="text-xs text-muted">{{ metric.label }}</p>
-          </div>
-        </div>
-      </UCard>
+      <MetricCard v-for="metric in planMetricCards" :key="metric.label" v-bind="metric" />
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -147,11 +105,12 @@ function statusColor(status: string) {
             <h2 class="font-semibold">All Plans</h2>
           </div>
         </template>
-        <UTable :columns="planColumns" :data="allPlans">
+        <UTable :columns="planColumns" :data="allPlans" :ui="{
+          th: 'px-2',
+          td: 'px-2 py-2'
+        }">
           <template #status-cell="{ row }">
-            <UBadge :color="statusColor(row.original.status)" variant="subtle" size="md">
-              {{ row.original.status }}
-            </UBadge>
+            <StatusBadge :status="row.original.status" size="sm"/>
           </template>
           <template #durationMs-cell="{ row }">
             {{ formatDuration(row.original.durationMs) }}
@@ -174,9 +133,7 @@ function statusColor(status: string) {
             <div class="flex items-center gap-2">
               <h2 class="font-semibold">{{ selectedPlanData.planName }}</h2>
             </div>
-            <UBadge :color="statusColor(selectedPlanData.status)" variant="subtle">
-              {{ selectedPlanData.status }}
-            </UBadge>
+            <StatusBadge :status="selectedPlanData.status" />
           </div>
         </template>
 

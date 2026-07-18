@@ -1,11 +1,7 @@
 <script setup lang="ts">
+import { getProviderIcon } from '~/utils/constants'
 
-const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:%7E')
-
-onMounted(() => {
-  const interval = setInterval(refreshSources, 5000)
-  onUnmounted(() => clearInterval(interval))
-})
+const { data: sourcesMetrics, refresh: refreshSources } = useMetricsPolling('/server-api/metrics/sources/sources:%7E')
 
 const totalSources = computed(() => sourcesMetrics.value?.['sources:total'] ?? 0)
 const activeSources = computed(() => sourcesMetrics.value?.['sources:active'] ?? 0)
@@ -36,62 +32,32 @@ const sourceColumns = [
   { accessorKey: 'host', header: 'Host' },
   { accessorKey: 'status', header: 'Status' }
 ]
-
-function providerIcon(provider: string) {
-  const map: Record<string, string> = {
-    postgres: 'i-lucide-database',
-    mongodb: 'i-lucide-database',
-    mssql: 'i-lucide-database',
-    mysql: 'i-lucide-database',
-    cosmosdb: 'i-lucide-database',
-    webservice: 'i-lucide-globe',
-    storage: 'i-lucide-hard-drive',
-    metal: 'i-lucide-server',
-    memory: 'i-lucide-cpu',
-    plans: 'i-lucide-workflow'
-  }
-  return map[provider] ?? 'i-lucide-database'
-}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
-    <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-plug" class="ml-0 mr-2" />Sources</h1>
-      <p class="text-sm text-muted">Data source connections and their status</p>
-    </div>
+    <PageHeader icon="i-lucide-plug" title="Sources" description="Data source connections and their status" />
 
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <UCard v-for="metric in sourceMetricCards" :key="metric.label" class="bg-metal-gradient">
-        <div class="flex items-center gap-3">
-          <UIcon :name="metric.icon" class="size-12" :class="metric.iconClass" />
-          <div>
-            <p class="text-2xl font-bold">{{ metric.value }}</p>
-            <p class="text-xs text-muted">{{ metric.label }}</p>
-          </div>
-        </div>
-      </UCard>
+      <MetricCard v-for="metric in sourceMetricCards" :key="metric.label" v-bind="metric" />
     </div>
 
     <UCard class="bg-metal-gradient">
       <template #header>
         <h2 class="font-semibold">All Sources</h2>
       </template>
-      <UTable :columns="sourceColumns" :data="allSources">
+      <UTable :columns="sourceColumns" :data="allSources" :ui="{
+          th: 'px-2',
+          td: 'px-2 py-2'
+        }">
         <template #provider-cell="{ row }">
           <div class="flex items-center gap-2">
-            <UIcon :name="providerIcon(row.original.provider)" class="size-4 text-muted" />
+            <UIcon :name="getProviderIcon(row.original.provider)" class="size-4 text-muted" />
             <span>{{ row.original.provider }}</span>
           </div>
         </template>
         <template #status-cell="{ row }">
-          <UBadge
-            :color="row.original.status === 'connected' ? 'success' : 'error'"
-            variant="subtle"
-            size="md"
-          >
-            {{ row.original.status }}
-          </UBadge>
+          <StatusBadge :status="row.original.status === 'connected' ? 'connected' : 'error'" size="md" />
         </template>
       </UTable>
     </UCard>

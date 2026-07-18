@@ -14,6 +14,7 @@ import { ServerEndpoint } from "./modules/core/ServerEndpoint"
 import { ServerInitializer } from "./modules/core/ServerInitializer"
 import { ServerShutdown } from "./modules/core/ServerShutdown"
 import { Logger } from "./utils/Logger"
+import { Package } from "./utils/Package"
 
 // Current Path
 const __filename = fileURLToPath(import.meta.url) // get the resolved path to the file
@@ -26,6 +27,9 @@ process.chdir(path.resolve(__dirname, "..", "..", ".."))
 // params
 const args = new Set(process.argv.slice(2))
 const ARG_build_all_images = args.has("--build-all-images") || args.has("-bai")
+
+// logging
+Logger.SetDb(Package.Json.name as string)
 
 // Setup graceful shutdown handlers
 if (!ARG_build_all_images) ServerShutdown.SetupSignalHandlers()

@@ -412,7 +412,7 @@ export class Step {
 			}),
 		)
 
-		Logger.Warn(`Plan '${planName}', step ${currentStep?.index} skipped after ${attempt} attempt(s) ${errorDetails}`)
+		Logger.Warn(`Plan '${planName}', step ${currentStep?.index} skipped after ${attempt} attempt(s) ${JsonUtils.Stringify(errorDetails)}`)
 		return data
 	}
 

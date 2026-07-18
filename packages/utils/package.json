@@ -1,0 +1,16 @@
+{
+	"name": "@metal/utils",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"build": "tsc"
+	},
+	"devDependencies": {
+		"@types/node": "^25.9.3",
+		"typescript": "^6.0.3"
+	}
+}

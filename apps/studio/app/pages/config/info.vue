@@ -1,10 +1,5 @@
 <script setup lang="ts">
-const { data: serverInfo, refresh } = useFetch<Record<string, any>>('/server-api/server/info')
-
-onMounted(() => {
-  const interval = setInterval(refresh, 10000)
-  onUnmounted(() => clearInterval(interval))
-})
+const { data: serverInfo, refresh } = useMetricsPolling('/server-api/server/info', 10000)
 
 const sections = computed(() => {
   if (!serverInfo.value) return []
@@ -43,12 +38,7 @@ const sections = computed(() => {
 
 <template>
   <div class="flex flex-col gap-6">
-    <div>
-      <h1 class="text-2xl font-bold">
-        <UIcon name="i-lucide-server" class="ml-0 mr-2" />Server Info
-      </h1>
-      <p class="text-sm text-muted">Server configuration and system information</p>
-    </div>
+    <PageHeader icon="i-lucide-server" title="Server Info" description="Server configuration and system information" />
 
     <div v-if="serverInfo" class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <UCard class="bg-metal-gradient" v-for="section in sections" :key="section.title">

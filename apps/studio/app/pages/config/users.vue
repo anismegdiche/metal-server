@@ -32,7 +32,10 @@ const roles = ref([
         <UTable :columns="[
           { accessorKey: 'user', header: 'User' },
           { accessorKey: 'role', header: 'Role' },
-        ]" :data="users">
+        ]" :data="users" :ui="{
+          th: 'px-2',
+          td: 'px-2 py-2'
+        }">
           <template #role-cell="{ row }">
             <UBadge variant="subtle" size="md" color="neutral">
               {{ row.original.role }}

@@ -1,15 +1,11 @@
 <script setup lang="ts">
+import { SCHEMA_TYPE_BADGE, STATUS_DOT_MAP, STATUS_LABEL_MAP, getProviderIcon } from '~/utils/constants'
 
-const { data: schemaMetrics, refresh: refreshSchemas } = useFetch<Record<string, any>>('/server-api/metrics/schemas/schemas:%7E')
-const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:%7E')
+const { formatNumber, errorPercent } = useFormatting()
 
-onMounted(() => {
-  const interval = setInterval(() => {
-    refreshSchemas()
-    refreshSources()
-  }, 5000)
-  onUnmounted(() => clearInterval(interval))
-})
+const { data: schemaMetrics, refresh: refreshSchemas } = useMetricsPolling('/server-api/metrics/schemas/schemas:%7E')
+const { data: sourcesMetrics, refresh: refreshSources } = useMetricsPolling('/server-api/metrics/sources/sources:%7E')
+useMultiMetricsPolling([{ refresh: refreshSchemas }, { refresh: refreshSources }])
 
 const schemasList = computed(() => {
   if (!schemaMetrics.value) return []
@@ -85,25 +81,8 @@ const avgDuration = computed(() => {
 })
 const errorRate = computed(() => totalRequests.value > 0 ? ((totalErrors.value / totalRequests.value) * 100).toFixed(2) : '0')
 
-const providerIcon: Record<string, string> = { mssql: 'i-lucide-server', postgresql: 'i-lucide-database', mongodb: 'i-lucide-leaf' }
-const typeIcon: Record<string, string> = { table: 'i-lucide-table', view: 'i-lucide-eye', collection: 'i-lucide-box' }
-
-const schemaTypeBadge: Record<string, { label: string, color: string }> = {
-  'source': { label: 'Source', color: 'info' },
-  'entities': { label: 'Entities', color: 'warning' },
-  'mixed': { label: 'Mixed', color: 'primary' }
-}
-
-const statusDot: Record<string, string> = {
-  healthy: 'bg-success',
-  degraded: 'bg-warning',
-  down: 'bg-error'
-}
-
-const statusLabel: Record<string, string> = {
-  healthy: 'Healthy',
-  degraded: 'Degraded',
-  down: 'Down'
+function sourceTotal(s: any): number {
+  return (s.reads || 0) + (s.writes || 0) + (s.deletes || 0)
 }
 
 const tableColumns = [
@@ -125,121 +104,64 @@ const entityTableColumns = [
   { accessorKey: 'errors', header: 'Errors' },
   { accessorKey: 'avgDuration', header: 'Avg' }
 ]
-
-function formatNumber(n: number): string {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
-  if (n >= 1000) return (n / 1000).toFixed(1) + 'K'
-  return n.toString()
-}
-
-function errorPercent(errors: number, total: number): string {
-  if (total === 0) return '0%'
-  return ((errors / total) * 100).toFixed(1) + '%'
-}
-
-function entityTotal(e: any): number {
-  return (e.reads || 0) + (e.writes || 0) + (e.deletes || 0)
-}
-
-function sourceTotal(s: any): number {
-  return (s.reads || 0) + (s.writes || 0) + (s.deletes || 0)
-}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
-    <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-book-open" class="ml-0 mr-2" />Schemas</h1>
-      <p class="text-sm text-muted">Schema performance and entity activity</p>
-    </div>
+    <PageHeader icon="i-lucide-book-open" title="Schemas" description="Schema performance and entity activity" />
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <UCard class="bg-metal-gradient">
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-book-open" class="size-12 text-primary" />
-          <div>
-            <p class="text-2xl font-bold">{{ schemasList.length }}</p>
-            <p class="text-xs text-muted">Total Schemas</p>
-          </div>
-        </div>
-      </UCard>
-      <UCard class="bg-metal-gradient">
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-activity" class="size-12 text-success" />
-          <div>
-            <p class="text-2xl font-bold">{{ formatNumber(totalRequests) }}</p>
-            <p class="text-xs text-muted">Total Operations</p>
-            <p class="text-[10px] text-muted font-mono">{{ formatNumber(totalReads) }} reads / {{ formatNumber(totalWrites) }} writes / {{ formatNumber(totalDeletes) }} deletes</p>
-          </div>
-        </div>
-      </UCard>
-      <UCard class="bg-metal-gradient">
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-clock" class="size-12 text-info" />
-          <div>
-            <p class="text-2xl font-bold">{{ avgDuration }}ms</p>
-            <p class="text-xs text-muted">Avg Duration</p>
-          </div>
-        </div>
-      </UCard>
-      <UCard class="bg-metal-gradient">
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-alert-triangle" class="size-12 text-warning" />
-          <div>
-            <p class="text-2xl font-bold">{{ errorRate }}%</p>
-            <p class="text-xs text-muted">Error Rate</p>
-            <p class="text-[10px] text-muted font-mono">{{ formatNumber(totalErrors) }} errors</p>
-          </div>
-        </div>
-      </UCard>
+      <MetricCard icon="i-lucide-book-open" :value="schemasList.length" label="Total Schemas"
+        icon-class="text-primary" />
+      <MetricCard icon="i-lucide-activity" :value="formatNumber(totalRequests)" label="Total Operations"
+        icon-class="text-success">
+        <template #sub>{{ formatNumber(totalReads) }} reads / {{ formatNumber(totalWrites) }} writes / {{
+          formatNumber(totalDeletes) }} deletes</template>
+      </MetricCard>
+      <MetricCard icon="i-lucide-clock" :value="`${avgDuration}ms`" label="Avg Duration" icon-class="text-info" />
+      <MetricCard icon="i-lucide-alert-triangle" :value="`${errorRate}%`" label="Error Rate" icon-class="text-warning">
+        <template #sub>{{ formatNumber(totalErrors) }} errors</template>
+      </MetricCard>
     </div>
 
     <UCard class="bg-metal-gradient">
       <template #header>
         <h2 class="font-semibold">All Schemas</h2>
       </template>
-      <UTable
-        :columns="tableColumns"
-        :data="schemasList"
+      <UTable :columns="tableColumns" :data="schemasList"
         :selected="selectedSchemaName ? [schemasList.findIndex(s => s.name === selectedSchemaName)] : []"
-        @select="(row: any) => { selectedSchemaName = schemasList[row.index]?.name ?? null }"
-      >
+        @select="(row: any) => { selectedSchemaName = schemasList[row.index]?.name ?? null }" :ui="{
+          th: 'px-2',
+          td: 'px-2 py-2'
+        }">
         <template #name-cell="{ row }">
-          <UButton
-            variant="link"
-            color="primary"
-            :class="{ 'font-bold': selectedSchemaName === row.original.name }"
-            @click="() => { selectedSchemaName = row.original.name }"
-          >
+          <UButton variant="link" color="primary" :class="{ 'font-bold': selectedSchemaName === row.original.name }"
+            @click="() => { selectedSchemaName = row.original.name }">
             {{ row.original.name }}
           </UButton>
         </template>
         <template #type-cell="{ row }">
-          <UBadge
-            :color="(schemaTypeBadge[row.original.type]?.color as any) ?? 'neutral'"
-            variant="subtle"
-            size="md"
-          >
-            {{ schemaTypeBadge[row.original.type]?.label }}
+          <UBadge :color="(SCHEMA_TYPE_BADGE[row.original.type]?.color as any) ?? 'neutral'" variant="subtle" size="sm">
+            {{ SCHEMA_TYPE_BADGE[row.original.type]?.label }}
           </UBadge>
         </template>
         <template #status-cell="{ row }">
           <div class="flex items-center gap-1.5">
-            <span class="size-3 rounded-full" :class="statusDot[row.original.status]" />
-            <span class="text-md">{{ statusLabel[row.original.status] }}</span>
+            <span class="size-3 rounded-full" :class="STATUS_DOT_MAP[row.original.status]"></span>
+            <span class="text-sm">{{ STATUS_LABEL_MAP[row.original.status] }}</span>
           </div>
         </template>
         <template #reads-cell="{ row }">
-          <span class="text-sm font-mono text-info">{{ formatNumber(row.original.reads) }}</span>
+          <span class="font-mono text-info text-sm">{{ formatNumber(row.original.reads) }}</span>
         </template>
         <template #writes-cell="{ row }">
-          <span class="text-sm font-mono text-success">{{ formatNumber(row.original.writes) }}</span>
+          <span class="font-mono text-success text-sm">{{ formatNumber(row.original.writes) }}</span>
         </template>
         <template #deletes-cell="{ row }">
-          <span class="text-sm font-mono text-warning">{{ formatNumber(row.original.deletes) }}</span>
+          <span class="font-mono text-warning text-sm">{{ formatNumber(row.original.deletes) }}</span>
         </template>
         <template #errors-cell="{ row }">
-          <span class="text-sm font-mono" :class="row.original.errors > 0 ? 'text-error' : ''">
+          <span class="font-mono text-sm" :class="row.original.errors > 0 ? 'text-error' : ''">
             {{ formatNumber(row.original.errors) }}
           </span>
         </template>
@@ -255,16 +177,13 @@ function sourceTotal(s: any): number {
           <div class="flex items-center gap-2">
             <UIcon name="i-lucide-layers" class="size-4 text-primary" />
             <h2 class="font-semibold">{{ selectedSchema.name }}</h2>
-            <UBadge
-              :color="(schemaTypeBadge[selectedSchema.type]?.color as any) ?? 'neutral'"
-              variant="subtle"
-              size="xs"
-            >
-              {{ schemaTypeBadge[selectedSchema.type]?.label }}
+            <UBadge :color="(SCHEMA_TYPE_BADGE[selectedSchema.type]?.color as any) ?? 'neutral'" variant="subtle"
+              size="xs">
+              {{ SCHEMA_TYPE_BADGE[selectedSchema.type]?.label }}
             </UBadge>
             <div class="flex items-center gap-1.5 ml-2">
-              <span class="size-2 rounded-full" :class="statusDot[selectedSchema.status]" />
-              <span class="text-xs text-muted">{{ statusLabel[selectedSchema.status] }}</span>
+              <span class="size-2 rounded-full" :class="STATUS_DOT_MAP[selectedSchema.status]" />
+              <span class="text-xs text-muted">{{ STATUS_LABEL_MAP[selectedSchema.status] }}</span>
             </div>
           </div>
         </div>
@@ -294,19 +213,26 @@ function sourceTotal(s: any): number {
 
         <div v-for="source in selectedSchema.sources" :key="source.name" class="flex flex-col gap-2">
           <div class="flex items-center gap-2">
-            <UIcon :name="providerIcon[source.provider] ?? 'i-lucide-plug'" class="size-4 text-muted" />
+            <UIcon :name="getProviderIcon(source.provider)" class="size-4 text-muted" />
             <span class="text-sm font-semibold">{{ source.name }}</span>
             <div class="flex items-center gap-1.5">
-              <span class="size-2 rounded-full" :class="statusDot[source.status === 'connected' ? 'healthy' : source.status === 'disconnected' ? 'down' : 'degraded']" />
-              <span class="text-xs text-muted">{{ source.status === 'connected' ? 'Connected' : source.status === 'disconnected' ? 'Disconnected' : source.status }}</span>
+              <span class="size-2 rounded-full"
+                :class="STATUS_DOT_MAP[source.status === 'connected' ? 'healthy' : source.status === 'disconnected' ? 'down' : 'degraded']" />
+              <span class="text-xs text-muted">{{ source.status === 'connected' ? 'Connected' : source.status ===
+                'disconnected' ? 'Disconnected' : source.status }}</span>
             </div>
             <span class="text-xs text-muted ml-auto font-mono">
-              {{ formatNumber(sourceTotal(source)) }} ops · {{ errorPercent(source.errors, sourceTotal(source)) }} errors · {{ source.avgDuration }}ms avg
+              {{ formatNumber(sourceTotal(source)) }} ops · {{ errorPercent(source.errors, sourceTotal(source)) }}
+              errors ·
+              {{ source.avgDuration }}ms avg
             </span>
           </div>
 
           <div v-if="source.entities.length > 0" class="pl-6">
-            <UTable :columns="entityTableColumns" :data="source.entities">
+            <UTable :columns="entityTableColumns" :data="source.entities" :ui="{
+              th: 'px-2',
+              td: 'px-2 py-2'
+            }">
               <template #name-cell="{ row }">
                 <div class="flex items-center gap-2">
                   <UIcon name="i-lucide-table" class="size-3.5 text-info" />

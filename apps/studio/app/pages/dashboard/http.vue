@@ -1,11 +1,5 @@
 <script setup lang="ts">
-
-const { data: httpMetrics, refresh: refreshHttp } = useFetch<Record<string, any>>('/server-api/metrics/http/http:%7E')
-
-onMounted(() => {
-    const interval = setInterval(refreshHttp, 5000)
-    onUnmounted(() => clearInterval(interval))
-})
+const { data: httpMetrics, refresh: refreshHttp } = useMetricsPolling('/server-api/metrics/http/http:%7E')
 
 const totalRequests = computed(() => httpMetrics.value?.['http:requests:total'] ?? 0)
 const activeRequests = computed(() => httpMetrics.value?.['http:requests:active'] ?? 0)
@@ -32,23 +26,10 @@ const statusBreakdown = computed(() => [
 
 <template>
     <div class="flex flex-col gap-6 p-0">
-        <div>
-            <h1 class="text-2xl font-bold">
-                <UIcon name="i-lucide-globe" class="ml-0 mr-2" />HTTP
-            </h1>
-            <p class="text-sm text-muted">Monitor HTTP request activity and performance</p>
-        </div>
+        <PageHeader icon="i-lucide-globe" title="HTTP" description="Monitor HTTP request activity and performance" />
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <UCard v-for="card in httpMetricCards" :key="card.label" class="bg-metal-gradient">
-                <div class="flex items-center gap-3">
-                    <UIcon :name="card.icon" class="size-12" :class="card.iconClass" />
-                    <div>
-                        <p class="text-2xl font-bold">{{ card.value }}</p>
-                        <p class="text-xs text-muted">{{ card.label }}</p>
-                    </div>
-                </div>
-            </UCard>
+            <MetricCard v-for="card in httpMetricCards" :key="card.label" v-bind="card" />
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -71,25 +52,10 @@ const statusBreakdown = computed(() => [
                     <h2 class="font-semibold">Request Details</h2>
                 </template>
                 <div class="flex flex-col gap-3">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Total Requests</span>
-                        <span class="font-medium">{{ totalRequests }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Currently Active</span>
-                        <span class="font-medium">{{ activeRequests }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Avg Response Time</span>
-                        <span class="font-medium">{{ avgDuration }}ms</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Success Rate</span>
-                        <span class="font-medium">{{ totalRequests > 0 ? ((count2xx / totalRequests) * 100).toFixed(1) : '0' }}%</span>
-                    </div>
+                    <InfoRow label="Total Requests" :value="totalRequests" />
+                    <InfoRow label="Currently Active" :value="activeRequests" />
+                    <InfoRow label="Avg Response Time" :value="`${avgDuration}ms`" />
+                    <InfoRow label="Success Rate" :value="`${totalRequests > 0 ? ((count2xx / totalRequests) * 100).toFixed(1) : '0'}%`" />
                 </div>
             </UCard>
         </div>

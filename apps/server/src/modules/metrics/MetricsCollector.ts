@@ -54,7 +54,10 @@ export class MetricsCollector {
     }
 
     static async GetMetricsRange(metricFrom: string, metricTo: string): Promise<TInternalResponse<any>> {
-        const metrics = MetricsCollector.Data.findRange(metricFrom, metricTo)
+        const metrics = MetricsCollector.Data.findRange({
+            start: metricFrom,
+            end: metricTo
+        })
         return HttpResponse.Ok(
             Object.fromEntries(metrics)
         )

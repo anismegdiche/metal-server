@@ -1,11 +1,7 @@
 <script setup lang="ts">
+const { formatDateTime } = useFormatting()
 
-const { data: metrics, refresh } = useFetch<Record<string, any>>('/server-api/metrics/schedules/schedules:%7E')
-
-onMounted(() => {
-  const interval = setInterval(refresh, 5000)
-  onUnmounted(() => clearInterval(interval))
-})
+const { data: metrics, refresh } = useMetricsPolling('/server-api/metrics/schedules/schedules:%7E')
 
 const schedules = computed(() => {
   if (!metrics.value) return []
@@ -33,11 +29,6 @@ const columns = [
   { accessorKey: 'nextFire', header: 'Next Fire' },
 ]
 
-function formatDateTime(iso: string | null): string {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString()
-}
-
 function formatNextFire(cron: string, iso: string | null): string {
   if (cron === '@start') return 'Never'
   if (!iso) return '—'
@@ -47,51 +38,21 @@ function formatNextFire(cron: string, iso: string | null): string {
 
 <template>
   <div class="flex flex-col gap-6">
-    <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-calendar-clock" class="ml-0 mr-2" />Schedules</h1>
-      <p class="text-sm text-muted">Cron-based job scheduling for plan execution</p>
-    </div>
+    <PageHeader icon="i-lucide-calendar-clock" title="Schedules" description="Cron-based job scheduling for plan execution" />
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <UCard class="bg-metal-gradient">
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-calendar-clock" class="size-12 text-primary" />
-          <div>
-            <p class="text-2xl font-bold">{{ totalSchedules }}</p>
-            <p class="text-xs text-muted">Total</p>
-          </div>
-        </div>
-      </UCard>
-      <UCard class="bg-metal-gradient">
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-zap" class="size-12 text-info" />
-          <div>
-            <p class="text-2xl font-bold">{{ totalActive }}</p>
-            <p class="text-xs text-muted">Active</p>
-          </div>
-        </div>
-      </UCard>
-      <UCard class="bg-metal-gradient">
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-check-circle" class="size-12 text-success" />
-          <div>
-            <p class="text-2xl font-bold">{{ totalCompleted }}</p>
-            <p class="text-xs text-muted">Completed</p>
-          </div>
-        </div>
-      </UCard>
+      <MetricCard icon="i-lucide-calendar-clock" :value="totalSchedules" label="Total" icon-class="text-primary" />
+      <MetricCard icon="i-lucide-zap" :value="totalActive" label="Active" icon-class="text-info" />
+      <MetricCard icon="i-lucide-check-circle" :value="totalCompleted" label="Completed" icon-class="text-success" />
     </div>
 
     <UCard class="bg-metal-gradient">
-      <UTable :columns="columns" :data="schedules">
+      <UTable :columns="columns" :data="schedules" :ui="{
+          th: 'px-2',
+          td: 'px-2 py-2'
+        }">
         <template #status-cell="{ row }">
-          <UBadge
-            :color="row.original.status === 'active' ? 'success' : 'neutral'"
-            variant="subtle"
-            size="md"
-          >
-            {{ row.original.status }}
-          </UBadge>
+          <StatusBadge :status="row.original.status === 'active' ? 'active' : row.original.status === 'completed' ? 'completed' : 'neutral'" size="sm" />
         </template>
         <template #lastFire-cell="{ row }">
           <span class="text-sm">{{ formatDateTime(row.original.lastFire) }}</span>

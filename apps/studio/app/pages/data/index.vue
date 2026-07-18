@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import { getProviderIcon } from '~/utils/constants'
+
 const sources = ref([
-  { name: 'PostgreSQL', type: 'POSTGRES', host: 'localhost:5432', database: 'main', status: 'connected', entities: 12 },
-  { name: 'MySQL', type: 'MYSQL', host: 'localhost:3306', database: 'app', status: 'connected', entities: 8 },
-  { name: 'SQLite', type: 'SQLITE', host: '/data/app.db', database: 'app', status: 'disconnected', entities: 5 },
+  { name: 'mydisk', type: 'storage', host: 'localhost:5432', database: 'main', status: 'connected', entities: 12 },
+  { name: 'db-mysql', type: 'mysql', host: 'localhost:3306', database: 'app', status: 'connected', entities: 8 },
+  { name: 'my-webservice', type: 'webservice', host: '/data/app.db', database: 'app', status: 'disconnected', entities: 5 },
 ])
 
 const schemas = ref([
-  { name: 'public', source: 'PostgreSQL', count: 3 },
-  { name: 'analytics', source: 'PostgreSQL', count: 2 },
-  { name: 'app', source: 'MySQL', count: 2 },
+  { name: 'public', source: 'mydisk' },
+  { name: 'analytics', source: 'db-mysql', count: 2 },
+  { name: 'app', source: 'mydisk', count: 2 },
 ])
 
 const tree = ref([
@@ -64,34 +66,12 @@ const previewRows = ref([
 function selectEntity(source: string, schema: string, entity: typeof tree.value[0]['schemas'][0]['entities'][0]) {
   selectedEntity.value = { source, schema, entity }
 }
-
-function providerIcon(provider: string) {
-  const map: Record<string, string> = {
-    POSTGRES: 'i-lucide-database',
-    MYSQL: 'i-lucide-database',
-    SQLITE: 'i-lucide-database',
-    MONGODB: 'i-lucide-database',
-    MSSQL: 'i-lucide-database',
-    COSMOSDB: 'i-lucide-database',
-    WEBSERVICE: 'i-lucide-globe',
-    STORAGE: 'i-lucide-hard-drive',
-    METAL: 'i-lucide-server',
-    MEMORY: 'i-lucide-cpu',
-    PLANS: 'i-lucide-workflow',
-  }
-  return map[provider] ?? 'i-lucide-database'
-}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">
-          <UIcon name="i-lucide-database" class="ml-0 mr-2" />Data
-        </h1>
-        <p class="text-sm text-muted">Manage sources, schemas, and browse data</p>
-      </div>
+      <PageHeader icon="i-lucide-database" title="Data" description="Manage sources, schemas, and browse data" />
       <UButton icon="i-lucide-refresh-cw" label="Refresh" size="sm" variant="outline" />
     </div>
 
@@ -112,17 +92,18 @@ function providerIcon(provider: string) {
           { accessorKey: 'host', header: 'Host' },
           { accessorKey: 'status', header: 'Status' },
           { accessorKey: 'actions', header: '' },
-        ]" :data="sources">
+        ]" :data="sources" :ui="{
+          th: 'px-2',
+          td: 'px-2 py-2'
+        }">
           <template #type-cell="{ row }">
             <div class="flex items-center gap-2">
-              <UIcon :name="providerIcon(row.original.type)" class="size-4 text-muted" />
+              <UIcon :name="getProviderIcon(row.original.type)" class="size-4 text-muted" />
               <span>{{ row.original.type }}</span>
             </div>
           </template>
           <template #status-cell="{ row }">
-            <UBadge :color="row.original.status === 'connected' ? 'success' : 'error'" variant="subtle" size="md">
-              {{ row.original.status }}
-            </UBadge>
+            <StatusBadge :status="row.original.status === 'connected' ? 'connected' : 'error'" />
           </template>
           <template #actions-cell>
             <div class="flex gap-1">
@@ -148,7 +129,10 @@ function providerIcon(provider: string) {
           { accessorKey: 'source', header: 'Source' },
           { accessorKey: 'count', header: 'Entities' },
           { accessorKey: 'actions', header: '' },
-        ]" :data="schemas">
+        ]" :data="schemas" :ui="{
+          th: 'px-2',
+          td: 'px-2 py-2'
+        }">
           <template #actions-cell>
             <div class="flex gap-1">
               <UButton icon="i-lucide-pencil" size="xs" variant="ghost" />
@@ -215,14 +199,17 @@ function providerIcon(provider: string) {
               </div>
               <div class="flex gap-1">
                 <UBadge v-for="col in selectedEntity.entity.columns" :key="col" variant="subtle" color="neutral"
-                  size="xs">
+                  size="sm">
                   {{ col }}
                 </UBadge>
               </div>
             </div>
             <div class="flex-1 overflow-auto p-3">
               <UTable :columns="selectedEntity.entity.columns.map(c => ({ accessorKey: c, header: c }))"
-                :data="previewRows" />
+                :data="previewRows"  :ui="{
+          th: 'px-2',
+          td: 'px-2 py-2'
+        }"/>
             </div>
           </div>
           <div v-else class="flex-1 flex items-center justify-center text-muted text-sm">

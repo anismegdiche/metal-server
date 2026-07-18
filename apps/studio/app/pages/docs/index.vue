@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getProviderIcon, METHOD_COLOR_MAP } from '~/utils/constants'
+
 const routes = [
   { method: 'GET', path: '/schema/:schema', description: 'List entities in a schema', auth: true },
   { method: 'GET', path: '/schema/:schema/:entity', description: 'Query entity data', auth: true },
@@ -19,43 +21,33 @@ const routes = [
   { method: 'POST', path: '/schedule/:job/start', description: 'Start a schedule', auth: true },
   { method: 'POST', path: '/schedule/:job/stop', description: 'Stop a schedule', auth: true },
 ]
-
-const methodColor: Record<string, string> = {
-  GET: 'text-success',
-  POST: 'text-info',
-  PATCH: 'text-warning',
-  DELETE: 'text-error',
-}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
-    <div>
-      <h1 class="text-2xl font-bold"><UIcon name="i-lucide-book-open" class="ml-0 mr-2" />API Reference</h1>
-      <p class="text-sm text-muted">Available REST API endpoints</p>
-    </div>
+    <PageHeader icon="i-lucide-book-open" title="API Reference" description="Available REST API endpoints" />
 
     <UCard class="bg-metal-gradient">
-      <UTable
-        :columns="[
-          { accessorKey: 'method', header: 'Method' },
-          { accessorKey: 'path', header: 'Path' },
-          { accessorKey: 'description', header: 'Description' },
-          { accessorKey: 'auth', header: 'Auth' }
-        ]"
-        :data="routes"
-      >
+      <UTable :columns="[
+        { accessorKey: 'method', header: 'Method' },
+        { accessorKey: 'path', header: 'Path' },
+        { accessorKey: 'description', header: 'Description' },
+        { accessorKey: 'auth', header: 'Auth' }
+      ]" :data="routes" :ui="{
+          th: 'px-2',
+          td: 'px-2 py-2'
+        }">
         <template #method-cell="{ row }">
-          <span class="text-xs font-mono font-bold" :class="methodColor[row.original.method]">
+          <span class="text-sm font-mono font-bold" :class="METHOD_COLOR_MAP[row.original.method]">
             {{ row.original.method }}
           </span>
         </template>
         <template #path-cell="{ row }">
-          <code class="text-xs font-mono bg-muted/30 px-1.5 py-0.5 rounded">{{ row.original.path }}</code>
+          <code class="text-sm font-mono bg-muted/30 px-1.5 py-0.5 rounded">{{ row.original.path }}</code>
         </template>
         <template #auth-cell="{ row }">
-          <UBadge v-if="row.original.auth" color="warning" variant="subtle" size="xs">Required</UBadge>
-          <UBadge v-else color="neutral" variant="subtle" size="xs">Public</UBadge>
+          <UBadge v-if="row.original.auth" color="warning" variant="subtle" size="md">Required</UBadge>
+          <UBadge v-else color="neutral" variant="subtle" size="md">Public</UBadge>
         </template>
       </UTable>
     </UCard>

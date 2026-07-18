@@ -32,6 +32,7 @@ export enum ROUTE {
 	PLAN_PATH = "/plan",
 	CACHE_PATH = "/cache",
 	SCHEDULE_PATH = "/schedule",
+	API_PATH = "/api",
 	SWAGGER_UI_PATH = "/api-docs",
 	METRICS_PATH = "/metrics",
 }

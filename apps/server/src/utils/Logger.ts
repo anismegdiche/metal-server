@@ -13,6 +13,10 @@ import { NormalizeError } from "../modules/errors/HttpErrorBase"
 import { DecoratorUtils } from "./DecoratorUtils"
 import { Stringify } from "./JsonUtils/Stringify"
 import { ToTextList } from "./JsonUtils/ToTextList"
+import PersistentMap from "@metal/persistent-map"
+import { StringUtils } from "./StringUtils"
+import { DateUtils } from "./DateUtils"
+import { Package } from "./Package"
 
 //
 export enum VERBOSITY {
@@ -23,6 +27,14 @@ export enum VERBOSITY {
 	ERROR = "error",
 }
 
+const VERBOSITY_RANK = [
+	VERBOSITY.ERROR,
+	VERBOSITY.WARN,
+	VERBOSITY.INFO,
+	VERBOSITY.DEBUG,
+	VERBOSITY.TRACE,
+]
+
 //
 export enum LOG_EVENT {
 	TRACE = "log:trace",
@@ -31,6 +43,15 @@ export enum LOG_EVENT {
 	WARN = "log:warn",
 	ERROR = "log:error",
 	FUNC_REGISTER = "log:func:register",
+}
+
+//
+type LogEntry = {
+	timestamp: Date
+	level: VERBOSITY
+	server?: string
+	user?: string
+	message: string
 }
 
 //
@@ -84,7 +105,11 @@ const _colors: Record<string, (text: string) => string> = {
 	[VERBOSITY.ERROR.toUpperCase()]: (text: string) => red(text),
 }
 
-export const LOGGER_DEFAULT_LEVEL: LogLevel.LogLevelDesc = VERBOSITY.WARN
+export const LOGGER_DEFAULT_LEVEL = VERBOSITY.WARN as LogLevel.LogLevelDesc
+
+function _formatPrefix(level: string, name: string | undefined, timestamp: Date) {
+	return `${gray(timestamp.toString())} ${_colors[level]?.(level.padEnd(5).slice(-5))} [${SERVER.NAME}] ${whiteBright(`${name}:`)}`
+}
 
 Prefix.reg(LogLevel)
 
@@ -92,7 +117,7 @@ LogLevel.setLevel(LOGGER_DEFAULT_LEVEL)
 
 Prefix.apply(LogLevel, {
 	format(level: string, name: string | undefined, timestamp: Date) {
-		return `${gray(timestamp.toString())} ${_colors[level]?.(level.padEnd(5).slice(-5))} [${SERVER.NAME}] ${whiteBright(`${name}:`)}`
+		return _formatPrefix(level, name, timestamp)
 	},
 })
 
@@ -103,10 +128,32 @@ Prefix.apply(LogLevel.getLogger("critical"), {
 })
 
 export class Logger {
+
+	static db: PersistentMap<LogEntry>
 	static readonly In = magenta("▶ ")
 	static readonly Out = yellow("◀ ")
 	static Level: LogLevel.LogLevelDesc = LOGGER_DEFAULT_LEVEL
 	static Bus = new EventBus()
+
+	static SetDb(name: string) {
+		Logger.db = new PersistentMap<LogEntry>
+			(`/data/logs/${DateUtils.GetDateStamp(new Date(Date.now()))}-${(name).replace('@', '').replace('/', '-')}-log.db`)
+	}
+
+	static _saveLogEntry(level: VERBOSITY, message: string) {
+		const timestamp = new Date(Date.now())
+		if (VERBOSITY_RANK.indexOf(level) <= VERBOSITY_RANK.indexOf(Logger.Level as VERBOSITY))
+			Logger.db.set(
+				`${timestamp.toISOString()},${crypto.randomUUID()}`,
+				<LogEntry>{
+					level,
+					message,
+					timestamp,
+					server: (Package.Json.name as string).replace('@', '').replace('/', '-'),
+					user: process.env.USERNAME || 'unknown'
+				}
+			)
+	}
 
 	static RequestMiddleware = morgan(":remote-addr, :method :url, :status, :res[content-length], :response-time ms", {
 		stream: {
@@ -157,26 +204,31 @@ export class Logger {
 
 	@on({ eventName: LOG_EVENT.TRACE, eventBus: Logger.Bus })
 	static _handleTrace(event: CustomEvent<{ message: any }>): void {
+		Logger._saveLogEntry(VERBOSITY.TRACE, event.data?.message)
 		LogLevel.trace(event.data?.message)
 	}
 
 	@on({ eventName: LOG_EVENT.DEBUG, eventBus: Logger.Bus })
 	static _handleDebug(event: CustomEvent<{ message: any }>): void {
+		Logger._saveLogEntry(VERBOSITY.DEBUG, event.data?.message)
 		LogLevel.debug(event.data?.message)
 	}
 
 	@on({ eventName: LOG_EVENT.INFO, eventBus: Logger.Bus })
 	static _handleInfo(event: CustomEvent<{ message: any }>): void {
+		Logger._saveLogEntry(VERBOSITY.INFO, event.data?.message)
 		LogLevel.info(event.data?.message)
 	}
 
 	@on({ eventName: LOG_EVENT.WARN, eventBus: Logger.Bus })
 	static _handleWarn(event: CustomEvent<{ message: any }>): void {
+		Logger._saveLogEntry(VERBOSITY.WARN, event.data?.message)
 		LogLevel.warn(event.data?.message)
 	}
 
 	@on({ eventName: LOG_EVENT.ERROR, eventBus: Logger.Bus })
 	static _handleError(event: CustomEvent<{ message: any }>): void {
+		Logger._saveLogEntry(VERBOSITY.ERROR, event.data?.message)
 		LogLevel.error(event.data?.message)
 	}
 
@@ -222,9 +274,13 @@ export class Logger {
 				try {
 					result = originalMethod.apply(this, args)
 				} catch (err: unknown) {
+					const _err = Logger.Level == VERBOSITY.DEBUG
+						? `\r\n${ToTextList(NormalizeError(err))}`
+						: (err as Error)?.message
+
 					Logger.Bus.dispatchEvent(
 						new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, {
-							data: { message: `${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${ToTextList(NormalizeError(err))}` },
+							data: { message: `${Logger.Out} ${ctorName}.${propertyKey} threw an error: ${_err}` },
 						}),
 					)
 					throw err
@@ -240,9 +296,13 @@ export class Logger {
 							return res
 						})
 						.catch((err: unknown) => {
+					const _err = Logger.Level == VERBOSITY.DEBUG
+						? `\r\n${ToTextList(NormalizeError(err))}`
+						: (err as Error)?.message
+						
 							Logger.Bus.dispatchEvent(
 								new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, {
-									data: { message: `${Logger.Out} ${ctorName}.${propertyKey} threw an error: \r\n${ToTextList(NormalizeError(err))}` },
+									data: { message: `${Logger.Out} ${ctorName}.${propertyKey} threw an error: ${_err}` },
 								}),
 							)
 							throw err

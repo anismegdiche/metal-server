@@ -39,13 +39,7 @@ function selectPlan(plan: typeof plans.value[0]) {
         >
           <div class="flex items-center justify-between">
             <span class="text-sm font-medium">{{ plan.name }}</span>
-            <UBadge
-              :color="plan.status === 'active' ? 'success' : 'neutral'"
-              variant="subtle"
-              size="xs"
-            >
-              {{ plan.status }}
-            </UBadge>
+            <StatusBadge :status="plan.status === 'active' ? 'active' : 'inactive'" />
           </div>
           <div class="flex items-center gap-2 mt-1 text-xs text-muted">
             <span>{{ plan.steps }} steps</span>

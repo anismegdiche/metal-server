@@ -1,15 +1,12 @@
 <script setup lang="ts">
-type ResolvedEntity = { name: string, type: string, anonymize?: string[], fromDefaultSource: boolean }
-type ResolvedSource = { name: string, provider: string, host: string, port: number, entities: ResolvedEntity[] }
-type ResolvedSchema = { name: string, type: 'source-only' | 'entities-only' | 'merged', sources: ResolvedSource[], defaultSource?: string }
+import { getProviderIcon, getTypeIcon } from '~/utils/constants'
+import type { ResolvedSchema } from '~/types/schema-charts'
+import { isDefaultSource } from '~/types/schema-charts'
 
 const props = defineProps<{ schema: ResolvedSchema }>()
 
 const containerRef = ref<HTMLElement | null>(null)
 const containerSize = ref({ w: 0, h: 0 })
-
-const providerIcon: Record<string, string> = { mssql: 'i-lucide-server', postgresql: 'i-lucide-database', mongodb: 'i-lucide-leaf' }
-const typeIcon: Record<string, string> = { table: 'i-lucide-table', view: 'i-lucide-eye', collection: 'i-lucide-box' }
 
 type Pos = { x: number, y: number }
 
@@ -26,7 +23,7 @@ const sourcePositions = computed<Pos[]>(() => {
   })
 })
 
-type PositionedEntity = ResolvedEntity & { pos: Pos, sourceName: string }
+type PositionedEntity = ResolvedSchema['sources'][0]['entities'][0] & { pos: Pos, sourceName: string }
 
 const positionedEntities = computed<PositionedEntity[]>(() => {
   const result: PositionedEntity[] = []
@@ -78,10 +75,6 @@ function bezierPath(l: Link): string {
   return `M ${l.x1} ${l.y1} Q ${mx} ${my}, ${l.x2} ${l.y2}`
 }
 
-function isDefaultSource(sourceName: string): boolean {
-  return props.schema.type === 'merged' && sourceName === props.schema.defaultSource
-}
-
 onMounted(() => {
   if (!containerRef.value) return
   const ro = new ResizeObserver(entries => {
@@ -115,7 +108,7 @@ onMounted(() => {
     </svg>
 
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-      <div class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border-2 bg-primary/15 border-primary/40 text-primary font-bold text-base shadow-lg shadow-primary/5">
+      <div class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border-2 bg-primary/15 border-primary/40 text-primary font-bold text-sm shadow-lg shadow-primary/5">
         <UIcon name="i-lucide-layers" class="size-5" />
         {{ schema.name }}
         <UBadge v-if="schema.type === 'merged'" color="primary" variant="subtle" size="xs">merged</UBadge>
@@ -130,13 +123,13 @@ onMounted(() => {
       >
         <div
           class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium shadow-md whitespace-nowrap"
-          :class="isDefaultSource(source.name)
+          :class="isDefaultSource(schema, source.name)
             ? 'bg-primary/10 border-primary/30 text-primary shadow-primary/5'
             : 'bg-info/10 border-info/30 text-info shadow-info/5'"
         >
-          <UIcon :name="providerIcon[source.provider] ?? 'i-lucide-plug'" class="size-4" />
+          <UIcon :name="getProviderIcon(source.provider)" class="size-4" />
           {{ source.name }}
-          <UBadge v-if="isDefaultSource(source.name)" color="primary" variant="subtle" size="xs">default</UBadge>
+          <UBadge v-if="isDefaultSource(schema, source.name)" color="primary" variant="subtle" size="xs">default</UBadge>
         </div>
       </div>
     </template>
@@ -156,7 +149,7 @@ onMounted(() => {
           schema.type === 'merged' && !pe.fromDefaultSource ? 'border-dashed ring-1 ring-warning/30' : ''
         ]"
       >
-        <UIcon :name="typeIcon[pe.type] ?? 'i-lucide-circle'" class="size-3" />
+        <UIcon :name="getTypeIcon(pe.type)" class="size-3" />
         {{ pe.name }}
       </div>
     </div>

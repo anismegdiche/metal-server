@@ -1,10 +1,12 @@
 <script setup lang="ts">
-const { data: serverMetrics, refresh: refreshServer } = useFetch<Record<string, any>>('/server-api/metrics/server/server:%7E')
-const { data: planMetrics, refresh: refreshPlans } = useFetch<Record<string, any>>('/server-api/metrics/plan:/plan:%7E')
-const { data: plansSummary, refresh: refreshPlansSummary } = useFetch<Record<string, any>>('/server-api/metrics/plans:/plans:%7E')
-const { data: httpMetrics, refresh: refreshHttp } = useFetch<Record<string, any>>('/server-api/metrics/http/http:%7E')
-const { data: sourcesMetrics, refresh: refreshSources } = useFetch<Record<string, any>>('/server-api/metrics/sources/sources:%7E')
-const { data: schedulesMetrics, refresh: refreshSchedules } = useFetch<Record<string, any>>('/server-api/metrics/schedules/schedules:%7E')
+const { formatDuration, formatRelativeTime, formatMemory, formatUptime, getStatusColor } = useFormatting()
+
+const { data: serverMetrics, refresh: refreshServer } = useMetricsPolling('/server-api/metrics/server/server:%7E')
+const { data: planMetrics, refresh: refreshPlans } = useMetricsPolling('/server-api/metrics/plan:/plan:%7E')
+const { data: plansSummary, refresh: refreshPlansSummary } = useMetricsPolling('/server-api/metrics/plans:/plans:%7E')
+const { data: httpMetrics, refresh: refreshHttp } = useMetricsPolling('/server-api/metrics/http/http:%7E')
+const { data: sourcesMetrics, refresh: refreshSources } = useMetricsPolling('/server-api/metrics/sources/sources:%7E')
+const { data: schedulesMetrics, refresh: refreshSchedules } = useMetricsPolling('/server-api/metrics/schedules/schedules:%7E')
 
 const now = ref(Date.now())
 const uptimeSeconds = ref(0)
@@ -32,54 +34,24 @@ onMounted(() => {
 
 const serverOnline = computed(() => !!serverMetrics.value)
 
-const formattedUptime = computed(() => {
-    const s = uptimeSeconds.value
-    const days = Math.floor(s / 86400)
-    const hours = Math.floor((s % 86400) / 3600)
-    const minutes = Math.floor((s % 3600) / 60)
-    return `${days}d ${hours}h ${minutes}m`
-})
-
-const formattedMemory = computed(() => {
-    const bytes = serverMetrics.value?.['server:memory:usage'] ?? 0
-    if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`
-    if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(0)} MB`
-    return `${(bytes / 1024).toFixed(0)} KB`
-})
-
-const formattedCpu = computed(() => {
-    const usage = serverMetrics.value?.['server:cpu:usage'] ?? 0
-    return `${Number(usage).toFixed(1)}%`
-})
+const formattedUptime = computed(() => formatUptime(uptimeSeconds.value))
+const formattedMemory = computed(() => formatMemory(serverMetrics.value?.['server:memory:usage'] ?? 0))
+const formattedCpu = computed(() => `${Number(serverMetrics.value?.['server:cpu:usage'] ?? 0).toFixed(1)}%`)
 
 const systemStatus = computed(() => ({
     plans_total: plansSummary.value?.['plans:total'] ?? 0,
     schemas: 3,
 }))
 
-function formatDuration(ms: number): string {
-    if (ms < 1000) return `${ms}ms`
-    const totalSeconds = Math.floor(ms / 1000)
-    if (totalSeconds < 60) return `${totalSeconds}s`
-    const minutes = Math.floor(totalSeconds / 60)
-    const seconds = totalSeconds % 60
-    return `${minutes}m ${seconds}s`
-}
-
-function formatRelativeTime(isoString: string): string {
-    const diff = Date.now() - new Date(isoString).getTime()
-    const seconds = Math.floor(diff / 1000)
-    if (seconds < 60) return 'just now'
-    const minutes = Math.floor(seconds / 60)
-    if (minutes < 60) return `${minutes}min ago`
-    const hours = Math.floor(minutes / 60)
-    if (hours < 24) return `${hours}h ago`
-    const days = Math.floor(hours / 24)
-    return `${days}d ago`
-}
+const totalRowsProcessed = computed(() => {
+    if (!planMetrics.value) return 0
+    return Object.entries(planMetrics.value)
+        .filter(([key]) => key.startsWith('plan:'))
+        .reduce((sum, [, plan]: [string, any]) => sum + (plan.totalRows ?? 0), 0)
+})
 
 const recentPlanRuns = computed(() => {
-    now.value // trigger reactivity for live relative time
+    now.value
     if (!planMetrics.value) return []
     return Object.entries(planMetrics.value)
         .filter(([key]) => key.startsWith('plan:'))
@@ -94,24 +66,12 @@ const recentPlanRuns = computed(() => {
         .sort((a, b) => b._endTime - a._endTime)
         .map(({ _endTime, ...rest }) => rest)
 })
-
-const totalRowsProcessed = computed(() => {
-    if (!planMetrics.value) return 0
-    return Object.entries(planMetrics.value)
-        .filter(([key]) => key.startsWith('plan:'))
-        .reduce((sum, [, plan]: [string, any]) => sum + (plan.totalRows ?? 0), 0)
-})
 </script>
 
 <template>
     <div class="flex flex-col gap-6 p-0">
         <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold">
-                    <UIcon name="i-lucide-layout-dashboard" class="ml-0 mr-2" />Dashboard
-                </h1>
-                <p class="text-sm text-muted">Monitor your Metal Server health and activity</p>
-            </div>
+            <PageHeader icon="i-lucide-layout-dashboard" title="Dashboard" description="Monitor your Metal Server health and activity" />
             <UBadge :color="serverOnline ? 'success' : 'error'" variant="subtle" size="lg">
                 <template #leading>
                     <div class="size-1.5 rounded-full" :class="serverOnline ? 'bg-success' : 'bg-error'" />
@@ -129,25 +89,10 @@ const totalRowsProcessed = computed(() => {
                     </div>
                 </template>
                 <div class="flex flex-col gap-3">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Total Requests</span>
-                        <span class="font-medium">{{ httpMetrics?.['http:requests:total'] ?? '-' }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Active Requests</span>
-                        <span class="font-medium">{{ httpMetrics?.['http:requests:active'] ?? '-' }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Avg Duration</span>
-                        <span class="font-medium">{{ httpMetrics?.['http:requests:avg_duration'] ?? '-' }}ms</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Errors (4xx/5xx)</span>
-                        <span class="font-medium">{{ (httpMetrics?.['http:requests:4xx'] ?? 0) + (httpMetrics?.['http:requests:5xx'] ?? 0) }}</span>
-                    </div>
+                    <InfoRow label="Total Requests" :value="httpMetrics?.['http:requests:total'] ?? '-'" />
+                    <InfoRow label="Active Requests" :value="httpMetrics?.['http:requests:active'] ?? '-'" />
+                    <InfoRow label="Avg Duration" :value="`${httpMetrics?.['http:requests:avg_duration'] ?? '-'}ms`" />
+                    <InfoRow label="Errors (4xx/5xx)" :value="(httpMetrics?.['http:requests:4xx'] ?? 0) + (httpMetrics?.['http:requests:5xx'] ?? 0)" />
                 </div>
             </UCard>
 
@@ -159,15 +104,8 @@ const totalRowsProcessed = computed(() => {
                     </div>
                 </template>
                 <div class="flex flex-col gap-3">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Total Sources</span>
-                        <span class="font-medium">{{ sourcesMetrics?.['sources:total'] ?? '-' }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Active Connections</span>
-                        <span class="font-medium">{{ sourcesMetrics?.['sources:active'] ?? '-' }}</span>
-                    </div>
+                    <InfoRow label="Total Sources" :value="sourcesMetrics?.['sources:total'] ?? '-'" />
+                    <InfoRow label="Active Connections" :value="sourcesMetrics?.['sources:active'] ?? '-'" />
                 </div>
             </UCard>
 
@@ -179,25 +117,10 @@ const totalRowsProcessed = computed(() => {
                     </div>
                 </template>
                 <div class="flex flex-col gap-3">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Active Plans</span>
-                        <span class="font-medium">{{ plansSummary?.['plans:active'] ?? '-' }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Total Executions</span>
-                        <span class="font-medium">{{ plansSummary?.['plans:execution'] ?? '-' }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Rows Processed</span>
-                        <span class="font-medium">{{ totalRowsProcessed }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Error Rate</span>
-                        <span class="font-medium">—</span>
-                    </div>
+                    <InfoRow label="Active Plans" :value="plansSummary?.['plans:active'] ?? '-'" />
+                    <InfoRow label="Total Executions" :value="plansSummary?.['plans:execution'] ?? '-'" />
+                    <InfoRow label="Rows Processed" :value="totalRowsProcessed" />
+                    <InfoRow label="Error Rate" value="—" />
                 </div>
             </UCard>
 
@@ -209,15 +132,8 @@ const totalRowsProcessed = computed(() => {
                     </div>
                 </template>
                 <div class="flex flex-col gap-3">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Total Schedules</span>
-                        <span class="font-medium">{{ schedulesMetrics?.['schedules:total'] ?? '-' }}</span>
-                    </div>
-                    <USeparator />
-                    <div class="flex justify-between text-sm">
-                        <span class="text-muted">Active Jobs</span>
-                        <span class="font-medium">{{ schedulesMetrics?.['schedules:active'] ?? '-' }}</span>
-                    </div>
+                    <InfoRow label="Total Schedules" :value="schedulesMetrics?.['schedules:total'] ?? '-'" />
+                    <InfoRow label="Active Jobs" :value="schedulesMetrics?.['schedules:active'] ?? '-'" />
                 </div>
             </UCard>
         </div>
@@ -240,11 +156,7 @@ const totalRowsProcessed = computed(() => {
                     { accessorKey: 'status', header: 'Status' }
                 ]" :data="recentPlanRuns">
                     <template #status-cell="{ row }">
-                        <UBadge
-                            :color="row.original.status === 'completed' ? 'success' : row.original.status === 'running' ? 'info' : 'error'"
-                            variant="subtle" size="md">
-                            {{ row.original.status }}
-                        </UBadge>
+                        <StatusBadge :status="row.original.status" />
                     </template>
                 </UTable>
             </UCard>
@@ -258,25 +170,10 @@ const totalRowsProcessed = computed(() => {
                         </div>
                     </template>
                     <div class="flex flex-col gap-3">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted">Version</span>
-                            <span class="font-medium">{{ serverMetrics?.['server:version'] ?? '—' }}</span>
-                        </div>
-                        <USeparator />
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted">Uptime</span>
-                            <span class="font-medium">{{ formattedUptime }}</span>
-                        </div>
-                        <USeparator />
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted">CPU Usage</span>
-                            <span class="font-medium">{{ formattedCpu }}</span>
-                        </div>
-                        <USeparator />
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted">Memory Usage</span>
-                            <span class="font-medium">{{ formattedMemory }}</span>
-                        </div>
+                        <InfoRow label="Version" :value="serverMetrics?.['server:version'] ?? '—'" />
+                        <InfoRow label="Uptime" :value="formattedUptime" />
+                        <InfoRow label="CPU Usage" :value="formattedCpu" />
+                        <InfoRow label="Memory Usage" :value="formattedMemory" />
                     </div>
                 </UCard>
 
@@ -288,15 +185,8 @@ const totalRowsProcessed = computed(() => {
                         </div>
                     </template>
                     <div class="flex flex-col gap-3">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted">Schemas</span>
-                            <span class="font-medium">{{ systemStatus.schemas }}</span>
-                        </div>
-                        <USeparator />
-                        <div class="flex justify-between text-sm">
-                            <span class="text-muted">Plans</span>
-                            <span class="font-medium">{{ systemStatus.plans_total }}</span>
-                        </div>
+                        <InfoRow label="Schemas" :value="systemStatus.schemas" />
+                        <InfoRow label="Plans" :value="systemStatus.plans_total" />
                     </div>
                 </UCard>
             </div>

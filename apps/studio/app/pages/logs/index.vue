@@ -1,40 +1,17 @@
 <script setup lang="ts">
-const logs = ref([
-  { id: '1', timestamp: '2025-07-17 14:32:01', level: 'info', message: 'Server started on port 3000', source: 'server' },
-  { id: '2', timestamp: '2025-07-17 14:32:02', level: 'info', message: 'Connected to PostgreSQL', source: 'source' },
-  { id: '3', timestamp: '2025-07-17 14:32:03', level: 'info', message: 'Connected to MySQL', source: 'source' },
-  { id: '4', timestamp: '2025-07-17 14:35:15', level: 'warn', message: 'Slow query detected: 2.3s', source: 'plan' },
-  { id: '5', timestamp: '2025-07-17 14:40:22', level: 'error', message: 'Connection refused to Redis', source: 'source' },
-  { id: '6', timestamp: '2025-07-17 14:45:30', level: 'info', message: 'Plan "Import Users" completed', source: 'plan' },
-  { id: '7', timestamp: '2025-07-17 14:50:45', level: 'debug', message: 'Cache hit for key: users:list', source: 'cache' },
-  { id: '8', timestamp: '2025-07-17 14:55:01', level: 'info', message: 'Schedule "Sync Inventory" triggered', source: 'schedule' },
-])
-
+const logs = ref<Array<{ id: string, timestamp: string, level: string, message: string, source: string }>>([])
+const meta = ref<{ total: number, limit: number, offset?: number, start: string, end: string, reverse: boolean } | null>(null)
 const filterLevel = ref('all')
-const filterSource = ref('all')
+const search = ref('')
+const page = ref(1)
+const pageSize = ref(50)
 
-const filteredLogs = computed(() => {
-  return logs.value.filter(log => {
-    if (filterLevel.value !== 'all' && log.level !== filterLevel.value) return false
-    if (filterSource.value !== 'all' && log.source !== filterSource.value) return false
-    return true
-  })
-})
-
-const levelColor: Record<string, string> = {
-  info: 'text-success',
-  warn: 'text-warning',
-  error: 'text-error',
-  debug: 'text-muted',
-}
-
-const sourceBadgeClass: Record<string, string> = {
-  server: 'bg-info/10 text-info',
-  source: 'bg-warning/10 text-warning',
-  plan: 'bg-success/10 text-success',
-  cache: 'bg-muted/10 text-muted',
-  schedule: 'bg-primary/10 text-primary',
-}
+const pageSizeItems = [
+  { label: '25', value: 25 },
+  { label: '50', value: 50 },
+  { label: '100', value: 100 },
+  { label: '200', value: 200 },
+]
 
 const levelItems = [
   { label: 'All Levels', value: 'all' },
@@ -44,44 +21,112 @@ const levelItems = [
   { label: 'Debug', value: 'debug' },
 ]
 
-const sourceItems = [
-  { label: 'All Sources', value: 'all' },
-  { label: 'Server', value: 'server' },
-  { label: 'Source', value: 'source' },
-  { label: 'Plan', value: 'plan' },
-  { label: 'Cache', value: 'cache' },
-  { label: 'Schedule', value: 'schedule' },
+const autoRefresh = ref(false)
+
+async function fetchLogs() {
+  try {
+    const res = await $fetch<{ data: Array<{ id: string, timestamp: string, level: string, message: string, source: string }>, meta: { total: number, limit: number, offset?: number, start: string, end: string, reverse: boolean } }>(`/server-api/api/logs/*/*/${pageSize.value}/*/true`)
+    logs.value = res.data
+    meta.value = res.meta
+  } catch {
+    logs.value = []
+    meta.value = null
+  }
+}
+
+await fetchLogs()
+
+let refreshInterval: ReturnType<typeof setInterval> | null = null
+
+watch(autoRefresh, (enabled) => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
+    refreshInterval = null
+  }
+  if (enabled) {
+    refreshInterval = setInterval(fetchLogs, 5000)
+  }
+})
+
+const filteredLogs = computed(() => {
+  return logs.value.filter(log => {
+    if (filterLevel.value !== 'all' && log.level !== filterLevel.value) return false
+    if (search.value && !log.message.toLowerCase().includes(search.value.toLowerCase())) return false
+    return true
+  })
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredLogs.value.length / pageSize.value)))
+
+const paginatedLogs = computed(() => {
+  const start = (page.value - 1) * pageSize.value
+  return filteredLogs.value.slice(start, start + pageSize.value)
+})
+
+watch([filterLevel, search], () => {
+  page.value = 1
+})
+
+watch(pageSize, () => {
+  page.value = 1
+  fetchLogs()
+})
+
+const levelColor: Record<string, string> = {
+  info: 'info',
+  warn: 'warning',
+  error: 'error',
+  debug: 'success',
+  trace: 'neutral',
+}
+
+const columns = [
+  { accessorKey: 'timestamp', header: 'Time' },
+  { accessorKey: 'level', header: 'Level' },
+  { accessorKey: 'message', header: 'Message' },
 ]
+
+function cleanMessage(msg: string): string {
+  return msg.replace('[33m◀ [39m', ' ◀ ').replace('[35m▶ [39m', ' ▶ ')
+}
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold"><UIcon name="i-lucide-scroll-text" class="ml-0 mr-2" />Logs</h1>
-        <p class="text-sm text-muted">Server logs and activity</p>
-      </div>
-      <div class="flex gap-2">
-        <USelect v-model="filterLevel" :items="levelItems" size="xs" />
-        <USelect v-model="filterSource" :items="sourceItems" size="xs" />
-      </div>
+  <div class="flex flex-col gap-4">
+    <PageHeader icon="i-lucide-scroll-text" title="Logs" description="Server logs and activity" />
+
+    <div class="flex items-center gap-2">
+      <UInput v-model="search" placeholder="Search logs..." icon="i-lucide-search" size="xs" class="w-64" />
+      <USelect v-model="filterLevel" :items="levelItems" size="xs" />
+      <div class="flex-1" />
+      <USelect v-model="pageSize" :items="pageSizeItems" size="xs" />
+      <span class="text-xs text-muted">{{ meta?.total ?? 0 }} entries</span>
+      <USwitch v-model="autoRefresh" size="xs" label="Auto-refresh" />
+      <UButton icon="i-lucide-refresh-cw" size="xs" variant="outline" @click="fetchLogs" />
     </div>
 
     <UCard class="bg-metal-gradient">
-      <div class="flex flex-col font-mono text-xs">
-        <div
-          v-for="log in filteredLogs"
-          :key="log.id"
-          class="flex items-start gap-3 py-1.5 border-b border-default/50 last:border-0"
-        >
-          <span class="text-muted whitespace-nowrap">{{ log.timestamp }}</span>
-          <span class="w-12 font-semibold uppercase" :class="levelColor[log.level]">{{ log.level }}</span>
-          <span class="inline-flex items-center text-[10px] px-1.5 py-0.5 rounded" :class="sourceBadgeClass[log.source]">
-            {{ log.source }}
-          </span>
-          <span class="flex-1">{{ log.message }}</span>
-        </div>
-      </div>
+      <UTable :columns="columns" :data="paginatedLogs" :ui="{
+        th: 'px-2 py-1',
+        td: 'px-2 py-1 align-top'
+      }">
+        <template #timestamp-cell="{ row }">
+          <span class="text-muted whitespace-nowrap font-mono text-xs">{{ row.original.timestamp }}</span>
+        </template>
+        <template #level-cell="{ row }">
+          <UBadge :color="levelColor[row.original.level] ?? 'neutral'" variant="subtle" size="sm">
+            {{ row.original.level }}
+          </UBadge>
+        </template>
+        <template #message-cell="{ row }">
+          <span class="font-mono text-xs whitespace-normal wrap-break-words">{{ cleanMessage(row.original.message)
+            }}</span>
+        </template>
+      </UTable>
     </UCard>
+
+    <div v-if="totalPages > 1" class="flex justify-center">
+      <UPagination v-model:page="page" :page-count="pageSize" :total="filteredLogs.length" size="xs" />
+    </div>
   </div>
 </template>

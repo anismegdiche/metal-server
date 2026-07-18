@@ -45,9 +45,31 @@ export class PersistentMap<T> {
 		return result
 	}
 
-	findRange(start: string | number, end: string | number): [string, T][] {
+	findRange({
+		start,
+		end,
+		reverse = false,
+		limit = undefined,
+		offset = undefined
+	}: {
+		start: string | number,
+		end: string | number,
+		reverse?: boolean,
+		limit?: number,
+		offset?: number
+	}): [string, T][] {
 		const result: [string, T][] = []
-		const range = this.db.getRange({ start: String(start), end: String(end) })
+		const range = this.db.getRange({
+			start: reverse
+				? String(end)
+				: String(start),
+			end: reverse
+				? String(start)
+				: String(end),
+			reverse,
+			limit,
+			offset
+		})
 		for (const { key, value } of range) {
 			result.push([String(key), value])
 		}

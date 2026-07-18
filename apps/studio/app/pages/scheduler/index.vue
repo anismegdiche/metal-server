@@ -237,6 +237,10 @@ function createSchedule() {
           { accessorKey: 'actions', header: '' },
         ]"
         :data="schedules"
+         :ui="{
+          th: 'px-2',
+          td: 'px-2 py-2'
+        }"
       >
         <template #status-cell="{ row }">
           <UBadge

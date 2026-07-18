@@ -5,5 +5,5 @@ if (import.meta.client) {
 </script>
 
 <template>
-  <div />
+  <div></div>
 </template>
