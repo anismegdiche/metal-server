@@ -26,7 +26,7 @@ function selectPlan(plan: typeof plans.value[0]) {
       <div class="p-3 border-b border-default">
         <div class="flex items-center justify-between">
           <h2 class="font-semibold text-sm">Plans</h2>
-          <UButton icon="i-lucide-plus" size="xs" variant="ghost" />
+           <UButton icon="i-lucide-plus" label="Add Plan" size="xs" variant="outline" />
         </div>
       </div>
       <div class="flex-1 overflow-auto">

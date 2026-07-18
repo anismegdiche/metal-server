@@ -1,13 +1,102 @@
 <script setup lang="ts">
 const schedules = ref([
-  { id: '1', name: 'Import Users', plan: 'Import Users', cron: '0 */6 * * *', status: 'active', lastFire: '2h ago', nextFire: '4h' },
-  { id: '2', name: 'Sync Inventory', plan: 'Sync Inventory', cron: '*/30 * * * *', status: 'active', lastFire: '15m ago', nextFire: '15m' },
-  { id: '3', name: 'Daily Report', plan: 'Daily Report', cron: '0 8 * * *', status: 'active', lastFire: '1d ago', nextFire: '16h' },
+  { id: '1', name: 'Import Users', plan: 'Import Users', cron: '@every 6h', status: 'active', lastFire: '2h ago', nextFire: '4h' },
+  { id: '2', name: 'Sync Inventory', plan: 'Sync Inventory', cron: '@every 30m', status: 'active', lastFire: '15m ago', nextFire: '15m' },
+  { id: '3', name: 'Daily Report', plan: 'Daily Report', cron: '@daily', status: 'active', lastFire: '1d ago', nextFire: '16h' },
   { id: '4', name: 'Clean Logs', plan: 'Clean Logs', cron: '0 2 * * 0', status: 'paused', lastFire: '7d ago', nextFire: '\u2014' },
 ])
 
 const showCreateModal = ref(false)
-const newSchedule = ref({ name: '', plan: '', cron: '' })
+const newSchedule = ref({ name: '', plan: '' })
+
+const cronMode = ref<'preset' | 'interval' | 'cron'>('preset')
+const cronPreset = ref('@daily')
+const intervalValue = ref(30)
+const intervalUnit = ref('m')
+const cronMinute = ref('0')
+const cronHour = ref('8')
+const cronDay = ref('*')
+const cronMonth = ref('*')
+const cronWeekday = ref('*')
+const cronSecond = ref('0')
+const useSeconds = ref(false)
+
+const presetOptions = [
+  { label: '@start', value: '@start', description: 'Run once on server start' },
+  { label: '@hourly', value: '@hourly', description: 'Every hour at :00' },
+  { label: '@daily', value: '@daily', description: 'Every day at midnight' },
+  { label: '@weekly', value: '@weekly', description: 'Every Sunday at midnight' },
+  { label: '@monthly', value: '@monthly', description: '1st of every month' },
+  { label: '@yearly', value: '@yearly', description: 'January 1st each year' },
+]
+
+const intervalUnitOptions = [
+  { label: 'seconds', value: 's' },
+  { label: 'minutes', value: 'm' },
+  { label: 'hours', value: 'h' },
+]
+
+const secondOptions = [
+  { label: 'Every second (*)', value: '*' },
+  { label: 'Every 5 sec (*/5)', value: '*/5' },
+  { label: 'Every 10 sec (*/10)', value: '*/10' },
+  { label: 'Every 15 sec (*/15)', value: '*/15' },
+  { label: 'Every 30 sec (*/30)', value: '*/30' },
+  ...Array.from({ length: 60 }, (_, i) => ({ label: String(i), value: String(i) })),
+]
+
+const minuteOptions = [
+  { label: 'Every minute (*)', value: '*' },
+  { label: 'Every 5 min (*/5)', value: '*/5' },
+  { label: 'Every 10 min (*/10)', value: '*/10' },
+  { label: 'Every 15 min (*/15)', value: '*/15' },
+  { label: 'Every 30 min (*/30)', value: '*/30' },
+  ...Array.from({ length: 60 }, (_, i) => ({ label: String(i), value: String(i) })),
+]
+
+const hourOptions = [
+  { label: 'Every hour (*)', value: '*' },
+  { label: 'Every 2 hours (*/2)', value: '*/2' },
+  { label: 'Every 3 hours (*/3)', value: '*/3' },
+  { label: 'Every 6 hours (*/6)', value: '*/6' },
+  { label: 'Every 12 hours (*/12)', value: '*/12' },
+  ...Array.from({ length: 24 }, (_, i) => ({ label: String(i).padStart(2, '0') + ':00', value: String(i) })),
+]
+
+const dayOptions = [
+  { label: 'Every day (*)', value: '*' },
+  ...Array.from({ length: 31 }, (_, i) => ({ label: `${i + 1}${i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'}`, value: String(i + 1) })),
+  { label: 'Last day (L)', value: 'L' },
+]
+
+const monthOptions = [
+  { label: 'Every month (*)', value: '*' },
+  { label: 'January', value: '1' },
+  { label: 'February', value: '2' },
+  { label: 'March', value: '3' },
+  { label: 'April', value: '4' },
+  { label: 'May', value: '5' },
+  { label: 'June', value: '6' },
+  { label: 'July', value: '7' },
+  { label: 'August', value: '8' },
+  { label: 'September', value: '9' },
+  { label: 'October', value: '10' },
+  { label: 'November', value: '11' },
+  { label: 'December', value: '12' },
+]
+
+const weekdayOptions = [
+  { label: 'Every day', value: '*' },
+  { label: 'Sun', value: '0' },
+  { label: 'Mon', value: '1' },
+  { label: 'Tue', value: '2' },
+  { label: 'Wed', value: '3' },
+  { label: 'Thu', value: '4' },
+  { label: 'Fri', value: '5' },
+  { label: 'Sat', value: '6' },
+  { label: 'Weekdays', value: '1-5' },
+  { label: 'Weekends', value: '0,6' },
+]
 
 const planItems = [
   { label: 'Import Users', value: 'Import Users' },
@@ -15,6 +104,75 @@ const planItems = [
   { label: 'Daily Report', value: 'Daily Report' },
   { label: 'Clean Logs', value: 'Clean Logs' },
 ]
+
+const builtCron = computed(() => {
+  if (cronMode.value === 'preset') return cronPreset.value
+  if (cronMode.value === 'interval') return `@every ${intervalValue.value}${intervalUnit.value}`
+  const fields = [cronMinute.value, cronHour.value, cronDay.value, cronMonth.value, cronWeekday.value]
+  if (useSeconds.value) fields.unshift(cronSecond.value)
+  return fields.join(' ')
+})
+
+const cronDescription = computed(() => {
+  const c = builtCron.value
+  if (c.startsWith('@')) {
+    const map: Record<string, string> = {
+      '@start': 'Runs once when the server starts',
+      '@hourly': 'Runs at the start of every hour',
+      '@daily': 'Runs once a day at midnight',
+      '@weekly': 'Runs once a week on Sunday at midnight',
+      '@monthly': 'Runs once a month on the 1st at midnight',
+      '@yearly': 'Runs once a year on January 1st at midnight',
+    }
+    if (map[c]) return map[c]
+    const everyMatch = c.match(/@every (\d+)(s|m|h)/)
+    if (everyMatch) {
+      const val = everyMatch[1]
+      const unit = everyMatch[2]
+      const unitName = { s: 'second', m: 'minute', h: 'hour' }[unit]
+      if (Number.parseInt(val) === 1) return `Runs every ${unitName}`
+      return `Runs every ${val} ${unitName}s`
+    }
+    return ''
+  }
+  const parts = c.split(' ')
+  if (parts.length < 5 || parts.length > 6) return ''
+
+  const hasSeconds = parts.length === 6
+  const [secOrMin, minOrHour, hourOrDay, dayOrMonth, monthOrDow, dow] = hasSeconds
+    ? [parts[0], parts[1], parts[2], parts[3], parts[4], parts[5]]
+    : ['*', parts[0], parts[1], parts[2], parts[3], parts[4]]
+  const min = minOrHour
+  const hour = hourOrDay
+  const day = dayOrMonth
+  const month = monthOrDow
+
+  const describe = (val: string, unit: string) => {
+    if (val === '*') return `every ${unit}`
+    if (val.startsWith('*/')) return `every ${val.slice(2)} ${unit}s`
+    return val
+  }
+
+  const timeParts = []
+  if (hasSeconds) {
+    if (secOrMin !== '*') timeParts.push(`at second ${describe(secOrMin, 'second')}`)
+    else timeParts.push('every second')
+  }
+  timeParts.push(describe(min, 'minute'))
+  timeParts.push(`at hour ${describe(hour, 'hour')}`)
+  const dowMap: Record<string, string> = {
+    '0': 'Sunday', '1': 'Monday', '2': 'Tuesday', '3': 'Wednesday',
+    '4': 'Thursday', '5': 'Friday', '6': 'Saturday',
+    '1-5': 'weekdays', '0,6': 'weekends',
+  }
+  const dowStr = dowMap[dow] ?? (dow === '*' ? 'every day' : dow)
+  if (day !== '*') timeParts.push(`on day ${describe(day, 'day')}`)
+  if (month !== '*') timeParts.push(`in ${describe(month, 'month')}`)
+  if (dow !== '*') timeParts.push(`on ${dowStr}`)
+  return timeParts.join(', ')
+})
+
+const isValid = computed(() => newSchedule.value.name && newSchedule.value.plan)
 
 function toggleSchedule(id: string) {
   const schedule = schedules.value.find(s => s.id === id)
@@ -26,6 +184,35 @@ function toggleSchedule(id: string) {
 function deleteSchedule(id: string) {
   schedules.value = schedules.value.filter(s => s.id !== id)
 }
+
+function resetModal() {
+  newSchedule.value = { name: '', plan: '' }
+  cronMode.value = 'preset'
+  cronPreset.value = '@daily'
+  intervalValue.value = 30
+  intervalUnit.value = 'm'
+  useSeconds.value = false
+  cronSecond.value = '0'
+  cronMinute.value = '0'
+  cronHour.value = '8'
+  cronDay.value = '*'
+  cronMonth.value = '*'
+  cronWeekday.value = '*'
+}
+
+function createSchedule() {
+  schedules.value.push({
+    id: String(Date.now()),
+    name: newSchedule.value.name,
+    plan: newSchedule.value.plan,
+    cron: builtCron.value,
+    status: 'active',
+    lastFire: '\u2014',
+    nextFire: '\u2014',
+  })
+  showCreateModal.value = false
+  resetModal()
+}
 </script>
 
 <template>
@@ -35,7 +222,7 @@ function deleteSchedule(id: string) {
         <h1 class="text-2xl font-bold"><UIcon name="i-lucide-calendar-clock" class="ml-0 mr-2" />Scheduler</h1>
         <p class="text-sm text-muted">Manage scheduled plan executions</p>
       </div>
-      <UButton icon="i-lucide-plus" label="Add Schedule" @click="() => { showCreateModal = true }" />
+      <UButton icon="i-lucide-plus" label="Add Schedule" @click="showCreateModal = true" />
     </div>
 
     <UCard class="bg-metal-gradient">
@@ -43,7 +230,7 @@ function deleteSchedule(id: string) {
         :columns="[
           { accessorKey: 'name', header: 'Name' },
           { accessorKey: 'plan', header: 'Plan' },
-          { accessorKey: 'cron', header: 'Cron' },
+          { accessorKey: 'cron', header: 'Schedule' },
           { accessorKey: 'status', header: 'Status' },
           { accessorKey: 'lastFire', header: 'Last Fire' },
           { accessorKey: 'nextFire', header: 'Next Fire' },
@@ -71,6 +258,7 @@ function deleteSchedule(id: string) {
               variant="ghost"
               @click="toggleSchedule(row.original.id)"
             />
+            <UButton icon="i-lucide-pencil" size="xs" variant="ghost" />
             <UButton
               icon="i-lucide-trash-2"
               size="xs"
@@ -83,26 +271,125 @@ function deleteSchedule(id: string) {
       </UTable>
     </UCard>
 
-    <UModal v-model:open="showCreateModal">
+    <UModal v-model:open="showCreateModal" :ui="{ content: 'w-full max-w-xl' }">
       <template #content>
-        <div class="p-4 flex flex-col gap-4">
-          <h2 class="font-semibold">New Schedule</h2>
-          <UFormField label="Name">
-            <UInput v-model="newSchedule.name" placeholder="Schedule name" />
-          </UFormField>
-          <UFormField label="Plan">
-            <USelect
-              v-model="newSchedule.plan"
-              :items="planItems"
-              placeholder="Select plan"
-            />
-          </UFormField>
-          <UFormField label="Cron Expression">
-            <UInput v-model="newSchedule.cron" placeholder="0 */6 * * *" />
-          </UFormField>
-          <div class="flex justify-end gap-2">
-            <UButton label="Cancel" variant="ghost" @click="() => { showCreateModal = false }" />
-            <UButton label="Create" @click="() => { showCreateModal = false }" />
+        <div class="p-4 flex flex-col gap-5">
+          <div>
+            <h2 class="font-semibold text-lg">New Schedule</h2>
+            <p class="text-xs text-muted">Configure when this schedule should run</p>
+          </div>
+
+          <div class="flex flex-col gap-4">
+            <UFormField label="Name" description="A descriptive name for this schedule" orientation="horizontal">
+              <UInput v-model="newSchedule.name" placeholder="e.g. Daily Data Sync" />
+            </UFormField>
+
+            <UFormField label="Plan" description="The plan to run when this schedule fires" orientation="horizontal">
+              <USelect v-model="newSchedule.plan" :items="planItems" placeholder="Select a plan to run" />
+            </UFormField>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <label class="text-sm font-medium">When to run</label>
+            <div class="grid grid-cols-3 rounded-lg bg-muted/20 p-0.5">
+              <button
+                class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+                :class="cronMode === 'preset' ? 'bg-background shadow-sm text-foreground' : 'text-muted hover:text-foreground'"
+                @click="cronMode = 'preset'"
+              >
+                Preset
+              </button>
+              <button
+                class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+                :class="cronMode === 'interval' ? 'bg-background shadow-sm text-foreground' : 'text-muted hover:text-foreground'"
+                @click="cronMode = 'interval'"
+              >
+                Interval
+              </button>
+              <button
+                class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
+                :class="cronMode === 'cron' ? 'bg-background shadow-sm text-foreground' : 'text-muted hover:text-foreground'"
+                @click="cronMode = 'cron'"
+              >
+                Cron
+              </button>
+            </div>
+
+            <div v-if="cronMode === 'preset'" class="grid grid-cols-2 gap-1.5">
+              <button
+                v-for="preset in presetOptions"
+                :key="preset.value"
+                class="flex flex-col items-start rounded-lg border p-2.5 text-left transition-colors"
+                :class="cronPreset === preset.value ? 'border-primary bg-primary/5' : 'border-muted hover:border-muted-foreground/30'"
+                @click="cronPreset = preset.value"
+              >
+                <code class="text-xs font-mono font-medium">{{ preset.label }}</code>
+                <span class="text-[10px] text-muted">{{ preset.description }}</span>
+              </button>
+            </div>
+
+            <div v-if="cronMode === 'interval'" class="flex items-center gap-2">
+              <span class="text-sm text-muted">Every</span>
+              <UInput
+                v-model="intervalValue"
+                type="number"
+                :min="1"
+                class="w-20"
+                size="sm"
+              />
+              <USelect
+                v-model="intervalUnit"
+                :items="intervalUnitOptions"
+                size="sm"
+                class="w-28"
+              />
+            </div>
+
+            <div v-if="cronMode === 'cron'" class="flex flex-col gap-2">
+              <div class="flex items-center gap-2">
+                <USwitch v-model="useSeconds" size="xs" />
+                <label class="text-[10px] text-muted">Include seconds</label>
+              </div>
+              <div class="grid gap-2" :class="useSeconds ? 'grid-cols-6' : 'grid-cols-5'">
+                <div v-if="useSeconds" class="flex flex-col gap-1">
+                  <label class="text-[10px] text-muted uppercase tracking-wide">Sec</label>
+                  <USelect v-model="cronSecond" :items="secondOptions" size="xs" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] text-muted uppercase tracking-wide">Min</label>
+                  <USelect v-model="cronMinute" :items="minuteOptions" size="xs" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] text-muted uppercase tracking-wide">Hour</label>
+                  <USelect v-model="cronHour" :items="hourOptions" size="xs" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] text-muted uppercase tracking-wide">Day</label>
+                  <USelect v-model="cronDay" :items="dayOptions" size="xs" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] text-muted uppercase tracking-wide">Month</label>
+                  <USelect v-model="cronMonth" :items="monthOptions" size="xs" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] text-muted uppercase tracking-wide">Weekday</label>
+                  <USelect v-model="cronWeekday" :items="weekdayOptions" size="xs" />
+                </div>
+              </div>
+              <p class="text-[10px] text-muted">{{ useSeconds ? '6-field format: sec min hour day month weekday' : '5-field format: min hour day month weekday' }}</p>
+            </div>
+          </div>
+
+          <div class="rounded-lg border border-dashed border-muted-foreground/20 bg-muted/10 p-3">
+            <div class="flex items-center gap-2 mb-1">
+              <code class="text-sm font-mono font-semibold text-primary">{{ builtCron }}</code>
+            </div>
+            <p class="text-xs text-muted">{{ cronDescription }}</p>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-1">
+            <UButton label="Cancel" variant="ghost" @click="showCreateModal = false" />
+            <UButton label="Create Schedule" :disabled="!isValid" @click="createSchedule" />
           </div>
         </div>
       </template>

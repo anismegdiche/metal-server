@@ -16,7 +16,7 @@ const sidebarItems: NavigationMenuItem[] = [
   },
   {
     label: 'Designer',
-    icon: 'i-lucide-workflow',
+    icon: 'i-lucide-pencil-ruler',
     to: '/designer'
   },
   {
