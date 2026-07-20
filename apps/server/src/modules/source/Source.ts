@@ -3,12 +3,14 @@
 //
 import { _MTR_ } from "@metal/config"
 import type { TJson } from "../../types/TJson"
+import { Assert } from "../../utils/Assert"
 import { Logger } from "../../utils/Logger"
 import { ConfigManager } from "../core/ConfigManager"
 import type { U__sources_source } from "../core/types/U__sources"
 import { HttpErrorLog } from "../errors/HttpErrors"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import { DATA_PROVIDER } from "./@consts"
+import type { IDataProvider } from "./base/IDataProvider"
 import { DataProvider } from "./DataProvider"
 import { SourceRegistry } from "./SourceRegistry"
 import type { TSource } from "./types/TSource"
@@ -32,7 +34,10 @@ export class Source {
 			? ConfigManager.Get<Record<string, U__sources_source>>("sources")
 			: {}
 
-		const details: Record<string, { provider: string; host: string; port: number | null; database: string | null; status: string }> = {}
+		const details: Record<
+			string,
+			{ provider: string; host: string; port: number | null; database: string | null; status: string }
+		> = {}
 		for (const name of allSourceNames) {
 			const config = allSourcesConfig[name]
 			details[name] = {
@@ -63,20 +68,28 @@ export class Source {
 				SourceConfig: sourceConfig,
 				DataProvider: await DataProvider.GetProvider(provider),
 			})
-			await Source.Sources.get(source)?.DataProvider.Init(source, sourceConfig)
-			Source.Sources.get(source)
-				?.DataProvider.Connect()
+
+			const _dataProvider = Assert.Get<IDataProvider>(
+				Source.Sources.get(source)?.DataProvider,
+				`no DataProvider found for source '${source}'`,
+			)
+			_dataProvider.Init(source, sourceConfig)
 				.then(() => {
-					Logger.Info(`${Logger.Out} Source.Connect '${source}': connected`)
-					MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_ACTIVE, MetricsCollector.Get(_MTR_.SOURCES_ACTIVE, 0) + 1)
-					MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "connected" } })
+					_dataProvider.Connect()
+						.then(() => {
+							Logger.Info(`${Logger.Out} Source.Connect '${source}': connected`)
+							MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_ACTIVE, MetricsCollector.Get(_MTR_.SOURCES_ACTIVE, 0) + 1)
+							MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "connected" } })
+						})
+						.catch((e) => {
+							Logger.Error(`${Logger.Out} Error connecting to source '${source}': ${(e as Error).message}`)
+							MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "disconnected" } })
+						})
 				})
-				.catch((error) => {
-					Logger.Error(`${Logger.Out} Error connecting to source '${source}': ${error.message}`)
-					MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "disconnected" } })
-				})
-		} catch (error: unknown) {
-			HttpErrorLog(error)
+		} catch (e: unknown) {
+			// HttpErrorLog(error)
+			Logger.Error(`${Logger.Out} Error connecting to source '${source}': ${(e as Error).message}`)
+			MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "disconnected" } })
 		}
 	}
 

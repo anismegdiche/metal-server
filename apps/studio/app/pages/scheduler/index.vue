@@ -1,12 +1,13 @@
 <script setup lang="ts">
-const schedules = ref([
-  { id: '1', name: 'Import Users', plan: 'Import Users', cron: '@every 6h', status: 'active', lastFire: '2h ago', nextFire: '4h' },
-  { id: '2', name: 'Sync Inventory', plan: 'Sync Inventory', cron: '@every 30m', status: 'active', lastFire: '15m ago', nextFire: '15m' },
-  { id: '3', name: 'Daily Report', plan: 'Daily Report', cron: '@daily', status: 'active', lastFire: '1d ago', nextFire: '16h' },
-  { id: '4', name: 'Clean Logs', plan: 'Clean Logs', cron: '0 2 * * 0', status: 'paused', lastFire: '7d ago', nextFire: '\u2014' },
-])
+type SchedulesResponse = Record<string, { plan: string; cron: string }>
+type PlansResponse = Record<string, { steps: any[]; [key: string]: any }>
+
+const schedules = ref<SchedulesResponse>({})
+const plans = ref<PlansResponse>({})
+const loading = ref(true)
 
 const showCreateModal = ref(false)
+const editingName = ref<string | null>(null)
 const newSchedule = ref({ name: '', plan: '' })
 
 const cronMode = ref<'preset' | 'interval' | 'cron'>('preset')
@@ -98,12 +99,17 @@ const weekdayOptions = [
   { label: 'Weekends', value: '0,6' },
 ]
 
-const planItems = [
-  { label: 'Import Users', value: 'Import Users' },
-  { label: 'Sync Inventory', value: 'Sync Inventory' },
-  { label: 'Daily Report', value: 'Daily Report' },
-  { label: 'Clean Logs', value: 'Clean Logs' },
-]
+const planItems = computed(() =>
+  Object.keys(plans.value).map((name) => ({ label: name, value: name }))
+)
+
+const scheduleRows = computed(() =>
+  Object.entries(schedules.value).map(([name, config]) => ({
+    name,
+    plan: config.plan,
+    cron: config.cron,
+  }))
+)
 
 const builtCron = computed(() => {
   if (cronMode.value === 'preset') return cronPreset.value
@@ -172,21 +178,77 @@ const cronDescription = computed(() => {
   return timeParts.join(', ')
 })
 
+const isEditing = computed(() => editingName.value !== null)
+const modalTitle = computed(() => isEditing.value ? 'Edit Schedule' : 'New Schedule')
+const modalSubmitLabel = computed(() => isEditing.value ? 'Save Changes' : 'Create Schedule')
 const isValid = computed(() => newSchedule.value.name && newSchedule.value.plan)
 
-function toggleSchedule(id: string) {
-  const schedule = schedules.value.find(s => s.id === id)
-  if (schedule) {
-    schedule.status = schedule.status === 'active' ? 'paused' : 'active'
+async function fetchData() {
+  loading.value = true
+  try {
+    const [s, p] = await Promise.all([
+      $fetch<SchedulesResponse>('/server-api/api/config/schedules'),
+      $fetch<PlansResponse>('/server-api/api/config/plans'),
+    ])
+    schedules.value = s
+    plans.value = p
+  } catch (e) {
+    console.error('Failed to load schedules/plans:', e)
+  } finally {
+    loading.value = false
   }
 }
 
-function deleteSchedule(id: string) {
-  schedules.value = schedules.value.filter(s => s.id !== id)
+function parseCronToFields(cron: string) {
+  if (cron.startsWith('@every ')) {
+    const match = cron.match(/@every (\d+)(s|m|h)/)
+    if (match) {
+      cronMode.value = 'interval'
+      intervalValue.value = Number.parseInt(match[1])
+      intervalUnit.value = match[2]
+    }
+  } else if (cron.startsWith('@')) {
+    cronMode.value = 'preset'
+    cronPreset.value = cron
+  } else {
+    cronMode.value = 'cron'
+    const parts = cron.split(' ')
+    const hasSeconds = parts.length === 6
+    if (hasSeconds) {
+      useSeconds.value = true
+      cronSecond.value = parts[0]
+      cronMinute.value = parts[1]
+      cronHour.value = parts[2]
+      cronDay.value = parts[3]
+      cronMonth.value = parts[4]
+      cronWeekday.value = parts[5]
+    } else {
+      useSeconds.value = false
+      cronMinute.value = parts[0]
+      cronHour.value = parts[1]
+      cronDay.value = parts[2]
+      cronMonth.value = parts[3]
+      cronWeekday.value = parts[4]
+    }
+  }
 }
 
-function resetModal() {
+function openCreateModal() {
+  editingName.value = null
   newSchedule.value = { name: '', plan: '' }
+  resetCronFields()
+  showCreateModal.value = true
+}
+
+function openEditModal(name: string) {
+  editingName.value = name
+  const config = schedules.value[name]
+  newSchedule.value = { name, plan: config.plan }
+  parseCronToFields(config.cron)
+  showCreateModal.value = true
+}
+
+function resetCronFields() {
   cronMode.value = 'preset'
   cronPreset.value = '@daily'
   intervalValue.value = 30
@@ -200,19 +262,34 @@ function resetModal() {
   cronWeekday.value = '*'
 }
 
-function createSchedule() {
-  schedules.value.push({
-    id: String(Date.now()),
-    name: newSchedule.value.name,
-    plan: newSchedule.value.plan,
-    cron: builtCron.value,
-    status: 'active',
-    lastFire: '\u2014',
-    nextFire: '\u2014',
-  })
-  showCreateModal.value = false
-  resetModal()
+async function submitSchedule() {
+  if (!isValid.value) return
+  const name = newSchedule.value.name
+  const body = { plan: newSchedule.value.plan, cron: builtCron.value }
+  try {
+    await $fetch(`/server-api/api/config/schedules/${encodeURIComponent(name)}`, {
+      method: 'PUT',
+      body,
+    })
+    showCreateModal.value = false
+    await fetchData()
+  } catch (e) {
+    console.error('Failed to save schedule:', e)
+  }
 }
+
+async function deleteSchedule(name: string) {
+  try {
+    await $fetch(`/server-api/api/config/schedules/${encodeURIComponent(name)}`, {
+      method: 'DELETE',
+    })
+    await fetchData()
+  } catch (e) {
+    console.error('Failed to delete schedule:', e)
+  }
+}
+
+await fetchData()
 </script>
 
 <template>
@@ -222,7 +299,7 @@ function createSchedule() {
         <h1 class="text-2xl font-bold"><UIcon name="i-lucide-calendar-clock" class="ml-0 mr-2" />Scheduler</h1>
         <p class="text-sm text-muted">Manage scheduled plan executions</p>
       </div>
-      <UButton icon="i-lucide-plus" label="Add Schedule" @click="showCreateModal = true" />
+      <UButton icon="i-lucide-plus" label="Add Schedule" @click="openCreateModal" />
     </div>
 
     <UCard class="bg-metal-gradient">
@@ -231,61 +308,46 @@ function createSchedule() {
           { accessorKey: 'name', header: 'Name' },
           { accessorKey: 'plan', header: 'Plan' },
           { accessorKey: 'cron', header: 'Schedule' },
-          { accessorKey: 'status', header: 'Status' },
-          { accessorKey: 'lastFire', header: 'Last Fire' },
-          { accessorKey: 'nextFire', header: 'Next Fire' },
           { accessorKey: 'actions', header: '' },
         ]"
-        :data="schedules"
-         :ui="{
+        :data="scheduleRows"
+        :ui="{
           th: 'px-2',
           td: 'px-2 py-2'
         }"
       >
-        <template #status-cell="{ row }">
-          <UBadge
-            :color="row.original.status === 'active' ? 'success' : 'warning'"
-            variant="subtle"
-            size="md"
-          >
-            {{ row.original.status }}
-          </UBadge>
-        </template>
         <template #cron-cell="{ row }">
           <code class="text-xs font-mono bg-muted/30 px-1.5 py-0.5 rounded">{{ row.original.cron }}</code>
         </template>
         <template #actions-cell="{ row }">
           <div class="flex gap-1">
-            <UButton
-              :icon="row.original.status === 'active' ? 'i-lucide-pause' : 'i-lucide-play'"
-              size="xs"
-              variant="ghost"
-              @click="toggleSchedule(row.original.id)"
-            />
-            <UButton icon="i-lucide-pencil" size="xs" variant="ghost" />
+            <UButton icon="i-lucide-pencil" size="xs" variant="ghost" @click="openEditModal(row.original.name)" />
             <UButton
               icon="i-lucide-trash-2"
               size="xs"
               variant="ghost"
               color="error"
-              @click="deleteSchedule(row.original.id)"
+              @click="deleteSchedule(row.original.name)"
             />
           </div>
         </template>
       </UTable>
+      <div v-if="!loading && scheduleRows.length === 0" class="text-center py-8 text-sm text-muted">
+        No schedules configured yet
+      </div>
     </UCard>
 
     <UModal v-model:open="showCreateModal" :ui="{ content: 'w-full max-w-xl' }">
       <template #content>
         <div class="p-4 flex flex-col gap-5">
           <div>
-            <h2 class="font-semibold text-lg">New Schedule</h2>
+            <h2 class="font-semibold text-lg">{{ modalTitle }}</h2>
             <p class="text-xs text-muted">Configure when this schedule should run</p>
           </div>
 
           <div class="flex flex-col gap-4">
             <UFormField label="Name" description="A descriptive name for this schedule" orientation="horizontal">
-              <UInput v-model="newSchedule.name" placeholder="e.g. Daily Data Sync" />
+              <UInput v-model="newSchedule.name" placeholder="e.g. Daily Data Sync" :disabled="isEditing" />
             </UFormField>
 
             <UFormField label="Plan" description="The plan to run when this schedule fires" orientation="horizontal">
@@ -393,7 +455,7 @@ function createSchedule() {
 
           <div class="flex justify-end gap-2 pt-1">
             <UButton label="Cancel" variant="ghost" @click="showCreateModal = false" />
-            <UButton label="Create Schedule" :disabled="!isValid" @click="createSchedule" />
+            <UButton :label="modalSubmitLabel" :disabled="!isValid" @click="submitSchedule" />
           </div>
         </div>
       </template>

@@ -154,7 +154,12 @@ export class StorageFoldersData extends absDataProvider {
 
 	@Logger.LogFunction(true)
 	async Connect(): Promise<void> {
-		if (this.Connection) await this.Connection.Connect()
+		Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage Data provider (folder) is not defined`)
+
+		await this.Connection.Connect()
+			.then(() => {
+				Logger.Debug(`${Logger.Out} Storage Data provider (folder) '${this.SourceName}' connected`)
+			})
 	}
 
 	@Logger.LogFunction(true)

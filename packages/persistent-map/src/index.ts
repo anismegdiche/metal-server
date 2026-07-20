@@ -77,7 +77,7 @@ export class PersistentMap<T> {
 	}
 
 	clear(): void {
-		this.db.clear()
+		this.db.clearSync()
 	}
 
 	close(): void {

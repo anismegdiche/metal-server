@@ -31,6 +31,8 @@ export class SoapWebService extends absWebServiceProvider {
 	ConfigSourceOptions?: U__source_webservice_options
 	Client?: import("soap").Client
 
+	_soapOptions : import("soap").IOptions = {}
+
 	Headers: Record<string, string>[] = []
 
 	private static _soapModule: typeof import("soap")
@@ -49,20 +51,22 @@ export class SoapWebService extends absWebServiceProvider {
 	async Init(): Promise<void> {
 		const endpoint = this.Endpoints.get(ENDPOINT.SESSION)
 
-		let soapOptions: import("soap").IOptions = {}
-
 		if (this.IsEndpoint(endpoint)) {
 			const { Data } = this.Endpoints.get(ENDPOINT.SESSION)!
 			if (User.IsUserCredentials(Data)) {
 				const { username, password } = Data
 				const auth = Buffer.from(`${username}:${password}`).toString("base64")
-				soapOptions = {
+				this._soapOptions = {
 					wsdl_headers: {
 						Authorization: `Basic ${auth}`,
 					},
 				}
 			}
 		}
+	}
+
+	@Logger.LogFunction()
+	async Connect(): Promise<void> {
 
 		Assert.Var<U__source_webservice>(this.ConfigSource, "host is not configured")
 
@@ -72,27 +76,15 @@ export class SoapWebService extends absWebServiceProvider {
 		const { content } = this.ConfigSourceOptions as U__source_webservice_options
 		Assert.Var<string>(content, "content is undefined")
 
-		try {
-			const soap = await SoapWebService._loadSoapModule()
+		const soap = await SoapWebService._loadSoapModule()
 
-			this.Client = await soap.createClientAsync(host, soapOptions)
+		this.Client = Assert.Get<import("soap").Client>(await soap.createClientAsync(host, this._soapOptions), `SoapWebService.Init: Failed to create client`)
 
-			if (!this.Client) throw new HttpErrorInternalServerError(`SoapWebService.Init: Failed to create client`)
+		// set content type
+		const [header] = Object.keys(HEADER[content]!)
+		const [value] = Object.values(HEADER[content]!)
 
-			// set content type
-			const [header] = Object.keys(HEADER[content]!)
-			const [value] = Object.values(HEADER[content]!)
-
-			if (typeof header === "string" && typeof value === "string") this.Client.addHttpHeader(header, value)
-		} catch (err: unknown) {
-			const _err = NormalizeError(err)
-			const _message = _err.errors.at(1).message ?? _err.errors.at(0).message ?? _err.message
-			Logger.Error(`SoapWebService.Init: ${_message}`)
-		}
-	}
-
-	@Logger.LogFunction()
-	async Connect(): Promise<void> {
+		if (typeof header === "string" && typeof value === "string") this.Client.addHttpHeader(header, value)
 		Logger.Debug(`${Logger.Out} SoapWebService connected`)
 	}
 

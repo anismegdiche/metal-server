@@ -74,16 +74,13 @@ export class PlanData extends absDataProvider {
 			new HttpErrorNotFound()
 		)
 
-		const sourceConfig = Source.Sources.get(source)?.SourceConfig
-		const planName = sourceConfig?.database
-
-		Assert.Var<string>(planName,
-			planName !== undefined,
+		Assert.Var<string>(entity,
+			entity !== undefined,
 			`${schema}: plan '${source}' is missing`,
 			new HttpErrorBadRequest()
 		)
 
-		const plan = Plans.get(planName)
+		const plan = Plans.get(entity)
 
 		Assert.Var<Plan>(
 			plan,
@@ -91,21 +88,16 @@ export class PlanData extends absDataProvider {
 			new HttpErrorNotFound()
 		)
 
-		const data = new DataTable(schemaRequest.entity)
-
-		if (plan) {
-			const planData = await plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
-			if (planData) {
-				await data.RowsSet(await planData.Rows())
-				if (options?.Cache)
-					await this.CacheSet(
-						{
-							...schemaRequest,
-							source: this.SourceName,
-						},
-						data,
-					)
-			}
+		const data = await plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
+		if (data) {
+			if (options?.Cache)
+				await this.CacheSet(
+					{
+						...schemaRequest,
+						source: this.SourceName,
+					},
+					data,
+				)
 		}
 
 		return HttpResponse.Ok(<TSchemaResponse>{
@@ -144,7 +136,17 @@ export class PlanData extends absDataProvider {
 	@Logger.LogFunction()
 	async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 		const { schema } = schemaRequest
-		throw new HttpErrorBadRequest(`Not allowed for plans '${schema}'`)
+
+		const data = new DataTable("plans")
+		const rows = [...Plans.keys()].map((name) => ({ name }))
+		await data.RowsSet(rows)
+
+		return HttpResponse.Ok(<TSchemaResponse>{
+			schema,
+			...RESPONSE.SELECT.SUCCESS.MESSAGE,
+			...RESPONSE.SELECT.SUCCESS.STATUS,
+			data,
+		})
 	}
 
 	EscapeEntity(entity: string): string {

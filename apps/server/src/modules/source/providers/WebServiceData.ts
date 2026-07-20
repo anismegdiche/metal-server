@@ -8,6 +8,7 @@ import type { TJson } from "../../../types/TJson"
 import { Assert } from "../../../utils/Assert"
 import { Logger, VERBOSITY } from "../../../utils/Logger"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
+import type { CONTENT } from "../../content/@consts"
 import type { IContentProvider } from "../../content/base/IContentProvider"
 import { ContentProvider } from "../../content/ContentProvider"
 import { RESPONSE } from "../../core/@consts"
@@ -39,7 +40,6 @@ import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
 import type { U__source_webservice } from "../types/U__source_webservice"
 
-
 //
 export class WebServiceData extends absDataProvider {
 	SourceName?: string
@@ -58,36 +58,36 @@ export class WebServiceData extends absDataProvider {
 
 	@Logger.LogFunction(["sourceConfig"])
 	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
+
 		await super.Init(source, sourceConfig)
 		this.Config = merge(this.Config, sourceConfig)
 
-		//
 		const { content, type: webservice } = this.Config.options
 
-		if (content === undefined) throw new HttpErrorInternalServerError(`${this.SourceName}: Content type is not defined`)
+		Assert.Var<CONTENT>(content, `${this.SourceName}: Content type is not defined`)
 
-		this.Connection = await WebServiceProvider.GetProvider(webservice)
+		this.Connection = Assert.Get<absWebServiceProvider>(
+			await WebServiceProvider.GetProvider(webservice),
+			`${this.SourceName}: Failed to initialize webservice provider`
+		)
+
 		this.Connection.SetConfig(this.Config)
 
 		// init webservice
-		if (this.Connection) await this.Connection.Init()
-		else throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize webservice provider`)
+		await this.Connection.Init()
 
 		// init content
-
 		this.ContentHandler = await ContentProvider.GetProvider(content)
 		this.ContentHandler.SetConfig(this.Config.options)
 	}
 
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
-		try {
-			if (this.Connection && this.ContentHandler) {
-				await this.Connection.Connect()
-				Logger.Debug(`${Logger.Out} WebService provider '${this.SourceName}' connected`)
-			}
-		} catch (err: unknown) {
-			Logger.Error(`${this.SourceName}: Failed to connect to WebService provider: ${NormalizeError(err).message}`)
+		if (this.Connection && this.ContentHandler) {
+			await this.Connection.Connect()
+				.then(() => {
+					Logger.Debug(`${Logger.Out} WebService Data Provider '${this.SourceName}' connected`)
+				})
 		}
 	}
 
@@ -96,7 +96,7 @@ export class WebServiceData extends absDataProvider {
 		try {
 			if (this.Connection && this.ContentHandler) await this.Connection.Disconnect()
 		} catch (err: unknown) {
-			Logger.Error(`${this.SourceName}: Failed to disconnect in WebService provider: ${NormalizeError(err).message}`)
+			Logger.Error(`${this.SourceName}: Failed to disconnect in WebService Data Provider: ${NormalizeError(err).message}`)
 		}
 	}
 
@@ -107,7 +107,7 @@ export class WebServiceData extends absDataProvider {
 		$context?: Partial<TContext>,
 	): Promise<TInternalResponse<TSchemaResponse>> {
 		if (!this.Connection)
-			throw new HttpErrorInternalServerError(`${this.SourceName}: Connection failed in WebService provider`)
+			throw new HttpErrorInternalServerError(`${this.SourceName}: Connection failed in WebService Data Provider`)
 
 		const { schema, entity } = schemaRequest
 
@@ -158,7 +158,7 @@ export class WebServiceData extends absDataProvider {
 		if (!schemaRequest.data) throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
 		if (!this.Connection)
-			throw new HttpErrorInternalServerError(`${this.SourceName}: Connection failed in WebService provider`)
+			throw new HttpErrorInternalServerError(`${this.SourceName}: Connection failed in WebService Data Provider`)
 
 		const { entity } = schemaRequest
 
@@ -193,7 +193,7 @@ export class WebServiceData extends absDataProvider {
 		if (!schemaRequest.data) throw new HttpErrorBadRequest(`${schemaRequest.schema}: data is missing`)
 
 		if (!this.Connection)
-			throw new HttpErrorInternalServerError(`${this.SourceName}: Connection failed in WebService provider`)
+			throw new HttpErrorInternalServerError(`${this.SourceName}: Connection failed in WebService Data Provider`)
 
 		const { entity } = schemaRequest
 
@@ -211,10 +211,10 @@ export class WebServiceData extends absDataProvider {
 
 		const endpointUpdate = this.Connection.Endpoints.get(ENDPOINT.ITEM_UPDATE)
 
-		Assert.Condition(endpointUpdate !== undefined, `${this.SourceName}: Invalid endpoint in WebService provider`)
+		Assert.Condition(endpointUpdate !== undefined, `${this.SourceName}: Invalid endpoint in WebService Data Provider`)
 		Assert.Var<TEndpoint>(
 			this.Connection.IsEndpoint(endpointUpdate),
-			`${this.SourceName}: Invalid endpoint in WebService provider`,
+			`${this.SourceName}: Invalid endpoint in WebService Data Provider`,
 		)
 
 		using keysCollection = await this.File.get(entity)?.Get(
@@ -260,7 +260,7 @@ export class WebServiceData extends absDataProvider {
 		$context?: Partial<TContext>,
 	): Promise<TInternalResponse<undefined>> {
 		if (!this.Connection)
-			throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in WebService provider`)
+			throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to read in WebService Data Provider`)
 
 		const { entity } = schemaRequest
 
@@ -278,10 +278,10 @@ export class WebServiceData extends absDataProvider {
 
 		const endpointDelete = this.Connection.Endpoints.get(ENDPOINT.ITEM_DELETE)
 
-		Assert.Condition(endpointDelete !== undefined, `${this.SourceName}: Invalid endpoint in WebService provider`)
+		Assert.Condition(endpointDelete !== undefined, `${this.SourceName}: Invalid endpoint in WebService Data Provider`)
 		Assert.Var<TEndpoint>(
 			this.Connection.IsEndpoint(endpointDelete),
-			`${this.SourceName}: Invalid endpoint in WebService provider`,
+			`${this.SourceName}: Invalid endpoint in WebService Data Provider`,
 		)
 
 		using keysCollection = await this.File.get(entity)?.Get(

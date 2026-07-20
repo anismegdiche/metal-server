@@ -107,14 +107,16 @@ export class StorageFilesData extends absDataProvider {
 
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
-		try {
-			if (this.Connection && this.ContentHandler) {
-				this.Connection.Connect()
-				Logger.Debug(`${Logger.Out} Storage provider '${this.SourceName}' connected`)
-			}
-		} catch (err: unknown) {
-			Logger.Error(`${this.SourceName}: Failed to connect in storage provider: ${NormalizeError(err).message}`)
-		}
+		Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage Data provider (file) is not defined`)
+		Assert.Condition(
+			this.ContentHandler !== undefined,
+			`${this.SourceName}: Storage Data provider (file) is not defined`
+		)
+
+		await this.Connection.Connect()
+			.then(() => {
+				Logger.Debug(`${Logger.Out} Storage Data provider (file) '${this.SourceName}' connected`)
+			})
 	}
 
 	@Logger.LogFunction()

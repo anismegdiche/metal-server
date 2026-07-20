@@ -6,6 +6,9 @@ const search = ref('')
 const page = ref(1)
 const pageSize = ref(50)
 
+const showClearModal = ref(false)
+const clearing = ref(false)
+
 const pageSizeItems = [
   { label: '25', value: 25 },
   { label: '50', value: 50 },
@@ -86,8 +89,17 @@ const columns = [
   { accessorKey: 'message', header: 'Message' },
 ]
 
-function cleanMessage(msg: string): string {
-  return msg.replace('[33m◀ [39m', ' ◀ ').replace('[35m▶ [39m', ' ▶ ')
+async function clearLogs() {
+  clearing.value = true
+  try {
+    await $fetch('/server-api/api/logs', { method: 'DELETE' })
+    logs.value = []
+    meta.value = null
+    showClearModal.value = false
+  } catch {
+  } finally {
+    clearing.value = false
+  }
 }
 </script>
 
@@ -103,6 +115,8 @@ function cleanMessage(msg: string): string {
       <span class="text-xs text-muted">{{ meta?.total ?? 0 }} entries</span>
       <USwitch v-model="autoRefresh" size="xs" label="Auto-refresh" />
       <UButton icon="i-lucide-refresh-cw" size="xs" variant="outline" @click="fetchLogs" />
+      <UButton icon="i-lucide-trash-2" size="xs" variant="outline" color="error" label="Clear"
+        @click="showClearModal = true" />
     </div>
 
     <UCard class="bg-metal-gradient">
@@ -119,8 +133,7 @@ function cleanMessage(msg: string): string {
           </UBadge>
         </template>
         <template #message-cell="{ row }">
-          <span class="font-mono text-xs whitespace-normal wrap-break-words">{{ cleanMessage(row.original.message)
-            }}</span>
+          <span class="font-mono text-xs whitespace-normal wrap-break-words">{{ row.original.message }}</span>
         </template>
       </UTable>
     </UCard>
@@ -128,5 +141,26 @@ function cleanMessage(msg: string): string {
     <div v-if="totalPages > 1" class="flex justify-center">
       <UPagination v-model:page="page" :page-count="pageSize" :total="filteredLogs.length" size="xs" />
     </div>
+
+    <UModal v-model:open="showClearModal">
+      <template #content>
+        <div class="p-4 flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center size-10 rounded-full bg-error/10">
+              <UIcon name="i-lucide-alert-triangle" class="size-5 text-error" />
+            </div>
+            <div>
+              <h2 class="font-semibold">Clear All Logs</h2>
+              <p class="text-sm text-muted">This will permanently delete all log entries. This action cannot be undone.
+              </p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <UButton label="Cancel" variant="ghost" @click="showClearModal = false" />
+            <UButton label="Clear Logs" color="error" :loading="clearing" @click="clearLogs" />
+          </div>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

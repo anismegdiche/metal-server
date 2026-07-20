@@ -67,7 +67,7 @@ export class Plan {
 
 	@Logger.LogFunction(["sqlQuery"])
 	@SynchronizerManager.Synchronized()
-	async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery?: string) {
+	async ProcessSchemaRequest(schemaRequest: TSchemaRequest, sqlQuery?: string): Promise<DataTable | undefined> {
 		const { schema: callerSchema, source } = schemaRequest as TSchemaRequestSelect
 
 		Assert.Var<string>(source, `no source found for ${callerSchema}`, new HttpErrorNotFound())
@@ -78,6 +78,7 @@ export class Plan {
 				.then(() => planData))
 			.catch((err) => {
 				Logger.Error(`Error occurred while processing schema request for plan '${this.Name}': ${err.message}`)
+				return undefined
 			})
 	}
 

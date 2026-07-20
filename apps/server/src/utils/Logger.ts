@@ -2,6 +2,7 @@
 //
 //
 import { CustomEvent, EventBus, type IEvent, on } from "@dimkl/events"
+import PersistentMap from "@metal/persistent-map"
 import { bold, cyan, gray, green, magenta, red, whiteBright, yellow } from "colorette"
 import * as _ from "lodash-es"
 import LogLevel from "loglevel"
@@ -10,12 +11,10 @@ import morgan from "morgan"
 //
 import { SERVER } from "../modules/core/@consts"
 import { NormalizeError } from "../modules/errors/HttpErrorBase"
+import { DateUtils } from "./DateUtils"
 import { DecoratorUtils } from "./DecoratorUtils"
 import { Stringify } from "./JsonUtils/Stringify"
 import { ToTextList } from "./JsonUtils/ToTextList"
-import PersistentMap from "@metal/persistent-map"
-import { StringUtils } from "./StringUtils"
-import { DateUtils } from "./DateUtils"
 import { Package } from "./Package"
 
 //
@@ -111,6 +110,10 @@ function _formatPrefix(level: string, name: string | undefined, timestamp: Date)
 	return `${gray(timestamp.toString())} ${_colors[level]?.(level.padEnd(5).slice(-5))} [${SERVER.NAME}] ${whiteBright(`${name}:`)}`
 }
 
+function _cleanMessage(msg: string): string {
+	return msg.replace("[33m◀ [39m", " ◀ ").replace("[35m▶ [39m", " ▶ ")
+}
+
 Prefix.reg(LogLevel)
 
 LogLevel.setLevel(LOGGER_DEFAULT_LEVEL)
@@ -128,7 +131,6 @@ Prefix.apply(LogLevel.getLogger("critical"), {
 })
 
 export class Logger {
-
 	static db: PersistentMap<LogEntry>
 	static readonly In = magenta("▶ ")
 	static readonly Out = yellow("◀ ")
@@ -136,23 +138,21 @@ export class Logger {
 	static Bus = new EventBus()
 
 	static SetDb(name: string) {
-		Logger.db = new PersistentMap<LogEntry>
-			(`/data/logs/${DateUtils.GetDateStamp(new Date(Date.now()))}-${(name).replace('@', '').replace('/', '-')}-log.db`)
+		Logger.db = new PersistentMap<LogEntry>(
+			`/data/logs/${DateUtils.GetDateStamp(new Date(Date.now()))}-${name.replace("@", "").replace("/", "-")}-log.db`,
+		)
 	}
 
 	static _saveLogEntry(level: VERBOSITY, message: string) {
 		const timestamp = new Date(Date.now())
 		if (VERBOSITY_RANK.indexOf(level) <= VERBOSITY_RANK.indexOf(Logger.Level as VERBOSITY))
-			Logger.db.set(
-				`${timestamp.toISOString()},${crypto.randomUUID()}`,
-				<LogEntry>{
-					level,
-					message,
-					timestamp,
-					server: (Package.Json.name as string).replace('@', '').replace('/', '-'),
-					user: process.env.USERNAME || 'unknown'
-				}
-			)
+			Logger.db.set(`${timestamp.toISOString()},${crypto.randomUUID()}`, <LogEntry>{
+				level,
+				message: _cleanMessage(message),
+				timestamp,
+				server: (Package.Json.name as string).replace("@", "").replace("/", "-"),
+				user: process.env.USERNAME || "unknown",
+			})
 	}
 
 	static RequestMiddleware = morgan(":remote-addr, :method :url, :status, :res[content-length], :response-time ms", {
@@ -245,7 +245,9 @@ export class Logger {
 	}
 
 	@on({ eventName: LOG_EVENT.FUNC_REGISTER, eventBus: Logger.Bus })
-	static _handleLogFunction(event: CustomEvent<{ hide: string[] | boolean; target: any; propertyKey: string; descriptor: PropertyDescriptor }>): void {
+	static _handleLogFunction(
+		event: CustomEvent<{ hide: string[] | boolean; target: any; propertyKey: string; descriptor: PropertyDescriptor }>,
+	): void {
 		const { hide, target, propertyKey, descriptor } = event.data!
 
 		const wrap = (originalMethod?: (...args: any[]) => any) => {
@@ -274,9 +276,7 @@ export class Logger {
 				try {
 					result = originalMethod.apply(this, args)
 				} catch (err: unknown) {
-					const _err = Logger.Level == VERBOSITY.DEBUG
-						? `\r\n${ToTextList(NormalizeError(err))}`
-						: (err as Error)?.message
+					const _err = Logger.Level === VERBOSITY.DEBUG ? `\r\n${ToTextList(NormalizeError(err))}` : (err as Error)?.message
 
 					Logger.Bus.dispatchEvent(
 						new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, {
@@ -296,10 +296,9 @@ export class Logger {
 							return res
 						})
 						.catch((err: unknown) => {
-					const _err = Logger.Level == VERBOSITY.DEBUG
-						? `\r\n${ToTextList(NormalizeError(err))}`
-						: (err as Error)?.message
-						
+							const _err =
+								Logger.Level === VERBOSITY.DEBUG ? `\r\n${ToTextList(NormalizeError(err))}` : (err as Error)?.message
+
 							Logger.Bus.dispatchEvent(
 								new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, {
 									data: { message: `${Logger.Out} ${ctorName}.${propertyKey} threw an error: ${_err}` },

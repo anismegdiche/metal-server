@@ -5,6 +5,7 @@
 //
 import type { Server } from "node:http"
 import type { FSWatcher } from "chokidar"
+import { JsonUtils } from "../../utils/JsonUtils"
 import { Logger } from "../../utils/Logger"
 import { AiDocker } from "../ai-engine/AiDocker"
 import { Cache } from "../cache/Cache"
@@ -245,7 +246,7 @@ export class ServerShutdown {
 
 		// Handle unhandled promise rejections
 		process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
-			Logger.Error(`Unhandled Rejection at: ${promise}, reason: ${reason}`)
+			Logger.Error(`Unhandled Rejection at: ${JsonUtils.Stringify(promise)}, reason: ${reason}`)
 			ServerShutdown.Shutdown("UNHANDLED_REJECTION").catch(() => {
 				process.exit(1)
 			})

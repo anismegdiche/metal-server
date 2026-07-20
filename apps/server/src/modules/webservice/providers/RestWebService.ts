@@ -1,12 +1,12 @@
 //
 //
 //
-
 import { Readable } from "node:stream"
 import axios, { type AxiosInstance, type AxiosResponse } from "axios"
 import { merge } from "lodash-es"
 //
 import type { TJson } from "../../../types/TJson"
+import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
@@ -14,10 +14,9 @@ import { StringUtils } from "../../../utils/StringUtils"
 import { CONTENT } from "../../content/@consts"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import {
-	HttpErrorBadRequest,
 	HttpErrorInternalServerError,
 	HttpErrorSwitch,
-	NormalizeError,
+	NormalizeError
 } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
@@ -49,11 +48,8 @@ export class RestWebService extends absWebServiceProvider {
 		this.Client.defaults.baseURL = this.ConfigSource?.host
 
 		// set content type
-		const content = this.ConfigSourceOptions?.content
-		if (!content) throw new HttpErrorBadRequest("Content type is required")
-
-		const headerObj = HEADER[content]
-		if (!headerObj) throw new HttpErrorBadRequest(`Invalid content type: ${content}`)
+		const content = Assert.Get<string>(this.ConfigSourceOptions?.content, "Content type is required")
+		const headerObj = Assert.Get<Record<string, string>>(HEADER[content], `Invalid content type: ${content}`)
 
 		const [header] = Object.keys(headerObj)
 		const [value] = Object.values(headerObj)
@@ -125,7 +121,14 @@ export class RestWebService extends absWebServiceProvider {
 
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
-		if (this.Endpoints.has(ENDPOINT.SESSION)) await this.RequestClient(ENDPOINT.SESSION, [200])
+		Assert.Var<AxiosInstance>(this.Client, `Rest Client is not initialized`)
+		await this.Client.head("/")
+			.then(async () => {
+				if (this.Endpoints.has(ENDPOINT.SESSION)) {
+					Assert.Var<Readable>(await this.RequestClient(ENDPOINT.SESSION, [200]), `Connection failed`)
+				}
+				Logger.Debug(`${Logger.Out} RestWebService connected`)
+			})
 	}
 
 	@Logger.LogFunction()

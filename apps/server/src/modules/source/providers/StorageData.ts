@@ -4,6 +4,7 @@
 import { merge } from "lodash-es"
 //
 import { Assert } from "../../../utils/Assert"
+import { Logger } from "../../../utils/Logger"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import type { U__sources_source } from "../../core/types/U__sources"
 import type { TContext } from "../../sandbox/types/TContext"
@@ -33,11 +34,11 @@ export enum STORAGE_MODE {
 //
 export type U__source_storage_options =
 	| ({
-			"storage-mode": STORAGE_MODE.FILES
-	  } & U__source_storage_file_options)
+		"storage-mode": STORAGE_MODE.FILES
+	} & U__source_storage_file_options)
 	| ({
-			"storage-mode": STORAGE_MODE.FOLDERS
-	  } & U__source_storage_folder_options)
+		"storage-mode": STORAGE_MODE.FOLDERS
+	} & U__source_storage_folder_options)
 
 export type U__source_storage = U__sources_source & {
 	options: U__source_storage_options
@@ -76,7 +77,10 @@ export class StorageData extends absDataProvider implements IDataProvider {
 	}
 
 	async Connect(): Promise<void> {
-		Assert.Var<StorageFilesData | StorageFoldersData>(this.Connection, `${this.SourceName}: Provider is not defined`)
+		Assert.Var<StorageFilesData | StorageFoldersData>(
+			this.Connection,
+			`${this.SourceName}: Storage Data provider is not defined`,
+		)
 		await this.Connection.Connect()
 	}
 

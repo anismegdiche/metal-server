@@ -65,10 +65,7 @@ export class FsStorage extends absStorageProvider {
 
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
-		const isFolderExists = await this.FolderIsExist("")
-		if (!isFolderExists) {
-			throw new HttpErrorInternalServerError(`Folder '${this.Params?.folder}' does not exist`)
-		}
+		Assert.Condition(await this.FolderIsExist("") === true,`Folder '${this.Params?.folder}' does not exist`)
 		Logger.Debug(`${Logger.Out} FsStorage: Connected`)
 	}
 

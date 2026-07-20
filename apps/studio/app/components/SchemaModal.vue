@@ -1,0 +1,118 @@
+<script setup lang="ts">
+interface SchemaConfig {
+  source?: string
+  entities?: Record<string, { source: string; entity: string }>
+}
+
+const props = defineProps<{
+  schemas: Record<string, SchemaConfig>
+  sourceOptions: { label: string; value: string }[]
+}>()
+
+const emit = defineEmits<{
+  saved: []
+}>()
+
+const open = defineModel<boolean>('open', { default: false })
+
+const mode = ref<'add' | 'edit'>('add')
+
+const schemaForm = ref({
+  name: '',
+  source: '',
+  entities: [] as { key: string; source: string; entity: string }[],
+})
+
+function resetForm() {
+  schemaForm.value = { name: '', source: '', entities: [] }
+}
+
+function populateForm(name: string) {
+  const config = props.schemas[name]
+  if (!config) return
+  schemaForm.value = {
+    name,
+    source: config.source ?? '',
+    entities: config.entities
+      ? Object.entries(config.entities).map(([key, val]) => ({ key, source: val.source, entity: val.entity }))
+      : [],
+  }
+}
+
+function openAdd() {
+  mode.value = 'add'
+  resetForm()
+  open.value = true
+}
+
+function openEdit(name: string) {
+  mode.value = 'edit'
+  populateForm(name)
+  open.value = true
+}
+
+function addEntity() {
+  schemaForm.value.entities.push({ key: '', source: '', entity: '' })
+}
+
+function removeEntity(index: number) {
+  schemaForm.value.entities.splice(index, 1)
+}
+
+async function save() {
+  const { name, source, entities } = schemaForm.value
+  if (!name) return
+  const entitiesMap: Record<string, { source: string; entity: string }> = {}
+  for (const e of entities) {
+    if (e.key) entitiesMap[e.key] = { source: e.source, entity: e.entity }
+  }
+  const body: SchemaConfig = { source }
+  if (Object.keys(entitiesMap).length > 0) body.entities = entitiesMap
+  try {
+    await $fetch(`/server-api/api/config/schemas/${encodeURIComponent(name)}`, {
+      method: 'PUT',
+      body,
+    })
+    open.value = false
+    emit('saved')
+  } catch (e) {
+    console.error('Failed to save schema', e)
+  }
+}
+
+defineExpose({ openAdd, openEdit })
+</script>
+
+<template>
+  <UModal v-model:open="open" :title="mode === 'add' ? 'Add Schema' : 'Edit Schema'">
+    <template #body>
+      <div class="flex flex-col gap-4">
+        <UFormField label="Name">
+          <UInput v-model="schemaForm.name" placeholder="my-schema" :disabled="mode === 'edit'" class="w-full" />
+        </UFormField>
+        <UFormField label="Source">
+          <USelect v-model="schemaForm.source" :items="sourceOptions" placeholder="Select a source" class="w-full" />
+        </UFormField>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-medium">Entities</label>
+            <UButton icon="i-lucide-plus" label="Add" size="xs" variant="outline" @click="addEntity" />
+          </div>
+          <div v-if="schemaForm.entities.length === 0" class="text-xs text-muted italic py-2">No entities defined</div>
+          <div v-for="(ent, idx) in schemaForm.entities" :key="idx" class="flex items-center gap-2">
+            <UInput v-model="ent.key" placeholder="key name" class="flex-1" size="sm" />
+            <UInput v-model="ent.source" placeholder="source" class="flex-1" size="sm" />
+            <UInput v-model="ent.entity" placeholder="entity" class="flex-1" size="sm" />
+            <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error" @click="removeEntity(idx)" />
+          </div>
+        </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="flex justify-end gap-2">
+        <UButton label="Cancel" variant="outline" @click="() => { open = false }" />
+        <UButton label="Save" @click="save" />
+      </div>
+    </template>
+  </UModal>
+</template>

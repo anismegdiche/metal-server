@@ -41,7 +41,7 @@ export const z_U__source_options_content_csv = z.object({
 	"csv-newline": z.string().optional(),
 	"csv-header": z.boolean().optional(),
 	"csv-quote": z.union([z.string(), z.null()]).optional(),
-	"csv-skip-empty-lines": z.union([z.boolean(), z.literal("greedy")]).optional(),
+	"csv-skip-empty-lines": z.boolean().optional(),
 })
 
 //
@@ -65,7 +65,7 @@ export class CsvContent extends absContentProvider {
 		"csv-delimiter": ";",
 		"csv-quote": '"',
 		"csv-newline": "\r\n",
-		"csv-skip-empty-lines": "greedy",
+		"csv-skip-empty-lines": true,
 	}
 
 	SetConfig(contentConfig: U__source_options_content_csv): void {
@@ -76,8 +76,7 @@ export class CsvContent extends absContentProvider {
 			delimiter: this.Config["csv-delimiter"],
 			record_delimiter: this.Config["csv-newline"],
 			headers: this.Config["csv-header"],
-			skip_empty_lines:
-				this.Config["csv-skip-empty-lines"] === true ? true : this.Config["csv-skip-empty-lines"] === "greedy",
+			skip_empty_lines: this.Config["csv-skip-empty-lines"] ?? true,
 		}
 
 		this.Params.quote =

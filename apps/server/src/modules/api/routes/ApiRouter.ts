@@ -39,3 +39,18 @@ ApiRouter.route("/config/:section/:name")
 ApiRouter.route("/logs/:start/:end/:limit/:offset/:reverse")
 	//.all(UserResponse.IsAuthenticated)
 	.get(ApiResponse.GetLogs)
+
+// DELETE /api/logs — clear all logs
+ApiRouter.route("/logs")
+	//.all(UserResponse.IsAuthenticated)
+	.delete(ApiResponse.ClearLogs)
+
+// GET /api/source/:source — list entities in a source
+ApiRouter.route("/source/:source")
+	//.all(UserResponse.IsAuthenticated)
+	.get(ApiResponse.ListSourceEntities)
+
+// GET /api/source/:source/:entity — list rows in a source entity
+ApiRouter.route("/source/:source/:entity")
+	//.all(UserResponse.IsAuthenticated)
+	.get(ApiResponse.SelectSourceEntityRows)
