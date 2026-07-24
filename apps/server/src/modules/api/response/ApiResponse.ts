@@ -1,11 +1,12 @@
 //
 //
 //
+
+import { Logger } from "@metal/logger"
 import type { Request, Response } from "express"
 import { Assert } from "../../../utils/Assert"
 //
 import { Convert } from "../../../utils/Convert"
-import { Logger } from "../../../utils/Logger"
 import { AUTH_PERMISSION } from "../../auth/@consts"
 import { Roles } from "../../auth/Roles"
 import { ConfigManager } from "../../core/ConfigManager"
@@ -303,10 +304,7 @@ export class ApiResponse {
 
 			Logger.db?.clear()
 
-			Convert.InternalResponseToResponse(
-				res,
-				HttpResponse.Ok({ message: "All logs cleared" }),
-			)
+			Convert.InternalResponseToResponse(res, HttpResponse.Ok({ message: "All logs cleared" }))
 		} catch (error) {
 			ResponseHandler.ResponseError(res, error as HttpError)
 		}

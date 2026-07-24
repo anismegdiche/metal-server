@@ -6,12 +6,12 @@ import { cpus } from "node:os"
 import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
 //
 import { DataTablesGetDataPath } from "@metal/config"
+import { Logger } from "@metal/logger"
 //
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../modules/errors/HttpErrors"
 import { Assert } from "../utils/Assert"
 import { clsClonable } from "../utils/base/clsClonable"
 import { JsonUtils } from "../utils/JsonUtils"
-import { Logger } from "../utils/Logger"
 import { Mutex } from "../utils/Mutex"
 import { RowUtils } from "../utils/RowUtils"
 import type { TSqlToken } from "../utils/SqlQueryUtils"
@@ -21,10 +21,7 @@ import { TypeUtils } from "../utils/TypeUtils"
 import { Utils } from "../utils/Utils"
 import type { TFields, TMetaData, TOrderBy, TRow, TSnapshotInfo } from "./DataTableTypes"
 import { DT_SYS_FIELDS, SORT_ORDER, z_SORT_ORDER, z_TOrderBy, z_TRow } from "./DataTableTypes"
-import type { TAny } from "./TAny"
-import type { TJson } from "./TJson"
-import type { TUuidv7 } from "./TUuidv7"
-
+import type { TAny, TJson, TUuidv7 } from "@metal/types"
 
 // constants
 export { SORT_ORDER }
@@ -82,14 +79,9 @@ function duckDb_Sql_SafeSeqName(table: string): string {
 }
 
 export function duckDb_Sql_CreateTable(table: string, sequence: string | undefined = undefined): string {
+	const name = sequence ? table : duckDb_Sql_SafeName(table)
 
-	const name = (sequence)
-		? table
-		: duckDb_Sql_SafeName(table)
-
-	const seq = (sequence)
-		? sequence
-		: duckDb_Sql_SafeSeqName(table)
+	const seq = sequence ? sequence : duckDb_Sql_SafeSeqName(table)
 
 	return `
     CREATE SEQUENCE IF NOT EXISTS ${seq} START 1;
@@ -134,9 +126,7 @@ function dataTable_constructSql({
 	sort = DT_SYS_FIELDS.seq,
 	safeName,
 }: TRowsConstructSqlParams): string {
-	const sqlIndex = includeIndex
-		? `${DT_SYS_FIELDS.idx},`
-		: ""
+	const sqlIndex = includeIndex ? `${DT_SYS_FIELDS.idx},` : ""
 
 	let sqlWhere = `WHERE ${DT_SYS_FIELDS.deleted} = false`
 
@@ -145,10 +135,10 @@ function dataTable_constructSql({
 			typeof filter === "string"
 				? filter
 				: Object.entries(filter)
-					.map(([key, value]) => {
-						return `${key} = '${value}'`
-					})
-					.join(" AND ")
+						.map(([key, value]) => {
+							return `${key} = '${value}'`
+						})
+						.join(" AND ")
 		sqlWhere = `WHERE ${DT_SYS_FIELDS.deleted} = false AND ${dataTable_convertSql(_filter)}`
 	}
 
@@ -522,10 +512,9 @@ export class DataTable extends clsClonable {
 	}
 
 	async DuckConnection(): Promise<DuckDBConnection> {
-		return this._dbEnsureInitialized()
-			.then(() => {
-				return Assert.Get<DuckDBConnection>(this._duckConnection, `data '${this.Name}': DB Connection is not initialized`)
-			})
+		return this._dbEnsureInitialized().then(() => {
+			return Assert.Get<DuckDBConnection>(this._duckConnection, `data '${this.Name}': DB Connection is not initialized`)
+		})
 	}
 
 	@Logger.LogFunction()
@@ -535,8 +524,7 @@ export class DataTable extends clsClonable {
 
 	// Lazy DB init
 	async _dbEnsureInitialized(): Promise<void> {
-		if (this._tableInitialized)
-			return
+		if (this._tableInitialized) return
 
 		if (!this._duckInstance) {
 			this._duckInstance = await DuckDBInstance.create(":memory:")
@@ -868,21 +856,18 @@ export class DataTable extends clsClonable {
 
 	@Logger.LogFunction(true)
 	async RowUpdateByIndex(index?: TUuidv7, row?: TJson | TRow, opt: { skipFieldsSet?: boolean } = {}): Promise<this> {
-		if (!index || !row)
-			return this
+		if (!index || !row) return this
 
 		await this._rowUpdateByIndex(index, row)
 
-		if (opt.skipFieldsSet)
-			return this
+		if (opt.skipFieldsSet) return this
 
 		return this.FieldsSet()
 	}
 
 	@Logger.LogFunction(true)
 	async RowDeleteByIndex(index?: TUuidv7): Promise<this> {
-		if (!index)
-			return this
+		if (!index) return this
 
 		await this._rowDeleteByIndex(index)
 
@@ -953,8 +938,7 @@ export class DataTable extends clsClonable {
 			fnMap,
 		})
 			.then((rows) => {
-				if (fnFilter)
-					return rows.filter((row) => fnFilter(row))
+				if (fnFilter) return rows.filter((row) => fnFilter(row))
 
 				return rows
 			})
@@ -1021,14 +1005,9 @@ export class DataTable extends clsClonable {
 
 	@Logger.LogFunction(true)
 	async RowsSet(rowOrRows?: TJson | TRow | TJson[] | TRow[]): Promise<this> {
-		if (rowOrRows === undefined && this._rows === undefined)
-			return this
+		if (rowOrRows === undefined && this._rows === undefined) return this
 
-		const __data__ = rowOrRows
-			? (Array.isArray(rowOrRows)
-				? rowOrRows
-				: [rowOrRows])
-			: (this._rows ?? [])
+		const __data__ = rowOrRows ? (Array.isArray(rowOrRows) ? rowOrRows : [rowOrRows]) : (this._rows ?? [])
 
 		return this._dbEnsureInitialized()
 			.then(() => this.RowsDelete().catch())
@@ -1167,7 +1146,7 @@ export class DataTable extends clsClonable {
 	 */
 	private _enqueue<T>(fn: () => Promise<T>): Promise<T> {
 		const next = this._queue.then(fn)
-		this._queue = next.catch(() => { }) as Promise<unknown>
+		this._queue = next.catch(() => {}) as Promise<unknown>
 		return next
 	}
 
@@ -1272,9 +1251,7 @@ export class DataTable extends clsClonable {
 		returnData?: boolean
 		convertCondition?: boolean
 	} = {}): Promise<DataTable | this> {
-
-		if (!sqlQuery)
-			return this
+		if (!sqlQuery) return this
 
 		const cnx = await this.DuckConnection()
 
@@ -1301,8 +1278,7 @@ export class DataTable extends clsClonable {
 
 	@Logger.LogFunction(true)
 	async Sort(sorts: TOrderBy): Promise<this> {
-		if (!sorts || Object.keys(sorts).length === 0)
-			return this
+		if (!sorts || Object.keys(sorts).length === 0) return this
 
 		const sqlOrderBy = Object.entries(sorts)
 			.map(([field, order]) => {
@@ -1310,8 +1286,7 @@ export class DataTable extends clsClonable {
 				const col = `"${field}"`
 				let _order: SORT_ORDER = SORT_ORDER.ASC
 
-				if (order && order !== null)
-					_order = order as SORT_ORDER
+				if (order && order !== null) _order = order as SORT_ORDER
 
 				return `${col} ${_order}`
 			})
@@ -1349,22 +1324,16 @@ export class DataTable extends clsClonable {
                 t.${DT_SYS_FIELDS.idx} = r.${DT_SYS_FIELDS.idx};
             `
 
-		return this._runSqlAndGetRows(sql)
-			.then(() => this)
+		return this._runSqlAndGetRows(sql).then(() => this)
 	}
 
 	@Logger.LogFunction(true)
 	async Pick(fields: string[]): Promise<this> {
-		if (!fields || fields.length === 0)
-			return this
+		if (!fields || fields.length === 0) return this
 
 		Logger.Debug(`${Logger.Out} DataTable.Pick: Starting to pick fields ${fields.join(", ")}`)
 
-		return this.RowsMap((row: TRow) =>
-			Promise.resolve(
-				RowUtils.Pick(row, fields)
-			)
-		).then(() => {
+		return this.RowsMap((row: TRow) => Promise.resolve(RowUtils.Pick(row, fields))).then(() => {
 			Logger.Debug(`${Logger.Out} DataTable.Pick: Successfully picked ${fields.length} fields`)
 			return this
 		})
@@ -1372,16 +1341,11 @@ export class DataTable extends clsClonable {
 
 	@Logger.LogFunction(true)
 	async Omit(fields: string[]): Promise<this> {
-		if (!fields || fields.length === 0)
-			return this
+		if (!fields || fields.length === 0) return this
 
 		Logger.Debug(`${Logger.Out} DataTable.Omit: Starting to omit fields ${fields.join(", ")}`)
 
-		return this.RowsMap((row: TRow) =>
-			Promise.resolve(
-				RowUtils.Omit(row, fields)
-			)
-		).then(() => {
+		return this.RowsMap((row: TRow) => Promise.resolve(RowUtils.Omit(row, fields))).then(() => {
 			Logger.Debug(`${Logger.Out} DataTable.Omit: Successfully omitted ${fields.length} fields`)
 			return this
 		})
@@ -1498,8 +1462,7 @@ export class DataTable extends clsClonable {
 
 	@Logger.LogFunction(true)
 	async SnapshotList(): Promise<TSnapshotInfo[]> {
-		return Array.from(this.SnapShots.values())
-			.sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
+		return Array.from(this.SnapShots.values()).sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
 	}
 
 	@Logger.LogFunction(true)
@@ -1511,8 +1474,7 @@ export class DataTable extends clsClonable {
 
 	@Logger.LogFunction(true)
 	async MoveToDisk() {
-		if (this._persistent || this._isAttached)
-			return
+		if (this._persistent || this._isAttached) return
 
 		await this._lock.Acquire()
 

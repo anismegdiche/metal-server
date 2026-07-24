@@ -1,21 +1,14 @@
 //
 //
 //
-import { CustomEvent, EventBus, type IEvent, on } from "@dimkl/events"
+import { CustomEvent, EventBus, type IEvent } from "@dimkl/events"
 import PersistentMap from "@metal/persistent-map"
 import { bold, cyan, gray, green, magenta, red, whiteBright, yellow } from "colorette"
 import * as _ from "lodash-es"
 import LogLevel from "loglevel"
 import Prefix from "loglevel-plugin-prefix"
 import morgan from "morgan"
-//
-import { SERVER } from "../modules/core/@consts"
-import { NormalizeError } from "../modules/errors/HttpErrorBase"
-import { DateUtils } from "./DateUtils"
-import { DecoratorUtils } from "./DecoratorUtils"
-import { Stringify } from "./JsonUtils/Stringify"
-import { ToTextList } from "./JsonUtils/ToTextList"
-import { Package } from "./Package"
+import { configure } from "safe-stable-stringify"
 
 //
 export enum VERBOSITY {
@@ -96,6 +89,65 @@ declare global {
 }
 
 //
+// Inlined utilities (previously from server utils)
+//
+
+type TJson<T = any> = Record<string, T>
+
+function _normalizeError(err: unknown): TJson<any> {
+	if (err instanceof Error) {
+		return {
+			...err,
+			message: err?.message || "Unknown error",
+			stack: err?.stack,
+		}
+	}
+	return err as TJson<any>
+}
+
+function _getDateStamp(date: Date): string {
+	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+}
+
+const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/gm
+const ARGUMENT_NAMES = /([^\s,]+)/g
+
+function _getParameters(originalMethod: Function, ...args: any[]): TJson {
+	const fnStr = originalMethod.toString().replaceAll(STRIP_COMMENTS, "")
+	const params = fnStr.slice(fnStr.indexOf("(") + 1, fnStr.indexOf(")")).match(ARGUMENT_NAMES)
+	return params ? Object.fromEntries(params.map((name, index) => [name, args[index]])) : {}
+}
+
+const SafeStableStringify = configure({
+	circularValue: undefined,
+	maximumDepth: 5,
+})
+
+function _stringify<T>(json: T): string {
+	try {
+		return JSON.stringify(json)
+	} catch (_error) {
+		return SafeStableStringify(json) ?? ""
+	}
+}
+
+function _toTextList(json?: TJson): string {
+	if (!json) {
+		return ""
+	}
+	const result: string[] = []
+	_.forEach(json, (value, key) => {
+		if (value) {
+			result.push(` - ${key}: ${_stringify(value)}`)
+		}
+	})
+	return result.join("\r\n")
+}
+
+//
+// Colors
+//
+
 const _colors: Record<string, (text: string) => string> = {
 	[VERBOSITY.TRACE.toUpperCase()]: (text: string) => magenta(text),
 	[VERBOSITY.DEBUG.toUpperCase()]: (text: string) => green(text),
@@ -107,11 +159,17 @@ const _colors: Record<string, (text: string) => string> = {
 export const LOGGER_DEFAULT_LEVEL = VERBOSITY.WARN as LogLevel.LogLevelDesc
 
 function _formatPrefix(level: string, name: string | undefined, timestamp: Date) {
-	return `${gray(timestamp.toString())} ${_colors[level]?.(level.padEnd(5).slice(-5))} [${SERVER.NAME}] ${whiteBright(`${name}:`)}`
+	return `${gray(timestamp.toString())} ${_colors[level]?.(level.padEnd(5).slice(-5))} [${Logger.ServiceName}] ${whiteBright(`${name}:`)}`
 }
 
 function _cleanMessage(msg: string): string {
 	return msg.replace("[33m◀ [39m", " ◀ ").replace("[35m▶ [39m", " ▶ ")
+}
+
+function _cleanServiceName(name: string): string {
+	return name
+		.replace("@", "")
+		.replace("/", "-")
 }
 
 Prefix.reg(LogLevel)
@@ -126,7 +184,7 @@ Prefix.apply(LogLevel, {
 
 Prefix.apply(LogLevel.getLogger("critical"), {
 	format(level: string, name: string | undefined, timestamp: Date) {
-		return red(bold(`${timestamp} ${(level.padEnd(5)).slice(-5)} [${SERVER.NAME}] ${name}:`))
+		return red(bold(`${timestamp} ${(level.padEnd(5)).slice(-5)} [${Logger.ServiceName}] ${name}:`))
 	},
 })
 
@@ -137,9 +195,16 @@ export class Logger {
 	static Level: LogLevel.LogLevelDesc = LOGGER_DEFAULT_LEVEL
 	static Bus = new EventBus()
 
-	static SetDb(name: string) {
+	static ServiceName = "NOT_DEFINED"
+
+	static Init(name: string) {
+		Logger.ServiceName = name
+		Logger.SetDb()
+	}
+
+	static SetDb() {
 		Logger.db = new PersistentMap<LogEntry>(
-			`/data/logs/${DateUtils.GetDateStamp(new Date(Date.now()))}-${name.replace("@", "").replace("/", "-")}-log.db`,
+			`/data/logs/${_getDateStamp(new Date(Date.now()))}-${_cleanServiceName(Logger.ServiceName)}-log.db`,
 		)
 	}
 
@@ -150,7 +215,7 @@ export class Logger {
 				level,
 				message: _cleanMessage(message),
 				timestamp,
-				server: (Package.Json.name as string).replace("@", "").replace("/", "-"),
+				server: Logger.ServiceName,
 				user: process.env.USERNAME || "unknown",
 			})
 	}
@@ -202,31 +267,26 @@ export class Logger {
 		Logger.SetLevel()
 	}
 
-	@on({ eventName: LOG_EVENT.TRACE, eventBus: Logger.Bus })
 	static _handleTrace(event: CustomEvent<{ message: any }>): void {
 		Logger._saveLogEntry(VERBOSITY.TRACE, event.data?.message)
 		LogLevel.trace(event.data?.message)
 	}
 
-	@on({ eventName: LOG_EVENT.DEBUG, eventBus: Logger.Bus })
 	static _handleDebug(event: CustomEvent<{ message: any }>): void {
 		Logger._saveLogEntry(VERBOSITY.DEBUG, event.data?.message)
 		LogLevel.debug(event.data?.message)
 	}
 
-	@on({ eventName: LOG_EVENT.INFO, eventBus: Logger.Bus })
 	static _handleInfo(event: CustomEvent<{ message: any }>): void {
 		Logger._saveLogEntry(VERBOSITY.INFO, event.data?.message)
 		LogLevel.info(event.data?.message)
 	}
 
-	@on({ eventName: LOG_EVENT.WARN, eventBus: Logger.Bus })
 	static _handleWarn(event: CustomEvent<{ message: any }>): void {
 		Logger._saveLogEntry(VERBOSITY.WARN, event.data?.message)
 		LogLevel.warn(event.data?.message)
 	}
 
-	@on({ eventName: LOG_EVENT.ERROR, eventBus: Logger.Bus })
 	static _handleError(event: CustomEvent<{ message: any }>): void {
 		Logger._saveLogEntry(VERBOSITY.ERROR, event.data?.message)
 		LogLevel.error(event.data?.message)
@@ -244,7 +304,6 @@ export class Logger {
 		}
 	}
 
-	@on({ eventName: LOG_EVENT.FUNC_REGISTER, eventBus: Logger.Bus })
 	static _handleLogFunction(
 		event: CustomEvent<{ hide: string[] | boolean; target: any; propertyKey: string; descriptor: PropertyDescriptor }>,
 	): void {
@@ -254,7 +313,7 @@ export class Logger {
 			if (!originalMethod) return undefined
 
 			return function (this: unknown, ...args: any[]) {
-				const _paramObject = DecoratorUtils.GetParameters(originalMethod, ...args)
+				const _paramObject = _getParameters(originalMethod, ...args)
 				const _hide = typeof hide === "boolean" ? Object.keys(_paramObject) : hide
 
 				const _filteredParams: Record<string, any> = _.chain(_paramObject)
@@ -262,7 +321,7 @@ export class Logger {
 					.omit(_hide)
 					.value()
 
-				const _argsString = _.isEmpty(_filteredParams) ? "" : ` ${Stringify(_filteredParams)}`
+				const _argsString = _.isEmpty(_filteredParams) ? "" : ` ${_stringify(_filteredParams)}`
 
 				const ctorName = target.name ?? (this as any)?.constructor?.name ?? "Anonymous"
 
@@ -276,7 +335,7 @@ export class Logger {
 				try {
 					result = originalMethod.apply(this, args)
 				} catch (err: unknown) {
-					const _err = Logger.Level === VERBOSITY.DEBUG ? `\r\n${ToTextList(NormalizeError(err))}` : (err as Error)?.message
+					const _err = Logger.Level === VERBOSITY.DEBUG ? `\r\n${_toTextList(_normalizeError(err))}` : (err as Error)?.message
 
 					Logger.Bus.dispatchEvent(
 						new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, {
@@ -297,7 +356,7 @@ export class Logger {
 						})
 						.catch((err: unknown) => {
 							const _err =
-								Logger.Level === VERBOSITY.DEBUG ? `\r\n${ToTextList(NormalizeError(err))}` : (err as Error)?.message
+								Logger.Level === VERBOSITY.DEBUG ? `\r\n${_toTextList(_normalizeError(err))}` : (err as Error)?.message
 
 							Logger.Bus.dispatchEvent(
 								new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, {
@@ -327,3 +386,13 @@ export class Logger {
 		}
 	}
 }
+
+// Register event handlers (replaces @on decorators for cross-runtime compatibility)
+Logger.Bus.addEventListener(LOG_EVENT.TRACE, (e) => Logger._handleTrace(e as CustomEvent<{ message: any }>))
+Logger.Bus.addEventListener(LOG_EVENT.DEBUG, (e) => Logger._handleDebug(e as CustomEvent<{ message: any }>))
+Logger.Bus.addEventListener(LOG_EVENT.INFO, (e) => Logger._handleInfo(e as CustomEvent<{ message: any }>))
+Logger.Bus.addEventListener(LOG_EVENT.WARN, (e) => Logger._handleWarn(e as CustomEvent<{ message: any }>))
+Logger.Bus.addEventListener(LOG_EVENT.ERROR, (e) => Logger._handleError(e as CustomEvent<{ message: any }>))
+Logger.Bus.addEventListener(LOG_EVENT.FUNC_REGISTER, (e) =>
+	Logger._handleLogFunction(e as CustomEvent<{ hide: string[] | boolean; target: any; propertyKey: string; descriptor: PropertyDescriptor }>),
+)

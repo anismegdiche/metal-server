@@ -3,6 +3,7 @@
 //
 
 import { Readable } from "node:stream"
+import { Logger } from "@metal/logger"
 import { parquetReadObjects } from "hyparquet"
 import type { BaseParquetReadOptions } from "hyparquet/src/types.js"
 import { ByteWriter, parquetWrite } from "hyparquet-writer"
@@ -12,15 +13,13 @@ import z from "zod"
 import type { TRow, TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { Logger } from "../../../utils/Logger"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
 
 //
 export const z_U__source_options_content_parquet = z.object({
-	"parquet-utf8": z.boolean()
-		.optional(),
+	"parquet-utf8": z.boolean().optional(),
 })
 
 //

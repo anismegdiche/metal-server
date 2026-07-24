@@ -1,20 +1,21 @@
 //
 //
 //
+
+import { Logger } from "@metal/logger"
 import { intersection, merge } from "lodash-es"
 import {
-	discovery,
-	genericGrantRequest,
-	fetchUserInfo,
-	tokenRevocation,
-	skipSubjectCheck,
 	type Configuration,
+	discovery,
+	fetchUserInfo,
+	genericGrantRequest,
+	skipSubjectCheck,
 	type TokenEndpointResponse,
+	tokenRevocation,
 } from "openid-client"
 import z from "zod"
 //
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { Logger } from "../../../utils/Logger"
 import { ConfigManager } from "../../core/ConfigManager"
 import { HttpErrorInternalServerError, HttpErrorUnauthorized, NormalizeError } from "../../errors/HttpErrors"
 import { AUTH_PROVIDER } from "../@consts"
@@ -77,23 +78,15 @@ export class OidcAuth extends absAuthProvider {
 		const { username, password } = userCredentials
 
 		try {
-			const tokenResponse = await genericGrantRequest(
-				this.#OidcConfig,
-				"password",
-				{
-					username,
-					password,
-					scope: this.#Config.scope ?? "openid roles",
-				},
-			)
+			const tokenResponse = await genericGrantRequest(this.#OidcConfig, "password", {
+				username,
+				password,
+				scope: this.#Config.scope ?? "openid roles",
+			})
 
 			this.#TokenCache.set(username, tokenResponse)
 
-			const userInfo = await fetchUserInfo(
-				this.#OidcConfig,
-				tokenResponse.access_token,
-				skipSubjectCheck,
-			)
+			const userInfo = await fetchUserInfo(this.#OidcConfig, tokenResponse.access_token, skipSubjectCheck)
 
 			const userRoles: string[] = JsonUtils.Get(userInfo, this.#Config["roles-path"]) ?? []
 

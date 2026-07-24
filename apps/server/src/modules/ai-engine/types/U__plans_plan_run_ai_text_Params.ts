@@ -2,7 +2,7 @@
 //
 //
 import { z } from "zod"
-import { z_T_IntPositive } from "../../../types/T_IntPositive"
+import { z_T_IntPositive } from "@metal/types"
 import { LANG_ISO } from "../consts/LANG"
 //
 import { TEXT_TASK } from "../consts/TEXT"

@@ -2,15 +2,15 @@
 //
 //
 import { Readable } from "node:stream"
+import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
 import z from "zod"
 //
 import type { TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
@@ -20,13 +20,11 @@ import { absContentProvider } from "../base/absContentProvider"
 
 //
 export const z_U__source_options_content_json = z.object({
-	"json-path": z.string()
-	.optional(),
+	"json-path": z.string().optional(),
 })
 
 export const z_T_JsonContentParams = z.object({
-	path: z.string()
-	.optional(),
+	path: z.string().optional(),
 })
 
 //

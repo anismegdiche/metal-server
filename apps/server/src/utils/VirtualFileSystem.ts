@@ -2,7 +2,7 @@
 //
 //
 import type { Readable } from "node:stream"
-import { Logger } from "./Logger"
+import { Logger } from "@metal/logger"
 
 //
 export class VirtualFileSystem {

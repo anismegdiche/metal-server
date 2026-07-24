@@ -1,0 +1,15 @@
+services:
+  llm-server:
+    build: .
+    ports:
+      - "11011:11434"
+    volumes:
+      - llm-server-data:/root/.ollama
+    deploy:
+      resources:
+        limits:
+          memory: 12g
+    restart: unless-stopped
+
+volumes:
+  llm-server-data:

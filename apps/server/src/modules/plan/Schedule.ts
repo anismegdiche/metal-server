@@ -2,11 +2,11 @@
 //
 //
 import { _MTR_ } from "@metal/config"
+import { Logger } from "@metal/logger"
 import { CronJob } from "cron"
 import { findKey } from "lodash-es"
 //
-import type { TJson } from "../../types/TJson"
-import { Logger } from "../../utils/Logger"
+import type { TJson } from "@metal/types"
 import { AUTH_PERMISSION } from "../auth/@consts"
 import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
@@ -37,54 +37,45 @@ export class Schedule {
 			return undefined
 		}
 
-		const scheduleConfig: [string, U__schedules_schedule][] =
-			Object.entries(ConfigManager.Get<U__schedules>("schedules"))
+		const scheduleConfig: [string, U__schedules_schedule][] = Object.entries(ConfigManager.Get<U__schedules>("schedules"))
 
 		// metrics schedules
 		MetricsCollector.DispatchEvent_set(
 			_MTR_.SCHEDULES,
-			scheduleConfig.map(([jobName]) => jobName)
+			scheduleConfig.map(([jobName]) => jobName),
 		)
-		MetricsCollector.DispatchEvent_set(
-			_MTR_.SCHEDULES_TOTAL,
-			scheduleConfig.length
-		)
+		MetricsCollector.DispatchEvent_set(_MTR_.SCHEDULES_TOTAL, scheduleConfig.length)
 
 		// metrics schedules active (we'll increment per active cron job)
 		MetricsCollector.DispatchEvent_set(_MTR_.SCHEDULES_ACTIVE, 0)
 
 		const _timezone = ConfigManager.Get<string>("server.timezone")
 
-		const details: Record<string, {
-			plan: string
-			cron: string
-			status: "active" | "completed"
-			lastFire: string | null
-			nextFire: string | null
-		}> = {}
+		const details: Record<
+			string,
+			{
+				plan: string
+				cron: string
+				status: "active" | "completed"
+				lastFire: string | null
+				nextFire: string | null
+			}
+		> = {}
 
 		for (const [_jobName, _scheduleParams] of scheduleConfig) {
-			Logger.Info(
-				`${Logger.In} Schedule.CreateAndStartAll: Creating job '${_jobName}'`
-			)
+			Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Creating job '${_jobName}'`)
 
 			const isOnStart = _scheduleParams.cron === ON_START
-			const hasCronExpression =
-				_scheduleParams.cron &&
-				_scheduleParams.cron !== ON_START
+			const hasCronExpression = _scheduleParams.cron && _scheduleParams.cron !== ON_START
 
 			// 1) If ON_START: run once immediately on server start
 			if (isOnStart) {
-				Logger.Info(
-					`${Logger.In} Schedule.CreateAndStartAll: Running ON_START job '${_jobName}'`
-				)
+				Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Running ON_START job '${_jobName}'`)
 				try {
 					await Schedule.JobProcess(_jobName, _scheduleParams)
 				} catch (e) {
 					const _e = NormalizeError(e)
-					Logger.Error(
-						`${Logger.Out} Error in ON_START job '${_jobName}': ${_e.message}`
-					)
+					Logger.Error(`${Logger.Out} Error in ON_START job '${_jobName}': ${_e.message}`)
 				}
 			}
 
@@ -93,7 +84,7 @@ export class Schedule {
 
 			if (hasCronExpression) {
 				Logger.Info(
-					`${Logger.In} Schedule.CreateAndStartAll: Starting cron job '${_jobName}' with expression '${_scheduleParams.cron}'`
+					`${Logger.In} Schedule.CreateAndStartAll: Starting cron job '${_jobName}' with expression '${_scheduleParams.cron}'`,
 				)
 
 				_cronJob = new CronJob(
@@ -105,21 +96,19 @@ export class Schedule {
 							await Schedule.JobProcess(_jobName, _scheduleParams)
 						} catch (e) {
 							const _e = NormalizeError(e)
-							Logger.Error(
-								`${Logger.Out} Error in job '${_jobName}': ${_e.message}`
-							)
+							Logger.Error(`${Logger.Out} Error in job '${_jobName}': ${_e.message}`)
 						}
 					},
 					// onComplete
 					null,
 					// start
-					true,                // start the scheduler immediately
+					true, // start the scheduler immediately
 					// timeZone
 					_timezone,
 					// context
 					null,
 					// runOnInit
-					false,               // we already handled ON_START manually above
+					false, // we already handled ON_START manually above
 					// utcOffset
 					null,
 					// unrefTimeout
@@ -129,16 +118,13 @@ export class Schedule {
 					// errorHandler
 					(e: unknown) => {
 						const _e = NormalizeError(e)
-						Logger.Error(
-							`${Logger.Out} Error in job '${_jobName}': ${_e.message}`
-						)
+						Logger.Error(`${Logger.Out} Error in job '${_jobName}': ${_e.message}`)
 					},
 					// name
 					_jobName,
 					// threshold
-					10000
+					10000,
 				)
-
 			}
 
 			// 3) Register job (even ON_START-only jobs, with cronJob undefined)
@@ -149,7 +135,7 @@ export class Schedule {
 			})
 
 			// 4) Build metrics detail
-			const nextFire = _cronJob ? _cronJob.nextDate()?.toISO() ?? null : null
+			const nextFire = _cronJob ? (_cronJob.nextDate()?.toISO() ?? null) : null
 			details[_jobName] = {
 				plan: _scheduleParams.plan,
 				cron: _scheduleParams.cron,
@@ -162,7 +148,6 @@ export class Schedule {
 		MetricsCollector.DispatchEvent_set(_MTR_.SCHEDULES_DETAILS, details)
 	}
 
-
 	static async JobProcess(jobName: string, scheduleParams: U__schedules_schedule) {
 		Logger.Info(`${Logger.In} Schedule.JobProcess: Running job '${jobName}'`)
 
@@ -173,12 +158,12 @@ export class Schedule {
 		// update lastFire
 		const details = MetricsCollector.Get(_MTR_.SCHEDULES_DETAILS, {}) as any
 		if (details[jobName]) {
-			const job = Schedule.Jobs.find(j => j.name === jobName)
+			const job = Schedule.Jobs.find((j) => j.name === jobName)
 			MetricsCollector.DispatchEvent_update(_MTR_.SCHEDULES_DETAILS, {
 				[jobName]: {
 					lastFire: new Date().toISOString(),
-					nextFire: job?.cronJob ? job.cronJob.nextDate()?.toISO() ?? null : null
-				}
+					nextFire: job?.cronJob ? (job.cronJob.nextDate()?.toISO() ?? null) : null,
+				},
 			})
 		}
 
@@ -231,16 +216,14 @@ export class Schedule {
 	@Logger.LogFunction()
 	static StartAll() {
 		for (const job of Schedule.Jobs) {
-			if (job.cronJob)
-				job.cronJob.start()
+			if (job.cronJob) job.cronJob.start()
 		}
 	}
 
 	@Logger.LogFunction()
 	static StopAll() {
 		for (const job of Schedule.Jobs) {
-			if (job.cronJob)
-				job.cronJob.stop()
+			if (job.cronJob) job.cronJob.stop()
 		}
 		Schedule.Jobs = []
 	}

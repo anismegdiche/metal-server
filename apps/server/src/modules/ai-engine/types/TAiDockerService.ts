@@ -3,7 +3,7 @@
 //
 import type { ImageBuildContext } from "dockerode"
 //
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import type { Mutex } from "../../../utils/Mutex"
 
 //

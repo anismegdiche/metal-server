@@ -3,11 +3,11 @@
 //
 import { CustomEvent } from "@dimkl/events"
 import { _MTR_ } from "@metal/config"
+import { Logger } from "@metal/logger"
 import z from "zod"
 //
-import type { TJson } from "../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../utils/Assert"
-import { Logger } from "../../utils/Logger"
 import { AUTH_PERMISSION } from "../auth/@consts"
 import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
@@ -29,8 +29,7 @@ export class PlansManager {
 
 	@Logger.LogFunction()
 	static async Init() {
-		if (!ConfigManager.Has("plans"))
-			return
+		if (!ConfigManager.Has("plans")) return
 
 		PlansManager.Config = ConfigManager.Get<U__plans>("plans") ?? {}
 
@@ -56,8 +55,8 @@ export class PlansManager {
 				data: {
 					planName,
 					steps: [],
-				} as Partial<T_PlanMetrics>
-			})
+				} as Partial<T_PlanMetrics>,
+			}),
 		)
 	}
 
@@ -131,7 +130,6 @@ export class PlansManager {
 
 	@Logger.LogFunction()
 	static async GetPlanMetrics(planName: string, _userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
-
 		const plan = Plans.get(planName)
 		Assert.Var<Plan>(plan, `Plan '${planName}' not found`, new HttpErrorNotFound())
 

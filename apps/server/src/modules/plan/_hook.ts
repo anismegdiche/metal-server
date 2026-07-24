@@ -1,7 +1,7 @@
 //
 //
 //
-import { Logger } from "../../utils/Logger"
+import { Logger } from "@metal/logger"
 import { ROUTE } from "../core/@consts"
 import { ResponseHandler } from "../core/ResponseHandler"
 import { ServerEndpoint } from "../core/ServerEndpoint"

@@ -4,8 +4,8 @@
 import { z } from "zod"
 //
 import { z_TOrderBy } from "../../../types/DataTable"
-import { z_T_IntPositive } from "../../../types/T_IntPositive"
-import { z_TJson } from "../../../types/TJson"
+import { z_T_IntPositive } from "@metal/types"
+import { z_TJson } from "@metal/types"
 
 
 // SchemaRequestBase

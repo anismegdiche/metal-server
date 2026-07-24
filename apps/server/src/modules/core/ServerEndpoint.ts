@@ -4,12 +4,12 @@
 
 //
 import { _MTR_ } from "@metal/config"
+import { Logger } from "@metal/logger"
 import express, { type Express, type NextFunction, type Request, type Response } from "express"
 import rateLimit from "express-rate-limit"
 import helmet from "helmet"
 import responseTime from "response-time"
 import { JsonUtils } from "../../utils/JsonUtils"
-import { Logger } from "../../utils/Logger"
 import { Swagger } from "../../utils/Swagger"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import { HTTP_STATUS_CODE, ROUTE, SERVER } from "./@consts"
@@ -39,7 +39,12 @@ export class ServerEndpoint {
 	static RegisterServerMiddleware(): void {
 		ServerEndpoint.RegisterMiddleware(() => {
 			Logger.Info(`Route: Enabling API, URL= ${ROUTE.SERVER_PATH}`)
-			ServerEndpoint.Api.use(`${ROUTE.SERVER_PATH}/`, Logger.RequestMiddleware, ResponseHandler.SetContentJson, ServerRouter)
+			ServerEndpoint.Api.use(
+				`${ROUTE.SERVER_PATH}/`,
+				Logger.RequestMiddleware,
+				ResponseHandler.SetContentJson,
+				ServerRouter,
+			)
 		})
 	}
 
@@ -73,8 +78,7 @@ export class ServerEndpoint {
 		let count5xx = 0
 
 		ServerEndpoint.Api.use((req: Request, res: Response, next: NextFunction) => {
-			if (req.path.startsWith(ROUTE.METRICS_PATH))
-				return next()
+			if (req.path.startsWith(ROUTE.METRICS_PATH)) return next()
 
 			activeRequests++
 			totalRequests++

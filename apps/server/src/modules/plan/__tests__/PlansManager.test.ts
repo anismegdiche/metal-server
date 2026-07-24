@@ -1,13 +1,12 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: testing */
 
-
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { ConfigManager } from "../../core/ConfigManager"
 import { Roles } from "../../auth/Roles"
+import { ConfigManager } from "../../core/ConfigManager"
 import { Plan } from "../Plan"
+import { PlanMetrics } from "../PlanMetrics"
 import { Plans } from "../Plans"
 import { PlansManager } from "../PlansManager"
-import { PlanMetrics } from "../PlanMetrics"
 import { Schedule } from "../Schedule"
 
 vi.mock("../../core/ConfigManager")
@@ -26,7 +25,7 @@ describe("PlansManager", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		Plans.clear()
-		PlanMetrics.Metrics.clear()
+		// PlanMetrics.Metrics.clear()
 	})
 
 	describe("Init", () => {
@@ -100,14 +99,12 @@ describe("PlansManager", () => {
 				endTime: new Date("2025-01-01T00:00:01.500Z"),
 				durationMs: 1500,
 				status: "success",
-				steps: [
-					{ index: 0, command: "select", status: "completed", outcome: "success", durationMs: 200 },
-				],
+				steps: [{ index: 0, command: "select", status: "completed", outcome: "success", durationMs: 200 }],
 			}
 			const mockPlan = new Plan("test-plan") as any
 			mockPlan.Metrics = mockMetrics
 			Plans.set("test-plan", mockPlan)
-			PlanMetrics.Metrics.set("test-plan", mockMetrics as any)
+			PlanMetrics.Set("test-plan", mockMetrics as any)
 
 			const result = await PlansManager.GetPlanMetrics("test-plan")
 
@@ -134,7 +131,7 @@ describe("PlansManager", () => {
 			const mockPlan = new Plan("test-plan") as any
 			mockPlan.Metrics = mockMetrics
 			Plans.set("test-plan", mockPlan)
-			PlanMetrics.Metrics.set("test-plan", mockMetrics as any)
+			PlanMetrics.Set("test-plan", mockMetrics as any)
 
 			const result = await PlansManager.GetPlanMetrics("test-plan")
 

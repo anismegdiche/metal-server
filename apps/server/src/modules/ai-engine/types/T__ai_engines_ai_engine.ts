@@ -3,7 +3,7 @@
 //
 import z from "zod"
 //
-import { z_TUrl } from "../../../types/TUrl"
+import { z_TUrl } from "@metal/types"
 import { AI_ENGINE } from "../@consts"
 import { AUDIO_TASK } from "../consts/AUDIO"
 import { IMAGE_TASK } from "../consts/IMAGE"

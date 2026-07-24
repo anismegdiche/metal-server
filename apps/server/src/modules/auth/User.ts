@@ -1,12 +1,12 @@
 //
 //
 //
-
 import { randomBytes } from "node:crypto"
+import { Logger } from "@metal/logger"
+import PersistentMap from "@metal/persistent-map"
 import jwt, { type JsonWebTokenError, type Secret } from "jsonwebtoken"
 //
-import type { TJson } from "../../types/TJson"
-import { Logger } from "../../utils/Logger"
+import type { TJson } from "@metal/types"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { HttpErrorUnauthorized } from "../errors/HttpErrors"
@@ -18,7 +18,7 @@ import { Roles } from "./Roles"
 export class User {
 	static readonly #JWT_EXPIRATION_TIME = 60 * 60 // 1 hour
 	static readonly #JWT_SECRET_LENGTH = 64 // Length of the JWT secret
-	static readonly _tokens: Map<string, Secret> = new Map()
+	static readonly _tokens = new PersistentMap<Secret>("/data/sessions")
 
 	static _generateJwtSecret(): Secret {
 		const bytes = randomBytes(User.#JWT_SECRET_LENGTH)

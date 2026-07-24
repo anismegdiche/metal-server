@@ -2,12 +2,11 @@
 //
 //
 import { _MTR_ } from "@metal/config"
-import type { TJson } from "../../types/TJson"
+import { Logger } from "@metal/logger"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../utils/Assert"
-import { Logger } from "../../utils/Logger"
 import { ConfigManager } from "../core/ConfigManager"
 import type { U__sources_source } from "../core/types/U__sources"
-import { HttpErrorLog } from "../errors/HttpErrors"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import { DATA_PROVIDER } from "./@consts"
 import type { IDataProvider } from "./base/IDataProvider"
@@ -73,19 +72,19 @@ export class Source {
 				Source.Sources.get(source)?.DataProvider,
 				`no DataProvider found for source '${source}'`,
 			)
-			_dataProvider.Init(source, sourceConfig)
-				.then(() => {
-					_dataProvider.Connect()
-						.then(() => {
-							Logger.Info(`${Logger.Out} Source.Connect '${source}': connected`)
-							MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_ACTIVE, MetricsCollector.Get(_MTR_.SOURCES_ACTIVE, 0) + 1)
-							MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "connected" } })
-						})
-						.catch((e) => {
-							Logger.Error(`${Logger.Out} Error connecting to source '${source}': ${(e as Error).message}`)
-							MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "disconnected" } })
-						})
-				})
+			_dataProvider.Init(source, sourceConfig).then(() => {
+				_dataProvider
+					.Connect()
+					.then(() => {
+						Logger.Info(`${Logger.Out} Source.Connect '${source}': connected`)
+						MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_ACTIVE, MetricsCollector.Get(_MTR_.SOURCES_ACTIVE, 0) + 1)
+						MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "connected" } })
+					})
+					.catch((e) => {
+						Logger.Error(`${Logger.Out} Error connecting to source '${source}': ${(e as Error).message}`)
+						MetricsCollector.DispatchEvent_update(_MTR_.SOURCES_DETAILS, { [source]: { status: "disconnected" } })
+					})
+			})
 		} catch (e: unknown) {
 			// HttpErrorLog(error)
 			Logger.Error(`${Logger.Out} Error connecting to source '${source}': ${(e as Error).message}`)

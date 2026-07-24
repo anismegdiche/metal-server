@@ -2,22 +2,18 @@
 //
 //
 import { Readable } from "node:stream"
+import { Logger } from "@metal/logger"
 import axios, { type AxiosInstance, type AxiosResponse } from "axios"
 import { merge } from "lodash-es"
 //
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { StringUtils } from "../../../utils/StringUtils"
 import { CONTENT } from "../../content/@consts"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
-import {
-	HttpErrorInternalServerError,
-	HttpErrorSwitch,
-	NormalizeError
-} from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorSwitch, NormalizeError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import type { U__source_webservice } from "../../source/types/U__source_webservice"
@@ -122,13 +118,12 @@ export class RestWebService extends absWebServiceProvider {
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
 		Assert.Var<AxiosInstance>(this.Client, `Rest Client is not initialized`)
-		await this.Client.head("/")
-			.then(async () => {
-				if (this.Endpoints.has(ENDPOINT.SESSION)) {
-					Assert.Var<Readable>(await this.RequestClient(ENDPOINT.SESSION, [200]), `Connection failed`)
-				}
-				Logger.Debug(`${Logger.Out} RestWebService connected`)
-			})
+		await this.Client.head("/").then(async () => {
+			if (this.Endpoints.has(ENDPOINT.SESSION)) {
+				Assert.Var<Readable>(await this.RequestClient(ENDPOINT.SESSION, [200]), `Connection failed`)
+			}
+			Logger.Debug(`${Logger.Out} RestWebService connected`)
+		})
 	}
 
 	@Logger.LogFunction()

@@ -6,7 +6,7 @@ import os from "node:os"
 import { pathToFileURL } from "node:url"
 import { _MTR_ } from "@metal/config"
 //
-import { Logger } from "../../utils/Logger"
+import { Logger } from "@metal/logger"
 import { StringUtils } from "../../utils/StringUtils"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import { ROUTE, SERVER } from "./@consts"

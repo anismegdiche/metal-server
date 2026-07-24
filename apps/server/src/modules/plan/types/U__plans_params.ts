@@ -4,8 +4,8 @@
 import z from "zod"
 //
 import { z_TOrderBy } from "../../../types/DataTable"
-import { z_T_JsPattern } from "../../../types/T_JsPattern"
-import { z_TJson } from "../../../types/TJson"
+import { z_T_JsPattern } from "@metal/types"
+import { z_TJson } from "@metal/types"
 import { JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../../utils/DataTableUtils"
 import { z_U__plans_plan_run_ai_Params } from "../../ai-engine/types/U__plans_plan_run_ai_Params"
 import { z_entity, z_schema, z_TSchemaRequestDelete, z_TSchemaRequestInsert, z_TSchemaRequestListEntities, z_TSchemaRequestSelect, z_TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"

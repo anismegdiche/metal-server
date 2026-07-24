@@ -4,16 +4,17 @@
 //
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-//
+import { Logger } from "@metal/logger"
 import { AiBuilder } from "./modules/ai-engine/AiBuilder"
 import { AiDocker } from "./modules/ai-engine/AiDocker"
+//
+import { ApiKey } from "./modules/apikey/ApiKey"
 import { ConfigManager } from "./modules/core/ConfigManager"
 import { ConfigStore } from "./modules/core/ConfigStore"
 import { ServerCore } from "./modules/core/ServerCore"
 import { ServerEndpoint } from "./modules/core/ServerEndpoint"
 import { ServerInitializer } from "./modules/core/ServerInitializer"
 import { ServerShutdown } from "./modules/core/ServerShutdown"
-import { Logger } from "./utils/Logger"
 import { Package } from "./utils/Package"
 
 // Current Path
@@ -27,9 +28,11 @@ process.chdir(path.resolve(__dirname, "..", "..", ".."))
 // params
 const args = new Set(process.argv.slice(2))
 const ARG_build_all_images = args.has("--build-all-images") || args.has("-bai")
+const ARG_generate_api_key = args.has("--generate-api-key") || args.has("-gak")
 
 // logging
-Logger.SetDb(Package.Json.name as string)
+const serviceName = Package.Json.name as string
+Logger.Init(serviceName)
 
 // Setup graceful shutdown handlers
 if (!ARG_build_all_images) ServerShutdown.SetupSignalHandlers()
@@ -43,6 +46,28 @@ if (ARG_build_all_images) {
 	//
 	await AiBuilder.PrepareImages()
 	Logger.Info(`${Logger.Out} 🔨 Exiting build mode`)
+	process.exit(0)
+}
+
+if (ARG_generate_api_key) {
+	const userId = args.has("--user") ? ([...args][[...args].indexOf("--user") + 1] ?? "admin") : "admin"
+	const keyName = args.has("--name") ? ([...args][[...args].indexOf("--name") + 1] ?? "generated") : "generated"
+
+	const result = ApiKey.Create(userId, { name: keyName, scopes: ["*"] })
+
+	console.log("\n┌──────────────────────────────────────────┐")
+	console.log("│           API Key Generated               │")
+	console.log("├──────────────────────────────────────────┤")
+	console.log(`│  User:  ${userId}`)
+	console.log(`│  Name:  ${keyName}`)
+	console.log(`│  ID:    ${result.Body?.id}`)
+	console.log("├──────────────────────────────────────────┤")
+	console.log(`│  Key:   ${result.Body?.key}`)
+	console.log("├──────────────────────────────────────────┤")
+	console.log("│  ⚠  Save this key now. It won't be shown │")
+	console.log("│     again.                                │")
+	console.log("└──────────────────────────────────────────┘\n")
+
 	process.exit(0)
 }
 

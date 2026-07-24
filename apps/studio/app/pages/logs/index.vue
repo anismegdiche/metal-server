@@ -86,6 +86,7 @@ const levelColor: Record<string, string> = {
 const columns = [
   { accessorKey: 'timestamp', header: 'Time' },
   { accessorKey: 'level', header: 'Level' },
+  { accessorKey: 'source', header: 'Source' },
   { accessorKey: 'message', header: 'Message' },
 ]
 
@@ -131,6 +132,9 @@ async function clearLogs() {
           <UBadge :color="levelColor[row.original.level] ?? 'neutral'" variant="subtle" size="sm">
             {{ row.original.level }}
           </UBadge>
+        </template>
+        <template #source-cell="{ row }">
+          <span class="text-muted whitespace-nowrap font-mono text-xs">{{ row.original.source }}</span>
         </template>
         <template #message-cell="{ row }">
           <span class="font-mono text-xs whitespace-normal wrap-break-words">{{ row.original.message }}</span>

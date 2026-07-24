@@ -1,0 +1,106 @@
+@baseUrl = http://127.0.0.1:3000
+
+# ── Login (get JWT for management) ───────────────────────
+
+# @name login
+POST {{baseUrl}}/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+
+###
+
+@authToken={{login.response.body.token}}
+
+# ── Create API key ───────────────────────────────────────
+
+# @name createKey
+POST {{baseUrl}}/api-keys
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "name": "ai-server",
+    "scopes": ["read", "write"]
+}
+
+###
+
+@keyId={{createKey.response.body.id}}
+@rawKey={{createKey.response.body.key}}
+
+# ── List API keys ────────────────────────────────────────
+
+# @name listKeys
+GET {{baseUrl}}/api-keys
+Authorization: Bearer {{authToken}}
+
+###
+
+# ── Get single API key ──────────────────────────────────
+
+# @name getKey
+GET {{baseUrl}}/api-keys/{{keyId}}
+Authorization: Bearer {{authToken}}
+
+###
+
+# ── Verify API key auth (access protected endpoint) ─────
+
+# @name verifyWithApiKey
+GET {{baseUrl}}/api-keys
+Authorization: Bearer {{rawKey}}
+
+###
+
+# ── Create second key ───────────────────────────────────
+
+# @name createKey2
+POST {{baseUrl}}/api-keys
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "name": "ci-pipeline",
+    "scopes": ["read"]
+}
+
+###
+
+@keyId2={{createKey2.response.body.id}}
+
+# ── Revoke second key ───────────────────────────────────
+
+# @name revokeKey
+DELETE {{baseUrl}}/api-keys/{{keyId2}}
+Authorization: Bearer {{authToken}}
+
+###
+
+# ── Verify revoked key fails ────────────────────────────
+# Expected: 401 Unauthorized
+
+# @name verifyRevoked
+GET {{baseUrl}}/api-keys
+Authorization: Bearer {{createKey2.response.body.key}}
+
+###
+
+# ── List after revoke ───────────────────────────────────
+
+# @name listAfterRevoke
+GET {{baseUrl}}/api-keys
+Authorization: Bearer {{authToken}}
+
+###
+
+# ── Unauthenticated access denied ───────────────────────
+# Expected: 401 Unauthorized
+
+# @name noAuth
+GET {{baseUrl}}/api-keys
+
+###

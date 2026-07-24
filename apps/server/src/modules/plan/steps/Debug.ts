@@ -2,7 +2,7 @@
 //
 //
 import type { DataTable } from "../../../types/DataTable"
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { METADATA } from "../../core/@consts"
 import type { TContext } from "../../sandbox/types/TContext"

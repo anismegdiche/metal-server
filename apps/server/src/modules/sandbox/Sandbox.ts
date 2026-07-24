@@ -1,10 +1,11 @@
 //
 //
 //
+
+//
+import { Logger } from "@metal/logger"
 import * as _ from "lodash-es"
 import { VM } from "vm2"
-//
-import { Logger } from "../../utils/Logger"
 import { Utils } from "../../utils/Utils"
 import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrors"
 import { maliciousPatterns } from "./@consts"
@@ -13,7 +14,7 @@ import type { TContext } from "./types/TContext"
 //
 export class Sandbox {
 	_context: Partial<TContext> = {}
-	_keepState: boolean = false 
+	_keepState: boolean = false
 
 	constructor(context?: Partial<TContext>) {
 		if (context) {

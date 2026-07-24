@@ -1,4 +1,3 @@
-
 //
 //
 //
@@ -6,6 +5,7 @@
 import { randomUUID } from "node:crypto"
 import fs from "node:fs"
 import DataType, { DuckDBScalarFunction } from "@duckdb/node-api"
+import { Logger } from "@metal/logger"
 import { omit } from "lodash-es"
 //
 import {
@@ -20,7 +20,6 @@ import {
 import { DT_SYS_FIELDS } from "../types/DataTableTypes"
 import { Assert } from "./Assert"
 import { JsonUtils } from "./JsonUtils"
-import { Logger } from "./Logger"
 import { RowUtils } from "./RowUtils"
 import { StringUtils } from "./StringUtils"
 
@@ -428,9 +427,7 @@ export class DataTableUtils {
 		const conn = await dt.DuckConnection()
 
 		// If no fields specified, use all fields from the first row
-		const _fields = (fields && fields.length > 0)
-			? fields
-			: dt.GetFieldNames()
+		const _fields = fields && fields.length > 0 ? fields : dt.GetFieldNames()
 
 		// Skip if no fields to deduplicate on
 		if (_fields.length === 0) {
@@ -546,9 +543,9 @@ export class DataTableUtils {
 		let aFields: string[] =
 			typeof fields === "string"
 				? fields
-					.split(",")
-					.map((f) => f.trim())
-					.filter(Boolean)
+						.split(",")
+						.map((f) => f.trim())
+						.filter(Boolean)
 				: fields.map((f) => f.trim())
 
 		if (aFields.length === 1 && aFields[0] === "*") {
@@ -582,11 +579,7 @@ export class DataTableUtils {
 							const rowAnonymized = RowUtils.Anonymize(row, fieldsSet, pseudo)
 
 							// Only stringify if modified
-							output.setItem(i,
-								JsonUtils.IsEqual(row, rowAnonymized)
-									? rawRow
-									: JsonUtils.Stringify(rowAnonymized)
-							)
+							output.setItem(i, JsonUtils.IsEqual(row, rowAnonymized) ? rawRow : JsonUtils.Stringify(rowAnonymized))
 						}
 						output.flush()
 					},
@@ -597,9 +590,7 @@ export class DataTableUtils {
 		}
 
 		const whereClause =
-			aFields.length > 0
-				? `WHERE ${aFields.map((f) => `json_exists(${DT_SYS_FIELDS.data}, '${f}')`).join(" OR ")}`
-				: ""
+			aFields.length > 0 ? `WHERE ${aFields.map((f) => `json_exists(${DT_SYS_FIELDS.data}, '${f}')`).join(" OR ")}` : ""
 
 		const sql = `UPDATE 
                     ${dt.SafeName} 
@@ -748,7 +739,6 @@ export class DataTableUtils {
 
 	@Logger.LogFunction(true)
 	static async SetFromDataTable(target: DataTable, source: DataTable): Promise<DataTable> {
-
 		const sourceConn = await source.DuckConnection()
 		const targetConn = await target.DuckConnection()
 

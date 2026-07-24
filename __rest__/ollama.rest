@@ -1,0 +1,93 @@
+@baseUrl = http://127.0.0.1:11011
+
+# ── Health Check ─────────────────────────────────────────
+
+# @name health
+GET {{baseUrl}}/api/tags
+
+###
+
+# ── Completion (OpenAI-compatible) ───────────────────────
+
+# @name completion
+POST {{baseUrl}}/v1/chat/completions
+Content-Type: application/json
+
+{
+    "model": "llama3-groq-tool-use:8b",
+    "messages": [
+        { "role": "user", "content": "Hello, what can you do?" }
+    ],
+    "temperature": 0.7,
+    "max_tokens": 256
+}
+
+###
+
+# ── Tool-use example ─────────────────────────────────────
+
+# @name completionTool
+POST {{baseUrl}}/v1/chat/completions
+Content-Type: application/json
+
+{
+    "model": "llama3-groq-tool-use:8b",
+    "messages": [
+        { "role": "user", "content": "What is 2 + 2?" }
+    ],
+    "tools": [
+        {
+            "type": "function",
+            "function": {
+                "name": "calculator",
+                "description": "Perform arithmetic",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "expression": { "type": "string" }
+                    },
+                    "required": ["expression"]
+                }
+            }
+        }
+    ],
+    "temperature": 0.0,
+    "max_tokens": 128
+}
+
+###
+
+# ── Streaming (SSE) ──────────────────────────────────────
+# PowerShell real-time streaming:
+#   $body = '{"model":"llama3-groq-tool-use:8b","messages":[{"role":"user","content":"Tell me a short joke"}],"stream":true,"max_tokens":256}'
+#   $resp = Invoke-WebRequest -Uri http://127.0.0.1:11011/v1/chat/completions -Method Post -ContentType "application/json" -Body $body -UseBasicParsing
+#   $reader = [System.IO.StreamReader]::new($resp.RawResponse.GetResponseStream())
+#   while ($null -ne ($line = $reader.ReadLine())) {
+#     if ($line.StartsWith("data: ") -and $line -ne "data: [DONE]") {
+#       $chunk = ($line.Substring(6) | ConvertFrom-Json).choices[0].delta.content
+#       if ($chunk) { Write-Host $chunk -NoNewline }
+#     }
+#   }
+#   Write-Host ""
+
+# @name completionStream
+POST {{baseUrl}}/v1/chat/completions
+Content-Type: application/json
+
+{
+    "model": "llama3-groq-tool-use:8b",
+    "messages": [
+        { "role": "user", "content": "Tell me a short joke" }
+    ],
+    "stream": true,
+    "max_tokens": 256
+}
+
+###
+
+# ── Models list ──────────────────────────────────────────
+
+# @name models
+GET {{baseUrl}}/api/tags
+
+###

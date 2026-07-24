@@ -35,6 +35,8 @@ export enum ROUTE {
 	API_PATH = "/api",
 	SWAGGER_UI_PATH = "/api-docs",
 	METRICS_PATH = "/metrics",
+	MCP_PATH = "/mcp",
+	API_KEYS_PATH = "/api-keys",
 }
 
 export enum HTTP_STATUS_CODE {

@@ -1,6 +1,6 @@
 import mssql from "mssql"
-import type { TIpPort } from "../../../types/TIpPort"
-import type { TJson } from "../../../types/TJson"
+import type { TIpPort } from "@metal/types"
+import type { TJson } from "@metal/types"
 import { Cache } from "../../cache/Cache"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import type { U__sources_source } from "../../core/types/U__sources"

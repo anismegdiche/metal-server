@@ -4,15 +4,15 @@
 //
 
 import { Readable } from "node:stream"
+import { Logger } from "@metal/logger"
 import ExcelJS, { type Worksheet } from "exceljs"
 import { compact, merge } from "lodash-es"
 //
 import z from "zod"
 import type { TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
-import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
@@ -22,20 +22,11 @@ import { absContentProvider } from "../base/absContentProvider"
 
 //
 export const z_U__source_options_content_xls = z.object({
-	"xls-sheet": z.string()
-		.optional(),
-	"xls-starting-cell": z.string()
-		.optional(),
-	"xls-default": z.union([
-		z.number(),
-		z.string(),
-		z.null()
-	])
-		.optional(),
-	"xls-parse-dates": z.boolean()
-		.optional(),
-	"xls-date-format": z.string()
-		.optional(),
+	"xls-sheet": z.string().optional(),
+	"xls-starting-cell": z.string().optional(),
+	"xls-default": z.union([z.number(), z.string(), z.null()]).optional(),
+	"xls-parse-dates": z.boolean().optional(),
+	"xls-date-format": z.string().optional(),
 })
 
 //
@@ -57,7 +48,7 @@ export function ColumnLetterToNumber(letter: string): number {
 	const { length } = letter
 
 	for (let i = 0; i < length; i++) {
-		column += (letter.charCodeAt(i) - 64) * 26 ** (length - i - 1) 
+		column += (letter.charCodeAt(i) - 64) * 26 ** (length - i - 1)
 	}
 
 	return column
@@ -211,24 +202,24 @@ export class XlsContent extends absContentProvider {
 			worksheet.getCell(Number.parseInt(startRow, 10), colIndex + idx).value = field
 		})
 
-			// Set data
-			; (await data.Rows()).forEach((row, idx) => {
-				fields.forEach((field: string, fieldIdx: number) => {
-					const _rowIdx = Number.parseInt(startRow, 10) + 1 + idx
-					const _colIdx: number = colIndex + fieldIdx
+		// Set data
+		;(await data.Rows()).forEach((row, idx) => {
+			fields.forEach((field: string, fieldIdx: number) => {
+				const _rowIdx = Number.parseInt(startRow, 10) + 1 + idx
+				const _colIdx: number = colIndex + fieldIdx
 
-					let _valueToSet = row[field]
+				let _valueToSet = row[field]
 
-					if (_valueToSet === null) {
-						_valueToSet = $__evalParams?.default
-					}
+				if (_valueToSet === null) {
+					_valueToSet = $__evalParams?.default
+				}
 
-					if ($__evalParams?.parseDates && _valueToSet instanceof Date) {
-						worksheet.getCell(_rowIdx, _colIdx).numFmt = $__evalParams?.dateFormat as string
-					}
-					worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet as import("exceljs").ValueType
-				})
+				if ($__evalParams?.parseDates && _valueToSet instanceof Date) {
+					worksheet.getCell(_rowIdx, _colIdx).numFmt = $__evalParams?.dateFormat as string
+				}
+				worksheet.getCell(_rowIdx, _colIdx).value = _valueToSet as import("exceljs").ValueType
 			})
+		})
 
 		// Create a new buffer and stream
 		const buffer = await workbook.xlsx.writeBuffer()

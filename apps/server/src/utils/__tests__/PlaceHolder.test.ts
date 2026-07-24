@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/suspicious/noTemplateCurlyInString: metal feat */
 import { Sandbox } from "../../modules/sandbox/Sandbox"
-import type { TJson } from "../../types/TJson"
+import type { TJson } from "@metal/types"
 import { PlaceHolder } from "../PlaceHolder"
 
 describe("PlaceHolder", () => {

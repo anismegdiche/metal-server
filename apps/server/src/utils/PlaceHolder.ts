@@ -1,37 +1,29 @@
-
+import { Logger } from "@metal/logger"
 //
 //
 //
 import type { Sandbox } from "../modules/sandbox/Sandbox"
-import type { TJson } from "../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "./Assert"
 import { JsonUtils } from "./JsonUtils"
-import { Logger } from "./Logger"
 import { StringUtils } from "./StringUtils"
-
 
 //
 export const RX_JS_CODE: RegExp = /\$\{\{(.*?)\}\}/m
-
 
 //
 export class PlaceHolder {
 	static EvaluateJsCode<T>(jsCode: any, sandBox: Sandbox): T | undefined | null {
 		// case undefined
-		if (jsCode === undefined)
-			return undefined
+		if (jsCode === undefined) return undefined
 
 		// case null - preserve null values
-		if (jsCode === null)
-			return null
+		if (jsCode === null) return null
 
 		// case no js code
-		const _jsCodeString = typeof jsCode === "string"
-			? jsCode
-			: JsonUtils.Stringify(jsCode)
+		const _jsCodeString = typeof jsCode === "string" ? jsCode : JsonUtils.Stringify(jsCode)
 
-		if (RX_JS_CODE.exec(_jsCodeString) === null)
-			return jsCode
+		if (RX_JS_CODE.exec(_jsCodeString) === null) return jsCode
 
 		// case js code type
 		switch (true) {
@@ -81,10 +73,12 @@ export class PlaceHolder {
 				const value = jsCode[key] as string | TJson | TJson[]
 				const evaluatedKey = PlaceHolder.EvaluateJsCode<string>(key, sandBox)
 				const evaluatedValue = PlaceHolder.EvaluateJsCode(value, sandBox)
-				if (evaluatedKey !== undefined
-					&& evaluatedKey !== null
-					&& evaluatedValue !== undefined
-					&& evaluatedValue !== null) {
+				if (
+					evaluatedKey !== undefined &&
+					evaluatedKey !== null &&
+					evaluatedValue !== undefined &&
+					evaluatedValue !== null
+				) {
 					result[evaluatedKey] = evaluatedValue
 				}
 			}

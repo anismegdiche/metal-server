@@ -42,7 +42,7 @@ describe("Schedule", () => {
 	describe("StopAll", () => {
 		it("should stop all registered jobs", () => {
 			const stopMock = vi.fn()
-			Schedule.Jobs = [{ name: "j1", cronJob: { stop: stopMock } as any }]
+			Schedule.Jobs = [{ name: "j1",cron: new Date(), cronJob: { stop: stopMock } as any }]
 
 			Schedule.StopAll()
 			expect(stopMock).toHaveBeenCalled()

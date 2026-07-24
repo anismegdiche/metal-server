@@ -3,13 +3,13 @@
 //
 import { CustomEvent } from "@dimkl/events"
 import { _MTR_ } from "@metal/config"
+import { Logger } from "@metal/logger"
 import { has, merge } from "lodash-es"
 //
 import { DataTable } from "../../types/DataTable"
-import type { TJson } from "../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../utils/Assert"
 import { JsonUtils } from "../../utils/JsonUtils"
-import { Logger } from "../../utils/Logger"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 import { AUTH_PERMISSION } from "../auth/@consts"
 import type { TUserTokenInfo } from "../auth/@types"
@@ -30,7 +30,6 @@ import { type U__plans_plan, z_U__plans_plan } from "./types/U__plans"
 import type { U__plans_plan__step } from "./types/U__plans_plan__step"
 import type { U__on_error_Params } from "./types/U__plans_plan_on_error"
 import type { U__schedules_schedule } from "./types/U__schedules"
-
 
 //
 export class Plan {
@@ -74,8 +73,7 @@ export class Plan {
 		Assert.Var<U__plans_plan>(this.Config, `plan '${this.Name}' not found or not configured`, new HttpErrorNotFound())
 
 		return this.Process(callerSchema)
-			.then((planData) => planData.FreeSql({ sqlQuery })
-				.then(() => planData))
+			.then((planData) => planData.FreeSql({ sqlQuery }).then(() => planData))
 			.catch((err) => {
 				Logger.Error(`Error occurred while processing schema request for plan '${this.Name}': ${err.message}`)
 				return undefined
@@ -163,7 +161,7 @@ export class Plan {
 
 				// if step has no on-error, merge with plan.on-error
 				if (_stepParams && (_stepParams as Record<string, unknown>)["on-error"] === undefined && planOnError) {
-					; (_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
+					;(_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
 				}
 
 				$context.$plan.currentStep = {
@@ -211,7 +209,9 @@ export class Plan {
 						},
 					})
 
-					throw new HttpErrorInternalServerError(`'${this.Name}': error have been encountered in step ${stepIndex}, ${_stepCommand}, ${JsonUtils.Stringify(_stepParams)}'`)
+					throw new HttpErrorInternalServerError(
+						`'${this.Name}': error have been encountered in step ${stepIndex}, ${_stepCommand}, ${JsonUtils.Stringify(_stepParams)}'`,
+					)
 				}
 
 				if (_stepOutput.data) {
@@ -283,7 +283,7 @@ export class Plan {
 						if (!this._data.MetaData[METADATA.PLAN_ERRORS]) {
 							this._data.MetaData[METADATA.PLAN_ERRORS] = []
 						}
-						; (this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
+						;(this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
 							step: stepIndex,
 							command: _stepCommand,
 							error: _e.message,
@@ -319,7 +319,7 @@ export class Plan {
 				new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_SET, {
 					data: {
 						planName: this.Name,
-						totalRows: await this._data.Count()
+						totalRows: await this._data.Count(),
 					},
 				}),
 			)

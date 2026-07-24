@@ -9,10 +9,10 @@ import { Roles } from "../../auth/Roles"
 import { METADATA } from "../../core/@consts"
 import { ConfigManager } from "../../core/ConfigManager"
 import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_OUTCOME, STEP_SIGNAL, STEP_STATUS } from "../@consts"
-import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "../PlanMetrics"
 import { Plan } from "../Plan"
-import { Step } from "../Step"
 import type { T_StepMetrics } from "../PlanMetrics"
+import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "../PlanMetrics"
+import { Step } from "../Step"
 import { z_U__plans_plan } from "../types/U__plans"
 
 vi.mock("../../core/ConfigManager")
@@ -42,16 +42,16 @@ vi.mock("../Step", () => ({
 				if (planName !== undefined && stepIndex !== undefined) {
 					const stepStartTime = new Date()
 					// Populate metrics directly in PlanMetrics.Metrics map
-					const planMetrics = PlanMetrics.Metrics.get(planName)
+					const planMetrics = PlanMetrics.Get(planName)
 					if (planMetrics) {
 						planMetrics.steps[stepIndex] = {
 							planName,
 							index: stepIndex,
 							step: { startTime: stepStartTime },
 							attemptCount: 1,
-							rows: { input: 0, passed: 0, skipped: 0, sunk: 0, failed: 0 }
+							rows: { input: 0, passed: 0, skipped: 0, sunk: 0, failed: 0 },
 						}
-						PlanMetrics.Metrics.set(planName, planMetrics)
+						PlanMetrics.Set(planName, planMetrics)
 					}
 				}
 
@@ -60,20 +60,20 @@ vi.mock("../Step", () => ({
 
 					if (planName !== undefined && stepIndex !== undefined) {
 						const stepEndTime = new Date()
-						const planMetrics = PlanMetrics.Metrics.get(planName)
+						const planMetrics = PlanMetrics.Get(planName)
 						if (planMetrics?.steps[stepIndex]) {
 							const startTime = planMetrics.steps[stepIndex].step?.startTime
 							const durationMs = startTime ? stepEndTime.getTime() - startTime.getTime() : 0
 							planMetrics.steps[stepIndex] = {
 								...planMetrics.steps[stepIndex],
-								step: { 
+								step: {
 									...planMetrics.steps[stepIndex].step,
 									endTime: stepEndTime,
 									durationMs,
-									status: STEP_STATUS.SUCCESS 
-								}
+									status: STEP_STATUS.SUCCESS,
+								},
 							}
-							PlanMetrics.Metrics.set(planName, planMetrics)
+							PlanMetrics.Set(planName, planMetrics)
 						}
 					}
 
@@ -86,20 +86,20 @@ vi.mock("../Step", () => ({
 				} catch (_error) {
 					if (planName !== undefined && stepIndex !== undefined) {
 						const stepEndTime = new Date()
-						const planMetrics = PlanMetrics.Metrics.get(planName)
+						const planMetrics = PlanMetrics.Get(planName)
 						if (planMetrics?.steps[stepIndex]) {
 							const startTime = planMetrics.steps[stepIndex].step?.startTime
 							const durationMs = startTime ? stepEndTime.getTime() - startTime.getTime() : 0
 							planMetrics.steps[stepIndex] = {
 								...planMetrics.steps[stepIndex],
-								step: { 
+								step: {
 									...planMetrics.steps[stepIndex].step,
 									endTime: stepEndTime,
 									durationMs,
-									status: STEP_STATUS.FAILED 
-								}
+									status: STEP_STATUS.FAILED,
+								},
 							}
-							PlanMetrics.Metrics.set(planName, planMetrics)
+							PlanMetrics.Set(planName, planMetrics)
 						}
 					}
 
@@ -131,7 +131,7 @@ describe("Plan", () => {
 	}
 
 	const seedPlanMetrics = () => {
-		PlanMetrics.Metrics.set("test-plan", {} as T_PlanMetrics)
+		PlanMetrics.Set("test-plan", {} as T_PlanMetrics)
 	}
 
 	const expectValidMetrics = (metrics: any, expectedStepCount: number) => {
@@ -154,7 +154,7 @@ describe("Plan", () => {
 
 	beforeEach(async () => {
 		vi.clearAllMocks()
-		PlanMetrics.Metrics.clear()
+		// PlanMetrics.Metrics.clear()
 		// Mock Zod validation before creating plan to avoid validation errors during Init
 		mockZodValidation({ steps: [] })
 		plan = new Plan("test-plan")
@@ -567,7 +567,7 @@ describe("Plan", () => {
 
 	describe("Metrics Event Handlers", () => {
 		beforeEach(() => {
-			PlanMetrics.Metrics.clear()
+			// PlanMetrics.Metrics.clear()
 		})
 
 		describe("PLAN_START event", () => {
@@ -575,7 +575,7 @@ describe("Plan", () => {
 				// Arrange
 				const planName = "test-plan"
 				const startTime = new Date()
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime,
 					status: PLAN_STATUS.RUNNING,
@@ -594,7 +594,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics).toBeDefined()
 				expect(metrics?.planName).toBe(planName)
 				expect(metrics?.startTime).toBe(startTime)
@@ -605,7 +605,7 @@ describe("Plan", () => {
 				// Arrange
 				const planName = "test-plan"
 				const startTime = new Date()
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime: new Date("2024-01-01"),
 					status: PLAN_STATUS.STOPPED,
@@ -624,7 +624,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics).toBeDefined()
 				expect(metrics?.startTime).toBe(startTime)
 				expect(metrics?.status).toBe(PLAN_STATUS.RUNNING)
@@ -637,7 +637,7 @@ describe("Plan", () => {
 				const planName = "test-plan"
 				const startTime = new Date("2024-01-01T10:00:00.000Z")
 				const endTime = new Date("2024-01-01T10:05:00.000Z")
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime,
 					status: PLAN_STATUS.RUNNING,
@@ -656,7 +656,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics).toBeDefined()
 				expect(metrics?.endTime).toBe(endTime)
 				expect(metrics?.durationMs).toBe(5 * 60 * 1000) // 5 minutes
@@ -668,7 +668,7 @@ describe("Plan", () => {
 				const planName = "test-plan"
 				const startTime = new Date("2024-01-01T10:00:00.000Z")
 				const endTime = new Date("2024-01-01T10:02:30.500Z")
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime,
 					status: PLAN_STATUS.RUNNING,
@@ -687,7 +687,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics?.durationMs).toBe(150500) // 2 minutes 30.5 seconds
 			})
 		})
@@ -698,7 +698,7 @@ describe("Plan", () => {
 				const planName = "test-plan"
 				const stepIndex = 0
 				const startTime = new Date()
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime: new Date(),
 					status: PLAN_STATUS.RUNNING,
@@ -719,7 +719,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics?.steps[stepIndex]).toBeDefined()
 				expect(metrics!.steps[stepIndex]!.planName).toBe(planName)
 				expect(metrics!.steps[stepIndex]!.index).toBe(stepIndex)
@@ -733,7 +733,7 @@ describe("Plan", () => {
 				const planName = "test-plan"
 				const stepIndex = 0
 				const startTime = new Date()
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime: new Date(),
 					status: PLAN_STATUS.RUNNING,
@@ -753,7 +753,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics!.steps[stepIndex]!.attemptCount).toBe(2)
 				expect(metrics!.steps[stepIndex]!.step?.startTime).toBe(startTime)
 			})
@@ -766,7 +766,7 @@ describe("Plan", () => {
 				const stepIndex = 0
 				const startTime = new Date("2024-01-01T10:00:00.000Z")
 				const endTime = new Date("2024-01-01T10:01:00.000Z")
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime: new Date(),
 					status: PLAN_STATUS.RUNNING,
@@ -793,7 +793,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics!.steps[stepIndex]!.step?.endTime).toBe(endTime)
 				expect(metrics!.steps[stepIndex]!.step?.durationMs).toBe(60000) // 1 minute
 				expect(metrics!.steps[stepIndex]!.step?.status).toBe(STEP_STATUS.SUCCESS)
@@ -805,7 +805,7 @@ describe("Plan", () => {
 				const stepIndex = 0
 				const startTime = new Date("2024-01-01T10:00:00.000Z")
 				const endTime = new Date("2024-01-01T10:00:30.500Z")
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime: new Date(),
 					status: PLAN_STATUS.RUNNING,
@@ -832,7 +832,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics!.steps[stepIndex]!.step?.durationMs).toBe(30500) // 30.5 seconds
 				expect(metrics!.steps[stepIndex]!.step?.status).toBe(STEP_STATUS.FAILED)
 			})
@@ -841,7 +841,7 @@ describe("Plan", () => {
 				// Arrange
 				const planName = "test-plan"
 				const stepIndex = 0
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime: new Date(),
 					status: PLAN_STATUS.RUNNING,
@@ -860,7 +860,7 @@ describe("Plan", () => {
 				)
 
 				// Assert - step metrics should remain empty since STEP_START wasn't called
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics?.steps[stepIndex]).toBeUndefined()
 			})
 		})
@@ -870,7 +870,7 @@ describe("Plan", () => {
 				// Arrange
 				const planName = "test-plan"
 				const stepIndex = 0
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime: new Date(),
 					status: PLAN_STATUS.RUNNING,
@@ -897,7 +897,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics!.steps[stepIndex]!.rows?.input).toBe(10)
 				expect(metrics!.steps[stepIndex]!.rows?.passed).toBe(2) // merge overwrites with event data
 				expect(metrics!.steps[stepIndex]!.rows?.skipped).toBe(1)
@@ -909,7 +909,7 @@ describe("Plan", () => {
 				// Arrange
 				const planName = "test-plan"
 				const stepIndex = 0
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime: new Date(),
 					status: PLAN_STATUS.RUNNING,
@@ -945,7 +945,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics!.steps[stepIndex]!.rows?.passed).toBe(3) // last event overwrites
 				expect(metrics!.steps[stepIndex]!.rows?.failed).toBe(2) // last event overwrites
 			})
@@ -954,7 +954,7 @@ describe("Plan", () => {
 				// Arrange
 				const planName = "test-plan"
 				const stepIndex = 0
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime: new Date(),
 					status: PLAN_STATUS.RUNNING,
@@ -973,7 +973,7 @@ describe("Plan", () => {
 				)
 
 				// Assert - step metrics should remain empty since STEP_START wasn't called
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics?.steps[stepIndex]).toBeUndefined()
 			})
 		})
@@ -985,7 +985,7 @@ describe("Plan", () => {
 				const planStartTime = new Date("2024-01-01T10:00:00.000Z")
 
 				// Initialize plan metrics
-				PlanMetrics.Metrics.set(planName, {
+				PlanMetrics.Set(planName, {
 					planName,
 					startTime: planStartTime,
 					status: PLAN_STATUS.RUNNING,
@@ -1083,7 +1083,7 @@ describe("Plan", () => {
 				)
 
 				// Assert
-				const metrics = PlanMetrics.Metrics.get(planName)
+				const metrics = PlanMetrics.Get(planName)
 				expect(metrics).toBeDefined()
 				expect(metrics?.planName).toBe(planName)
 				expect(metrics?.startTime).toBe(planStartTime)

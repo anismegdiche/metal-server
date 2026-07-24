@@ -2,6 +2,7 @@
 //
 //
 import { Readable } from "node:stream"
+import { Logger } from "@metal/logger"
 import { parse } from "csv-parse/sync"
 import { stringify } from "csv-stringify/sync"
 import { merge } from "lodash-es"
@@ -9,10 +10,9 @@ import z from "zod"
 //
 import type { TRow, TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"

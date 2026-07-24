@@ -3,16 +3,16 @@
 //
 
 import { Readable } from "node:stream"
+import { Logger } from "@metal/logger"
 import { type X2jOptions, XMLBuilder, XMLParser, type XmlBuilderOptions } from "fast-xml-parser"
 import { merge } from "lodash-es"
 import z from "zod"
 //
 import type { TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
@@ -23,14 +23,10 @@ import { absContentProvider } from "../base/absContentProvider"
 //
 
 export const z_U__source_options_content_xml = z.object({
-	"xml-path": z.string()
-		.optional(),
-	"xml-ignore-attributes": z.boolean()
-		.optional(),
-	"xml-attribute-prefix": z.string()
-		.optional(),
-	"xml-remove-ns-prefix": z.boolean()
-		.optional(),
+	"xml-path": z.string().optional(),
+	"xml-ignore-attributes": z.boolean().optional(),
+	"xml-attribute-prefix": z.string().optional(),
+	"xml-remove-ns-prefix": z.boolean().optional(),
 })
 
 //

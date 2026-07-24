@@ -24,7 +24,14 @@ export default defineNuxtConfig({
     css: ['~/assets/css/main.css'],
 
     routeRules: {
-        '/server-api/**': { proxy: 'http://localhost:3000/**' }
+        '/server-api/**': { proxy: 'http://localhost:3000/**' },
+        '/ai-api/**': { proxy: 'http://localhost:3001/**' }
+    },
+
+    runtimeConfig: {
+        public: {
+            aiServerUrl: process.env.NUXT_PUBLIC_AI_SERVER_URL ?? 'http://localhost:3001'
+        }
     },
 
     eslint: {

@@ -1,0 +1,28 @@
+{
+	"name": "@metal/logger",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"build": "tsc"
+	},
+	"dependencies": {
+		"@dimkl/events": "^3.0.3",
+		"@metal/persistent-map": "workspace:*",
+		"colorette": "^2.0.20",
+		"lodash-es": "^4.17.21",
+		"loglevel": "^1.9.2",
+		"loglevel-plugin-prefix": "^0.8.4",
+		"morgan": "^1.10.0",
+		"safe-stable-stringify": "^2.4.3"
+	},
+	"devDependencies": {
+		"@types/lodash-es": "^4.17.12",
+		"@types/morgan": "^1.9.9",
+		"@types/node": "^25.9.3",
+		"typescript": "^6.0.3"
+	}
+}

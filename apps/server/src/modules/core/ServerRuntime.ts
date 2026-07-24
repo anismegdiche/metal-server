@@ -1,8 +1,9 @@
 //
 //
 //
-import type { TJson } from "../../types/TJson"
-import { Logger } from "../../utils/Logger"
+
+import { Logger } from "@metal/logger"
+import type { TJson } from "@metal/types"
 import { AiDocker } from "../ai-engine/AiDocker"
 import { AiEngine } from "../ai-engine/AiEngine"
 import { AUTH_PERMISSION } from "../auth/@consts"

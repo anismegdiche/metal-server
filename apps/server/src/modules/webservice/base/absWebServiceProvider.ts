@@ -5,7 +5,7 @@
 import type { Readable } from "node:stream"
 import { merge, omit } from "lodash-es"
 //
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"

@@ -1,7 +1,7 @@
 //
 //
 //
-import { Logger } from "./Logger"
+import { Logger } from "@metal/logger"
 
 //
 export class Synchronizer {

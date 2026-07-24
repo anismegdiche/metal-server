@@ -1,4 +1,4 @@
-
+import { Logger } from "@metal/logger"
 //
 //
 //
@@ -6,12 +6,11 @@ import * as _ from "lodash-es"
 import { DecoratorUtils } from "./DecoratorUtils"
 //
 import { JsonUtils } from "./JsonUtils"
-import { Logger } from "./Logger"
 import { Synchronizer } from "./Synchronizer"
 
 //
 export class SynchronizerManager {
-	static #SyncMap: Map<string, Synchronizer> = new Map() 
+	static #SyncMap: Map<string, Synchronizer> = new Map()
 
 	static async Execute<T>(signature: string, fn: () => Promise<T>, ..._args: any[]): Promise<T> {
 		let sync = SynchronizerManager.#SyncMap.get(signature)

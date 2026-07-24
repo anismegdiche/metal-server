@@ -8,7 +8,7 @@ import type { TInternalResponse } from "../modules/core/types/TInternalResponse"
 import { HttpErrorBadRequest } from "../modules/errors/HttpErrors"
 //
 import type { TSchemaRequest } from "../modules/schema/types/TSchemaRequest"
-import type { TJson } from "../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "./Assert"
 
 const RX_SORT = /^(\w+:(asc|desc))(,\w+:(asc|desc))*$/

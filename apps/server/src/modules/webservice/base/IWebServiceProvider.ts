@@ -2,7 +2,7 @@
 //
 //
 import type { Readable } from "node:stream"
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import type { clsClonable } from "../../../utils/base/clsClonable"
 import type { TContext } from "../../sandbox/types/TContext"
 //

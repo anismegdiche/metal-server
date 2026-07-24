@@ -25,6 +25,11 @@ const sidebarItems: NavigationMenuItem[] = [
     to: '/scheduler'
   },
   {
+    label: 'AI Chat',
+    icon: 'i-lucide-bot',
+    to: '/chat'
+  },
+  {
     label: 'Config',
     icon: 'i-lucide-file-cog',
     to: '/config/info'
@@ -53,7 +58,8 @@ const dashboardTabs: NavigationMenuItem[] = [
 const configTabs: NavigationMenuItem[] = [
   { label: 'Info', to: '/config/info' },
   { label: 'Server', to: '/config/server' },
-  { label: 'Users & Roles', to: '/config/users' }
+  { label: 'Users & Roles', to: '/config/users' },
+  { label: 'API Keys', to: '/config/api-keys' }
 ]
 
 const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))

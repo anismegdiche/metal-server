@@ -1,5 +1,5 @@
+import { Logger } from "@metal/logger"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { Logger } from "../../../utils/Logger"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import {
 	HttpErrorBadRequest,

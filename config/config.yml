@@ -15,6 +15,14 @@ server:
     options:
       autocreate: true
 
+mcp:
+  enabled: true
+  route: /mcp
+  hide-sensitive-data:
+    - password
+    - secret
+
+
 roles:
   all: lacrud
 

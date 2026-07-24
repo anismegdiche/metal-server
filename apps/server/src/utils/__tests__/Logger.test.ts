@@ -34,7 +34,7 @@ vi.mock("colorette", () => ({
 }))
 const loadLogger = async () => {
 	const LogLevel = await import("loglevel")
-	const { Logger } = await import("../Logger")
+	const { Logger } = await import("@metal/logger")
 	return { LogLevel: LogLevel.default, Logger }
 }
 

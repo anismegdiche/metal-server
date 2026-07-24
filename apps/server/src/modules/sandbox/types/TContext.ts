@@ -2,7 +2,7 @@
 //
 //
 import type { DataTable } from "../../../types/DataTable"
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import type { TAiOutput } from "../../ai-engine/@types"
 import type { STEP, STEP_STATUS } from "../../plan/@consts"
 import type { T_StepErrorDetails } from "../../plan/T_StepErrorDetails"

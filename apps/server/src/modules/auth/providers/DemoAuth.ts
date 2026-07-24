@@ -1,9 +1,10 @@
 //
 //
 //
-import z from "zod"
+
 //
-import { Logger } from "../../../utils/Logger"
+import { Logger } from "@metal/logger"
+import z from "zod"
 import type { U__users } from "../../core/types/U__users"
 import { AUTH_PROVIDER } from "../@consts"
 import type { TUserCredentials, TUserTokenInfo } from "../@types"
@@ -23,7 +24,7 @@ export class DemoAuth extends absAuthProvider {
 	GetUsers(): U__users {
 		return {
 			admin: {
-				password: "password", 
+				password: "password",
 				roles: ["admin"],
 			},
 		}

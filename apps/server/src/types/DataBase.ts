@@ -2,19 +2,16 @@
 //
 //
 import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
+import { Logger } from "@metal/logger"
 //
 import { Assert } from "../utils/Assert"
-import { Logger } from "../utils/Logger"
 import { StringUtils } from "../utils/StringUtils"
 import { Utils } from "../utils/Utils"
 import { DATATABLES_PATH, DataTable, dataTable_convertSql, type TRow } from "./DataTable"
-import type { TAny } from "./TAny"
-import type { TJson } from "./TJson"
-
+import type { TAny, TJson } from "@metal/types"
 
 //
 export class DataBase {
-
 	Name: string
 	Tables: Record<string, DataTable> = {}
 	_duckInstance?: DuckDBInstance
@@ -25,9 +22,7 @@ export class DataBase {
 		Assert.Var<string>(name, "undefined DataBase name")
 		this.Name = name
 		this._dbPath =
-			isPersistant === true
-				? StringUtils.FsPath(DATATABLES_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
-				: ":memory:"
+			isPersistant === true ? StringUtils.FsPath(DATATABLES_PATH, `${this.Name}_${Utils.Uuid(true)}.db`) : ":memory:"
 
 		// Generate encryption key for persistent databases
 		if (isPersistant === true) {
@@ -65,10 +60,8 @@ export class DataBase {
 	@Logger.LogFunction()
 	async SetTable(entity: string, rows?: TRow[] | TJson[]) {
 		Assert.Var(entity, "undefined DataTable name")
-		if (this.Tables[entity] === undefined)
-			this.AddTable(entity, rows)
-		else
-			this.Tables[entity].RowsSet(rows)
+		if (this.Tables[entity] === undefined) this.AddTable(entity, rows)
+		else this.Tables[entity].RowsSet(rows)
 	}
 
 	@Logger.LogFunction()
@@ -85,34 +78,29 @@ export class DataBase {
 		returnData?: boolean
 		convertCondition?: boolean
 	} = {}): Promise<DataTable | this> {
-
 		Assert.Var<string>(entity, "undefined DataTable name")
 		Assert.Var<string>(sqlQuery, "undefined SQL query")
 
 		const data = Assert.Get<DataTable>(this.Tables[entity], `entity ${entity} do not exist`)
 		const cnx = Assert.Get<DuckDBConnection>(await data.DuckConnection(), `connection is not set for ${entity}`)
 
-		const _sql = (convertCondition)
-			? dataTable_convertSql(sqlQuery)
-			: sqlQuery
+		const _sql = convertCondition ? dataTable_convertSql(sqlQuery) : sqlQuery
 
 		if (returnData) {
 			const result = new DataTable(
 				this.Name,
-				await data._runSqlAndGetRows(_sql, queryParams)
-					.catch((err) => {
-						Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
-						throw new Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
-					}),
+				await data._runSqlAndGetRows(_sql, queryParams).catch((err) => {
+					Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
+					throw new Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
+				}),
 			)
 			return result.FieldsSet()
 		}
 
-		await cnx.run(_sql, queryParams as DuckDBValue[])
-			.catch((err) => {
-				Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
-				throw new Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
-			})
+		await cnx.run(_sql, queryParams as DuckDBValue[]).catch((err) => {
+			Logger.Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
+			throw new Error(`DataTable.FreeSql: '${this.Name}' Error executing SQL query: '${sqlQuery}': ${err.message}`)
+		})
 
 		return this
 	}

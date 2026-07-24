@@ -10,6 +10,7 @@ import { z_U__roles } from "./U__roles"
 import { z_U__schemas } from "./U__schemas"
 import { z_U__server } from "./U__server"
 import { z_U__sources } from "./U__sources"
+import { z_U__mcp } from "../../mcp/types/U__mcp"
 import { z_U__users } from "./U__users"
 import { z_U__version } from "./U__version"
 
@@ -24,6 +25,7 @@ export const z_U_config = z.strictObject({
 	"ai-engines": z_T__ai_engines.optional(),
 	plans: z_U__plans.optional(),
 	schedules: z_U__schedules.optional(),
+	mcp: z_U__mcp.optional(),
 })
 
 //

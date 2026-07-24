@@ -1,13 +1,13 @@
 //
 
+import { Logger } from "@metal/logger"
 //
 //
 import * as Sha512 from "js-sha512"
 //
 import type { DataTable } from "../../types/DataTable"
-import type { TJson } from "../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../utils/Assert"
-import { Logger } from "../../utils/Logger"
 import { Semaphore } from "../../utils/Semaphore"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 import { AUTH_PERMISSION } from "../auth/@consts"
@@ -40,18 +40,18 @@ export class Cache {
 		entity: "cache",
 	}
 
-	static Database = Cache.DEFAULT.database 
-	static Entity = Cache.DEFAULT.entity 
-	static DataSource: IDataProvider 
+	static Database = Cache.DEFAULT.database
+	static Entity = Cache.DEFAULT.entity
+	static DataSource: IDataProvider
 	static DataSourceConfig: U__sources_source
-	static __LOCK__: Semaphore = new Semaphore(1) 
+	static __LOCK__: Semaphore = new Semaphore(1)
 	static _cacheSchemaRequest: TSchemaRequest = <TSchemaRequest>{
 		//NOSNAR
 		schema: Cache.Database,
 		entity: Cache.Entity,
 	}
 
-	static IsEnabled = false 
+	static IsEnabled = false
 
 	static Index = new Map<string, number>()
 	static AutoCleanupInterval: NodeJS.Timeout | undefined

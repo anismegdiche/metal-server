@@ -1,12 +1,13 @@
 //
 //
 //
+
+import { Logger, VERBOSITY } from "@metal/logger"
 import { has, merge } from "lodash-es"
 //
 import type { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { Convert } from "../../../utils/Convert"
-import { Logger, VERBOSITY } from "../../../utils/Logger"
 import { Mutex } from "../../../utils/Mutex"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import type { IContentProvider } from "../../content/base/IContentProvider"
@@ -43,7 +44,6 @@ import {
 	z_U__source_storage_file_content,
 } from "../types/U__source_storage_file_content"
 import type { U__source_storage_file_options } from "../types/U__source_storage_file_options"
-
 
 //
 export class StorageFilesData extends absDataProvider {
@@ -108,15 +108,11 @@ export class StorageFilesData extends absDataProvider {
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
 		Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage Data provider (file) is not defined`)
-		Assert.Condition(
-			this.ContentHandler !== undefined,
-			`${this.SourceName}: Storage Data provider (file) is not defined`
-		)
+		Assert.Condition(this.ContentHandler !== undefined, `${this.SourceName}: Storage Data provider (file) is not defined`)
 
-		await this.Connection.Connect()
-			.then(() => {
-				Logger.Debug(`${Logger.Out} Storage Data provider (file) '${this.SourceName}' connected`)
-			})
+		await this.Connection.Connect().then(() => {
+			Logger.Debug(`${Logger.Out} Storage Data provider (file) '${this.SourceName}' connected`)
+		})
 	}
 
 	@Logger.LogFunction()

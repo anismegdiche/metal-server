@@ -4,11 +4,11 @@
 // lodash
 
 import { Readable } from "node:stream"
+import { Logger, VERBOSITY } from "@metal/logger"
 import { merge } from "lodash-es"
 //
 import type { DataTable, TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { Logger, VERBOSITY } from "../../../utils/Logger"
 import { Mutex } from "../../../utils/Mutex"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { StringUtils } from "../../../utils/StringUtils"
@@ -156,10 +156,9 @@ export class StorageFoldersData extends absDataProvider {
 	async Connect(): Promise<void> {
 		Assert.Var<absStorageProvider>(this.Connection, `${this.SourceName}: Storage Data provider (folder) is not defined`)
 
-		await this.Connection.Connect()
-			.then(() => {
-				Logger.Debug(`${Logger.Out} Storage Data provider (folder) '${this.SourceName}' connected`)
-			})
+		await this.Connection.Connect().then(() => {
+			Logger.Debug(`${Logger.Out} Storage Data provider (folder) '${this.SourceName}' connected`)
+		})
 	}
 
 	@Logger.LogFunction(true)

@@ -3,9 +3,9 @@
 //
 //
 
+import { Logger } from "@metal/logger"
 import type { ZodIssue, ZodSafeParseResult } from "zod"
 import { type HttpError, HttpErrorInternalServerError } from "../modules/errors/HttpErrorBase"
-import { Logger } from "./Logger"
 
 //
 type JsonPathSegment = string | number
@@ -32,7 +32,7 @@ function allLeavesReceivedUndefined(issues: ZodIssue[], base: number = 0): boole
 		const d = base + toJsonPath(issue.path).length
 		if (issue.code === "invalid_union") {
 			// A union in a branch: check all its sub-branches
-			const allSubsUndefined = issue.errors.every(b => allLeavesReceivedUndefined(b, d))
+			const allSubsUndefined = issue.errors.every((b) => allLeavesReceivedUndefined(b, d))
 			if (!allSubsUndefined) return false
 		} else {
 			// Leaf issue: "received undefined" in the message means key was absent
@@ -69,11 +69,11 @@ function collectIssues(issues: ZodIssue[], prefixPath: JsonPathSegment[] = []): 
 
 		if (issue.code === "invalid_union") {
 			const branches = issue.errors
-			const allBranchesUndef = branches.every(b => allLeavesReceivedUndefined(b))
+			const allBranchesUndef = branches.every((b) => allLeavesReceivedUndefined(b))
 
 			if (allBranchesUndef) {
-				// None of the union branches matched any keys in the input. 
-				// Output the union's own message (e.g. "Invalid input") instead of 
+				// None of the union branches matched any keys in the input.
+				// Output the union's own message (e.g. "Invalid input") instead of
 				// arbitrarily picking the first branch and complaining about its keys.
 				const pathStr = formatPath(fullPath)
 				const location = pathStr ? `\n  → at ${pathStr}` : ""

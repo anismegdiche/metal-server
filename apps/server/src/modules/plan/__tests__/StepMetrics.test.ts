@@ -24,8 +24,8 @@ describe("Step Metrics Collection", () => {
     beforeEach(() => {
         vi.clearAllMocks()
         capturedEvents.length = 0
-        PlanMetrics.Metrics.clear()
-        PlanMetrics.Metrics.set("test-plan", {
+        // PlanMetrics.Metrics.clear()
+        PlanMetrics.Set("test-plan", {
             planName: "test-plan",
             status: PLAN_STATUS.RUNNING,
             steps: [],

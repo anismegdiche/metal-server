@@ -2,10 +2,10 @@
 //
 //
 import { _MTR_ } from "@metal/config"
+import { Logger } from "@metal/logger"
 import { DataTable } from "../../types/DataTable"
 import { Assert } from "../../utils/Assert"
 import { DataTableUtils } from "../../utils/DataTableUtils"
-import { Logger } from "../../utils/Logger"
 import { AUTH_PERMISSION } from "../auth/@consts"
 import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
@@ -23,7 +23,7 @@ import type {
 	TSchemaRequestInsert,
 	TSchemaRequestListEntities,
 	TSchemaRequestSelect,
-	TSchemaRequestUpdate
+	TSchemaRequestUpdate,
 } from "./types/TSchemaRequest"
 import {
 	z_TSchemaRequestDelete,
@@ -154,22 +154,43 @@ export class Schema {
 
 	static DispatchMetrics(): void {
 		const schemaNames = Object.keys(Schema._schemaParams)
-		const details: Record<string, {
-			type: "source" | "entities" | "mixed"
-			sources: Record<string, {
-				reads: number, writes: number, deletes: number, errors: number, avgDuration: number
-				entities: Record<string, { reads: number, writes: number, deletes: number, errors: number, avgDuration: number }>
-			}>
-			reads: number, writes: number, deletes: number, errors: number, avgDuration: number
-		}> = {}
+		const details: Record<
+			string,
+			{
+				type: "source" | "entities" | "mixed"
+				sources: Record<
+					string,
+					{
+						reads: number
+						writes: number
+						deletes: number
+						errors: number
+						avgDuration: number
+						entities: Record<string, { reads: number; writes: number; deletes: number; errors: number; avgDuration: number }>
+					}
+				>
+				reads: number
+				writes: number
+				deletes: number
+				errors: number
+				avgDuration: number
+			}
+		> = {}
 
 		for (const schemaName of schemaNames) {
 			const _schemaParams = Schema._schemaParams[schemaName]
 			const routes = Schema._schemaRoutes.get(schemaName)
-			const sourceMap: Record<string, {
-				reads: number, writes: number, deletes: number, errors: number, avgDuration: number
-				entities: Record<string, { reads: number, writes: number, deletes: number, errors: number, avgDuration: number }>
-			}> = {}
+			const sourceMap: Record<
+				string,
+				{
+					reads: number
+					writes: number
+					deletes: number
+					errors: number
+					avgDuration: number
+					entities: Record<string, { reads: number; writes: number; deletes: number; errors: number; avgDuration: number }>
+				}
+			> = {}
 
 			if (routes) {
 				for (const [entityKey, route] of routes) {
@@ -192,7 +213,11 @@ export class Schema {
 			details[schemaName] = {
 				type,
 				sources: sourceMap,
-				reads: 0, writes: 0, deletes: 0, errors: 0, avgDuration: 0
+				reads: 0,
+				writes: 0,
+				deletes: 0,
+				errors: 0,
+				avgDuration: 0,
 			}
 		}
 
@@ -208,7 +233,7 @@ export class Schema {
 		sourceName: string,
 		entity: string,
 		duration: number,
-		isError: boolean
+		isError: boolean,
 	) {
 		const existing = MetricsCollector.Get(_MTR_.SCHEMAS_DETAILS, {}) as any
 		const schemaData = existing[schema]
@@ -216,21 +241,17 @@ export class Schema {
 
 		const opCount = schemaData[operation] + 1
 		const totalOps = schemaData.reads + schemaData.writes + schemaData.deletes + 1
-		const newAvg = ((schemaData.avgDuration * (totalOps - 1)) + duration) / totalOps
+		const newAvg = (schemaData.avgDuration * (totalOps - 1) + duration) / totalOps
 
 		const sourceData = schemaData.sources?.[sourceName]
 		const sourceOpCount = sourceData ? sourceData[operation] + 1 : 1
 		const sourceTotalOps = sourceData ? sourceData.reads + sourceData.writes + sourceData.deletes + 1 : 1
-		const sourceAvg = sourceData
-			? ((sourceData.avgDuration * (sourceTotalOps - 1)) + duration) / sourceTotalOps
-			: duration
+		const sourceAvg = sourceData ? (sourceData.avgDuration * (sourceTotalOps - 1) + duration) / sourceTotalOps : duration
 
 		const entityData = sourceData?.entities?.[entity]
 		const entityOpCount = entityData ? entityData[operation] + 1 : 1
 		const entityTotalOps = entityData ? entityData.reads + entityData.writes + entityData.deletes + 1 : 1
-		const entityAvg = entityData
-			? ((entityData.avgDuration * (entityTotalOps - 1)) + duration) / entityTotalOps
-			: duration
+		const entityAvg = entityData ? (entityData.avgDuration * (entityTotalOps - 1) + duration) / entityTotalOps : duration
 
 		const patch: Record<string, any> = {}
 		patch[schema] = {
@@ -247,11 +268,11 @@ export class Schema {
 							...(entityData || {}),
 							[operation]: entityOpCount,
 							avgDuration: Math.round(entityAvg),
-							errors: isError ? (entityData?.errors || 0) + 1 : entityData?.errors || 0
-						}
-					}
-				}
-			}
+							errors: isError ? (entityData?.errors || 0) + 1 : entityData?.errors || 0,
+						},
+					},
+				},
+			},
 		}
 
 		MetricsCollector.DispatchEvent_update(_MTR_.SCHEMAS_DETAILS, patch)

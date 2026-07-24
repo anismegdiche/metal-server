@@ -6,6 +6,8 @@ import type { NextFunction, Request, Response } from "express"
 import { Convert } from "../../../utils/Convert"
 import type { TUserCredentials } from "../../auth/@types"
 import { User } from "../../auth/User"
+import { ApiKey } from "../../apikey/ApiKey"
+import { API_KEY_PREFIX } from "../../apikey/@consts"
 import { type HttpError, HttpErrorForbidden, HttpErrorUnauthorized } from "../../errors/HttpErrors"
 import { ResponseHandler } from "../ResponseHandler"
 
@@ -38,7 +40,16 @@ export class UserResponse {
 	}
 
 	static IsAuthenticated(req: Request, _res: Response, next: NextFunction): void {
-		const tokenInfo = User.IsAuthenticated(UserResponse.GetRequestToken(req))
+		const token = UserResponse.GetRequestToken(req)
+		//
+		if (token?.startsWith(API_KEY_PREFIX.SK)) {
+			const tokenInfo = ApiKey.Verify(token)
+			req.__METAL_CURRENT_USER = tokenInfo
+			next()
+			return
+		}
+		//
+		const tokenInfo = User.IsAuthenticated(token)
 		if (tokenInfo) {
 			req.__METAL_CURRENT_USER = tokenInfo
 			next()

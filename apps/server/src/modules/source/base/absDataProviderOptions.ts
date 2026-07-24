@@ -2,10 +2,10 @@
 //
 //
 
+import { Logger } from "@metal/logger"
 import { Global } from "../../../modules/core/Global"
 import { DataTable, type TOrderBy } from "../../../types/DataTable"
-import type { TJson } from "../../../types/TJson"
-import { Logger } from "../../../utils/Logger"
+import type { TJson } from "@metal/types"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
@@ -15,7 +15,6 @@ import type { IDataProviderOptions } from "./IDataProviderOptions"
 
 //
 export abstract class absDataProviderOptions implements IDataProviderOptions {
-	
 	@Logger.LogFunction(true)
 	Parse(schemaRequest: TSchemaRequest, $context?: Partial<TContext>): Partial<TOptionalParameter> {
 		let options: TOptionalParameter = <TOptionalParameter>{}
@@ -31,11 +30,12 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 	}
 
 	@Logger.LogFunction(true)
-	GetFilter(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>,): Partial<TOptionalParameter> {
-		const {
-			"filter-expression": filterExpression,
-			filter
-		} = schemaRequest as TSchemaRequestSelect
+	GetFilter(
+		options: TOptionalParameter,
+		schemaRequest: TSchemaRequest,
+		$context?: Partial<TContext>,
+	): Partial<TOptionalParameter> {
+		const { "filter-expression": filterExpression, filter } = schemaRequest as TSchemaRequestSelect
 
 		if (filterExpression) {
 			options.Filter = PlaceHolder.EvaluateJsCode<string>(filterExpression, new Sandbox($context)) as string
@@ -49,7 +49,11 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 	}
 
 	@Logger.LogFunction(true)
-	GetFields(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>,): Partial<TOptionalParameter> {
+	GetFields(
+		options: TOptionalParameter,
+		schemaRequest: TSchemaRequest,
+		$context?: Partial<TContext>,
+	): Partial<TOptionalParameter> {
 		const { fields } = schemaRequest as TSchemaRequestSelect
 		const _fields: string =
 			fields === undefined ? "*" : (PlaceHolder.EvaluateJsCode(fields, new Sandbox($context)) ?? "*")
@@ -60,7 +64,11 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 	}
 
 	@Logger.LogFunction(true)
-	GetSort(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>,): Partial<TOptionalParameter> {
+	GetSort(
+		options: TOptionalParameter,
+		schemaRequest: TSchemaRequest,
+		$context?: Partial<TContext>,
+	): Partial<TOptionalParameter> {
 		const { sort } = schemaRequest as TSchemaRequestSelect
 		if (sort) {
 			options.Sort = PlaceHolder.EvaluateJsCode<TOrderBy>(sort, new Sandbox($context)) as TOrderBy
@@ -69,7 +77,11 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 	}
 
 	@Logger.LogFunction(true)
-	GetData(options: TOptionalParameter, schemaRequest: TSchemaRequest, $context?: Partial<TContext>,): Partial<TOptionalParameter> {
+	GetData(
+		options: TOptionalParameter,
+		schemaRequest: TSchemaRequest,
+		$context?: Partial<TContext>,
+	): Partial<TOptionalParameter> {
 		const { schema, entity, data } = schemaRequest as TSchemaRequestInsert
 
 		if (data) {
@@ -77,7 +89,7 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 			// no evaluation for CacheData
 			const _data = _isCacheData
 				? (data as TJson[])
-				: PlaceHolder.EvaluateJsCode<TJson[]>(data, new Sandbox($context)) ?? undefined
+				: (PlaceHolder.EvaluateJsCode<TJson[]>(data, new Sandbox($context)) ?? undefined)
 
 			options.Data = new DataTable(entity, _data)
 		}

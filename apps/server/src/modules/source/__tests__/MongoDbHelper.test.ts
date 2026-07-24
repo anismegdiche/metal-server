@@ -1,4 +1,4 @@
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import { MongoDbHelper } from "../providers/MongoDbHelper"
 
 describe("MongoDbHelper", () => {

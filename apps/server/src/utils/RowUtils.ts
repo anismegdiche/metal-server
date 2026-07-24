@@ -3,10 +3,10 @@
 //
 
 import { createHash, createHmac, randomUUID } from "node:crypto"
+import { Logger } from "@metal/logger"
 //
 import type { TRow } from "../types/DataTableTypes"
 import { JsonUtils } from "./JsonUtils"
-import { Logger } from "./Logger"
 
 //
 const HASH_ALGO = "sha256"

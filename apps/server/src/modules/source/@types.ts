@@ -2,7 +2,7 @@
 //
 //
 import type { DataTable, TOrderBy } from "../../types/DataTable"
-import type { TJson } from "../../types/TJson"
+import type { TJson } from "@metal/types"
 import type { DATA_ENTITY_TYPE } from "./@consts"
 
 //

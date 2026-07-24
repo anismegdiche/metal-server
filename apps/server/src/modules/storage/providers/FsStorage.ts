@@ -4,13 +4,13 @@
 
 import * as fs from "node:fs"
 import type { Readable } from "node:stream"
+import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
 import z from "zod"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { Logger } from "../../../utils/Logger"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
@@ -32,8 +32,8 @@ export type U__source_storage_fs_options = z.infer<typeof z_U__source_storage_fs
 
 type TFsStorageParams = {
 	[K in keyof U__source_storage_fs_options as K extends `${infer U}`
-	? TConvertParams<U>
-	: K]: U__source_storage_fs_options[K]
+		? TConvertParams<U>
+		: K]: U__source_storage_fs_options[K]
 }
 
 //
@@ -65,7 +65,7 @@ export class FsStorage extends absStorageProvider {
 
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
-		Assert.Condition(await this.FolderIsExist("") === true,`Folder '${this.Params?.folder}' does not exist`)
+		Assert.Condition((await this.FolderIsExist("")) === true, `Folder '${this.Params?.folder}' does not exist`)
 		Logger.Debug(`${Logger.Out} FsStorage: Connected`)
 	}
 

@@ -10,11 +10,11 @@ import {
 	type OperationInput,
 	type SqlQuerySpec,
 } from "@azure/cosmos"
+import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { Logger } from "../../../utils/Logger"
 import { StringUtils } from "../../../utils/StringUtils"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
@@ -160,8 +160,7 @@ export class CosmosDbData extends absDataProvider {
 
 			if (rows.length > 0) {
 				data.RowsSet(rows)
-				if (options?.Cache) 
-					await this.CacheSet(schemaRequest, data)
+				if (options?.Cache) await this.CacheSet(schemaRequest, data)
 			}
 
 			return HttpResponse.Ok(<TSchemaResponse>{

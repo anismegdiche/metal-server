@@ -7,7 +7,7 @@ import equal from "fast-deep-equal";
 import { forEach, forOwn, get, isEmpty, isObject, isString, pickBy, set } from "lodash-es";
 import objectPath from "object-path";
 //
-import type { TJson } from "../types/TJson";
+import type { TJson } from "@metal/types"
 import { Stringify } from "./JsonUtils/Stringify";
 import { ToTextList as _ToTextList } from "./JsonUtils/ToTextList";
 

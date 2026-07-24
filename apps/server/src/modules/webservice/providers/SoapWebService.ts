@@ -3,13 +3,13 @@
 //
 
 import { Readable } from "node:stream"
+import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
 // Lazy-loaded soap module
 //
-import type { TJson } from "../../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
-import { Logger } from "../../../utils/Logger"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { User } from "../../auth/User"
 import { CONTENT } from "../../content/@consts"
@@ -31,7 +31,7 @@ export class SoapWebService extends absWebServiceProvider {
 	ConfigSourceOptions?: U__source_webservice_options
 	Client?: import("soap").Client
 
-	_soapOptions : import("soap").IOptions = {}
+	_soapOptions: import("soap").IOptions = {}
 
 	Headers: Record<string, string>[] = []
 
@@ -67,7 +67,6 @@ export class SoapWebService extends absWebServiceProvider {
 
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
-
 		Assert.Var<U__source_webservice>(this.ConfigSource, "host is not configured")
 
 		const { host } = this.ConfigSource
@@ -78,7 +77,10 @@ export class SoapWebService extends absWebServiceProvider {
 
 		const soap = await SoapWebService._loadSoapModule()
 
-		this.Client = Assert.Get<import("soap").Client>(await soap.createClientAsync(host, this._soapOptions), `SoapWebService.Init: Failed to create client`)
+		this.Client = Assert.Get<import("soap").Client>(
+			await soap.createClientAsync(host, this._soapOptions),
+			`SoapWebService.Init: Failed to create client`,
+		)
 
 		// set content type
 		const [header] = Object.keys(HEADER[content]!)

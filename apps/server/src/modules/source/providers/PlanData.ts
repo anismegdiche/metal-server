@@ -1,11 +1,12 @@
 //
 //
 //
+
+import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { Logger } from "../../../utils/Logger"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
@@ -15,13 +16,19 @@ import { HttpErrorBadRequest, HttpErrorNotFound } from "../../errors/HttpErrors"
 import type { Plan } from "../../plan/Plan"
 import { Plans } from "../../plan/Plans"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { TSchemaRequest, TSchemaRequestDelete, TSchemaRequestInsert, TSchemaRequestListEntities, TSchemaRequestSelect, TSchemaRequestUpdate, } from "../../schema/types/TSchemaRequest"
+import type {
+	TSchemaRequest,
+	TSchemaRequestDelete,
+	TSchemaRequestInsert,
+	TSchemaRequestListEntities,
+	TSchemaRequestSelect,
+	TSchemaRequestUpdate,
+} from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
 import { Source } from "../Source"
-
 
 //
 export class PlanData extends absDataProvider {
@@ -53,7 +60,10 @@ export class PlanData extends absDataProvider {
 
 	@Logger.LogFunction()
 	@SynchronizerManager.Synchronized()
-	async Select(schemaRequest: TSchemaRequestSelect, $context?: Partial<TContext>,): Promise<TInternalResponse<TSchemaResponse>> {
+	async Select(
+		schemaRequest: TSchemaRequestSelect,
+		$context?: Partial<TContext>,
+	): Promise<TInternalResponse<TSchemaResponse>> {
 		const { schema, entity, source } = schemaRequest
 
 		$context = merge($context, this.GetContext(schemaRequest))
@@ -64,29 +74,15 @@ export class PlanData extends absDataProvider {
 
 		const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-		Assert.Var<string>(source, source !== undefined,
-			`${schema}: plan '${source}' is missing`,
-			new HttpErrorNotFound())
+		Assert.Var<string>(source, source !== undefined, `${schema}: plan '${source}' is missing`, new HttpErrorNotFound())
 
-		Assert.Condition(
-			Source.Sources.has(source),
-			`${schema}: plan '${source}' is missing`,
-			new HttpErrorNotFound()
-		)
+		Assert.Condition(Source.Sources.has(source), `${schema}: plan '${source}' is missing`, new HttpErrorNotFound())
 
-		Assert.Var<string>(entity,
-			entity !== undefined,
-			`${schema}: plan '${source}' is missing`,
-			new HttpErrorBadRequest()
-		)
+		Assert.Var<string>(entity, entity !== undefined, `${schema}: plan '${source}' is missing`, new HttpErrorBadRequest())
 
 		const plan = Plans.get(entity)
 
-		Assert.Var<Plan>(
-			plan,
-			`${schema}: No plan found`,
-			new HttpErrorNotFound()
-		)
+		Assert.Var<Plan>(plan, `${schema}: No plan found`, new HttpErrorNotFound())
 
 		const data = await plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
 		if (data) {

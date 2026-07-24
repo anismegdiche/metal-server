@@ -1,0 +1,72 @@
+@baseUrl = http://127.0.0.1:3001
+
+# ── Health Check ─────────────────────────────────────────
+
+# @name health
+GET {{baseUrl}}/health
+
+###
+
+# ── New conversation ─────────────────────────────────────
+
+# @name chatNew
+POST {{baseUrl}}/chat
+Content-Type: application/json
+
+{
+    "message": "What sources are available?"
+}
+
+###
+
+@chatId={{chatNew.response.body.conversationId}}
+
+# ── Follow-up in same conversation ──────────────────────
+
+# @name chatFollowUp
+POST {{baseUrl}}/chat
+Content-Type: application/json
+
+{
+    "conversationId": "{{chatId}}",
+    "message": "Show me the schemas"
+}
+
+###
+
+# ── Ask about plans ──────────────────────────────────────
+
+# @name chatPlans
+POST {{baseUrl}}/chat
+Content-Type: application/json
+
+{
+    "message": "List all the plans and their status"
+}
+
+###
+
+# ── Ask about entities ──────────────────────────────────
+
+# @name chatEntities
+POST {{baseUrl}}/chat
+Content-Type: application/json
+
+{
+    "message": "Preview the first 5 rows from entity 'myplan' in schema 'myplan'"
+}
+
+###
+
+# ── Multi-turn conversation ─────────────────────────────
+
+# @name chatMultiTurn
+POST {{baseUrl}}/chat
+Content-Type: application/json
+
+{
+    "conversationId": "{{chatId}}",
+    "message": "Can you summarize what we discussed so far?"
+}
+
+###

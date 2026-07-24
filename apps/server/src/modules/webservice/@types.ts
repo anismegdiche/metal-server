@@ -3,7 +3,7 @@
 //
 import z from "zod"
 //
-import { type TJson, z_TJson, z_TJsonOf } from "../../types/TJson"
+import { type TJson, z_TJson, z_TJsonOf } from "@metal/types"
 
 //
 export const z_TEndpoint = z.object({

@@ -1,0 +1,1 @@
+podman stop ollama

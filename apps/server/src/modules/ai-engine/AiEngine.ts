@@ -4,7 +4,7 @@
 //
 import * as _ from "lodash-es"
 //
-import type { TJson } from "../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Factory } from "../../utils/Factory"
 import { Semaphore } from "../../utils/Semaphore"
 import { ConfigManager } from "../core/ConfigManager"

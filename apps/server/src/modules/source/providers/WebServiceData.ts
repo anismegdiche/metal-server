@@ -1,12 +1,13 @@
 //
 //
 //
+
+import { Logger, VERBOSITY } from "@metal/logger"
+import type { TJson } from "@metal/types"
 import { merge } from "lodash-es"
 //
 import { DataTable, type TRowsCopyParams } from "../../../types/DataTable"
-import type { TJson } from "../../../types/TJson"
 import { Assert } from "../../../utils/Assert"
-import { Logger, VERBOSITY } from "../../../utils/Logger"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import type { CONTENT } from "../../content/@consts"
 import type { IContentProvider } from "../../content/base/IContentProvider"
@@ -58,7 +59,6 @@ export class WebServiceData extends absDataProvider {
 
 	@Logger.LogFunction(["sourceConfig"])
 	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
-
 		await super.Init(source, sourceConfig)
 		this.Config = merge(this.Config, sourceConfig)
 
@@ -68,7 +68,7 @@ export class WebServiceData extends absDataProvider {
 
 		this.Connection = Assert.Get<absWebServiceProvider>(
 			await WebServiceProvider.GetProvider(webservice),
-			`${this.SourceName}: Failed to initialize webservice provider`
+			`${this.SourceName}: Failed to initialize webservice provider`,
 		)
 
 		this.Connection.SetConfig(this.Config)
@@ -84,10 +84,9 @@ export class WebServiceData extends absDataProvider {
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
 		if (this.Connection && this.ContentHandler) {
-			await this.Connection.Connect()
-				.then(() => {
-					Logger.Debug(`${Logger.Out} WebService Data Provider '${this.SourceName}' connected`)
-				})
+			await this.Connection.Connect().then(() => {
+				Logger.Debug(`${Logger.Out} WebService Data Provider '${this.SourceName}' connected`)
+			})
 		}
 	}
 

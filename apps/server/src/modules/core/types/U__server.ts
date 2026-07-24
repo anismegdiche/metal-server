@@ -2,11 +2,11 @@
 //
 //
 import z from "zod"
-import { z_T_IntPositive } from "../../../types/T_IntPositive"
+import { z_T_IntPositive } from "@metal/types"
 //
-import { z_TIpPort } from "../../../types/TIpPort"
-import { z_TJson } from "../../../types/TJson"
-import { z_TUrl } from "../../../types/TUrl"
+import { z_TIpPort } from "@metal/types"
+import { z_TJson } from "@metal/types"
+import { z_TUrl } from "@metal/types"
 import { z_U__server_authentication } from "../../auth/types/U__server_authentication"
 import { z_U__sources_source } from "./U__sources"
 

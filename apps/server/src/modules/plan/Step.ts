@@ -3,12 +3,12 @@
 //
 //
 import { CustomEvent } from "@dimkl/events"
+import { Logger } from "@metal/logger"
 //
 import type { DataTable, TRow } from "../../types/DataTable"
-import type { TUuidv7 } from "../../types/TUuidv7"
+import type { TUuidv7 } from "@metal/types"
 import { Assert } from "../../utils/Assert"
 import { JsonUtils } from "../../utils/JsonUtils"
-import { Logger } from "../../utils/Logger"
 import { Utils } from "../../utils/Utils"
 import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrorBase"
 import type { TContext } from "../sandbox/types/TContext"
@@ -376,9 +376,9 @@ export class Step {
 			`Plan '${planName}', step ${currentStep?.index} threw an error after ${attempt} attempt(s): ${JsonUtils.Stringify(errorDetails)}`,
 		)
 		throw new HttpErrorInternalServerError(
-			`Plan '${planName}', step ${currentStep?.index} threw an error after ${attempt} attempt(s): ${JsonUtils.Stringify(errorDetails)
-				
-			}`,
+			`Plan '${planName}', step ${currentStep?.index} threw an error after ${attempt} attempt(s): ${JsonUtils.Stringify(
+				errorDetails,
+			)}`,
 		)
 	}
 
@@ -412,7 +412,9 @@ export class Step {
 			}),
 		)
 
-		Logger.Warn(`Plan '${planName}', step ${currentStep?.index} skipped after ${attempt} attempt(s) ${JsonUtils.Stringify(errorDetails)}`)
+		Logger.Warn(
+			`Plan '${planName}', step ${currentStep?.index} skipped after ${attempt} attempt(s) ${JsonUtils.Stringify(errorDetails)}`,
+		)
 		return data
 	}
 

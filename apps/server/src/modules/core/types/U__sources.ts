@@ -3,8 +3,8 @@
 //
 import z from "zod"
 //
-import { z_TIpPort } from "../../../types/TIpPort"
-import { z_TJson } from "../../../types/TJson"
+import { z_TIpPort } from "@metal/types"
+import { z_TJson } from "@metal/types"
 import { DATA_PROVIDER } from "../../source/@consts"
 
 //

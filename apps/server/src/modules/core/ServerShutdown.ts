@@ -4,9 +4,9 @@
 // Handles graceful shutdown of all server components
 //
 import type { Server } from "node:http"
+import { Logger } from "@metal/logger"
 import type { FSWatcher } from "chokidar"
 import { JsonUtils } from "../../utils/JsonUtils"
-import { Logger } from "../../utils/Logger"
 import { AiDocker } from "../ai-engine/AiDocker"
 import { Cache } from "../cache/Cache"
 import { Schedule } from "../plan/Schedule"

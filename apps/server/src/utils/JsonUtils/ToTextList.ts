@@ -1,5 +1,5 @@
 import { forEach } from "lodash-es"
-import type { TJson } from "../../types/TJson"
+import type { TJson } from "@metal/types"
 import { Stringify } from "./Stringify"
 
 export function ToTextList(json?: TJson): string {

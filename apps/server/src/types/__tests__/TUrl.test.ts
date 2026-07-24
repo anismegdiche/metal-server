@@ -1,4 +1,4 @@
-import { z_TUrl } from "../TUrl"
+import { z_TUrl } from "@metal/types"
 
 describe("TUrl Type", () => {
 	describe("Valid URLs", () => {

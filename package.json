@@ -18,6 +18,7 @@
 		"start": "yarn workspace @metal/server start",
 		"prod": "yarn workspace @metal/server prod",
 		"prod:build-all-images": "yarn workspace @metal/server prod:build-all-images",
+		"prod:generate-api-key": "yarn workspace @metal/server prod:generate-api-key",
 		"test": "yarn workspace @metal/server test",
 		"lint": "yarn workspace @metal/server lint",
 		"lint:check": "yarn workspace @metal/server lint:check",

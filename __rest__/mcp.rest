@@ -1,0 +1,199 @@
+# @name login
+POST  http://127.0.0.1:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+###
+
+@token={{login.response.body.token}}
+
+# ── Initialize ───────────────────────────────────────────
+
+# @name init
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2025-03-26",
+    "capabilities": {},
+    "clientInfo": { "name": "rest-client", "version": "1.0.0" }
+  }
+}
+###
+
+# ── List tools ───────────────────────────────────────────
+
+# @name listTools
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/list",
+  "params": {}
+}
+###
+
+# ── Call: list_sources ───────────────────────────────────
+
+# @name listSources
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "list_sources",
+    "arguments": {}
+  }
+}
+###
+
+# ── Call: get_source ─────────────────────────────────────
+
+# @name getSource
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "get_source",
+    "arguments": { "sourceId": "src-json" }
+  }
+}
+###
+
+# ── Call: list_schemas ───────────────────────────────────
+
+# @name listSchemas
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "tools/call",
+  "params": {
+    "name": "list_schemas",
+    "arguments": {}
+  }
+}
+###
+
+# ── Call: get_schema ─────────────────────────────────────
+
+# @name getSchema
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "get_schema",
+    "arguments": { "schemaId": "myplan" }
+  }
+}
+###
+
+# ── Call: preview_entity (with schema) ───────────────────
+
+# @name previewEntityWithSchema
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "tools/call",
+  "params": {
+    "name": "preview_entity",
+    "arguments": { "entity": "myplan", "schema": "myplan", "limit": 3 }
+  }
+}
+###
+
+# ── Call: preview_entity (global search) ─────────────────
+
+# @name previewEntityGlobal
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 8,
+  "method": "tools/call",
+  "params": {
+    "name": "preview_entity",
+    "arguments": { "entity": "output.json", "limit": 10 }
+  }
+}
+###
+
+# ── Call: list_plans ─────────────────────────────────────
+
+# @name listPlans
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 9,
+  "method": "tools/call",
+  "params": {
+    "name": "list_plans",
+    "arguments": {}
+  }
+}
+###
+
+# ── Call: get_plan ───────────────────────────────────────
+
+# @name getPlan
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 10,
+  "method": "tools/call",
+  "params": {
+    "name": "get_plan",
+    "arguments": { "planId": "myplan" }
+  }
+}
+###

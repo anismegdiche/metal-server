@@ -1,12 +1,13 @@
 //
 //
 //
+
+import { Logger } from "@metal/logger"
 import type { FSWatcher } from "chokidar"
 import chokidar from "chokidar"
 import type { LogLevelDesc } from "loglevel"
 //
 import { Convert } from "../../utils/Convert"
-import { Logger } from "../../utils/Logger"
 import { AiEngine } from "../ai-engine/AiEngine"
 import { AuthProvider } from "../auth/AuthProvider"
 import { Roles } from "../auth/Roles"
@@ -63,8 +64,9 @@ export class ServerInitializer {
 	static StartWatcher(): void {
 		ServerInitializer.configWatcher = chokidar.watch(ConfigManager.ConfigFilePath).on("change", () => {
 			Logger.Info("Config file changed. Reloading...")
-			import("./ServerRuntime")
-				.then(({ ServerRuntime }) => ServerRuntime.Reload().catch((err: Error) => Logger.Error(err.message)))
+			import("./ServerRuntime").then(({ ServerRuntime }) =>
+				ServerRuntime.Reload().catch((err: Error) => Logger.Error(err.message)),
+			)
 		})
 
 		ServerShutdown.RegisterConfigWatcher(ServerInitializer.configWatcher)

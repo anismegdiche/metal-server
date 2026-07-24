@@ -9,7 +9,7 @@ describe("CsvContent", () => {
 		"csv-newline": "\n",
 		"csv-header": true,
 		"csv-quote": "",
-		"csv-skip-empty-lines": "greedy",
+		"csv-skip-empty-lines": true,
 	}
 
 	const csvContent = new CsvContent()
@@ -279,7 +279,7 @@ describe("CsvContent", () => {
 				"csv-newline": "\r\n",
 				"csv-header": false,
 				"csv-quote": undefined,
-				"csv-skip-empty-lines": "greedy",
+				"csv-skip-empty-lines": true,
 			}
 
 			csvContent.SetConfig(options)

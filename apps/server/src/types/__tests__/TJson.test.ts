@@ -3,7 +3,7 @@
 //
 //
 //
-import type { TJson } from "../TJson"
+import type { TJson } from "@metal/types"
 
 const dataA: TJson = {
 	name: "Davy Jones",
