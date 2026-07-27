@@ -1,4 +1,5 @@
-import { Logger } from '@metal/logger' // EXACT same path as in your app
+import { type LogEntry, Logger } from '@metal/logger' // EXACT same path as in your app
+import PersistentMap from '@metal/persistent-map'
 import { vi } from 'vitest'
 
 const noop = () => { }
@@ -15,3 +16,4 @@ vi.spyOn(Logger, 'EnableAll').mockImplementation(noop)
 
 // Morgan middleware must still call next()
 Logger.RequestMiddleware = (_req: any, _res: any, next: any) => next()
+
