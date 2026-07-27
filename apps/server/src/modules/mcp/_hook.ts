@@ -4,18 +4,25 @@
 import { Logger } from "@metal/logger"
 import { ROUTE } from "../core/@consts"
 import { ConfigManager } from "../core/ConfigManager"
+import type { U__server } from "../core/types/U__server"
 import { ServerEndpoint } from "../core/ServerEndpoint"
+import { McpToolsValidator } from "./McpToolsValidator"
 import { McpRouter } from "./router"
-import type { U__mcp } from "./types/U__mcp"
 
 //
 export function RegisterMiddleware(): void {
-	if (!ConfigManager.Has("mcp")) return
+	McpToolsValidator.Validate()
 
-	const mcpConfig = ConfigManager.Get<U__mcp>("mcp")
-	if (!mcpConfig?.enabled) return
+	const serverConfig = ConfigManager.Get<U__server>("server")
+	const enableMcp = serverConfig?.endpoints?.["enable-mcp"] ?? false
+	if (!enableMcp) return
 
-	const route = mcpConfig.route ?? ROUTE.MCP_PATH
+	const hasAuth = ConfigManager.Has("server.authentication")
+	if (!hasAuth) {
+		Logger.Warn("[MCP] Warning: MCP endpoint is enabled without authentication. Restrict to trusted networks.")
+	}
+
+	const route = ROUTE.MCP_PATH
 
 	ServerEndpoint.RegisterMiddleware(() => {
 		Logger.Info(`Route: Enabling MCP, URL= ${route}`)

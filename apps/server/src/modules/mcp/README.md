@@ -1,270 +1,187 @@
 # Metal MCP Server
 
-Exposes Metal's data sources, schemas, entities, and plans as MCP (Model Context Protocol) tools. Read-only — no mutating operations.
+Exposes Metal schemas and entities as MCP (Model Context Protocol) tools via declarative YAML configuration. Any LLM client supporting MCP (Claude Desktop, Claude Code, etc.) can call them directly.
 
 ## Configuration
 
-Add to `config.yml`:
+### Enable the endpoint
+
+```yaml
+server:
+  port: 3000
+  endpoints:
+    enable-mcp: true
+```
+
+### Declare tools
 
 ```yaml
 mcp:
-  enabled: true
-  route: /mcp                    # optional, defaults to /mcp
-  hide-sensitive-data:           # optional, fields to strip from results
+  server:
+    name: my-metal-mcp
+    version: "1.0.0"
+  hide-sensitive-data:
     - password
     - secret
+  tools:
+    get_users:
+      description: "Get list of users, optionally filtered by status"
+      schema: crm
+      entity: users
+      action: read
+      cache: 30
+      parameters:
+        status:
+          type: string
+          required: false
+          description: "Filter by status"
+          enum: [active, inactive]
+        limit:
+          type: number
+          required: false
+          description: "Max rows to return"
+          default: 50
 ```
 
-The MCP endpoint uses Metal's existing auth middleware — all requests must include a valid `Authorization: Bearer <token>` header.
+## Tool Declaration
 
-## Tools
+Each key under `mcp.tools` is the MCP tool name. Every tool maps to a schema entity and an action.
 
-### `list_sources`
+### Parameters
 
-List all configured data sources.
+| Parameter     | Type    | Required | Description                                                                 |
+| ------------- | ------- | -------- | --------------------------------------------------------------------------- |
+| `description` | String  | Y        | Description shown to the LLM                                               |
+| `schema`      | String  | Y        | Schema name (must exist in `schemas` config)                               |
+| `entity`      | String  | Y        | Entity name within the schema                                               |
+| `action`      | Enum    | N        | `read`, `create`, `update`, `delete` (default: `read`)                     |
+| `destructive` | Boolean | N        | Must be `true` for any `action` other than `read`                          |
+| `role`        | String  | N        | Minimum role required to call this tool                                    |
+| `cache`       | Integer | N        | Seconds to cache results (read only)                                       |
+| `parameters`  | Object  | N        | Input parameters (see below)                                               |
 
-**Input:** None
+### Input Parameters
 
-**Example call:**
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "list_sources",
-    "arguments": {}
-  }
-}
+| Parameter     | Type    | Required | Description                                     |
+| ------------- | ------- | -------- | ----------------------------------------------- |
+| `type`        | Enum    | Y        | `string`, `number`, `boolean`, `array`          |
+| `required`    | Boolean | N        | Whether the LLM must supply this (default: `false`) |
+| `description` | String  | Y        | Description shown to the LLM                    |
+| `default`     | Any     | N        | Default value when omitted                      |
+| `enum`        | Array   | N        | Restricts allowed values                        |
+| `maps-to`     | String  | N        | Underlying field name if different from key     |
+
+## Examples
+
+### Read tool with filtering
+
+```yaml
+mcp:
+  tools:
+    get_users:
+      description: "Get users filtered by status"
+      schema: crm
+      entity: users
+      action: read
+      parameters:
+        status:
+          type: string
+          required: false
+          description: "Filter by status"
+          enum: [active, inactive]
+        limit:
+          type: number
+          required: false
+          description: "Max rows"
+          default: 50
 ```
 
-**Response:**
-```json
-[
-  { "name": "my-postgres", "provider": "POSTGRES", "host": "localhost", "port": 5432, "database": "mydb" },
-  { "name": "my-mssql", "provider": "MSSQL", "host": "10.0.0.1", "port": 1433, "database": "production" }
-]
+### Create tool (destructive)
+
+```yaml
+mcp:
+  tools:
+    create_user:
+      description: "Create a new user"
+      schema: crm
+      entity: users
+      action: create
+      destructive: true
+      role: admin
+      parameters:
+        name:
+          type: string
+          required: true
+          description: "User's full name"
+        email:
+          type: string
+          required: true
+          description: "User's email address"
 ```
 
----
+### Delete tool (destructive)
 
-### `get_source`
-
-Get details of a specific data source (password is stripped).
-
-**Input:**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `sourceId` | string | yes | The source name/id |
-
-**Example call:**
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "get_source",
-    "arguments": { "sourceId": "my-postgres" }
-  }
-}
+```yaml
+mcp:
+  tools:
+    delete_stale_sessions:
+      description: "Delete sessions older than N days"
+      schema: auth
+      entity: sessions
+      action: delete
+      destructive: true
+      role: admin
+      parameters:
+        days:
+          type: number
+          required: true
+          description: "Delete sessions older than this many days"
 ```
 
-**Response:**
-```json
-{
-  "name": "my-postgres",
-  "provider": "POSTGRES",
-  "host": "localhost",
-  "port": 5432,
-  "database": "mydb"
-}
+### Plan-backed data via schema
+
+Plans can be exposed as schema entities through a `plans` provider:
+
+```yaml
+sources:
+  src-myplan:
+    provider: plans
+
+schemas:
+  myplan:
+    source: src-myplan
+
+mcp:
+  tools:
+    run_report:
+      description: "Run the daily report plan"
+      schema: myplan
+      entity: daily-report
+      action: read
 ```
 
----
+## Authorization
 
-### `list_schemas`
+MCP tool access reuses Metal's existing `roles`/`users`/`server.authentication` configuration:
 
-List all configured schemas with their entities and source mappings.
+- If no authentication is configured, all tools are exposed unauthenticated (startup warning emitted)
+- Each tool's required permission is derived from its `action` (`read`→`r`, `create`→`c`, `update`→`u`, `delete`→`d`)
+- An explicit `role:` on a tool overrides the derived permission
+- Tools the caller can't access are omitted from `tools/list` entirely
 
-**Input:** None
+## Validation (startup)
 
-**Example call:**
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "list_schemas",
-    "arguments": {}
-  }
-}
-```
-
-**Response:**
-```json
-[
-  {
-    "name": "my-schema",
-    "source": "my-postgres",
-    "entities": {
-      "users": { "source": "my-postgres", "entity": "public.users" }
-    }
-  }
-]
-```
-
----
-
-### `get_schema`
-
-Get details of a specific schema including its entities, source mappings, roles, and anonymization config.
-
-**Input:**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `schemaId` | string | yes | The schema name |
-
-**Example call:**
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "get_schema",
-    "arguments": { "schemaId": "my-schema" }
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "name": "my-schema",
-  "source": "my-postgres",
-  "entities": {
-    "users": { "source": "my-postgres", "entity": "public.users" },
-    "orders": { "source": "my-postgres", "entity": "public.orders" }
-  },
-  "roles": ["admin", "reader"],
-  "anonymize": "email, phone"
-}
-```
-
----
-
-### `preview_entity`
-
-Preview a small sample of rows from an entity. If only `entity` is provided, it is searched across all schemas. System fields (`__seq__`, `__idx__`, `__data__`, `__deleted__`, `__created_at__`) are always stripped.
-
-**Input:**
-
-| Field | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
-| `entity` | string | yes | — | The entity name to preview |
-| `schema` | string | no | — | The schema name (if omitted, entity is searched globally) |
-| `limit` | number | no | 5 | Max rows to return (capped at 20) |
-
-**Example call:**
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "preview_entity",
-    "arguments": { "entity": "users", "schema": "my-schema", "limit": 3 }
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "schema": "my-schema",
-  "entity": "users",
-  "fields": { "id": "BIGINT", "name": "VARCHAR", "email": "VARCHAR" },
-  "rows": [
-    { "id": 1, "name": "Alice", "email": "alice@example.com" },
-    { "id": 2, "name": "Bob", "email": "bob@example.com" },
-    { "id": 3, "name": "Charlie", "email": "charlie@example.com" }
-  ],
-  "count": 3
-}
-```
-
----
-
-### `list_plans`
-
-List all configured plans with their step counts.
-
-**Input:** None
-
-**Example call:**
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "list_plans",
-    "arguments": {}
-  }
-}
-```
-
-**Response:**
-```json
-[
-  { "name": "etl-daily", "steps": 4 },
-  { "name": "sync-inventory", "steps": 2 }
-]
-```
-
----
-
-### `get_plan`
-
-Get the full definition of a plan including its steps, error handling, and failure strategy.
-
-**Input:**
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `planId` | string | yes | The plan name |
-
-**Example call:**
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "get_plan",
-    "arguments": { "planId": "etl-daily" }
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "name": "etl-daily",
-  "steps": [
-    { "select": { "schema": "source", "entity": "raw_data" } },
-    { "transform": { "field": "date", "as": "parsed_date", "expression": "new Date($row.date)" } },
-    { "insert": { "schema": "warehouse", "entity": "daily_report" } }
-  ],
-  "on-error": { "strategy": "throw", "scope": "step" },
-  "failure-strategy": "throw"
-}
-```
-
----
-
-## Testing with MCP Inspector
-
-```sh
-npx @modelcontextprotocol/inspector
-```
-
-Point it at `http://localhost:3000/mcp` with a valid Bearer token in the auth header.
+Metal fails to start when:
+1. Tool name doesn't match `^[a-zA-Z0-9_-]+$`
+2. `schema` reference doesn't exist in config
+3. `entity` doesn't exist within the schema (unless schema has wildcard source)
+4. `action` is not `read` without `destructive: true`
+5. A parameter is missing `description` or `type`
 
 ## Architecture
 
-- `adapter.ts` — `MetalMcpAdapter` creates a fresh `McpServer` per request (stateless mode), registers all tools, and connects via `StreamableHTTPServerTransport`.
-- `_hook.ts` — Auto-discovered by `ServerCore.LoadModuleHooks()`. Registers the `/mcp` route if `mcp.enabled: true` in config.
-- `router.ts` — Express router: POST → MCP handler, GET/DELETE → 405.
-- User context is propagated via `AsyncLocalStorage` so tool implementations can access the authenticated user for role checking.
-- Each tool call is logged with tool name, input args, caller identity, timestamp, and success/error status.
+- `adapter.ts` — Creates a fresh `McpServer` per request (stateless), registers config-driven tools
+- `_hook.ts` — Runs validator, checks `server.endpoints.enable-mcp`, registers route
+- `router.ts` — Express router: POST → MCP handler
+- `McpToolsValidator.ts` — Startup validation for tool declarations
+- User context propagated via `AsyncLocalStorage`

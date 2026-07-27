@@ -41,6 +41,10 @@ export const z_U__server_ai_engines = z.object({
 	memory: z_T_IntPositive.min(1).max(128).optional(),
 })
 
+export const z_U__server_endpoints = z.object({
+	"enable-mcp": z.boolean().default(false).optional(),
+})
+
 export const z_U__server = z.object({
 	port: z_TIpPort.optional(),
 	verbosity: z.union([z.string(), z_T_IntPositive]).optional(),
@@ -58,9 +62,11 @@ export const z_U__server = z.object({
 		.optional(),
 	"response-chunk": z.boolean().optional(),
 	"ai-engines": z_U__server_ai_engines.optional(),
+	endpoints: z_U__server_endpoints.optional(),
 })
 
 //
 export type U__server_ai_engines_cors = z.infer<typeof z_U__server_ai_engines_cors>
 export type U__server_ai_engines = z.infer<typeof z_U__server_ai_engines>
+export type U__server_endpoints = z.infer<typeof z_U__server_endpoints>
 export type U__server = z.infer<typeof z_U__server>

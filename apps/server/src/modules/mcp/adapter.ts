@@ -10,22 +10,38 @@ import z from "zod"
 //
 import type { TRow } from "../../types/DataTable"
 import type { TUserTokenInfo } from "../auth/@types"
+import { AUTH_PERMISSION } from "../auth/@consts"
+import { Roles } from "../auth/Roles"
 import { HTTP_STATUS_CODE } from "../core/@consts"
 import { ConfigManager } from "../core/ConfigManager"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
-import type { U__schemas_schema } from "../core/types/U__schemas"
-import type { U__sources_source } from "../core/types/U__sources"
-import { PlansManager } from "../plan/PlansManager"
 import { Schema } from "../schema/Schema"
+import type { TSchemaRequestDelete } from "../schema/types/TSchemaRequest"
+import type { TSchemaRequestInsert } from "../schema/types/TSchemaRequest"
 import type { TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
+import type { TSchemaRequestUpdate } from "../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../schema/types/TSchemaResponse"
-import { SourceRegistry } from "../source/SourceRegistry"
-import { MCP_DEFAULT_ROW_LIMIT, MCP_TOOL } from "./@consts"
-import type { U__mcp } from "./types/U__mcp"
+import { MCP_DEFAULT_ROW_LIMIT } from "./@consts"
+import type { U__mcp, U__mcp_tool, U__mcp_tool_parameter } from "./types/U__mcp"
 
 //
 export const asyncLocalStorage = new AsyncLocalStorage<TUserTokenInfo>()
 
+const ACTION_TO_PERMISSION: Record<string, string> = {
+	read: AUTH_PERMISSION.READ,
+	create: AUTH_PERMISSION.CREATE,
+	update: AUTH_PERMISSION.UPDATE,
+	delete: AUTH_PERMISSION.DELETE,
+}
+
+const ZOD_TYPE_MAP: Record<string, z.ZodType> = {
+	string: z.string(),
+	number: z.number(),
+	boolean: z.boolean(),
+	array: z.array(z.unknown()),
+}
+
+//
 function _logToolCall(toolName: string, args: unknown, user: TUserTokenInfo | undefined, startMs: number, error?: unknown) {
 	const duration = Date.now() - startMs
 	const caller = user?.user ?? "unknown"
@@ -51,15 +67,67 @@ function _getHideSensitiveFields(): string[] | undefined {
 	return mcpConfig?.["hide-sensitive-data"]
 }
 
-function _findSchemaForEntity(entityName: string): { schemaName: string; schemaConfig: U__schemas_schema } | undefined {
-	if (!Schema._schemaParams) return undefined
+function _hasToolAccess(toolConfig: U__mcp_tool, user: TUserTokenInfo | undefined): boolean {
+	if (toolConfig.role) {
+		const userRoles = user?.roles ?? []
+		return userRoles.includes(toolConfig.role)
+	}
 
-	for (const [schemaName, schemaConfig] of Object.entries(Schema._schemaParams)) {
-		if (schemaConfig.entities && entityName in schemaConfig.entities) {
-			return { schemaName, schemaConfig }
+	const permission = ACTION_TO_PERMISSION[toolConfig.action] ?? AUTH_PERMISSION.READ
+	return Roles.HasPermission(user, undefined, permission)
+}
+
+function _buildFilterFromParams(
+	args: Record<string, unknown>,
+	paramConfigs: Record<string, U__mcp_tool_parameter>,
+): Record<string, unknown> {
+	const filter: Record<string, unknown> = {}
+	for (const [paramName, config] of Object.entries(paramConfigs)) {
+		const value = args[paramName] ?? config.default
+		if (value !== undefined) {
+			const fieldName = config["maps-to"] ?? paramName
+			filter[fieldName] = value
 		}
 	}
-	return undefined
+	return filter
+}
+
+function _buildDataFromParams(
+	args: Record<string, unknown>,
+	paramConfigs: Record<string, U__mcp_tool_parameter>,
+): Record<string, unknown> {
+	const data: Record<string, unknown> = {}
+	for (const [paramName, config] of Object.entries(paramConfigs)) {
+		const value = args[paramName] ?? config.default
+		if (value !== undefined) {
+			const fieldName = config["maps-to"] ?? paramName
+			data[fieldName] = value
+		}
+	}
+	return data
+}
+
+function _buildInputSchema(parameters: Record<string, U__mcp_tool_parameter> | undefined): Record<string, z.ZodType> | undefined {
+	if (!parameters || Object.keys(parameters).length === 0) return undefined
+
+	const shape: Record<string, z.ZodType> = {}
+
+	for (const [name, param] of Object.entries(parameters)) {
+		let fieldSchema = ZOD_TYPE_MAP[param.type] ?? z.string()
+
+		if (param.description) fieldSchema = fieldSchema.describe(param.description)
+		if (param.enum) fieldSchema = z.enum(param.enum as [string, ...string[]])
+		if (param.default !== undefined) fieldSchema = fieldSchema.default(param.default)
+		if (!param.required) fieldSchema = fieldSchema.optional()
+
+		shape[name] = fieldSchema
+	}
+
+	return shape
+}
+
+function _mcpResult(content: string, isError?: boolean) {
+	return { content: [{ type: "text" as const, text: content }], ...(isError ? { isError: true as const } : {}) }
 }
 
 //
@@ -67,16 +135,19 @@ export class MetalMcpAdapter {
 	static async HandleRequest(req: Request, res: Response): Promise<void> {
 		const userToken = req.__METAL_CURRENT_USER
 
-		const startMs = Date.now()
 		console.log(`[MCP] Request received caller=${userToken?.user ?? "unknown"}`)
 
 		try {
+			const mcpConfig = ConfigManager.Get<U__mcp>("mcp")
+			const serverName = mcpConfig?.server?.name ?? "metal-mcp"
+			const serverVersion = mcpConfig?.server?.version ?? "1.0.0"
+
 			const server = new McpServer(
-				{ name: "metal-mcp", version: "1.0.0" },
+				{ name: serverName, version: serverVersion },
 				{ capabilities: {} },
 			)
 
-			MetalMcpAdapter.#registerTools(server)
+			MetalMcpAdapter.#registerConfigTools(server, mcpConfig?.tools ?? {}, userToken)
 
 			const transport = new StreamableHTTPServerTransport({
 				sessionIdGenerator: undefined,
@@ -107,311 +178,105 @@ export class MetalMcpAdapter {
 		}
 	}
 
-	static #registerTools(server: McpServer): void {
-		server.registerTool(
-			MCP_TOOL.LIST_SOURCES,
-			{
-				description: "List all configured data sources",
-			},
-			async () => {
-				const startMs = Date.now()
-				const user = asyncLocalStorage.getStore()
-				try {
-					const sources: Array<{ name: string; provider: string; host?: string; port?: number; database?: string }> = []
+	static #registerConfigTools(server: McpServer, tools: U__mcp["tools"], user: TUserTokenInfo | undefined): void {
+		for (const [toolName, toolConfig] of Object.entries(tools)) {
+			if (!_hasToolAccess(toolConfig, user)) continue
 
-					for (const [name, source] of SourceRegistry.Sources) {
-						const config = source.SourceConfig as U__sources_source
-						sources.push({
-							name,
-							provider: config.provider,
-							host: config.host,
-							port: config.port ?? undefined,
-							database: config.database,
-						})
-					}
+			const inputSchema = _buildInputSchema(toolConfig.parameters)
 
-					_logToolCall(MCP_TOOL.LIST_SOURCES, {}, user, startMs)
-					return {
-						content: [{ type: "text", text: JSON.stringify(sources, null, 2) }],
-					}
-				} catch (error) {
-					_logToolCall(MCP_TOOL.LIST_SOURCES, {}, user, startMs, error)
-					return {
-						content: [{ type: "text", text: `Error listing sources: ${error instanceof Error ? error.message : String(error)}` }],
-						isError: true,
-					}
-				}
-			},
-		)
-
-		server.registerTool(
-			MCP_TOOL.GET_SOURCE,
-			{
-				description: "Get details of a specific data source",
-				inputSchema: {
-					sourceId: z.string().describe("The source name/id to retrieve"),
+			server.registerTool(
+				toolName,
+				{
+					description: toolConfig.description,
+					...(inputSchema ? { inputSchema } : {}),
 				},
-			},
-			async (args) => {
-				const startMs = Date.now()
-				const user = asyncLocalStorage.getStore()
-				try {
-					const source = SourceRegistry.Sources.get(args.sourceId)
-					if (!source) {
-						_logToolCall(MCP_TOOL.GET_SOURCE, args, user, startMs)
-						return {
-							content: [{ type: "text", text: `Source '${args.sourceId}' not found` }],
-							isError: true,
-						}
+				async (args) => {
+					const startMs = Date.now()
+					const currentUser = asyncLocalStorage.getStore()
+					try {
+						return await MetalMcpAdapter.#executeSchemaTool(toolName, toolConfig, args as Record<string, unknown>, currentUser)
+					} catch (error) {
+						_logToolCall(toolName, args, currentUser, startMs, error)
+						return _mcpResult(`Error: ${error instanceof Error ? error.message : String(error)}`, true)
 					}
-
-					const config = { ...source.SourceConfig } as Record<string, unknown>
-					delete config.password
-
-					const result = {
-						name: args.sourceId,
-						...config,
-					}
-
-					_logToolCall(MCP_TOOL.GET_SOURCE, args, user, startMs)
-					return {
-						content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-					}
-				} catch (error) {
-					_logToolCall(MCP_TOOL.GET_SOURCE, args, user, startMs, error)
-					return {
-						content: [{ type: "text", text: `Error getting source: ${error instanceof Error ? error.message : String(error)}` }],
-						isError: true,
-					}
-				}
-			},
-		)
-
-		server.registerTool(
-			MCP_TOOL.LIST_SCHEMAS,
-			{
-				description: "List all configured schemas with their entities",
-			},
-			async () => {
-				const startMs = Date.now()
-				const user = asyncLocalStorage.getStore()
-				try {
-					const schemas: Array<{
-						name: string
-						source?: string
-						entities?: Record<string, { source: string; entity: string }>
-					}> = []
-
-					if (Schema._schemaParams) {
-						for (const [name, config] of Object.entries(Schema._schemaParams)) {
-							schemas.push({
-								name,
-								source: config.source,
-								entities: config.entities,
-							})
-						}
-					}
-
-					_logToolCall(MCP_TOOL.LIST_SCHEMAS, {}, user, startMs)
-					return {
-						content: [{ type: "text", text: JSON.stringify(schemas, null, 2) }],
-					}
-				} catch (error) {
-					_logToolCall(MCP_TOOL.LIST_SCHEMAS, {}, user, startMs, error)
-					return {
-						content: [{ type: "text", text: `Error listing schemas: ${error instanceof Error ? error.message : String(error)}` }],
-						isError: true,
-					}
-				}
-			},
-		)
-
-		server.registerTool(
-			MCP_TOOL.GET_SCHEMA,
-			{
-				description: "Get details of a specific schema including its entities and source mappings",
-				inputSchema: {
-					schemaId: z.string().describe("The schema name to retrieve"),
 				},
-			},
-			async (args) => {
-				const startMs = Date.now()
-				const user = asyncLocalStorage.getStore()
-				try {
-					if (!Schema._schemaParams || !(args.schemaId in Schema._schemaParams)) {
-						_logToolCall(MCP_TOOL.GET_SCHEMA, args, user, startMs)
-						return {
-							content: [{ type: "text", text: `Schema '${args.schemaId}' not found` }],
-							isError: true,
-						}
-					}
+			)
+		}
+	}
 
-					const config = Schema._schemaParams[args.schemaId]
-					const result = {
-						name: args.schemaId,
-						source: config?.source,
-						entities: config?.entities,
-						roles: config?.roles,
-						anonymize: config?.anonymize,
-					}
+	static async #executeSchemaTool(
+		toolName: string,
+		toolConfig: U__mcp_tool,
+		args: Record<string, unknown>,
+		user: TUserTokenInfo | undefined,
+	) {
+		const startMs = Date.now()
+		const params = toolConfig.parameters ?? {}
 
-					_logToolCall(MCP_TOOL.GET_SCHEMA, args, user, startMs)
-					return {
-						content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-					}
-				} catch (error) {
-					_logToolCall(MCP_TOOL.GET_SCHEMA, args, user, startMs, error)
-					return {
-						content: [{ type: "text", text: `Error getting schema: ${error instanceof Error ? error.message : String(error)}` }],
-						isError: true,
-					}
+		let result: TInternalResponse<TSchemaResponse | undefined>
+
+		switch (toolConfig.action) {
+			case "read": {
+				const schemaRequest: TSchemaRequestSelect = {
+					schema: toolConfig.schema,
+					entity: toolConfig.entity,
 				}
-			},
-		)
-
-		server.registerTool(
-			MCP_TOOL.PREVIEW_ENTITY,
-			{
-				description: "Preview a small sample of rows from an entity. If only entity is provided, it is searched across all schemas.",
-				inputSchema: {
-					entity: z.string().describe("The entity name to preview"),
-					schema: z.string().optional().describe("The schema name (optional — if omitted, the entity is searched across all schemas)"),
-					limit: z.number().int().min(1).max(MCP_DEFAULT_ROW_LIMIT).default(5).describe(`Maximum number of rows to return (max ${MCP_DEFAULT_ROW_LIMIT})`),
-				},
-			},
-			async (args) => {
-				const startMs = Date.now()
-				const user = asyncLocalStorage.getStore()
-				try {
-					let schemaName = args.schema
-
-					if (!schemaName) {
-						const found = _findSchemaForEntity(args.entity)
-						if (!found) {
-							_logToolCall(MCP_TOOL.PREVIEW_ENTITY, args, user, startMs)
-							return {
-								content: [{ type: "text", text: `Entity '${args.entity}' not found in any schema` }],
-								isError: true,
-							}
-						}
-						schemaName = found.schemaName
-					}
-
-					const limit = Math.min(args.limit, MCP_DEFAULT_ROW_LIMIT)
-
-					const schemaRequest: TSchemaRequestSelect = {
-						schema: schemaName,
-						entity: args.entity,
-					}
-
-					const intRes: TInternalResponse<TSchemaResponse | undefined> = await Schema.Select(schemaRequest, user)
-
-					if (!intRes.Body) {
-						_logToolCall(MCP_TOOL.PREVIEW_ENTITY, args, user, startMs)
-						return {
-							content: [{ type: "text", text: "No data returned" }],
-						}
-					}
-
-					const hideFields = _getHideSensitiveFields()
-					const rawRows = await intRes.Body.data.Rows({ limit })
-					const rows = rawRows.map((row) => _stripSensitiveFields(row, hideFields))
-					const fields = intRes.Body.data.Fields
-
-					const result = {
-						schema: schemaName,
-						entity: args.entity,
-						fields,
-						rows,
-						count: rows.length,
-					}
-
-					_logToolCall(MCP_TOOL.PREVIEW_ENTITY, args, user, startMs)
-					return {
-						content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-					}
-				} catch (error) {
-					_logToolCall(MCP_TOOL.PREVIEW_ENTITY, args, user, startMs, error)
-					return {
-						content: [{ type: "text", text: `Error previewing entity: ${error instanceof Error ? error.message : String(error)}` }],
-						isError: true,
-					}
+				const filter = _buildFilterFromParams(args, params)
+				if (Object.keys(filter).length > 0) schemaRequest.filter = filter
+				if (toolConfig.cache) schemaRequest.cache = toolConfig.cache
+				result = await Schema.Select(schemaRequest, user)
+				break
+			}
+			case "create": {
+				const schemaRequest: TSchemaRequestInsert = {
+					schema: toolConfig.schema,
+					entity: toolConfig.entity,
+					data: _buildDataFromParams(args, params),
 				}
-			},
-		)
-
-		server.registerTool(
-			MCP_TOOL.LIST_PLANS,
-			{
-				description: "List all configured plans",
-			},
-			async () => {
-				const startMs = Date.now()
-				const user = asyncLocalStorage.getStore()
-				try {
-					const plans: Array<{ name: string; steps: number }> = []
-
-					for (const [name, config] of Object.entries(PlansManager.Config)) {
-						plans.push({
-							name,
-							steps: config.steps?.length ?? 0,
-						})
-					}
-
-					_logToolCall(MCP_TOOL.LIST_PLANS, {}, user, startMs)
-					return {
-						content: [{ type: "text", text: JSON.stringify(plans, null, 2) }],
-					}
-				} catch (error) {
-					_logToolCall(MCP_TOOL.LIST_PLANS, {}, user, startMs, error)
-					return {
-						content: [{ type: "text", text: `Error listing plans: ${error instanceof Error ? error.message : String(error)}` }],
-						isError: true,
-					}
+				result = await Schema.Insert(schemaRequest, user)
+				break
+			}
+			case "update": {
+				const schemaRequest: TSchemaRequestUpdate = {
+					schema: toolConfig.schema,
+					entity: toolConfig.entity,
+					filter: _buildFilterFromParams(args, params),
+					data: _buildDataFromParams(args, params),
 				}
-			},
-		)
-
-		server.registerTool(
-			MCP_TOOL.GET_PLAN,
-			{
-				description: "Get the definition of a specific plan including its steps",
-				inputSchema: {
-					planId: z.string().describe("The plan name to retrieve"),
-				},
-			},
-			async (args) => {
-				const startMs = Date.now()
-				const user = asyncLocalStorage.getStore()
-				try {
-					const planConfig = PlansManager.Config[args.planId]
-					if (!planConfig) {
-						_logToolCall(MCP_TOOL.GET_PLAN, args, user, startMs)
-						return {
-							content: [{ type: "text", text: `Plan '${args.planId}' not found` }],
-							isError: true,
-						}
-					}
-
-					const result = {
-						name: args.planId,
-						steps: planConfig.steps,
-						"on-error": planConfig["on-error"],
-						"failure-strategy": planConfig["failure-strategy"],
-					}
-
-					_logToolCall(MCP_TOOL.GET_PLAN, args, user, startMs)
-					return {
-						content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-					}
-				} catch (error) {
-					_logToolCall(MCP_TOOL.GET_PLAN, args, user, startMs, error)
-					return {
-						content: [{ type: "text", text: `Error getting plan: ${error instanceof Error ? error.message : String(error)}` }],
-						isError: true,
-					}
+				result = await Schema.Update(schemaRequest, user)
+				break
+			}
+			case "delete": {
+				const schemaRequest: TSchemaRequestDelete = {
+					schema: toolConfig.schema,
+					entity: toolConfig.entity,
+					filter: _buildFilterFromParams(args, params),
 				}
-			},
-		)
+				result = await Schema.Delete(schemaRequest, user)
+				break
+			}
+		}
+
+		if (!result?.Body) {
+			_logToolCall(toolName, args, user, startMs)
+			return _mcpResult("No data returned")
+		}
+
+		const hideFields = _getHideSensitiveFields()
+
+		if (toolConfig.action === "read") {
+			const rawRows = await result.Body.data.Rows({ limit: MCP_DEFAULT_ROW_LIMIT })
+			const rows = rawRows.map((row) => _stripSensitiveFields(row, hideFields))
+			const output = {
+				fields: result.Body.data.Fields,
+				rows,
+				count: rows.length,
+			}
+			_logToolCall(toolName, args, user, startMs)
+			return _mcpResult(JSON.stringify(output, null, 2))
+		}
+
+		_logToolCall(toolName, args, user, startMs)
+		return _mcpResult(JSON.stringify({ success: true }, null, 2))
 	}
 }
