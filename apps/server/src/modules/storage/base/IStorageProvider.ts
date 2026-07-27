@@ -5,16 +5,18 @@ import type { Readable } from "node:stream"
 //
 import type { DataTable } from "../../../types/DataTable"
 import type { clsClonable } from "../../../utils/base/clsClonable"
-import type { U__sources_source } from "../../core/types/U__sources"
-import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
+import type { U__source_storage } from "../../source/types/U__source_storage"
+import type { U__storage } from "../types/U__storage"
 
 //
 export interface IStorageProvider extends clsClonable {
-	Config?: U__source_storage_file_options
+	SourceConfig?: U__source_storage
+
+	StorageConfig?: U__storage
 
 	IsConfigValid(): void
 
-	SetConfig(configSource: U__sources_source): void
+	SetConfig(configSource: U__source_storage): void
 
 	Init(): void
 	//

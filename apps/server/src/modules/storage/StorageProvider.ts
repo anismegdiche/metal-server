@@ -20,6 +20,7 @@ export class StorageProvider {
 	static readonly #providerMap: ProviderMap = {
 		[STORAGE.FILESYSTEM]: () => import("./providers/FsStorage").then((m) => m.FsStorage),
 		[STORAGE.FTP]: () => import("./providers/FtpStorage").then((m) => m.FtpStorage),
+		[STORAGE.SFTP]: () => import("./providers/SftpStorage").then((m) => m.SftpStorage),
 		[STORAGE.AZURE_BLOB]: () => import("./providers/AzureBlobStorage").then((m) => m.AzureBlobStorage),
 		[STORAGE.AZURE_FILE]: () => import("./providers/AzureFileStorage").then((m) => m.AzureFileStorage),
 		[STORAGE.AZURE_DATALAKE_G2]: () => import("./providers/AzureDataLakeStorage").then((m) => m.AzureDataLakeStorage),

@@ -1,9 +1,10 @@
 //
 //
 //
-import type { DataTable, TOrderBy } from "../../types/DataTable"
 import type { TJson } from "@metal/types"
+import type { DataTable, TOrderBy } from "../../types/DataTable"
 import type { DATA_ENTITY_TYPE } from "./@consts"
+
 
 //
 export type TDataListEntity = {

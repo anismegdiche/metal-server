@@ -29,12 +29,13 @@ import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
 import { Source } from "../Source"
+import type { U__source_plans } from "../types/U__source_plans"
 
 //
 export class PlanData extends absDataProvider {
 	SourceName?: string
 	ProviderName = DATA_PROVIDER.PLANS
-	Config: U__sources_source = <U__sources_source>{}
+	Config: U__source_plans = <U__source_plans>{}
 	Connection: undefined
 
 	// biome-ignore lint/complexity/noUselessConstructor: compatibility
@@ -45,17 +46,17 @@ export class PlanData extends absDataProvider {
 	@Logger.LogFunction()
 	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
-		this.Config = sourceConfig
+		this.Config = sourceConfig as U__source_plans
 	}
 
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
-		Logger.Info(`${Logger.Out} connected to '${this.SourceName} (${this.Config.database})'`)
+		Logger.Info(`${Logger.Out} connected to '${this.SourceName}'`)
 	}
 
 	@Logger.LogFunction()
 	async Disconnect(): Promise<void> {
-		Logger.Info(`${Logger.In} '${this.SourceName} (${this.Config.database})' disconnected`)
+		Logger.Info(`${Logger.In} '${this.SourceName}' disconnected`)
 	}
 
 	@Logger.LogFunction()

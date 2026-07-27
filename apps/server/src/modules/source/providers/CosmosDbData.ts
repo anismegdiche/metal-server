@@ -8,7 +8,7 @@ import {
 	type CosmosClientOptions,
 	type Database,
 	type OperationInput,
-	type SqlQuerySpec,
+	type SqlQuerySpec
 } from "@azure/cosmos"
 import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
@@ -41,17 +41,9 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import type { TDataListEntity, TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
+import type { U__source_cosmosdb } from "../types/U__source_cosmosdb"
 import { CosmosDbHelper } from "./CosmosDbHelper"
 
-//
-export type U__source_cosmosdb = {
-	provider: DATA_PROVIDER.COSMOSDB
-	host: string
-	database: string
-	options: CosmosClientOptions & {
-		autocreate?: boolean
-	}
-}
 
 //
 export class CosmosDbData extends absDataProvider {
@@ -73,7 +65,6 @@ export class CosmosDbData extends absDataProvider {
 			consistencyLevel: "Session",
 			connectionPolicy: {
 				requestTimeout: 5000,
-				connectionMode: ConnectionMode.Gateway,
 			},
 		},
 	}
@@ -91,14 +82,15 @@ export class CosmosDbData extends absDataProvider {
 	@Logger.LogFunction()
 	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
-		this.Config = merge(this.DEFAULT, sourceConfig as U__source_cosmosdb)
-		this.Config.options.endpoint = this.Config.host
+		this.Config = merge(this.DEFAULT, sourceConfig) as U__source_cosmosdb
+		// Config is initialized in Init(); assert non-null here for TS
+		this.Config!.options!.endpoint = this.Config!.host
 
 		Assert.Condition(
-			!StringUtils.IsEmpty(this.Config.options.endpoint),
+			!StringUtils.IsEmpty(this.Config.options!.endpoint),
 			`${this.SourceName}: Cosmos DB endpoint is required`,
 		)
-		Assert.Condition(!StringUtils.IsEmpty(this.Config.options.key), `${this.SourceName}: Cosmos DB key is required`)
+		Assert.Condition(!StringUtils.IsEmpty(this.Config.options!.key), `${this.SourceName}: Cosmos DB key is required`)
 		Assert.Condition(!StringUtils.IsEmpty(this.Config.database), `${this.SourceName}: Cosmos DB database is required`)
 	}
 
@@ -111,10 +103,10 @@ export class CosmosDbData extends absDataProvider {
 		try {
 			const { database, options } = this.Config
 
-			this.Client = new CosmosClient(options)
+			this.Client = new CosmosClient(options as CosmosClientOptions)
 
 			// Get or create database
-			this.Database = this.Config.options.autocreate
+			this.Database = this.Config.options!.autocreate
 				? (await this.Client.databases.createIfNotExists({ id: database })).database
 				: this.Client.database(database)
 

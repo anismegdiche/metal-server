@@ -5,8 +5,6 @@
 import type { Readable } from "node:stream"
 import type { DataLakeFileSystemClient } from "@azure/storage-file-datalake"
 import { Logger } from "@metal/logger"
-import { merge } from "lodash-es"
-import z from "zod"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -16,37 +14,29 @@ import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
+import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
 import type { TStorageFile } from "../types/TStorageFile"
+import { type U__storage_azdatalake, z_U__storage_azdatalake } from "../types/U__storage_azdatalake"
 
 //
-const z_U__source_storage_azdatalake_options = z.object({
-	"connection-string": z.string(),
-	container: z.string(),
-	autocreate: z.boolean().optional(),
-})
-
-//
-export type U__source_storage_azdatalake_options = z.infer<typeof z_U__source_storage_azdatalake_options>
-
-type TAzureDataLakeStorageParams = {
-	[K in keyof U__source_storage_azdatalake_options as K extends `${infer U}`
-		? TConvertParams<U>
-		: K]: U__source_storage_azdatalake_options[K]
+type TAzureDataLakeStorageParams = Omit<
+	{
+		[K in keyof U__storage_azdatalake as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_azdatalake[K]
+	},
+	"storageType"
+> & {
+	autocreate: boolean
 }
 
 //
 export class AzureDataLakeStorage extends absStorageProvider {
-	Config?: U__source_storage_file_options
+	SourceConfig?: U__source_storage
+	StorageConfig?: U__storage_azdatalake
 	Params?: TAzureDataLakeStorageParams
 
 	_fileSystemClient?: DataLakeFileSystemClient
 	static _azureStorageFileDatalake: typeof import("@azure/storage-file-datalake")
-
-	DEFAULT: Partial<U__source_storage_azdatalake_options> = {
-		autocreate: false,
-	}
 
 	private static async _loadAzureStorageFileDatalake(): Promise<typeof import("@azure/storage-file-datalake")> {
 		if (!AzureDataLakeStorage._azureStorageFileDatalake) {
@@ -56,18 +46,26 @@ export class AzureDataLakeStorage extends absStorageProvider {
 	}
 
 	IsConfigValid(): boolean {
-		return z_U__source_storage_azdatalake_options.safeParse(this.Config).success
+		return z_U__storage_azdatalake.safeParse(this.SourceConfig).success
 	}
 
 	@Logger.LogFunction()
 	Init(): void {
-		Assert.Var<U__source_storage_file_options>(this.Config, this.IsConfigValid(), "No configuration defined")
-		this.Config = merge(this.DEFAULT, this.Config)
+		this.SourceConfig = Assert.ZodSchema<U__source_storage>(
+			this.SourceConfig,
+			z_U__source_storage,
+			"Source configuration errors",
+		)
+		this.StorageConfig = Assert.ZodSchema<U__storage_azdatalake>(
+			this.StorageConfig,
+			z_U__storage_azdatalake,
+			"Storage configuration errors",
+		)
 
 		this.Params = {
-			connectionString: this.Config["connection-string"],
-			container: this.Config.container,
-			autocreate: this.Config.autocreate,
+			connectionString: this.StorageConfig["connection-string"],
+			container: this.StorageConfig.container,
+			autocreate: this.SourceConfig.options.autocreate!,
 		}
 
 		Assert.Var<string>(this.Params.connectionString, "No connection string defined")

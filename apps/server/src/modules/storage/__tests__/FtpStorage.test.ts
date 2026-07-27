@@ -4,6 +4,7 @@ import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../../module
 import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
 import { FtpStorage } from "../providers/FtpStorage"
+import type { U__storage_ftp } from "../types/U__storage_ftp"
 
 // Mock the module
 vi.mock("basic-ftp")
@@ -12,7 +13,7 @@ vi.mock("../../../utils/Convert")
 const rndParams = {
 	provider: DATA_PROVIDER.STORAGE,
 	host: "127.0.0.1",
-} as unknown as U__sources_source
+}
 
 describe("FtpStorage", () => {
 	let ftpStorage: FtpStorage
@@ -40,11 +41,12 @@ describe("FtpStorage", () => {
 		ftpStorage.SetConfig({
 			...rndParams,
 			options: {
+				"storage-type": "ftp" as any,
 				host: "127.0.0.1",
 				user: "user",
-				password: "password", 
+				password: "password",
 			},
-		})
+		} as any)
 		ftpStorage.Params = {
 			host: "127.0.0.1",
 			port: 21,
@@ -61,7 +63,7 @@ describe("FtpStorage", () => {
 	describe("Init", () => {
 		it("should initialize the FTP client with given options", async () => {
 			ftpStorage.Init()
-			expect(ftpStorage.Config?.host).toBe("127.0.0.1")
+			expect((ftpStorage.SourceConfig as unknown as U__storage_ftp)?.host).toBe("127.0.0.1")
 		})
 	})
 

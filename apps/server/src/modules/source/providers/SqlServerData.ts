@@ -1,13 +1,11 @@
 //
 //
 //
-
 import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
-import mssql, { type ConnectionPool, type IOptions } from "mssql"
+import mssql, { type ConnectionPool } from "mssql"
 //
 import { DataTable } from "../../../types/DataTable"
-import type { TIpPort } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
@@ -34,17 +32,8 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
+import type { U__source_sqlserver } from "../types/U__source_sqlserver"
 
-//
-export type U__source_sqlserver = {
-	provider: DATA_PROVIDER.MSSQL
-	host: string
-	port: TIpPort
-	user: string
-	password: string
-	database: string
-	options: IOptions
-}
 
 //
 export class SqlServerData extends absDataProvider {

@@ -3,10 +3,10 @@
 //
 import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
+import type { TJson } from "@metal/types"
 import axios, { type AxiosInstance, type AxiosResponse } from "axios"
 import { merge } from "lodash-es"
 //
-import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
@@ -24,7 +24,7 @@ import { absWebServiceProvider } from "../base/absWebServiceProvider"
 //
 export class RestWebService extends absWebServiceProvider {
 	DEFAULT: Partial<U__source_webservice_options> = {
-		content: CONTENT.JSON,
+		"content-type": CONTENT.JSON,
 	}
 
 	ConfigSource?: U__source_webservice
@@ -44,7 +44,7 @@ export class RestWebService extends absWebServiceProvider {
 		this.Client.defaults.baseURL = this.ConfigSource?.host
 
 		// set content type
-		const content = Assert.Get<string>(this.ConfigSourceOptions?.content, "Content type is required")
+		const content = Assert.Get<string>(this.ConfigSourceOptions?.["content-type"], "Content type is required")
 		const headerObj = Assert.Get<Record<string, string>>(HEADER[content], `Invalid content type: ${content}`)
 
 		const [header] = Object.keys(headerObj)

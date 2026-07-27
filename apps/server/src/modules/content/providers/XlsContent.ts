@@ -1,17 +1,16 @@
-//
 /** biome-ignore-all lint/suspicious/noNonNullAssertedOptionalChain: <explanation> */
 //
 //
-
+//
 import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
+import type { TJson } from "@metal/types"
 import ExcelJS, { type Worksheet } from "exceljs"
 import { compact, merge } from "lodash-es"
 //
 import z from "zod"
 import type { TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
-import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
@@ -19,15 +18,7 @@ import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
-
-//
-export const z_U__source_options_content_xls = z.object({
-	"xls-sheet": z.string().optional(),
-	"xls-starting-cell": z.string().optional(),
-	"xls-default": z.union([z.number(), z.string(), z.null()]).optional(),
-	"xls-parse-dates": z.boolean().optional(),
-	"xls-date-format": z.string().optional(),
-})
+import { type U__source_options_content_xls, z_U__source_options_content_xls } from "../types/U__source_options_content_xls"
 
 //
 export const z_T_XlsContentParams = z.object({
@@ -38,8 +29,6 @@ export const z_T_XlsContentParams = z.object({
 	dateFormat: z.string().optional(),
 })
 
-//
-export type U__source_options_content_xls = z.infer<typeof z_U__source_options_content_xls>
 export type T_XlsContentParams = z.infer<typeof z_T_XlsContentParams>
 
 // Convert column letter (e.g., 'A', 'B', 'AA') to a column number
@@ -58,7 +47,7 @@ export function ColumnLetterToNumber(letter: string): number {
 export class XlsContent extends absContentProvider {
 	Params: T_XlsContentParams | undefined
 
-	DEFAULT: U__source_options_content_xls = {
+	DEFAULT: Partial<U__source_options_content_xls> = {
 		"xls-parse-dates": false,
 		"xls-default": null,
 		"xls-date-format": "dd/mm/yyyy",

@@ -1,23 +1,26 @@
-import type { CONTENT } from "../../content/@consts"
-import type { U__source_options_content } from "../../content/@types"
-import type { WEBSERVICE, ENDPOINT } from "../../webservice/@consts"
-import type { TWebServiceEndpoint } from "../../webservice/@types"
+import { z } from "zod"
+import { CONTENT } from "../../content/@consts"
+import { z_U__source_options_content } from "../../content/types/U__source_options_content"
+import { ENDPOINT, WEBSERVICE } from "../../webservice/@consts"
+import { z_TWebServiceEndpoint } from "../../webservice/@types"
 
 //
+export const z_U__source_webservice_options = z
+	.object({
+		type: z.enum(WEBSERVICE),
+		endpoints: z.object({
+			[ENDPOINT.SESSION]: z_TWebServiceEndpoint.optional(),
+			[ENDPOINT.COLLECTION_READ]: z_TWebServiceEndpoint,
+			[ENDPOINT.COLLECTION_CREATE]: z_TWebServiceEndpoint.optional(),
+			[ENDPOINT.COLLECTION_UPDATE]: z_TWebServiceEndpoint.optional(),
+			[ENDPOINT.COLLECTION_DELETE]: z_TWebServiceEndpoint.optional(),
+			[ENDPOINT.COLLECTION_LIST]: z_TWebServiceEndpoint.optional(),
+			[ENDPOINT.ITEM_READ]: z_TWebServiceEndpoint.optional(),
+			[ENDPOINT.ITEM_CREATE]: z_TWebServiceEndpoint.optional(),
+			[ENDPOINT.ITEM_UPDATE]: z_TWebServiceEndpoint.optional(),
+			[ENDPOINT.ITEM_DELETE]: z_TWebServiceEndpoint.optional(),
+		}),
+	})
+	.and(z_U__source_options_content)
 
-export type U__source_webservice_options = {
-	type: WEBSERVICE
-	content: CONTENT
-	endpoints: {
-		[ENDPOINT.SESSION]?: TWebServiceEndpoint;
-		[ENDPOINT.COLLECTION_READ]: TWebServiceEndpoint;
-		[ENDPOINT.COLLECTION_CREATE]?: TWebServiceEndpoint;
-		[ENDPOINT.COLLECTION_UPDATE]?: TWebServiceEndpoint;
-		[ENDPOINT.COLLECTION_DELETE]?: TWebServiceEndpoint;
-		[ENDPOINT.COLLECTION_LIST]?: TWebServiceEndpoint;
-		[ENDPOINT.ITEM_READ]?: TWebServiceEndpoint;
-		[ENDPOINT.ITEM_CREATE]?: TWebServiceEndpoint;
-		[ENDPOINT.ITEM_UPDATE]?: TWebServiceEndpoint;
-		[ENDPOINT.ITEM_DELETE]?: TWebServiceEndpoint
-	}
-} & U__source_options_content
+export type U__source_webservice_options = z.infer<typeof z_U__source_webservice_options>

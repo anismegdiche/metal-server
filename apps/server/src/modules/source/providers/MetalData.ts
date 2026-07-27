@@ -1,11 +1,10 @@
 //
+/** biome-ignore-all lint/suspicious/noTemplateCurlyInString: <explanation> */
 //
 //
-
 import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
 //
-import type { TUrl } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { CONTENT } from "../../content/@consts"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
@@ -23,15 +22,9 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { ENDPOINT, WEBSERVICE } from "../../webservice/@consts"
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
+import type { U__source_metal } from "../types/U__source_metal"
+import type { U__source_webservice_options } from "../types/U__source_webservice_options"
 import { WebServiceData } from "./WebServiceData"
-
-//
-export type U__source_metal = {
-	host: TUrl
-	user: string
-	password: string
-	schema: string
-}
 
 // v2.0
 export class MetalData extends absDataProvider {
@@ -40,11 +33,11 @@ export class MetalData extends absDataProvider {
 	Config: U__source_metal = <U__source_metal>{}
 	Connection?: WebServiceData
 
-	DEFAULT: U__source_metal = {
+	DEFAULT: Partial<U__source_metal> = {
 		host: "http://127.0.0.1:3000",
 		user: "",
 		password: "",
-		schema: "",
+		database: "",
 	}
 
 	constructor() {
@@ -55,16 +48,14 @@ export class MetalData extends absDataProvider {
 	@Logger.LogFunction()
 	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
-		this.Config = merge(this.DEFAULT, sourceConfig, {
-			schema: sourceConfig.database,
-		})
+		this.Config = merge(this.DEFAULT, sourceConfig) as U__source_metal
 
 		const webServiceConfig: U__sources_source = {
 			provider: DATA_PROVIDER.WEBSERVICE,
 			host: this.Config.host,
-			options: {
+			options: <U__source_webservice_options>{
 				type: WEBSERVICE.REST,
-				content: CONTENT.JSON,
+				"content-type": CONTENT.JSON,
 				endpoints: {
 					[ENDPOINT.SESSION]: {
 						post: "/user/login",
@@ -77,11 +68,11 @@ export class MetalData extends absDataProvider {
 						},
 					},
 					[ENDPOINT.COLLECTION_LIST]: {
-						get: `/schema/${this.Config.schema}`,
+						get: `/schema/${this.Config.database}`,
 						response: "rows",
 					},
 					[ENDPOINT.COLLECTION_READ]: {
-						get: `/schema/${this.Config.schema}/\${{ $entity }}`,
+						get: `/schema/${this.Config.database}/\${{ $entity }}`,
 						data: {
 							fields: "${{ $options.fields }}",
 							filter: "${{ $options.filter }}",
@@ -92,13 +83,13 @@ export class MetalData extends absDataProvider {
 						response: "rows",
 					},
 					[ENDPOINT.COLLECTION_CREATE]: {
-						post: `/schema/${this.Config.schema}/\${{ $entity }}`,
+						post: `/schema/${this.Config.database}/\${{ $entity }}`,
 						data: {
 							data: "${{ $options.data }}",
 						},
 					},
 					[ENDPOINT.COLLECTION_UPDATE]: {
-						patch: `/schema/${this.Config.schema}/\${{ $entity }}`,
+						patch: `/schema/${this.Config.database}/\${{ $entity }}`,
 						data: {
 							filter: "${{ $options.filter }}",
 							"filter-expression": "${{ $options['filter-expression'] }}",
@@ -106,7 +97,7 @@ export class MetalData extends absDataProvider {
 						},
 					},
 					[ENDPOINT.COLLECTION_DELETE]: {
-						delete: `/schema/${this.Config.schema}/\${{ $entity }}`,
+						delete: `/schema/${this.Config.database}/\${{ $entity }}`,
 						data: {
 							filter: "${{ $options.filter }}",
 							"filter-expression": "${{ $options['filter-expression'] }}",

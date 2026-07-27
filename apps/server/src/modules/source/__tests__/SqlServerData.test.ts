@@ -1,6 +1,5 @@
+import type { TIpPort, TJson } from "@metal/types"
 import mssql from "mssql"
-import type { TIpPort } from "@metal/types"
-import type { TJson } from "@metal/types"
 import { Cache } from "../../cache/Cache"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import type { U__sources_source } from "../../core/types/U__sources"
@@ -41,7 +40,7 @@ const mockConfig: U__sources_source = {
 	host: "127.0.0.1",
 	port: 1433 as TIpPort,
 	user: "testuser",
-	password: "testpass", 
+	password: "testpass",
 	database: "testdb",
 	options: {
 		encrypt: false,
@@ -89,7 +88,7 @@ describe("SqlServerData", () => {
 		})
 
 		it("should merge configuration with defaults", async () => {
-			const partialConfig: U__sources_source = {
+			const partialConfig: any = {
 				provider: DATA_PROVIDER.MSSQL,
 				host: "127.0.0.1",
 				database: "testdb",

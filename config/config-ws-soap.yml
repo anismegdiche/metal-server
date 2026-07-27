@@ -34,7 +34,7 @@ sources:
     host: http://127.0.0.1:8080/ws/movies.wsdl
     options:
       type: soap
-      content: xml
+      content-type: xml
       endpoints:
         collection-read:
           listMovies:
@@ -59,7 +59,7 @@ sources:
     host: https://www.crcind.com/csp/samples/SOAP.Demo.CLS?WSDL=1
     options:
       type: soap
-      content: xml
+      content-type: xml
       endpoints:
         collection-read:
           GetListByName:

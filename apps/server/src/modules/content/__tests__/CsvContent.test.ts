@@ -1,7 +1,8 @@
 import { Readable } from "node:stream"
 import { DataTable } from "../../../types/DataTable"
-import type { U__source_options_content_csv } from "../providers/CsvContent"
+import { CONTENT } from "../@consts"
 import { CsvContent, EscapeNewlines, UnescapeNewlines } from "../providers/CsvContent"
+import type { U__source_options_content_csv } from "../types/U__source_options_content_csv"
 
 describe("CsvContent", () => {
 	const contentConfig: U__source_options_content_csv = <U__source_options_content_csv>{
@@ -112,7 +113,7 @@ describe("CsvContent", () => {
 					"",
 					"Single line",
 					"Multiple\nlines\r\nwith\rdifferent\nendings",
-					`Complex\\and mixed\\r\\ncontent\\nhere`, 
+					`Complex\\and mixed\\r\\ncontent\\nhere`,
 					String.raw`Complex\and mixed\r\ncontent\nhere`,
 				]
 
@@ -275,6 +276,7 @@ describe("CsvContent", () => {
 			const name = "test.csv"
 			const content = Readable.from("idname\n1John\n2Jane")
 			const options: U__source_options_content_csv = {
+				"content-type": CONTENT.CSV,
 				"csv-delimiter": "",
 				"csv-newline": "\r\n",
 				"csv-header": false,

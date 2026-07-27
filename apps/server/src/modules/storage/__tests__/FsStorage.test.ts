@@ -5,6 +5,7 @@ import { HttpErrorNotFound } from "../../../modules/errors/HttpErrors"
 import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
 import { FsStorage } from "../providers/FsStorage"
+import type { U__storage_fs } from "../types/U__storage_fs"
 
 vi.mock("node:fs", async () => {
 	const actual = await vi.importActual<typeof import("node:fs")>("fs")
@@ -41,7 +42,7 @@ const fsMock = Fs as unknown as FsMock
 
 describe("FsStorage", () => {
 	let fsStorage: FsStorage
-	const sourceConfig = <U__sources_source>{
+	const sourceConfig = {
 		provider: DATA_PROVIDER.STORAGE,
 		options: {
 			folder: "./",
@@ -63,18 +64,18 @@ describe("FsStorage", () => {
 		
 
 		fsStorage = new FsStorage()
-		fsStorage.SetConfig(sourceConfig)
+		fsStorage.SetConfig(sourceConfig as any)
 		fsStorage.Init()
 	})
 
 	describe("Init", () => {
 		it("should initialize with correct folder path", async () => {
-			expect(fsStorage.Config?.folder).toBe("./")
+			expect((fsStorage.SourceConfig as unknown as U__storage_fs)?.folder).toBe("./")
 		})
 
 		it("should throw if config is invalid", () => {
 			const badStorage = new FsStorage()
-			expect(() => badStorage.SetConfig({ provider: DATA_PROVIDER.STORAGE, options: {} })).toThrow()
+			expect(() => badStorage.SetConfig({ provider: DATA_PROVIDER.STORAGE, options: {} } as any)).toThrow()
 		})
 	})
 

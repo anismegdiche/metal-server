@@ -3,12 +3,11 @@
 //
 import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
+import type { TJson } from "@metal/types"
 import { merge } from "lodash-es"
 import z from "zod"
-//
 import type { TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
-import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
@@ -17,24 +16,18 @@ import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
-
-//
-export const z_U__source_options_content_json = z.object({
-	"json-path": z.string().optional(),
-})
+import { type U__source_options_content_json, z_U__source_options_content_json } from "../types/U__source_options_content_json"
 
 export const z_T_JsonContentParams = z.object({
 	path: z.string().optional(),
 })
 
-//
-export type U__source_options_content_json = z.infer<typeof z_U__source_options_content_json>
 export type T_JsonContentParams = z.infer<typeof z_T_JsonContentParams>
 
 //
 export class JsonContent extends absContentProvider {
 	Params: T_JsonContentParams | undefined
-	DEFAULT: U__source_options_content_json = {
+	DEFAULT: Partial<U__source_options_content_json> = {
 		"json-path": undefined,
 	}
 

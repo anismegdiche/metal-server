@@ -1,7 +1,6 @@
 //
 //
 //
-
 import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
 //
@@ -27,17 +26,8 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
+import type { U__source_memory } from "../types/U__source_memory"
 
-//
-export type U__source_memory_options = {
-	autocreate?: boolean // v0.3, Auto create table if not exist
-}
-
-//
-export type U__source_memory = {
-	database: string
-	options?: U__source_memory_options
-}
 
 //
 export class MemoryData extends absDataProvider {

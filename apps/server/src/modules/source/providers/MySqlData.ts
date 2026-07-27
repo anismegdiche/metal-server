@@ -1,15 +1,14 @@
 //
 //
 //
-
 import { Logger } from "@metal/logger"
+import type { TIpPort } from "@metal/types"
 import { merge } from "lodash-es"
 import type { Pool } from "mysql2/promise"
 import mysql from "mysql2/promise"
 //
 import type { TRow } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
-import type { TIpPort } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
@@ -35,17 +34,10 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
+import type { U__source_mysql } from "../types/U__source_mysql"
+
 
 //
-export type U__source_mysql = {
-	host: string
-	port: TIpPort
-	user: string
-	password: string
-	database: string
-	options?: mysql.PoolOptions
-}
-
 export class MySqlData extends absDataProvider {
 	SourceName?: string
 	ProviderName = DATA_PROVIDER.MYSQL

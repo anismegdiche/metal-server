@@ -1,12 +1,12 @@
 //
 
 import { Logger } from "@metal/logger"
+import type { TJson } from "@metal/types"
 //
 //
 import * as Sha512 from "js-sha512"
 //
 import type { DataTable } from "../../types/DataTable"
-import type { TJson } from "@metal/types"
 import { Assert } from "../../utils/Assert"
 import { Semaphore } from "../../utils/Semaphore"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
@@ -64,7 +64,8 @@ export class Cache {
 		if (!Cache.IsEnabled) return
 
 		Cache.DataSourceConfig = ConfigManager.Get<U__sources_source>("server.cache")
-		Cache.Database = Cache.DataSourceConfig.database ?? Cache.DEFAULT.database
+		const cacheDatabase = Cache.DataSourceConfig && "database" in Cache.DataSourceConfig ? Cache.DataSourceConfig.database : undefined
+		Cache.Database = cacheDatabase ?? Cache.DEFAULT.database
 		Cache._cacheSchemaRequest = <TSchemaRequest>{
 			schema: Cache.Database,
 			entity: Cache.Entity,

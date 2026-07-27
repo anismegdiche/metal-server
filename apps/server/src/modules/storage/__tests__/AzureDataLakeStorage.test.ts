@@ -36,7 +36,7 @@ describe("AzureDataLakeStorage", () => {
 		exists: Mock
 		flush: Mock
 	}
-	const mockConfig: U__sources_source = {
+	const mockConfig = {
 		...baseParams,
 		provider: DATA_PROVIDER.STORAGE,
 		host: "test.datalake.core.windows.net",
@@ -89,7 +89,7 @@ describe("AzureDataLakeStorage", () => {
 			.mockReturnValue(mockServiceClient)
 
 		storage = new AzureDataLakeStorage()
-		storage.SetConfig(mockConfig)
+		storage.SetConfig(mockConfig as any)
 	})
 
 	describe("Init", () => {
@@ -106,7 +106,7 @@ describe("AzureDataLakeStorage", () => {
 		})
 
 		it("should throw error when no configuration is provided", () => {
-			storage.Config = undefined
+			storage.SourceConfig = undefined
 			expect(() => storage.Init()).toThrow(HttpErrorInternalServerError)
 		})
 	})

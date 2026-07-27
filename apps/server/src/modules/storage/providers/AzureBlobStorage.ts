@@ -4,9 +4,6 @@
 
 import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
-import { merge } from "lodash-es"
-import z from "zod"
-//
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
@@ -14,40 +11,32 @@ import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
+import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
 import type { TStorageFile } from "../types/TStorageFile"
 import type { TStorageFolder } from "../types/TStorageFolder"
+import { type U__storage_azblob, z_U__storage_azblob } from "../types/U__storage_azblob"
 
 //
-const z_U__source_storage_azblob_options = z.object({
-	"connection-string": z.string(),
-	container: z.string(),
-	autocreate: z.boolean().optional(),
-})
-
-//
-export type U__source_storage_azblob_options = z.infer<typeof z_U__source_storage_azblob_options>
-
-type TAzureBlobStorageParams = {
-	[K in keyof U__source_storage_azblob_options as K extends `${infer U}`
-		? TConvertParams<U>
-		: K]: U__source_storage_azblob_options[K]
+type TAzureBlobStorageParams = Omit<
+	{
+		[K in keyof U__storage_azblob as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_azblob[K]
+	},
+	"storageType"
+> & {
+	autocreate: boolean
 }
 
 //
 export class AzureBlobStorage extends absStorageProvider {
-	Config?: U__source_storage_file_options
+	SourceConfig?: U__source_storage
+	StorageConfig?: U__storage_azblob
 	Params?: TAzureBlobStorageParams
 
 	// Azure Blob
 	static _libAzureStorageBlob: typeof import("@azure/storage-blob")
 	_blobServiceClient: import("@azure/storage-blob").BlobServiceClient | undefined
 	_containerClient: import("@azure/storage-blob").ContainerClient | undefined
-
-	DEFAULT: Partial<U__source_storage_azblob_options> = {
-		autocreate: false,
-	}
 
 	static async _loadAzureStorageBlob(): Promise<typeof import("@azure/storage-blob")> {
 		if (!AzureBlobStorage._libAzureStorageBlob) {
@@ -57,18 +46,26 @@ export class AzureBlobStorage extends absStorageProvider {
 	}
 
 	IsConfigValid(): boolean {
-		return z_U__source_storage_azblob_options.safeParse(this.Config).success
+		return z_U__storage_azblob.safeParse(this.SourceConfig).success
 	}
 
 	@Logger.LogFunction()
 	Init(): void {
-		Assert.Var<U__source_storage_azblob_options>(this.Config, this.IsConfigValid(), "No config storage defined")
-		this.Config = merge(this.DEFAULT, this.Config)
+		this.SourceConfig = Assert.ZodSchema<U__source_storage>(
+			this.SourceConfig,
+			z_U__source_storage,
+			"Source configuration errors",
+		)
+		this.StorageConfig = Assert.ZodSchema<U__storage_azblob>(
+			this.StorageConfig,
+			z_U__storage_azblob,
+			"Storage configuration errors",
+		)
 
 		this.Params = {
-			connectionString: this.Config["connection-string"],
-			container: this.Config.container,
-			autocreate: this.Config.autocreate,
+			connectionString: this.StorageConfig["connection-string"],
+			container: this.StorageConfig.container,
+			autocreate: this.SourceConfig.options.autocreate!,
 		}
 
 		Assert.Var<string>(this.Params.connectionString, "No connection string defined")

@@ -4,9 +4,6 @@
 
 import type { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
-import { merge } from "lodash-es"
-import z from "zod"
-//
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
@@ -15,37 +12,27 @@ import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
+import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
 import type { TStorageFile } from "../types/TStorageFile"
 import type { TStorageFolder } from "../types/TStorageFolder"
+import { type U__storage_azfs, z_U__storage_azfs } from "../types/U__storage_azfs"
 
 //
-const z_U__source_storage_azfs_options = z.object({
-	"connection-string": z.string(),
-	"share-name": z.string(),
-	folder: z.string().optional(),
-	autocreate: z.boolean().optional(),
-})
-
-//
-export type U__source_storage_azfs_options = z.infer<typeof z_U__source_storage_azfs_options>
-
-type TAzureFileStorageParams = {
-	[K in keyof U__source_storage_azfs_options as K extends `${infer U}`
-		? TConvertParams<U>
-		: K]: U__source_storage_azfs_options[K]
+type TAzureFileStorageParams = Omit<
+	{
+		[K in keyof U__storage_azfs as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_azfs[K]
+	},
+	"storageType"
+> & {
+	autocreate: boolean
 }
 
 //
 export class AzureFileStorage extends absStorageProvider {
-	Config?: U__source_storage_file_options
+	SourceConfig?: U__source_storage
+	StorageConfig?: U__storage_azfs
 	Params?: TAzureFileStorageParams
-
-	DEFAULT: Partial<U__source_storage_file_options> = {
-		folder: "/",
-		autocreate: false,
-	}
 
 	static _libAzureStorageFileShare: typeof import("@azure/storage-file-share")
 	_shareServiceClient?: import("@azure/storage-file-share").ShareServiceClient
@@ -59,18 +46,27 @@ export class AzureFileStorage extends absStorageProvider {
 	}
 
 	IsConfigValid(): boolean {
-		return z_U__source_storage_azfs_options.safeParse(this.Config).success
+		return z_U__storage_azfs.safeParse(this.SourceConfig).success
 	}
 
 	@Logger.LogFunction()
 	Init(): void {
-		Assert.Var<U__source_storage_file_options>(this.Config, this.IsConfigValid(), "No config storage defined")
-		this.Config = merge(this.DEFAULT, this.Config)
+		this.SourceConfig = Assert.ZodSchema<U__source_storage>(
+			this.SourceConfig,
+			z_U__source_storage,
+			"Source configuration errors",
+		)
+		this.StorageConfig = Assert.ZodSchema<U__storage_azfs>(
+			this.StorageConfig,
+			z_U__storage_azfs,
+			"Storage configuration errors",
+		)
 
 		this.Params = {
-			connectionString: this.Config["connection-string"],
-			shareName: this.Config["share-name"],
-			folder: this.Config.folder,
+			connectionString: this.StorageConfig["connection-string"],
+			shareName: this.StorageConfig["share-name"],
+			folder: this.StorageConfig.folder,
+			autocreate: this.SourceConfig.options.autocreate!,
 		}
 
 		Assert.Var<string>(this.Params.connectionString, "No connection string defined")

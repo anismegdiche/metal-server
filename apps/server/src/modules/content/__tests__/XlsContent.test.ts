@@ -1,9 +1,9 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: testing */
 import { Readable } from "node:stream"
 import * as ExcelJS from "exceljs"
-//
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
+import { CONTENT } from "../@consts"
 import { ColumnLetterToNumber, type T_XlsContentParams, XlsContent } from "../providers/XlsContent"
 
 
@@ -70,13 +70,17 @@ describe("XlsContent", () => {
 
 		// Setup XlsContent
 		xlsContent = new XlsContent()
-		xlsContent.SetConfig({})
+		xlsContent.SetConfig({
+			"content-type": CONTENT.XLS,
+		})
 	}, 300_000)
 
 	describe("Init", () => {
 		it("should initialize with default parameters", async () => {
 			const inputStream = createReadableStream(mockWorkbookBuffer)
-			xlsContent.Config = {}
+			xlsContent.Config = {
+				"content-type": CONTENT.XLS,
+			}
 
 			xlsContent.InitContent("testEntity", inputStream)
 
@@ -93,6 +97,7 @@ describe("XlsContent", () => {
 		it("should initialize with custom parameters", async () => {
 			const inputStream = createReadableStream(mockWorkbookBuffer)
 			xlsContent.SetConfig({
+				"content-type": CONTENT.XLS,
 				"xls-sheet": "Sheet1",
 				"xls-parse-dates": true,
 				"xls-default": 0,
@@ -116,6 +121,7 @@ describe("XlsContent", () => {
 		beforeEach(async () => {
 			const inputStream = createReadableStream(mockWorkbookBuffer)
 			xlsContent.Config = {
+				"content-type": CONTENT.XLS,
 				"xls-sheet": "Sheet1",
 				"xls-starting-cell": "A1",
 			}
@@ -160,6 +166,7 @@ describe("XlsContent", () => {
 		beforeEach(async () => {
 			const inputStream = createReadableStream(mockWorkbookBuffer)
 			xlsContent.Config = {
+				"content-type": CONTENT.XLS,
 				"xls-sheet": "Sheet1",
 				"xls-starting-cell": "A1",
 			}

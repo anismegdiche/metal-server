@@ -1,19 +1,17 @@
 //
 //
 //
-
 import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
 //
 import { DataTable } from "../../../types/DataTable"
-import type { TIpPort } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
-import type { U__sources_source, U__sources_source_options } from "../../core/types/U__sources"
+import type { U__sources_source } from "../../core/types/U__sources"
 import {
 	HttpErrorBadRequest,
 	HttpErrorInternalServerError,
@@ -33,17 +31,7 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
-
-//
-export type U__source_postgres = {
-	provider: DATA_PROVIDER.POSTGRES
-	host: string
-	port: TIpPort
-	user: string
-	password: string
-	database: string
-	options?: U__sources_source_options
-}
+import type { U__source_postgres } from "../types/U__source_postgres"
 
 //
 export class PostgresData extends absDataProvider {

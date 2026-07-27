@@ -4,6 +4,7 @@
 import { _MTR_ } from "@metal/config"
 import { Logger } from "@metal/logger"
 import type { TJson } from "@metal/types"
+import { pick } from "lodash-es"
 import { Assert } from "../../utils/Assert"
 import { ConfigManager } from "../core/ConfigManager"
 import type { U__sources_source } from "../core/types/U__sources"
@@ -40,12 +41,9 @@ export class Source {
 		for (const name of allSourceNames) {
 			const config = allSourcesConfig[name]
 			details[name] = {
-				provider: config?.provider ?? "unknown",
-				host: config?.host ?? "local",
-				port: config?.port ?? null,
-				database: config?.database ?? null,
+				...pick(config, ["provider", "host", "port", "database"]),
 				status: "unknown",
-			}
+			} as { provider: string; host: string; port: number | null; database: string | null; status: string }
 		}
 
 		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES, allSourceNames)

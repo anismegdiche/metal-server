@@ -4,15 +4,16 @@ import type SftpClient from "ssh2-sftp-client"
 import type { Mocked } from "vitest"
 import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
-import { SftpStorage, type U__source_storage_sftp_options } from "../providers/SftpStorage"
+import { STORAGE } from "../@consts"
+import { SftpStorage } from "../providers/SftpStorage"
+import type { U__storage_sftp } from "../types/U__storage_sftp"
 
 // Mock SFTP Client
 vi.mock("ssh2-sftp-client")
 
 const rndParams = {
 	provider: DATA_PROVIDER.STORAGE,
-	host: "test.sftp.server.com",
-} as unknown as U__sources_source
+}
 
 describe("SftpStorage", () => {
 	let storage: SftpStorage
@@ -41,51 +42,55 @@ describe("SftpStorage", () => {
 
 		storage.SetConfig({
 			...rndParams,
-			options: <U__source_storage_sftp_options>{
+			options: {
+				"storage-type": STORAGE.SFTP,
 				host: "test.sftp.server.com",
 				port: 22,
 				user: "testuser",
-				password: "testpassword", 
+				password: "testpassword",
 				folder: "/uploads",
 			},
-		})
+		} as any)
 	})
 
 	describe("Init", () => {
 		it("should initialize the storage client with given options", async () => {
 			storage.Init()
-			expect(storage.Config?.host).toBe("test.sftp.server.com")
-			expect(storage.Config?.port).toBe(22)
-			expect(storage.Config?.user).toBe("testuser")
-			expect(storage.Config?.password).toBe("testpassword")
-			expect(storage.Config?.folder).toBe("/uploads")
+			const config = storage.SourceConfig as unknown as U__storage_sftp
+			expect(config?.host).toBe("test.sftp.server.com")
+			expect(config?.port).toBe(22)
+			expect(config?.user).toBe("testuser")
+			expect(config?.password).toBe("testpassword")
+			expect(config?.folder).toBe("/uploads")
 		})
 
 		it("should use default port if not provided", async () => {
 			storage.SetConfig({
 				...rndParams,
-				options: <U__source_storage_sftp_options>{
+				options: {
+					"storage-type": STORAGE.SFTP,
 					host: "test.sftp.server.com",
 					user: "testuser",
-					password: "testpassword", 
+					password: "testpassword",
 				},
-			})
+			} as any)
 			storage.Init()
-			expect(storage.Config?.port).toBe(22)
+			expect((storage.SourceConfig as unknown as U__storage_sftp)?.port).toBe(22)
 		})
 
 		it("should use default folder if not provided", async () => {
 			const freshStorage = new SftpStorage()
 			freshStorage.SetConfig({
 				...rndParams,
-				options: <U__source_storage_sftp_options>{
+				options: {
+					"storage-type": STORAGE.SFTP,
 					host: "test.sftp.server.com",
 					user: "testuser",
-					password: "testpassword", 
+					password: "testpassword",
 				},
-			})
+			} as any)
 			freshStorage.Init()
-			expect(freshStorage.Config?.folder).toBe("/")
+			expect((freshStorage.SourceConfig as unknown as U__storage_sftp)?.folder).toBe("/")
 		})
 	})
 
@@ -98,21 +103,22 @@ describe("SftpStorage", () => {
 				host: "test.sftp.server.com",
 				port: 22,
 				user: "testuser",
-				password: "testpassword", 
+				password: "testpassword",
 			})
 		})
 
 		it("should connect with private key if provided", async () => {
 			storage.SetConfig({
 				...rndParams,
-				options: <U__source_storage_sftp_options>{
+				options: {
+					"storage-type": STORAGE.SFTP,
 					host: "test.sftp.server.com",
 					user: "testuser",
-					password: "testpassword", 
+					password: "testpassword",
 					"private-key": "-----BEGIN RSA PRIVATE KEY-----\n...",
-					passphrase: "testpassphrase", 
+					passphrase: "testpassphrase",
 				},
-			})
+			} as any)
 			storage.Init()
 			await storage.Connect()
 
@@ -120,9 +126,9 @@ describe("SftpStorage", () => {
 				host: "test.sftp.server.com",
 				port: 22,
 				user: "testuser",
-				password: "testpassword", 
+				password: "testpassword",
 				privateKey: "-----BEGIN RSA PRIVATE KEY-----\n...",
-				passphrase: "testpassphrase", 
+				passphrase: "testpassphrase",
 			})
 		})
 

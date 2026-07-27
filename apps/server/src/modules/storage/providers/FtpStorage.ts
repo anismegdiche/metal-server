@@ -5,63 +5,49 @@
 import { PassThrough, Readable } from "node:stream"
 import { Logger } from "@metal/logger"
 import * as Ftp from "basic-ftp"
-import { merge } from "lodash-es"
-import z from "zod"
-//
 import { DataTable, type TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { StringUtils } from "../../../utils/StringUtils"
 import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
+import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
 import type { TStorageFile } from "../types/TStorageFile"
 import type { TStorageFolder } from "../types/TStorageFolder"
-
-//
-const z_U__source_storage_ftp_options = z.object({
-	host: z.string(),
-	port: z.number().optional(),
-	user: z.string(),
-	password: z.string(),
-	secure: z.boolean().optional(),
-	folder: z.string().optional(),
-	autocreate: z.boolean().optional(),
-})
-
-//
-export type U__source_storage_ftp_options = z.infer<typeof z_U__source_storage_ftp_options>
+import { type U__storage_ftp, z_U__storage_ftp } from "../types/U__storage_ftp"
 
 //
 export class FtpStorage extends absStorageProvider {
-	Config?: U__source_storage_file_options
+	SourceConfig?: U__source_storage
+	StorageConfig?: U__storage_ftp
 	Params?: Ftp.AccessOptions
 
 	_ftpClient: Ftp.Client = new Ftp.Client()
 
-	DEFAULT: Partial<U__source_storage_ftp_options> = {
-		port: 21,
-		secure: false,
-		folder: "/",
-		autocreate: false,
-	}
-
 	IsConfigValid(): boolean {
-		return z_U__source_storage_ftp_options.safeParse(this.Config).success
+		return z_U__storage_ftp.safeParse(this.SourceConfig).success
 	}
 
 	@Logger.LogFunction()
 	Init(): void {
-		Assert.Var<U__source_storage_file_options>(this.Config, this.IsConfigValid(), "No config storage defined")
-		this.Config = merge(this.DEFAULT, this.Config)
+		this.SourceConfig = Assert.ZodSchema<U__source_storage>(
+			this.SourceConfig,
+			z_U__source_storage,
+			"Source configuration errors",
+		)
+		this.StorageConfig = Assert.ZodSchema<U__storage_ftp>(
+			this.StorageConfig,
+			z_U__storage_ftp,
+			"Storage configuration errors",
+		)
 
 		this.Params = {
-			host: this.Config.host,
-			port: this.Config.port,
-			user: this.Config.user,
-			password: this.Config.password,
-			secure: this.Config.secure,
+			host: this.StorageConfig.host,
+			port: this.StorageConfig.port,
+			user: this.StorageConfig.user,
+			password: this.StorageConfig.password,
+			secure: this.StorageConfig.secure,
 		}
 
 		Assert.Var<string>(this.Params.host, "No host defined")
@@ -69,8 +55,8 @@ export class FtpStorage extends absStorageProvider {
 		Assert.Var<string>(this.Params.user, "No user defined")
 		Assert.Var<string>(this.Params.password, "No password defined")
 		Assert.Var<boolean>(this.Params.secure, "No secure flag defined")
-		Assert.Var<string>(this.Config.folder, "No folder path defined")
-		Assert.Var<boolean>(this.Config.autocreate, "No autocreate flag defined")
+		Assert.Var<string>(this.StorageConfig.folder, "No folder path defined")
+		Assert.Var<boolean>(this.SourceConfig.options.autocreate, "No autocreate flag defined")
 	}
 
 	@Logger.LogFunction()
@@ -96,12 +82,13 @@ export class FtpStorage extends absStorageProvider {
 		this.CheckPaths([dirName])
 
 		Assert.Var<Ftp.AccessOptions>(this.Params, "No params defined")
-		Assert.Var<string>(this.Config?.folder, "No folder defined")
+		Assert.Var<U__storage_ftp>(this.SourceConfig, this.IsConfigValid(), "No config storage defined")
+		Assert.Var<string>(this.SourceConfig.folder, "No folder defined")
 
 		try {
-			const _dirFullPath = StringUtils.Path(this.Config.folder, dirName)
+			const _dirFullPath = StringUtils.Path(this.SourceConfig.folder, dirName)
 
-			const list = await this._ftpClient.list(this.Config.folder)
+			const list = await this._ftpClient.list(this.SourceConfig.folder)
 			const folderExists = list.some((item) => item.isDirectory && item.name === dirName)
 			return folderExists
 		} catch {
@@ -114,9 +101,10 @@ export class FtpStorage extends absStorageProvider {
 		this.CheckPaths([dirName])
 
 		Assert.Var<Ftp.AccessOptions>(this.Params, "No params defined")
-		Assert.Var<string>(this.Config?.folder, "No folder defined")
+		Assert.Var<U__storage_ftp>(this.SourceConfig, this.IsConfigValid(), "No config storage defined")
+		Assert.Var<string>(this.SourceConfig.folder, "No folder defined")
 
-		const _dirFullPath = StringUtils.Path(this.Config.folder, dirName)
+		const _dirFullPath = StringUtils.Path(this.SourceConfig.folder, dirName)
 
 		await this._ftpClient.ensureDir(_dirFullPath)
 	}
@@ -124,9 +112,10 @@ export class FtpStorage extends absStorageProvider {
 	@Logger.LogFunction()
 	async FolderListFolders(): Promise<DataTable> {
 		Assert.Var<Ftp.AccessOptions>(this.Params, "No params defined")
-		Assert.Var<string>(this.Config?.folder, "No folder defined")
+		Assert.Var<U__storage_ftp>(this.SourceConfig, this.IsConfigValid(), "No config storage defined")
+		Assert.Var<string>(this.SourceConfig.folder, "No folder defined")
 
-		const list = await this._ftpClient.list(this.Config.folder).catch((error) => {
+		const list = await this._ftpClient.list(this.SourceConfig.folder).catch((error) => {
 			throw new HttpErrorInternalServerError(`Failed to list folders: ${(error as Error)?.message}`)
 		})
 
@@ -147,9 +136,10 @@ export class FtpStorage extends absStorageProvider {
 		this.CheckPaths([dirName])
 
 		Assert.Var<Ftp.AccessOptions>(this.Params, "No params defined")
-		Assert.Var<string>(this.Config?.folder, "No folder defined")
+		Assert.Var<U__storage_ftp>(this.SourceConfig, this.IsConfigValid(), "No config storage defined")
+		Assert.Var<string>(this.SourceConfig.folder, "No folder defined")
 
-		const targetDir = dirName ? StringUtils.Path(this.Config.folder, dirName) : this.Config.folder
+		const targetDir = dirName ? StringUtils.Path(this.SourceConfig.folder, dirName) : this.SourceConfig.folder
 
 		const list = await this._ftpClient.list(targetDir).catch((error) => {
 			throw new HttpErrorInternalServerError(`Failed to list files: ${(error as Error)?.message}`)
@@ -177,10 +167,11 @@ export class FtpStorage extends absStorageProvider {
 		this.CheckPaths([dirName, fileName])
 
 		Assert.Var<Ftp.AccessOptions>(this.Params, "No params defined")
-		Assert.Var<string>(this.Config?.folder, "No folder defined")
+		Assert.Var<U__storage_ftp>(this.SourceConfig, this.IsConfigValid(), "No config storage defined")
+		Assert.Var<string>(this.SourceConfig.folder, "No folder defined")
 
 		try {
-			const __targetFile = StringUtils.Path(this.Config.folder, dirName, fileName)
+			const __targetFile = StringUtils.Path(this.SourceConfig.folder, dirName, fileName)
 
 			const fileInfo = await this._ftpClient.size(__targetFile)
 			return fileInfo !== -1
@@ -194,14 +185,15 @@ export class FtpStorage extends absStorageProvider {
 		this.CheckPaths([dirName, fileName])
 
 		Assert.Var<Ftp.AccessOptions>(this.Params, "No params defined")
-		Assert.Var<string>(this.Config?.folder, "No folder defined")
+		Assert.Var<U__storage_ftp>(this.SourceConfig, this.IsConfigValid(), "No config storage defined")
+		Assert.Var<string>(this.SourceConfig.folder, "No folder defined")
 
 		if (!(await this.FileIsExist(dirName, fileName)))
 			throw new HttpErrorNotFound(`File '${fileName}' does not exist on the FTP server`)
 
 		const content = new PassThrough()
 
-		const __targetFile = StringUtils.Path(this.Config.folder, dirName, fileName)
+		const __targetFile = StringUtils.Path(this.SourceConfig.folder, dirName, fileName)
 
 		await this._ftpClient.downloadTo(content, __targetFile)
 		return Readable.from(content)
@@ -212,11 +204,12 @@ export class FtpStorage extends absStorageProvider {
 		this.CheckPaths([dirName, fileName])
 
 		Assert.Var<Ftp.AccessOptions>(this.Params, "No params defined")
-		Assert.Var<string>(this.Config?.folder, "No folder defined")
+		Assert.Var<U__storage_ftp>(this.SourceConfig, this.IsConfigValid(), "No config storage defined")
+		Assert.Var<string>(this.SourceConfig.folder, "No folder defined")
 
-		const fullPath = StringUtils.Path(this.Config.folder, dirName, fileName)
+		const fullPath = StringUtils.Path(this.SourceConfig.folder, dirName, fileName)
 
-		if (this.Config.autocreate && !(await this.FileIsExist(dirName, fileName)))
+		if (this.SourceConfig.options.autocreate && !(await this.FileIsExist(dirName, fileName)))
 			await this._ftpClient.uploadFrom(content, fullPath)
 		else await this._ftpClient.appendFrom(content, fullPath)
 	}
@@ -226,11 +219,12 @@ export class FtpStorage extends absStorageProvider {
 		this.CheckPaths([dirName, fileName, newName])
 
 		Assert.Var<Ftp.AccessOptions>(this.Params, "No params defined")
-		Assert.Var<string>(this.Config?.folder, "No folder defined")
+		Assert.Var<U__storage_ftp>(this.SourceConfig, this.IsConfigValid(), "No config storage defined")
+		Assert.Var<string>(this.SourceConfig.folder, "No folder defined")
 
 		try {
-			const oldPath = StringUtils.Path(this.Config.folder, dirName, fileName)
-			const newPath = StringUtils.Path(this.Config.folder, dirName, newName)
+			const oldPath = StringUtils.Path(this.SourceConfig.folder, dirName, fileName)
+			const newPath = StringUtils.Path(this.SourceConfig.folder, dirName, newName)
 
 			if (!(await this.FileIsExist(dirName, fileName))) {
 				throw new HttpErrorNotFound(`File '${fileName}' does not exist on the FTP server`)
@@ -249,10 +243,11 @@ export class FtpStorage extends absStorageProvider {
 	async FileDelete(dirName: string, fileName: string): Promise<void> {
 		this.CheckPaths([dirName, fileName])
 
+		Assert.Var<U__storage_ftp>(this.SourceConfig, this.IsConfigValid(), "No config storage defined")
 		Assert.Var<Ftp.AccessOptions>(this.Params, "No params defined")
 		Assert.Var<string>(fileName, "File name is required")
-		Assert.Var<string>(this.Config?.folder, "No folder defined")
+		Assert.Var<string>(this.SourceConfig.folder, "No folder defined")
 
-		await this._ftpClient.remove(StringUtils.Path(this.Config.folder, dirName, fileName))
+		await this._ftpClient.remove(StringUtils.Path(this.SourceConfig.folder, dirName, fileName))
 	}
 }

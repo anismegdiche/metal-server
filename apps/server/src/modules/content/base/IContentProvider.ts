@@ -8,7 +8,7 @@ import type { DataTable, TRowsCopyParams } from "../../../types/DataTable"
 import type { clsClonable } from "../../../utils/base/clsClonable"
 import type { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import type { TContext } from "../../sandbox/types/TContext"
-import type { U__source_options_content } from "../@types"
+import type { U__source_options_content } from "../types/U__source_options_content"
 
 //
 export interface IContentProvider extends clsClonable {

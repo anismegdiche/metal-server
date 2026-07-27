@@ -6,9 +6,6 @@ import type { Readable } from "node:stream"
 import type { S3ClientConfig } from "@aws-sdk/client-s3"
 import { Logger } from "@metal/logger"
 import { fileTypeFromBuffer } from "file-type"
-import { merge } from "lodash-es"
-import z from "zod"
-//
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
@@ -17,33 +14,25 @@ import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
+import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
 import type { TStorageFile } from "../types/TStorageFile"
+import { type U__storage_s3, z_U__storage_s3 } from "../types/U__storage_s3"
 
 //
-const z_U__source_storage_s3_options = z.object({
-	bucket: z.string(),
-	region: z.string(),
-	"access-key-id": z.string().optional(),
-	"secret-access-key": z.string().optional(),
-	endpoint: z.string().optional(),
-	profile: z.string().optional(),
-	autocreate: z.boolean().optional(),
-})
-
-//
-export type U__source_storage_s3_options = z.infer<typeof z_U__source_storage_s3_options>
-
-type TAmazonS3StorageParams = Required<{
-	[K in keyof U__source_storage_s3_options as K extends `${infer U}`
-		? TConvertParams<U>
-		: K]: U__source_storage_s3_options[K]
-}>
+type TAmazonS3StorageParams = Omit<
+	{
+		[K in keyof U__storage_s3 as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_s3[K]
+	},
+	"storageType"
+> & {
+	autocreate: boolean
+}
 
 //
 export class AmazonS3Storage extends absStorageProvider {
-	Config?: U__source_storage_file_options
+	SourceConfig?: U__source_storage
+	StorageConfig?: U__storage_s3
 	Params?: TAmazonS3StorageParams
 	private _s3Client: import("@aws-sdk/client-s3").S3Client | undefined
 	private static _s3Module: typeof import("@aws-sdk/client-s3")
@@ -53,8 +42,6 @@ export class AmazonS3Storage extends absStorageProvider {
 		AmazonS3Storage._s3Module = module
 	}
 
-	DEFAULT = {}
-
 	private static async _loadS3Module(): Promise<typeof import("@aws-sdk/client-s3")> {
 		if (!AmazonS3Storage._s3Module) {
 			AmazonS3Storage._s3Module = await import("@aws-sdk/client-s3")
@@ -63,22 +50,30 @@ export class AmazonS3Storage extends absStorageProvider {
 	}
 
 	IsConfigValid(): boolean {
-		return z_U__source_storage_s3_options.safeParse(this.Config).success
+		return z_U__storage_s3.safeParse(this.SourceConfig).success
 	}
 
 	@Logger.LogFunction()
 	Init(): void {
-		Assert.Var<U__source_storage_file_options>(this.Config, this.IsConfigValid(), "No configuration defined")
-		this.Config = merge(this.DEFAULT, this.Config)
+		this.SourceConfig = Assert.ZodSchema<U__source_storage>(
+			this.SourceConfig,
+			z_U__source_storage,
+			"Source configuration errors",
+		)
+		this.StorageConfig = Assert.ZodSchema<U__storage_s3>(
+			this.StorageConfig,
+			z_U__storage_s3,
+			"Storage configuration errors",
+		)
 
-		this.Params = <TAmazonS3StorageParams>{
-			accessKeyId: this.Config["access-key-id"],
-			secretAccessKey: this.Config["secret-access-key"],
-			region: this.Config.region,
-			bucket: this.Config.bucket,
-			endpoint: this.Config.endpoint,
-			profile: this.Config.profile,
-			autocreate: this.Config.autocreate,
+		this.Params = {
+			accessKeyId: this.StorageConfig["access-key-id"]!,
+			secretAccessKey: this.StorageConfig["secret-access-key"]!,
+			region: this.StorageConfig.region,
+			bucket: this.StorageConfig.bucket,
+			endpoint: this.StorageConfig.endpoint!,
+			profile: this.StorageConfig.profile!,
+			autocreate: this.SourceConfig.options.autocreate!,
 		}
 	}
 

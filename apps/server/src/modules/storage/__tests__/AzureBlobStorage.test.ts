@@ -1,4 +1,3 @@
-
 //
 
 import { Readable } from "node:stream"
@@ -6,7 +5,9 @@ import { BlobServiceClient, type BlockBlobClient, type ContainerClient } from "@
 import type { Mock, Mocked } from "vitest"
 import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
-import { AzureBlobStorage, type U__source_storage_azblob_options } from "../providers/AzureBlobStorage"
+import type { U__source_storage } from "../../source/types/U__source_storage"
+import { AzureBlobStorage } from "../providers/AzureBlobStorage"
+import type { U__storage_azblob } from "../types/U__storage_azblob"
 
 // Mock Azure SDK
 vi.mock("@azure/storage-blob")
@@ -14,7 +15,7 @@ vi.mock("@azure/storage-blob")
 const rndParams = {
 	provider: DATA_PROVIDER.STORAGE,
 	host: "test.blob.core.windows.net",
-} as unknown as U__sources_source
+}
 
 describe("AzureBlobStorage", () => {
 	let storage: AzureBlobStorage
@@ -53,33 +54,34 @@ describe("AzureBlobStorage", () => {
 		storage = new AzureBlobStorage()
 		storage.SetConfig({
 			...rndParams,
-			options: <U__source_storage_azblob_options>{
+			options: {
 				"connection-string": "testconnectionstring",
 				container: "testcontainer",
 				autocreate: true,
 			},
-		})
+		} as any)
 	})
 
 	describe("Init", () => {
 		it("should initialize the storage client with given options", async () => {
 			storage.Init()
-			expect(storage.Config?.["connection-string"]).toBe("testconnectionstring")
-			expect(storage.Config?.container).toBe("testcontainer")
-			expect(storage.Config?.autocreate).toBe(true)
+			const config = storage.SourceConfig as U__source_storage
+			expect((config.options as U__storage_azblob)?.["connection-string"]).toBe("testconnectionstring")
+			expect((config.options as U__storage_azblob)?.container).toBe("testcontainer")
+			expect(config.options?.autocreate).toBe(true)
 		})
 
 		it("should use default autocreate value if not provided", async () => {
 			const freshStorage = new AzureBlobStorage()
 			freshStorage.SetConfig({
 				...rndParams,
-				options: <U__source_storage_azblob_options>{
+				options: {
 					"connection-string": "testconnectionstring",
 					container: "testcontainer",
 				},
-			})
+			} as any)
 			freshStorage.Init()
-			expect(freshStorage.Config?.autocreate).toBe(false)
+			expect(freshStorage?.SourceConfig?.options?.autocreate).toBe(false)
 		})
 	})
 

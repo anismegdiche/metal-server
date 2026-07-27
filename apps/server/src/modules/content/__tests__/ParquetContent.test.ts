@@ -1,13 +1,14 @@
-
 import { Readable } from "node:stream"
 import { parquetReadObjects } from "hyparquet"
 import { ByteWriter, parquetWrite } from "hyparquet-writer"
 import { DataTable } from "../../../types/DataTable"
-import type { U__source_options_content_parquet } from "../providers/ParquetContent"
+import { CONTENT } from "../@consts"
 import { convertToArrayBuffer, ParquetContent } from "../providers/ParquetContent"
+import type { U__source_options_content_parquet } from "../types/U__source_options_content_parquet"
 
 describe("ParquetContent", () => {
 	const contentConfig: U__source_options_content_parquet = {
+		"content-type": CONTENT.PARQUET,
 		"parquet-utf8": true,
 	}
 
@@ -23,7 +24,9 @@ describe("ParquetContent", () => {
 			const content = Readable.from(Buffer.from("mock parquet data"))
 
 			const parquetContentEmptyOptions = new ParquetContent()
-			parquetContentEmptyOptions.SetConfig({})
+			parquetContentEmptyOptions.SetConfig({
+				"content-type": CONTENT.PARQUET,
+			})
 
 			parquetContentEmptyOptions.InitContent(name, content)
 			expect(parquetContentEmptyOptions.Params).toEqual({

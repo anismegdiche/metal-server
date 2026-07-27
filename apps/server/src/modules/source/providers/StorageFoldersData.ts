@@ -32,38 +32,26 @@ import type {
 	TSchemaRequestUpdate,
 } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { STORAGE } from "../../storage/@consts"
-import type { U__source_storage_options } from "../../storage/@types"
+import type { STORAGE } from "../../storage/@consts"
 import type { absStorageProvider } from "../../storage/base/absStorageProvider"
 import { StorageProvider } from "../../storage/StorageProvider"
 import type { TStorageFile } from "../../storage/types/TStorageFile"
 import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
+import { type U__source_storage, z_U__source_storage } from "../types/U__source_storage"
+import { type U__source_storage_folders, z_U__source_storage_folders } from "../types/U__source_storage_folders"
+import { STORAGE_MODE } from "./STORAGE_MODE"
 
 //
 const FLD_CONTENT = "content"
 const FLD_OLD_NAME = "old_name"
 
 //
-export type U__source_storage_folder_options = {
-	storage?: STORAGE
-	autocreate?: boolean
-	"allow-delete"?: boolean
-	"folders-pattern": string
-	"files-pattern": string
-} & U__source_storage_options
-
-export type TStorageFoldersDataConfig = {
-	provider: DATA_PROVIDER.STORAGE
-	options: U__source_storage_folder_options
-}
-
-//
 export class StorageFoldersData extends absDataProvider {
 	SourceName?: string
 	ProviderName = DATA_PROVIDER.STORAGE
-	Config: TStorageFoldersDataConfig = <TStorageFoldersDataConfig>{}
+	Config: U__source_storage = <U__source_storage>{}
 	Connection?: absStorageProvider
 
 	// biome-ignore lint/complexity/noUselessConstructor: compatibility
@@ -76,16 +64,6 @@ export class StorageFoldersData extends absDataProvider {
 	LockTimestamps: Map<string, number> = new Map<string, number>()
 	LockCleanupInterval = 300000 // 5 minutes
 	LockCleanupTimer?: NodeJS.Timeout
-
-	DEFAULT: Partial<TStorageFoldersDataConfig> = {
-		options: {
-			storage: STORAGE.FILESYSTEM,
-			autocreate: true,
-			"allow-delete": false,
-			"folders-pattern": "*.*",
-			"files-pattern": "*.*",
-		} as U__source_storage_folder_options,
-	}
 
 	setLock(fileName: string) {
 		if (!this.Lock.has(fileName)) this.Lock.set(fileName, new Mutex())
@@ -137,9 +115,9 @@ export class StorageFoldersData extends absDataProvider {
 	@Logger.LogFunction(true)
 	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
-		this.Config = merge(this.DEFAULT, sourceConfig as TStorageFoldersDataConfig)
+		this.Config = z_U__source_storage.parse(sourceConfig) as U__source_storage
 
-		const { storage } = this.Config.options
+		const { "storage-type": storage } = this.Config.options
 
 		this.Connection = await StorageProvider.GetProvider(storage as STORAGE)
 		this.Connection.SetConfig(this.Config)
@@ -362,7 +340,7 @@ export class StorageFoldersData extends absDataProvider {
 		$context?: Partial<TContext>,
 	): Promise<TInternalResponse<undefined>> {
 		Assert.Condition(
-			(this.Config.options?.["allow-delete"] as boolean) === true,
+			((this.Config.options as U__source_storage_folders)?.["allow-delete"] as boolean) === true,
 			`${this.SourceName}: "allow-delete" option is required to delete files`,
 			new HttpErrorForbidden(),
 		)

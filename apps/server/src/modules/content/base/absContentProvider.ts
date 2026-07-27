@@ -10,7 +10,7 @@ import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import type { TContext } from "../../sandbox/types/TContext"
 //
 //
-import type { U__source_options_content } from "../@types"
+import type { U__source_options_content } from "../types/U__source_options_content"
 import type { IContentProvider } from "./IContentProvider"
 
 //

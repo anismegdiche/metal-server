@@ -3,25 +3,26 @@
 //
 import type { Readable } from "node:stream"
 import { lookup } from "mime-types"
-//
 import type { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { StringUtils } from "../../../utils/StringUtils"
-import type { U__sources_source } from "../../core/types/U__sources"
-import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
+import type { U__source_storage } from "../../source/types/U__source_storage"
+import type { U__storage } from "../types/U__storage"
 import type { IStorageProvider } from "./IStorageProvider"
 
 
 //
 export abstract class absStorageProvider extends clsClonable implements IStorageProvider {
 
-	abstract Config?: U__source_storage_file_options
+	abstract SourceConfig?: U__source_storage
+	abstract StorageConfig?: U__storage
 
 	abstract IsConfigValid(): void
 
-	SetConfig(configSource: U__sources_source) {
-		this.Config = configSource.options as U__source_storage_file_options
+	SetConfig(sourceConfig: U__source_storage) {
+		this.SourceConfig = sourceConfig
+		this.StorageConfig = (sourceConfig as U__source_storage).options as U__storage
 		this.Init()
 	}
 

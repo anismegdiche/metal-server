@@ -4,6 +4,7 @@ export enum STORAGE {
 	// Legacy
 	FILESYSTEM = "fs",
 	FTP = "ftp",
+	SFTP = "sftp",
 
 	// Cloud (Azure)
 	AZURE_BLOB = "azure-blob",

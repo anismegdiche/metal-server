@@ -39,17 +39,15 @@ import { StorageProvider } from "../../storage/StorageProvider"
 import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
-import {
-	type U__source_storage_file_content,
-	z_U__source_storage_file_content,
-} from "../types/U__source_storage_file_content"
-import type { U__source_storage_file_options } from "../types/U__source_storage_file_options"
+import type { U__source_storage } from "../types/U__source_storage"
+import type { U__source_storage_files, U__source_storage_files_content } from "../types/U__source_storage_files"
+import { z_U__source_storage_files_content } from "../types/U__source_storage_files"
 
 //
 export class StorageFilesData extends absDataProvider {
 	SourceName?: string
 	ProviderName = DATA_PROVIDER.STORAGE
-	Config: U__sources_source = <U__sources_source>{}
+	Config: U__source_storage = <U__source_storage>{}
 	Connection?: absStorageProvider = undefined
 
 	// biome-ignore lint/complexity/noUselessConstructor: compatibility
@@ -77,13 +75,12 @@ export class StorageFilesData extends absDataProvider {
 	@Logger.LogFunction()
 	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
-		this.Config = sourceConfig
-		const { "storage-type": storage = STORAGE.FILESYSTEM, content } = this.Config
-			.options as U__source_storage_file_options
+		this.Config = sourceConfig as U__source_storage
+		const { "storage-type": storage = STORAGE.FILESYSTEM, content } = this.Config.options as U__source_storage_files
 
-		Assert.Var<U__source_storage_file_content>(
+		Assert.Var<U__source_storage_files_content>(
 			content,
-			z_U__source_storage_file_content.safeParse(content).success,
+			z_U__source_storage_files_content.safeParse(content).success,
 			`${this.SourceName}: Content type is not defined`,
 		)
 

@@ -1,16 +1,14 @@
 //
 //
 //
-
 import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
+import type { TJson } from "@metal/types"
 import { type X2jOptions, XMLBuilder, XMLParser, type XmlBuilderOptions } from "fast-xml-parser"
 import { merge } from "lodash-es"
-import z from "zod"
 //
 import type { TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
-import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
@@ -19,24 +17,13 @@ import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
-
-//
-
-export const z_U__source_options_content_xml = z.object({
-	"xml-path": z.string().optional(),
-	"xml-ignore-attributes": z.boolean().optional(),
-	"xml-attribute-prefix": z.string().optional(),
-	"xml-remove-ns-prefix": z.boolean().optional(),
-})
-
-//
-export type U__source_options_content_xml = z.infer<typeof z_U__source_options_content_xml>
+import { type U__source_options_content_xml, z_U__source_options_content_xml } from "../types/U__source_options_content_xml"
 
 //
 export class XmlContent extends absContentProvider {
 	Params: U__source_options_content_xml | undefined
 
-	DEFAULT: U__source_options_content_xml = {
+	DEFAULT: Partial<U__source_options_content_xml> = {
 		"xml-path": undefined,
 		"xml-ignore-attributes": true,
 		"xml-attribute-prefix": "@",
@@ -48,7 +35,7 @@ export class XmlContent extends absContentProvider {
 
 	SetConfig(contentConfig: U__source_options_content_xml): void {
 		super.SetConfig(contentConfig)
-		this.Params = merge(this.DEFAULT, this.Config)
+		this.Params = merge(this.DEFAULT, this.Config) as U__source_options_content_xml
 		this.ParserOptions = {
 			attributeNamePrefix: this.Params["xml-attribute-prefix"],
 			ignoreAttributes: this.Params["xml-ignore-attributes"],

@@ -1,13 +1,11 @@
 //
 //
 //
-
 import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
-import { merge } from "lodash-es"
-// Lazy-loaded soap module
-//
 import type { TJson } from "@metal/types"
+import { merge } from "lodash-es"
+//
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
@@ -24,7 +22,7 @@ import { absWebServiceProvider } from "../base/absWebServiceProvider"
 //
 export class SoapWebService extends absWebServiceProvider {
 	DEFAULT: Partial<U__source_webservice_options> = {
-		content: CONTENT.XML,
+		"content-type": CONTENT.XML,
 	}
 
 	ConfigSource?: U__source_webservice
@@ -72,7 +70,7 @@ export class SoapWebService extends absWebServiceProvider {
 		const { host } = this.ConfigSource
 		Assert.Var<string>(host, "host is undefined")
 
-		const { content } = this.ConfigSourceOptions as U__source_webservice_options
+		const { "content-type": content } = this.ConfigSourceOptions as U__source_webservice_options
 		Assert.Var<string>(content, "content is undefined")
 
 		const soap = await SoapWebService._loadSoapModule()

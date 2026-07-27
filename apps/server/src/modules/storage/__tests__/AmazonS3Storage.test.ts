@@ -2,31 +2,34 @@ import { Readable } from "node:stream"
 import { vi } from "vitest"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
-import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
+import { STORAGE_MODE } from "../../source/providers/STORAGE_MODE"
+import { STORAGE } from "../@consts"
 import { AmazonS3Storage } from "../providers/AmazonS3Storage"
 
 const mockS3Module = {
-	S3Client: vi.fn().mockImplementation(() => ({ send: vi.fn() } )),
-	ListObjectsV2Command: vi.fn().mockImplementation(() => ({} )),
-	PutObjectCommand: vi.fn().mockImplementation(() => ({} )),
-	GetObjectCommand: vi.fn().mockImplementation(() => ({} )),
-	CopyObjectCommand: vi.fn().mockImplementation(() => ({} )),
-	DeleteObjectCommand: vi.fn().mockImplementation(() => ({} )),
+	S3Client: vi.fn().mockImplementation(() => ({ send: vi.fn() })),
+	ListObjectsV2Command: vi.fn().mockImplementation(() => ({})),
+	PutObjectCommand: vi.fn().mockImplementation(() => ({})),
+	GetObjectCommand: vi.fn().mockImplementation(() => ({})),
+	CopyObjectCommand: vi.fn().mockImplementation(() => ({})),
+	DeleteObjectCommand: vi.fn().mockImplementation(() => ({})),
 }
 
 const baseParams = {
 	provider: DATA_PROVIDER.STORAGE,
 	host: "s3.amazonaws.com",
-} as unknown as U__sources_source
+}
 
 describe("AmazonS3Storage", () => {
 	let storage: AmazonS3Storage
-	const mockConfig: U__sources_source = {
+	const mockConfig = {
 		...baseParams,
 		provider: DATA_PROVIDER.STORAGE,
 		host: "s3.amazonaws.com",
 		options: {
+			"storage-type": STORAGE.AWS_S3,
+			"storage-mode": STORAGE_MODE.FOLDERS,
 			bucket: "test-bucket",
 			region: "us-east-1",
 			"access-key-id": "test-key",
@@ -40,7 +43,7 @@ describe("AmazonS3Storage", () => {
 		// Inject the mock S3 module for testing
 		AmazonS3Storage.setS3Module(mockS3Module as any)
 		storage = new AmazonS3Storage()
-		storage.SetConfig(mockConfig)
+		storage.SetConfig(mockConfig as any)
 	})
 
 	describe("Connect", () => {

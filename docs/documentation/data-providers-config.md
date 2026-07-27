@@ -70,8 +70,8 @@ sources:
 | Parameter                             | Type    | Description                                                                                                                                                                                        |
 | ------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `connectionString`                    | String  | Connection string. Example:`postgres://user:password@host:5432/database`                                                                                                                           |
-| `ssl`                                 | String  | Options passed directly to`node.TLSSocket`. Supports all`tls.connect`                                                                                                                              |
-| `types`                               | String  | Custom type parsers.                                                                                                                                                                               |
+| `ssl`                                 | Object  | Options passed directly to`node.TLSSocket`. see: [TLS/SSL connections](https://node-postgres.com/features/ssl)                                                                                     |
+| `types`                               | Object  | Custom type parsers.                                                                                                                                                                               |
 | `statement_timeout`                   | Number  | Number of milliseconds before a statement in query will time out, default is no timeout.                                                                                                           |
 | `query_timeout`                       | Number  | Number of milliseconds before a query call will timeout, default is no timeout.                                                                                                                    |
 | `application_name`                    | String  | The name of the application that created this Client instance.                                                                                                                                     |
@@ -272,15 +272,27 @@ sources:
 
 **Optional parameters:**
 
-| Parameter        | Type    | Default | Description                                            |
-| ---------------- | ------- | ------- | ------------------------------------------------------ |
-| `key`            | String  | Y       | The primary or secondary key for your CosmosDB account |
-| `partitionKey`   | String  | N       | The partition key path for the container               |
-| `maxRetries`     | Integer | 3       | Maximum number of retries for failed operations        |
-| `requestTimeout` | Integer | 60000   | Request timeout in milliseconds                        |
-| `connectionMode` | String  | Direct  | Connection mode (Direct or Gateway)                    |
-| `protocol`       | String  | Tcp     | Protocol to use (Tcp or Http)                          |
-| `retryAfter`     | Integer | 1000    | Time to wait between retries in milliseconds           |
+| Parameter          | Type    | Required | Description                                                                                                              |
+| ------------------ | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `endpoint`         | String  | N        | The CosmosDB endpoint URL (default: `""`)                                                                                |
+| `key`              | String  | N        | The primary or secondary key for your CosmosDB account                                                                   |
+| `partitionKey`     | String  | N        | The partition key path for the container                                                                                 |
+| `consistencyLevel` | String  | N        | Consistency level: `Strong`, `BoundedStaleness`, `Session`, `Eventual`, `ConsistentPrefix` (default: `Session`)          |
+| `retryAfter`       | Integer | N        | Time to wait between retries in milliseconds                                                                             |
+| `autocreate`       | Boolean | N        | If set to `true`, container will be created automatically (default: `true`)                                              |
+| `connectionPolicy` | Object  | N        | Connection policy settings (see: [`connectionPolicy`](#connectionpolicy))                                                 |
+
+#### `connectionPolicy`
+
+Optional nested object for configuring the CosmosDB client connection policy.
+
+| Parameter                            | Type    | Required | Description                                                                   |
+| ------------------------------------ | ------- | -------- | ----------------------------------------------------------------------------- |
+| `requestTimeout`                     | Integer | N        | Request timeout in milliseconds (default: `5000`)                             |
+| `maxRetryAttemptsOnThrottledRequests`| Integer | N        | Maximum number of retries for throttled requests                              |
+| `maxRetryWaitTimeOnThrottledRequests`| Integer | N        | Maximum wait time in milliseconds between retries for throttled requests      |
+| `enableEndpointDiscovery`            | Boolean | N        | Enable endpoint discovery for multi-region accounts                           |
+| `preferredLocations`                 | Array   | N        | List of preferred regions for multi-region CosmosDB accounts                  |
 
 **Example:**
 
@@ -291,12 +303,20 @@ sources:
     host: https://mycosmos.documents.azure.com
     database: mydatabase
     options:
-    key: your-primary-key-here
+      key: your-primary-key-here
       partitionKey: /id
-      maxRetries: 3
-      requestTimeout: 60000
-      connectionMode: Direct
-      protocol: Tcp
+      consistencyLevel: Session
+      retryAfter: 1000
+      autocreate: true
+      connectionPolicy:
+        requestTimeout: 5000
+        connectionMode: Gateway
+        maxRetryAttemptsOnThrottledRequests: 9
+        maxRetryWaitTimeOnThrottledRequests: 30
+        enableEndpointDiscovery: true
+        preferredLocations:
+          - "East US"
+          - "West Europe"
 ```
 
 ## Storage <Badge type="info" text="v0.5+" />
@@ -355,16 +375,32 @@ The `folders` mode enables handle folders as data, returning subfolders as entit
 
 Data returned from folders mode are:
 
-| Property     | Type     | Description                                                                                                |
-| ------------ | -------- | ---------------------------------------------------------------------------------------------------------- |
-| `name`       | `string` | The name of the file.                                                                                      |
-| `mimeType`   | `string` | The mime type of the file.                                                                                 |
-| `type`       | `string` | The type of the file.                                                                                      |
-| `size`       | `number` | The size of the file in bytes.                                                                             |
-| `createdAt`  | `date`   | The creation date of the file. (ISO 8601 format)                                                           |
-| `modifiedAt` | `date`   | The modification date of the file. (ISO 8601 format)                                                       |
-| `path`       | `string` | The path of the file.                                                                                      |
+| Property     | Type     | Description                                                                                               |
+| ------------ | -------- | --------------------------------------------------------------------------------------------------------- |
+| `name`       | `string` | The name of the file.                                                                                     |
+| `mimeType`   | `string` | The mime type of the file.                                                                                |
+| `type`       | `string` | The type of the file.                                                                                     |
+| `size`       | `number` | The size of the file in bytes.                                                                            |
+| `createdAt`  | `date`   | The creation date of the file. (ISO 8601 format)                                                          |
+| `modifiedAt` | `date`   | The modification date of the file. (ISO 8601 format)                                                      |
+| `path`       | `string` | The path of the file.                                                                                     |
 | `content`    | `string` | The Base64 content of the file. ❗By default it is not returned unless you specify it explicitly in fields |
+
+
+**Example:**
+
+Working with Filesystem storage:
+
+```yaml
+sources:
+  src-fs:
+    provider: storage
+    options:
+      storage-mode: folders
+      storage-type: fs
+      folder: ./data/
+      allow-delete: true
+```
 
 ::: warning ⚠️ IMPORTANT
 By Default, the `content` field is not returned unless you specify it explicitly for example in `select.fields`.
@@ -384,21 +420,6 @@ By Default, the `content` field is not returned unless you specify it explicitly
 When you perform Insert and Update, only fields `name` and `content` can be modified.
 :::
 
-**Example:**
-
-Working with Filesystem storage:
-
-```yaml
-sources:
-  src-fs:
-    provider: storage
-    options:
-      storage-mode: folders
-      storage-type: fs
-      folder: ./data/
-      allow-delete: true
-```
-
 #### `files`
 
 The `files` mode enables treating files as data. Files content is returned as data.
@@ -413,6 +434,25 @@ Each file can have its own associated content type with optional parameters for 
 | `storage-type` | String  | Y        | The storage where the files are stored, see: [Storage Types](#storage-types)                                                                                                                   |
 | `content`      | Object  | Y        | Contains pattern of files and associated content type, including JSON, CSV, and XLS, with optional parameters for customizing the content type settings., see: [Content Types](#content-types) |
 | `autocreate`   | Boolean | N        | if set to `true`, when interacting with entities that do not exist, files with same entity name will be created automatically (default: `false`)                                               |
+
+**Example:**
+
+Working with *.json files on Filesystem storage:
+
+```yaml
+sources:
+  src-json:
+    provider: storage
+    options:
+      storage-mode: files
+      storage-type: fs
+      folder: ../data
+      autocreate: true
+      content:
+        "*.json":
+          content-type: json
+          json-path: rows
+```
 
 ### `storage-type` <Badge type="default" text="v0.3+" />
 
@@ -729,8 +769,8 @@ List of managed content types:
 
 #### `json` <Badge type="default" text="v0.3+" />
 
-| Parameter      | Type   | Description                                                               |
-| -------------- | ------ | ------------------------------------------------------------------------- |
+| Parameter     | Type   | Description                                                               |
+| ------------- | ------ | ------------------------------------------------------------------------- |
 | 📜 `json-path` | String | the JSON path of the Data Array in the JSON file (default: empty string). |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
@@ -752,13 +792,13 @@ sources:
 
 #### `csv` <Badge type="info" text="v0.5+" />
 
-| Parameter              | Type            | Description                                                                                                                                                                                                                                          |
-| ---------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `csv-delimiter`        | String          | The delimiting character (default: `;`).                                                                                                                                                                                                             |
-| `csv-newline`          | String          | The newline sequence. Must be one of `\r`, `\n`, or `\r\n` (default: `\r\n`).                                                                                                                                                                        |
-| `csv-header`           | Boolean         | If true, the first row of parsed data will be interpreted as field names (default: `true`).                                                                                                                                                          |
-| `csv-quote`            | String          | The character used to quote fields (default: `"`).                                                                                                                                                                                                   |
-| `csv-skip-empty-lines` | Boolean         | If true, lines that are completely empty will be skipped (default: `true`).                                                                                                                                                                          |
+| Parameter              | Type    | Description                                                                                 |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------------- |
+| `csv-delimiter`        | String  | The delimiting character (default: `;`).                                                    |
+| `csv-newline`          | String  | The newline sequence. Must be one of `\r`, `\n`, or `\r\n` (default: `\r\n`).               |
+| `csv-header`           | Boolean | If true, the first row of parsed data will be interpreted as field names (default: `true`). |
+| `csv-quote`            | String  | The character used to quote fields (default: `"`).                                          |
+| `csv-skip-empty-lines` | Boolean | If true, lines that are completely empty will be skipped (default: `true`).                 |
 
 **Example:**
 
@@ -902,8 +942,8 @@ This endpoint is used to establish a connection with the webservice and obtain a
 
 The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request. Additionally, it can include headers to be added after a successful login session.
 
-| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                                                                                 |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter                   | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                                                                                 |
+| --------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                                                                        |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                                                                        |
 | 📜 `session-headers`         | Object | Headers to add after login is successful                                                                                                         | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars)<br>[`$request`](dynamic-expression-engine#request)<br>[`$response`](dynamic-expression-engine#response) |
@@ -939,8 +979,8 @@ rest-dummyjson: # https://dummyjson.com/docs
 
 This endpoint is used to read data from a collection. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
-| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                                                                                 |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter                   | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                                                                                 |
+| --------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                                                                        |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                                                                                        |
 | 📜 `response`                | String | response path to get data                                                                                                                        | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars)<br>[`$request`](dynamic-expression-engine#request)<br>[`$response`](dynamic-expression-engine#response) |
@@ -967,8 +1007,8 @@ rest-dog: # https://dog.ceo/dog-api/documentation/
 
 This endpoint is used to create a new item. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
-| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                    |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter                   | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                    |
+| --------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars)<br>                                        |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars)<br>[`$row`](dynamic-expression-engine#row) |
 
@@ -993,8 +1033,8 @@ rest-fakerestapi: # https://fakerestapi.azurewebsites.net/index.html
 
 This endpoint is used to update an existing item. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
-| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                    |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter                   | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                    |
+| --------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                           |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars)<br>[`$row`](dynamic-expression-engine#row) |
 
@@ -1019,8 +1059,8 @@ rest-fakerestapi: # https://fakerestapi.azurewebsites.net/index.html
 
 This endpoint is used to delete an existing item. The endpoint configuration includes the HTTP method to use, the relative URL to request, and any data to be sent with the request.
 
-| Parameter                    | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                    |
-| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter                   | Type   | Description                                                                                                                                      | JS Context variable                                                                                                                                                                    |
+| --------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 📜 _`<method or operation>`_ | String | The Key is the method or operation to use (e.g. `get`,`listMovies`). see: [Method or Operation key](#method)                                     | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity)                                                                                           |
 | 📜 `data`                    | Object | Data to send with the request. If not set, object in Optional Parameter [`data`](optional-parameters#data) will be passed AsIs to the webservice | [`$schema`](dynamic-expression-engine#schema)<br>[`$entity`](dynamic-expression-engine#entity)<br>[`$vars`](dynamic-expression-engine#vars)<br>[`$row`](dynamic-expression-engine#row) |
 

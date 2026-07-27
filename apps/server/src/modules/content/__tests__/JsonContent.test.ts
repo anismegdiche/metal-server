@@ -1,10 +1,12 @@
 import { Readable } from "node:stream"
 import { DataTable } from "../../../types/DataTable"
-import type { U__source_options_content } from "../@types"
+import { CONTENT } from "../@consts"
 import { JsonContent } from "../providers/JsonContent"
+import type { U__source_options_content } from "../types/U__source_options_content"
 
 describe("JsonContent", () => {
 	const contentConfig: U__source_options_content = {
+		"content-type": CONTENT.JSON,
 		"json-path": "data",
 	}
 
@@ -20,7 +22,9 @@ describe("JsonContent", () => {
 			const content = Readable.from('{"key": "value"}')
 
 			const jsonContentEmptyOptions = new JsonContent()
-			jsonContentEmptyOptions.SetConfig({})
+			jsonContentEmptyOptions.SetConfig({
+				"content-type": CONTENT.JSON,
+			})
 
 			jsonContentEmptyOptions.InitContent(name, content)
 			expect(jsonContentEmptyOptions.Params).toEqual({ path: undefined })

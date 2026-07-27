@@ -4,7 +4,7 @@
 
 import { Logger } from "@metal/logger"
 import { assign, merge, pick } from "lodash-es"
-import type { MongoClientOptions, Document as MongoDocument } from "mongodb"
+import type { Document as MongoDocument } from "mongodb"
 //
 import { DataTable, type TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -33,6 +33,7 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
 import type { TDataListEntity, TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
+import type { U__source_mongodb } from "../types/U__source_mongodb"
 import { MongoDbHelper } from "./MongoDbHelper"
 
 // Define the MongoDB types that we'll use
@@ -45,14 +46,6 @@ type MongoDbTypes = {
 type Document = MongoDocument
 type Filter<_T> = object
 type UpdateFilter<_T> = object
-
-//
-export type U__source_mongodb = {
-	provider: DATA_PROVIDER.MONGODB
-	host: string
-	database?: string
-	options?: MongoClientOptions
-}
 
 //
 export class MongoDbData extends absDataProvider {

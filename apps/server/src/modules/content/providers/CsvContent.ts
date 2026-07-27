@@ -3,14 +3,12 @@
 //
 import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
+import type { TJson } from "@metal/types"
 import { parse } from "csv-parse/sync"
 import { stringify } from "csv-stringify/sync"
 import { merge } from "lodash-es"
-import z from "zod"
-//
 import type { TRow, TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
-import type { TJson } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
 import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
@@ -19,6 +17,7 @@ import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
+import { type U__source_options_content_csv, z_U__source_options_content_csv } from "../types/U__source_options_content_csv"
 
 //
 type CsvParams = Record<string, string | boolean | number | undefined>
@@ -36,18 +35,6 @@ export const CSV_CHAR_REVERSE = {
 }
 
 //
-export const z_U__source_options_content_csv = z.object({
-	"csv-delimiter": z.string().optional(),
-	"csv-newline": z.string().optional(),
-	"csv-header": z.boolean().optional(),
-	"csv-quote": z.union([z.string(), z.null()]).optional(),
-	"csv-skip-empty-lines": z.boolean().optional(),
-})
-
-//
-export type U__source_options_content_csv = z.infer<typeof z_U__source_options_content_csv>
-
-//
 export function EscapeNewlines(value: string): string {
 	return Object.entries(CSV_CHAR_REPLACEMENT).reduce((acc, [from, to]) => acc.replaceAll(from, to), value)
 }
@@ -60,7 +47,7 @@ export function UnescapeNewlines(value: string): string {
 export class CsvContent extends absContentProvider {
 	Params: CsvParams | undefined
 
-	DEFAULT: U__source_options_content_csv = {
+	DEFAULT: Partial<U__source_options_content_csv> = {
 		"csv-header": true,
 		"csv-delimiter": ";",
 		"csv-quote": '"',

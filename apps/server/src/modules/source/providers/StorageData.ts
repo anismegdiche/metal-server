@@ -1,8 +1,6 @@
 //
 //
 //
-
-import { Logger } from "@metal/logger"
 import { merge } from "lodash-es"
 //
 import { Assert } from "../../../utils/Assert"
@@ -21,35 +19,17 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
 import type { IDataProvider } from "../base/IDataProvider"
-import type { U__source_storage_file_options } from "../types/U__source_storage_file_options"
+import type { U__source_storage, U__source_storage_options } from "../types/U__source_storage"
+import { STORAGE_MODE } from "./STORAGE_MODE"
 import { StorageFilesData } from "./StorageFilesData"
-import type { U__source_storage_folder_options } from "./StorageFoldersData"
 import { StorageFoldersData } from "./StorageFoldersData"
 
-//
-export enum STORAGE_MODE {
-	FILES = "files",
-	FOLDERS = "folders",
-}
-
-//
-export type U__source_storage_options =
-	| ({
-			"storage-mode": STORAGE_MODE.FILES
-	  } & U__source_storage_file_options)
-	| ({
-			"storage-mode": STORAGE_MODE.FOLDERS
-	  } & U__source_storage_folder_options)
-
-export type U__source_storage = U__sources_source & {
-	options: U__source_storage_options
-}
 
 //
 export class StorageData extends absDataProvider implements IDataProvider {
 	SourceName?: string
 	ProviderName = DATA_PROVIDER.STORAGE
-	Config: U__sources_source = <U__sources_source>{}
+	Config: U__source_storage = <U__source_storage>{}
 	Connection?: StorageFilesData | StorageFoldersData
 
 	// biome-ignore lint/complexity/noUselessConstructor: compatibility
@@ -66,7 +46,7 @@ export class StorageData extends absDataProvider implements IDataProvider {
 	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
 
-		this.Config = merge(this.DEFAULT, sourceConfig)
+		this.Config = merge(this.DEFAULT, sourceConfig) as U__source_storage
 
 		const { "storage-mode": storageMode } = this.Config.options as U__source_storage_options
 

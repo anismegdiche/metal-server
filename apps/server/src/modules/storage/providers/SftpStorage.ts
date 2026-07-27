@@ -4,9 +4,8 @@
 
 import { PassThrough, Readable } from "node:stream"
 import { Logger } from "@metal/logger"
-import { merge, omit } from "lodash-es"
+import { omit } from "lodash-es"
 import SftpClient from "ssh2-sftp-client"
-import z from "zod"
 //
 import { DataTable, type TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -15,59 +14,53 @@ import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
-import type { U__source_storage_file_options } from "../../source/types/U__source_storage_file_options"
+import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
 import type { TStorageFile } from "../types/TStorageFile"
 import type { TStorageFolder } from "../types/TStorageFolder"
+import { type U__storage_sftp, z_U__storage_sftp } from "../types/U__storage_sftp"
 
-//
-const z_U__source_storage_sftp_options = z.object({
-	host: z.string(),
-	port: z.number().optional(),
-	user: z.string(),
-	password: z.string(),
-	"private-key": z.string().optional(),
-	passphrase: z.string().optional(),
-	folder: z.string().optional(),
-})
-
-//
-export type U__source_storage_sftp_options = z.infer<typeof z_U__source_storage_sftp_options>
-
-type TSftpStorageParams = Required<{
-	[K in keyof U__source_storage_sftp_options as K extends `${infer U}`
-		? TConvertParams<U>
-		: K]: U__source_storage_sftp_options[K]
-}>
+type TSftpStorageParams = Omit<
+	{
+		[K in keyof U__storage_sftp as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_sftp[K]
+	},
+	"storageType"
+> & {
+	autocreate: boolean
+}
 
 //
 export class SftpStorage extends absStorageProvider {
-	Config?: U__source_storage_file_options
+	SourceConfig?: U__source_storage
+	StorageConfig?: U__storage_sftp
 	Params?: TSftpStorageParams
 	_sftpClient: SftpClient = new SftpClient()
 
-	DEFAULT: Partial<TSftpStorageParams> = {
-		port: 22,
-		folder: "/",
-	}
-
 	IsConfigValid(): boolean {
-		return z_U__source_storage_sftp_options.safeParse(this.Config).success
+		return z_U__storage_sftp.safeParse(this.SourceConfig).success
 	}
 
 	@Logger.LogFunction()
 	Init(): void {
-		Assert.Var<U__source_storage_file_options>(this.Config, this.IsConfigValid(), "No config storage defined")
-		this.Config = merge(this.DEFAULT, this.Config)
+		this.SourceConfig = Assert.ZodSchema<U__source_storage>(
+			this.SourceConfig,
+			z_U__source_storage,
+			"Source configuration errors",
+		)
+		this.StorageConfig = Assert.ZodSchema<U__storage_sftp>(
+			this.StorageConfig,
+			z_U__storage_sftp,
+			"Storage configuration errors",
+		)
 
 		this.Params = <TSftpStorageParams>{
-			host: this.Config.host,
-			port: this.Config.port,
-			user: this.Config.user,
-			password: this.Config.password,
-			privateKey: this.Config["private-key"],
-			passphrase: this.Config.passphrase,
-			folder: this.Config.folder,
+			host: this.StorageConfig.host,
+			port: this.StorageConfig.port,
+			user: this.StorageConfig.user,
+			password: this.StorageConfig.password,
+			privateKey: this.StorageConfig["private-key"],
+			passphrase: this.StorageConfig.passphrase,
+			folder: this.StorageConfig.folder,
 		}
 	}
 
@@ -146,7 +139,7 @@ export class SftpStorage extends absStorageProvider {
 		const targetDir = dirName ? StringUtils.Path(this.Params.folder, dirName) : this.Params.folder
 
 		try {
-			const list = await this._sftpClient.list(targetDir)
+			const list = await this._sftpClient.list(targetDir as string)
 
 			const result: TRow[] = list
 				.filter((file) => file.type === "-")

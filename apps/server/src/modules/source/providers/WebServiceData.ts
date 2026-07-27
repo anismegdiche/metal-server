@@ -40,12 +40,13 @@ import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
 import type { U__source_webservice } from "../types/U__source_webservice"
+import type { U__source_webservice_options } from "../types/U__source_webservice_options"
 
 //
 export class WebServiceData extends absDataProvider {
 	SourceName?: string
 	ProviderName = DATA_PROVIDER.WEBSERVICE
-	Config: U__source_webservice | undefined
+	Config: U__source_webservice = <U__source_webservice>{}
 	Connection?: absWebServiceProvider
 
 	// biome-ignore lint/complexity/noUselessConstructor: compatibility
@@ -62,7 +63,7 @@ export class WebServiceData extends absDataProvider {
 		await super.Init(source, sourceConfig)
 		this.Config = merge(this.Config, sourceConfig)
 
-		const { content, type: webservice } = this.Config.options
+		const { "content-type": content, type: webservice } = this.Config.options as U__source_webservice_options
 
 		Assert.Var<CONTENT>(content, `${this.SourceName}: Content type is not defined`)
 

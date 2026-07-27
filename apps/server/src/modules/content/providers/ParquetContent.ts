@@ -1,14 +1,12 @@
 //
 //
 //
-
 import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
 import { parquetReadObjects } from "hyparquet"
 import type { BaseParquetReadOptions } from "hyparquet/src/types.js"
 import { ByteWriter, parquetWrite } from "hyparquet-writer"
 import { merge } from "lodash-es"
-import z from "zod"
 //
 import type { TRow, TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
@@ -16,14 +14,10 @@ import { Assert } from "../../../utils/Assert"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
-
-//
-export const z_U__source_options_content_parquet = z.object({
-	"parquet-utf8": z.boolean().optional(),
-})
-
-//
-export type U__source_options_content_parquet = z.infer<typeof z_U__source_options_content_parquet>
+import {
+	type U__source_options_content_parquet,
+	z_U__source_options_content_parquet,
+} from "../types/U__source_options_content_parquet"
 
 //
 function createDataFromRows(rows: TRow[]): Record<string, unknown[]> {
@@ -60,7 +54,7 @@ export async function convertToArrayBuffer(stream: Readable): Promise<ArrayBuffe
 //
 export class ParquetContent extends absContentProvider {
 	Params: Partial<BaseParquetReadOptions> | undefined
-	DEFAULT: U__source_options_content_parquet = {
+	DEFAULT: Partial<U__source_options_content_parquet> = {
 		"parquet-utf8": true,
 	}
 

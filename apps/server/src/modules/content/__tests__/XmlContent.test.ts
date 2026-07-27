@@ -2,7 +2,9 @@ import { Readable } from "node:stream"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
+import { CONTENT } from "../@consts"
 import { XmlContent } from "../providers/XmlContent"
+import type { U__source_options_content_xml } from "../types/U__source_options_content_xml"
 
 const xmlUsers = `<?xml version="1.0" encoding="UTF-8"?>
 <users>
@@ -58,7 +60,10 @@ describe("XmlContent", () => {
 		const xmlContent = new XmlContent()
 		const entity = "users"
 		const content = Readable.from(xmlUsers)
-		const config = { "xml-path": "users.user" }
+		const config: U__source_options_content_xml = {
+			"content-type": CONTENT.XML,
+			"xml-path": "users.user"
+		}
 
 		xmlContent.SetConfig(config)
 		xmlContent.InitContent(entity, content)
@@ -72,7 +77,10 @@ describe("XmlContent", () => {
 		const xmlContent = new XmlContent()
 		xmlContent.EntityName = "users"
 		xmlContent.Content.UploadFile("users", Readable.from(xmlUsers))
-		xmlContent.Params = { "xml-path": "users.user" }
+		xmlContent.Params = {
+			"content-type": CONTENT.XML,
+			"xml-path": "users.user"
+		}
 
 		const result = await xmlContent.Get({}, {})
 
@@ -100,7 +108,9 @@ describe("XmlContent", () => {
 	it("should update XML content and save changes", async () => {
 		const xmlContent = new XmlContent()
 		const initialXml = "<root><data>old</data></root>"
-		xmlContent.Params = { "xml-path": "root.data" }
+		xmlContent.Params = {
+			"content-type": CONTENT.XML, "xml-path": "root.data"
+		}
 		xmlContent.Content.UploadFile("test", Readable.from(initialXml))
 		xmlContent.EntityName = "test"
 
@@ -114,7 +124,9 @@ describe("XmlContent", () => {
 	// SQL queries execute correctly on retrieved XML data
 	it("should execute SQL queries on XML data", async () => {
 		const xmlContent = new XmlContent()
-		xmlContent.Params = { "xml-path": "users.user" }
+		xmlContent.Params = {
+			"content-type": CONTENT.XML, "xml-path": "users.user"
+		}
 		xmlContent.Content.UploadFile("users", Readable.from(xmlUsers))
 		xmlContent.EntityName = "users"
 
@@ -153,7 +165,9 @@ describe("XmlContent", () => {
 		const xmlContent = new XmlContent()
 		xmlContent.EntityName = "users"
 		xmlContent.Content.UploadFile("users", Readable.from(xmlUsersSoap))
-		xmlContent.Params = { "xml-path": "soap:Envelope.soap:Body.GetUsersResponse.GetUsersResult.users.user" }
+		xmlContent.Params = {
+			"content-type": CONTENT.XML, "xml-path": "soap:Envelope.soap:Body.GetUsersResponse.GetUsersResult.users.user"
+		}
 
 		const result = await xmlContent.Get({}, {})
 
@@ -179,7 +193,9 @@ describe("XmlContent", () => {
 
 	it("should execute SQL queries on SOAP XML data", async () => {
 		const xmlContent = new XmlContent()
-		xmlContent.Params = { "xml-path": "soap:Envelope.soap:Body.GetUsersResponse.GetUsersResult.users.user" }
+		xmlContent.Params = {
+			"content-type": CONTENT.XML, "xml-path": "soap:Envelope.soap:Body.GetUsersResponse.GetUsersResult.users.user"
+		}
 		xmlContent.Content.UploadFile("users", Readable.from(xmlUsersSoap))
 		xmlContent.EntityName = "users"
 
@@ -202,7 +218,9 @@ describe("XmlContent", () => {
 		const xmlContent = new XmlContent()
 		xmlContent.EntityName = "users"
 		xmlContent.Content.UploadFile("users", Readable.from(""))
-		xmlContent.Params = { "xml-path": "users.user" }
+		xmlContent.Params = {
+			"content-type": CONTENT.XML, "xml-path": "users.user"
+		}
 
 		await expect(xmlContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
 	})
@@ -211,7 +229,9 @@ describe("XmlContent", () => {
 		const xmlContent = new XmlContent()
 		xmlContent.EntityName = "users"
 		xmlContent.Content.UploadFile("users", Readable.from("<root> invalid xml </root>"))
-		xmlContent.Params = { "xml-path": "users.user" }
+		xmlContent.Params = {
+			"content-type": CONTENT.XML, "xml-path": "users.user"
+		}
 
 		await expect(xmlContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
 	})
@@ -220,7 +240,9 @@ describe("XmlContent", () => {
 		const xmlContent = new XmlContent()
 		xmlContent.EntityName = "users"
 		xmlContent.Content.UploadFile("users", Readable.from(xmlUsers))
-		xmlContent.Params = { "xml-path": "missing.path" }
+		xmlContent.Params = {
+			"content-type": CONTENT.XML, "xml-path": "missing.path"
+		}
 
 		await expect(xmlContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
 	})
@@ -229,7 +251,9 @@ describe("XmlContent", () => {
 		const xmlContent = new XmlContent()
 		xmlContent.EntityName = "users"
 		xmlContent.Content.UploadFile("users", Readable.from(xmlUsers))
-		xmlContent.Params = { "xml-path": "users invalid.path" }
+		xmlContent.Params = {
+			"content-type": CONTENT.XML, "xml-path": "users invalid.path"
+		}
 
 		await expect(xmlContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
 	})
