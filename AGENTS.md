@@ -256,6 +256,19 @@ Available context variables in expressions:
 
 ## 10. Testing Patterns (Vitest)
 
+**Root-level config:** Vitest is configured centrally in the root `vitest.config.ts` using the `test.projects` API. Each workspace with tests is a separate project.
+
+**Commands:**
+```sh
+yarn test                    # run all workspace projects
+yarn test:server             # run only @metal/server tests
+yarn test:types              # run only @metal/types tests
+yarn test:logger             # run only @metal/logger tests
+yarn test:watch              # watch mode for all projects
+```
+
+**Adding tests to a new workspace:** Add an inline project entry to `test.projects` in the root `vitest.config.ts` and a `"test": "vitest run --project <name>"` script to the workspace's `package.json`.
+
 ```ts
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { DataTable } from "../../../types/DataTable"

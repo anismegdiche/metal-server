@@ -19,7 +19,11 @@
 		"prod": "yarn workspace @metal/server prod",
 		"prod:build-all-images": "yarn workspace @metal/server prod:build-all-images",
 		"prod:generate-api-key": "yarn workspace @metal/server prod:generate-api-key",
-		"test": "yarn workspace @metal/server test",
+		"test": "vitest run",
+		"test:watch": "vitest --watch",
+		"test:server": "vitest run --project @metal/server",
+		"test:types": "vitest run --project @metal/types",
+		"test:logger": "vitest run --project @metal/logger",
 		"lint": "yarn workspace @metal/server lint",
 		"lint:check": "yarn workspace @metal/server lint:check",
 		"format": "yarn workspace @metal/server format",
@@ -42,6 +46,7 @@
 	},
 	"devDependencies": {
 		"@types/node": "^26.0.0",
+		"@vitest/coverage-v8": "^4.1.8",
 		"vitest": "^4.1.9"
 	},
 	"packageManager": "yarn@4.17.1",

@@ -12,7 +12,7 @@
 		"prod": "yarn build && yarn start",
 		"prod:build-all-images": "yarn build && node dist/index.js --build-all-images",
 		"prod:generate-api-key": "yarn build && node dist/index.js --generate-api-key",
-		"test": "vitest run",
+		"test": "vitest run --project @metal/server",
 		"lint": "biome lint --write src",
 		"lint:check": "biome lint src",
 		"format": "biome format --write src",
@@ -100,12 +100,10 @@
 		"@types/response-time": "^2.3.9",
 		"@types/ssh2-sftp-client": "^9.0.6",
 		"@types/swagger-ui-express": "^4.1.8",
-		"@vitest/coverage-v8": "^4.1.8",
 		"madge": "^8.0.0",
 		"standard-version": "^9.5.0",
 		"tsup": "^8.5.1",
 		"tsx": "^4.22.4",
-		"typescript": "~6.0.3",
-		"vitest": "^4.1.8"
+		"typescript": "~6.0.3"
 	}
 }

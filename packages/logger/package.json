@@ -7,7 +7,8 @@
 		".": "./src/index.ts"
 	},
 	"scripts": {
-		"build": "tsc"
+		"build": "tsc",
+		"test": "vitest run --project @metal/logger"
 	},
 	"dependencies": {
 		"@dimkl/events": "^3.0.3",

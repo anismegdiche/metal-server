@@ -1,5 +1,5 @@
+import { Logger } from '@metal/logger' // EXACT same path as in your app
 import { vi } from 'vitest'
-import { Logger } from './src/utils/Logger' // EXACT same path as in your app
 
 const noop = () => { }
 
