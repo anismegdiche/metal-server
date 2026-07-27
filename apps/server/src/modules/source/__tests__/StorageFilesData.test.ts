@@ -35,7 +35,7 @@ describe("StorageFilesData", () => {
 		mockStorageProvider = {
 			SetConfig: vi.fn(),
 			Init: vi.fn(),
-			Connect: vi.fn(),
+			Connect: vi.fn().mockResolvedValue(undefined),
 			Disconnect: vi.fn(),
 			FileRead: vi.fn(),
 			FileWrite: vi.fn(),

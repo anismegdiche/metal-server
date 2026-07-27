@@ -3,7 +3,9 @@ import * as Yaml from "js-yaml"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ConfigManager } from "../ConfigManager"
 
-vi.mock("node:fs")
+vi.mock("node:fs", () => ({
+	readFileSync: vi.fn().mockReturnValue(JSON.stringify({ version: "0.0.0" })),
+}))
 vi.mock("js-yaml")
 vi.mock("dotenv", () => ({
 	config: vi.fn(),

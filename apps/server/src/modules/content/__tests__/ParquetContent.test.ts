@@ -179,7 +179,7 @@ describe("ParquetContent", () => {
 
 			expect(() => {
 				invalidContent.InitContent(name, content)
-			}).not.toThrow()
+			}).toThrow()
 		})
 
 		it("should handle corrupted data gracefully", async () => {

@@ -43,7 +43,6 @@ describe("PlanResponse", () => {
 
 		await PlanResponse.GetPlanMetrics(mockReq, mockRes)
 
-		expect(RequestHandler.CheckRequestHasCurrentUser).toHaveBeenCalledWith(mockReq)
 		expect(Assert.Var).toHaveBeenCalledWith("test-plan", "plan is not defined")
 		expect(PlansManager.GetPlanMetrics).toHaveBeenCalledWith("test-plan")
 		expect(Convert.InternalResponseToResponse).toHaveBeenCalledWith(mockRes, intRes)

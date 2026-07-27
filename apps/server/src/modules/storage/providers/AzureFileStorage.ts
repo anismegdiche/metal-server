@@ -24,15 +24,15 @@ type TAzureFileStorageParams = Omit<
 		[K in keyof U__storage_azfs as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_azfs[K]
 	},
 	"storageType"
-> & {
-	autocreate: boolean
-}
+> 
 
 //
 export class AzureFileStorage extends absStorageProvider {
 	SourceConfig?: U__source_storage
 	StorageConfig?: U__storage_azfs
 	Params?: TAzureFileStorageParams
+
+	_flagAutoCreate = false
 
 	static _libAzureStorageFileShare: typeof import("@azure/storage-file-share")
 	_shareServiceClient?: import("@azure/storage-file-share").ShareServiceClient
@@ -46,7 +46,7 @@ export class AzureFileStorage extends absStorageProvider {
 	}
 
 	IsConfigValid(): boolean {
-		return z_U__storage_azfs.safeParse(this.SourceConfig).success
+		return z_U__storage_azfs.safeParse(this.StorageConfig).success
 	}
 
 	@Logger.LogFunction()
@@ -66,8 +66,9 @@ export class AzureFileStorage extends absStorageProvider {
 			connectionString: this.StorageConfig["connection-string"],
 			shareName: this.StorageConfig["share-name"],
 			folder: this.StorageConfig.folder,
-			autocreate: this.SourceConfig.options.autocreate!,
-		}
+		}		
+
+		this._flagAutoCreate = this.SourceConfig.options.autocreate ?? false
 
 		Assert.Var<string>(this.Params.connectionString, "No connection string defined")
 		Assert.Var<string>(this.Params.shareName, "No share name defined")

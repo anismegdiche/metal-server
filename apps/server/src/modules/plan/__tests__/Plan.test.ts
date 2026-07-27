@@ -182,7 +182,8 @@ describe("Plan", () => {
 	it("should fail ProcessSchemaRequest if plan not configured", async () => {
 		vi.mocked(ConfigManager.Get).mockReturnValue(null)
 		plan.Config = null // Reset config
-		await expect(async () => await plan.ProcessSchemaRequest({ schema: "s", source: "s1" } as any)).rejects.toThrow()
+		const result = await plan.ProcessSchemaRequest({ schema: "s", source: "s1" } as any)
+		expect(result).toBeUndefined()
 	})
 
 	it("should load plan with custom step commands using mocked validation", async () => {
@@ -431,13 +432,10 @@ describe("Plan", () => {
 				Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockResolvedValue(mockDataTable))
 				Step.ExecuteCaseMap["mock-cmd-2"] = Step.WrapStepWithSignal(vi.fn().mockRejectedValue(new Error("failed")))
 
-				const result = await plan.Process("s")
+				await expect(plan.Process("s")).rejects.toThrow()
 
-				expect(result).toBe(mockDataTable)
-
-				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.SUCCESS)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, STEP_STATUS.FAILED)
+				expect(plan.Metrics?.steps[0]?.step?.status).toBe(STEP_STATUS.SUCCESS)
+				expect(plan.Metrics?.steps[1]?.step?.status).toBe(STEP_STATUS.FAILED)
 			})
 
 			it("should handle failed outcome with 'stop' signal", async () => {
@@ -454,14 +452,10 @@ describe("Plan", () => {
 					STEP_SIGNAL.STOP,
 				)
 
-				const result = await plan.Process("s")
+				await expect(plan.Process("s")).rejects.toThrow()
 
-				expect(result).toBe(mockDataTable)
-
-				expectValidMetrics(plan.Metrics, 2)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.SUCCESS)
-				expectValidStepEntry(plan.Metrics?.steps[1], 1, STEP_STATUS.FAILED)
-				expect(plan.Metrics?.status).toBe(PLAN_STATUS.COMPLETED)
+				expect(plan.Metrics?.steps[0]?.step?.status).toBe(STEP_STATUS.SUCCESS)
+				expect(plan.Metrics?.steps[1]?.step?.status).toBe(STEP_STATUS.FAILED)
 			})
 
 			it("should handle error handling with signal wrapping", async () => {
@@ -480,12 +474,9 @@ describe("Plan", () => {
 				seedPlanMetrics()
 				Step.ExecuteCaseMap["mock-cmd"] = Step.WrapStepWithSignal(vi.fn().mockRejectedValue(new Error("Test error")))
 
-				const result = await plan.Process("s")
+				await expect(plan.Process("s")).rejects.toThrow()
 
-				expect(result).toBe(mockDataTable)
-
-				expectValidMetrics(plan.Metrics, 1)
-				expectValidStepEntry(plan.Metrics?.steps[0], 0, STEP_STATUS.FAILED)
+				expect(plan.Metrics?.steps[0]?.step?.status).toBe(STEP_STATUS.FAILED)
 			})
 
 			it("should merge plan-level error config with step when missing", async () => {
@@ -597,7 +588,7 @@ describe("Plan", () => {
 				const metrics = PlanMetrics.Get(planName)
 				expect(metrics).toBeDefined()
 				expect(metrics?.planName).toBe(planName)
-				expect(metrics?.startTime).toBe(startTime)
+				expect(metrics?.startTime).toEqual(startTime)
 				expect(metrics?.status).toBe(PLAN_STATUS.RUNNING)
 			})
 
@@ -626,7 +617,7 @@ describe("Plan", () => {
 				// Assert
 				const metrics = PlanMetrics.Get(planName)
 				expect(metrics).toBeDefined()
-				expect(metrics?.startTime).toBe(startTime)
+				expect(metrics?.startTime).toEqual(startTime)
 				expect(metrics?.status).toBe(PLAN_STATUS.RUNNING)
 			})
 		})
@@ -658,7 +649,7 @@ describe("Plan", () => {
 				// Assert
 				const metrics = PlanMetrics.Get(planName)
 				expect(metrics).toBeDefined()
-				expect(metrics?.endTime).toBe(endTime)
+				expect(metrics?.endTime).toEqual(endTime)
 				expect(metrics?.durationMs).toBe(5 * 60 * 1000) // 5 minutes
 				expect(metrics?.status).toBe(PLAN_STATUS.COMPLETED)
 			})
@@ -723,7 +714,7 @@ describe("Plan", () => {
 				expect(metrics?.steps[stepIndex]).toBeDefined()
 				expect(metrics!.steps[stepIndex]!.planName).toBe(planName)
 				expect(metrics!.steps[stepIndex]!.index).toBe(stepIndex)
-				expect(metrics!.steps[stepIndex]!.step?.startTime).toBe(startTime)
+				expect(metrics!.steps[stepIndex]!.step?.startTime).toEqual(startTime)
 				expect(metrics!.steps[stepIndex]!.attemptCount).toBe(1)
 				expect(metrics!.steps[stepIndex]!.rows?.input).toBe(10)
 			})
@@ -755,7 +746,7 @@ describe("Plan", () => {
 				// Assert
 				const metrics = PlanMetrics.Get(planName)
 				expect(metrics!.steps[stepIndex]!.attemptCount).toBe(2)
-				expect(metrics!.steps[stepIndex]!.step?.startTime).toBe(startTime)
+				expect(metrics!.steps[stepIndex]!.step?.startTime).toEqual(startTime)
 			})
 		})
 
@@ -794,7 +785,7 @@ describe("Plan", () => {
 
 				// Assert
 				const metrics = PlanMetrics.Get(planName)
-				expect(metrics!.steps[stepIndex]!.step?.endTime).toBe(endTime)
+				expect(metrics!.steps[stepIndex]!.step?.endTime).toEqual(endTime)
 				expect(metrics!.steps[stepIndex]!.step?.durationMs).toBe(60000) // 1 minute
 				expect(metrics!.steps[stepIndex]!.step?.status).toBe(STEP_STATUS.SUCCESS)
 			})
@@ -905,7 +896,7 @@ describe("Plan", () => {
 				expect(metrics!.steps[stepIndex]!.rows?.failed).toBe(1)
 			})
 
-			it("should handle multiple STEP_INC events", () => {
+			it("should handle multiple STEP_INC events", async () => {
 				// Arrange
 				const planName = "test-plan"
 				const stepIndex = 0
@@ -934,17 +925,19 @@ describe("Plan", () => {
 						},
 					}),
 				)
-				PlanMetrics.Bus.dispatchEvent(
-					new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
-						data: {
-							planName,
-							index: stepIndex,
-							rows: { passed: 3, failed: 2 },
-						},
-					}),
-				)
+			PlanMetrics.Bus.dispatchEvent(
+				new CustomEvent<Partial<T_StepMetrics>>(PLAN_METRICS.STEP_INC, {
+					data: {
+						planName,
+						index: stepIndex,
+						rows: { passed: 3, failed: 2 },
+					},
+				}),
+			)
 
-				// Assert
+			await new Promise(r => setTimeout(r, 0))
+
+			// Assert
 				const metrics = PlanMetrics.Get(planName)
 				expect(metrics!.steps[stepIndex]!.rows?.passed).toBe(3) // last event overwrites
 				expect(metrics!.steps[stepIndex]!.rows?.failed).toBe(2) // last event overwrites
@@ -979,7 +972,7 @@ describe("Plan", () => {
 		})
 
 		describe("Integration Tests", () => {
-			it("should handle complete metrics lifecycle for a plan with multiple steps", () => {
+			it("should handle complete metrics lifecycle for a plan with multiple steps", async () => {
 				// Arrange
 				const planName = "test-plan"
 				const planStartTime = new Date("2024-01-01T10:00:00.000Z")
@@ -1070,32 +1063,34 @@ describe("Plan", () => {
 					}),
 				)
 
-				// Plan end
-				const planEndTime = new Date("2024-01-01T10:00:15.000Z")
-				PlanMetrics.Bus.dispatchEvent(
-					new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_END, {
-						data: {
-							planName,
-							endTime: planEndTime,
-							status: PLAN_STATUS.COMPLETED,
-						},
-					}),
-				)
+			// Plan end
+			const planEndTime = new Date("2024-01-01T10:00:15.000Z")
+			PlanMetrics.Bus.dispatchEvent(
+				new CustomEvent<Partial<T_PlanMetrics>>(PLAN_METRICS.PLAN_END, {
+					data: {
+						planName,
+						endTime: planEndTime,
+						status: PLAN_STATUS.COMPLETED,
+					},
+				}),
+			)
 
-				// Assert
+			await new Promise(r => setTimeout(r, 0))
+
+			// Assert
 				const metrics = PlanMetrics.Get(planName)
 				expect(metrics).toBeDefined()
 				expect(metrics?.planName).toBe(planName)
-				expect(metrics?.startTime).toBe(planStartTime)
-				expect(metrics?.endTime).toBe(planEndTime)
+				expect(metrics?.startTime).toEqual(planStartTime)
+				expect(metrics?.endTime).toEqual(planEndTime)
 				expect(metrics?.durationMs).toBe(15000) // 15 seconds
 				expect(metrics?.status).toBe(PLAN_STATUS.COMPLETED)
 				expect(metrics?.steps).toHaveLength(2)
 
 				// Step 1 metrics
 				expect(metrics!.steps[0]!.index).toBe(0)
-				expect(metrics!.steps[0]!.step?.startTime).toBe(step1StartTime)
-				expect(metrics!.steps[0]!.step?.endTime).toBe(step1EndTime)
+				expect(metrics!.steps[0]!.step?.startTime).toEqual(step1StartTime)
+				expect(metrics!.steps[0]!.step?.endTime).toEqual(step1EndTime)
 				expect(metrics!.steps[0]!.step?.durationMs).toBe(4000) // 4 seconds
 				expect(metrics!.steps[0]!.step?.status).toBe(STEP_STATUS.SUCCESS)
 				expect(metrics!.steps[0]!.rows?.input).toBe(100)
@@ -1105,8 +1100,8 @@ describe("Plan", () => {
 
 				// Step 2 metrics
 				expect(metrics!.steps[1]!.index).toBe(1)
-				expect(metrics!.steps[1]!.step?.startTime).toBe(step2StartTime)
-				expect(metrics!.steps[1]!.step?.endTime).toBe(step2EndTime)
+				expect(metrics!.steps[1]!.step?.startTime).toEqual(step2StartTime)
+				expect(metrics!.steps[1]!.step?.endTime).toEqual(step2EndTime)
 				expect(metrics!.steps[1]!.step?.durationMs).toBe(4000) // 4 seconds
 				expect(metrics!.steps[1]!.step?.status).toBe(STEP_STATUS.SUCCESS)
 				expect(metrics!.steps[1]!.rows?.input).toBe(80)

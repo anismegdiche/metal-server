@@ -23,15 +23,15 @@ type TAzureBlobStorageParams = Omit<
 		[K in keyof U__storage_azblob as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_azblob[K]
 	},
 	"storageType"
-> & {
-	autocreate: boolean
-}
+>
 
 //
 export class AzureBlobStorage extends absStorageProvider {
 	SourceConfig?: U__source_storage
 	StorageConfig?: U__storage_azblob
 	Params?: TAzureBlobStorageParams
+
+	_flagAutoCreate = false
 
 	// Azure Blob
 	static _libAzureStorageBlob: typeof import("@azure/storage-blob")
@@ -46,7 +46,7 @@ export class AzureBlobStorage extends absStorageProvider {
 	}
 
 	IsConfigValid(): boolean {
-		return z_U__storage_azblob.safeParse(this.SourceConfig).success
+		return z_U__storage_azblob.safeParse(this.StorageConfig).success
 	}
 
 	@Logger.LogFunction()
@@ -65,8 +65,9 @@ export class AzureBlobStorage extends absStorageProvider {
 		this.Params = {
 			connectionString: this.StorageConfig["connection-string"],
 			container: this.StorageConfig.container,
-			autocreate: this.SourceConfig.options.autocreate!,
 		}
+
+		this._flagAutoCreate = this.SourceConfig.options.autocreate ?? false
 
 		Assert.Var<string>(this.Params.connectionString, "No connection string defined")
 		Assert.Var<string>(this.Params.container, "No container name defined")
@@ -82,14 +83,14 @@ export class AzureBlobStorage extends absStorageProvider {
 		Assert.Condition(!!this.Params.container && this.Params.container.trim() !== "", "No container name defined")
 
 		try {
-			const { connectionString, container, autocreate } = this.Params
+			const { connectionString, container } = this.Params
 
 			const azureStorageBlob = await AzureBlobStorage._loadAzureStorageBlob()
 			this._blobServiceClient = azureStorageBlob.BlobServiceClient.fromConnectionString(connectionString)
 			this._containerClient = this._blobServiceClient.getContainerClient(container)
 
 			// Create container if autocreate is enabled
-			if (autocreate) {
+			if (this._flagAutoCreate) {
 				await this._containerClient.createIfNotExists()
 			}
 		} catch (e: unknown) {

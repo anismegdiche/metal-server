@@ -25,15 +25,15 @@ type TAzureDataLakeStorageParams = Omit<
 		[K in keyof U__storage_azdatalake as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_azdatalake[K]
 	},
 	"storageType"
-> & {
-	autocreate: boolean
-}
+>
 
 //
 export class AzureDataLakeStorage extends absStorageProvider {
 	SourceConfig?: U__source_storage
 	StorageConfig?: U__storage_azdatalake
 	Params?: TAzureDataLakeStorageParams
+
+	_flagAutoCreate = false
 
 	_fileSystemClient?: DataLakeFileSystemClient
 	static _azureStorageFileDatalake: typeof import("@azure/storage-file-datalake")
@@ -46,7 +46,7 @@ export class AzureDataLakeStorage extends absStorageProvider {
 	}
 
 	IsConfigValid(): boolean {
-		return z_U__storage_azdatalake.safeParse(this.SourceConfig).success
+		return z_U__storage_azdatalake.safeParse(this.StorageConfig).success
 	}
 
 	@Logger.LogFunction()
@@ -65,8 +65,9 @@ export class AzureDataLakeStorage extends absStorageProvider {
 		this.Params = {
 			connectionString: this.StorageConfig["connection-string"],
 			container: this.StorageConfig.container,
-			autocreate: this.SourceConfig.options.autocreate!,
 		}
+
+		this._flagAutoCreate = this.SourceConfig.options.autocreate ?? false
 
 		Assert.Var<string>(this.Params.connectionString, "No connection string defined")
 		Assert.Var<string>(this.Params.container, "No container name defined")
@@ -79,14 +80,14 @@ export class AzureDataLakeStorage extends absStorageProvider {
 		Assert.Condition(!StringUtils.IsEmpty(this.Params.container), "No container name defined")
 
 		try {
-			const { connectionString, container, autocreate } = this.Params
+			const { connectionString, container } = this.Params
 
 			const azureStorageFileDatalake = await AzureDataLakeStorage._loadAzureStorageFileDatalake()
 			const serviceClient = azureStorageFileDatalake.DataLakeServiceClient.fromConnectionString(connectionString)
 			this._fileSystemClient = serviceClient.getFileSystemClient(container)
 
 			// Create the container if it doesn't exist and autocreate is enabled
-			if (autocreate) {
+			if (this._flagAutoCreate) {
 				await this._fileSystemClient.createIfNotExists()
 			}
 		} catch (e: unknown) {

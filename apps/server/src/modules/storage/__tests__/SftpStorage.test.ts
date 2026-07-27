@@ -56,7 +56,7 @@ describe("SftpStorage", () => {
 	describe("Init", () => {
 		it("should initialize the storage client with given options", async () => {
 			storage.Init()
-			const config = storage.SourceConfig as unknown as U__storage_sftp
+			const config = storage.StorageConfig as unknown as U__storage_sftp
 			expect(config?.host).toBe("test.sftp.server.com")
 			expect(config?.port).toBe(22)
 			expect(config?.user).toBe("testuser")
@@ -75,7 +75,7 @@ describe("SftpStorage", () => {
 				},
 			} as any)
 			storage.Init()
-			expect((storage.SourceConfig as unknown as U__storage_sftp)?.port).toBe(22)
+			expect((storage.StorageConfig as unknown as U__storage_sftp)?.port).toBe(22)
 		})
 
 		it("should use default folder if not provided", async () => {
@@ -90,7 +90,7 @@ describe("SftpStorage", () => {
 				},
 			} as any)
 			freshStorage.Init()
-			expect((freshStorage.SourceConfig as unknown as U__storage_sftp)?.folder).toBe("/")
+			expect((freshStorage.StorageConfig as unknown as U__storage_sftp)?.folder).toBe("/")
 		})
 	})
 
@@ -136,7 +136,7 @@ describe("SftpStorage", () => {
 			mockSftpClient.connect = vi.fn().mockRejectedValue(new Error("Connection failed"))
 
 			storage.Init()
-			expect(async () => await storage.Connect()).rejects.toThrow()
+			await expect(async () => await storage.Connect()).rejects.toThrow()
 		})
 	})
 

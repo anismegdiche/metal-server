@@ -10,6 +10,7 @@ type Res = { status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn>; e
 vi.mock("../../RequestHandler", () => ({
 	RequestHandler: {
 		CheckRequest: vi.fn(),
+		CheckRequestHasCurrentUser: vi.fn(),
 	},
 }))
 

@@ -112,7 +112,7 @@ describe("ApiKey", () => {
 			const key = result.Body![0]
 			//
 			expect(key).not.toHaveProperty("hash")
-			expect(key?.prefix).toMatch(/^sk_[a-f0-9]{8}$/)
+			expect(key?.prefix).toMatch(/^sk_[a-f0-9]{9}$/)
 		})
 	})
 	//

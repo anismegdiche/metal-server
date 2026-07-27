@@ -2,8 +2,8 @@ import * as Fs from "node:fs"
 import { Readable } from "node:stream"
 import { type Mock, vi } from "vitest"
 import { HttpErrorNotFound } from "../../../modules/errors/HttpErrors"
-import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
+import { STORAGE } from "../@consts"
 import { FsStorage } from "../providers/FsStorage"
 import type { U__storage_fs } from "../types/U__storage_fs"
 
@@ -45,6 +45,7 @@ describe("FsStorage", () => {
 	const sourceConfig = {
 		provider: DATA_PROVIDER.STORAGE,
 		options: {
+			"storage-type": STORAGE.FILESYSTEM,
 			folder: "./",
 		},
 	}
@@ -70,7 +71,7 @@ describe("FsStorage", () => {
 
 	describe("Init", () => {
 		it("should initialize with correct folder path", async () => {
-			expect((fsStorage.SourceConfig as unknown as U__storage_fs)?.folder).toBe("./")
+			expect((fsStorage.StorageConfig as unknown as U__storage_fs)?.folder).toBe("./")
 		})
 
 		it("should throw if config is invalid", () => {
@@ -81,6 +82,7 @@ describe("FsStorage", () => {
 
 	describe("Connect", () => {
 		it("should connect successfully", async () => {
+			fsMock.existsSync = vi.fn().mockReturnValue(true)
 			await fsStorage.Connect()
 			expect(fsStorage.Connect).toBeDefined()
 		})
@@ -206,7 +208,8 @@ describe("FsStorage", () => {
 			expect(fsMock.promises.writeFile).toHaveBeenCalled()
 		})
 		it("should autocreate file if autocreate is true and file does not exist", async () => {
-			fsStorage.Params = { folder: "./", autocreate: true }
+			fsStorage.Params = { folder: "./" }
+			fsStorage._flagAutoCreate = true
 			fsStorage.FileIsExist = vi.fn().mockResolvedValue(false)
 			fsMock.openSync = vi.fn().mockReturnValue(1)
 			fsMock.promises.writeFile = vi.fn().mockResolvedValue(undefined)
@@ -251,6 +254,7 @@ describe("FsStorage", () => {
 
 	describe("Disconnect", () => {
 		it("should disconnect successfully", async () => {
+			fsMock.existsSync = vi.fn().mockReturnValue(true)
 			await fsStorage.Connect()
 			await fsStorage.Disconnect()
 			expect(fsStorage.Disconnect).toBeDefined()
@@ -259,7 +263,7 @@ describe("FsStorage", () => {
 
 	describe("Additional Tests", () => {
 		it("should throw not found error if file does not exist and no autocreate", async () => {
-			fsStorage.Params = { folder: "./", autocreate: false }
+			fsStorage.Params = { folder: "./" }
 			fsStorage.FileIsExist = vi.fn().mockResolvedValue(false)
 			await expect(fsStorage.FileRead("test-folder", "nonExistentFile.txt")).rejects.toThrow(HttpErrorNotFound)
 		})

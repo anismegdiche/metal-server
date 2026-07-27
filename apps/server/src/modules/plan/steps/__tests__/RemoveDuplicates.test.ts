@@ -35,7 +35,7 @@ describe("RemoveDuplicates", () => {
 			$vars: {},
 		}
 
-		const stepParams = <U__plans_plan_remove_duplicates_Params>{}
+		const stepParams = <U__plans_plan_remove_duplicates_Params>{ condition: undefined }
 
 		const result = await RemoveDuplicates(stepParams, $context)
 		expect(result).toBe(await DataTableUtils.RemoveDuplicates(myPlanEntity1))
@@ -63,6 +63,7 @@ describe("RemoveDuplicates", () => {
 			key: ["name"],
 			method: REMOVE_DUPLICATES_METHOD.HASH,
 			strategy: REMOVE_DUPLICATES_STRATEGY.LAST,
+			condition: undefined,
 		}
 
 		const result = await RemoveDuplicates(stepParams, $context)

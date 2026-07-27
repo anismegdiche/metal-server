@@ -6,6 +6,7 @@ vi.mock("express", () => {
 	const mockApp = {
 		use: vi.fn(),
 		get: vi.fn(),
+		set: vi.fn(),
 		listen: vi.fn().mockReturnValue({
 			on: vi.fn().mockReturnThis(),
 		}),

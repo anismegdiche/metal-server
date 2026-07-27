@@ -1,10 +1,9 @@
 import { Readable } from "node:stream"
 import { type ShareDirectoryClient, type ShareFileClient, ShareServiceClient } from "@azure/storage-file-share"
 import type { Mocked } from "vitest"
-import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
+import { STORAGE } from "../@consts"
 import { AzureFileStorage } from "../providers/AzureFileStorage"
-import type { U__storage_azfs } from "../types/U__storage_azfs"
 
 // Mock Azure SDK
 vi.mock("@azure/storage-file-share")
@@ -68,6 +67,7 @@ describe("AzureFileStorage", () => {
 		storage.SetConfig({
 			...rndParams,
 			options: {
+				"storage-type": STORAGE.AZURE_FILE,
 				"connection-string":
 					"DefaultEndpointsProtocol=https;AccountName=testaccount;AccountKey=testkey;EndpointSuffix=core.windows.net",
 				"share-name": "test-share",
@@ -227,7 +227,6 @@ describe("AzureFileStorage", () => {
 				connectionString: storage.Params?.connectionString ?? "",
 				shareName: storage.Params?.shareName ?? "",
 				folder: undefined,
-				autocreate: false,
 			}
 			await expect(storage.FileRead("test-folder", "test-file.txt")).rejects.toThrow()
 		})

@@ -63,7 +63,7 @@ describe("FtpStorage", () => {
 	describe("Init", () => {
 		it("should initialize the FTP client with given options", async () => {
 			ftpStorage.Init()
-			expect((ftpStorage.SourceConfig as unknown as U__storage_ftp)?.host).toBe("127.0.0.1")
+			expect((ftpStorage.StorageConfig as unknown as U__storage_ftp)?.host).toBe("127.0.0.1")
 		})
 	})
 

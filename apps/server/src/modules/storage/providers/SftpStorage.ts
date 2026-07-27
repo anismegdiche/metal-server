@@ -25,19 +25,19 @@ type TSftpStorageParams = Omit<
 		[K in keyof U__storage_sftp as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_sftp[K]
 	},
 	"storageType"
-> & {
-	autocreate: boolean
-}
+>
 
 //
 export class SftpStorage extends absStorageProvider {
 	SourceConfig?: U__source_storage
 	StorageConfig?: U__storage_sftp
 	Params?: TSftpStorageParams
+
+	_flagAutoCreate = false
 	_sftpClient: SftpClient = new SftpClient()
 
 	IsConfigValid(): boolean {
-		return z_U__storage_sftp.safeParse(this.SourceConfig).success
+		return z_U__storage_sftp.safeParse(this.StorageConfig).success
 	}
 
 	@Logger.LogFunction()
@@ -62,6 +62,8 @@ export class SftpStorage extends absStorageProvider {
 			passphrase: this.StorageConfig.passphrase,
 			folder: this.StorageConfig.folder,
 		}
+
+		this._flagAutoCreate = this.SourceConfig.options.autocreate ?? false
 	}
 
 	@Logger.LogFunction()

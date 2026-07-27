@@ -129,9 +129,13 @@ describe("PlansManager", () => {
 				],
 			}
 			const mockPlan = new Plan("test-plan") as any
-			mockPlan.Metrics = mockMetrics
 			Plans.set("test-plan", mockPlan)
-			PlanMetrics.Set("test-plan", mockMetrics as any)
+			vi.spyOn(PlanMetrics, "Get").mockReturnValue(mockMetrics as any)
+			Object.defineProperty(mockPlan, "Metrics", {
+				get() {
+					return PlanMetrics.Get("test-plan")
+				},
+			})
 
 			const result = await PlansManager.GetPlanMetrics("test-plan")
 
@@ -147,8 +151,8 @@ describe("PlansManager", () => {
 
 		it("should throw error if plan has no metrics", async () => {
 			const mockPlan = new Plan("test-plan") as any
-			mockPlan.Metrics = undefined
 			Plans.set("test-plan", mockPlan)
+			vi.spyOn(PlanMetrics, "Get").mockReturnValue({} as any)
 
 			await expect(PlansManager.GetPlanMetrics("test-plan")).rejects.toThrow()
 		})

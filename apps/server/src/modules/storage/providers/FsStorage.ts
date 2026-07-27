@@ -24,9 +24,7 @@ type TFsStorageParams = Omit<
 		[K in keyof U__storage_fs as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_fs[K]
 	},
 	"storageType"
-> & {
-	autocreate: boolean
-}
+> 
 
 //
 export class FsStorage extends absStorageProvider {
@@ -34,8 +32,10 @@ export class FsStorage extends absStorageProvider {
 	StorageConfig?: U__storage_fs
 	Params?: TFsStorageParams
 
+	_flagAutoCreate = false
+
 	IsConfigValid(): boolean {
-		return z_U__storage_fs.safeParse(this.SourceConfig).success
+		return z_U__storage_fs.safeParse(this.StorageConfig).success
 	}
 
 	@Logger.LogFunction()
@@ -53,11 +53,11 @@ export class FsStorage extends absStorageProvider {
 
 		this.Params = {
 			folder: this.StorageConfig.folder,
-			autocreate: this.SourceConfig.options.autocreate!,
 		}
 
+		this._flagAutoCreate = this.SourceConfig.options.autocreate ?? false
+
 		Assert.Var<string>(this.Params.folder, "No folder path defined")
-		Assert.Var<boolean>(this.Params.autocreate, "No autocreate flag defined")
 	}
 
 	@Logger.LogFunction()
@@ -170,7 +170,7 @@ export class FsStorage extends absStorageProvider {
 
 		const _fileFullPath = StringUtils.FsPath(this.Params.folder, dirName, fileName)
 
-		if (this.Params.autocreate && !(await this.FileIsExist(dirName, fileName))) {
+		if (this._flagAutoCreate && !(await this.FileIsExist(dirName, fileName))) {
 			const _fd = fs.openSync(_fileFullPath, "wx")
 			await fs.promises.writeFile(_fileFullPath, "", "utf8")
 			fs.closeSync(_fd)
@@ -189,7 +189,7 @@ export class FsStorage extends absStorageProvider {
 
 		const _fileFullPath = StringUtils.FsPath(this.Params.folder, dirName, fileName)
 
-		if (this.Params.autocreate && !(await this.FileIsExist(dirName, fileName))) {
+		if (this._flagAutoCreate && !(await this.FileIsExist(dirName, fileName))) {
 			const _fd = fs.openSync(_fileFullPath, "wx")
 			await fs.promises.writeFile(_fileFullPath, "", "utf8")
 			fs.closeSync(_fd)

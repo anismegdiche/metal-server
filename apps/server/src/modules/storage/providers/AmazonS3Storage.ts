@@ -25,15 +25,15 @@ type TAmazonS3StorageParams = Omit<
 		[K in keyof U__storage_s3 as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_s3[K]
 	},
 	"storageType"
-> & {
-	autocreate: boolean
-}
+>
 
 //
 export class AmazonS3Storage extends absStorageProvider {
 	SourceConfig?: U__source_storage
 	StorageConfig?: U__storage_s3
 	Params?: TAmazonS3StorageParams
+
+	_flagAutoCreate = false
 	private _s3Client: import("@aws-sdk/client-s3").S3Client | undefined
 	private static _s3Module: typeof import("@aws-sdk/client-s3")
 
@@ -50,7 +50,7 @@ export class AmazonS3Storage extends absStorageProvider {
 	}
 
 	IsConfigValid(): boolean {
-		return z_U__storage_s3.safeParse(this.SourceConfig).success
+		return z_U__storage_s3.safeParse(this.StorageConfig).success
 	}
 
 	@Logger.LogFunction()
@@ -72,9 +72,10 @@ export class AmazonS3Storage extends absStorageProvider {
 			region: this.StorageConfig.region,
 			bucket: this.StorageConfig.bucket,
 			endpoint: this.StorageConfig.endpoint!,
-			profile: this.StorageConfig.profile!,
-			autocreate: this.SourceConfig.options.autocreate!,
+			profile: this.StorageConfig.profile!
 		}
+
+		this._flagAutoCreate = this.SourceConfig.options.autocreate ?? false
 	}
 
 	@Logger.LogFunction()

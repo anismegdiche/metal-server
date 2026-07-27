@@ -6,6 +6,7 @@ import type { U__source_options_content_csv } from "../types/U__source_options_c
 
 describe("CsvContent", () => {
 	const contentConfig: U__source_options_content_csv = <U__source_options_content_csv>{
+		"content-type": CONTENT.CSV,
 		"csv-delimiter": ",",
 		"csv-newline": "\n",
 		"csv-header": true,
