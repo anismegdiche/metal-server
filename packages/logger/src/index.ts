@@ -38,7 +38,7 @@ export enum LOG_EVENT {
 }
 
 //
-type LogEntry = {
+export type LogEntry = {
 	timestamp: Date
 	level: VERBOSITY
 	server?: string
@@ -208,12 +208,13 @@ export class Logger {
 		)
 	}
 
-	static _saveLogEntry(level: VERBOSITY, message: string) {
+	static _saveLogEntry(level: VERBOSITY, message: any) {
 		const timestamp = new Date(Date.now())
+		const msg = typeof message === "string" ? message : String(message)
 		if (VERBOSITY_RANK.indexOf(level) <= VERBOSITY_RANK.indexOf(Logger.Level as VERBOSITY))
 			Logger.db.set(`${timestamp.toISOString()},${crypto.randomUUID()}`, <LogEntry>{
 				level,
-				message: _cleanMessage(message),
+				message: _cleanMessage(msg),
 				timestamp,
 				server: Logger.ServiceName,
 				user: process.env.USERNAME || "unknown",

@@ -1,4 +1,6 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: <explanation> */
+import type { LogEntry } from "@metal/logger"
+import PersistentMap from "@metal/persistent-map"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("loglevel", () => ({
@@ -38,6 +40,8 @@ const loadLogger = async () => {
 	return { LogLevel: LogLevel.default, Logger }
 }
 
+const mockDb = new PersistentMap<LogEntry>(`/data/logs/${Date.now()}-tests-log.db`)
+
 describe("Logger", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -46,6 +50,8 @@ describe("Logger", () => {
 
 	it("should reset level when LogLevel.setLevel fails", async () => {
 		const { LogLevel, Logger } = await loadLogger()
+		Logger.ServiceName = "tests"
+		Logger.db = mockDb
 		vi.mocked(LogLevel.setLevel).mockClear()
 		vi
 			.mocked(LogLevel.setLevel)
@@ -61,6 +67,8 @@ describe("Logger", () => {
 
 	it("should wrap sync and async functions with LogFunction", async () => {
 		const { LogLevel, Logger } = await loadLogger()
+		Logger.ServiceName = "tests"
+		Logger.db = mockDb
 
 		class Example {
 			value = 1
@@ -77,11 +85,11 @@ describe("Logger", () => {
 		const syncDescriptor = Object.getOwnPropertyDescriptor(Example.prototype, "syncMethod")!
 		const asyncDescriptor = Object.getOwnPropertyDescriptor(Example.prototype, "asyncMethod")!
 
-		Logger.LogFunction()(Example.prototype, "syncMethod", syncDescriptor)
-		Logger.LogFunction()(Example.prototype, "asyncMethod", asyncDescriptor)
+		const wrappedSyncDescriptor = Logger.LogFunction()(Example.prototype, "syncMethod", syncDescriptor) ?? syncDescriptor
+		const wrappedAsyncDescriptor = Logger.LogFunction()(Example.prototype, "asyncMethod", asyncDescriptor) ?? asyncDescriptor
 
-		Object.defineProperty(Example.prototype, "syncMethod", syncDescriptor)
-		Object.defineProperty(Example.prototype, "asyncMethod", asyncDescriptor)
+		Object.defineProperty(Example.prototype, "syncMethod", wrappedSyncDescriptor)
+		Object.defineProperty(Example.prototype, "asyncMethod", wrappedAsyncDescriptor)
 
 		const instance = new Example()
 
