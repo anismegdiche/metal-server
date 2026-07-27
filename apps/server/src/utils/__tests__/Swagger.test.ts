@@ -4,7 +4,10 @@ import { ROUTE } from "../../modules/core/@consts"
 import { Swagger } from "../Swagger"
 
 vi.mock("fs", () => ({
-	readFileSync: vi.fn().mockReturnValue("openapi: 3.0.0"),
+	readFileSync: vi.fn().mockImplementation((path: string) => {
+		if (path === "./package.json") return JSON.stringify({ version: "0.0.0" })
+		return "openapi: 3.0.0"
+	}),
 }))
 
 vi.mock("js-yaml", () => ({
@@ -36,7 +39,7 @@ describe("Swagger", () => {
 
 		await Swagger.StartUi(app)
 
-		expect(app.use).toHaveBeenCalledWith(ROUTE.SWAGGER_UI_PATH, "serve-mw", "setup-mw")
+		expect(app.use).toHaveBeenCalledWith(ROUTE.SWAGGER_UI_PATH, expect.any(Function), "serve-mw", "setup-mw")
 		expect(app.use).toHaveBeenCalledTimes(2)
 	})
 
