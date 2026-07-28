@@ -4,7 +4,7 @@ import { type Mock, vi } from "vitest"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
-import { STORAGE } from "../@consts"
+import { STORAGE_TYPE } from "../@consts"
 import { AzureDataLakeStorage } from "../providers/AzureDataLakeStorage"
 
 vi.mock("@azure/storage-file-datalake")
@@ -42,7 +42,7 @@ describe("AzureDataLakeStorage", () => {
 		provider: DATA_PROVIDER.STORAGE,
 		host: "test.datalake.core.windows.net",
 		options: {
-			"storage-type": STORAGE.AZURE_DATALAKE_G2,
+			"storage-type": STORAGE_TYPE.AZURE_DATALAKE_G2,
 			"connection-string":
 				"DefaultEndpointsProtocol=https;AccountName=testaccount;AccountKey=teststoragekey;EndpointSuffix=core.windows.net",
 			container: "testcontainer",

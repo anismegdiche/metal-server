@@ -2,7 +2,7 @@ import { Readable } from "node:stream"
 import { type ShareDirectoryClient, type ShareFileClient, ShareServiceClient } from "@azure/storage-file-share"
 import type { Mocked } from "vitest"
 import { DATA_PROVIDER } from "../../source/@consts"
-import { STORAGE } from "../@consts"
+import { STORAGE_TYPE } from "../@consts"
 import { AzureFileStorage } from "../providers/AzureFileStorage"
 
 // Mock Azure SDK
@@ -67,7 +67,7 @@ describe("AzureFileStorage", () => {
 		storage.SetConfig({
 			...rndParams,
 			options: {
-				"storage-type": STORAGE.AZURE_FILE,
+				"storage-type": STORAGE_TYPE.AZURE_FILE,
 				"connection-string":
 					"DefaultEndpointsProtocol=https;AccountName=testaccount;AccountKey=testkey;EndpointSuffix=core.windows.net",
 				"share-name": "test-share",

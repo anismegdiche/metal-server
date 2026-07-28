@@ -33,7 +33,7 @@ import type {
 	TSchemaRequestUpdate,
 } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { STORAGE } from "../../storage/@consts"
+import { STORAGE_TYPE } from "../../storage/@consts"
 import type { absStorageProvider } from "../../storage/base/absStorageProvider"
 import { StorageProvider } from "../../storage/StorageProvider"
 import { DATA_PROVIDER } from "../@consts"
@@ -76,7 +76,7 @@ export class StorageFilesData extends absDataProvider {
 	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
 		this.Config = sourceConfig as U__source_storage
-		const { "storage-type": storage = STORAGE.FILESYSTEM, content } = this.Config.options as U__source_storage_files
+		const { "storage-type": storage = STORAGE_TYPE.FILESYSTEM, content } = this.Config.options as U__source_storage_files
 
 		Assert.Var<U__source_storage_files_content>(
 			content,

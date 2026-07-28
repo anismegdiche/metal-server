@@ -4,7 +4,7 @@ import type SftpClient from "ssh2-sftp-client"
 import type { Mocked } from "vitest"
 import type { U__sources_source } from "../../core/types/U__sources"
 import { DATA_PROVIDER } from "../../source/@consts"
-import { STORAGE } from "../@consts"
+import { STORAGE_TYPE } from "../@consts"
 import { SftpStorage } from "../providers/SftpStorage"
 import type { U__storage_sftp } from "../types/U__storage_sftp"
 
@@ -43,7 +43,7 @@ describe("SftpStorage", () => {
 		storage.SetConfig({
 			...rndParams,
 			options: {
-				"storage-type": STORAGE.SFTP,
+				"storage-type": STORAGE_TYPE.SFTP,
 				host: "test.sftp.server.com",
 				port: 22,
 				user: "testuser",
@@ -68,7 +68,7 @@ describe("SftpStorage", () => {
 			storage.SetConfig({
 				...rndParams,
 				options: {
-					"storage-type": STORAGE.SFTP,
+					"storage-type": STORAGE_TYPE.SFTP,
 					host: "test.sftp.server.com",
 					user: "testuser",
 					password: "testpassword",
@@ -83,7 +83,7 @@ describe("SftpStorage", () => {
 			freshStorage.SetConfig({
 				...rndParams,
 				options: {
-					"storage-type": STORAGE.SFTP,
+					"storage-type": STORAGE_TYPE.SFTP,
 					host: "test.sftp.server.com",
 					user: "testuser",
 					password: "testpassword",
@@ -111,7 +111,7 @@ describe("SftpStorage", () => {
 			storage.SetConfig({
 				...rndParams,
 				options: {
-					"storage-type": STORAGE.SFTP,
+					"storage-type": STORAGE_TYPE.SFTP,
 					host: "test.sftp.server.com",
 					user: "testuser",
 					password: "testpassword",

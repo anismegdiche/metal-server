@@ -1,11 +1,11 @@
 import { z } from "zod"
-import { STORAGE } from "../@consts"
+import { STORAGE_TYPE } from "../@consts"
 
 //
 
 
 export const z_U__storage_fs = z.object({
-	"storage-type": z.literal(STORAGE.FILESYSTEM).default(STORAGE.FILESYSTEM),
+	"storage-type": z.literal(STORAGE_TYPE.FILESYSTEM).default(STORAGE_TYPE.FILESYSTEM),
 	folder: z.string(),
 })
 

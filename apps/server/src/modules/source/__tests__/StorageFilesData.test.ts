@@ -7,7 +7,7 @@ import { ContentProvider } from "../../content/ContentProvider"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemented } from "../../errors/HttpErrors"
-import { STORAGE } from "../../storage/@consts"
+import { STORAGE_TYPE } from "../../storage/@consts"
 import { StorageProvider } from "../../storage/StorageProvider"
 import { DATA_PROVIDER } from "../@consts"
 import { STORAGE_MODE } from "../providers/STORAGE_MODE"
@@ -73,7 +73,7 @@ describe("StorageFilesData", () => {
 		const sourceConfig: U__source_storage = {
 			provider: DATA_PROVIDER.STORAGE,
 			options: {
-				"storage-type": STORAGE.FILESYSTEM,
+				"storage-type": STORAGE_TYPE.FILESYSTEM,
 				"storage-mode": STORAGE_MODE.FILES,
 				folder: "/tests",
 				content: {
@@ -89,14 +89,14 @@ describe("StorageFilesData", () => {
 
 			expect(storageFilesData.SourceName).toBe("testSource")
 			expect(storageFilesData.Config).toEqual(sourceConfig)
-			expect(StorageProvider.GetProvider).toHaveBeenCalledWith(STORAGE.FILESYSTEM)
+			expect(StorageProvider.GetProvider).toHaveBeenCalledWith(STORAGE_TYPE.FILESYSTEM)
 			expect(mockStorageProvider.SetConfig).toHaveBeenCalledWith(sourceConfig)
 			expect(mockStorageProvider.Init).toHaveBeenCalled()
 			expect(ContentProvider.GetProvider).toHaveBeenCalledWith(CONTENT.JSON)
 		})
 
 		it("should throw error when content is undefined", async () => {
-			const invalidConfig: any = { options: { storage: STORAGE.FILESYSTEM } }
+			const invalidConfig: any = { options: { storage: STORAGE_TYPE.FILESYSTEM } }
 			await expect(storageFilesData.Init("testSource", invalidConfig)).rejects.toThrow(HttpErrorInternalServerError)
 		})
 

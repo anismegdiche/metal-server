@@ -1,12 +1,12 @@
 import { z_TIpPort } from "@metal/types"
 import { z } from "zod"
-import { STORAGE } from "../@consts"
+import { STORAGE_TYPE } from "../@consts"
 
 //
 
 
 export const z_U__storage_sftp = z.object({
-	"storage-type": z.literal(STORAGE.SFTP).default(STORAGE.SFTP),
+	"storage-type": z.literal(STORAGE_TYPE.SFTP).default(STORAGE_TYPE.SFTP),
 	host: z.string(),
 	port: z_TIpPort.default(22)
 		.optional(),

@@ -1,11 +1,11 @@
 import z from "zod"
-import { STORAGE } from "../@consts"
+import { STORAGE_TYPE } from "../@consts"
 
 //
 
 
 export const z_U__storage_s3 = z.object({
-	"storage-type": z.literal(STORAGE.AWS_S3).default(STORAGE.AWS_S3),
+	"storage-type": z.literal(STORAGE_TYPE.AWS_S3).default(STORAGE_TYPE.AWS_S3),
 	bucket: z.string(),
 	region: z.string(),
 	"access-key-id": z.string()

@@ -3,7 +3,7 @@ import { Readable } from "node:stream"
 import { type Mock, vi } from "vitest"
 import { HttpErrorNotFound } from "../../../modules/errors/HttpErrors"
 import { DATA_PROVIDER } from "../../source/@consts"
-import { STORAGE } from "../@consts"
+import { STORAGE_TYPE } from "../@consts"
 import { FsStorage } from "../providers/FsStorage"
 import type { U__storage_fs } from "../types/U__storage_fs"
 
@@ -45,7 +45,7 @@ describe("FsStorage", () => {
 	const sourceConfig = {
 		provider: DATA_PROVIDER.STORAGE,
 		options: {
-			"storage-type": STORAGE.FILESYSTEM,
+			"storage-type": STORAGE_TYPE.FILESYSTEM,
 			folder: "./",
 		},
 	}

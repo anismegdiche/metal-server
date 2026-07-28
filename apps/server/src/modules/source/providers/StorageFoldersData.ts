@@ -32,7 +32,7 @@ import type {
 	TSchemaRequestUpdate,
 } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import type { STORAGE } from "../../storage/@consts"
+import type { STORAGE_TYPE } from "../../storage/@consts"
 import type { absStorageProvider } from "../../storage/base/absStorageProvider"
 import { StorageProvider } from "../../storage/StorageProvider"
 import type { TStorageFile } from "../../storage/types/TStorageFile"
@@ -40,8 +40,7 @@ import { DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
 import { type U__source_storage, z_U__source_storage } from "../types/U__source_storage"
-import { type U__source_storage_folders, z_U__source_storage_folders } from "../types/U__source_storage_folders"
-import { STORAGE_MODE } from "./STORAGE_MODE"
+import type { U__source_storage_folders } from "../types/U__source_storage_folders"
 
 //
 const FLD_CONTENT = "content"
@@ -119,7 +118,7 @@ export class StorageFoldersData extends absDataProvider {
 
 		const { "storage-type": storage } = this.Config.options
 
-		this.Connection = await StorageProvider.GetProvider(storage as STORAGE)
+		this.Connection = await StorageProvider.GetProvider(storage as STORAGE_TYPE)
 		this.Connection.SetConfig(this.Config)
 
 		// init storage

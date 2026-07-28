@@ -5,7 +5,7 @@ import { BlobServiceClient, type BlockBlobClient, type ContainerClient } from "@
 import type { Mock, Mocked } from "vitest"
 import { DATA_PROVIDER } from "../../source/@consts"
 import type { U__source_storage } from "../../source/types/U__source_storage"
-import { STORAGE } from "../@consts"
+import { STORAGE_TYPE } from "../@consts"
 import { AzureBlobStorage } from "../providers/AzureBlobStorage"
 import type { U__storage_azblob } from "../types/U__storage_azblob"
 
@@ -55,7 +55,7 @@ describe("AzureBlobStorage", () => {
 		storage.SetConfig({
 			...rndParams,
 			options: {
-				"storage-type": STORAGE.AZURE_BLOB,
+				"storage-type": STORAGE_TYPE.AZURE_BLOB,
 				"connection-string": "testconnectionstring",
 				container: "testcontainer",
 				autocreate: true,
@@ -77,7 +77,7 @@ describe("AzureBlobStorage", () => {
 			freshStorage.SetConfig({
 				...rndParams,
 				options: {
-					"storage-type": STORAGE.AZURE_BLOB,
+					"storage-type": STORAGE_TYPE.AZURE_BLOB,
 					"connection-string": "testconnectionstring",
 					container: "testcontainer",
 				},

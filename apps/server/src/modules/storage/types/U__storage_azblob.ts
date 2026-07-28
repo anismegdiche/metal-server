@@ -1,11 +1,11 @@
 import { z } from "zod"
-import { STORAGE } from "../@consts"
+import { STORAGE_TYPE } from "../@consts"
 
 //
 
 
 export const z_U__storage_azblob = z.object({
-	"storage-type": z.literal(STORAGE.AZURE_BLOB).default(STORAGE.AZURE_BLOB),
+	"storage-type": z.literal(STORAGE_TYPE.AZURE_BLOB).default(STORAGE_TYPE.AZURE_BLOB),
 	"connection-string": z.string(),
 	container: z.string()
 })
