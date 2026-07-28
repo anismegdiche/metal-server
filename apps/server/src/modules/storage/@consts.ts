@@ -1,6 +1,6 @@
 //
 
-export enum STORAGE {
+export enum STORAGE_TYPE {
 	// Legacy
 	FILESYSTEM = "fs",
 	FTP = "ftp",
