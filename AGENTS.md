@@ -7,7 +7,11 @@
 - **`apps/server/`** — Express-based TypeScript middleware/ETL/AI server using DuckDB (see `src/types/DataTable.ts`). REST API over multiple database/storage/web backends, plan-based ETL pipeline, Docker-based AI task execution.
 - **`apps/studio/`** — Nuxt 4 / Vue 3 studio frontend. Single `default.vue` layout with sidebar + header tabs. All pages at root level (no `/studio/` prefix).
 - **`apps/metrics/`** — Metrics collection service (`@metal/metrics`).
+- **`apps/ai-server/`** — MCP (Model Context Protocol) AI server (`@metal/ai-server`).
 - **`packages/config/`** — Shared config handling (`@metal/config`).
+- **`packages/logger/`** — Logging service (`@metal/logger`).
+- **`packages/types/`** — Shared types and zod schemas (`@metal/types`).
+- **`packages/utils/`** — Shared utilities (`@metal/utils`).
 - **`packages/messaging/`** — ZeroMQ-based pub/sub messaging with DI, decorators (`@metal/messaging`).
 - **`packages/persistent-map/`** — LMDB-backed persistent map (`@metal/persistent-map`).
 
