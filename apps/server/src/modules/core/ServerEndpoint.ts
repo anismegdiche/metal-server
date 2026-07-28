@@ -145,9 +145,9 @@ export class ServerEndpoint {
 	static Start() {
 		// Start Server
 		const server = ServerEndpoint.Api.listen(ServerEndpoint.Port, () => {
-			Logger.Message(SERVER.CONSOLE_BANNER)
-			Logger.Message(`Metal server started on port ${ServerEndpoint.Port}`)
-			Logger.Message(`version: ${SERVER.VERSION}`)
+			Logger.Info(SERVER.CONSOLE_BANNER)
+			Logger.Info(`Metal server started on port ${ServerEndpoint.Port}`)
+			Logger.Info(`version: ${SERVER.VERSION}`)
 		}).on("error", (error: Error & { code?: string }) => {
 			if (error.code === "EADDRINUSE") {
 				Logger.Error(`Port ${ServerEndpoint.Port} is already in use. Exiting the process.`)

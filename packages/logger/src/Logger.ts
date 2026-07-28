@@ -1,4 +1,6 @@
 //
+/** biome-ignore-all lint/complexity/noBannedTypes: <!+> */
+/** biome-ignore-all lint/suspicious/noExplicitAny: <!+> */
 //
 //
 import { CustomEvent, EventBus, type IEvent } from "@dimkl/events"
@@ -50,27 +52,27 @@ export type LogEntry = {
 declare global {
 	interface LogTrace extends IEvent {
 		type: LOG_EVENT.TRACE
-		data: { message: any }
+		data: { message: any[] }
 	}
 
 	interface LogDebug extends IEvent {
 		type: LOG_EVENT.DEBUG
-		data: { message: any }
+		data: { message: any[] }
 	}
 
 	interface LogInfo extends IEvent {
 		type: LOG_EVENT.INFO
-		data: { message: any }
+		data: { message: any[] }
 	}
 
 	interface LogWarn extends IEvent {
 		type: LOG_EVENT.WARN
-		data: { message: any }
+		data: { message: any[] }
 	}
 
 	interface LogError extends IEvent {
 		type: LOG_EVENT.ERROR
-		data: { message: any }
+		data: { message: any[] }
 	}
 
 	interface LogFuncRegister extends IEvent {
@@ -208,7 +210,7 @@ export class Logger {
 		)
 	}
 
-	static _saveLogEntry(level: VERBOSITY, message: any) {
+	static _saveLogEntry(level: VERBOSITY, message: any[]) {
 		const timestamp = new Date(Date.now())
 		const msg = typeof message === "string" ? message : String(message)
 		if (VERBOSITY_RANK.indexOf(level) <= VERBOSITY_RANK.indexOf(Logger.Level as VERBOSITY))
@@ -242,55 +244,60 @@ export class Logger {
 		LogLevel.enableAll()
 	}
 
-	static Trace(msg: any): void {
-		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any }>(LOG_EVENT.TRACE, { data: { message: msg } }))
+	static Trace(...msg: any[]): void {
+		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any[] }>(LOG_EVENT.TRACE, { data: { message: msg } }))
 	}
 
-	static Debug(msg: any): void {
-		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any }>(LOG_EVENT.DEBUG, { data: { message: msg } }))
+	static Debug(...msg: any[]): void {
+		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any[] }>(LOG_EVENT.DEBUG, { data: { message: msg } }))
 	}
 
-	static Info(msg: any): void {
-		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any }>(LOG_EVENT.INFO, { data: { message: msg } }))
+	static Info(...msg: any[]): void {
+		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any[] }>(LOG_EVENT.INFO, { data: { message: msg } }))
 	}
 
-	static Warn(msg: any): void {
-		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any }>(LOG_EVENT.WARN, { data: { message: msg } }))
+	static Warn(...msg: any[]): void {
+		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any[] }>(LOG_EVENT.WARN, { data: { message: msg } }))
 	}
 
-	static Error(msg: any): void {
-		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, { data: { message: msg } }))
+	static Error(...msg: any[]): void {
+		Logger.Bus.dispatchEvent(new CustomEvent<{ message: any[] }>(LOG_EVENT.ERROR, { data: { message: msg } }))
 	}
 
-	static Message(msg: any): void {
-		Logger.EnableAll()
-		Logger.Info(msg)
-		Logger.SetLevel()
+	// static Message(...msg: any[]): void {
+	// 	Logger.EnableAll()
+	// 	Logger.Info(msg)
+	// 	Logger.SetLevel()
+	// }
+
+	static _handleTrace(event: CustomEvent<{ message: any[] }>): void {
+		const message = event.data?.message ?? []
+		Logger._saveLogEntry(VERBOSITY.TRACE, message)
+		LogLevel.trace(...message)
 	}
 
-	static _handleTrace(event: CustomEvent<{ message: any }>): void {
-		Logger._saveLogEntry(VERBOSITY.TRACE, event.data?.message)
-		LogLevel.trace(event.data?.message)
+	static _handleDebug(event: CustomEvent<{ message: any[] }>): void {
+		const message = event.data?.message ?? []
+		Logger._saveLogEntry(VERBOSITY.DEBUG, message)
+		LogLevel.debug(...message)
 	}
 
-	static _handleDebug(event: CustomEvent<{ message: any }>): void {
-		Logger._saveLogEntry(VERBOSITY.DEBUG, event.data?.message)
-		LogLevel.debug(event.data?.message)
+	static _handleInfo(event: CustomEvent<{ message: any[] }>): void {
+		const message = event.data?.message ?? []
+		Logger._saveLogEntry(VERBOSITY.INFO, message)
+		LogLevel.info(...message)
 	}
 
-	static _handleInfo(event: CustomEvent<{ message: any }>): void {
-		Logger._saveLogEntry(VERBOSITY.INFO, event.data?.message)
-		LogLevel.info(event.data?.message)
+	static _handleWarn(event: CustomEvent<{ message: any[] }>): void {
+		const message = event.data?.message ?? []
+		Logger._saveLogEntry(VERBOSITY.WARN, message)
+		LogLevel.warn(...message)
 	}
 
-	static _handleWarn(event: CustomEvent<{ message: any }>): void {
-		Logger._saveLogEntry(VERBOSITY.WARN, event.data?.message)
-		LogLevel.warn(event.data?.message)
-	}
-
-	static _handleError(event: CustomEvent<{ message: any }>): void {
-		Logger._saveLogEntry(VERBOSITY.ERROR, event.data?.message)
-		LogLevel.error(event.data?.message)
+	static _handleError(event: CustomEvent<{ message: any[] }>): void {
+		const message = event.data?.message ?? []
+		Logger._saveLogEntry(VERBOSITY.ERROR, message)
+		LogLevel.error(...message)
 	}
 
 	static LogFunction(hide: string[] | boolean = []): any {
@@ -327,8 +334,8 @@ export class Logger {
 				const ctorName = target.name ?? (this as any)?.constructor?.name ?? "Anonymous"
 
 				Logger.Bus.dispatchEvent(
-					new CustomEvent<{ message: any }>(LOG_EVENT.DEBUG, {
-						data: { message: `${Logger.In} ${ctorName}.${propertyKey}${_argsString}` },
+					new CustomEvent<{ message: any[] }>(LOG_EVENT.DEBUG, {
+						data: { message: [`${Logger.In} ${ctorName}.${propertyKey}${_argsString}`] },
 					}),
 				)
 				// biome-ignore lint/suspicious/noImplicitAnyLet: any
@@ -339,8 +346,8 @@ export class Logger {
 					const _err = Logger.Level === VERBOSITY.DEBUG ? `\r\n${_toTextList(_normalizeError(err))}` : (err as Error)?.message
 
 					Logger.Bus.dispatchEvent(
-						new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, {
-							data: { message: `${Logger.Out} ${ctorName}.${propertyKey} threw an error: ${_err}` },
+						new CustomEvent<{ message: any[] }>(LOG_EVENT.ERROR, {
+							data: { message: [`${Logger.Out} ${ctorName}.${propertyKey} threw an error: ${_err}`] },
 						}),
 					)
 					throw err
@@ -349,8 +356,8 @@ export class Logger {
 					return result
 						.then((res) => {
 							Logger.Bus.dispatchEvent(
-								new CustomEvent<{ message: any }>(LOG_EVENT.DEBUG, {
-									data: { message: `${Logger.Out} ${ctorName}.${propertyKey}` },
+								new CustomEvent<{ message: any[] }>(LOG_EVENT.DEBUG, {
+									data: { message: [`${Logger.Out} ${ctorName}.${propertyKey}`] },
 								}),
 							)
 							return res
@@ -360,16 +367,16 @@ export class Logger {
 								Logger.Level === VERBOSITY.DEBUG ? `\r\n${_toTextList(_normalizeError(err))}` : (err as Error)?.message
 
 							Logger.Bus.dispatchEvent(
-								new CustomEvent<{ message: any }>(LOG_EVENT.ERROR, {
-									data: { message: `${Logger.Out} ${ctorName}.${propertyKey} threw an error: ${_err}` },
+								new CustomEvent<{ message: any[] }>(LOG_EVENT.ERROR, {
+									data: { message: [`${Logger.Out} ${ctorName}.${propertyKey} threw an error: ${_err}`] },
 								}),
 							)
 							throw err
 						})
 				}
 				Logger.Bus.dispatchEvent(
-					new CustomEvent<{ message: any }>(LOG_EVENT.DEBUG, {
-						data: { message: `${Logger.Out} ${ctorName}.${propertyKey}` },
+					new CustomEvent<{ message: any[] }>(LOG_EVENT.DEBUG, {
+						data: { message: [`${Logger.Out} ${ctorName}.${propertyKey}`] },
 					}),
 				)
 				return result
@@ -389,11 +396,11 @@ export class Logger {
 }
 
 // Register event handlers (replaces @on decorators for cross-runtime compatibility)
-Logger.Bus.addEventListener(LOG_EVENT.TRACE, (e) => Logger._handleTrace(e as CustomEvent<{ message: any }>))
-Logger.Bus.addEventListener(LOG_EVENT.DEBUG, (e) => Logger._handleDebug(e as CustomEvent<{ message: any }>))
-Logger.Bus.addEventListener(LOG_EVENT.INFO, (e) => Logger._handleInfo(e as CustomEvent<{ message: any }>))
-Logger.Bus.addEventListener(LOG_EVENT.WARN, (e) => Logger._handleWarn(e as CustomEvent<{ message: any }>))
-Logger.Bus.addEventListener(LOG_EVENT.ERROR, (e) => Logger._handleError(e as CustomEvent<{ message: any }>))
+Logger.Bus.addEventListener(LOG_EVENT.TRACE, (e) => Logger._handleTrace(e as CustomEvent<{ message: any[] }>))
+Logger.Bus.addEventListener(LOG_EVENT.DEBUG, (e) => Logger._handleDebug(e as CustomEvent<{ message: any[] }>))
+Logger.Bus.addEventListener(LOG_EVENT.INFO, (e) => Logger._handleInfo(e as CustomEvent<{ message: any[] }>))
+Logger.Bus.addEventListener(LOG_EVENT.WARN, (e) => Logger._handleWarn(e as CustomEvent<{ message: any[] }>))
+Logger.Bus.addEventListener(LOG_EVENT.ERROR, (e) => Logger._handleError(e as CustomEvent<{ message: any[] }>))
 Logger.Bus.addEventListener(LOG_EVENT.FUNC_REGISTER, (e) =>
 	Logger._handleLogFunction(e as CustomEvent<{ hide: string[] | boolean; target: any; propertyKey: string; descriptor: PropertyDescriptor }>),
 )
