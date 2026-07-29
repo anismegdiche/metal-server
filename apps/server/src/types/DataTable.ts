@@ -8,6 +8,7 @@ import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb
 import { DataTablesGetDataPath } from "@metal/config"
 import { Logger } from "@metal/logger"
 //
+import type { TAny, TJson, TUuidv7 } from "@metal/types"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../modules/errors/HttpErrors"
 import { Assert } from "../utils/Assert"
 import { clsClonable } from "../utils/base/clsClonable"
@@ -21,7 +22,6 @@ import { TypeUtils } from "../utils/TypeUtils"
 import { Utils } from "../utils/Utils"
 import type { TFields, TMetaData, TOrderBy, TRow, TSnapshotInfo } from "./DataTableTypes"
 import { DT_SYS_FIELDS, SORT_ORDER, z_SORT_ORDER, z_TOrderBy, z_TRow } from "./DataTableTypes"
-import type { TAny, TJson, TUuidv7 } from "@metal/types"
 
 // constants
 export { SORT_ORDER }
@@ -252,19 +252,30 @@ function duckDb_row_parser({ includeIndex, fields, row, fnMap }: TRowsParseParam
 	const jsonRaw = row.__data__ as string
 	let _row: TRow = {}
 
-	if (StringUtils.IsEmpty(jsonRaw)) return <TRow>{}
+	if (jsonRaw) {
+		const __data__Parsed = JsonUtils.TryParse(jsonRaw, <TRow>{})
+		if (!__data__Parsed) return <TRow>{}
 
-	const __data__Parsed = JsonUtils.TryParse(jsonRaw, <TRow>{})
-	if (!__data__Parsed) return <TRow>{}
+		const _fields = fields?.includes("*") ? undefined : fields
 
-	const _fields = fields?.includes("*") ? undefined : fields
+		let selectedFields = _fields
+		if (!selectedFields || selectedFields.length === 0) selectedFields = Object.keys(__data__Parsed)
 
-	let selectedFields = _fields
-	if (!selectedFields || selectedFields.length === 0) selectedFields = Object.keys(__data__Parsed)
-
-	for (const k of selectedFields) {
-		if (!dataTable_fieldIsSystem(k)) {
-			_row[k] = __data__Parsed[k]
+		for (const k of selectedFields) {
+			if (!dataTable_fieldIsSystem(k)) {
+				_row[k] = __data__Parsed[k]
+			}
+		}
+	} else {
+		// FreeSql result: flat columns directly on row
+		for (const [k, v] of Object.entries(row)) {
+			if (!dataTable_fieldIsSystem(k) && v !== null) {
+				if (typeof v === "string" && v.startsWith('"') && v.endsWith('"')) {
+					_row[k] = JsonUtils.TryParse(v, v)
+				} else {
+					_row[k] = v
+				}
+			}
 		}
 	}
 
@@ -1340,8 +1351,9 @@ export class DataTable extends clsClonable {
 	}
 
 	@Logger.LogFunction(true)
-	async Omit(fields: string[]): Promise<this> {
-		if (!fields || fields.length === 0) return this
+	async Omit(fields: string[] | undefined): Promise<this> {
+		if (!fields || fields.length === 0) 
+			return this
 
 		Logger.Debug(`${Logger.Out} DataTable.Omit: Starting to omit fields ${fields.join(", ")}`)
 

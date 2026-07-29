@@ -71,7 +71,10 @@ export class RowUtils {
 		return filtered
 	}
 
-	static Omit(row: TRow, fields: string[]): TRow {
+	static Omit(row: TRow, fields: string[] | undefined): TRow {
+		if (!fields || fields.length === 0)
+			return row
+
 		const filtered: TRow = {}
 
 		// Keep all fields except the ones to omit

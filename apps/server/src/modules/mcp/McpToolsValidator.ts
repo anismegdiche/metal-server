@@ -1,11 +1,12 @@
 //
 //
 //
-import { ConfigFileError } from "../errors/HttpErrorBase"
 import { ConfigManager } from "../core/ConfigManager"
+import { ConfigFileError } from "../errors/HttpErrorBase"
 import { Schema } from "../schema/Schema"
 import { MCP_TOOL_NAME_REGEX } from "./@consts"
 import type { U__mcp } from "./types/U__mcp"
+
 
 //
 export class McpToolsValidator {
@@ -19,7 +20,6 @@ export class McpToolsValidator {
 		McpToolsValidator.#validateToolNames(tools)
 		McpToolsValidator.#validateToolParams(tools)
 		McpToolsValidator.#validateToolReferences(tools)
-		McpToolsValidator.#validateDestructiveFlags(tools)
 	}
 
 	static #validateToolNames(tools: U__mcp["tools"]): void {
@@ -34,7 +34,7 @@ export class McpToolsValidator {
 
 	static #validateToolParams(tools: U__mcp["tools"]): void {
 		for (const [toolName, tool] of Object.entries(tools)) {
-			const params = tool.parameters
+			const params = tool.arguments
 			if (!params) continue
 
 			for (const [paramName, param] of Object.entries(params)) {
@@ -56,7 +56,19 @@ export class McpToolsValidator {
 		const schemas = Schema._schemaParams
 
 		for (const [toolName, tool] of Object.entries(tools)) {
-			McpToolsValidator.#validateSchemaRef(toolName, tool.schema, tool.entity, schemas)
+			if (tool.action === "list") {
+				McpToolsValidator.#validateSchemaRefSkipEntity(toolName, tool.schema, schemas)
+			} else {
+				McpToolsValidator.#validateSchemaRef(toolName, tool.schema, tool.entity, schemas)
+			}
+		}
+	}
+
+	static #validateSchemaRefSkipEntity(toolName: string, schemaName: string, schemas: Record<string, unknown> | undefined): void {
+		if (!schemas?.[schemaName]) {
+			throw new ConfigFileError(
+				`MCP tool '${toolName}' references schema '${schemaName}' which does not exist`,
+			)
 		}
 	}
 
@@ -80,16 +92,4 @@ export class McpToolsValidator {
 		}
 	}
 
-	static #validateDestructiveFlags(tools: U__mcp["tools"]): void {
-		for (const [toolName, tool] of Object.entries(tools)) {
-			const action = tool.action ?? "read"
-			const destructive = tool.destructive ?? false
-
-			if (action !== "read" && !destructive) {
-				throw new ConfigFileError(
-					`MCP tool '${toolName}' has action '${action}' but 'destructive' is not set to true`,
-				)
-			}
-		}
-	}
 }

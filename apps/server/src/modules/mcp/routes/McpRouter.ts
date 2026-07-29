@@ -3,8 +3,8 @@
 //
 import { Router } from "express"
 //
-import { UserResponse } from "../core/response/UserResponse"
-import { MetalMcpAdapter } from "./adapter"
+import { UserResponse } from "../../core/response/UserResponse"
+import { McpAdapter } from "../McpAdapter"
 
 //
 export const McpRouter: Router = Router()
@@ -12,4 +12,4 @@ export const McpRouter: Router = Router()
 //
 McpRouter.route("/")
 	.all(UserResponse.IsAuthenticated)
-	.post(MetalMcpAdapter.HandleRequest)
+	.post(McpAdapter.HandleRequest)

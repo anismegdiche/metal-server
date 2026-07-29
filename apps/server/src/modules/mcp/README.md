@@ -17,9 +17,6 @@ server:
 
 ```yaml
 mcp:
-  server:
-    name: my-metal-mcp
-    version: "1.0.0"
   hide-sensitive-data:
     - password
     - secret
@@ -30,22 +27,20 @@ mcp:
       entity: users
       action: read
       cache: 30
-      parameters:
+      limit: 50
+      fields: [id, name, email]
+      arguments:
         status:
           type: string
           required: false
           description: "Filter by status"
+          map-to: user_status
           enum: [active, inactive]
-        limit:
-          type: number
-          required: false
-          description: "Max rows to return"
-          default: 50
 ```
 
 ## Tool Declaration
 
-Each key under `mcp.tools` is the MCP tool name. Every tool maps to a schema entity and an action.
+Each key under `mcp.tools` is the MCP tool name. Every tool maps to a schema entity and an action (`read`, `create`, `update`, `delete`, `list`).
 
 ### Parameters
 
@@ -54,22 +49,23 @@ Each key under `mcp.tools` is the MCP tool name. Every tool maps to a schema ent
 | `description` | String  | Y        | Description shown to the LLM                                               |
 | `schema`      | String  | Y        | Schema name (must exist in `schemas` config)                               |
 | `entity`      | String  | Y        | Entity name within the schema                                               |
-| `action`      | Enum    | N        | `read`, `create`, `update`, `delete` (default: `read`)                     |
-| `destructive` | Boolean | N        | Must be `true` for any `action` other than `read`                          |
-| `role`        | String  | N        | Minimum role required to call this tool                                    |
+| `action`      | Enum    | N        | `read`, `create`, `update`, `delete`, `list` (default: `read`)             |
+| `roles`       | Array   | N        | Required roles (any match). If omitted, access is permission-based          |
 | `cache`       | Integer | N        | Seconds to cache results (read only)                                       |
-| `parameters`  | Object  | N        | Input parameters (see below)                                               |
+| `limit`       | Integer | N        | Max rows to return (default: 20)                                           |
+| `fields`      | Array   | N        | Restrict returned columns (read only). Omit to return all fields           |
+| `arguments`   | Object  | N        | Input arguments (see below)                                                |
 
-### Input Parameters
+### Input Arguments
 
 | Parameter     | Type    | Required | Description                                     |
 | ------------- | ------- | -------- | ----------------------------------------------- |
 | `type`        | Enum    | Y        | `string`, `number`, `boolean`, `array`          |
-| `required`    | Boolean | N        | Whether the LLM must supply this (default: `false`) |
 | `description` | String  | Y        | Description shown to the LLM                    |
+| `map-to`      | String  | Y        | Target field name in the schema entity          |
+| `required`    | Boolean | N        | Whether the LLM must supply this (default: `false`) |
 | `default`     | Any     | N        | Default value when omitted                      |
 | `enum`        | Array   | N        | Restricts allowed values                        |
-| `maps-to`     | String  | N        | Underlying field name if different from key     |
 
 ## Examples
 
@@ -83,20 +79,18 @@ mcp:
       schema: crm
       entity: users
       action: read
-      parameters:
+      limit: 50
+      fields: [id, name, email]
+      arguments:
         status:
           type: string
           required: false
           description: "Filter by status"
+          map-to: user_status
           enum: [active, inactive]
-        limit:
-          type: number
-          required: false
-          description: "Max rows"
-          default: 50
 ```
 
-### Create tool (destructive)
+### Create tool
 
 ```yaml
 mcp:
@@ -106,20 +100,35 @@ mcp:
       schema: crm
       entity: users
       action: create
-      destructive: true
-      role: admin
-      parameters:
+      roles: [admin]
+      arguments:
         name:
           type: string
           required: true
           description: "User's full name"
+          map-to: full_name
         email:
           type: string
           required: true
           description: "User's email address"
+          map-to: email
 ```
 
-### Delete tool (destructive)
+### List tool
+
+```yaml
+mcp:
+  tools:
+    list_folders:
+      description: "Get list of folders"
+      schema: fs
+      action: list
+      limit: 10
+```
+
+Lists entities within a schema. The `entity` field is ignored — the schema defines which entities are available.
+
+### Delete tool
 
 ```yaml
 mcp:
@@ -129,13 +138,13 @@ mcp:
       schema: auth
       entity: sessions
       action: delete
-      destructive: true
-      role: admin
-      parameters:
+      roles: [admin]
+      arguments:
         days:
           type: number
           required: true
           description: "Delete sessions older than this many days"
+          map-to: created_days_ago
 ```
 
 ### Plan-backed data via schema
@@ -166,7 +175,8 @@ MCP tool access reuses Metal's existing `roles`/`users`/`server.authentication` 
 
 - If no authentication is configured, all tools are exposed unauthenticated (startup warning emitted)
 - Each tool's required permission is derived from its `action` (`read`→`r`, `create`→`c`, `update`→`u`, `delete`→`d`)
-- An explicit `role:` on a tool overrides the derived permission
+- An explicit `roles:` array on a tool overrides the derived permission — user must have at least one of the listed roles
+- If `roles` is omitted, access is permission-based (derived from `action`)
 - Tools the caller can't access are omitted from `tools/list` entirely
 
 ## Validation (startup)
@@ -175,12 +185,11 @@ Metal fails to start when:
 1. Tool name doesn't match `^[a-zA-Z0-9_-]+$`
 2. `schema` reference doesn't exist in config
 3. `entity` doesn't exist within the schema (unless schema has wildcard source)
-4. `action` is not `read` without `destructive: true`
-5. A parameter is missing `description` or `type`
+4. A parameter is missing `description` or `type`
 
 ## Architecture
 
-- `adapter.ts` — Creates a fresh `McpServer` per request (stateless), registers config-driven tools
+- `adapter.ts` — Creates a fresh `McpServer` per request (stateless), registers config-driven tools with arguments as input schema
 - `_hook.ts` — Runs validator, checks `server.endpoints.enable-mcp`, registers route
 - `router.ts` — Express router: POST → MCP handler
 - `McpToolsValidator.ts` — Startup validation for tool declarations

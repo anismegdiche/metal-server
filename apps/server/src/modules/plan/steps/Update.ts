@@ -31,7 +31,7 @@ export async function Update(stepParams: U__plans_plan__step_Params, $context: P
 		new Sandbox($context),
 	) as U__plans_plan_update_Params
 
-	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
+	const { data: planData } = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	const $__schemaRequest = omit($__stepParams, "on-error") as TSchemaRequestUpdate
@@ -56,8 +56,8 @@ async function _updateSchema(step: U__plans_plan_update_Params, $context: Partia
 	const schemaRequest = step as TSchemaRequestUpdate
 	const { schema, entity, data } = schemaRequest
 
-	const { $schema } = $context!
-	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
+	const { $schema } = $context
+	const { data: planData } = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	// only schema --> error
@@ -81,7 +81,7 @@ async function _updatePlan(step: U__plans_plan_update_Params, $context: Partial<
 
 	const {
 		data: planData
-	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	} = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	// entity given --> error

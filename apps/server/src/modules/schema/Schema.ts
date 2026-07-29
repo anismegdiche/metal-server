@@ -430,7 +430,7 @@ export class Schema {
 		const sourceDataProvider = SourceRegistry.Sources.get(entityRoute.sourceName)?.DataProvider
 		Assert.Var<IDataProvider>(sourceDataProvider, sourceDataProvider !== undefined, "Source data provider not found")
 
-		const startTime = Date.now()
+		const _MTR_START_TIME = Date.now()
 		let isError = false
 		try {
 			const intResp = await sourceDataProvider.Select(<TSchemaRequestSelect>{
@@ -450,7 +450,7 @@ export class Schema {
 			isError = true
 			throw error
 		} finally {
-			Schema._DispatchOpMetric("reads", schema, entityRoute.sourceName, entity, Date.now() - startTime, isError)
+			Schema._DispatchOpMetric("reads", schema, entityRoute.sourceName, entity, Date.now() - _MTR_START_TIME, isError)
 		}
 	}
 

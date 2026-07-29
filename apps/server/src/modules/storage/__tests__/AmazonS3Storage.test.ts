@@ -8,12 +8,12 @@ import { STORAGE_TYPE } from "../@consts"
 import { AmazonS3Storage } from "../providers/AmazonS3Storage"
 
 const mockS3Module = {
-	S3Client: vi.fn().mockImplementation(() => ({ send: vi.fn() })),
-	ListObjectsV2Command: vi.fn().mockImplementation(() => ({})),
-	PutObjectCommand: vi.fn().mockImplementation(() => ({})),
-	GetObjectCommand: vi.fn().mockImplementation(() => ({})),
-	CopyObjectCommand: vi.fn().mockImplementation(() => ({})),
-	DeleteObjectCommand: vi.fn().mockImplementation(() => ({})),
+	S3Client: vi.fn().mockImplementation(() => ({ send: vi.fn() } )),
+	ListObjectsV2Command: vi.fn().mockImplementation(() => ({} )),
+	PutObjectCommand: vi.fn().mockImplementation(() => ({} )),
+	GetObjectCommand: vi.fn().mockImplementation(() => ({} )),
+	CopyObjectCommand: vi.fn().mockImplementation(() => ({} )),
+	DeleteObjectCommand: vi.fn().mockImplementation(() => ({} )),
 }
 
 const baseParams = {

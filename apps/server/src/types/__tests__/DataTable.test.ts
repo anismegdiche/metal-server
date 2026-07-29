@@ -646,7 +646,7 @@ describe("DataTable", () => {
 
 			// Check Date
 			expect(row?.date).toBeInstanceOf(Date)
-			expect((row?.date as Date).toISOString()).toBe(testDate.toISOString())
+			expect(row?.date.toISOString()).toBe(testDate.toISOString())
 
 			// Check Object
 			const rowObject = row?.object as { key: string; nested: { number: number } }
@@ -1583,6 +1583,49 @@ describe("DataTable", () => {
 				},
 			])
 		})
+
+		it("UC1", async () => {
+			const myDataTable = new DataTable("img")
+			await myDataTable.RowsSet([
+				{
+					name: "ocr-1.png",
+					mimeType: "image/png",
+					type: "file",
+					size: 130403,
+					createdAt: "2025-05-27T12:40:43.906Z",
+					modifiedAt: "2025-05-27T12:40:44.954Z",
+					path: "..\\metal-tests\\fs-storage\\img\\ocr-1.png",
+				},
+				{
+					name: "ocr-3.png",
+					mimeType: "image/png",
+					type: "file",
+					size: 23359,
+					createdAt: "2025-07-16T09:10:06.240Z",
+					modifiedAt: "2025-07-16T09:10:07.770Z",
+					path: "..\\metal-tests\\fs-storage\\img\\ocr-3.png",
+				},
+			])
+
+			const sqlQuery = "SELECT content, name FROM img WHERE name = 'ocr-1.png'"
+
+			// Act
+			const result = await myDataTable.FreeSql({
+				sqlQuery,
+				returnData:true
+			})
+
+			// Assert
+			expect(result).toBeInstanceOf(DataTable)
+			expect(await result.Rows()).toEqual([
+				{
+					name: "ocr-1.png",
+				}
+			])
+			expect(result.Fields).toEqual({
+				"name": "string",
+			})
+		})
 	})
 
 	describe("Pick", () => {
@@ -2015,6 +2058,12 @@ describe("dataTable_convertSql", () => {
 		// WHERE variables wrapped, IN list spaced
 		expect(dataTable_convertSql(`UPDATE table1 SET a = 2 WHERE b != 3 AND c IN (1,2,3)`)).toBe(
 			`UPDATE table1 SET ${DT_SYS_FIELDS.data} = json_merge_patch(${DT_SYS_FIELDS.data}, json_object('a',2)) WHERE (${DT_SYS_FIELDS.data}->'b') != 3 AND (${DT_SYS_FIELDS.data}->'c') IN ( 1 , 2 , 3 )`,
+		)
+	})
+
+	it("UC 1: SELECT * FROM img WHERE name = 'ocr-1.png'", () => {
+		expect(dataTable_convertSql(`SELECT * FROM img WHERE name = 'ocr-1.png'`)).toBe(
+			"SELECT * FROM img WHERE (__data__->'name') = '\"ocr-1.png\"'",
 		)
 	})
 })

@@ -35,7 +35,7 @@ export async function Select(stepParams: U__plans_plan__step_Params, $context: P
 
 	const {
 		data: planData
-	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	} = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 
@@ -56,8 +56,8 @@ async function _selectSchema(stepParams: U__plans_plan_select_Params, $context: 
 	const schemaRequest = stepParams as TSchemaRequestSelect
 	const { schema, entity } = schemaRequest
 
-	const { $schema } = $context!
-	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
+	const { $schema } = $context
+	const { data: planData } = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	// data from schema
@@ -90,7 +90,7 @@ async function _selectPlan(stepParams: U__plans_plan__step_Params, $context: Par
 
 	const {
 		data: planData
-	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	} = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	const options: TOptionalParameter = DATAPROVIDER.Options.Parse(schemaRequest, $context)
@@ -103,6 +103,10 @@ async function _selectPlan(stepParams: U__plans_plan__step_Params, $context: Par
 	)
 
 	const sqlQuery = DATAPROVIDER.GetSqlQuery(sqlQueryHelper, options)
-	return planData.FreeSql({ sqlQuery, queryParams: sqlQueryHelper.QueryParams })
+	return planData.FreeSql({
+		sqlQuery,
+		queryParams: sqlQueryHelper.QueryParams,
+		returnData: true
+	})
 }
 

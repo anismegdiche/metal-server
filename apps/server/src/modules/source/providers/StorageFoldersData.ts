@@ -5,7 +5,7 @@
 
 import { Readable } from "node:stream"
 import { Logger, VERBOSITY } from "@metal/logger"
-import { merge } from "lodash-es"
+import { merge, omit } from "lodash-es"
 //
 import type { DataTable, TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
@@ -44,6 +44,7 @@ import type { U__source_storage_folders } from "../types/U__source_storage_folde
 
 //
 const FLD_CONTENT = "content"
+const FLD_NAME = "name"
 const FLD_OLD_NAME = "old_name"
 
 //
@@ -64,12 +65,12 @@ export class StorageFoldersData extends absDataProvider {
 	LockCleanupInterval = 300000 // 5 minutes
 	LockCleanupTimer?: NodeJS.Timeout
 
-	setLock(fileName: string) {
+	_setLock(fileName: string) {
 		if (!this.Lock.has(fileName)) this.Lock.set(fileName, new Mutex())
 		this.LockTimestamps.set(fileName, Date.now())
 	}
 
-	cleanupLock(fileName: string) {
+	_cleanupLock(fileName: string) {
 		// Remove lock if it hasn't been used in the last cleanup interval
 		const lastUsed = this.LockTimestamps.get(fileName)
 		if (lastUsed && Date.now() - lastUsed > this.LockCleanupInterval) {
@@ -78,7 +79,7 @@ export class StorageFoldersData extends absDataProvider {
 		}
 	}
 
-	async cleanupAllLocks() {
+	async _cleanupAllLocks() {
 		const now = Date.now()
 		const toDelete: string[] = []
 		for (const [fileName, lastUsed] of this.LockTimestamps.entries()) {
@@ -95,20 +96,27 @@ export class StorageFoldersData extends absDataProvider {
 		}
 	}
 
-	startLockCleanup() {
+	_startLockCleanup() {
 		// Run cleanup every 5 minutes
 		this.LockCleanupTimer = setInterval(() => {
-			this.cleanupAllLocks()
+			this._cleanupAllLocks()
 		}, this.LockCleanupInterval)
 		Logger.Debug(`${this.SourceName}: Lock cleanup timer started (interval: ${this.LockCleanupInterval}ms)`)
 	}
 
-	stopLockCleanup() {
+	_stopLockCleanup() {
 		if (this.LockCleanupTimer) {
 			clearInterval(this.LockCleanupTimer)
 			this.LockCleanupTimer = undefined
 			Logger.Debug(`${this.SourceName}: Lock cleanup timer stopped`)
 		}
+	}
+
+	_addNameToFields(fields: string[] | undefined): string[] | undefined {
+		if (fields && !fields?.includes(FLD_NAME))
+			fields?.push(FLD_NAME)
+
+		return fields
 	}
 
 	@Logger.LogFunction(true)
@@ -126,7 +134,7 @@ export class StorageFoldersData extends absDataProvider {
 		else throw new HttpErrorInternalServerError(`${this.SourceName}: Failed to initialize storage provider`)
 
 		// Start periodic lock cleanup
-		this.startLockCleanup()
+		this._startLockCleanup()
 	}
 
 	@Logger.LogFunction(true)
@@ -141,10 +149,10 @@ export class StorageFoldersData extends absDataProvider {
 	@Logger.LogFunction(true)
 	async Disconnect(): Promise<void> {
 		// Stop lock cleanup timer
-		this.stopLockCleanup()
+		this._stopLockCleanup()
 
 		// Clean up all locks before disconnecting
-		await this.cleanupAllLocks()
+		await this._cleanupAllLocks()
 
 		if (this.Connection) await this.Connection.Disconnect()
 	}
@@ -159,6 +167,7 @@ export class StorageFoldersData extends absDataProvider {
 
 		const { schema, entity: dirName } = schemaRequest
 
+
 		const schemaResponse = <TSchemaResponse>{
 			schema,
 			entity: dirName,
@@ -168,17 +177,28 @@ export class StorageFoldersData extends absDataProvider {
 
 		const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
+		const _fieldsHasName = (options.Fields?.includes(FLD_NAME) || options.Fields?.includes('*'))
+			?? false
+
+		options.Fields = this._addNameToFields(options.Fields)
+
 		const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
 
 		const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
-		const files = await (await this.Connection.FolderListFiles(dirName)).FreeSql({ sqlQuery })
+		const data = await this.Connection.FolderListFiles(dirName)
+
+		const filteredData = await data.FreeSql({ sqlQuery, returnData: true })
 
 		if (options.Fields?.includes(FLD_CONTENT)) {
 			// read files content
-			await files.RowsMap(async (row: TRow) => {
-				const _file = row as TStorageFile
+			await filteredData.RowsMap(async (row: TRow) => {
+				let _file = row as TStorageFile
 				const _fileContent = await this.Connection?.FileRead(dirName, _file.name)
+				
+				if (!_fieldsHasName)
+					_file = omit(_file, FLD_NAME) as TStorageFile
+
 				return ReadableUtils.ToBase64(_fileContent).then((_content) => {
 					_file.content = _content
 					return _file
@@ -186,7 +206,7 @@ export class StorageFoldersData extends absDataProvider {
 			})
 		}
 
-		if (Logger.Level === VERBOSITY.DEBUG) files.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
+		if (Logger.Level === VERBOSITY.DEBUG) filteredData.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
 
 		if (options?.Cache)
 			await this.CacheSet(
@@ -194,14 +214,14 @@ export class StorageFoldersData extends absDataProvider {
 					...schemaRequest,
 					source: this.SourceName,
 				},
-				files,
+				filteredData,
 			)
 
 		return HttpResponse.Ok(<TSchemaResponse>{
 			...schemaResponse,
 			...RESPONSE.SELECT.SUCCESS.MESSAGE,
 			...RESPONSE.SELECT.SUCCESS.STATUS,
-			data: files,
+			data: filteredData,
 		})
 	}
 
@@ -234,7 +254,7 @@ export class StorageFoldersData extends absDataProvider {
 				new HttpErrorBadRequest(),
 			)
 
-			this.setLock(__file.path)
+			this._setLock(__file.path)
 			await this.Lock.get(__file.path)?.Acquire()
 			try {
 				await this.Connection?.FileWrite(dirName, __file.name, Readable.from(Buffer.from(__file.content, "base64")))
@@ -274,11 +294,10 @@ export class StorageFoldersData extends absDataProvider {
 		using folderList = await this.Connection.FolderListFiles(dirName).then((dt) => dt.Rename(dirName))
 
 		const files = await folderList.Pick(["name", "path"])
-
-		const filesFiltered = await files.FreeSql({ sqlQuery: selectQuery })
+		const filteredFiles = await files.FreeSql({ sqlQuery: selectQuery, returnData: true })
 
 		// add old name
-		await filesFiltered.FreeSql({
+		await filteredFiles.FreeSql({
 			sqlQuery: `
                 UPDATE ${dirName}
                 SET ${FLD_OLD_NAME} = name
@@ -288,47 +307,46 @@ export class StorageFoldersData extends absDataProvider {
 		const updateQueryHelper = await this.GenerateSqlUpdate(schemaRequest, options)
 		const updateQuery = this.GetSqlQuery(updateQueryHelper, options)
 
-		await filesFiltered.FreeSql({ sqlQuery: updateQuery })
+		await filteredFiles.FreeSql({ sqlQuery: updateQuery })
 
-		// update files
-		return filesFiltered
-			.ForEach(async (row: TRow) => {
-				const { name: newFileName, [FLD_OLD_NAME]: oldFileName } = row as TStorageFile & {
-					[FLD_OLD_NAME]: string
+		// update filteredFiles
+		return filteredFiles.ForEach(async (row: TRow) => {
+			const { name: newFileName, [FLD_OLD_NAME]: oldFileName } = row as TStorageFile & {
+				[FLD_OLD_NAME]: string
+			}
+
+			Assert.Var<string>(newFileName, "File name is required")
+			Assert.Var<string>(oldFileName, "File old name is required")
+
+			const __lock = `${dirName}/${oldFileName}`
+			this._setLock(__lock)
+			await this.Lock.get(__lock)?.Acquire()
+
+			try {
+				// update file content
+				const __fileContent = await ReadableUtils.ToBase64(await this.Connection?.FileRead(dirName, oldFileName))
+
+				if (updateData?.content && updateData?.content !== __fileContent) {
+					const ___content = updateData?.content ?? __fileContent
+
+					Assert.Var<string>(
+						___content,
+						StringUtils.IsBase64(___content),
+						"content is not a valid base64 string",
+						new HttpErrorBadRequest(),
+					)
+
+					await this.Connection?.FileWrite(dirName, oldFileName, Readable.from(Buffer.from(___content, "base64")))
 				}
 
-				Assert.Var<string>(newFileName, "File name is required")
-				Assert.Var<string>(oldFileName, "File old name is required")
-
-				const __lock = `${dirName}/${oldFileName}`
-				this.setLock(__lock)
-				await this.Lock.get(__lock)?.Acquire()
-
-				try {
-					// update file content
-					const __fileContent = await ReadableUtils.ToBase64(await this.Connection?.FileRead(dirName, oldFileName))
-
-					if (updateData?.content && updateData?.content !== __fileContent) {
-						const ___content = updateData?.content ?? __fileContent
-
-						Assert.Var<string>(
-							___content,
-							StringUtils.IsBase64(___content),
-							"content is not a valid base64 string",
-							new HttpErrorBadRequest(),
-						)
-
-						await this.Connection?.FileWrite(dirName, oldFileName, Readable.from(Buffer.from(___content, "base64")))
-					}
-
-					// rename file
-					if (oldFileName !== newFileName) await this.Connection?.FileRename(dirName, oldFileName, newFileName)
-				} finally {
-					this.Lock.get(__lock)?.Release()
-					// Optionally cleanup lock after use (commented out to rely on periodic cleanup)
-					// this.cleanupLock(__lock)
-				}
-			})
+				// rename file
+				if (oldFileName !== newFileName) await this.Connection?.FileRename(dirName, oldFileName, newFileName)
+			} finally {
+				this.Lock.get(__lock)?.Release()
+				// Optionally cleanup lock after use (commented out to rely on periodic cleanup)
+				// this.cleanupLock(__lock)
+			}
+		})
 			.then(() => this.CacheRemove(schemaRequest))
 			.then(() => HttpResponse.NoContent())
 	}
@@ -359,7 +377,7 @@ export class StorageFoldersData extends absDataProvider {
 
 		using files = await this.Connection.FolderListFiles(dirName).then((dt) => dt.Rename(dirName))
 
-		const filesFiltered = await files.FreeSql({ sqlQuery })
+		const filesFiltered = await files.FreeSql({ sqlQuery, returnData: true })
 
 		return filesFiltered
 			.ForEach(async (row: TRow) => {

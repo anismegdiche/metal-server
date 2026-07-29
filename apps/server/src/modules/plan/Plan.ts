@@ -4,10 +4,10 @@
 import { CustomEvent } from "@dimkl/events"
 import { _MTR_ } from "@metal/config"
 import { Logger } from "@metal/logger"
+import type { TJson } from "@metal/types"
 import { has, merge } from "lodash-es"
 //
 import { DataTable } from "../../types/DataTable"
-import type { TJson } from "@metal/types"
 import { Assert } from "../../utils/Assert"
 import { JsonUtils } from "../../utils/JsonUtils"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
@@ -23,7 +23,7 @@ import { MetricsCollector } from "../metrics/MetricsCollector"
 import type { TContext } from "../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../source/@consts"
-import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_OUTCOME, STEP_SIGNAL, STEP_STATUS } from "./@consts"
+import { PLAN_FAILURE_STRATEGY, PLAN_STATUS, STEP_OUTCOME, STEP_STATUS } from "./@consts"
 import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "./PlanMetrics"
 import { Step, type T_StepFunctionWithSignal } from "./Step"
 import { type U__plans_plan, z_U__plans_plan } from "./types/U__plans"
@@ -73,7 +73,10 @@ export class Plan {
 		Assert.Var<U__plans_plan>(this.Config, `plan '${this.Name}' not found or not configured`, new HttpErrorNotFound())
 
 		return this.Process(callerSchema)
-			.then((planData) => planData.FreeSql({ sqlQuery }).then(() => planData))
+			.then(async (planData) => {
+				this._data = await planData.FreeSql({ sqlQuery, returnData: true })
+				return this._data
+			})
 			.catch((err) => {
 				Logger.Error(`Error occurred while processing schema request for plan '${this.Name}': ${err.message}`)
 				return undefined
@@ -90,7 +93,7 @@ export class Plan {
 
 		try {
 			const data = await this.Process()
-			await data.FreeSql({ sqlQuery })
+			this._data = await data.FreeSql({ sqlQuery })
 		} catch (err) {
 			const _e = NormalizeError(err)
 			Logger.Error(`Error occurred while processing schedule '${plan}': ${_e.message}`)
@@ -161,7 +164,7 @@ export class Plan {
 
 				// if step has no on-error, merge with plan.on-error
 				if (_stepParams && (_stepParams as Record<string, unknown>)["on-error"] === undefined && planOnError) {
-					;(_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
+					; (_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
 				}
 
 				$context.$plan.currentStep = {
@@ -283,7 +286,7 @@ export class Plan {
 						if (!this._data.MetaData[METADATA.PLAN_ERRORS]) {
 							this._data.MetaData[METADATA.PLAN_ERRORS] = []
 						}
-						;(this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
+						; (this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
 							step: stepIndex,
 							command: _stepCommand,
 							error: _e.message,

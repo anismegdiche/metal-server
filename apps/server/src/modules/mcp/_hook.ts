@@ -4,10 +4,10 @@
 import { Logger } from "@metal/logger"
 import { ROUTE } from "../core/@consts"
 import { ConfigManager } from "../core/ConfigManager"
-import type { U__server } from "../core/types/U__server"
 import { ServerEndpoint } from "../core/ServerEndpoint"
+import type { U__server } from "../core/types/U__server"
 import { McpToolsValidator } from "./McpToolsValidator"
-import { McpRouter } from "./router"
+import { McpRouter } from "./routes/McpRouter"
 
 //
 export function RegisterMiddleware(): void {

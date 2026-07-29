@@ -31,7 +31,7 @@ export async function Delete(stepParams: U__plans_plan__step_Params, $context: P
 		new Sandbox($context),
 	) as U__plans_plan_delete_Params
 
-	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
+	const { data: planData } = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	const $__schemaRequest = omit($__stepParams, "on-error") as TSchemaRequestDelete
@@ -57,8 +57,8 @@ async function _deleteSchema(stepParams: U__plans_plan_delete_Params, $context: 
 	const schemaRequest = stepParams as TSchemaRequestDelete
 	const { schema, entity } = schemaRequest
 
-	const { $schema } = $context!
-	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
+	const { $schema } = $context
+	const { data: planData } = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	// only schema --> error
@@ -77,7 +77,7 @@ async function _deletePlan(stepParams: U__plans_plan_delete_Params, $context: Pa
 
 	const {
 		data: planData
-	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	} = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	// entity given --> error

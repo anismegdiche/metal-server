@@ -46,9 +46,9 @@ Authorization: Bearer {{token}}
 }
 ###
 
-# ── Call: list_sources ───────────────────────────────────
+# ── Call: get_images ───────────────────────────────────
 
-# @name listSources
+# @name get_images
 POST  http://127.0.0.1:3000/mcp
 Content-Type: application/json
 Accept: application/json, text/event-stream
@@ -59,7 +59,64 @@ Authorization: Bearer {{token}}
   "id": 3,
   "method": "tools/call",
   "params": {
-    "name": "list_sources",
+    "name": "get_images",
+    "arguments": {"filename": "ocr-1.png"}
+  }
+}
+###
+
+# ── Call: get_image_content ───────────────────────────────────
+
+# @name get_image_content
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "get_image_content",
+    "arguments": {"filename": "ocr-1.png"}
+  }
+}
+###
+
+# ── Call: get_recovery ───────────────────────────────────
+
+# @name get_recovery
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "get_recovery",
+    "arguments": {}
+  }
+}
+###
+
+# ── Call: list_folders ───────────────────────────────────
+
+# @name list_folders
+POST  http://127.0.0.1:3000/mcp
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer {{token}}
+
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "list_folders",
     "arguments": {}
   }
 }

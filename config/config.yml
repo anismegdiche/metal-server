@@ -18,28 +18,55 @@ server:
     enable-mcp: true
 
 mcp:
-  server:
-    name: my-metal-mcp
-    version: "1.0.0"
   hide-sensitive-data:
     - password
     - secret
+    - path
   tools:
     get_images:
       description: "Get list of images"
       schema: fs
       entity: img
       action: read
-      parameters:
+      limit: 50
+      arguments:
         filename:
-          type: string
-          required: false
           description: "Filter by filename (partial match)"
-        limit:
-          type: number
+          type: string
+          map-to: name
           required: false
-          description: "Max rows to return"
-          default: 50
+    get_image_content:
+      description: "Get image content"
+      schema: fs
+      entity: img
+      action: read
+      limit: 1
+      fields:
+        - content
+      arguments:
+        filename:
+          description: "Filter by filename"
+          type: string
+          map-to: name
+          required: false
+    get_recovery:
+      description: "Get recovery"
+      schema: fs
+      entity: rec
+      action: read
+      limit: 10
+      arguments:
+        filename:
+          description: "Filter by filename"
+          type: string
+          map-to: name
+          required: false
+
+    list_folders:
+      description: "Get list of folders"
+      schema: fs
+      action: list
+      limit: 5
 
 
 
