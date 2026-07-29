@@ -56,6 +56,7 @@ The parameters that can be configured inside the `server` section include:
 | `request-limit`  | String  | N        | Define request limit (default: `10mb`)        | <Badge type="default" text="v0.1+" /> |
 | `response-limit` | String  | N        | Define response limit (default: `10mb`)       | <Badge type="default" text="v0.3+" /> |
 | `response-rate`  | Object  | N        | Define response rate limit                    | <Badge type="default" text="v0.3+" /> |
+| `endpoints`      | Object  | N        | Server endpoint toggles, including MCP        | <Badge type="info" text="v0.5+" /> |
 
 **Example:**
 
@@ -140,6 +141,24 @@ For more informations about authentication, roles and users, please refer to the
 
 :::
 
+### `endpoints` <Badge type="info" text="v0.5+" />
+
+Configures optional server endpoints.
+
+The parameters that can be configured inside the `endpoints` section include:
+
+| Parameter | Type | Required | Description | Metal version |
+| --------- | ---- | -------- | ----------- | ------------- |
+| `enable-mcp` | Boolean | N | Enables the MCP endpoint for exposing Metal tools to MCP clients | <Badge type="info" text="v0.5+" /> |
+
+**Example:**
+
+```yaml
+server:
+  endpoints:
+    enable-mcp: true
+```
+
 ### `request-limit` <Badge type="default" text="v0.1+" />
 
 Controls the maximum request body size. If this is a number, then the value specifies the number of bytes; if it is a string, the value is passed to the bytes library for parsing.
@@ -218,39 +237,126 @@ The parameters that can be configured inside the `ai-engines` section include:
 For more detailed information about how to configure a Container Provider in `params`, See: [Container Provider Configurations](./container-provider-config.md)
 :::
 
+## `mcp` <Badge type="info" text="v0.5+" />
+
+Configures MCP (Model Context Protocol) tools exposed by Metal. This allows LLM clients to call Metal schemas and entities through declarative YAML configuration.
+
+To enable the MCP endpoint, set the following under the `server` section:
+
+```yaml
+server:
+  endpoints:
+    enable-mcp: true
+```
+
+The parameters that can be configured inside the `mcp` section include:
+
+| Parameter             | Type   | Required | Description                                     | Metal version                      |
+| --------------------- | ------ | -------- | ----------------------------------------------- | ---------------------------------- |
+| `tools`               | Object | N        | Declarative MCP tools to expose                 | <Badge type="info" text="v0.5+" /> |
+| `hide-sensitive-data` | Array  | N        | List of field names to hide from tool responses | <Badge type="info" text="v0.5+" /> |
+
+### `tools`
+
+Each entry under `tools` defines an MCP tool name. A tool maps to a schema entity and an action (`read`, `create`, `update`, `delete`, or `list`).
+
+The parameters that can be configured inside each tool include:
+
+| Parameter     | Type         | Required | Description                                                                 | Metal version                      |
+| ------------- | ------------ | -------- | --------------------------------------------------------------------------- | ---------------------------------- |
+| `description` | String       | Y        | Description shown to the LLM client                                         | <Badge type="info" text="v0.5+" /> |
+| `schema`      | String       | Y        | Name of the schema to use                                                   | <Badge type="info" text="v0.5+" /> |
+| `entity`      | String       | Y        | Name of the entity inside the schema (except for `list` actions)            | <Badge type="info" text="v0.5+" /> |
+| `action`      | Enum(String) | N        | Tool action: `read`, `create`, `update`, `delete`, `list` (default: `read`) | <Badge type="info" text="v0.5+" /> |
+| `roles`       | Array        | N        | Required roles for access to the tool                                       | <Badge type="info" text="v0.5+" /> |
+| `cache`       | Integer      | N        | Cache duration in seconds for read operations                               | <Badge type="info" text="v0.5+" /> |
+| `limit`       | Integer      | N        | Maximum number of rows to return (default: `10`)                            | <Badge type="info" text="v0.5+" /> |
+| `fields`      | Array        | N        | Restrict the returned fields                                                | <Badge type="info" text="v0.5+" /> |
+| `arguments`   | Object       | N        | Input arguments accepted by the tool                                        | <Badge type="info" text="v0.5+" /> |
+
+### `arguments`
+
+The parameters that can be configured inside each argument include:
+
+| Parameter     | Type         | Required | Description                                              | Metal version                      |
+| ------------- | ------------ | -------- | -------------------------------------------------------- | ---------------------------------- |
+| `type`        | Enum(String) | Y        | Argument type: `string`, `number`, `boolean`, or `array` | <Badge type="info" text="v0.5+" /> |
+| `description` | String       | Y        | Description shown to the LLM client                      | <Badge type="info" text="v0.5+" /> |
+| `map-to`      | String       | Y        | Target field name in the schema entity                   | <Badge type="info" text="v0.5+" /> |
+| `required`    | Boolean      | N        | Whether the argument is required (default: `false`)      | <Badge type="info" text="v0.5+" /> |
+| `default`     | Any          | N        | Default value when the argument is omitted               | <Badge type="info" text="v0.5+" /> |
+| `enum`        | Array        | N        | Restricts the allowed values                             | <Badge type="info" text="v0.5+" /> |
+
+**Example:**
+
+```yaml
+mcp:
+  hide-sensitive-data:
+    - password
+    - secret
+  tools:
+    get_users:
+      description: "Get list of users"
+      schema: crm
+      entity: users
+      action: read
+      limit: 50
+      fields: [id, name, email]
+      arguments:
+        status:
+          type: string
+          required: false
+          description: "Filter by status"
+          map-to: user_status
+```
+
 ## `roles` <Badge type="default" text="v0.3+" />
 
 Sets the list of roles with associated permissions used when authentication is enabled with `server.authentication`. Each role is defined by a unique name and a string of permissions where each character represents a specific permission:
 
-| Permission | Description          | Metal version                         |
-| ---------- | -------------------- | ------------------------------------- |
-| `c`        | Create data          | <Badge type="default" text="v0.3+" /> |
-| `r`        | Read data            | <Badge type="default" text="v0.3+" /> |
-| `u`        | Update data          | <Badge type="default" text="v0.3+" /> |
-| `d`        | Delete data          | <Badge type="default" text="v0.3+" /> |
-| `a`        | Administrate server  | <Badge type="default" text="v0.3+" /> |
-| `l`        | List schema entities | <Badge type="default" text="v0.3+" /> |
+| Permission | Description             | Metal version                         |
+| ---------- | ----------------------- | ------------------------------------- |
+| `a`        | Administrate server     | <Badge type="default" text="v0.3+" /> |
+| `l`        | List schema entities    | <Badge type="default" text="v0.3+" /> |
+| `c`        | Create data in entities | <Badge type="default" text="v0.3+" /> |
+| `r`        | Read data in entities   | <Badge type="default" text="v0.3+" /> |
+| `u`        | Update data in entities | <Badge type="default" text="v0.3+" /> |
+| `d`        | Delete data in entities | <Badge type="default" text="v0.3+" /> |
 
 **Example:**
 
 ```yaml
 roles:
-  admin: arl
-  all-rights: crudla
-  guest: r
+  admin: arl           # admin,read,list
+  all-rights: crudla   # all rights
+  guest: r             # read only
 ```
 
-## `users` <Badge type="default" text="v0.1+" />
+## `users` <Badge type="info" text="v0.5+" />
 
 Declares a list of Metal users used when authentication is enabled with `server.authentication`.
+
+Each user entry is defined as an object containing:
+
+| Parameter  | Type          | Required | Description                                                 | Metal version                         |
+| ---------- | ------------- | -------- | ----------------------------------------------------------- | ------------------------------------- |
+| `password` | String/Number | Y        | Password for the user account                               | <Badge type="default" text="v0.1+" /> |
+| `secret`   | String        | N        | Optional secret value that can be used by the auth provider | <Badge type="info" text="v0.5+" />    |
+| `roles`    | Array         | N        | Optional list of roles assigned to the user                 | <Badge type="info" text="v0.5+" />    |
 
 **Example:**
 
 ```yaml
 users:
-  admin: 123456
-  guest: "654321"
+  myapiuser:
+    password: myStr@ngpa$$w0rd
+  user1:
+    password: pass
+    roles:
+      - admin
 ```
+
+You can also define users with a simple scalar value, but the structured object form is the recommended format for compatibility with the current authentication schema.
 
 ## `sources` <Badge type="default" text="v0.1+" />
 
