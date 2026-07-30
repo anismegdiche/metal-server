@@ -4,34 +4,40 @@ info:
   version: "0.5"
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     dataResponse:
-        type: object
-        properties:
-          schema:
-            type: string
-            description: Name of the schema
-          entity:
-            type: string
-            description: Name of the entity
-          status:
-            description: Status
-            type: integer
-            enum: [200]
-          metadata:
-            description: Metadata
+      type: object
+      properties:
+        schema:
+          type: string
+          description: Name of the schema
+        entity:
+          type: string
+          description: Name of the entity
+        status:
+          description: Status
+          type: integer
+          enum: [200]
+        metadata:
+          description: Metadata
+          type: object
+        rows:
+          description: Data
+          type: array
+          items:
             type: object
-          rows:
-            description: Data
-            type: array
-            items:
-              type: object
-        required:
-          - schema
-          - entity
-          - status
-          - metadata
-          - rows
+      required:
+        - schema
+        - entity
+        - status
+        - metadata
+        - rows
 
     filter:
       type: object
@@ -163,6 +169,21 @@ tags:
   - name: "Config"
     description: "Operations about Configuration"
 
+  - name: "API"
+    description: "Operations about API internals"
+
+  - name: "Source"
+    description: "Operations about source data access"
+
+  - name: "Metrics"
+    description: "Operations about metrics"
+
+  - name: "MCP"
+    description: "Operations about MCP requests"
+
+  - name: "API Keys"
+    description: "Operations about API keys"
+
 paths:
   /user/login:
     post:
@@ -189,7 +210,7 @@ paths:
               additionalProperties: false
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Successful login
           content:
@@ -235,7 +256,7 @@ paths:
         - bearerAuth: []
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Successful retrieval of user information
           content:
@@ -261,7 +282,7 @@ paths:
         - bearerAuth: []
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Server information
           content:
@@ -287,7 +308,7 @@ paths:
         - bearerAuth: []
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Server reloaded
           content:
@@ -313,7 +334,7 @@ paths:
         - bearerAuth: []
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Plans reloaded
           content:
@@ -346,7 +367,7 @@ paths:
           description: The name of the schema
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: A list of entities in the schema
           content:
@@ -378,46 +399,46 @@ paths:
         - in: query
           name: filter
           schema:
-            $ref: '#/components/schemas/filter'
+            $ref: "#/components/schemas/filter"
           required: false
           allowReserved: true
           description: Simple filtering feature by providing fields and values
         - in: query
           name: filter-expression
           schema:
-            $ref: '#/components/schemas/filter-expression'
+            $ref: "#/components/schemas/filter-expression"
           required: false
           allowReserved: true
           description: Free expression for more complex data filtering expressed in SQL-like syntax
         - in: query
           name: fields
           schema:
-            $ref: '#/components/schemas/fields'
+            $ref: "#/components/schemas/fields"
           required: false
           allowReserved: true
           description: fields to return
         - in: query
           name: cache
           schema:
-            $ref: '#/components/schemas/cache'
+            $ref: "#/components/schemas/cache"
           required: false
           description: cache the returned data for given seconds
         - in: query
           name: sort
           schema:
-            $ref: '#/components/schemas/sort'
+            $ref: "#/components/schemas/sort"
           required: false
           allowReserved: true
           description: sort data with given order
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Ok
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/dataResponse'
+                $ref: "#/components/schemas/dataResponse"
         400:
           $ref: "#/components/responses/http400"
         401:
@@ -451,7 +472,7 @@ paths:
                 - data
               properties:
                 data:
-                  $ref: '#/components/schemas/data'
+                  $ref: "#/components/schemas/data"
       responses:
         201:
           description: Operation success
@@ -498,12 +519,12 @@ paths:
                 - data
               properties:
                 filter:
-                  $ref: '#/components/schemas/filter'
+                  $ref: "#/components/schemas/filter"
                 filter-expression:
-                  $ref: '#/components/schemas/filter-expression'
+                  $ref: "#/components/schemas/filter-expression"
                 data:
-                  $ref: '#/components/schemas/data'
-      responses:        
+                  $ref: "#/components/schemas/data"
+      responses:
         204:
           description: Operation success
         400:
@@ -547,9 +568,9 @@ paths:
               additionalProperties: false
               properties:
                 filter:
-                  $ref: '#/components/schemas/filter'
+                  $ref: "#/components/schemas/filter"
                 filter-expression:
-                  $ref: '#/components/schemas/filter-expression'
+                  $ref: "#/components/schemas/filter-expression"
       responses:
         204:
           description: Operation success
@@ -574,7 +595,7 @@ paths:
         - bearerAuth: []
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Cache data
           content:
@@ -591,7 +612,7 @@ paths:
           $ref: "#/components/responses/http404"
         500:
           $ref: "#/components/responses/http500"
-     
+
   /cache/clean:
     post:
       tags:
@@ -602,7 +623,7 @@ paths:
         - bearerAuth: []
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Cache cleaned
           content:
@@ -617,7 +638,7 @@ paths:
           $ref: "#/components/responses/http403"
         500:
           $ref: "#/components/responses/http500"
-     
+
   /cache/purge:
     post:
       tags:
@@ -628,7 +649,7 @@ paths:
         - bearerAuth: []
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Cache purged
           content:
@@ -643,7 +664,7 @@ paths:
           $ref: "#/components/responses/http403"
         500:
           $ref: "#/components/responses/http500"
-  
+
   /plan/{plan}/reload:
     post:
       summary: Reload plan
@@ -661,7 +682,7 @@ paths:
           description: Plan name
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Plan reloaded successfully
           content:
@@ -696,7 +717,7 @@ paths:
           description: Plan name
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Plan metrics retrieved successfully
           content:
@@ -730,7 +751,7 @@ paths:
           $ref: "#/components/responses/http404"
         500:
           $ref: "#/components/responses/http500"
-  
+
   /api/config:
     get:
       summary: Get full configuration
@@ -741,7 +762,7 @@ paths:
         - bearerAuth: []
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Full configuration object
           content:
@@ -772,7 +793,7 @@ paths:
               type: object
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Configuration saved
           content:
@@ -801,7 +822,7 @@ paths:
         - bearerAuth: []
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Server reloaded
           content:
@@ -830,12 +851,22 @@ paths:
           name: section
           schema:
             type: string
-            enum: [server, sources, schemas, plans, schedules, roles, users, ai-engines]
+            enum:
+              [
+                server,
+                sources,
+                schemas,
+                plans,
+                schedules,
+                roles,
+                users,
+                ai-engines,
+              ]
           required: true
           description: The configuration section name
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Section data
           content:
@@ -863,7 +894,17 @@ paths:
           name: section
           schema:
             type: string
-            enum: [server, sources, schemas, plans, schedules, roles, users, ai-engines]
+            enum:
+              [
+                server,
+                sources,
+                schemas,
+                plans,
+                schedules,
+                roles,
+                users,
+                ai-engines,
+              ]
           required: true
           description: The configuration section name
       requestBody:
@@ -874,7 +915,7 @@ paths:
               type: object
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Section patched
           content:
@@ -906,7 +947,17 @@ paths:
           name: section
           schema:
             type: string
-            enum: [server, sources, schemas, plans, schedules, roles, users, ai-engines]
+            enum:
+              [
+                server,
+                sources,
+                schemas,
+                plans,
+                schedules,
+                roles,
+                users,
+                ai-engines,
+              ]
           required: true
           description: The configuration section name
         - in: path
@@ -917,7 +968,7 @@ paths:
           description: The item name within the section
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Item data
           content:
@@ -947,7 +998,17 @@ paths:
           name: section
           schema:
             type: string
-            enum: [server, sources, schemas, plans, schedules, roles, users, ai-engines]
+            enum:
+              [
+                server,
+                sources,
+                schemas,
+                plans,
+                schedules,
+                roles,
+                users,
+                ai-engines,
+              ]
           required: true
           description: The configuration section name
         - in: path
@@ -964,7 +1025,7 @@ paths:
               type: object
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Item saved
           content:
@@ -995,7 +1056,17 @@ paths:
           name: section
           schema:
             type: string
-            enum: [server, sources, schemas, plans, schedules, roles, users, ai-engines]
+            enum:
+              [
+                server,
+                sources,
+                schemas,
+                plans,
+                schedules,
+                roles,
+                users,
+                ai-engines,
+              ]
           required: true
           description: The configuration section name
         - in: path
@@ -1006,7 +1077,7 @@ paths:
           description: The item name within the section
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Item deleted
           content:
@@ -1022,6 +1093,369 @@ paths:
           $ref: "#/components/responses/http401"
         403:
           $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/logs:
+    delete:
+      tags:
+        - API
+      summary: Clear logs
+      description: Clears all server logs
+      security:
+        - bearerAuth: []
+      responses:
+        204:
+          description: Logs cleared
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/logs/{start}/{end}/{limit}/{offset}/{reverse}:
+    get:
+      tags:
+        - API
+      summary: Get logs
+      description: Retrieves logs for the requested range and pagination parameters
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: start
+          schema:
+            type: string
+          required: true
+          description: Start timestamp
+        - in: path
+          name: end
+          schema:
+            type: string
+          required: true
+          description: End timestamp
+        - in: path
+          name: limit
+          schema:
+            type: integer
+          required: true
+          description: Maximum number of log records to return
+        - in: path
+          name: offset
+          schema:
+            type: integer
+          required: true
+          description: Number of records to skip
+        - in: path
+          name: reverse
+          schema:
+            type: string
+          required: true
+          description: Reverse order flag
+      responses:
+        200:
+          description: Log data
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/source/{source}:
+    get:
+      tags:
+        - Source
+      summary: List source entities
+      description: Lists entities available in the requested source
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: source
+          schema:
+            type: string
+          required: true
+          description: Source name
+      responses:
+        200:
+          description: Source entities
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/source/{source}/{entity}:
+    get:
+      tags:
+        - Source
+      summary: Get source entity rows
+      description: Returns rows from the requested source entity
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: source
+          schema:
+            type: string
+          required: true
+          description: Source name
+        - in: path
+          name: entity
+          schema:
+            type: string
+          required: true
+          description: Entity name
+      responses:
+        200:
+          description: Source entity rows
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api-keys:
+    get:
+      tags:
+        - API Keys
+      summary: List API keys
+      description: Returns a list of API keys for the current user
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: API keys list
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+    post:
+      tags:
+        - API Keys
+      summary: Create API key
+      description: Creates a new API key
+      security:
+        - bearerAuth: []
+      responses:
+        201:
+          description: API key created
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api-keys/{id}:
+    get:
+      tags:
+        - API Keys
+      summary: Get API key
+      description: Returns an API key by identifier
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: API key identifier
+      responses:
+        200:
+          description: API key details
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+    delete:
+      tags:
+        - API Keys
+      summary: Revoke API key
+      description: Revokes an API key by identifier
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: API key identifier
+      responses:
+        204:
+          description: API key revoked
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /mcp:
+    post:
+      tags:
+        - MCP
+      summary: Handle MCP request
+      description: Forwards a request to the MCP adapter
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        200:
+          description: MCP response
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /metrics:
+    get:
+      tags:
+        - Metrics
+      summary: Get all metrics
+      description: Returns all available metrics
+      responses:
+        200:
+          description: Metrics data
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /metrics/{metric}:
+    get:
+      tags:
+        - Metrics
+      summary: Get a metric
+      description: Returns a single metric by name
+      parameters:
+        - in: path
+          name: metric
+          schema:
+            type: string
+          required: true
+          description: Metric name
+      responses:
+        200:
+          description: Metric data
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        404:
+          $ref: "#/components/responses/http404"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /metrics/{metricFrom}/{metricTo}:
+    get:
+      tags:
+        - Metrics
+      summary: Get metrics range
+      description: Returns metrics for a range of metric names
+      parameters:
+        - in: path
+          name: metricFrom
+          schema:
+            type: string
+          required: true
+          description: Start metric name
+        - in: path
+          name: metricTo
+          schema:
+            type: string
+          required: true
+          description: End metric name
+      responses:
+        200:
+          description: Metrics range data
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        404:
+          $ref: "#/components/responses/http404"
         500:
           $ref: "#/components/responses/http500"
 
@@ -1042,7 +1476,7 @@ paths:
           description: The name of the job to start
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Job started successfully
           content:
@@ -1059,7 +1493,7 @@ paths:
           $ref: "#/components/responses/http404"
         500:
           $ref: "#/components/responses/http500"
-  
+
   /schedule/{jobName}/stop:
     post:
       summary: Stop a job
@@ -1077,7 +1511,7 @@ paths:
           description: The name of the job to stop
       responses:
         default:
-          $ref: '#/components/responses/DefaultError'
+          $ref: "#/components/responses/DefaultError"
         200:
           description: Job stopped successfully
           content:
@@ -1094,4 +1528,3 @@ paths:
           $ref: "#/components/responses/http404"
         500:
           $ref: "#/components/responses/http500"
-  

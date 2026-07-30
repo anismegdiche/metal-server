@@ -128,7 +128,10 @@ onMounted(loadData)
   <div class="flex flex-col gap-6">
     <div class="flex items-center justify-between">
       <PageHeader icon="i-lucide-database" title="Data" description="Manage sources, schemas, and browse data" />
-      <UButton icon="i-lucide-refresh-cw" label="Refresh" size="sm" variant="outline" @click="loadData" />
+      <div class="flex items-center gap-2">
+        <UButton icon="i-lucide-atom" label="MCP Tools" size="sm" variant="outline" to="/data/mcp-tools" />
+        <UButton icon="i-lucide-refresh-cw" label="Refresh" size="sm" variant="outline" @click="loadData" />
+      </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">

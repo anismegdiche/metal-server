@@ -3,6 +3,8 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: <!+> */
 //
 //
+
+import { join } from "node:path"
 import { CustomEvent, EventBus, type IEvent } from "@dimkl/events"
 import PersistentMap from "@metal/persistent-map"
 import { bold, cyan, gray, green, magenta, red, whiteBright, yellow } from "colorette"
@@ -21,13 +23,7 @@ export enum VERBOSITY {
 	ERROR = "error",
 }
 
-const VERBOSITY_RANK = [
-	VERBOSITY.ERROR,
-	VERBOSITY.WARN,
-	VERBOSITY.INFO,
-	VERBOSITY.DEBUG,
-	VERBOSITY.TRACE,
-]
+const VERBOSITY_RANK = [VERBOSITY.ERROR, VERBOSITY.WARN, VERBOSITY.INFO, VERBOSITY.DEBUG, VERBOSITY.TRACE]
 
 //
 export enum LOG_EVENT {
@@ -107,9 +103,9 @@ function _normalizeError(err: unknown): TJson<any> {
 	return err as TJson<any>
 }
 
-function _getDateStamp(date: Date): string {
-	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
-}
+//XXX function _getDateStamp(date: Date): string {
+//XXX 	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+//XXX }
 
 const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/gm
 const ARGUMENT_NAMES = /([^\s,]+)/g
@@ -164,14 +160,16 @@ function _formatPrefix(level: string, name: string | undefined, timestamp: Date)
 	return `${gray(timestamp.toString())} ${_colors[level]?.(level.padEnd(5).slice(-5))} [${Logger.ServiceName}] ${whiteBright(`${name}:`)}`
 }
 
-function _cleanMessage(msg: string): string {
-	return msg.replace("[33m◀ [39m", " ◀ ").replace("[35m▶ [39m", " ▶ ")
+function _cleanMessage(msg: any[]): string {
+	return msg
+		.map((m) => {
+			return (typeof m === "string" ? m : JSON.stringify(m)).replace("[33m◀ [39m", " ◀ ").replace("[35m▶ [39m", " ▶ ")
+		})
+		.join(" ")
 }
 
 function _cleanServiceName(name: string): string {
-	return name
-		.replace("@", "")
-		.replace("/", "-")
+	return name.replace("@", "").replace("/", "-")
 }
 
 Prefix.reg(LogLevel)
@@ -205,18 +203,15 @@ export class Logger {
 	}
 
 	static SetDb() {
-		Logger.db = new PersistentMap<LogEntry>(
-			`/data/logs/${_getDateStamp(new Date(Date.now()))}-${_cleanServiceName(Logger.ServiceName)}-log.db`,
-		)
+		Logger.db = new PersistentMap<LogEntry>(`/data/logs/${_cleanServiceName(Logger.ServiceName)}-log.db`)
 	}
 
 	static _saveLogEntry(level: VERBOSITY, message: any[]) {
 		const timestamp = new Date(Date.now())
-		const msg = typeof message === "string" ? message : String(message)
 		if (VERBOSITY_RANK.indexOf(level) <= VERBOSITY_RANK.indexOf(Logger.Level as VERBOSITY))
 			Logger.db.set(`${timestamp.toISOString()},${crypto.randomUUID()}`, <LogEntry>{
 				level,
-				message: _cleanMessage(msg),
+				message: _cleanMessage(message),
 				timestamp,
 				server: Logger.ServiceName,
 				user: process.env.USERNAME || "unknown",
@@ -343,7 +338,8 @@ export class Logger {
 				try {
 					result = originalMethod.apply(this, args)
 				} catch (err: unknown) {
-					const _err = Logger.Level === VERBOSITY.DEBUG ? `\r\n${_toTextList(_normalizeError(err))}` : (err as Error)?.message
+					const _err =
+						Logger.Level === VERBOSITY.DEBUG ? `\r\n${_toTextList(_normalizeError(err))}` : (err as Error)?.message
 
 					Logger.Bus.dispatchEvent(
 						new CustomEvent<{ message: any[] }>(LOG_EVENT.ERROR, {
@@ -402,5 +398,7 @@ Logger.Bus.addEventListener(LOG_EVENT.INFO, (e) => Logger._handleInfo(e as Custo
 Logger.Bus.addEventListener(LOG_EVENT.WARN, (e) => Logger._handleWarn(e as CustomEvent<{ message: any[] }>))
 Logger.Bus.addEventListener(LOG_EVENT.ERROR, (e) => Logger._handleError(e as CustomEvent<{ message: any[] }>))
 Logger.Bus.addEventListener(LOG_EVENT.FUNC_REGISTER, (e) =>
-	Logger._handleLogFunction(e as CustomEvent<{ hide: string[] | boolean; target: any; propertyKey: string; descriptor: PropertyDescriptor }>),
+	Logger._handleLogFunction(
+		e as CustomEvent<{ hide: string[] | boolean; target: any; propertyKey: string; descriptor: PropertyDescriptor }>,
+	),
 )

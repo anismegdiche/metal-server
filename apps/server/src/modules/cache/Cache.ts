@@ -358,7 +358,7 @@ export class Cache {
 	static StartAutoCleanup(intervalMs: number = Cache.AutoCleanupIntervalMs) {
 		Cache.StopAutoCleanup()
 
-		Logger.Info(`Cache auto-cleanup started (interval: ${intervalMs}ms)`)
+		Logger.Info(Logger.Out, `Cache auto-cleanup started (interval: ${intervalMs}ms)`)
 		Cache.AutoCleanupInterval = setInterval(async () => {
 			const expiresNow = Date.now()
 			// Clean Index Map

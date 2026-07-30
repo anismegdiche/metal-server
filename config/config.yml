@@ -68,7 +68,29 @@ mcp:
       action: list
       limit: 5
 
-
+    create_file:
+      description: "Create a file input"
+      schema: json
+      entity: output.json 
+      action: create
+      arguments:
+        file:
+          description: "File details"
+          type: structure
+          required: true
+          properties:
+            name:
+              type: string
+              map-to: name
+              required: true
+            type:
+              type: string
+              map-to: type
+              required: true
+            size:
+              type: number
+              map-to: size
+              required: true
 
 roles:
   all: lacrud

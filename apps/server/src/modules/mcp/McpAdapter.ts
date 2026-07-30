@@ -79,6 +79,14 @@ function _hasToolAccess(toolConfig: U__mcp_tool, user: TUserTokenInfo | undefine
 	return Roles.HasPermission(user, undefined, permission)
 }
 
+function _getMapTo(config: U__mcp_tool_parameter): string | undefined {
+	if ("map-to" in config) {
+		const mt = (config as { "map-to"?: string })["map-to"]
+		return mt && mt.trim() !== "" ? mt : undefined
+	}
+	return undefined
+}
+
 function _buildFilterFromParams(
 	args: Record<string, unknown>,
 	paramConfigs: Record<string, U__mcp_tool_parameter>,
@@ -87,7 +95,13 @@ function _buildFilterFromParams(
 	for (const [paramName, config] of Object.entries(paramConfigs)) {
 		const value = args[paramName] ?? config.default
 		if (value !== undefined) {
-			filter[config["map-to"]] = value
+			if (config.type === "structure" && config.properties && Object.keys(config.properties).length > 0 && value && typeof value === "object" && !Array.isArray(value)) {
+				const nested = _buildFilterFromParams(value as Record<string, unknown>, config.properties)
+				Object.assign(filter, nested)
+			} else {
+				const mapTo = _getMapTo(config)
+				if (mapTo) filter[mapTo] = value
+			}
 		}
 	}
 	return filter
@@ -101,7 +115,13 @@ function _buildDataFromParams(
 	for (const [paramName, config] of Object.entries(paramConfigs)) {
 		const value = args[paramName] ?? config.default
 		if (value !== undefined) {
-			data[config["map-to"]] = value
+			if (config.type === "structure" && config.properties && Object.keys(config.properties).length > 0 && value && typeof value === "object" && !Array.isArray(value)) {
+				const nested = _buildDataFromParams(value as Record<string, unknown>, config.properties)
+				Object.assign(data, nested)
+			} else {
+				const mapTo = _getMapTo(config)
+				if (mapTo) data[mapTo] = value
+			}
 		}
 	}
 	return data
@@ -115,17 +135,52 @@ function _buildInputSchema(
 	const shape: Record<string, z.ZodType> = {}
 
 	for (const [name, param] of Object.entries(parameters)) {
-		let fieldSchema = ZOD_TYPE_MAP[param.type] ?? z.string()
-
-		if (param.description) fieldSchema = fieldSchema.describe(param.description)
-		if (param.enum) fieldSchema = z.enum(param.enum as [string, ...string[]])
-		if (param.default !== undefined) fieldSchema = fieldSchema.default(param.default)
-		if (!param.required) fieldSchema = fieldSchema.optional()
-
+		const fieldSchema = _buildFieldSchema(param)
 		shape[name] = fieldSchema
 	}
 
 	return shape
+}
+
+function _buildFieldSchema(param: U__mcp_tool_parameter): z.ZodType {
+	let base: z.ZodType
+
+	switch (param.type) {
+		case "structure": {
+			if (param.properties && Object.keys(param.properties).length > 0) {
+				const nestedShape = _buildInputSchema(param.properties) || {}
+				base = z.object(nestedShape as Record<string, z.ZodTypeAny>)
+			} else {
+				base = z.record(z.string(), z.unknown())
+			}
+			break
+		}
+		case "json": {
+			base = z.record(z.string(), z.unknown())
+			break
+		}
+		case "array": {
+			if (param.items) {
+				const itemSchema = _buildFieldSchema(param.items)
+				base = z.array(itemSchema)
+			} else {
+				base = z.array(z.unknown())
+			}
+			break
+		}
+		default: {
+			base = ZOD_TYPE_MAP[param.type] ?? z.string()
+		}
+	}
+
+	if (param.description) base = base.describe(param.description)
+	if ("enum" in param && param.enum) {
+		base = z.enum(param.enum as [string, ...string[]])
+	}
+	if (param.default !== undefined) base = base.default(param.default)
+	if (!param.required) base = base.optional()
+
+	return base
 }
 
 function _mcpResult(content: string, isError?: boolean) {
@@ -134,6 +189,7 @@ function _mcpResult(content: string, isError?: boolean) {
 
 //
 export class McpAdapter {
+	@Logger.LogFunction(true)
 	static async HandleRequest(req: Request, res: Response): Promise<void> {
 		const userToken = req.__METAL_CURRENT_USER
 
@@ -151,7 +207,7 @@ export class McpAdapter {
 				},
 			)
 
-			McpAdapter.#registerConfigTools(server, mcpConfig?.tools ?? {}, userToken)
+			McpAdapter._registerConfigTools(server, mcpConfig?.tools ?? {}, userToken)
 
 			const transport = new StreamableHTTPServerTransport({
 				sessionIdGenerator: undefined,
@@ -182,7 +238,8 @@ export class McpAdapter {
 		}
 	}
 
-	static #registerConfigTools(server: McpServer, tools: U__mcp["tools"], user: TUserTokenInfo | undefined): void {
+	@Logger.LogFunction(true)
+	static _registerConfigTools(server: McpServer, tools: U__mcp["tools"], user: TUserTokenInfo | undefined): void {
 		for (const [toolName, toolConfig] of Object.entries(tools)) {
 			if (!_hasToolAccess(toolConfig, user)) continue
 
@@ -198,7 +255,7 @@ export class McpAdapter {
 					const startMs = Date.now()
 					const currentUser = asyncLocalStorage.getStore()
 					try {
-						return await McpAdapter.#executeSchemaTool(toolName, toolConfig, args as Record<string, unknown>, currentUser)
+						return await McpAdapter._executeSchemaTool(toolName, toolConfig, args as Record<string, unknown>, currentUser)
 					} catch (error) {
 						_logToolCall(toolName, args, currentUser, startMs, error)
 						return _mcpResult(`Error: ${error instanceof Error ? error.message : String(error)}`, true)
@@ -208,7 +265,8 @@ export class McpAdapter {
 		}
 	}
 
-	static async #executeSchemaTool(
+	@Logger.LogFunction(true)
+	static async _executeSchemaTool(
 		toolName: string,
 		toolConfig: U__mcp_tool,
 		args: Record<string, unknown>,
@@ -270,7 +328,7 @@ export class McpAdapter {
 				break
 			}
 			default: {
-				return _mcpResult(`Unsupported action: ${String((toolConfig as any)?.action)}`)
+				return _mcpResult(`Unsupported action: ${String((toolConfig as { action: string }).action)}`)
 			}
 		}
 
@@ -299,3 +357,6 @@ export class McpAdapter {
 		return _mcpResult(JSON.stringify({ success: true }, null, 2))
 	}
 }
+
+// Export helpers for unit tests
+export { _buildDataFromParams, _buildFieldSchema, _buildFilterFromParams, _buildInputSchema }

@@ -141,9 +141,9 @@ Authorization: Bearer {{token}}
 }
 ###
 
-# ── Call: list_schemas ───────────────────────────────────
+# ── Call: create_file ───────────────────────────────────
 
-# @name listSchemas
+# @name create_file
 POST  http://127.0.0.1:3000/mcp
 Content-Type: application/json
 Accept: application/json, text/event-stream
@@ -154,8 +154,14 @@ Authorization: Bearer {{token}}
   "id": 5,
   "method": "tools/call",
   "params": {
-    "name": "list_schemas",
-    "arguments": {}
+    "name": "create_file",
+    "arguments": {
+      "file": {
+        "name":"zero-name",
+        "type": "zero-type",
+        "size": 0
+      }
+    }
   }
 }
 ###

@@ -21,7 +21,7 @@ import type { TSchemaRequestListEntities, TSchemaRequestSelect } from "../../sch
 import { SourceRegistry } from "../../source/SourceRegistry"
 import type { TSource } from "../../source/types/TSource"
 
-const VALID_SECTIONS = ["server", "sources", "schemas", "plans", "schedules", "roles", "users", "ai-engines"]
+const VALID_SECTIONS = ["server", "sources", "schemas", "plans", "schedules", "roles", "users", "ai-engines", "mcp"]
 
 export class ApiResponse {
 	static GetConfig(req: Request, res: Response): void {

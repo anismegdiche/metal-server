@@ -5,8 +5,8 @@ import { existsSync, readdirSync } from "node:fs"
 import os from "node:os"
 import { pathToFileURL } from "node:url"
 import { _MTR_ } from "@metal/config"
-//
 import { Logger } from "@metal/logger"
+//
 import { StringUtils } from "../../utils/StringUtils"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import { ROUTE, SERVER } from "./@consts"
@@ -23,6 +23,7 @@ export class ServerCore {
 	static readonly Memory = os.freemem()
 	static readonly Platform = process.platform
 
+	@Logger.LogFunction()
 	static RegisterServerMiddleware(): void {
 		ServerEndpoint.RegisterMiddleware(() => {
 			Logger.Info(`Route: Enabling API, URL= ${ROUTE.SERVER_PATH}`)
@@ -47,15 +48,16 @@ export class ServerCore {
 			try {
 				const hookModule = await import(pathToFileURL(hookPath).href)
 				if (hookModule.RegisterMiddleware && typeof hookModule.RegisterMiddleware === "function") {
-					Logger.Info(`Loading hook for module: ${moduleName}`)
+					Logger.Info(Logger.In, `Loading hook for module:`, moduleName)
 					hookModule.RegisterMiddleware()
 				}
 			} catch (e) {
-				Logger.Warn(`Failed to load hook for module '${moduleName}': ${e instanceof Error ? e.message : String(e)}`)
+				Logger.Error(Logger.Out, `Failed to load hook for module '${moduleName}':`, e)
 			}
 		}
 	}
 
+	@Logger.LogFunction()
 	static ResetMetrics(): void {
 		MetricsCollector.Clear()
 		MetricsCollector.DispatchEvent_set(_MTR_.SERVER_VERSION, SERVER.VERSION)
@@ -76,8 +78,8 @@ export class ServerCore {
 
 	@Logger.LogFunction()
 	static async Init(): Promise<void> {
-		
-		ServerCore.ResetMetrics()		
+
+		ServerCore.ResetMetrics()
 
 		await ServerInitializer.InitAll()
 

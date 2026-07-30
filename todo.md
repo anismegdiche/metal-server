@@ -23,8 +23,9 @@ remove source from schemarequest if possible
 (A) routing bad data to an error sink implicitly removes it from the plan data for downstream steps. The row exists in the error sink, but it's no longer in the main processing stream. {f} {start:2026-03-28T11:10:04} {cm:2026-05-11} {duration:1m-13d_17h11m} {h}
 step: fake data with faker js {f}
 core > use threads (piscina)
-(A) core > step metrics {f} {start:2026-05-12T10:04:10} {cm:2026-05-23} {duration:11d_07h05m}
+(A) core > step metrics {f} {start:2026-05-12T10:04:10} {cm:2026-05-23} {duration:11d_07h05m} {h}
 core > studio {f}
 (A) step > break > add boolean condition to break {f} {start:2026-05-11T15:23:00} {cm:2026-05-11} {duration:01h17m} {h}
-(A) make modules api registration dynamic {f} {start:2026-05-24T11:17:43} {cm:2026-05-24} {duration:01h49m}
-(A) move to monorepo {f} {start:2026-06-22T14:14:12}
+(A) make modules api registration dynamic {f} {start:2026-05-24T11:17:43} {cm:2026-05-24} {duration:01h49m} {h}
+(A) move to monorepo {f} {start:2026-06-22T14:14:12} {cm:2026-07-30} {duration:1m-7d_11h43m} {h}
+(A) refactor: remove normalize/stringify error, use new logger format {f}

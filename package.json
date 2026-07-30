@@ -11,6 +11,7 @@
 	"scripts": {
 		"dev": "yarn workspace @metal/server dev",
 		"studio:dev": "yarn workspace studio dev",
+		"example:ai-chat:dev": "cd examples/ai-chat && yarn dev",
 		"dev:build-all-images": "yarn workspace @metal/server dev:build-all-images",
 		"build": "yarn workspace @metal/server build",
 		"build:watch": "yarn workspace @metal/server build:watch",

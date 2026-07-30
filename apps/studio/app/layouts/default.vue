@@ -15,6 +15,11 @@ const sidebarItems: NavigationMenuItem[] = [
     to: '/data'
   },
   {
+    label: 'MCP Tools',
+    icon: 'i-lucide-atom',
+    to: '/data/mcp-tools'
+  },
+  {
     label: 'Designer',
     icon: 'i-lucide-pencil-ruler',
     to: '/designer'
@@ -23,11 +28,6 @@ const sidebarItems: NavigationMenuItem[] = [
     label: 'Scheduler',
     icon: 'i-lucide-calendar-clock',
     to: '/scheduler'
-  },
-  {
-    label: 'AI Chat',
-    icon: 'i-lucide-bot',
-    to: '/chat'
   },
   {
     label: 'Config',

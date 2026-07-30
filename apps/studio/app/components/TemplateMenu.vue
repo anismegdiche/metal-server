@@ -21,9 +21,6 @@
       label: 'Dashboard',
       to: 'https://dashboard-template.nuxt.dev/'
     }, {
-      label: 'Chat',
-      to: 'https://chat-template.nuxt.dev/'
-    }, {
       label: 'Portfolio',
       to: 'https://portfolio-template.nuxt.dev/'
     }, {
