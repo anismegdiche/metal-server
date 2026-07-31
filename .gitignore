@@ -12,8 +12,12 @@ dist/
 
 *.traineddata
 
-!.gitkeep
 
 .git/
 yarn.lock
 sync.ffs_db
+
+# docs
+docs/docs/.vitepress/cache/
+
+!.gitkeep

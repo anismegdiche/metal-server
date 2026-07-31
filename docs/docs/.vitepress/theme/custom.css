@@ -1,0 +1,176 @@
+/*******/
+@import url(https://fonts.googleapis.com/css?family=Space+Mono:regular,italic,700,700italic);
+@import url(https://fonts.googleapis.com/css?family=Space+Grotesk:regular,italic,700,700italic);
+@import url(https://fonts.googleapis.com/css?family=Gothic+A1:600);
+/*******/
+@import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css);
+/*******/
+@import url(https://fonts.googleapis.com/css2?family=Comfortaa:wght@600&display=swap);
+
+:root {
+  --color-red: #ff2367;
+  --color-blue: #1d476a;
+  --color-green: #807700;
+  --color-orange: #ff7527;
+  --color-white: #fbfcff;
+}
+
+:root {
+  --vp-c-brand: var(--color-red);
+  --vp-c-brand-light: #ff5719;
+  --vp-c-brand-lighter: #ff7340;
+  --vp-c-brand-lighter: rgba(255, 135, 23, 0.25);
+  --vp-c-brand-dark: #ff622d;
+  --vp-c-brand-darker: #e23c00;
+
+  --vp-c-brand-1:var(--color-red);
+  --vp-c-brand-2:var(--color-red);
+  --vp-c-brand-3:var(--color-red);
+
+  --vp-c-sponsor: #fd1d7c;
+
+  --vp-c-text-code: var(--color-red);
+  --vp-button-brand-bg: var(--color-red);
+  --vp-button-brand-hover-bg: var(--vp-c-brand-light);
+  --vp-home-hero-name-color: var(--color-red);
+  --vp-button-brand-active-bg: var(--color-red);
+
+  /* Typography */
+  --vp-font-family-base: Comfortaa, "Segoe UI", Ubuntu, Roboto, "Gothic A1","Space Grotesk", "Inter var experimental", "Inter var",
+    -apple-system, BlinkMacSystemFont,  Oxygen, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+
+  /* Code Snippet font */
+  --vp-font-family-mono: 'Roboto Mono', 'Ubunto Mono', 'Space Mono', Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+
+  /* Typography */
+  /* --vp-font-family-base: "Gothic A1","Space Grotesk", "Inter var experimental", "Inter var",
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; */
+
+  /* Code Snippet font */
+  /* --vp-font-family-mono: 'Space Mono', Menlo, Monaco, Consolas, 'Courier New',
+    monospace; */
+
+    --vp-code-line-height: 1.4;
+}
+
+/* body {
+  font-size: 0.95em;
+} */
+
+.main p {
+  text-align: justify;
+}
+
+.vp-doc table td,.vp-doc table th {
+  padding: 8px 10px;
+  line-height: 1.1rem;
+}
+
+/* .vp-doc table td {
+  font-size: 0.8rem;
+} */
+
+.vp-doc li + li {
+  margin-top: 0;
+}
+
+:root {
+  --vp-badge-info-border: transparent;
+  --vp-badge-info-text: var(--vp-c-success-1);
+  --vp-badge-info-bg: var(--vp-c-success-soft);
+}
+
+/* testing */
+.VPBadge {
+  font-family: var(--vp-font-family-code)!important;
+}
+
+.VPBadge.default {
+  border-color: transparent!important;
+  background-color: #eaeaea!important;
+  color: #000000 !important;
+}
+
+.VPBadge.info {
+  border-color: transparent!important;
+  color: #0a790a!important;
+  background-color: #aaff0089!important;
+  font-weight: bold!important;
+}
+
+#VPSidebarNav > div > section > div.items > div > div > a > p {
+  padding: 2px 0;
+}
+
+.outline-link {
+  line-height: 1.5rem!important;
+}
+
+
+.content-container {
+  max-width: unset !important;
+}
+
+#VPContent .content table td:first-child {
+  white-space: nowrap!important;
+}
+
+/* .vp-doc blockquote > p {
+  font-size: 14px!important;
+  line-height: 20px!important;
+} */
+
+.technology {
+  display: grid; 
+  grid-template-columns: repeat(7, 1fr); 
+  gap: 15px; 
+  justify-items: center; 
+  align-items: center; 
+  text-align: center;
+}
+
+.technology-logo {
+  max-height:65px; 
+  aspect-ratio: auto;
+}
+
+.grey {
+  filter:grayscale(100%);
+}
+
+.red {
+  color: var(--color-red);
+}
+
+.h-red {
+  color: var(--color-red);
+  padding-top: 60px;
+  padding-bottom: 20px;
+}
+
+.index-h2 {
+  color: var(--color-blue);
+  margin-top: 0!important;
+}
+
+.fancy-image {
+  flex: 1;
+  width: 30%;
+  filter:grayscale(1) opacity(0.8);
+}
+
+.fancy-image img {
+  max-width: 50%;
+  margin: auto;
+}
+
+
+.vp-doc :not(pre) > code {
+    border-radius: 4px;
+    padding: 1px 4px;
+    background-color: var(--vp-code-bg);
+    transition: color 0.25s,
+    background-color 0.5s;
+}

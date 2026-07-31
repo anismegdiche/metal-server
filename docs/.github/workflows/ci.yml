@@ -1,0 +1,64 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  build:
+    if: github.ref_name == 'dev' && !contains(github.event.head_commit.message, 'auto build docs')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        env:
+          NODE_NO_WARNINGS: 1
+        with:
+          ref: dev
+ 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '24.13.0'  # Using LTS version
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npx vitepress build docs
+
+      - name: Commit and push
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "auto build docs"
+          git push
+  
+  deploy:
+    needs: 
+      - build
+    if: github.ref_name == 'dev' && needs.build.result == 'success'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        env:
+          NODE_NO_WARNINGS: 1
+        with:
+          ref: dev
+
+      - name: Force sync dev to master (delete orphans)
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git fetch origin
+          git checkout dev
+          git push origin dev:master --force

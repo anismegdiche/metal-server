@@ -9,30 +9,28 @@
 	"license": "GPL-3.0-or-later",
 	"type": "module",
 	"scripts": {
-		"dev": "yarn workspace @metal/server dev",
+		"all:build:workspaces": "yarn workspaces foreach -A run build",
+		"all:test": "vitest run",
+		"all:test:watch": "vitest --watch",
+		"server:dev": "yarn workspace @metal/server dev",
+		"server:dev:build-all-images": "yarn workspace @metal/server dev:build-all-images",
+		"server:build": "yarn workspace @metal/server build",
+		"server:build:watch": "yarn workspace @metal/server build:watch",
+		"server:prod": "yarn workspace @metal/server prod",
+		"server:prod:build-all-images": "yarn workspace @metal/server prod:build-all-images",
+		"server:prod:generate-api-key": "yarn workspace @metal/server prod:generate-api-key",
+		"server:start": "yarn workspace @metal/server start",
+		"server:lint": "yarn workspace @metal/server lint",
+		"server:lint:check": "yarn workspace @metal/server lint:check",
+		"server:format": "yarn workspace @metal/server format",
+		"server:format:check": "yarn workspace @metal/server format:check",
+		"server:check": "yarn workspace @metal/server check",
+		"server:tools:unused-modules": "yarn workspace @metal/server tools:unused-modules",
+		"server:tools:dependency-graph": "yarn workspace @metal/server tools:dependency-graph",
 		"studio:dev": "yarn workspace studio dev",
 		"example:ai-chat:dev": "cd examples/ai-chat && yarn dev",
-		"dev:build-all-images": "yarn workspace @metal/server dev:build-all-images",
-		"build": "yarn workspace @metal/server build",
-		"build:watch": "yarn workspace @metal/server build:watch",
-		"build:workspaces": "yarn workspaces foreach -A run build",
-		"start": "yarn workspace @metal/server start",
-		"prod": "yarn workspace @metal/server prod",
-		"prod:build-all-images": "yarn workspace @metal/server prod:build-all-images",
-		"prod:generate-api-key": "yarn workspace @metal/server prod:generate-api-key",
-		"test": "vitest run",
-		"test:watch": "vitest --watch",
-		"test:server": "vitest run --project @metal/server",
-		"test:types": "vitest run --project @metal/types",
-		"test:logger": "vitest run --project @metal/logger",
-		"lint": "yarn workspace @metal/server lint",
-		"lint:check": "yarn workspace @metal/server lint:check",
-		"format": "yarn workspace @metal/server format",
-		"format:check": "yarn workspace @metal/server format:check",
-		"check": "yarn workspace @metal/server check",
-		"prepare": "echo \"prepare done.\"",
-		"tools:unused-modules": "yarn workspace @metal/server tools:unused-modules",
-		"tools:dependency-graph": "yarn workspace @metal/server tools:dependency-graph"
+		"docs:dev": "yarn workspace @metal/docs dev",
+		"docs:build": "yarn workspace @metal/docs build"
 	},
 	"standard.options": {
 		"ignore": [
@@ -54,6 +52,7 @@
 	"private": true,
 	"workspaces": [
 		"apps/*",
-		"packages/*"
+		"packages/*",
+		"docs"
 	]
 }
