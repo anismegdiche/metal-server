@@ -14,7 +14,6 @@ const routes = [
   { method: 'GET', path: '/metrics/:name', description: 'Specific metric', auth: false },
   { method: 'GET', path: '/metrics/:from/:to', description: 'Metric range', auth: false },
   { method: 'POST', path: '/plan/:plan/reload', description: 'Reload a plan', auth: true },
-  { method: 'GET', path: '/plan/:plan/metrics', description: 'Plan execution metrics', auth: false },
   { method: 'GET', path: '/cache/view', description: 'View cache contents', auth: true },
   { method: 'POST', path: '/cache/clean', description: 'Clean expired entries', auth: true },
   { method: 'POST', path: '/cache/purge', description: 'Purge entire cache', auth: true },

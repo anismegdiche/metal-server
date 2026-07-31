@@ -22,16 +22,4 @@ export class PlanResponse {
 			.then((intRes) => Convert.InternalResponseToResponse(res, intRes))
 			.catch((error: HttpError) => ResponseHandler.ResponseError(res, error))
 	}
-
-	static async GetPlanMetrics(req: Request, res: Response): Promise<void> {
-		// RequestHandler.CheckRequestHasCurrentUser(req)
-
-		const { plan } = req.params
-
-		Assert.Var<string>(plan, "plan is not defined")
-
-		PlansManager.GetPlanMetrics(plan)
-			.then((intRes) => Convert.InternalResponseToResponse(res, intRes))
-			.catch((error: HttpError) => ResponseHandler.ResponseError(res, error))
-	}
 }

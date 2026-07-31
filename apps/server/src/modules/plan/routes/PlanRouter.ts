@@ -24,6 +24,3 @@ PlanRouter.route("/:plan/reload")
 	.all(UserResponse.IsAuthenticated)
 	.post(PlanResponse.ReloadPlan)
 
-PlanRouter.route("/:plan/metrics")
-	// .all(UserResponse.IsAuthenticated)
-	.get(PlanResponse.GetPlanMetrics)

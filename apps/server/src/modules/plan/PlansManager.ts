@@ -4,7 +4,6 @@
 import { CustomEvent } from "@dimkl/events"
 import { _MTR_ } from "@metal/config"
 import { Logger } from "@metal/logger"
-import z from "zod"
 //
 import type { TJson } from "@metal/types"
 import { Assert } from "../../utils/Assert"
@@ -14,9 +13,7 @@ import { Roles } from "../auth/Roles"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
-import { HttpErrorNotFound } from "../errors/HttpErrors"
 import { MetricsCollector } from "../metrics/MetricsCollector"
-import { PLAN_STATUS } from "./@consts"
 import { Plan } from "./Plan"
 import { PLAN_METRICS, PlanMetrics, type T_PlanMetrics } from "./PlanMetrics"
 import { Plans } from "./Plans"
@@ -126,21 +123,6 @@ export class PlansManager {
 			...result?.Body,
 			message: `Plan '${planName}' and schedules reloaded`,
 		})
-	}
-
-	@Logger.LogFunction()
-	static async GetPlanMetrics(planName: string, _userToken?: TUserTokenInfo): Promise<TInternalResponse<TJson>> {
-		const plan = Plans.get(planName)
-		Assert.Var<Plan>(plan, `Plan '${planName}' not found`, new HttpErrorNotFound())
-
-		const planMetrics = PlanMetrics.Get(planName)
-
-		if (!planMetrics.durationMs) {
-			const startTime = Assert.ZodSchema<Date>(planMetrics?.startTime, z.date(), "startTime is undefined")
-			planMetrics.durationMs = Date.now() - startTime.getTime()
-		}
-
-		return HttpResponse.Ok(plan.Metrics)
 	}
 
 	static Clear(): void {
