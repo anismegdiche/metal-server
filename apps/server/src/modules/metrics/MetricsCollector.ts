@@ -46,7 +46,7 @@ export class MetricsCollector {
 	@Queue.AddToQueue(MetricsCollector._queue)
 	static Inc(event: CustomEvent<any>) {
 		const { metricName } = event.data
-		const oldData = MetricsCollector.Get(metricName)
+		const oldData: number = MetricsCollector.Get(metricName) ?? 0
 		MetricsCollector.Data.set(metricName, oldData + 1)
 	}
 
