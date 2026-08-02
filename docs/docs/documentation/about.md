@@ -7,19 +7,48 @@ Metal (**M**iddleware, **E**xtraction, **T**ransformation, **A**rtificial Intell
 
 It streamlines and modernizes CRUD operations and data transformation tasks across SQL and NoSQL databases, instigating a paradigm shift in data management and processing. Operating as an advanced middleware layer between the database system and HTTP requests, Metal manages communication with popular DBMS, particularly beneficial for systems like MS SQL Server and PostgreSQL that lack built-in REST APIs.
 
-```mermaid
-graph TD
-M(<img src="https://metal-docs-sh3b0.kinsta.page/metal-logo-icon.png" width="50"/> Metal Server) -- TDS Protocol --> A[(Azure SQL <br>Database)]
-M -- Wire Protocol --> B[(MongoDB)]
-M -- Message-based protocol --> C[(PostgreSQL)]
-M -- I/O --> F[Files]@{ shape: notch-rect, label: "Files" }
-M -- HTTP --> W((Webservices))
-U((Application)) -- HTTP/HTTPS --> M
+Going beyond traditional middleware, Metal natively speaks the Model Context Protocol (MCP) — the emerging standard that lets AI agents and LLM applications act directly on your data. With a simple declarative configuration, your schemas and entities become callable tools for the AI era, turning Metal into the bridge between your data infrastructure and the growing ecosystem of intelligent, autonomous applications.
 
-style M fill:none,stroke:none
+```mermaid
+flowchart TD
+  A((Web Application)) --> M[Metal Server]
+  L((AI/LLM Applications)) --> M
+
+  subgraph P[Core Platform]
+    M[Metal Server]
+  end
+
+  subgraph D[Data Stores]
+    A1[(Relational DB)]
+    B1[(Document DB)]
+    C1[(Event Store)]
+    F1[Files]
+  end
+
+  subgraph X[External Systems]
+    W((Web services))
+  end
+
+  M --> A1
+  M --> B1
+  M --> C1
+  M --> F1
+  M --> W
+
+  classDef core fill:#f8f8f8,stroke:#666,stroke-width:1px,rx:10,ry:10;
+  classDef store fill:#fff,stroke:#666,stroke-width:1px;
+  classDef ext fill:#f3f3ff,stroke:#666,stroke-width:1px;
+  classDef actor fill:#ffffff,stroke:#666,stroke-width:1px,stroke-dasharray: 4 3;
+
+  class M core;
+  class A1,B1,C1,F1 store;
+  class W ext;
+  class A,L actor;
 ```
 
 As a conduit between applications and the underlying DBMS, Metal accommodates various database operations, presenting a uniform interface for developers to construct and maintain applications that seamlessly interact with data. By abstracting complexities associated with direct DBMS engagement, Metal empowers developers to focus on core functionality, fostering productivity and manageability.
+
+With its built-in MCP server, Metal extends this same abstraction to intelligent agents: AI assistants, chatbots, and automation pipelines can query, create, update, and manage your data through standardized MCP tools — secured by role-based access control, so you get the power of agentic data access without compromising security or control.
 
 ## Key Features
 
@@ -33,7 +62,9 @@ Metal offers a wide range of powerful features designed to enhance flexibility, 
 
 - **AI-Powered Insights:** Leverage cutting-edge artificial intelligence to automatically identify patterns, trends, and anomalies within your datasets. This feature transforms raw data into strategic assets through intelligent insights.
 
-- **Enhanced Security:** Prioritize security with an additional login process and granular access control. Enforce different levels of permissions per table to protect sensitive data.
+- **MCP Server:** Expose Metal schemas and entities as MCP (Model Context Protocol) tools, enabling LLM clients and AI agents to read, create, update, delete, and list data through a declarative configuration.
+
+- **Enhanced Security:** Prioritize security with an additional login process and granular access control. Enforce different levels of permissions per table and per MCP tool to protect sensitive data.
 
 - **Dynamic Transformations:** Execute transformations on the fly without modifying existing schemas. This real-time processing capability eliminates the need for costly schema alterations.
 
@@ -64,6 +95,8 @@ In the realm of Metal, several key concepts facilitate effective data management
 - **Plan:** Encapsulates predefined steps for conducting ETL operations, enabling efficient transformation and integration of diverse data sources into a cohesive format.
 
 - **AI Engine:** A sophisticated component that harnesses artificial intelligence to enhance decision-making by identifying patterns and trends in data.
+
+- **MCP Tool:** A declarative mapping between an LLM-friendly input shape and a Metal schema operation, exposed to AI clients through the Model Context Protocol endpoint.
 
 Metal's comprehensive feature set empowers developers while simplifying CRUD operations and enabling efficient integration across various database systems. By harnessing the power of artificial intelligence for advanced insights, Metal transforms how organizations approach database management and data transformation.
 
@@ -125,5 +158,14 @@ The AI Engine is a sophisticated component integrated into Metal's architecture.
 ```mermaid
 graph LR
     Step(Step) -- Run --> AI-Engine(AI Engine) -- Transform/Produce --> Data(Data)
+```
+
+**MCP Tool**
+
+The MCP Tool exposes Metal schemas and entities to LLM clients through the Model Context Protocol. Each tool maps an LLM-friendly input shape to a schema operation (`read`, `create`, `update`, `delete`, or `list`) and is protected by role-based access control.
+
+```mermaid
+graph LR
+    LLM(LLM Client) -- JSON-RPC --> MCP(MCP Endpoint) -- Operate --> Schema(Schema) -- Access --> Data(Data)
 ```
 

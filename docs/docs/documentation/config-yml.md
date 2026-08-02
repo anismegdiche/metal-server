@@ -285,7 +285,7 @@ The parameters that can be configured inside each tool include:
 | `schema`      | String       | Y        | Name of the schema to use                                                   | <Badge type="info" text="v0.5+" /> |
 | `entity`      | String       | Y        | Name of the entity inside the schema (except for `list` actions)            | <Badge type="info" text="v0.5+" /> |
 | `action`      | Enum(String) | N        | Tool action: `read`, `create`, `update`, `delete`, `list` (default: `read`) | <Badge type="info" text="v0.5+" /> |
-| `roles`       | Array        | N        | Required roles for access to the tool                                       | <Badge type="info" text="v0.5+" /> |
+| `roles`       | Array        | N        | Required roles for access to the tool. If omitted, access is derived from the tool's `action` permission (e.g. `read` → `r`)  | <Badge type="info" text="v0.5+" /> |
 | `cache`       | Integer      | N        | Cache duration in seconds for read operations                               | <Badge type="info" text="v0.5+" /> |
 | `limit`       | Integer      | N        | Maximum number of rows to return (default: `10`)                            | <Badge type="info" text="v0.5+" /> |
 | `fields`      | Array        | N        | Restrict the returned fields                                                | <Badge type="info" text="v0.5+" /> |
@@ -297,22 +297,23 @@ The parameters that can be configured inside each argument include:
 
 | Parameter     | Type         | Required | Description                                                                 | Metal version                      |
 | ------------- | ------------ | -------- | --------------------------------------------------------------------------- | ---------------------------------- |
-| `type`        | Enum(String) | Y        | Argument type: `string`, `number`, `boolean`, `array`, or `object`         | <Badge type="info" text="v0.5+" /> |
+| `type`        | Enum(String) | Y        | Argument type: `string`, `number`, `boolean`, `array`, `json`, or `structure` | <Badge type="info" text="v0.5+" /> |
 | `description` | String       | Y        | Description shown to the LLM client                                         | <Badge type="info" text="v0.5+" /> |
-| `map-to`      | String       | N        | Target field name in the schema entity for a single-field payload           | <Badge type="info" text="v0.5+" /> |
-| `properties`  | Object       | N        | Nested properties for object arguments that should be remapped to many fields | <Badge type="info" text="v0.5+" /> |
+| `map-to`      | String       | N        | Target field name in the schema entity for a single-field payload (`json` or scalar arguments) | <Badge type="info" text="v0.5+" /> |
+| `properties`  | Object       | N        | Nested properties for `structure` arguments that should be remapped to many fields | <Badge type="info" text="v0.5+" /> |
+| `items`       | Object       | N        | Item schema for `array` arguments (scalar, `json`, or `structure`)          | <Badge type="info" text="v0.5+" /> |
 | `required`    | Boolean      | N        | Whether the argument is required (default: `false`)                       | <Badge type="info" text="v0.5+" /> |
 | `default`     | Any          | N        | Default value when the argument is omitted                                  | <Badge type="info" text="v0.5+" /> |
 | `enum`        | Array        | N        | Restricts the allowed values                                                | <Badge type="info" text="v0.5+" /> |
 
-For object arguments, use one of these two patterns:
+For `json` and `structure` arguments, use one of these two patterns:
 
-- `map-to` only: the argument is treated as a single payload field and is mapped to one destination column.
-- `properties` only: the argument is treated as a structured container and each nested property is mapped independently to one or many destination fields.
+- `json` with `map-to` only: the argument is treated as a single payload field and is mapped to one destination column.
+- `structure` with `properties` only: the argument is treated as a structured container and each nested property is mapped independently to one or many destination fields.
 
-These two modes are mutually exclusive. A nested object cannot define both `map-to` and `properties` at the same time.
+These two modes are mutually exclusive. A `structure` argument cannot define both `map-to` and `properties` at the same time.
 
-**Example: single-field object payload**
+**Example: single-field payload**
 
 ```yaml
 mcp:
@@ -324,12 +325,12 @@ mcp:
       action: create
       arguments:
         contact:
-          type: object
+          type: json
           description: Contact payload
           map-to: contact
 ```
 
-**Example: structured object remapping**
+**Example: structured remapping**
 
 ```yaml
 mcp:
@@ -341,7 +342,7 @@ mcp:
       action: create
       arguments:
         contact:
-          type: object
+          type: structure
           description: Contact details
           properties:
             first_name:
@@ -378,6 +379,10 @@ mcp:
 ```
 
 ::: tip ℹ️ NOTE
+`hide-sensitive-data` is applied to the rows returned by `read` and `list` tools.
+:::
+
+::: tip ℹ️ NOTE
 For practical guidance and additional examples, see [MCP Tools Guide](../guides/mcp-tools).
 :::
 
@@ -402,6 +407,10 @@ roles:
   all-rights: crudla   # all rights
   guest: r             # read only
 ```
+
+::: tip ℹ️ NOTE
+MCP tools are also access-controlled. If an MCP tool declares a `roles` list, only users holding one of those roles can call it. Otherwise, access is derived from the tool's `action` permission (`read` → `r`, `create` → `c`, `update` → `u`, `delete` → `d`, `list` → `l`). See: [MCP Tools Guide](../guides/mcp-tools)
+::: 
 
 ## `users` <Badge type="info" text="v0.5+" />
 

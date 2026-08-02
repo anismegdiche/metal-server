@@ -35,11 +35,11 @@ features:
     title: Virtualize Schema
     details: Metal enables you to virtualize schemas, allowing you to deliver different schema names and user credentials based on specific requirements.
   - icon: "<i class='fa-solid fa-robot' style='color:var(--color-red)'></i>"
-    title: Leverage Artificial Intelligence
-    details: Enable AI-driven capabilities for automatic identification of patterns, trends, and anomalies within your datasets.
+    title: Connect AI Agents
+    details: Expose your schemas and entities as MCP (Model Context Protocol) tools, callable by LLM clients and AI agents with granular per-tool access control.
   - icon: "<i class='fa-solid fa-arrows-spin' style='color:var(--color-red)'></i>"
-    title: Streamlined ETL
-    details: Apply data transformations dynamically at runtime or through scheduled jobs.
+    title: Streamlined ETL & AI Tasks
+    details: Apply data transformations dynamically at runtime or through enabling AI-driven capabilities for automatic identification of patterns, trends, and anomalies within your datasets.
 ---
 
 <script setup>

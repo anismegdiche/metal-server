@@ -110,14 +110,14 @@ export default withMermaid({
 					items: [{ text: "Understanding Authentication", link: "/guides/authentication" }],
 				},
 				{
-					text: "MCP",
+					text: "MCP Server",
 					collapsed: false,
 					items: [
 						{ text: "MCP Tools Guide", link: "/guides/mcp-tools" },
 					],
 				},
 				{
-					text: "API",
+					text: "REST API",
 					collapsed: false,
 					items: [
 						{ text: "PostgreSQL database HTTP API", link: "/guides/postgresql-http-api" },

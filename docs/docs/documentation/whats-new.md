@@ -7,6 +7,12 @@ hero:
   name: What's new in v0.5
 
 features:
+  - title: New MCP Server
+    details: |
+      Expose your schemas and entities as MCP (Model Context Protocol) tools, callable by LLM clients and AI agents. Declarative YAML configuration with role-based access control and sensitive data hiding.
+      <br><br><span class="VPBadge danger">Learn more...</span>
+    link: /documentation/mcp-server
+
   - title: New Performance improvements
     details: |
       We have made some performance improvements to the system as well as plan and data providers.
@@ -41,7 +47,7 @@ features:
 
   - title: New on error handler per step
     details: |
-      Introducing the new and powerful step-level error handling. With this feature, you can now handle errors that occur during the execution of individual steps in your Metal plans. This means you can now customize how your plans handle errors, whether you want to retry, skip, or even sink the error data into a separate entity. This feature expands the flexibility of Metal and enables you to handle errors in a more granular and precise manner.
+      Introducing step-level error handling. Handle failures per plan step with retry, skip, or error sink options for more control and resilience.
       <br><br><span class="VPBadge danger">Learn more...</span>
     link: on-error
 ---

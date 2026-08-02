@@ -20,13 +20,13 @@ A tool definition has three main parts:
 - `entity`: the entity inside that schema (except for `list` tools)
 - `arguments`: the input arguments accepted by the tool
 
-## 2. Object arguments: two supported patterns
+## 2. JSON and structure arguments: two supported patterns
 
-For object arguments, Metal supports two mutually exclusive patterns:
+For `json` and `structure` arguments, Metal supports two mutually exclusive patterns:
 
-### Pattern A — single-field object payload
+### Pattern A — single-field payload (`json`)
 
-Use this when the object should be stored as one value in the target row.
+Use this when the argument should be stored as one value in the target row.
 
 ```yaml
 mcp:
@@ -38,7 +38,7 @@ mcp:
       action: create
       arguments:
         contact:
-          type: object
+          type: json
           description: Contact payload
           map-to: contact
 ```
@@ -47,7 +47,7 @@ Typical use case:
 - the tool receives a nested JSON object that should be written to one column
 - the object is effectively a single field, such as a serialized payload
 
-### Pattern B — structured remapping container
+### Pattern B — structured remapping container (`structure`)
 
 Use this when the object should be unpacked into multiple row fields.
 
@@ -61,7 +61,7 @@ mcp:
       action: create
       arguments:
         contact:
-          type: object
+          type: structure
           description: Contact details
           properties:
             first_name:
@@ -118,7 +118,7 @@ mcp:
       action: create
       arguments:
         contact:
-          type: object
+          type: structure
           description: Contact details
           properties:
             first_name:
@@ -171,17 +171,17 @@ Use this when the tool should expose the available entities in a schema.
 
 ## 4. Recommended design principles
 
-- Prefer `properties` for structured input objects.
-- Use `map-to` only when the object is a single payload field.
+- Prefer `structure` arguments with `properties` for structured input objects.
+- Use `json` with `map-to` only when the argument is a single payload field.
 - Keep argument names close to the business concept, not the storage column name.
 - Use `required: true` for values the tool cannot work without.
 - Keep nested objects shallow and explicit for LLM readability.
 
 ## 5. Validation rules
 
-Metal validates MCP tool configs at startup. Object arguments must follow one of these two shapes:
+Metal validates MCP tool configs at startup. `json` and `structure` arguments must follow one of these two shapes:
 
-- `map-to` only for a single-field payload
-- `properties` only for a structured remapping container
+- `json` with `map-to` for a single-field payload
+- `structure` with `properties` for a structured remapping container
 
-Mixing both styles is rejected.
+Mixing both styles is rejected. Additionally, `json` arguments require `map-to` and `structure` arguments require at least one property.

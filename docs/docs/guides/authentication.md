@@ -101,6 +101,10 @@ This code creates three new roles, `admin`, `all-rights`, and `guest`, with the 
 | `a`        | Administrate server  |
 | `l`        | List schema entities |
 
+::: tip ℹ️ NOTE
+MCP tools are also subject to role-based access control. A tool declaring a `roles` list requires one of those roles; otherwise access is derived from the tool's `action` permission (`read` → `r`, `create` → `c`, `update` → `u`, `delete` → `d`, `list` → `l`). See [MCP Tools Guide](mcp-tools).
+:::
+
 ### Assigning Roles to Users
 
 To assign a role to a user, you need to add the following code to the `users` section of the `config.yml` file:
