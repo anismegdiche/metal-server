@@ -8,6 +8,11 @@ export default defineEventHandler(async (event) => {
   const token = session?.secure?.token
 
   return proxyRequest(event, target, {
-    headers: token ? { authorization: `Bearer ${token}` } : {}
+    headers: token ? { authorization: `Bearer ${token}` } : {},
+    onResponse: async (_event, response) => {
+      if (response.status === 401) {
+        await clearUserSession(event).catch(() => {})
+      }
+    }
   })
 })
