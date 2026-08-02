@@ -24,11 +24,10 @@ const oidcScope = ref("")
 const oidcRolesPath = ref("")
 
 const cacheProvider = ref("postgres")
-const cacheHost = ref("localhost")
-const cachePort = ref(5432)
-const cacheDatabase = ref("")
-const cacheUser = ref("")
-const cachePassword = ref("")
+const cacheConfig = ref<Record<string, any> | undefined>(undefined)
+const cacheFieldsRef = ref<{ collectBody?: () => Record<string, any> } | null>(null)
+
+const cacheProviders = ["postgres", "mysql", "mssql", "mongodb", "cosmosdb", "metal", "memory"]
 
 const aiEnginesUrl = ref("")
 const aiEnginesTimeout = ref(30000)
@@ -60,11 +59,6 @@ const authProviderItems = [
   { label: "OIDC", value: "oidc" },
 ]
 
-const cacheProviderItems = [
-  { label: "Postgres", value: "postgres" },
-  { label: "SQLite", value: "sqlite" },
-]
-
 async function loadConfig() {
   loading.value = true
   try {
@@ -93,11 +87,7 @@ async function loadConfig() {
 
     const cache = config.cache
     cacheProvider.value = cache?.provider ?? "postgres"
-    cacheHost.value = cache?.host ?? "localhost"
-    cachePort.value = cache?.port ?? 5432
-    cacheDatabase.value = cache?.database ?? ""
-    cacheUser.value = cache?.user ?? ""
-    cachePassword.value = cache?.password ?? ""
+    cacheConfig.value = cache
 
     const ai = config["ai-engines"]
     aiEnginesUrl.value = ai?.["engines-url"] ?? ""
@@ -148,14 +138,7 @@ async function saveConfig() {
           "roles-path": oidcRolesPath.value,
         } : {}),
       },
-      cache: {
-        provider: cacheProvider.value,
-        host: cacheHost.value,
-        port: cachePort.value,
-        database: cacheDatabase.value,
-        user: cacheUser.value,
-        password: cachePassword.value,
-      },
+      cache: cacheFieldsRef.value?.collectBody?.() ?? { provider: cacheProvider.value },
       "ai-engines": {
         "engines-url": aiEnginesUrl.value,
         timeout: aiEnginesTimeout.value,
@@ -304,24 +287,12 @@ onMounted(loadConfig)
             </div>
           </template>
           <div class="flex flex-col gap-4">
-            <UFormField label="Provider" description="Cache storage provider" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <USelect v-model="cacheProvider" :items="cacheProviderItems" />
-            </UFormField>
-            <UFormField label="Host" description="Cache server hostname" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="cacheHost" placeholder="localhost" />
-            </UFormField>
-            <UFormField label="Port" description="Cache server port" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="cachePort" type="number" />
-            </UFormField>
-            <UFormField label="Database" description="Database name" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="cacheDatabase" placeholder="metal_cache" />
-            </UFormField>
-            <UFormField label="User" description="Database user" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="cacheUser" placeholder="postgres" />
-            </UFormField>
-            <UFormField label="Password" description="Database password" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="cachePassword" type="password" />
-            </UFormField>
+            <SourceConfigFields
+              ref="cacheFieldsRef"
+              v-model:provider="cacheProvider"
+              :source-config="cacheConfig"
+              :providers="cacheProviders"
+            />
           </div>
         </UCard>
 

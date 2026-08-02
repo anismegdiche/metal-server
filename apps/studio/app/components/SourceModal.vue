@@ -1,15 +1,5 @@
 <script setup lang="ts">
-import { getProviderIcon } from '~/utils/constants'
-import SourceModalPostgres from '~/components/SourceModalPostgres.vue'
-import SourceModalMysql from '~/components/SourceModalMysql.vue'
-import SourceModalMssql from '~/components/SourceModalMssql.vue'
-import SourceModalMongodb from '~/components/SourceModalMongodb.vue'
-import SourceModalCosmosdb from '~/components/SourceModalCosmosdb.vue'
-import SourceModalMetal from '~/components/SourceModalMetal.vue'
-import SourceModalMemory from '~/components/SourceModalMemory.vue'
-import SourceModalPlans from '~/components/SourceModalPlans.vue'
-import SourceModalWebservice from '~/components/SourceModalWebservice.vue'
-import SourceModalStorage from '~/components/SourceModalStorage.vue'
+import SourceConfigFields from '~/components/SourceConfigFields.vue'
 
 interface SourceConfig {
   provider: string
@@ -35,37 +25,7 @@ const mode = ref<'add' | 'edit'>('add')
 const name = ref('')
 const provider = ref('postgres')
 
-const PROVIDER_OPTIONS = [
-  { label: 'PostgreSQL', value: 'postgres', icon: 'i-lucide-database' },
-  { label: 'MySQL', value: 'mysql', icon: 'i-lucide-database' },
-  { label: 'MSSQL', value: 'mssql', icon: 'i-lucide-server' },
-  { label: 'MongoDB', value: 'mongodb', icon: 'i-lucide-leaf' },
-  { label: 'CosmosDB', value: 'cosmosdb', icon: 'i-lucide-database' },
-  { label: 'Web Service', value: 'webservice', icon: 'i-lucide-globe' },
-  { label: 'Storage', value: 'storage', icon: 'i-lucide-hard-drive' },
-  { label: 'Metal', value: 'metal', icon: 'i-lucide-server' },
-  { label: 'Plans', value: 'plans', icon: 'i-lucide-workflow' },
-  { label: 'Memory', value: 'memory', icon: 'i-lucide-cpu' },
-]
-
-const PROVIDER_COMPONENT_MAP: Record<string, any> = {
-  postgres: SourceModalPostgres,
-  mysql: SourceModalMysql,
-  mssql: SourceModalMssql,
-  mongodb: SourceModalMongodb,
-  cosmosdb: SourceModalCosmosdb,
-  metal: SourceModalMetal,
-  memory: SourceModalMemory,
-  plans: SourceModalPlans,
-  webservice: SourceModalWebservice,
-  storage: SourceModalStorage,
-}
-
-const providerChildRef = ref<any>(null)
-
-const providerComponent = computed(() => {
-  return PROVIDER_COMPONENT_MAP[provider.value] ?? SourceModalPostgres
-})
+const fieldsRef = ref<{ collectBody?: () => Record<string, any> } | null>(null)
 
 const currentSourceConfig = computed(() => {
   if (mode.value === 'edit') return props.sources[name.value]
@@ -98,9 +58,8 @@ function openEdit(sourceName: string) {
 
 async function saveSource() {
   if (!name.value) return
-  const child = providerChildRef.value
-  if (!child?.collectBody) return
-  const body = child.collectBody()
+  const body = fieldsRef.value?.collectBody?.()
+  if (!body) return
   try {
     await $fetch(`/server-api/api/config/sources/${encodeURIComponent(name.value)}`, {
       method: 'PUT',
@@ -123,15 +82,9 @@ defineExpose({ openAdd, openEdit })
         <UFormField label="Name" orientation="horizontal">
           <UInput v-model="name" placeholder="my-source" :disabled="mode === 'edit'" class="w-full min-w-[25ch]" />
         </UFormField>
-        <UFormField label="Provider" orientation="horizontal">
-          <div class="flex items-center gap-2">
-            <UIcon :name="getProviderIcon(provider)" class="size-5 text-primary" />
-            <USelect v-model="provider" :items="PROVIDER_OPTIONS" class="flex-1 min-w-[25ch]" />
-          </div>
-        </UFormField>
-        <component
-          :is="providerComponent"
-          ref="providerChildRef"
+        <SourceConfigFields
+          ref="fieldsRef"
+          v-model:provider="provider"
           :source-config="currentSourceConfig"
         />
       </div>

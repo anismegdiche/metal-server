@@ -127,7 +127,7 @@ await fetchKeys()
         </template>
         <template #scopes-cell="{ row }">
           <div class="flex flex-wrap gap-1">
-            <UBadge v-for="s in row.original.scopesDisplay" :key="s" variant="subtle" size="xs" color="neutral">
+            <UBadge v-for="s in row.original.scopesDisplay" :key="s" variant="subtle" size="sm" color="neutral">
               {{ s }}
             </UBadge>
             <span v-if="!row.original.scopesDisplay.length" class="text-xs text-muted">all</span>

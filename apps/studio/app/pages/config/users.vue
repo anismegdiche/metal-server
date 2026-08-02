@@ -196,7 +196,7 @@ await fetchData()
         <UTable :columns="userColumns" :data="usersTableData" :ui="{ th: 'px-2', td: 'px-2 py-2' }">
           <template #roles-cell="{ row }">
             <div class="flex flex-wrap gap-1">
-              <UBadge v-for="r in row.original.roles" :key="r" variant="subtle" size="xs" color="neutral">
+              <UBadge v-for="r in row.original.roles" :key="r" variant="subtle" size="sm" color="neutral">
                 {{ r }}
               </UBadge>
               <span v-if="!row.original.roles.length" class="text-xs text-muted">none</span>
@@ -225,8 +225,8 @@ await fetchData()
         <UTable :columns="roleColumns" :data="rolesTableData" :ui="{ th: 'px-2', td: 'px-2 py-2' }">
           <template #permissions-cell="{ row }">
             <div class="flex flex-wrap gap-1">
-              <UBadge v-for="p in row.original.permissions" :key="p" variant="subtle" size="xs" color="neutral">
-                {{ p }}: {{ permissionLabels[p] ?? p }}
+              <UBadge v-for="p in row.original.permissions" :key="p" variant="subtle" size="sm" color="neutral">
+                {{ permissionLabels[p] ?? p }}
               </UBadge>
               <span v-if="!row.original.permissions" class="text-xs text-muted">none</span>
             </div>
