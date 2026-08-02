@@ -102,7 +102,7 @@ Follow these steps to install the sample project:
 To ensure everything is set up correctly, run the following command:
 
 ```bash
-curl http://127.0.0.1:3000/server/info
+curl http://127.0.0.1:3000/api/server/info
 ```
 
 You sould receive the following response:

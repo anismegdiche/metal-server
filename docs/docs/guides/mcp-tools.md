@@ -6,6 +6,10 @@ description: "How to design MCP tools in Metal"
 
 Metal exposes schema-driven tools through the MCP endpoint. Each tool is declared in the YAML config under `mcp.tools` and can read, create, update, delete, or list data from a schema entity.
 
+::: tip ℹ️ NOTE
+For more detailed information about how to configure `mcp` section , See: [Configuration File Reference: mcp](../documentation/config-yml#mcp)
+:::
+
 ## 1. Core idea
 
 An MCP tool maps an LLM-friendly input shape to a Metal schema operation.

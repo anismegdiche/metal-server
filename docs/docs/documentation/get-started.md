@@ -39,7 +39,7 @@ Before diving into Metal Server, make sure your environment meets the following 
 
 4. Configure your `config.yml` file located in the **./config** folder.
    ::: tip ℹ️ NOTE
-   For detailed configuration options, refer to the [Configuration File Reference](config-yml.md).
+   For detailed configuration options, refer to the [Configuration File Reference](config-yml).
    :::
 
 5. Start the server:
@@ -53,7 +53,7 @@ Before diving into Metal Server, make sure your environment meets the following 
 Ensure that the server is running by using a tool like CURL:
 
 ```bash
-curl http://127.0.0.1:3000/server/info
+curl http://127.0.0.1:3000/api/server/info
 ```
 
 You should receive a response similar to the following:
@@ -75,4 +75,4 @@ You may use the [Swagger UI](https://swagger.io/docs/open-source-tools/swagger-u
 - Test API requests directly from the interface
 - View detailed information about each endpoint, including response formats and error handling
 
-The Swagger UI is available at `http://127.0.0.1:3000/api-docs`. Simply navigate to this URL in your web browser to access the interface.
+The Swagger UI is available at `/api-docs`. Simply navigate to this URL in your web browser to access the interface.

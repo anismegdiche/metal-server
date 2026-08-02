@@ -174,3 +174,10 @@
     transition: color 0.25s,
     background-color 0.5s;
 }
+
+
+.feature-link {
+  text-decoration: none!important;
+  color: inherit!important;
+  font-size: 0.7rem!important;
+}

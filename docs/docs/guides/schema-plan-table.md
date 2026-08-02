@@ -14,7 +14,7 @@ As of now, Metal Server exclusively supports only reading operations with Plan t
 
 ## Prerequisites
 
-Before testing this use case, ensure that the sample project is deployed and ready. (Refer to: [Sample project](../sample-project.md))
+Before testing this use case, ensure that the sample project is deployed and ready. (Refer to: [Sample project](../sample-project))
 
 ## Presentation
 
@@ -131,7 +131,7 @@ plans:
 | <span style="color:yellow">order by</span> order_date <span style="color:yellow">asc</span>                                                                                                                                                                                                               | <pre>- sort:<br> order_date: asc</pre>                                                                                                 |
 
 ::: tip ℹ️ INFO
-For more information about using plans, please refer to: [Configuration File Reference (Section Plans)](../documentation/config-yml.md#plans).
+For more information about using plans, please refer to: [Configuration File Reference (Section Plans)](../documentation/config-yml#plans).
 :::
 
 Add source `plan-order-countries` to the `sources` section to point to the plan `p-order-countries`:
@@ -279,4 +279,4 @@ You should receive the following response:
 
 Feel free to explore and interact with the HTTP API using the provided example.
 
-For additional details and comprehensive information, please consult the [API documentation](../documentation/rest-api.md).
+For additional details and comprehensive information, please consult the [API documentation](../documentation/rest-api).

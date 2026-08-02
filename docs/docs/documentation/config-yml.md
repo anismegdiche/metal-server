@@ -101,6 +101,23 @@ Sets the Database server for storing cache objects. The configuration is the sam
 
 This parameter must be configured if you plan to use the cache feature in Metal server.
 
+::: warning ⚠️ IMPORTANT
+Only the following cache providers are supported. Choose the one that matches your cache/storage backend:
+
+- `postgres` — PostgreSQL
+- `mysql` — MySQL
+- `mssql` — Microsoft SQL Server
+- `mongodb` — MongoDB
+- `cosmosdb` — Azure Cosmos DB
+- `metal` — Metal native storage
+- `memory` — In-memory cache (non-persistent; for development/testing only)
+
+Configure provider-specific connection settings in the `sources` section. 
+
+Using `memory` will not persist data across restarts.
+:::
+
+
 ### `timezone` <Badge type="default" text="v0.1+" />
 
 Sets the server's timezone.
@@ -137,7 +154,7 @@ server:
 ```
 
 ::: tip ℹ️ TIP
-For more informations about authentication, roles and users, please refer to the [Authentication](../guides/authentication.md) guide.
+For more informations about authentication, roles and users, please refer to the [Authentication](../guides/authentication) guide.
 
 :::
 
@@ -234,7 +251,7 @@ The parameters that can be configured inside the `ai-engines` section include:
 | `cors`.`allowed-headers`  | String  | `Content-Type,Authorization,X-Requested-With` | N        | CORS Allowed headers for AI Engine services.                                     | <Badge type="info" text="v0.5+" /> |
 
 ::: tip ℹ️ NOTE
-For more detailed information about how to configure a Container Provider in `params`, See: [Container Provider Configurations](./container-provider-config.md)
+For more detailed information about how to configure a Container Provider in `params`, See: [Container Provider Configurations](./container-provider-config)
 :::
 
 ## `mcp` <Badge type="info" text="v0.5+" />
@@ -337,9 +354,7 @@ mcp:
               map-to: company
 ```
 
-For practical guidance and additional examples, see [mcp-tools.md](./mcp-tools.md).
-
-**Example:**
+**Example: sensitive data hiding**
 
 ```yaml
 mcp:
@@ -361,6 +376,10 @@ mcp:
           description: "Filter by status"
           map-to: user_status
 ```
+
+::: tip ℹ️ NOTE
+For practical guidance and additional examples, see [MCP Tools Guide](../guides/mcp-tools).
+:::
 
 ## `roles` <Badge type="default" text="v0.3+" />
 
@@ -469,7 +488,7 @@ The table below describes the different values that can be configured in the `pr
 | `metal`    | Metal Server via REST                    | <Badge type="default" text="v0.2+" /> |
 | `memory`   | Local Memory storage (Non-persistant)    | <Badge type="default" text="v0.2+" /> |
 
-For more detailed information about how to configure a data provider, See: [Data Providers Configurations](./data-providers-config.md)
+For more detailed information about how to configure a data provider, See: [Data Providers Configurations](./data-providers-config)
 
 **Example:**
 
@@ -571,7 +590,7 @@ sources:
 ```
 
 ::: tip ℹ️ NOTE
-For more information about how to configure a data provider and its options, See: [Data Providers Configurations](./data-providers-config.md)
+For more information about how to configure a data provider and its options, See: [Data Providers Configurations](./data-providers-config)
 :::
 
 ## `schemas` <Badge type="default" text="v0.1+" />
@@ -705,7 +724,7 @@ The parameters that can be configured inside `update` tag are :
 | Name               | Type   | Required | Description                                                                | Metal version                      |
 | ------------------ | ------ | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
 | `steps`            | Object | Y        | Section to declare plan's steps                                            | <Badge type="info" text="v0.5+" /> |
-| `on-error`         | Object | N        | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+| `on-error`         | Object | N        | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 | `failure-strategy` | String | N        | Plan's output whene failure happen (default: `throw`)                      | <Badge type="info" text="v0.5+" /> |
 
 **Example**
@@ -751,7 +770,7 @@ plans:
 ### `on-error` <Badge type="info" text="v0.5+" />
 
 ::: note ℹ️ TIP
-For detailed configuration, please see article [on-error](on-error-yml.md).
+For detailed configuration, please see article [on-error](on-error-yml).
 :::
 
 ### `failure-strategy` <Badge type="info" text="v0.5+" />
@@ -799,7 +818,7 @@ The parameters that can be configured inside `select` tag are :
 | Name        | Decription                                                                 | Metal version                      |
 | ----------- | -------------------------------------------------------------------------- | ---------------------------------- |
 | 📜`schema`   | name of schema                                                             | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -835,7 +854,7 @@ The parameters that can be configured inside `select` tag are :
 | 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | <Badge type="info" text="v0.5+" /> |
 | 📜`sort`              | sort data, can be `asc` or `desc`. (see: [Optional Parameters](rest-api#optional-parameters))    | <Badge type="info" text="v0.5+" /> |
 | 📜`cache`             | time in seconds to cache data. (see: [Optional Parameters](rest-api#optional-parameters))        | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml.md))                       | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                       | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -870,7 +889,7 @@ The parameters that can be configured inside `insert` tag are :
 | 📜`schema`   | name of schema                                                                                  | <Badge type="info" text="v0.5+" /> |
 | 📜`entity`   | name of entity in the `schema`                                                                  | <Badge type="info" text="v0.5+" /> |
 | 📜`data`     | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters)) | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Error handling strategy when step fails (see: [on-error](on-error-yml.md))                      | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Error handling strategy when step fails (see: [on-error](on-error-yml))                      | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -912,7 +931,7 @@ The parameters that can be configured inside `delete` tag are :
 | 📜`entity`            | name of entity in the `schema`                                                                   | <Badge type="info" text="v0.5+" /> |
 | 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | <Badge type="info" text="v0.5+" /> |
 | 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml.md))                       | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                       | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -949,7 +968,7 @@ The parameters that can be configured inside `update` tag are :
 | 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | <Badge type="info" text="v0.5+" /> |
 | 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | <Badge type="info" text="v0.5+" /> |
 | 📜❇️`data`             | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters))  | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml.md))                       | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                       | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 >
@@ -1035,7 +1054,7 @@ The parameters that can be configured inside `join` tag are :
 | 📜`type`        | Join type can be `left`,`right`,`inner`,`full-outer`,`cross`               | <Badge type="info" text="v0.5+" /> |
 | 📜`left-field`  | Left field for equality with `right-field`                                 | <Badge type="info" text="v0.5+" /> |
 | 📜`right-field` | Right field                                                                | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1087,7 +1106,7 @@ If sorting order is not provided, ascending order will be used.
 | Parameter   | Type   | Required | Description                                                                   | Metal version                      |
 | ----------- | ------ | -------- | ----------------------------------------------------------------------------- | ---------------------------------- |
 | 📜`fields`   | Object | yes      | Mapping of fields to sort by, defined as `field: direction` (`asc` or `desc`) | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Object | no       | Strategy to apply if the step fails (see: [on-error](on-error-yml.md))        | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Object | no       | Strategy to apply if the step fails (see: [on-error](on-error-yml))        | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1121,7 +1140,7 @@ Select fields to keep and remove remaining from actual plan's data
 | Parameters  | Type          | Required | Description                                                                | Metal version                      |
 | ----------- | ------------- | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
 | 📜`fields`   | Array(String) | yes      | List of key(s) used for comparison                                         | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1155,7 +1174,7 @@ Select fields to remove from actual plan's data
 | Parameters  | Type          | Required | Description                                                                | Metal version                      |
 | ----------- | ------------- | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
 | 📜`fields`   | Array(String) | yes      | List of key(s) used for comparison                                         | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1190,7 +1209,7 @@ The parameters that can be configured inside `map` tag are :
 | Name        | Type   | Description                                                                  | Metal version                      |
 | ----------- | ------ | ---------------------------------------------------------------------------- | ---------------------------------- |
 | 📜`script`   | String | JavaScript code to transform each row                                        | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Object | Error handling strategy when script fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Object | Error handling strategy when script fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1281,7 +1300,7 @@ The parameters that can be configured inside `run` tag are :
 | 📜`params`   | Object | AI Engine parameters (see: [AI Engines](ai-engines))                       | <Badge type="info" text="v0.5+" /> |
 | 📜`input`    | String | input field to perform the processing                                      | <Badge type="info" text="v0.5+" /> |
 | 📜`output`   | Object | Output result to be stored. (see: output)                                  | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Object | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Object | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1335,7 +1354,7 @@ The parameters that can be configured inside `sync` tag are :
 | 📜`to.schema`   | name of destination schema. If not provided actual plan will be used as a schema                                | <Badge type="info" text="v0.5+" /> |
 | 📜`to.entity`   | name of destination entity in the `to.schema`                                                                   | <Badge type="info" text="v0.5+" /> |
 | 📜`id`          | field that exists in both source and destination entity. It will be used as unique identity for synchronization | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml.md))                                      | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml))                                      | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1369,7 +1388,7 @@ To anonymize data of given list of fields.
 | Parameters  | Type          | Required | Description                                                                | Metal version                      |
 | ----------- | ------------- | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
 | 📜`fields`   | Array(String) | yes      | List of key(s) used for comparison                                         | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1402,7 +1421,7 @@ The `remove-duplicates` function is designed to remove duplicate rows from a dat
 | 📜`method`    | String        | No       | Method of comparison (default: `hash`)                                     | <Badge type="info" text="v0.5+" /> |
 | 📜`strategy`  | String        | No       | Strategy to adopt when duplicates are found (default: `first`)             | <Badge type="info" text="v0.5+" /> |
 | 📜`condition` | String        | No       | Condition to apply according to selected strategy (default: empty)         | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`  | Object        | No       | Error handling strategy when step fails (see: [on-error](on-error-yml.md)) | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`  | Object        | No       | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1474,7 +1493,7 @@ This step removes fields that contain empty values according to configurable cri
 | ----------- | ------ | -------- | -------------------------------------------------------------------------------------- | ---------------------------------- |
 | 📜`defaults` | Object | No       | List of criterion used for empty values testing. see Empty value criterion below       | <Badge type="info" text="v0.5+" /> |
 | 📜`fields`   | Object | Yes      | List of field-specific criterion (overrides defaults). see Empty value criterion below | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Object | No       | Error handling strategy when step fails (see: [on-error](on-error-yml.md))             | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Object | No       | Error handling strategy when step fails (see: [on-error](on-error-yml))             | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 

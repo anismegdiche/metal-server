@@ -5,19 +5,22 @@ defineProps({
   icon: String,
   image: String,
   badge_text: String,
-  badge_style: String
+  badge_style: String,
+  link: String
 })
 </script>
 
 <template>
   <div class="feature-card">
-    <div v-if="icon" class="feature-icon">{{ icon }}</div>
-    <div v-if="image" class="feature-image">
-      <img class="technology-logo" :src="image" :alt="title" />
-    </div>
-    <h3>{{ title }}</h3>
-    <Badge v-if="badge_text" :type="badge_style" :text="badge_text" />
-    <p v-if="description">{{ description }}</p>
+    <a v-if="link" :href="link" class="feature-link">
+      <div v-if="icon" class="feature-icon">{{ icon }}</div>
+      <div v-if="image" class="feature-image">
+        <img class="technology-logo" :src="image" :alt="title" />
+      </div>
+      <h3>{{ title }}</h3>
+      <Badge v-if="badge_text" :type="badge_style" :text="badge_text" />
+      <p v-if="description">{{ description }}</p>
+    </a>
   </div>
 </template>
 

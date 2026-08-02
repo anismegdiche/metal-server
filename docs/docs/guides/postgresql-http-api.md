@@ -16,7 +16,7 @@ As of now, Metal Server is exclusively designed for CRUD operations.
 
 ## Prerequisites
 
-Before testing this use case, ensure that the sample project is deployed and ready. (Please refer to: [Sample project](../sample-project.md))
+Before testing this use case, ensure that the sample project is deployed and ready. (Please refer to: [Sample project](../sample-project))
 
 ## Presentation
 
@@ -230,4 +230,4 @@ You should receive the following response:
 
 Feel free to explore and interact with the HTTP API using the provided example.
 
-For additional details and comprehensive information, please consult the [API documentation](../documentation/rest-api.md).
+For additional details and comprehensive information, please consult the [API documentation](../documentation/rest-api).

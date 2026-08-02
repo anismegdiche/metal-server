@@ -9,7 +9,7 @@ import FeatureCard from '../.vitepress/theme/components/FeatureCard.vue'
 
 # Catalogue
 
-Browse, configure, and virtualize Metal data sources.
+Browse, configure, and virtualize Data Sources.
 
 ## Data Providers
 
@@ -94,37 +94,43 @@ Browse, configure, and virtualize Metal data sources.
 <FeatureCard 
   title="Azure Blob Storage" 
   image="/logo/azure-blob-storage.svg" 
-  link="#"
+  link="/documentation/data-providers-config.html#azure-blob-azure-blob-storage"
    />
 
 <FeatureCard 
   title="Azure File Storage" 
   image="/logo/azure-file-storage.png" 
-  link="#"
+  link="/documentation/data-providers-config.html#azure-file-azure-file-share"
    />
 
 <FeatureCard 
   title="Azure Datalake Gen2" 
   image="/logo/azure-datalake.svg" 
-  link="#"
+  link="/documentation/data-providers-config.html#azure-datalake-azure-data-lake-storage-gen2"
    />
 
 <FeatureCard 
   title="Amazon S3" 
   image="/logo/s3.png" 
-  link="#"
+  link="/documentation/data-providers-config.html#aws-s3-amazon-s3"
+   />
+
+<FeatureCard 
+  title="Local File System" 
+  image="" 
+  link="/documentation/data-providers-config.html#fs-filesystem"
    />
 
 <FeatureCard 
   title="FTP" 
   image="/logo/ftp.svg" 
-  link="#"
+  link="/documentation/data-providers-config.html#ftp-ftp-server"
    />
 
 <FeatureCard 
   title="SFTP" 
   image="/logo/sftp.png" 
-  link="#"
+  link="/documentation/data-providers-config.html#sftp-sftp-server"
    />
 
 </div>
@@ -136,35 +142,36 @@ Browse, configure, and virtualize Metal data sources.
 <FeatureCard 
   title="Parquet" 
   image="/logo/parquet-logo.svg" 
-  link="#"
+  link="/documentation/data-providers-config.html#parquet"
    />
 <FeatureCard 
   title="XML" 
   image="/logo/xml.svg" 
-  link="#"
+  link="/documentation/data-providers-config.html#xml"
    />
 
 <FeatureCard 
   title="CSV" 
   image="/logo/csv.svg" 
-  link="#"
+  link="/documentation/data-providers-config.html#csv"
    />
 
 <FeatureCard 
   title="JSON" 
   image="/logo/json.png" 
-  link="#"
+  link="/documentation/data-providers-config.html#json"
    />
 
 <FeatureCard 
   title="XLS" 
   image="/logo/xls.svg" 
-  link="#"
+  link="/documentation/data-providers-config.html#xls"
    />
 </div>
 
 ## AI Tasks
 
+<h3 style="padding-bottom: 20px">OCR</h3>
 <div class="feature-grid">
   <!-- OCR Tasks -->
   <FeatureCard 
@@ -172,18 +179,14 @@ Browse, configure, and virtualize Metal data sources.
     image="/logo/ai-ocr.png" 
     link="/documentation/ai-engines#image-to-string"
     />
-  
+</div>
+<h3 style="padding-bottom: 20px">Text</h3>
+<div class="feature-grid">
   <!-- Text Processing Tasks -->
   <FeatureCard 
     title="Emotion Detection" 
     image="/logo/ai-text.png" 
     link="/documentation/ai-engines#emotion-detection"
-    />
-  
-  <FeatureCard 
-    title="Feature Extraction" 
-    image="/logo/ai-text.png" 
-    link="/documentation/ai-engines#feature-extraction"
     />
   
   <FeatureCard 
@@ -263,6 +266,9 @@ Browse, configure, and virtualize Metal data sources.
     image="/logo/ai-text.png" 
     link="/documentation/ai-engines#zero-shot-classification"
     />
+</div>
+<h3 style="padding-bottom: 20px">Image</h3>
+<div class="feature-grid">
   
   <!-- Image Processing Tasks -->
   <FeatureCard 
@@ -294,6 +300,9 @@ Browse, configure, and virtualize Metal data sources.
     image="/logo/ai-image.png" 
     link="/documentation/ai-engines#visual-question-answering"
     />
+</div>
+<h3 style="padding-bottom: 20px">Audio</h3>
+<div class="feature-grid">
   
   <!-- Audio Processing Tasks -->
   <FeatureCard 

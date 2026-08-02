@@ -10,7 +10,7 @@ Metal Plans and Scheduler functions provide a robust solution for scheduling ETL
 
 ## Prerequisites
 
-Before testing this use case, ensure that the sample project is deployed and ready. (Refer to: [Sample project](../sample-project.md))
+Before testing this use case, ensure that the sample project is deployed and ready. (Refer to: [Sample project](../sample-project))
 
 ## Presentation
 
@@ -160,7 +160,7 @@ plans:
 | delete from <span style="color:red">mflix.log</span><br>where etl_status = 'locked'                      | <pre>- delete:<br> schema: mflix<br> entity: log<br> filter:<br> etl_status: locked</pre>                               |
 
 ::: tip ℹ️ INFO
-For more information about using plans, please refer to: [Configuration File Reference (Section Plans)](../documentation/config-yml.md#plans).
+For more information about using plans, please refer to: [Configuration File Reference (Section Plans)](../documentation/config-yml#plans).
 :::
 
 Now that the plan is configured, add the jobs to execute the transfer every 5 seconds:
@@ -421,4 +421,4 @@ You should receive the following response that shows moved rows from the **mflix
 
 Feel free to explore and interact with the HTTP API using the provided example.
 
-For additional details and comprehensive information, please consult the [API documentation](../documentation/rest-api.md).
+For additional details and comprehensive information, please consult the [API documentation](../documentation/rest-api).

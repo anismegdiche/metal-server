@@ -6,7 +6,7 @@ description: "Metal:Middleware, ETL & AI at the same place. Empower your project
 
 # Plan using AI Image Classifier
 
-Metal empowers the seamless integration of Extract, Transform, Load (ETL) processes with Artificial Intelligence (AI). This synergy is achieved through predefined AI Engines, as detailed in the [AI Engines](../documentation/config-yml.md#ai-engines) documentation.
+Metal empowers the seamless integration of Extract, Transform, Load (ETL) processes with Artificial Intelligence (AI). This synergy is achieved through predefined AI Engines, as detailed in the [AI Engines](../documentation/config-yml#ai-engines) documentation.
 
 ::: tip ℹ️ INFO
 Presently, Metal Server exclusively supports read operations with Plan tables.
@@ -14,7 +14,7 @@ Presently, Metal Server exclusively supports read operations with Plan tables.
 
 ## Prerequisites
 
-Before experimenting with this use case, ensure the deployment and readiness of the sample project. Refer to the [Sample project](../sample-project.md) documentation for guidance.
+Before experimenting with this use case, ensure the deployment and readiness of the sample project. Refer to the [Sample project](../sample-project) documentation for guidance.
 
 ## Presentation
 
@@ -98,7 +98,7 @@ plans:
 | <pre>- run:<br> ai: img-class<br> input: img<br> output:<br> class: class</pre>                                                                       | Runs AI `img-class` on the `img` field and creates a new field (`class`) for the AI output |
 
 ::: tip ℹ️ INFO
-For more information about using plans, please refer to: [Configuration File Reference (Section Plans)](../documentation/config-yml.md#plans).
+For more information about using plans, please refer to: [Configuration File Reference (Section Plans)](../documentation/config-yml#plans).
 :::
 
 Add the source `plan-image-classify` to the `sources` section:
@@ -267,4 +267,4 @@ You should receive a response showing rows with the **img** field and a new fiel
 
 Feel free to explore and interact with the HTTP API using the provided example.
 
-For additional details and comprehensive information, please consult the [API documentation](../documentation/rest-api.md).
+For additional details and comprehensive information, please consult the [API documentation](../documentation/rest-api).
