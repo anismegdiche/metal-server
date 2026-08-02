@@ -220,7 +220,7 @@ export class Logger {
 
 	static RequestMiddleware = morgan(":remote-addr, :method :url, :status, :res[content-length], :response-time ms", {
 		stream: {
-			write: (message: string) => Logger.Info(message.trim()),
+			write: (message: string) => Logger.Info(Logger.Out, message.trim()),
 		},
 	})
 

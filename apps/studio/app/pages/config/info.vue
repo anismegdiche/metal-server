@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { data: serverInfo, refresh } = useMetricsPolling('/server-api/server/info', 10000)
+const { data: serverInfo, refresh } = useMetricsPolling('/server-api/api/server/info', 10000)
 
 const sections = computed(() => {
   if (!serverInfo.value) return []

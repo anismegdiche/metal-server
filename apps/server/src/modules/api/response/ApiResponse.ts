@@ -1,7 +1,6 @@
 //
 //
 //
-
 import { Logger } from "@metal/logger"
 import type { Request, Response } from "express"
 import { Assert } from "../../../utils/Assert"
@@ -26,8 +25,8 @@ const VALID_SECTIONS = ["server", "sources", "schemas", "plans", "schedules", "r
 export class ApiResponse {
 	static GetConfig(req: Request, res: Response): void {
 		try {
-			//RequestHandler.CheckRequestHasCurrentUser(req)
-			//Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
+			RequestHandler.CheckRequestHasCurrentUser(req)
+			Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
 
 			const config = ConfigManager.configStore?.Configuration
 			if (!config) {
@@ -42,8 +41,8 @@ export class ApiResponse {
 
 	static GetSection(req: Request, res: Response): void {
 		try {
-			//RequestHandler.CheckRequestHasCurrentUser(req)
-			//Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
+			RequestHandler.CheckRequestHasCurrentUser(req)
+			Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
 
 			const section = String(req.params.section)
 
@@ -65,8 +64,8 @@ export class ApiResponse {
 
 	static GetSectionItem(req: Request, res: Response): void {
 		try {
-			//RequestHandler.CheckRequestHasCurrentUser(req)
-			//Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
+			RequestHandler.CheckRequestHasCurrentUser(req)
+			Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
 
 			const section = String(req.params.section)
 			const name = String(req.params.name)
@@ -98,8 +97,8 @@ export class ApiResponse {
 
 	static PutConfig(req: Request, res: Response): void {
 		try {
-			//RequestHandler.CheckRequestHasCurrentUser(req)
-			//Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
+			RequestHandler.CheckRequestHasCurrentUser(req)
+			Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
 
 			const newConfig = req.body as U_config
 
@@ -121,8 +120,8 @@ export class ApiResponse {
 
 	static PatchSection(req: Request, res: Response): void {
 		try {
-			//RequestHandler.CheckRequestHasCurrentUser(req)
-			//Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
+			RequestHandler.CheckRequestHasCurrentUser(req)
+			Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
 
 			const section = String(req.params.section)
 
@@ -140,7 +139,7 @@ export class ApiResponse {
 
 			const merged = { ...(currentSection as Record<string, unknown>), ...patchData }
 
-			;(config as Record<string, unknown>)[section] = merged
+				; (config as Record<string, unknown>)[section] = merged
 
 			const result = z_U_config.safeParse(config)
 			if (!result.success) {
@@ -160,8 +159,8 @@ export class ApiResponse {
 
 	static PutSectionItem(req: Request, res: Response): void {
 		try {
-			//RequestHandler.CheckRequestHasCurrentUser(req)
-			//Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
+			RequestHandler.CheckRequestHasCurrentUser(req)
+			Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
 
 			const section = String(req.params.section)
 			const name = String(req.params.name)
@@ -177,7 +176,7 @@ export class ApiResponse {
 
 			const sectionData = (config as Record<string, unknown>)[section]
 			if (!sectionData || typeof sectionData !== "object") {
-				;(config as Record<string, unknown>)[section] = {}
+				; (config as Record<string, unknown>)[section] = {}
 			}
 
 			const target = (config as Record<string, unknown>)[section] as Record<string, unknown>
@@ -201,8 +200,8 @@ export class ApiResponse {
 
 	static DeleteSectionItem(req: Request, res: Response): void {
 		try {
-			//RequestHandler.CheckRequestHasCurrentUser(req)
-			//Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
+			RequestHandler.CheckRequestHasCurrentUser(req)
+			Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
 
 			const section = String(req.params.section)
 			const name = String(req.params.name)
@@ -248,8 +247,8 @@ export class ApiResponse {
 
 	static GetLogs(req: Request, res: Response): void {
 		try {
-			//RequestHandler.CheckRequestHasCurrentUser(req)
-			//Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
+			RequestHandler.CheckRequestHasCurrentUser(req)
+			Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
 
 			const { start, end, limit, offset, reverse } = req.params
 
@@ -299,8 +298,8 @@ export class ApiResponse {
 
 	static ClearLogs(req: Request, res: Response): void {
 		try {
-			//RequestHandler.CheckRequestHasCurrentUser(req)
-			//Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
+			RequestHandler.CheckRequestHasCurrentUser(req)
+			Roles.CheckPermission(req.__METAL_CURRENT_USER, undefined, AUTH_PERMISSION.ADMIN)
 
 			Logger.db?.clear()
 
@@ -311,7 +310,7 @@ export class ApiResponse {
 	}
 
 	static ReloadServer(req: Request, res: Response): void {
-		//RequestHandler.CheckRequestHasCurrentUser(req)
+		RequestHandler.CheckRequestHasCurrentUser(req)
 		ServerRuntime.Reload(req.__METAL_CURRENT_USER)
 			.then((intRes) => Convert.InternalResponseToResponse(res, intRes))
 			.catch((error: HttpError) => ResponseHandler.ResponseError(res, error))

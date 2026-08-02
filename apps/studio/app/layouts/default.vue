@@ -2,6 +2,14 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 const route = useRoute()
+const { user, clear } = useUserSession()
+
+const avatarSeed = computed(() => user.value?.username ?? 'Admin')
+
+async function handleLogout() {
+  await clear()
+  await navigateTo('/login')
+}
 
 const sidebarItems: NavigationMenuItem[] = [
   {
@@ -73,7 +81,7 @@ const headerTabs = computed(() => {
 </script>
 
 <template>
-  <UDashboardGroup>
+  <UDashboardGroup class="tracking-tight">
     <UDashboardSidebar collapsible resizable>
       <template #header="{ collapsed }">
         <AppLogo :collapsed="collapsed" />
@@ -86,10 +94,10 @@ const headerTabs = computed(() => {
       <template #footer="{ collapsed }">
         <div class="flex flex-col gap-1">
           <UButton :avatar="{
-            src: 'https://api.dicebear.com/9.x/initials/svg?seed=Admin',
+            src: `https://api.dicebear.com/9.x/initials/svg?seed=${avatarSeed}`,
             loading: 'lazy'
-          }" :label="collapsed ? undefined : 'Administrator'" color="neutral" variant="ghost" class="w-full"
-            :block="collapsed" />
+          }" :label="collapsed ? undefined : (user?.username ?? 'Sign in')" color="neutral" variant="ghost" class="w-full"
+            :block="collapsed" :title="user ? 'Sign out' : 'Sign in'" @click="handleLogout" />
         </div>
       </template>
     </UDashboardSidebar>
@@ -108,7 +116,7 @@ const headerTabs = computed(() => {
           </template>
 
           <template #right>
-            <UButton icon="i-lucide-user" color="neutral" variant="ghost" size="sm" />
+            <UButton icon="i-lucide-log-out" color="neutral" variant="ghost" size="sm" title="Sign out" @click="handleLogout" />
             <UColorModeButton />
           </template>
         </UDashboardNavbar>

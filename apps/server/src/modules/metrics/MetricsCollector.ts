@@ -42,6 +42,14 @@ export class MetricsCollector {
 		MetricsCollector.Data.set(metricName, merge(oldData, metricData))
 	}
 
+	@on({ eventName: METRIC_EVENT.INC, eventBus: MetricsCollector.Bus })
+	@Queue.AddToQueue(MetricsCollector._queue)
+	static Inc(event: CustomEvent<any>) {
+		const { metricName } = event.data
+		const oldData = MetricsCollector.Get(metricName)
+		MetricsCollector.Data.set(metricName, oldData + 1)
+	}
+
 	static Clear() {
 		MetricsCollector.Data.clear()
 	}
@@ -86,4 +94,15 @@ export class MetricsCollector {
 			}),
 		)
 	}
+
+	static DispatchEvent_inc(metricName: string) {
+		MetricsCollector.Bus.dispatchEvent(
+			new CustomEvent<any>(METRIC_EVENT.INC, {
+				data: {
+					metricName,
+				},
+			}),
+		)
+	}
 }
+

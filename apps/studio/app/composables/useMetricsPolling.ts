@@ -1,5 +1,5 @@
 export function useMetricsPolling(url: string, intervalMs = 5000) {
-  const { data, refresh } = useFetch<Record<string, any>>(url)
+  const { data, refresh } = useFetch<Record<string, any>>(url, { server: false })
 
   onMounted(() => {
     const interval = setInterval(refresh, intervalMs)

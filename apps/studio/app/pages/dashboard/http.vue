@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { data: httpMetrics, refresh: refreshHttp } = useMetricsPolling('/server-api/metrics/http/http:%7E')
+const { data: httpMetrics, refresh: refreshHttp } = useMetricsPolling('/server-api/api/metrics/http/http:%7E')
 
 const totalRequests = computed(() => httpMetrics.value?.['http:requests:total'] ?? 0)
 const activeRequests = computed(() => httpMetrics.value?.['http:requests:active'] ?? 0)

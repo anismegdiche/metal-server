@@ -1,8 +1,8 @@
 <script setup lang="ts">
 const { formatDuration, formatTime, formatDateTime, getStatusColor } = useFormatting()
 
-const { data: planMetrics, refresh: refreshPlans } = useMetricsPolling('/server-api/metrics/plan:/plan:%7E')
-const { data: plansSummary, refresh: refreshPlansSummary } = useMetricsPolling('/server-api/metrics/plans:/plans:%7E')
+const { data: planMetrics, refresh: refreshPlans } = useMetricsPolling('/server-api/api/metrics/plan:/plan:%7E')
+const { data: plansSummary, refresh: refreshPlansSummary } = useMetricsPolling('/server-api/api/metrics/plans:/plans:%7E')
 useMultiMetricsPolling([{ refresh: refreshPlans }, { refresh: refreshPlansSummary }])
 
 const selectedPlan = ref<string | null>(null)

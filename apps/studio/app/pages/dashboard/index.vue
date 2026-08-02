@@ -1,12 +1,12 @@
 <script setup lang="ts">
 const { formatDuration, formatRelativeTime, formatMemory, formatUptime, getStatusColor } = useFormatting()
 
-const { data: serverMetrics, refresh: refreshServer } = useMetricsPolling('/server-api/metrics/server/server:%7E')
-const { data: planMetrics, refresh: refreshPlans } = useMetricsPolling('/server-api/metrics/plan:/plan:%7E')
-const { data: plansSummary, refresh: refreshPlansSummary } = useMetricsPolling('/server-api/metrics/plans:/plans:%7E')
-const { data: httpMetrics, refresh: refreshHttp } = useMetricsPolling('/server-api/metrics/http/http:%7E')
-const { data: sourcesMetrics, refresh: refreshSources } = useMetricsPolling('/server-api/metrics/sources/sources:%7E')
-const { data: schedulesMetrics, refresh: refreshSchedules } = useMetricsPolling('/server-api/metrics/schedules/schedules:%7E')
+const { data: serverMetrics, refresh: refreshServer } = useMetricsPolling('/server-api/api/metrics/server/server:%7E')
+const { data: planMetrics, refresh: refreshPlans } = useMetricsPolling('/server-api/api/metrics/plan:/plan:%7E')
+const { data: plansSummary, refresh: refreshPlansSummary } = useMetricsPolling('/server-api/api/metrics/plans:/plans:%7E')
+const { data: httpMetrics, refresh: refreshHttp } = useMetricsPolling('/server-api/api/metrics/http/http:%7E')
+const { data: sourcesMetrics, refresh: refreshSources } = useMetricsPolling('/server-api/api/metrics/sources/sources:%7E')
+const { data: schedulesMetrics, refresh: refreshSchedules } = useMetricsPolling('/server-api/api/metrics/schedules/schedules:%7E')
 
 const now = ref(Date.now())
 const uptimeSeconds = ref(0)

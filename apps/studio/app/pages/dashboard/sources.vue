@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getProviderIcon } from '~/utils/constants'
 
-const { data: sourcesMetrics, refresh: refreshSources } = useMetricsPolling('/server-api/metrics/sources/sources:%7E')
+const { data: sourcesMetrics, refresh: refreshSources } = useMetricsPolling('/server-api/api/metrics/sources/sources:%7E')
 
 const totalSources = computed(() => sourcesMetrics.value?.['sources:total'] ?? 0)
 const activeSources = computed(() => sourcesMetrics.value?.['sources:active'] ?? 0)

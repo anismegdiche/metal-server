@@ -14,6 +14,7 @@
 		"all:test:watch": "vitest --watch",
 		"server:dev": "yarn workspace @metal/server dev",
 		"server:dev:build-all-images": "yarn workspace @metal/server dev:build-all-images",
+		"server:dev:generate-api-key": "yarn workspace @metal/server dev:generate-api-key",
 		"server:build": "yarn workspace @metal/server build",
 		"server:build:watch": "yarn workspace @metal/server build:watch",
 		"server:prod": "yarn workspace @metal/server prod",

@@ -5,8 +5,10 @@
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { Logger } from "@metal/logger"
+import chalk from "chalk"
 import { AiBuilder } from "./modules/ai-engine/AiBuilder"
 import { AiDocker } from "./modules/ai-engine/AiDocker"
+
 //
 import { ApiKey } from "./modules/apikey/ApiKey"
 import { ConfigManager } from "./modules/core/ConfigManager"
@@ -55,18 +57,22 @@ if (ARG_generate_api_key) {
 
 	const result = ApiKey.Create(userId, { name: keyName, scopes: ["*"] })
 
-	console.log("\n┌──────────────────────────────────────────┐")
-	console.log("│           API Key Generated               │")
-	console.log("├──────────────────────────────────────────┤")
-	console.log(`│  User:  ${userId}`)
-	console.log(`│  Name:  ${keyName}`)
-	console.log(`│  ID:    ${result.Body?.id}`)
-	console.log("├──────────────────────────────────────────┤")
-	console.log(`│  Key:   ${result.Body?.key}`)
-	console.log("├──────────────────────────────────────────┤")
-	console.log("│  ⚠  Save this key now. It won't be shown │")
-	console.log("│     again.                                │")
-	console.log("└──────────────────────────────────────────┘\n")
+	console.log()
+
+	console.log(chalk.green.bold("🔑  API Key Generated"))
+	console.log()
+
+	console.log(chalk.gray("User      "), userId)
+	console.log(chalk.gray("Name      "), keyName)
+	console.log(chalk.gray("ID        "), result.Body?.id)
+
+	console.log()
+	console.log(chalk.yellow("Secret Key"))
+	console.log(chalk.white.bold(result.Body?.key))
+
+	console.log()
+	console.log(chalk.yellow("⚠️   Save this key now. It will not be shown again."))
+	console.log()
 
 	process.exit(0)
 }

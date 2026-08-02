@@ -38,9 +38,9 @@ export class ServerEndpoint {
 
 	static RegisterServerMiddleware(): void {
 		ServerEndpoint.RegisterMiddleware(() => {
-			Logger.Info(`Route: Enabling API, URL= ${ROUTE.SERVER_PATH}`)
+			Logger.Info(`Route: Enabling API, URL= ${ROUTE.API_SERVER_PATH}`)
 			ServerEndpoint.Api.use(
-				`${ROUTE.SERVER_PATH}/`,
+				`${ROUTE.API_SERVER_PATH}/`,
 				Logger.RequestMiddleware,
 				ResponseHandler.SetContentJson,
 				ServerRouter,
@@ -78,7 +78,7 @@ export class ServerEndpoint {
 		let count5xx = 0
 
 		ServerEndpoint.Api.use((req: Request, res: Response, next: NextFunction) => {
-			if (req.path.startsWith(ROUTE.METRICS_PATH)) return next()
+			if (req.path.startsWith(ROUTE.API_METRICS_PATH)) return next()
 
 			activeRequests++
 			totalRequests++
@@ -99,6 +99,10 @@ export class ServerEndpoint {
 				else if (status >= 400 && status < 500) count4xx++
 				else if (status >= 500) count5xx++
 
+				// http request
+				MetricsCollector.DispatchEvent_inc(`${_MTR_.HTTP_REQUEST}${req.method}:${req.path}:${res.statusCode}`)
+
+				// http requests
 				MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_ACTIVE, activeRequests)
 				MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_2XX, count2xx)
 				MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_3XX, count3xx)
@@ -123,6 +127,15 @@ export class ServerEndpoint {
 		// path: /
 		ServerEndpoint.Api.get("/", (_req: Request, res: Response) => {
 			res.status(HTTP_STATUS_CODE.OK).send(SERVER.BANNER)
+		})
+
+		// path: /health
+		ServerEndpoint.Api.get(ROUTE.HEALTH_PATH, (_req: Request, res: Response) => {
+			res.status(HTTP_STATUS_CODE.OK).json({
+				status: "ok",
+				uptime: process.uptime(),
+				timestamp: new Date().toISOString(),
+			})
 		})
 
 		// Execute module middleware registration queue

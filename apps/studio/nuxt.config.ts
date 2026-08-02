@@ -5,7 +5,8 @@ export default defineNuxtConfig({
 
     modules: [
         '@nuxt/eslint',
-        '@nuxt/ui'
+        '@nuxt/ui',
+        'nuxt-auth-utils'
     ],
 
     colorMode: {
@@ -23,12 +24,8 @@ export default defineNuxtConfig({
 
     css: ['~/assets/css/main.css'],
 
-    routeRules: {
-        '/server-api/**': { proxy: 'http://localhost:3000/**' },
-        '/ai-api/**': { proxy: 'http://localhost:3001/**' }
-    },
-
     runtimeConfig: {
+        metalServerUrl: process.env.NUXT_METAL_SERVER_URL ?? 'http://127.0.0.1:3000',
         public: {
             aiServerUrl: process.env.NUXT_PUBLIC_AI_SERVER_URL ?? 'http://localhost:3001'
         }

@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "tsx watch --inspect=0.0.0.0:9229 src/index.ts",
 		"dev:build-all-images": "tsx watch --inspect=0.0.0.0:9229 src/index.ts --build-all-images",
+		"dev:generate-api-key": "tsx watch --inspect=0.0.0.0:9229 src/index.ts --generate-api-key",
 		"build": "tsup-node",
 		"build:watch": "tsc --watch",
 		"start": "node dist/index.js",

@@ -26,8 +26,8 @@ export class ServerCore {
 	@Logger.LogFunction()
 	static RegisterServerMiddleware(): void {
 		ServerEndpoint.RegisterMiddleware(() => {
-			Logger.Info(`Route: Enabling API, URL= ${ROUTE.SERVER_PATH}`)
-			ServerEndpoint.Api.use(`${ROUTE.SERVER_PATH}/`, Logger.RequestMiddleware, ResponseHandler.SetContentJson, ServerRouter)
+			Logger.Info(`Route: Enabling API, URL= ${ROUTE.API_SERVER_PATH}`)
+			ServerEndpoint.Api.use(`${ROUTE.API_SERVER_PATH}/`, Logger.RequestMiddleware, ResponseHandler.SetContentJson, ServerRouter)
 		})
 	}
 

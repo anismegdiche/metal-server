@@ -27,16 +27,17 @@ export const SERVER = {
 
 export enum ROUTE {
 	USER_PATH = "/user",
-	SERVER_PATH = "/server",
 	SCHEMA_PATH = "/schema",
-	PLAN_PATH = "/plan",
-	CACHE_PATH = "/cache",
-	SCHEDULE_PATH = "/schedule",
-	API_PATH = "/api",
-	SWAGGER_UI_PATH = "/api-docs",
-	METRICS_PATH = "/metrics",
 	MCP_PATH = "/mcp",
-	API_KEYS_PATH = "/api-keys",
+	HEALTH_PATH = "/health",
+	SWAGGER_UI_PATH = "/api-docs",
+	API_SERVER_PATH = "/api/server",
+	API_PLAN_PATH = "/api/plan",
+	API_CACHE_PATH = "/api/cache",
+	API_SCHEDULE_PATH = "/api/schedule",
+	API_PATH = "/api",
+	API_METRICS_PATH = "/api/metrics",
+	API_KEYS_PATH = "/api/keys",
 }
 
 export enum HTTP_STATUS_CODE {

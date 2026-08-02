@@ -50,7 +50,7 @@ const tableData = computed(() =>
 
 async function fetchKeys() {
   try {
-    keys.value = await $fetch<ApiKeyInfo[]>('/server-api/api-keys')
+    keys.value = await $fetch<ApiKeyInfo[]>('/server-api/api/keys')
   } catch (e: any) {
     toast.add({ title: 'Error', description: e?.data?.message ?? 'Failed to load API keys', color: 'error' })
   }
@@ -68,7 +68,7 @@ async function createKey() {
     const scopes = createForm.scopes
       ? createForm.scopes.split(',').map(s => s.trim()).filter(Boolean)
       : []
-    const result = await $fetch<ApiKeyCreated>('/server-api/api-keys', {
+    const result = await $fetch<ApiKeyCreated>('/server-api/api/keys', {
       method: 'POST',
       body: { name: createForm.name, scopes },
     })
@@ -96,7 +96,7 @@ function confirmRevoke(id: string) {
 async function revokeKey() {
   if (!revokeKeyId.value) return
   try {
-    await $fetch(`/server-api/api-keys/${revokeKeyId.value}`, { method: 'DELETE' })
+    await $fetch(`/server-api/api/keys/${revokeKeyId.value}`, { method: 'DELETE' })
     toast.add({ title: 'Key revoked', color: 'success' })
     revokeModalOpen.value = false
     revokeKeyId.value = null

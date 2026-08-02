@@ -3,8 +3,8 @@ import { SCHEMA_TYPE_BADGE, STATUS_DOT_MAP, STATUS_LABEL_MAP, getProviderIcon } 
 
 const { formatNumber, errorPercent } = useFormatting()
 
-const { data: schemaMetrics, refresh: refreshSchemas } = useMetricsPolling('/server-api/metrics/schemas/schemas:%7E')
-const { data: sourcesMetrics, refresh: refreshSources } = useMetricsPolling('/server-api/metrics/sources/sources:%7E')
+const { data: schemaMetrics, refresh: refreshSchemas } = useMetricsPolling('/server-api/api/metrics/schemas/schemas:%7E')
+const { data: sourcesMetrics, refresh: refreshSources } = useMetricsPolling('/server-api/api/metrics/sources/sources:%7E')
 useMultiMetricsPolling([{ refresh: refreshSchemas }, { refresh: refreshSources }])
 
 const schemasList = computed(() => {

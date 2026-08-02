@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { formatDateTime } = useFormatting()
 
-const { data: metrics, refresh } = useMetricsPolling('/server-api/metrics/schedules/schedules:%7E')
+const { data: metrics, refresh } = useMetricsPolling('/server-api/api/metrics/schedules/schedules:%7E')
 
 const schedules = computed(() => {
   if (!metrics.value) return []

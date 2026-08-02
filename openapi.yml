@@ -130,12 +130,6 @@ tags:
       description: "Find out more"
       url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#user"
 
-  - name: "Server"
-    description: "Operations about Server"
-    externalDocs:
-      description: "Find out more"
-      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#server"
-
   - name: "Schema"
     description: "Operations about Schema"
     externalDocs:
@@ -148,51 +142,54 @@ tags:
       description: "Find out more"
       url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#schema"
 
-  - name: "Plan"
-    description: "Operations about Plan"
-    externalDocs:
-      description: "Find out more"
-      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#plan"
-
-  - name: "Cache"
-    description: "Operations about Cache"
-    externalDocs:
-      description: "Find out more"
-      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#cache"
-
-  - name: "Schedule"
-    description: "Operations about Scheduler"
-    externalDocs:
-      description: "Find out more"
-      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#schedule"
-
-  - name: "Config"
-    description: "Operations about Configuration"
+  - name: "MCP"
+    description: "Operations about MCP requests"
 
   - name: "API"
     description: "Operations about API internals"
 
-  - name: "Source"
-    description: "Operations about source data access"
-
-  - name: "Metrics"
-    description: "Operations about metrics"
-
-  - name: "MCP"
-    description: "Operations about MCP requests"
-
-  - name: "API Keys"
-    description: "Operations about API keys"
+  - name: "Server"
+    description: "Operations about Server"
+    externalDocs:
+      description: "Find out more"
+      url: "https://metal-docs-sh3b0.kinsta.page/documentation/rest-api.html#server"
 
 paths:
+  /health:
+    get:
+      tags:
+        - Server
+      summary: Health check
+      description: Returns the server health status (no authentication required)
+      security: []
+      responses:
+        default:
+          $ref: "#/components/responses/DefaultError"
+        200:
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  uptime:
+                    type: number
+                  timestamp:
+                    type: string
+                    format: date-time
+        500:
+          $ref: "#/components/responses/http500"
+
   /user/login:
     post:
       summary: Login to the Metal server
       description: Returns a JWT token if the credentials are valid
       tags:
         - User
-      security:
-        - bearerAuth: []
+      security: []
       requestBody:
         required: true
         content:
@@ -272,84 +269,6 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /server/info:
-    get:
-      tags:
-        - Server
-      summary: Get server information
-      description: Returns server information
-      security:
-        - bearerAuth: []
-      responses:
-        default:
-          $ref: "#/components/responses/DefaultError"
-        200:
-          description: Server information
-          content:
-            application/json:
-              schema:
-                type: object
-        400:
-          $ref: "#/components/responses/http400"
-        401:
-          $ref: "#/components/responses/http401"
-        403:
-          $ref: "#/components/responses/http403"
-        500:
-          $ref: "#/components/responses/http500"
-
-  /server/reload:
-    post:
-      tags:
-        - Server
-      summary: Reload server
-      description: Reloads the server
-      security:
-        - bearerAuth: []
-      responses:
-        default:
-          $ref: "#/components/responses/DefaultError"
-        200:
-          description: Server reloaded
-          content:
-            application/json:
-              schema:
-                type: object
-        400:
-          $ref: "#/components/responses/http400"
-        401:
-          $ref: "#/components/responses/http401"
-        403:
-          $ref: "#/components/responses/http403"
-        500:
-          $ref: "#/components/responses/http500"
-
-  /server/reload-plans:
-    post:
-      tags:
-        - Server
-      summary: Reload plans
-      description: Reloads all plans without restarting the server
-      security:
-        - bearerAuth: []
-      responses:
-        default:
-          $ref: "#/components/responses/DefaultError"
-        200:
-          description: Plans reloaded
-          content:
-            application/json:
-              schema:
-                type: object
-        400:
-          $ref: "#/components/responses/http400"
-        401:
-          $ref: "#/components/responses/http401"
-        403:
-          $ref: "#/components/responses/http403"
-        500:
-          $ref: "#/components/responses/http500"
-
   /schema/{schema}:
     get:
       tags:
@@ -388,7 +307,7 @@ paths:
   /schema/{schema}/{entity}:
     get:
       tags:
-        - Schema
+        - Entity
       summary: Get data from an entity in the schema
       description: Retrieves data from an entity in the specified schema
       security:
@@ -452,7 +371,7 @@ paths:
 
     post:
       tags:
-        - Schema
+        - Entity
       summary: Insert Data in an entity in the schema
       description: Creates a new entity in the specified schema
       security:
@@ -489,7 +408,7 @@ paths:
 
     patch:
       tags:
-        - Schema
+        - Entity
       summary: Update Data in an entity in the schema
       description: updates an existing entity in the specified schema
       security:
@@ -540,7 +459,7 @@ paths:
 
     delete:
       tags:
-        - Schema
+        - Entity
       summary: Delete Data in an entity in the schema
       description: Deletes an existing entity in the specified schema
       security:
@@ -585,10 +504,118 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /cache/view:
+  /mcp:
+    post:
+      tags:
+        - MCP
+      summary: Handle MCP request
+      description: Forwards a request to the MCP adapter
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        200:
+          description: MCP response
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/server/info:
     get:
       tags:
-        - Cache
+        - API
+      summary: Get server information
+      description: Returns server information
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: "#/components/responses/DefaultError"
+        200:
+          description: Server information
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/server/reload:
+    post:
+      tags:
+        - API
+      summary: Reload server
+      description: Reloads the server
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: "#/components/responses/DefaultError"
+        200:
+          description: Server reloaded
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/server/reload-plans:
+    post:
+      tags:
+        - API
+      summary: Reload plans
+      description: Reloads all plans without restarting the server
+      security:
+        - bearerAuth: []
+      responses:
+        default:
+          $ref: "#/components/responses/DefaultError"
+        200:
+          description: Plans reloaded
+          content:
+            application/json:
+              schema:
+                type: object
+        400:
+          $ref: "#/components/responses/http400"
+        401:
+          $ref: "#/components/responses/http401"
+        403:
+          $ref: "#/components/responses/http403"
+        500:
+          $ref: "#/components/responses/http500"
+
+  /api/cache/view:
+    get:
+      tags:
+        - API
       summary: View cache
       description: Returns the current cache
       security:
@@ -613,10 +640,10 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /cache/clean:
+  /api/cache/clean:
     post:
       tags:
-        - Cache
+        - API
       summary: Clean cache
       description: Cleans the cache
       security:
@@ -639,10 +666,10 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /cache/purge:
+  /api/cache/purge:
     post:
       tags:
-        - Cache
+        - API
       summary: Purge cache
       description: Purges the cache
       security:
@@ -665,12 +692,12 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /plan/{plan}/reload:
+  /api/plan/{plan}/reload:
     post:
       summary: Reload plan
       description: Reload plan by name
       tags:
-        - Plan
+        - API
       security:
         - bearerAuth: []
       parameters:
@@ -700,64 +727,12 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /plan/{plan}/metrics:
-    post:
-      summary: Get plan metrics
-      description: Returns execution metrics for a plan by name
-      tags:
-        - Plan
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: plan
-          schema:
-            type: string
-          required: true
-          description: Plan name
-      responses:
-        default:
-          $ref: "#/components/responses/DefaultError"
-        200:
-          description: Plan metrics retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  planName:
-                    type: string
-                  startTime:
-                    type: string
-                    format: date-time
-                  endTime:
-                    type: string
-                    format: date-time
-                  durationMs:
-                    type: number
-                  status:
-                    type: string
-                  steps:
-                    type: array
-                    items:
-                      type: object
-        400:
-          $ref: "#/components/responses/http400"
-        401:
-          $ref: "#/components/responses/http401"
-        403:
-          $ref: "#/components/responses/http403"
-        404:
-          $ref: "#/components/responses/http404"
-        500:
-          $ref: "#/components/responses/http500"
-
   /api/config:
     get:
       summary: Get full configuration
       description: Returns the entire server configuration
       tags:
-        - Config
+        - API
       security:
         - bearerAuth: []
       responses:
@@ -782,7 +757,7 @@ paths:
       summary: Replace full configuration
       description: Replaces the entire server configuration after validation
       tags:
-        - Config
+        - API
       security:
         - bearerAuth: []
       requestBody:
@@ -817,7 +792,7 @@ paths:
       summary: Reload server from config
       description: Reloads the server after a configuration change
       tags:
-        - Config
+        - API
       security:
         - bearerAuth: []
       responses:
@@ -843,7 +818,7 @@ paths:
       summary: Get config section
       description: Returns a specific configuration section (e.g. server, sources, schemas, plans, schedules)
       tags:
-        - Config
+        - API
       security:
         - bearerAuth: []
       parameters:
@@ -886,7 +861,7 @@ paths:
       summary: Patch config section
       description: Merges data into an existing configuration section
       tags:
-        - Config
+        - API
       security:
         - bearerAuth: []
       parameters:
@@ -939,7 +914,7 @@ paths:
       summary: Get config item
       description: Returns a named item within a configuration section
       tags:
-        - Config
+        - API
       security:
         - bearerAuth: []
       parameters:
@@ -990,7 +965,7 @@ paths:
       summary: Create or update config item
       description: Creates or updates a named item within a configuration section
       tags:
-        - Config
+        - API
       security:
         - bearerAuth: []
       parameters:
@@ -1048,7 +1023,7 @@ paths:
       summary: Delete config item
       description: Deletes a named item from a configuration section
       tags:
-        - Config
+        - API
       security:
         - bearerAuth: []
       parameters:
@@ -1174,7 +1149,7 @@ paths:
   /api/source/{source}:
     get:
       tags:
-        - Source
+        - API
       summary: List source entities
       description: Lists entities available in the requested source
       security:
@@ -1207,7 +1182,7 @@ paths:
   /api/source/{source}/{entity}:
     get:
       tags:
-        - Source
+        - API
       summary: Get source entity rows
       description: Returns rows from the requested source entity
       security:
@@ -1243,10 +1218,10 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /api-keys:
+  /api/keys:
     get:
       tags:
-        - API Keys
+        - API
       summary: List API keys
       description: Returns a list of API keys for the current user
       security:
@@ -1269,7 +1244,7 @@ paths:
 
     post:
       tags:
-        - API Keys
+        - API
       summary: Create API key
       description: Creates a new API key
       security:
@@ -1290,10 +1265,10 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /api-keys/{id}:
+  /api/keys/{id}:
     get:
       tags:
-        - API Keys
+        - API
       summary: Get API key
       description: Returns an API key by identifier
       security:
@@ -1325,7 +1300,7 @@ paths:
 
     delete:
       tags:
-        - API Keys
+        - API
       summary: Revoke API key
       description: Revokes an API key by identifier
       security:
@@ -1351,42 +1326,14 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /mcp:
-    post:
-      tags:
-        - MCP
-      summary: Handle MCP request
-      description: Forwards a request to the MCP adapter
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        200:
-          description: MCP response
-          content:
-            application/json:
-              schema:
-                type: object
-        400:
-          $ref: "#/components/responses/http400"
-        401:
-          $ref: "#/components/responses/http401"
-        403:
-          $ref: "#/components/responses/http403"
-        500:
-          $ref: "#/components/responses/http500"
-
-  /metrics:
+  /api/metrics:
     get:
       tags:
-        - Metrics
+        - API
       summary: Get all metrics
       description: Returns all available metrics
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: Metrics data
@@ -1399,12 +1346,14 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /metrics/{metric}:
+  /api/metrics/{metric}:
     get:
       tags:
-        - Metrics
+        - API
       summary: Get a metric
       description: Returns a single metric by name
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: metric
@@ -1426,12 +1375,14 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /metrics/{metricFrom}/{metricTo}:
+  /api/metrics/{metricFrom}/{metricTo}:
     get:
       tags:
-        - Metrics
+        - API
       summary: Get metrics range
       description: Returns metrics for a range of metric names
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: metricFrom
@@ -1459,14 +1410,14 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /schedule/{jobName}/start:
+  /api/schedule/{jobName}/start:
     post:
       summary: Start a job
       description: Start a job with the given job name
       security:
         - bearerAuth: []
       tags:
-        - Schedule
+        - API
       parameters:
         - in: path
           name: jobName
@@ -1494,14 +1445,14 @@ paths:
         500:
           $ref: "#/components/responses/http500"
 
-  /schedule/{jobName}/stop:
+  /api/schedule/{jobName}/stop:
     post:
       summary: Stop a job
       description: Stop a job with the given job name
       security:
         - bearerAuth: []
       tags:
-        - Schedule
+        - API
       parameters:
         - in: path
           name: jobName
@@ -1528,3 +1479,5 @@ paths:
           $ref: "#/components/responses/http404"
         500:
           $ref: "#/components/responses/http500"
+
+
