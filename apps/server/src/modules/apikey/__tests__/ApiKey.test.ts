@@ -3,7 +3,6 @@
 //
 import { beforeEach, describe, expect, it, vi } from "vitest"
 //
-import { API_KEY_PREFIX } from "../@consts"
 import { ApiKey } from "../ApiKey"
 
 //

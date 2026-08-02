@@ -32,6 +32,7 @@ const createForm = reactive({
 const columns = [
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'prefix', header: 'Key Prefix' },
+  { accessorKey: 'userId', header: 'User' },
   { accessorKey: 'scopes', header: 'Scopes' },
   { accessorKey: 'createdAt', header: 'Created' },
   { accessorKey: 'lastUsedAt', header: 'Last Used' },

@@ -1,0 +1,20 @@
+# @name login
+POST  http://127.0.0.1:3000/user/login
+Content-Type: application/json
+
+{
+    "username":"myapiuser",
+    "password": "myStr@ngpa$$w0rd"
+}
+###
+
+
+@token={{login.response.body.token}}
+###
+
+
+# @name metrics
+GET http://127.0.0.1:3000/api/metrics
+authorization: Bearer {{token}}
+Content-Type: application/json
+###
