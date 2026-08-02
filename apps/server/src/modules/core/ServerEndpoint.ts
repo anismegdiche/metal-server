@@ -100,7 +100,7 @@ export class ServerEndpoint {
 				else if (status >= 500) count5xx++
 
 				// http request
-				MetricsCollector.DispatchEvent_inc(`${_MTR_.HTTP_REQUEST}${req.method}:${req.path}:${res.statusCode}`)
+				MetricsCollector.DispatchEvent_inc(`${_MTR_.HTTP_REQUEST}${req.method}:${req.baseUrl}${req.path}:${res.statusCode}`)
 
 				// http requests
 				MetricsCollector.DispatchEvent_set(_MTR_.HTTP_REQUESTS_ACTIVE, activeRequests)
