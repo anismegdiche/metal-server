@@ -187,7 +187,7 @@ sources:
 
 ## Memory <Badge type="default" text="v0.2+" />
 
-Non-persistant Memory Database
+Non-persistent Memory Database
 
 **Primary parameters:**
 

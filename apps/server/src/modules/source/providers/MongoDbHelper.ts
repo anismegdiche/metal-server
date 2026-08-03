@@ -5,9 +5,9 @@ const SQLParser = require("@synatic/noql")
 
 import { Logger } from "@metal/logger"
 import type { TJson } from "@metal/types"
-import { Assert } from "../../../utils/Assert"
 //
-import { JsonUtils } from "../../../utils/JsonUtils"
+import { JsonUtils } from "@metal/utils"
+import { Assert } from "../../../utils/Assert"
 import type { TSqlToken } from "../../../utils/SqlQueryUtils"
 import { SQL_TYPE, SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 import { NormalizeError } from "../../errors/HttpErrors"

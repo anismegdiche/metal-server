@@ -495,7 +495,7 @@ The table below describes the different values that can be configured in the `pr
 | `plans`    | Connect to Metal Plans                   | <Badge type="info" text="v0.5+" />    |
 | `storage`  | Storage abstraction data provider        | <Badge type="info" text="v0.5+" />    |
 | `metal`    | Metal Server via REST                    | <Badge type="default" text="v0.2+" /> |
-| `memory`   | Local Memory storage (Non-persistant)    | <Badge type="default" text="v0.2+" /> |
+| `memory`   | Local Memory storage (Non-persistent)    | <Badge type="default" text="v0.2+" /> |
 
 For more detailed information about how to configure a data provider, See: [Data Providers Configurations](./data-providers-config)
 

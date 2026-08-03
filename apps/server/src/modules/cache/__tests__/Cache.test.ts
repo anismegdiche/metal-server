@@ -3,21 +3,6 @@ import { ConfigManager } from "../../core/ConfigManager"
 import { Cache } from "../Cache"
 
 vi.mock("../../core/ConfigManager")
-vi.mock("../../../utils/Logger", () => ({
-	LOGGER_DEFAULT_LEVEL: "info",
-	VERBOSITY: {
-		DEBUG: "debug",
-	},
-	Logger: {
-		LogFunction: () => (_target: any, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-		Info: vi.fn(),
-		Error: vi.fn(),
-		Warn: vi.fn(),
-		Debug: vi.fn(),
-		In: "",
-		Out: "",
-	},
-}))
 vi.mock("../../schema/Schema", () => ({
 	Schema: {
 		IsSchemaRequestSelect: vi.fn().mockReturnValue(true),

@@ -1,6 +1,6 @@
+import { JsonUtils } from "@metal/utils"
 import { HttpErrorBadRequest } from "../../modules/errors/HttpErrors"
 import type { TRow } from "../../types/DataTable"
-import { JsonUtils } from "../JsonUtils"
 import { SQL_TYPE, SqlQueryUtils } from "../SqlQueryUtils"
 
 function mockEscapeField(field: string) {

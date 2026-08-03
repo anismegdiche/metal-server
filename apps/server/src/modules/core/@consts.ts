@@ -1,8 +1,9 @@
 //
 //
 //
+
+import { StringUtils } from "@metal/utils"
 import { Package } from "../../utils/Package"
-import { StringUtils } from "../../utils/StringUtils"
 
 //
 export const SERVER = {
@@ -72,13 +73,6 @@ export enum HTTP_STATUS_MESSAGE {
 	NOT_IMPLEMENTED = "Not Implemented",
 	CONTENT_TOO_LARGE = "Content Too Large",
 }
-
-//XXX export enum VALIDATION_ERROR_MESSAGE {
-//XXX     MUST_BE_NUMBER = 'must be a number',
-//XXX     MUST_BE_JSON = 'must be a JSON object',
-//XXX     MUST_BE_JSON_ARRAY_OR_OBJECT = 'must be a JSON array or a JSON object',
-//XXX     MUST_BE_STRING = 'must be a string'
-//XXX }
 
 export const RESPONSE = {
 	SELECT: {

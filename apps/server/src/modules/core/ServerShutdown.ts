@@ -5,8 +5,8 @@
 //
 import type { Server } from "node:http"
 import { Logger } from "@metal/logger"
+import { JsonUtils } from "@metal/utils"
 import type { FSWatcher } from "chokidar"
-import { JsonUtils } from "../../utils/JsonUtils"
 import { AiDocker } from "../ai-engine/AiDocker"
 import { Cache } from "../cache/Cache"
 import { Schedule } from "../plan/Schedule"

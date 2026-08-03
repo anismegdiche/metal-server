@@ -1,7 +1,7 @@
 //
 //
 //
-import { AiEnginesGetModelsPath } from "@metal/config"
+import { EnvGetAiEnginesModelsPath } from "@metal/config"
 
 
 //
@@ -15,4 +15,4 @@ export enum AI_ENGINE {
 
 
 //
-export const AI_DOCKER_MODEL_PATH = AiEnginesGetModelsPath()
+export const AI_DOCKER_MODEL_PATH = EnvGetAiEnginesModelsPath()

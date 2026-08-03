@@ -1,11 +1,12 @@
 //
 //
 //
+
+import { JsonUtils } from "@metal/utils"
 import { merge, omit } from "lodash-es"
 //
 import type { DataTable, TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
@@ -13,13 +14,11 @@ import { Schema } from "../../schema/Schema"
 import type { TSchemaRequestInsert } from "../../schema/types/TSchemaRequest"
 import { STEP } from "../@consts"
 import { DATAPROVIDER } from "../consts/DATAPROVIDER"
-import { type U__plans_plan_insert_Params, z_U__plans_plan_insert_Params, } from "../types/U__plans_params"
+import { type U__plans_plan_insert_Params, z_U__plans_plan_insert_Params } from "../types/U__plans_params"
 import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
-
 
 //
 export async function Insert(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
-
 	Assert.Var<U__plans_plan_insert_Params>(
 		stepParams,
 		z_U__plans_plan_insert_Params.safeParse(stepParams).success,
@@ -31,17 +30,12 @@ export async function Insert(stepParams: U__plans_plan__step_Params, $context: P
 		new Sandbox($context),
 	) as U__plans_plan_insert_Params
 
-	const { 
-		data: planData 
-	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	const $__schemaRequest = omit($__stepParams, "on-error") as TSchemaRequestInsert
 
-	$context = merge(
-		$context,
-		DATAPROVIDER.GetContext($__schemaRequest)
-	)
+	$context = merge($context, DATAPROVIDER.GetContext($__schemaRequest))
 
 	const { schema } = $__schemaRequest
 
@@ -55,7 +49,6 @@ export async function Insert(stepParams: U__plans_plan__step_Params, $context: P
 }
 
 async function _insertSchema(stepParams: U__plans_plan_insert_Params, $context: Partial<TContext>): Promise<void> {
-
 	const schemaRequest = stepParams as TSchemaRequestInsert
 	const { schema, entity, data } = schemaRequest
 
@@ -79,32 +72,31 @@ async function _insertSchema(stepParams: U__plans_plan_insert_Params, $context: 
 }
 
 async function _insertPlan(stepParams: U__plans_plan_insert_Params, $context: Partial<TContext>): Promise<DataTable> {
-
 	const schemaRequest = stepParams as TSchemaRequestInsert
 	const { entity, data } = schemaRequest
 
-	const {
-		data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
+	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	// entity given --> error
 	Assert.Var<string>(entity, !entity, `${STEP.INSERT}: entity should not be given`)
 
 	// At least one have data
-	Assert.Condition(
-		(data as TRow[])?.length > 0,
-		`${STEP.INSERT}: No data to insert ${JsonUtils.Stringify(stepParams)}`,
-	)
+	Assert.Condition((data as TRow[])?.length > 0, `${STEP.INSERT}: No data to insert ${JsonUtils.Stringify(stepParams)}`)
 
 	return planData.RowsAdd(data)
 }
 
-export function _insertRow(row: TRow, stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<TRow> {
+export function _insertRow(
+	row: TRow,
+	stepParams: U__plans_plan__step_Params,
+	$context: Partial<TContext>,
+): Promise<TRow> {
 	return Insert(
 		{
-			...stepParams as TSchemaRequestInsert,
-			data: row
+			...(stepParams as TSchemaRequestInsert),
+			data: row,
 		},
-		$context
+		$context,
 	)
 }

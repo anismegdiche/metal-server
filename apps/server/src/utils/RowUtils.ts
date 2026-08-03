@@ -4,9 +4,9 @@
 
 import { createHash, createHmac, randomUUID } from "node:crypto"
 import { Logger } from "@metal/logger"
+import { JsonUtils } from "@metal/utils"
 //
 import type { TRow } from "../types/DataTableTypes"
-import { JsonUtils } from "./JsonUtils"
 
 //
 const HASH_ALGO = "sha256"
@@ -72,8 +72,7 @@ export class RowUtils {
 	}
 
 	static Omit(row: TRow, fields: string[] | undefined): TRow {
-		if (!fields || fields.length === 0)
-			return row
+		if (!fields || fields.length === 0) return row
 
 		const filtered: TRow = {}
 

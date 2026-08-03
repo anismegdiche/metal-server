@@ -3,6 +3,8 @@
 //
 
 import { Logger } from "@metal/logger"
+//
+import { JsonUtils } from "@metal/utils"
 import { intersection, merge } from "lodash-es"
 import {
 	type Configuration,
@@ -14,8 +16,6 @@ import {
 	tokenRevocation,
 } from "openid-client"
 import z from "zod"
-//
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { ConfigManager } from "../../core/ConfigManager"
 import { HttpErrorInternalServerError, HttpErrorUnauthorized, NormalizeError } from "../../errors/HttpErrors"
 import { AUTH_PROVIDER } from "../@consts"

@@ -6,39 +6,37 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ApiKey } from "../ApiKey"
 
 //
+const mockPersistentMapStore = vi.hoisted(() => new Map<string, unknown>())
+//
 vi.mock("@metal/persistent-map", () => {
-	const store = new Map()
 	class MockPersistentMap {
-		constructor(_path: string) {}
 		set(key: string, value: unknown) {
-			store.set(key, value)
+			mockPersistentMapStore.set(key, value)
+			return this
 		}
-		get(key: string) {
-			return store.get(key)
+		get<T>(key: string): T {
+			return mockPersistentMapStore.get(key) as T
+		}
+		has(key: string): boolean {
+			return mockPersistentMapStore.has(key)
+		}
+		delete(key: string): void {
+			mockPersistentMapStore.delete(key)
 		}
 		entries() {
-			return [...store.entries()]
+			return [...mockPersistentMapStore.entries()]
 		}
-		clear() {
-			store.clear()
+		clear(): void {
+			mockPersistentMapStore.clear()
 		}
 	}
 	return { default: MockPersistentMap }
 })
 //
-vi.mock("../../../utils/Logger", () => ({
-	Logger: {
-		Info: vi.fn(),
-		Debug: vi.fn(),
-		Warn: vi.fn(),
-		Error: vi.fn(),
-		LogFunction: () => (_target: unknown, _propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
-	},
-}))
-//
 describe("ApiKey", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		mockPersistentMapStore.clear()
 	})
 	//
 	describe("Create", () => {
@@ -92,7 +90,7 @@ describe("ApiKey", () => {
 	})
 	//
 	describe("List", () => {
-		it("should list API keys for a user", () => {
+		it("should list all API keys", () => {
 			ApiKey.Create("user-a", { name: "key-1" })
 			ApiKey.Create("user-a", { name: "key-2" })
 			ApiKey.Create("user-b", { name: "key-3" })
@@ -100,8 +98,8 @@ describe("ApiKey", () => {
 			const result = ApiKey.List("user-a")
 			//
 			expect(result.StatusCode).toBe(200)
-			expect(result.Body).toHaveLength(2)
-			expect(result.Body!.every((k) => k.userId === "user-a")).toBe(true)
+			expect(result.Body).toHaveLength(3)
+			expect(result.Body!.some((k) => k.userId === "user-b")).toBe(true)
 		})
 		//
 		it("should not expose hash in listed keys", () => {

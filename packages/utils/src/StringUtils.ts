@@ -1,5 +1,5 @@
 //
-/** biome-ignore-all lint/suspicious/noControlCharactersInRegex: <explanation> */
+/** biome-ignore-all lint/suspicious/noControlCharactersInRegex: <!+> */
 //
 //
 import path from "node:path"
@@ -11,9 +11,9 @@ export class StringUtils {
 	static Split(str: string, sep: string): string[] {
 		return str.includes(sep)
 			? str
-				.split(sep)
-				.filter((_field) => !(_field === undefined || _field.trim() === ""))
-				.map((_field) => _field.trim())
+					.split(sep)
+					.filter((_field) => !(_field === undefined || _field.trim() === ""))
+					.map((_field) => _field.trim())
 			: [str]
 	}
 
@@ -28,28 +28,23 @@ export class StringUtils {
 
 	static Url(...subPaths: Array<string | undefined>) {
 		const cleanSubPaths = subPaths.filter((path: string | undefined) => !StringUtils.IsEmpty(path)) as string[]
-		if (cleanSubPaths.length === 0) 
-			return ""
+		if (cleanSubPaths.length === 0) return ""
 
 		return urlJoin(...cleanSubPaths).replaceAll(/\\/g, "/")
 	}
 
 	static Path(...subPaths: Array<string | undefined>) {
 		const cleanSubPaths = subPaths.filter((path: string | undefined) => !StringUtils.IsEmpty(path)) as string[]
-		if (cleanSubPaths.length === 0)
-			return ""
+		if (cleanSubPaths.length === 0) return ""
 
 		return path.posix.join(...cleanSubPaths)
 	}
 
 	static FsPath(...subPaths: Array<string | undefined>) {
 		const cleanSubPaths = subPaths.filter((path: string | undefined) => !StringUtils.IsEmpty(path)) as string[]
-		if (cleanSubPaths.length === 0)
-			return ""
+		if (cleanSubPaths.length === 0) return ""
 
-		return (process.platform === 'win32')
-			? path.join(...cleanSubPaths)
-			: path.posix.join(...cleanSubPaths)
+		return process.platform === "win32" ? path.join(...cleanSubPaths) : path.posix.join(...cleanSubPaths)
 	}
 
 	static ToString<T>(value: T): string {

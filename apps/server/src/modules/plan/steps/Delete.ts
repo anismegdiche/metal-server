@@ -1,11 +1,12 @@
 //
 //
 //
+
+import { JsonUtils } from "@metal/utils"
 import { merge, omit } from "lodash-es"
 //
 import type { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
@@ -14,9 +15,8 @@ import type { TSchemaRequestDelete } from "../../schema/types/TSchemaRequest"
 import type { TOptionalParameter } from "../../source/@types"
 import { STEP } from "../@consts"
 import { DATAPROVIDER } from "../consts/DATAPROVIDER"
-import { type U__plans_plan_delete_Params, z_U__plans_plan_delete_Params, } from "../types/U__plans_params"
+import { type U__plans_plan_delete_Params, z_U__plans_plan_delete_Params } from "../types/U__plans_params"
 import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
-
 
 //
 export async function Delete(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
@@ -36,10 +36,7 @@ export async function Delete(stepParams: U__plans_plan__step_Params, $context: P
 
 	const $__schemaRequest = omit($__stepParams, "on-error") as TSchemaRequestDelete
 
-	$context = merge(
-		$context,
-		DATAPROVIDER.GetContext($__schemaRequest)
-	)
+	$context = merge($context, DATAPROVIDER.GetContext($__schemaRequest))
 
 	const { schema } = $__schemaRequest
 
@@ -53,7 +50,6 @@ export async function Delete(stepParams: U__plans_plan__step_Params, $context: P
 }
 
 async function _deleteSchema(stepParams: U__plans_plan_delete_Params, $context: Partial<TContext>): Promise<void> {
-
 	const schemaRequest = stepParams as TSchemaRequestDelete
 	const { schema, entity } = schemaRequest
 
@@ -71,13 +67,10 @@ async function _deleteSchema(stepParams: U__plans_plan_delete_Params, $context: 
 }
 
 async function _deletePlan(stepParams: U__plans_plan_delete_Params, $context: Partial<TContext>): Promise<DataTable> {
-
 	const $__schemaRequest = stepParams as TSchemaRequestDelete
 	const { entity } = $__schemaRequest
 
-	const {
-		data: planData
-	} = $context.$plan as NonNullable<Record<string, unknown>>
+	const { data: planData } = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	// entity given --> error

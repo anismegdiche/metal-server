@@ -1,11 +1,11 @@
 import { Logger } from "@metal/logger"
 //
+import { JsonUtils } from "@metal/utils"
+//
 //
 //
 import * as _ from "lodash-es"
 import { DecoratorUtils } from "./DecoratorUtils"
-//
-import { JsonUtils } from "./JsonUtils"
 import { Synchronizer } from "./Synchronizer"
 
 //

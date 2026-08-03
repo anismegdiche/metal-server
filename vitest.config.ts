@@ -37,6 +37,16 @@ export default defineConfig({
 					setupFiles: ["../../vitest.setup.ts"],
 				},
 			},
+			{
+				test: {
+					name: "@metal/utils",
+					root: "./packages/utils",
+					include: ["**/__tests__/*.test.ts"],
+					exclude: ["node_modules"],
+					environment: "node",
+					globals: true,
+				},
+			},
 		],
 	},
 })

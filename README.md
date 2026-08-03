@@ -8,51 +8,77 @@ Metal (**M**iddleware, **E**xtraction, **T**ransformation, **A**rtificial Intell
 
 It streamlines and modernizes CRUD operations and data transformation tasks across SQL and NoSQL databases, instigating a paradigm shift in data management and processing. Operating as an advanced middleware layer between the database system and HTTP requests, Metal manages communication with popular DBMS, particularly beneficial for systems like MS SQL Server and PostgreSQL that lack built-in REST APIs.
 
-```mermaid
-graph TD
-M(<img src="https://metal-docs-sh3b0.kinsta.page/metal-logo-icon.png" width="50"/> Metal Server) -- TDS Protocol --> A[(Azure SQL <br>Database)]
-M -- Wire Protocol --> B[(MongoDB)]
-M -- Message-based protocol --> C[(PostgreSQL)]
-M -- I/O --> F[Files]@{ shape: notch-rect, label: "Files" }
-M -- HTTP --> W((Webservices))
-U((Application)) -- HTTP/HTTPS --> M
+Going beyond traditional middleware, Metal natively speaks the Model Context Protocol (MCP) — the emerging standard that lets AI agents and LLM applications act directly on your data. With a simple declarative configuration, your schemas and entities become callable tools for the AI era, turning Metal into the bridge between your data infrastructure and the growing ecosystem of intelligent, autonomous applications.
 
-style M fill:none,stroke:none
+```mermaid
+flowchart TD
+  A((Web Application)) --> M[Metal Server]
+  L((AI/LLM Applications)) --> M
+
+  subgraph P[Core Platform]
+    M[Metal Server]
+  end
+
+  subgraph D[Data Stores]
+    A1[(Relational DB)]
+    B1[(Document DB)]
+    C1[(Event Store)]
+    F1[Files]
+  end
+
+  subgraph X[External Systems]
+    W((Web services))
+  end
+
+  M --> A1
+  M --> B1
+  M --> C1
+  M --> F1
+  M --> W
+
+  classDef core fill:#f8f8f8,stroke:#666,stroke-width:1px,rx:10,ry:10;
+  classDef store fill:#fff,stroke:#666,stroke-width:1px;
+  classDef ext fill:#f3f3ff,stroke:#666,stroke-width:1px;
+  classDef actor fill:#ffffff,stroke:#666,stroke-width:1px,stroke-dasharray: 4 3;
+
+  class M core;
+  class A1,B1,C1,F1 store;
+  class W ext;
+  class A,L actor;
 ```
 
 As a conduit between applications and the underlying DBMS, Metal accommodates various database operations, presenting a uniform interface for developers to construct and maintain applications that seamlessly interact with data. By abstracting complexities associated with direct DBMS engagement, Metal empowers developers to focus on core functionality, fostering productivity and manageability.
 
+With its built-in MCP server, Metal extends this same abstraction to intelligent agents: AI assistants, chatbots, and automation pipelines can query, create, update, and manage your data through standardized MCP tools — secured by role-based access control, so you get the power of agentic data access without compromising security or control.
 
-## Features
+## Key Features
 
-Metal offers a wide range of powerful features that empower developers and streamline data operations. With Metal, you can:
+Metal offers a wide range of powerful features designed to enhance flexibility, security, and efficiency in data operations:
 
-- **Modernize access to traditional database management systems**: <br/>Metal provides a unified REST API that allows you to modernize the way you interact with popular database systems like MS SQL Server, PostgreSQL, MySQL, or MariaDB. By utilizing this API, you can seamlessly communicate with these systems, making the integration process simpler and more efficient.<br/><br/>
+- **Unified REST API:** Modernize access to traditional database management systems like MS SQL Server, PostgreSQL, MySQL, or MariaDB through a unified REST API, simplifying integration processes.
+  
+- **Schema Virtualization:** Deliver different schema names and user credentials based on specific requirements, allowing your application to adapt to various environments without significant modifications.
 
-- **Virtualize schema**: <br/>Metal enables you to virtualize schemas, allowing you to deliver different schema names and user credentials based on specific requirements. This flexibility ensures that your application can adapt to different environments or scenarios without the need for significant modifications.<br/><br/>
+- **Schema Merging:** Merge schemas from multiple databases and tables—even from different data providers—providing a unified view for seamless data analysis and manipulation.
 
-- **Merge schemas**: <br/>Metal goes beyond traditional boundaries by allowing you to merge schemas from multiple databases and tables, even if they are from different database providers. This capability simplifies the process of working with distributed or heterogeneous data sources, providing a unified view for seamless data analysis and manipulation.<br/><br/>
+- **AI-Powered Insights:** Leverage cutting-edge artificial intelligence to automatically identify patterns, trends, and anomalies within your datasets. This feature transforms raw data into strategic assets through intelligent insights.
 
-- **Leverage Artificial Intelligence for Intelligent Insights**: <br/>Through the integration of cutting-edge Artificial Intelligence, Metal empowers you to harness intelligent insights from your data. The AI-driven capabilities enable automatic identification of patterns, trends, and anomalies within your datasets. This feature unlocks the potential for data-driven decision-making and predictive analytics, transforming your data into a strategic asset.<br/><br/>
+- **MCP Server:** Expose Metal schemas and entities as MCP (Model Context Protocol) tools, enabling LLM clients and AI agents to read, create, update, delete, and list data through a declarative configuration.
 
-- **Secure your schema**: Metal prioritizes security by providing an additional login process and granular access control. You can enforce different levels of permissions per table, ensuring that your sensitive data remains protected and only accessible to authorized users or applications.<br/><br/>
+- **Enhanced Security:** Prioritize security with an additional login process and granular access control. Enforce different levels of permissions per table and per MCP tool to protect sensitive data.
 
-- **Execute transformations on the fly**: Metal empowers you to perform data transformations effortlessly without the need to modify existing schemas. You can apply transformations dynamically at runtime, providing real-time data processing capabilities and eliminating the need for costly and time-consuming schema alterations.
+- **Dynamic Transformations:** Execute transformations on the fly without modifying existing schemas. This real-time processing capability eliminates the need for costly schema alterations.
 
-These features collectively enhance the flexibility, security, and efficiency of your data operations, enabling you to modernize your approach to database management and data transformation while harnessing the power of Artificial Intelligence for advanced insights.
+## Benefits
 
-**List of principal features:**
+By integrating an API with ETL capabilities, Metal provides numerous benefits:
 
- * REST API
- * SQL Servers support (Azure SQL Database, Microsoft SQL Server, PostgreSQL)
- * NoSQL Servers support (MongoDB)
- * Files as tables abstraction (JSON,CSV)
- * WebServices support (REST, SOAP)
- * Virtualize schema and deliver different schema names and user credentials
- * Merge schemas from multiple databases and tables, even from different data providers
- * Secure your schema with additional login processes and grant different rights per table
- * Execute transformations on the fly without modifying existing schemas
+- **Improved Productivity:** Developers can focus on core functionalities rather than dealing with complex database interactions.
+  
+- **Real-Time Data Processing:** With dynamic transformations and real-time access through the API, organizations can make timely decisions based on up-to-date information.
 
-These features empower developers and simplify CRUD operations, data transformations, and integration with various database systems.
+- **Scalability:** The architecture supports growing data needs efficiently without performance degradation.
+
+- **Simplified Data Management:** A unified interface for diverse data sources simplifies CRUD operations and enhances overall data management practices.
 
 For additional details and comprehensive information, please consult the [Documentation](https://metal-docs-sh3b0.kinsta.page/).

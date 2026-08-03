@@ -4,10 +4,9 @@
 
 import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
+import { JsonUtils, StringUtils } from "@metal/utils"
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
-import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"

@@ -1,11 +1,10 @@
 //
 //
 //
-
 import { Logger, VERBOSITY } from "@metal/logger"
-import type { TJson } from "@metal/types"
-import { Stringify } from "../../utils/JsonUtils/Stringify"
-import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from "../core/@consts"
+import { Stringify } from "@metal/utils/json-utils/stringify"
+import { HTTP_STATUS_CODE } from "../core/@consts"
+
 
 //
 import {
@@ -35,7 +34,7 @@ export {
 	HttpErrorNotImplemented,
 	HttpErrorTooManyRequests,
 	HttpErrorUnauthorized,
-	NormalizeError,
+	NormalizeError
 }
 
 export function HttpErrorLog(error: HttpError | Error | unknown): void {

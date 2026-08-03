@@ -2,19 +2,17 @@
 //
 //
 import type { Readable } from "node:stream"
+import { StringUtils } from "@metal/utils"
 import { lookup } from "mime-types"
 import type { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { clsClonable } from "../../../utils/base/clsClonable"
-import { StringUtils } from "../../../utils/StringUtils"
 import type { U__source_storage } from "../../source/types/U__source_storage"
 import type { U__storage } from "../types/U__storage"
 import type { IStorageProvider } from "./IStorageProvider"
 
-
 //
 export abstract class absStorageProvider extends clsClonable implements IStorageProvider {
-
 	abstract SourceConfig?: U__source_storage
 	abstract StorageConfig?: U__storage
 

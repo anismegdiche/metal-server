@@ -2,11 +2,11 @@
 //
 //
 import { Logger } from "@metal/logger"
+import { JsonUtils } from "@metal/utils"
 import { merge } from "lodash-es"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"

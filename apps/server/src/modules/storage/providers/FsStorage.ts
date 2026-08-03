@@ -4,11 +4,10 @@
 import * as fs from "node:fs"
 import type { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
+import { JsonUtils, StringUtils } from "@metal/utils"
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
-import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
@@ -24,7 +23,7 @@ type TFsStorageParams = Omit<
 		[K in keyof U__storage_fs as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_fs[K]
 	},
 	"storageType"
-> 
+>
 
 //
 export class FsStorage extends absStorageProvider {

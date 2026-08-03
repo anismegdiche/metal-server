@@ -7,7 +7,7 @@ import { pathToFileURL } from "node:url"
 import { _MTR_ } from "@metal/config"
 import { Logger } from "@metal/logger"
 //
-import { StringUtils } from "../../utils/StringUtils"
+import { StringUtils } from "@metal/utils"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import { ROUTE, SERVER } from "./@consts"
 import { ResponseHandler } from "./ResponseHandler"

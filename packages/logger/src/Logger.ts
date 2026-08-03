@@ -1,18 +1,17 @@
-//
 /** biome-ignore-all lint/complexity/noBannedTypes: <!+> */
 /** biome-ignore-all lint/suspicious/noExplicitAny: <!+> */
 //
 //
-
-import { join } from "node:path"
+//
 import { CustomEvent, EventBus, type IEvent } from "@dimkl/events"
 import PersistentMap from "@metal/persistent-map"
+import { Stringify, StringUtils } from "@metal/utils"
 import { bold, cyan, gray, green, magenta, red, whiteBright, yellow } from "colorette"
 import * as _ from "lodash-es"
 import LogLevel from "loglevel"
 import Prefix from "loglevel-plugin-prefix"
 import morgan from "morgan"
-import { configure } from "safe-stable-stringify"
+
 
 //
 export enum VERBOSITY {
@@ -92,21 +91,6 @@ declare global {
 
 type TJson<T = any> = Record<string, T>
 
-function _normalizeError(err: unknown): TJson<any> {
-	if (err instanceof Error) {
-		return {
-			...err,
-			message: err?.message || "Unknown error",
-			stack: err?.stack,
-		}
-	}
-	return err as TJson<any>
-}
-
-//XXX function _getDateStamp(date: Date): string {
-//XXX 	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
-//XXX }
-
 const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/gm
 const ARGUMENT_NAMES = /([^\s,]+)/g
 
@@ -114,32 +98,6 @@ function _getParameters(originalMethod: Function, ...args: any[]): TJson {
 	const fnStr = originalMethod.toString().replaceAll(STRIP_COMMENTS, "")
 	const params = fnStr.slice(fnStr.indexOf("(") + 1, fnStr.indexOf(")")).match(ARGUMENT_NAMES)
 	return params ? Object.fromEntries(params.map((name, index) => [name, args[index]])) : {}
-}
-
-const SafeStableStringify = configure({
-	circularValue: undefined,
-	maximumDepth: 5,
-})
-
-function _stringify<T>(json: T): string {
-	try {
-		return JSON.stringify(json)
-	} catch (_error) {
-		return SafeStableStringify(json) ?? ""
-	}
-}
-
-function _toTextList(json?: TJson): string {
-	if (!json) {
-		return ""
-	}
-	const result: string[] = []
-	_.forEach(json, (value, key) => {
-		if (value) {
-			result.push(` - ${key}: ${_stringify(value)}`)
-		}
-	})
-	return result.join("\r\n")
 }
 
 //
@@ -163,7 +121,7 @@ function _formatPrefix(level: string, name: string | undefined, timestamp: Date)
 function _cleanMessage(msg: any[]): string {
 	return msg
 		.map((m) => {
-			return (typeof m === "string" ? m : JSON.stringify(m)).replace("[33m◀ [39m", " ◀ ").replace("[35m▶ [39m", " ▶ ")
+			return (typeof m === "string" ? m : Stringify(m)).replace("[33m◀ [39m", " ◀ ").replace("[35m▶ [39m", " ▶ ")
 		})
 		.join(" ")
 }
@@ -188,6 +146,8 @@ Prefix.apply(LogLevel.getLogger("critical"), {
 	},
 })
 
+const LOG_PATH = (await import("@metal/config")).EnvLogsDataPath() ?? "./data/logs"
+
 export class Logger {
 	static db: PersistentMap<LogEntry>
 	static readonly In = magenta("▶ ")
@@ -203,7 +163,12 @@ export class Logger {
 	}
 
 	static SetDb() {
-		Logger.db = new PersistentMap<LogEntry>(`/data/logs/${_cleanServiceName(Logger.ServiceName)}-log.db`)
+		Logger.db = new PersistentMap<LogEntry>(
+			StringUtils.Path(
+				LOG_PATH,
+				`${_cleanServiceName(Logger.ServiceName)}-log.db`
+			)
+		)
 	}
 
 	static _saveLogEntry(level: VERBOSITY, message: any[]) {
@@ -324,55 +289,80 @@ export class Logger {
 					.omit(_hide)
 					.value()
 
-				const _argsString = _.isEmpty(_filteredParams) ? "" : ` ${_stringify(_filteredParams)}`
+				const _argsString = _.isEmpty(_filteredParams) ? "" : ` ${Stringify(_filteredParams)}`
 
 				const ctorName = target.name ?? (this as any)?.constructor?.name ?? "Anonymous"
 
 				Logger.Bus.dispatchEvent(
 					new CustomEvent<{ message: any[] }>(LOG_EVENT.DEBUG, {
-						data: { message: [`${Logger.In} ${ctorName}.${propertyKey}${_argsString}`] },
+						data: {
+							message: [
+								Logger.In,
+								`${ctorName}.${propertyKey}${_argsString}`
+							]
+						},
 					}),
 				)
 				// biome-ignore lint/suspicious/noImplicitAnyLet: any
 				let result
 				try {
 					result = originalMethod.apply(this, args)
-				} catch (err: unknown) {
-					const _err =
-						Logger.Level === VERBOSITY.DEBUG ? `\r\n${_toTextList(_normalizeError(err))}` : (err as Error)?.message
-
+				} catch (e: unknown) {
 					Logger.Bus.dispatchEvent(
 						new CustomEvent<{ message: any[] }>(LOG_EVENT.ERROR, {
-							data: { message: [`${Logger.Out} ${ctorName}.${propertyKey} threw an error: ${_err}`] },
+							data: {
+								message: [
+									Logger.Out,
+									`${ctorName}.${propertyKey} threw an error:`,
+									(Logger.Level === VERBOSITY.DEBUG || Logger.Level === VERBOSITY.TRACE)
+										? e
+										: (e as Error).message
+								]
+							},
 						}),
 					)
-					throw err
+					throw e
 				}
 				if (result instanceof Promise) {
 					return result
 						.then((res) => {
 							Logger.Bus.dispatchEvent(
 								new CustomEvent<{ message: any[] }>(LOG_EVENT.DEBUG, {
-									data: { message: [`${Logger.Out} ${ctorName}.${propertyKey}`] },
+									data: {
+										message: [
+											Logger.Out,
+											`${ctorName}.${propertyKey}`
+										]
+									},
 								}),
 							)
 							return res
 						})
-						.catch((err: unknown) => {
-							const _err =
-								Logger.Level === VERBOSITY.DEBUG ? `\r\n${_toTextList(_normalizeError(err))}` : (err as Error)?.message
-
+						.catch((e: unknown) => {
 							Logger.Bus.dispatchEvent(
 								new CustomEvent<{ message: any[] }>(LOG_EVENT.ERROR, {
-									data: { message: [`${Logger.Out} ${ctorName}.${propertyKey} threw an error: ${_err}`] },
+									data: {
+										message: [
+											Logger.Out,
+											`${ctorName}.${propertyKey} threw an error:`,
+											(Logger.Level === VERBOSITY.DEBUG || Logger.Level === VERBOSITY.TRACE)
+												? e
+												: (e as Error).message
+										]
+									},
 								}),
 							)
-							throw err
+							throw e
 						})
 				}
 				Logger.Bus.dispatchEvent(
 					new CustomEvent<{ message: any[] }>(LOG_EVENT.DEBUG, {
-						data: { message: [`${Logger.Out} ${ctorName}.${propertyKey}`] },
+						data: {
+							message: [
+								Logger.Out,
+								`${ctorName}.${propertyKey}`
+							]
+						},
 					}),
 				)
 				return result

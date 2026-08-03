@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@dimkl/events": "^3.0.3",
 		"@metal/persistent-map": "workspace:*",
+		"@metal/utils": "workspace:*",
 		"colorette": "^2.0.20",
 		"lodash-es": "^4.17.21",
 		"loglevel": "^1.9.2",

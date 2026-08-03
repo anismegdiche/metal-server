@@ -2,7 +2,6 @@
 //
 //
 import {
-	ConnectionMode,
 	type Container,
 	CosmosClient,
 	type CosmosClientOptions,
@@ -11,11 +10,11 @@ import {
 	type SqlQuerySpec
 } from "@azure/cosmos"
 import { Logger } from "@metal/logger"
+import { StringUtils } from "@metal/utils"
 import { merge } from "lodash-es"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { StringUtils } from "../../../utils/StringUtils"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
@@ -43,7 +42,6 @@ import type { TDataListEntity, TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
 import type { U__source_cosmosdb } from "../types/U__source_cosmosdb"
 import { CosmosDbHelper } from "./CosmosDbHelper"
-
 
 //
 export class CosmosDbData extends absDataProvider {

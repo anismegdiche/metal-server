@@ -1,11 +1,12 @@
 //
 //
 //
+
+import { JsonUtils } from "@metal/utils"
 import { merge, omit } from "lodash-es"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
@@ -15,13 +16,11 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import type { TOptionalParameter } from "../../source/@types"
 import { STEP } from "../@consts"
 import { DATAPROVIDER } from "../consts/DATAPROVIDER"
-import { type U__plans_plan_select_Params, z_U__plans_plan_select_Params, } from "../types/U__plans_params"
+import { type U__plans_plan_select_Params, z_U__plans_plan_select_Params } from "../types/U__plans_params"
 import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
-
 
 //
 export async function Select(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
-
 	Assert.Var<U__plans_plan_select_Params>(
 		stepParams,
 		z_U__plans_plan_select_Params.safeParse(stepParams).success,
@@ -33,26 +32,19 @@ export async function Select(stepParams: U__plans_plan__step_Params, $context: P
 		new Sandbox($context),
 	) as U__plans_plan_select_Params
 
-	const {
-		data: planData
-	} = $context.$plan as NonNullable<Record<string, unknown>>
+	const { data: planData } = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
-
 
 	const $__schemaRequest = omit($__stepParams, "on-error") as TSchemaRequestSelect
 
-	$context = merge(
-		$context,
-		DATAPROVIDER.GetContext($__schemaRequest)
-	)
+	$context = merge($context, DATAPROVIDER.GetContext($__schemaRequest))
 
-	return ($__schemaRequest.schema !== undefined && $__schemaRequest.entity !== undefined)
+	return $__schemaRequest.schema !== undefined && $__schemaRequest.entity !== undefined
 		? await _selectSchema($__schemaRequest, $context)
 		: await _selectPlan($__schemaRequest, $context)
 }
 
 async function _selectSchema(stepParams: U__plans_plan_select_Params, $context: Partial<TContext>): Promise<DataTable> {
-
 	const schemaRequest = stepParams as TSchemaRequestSelect
 	const { schema, entity } = schemaRequest
 
@@ -88,9 +80,7 @@ async function _selectSchema(stepParams: U__plans_plan_select_Params, $context: 
 async function _selectPlan(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
 	const schemaRequest = stepParams as TSchemaRequestSelect
 
-	const {
-		data: planData
-	} = $context.$plan as NonNullable<Record<string, unknown>>
+	const { data: planData } = $context.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	const options: TOptionalParameter = DATAPROVIDER.Options.Parse(schemaRequest, $context)
@@ -99,14 +89,13 @@ async function _selectPlan(stepParams: U__plans_plan__step_Params, $context: Par
 		<TSchemaRequestSelect>{
 			entity: planData.Name,
 		},
-		options
+		options,
 	)
 
 	const sqlQuery = DATAPROVIDER.GetSqlQuery(sqlQueryHelper, options)
 	return planData.FreeSql({
 		sqlQuery,
 		queryParams: sqlQueryHelper.QueryParams,
-		returnData: true
+		returnData: true,
 	})
 }
-

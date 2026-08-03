@@ -4,10 +4,10 @@
 
 import { Logger } from "@metal/logger"
 import type { TJson } from "@metal/types"
+import { StringUtils } from "@metal/utils"
 import axios, { type AxiosResponse } from "axios"
 //
 import { clsClonable } from "../../../utils/base/clsClonable"
-import { StringUtils } from "../../../utils/StringUtils"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Utils } from "../../../utils/Utils"
 import { ConfigManager } from "../../core/ConfigManager"

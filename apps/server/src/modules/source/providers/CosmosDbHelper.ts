@@ -3,9 +3,9 @@
 //
 //
 
+import { StringUtils } from "@metal/utils"
 import { Assert } from "../../../utils/Assert"
 import { SQL_TYPE, SqlQueryUtils } from "../../../utils/SqlQueryUtils"
-import { StringUtils } from "../../../utils/StringUtils"
 
 //
 export class CosmosDbHelper {

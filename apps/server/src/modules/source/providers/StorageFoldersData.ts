@@ -5,13 +5,13 @@
 
 import { Readable } from "node:stream"
 import { Logger, VERBOSITY } from "@metal/logger"
+import { StringUtils } from "@metal/utils"
 import { merge, omit } from "lodash-es"
 //
 import type { DataTable, TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { Mutex } from "../../../utils/Mutex"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
-import { StringUtils } from "../../../utils/StringUtils"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
@@ -113,8 +113,7 @@ export class StorageFoldersData extends absDataProvider {
 	}
 
 	_addNameToFields(fields: string[] | undefined): string[] | undefined {
-		if (fields && !fields?.includes(FLD_NAME))
-			fields?.push(FLD_NAME)
+		if (fields && !fields?.includes(FLD_NAME)) fields?.push(FLD_NAME)
 
 		return fields
 	}
@@ -167,7 +166,6 @@ export class StorageFoldersData extends absDataProvider {
 
 		const { schema, entity: dirName } = schemaRequest
 
-
 		const schemaResponse = <TSchemaResponse>{
 			schema,
 			entity: dirName,
@@ -177,8 +175,7 @@ export class StorageFoldersData extends absDataProvider {
 
 		const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-		const _fieldsHasName = (options.Fields?.includes(FLD_NAME) || options.Fields?.includes('*'))
-			?? false
+		const _fieldsHasName = (options.Fields?.includes(FLD_NAME) || options.Fields?.includes("*")) ?? false
 
 		options.Fields = this._addNameToFields(options.Fields)
 
@@ -195,9 +192,8 @@ export class StorageFoldersData extends absDataProvider {
 			await filteredData.RowsMap(async (row: TRow) => {
 				let _file = row as TStorageFile
 				const _fileContent = await this.Connection?.FileRead(dirName, _file.name)
-				
-				if (!_fieldsHasName)
-					_file = omit(_file, FLD_NAME) as TStorageFile
+
+				if (!_fieldsHasName) _file = omit(_file, FLD_NAME) as TStorageFile
 
 				return ReadableUtils.ToBase64(_fileContent).then((_content) => {
 					_file.content = _content
@@ -310,43 +306,44 @@ export class StorageFoldersData extends absDataProvider {
 		await filteredFiles.FreeSql({ sqlQuery: updateQuery })
 
 		// update filteredFiles
-		return filteredFiles.ForEach(async (row: TRow) => {
-			const { name: newFileName, [FLD_OLD_NAME]: oldFileName } = row as TStorageFile & {
-				[FLD_OLD_NAME]: string
-			}
-
-			Assert.Var<string>(newFileName, "File name is required")
-			Assert.Var<string>(oldFileName, "File old name is required")
-
-			const __lock = `${dirName}/${oldFileName}`
-			this._setLock(__lock)
-			await this.Lock.get(__lock)?.Acquire()
-
-			try {
-				// update file content
-				const __fileContent = await ReadableUtils.ToBase64(await this.Connection?.FileRead(dirName, oldFileName))
-
-				if (updateData?.content && updateData?.content !== __fileContent) {
-					const ___content = updateData?.content ?? __fileContent
-
-					Assert.Var<string>(
-						___content,
-						StringUtils.IsBase64(___content),
-						"content is not a valid base64 string",
-						new HttpErrorBadRequest(),
-					)
-
-					await this.Connection?.FileWrite(dirName, oldFileName, Readable.from(Buffer.from(___content, "base64")))
+		return filteredFiles
+			.ForEach(async (row: TRow) => {
+				const { name: newFileName, [FLD_OLD_NAME]: oldFileName } = row as TStorageFile & {
+					[FLD_OLD_NAME]: string
 				}
 
-				// rename file
-				if (oldFileName !== newFileName) await this.Connection?.FileRename(dirName, oldFileName, newFileName)
-			} finally {
-				this.Lock.get(__lock)?.Release()
-				// Optionally cleanup lock after use (commented out to rely on periodic cleanup)
-				// this.cleanupLock(__lock)
-			}
-		})
+				Assert.Var<string>(newFileName, "File name is required")
+				Assert.Var<string>(oldFileName, "File old name is required")
+
+				const __lock = `${dirName}/${oldFileName}`
+				this._setLock(__lock)
+				await this.Lock.get(__lock)?.Acquire()
+
+				try {
+					// update file content
+					const __fileContent = await ReadableUtils.ToBase64(await this.Connection?.FileRead(dirName, oldFileName))
+
+					if (updateData?.content && updateData?.content !== __fileContent) {
+						const ___content = updateData?.content ?? __fileContent
+
+						Assert.Var<string>(
+							___content,
+							StringUtils.IsBase64(___content),
+							"content is not a valid base64 string",
+							new HttpErrorBadRequest(),
+						)
+
+						await this.Connection?.FileWrite(dirName, oldFileName, Readable.from(Buffer.from(___content, "base64")))
+					}
+
+					// rename file
+					if (oldFileName !== newFileName) await this.Connection?.FileRename(dirName, oldFileName, newFileName)
+				} finally {
+					this.Lock.get(__lock)?.Release()
+					// Optionally cleanup lock after use (commented out to rely on periodic cleanup)
+					// this.cleanupLock(__lock)
+				}
+			})
 			.then(() => this.CacheRemove(schemaRequest))
 			.then(() => HttpResponse.NoContent())
 	}

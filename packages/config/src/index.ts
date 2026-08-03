@@ -4,20 +4,16 @@
 import { loadEnvFile } from 'node:process'
 import { _MTR_ } from './metrics'
 
-
 //
 export {
     _MTR_
 }
 
-
 //
 const ENV_PATH = "../../.env"
 
-
 //
 let _EnvLoaded = false
-
 
 //
 export function LoadEnv(path: string = ENV_PATH): void {
@@ -32,28 +28,37 @@ export function LoadEnv(path: string = ENV_PATH): void {
     }
 }
 
-export function MetricsGetDataPath(): string {
+export function EnvGetMetricsDataPath(): string {
     LoadEnv()
-    return process.env.METRICS_DB_PATH
-        ?? "/data/metrics"
+    return process.env.METRICS_DB_PATH ?? "./data/metrics"
 }
 
-export function MetricsGetTcpAddress(): string {
+export function EnvGetMetricsTcpAddress(): string {
     LoadEnv()
-    return process.env.METRICS_ADDRESS
-        ?? "tcp://localhost:5555"
+    return process.env.METRICS_ADDRESS ?? "tcp://localhost:5555"
 }
 
-
-export function DataTablesGetDataPath(): string {
+export function EnvGetDataTablesDataPath(): string {
     LoadEnv()
-    return process.env.DATATABLES_PATH
-        ?? "/data/tables"
+    return process.env.DATATABLES_PATH ?? "./data/tables"
 }
 
-
-export function AiEnginesGetModelsPath(): string {
+export function EnvGetAiEnginesModelsPath(): string {
     LoadEnv()
-    return process.env.AI_MODELS_PATH
-        ?? "/data/models"
+    return process.env.AI_MODELS_PATH ?? "./data/models"
+}
+
+export function EnvApiKeysDataPath(): string {
+    LoadEnv()
+    return process.env.API_KEYS_PATH ?? "./data/api-keys"
+}
+
+export function EnvLogsDataPath(): string {
+    LoadEnv()
+    return process.env.LOGS_PATH ?? "./data/logs"
+}
+
+export function EnvSessionsDataPath(): string {
+    LoadEnv()
+    return process.env.SESSIONS_PATH ?? "./data/sessions"
 }

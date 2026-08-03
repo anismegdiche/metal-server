@@ -36,11 +36,23 @@ export default withMermaid({
 		outline: "deep",
 		nav: [
 			{ text: "About Metal", link: "/documentation/about" },
-			{ text: "What's new", link: "/documentation/whats-new" },
-			{ text: "Get Started", link: "/documentation/get-started" },
+			{
+				text: "Metal Studio",
+				items: [
+					{ text: "Overview", link: "/documentation/studio" },
+					{ text: "Dashboard", link: "/documentation/studio/dashboard" },
+					{ text: "Data", link: "/documentation/studio/data" },
+					{ text: "MCP Tools", link: "/documentation/studio/mcp-tools" },
+					{ text: "Designer", link: "/documentation/studio/designer" },
+					{ text: "Scheduler", link: "/documentation/studio/scheduler" },
+					{ text: "Config", link: "/documentation/studio/config" },
+					{ text: "Logs", link: "/documentation/studio/logs" },
+				],
+			},
 			{
 				text: "Documentation",
 				items: [
+					{ text: "Metal Studio", link: "/documentation/studio" },
 					{ text: "Configuration file", link: "/documentation/config-yml" },
 					{ text: "Data Providers Configurations", link: "/documentation/data-providers-config" },
 					{ text: "Container Provider Configurations", link: "/documentation/container-provider-config" },
@@ -52,7 +64,6 @@ export default withMermaid({
 					{ text: "Metal MCP Server", link: "/documentation/mcp-server" },
 				],
 			},
-			{ text: "Sample Project", link: "/sample-project" },
 			{ text: "Technical Guides", link: "/guides/technical-guides" },
 			{ text: "Change Log", link: "https://github.com/anismegdiche/metal-server/blob/latest/CHANGELOG.md" },
 		],
@@ -63,9 +74,10 @@ export default withMermaid({
 					collapsed: false,
 					items: [
 						{ text: "About Metal", link: "/documentation/about" },
+						{ text: "What's new", link: "/documentation/whats-new" },
 						{ text: "Key Features", link: "/documentation/about#key-features" },
 						{ text: "Get Started", link: "/documentation/get-started" },
-						{ text: "Swagger UI", link: "/documentation/get-started#swagger-ui" },
+						{ text: "Sample Project", link: "/sample-project" },
 					],
 				},
 				{
@@ -95,6 +107,21 @@ export default withMermaid({
 					],
 				},
 				{
+					text: "🖥️ Studio",
+					collapsed: false,
+					items: [
+						{ text: "Overview", link: "/documentation/studio" },
+						{ text: "Get Started", link: "/documentation/studio/get-started" },
+						{ text: "Dashboard", link: "/documentation/studio/dashboard" },
+						{ text: "Data", link: "/documentation/studio/data" },
+						{ text: "MCP Tools", link: "/documentation/studio/mcp-tools" },
+						{ text: "Designer", link: "/documentation/studio/designer" },
+						{ text: "Scheduler", link: "/documentation/studio/scheduler" },
+						{ text: "Config", link: "/documentation/studio/config" },
+						{ text: "Logs", link: "/documentation/studio/logs" },
+					],
+				},
+				{
 					text: "🌐 API",
 					collapsed: false,
 					items: [
@@ -112,9 +139,7 @@ export default withMermaid({
 				{
 					text: "MCP Server",
 					collapsed: false,
-					items: [
-						{ text: "MCP Tools Guide", link: "/guides/mcp-tools" },
-					],
+					items: [{ text: "MCP Tools Guide", link: "/guides/mcp-tools" }],
 				},
 				{
 					text: "REST API",

@@ -87,7 +87,6 @@ export class ApiKey {
 		//
 		const keys = entries
 			.map(([_, record]) => ApiKey._recordToInfo(record as TApiKeyRecord))
-			// .filter((info) => info.userId === userId)
 			.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 		//
 		return HttpResponse.Ok(keys)

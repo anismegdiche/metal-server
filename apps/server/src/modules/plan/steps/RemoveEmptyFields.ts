@@ -1,39 +1,42 @@
 //
 //
 //
+
+import { JsonUtils } from "@metal/utils"
 import type { DataTable, TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { STEP } from "../@consts"
-import { type U__plans_plan_remove_empty_fields_Params, z_U__plans_plan_remove_empty_fields_Params, } from "../types/U__plans_params"
+import {
+	type U__plans_plan_remove_empty_fields_Params,
+	z_U__plans_plan_remove_empty_fields_Params,
+} from "../types/U__plans_params"
 import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
 
-
 //
-export async function RemoveEmptyFields(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
-	
+export async function RemoveEmptyFields(
+	stepParams: U__plans_plan__step_Params,
+	$context: Partial<TContext>,
+): Promise<DataTable> {
 	const _stepParams = Assert.ZodSchema<U__plans_plan_remove_empty_fields_Params>(
 		stepParams,
 		z_U__plans_plan_remove_empty_fields_Params,
-		`${STEP.REMOVE_EMPTY_FIELDS}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`
+		`${STEP.REMOVE_EMPTY_FIELDS}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`,
 	)
 
-	const {
-		data: planData
-	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
-
-	return planData.RowsMap((row: TRow) =>
-		_removeEmptyFieldsRow(row, stepParams, $context)
-	)
+	return planData.RowsMap((row: TRow) => _removeEmptyFieldsRow(row, stepParams, $context))
 }
 
-export async function _removeEmptyFieldsRow(row: TRow, stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<TRow> {
-
+export async function _removeEmptyFieldsRow(
+	row: TRow,
+	stepParams: U__plans_plan__step_Params,
+	$context: Partial<TContext>,
+): Promise<TRow> {
 	Assert.Var<U__plans_plan_remove_empty_fields_Params>(
 		stepParams,
 		z_U__plans_plan_remove_empty_fields_Params.safeParse(stepParams).success,
@@ -43,7 +46,7 @@ export async function _removeEmptyFieldsRow(row: TRow, stepParams: U__plans_plan
 	const _stepParams = Assert.ZodSchema<U__plans_plan_remove_empty_fields_Params>(
 		stepParams,
 		z_U__plans_plan_remove_empty_fields_Params,
-		`${STEP.REMOVE_EMPTY_FIELDS}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`
+		`${STEP.REMOVE_EMPTY_FIELDS}: Wrong argument passed ${JsonUtils.Stringify(stepParams)}`,
 	)
 
 	const $__stepParams = PlaceHolder.EvaluateJsCode<U__plans_plan_remove_empty_fields_Params>(
@@ -51,10 +54,7 @@ export async function _removeEmptyFieldsRow(row: TRow, stepParams: U__plans_plan
 		new Sandbox($context),
 	) as U__plans_plan_remove_empty_fields_Params
 
-	const {
-		defaults,
-		fields
-	} = $__stepParams
+	const { defaults, fields } = $__stepParams
 
 	// Create _fields: use provided fields or create from row keys with defaults
 	let _fields: Record<string, Record<string, boolean>>
@@ -62,25 +62,26 @@ export async function _removeEmptyFieldsRow(row: TRow, stepParams: U__plans_plan
 		// fields provided: merge each field config with defaults
 		_fields = {}
 		for (const [fieldName, fieldConfig] of Object.entries(fields)) {
-			_fields[fieldName] = fieldConfig === null 
-				? defaults 
-				: { ...defaults, ...fieldConfig }
+			_fields[fieldName] = fieldConfig === null ? defaults : { ...defaults, ...fieldConfig }
 		}
 	} else {
 		// No fields provided: create from row keys with defaults
-		_fields = Object.keys(row).reduce((acc, key) => {
-			acc[key] = defaults
-			return acc
-		}, {} as Record<string, Record<string, boolean>>)
+		_fields = Object.keys(row).reduce(
+			(acc, key) => {
+				acc[key] = defaults
+				return acc
+			},
+			{} as Record<string, Record<string, boolean>>,
+		)
 	}
 
 	// Process each field and remove empty ones
 	for (const [fieldName, config] of Object.entries(_fields)) {
 		const fieldValue = row[fieldName]
-		
+
 		// Check if the field value should be considered empty
 		const isEmpty = _isEmptyValue(fieldValue, config)
-		
+
 		// If empty, remove from row (by not adding to processedRow)
 		if (isEmpty) {
 			delete row[fieldName]
@@ -91,13 +92,15 @@ export async function _removeEmptyFieldsRow(row: TRow, stepParams: U__plans_plan
 }
 
 function _isEmptyValue(value: unknown, config: Record<string, boolean>): boolean {
-	return _isNullish(value, config)
-		|| _isEmptyString(value, config)
-		|| _isEmptyNumber(value, config)
-		|| _isEmptyBoolean(value, config)
-		|| _isEmptyArray(value, config)
-		|| _isEmptyObject(value, config)
-		|| false
+	return (
+		_isNullish(value, config) ||
+		_isEmptyString(value, config) ||
+		_isEmptyNumber(value, config) ||
+		_isEmptyBoolean(value, config) ||
+		_isEmptyArray(value, config) ||
+		_isEmptyObject(value, config) ||
+		false
+	)
 }
 
 function _isNullish(value: unknown, config: Record<string, boolean>): boolean {

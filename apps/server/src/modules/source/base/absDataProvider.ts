@@ -1,6 +1,8 @@
 //
 //
 //
+
+import { StringUtils } from "@metal/utils"
 import { Mixin } from "ts-mixer"
 //
 import type { DataTable } from "../../../types/DataTable"
@@ -8,7 +10,6 @@ import { Assert } from "../../../utils/Assert"
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { clsContext } from "../../../utils/base/clsContext"
 import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
-import { StringUtils } from "../../../utils/StringUtils"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
 import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorBadRequest } from "../../errors/HttpErrors"
@@ -27,12 +28,10 @@ import { absDataProviderOptions } from "./absDataProviderOptions"
 import type { IDataProvider } from "./IDataProvider"
 import type { IDataProviderOptions } from "./IDataProviderOptions"
 
-export class DataProviderOptions extends absDataProviderOptions implements IDataProviderOptions { }
+export class DataProviderOptions extends absDataProviderOptions implements IDataProviderOptions {}
 
 //
 export abstract class absDataProvider extends Mixin(clsClonable, clsContext) implements IDataProvider {
-	
-
 	abstract ProviderName: DATA_PROVIDER
 	abstract SourceName?: string
 	abstract Config: unknown

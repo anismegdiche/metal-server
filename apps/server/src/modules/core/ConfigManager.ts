@@ -3,12 +3,12 @@
 //
 import * as Fs from "node:fs"
 import { LOGGER_DEFAULT_LEVEL, Logger } from "@metal/logger"
+import { JsonUtils } from "@metal/utils"
 import * as dotenv from "dotenv"
 import * as Yaml from "js-yaml"
 import { has, merge } from "lodash-es"
 //
 import { Assert } from "../../utils/Assert"
-import { JsonUtils } from "../../utils/JsonUtils"
 import { TypeUtils } from "../../utils/TypeUtils"
 import { AUTH_PROVIDER } from "../auth/@consts"
 import { ConfigFileError } from "../errors/HttpErrors"

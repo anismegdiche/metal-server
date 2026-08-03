@@ -1,8 +1,19 @@
-__pycache__
+# Yarn Berry
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# dev
 .vs
 .qodo
 
-.idea/
+# python
+__pycache__
+
 .vagrant/
 node_modules/
 build/
@@ -11,13 +22,29 @@ tmp/
 dist/
 
 *.traineddata
-
-
-.git/
-yarn.lock
 sync.ffs_db
 
 # docs
 docs/docs/.vitepress/cache/
+
+# data
+data/
+
+# Nuxt dev/build outputs
+.output/
+.data/
+.nuxt/
+.nitro/
+.cache/
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+.env.*
+!.env.example
 
 !.gitkeep

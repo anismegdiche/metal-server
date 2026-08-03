@@ -3,12 +3,12 @@
 //
 import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
 import { Logger } from "@metal/logger"
+import type { TAny, TJson } from "@metal/types"
+import { StringUtils } from "@metal/utils"
 //
 import { Assert } from "../utils/Assert"
-import { StringUtils } from "../utils/StringUtils"
 import { Utils } from "../utils/Utils"
 import { DATATABLES_PATH, DataTable, dataTable_convertSql, type TRow } from "./DataTable"
-import type { TAny, TJson } from "@metal/types"
 
 //
 export class DataBase {
@@ -18,14 +18,14 @@ export class DataBase {
 	_dbPath: string
 	_encryptionKey?: string
 
-	constructor(name: string, isPersistant?: boolean) {
+	constructor(name: string, isPersistent?: boolean) {
 		Assert.Var<string>(name, "undefined DataBase name")
 		this.Name = name
 		this._dbPath =
-			isPersistant === true ? StringUtils.FsPath(DATATABLES_PATH, `${this.Name}_${Utils.Uuid(true)}.db`) : ":memory:"
+			isPersistent === true ? StringUtils.FsPath(DATATABLES_PATH, `${this.Name}_${Utils.Uuid(true)}.db`) : ":memory:"
 
 		// Generate encryption key for persistent databases
-		if (isPersistant === true) {
+		if (isPersistent === true) {
 			this._encryptionKey = Utils.Uuid()
 		}
 	}

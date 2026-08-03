@@ -4,20 +4,23 @@
 import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
 import type { TJson } from "@metal/types"
+import { JsonUtils } from "@metal/utils"
 import { type X2jOptions, XMLBuilder, XMLParser, type XmlBuilderOptions } from "fast-xml-parser"
 import { merge } from "lodash-es"
 //
 import type { TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
-import { type U__source_options_content_xml, z_U__source_options_content_xml } from "../types/U__source_options_content_xml"
+import {
+	type U__source_options_content_xml,
+	z_U__source_options_content_xml,
+} from "../types/U__source_options_content_xml"
 
 //
 export class XmlContent extends absContentProvider {

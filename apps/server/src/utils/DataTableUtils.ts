@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto"
 import fs from "node:fs"
 import DataType, { DuckDBScalarFunction } from "@duckdb/node-api"
 import { Logger } from "@metal/logger"
+import { JsonUtils, StringUtils } from "@metal/utils"
 import { omit } from "lodash-es"
 //
 import {
@@ -19,9 +20,7 @@ import {
 } from "../types/DataTable"
 import { DT_SYS_FIELDS } from "../types/DataTableTypes"
 import { Assert } from "./Assert"
-import { JsonUtils } from "./JsonUtils"
 import { RowUtils } from "./RowUtils"
-import { StringUtils } from "./StringUtils"
 
 //
 export enum JOIN_TYPE {

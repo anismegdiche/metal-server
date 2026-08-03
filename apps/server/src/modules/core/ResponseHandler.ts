@@ -10,9 +10,9 @@ import * as _ from "lodash-es"
 
 import { Logger } from "@metal/logger"
 import type { TJson } from "@metal/types"
+import { JsonUtils } from "@metal/utils"
 import type { TRow } from "../../types/DataTable"
 import { Convert } from "../../utils/Convert"
-import { JsonUtils } from "../../utils/JsonUtils"
 import {
 	HttpError,
 	HttpErrorBadRequest,

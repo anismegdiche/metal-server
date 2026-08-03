@@ -5,11 +5,11 @@
 //
 import { _MTR_ } from "@metal/config"
 import { Logger } from "@metal/logger"
+import { JsonUtils } from "@metal/utils"
 import express, { type Express, type NextFunction, type Request, type Response } from "express"
 import rateLimit from "express-rate-limit"
 import helmet from "helmet"
 import responseTime from "response-time"
-import { JsonUtils } from "../../utils/JsonUtils"
 import { Swagger } from "../../utils/Swagger"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import { HTTP_STATUS_CODE, ROUTE, SERVER } from "./@consts"

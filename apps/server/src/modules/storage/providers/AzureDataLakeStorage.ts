@@ -5,12 +5,11 @@
 import type { Readable } from "node:stream"
 import type { DataLakeFileSystemClient } from "@azure/storage-file-datalake"
 import { Logger } from "@metal/logger"
+import { JsonUtils, StringUtils } from "@metal/utils"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
-import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"

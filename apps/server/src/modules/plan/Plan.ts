@@ -5,11 +5,11 @@ import { CustomEvent } from "@dimkl/events"
 import { _MTR_ } from "@metal/config"
 import { Logger } from "@metal/logger"
 import type { TJson } from "@metal/types"
+import { JsonUtils } from "@metal/utils"
 import { has, merge } from "lodash-es"
 //
 import { DataTable } from "../../types/DataTable"
 import { Assert } from "../../utils/Assert"
-import { JsonUtils } from "../../utils/JsonUtils"
 import { SynchronizerManager } from "../../utils/SynchronizerManager"
 import { AUTH_PERMISSION } from "../auth/@consts"
 import type { TUserTokenInfo } from "../auth/@types"
@@ -49,7 +49,7 @@ export class Plan {
 
 	async Init() {
 		this._data = new DataTable(this.Name, undefined, undefined, {
-			persistant: true,
+			persistent: true,
 			batchSize: 100,
 		})
 
@@ -164,7 +164,7 @@ export class Plan {
 
 				// if step has no on-error, merge with plan.on-error
 				if (_stepParams && (_stepParams as Record<string, unknown>)["on-error"] === undefined && planOnError) {
-					; (_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
+					;(_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
 				}
 
 				$context.$plan.currentStep = {
@@ -286,7 +286,7 @@ export class Plan {
 						if (!this._data.MetaData[METADATA.PLAN_ERRORS]) {
 							this._data.MetaData[METADATA.PLAN_ERRORS] = []
 						}
-						; (this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
+						;(this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
 							step: stepIndex,
 							command: _stepCommand,
 							error: _e.message,

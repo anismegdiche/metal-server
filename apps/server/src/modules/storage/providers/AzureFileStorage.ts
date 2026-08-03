@@ -4,11 +4,10 @@
 
 import type { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
+import { JsonUtils, StringUtils } from "@metal/utils"
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
-import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
@@ -24,7 +23,7 @@ type TAzureFileStorageParams = Omit<
 		[K in keyof U__storage_azfs as K extends `${infer U}` ? TConvertParams<U> : K]: U__storage_azfs[K]
 	},
 	"storageType"
-> 
+>
 
 //
 export class AzureFileStorage extends absStorageProvider {
@@ -66,7 +65,7 @@ export class AzureFileStorage extends absStorageProvider {
 			connectionString: this.StorageConfig["connection-string"],
 			shareName: this.StorageConfig["share-name"],
 			folder: this.StorageConfig.folder,
-		}		
+		}
 
 		this._flagAutoCreate = this.SourceConfig.options.autocreate ?? false
 

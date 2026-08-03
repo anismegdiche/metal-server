@@ -4,11 +4,10 @@
 
 import { PassThrough, Readable } from "node:stream"
 import { Logger } from "@metal/logger"
+import { JsonUtils, StringUtils } from "@metal/utils"
 import * as Ftp from "basic-ftp"
 import { DataTable, type TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
-import { StringUtils } from "../../../utils/StringUtils"
 import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
@@ -214,8 +213,7 @@ export class FtpStorage extends absStorageProvider {
 
 		if (this._flagAutoCreate && !(await this.FileIsExist(dirName, fileName)))
 			await this._ftpClient.uploadFrom(content, fullPath)
-		else
-			await this._ftpClient.appendFrom(content, fullPath)
+		else await this._ftpClient.appendFrom(content, fullPath)
 	}
 
 	@Logger.LogFunction()

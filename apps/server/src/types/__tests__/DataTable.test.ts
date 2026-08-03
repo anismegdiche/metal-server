@@ -4,9 +4,9 @@
 
 import fs from "node:fs"
 import { DuckDBInstance } from "@duckdb/node-api"
+import { StringUtils } from "@metal/utils"
 import { beforeEach, describe, expect, it } from "vitest"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../modules/errors/HttpErrors"
-import { StringUtils } from "../../utils/StringUtils"
 import { Utils } from "../../utils/Utils"
 import type { TRow } from "../DataTable"
 import { DATATABLES_PATH, DataTable, dataTable_convertSql, SORT_ORDER } from "../DataTable"
@@ -132,7 +132,7 @@ describe("DataTable", () => {
 		it("should persist data on disk and keep data without 'using'", async () => {
 			// Arrange
 			const data = new DataTable(
-				"dt_persistant",
+				"dt_persistent",
 				[
 					{
 						Col1: "Value1",
@@ -145,13 +145,13 @@ describe("DataTable", () => {
 				],
 				undefined,
 				{
-					persistant: true,
+					persistent: true,
 				},
 			)
 			await data.RowsSet()
 
 			// Assert
-			expect(data.Name).toEqual("dt_persistant")
+			expect(data.Name).toEqual("dt_persistent")
 			expect(await data.Rows()).toEqual([
 				{
 					Col1: "Value1",
@@ -178,7 +178,7 @@ describe("DataTable", () => {
 			const dt_create = async () => {
 				// Arrange
 				using data = new DataTable(
-					"dt_persistant_removable",
+					"dt_persistent_removable",
 					[
 						{
 							Col1: "Value1",
@@ -191,7 +191,7 @@ describe("DataTable", () => {
 					],
 					undefined,
 					{
-						persistant: true,
+						persistent: true,
 					},
 				)
 				await data.RowsSet()
@@ -199,7 +199,7 @@ describe("DataTable", () => {
 				dbPath = (<any>data)._dbPath
 
 				// Assert
-				expect(data.Name).toEqual("dt_persistant_removable")
+				expect(data.Name).toEqual("dt_persistent_removable")
 				expect(await data.Rows()).toEqual([
 					{
 						Col1: "Value1",
@@ -1612,7 +1612,7 @@ describe("DataTable", () => {
 			// Act
 			const result = await myDataTable.FreeSql({
 				sqlQuery,
-				returnData:true
+				returnData: true,
 			})
 
 			// Assert
@@ -1620,10 +1620,10 @@ describe("DataTable", () => {
 			expect(await result.Rows()).toEqual([
 				{
 					name: "ocr-1.png",
-				}
+				},
 			])
 			expect(result.Fields).toEqual({
-				"name": "string",
+				name: "string",
 			})
 		})
 	})
@@ -2083,7 +2083,7 @@ describe("DataTable Encryption", () => {
 	})
 
 	it("should generate encryption key for persistent database", async () => {
-		dataTable = new DataTable(testDbName, [{ id: 1, name: "Test" }], {}, { persistant: true })
+		dataTable = new DataTable(testDbName, [{ id: 1, name: "Test" }], {}, { persistent: true })
 
 		// Initialize the database
 		await dataTable.Rows()
@@ -2100,7 +2100,7 @@ describe("DataTable Encryption", () => {
 				{ id: 2, name: "Bob" },
 			],
 			{},
-			{ persistant: true },
+			{ persistent: true },
 		)
 
 		// Add more rows

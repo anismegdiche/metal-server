@@ -1,12 +1,13 @@
 //
 //
 //
+
+import type { TAny, TUuidv7 } from "@metal/types"
+import { JsonUtils } from "@metal/utils"
 import { isEmpty, isObject, isString, merge } from "lodash-es"
 //
 import type { DataTable, TRow } from "../../../types/DataTable"
-import type { TAny, TUuidv7 } from "@metal/types"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder, RX_JS_CODE } from "../../../utils/PlaceHolder"
 import type { TAiArguments } from "../../ai-engine/@types"
 import { AiEngine } from "../../ai-engine/AiEngine"
@@ -14,19 +15,16 @@ import type { IAiEngine } from "../../ai-engine/base/IAiEngine"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { STEP } from "../@consts"
-import { type U__plans_plan_run_Params, z_U__plans_plan_run_Params, } from "../types/U__plans_params"
+import { type U__plans_plan_run_Params, z_U__plans_plan_run_Params } from "../types/U__plans_params"
 import type { U__plans_plan__step_Params } from "../types/U__plans_plan__step"
-
 
 //
 const DEFAULT = {
 	output: null,
 }
 
-
 //
 export async function Run(stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<DataTable> {
-
 	const _stepParam = merge(DEFAULT, stepParams)
 
 	Assert.Var<U__plans_plan_run_Params>(
@@ -38,9 +36,7 @@ export async function Run(stepParams: U__plans_plan__step_Params, $context: Part
 	$context.$row = undefined
 	$context.$result = undefined
 
-	const {
-		data: planData
-	} = $context?.$plan as NonNullable<Record<string, unknown>>
+	const { data: planData } = $context?.$plan as NonNullable<Record<string, unknown>>
 	Assert.Var<DataTable>(planData, "Data is not initialized")
 
 	const rowPromises: Promise<void>[] = []
@@ -57,11 +53,14 @@ export async function Run(stepParams: U__plans_plan__step_Params, $context: Part
 		)
 	}
 
-	return Promise.all(rowPromises)
-		.then(() => planData.FieldsSet())
+	return Promise.all(rowPromises).then(() => planData.FieldsSet())
 }
 
-export async function _runRow(row: TRow, stepParams: U__plans_plan__step_Params, $context: Partial<TContext>): Promise<TRow> {
+export async function _runRow(
+	row: TRow,
+	stepParams: U__plans_plan__step_Params,
+	$context: Partial<TContext>,
+): Promise<TRow> {
 	Assert.Var<U__plans_plan_run_Params>(
 		stepParams,
 		z_U__plans_plan_run_Params.safeParse(stepParams).success,
@@ -75,24 +74,17 @@ export async function _runRow(row: TRow, stepParams: U__plans_plan__step_Params,
 	$context.$row = row
 	$context.$result = undefined
 
-	const {
-		input,
-		output
-	} = stepParams
+	const { input, output } = stepParams
 
-	const $__fieldValue = RX_JS_CODE.exec(input) === null
-		? $context.$row[input]
-		: PlaceHolder.EvaluateJsCode(input, new Sandbox($context))
+	const $__fieldValue =
+		RX_JS_CODE.exec(input) === null ? $context.$row[input] : PlaceHolder.EvaluateJsCode(input, new Sandbox($context))
 
 	const $__stepParams = PlaceHolder.EvaluateJsCode<U__plans_plan_run_Params>(
 		merge(DEFAULT, stepParams),
 		new Sandbox($context),
 	) as U__plans_plan_run_Params
 
-	const {
-		ai,
-		task,
-	} = $__stepParams
+	const { ai, task } = $__stepParams
 
 	const aiTask = `${ai}-${task}`
 	const aiEngine = AiEngine.AiEnginesInstance.get(aiTask)
@@ -106,8 +98,7 @@ export async function _runRow(row: TRow, stepParams: U__plans_plan__step_Params,
 		...($__stepParams as U__plans_plan_run_Params),
 	} as TAiArguments)
 
-	if (isEmpty(aiResult))
-		return row
+	if (isEmpty(aiResult)) return row
 
 	$context.$result = aiResult
 
@@ -127,7 +118,7 @@ export async function _runRow(row: TRow, stepParams: U__plans_plan__step_Params,
 				row[_outField] = $__value
 			}
 			break
-			
+
 		default:
 			row[aiTask] = JsonUtils.SafeCopy(aiResult)
 			break

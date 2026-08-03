@@ -5,19 +5,18 @@ import fs from "node:fs"
 import { cpus } from "node:os"
 import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
 //
-import { DataTablesGetDataPath } from "@metal/config"
+import { EnvGetDataTablesDataPath } from "@metal/config"
 import { Logger } from "@metal/logger"
 //
 import type { TAny, TJson, TUuidv7 } from "@metal/types"
+import { JsonUtils, StringUtils } from "@metal/utils"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../modules/errors/HttpErrors"
 import { Assert } from "../utils/Assert"
 import { clsClonable } from "../utils/base/clsClonable"
-import { JsonUtils } from "../utils/JsonUtils"
 import { Mutex } from "../utils/Mutex"
 import { RowUtils } from "../utils/RowUtils"
 import type { TSqlToken } from "../utils/SqlQueryUtils"
 import { SQL_TYPE, SqlQueryUtils } from "../utils/SqlQueryUtils"
-import { StringUtils } from "../utils/StringUtils"
 import { TypeUtils } from "../utils/TypeUtils"
 import { Utils } from "../utils/Utils"
 import type { TFields, TMetaData, TOrderBy, TRow, TSnapshotInfo } from "./DataTableTypes"
@@ -27,7 +26,7 @@ import { DT_SYS_FIELDS, SORT_ORDER, z_SORT_ORDER, z_TOrderBy, z_TRow } from "./D
 export { SORT_ORDER }
 
 export const DATATABLE_SYS_FIELDS: string[] = Object.values(DT_SYS_FIELDS)
-export const DATATABLES_PATH = DataTablesGetDataPath()
+export const DATATABLES_PATH = EnvGetDataTablesDataPath()
 
 // types
 export type { TFields, TMetaData, TOrderBy, TRow, TSnapshotInfo }
@@ -446,7 +445,7 @@ export class DataTable extends clsClonable {
 		rows?: TRow | TRow[] | TJson | TJson[],
 		metaData?: TMetaData | TJson,
 		opt: {
-			persistant?: boolean
+			persistent?: boolean
 			batchSize?: number
 			duckInstance?: DuckDBInstance
 		} = {},
@@ -461,7 +460,7 @@ export class DataTable extends clsClonable {
 			this._isAttached = true
 		} else {
 			this._dbPath = StringUtils.FsPath(DATATABLES_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
-			this._persistent = opt.persistant ?? false
+			this._persistent = opt.persistent ?? false
 
 			// Generate encryption key for persistent databases
 			if (this._persistent) {
@@ -1352,8 +1351,7 @@ export class DataTable extends clsClonable {
 
 	@Logger.LogFunction(true)
 	async Omit(fields: string[] | undefined): Promise<this> {
-		if (!fields || fields.length === 0) 
-			return this
+		if (!fields || fields.length === 0) return this
 
 		Logger.Debug(`${Logger.Out} DataTable.Omit: Starting to omit fields ${fields.join(", ")}`)
 

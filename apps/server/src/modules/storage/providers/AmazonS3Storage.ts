@@ -5,12 +5,11 @@
 import type { Readable } from "node:stream"
 import type { S3ClientConfig } from "@aws-sdk/client-s3"
 import { Logger } from "@metal/logger"
+import { JsonUtils, StringUtils } from "@metal/utils"
 import { fileTypeFromBuffer } from "file-type"
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
-import { StringUtils } from "../../../utils/StringUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
@@ -72,7 +71,7 @@ export class AmazonS3Storage extends absStorageProvider {
 			region: this.StorageConfig.region,
 			bucket: this.StorageConfig.bucket,
 			endpoint: this.StorageConfig.endpoint!,
-			profile: this.StorageConfig.profile!
+			profile: this.StorageConfig.profile!,
 		}
 
 		this._flagAutoCreate = this.SourceConfig.options.autocreate ?? false

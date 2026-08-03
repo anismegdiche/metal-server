@@ -3,10 +3,10 @@
 //
 
 import { Logger } from "@metal/logger"
+import { JsonUtils } from "@metal/utils"
 import type { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { DataTableUtils } from "../../../utils/DataTableUtils"
-import { JsonUtils } from "../../../utils/JsonUtils"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"

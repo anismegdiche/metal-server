@@ -2,7 +2,7 @@
 description: "Metal:Middleware, ETL & AI at the same place. Empower your projects with a free open-source data transformation solution"
 ---
 
-# Get Started
+# Get Started with Metal Server
 
 ::: warning ⚠️ BEFORE YOU START
 Please note that Metal As It Is is currently in the prototype phase, undergoing rigorous testing and refinement. This phase allows for experimentation, feature validation, and fine-tuning to ensure the final product meets the highest standards.
