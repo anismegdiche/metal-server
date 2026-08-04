@@ -94,6 +94,9 @@ mcp:
 
 roles:
   all: lacrud
+  reader: r
+  writer: cu
+  cleaner: d
 
 users:
   myapiuser:

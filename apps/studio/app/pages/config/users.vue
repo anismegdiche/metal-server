@@ -276,15 +276,15 @@ await fetchData()
               <UButton
                 v-for="p in permissionChars"
                 :key="p"
-                :label="`${p} - ${permissionLabels[p]}`"
+                :label="`${permissionLabels[p]}`"
                 size="xs"
                 :variant="roleForm.permissions.includes(p) ? 'solid' : 'outline'"
                 @click="togglePermission(p)"
               />
             </div>
           </UFormField>
-          <UFormField label="Permission String">
-            <UInput v-model="roleForm.permissions" placeholder="e.g. crudla" />
+          <UFormField label="Permission String" hidden>
+            <UInput v-model="roleForm.permissions" placeholder="e.g. crudla"/>
           </UFormField>
         </div>
       </template>
