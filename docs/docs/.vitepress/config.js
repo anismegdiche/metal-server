@@ -37,6 +37,20 @@ export default withMermaid({
 		nav: [
 			{ text: "About Metal", link: "/documentation/about" },
 			{
+				text: "Documentation",
+				items: [
+					{ text: "Configuration file", link: "/documentation/config-yml" },
+					{ text: "Data Providers Configurations", link: "/documentation/data-providers-config" },
+					{ text: "Container Provider Configurations", link: "/documentation/container-provider-config" },
+					{ text: "AI Engines Configurations", link: "/documentation/ai-engines" },
+					{ text: "Optional Parameters", link: "/documentation/optional-parameters" },
+					{ text: "Dynamic Expression Engine", link: "/documentation/dynamic-expression-engine" },
+					{ text: "Understanding Authentication", link: "/guides/authentication" },
+					{ text: "Metal REST API", link: "/documentation/rest-api" },
+					{ text: "Metal MCP Server", link: "/documentation/mcp-server" },
+				],
+			},
+			{
 				text: "Metal Studio",
 				items: [
 					{ text: "Overview", link: "/documentation/studio" },
@@ -47,21 +61,6 @@ export default withMermaid({
 					{ text: "Scheduler", link: "/documentation/studio/scheduler" },
 					{ text: "Config", link: "/documentation/studio/config" },
 					{ text: "Logs", link: "/documentation/studio/logs" },
-				],
-			},
-			{
-				text: "Documentation",
-				items: [
-					{ text: "Metal Studio", link: "/documentation/studio" },
-					{ text: "Configuration file", link: "/documentation/config-yml" },
-					{ text: "Data Providers Configurations", link: "/documentation/data-providers-config" },
-					{ text: "Container Provider Configurations", link: "/documentation/container-provider-config" },
-					{ text: "AI Engines Configurations", link: "/documentation/ai-engines" },
-					{ text: "Optional Parameters", link: "/documentation/optional-parameters" },
-					{ text: "Dynamic Expression Engine", link: "/documentation/dynamic-expression-engine" },
-					{ text: "Understanding Authentication", link: "/guides/authentication" },
-					{ text: "Metal REST API", link: "/documentation/rest-api" },
-					{ text: "Metal MCP Server", link: "/documentation/mcp-server" },
 				],
 			},
 			{ text: "Technical Guides", link: "/guides/technical-guides" },

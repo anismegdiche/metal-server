@@ -1,11 +1,10 @@
 /*******/
-@import url(https://fonts.googleapis.com/css?family=Space+Mono:regular,italic,700,700italic);
 @import url(https://fonts.googleapis.com/css?family=Space+Grotesk:regular,italic,700,700italic);
 @import url(https://fonts.googleapis.com/css?family=Gothic+A1:600);
 /*******/
 @import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css);
 /*******/
-@import url(https://fonts.googleapis.com/css2?family=Comfortaa:wght@600&display=swap);
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@600&family=Fira+Mono:wght@400;500;700&family=Geist+Mono:ital,wght@0,100..900;1,100..900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 :root {
   --color-red: #ff2367;
@@ -36,7 +35,7 @@
   --vp-button-brand-active-bg: var(--color-red);
 
   /* Typography */
-  --vp-font-family-base: Comfortaa, "Segoe UI", Ubuntu, Roboto, "Gothic A1","Space Grotesk", "Inter var experimental", "Inter var",
+  --vp-font-family-base: "Fira Mono", "Space Mono", Comfortaa, "Segoe UI", Ubuntu, Roboto, "Gothic A1","Space Grotesk", "Inter var experimental", "Inter var",
     -apple-system, BlinkMacSystemFont,  Oxygen, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
   /* Code Snippet font */
@@ -55,9 +54,10 @@
     --vp-code-line-height: 1.4;
 }
 
-/* body {
+body {
   font-size: 0.95em;
-} */
+  letter-spacing: -0.03em;
+}
 
 .main p {
   text-align: justify;
