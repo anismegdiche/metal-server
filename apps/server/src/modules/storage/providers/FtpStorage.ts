@@ -8,7 +8,7 @@ import { JsonUtils, StringUtils } from "@metal/utils"
 import * as Ftp from "basic-ftp"
 import { DataTable, type TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
@@ -69,8 +69,7 @@ export class FtpStorage extends absStorageProvider {
 			await this._ftpClient.access(this.Params)
 			Logger.Info(`Connected to FTP server '${this.Params?.host}'`)
 		} catch (e: unknown) {
-			const _e = NormalizeError(e)
-			throw new HttpErrorInternalServerError(`FTP Storage Error: ${_e.message}`)
+			throw new HttpErrorInternalServerError(`FTP Storage Error: ${(e as Error).message}`)
 		}
 	}
 

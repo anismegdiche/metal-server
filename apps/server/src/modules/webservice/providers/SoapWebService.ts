@@ -5,13 +5,14 @@ import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
 import type { TJson } from "@metal/types"
 import { JsonUtils } from "@metal/utils"
+import type { AxiosError } from "axios"
 import { merge } from "lodash-es"
 //
 import { Assert } from "../../../utils/Assert"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { User } from "../../auth/User"
 import { CONTENT } from "../../content/@consts"
-import { HttpErrorInternalServerError, HttpErrorSwitch, NormalizeError } from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import type { U__source_webservice } from "../../source/types/U__source_webservice"
@@ -132,9 +133,9 @@ export class SoapWebService extends absWebServiceProvider {
 			}
 
 			return Readable.from(JsonUtils.Stringify(wsResp.at(1)))
-		} catch (err: unknown) {
-			const _err = NormalizeError(err)
-			throw HttpErrorSwitch(_err.status, _err.message)
+		} catch (e: unknown) {
+			const _e: AxiosError = e as AxiosError
+			throw HttpErrorSwitch(_e.status, _e.message)
 		}
 	}
 

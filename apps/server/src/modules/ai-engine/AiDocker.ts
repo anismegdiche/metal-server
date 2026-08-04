@@ -11,7 +11,7 @@ import { Assert } from "../../utils/Assert"
 import { Mutex } from "../../utils/Mutex"
 import { ConfigManager } from "../core/ConfigManager"
 import type { U__server_ai_engines } from "../core/types/U__server"
-import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrors"
+import { HttpErrorInternalServerError } from "../errors/HttpErrors"
 import { DOCKER } from "./consts/DOCKER"
 import { CaddyDockerService } from "./docker-services/CaddyDockerService"
 import type { TAiDockerService } from "./types/TAiDockerService"
@@ -83,8 +83,8 @@ export class AiDocker {
 
 				Logger.Info(`${Logger.Out} AI Engine stack manager started`)
 			}
-		} catch (error) {
-			throw new HttpErrorInternalServerError(NormalizeError(error).message)
+		} catch (e: unknown) {
+			throw new HttpErrorInternalServerError((e as Error).message)
 		}
 	}
 

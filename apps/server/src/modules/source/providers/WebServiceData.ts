@@ -19,8 +19,7 @@ import type { U__sources_source } from "../../core/types/U__sources"
 import {
 	HttpErrorBadRequest,
 	HttpErrorInternalServerError,
-	HttpErrorNotImplemented,
-	NormalizeError,
+	HttpErrorNotImplemented
 } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
 import type {
@@ -95,8 +94,8 @@ export class WebServiceData extends absDataProvider {
 	async Disconnect(): Promise<void> {
 		try {
 			if (this.Connection && this.ContentHandler) await this.Connection.Disconnect()
-		} catch (err: unknown) {
-			Logger.Error(`${this.SourceName}: Failed to disconnect in WebService Data Provider: ${NormalizeError(err).message}`)
+		} catch (e: unknown) {
+			Logger.Error(`${this.SourceName}: Failed to disconnect in WebService Data Provider: ${(e as Error).message}`)
 		}
 	}
 

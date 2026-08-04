@@ -7,7 +7,7 @@ import { Logger } from "@metal/logger"
 import * as _ from "lodash-es"
 import { VM } from "vm2"
 import { Utils } from "../../utils/Utils"
-import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrors"
+import { HttpErrorInternalServerError } from "../errors/HttpErrors"
 import { maliciousPatterns } from "./@consts"
 import type { TContext } from "./types/TContext"
 
@@ -59,7 +59,7 @@ export class Sandbox {
 			})
 			return vm.run(_code) as T
 		} catch (err: unknown) {
-			Logger.Error(`Error evaluating code: ${_code}, ${NormalizeError(err).message}`)
+			Logger.Error(`Error evaluating code: ${_code},`, (err as Error).message)
 			if (isSuspicious || throwError) throw err
 			return undefined
 		}

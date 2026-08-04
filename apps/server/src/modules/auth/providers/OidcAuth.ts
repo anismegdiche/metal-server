@@ -15,10 +15,8 @@ import {
 	type TokenEndpointResponse,
 	tokenRevocation,
 } from "openid-client"
-import z from "zod"
 import { ConfigManager } from "../../core/ConfigManager"
-import { HttpErrorInternalServerError, HttpErrorUnauthorized, NormalizeError } from "../../errors/HttpErrors"
-import { AUTH_PROVIDER } from "../@consts"
+import { HttpErrorInternalServerError, HttpErrorUnauthorized } from "../../errors/HttpErrors"
 import type { TUserCredentials, TUserTokenInfo } from "../@types"
 import { absAuthProvider } from "../base/absAuthProvider"
 
@@ -27,10 +25,7 @@ enum OIDC_ERROR_MESSAGE {
 	NOT_INITIALIZED = "OIDC client not initialized",
 }
 
-import {
-	type U__server_authentication_oidc,
-	z_U__server_authentication_oidc,
-} from "../types/U__server_authentication_oidc"
+import type { U__server_authentication_oidc } from "../types/U__server_authentication_oidc"
 
 //
 export class OidcAuth extends absAuthProvider {
@@ -67,8 +62,8 @@ export class OidcAuth extends absAuthProvider {
 				this.#Config["client-id"],
 				this.#Config["client-secret"],
 			)
-		} catch (err: unknown) {
-			throw new HttpErrorInternalServerError(`Failed to initialize OIDC Authentication: ${NormalizeError(err).message}`)
+		} catch (e: unknown) {
+			throw new HttpErrorInternalServerError(`Failed to initialize OIDC Authentication: ${(e as Error).message}`)
 		}
 	}
 
@@ -96,8 +91,8 @@ export class OidcAuth extends absAuthProvider {
 				user: username,
 				roles,
 			}
-		} catch (err: unknown) {
-			throw new HttpErrorUnauthorized(`Authentication failed: ${NormalizeError(err).message}`)
+		} catch (e: unknown) {
+			throw new HttpErrorUnauthorized(`Authentication failed: ${(e as Error).message}`)
 		}
 	}
 
@@ -111,8 +106,8 @@ export class OidcAuth extends absAuthProvider {
 				this.#TokenCache.delete(username)
 			}
 			Logger.Debug(`User ${username} logged out`)
-		} catch (err: unknown) {
-			Logger.Error(`Error during logout for user ${username}: ${NormalizeError(err).message}`)
+		} catch (e: unknown) {
+			Logger.Error(`Error during logout for user ${username}: ${(e as Error).message}`)
 		}
 	}
 }

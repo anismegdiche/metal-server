@@ -20,8 +20,7 @@ import {
 	HttpErrorBadRequest,
 	HttpErrorInternalServerError,
 	HttpErrorNotFound,
-	HttpErrorNotImplemented,
-	NormalizeError,
+	HttpErrorNotImplemented
 } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
 import type {
@@ -116,8 +115,8 @@ export class StorageFilesData extends absDataProvider {
 	async Disconnect(): Promise<void> {
 		try {
 			if (this.Connection && this.ContentHandler) await this.Connection.Disconnect()
-		} catch (err: unknown) {
-			Logger.Error(`${this.SourceName}: Failed to disconnect in storage provider: ${NormalizeError(err).message}`)
+		} catch (e: unknown) {
+			Logger.Error(`${this.SourceName}: Failed to disconnect in storage provider: ${(e as Error).message}`)
 		}
 	}
 
@@ -203,8 +202,8 @@ export class StorageFilesData extends absDataProvider {
 			// clean cache
 			await this.CacheRemove(schemaRequest)
 			return HttpResponse.Created()
-		} catch (err: unknown) {
-			throw new HttpErrorInternalServerError(`${this.SourceName}: ${NormalizeError(err).message}`)
+		} catch (e: unknown) {
+			throw new HttpErrorInternalServerError(`${this.SourceName}: ${(e as Error).message}`)
 		} finally {
 			this.Lock.get(fileName)?.Release()
 		}
@@ -246,9 +245,9 @@ export class StorageFilesData extends absDataProvider {
 			// clean cache
 			await this.CacheRemove(schemaRequest)
 			return HttpResponse.NoContent()
-		} catch (err: unknown) {
+		} catch (e: unknown) {
 			throw new HttpErrorInternalServerError(
-				`${this.SourceName}: Failed to update ${fileName} in storage provider: ${NormalizeError(err).message}`,
+				`${this.SourceName}: Failed to update ${fileName} in storage provider: ${(e as Error).message}`,
 			)
 		} finally {
 			this.Lock.get(fileName)?.Release()
@@ -289,9 +288,9 @@ export class StorageFilesData extends absDataProvider {
 			// clean cache
 			await this.CacheRemove(schemaRequest)
 			return HttpResponse.NoContent()
-		} catch (err: unknown) {
+		} catch (e: unknown) {
 			throw new HttpErrorInternalServerError(
-				`${this.SourceName}: Failed to update ${fileName} in storage provider: ${NormalizeError(err).message}`,
+				`${this.SourceName}: Failed to update ${fileName} in storage provider: ${(e as Error).message}`,
 			)
 		} finally {
 			this.Lock.get(fileName)?.Release()

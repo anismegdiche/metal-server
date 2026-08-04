@@ -9,7 +9,7 @@ import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
-import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
@@ -86,8 +86,7 @@ export class AzureFileStorage extends absStorageProvider {
 			)
 			this._shareClient = this._shareServiceClient.getShareClient(this.Params.shareName)
 		} catch (e: unknown) {
-			const _e = NormalizeError(e)
-			throw new HttpErrorInternalServerError(`Azure File Storage Error: ${_e.message}`)
+			throw new HttpErrorInternalServerError(`Azure File Storage Error: ${(e as Error).message}`)
 		}
 	}
 

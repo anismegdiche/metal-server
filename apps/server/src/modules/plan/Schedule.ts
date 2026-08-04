@@ -3,17 +3,17 @@
 //
 import { _MTR_ } from "@metal/config"
 import { Logger } from "@metal/logger"
-import { CronJob } from "cron"
-import { findKey } from "lodash-es"
 //
 import type { TJson } from "@metal/types"
+import { CronJob } from "cron"
+import { findKey } from "lodash-es"
 import { AUTH_PERMISSION } from "../auth/@consts"
 import type { TUserTokenInfo } from "../auth/@types"
 import { Roles } from "../auth/Roles"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
-import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import { Plans } from "./Plans"
 import type { TSchedule } from "./types/TSchedule"
@@ -74,8 +74,7 @@ export class Schedule {
 				try {
 					await Schedule.JobProcess(_jobName, _scheduleParams)
 				} catch (e) {
-					const _e = NormalizeError(e)
-					Logger.Error(`${Logger.Out} Error in ON_START job '${_jobName}': ${_e.message}`)
+					Logger.Error(`${Logger.Out} Error in ON_START job '${_jobName}':`, (e as Error).message)
 				}
 			}
 
@@ -94,9 +93,8 @@ export class Schedule {
 					async () => {
 						try {
 							await Schedule.JobProcess(_jobName, _scheduleParams)
-						} catch (e) {
-							const _e = NormalizeError(e)
-							Logger.Error(`${Logger.Out} Error in job '${_jobName}': ${_e.message}`)
+						} catch (e: unknown) {
+							Logger.Error(`${Logger.Out} Error in job '${_jobName}':`, (e as Error).message)
 						}
 					},
 					// onComplete
@@ -117,8 +115,7 @@ export class Schedule {
 					true,
 					// errorHandler
 					(e: unknown) => {
-						const _e = NormalizeError(e)
-						Logger.Error(`${Logger.Out} Error in job '${_jobName}': ${_e.message}`)
+						Logger.Error(`${Logger.Out} Error in job '${_jobName}':`, (e as Error).message)
 					},
 					// name
 					_jobName,
@@ -179,8 +176,7 @@ export class Schedule {
 				MetricsCollector.DispatchEvent_set(_MTR_.SCHEDULES_ACTIVE, _mtr_schedules_active - 1)
 			})
 			.catch((e: unknown) => {
-				const _e = NormalizeError(e)
-				throw new HttpErrorInternalServerError(`Unable to process scheduled job '${jobName}': ${_e.message} `)
+				throw new HttpErrorInternalServerError(`Unable to process scheduled job '${jobName}': ${(e as Error).message}`)
 			})
 	}
 

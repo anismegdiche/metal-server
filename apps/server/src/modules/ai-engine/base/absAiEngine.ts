@@ -5,14 +5,13 @@
 import { Logger } from "@metal/logger"
 import type { TJson } from "@metal/types"
 import { StringUtils } from "@metal/utils"
-import axios, { type AxiosResponse } from "axios"
+import axios, { type AxiosError, type AxiosResponse } from "axios"
 //
 import { clsClonable } from "../../../utils/base/clsClonable"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { Utils } from "../../../utils/Utils"
 import { ConfigManager } from "../../core/ConfigManager"
 import type { U__server_ai_engines } from "../../core/types/U__server"
-import { NormalizeError } from "../../errors/HttpErrors"
 import type { AI_ENGINE } from "../@consts"
 import type { TAiArguments, TAiOutput } from "../@types"
 import type { T__ai_engines_ai_engine } from "../types/T__ai_engines_ai_engine"
@@ -48,13 +47,11 @@ export abstract class absAiEngine extends clsClonable implements IAiEngine {
 					},
 					IMAGE_DEFAULT_HEADERS,
 				)
-			} catch (err: unknown) {
-				const _err = NormalizeError(err)
-				if (_err.response?.status === 429) {
+			} catch (e: unknown) {
+				if ((e as AxiosError).response?.status === 429) {
 					Logger.Info(`${this.InstanceName} processing is busy, retrying`)
 				} else {
-					const errorMessage = _err.response?.data?.message ?? _err.message
-					Logger.Warn(`${this.InstanceName} processing failed: ${errorMessage}`)
+					Logger.Warn(`${this.InstanceName} processing failed:`, e)
 				}
 				await Utils.Sleep(200)
 			}

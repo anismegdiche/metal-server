@@ -18,7 +18,7 @@ import { METADATA } from "../core/@consts"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
-import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import type { TContext } from "../sandbox/types/TContext"
 import type { TSchemaRequest, TSchemaRequestBase, TSchemaRequestSelect } from "../schema/types/TSchemaRequest"
@@ -94,9 +94,8 @@ export class Plan {
 		try {
 			const data = await this.Process()
 			this._data = await data.FreeSql({ sqlQuery })
-		} catch (err) {
-			const _e = NormalizeError(err)
-			Logger.Error(`Error occurred while processing schedule '${plan}': ${_e.message}`)
+		} catch (e: unknown) {
+			Logger.Error(`Error occurred while processing schedule '${plan}':`, (e as Error).message)
 		}
 	}
 
@@ -164,7 +163,7 @@ export class Plan {
 
 				// if step has no on-error, merge with plan.on-error
 				if (_stepParams && (_stepParams as Record<string, unknown>)["on-error"] === undefined && planOnError) {
-					;(_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
+					; (_stepParams as Record<string, U__on_error_Params>)["on-error"] = planOnError
 				}
 
 				$context.$plan.currentStep = {
@@ -248,8 +247,6 @@ export class Plan {
 					break
 				}
 			} catch (e: unknown) {
-				const _e = NormalizeError(e)
-
 				Assert.Var<NonNullable<typeof $context.$plan>>($context.$plan, "Plan context is not defined")
 				Assert.Var<DataTable>(this._data, `'${this.Name}': Data is not set`)
 
@@ -276,7 +273,7 @@ export class Plan {
 					},
 				})
 
-				const _errMessage = `'${this.Name}': error have been encountered in step ${stepIndex}, ${_stepCommand}, ${JsonUtils.Stringify(_stepParams)}': ${JsonUtils.Stringify(_e.message)}`
+				const _errMessage = `'${this.Name}': error have been encountered in step ${stepIndex}, ${_stepCommand}, ${JsonUtils.Stringify(_stepParams)}': ${JsonUtils.Stringify((e as Error).message)}`
 
 				Logger.Error(_errMessage)
 
@@ -286,10 +283,10 @@ export class Plan {
 						if (!this._data.MetaData[METADATA.PLAN_ERRORS]) {
 							this._data.MetaData[METADATA.PLAN_ERRORS] = []
 						}
-						;(this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
+						; (this._data.MetaData[METADATA.PLAN_ERRORS] as TJson[]).push({
 							step: stepIndex,
 							command: _stepCommand,
-							error: _e.message,
+							error: (e as Error).message,
 							timestamp: new Date().toISOString(),
 						})
 						isPlanCompletedWithErrors = true

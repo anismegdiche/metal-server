@@ -10,7 +10,6 @@ import { JsonUtils } from "@metal/utils"
 import { Assert } from "../../../utils/Assert"
 import type { TSqlToken } from "../../../utils/SqlQueryUtils"
 import { SQL_TYPE, SqlQueryUtils } from "../../../utils/SqlQueryUtils"
-import { NormalizeError } from "../../errors/HttpErrors"
 
 //
 export class MongoDbHelper {
@@ -20,8 +19,8 @@ export class MongoDbHelper {
 
 		try {
 			mongoParsedQuery = SQLParser.parseSQL(sqlQuery)
-		} catch (err: unknown) {
-			Logger.Error(`MongoDbHelper.ParseSqlQuery: Error parsing SQL query: ${sqlQuery}\r\n${NormalizeError(err).message}`)
+		} catch (e: unknown) {
+			Logger.Error(`MongoDbHelper.ParseSqlQuery: Error parsing SQL query: ${sqlQuery}, `, (e as Error).message)
 		}
 
 		mongoParsedQuery = JsonUtils.ReplaceStrings(mongoParsedQuery, /%/g, ".*")

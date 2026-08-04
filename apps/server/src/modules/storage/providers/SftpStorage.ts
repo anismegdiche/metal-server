@@ -11,7 +11,7 @@ import SftpClient from "ssh2-sftp-client"
 import { DataTable, type TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import type { TConvertParams } from "../../../utils/TConvertParams"
-import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
@@ -73,8 +73,7 @@ export class SftpStorage extends absStorageProvider {
 			const config: SftpClient.ConnectOptions = omit(this.Params, "folder") as SftpClient.ConnectOptions
 			await this._sftpClient.connect(config)
 		} catch (e: unknown) {
-			const _e = NormalizeError(e)
-			throw new HttpErrorInternalServerError(`Failed to connect to SFTP server '${this.Params.host}': ${_e.message}`)
+			throw new HttpErrorInternalServerError(`Failed to connect to SFTP server '${this.Params.host}': ${(e as Error).message}`)
 		}
 	}
 

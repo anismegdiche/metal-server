@@ -19,7 +19,6 @@ import {
 	HttpErrorNotImplemented,
 	HttpErrorTooManyRequests,
 	HttpErrorUnauthorized,
-	NormalizeError,
 } from "./HttpErrorBase"
 
 export {
@@ -34,17 +33,14 @@ export {
 	HttpErrorNotImplemented,
 	HttpErrorTooManyRequests,
 	HttpErrorUnauthorized,
-	NormalizeError
 }
 
-export function HttpErrorLog(error: HttpError | Error | unknown): void {
-	const logger = error instanceof HttpErrorNotFound ? Logger.Warn : Logger.Error
+export function HttpErrorLog(e: HttpError | Error | unknown): void {
+	const logger = e instanceof HttpErrorNotFound ? Logger.Warn : Logger.Error
 
-	const _err = NormalizeError(error)
+	logger((e as Error).message)
 
-	logger(_err.message)
-
-	if (Logger.Level === VERBOSITY.DEBUG) logger(_err.stack)
+	if (Logger.Level === VERBOSITY.DEBUG) logger((e as Error).stack)
 }
 
 export function HttpErrorSwitch(status?: number, message?: string): HttpError {

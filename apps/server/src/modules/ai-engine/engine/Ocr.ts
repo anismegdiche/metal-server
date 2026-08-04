@@ -1,10 +1,9 @@
 //
 //
 //
-
 import { Logger } from "@metal/logger"
 import { StringUtils } from "@metal/utils"
-import axios, { type AxiosResponse } from "axios"
+import axios, { type AxiosError, type AxiosResponse } from "axios"
 import { merge } from "lodash-es"
 //
 import { Assert } from "../../../utils/Assert"
@@ -12,7 +11,6 @@ import { LangUtils } from "../../../utils/LangUtils"
 import { Utils } from "../../../utils/Utils"
 import { ConfigManager } from "../../core/ConfigManager"
 import type { U__server_ai_engines } from "../../core/types/U__server"
-import { NormalizeError } from "../../errors/HttpErrors"
 import { AI_ENGINE } from "../@consts"
 import type { TAiArguments, TAiOutput } from "../@types"
 import { AiDocker } from "../AiDocker"
@@ -48,12 +46,11 @@ export class Ocr extends absAiEngine implements IAiEngine {
 		while (true) {
 			try {
 				return await axios.post(_url, Buffer.from(data, "base64"), OCR_DEFAULT_HEADERS)
-			} catch (err: unknown) {
-				const _err = NormalizeError(err)
-				if (_err.response.status === 429) {
+			} catch (e: unknown) {
+				if ((e as AxiosError).response?.status === 429) {
 					Logger.Info(`${this.InstanceName} processing is busy, retrying`)
 				} else {
-					Logger.Warn(`${this.InstanceName} processing failed: ${_err.response.data.message ?? _err.message}`)
+					Logger.Warn(`${this.InstanceName} processing failed: `, e)
 				}
 				await Utils.Sleep(200)
 			}

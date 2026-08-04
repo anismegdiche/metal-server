@@ -8,7 +8,7 @@ import { JsonUtils, StringUtils } from "@metal/utils"
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import type { TConvertParams } from "../../../utils/TConvertParams"
-import { HttpErrorInternalServerError, NormalizeError } from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
@@ -93,8 +93,7 @@ export class AzureBlobStorage extends absStorageProvider {
 				await this._containerClient.createIfNotExists()
 			}
 		} catch (e: unknown) {
-			const _e = NormalizeError(e)
-			throw new HttpErrorInternalServerError(`Azure Blob Storage Error: ${_e.message}`)
+			throw new HttpErrorInternalServerError(`Azure Blob Storage Error: ${(e as Error).message}`)
 		}
 	}
 

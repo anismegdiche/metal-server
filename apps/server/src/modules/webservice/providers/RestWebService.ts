@@ -5,14 +5,14 @@ import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
 import type { TJson } from "@metal/types"
 import { JsonUtils, StringUtils } from "@metal/utils"
-import axios, { type AxiosInstance, type AxiosResponse } from "axios"
+import axios, { type AxiosError, type AxiosInstance, type AxiosResponse } from "axios"
 import { merge } from "lodash-es"
 //
 import { Assert } from "../../../utils/Assert"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
 import { CONTENT } from "../../content/@consts"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
-import { HttpErrorInternalServerError, HttpErrorSwitch, NormalizeError } from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorSwitch } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import type { U__source_webservice } from "../../source/types/U__source_webservice"
@@ -103,13 +103,11 @@ export class RestWebService extends absWebServiceProvider {
 			}
 
 			return Readable.from(JsonUtils.Stringify(wsResp.data))
-		} catch (err: unknown) {
-			const _err = NormalizeError(err)
+		} catch (e: unknown) {
+			const _e: AxiosError = e as AxiosError
 			throw HttpErrorSwitch(
-				_err.status || HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,
-				JsonUtils.Stringify(
-					_err.response.data.message || _err.response.data || _err.errors || _err.message || "Unknown error",
-				),
+				_e.status || HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR,
+				JsonUtils.Stringify(e instanceof Error ? e.message : (_e.response?.data ?? "Unknown error")),
 			)
 		}
 	}

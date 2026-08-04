@@ -7,11 +7,12 @@ import type { S3ClientConfig } from "@aws-sdk/client-s3"
 import { Logger } from "@metal/logger"
 import { JsonUtils, StringUtils } from "@metal/utils"
 import { fileTypeFromBuffer } from "file-type"
+//
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { ReadableUtils } from "../../../utils/ReadableUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
-import { HttpErrorInternalServerError, HttpErrorNotFound, NormalizeError } from "../../errors/HttpErrors"
+import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
 import { type U__source_storage, z_U__source_storage } from "../../source/types/U__source_storage"
 import { absStorageProvider } from "../base/absStorageProvider"
@@ -110,8 +111,7 @@ export class AmazonS3Storage extends absStorageProvider {
 
 			this._s3Client = new s3.S3Client(clientConfig)
 		} catch (e: unknown) {
-			const _e = NormalizeError(e)
-			throw new HttpErrorInternalServerError(`Amazon S3 Storage Error: ${_e.message}`)
+			throw new HttpErrorInternalServerError(`Amazon S3 Storage Error: ${(e as Error).message}`)
 		}
 	}
 
@@ -260,14 +260,13 @@ export class AmazonS3Storage extends absStorageProvider {
 
 			await this._s3Client.send(command)
 			return true
-		} catch (err: unknown) {
-			const _err = NormalizeError(err)
+		} catch (e: unknown) {
 			// Only return false if it's a NoSuchKey error
-			if (_err.type === "NoSuchKey" || _err.name === "NoSuchKey" || _err.code === "NoSuchKey") {
+			if ((e as Error).message.includes("NoSuchKey")) {
 				return false
 			}
 			// Throw for other errors
-			throw err
+			throw e
 		}
 	}
 

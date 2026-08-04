@@ -2,6 +2,7 @@
 /** biome-ignore-all lint/suspicious/noControlCharactersInRegex: <!+> */
 //
 //
+/// <reference path="./@types/loxjs-url-join.d.ts" />
 import path from "node:path"
 import urlJoin from "@loxjs/url-join"
 import { Stringify } from "./JsonUtils/Stringify"

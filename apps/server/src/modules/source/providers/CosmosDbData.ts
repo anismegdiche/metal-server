@@ -24,8 +24,7 @@ import {
 	HttpErrorBadRequest,
 	HttpErrorInternalServerError,
 	HttpErrorNotFound,
-	HttpErrorNotImplemented,
-	NormalizeError,
+	HttpErrorNotImplemented
 } from "../../errors/HttpErrors"
 import type { TContext } from "../../sandbox/types/TContext"
 import type {
@@ -209,10 +208,8 @@ export class CosmosDbData extends absDataProvider {
 			await this.CacheRemove(schemaRequest)
 
 			return HttpResponse.Created()
-		} catch (err: unknown) {
-			const _err = NormalizeError(err)
-			Logger.Error(`Failed to insert into '${entity}': ${_err}`)
-			throw new HttpErrorInternalServerError(`Failed to insert items: ${_err.message}`)
+		} catch (e: unknown) {
+			throw new HttpErrorInternalServerError(`Failed to insert items: ${(e as Error).message}`)
 		}
 	}
 
@@ -283,10 +280,8 @@ export class CosmosDbData extends absDataProvider {
 
 			await this.CacheRemove(schemaRequest)
 			return HttpResponse.NoContent()
-		} catch (err: unknown) {
-			const _err = NormalizeError(err)
-			Logger.Error(`Failed to update in '${schema}.${entity}': ${_err}`)
-			throw new HttpErrorInternalServerError(`Failed to update items: ${_err.message}`)
+		} catch (e: unknown) {
+			throw new HttpErrorInternalServerError(`Failed to update items: ${(e as Error).message}`)
 		}
 	}
 
@@ -334,25 +329,22 @@ export class CosmosDbData extends absDataProvider {
 						const response = await container.item(item.id, partitionKeyValue).delete()
 
 						Assert.Condition(response.statusCode === 204, `Failed to delete item ${item.id}: ${response}`)
-					} catch (deleteError: unknown) {
-						const _deleteError = NormalizeError(deleteError)
-						if (_deleteError.code === 404) {
+					} catch (e: unknown) {
+						if ((e as { code?: number })?.code === 404) {
 							Logger.Warn(`'${schema}.${entity}': Item ${item.id} not found`)
 							return
 						}
 
-						Logger.Error(`Failed to delete item ${item.id} from ${schema}.${entity}: ${deleteError}`)
-						throw deleteError
+						Logger.Error(`Failed to delete item ${item.id} from ${schema}.${entity}: ${e}`)
+						throw e
 					}
 				}),
 			)
 
 			await this.CacheRemove(schemaRequest)
 			return HttpResponse.NoContent()
-		} catch (err: unknown) {
-			const _err = NormalizeError(err)
-			Logger.Error(`Failed to delete from '${schema}.${entity}': ${_err}`)
-			throw new HttpErrorInternalServerError(`Failed to delete items: ${_err.message}`)
+		} catch (e: unknown) {
+			throw new HttpErrorInternalServerError(`Failed to delete items: ${(e as Error).message}`)
 		}
 	}
 
@@ -405,12 +397,11 @@ export class CosmosDbData extends absDataProvider {
 				...RESPONSE.LIST_ENTITIES.SUCCESS.STATUS,
 				data: new DataTable(schema, rows),
 			})
-		} catch (err: unknown) {
-			if (err instanceof HttpErrorNotFound) throw err
+		} catch (e: unknown) {
+			if (e instanceof HttpErrorNotFound) 
+				throw e
 
-			const _err = NormalizeError(err)
-			Logger.Error(`Failed to list entities: ${_err}`)
-			throw new HttpErrorInternalServerError(`Failed to list entities: ${_err.message}`)
+			throw new HttpErrorInternalServerError(`Failed to list entities: ${(e as Error).message}`)
 		}
 	}
 

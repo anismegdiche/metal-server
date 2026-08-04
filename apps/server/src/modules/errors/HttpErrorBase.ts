@@ -1,29 +1,7 @@
-import type { TJson } from "@metal/types"
+//
+//
+//
 import { HTTP_STATUS_CODE, HTTP_STATUS_MESSAGE } from "../core/@consts"
-
-/**
- * Normalizes an error into a JSON-serializable object.
- */
-export function NormalizeError(err: unknown): TJson<any> {
-    if (err instanceof HttpError) {
-        return {
-            ...err,
-            message: err?.message,
-            stack: err?.stack,
-        }
-    }
-
-    if (err instanceof Error) {
-        return {
-            ...err,
-            message: err?.message || "Unknown error",
-            stack: err?.stack,
-        }
-    }
-
-    // fail safe, return actual error as is
-    return err as TJson<any>
-}
 
 /**
  * Base class for all HTTP errors.

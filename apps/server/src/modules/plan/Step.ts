@@ -10,7 +10,7 @@ import { JsonUtils } from "@metal/utils"
 import type { DataTable, TRow } from "../../types/DataTable"
 import { Assert } from "../../utils/Assert"
 import { Utils } from "../../utils/Utils"
-import { HttpErrorInternalServerError, NormalizeError } from "../errors/HttpErrorBase"
+import { HttpErrorInternalServerError } from "../errors/HttpErrorBase"
 import type { TContext } from "../sandbox/types/TContext"
 import {
 	STEP,
@@ -750,12 +750,11 @@ export class Step {
 	}
 
 	static _errorToJson(error: Error | undefined, attempt: number, $context: Partial<TContext>): T_StepErrorDetails {
-		const normalizedError = NormalizeError(error)
 		const currentStep = $context.$plan?.currentStep
 
 		return {
-			message: normalizedError?.message,
-			type: normalizedError?.name,
+			message: (error as Error)?.message,
+			type: (error as Error)?.name,
 			timestamp: new Date().toISOString(),
 			attempt: attempt,
 			step: {
