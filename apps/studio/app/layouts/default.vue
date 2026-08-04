@@ -81,7 +81,7 @@ const headerTabs = computed(() => {
 </script>
 
 <template>
-  <UDashboardGroup class="tracking-tight">
+  <UDashboardGroup class="tracking-[-0.03em]">
     <UDashboardSidebar collapsible resizable>
       <template #header="{ collapsed }">
         <AppLogo :collapsed="collapsed" />
