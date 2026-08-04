@@ -37,9 +37,10 @@ export default withMermaid({
 		nav: [
 			{ text: "About Metal", link: "/documentation/about" },
 			{
-				text: "Documentation",
+				text: "Server",
 				items: [
 					{ text: "Configuration file", link: "/documentation/config-yml" },
+					{ text: "Environment Variables", link: "/documentation/env" },
 					{ text: "Data Providers Configurations", link: "/documentation/data-providers-config" },
 					{ text: "Container Provider Configurations", link: "/documentation/container-provider-config" },
 					{ text: "AI Engines Configurations", link: "/documentation/ai-engines" },
@@ -51,7 +52,7 @@ export default withMermaid({
 				],
 			},
 			{
-				text: "Metal Studio",
+				text: "Studio",
 				items: [
 					{ text: "Overview", link: "/documentation/studio" },
 					{ text: "Dashboard", link: "/documentation/studio/dashboard" },
@@ -103,6 +104,7 @@ export default withMermaid({
 						{ text: "schemas", link: "/documentation/config-yml#schemas" },
 						{ text: "plans", link: "/documentation/config-yml#plans" },
 						{ text: "schedules", link: "/documentation/config-yml#schedules" },
+						{ text: "Environment Variables", link: "/documentation/env" },
 					],
 				},
 				{
