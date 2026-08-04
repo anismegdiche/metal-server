@@ -139,7 +139,7 @@ onMounted(loadData)
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-plug" class="size-4 text-primary" />
+              <UIcon name="i-lucide-plug" class="size-5 text-primary" />
               <h2 class="font-semibold text-sm">Sources</h2>
             </div>
             <UButton icon="i-lucide-plus" label="Add Source" size="xs" variant="outline" @click="openAddSource" />
@@ -167,7 +167,7 @@ onMounted(loadData)
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-book-open" class="size-4 text-warning" />
+              <UIcon name="i-lucide-book-open" class="size-5 text-warning" />
               <h2 class="font-semibold text-sm">Schemas</h2>
             </div>
             <UButton icon="i-lucide-plus" label="Add Schema" size="xs" variant="outline" @click="openAddSchema" />

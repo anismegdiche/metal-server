@@ -304,14 +304,6 @@ onMounted(loadData)
     </div>
 
     <UCard class="bg-metal-gradient">
-      <template #header>
-        <div class="flex items-center gap-2">
-          <UIcon name="i-lucide-box" class="size-4 text-primary" />
-          <h2 class="font-semibold text-sm">
-            Configured MCP Tools
-          </h2>
-        </div>
-      </template>
 
       <div class="p-4">
         <div v-if="isLoading" class="text-sm text-muted">

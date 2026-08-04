@@ -2,6 +2,8 @@
 interface SchemaConfig {
   source?: string
   entities?: Record<string, { source: string; entity: string }>
+  anonymize?: string
+  roles?: string[]
 }
 
 const props = defineProps<{
@@ -21,10 +23,29 @@ const schemaForm = ref({
   name: '',
   source: '',
   entities: [] as { key: string; source: string; entity: string }[],
+  anonymize: '',
+  roles: [] as string[],
 })
 
+const roleInput = ref('')
+
+function addRole() {
+  const value = roleInput.value.trim()
+  if (value && !schemaForm.value.roles.includes(value)) {
+    schemaForm.value.roles.push(value)
+  }
+  roleInput.value = ''
+}
+
+function onRoleBackspace() {
+  if (!roleInput.value && schemaForm.value.roles.length > 0) {
+    schemaForm.value.roles.pop()
+  }
+}
+
 function resetForm() {
-  schemaForm.value = { name: '', source: '', entities: [] }
+  schemaForm.value = { name: '', source: '', entities: [], anonymize: '', roles: [] }
+  roleInput.value = ''
 }
 
 function populateForm(name: string) {
@@ -36,6 +57,8 @@ function populateForm(name: string) {
     entities: config.entities
       ? Object.entries(config.entities).map(([key, val]) => ({ key, source: val.source, entity: val.entity }))
       : [],
+    anonymize: config.anonymize ?? '',
+    roles: config.roles ?? [],
   }
 }
 
@@ -60,7 +83,7 @@ function removeEntity(index: number) {
 }
 
 async function save() {
-  const { name, source, entities } = schemaForm.value
+  const { name, source, entities, anonymize, roles } = schemaForm.value
   if (!name) return
   const entitiesMap: Record<string, { source: string; entity: string }> = {}
   for (const e of entities) {
@@ -68,6 +91,8 @@ async function save() {
   }
   const body: SchemaConfig = { source }
   if (Object.keys(entitiesMap).length > 0) body.entities = entitiesMap
+  if (anonymize) body.anonymize = anonymize
+  if (roles.length > 0) body.roles = roles
   try {
     await $fetch(`/server-api/api/config/schemas/${encodeURIComponent(name)}`, {
       method: 'PUT',
@@ -78,6 +103,10 @@ async function save() {
   } catch (e) {
     console.error('Failed to save schema', e)
   }
+}
+
+function removeRole(index: number) {
+  schemaForm.value.roles.splice(index, 1)
 }
 
 defineExpose({ openAdd, openEdit })
@@ -92,6 +121,35 @@ defineExpose({ openAdd, openEdit })
         </UFormField>
         <UFormField label="Source">
           <USelect v-model="schemaForm.source" :items="sourceOptions" placeholder="Select a source" class="w-full" />
+        </UFormField>
+        <UFormField label="Anonymize" hint="Comma-separated field names to anonymize in responses">
+          <UInput v-model="schemaForm.anonymize" placeholder="email,ssn,phone" class="w-full" />
+        </UFormField>
+        <UFormField label="Roles" hint="Roles allowed to access this schema">
+          <div class="flex flex-wrap items-center gap-1.5 rounded-lg border border-muted bg-background px-2 py-1.5">
+            <UBadge
+              v-for="(role, idx) in schemaForm.roles"
+              :key="idx"
+              color="neutral"
+              variant="subtle"
+              size="sm"
+            >
+              {{ role }}
+              <button class="ml-1 text-muted hover:text-error" @click="removeRole(idx)">
+                <UIcon name="i-lucide-x" class="size-3" />
+              </button>
+            </UBadge>
+            <UInput
+              v-model="roleInput"
+              placeholder="Add role..."
+              size="sm"
+              variant="none"
+              class="flex-1 min-w-24"
+              @keydown.enter.prevent="addRole"
+              @keydown.tab.prevent="addRole"
+              @keydown.backspace="onRoleBackspace"
+            />
+          </div>
         </UFormField>
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between">

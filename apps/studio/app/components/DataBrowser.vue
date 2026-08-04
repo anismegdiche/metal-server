@@ -99,7 +99,7 @@ function selectEntity(sourceName: string, schemaName: string, entity: { name: st
   <UCard class="bg-metal-gradient">
     <template #header>
       <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-table" class="size-4 text-info" />
+        <UIcon name="i-lucide-table" class="size-5 text-info" />
         <h2 class="font-semibold text-sm">Data Browser</h2>
       </div>
     </template>

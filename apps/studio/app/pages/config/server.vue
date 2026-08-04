@@ -176,9 +176,11 @@ onMounted(loadConfig)
 
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader icon="i-lucide-sliders-horizontal" title="Server Configuration" description="Configure server settings from metal.yaml">
+    <PageHeader icon="i-lucide-sliders-horizontal" title="Server Configuration"
+      description="Configure server settings from metal.yaml">
       <template #actions>
-        <UButton icon="i-lucide-rotate-cw" label="Reload" size="sm" variant="outline" :loading="loading" @click="loadConfig" />
+        <UButton icon="i-lucide-rotate-cw" label="Reload" size="sm" variant="outline" :loading="loading"
+          @click="loadConfig" />
         <UButton icon="i-lucide-save" label="Save" size="sm" :loading="saving" @click="saveConfig" />
       </template>
     </PageHeader>
@@ -195,27 +197,33 @@ onMounted(loadConfig)
         <UCard class="bg-metal-gradient">
           <template #header>
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-server" class="size-4 text-primary" />
+              <UIcon name="i-lucide-server" class="size-5 text-primary" />
               <h2 class="font-semibold text-sm">General</h2>
             </div>
           </template>
           <div class="flex flex-col gap-4">
-            <UFormField label="Port" description="Server TCP port (1-65535)" size="md" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="port" type="number" :min="1" :max="65535" />
+            <UFormField label="Port" description="Server TCP port (1-65535)" size="md" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <UInput v-model="port" type="number" :min="1" :max="65535" class="w-24" />
             </UFormField>
-            <UFormField label="Timezone" description="Default timezone for schedules" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="timezone" placeholder="UTC" />
+            <UFormField label="Timezone" description="Default timezone for schedules" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <UInput v-model="timezone" placeholder="UTC" class="w-24" />
             </UFormField>
-            <UFormField label="Verbosity" description="Console logging level" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <USelect v-model="verbosity" :items="verbosityItems" />
+            <UFormField label="Verbosity" description="Console logging level" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <USelect v-model="verbosity" :items="verbosityItems" class="w-24" />
             </UFormField>
-            <UFormField label="Request Limit" description="Max request body size (e.g. 10mb)" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="requestLimit" placeholder="10mb" />
+            <UFormField label="Request Limit" description="Max request body size (e.g. 10mb)" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <UInput v-model="requestLimit" placeholder="10mb" class="w-24" />
             </UFormField>
-            <UFormField label="Response Limit" description="Max response body size (e.g. 10mb)" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="responseLimit" placeholder="10mb" />
+            <UFormField label="Response Limit" description="Max response body size (e.g. 10mb)" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <UInput v-model="responseLimit" placeholder="10mb" class="w-24" />
             </UFormField>
-            <UFormField label="Response Chunk" description="Enable chunked transfer encoding" orientation="horizontal" :ui="{ description: 'text-xs' }">
+            <UFormField label="Response Chunk" description="Enable chunked transfer encoding" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
               <USwitch v-model="responseChunk" />
             </UFormField>
           </div>
@@ -225,32 +233,39 @@ onMounted(loadConfig)
         <UCard class="bg-metal-gradient">
           <template #header>
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-shield" class="size-4 text-success" />
+              <UIcon name="i-lucide-shield" class="size-5 text-success" />
               <h2 class="font-semibold text-sm">Authentication</h2>
             </div>
           </template>
           <div class="flex flex-col gap-4">
-            <UFormField label="Provider" description="Authentication provider type" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <USelect v-model="authProvider" :items="authProviderItems" />
+            <UFormField label="Provider" description="Authentication provider type" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <USelect v-model="authProvider" :items="authProviderItems" class="w-24" />
             </UFormField>
-            <UFormField label="Default Role" description="Role assigned to authenticated users" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="authDefaultRole" placeholder="e.g. user" />
+            <UFormField label="Default Role" description="Role assigned to authenticated users" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <UInput v-model="authDefaultRole" placeholder="e.g. user" class="w-24" />
             </UFormField>
             <template v-if="authProvider === 'oidc'">
               <USeparator label="OIDC Settings" />
-              <UFormField label="Issuer" description="OpenID Connect issuer URL" orientation="horizontal" :ui="{ description: 'text-xs' }">
+              <UFormField label="Issuer" description="OpenID Connect issuer URL" orientation="horizontal"
+                :ui="{ description: 'text-xs' }">
                 <UInput v-model="oidcIssuer" placeholder="https://accounts.google.com" />
               </UFormField>
-              <UFormField label="Client ID" description="OAuth2 client ID" orientation="horizontal" :ui="{ description: 'text-xs' }">
+              <UFormField label="Client ID" description="OAuth2 client ID" orientation="horizontal"
+                :ui="{ description: 'text-xs' }">
                 <UInput v-model="oidcClientId" placeholder="client-id" />
               </UFormField>
-              <UFormField label="Client Secret" description="OAuth2 client secret" orientation="horizontal" :ui="{ description: 'text-xs' }">
+              <UFormField label="Client Secret" description="OAuth2 client secret" orientation="horizontal"
+                :ui="{ description: 'text-xs' }">
                 <UInput v-model="oidcClientSecret" type="password" placeholder="client-secret" />
               </UFormField>
-              <UFormField label="Scope" description="Space-separated scopes (optional)" orientation="horizontal" :ui="{ description: 'text-xs' }">
+              <UFormField label="Scope" description="Space-separated scopes (optional)" orientation="horizontal"
+                :ui="{ description: 'text-xs' }">
                 <UInput v-model="oidcScope" placeholder="openid profile email" />
               </UFormField>
-              <UFormField label="Roles Path" description="JSON path to roles in token (optional)" orientation="horizontal" :ui="{ description: 'text-xs' }">
+              <UFormField label="Roles Path" description="JSON path to roles in token (optional)"
+                orientation="horizontal" :ui="{ description: 'text-xs' }">
                 <UInput v-model="oidcRolesPath" placeholder="e.g. resource_access.myapp.roles" />
               </UFormField>
             </template>
@@ -261,19 +276,22 @@ onMounted(loadConfig)
         <UCard class="bg-metal-gradient">
           <template #header>
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-gauge" class="size-4 text-warning" />
+              <UIcon name="i-lucide-gauge" class="size-5 text-warning" />
               <h2 class="font-semibold text-sm">Rate Limiting</h2>
             </div>
           </template>
           <div class="flex flex-col gap-4">
-            <UFormField label="Window (ms)" description="Time window in milliseconds" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="rateWindowMs" type="number" />
+            <UFormField label="Window (ms)" description="Time window in milliseconds" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <UInput v-model="rateWindowMs" type="number" class="w-24" />
             </UFormField>
-            <UFormField label="Max Requests" description="Max requests per window" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="rateMax" type="number" />
+            <UFormField label="Max Requests" description="Max requests per window" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <UInput v-model="rateMax" type="number" class="w-24" />
             </UFormField>
-            <UFormField label="Message" description="Response when rate limit exceeded" orientation="horizontal" :ui="{ description: 'text-xs' }">
-              <UInput v-model="rateMessage" />
+            <UFormField label="Message" description="Response when rate limit exceeded" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <UInput v-model="rateMessage" class="w-80" />
             </UFormField>
           </div>
         </UCard>
@@ -282,17 +300,13 @@ onMounted(loadConfig)
         <UCard class="bg-metal-gradient">
           <template #header>
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-database" class="size-4 text-info" />
+              <UIcon name="i-lucide-database" class="size-5 text-info" />
               <h2 class="font-semibold text-sm">Cache</h2>
             </div>
           </template>
           <div class="flex flex-col gap-4">
-            <SourceConfigFields
-              ref="cacheFieldsRef"
-              v-model:provider="cacheProvider"
-              :source-config="cacheConfig"
-              :providers="cacheProviders"
-            />
+            <SourceConfigFields ref="cacheFieldsRef" v-model:provider="cacheProvider" :source-config="cacheConfig"
+              :providers="cacheProviders" />
           </div>
         </UCard>
 
@@ -300,7 +314,7 @@ onMounted(loadConfig)
         <UCard class="bg-metal-gradient lg:col-span-2">
           <template #header>
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-brain" class="size-4 text-error" />
+              <UIcon name="i-lucide-brain" class="size-5 text-error" />
               <h2 class="font-semibold text-sm">AI Engines</h2>
             </div>
           </template>
@@ -308,59 +322,74 @@ onMounted(loadConfig)
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div class="flex flex-col gap-4">
                 <USeparator label="Endpoint" />
-                <UFormField label="Engines URL" description="Base URL for AI engine service" orientation="horizontal" :ui="{ description: 'text-xs' }">
+                <UFormField label="Engines URL" description="Base URL for AI engine service" orientation="horizontal"
+                  :ui="{ description: 'text-xs' }">
                   <UInput v-model="aiEnginesUrl" placeholder="http://localhost:8080" />
                 </UFormField>
-                <UFormField label="Timeout (ms)" description="Request timeout" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesTimeout" type="number" />
+                <UFormField label="Timeout (ms)" description="Request timeout" orientation="horizontal"
+                  :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesTimeout" type="number" class="w-24" />
                 </UFormField>
-                <UFormField label="Sleep (ms)" description="Sleep between health checks (5000-600000)" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesSleep" type="number" />
+                <UFormField label="Sleep (ms)" description="Sleep between health checks (5000-600000)"
+                  orientation="horizontal" :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesSleep" type="number" class="w-24" />
                 </UFormField>
-                <UFormField label="Build Batch Size" description="Tasks per build batch (1-10)" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesBuildBatchSize" type="number" :min="1" :max="10" />
+                <UFormField label="Build Batch Size" description="Tasks per build batch (1-10)" orientation="horizontal"
+                  :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesBuildBatchSize" type="number" :min="1" :max="10" class="w-24" />
                 </UFormField>
               </div>
               <div class="flex flex-col gap-4">
                 <USeparator label="CORS" />
-                <UFormField label="Allowed Origins" description="Comma-separated origins" orientation="horizontal" :ui="{ description: 'text-xs' }">
+                <UFormField label="Allowed Origins" description="Comma-separated origins" orientation="horizontal"
+                  :ui="{ description: 'text-xs' }">
                   <UInput v-model="aiEnginesCorsOrigins" placeholder="*" />
                 </UFormField>
-                <UFormField label="Allowed Methods" description="Comma-separated HTTP methods" orientation="horizontal" :ui="{ description: 'text-xs' }">
+                <UFormField label="Allowed Methods" description="Comma-separated HTTP methods" orientation="horizontal"
+                  :ui="{ description: 'text-xs' }">
                   <UInput v-model="aiEnginesCorsMethods" placeholder="GET,POST,PUT,DELETE" />
                 </UFormField>
-                <UFormField label="Allowed Headers" description="Comma-separated headers" orientation="horizontal" :ui="{ description: 'text-xs' }">
+                <UFormField label="Allowed Headers" description="Comma-separated headers" orientation="horizontal"
+                  :ui="{ description: 'text-xs' }">
                   <UInput v-model="aiEnginesCorsHeaders" placeholder="Content-Type,Authorization" />
                 </UFormField>
               </div>
               <div class="flex flex-col gap-4">
                 <USeparator label="Orchestrator" />
-                <UFormField label="Min Instances" description="Minimum running instances" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesMinInstance" type="number" :min="1" />
+                <UFormField label="Min Instances" description="Minimum running instances" orientation="horizontal"
+                  :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesMinInstance" type="number" :min="1" class="w-24" />
                 </UFormField>
-                <UFormField label="Max Instances" description="Maximum running instances" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesMaxInstance" type="number" />
+                <UFormField label="Max Instances" description="Maximum running instances" orientation="horizontal"
+                  :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesMaxInstance" type="number" class="w-24" />
                 </UFormField>
-                <UFormField label="CPU Scale Up (%)" description="CPU threshold to scale up (10-100)" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesCpuScaleUp" type="number" :min="10" :max="100" />
+                <UFormField label="CPU Scale Up (%)" description="CPU threshold to scale up (10-100)"
+                  orientation="horizontal" :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesCpuScaleUp" type="number" :min="10" :max="100" class="w-24" />
                 </UFormField>
-                <UFormField label="CPU Scale Down (%)" description="CPU threshold to scale down (0-50)" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesCpuScaleDown" type="number" :min="0" :max="50" />
+                <UFormField label="CPU Scale Down (%)" description="CPU threshold to scale down (0-50)"
+                  orientation="horizontal" :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesCpuScaleDown" type="number" :min="0" :max="50" class="w-24" />
                 </UFormField>
-                <UFormField label="Scale Interval (ms)" description="Check interval (5000-600000)" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesScaleInterval" type="number" />
+                <UFormField label="Scale Interval (ms)" description="Check interval (5000-600000)"
+                  orientation="horizontal" :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesScaleInterval" type="number" class="w-24" />
                 </UFormField>
-                <UFormField label="Scale Down Grace (ms)" description="Grace period before scaling down (5000-600000)" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesScaleDownGracePeriod" type="number" />
+                <UFormField label="Scale Down Grace (ms)" description="Grace period before scaling down (5000-600000)"
+                  orientation="horizontal" :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesScaleDownGracePeriod" type="number" class="w-24" />
                 </UFormField>
               </div>
               <div class="flex flex-col gap-4">
                 <USeparator label="Instance Resources" />
-                <UFormField label="CPU (cores)" description="CPU cores per instance (1-64)" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesCpu" type="number" :min="1" :max="64" />
+                <UFormField label="CPU (cores)" description="CPU cores per instance (1-64)" orientation="horizontal"
+                  :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesCpu" type="number" :min="1" :max="64"  class="w-24" />
                 </UFormField>
-                <UFormField label="Memory (GB)" description="Memory per instance (1-128)" orientation="horizontal" :ui="{ description: 'text-xs' }">
-                  <UInput v-model="aiEnginesMemory" type="number" :min="1" :max="128" />
+                <UFormField label="Memory (GB)" description="Memory per instance (1-128)" orientation="horizontal"
+                  :ui="{ description: 'text-xs' }">
+                  <UInput v-model="aiEnginesMemory" type="number" :min="1" :max="128"  class="w-24" />
                 </UFormField>
               </div>
             </div>

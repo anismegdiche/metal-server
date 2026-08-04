@@ -187,7 +187,7 @@ await fetchData()
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-users" class="size-4 text-primary" />
+              <UIcon name="i-lucide-users" class="size-5 text-primary" />
               <h2 class="font-semibold text-sm">Users</h2>
             </div>
             <UButton icon="i-lucide-plus" label="Add User" size="xs" variant="outline" @click="openAddUser" />
@@ -216,7 +216,7 @@ await fetchData()
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-shield" class="size-4 text-warning" />
+              <UIcon name="i-lucide-shield" class="size-5 text-warning" />
               <h2 class="font-semibold text-sm">Roles</h2>
             </div>
             <UButton icon="i-lucide-plus" label="Add Role" size="xs" variant="outline" @click="openAddRole" />

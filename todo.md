@@ -28,8 +28,8 @@ core > studio {f} {cm:2026-08-03}
 (A) step > break > add boolean condition to break {f} {start:2026-05-11T15:23:00} {cm:2026-05-11} {duration:01h17m} {h}
 (A) make modules api registration dynamic {f} {start:2026-05-24T11:17:43} {cm:2026-05-24} {duration:01h49m} {h}
 (A) move to monorepo {f} {start:2026-06-22T14:14:12} {cm:2026-07-30} {duration:1m-7d_11h43m} {h}
-(A) refactor: remove normalize/stringify error, use new logger format {f} {start:2026-08-04T11:23:20} {cm:2026-08-04} {duration:03h52m}
+(A) refactor: remove normalize/stringify error, use new logger format {f} {start:2026-08-04T11:23:20} {cm:2026-08-04} {duration:03h52m} {h}
 (A) move utils {f} {start:2026-08-04T11:23:16}
 (A) source > pagination {f}
 (A) endpoint > gzip compress {f}
-(A) source > connections pools checking if a unique pool is open and not many {f}
+(A) source > connections pools checking if a unique pool is open and not many {f} {cm:2026-08-04} {h}
