@@ -30,3 +30,6 @@ core > studio {f} {cm:2026-08-03}
 (A) move to monorepo {f} {start:2026-06-22T14:14:12} {cm:2026-07-30} {duration:1m-7d_11h43m} {h}
 (A) refactor: remove normalize/stringify error, use new logger format {f}
 (A) move utils {f}
+(A) source > pagination {f}
+(A) endpoint > gzip compress {f}
+(A) source > connections pools checking if a unique pool is open and not many {f}
