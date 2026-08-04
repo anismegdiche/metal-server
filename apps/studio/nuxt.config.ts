@@ -1,5 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 /** biome-ignore-all lint/correctness/noUndeclaredVariables: <nuxt> */
+import {EnvGetServerAddress} from '@metal/config'
+
+
 export default defineNuxtConfig({
     compatibilityDate: '2026-06-30',
 
@@ -25,10 +28,7 @@ export default defineNuxtConfig({
     css: ['~/assets/css/main.css'],
 
     runtimeConfig: {
-        metalServerUrl: process.env.NUXT_METAL_SERVER_URL ?? 'http://127.0.0.1:3000',
-        public: {
-            aiServerUrl: process.env.NUXT_PUBLIC_AI_SERVER_URL ?? 'http://localhost:3001'
-        }
+        metalServerUrl: EnvGetServerAddress(),
     },
 
     eslint: {

@@ -5,8 +5,5 @@ export default defineNuxtConfig({
   css: [],
   devServer: { port: 5002 },
   runtimeConfig: {
-    public: {
-      aiServerUrl: process.env.NUXT_PUBLIC_AI_SERVER_URL ?? 'http://localhost:3001'
-    }
   }
 })

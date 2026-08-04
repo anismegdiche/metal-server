@@ -14,6 +14,7 @@
     "@iconify-json/lucide": "^1.2.114",
     "@iconify-json/simple-icons": "^1.2.87",
     "@metal/server": "*",
+    "@metal/config": "*",
     "@nuxt/kit": "^4.4.8",
     "@nuxt/ui": "^4.9.0",
     "nuxt": "^4.4.8",

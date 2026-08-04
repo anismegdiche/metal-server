@@ -116,16 +116,16 @@ defineExpose({ openAdd, openEdit })
   <UModal v-model:open="open" :title="mode === 'add' ? 'Add Schema' : 'Edit Schema'">
     <template #body>
       <div class="flex flex-col gap-4">
-        <UFormField label="Name">
-          <UInput v-model="schemaForm.name" placeholder="my-schema" :disabled="mode === 'edit'" class="w-full" />
+        <UFormField label="Name" orientation="horizontal"  :ui="{ description: 'text-xs' }">
+          <UInput v-model="schemaForm.name" placeholder="my-schema" :disabled="mode === 'edit'" class="w-48" />
         </UFormField>
-        <UFormField label="Source">
-          <USelect v-model="schemaForm.source" :items="sourceOptions" placeholder="Select a source" class="w-full" />
+        <UFormField label="Source" orientation="horizontal"  :ui="{ description: 'text-xs' }">
+          <USelect v-model="schemaForm.source" :items="sourceOptions" placeholder="Select a source" class="w-48" />
         </UFormField>
-        <UFormField label="Anonymize" hint="Comma-separated field names to anonymize in responses">
-          <UInput v-model="schemaForm.anonymize" placeholder="email,ssn,phone" class="w-full" />
+        <UFormField label="Anonymize"  orientation="horizontal" description="Comma-separated field names to anonymize in responses"  :ui="{ description: 'text-xs' }">
+          <UInput v-model="schemaForm.anonymize" placeholder="email,ssn,phone" class="w-48" />
         </UFormField>
-        <UFormField label="Roles" hint="Roles allowed to access this schema">
+        <UFormField label="Roles" hint="Roles allowed to access this schema" orientation="horizontal">
           <div class="flex flex-wrap items-center gap-1.5 rounded-lg border border-muted bg-background px-2 py-1.5">
             <UBadge
               v-for="(role, idx) in schemaForm.roles"

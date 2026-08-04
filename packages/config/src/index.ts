@@ -62,3 +62,8 @@ export function EnvSessionsDataPath(): string {
     LoadEnv()
     return process.env.SESSIONS_PATH ?? "./data/sessions"
 }
+
+export function EnvGetServerAddress(): string {
+    LoadEnv()
+    return process.env.SERVER_ADDRESS ?? "http://localhost:3000"
+}
