@@ -2771,7 +2771,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metal/config@workspace:*, @metal/config@workspace:packages/config":
+"@metal/config@npm:*, @metal/config@workspace:*, @metal/config@workspace:packages/config":
   version: 0.0.0-use.local
   resolution: "@metal/config@workspace:packages/config"
   dependencies:
@@ -2864,6 +2864,7 @@ __metadata:
     "@swc/core": "npm:^1.15.41"
     "@synatic/noql": "npm:^6.0.6"
     "@types/bytes": "npm:^3.1.5"
+    "@types/compression": "npm:^1.8.1"
     "@types/dockerode": "npm:^4.0.1"
     "@types/express": "npm:^5.0.6"
     "@types/js-yaml": "npm:^4.0.9"
@@ -2881,6 +2882,7 @@ __metadata:
     bcryptjs: "npm:^3.0.3"
     bytes: "npm:^3.1.2"
     chokidar: "npm:^5.0.0"
+    compression: "npm:^1.8.1"
     cron: "npm:^4.4.0"
     csv-parse: "npm:^6.2.1"
     csv-stringify: "npm:^6.7.0"
@@ -6323,6 +6325,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/compression@npm:^1.8.1":
+  version: 1.8.1
+  resolution: "@types/compression@npm:1.8.1"
+  dependencies:
+    "@types/express": "npm:*"
+    "@types/node": "npm:*"
+  checksum: 10/cd746c830a5c981568d36989c3c43a55caf1872b54e3f9891b82fba04501de11882091df3ece11fbede2de01179c99d08639a08831e06c3966873f928407c01a
+  languageName: node
+  linkType: hard
+
 "@types/connect@npm:*":
   version: 3.4.38
   resolution: "@types/connect@npm:3.4.38"
@@ -9093,7 +9105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bytes@npm:^3.1.2, bytes@npm:~3.1.2":
+"bytes@npm:3.1.2, bytes@npm:^3.1.2, bytes@npm:~3.1.2":
   version: 3.1.2
   resolution: "bytes@npm:3.1.2"
   checksum: 10/a10abf2ba70c784471d6b4f58778c0beeb2b5d405148e66affa91f23a9f13d07603d0a0354667310ae1d6dc141474ffd44e2a074be0f6e2254edb8fc21445388
@@ -9575,6 +9587,30 @@ __metadata:
     normalize-path: "npm:^3.0.0"
     readable-stream: "npm:^4.0.0"
   checksum: 10/78e3ba10aeef919a1c5bbac21e120f3e1558a31b2defebbfa1635274fc7f7e8a3a0ee748a06249589acd0b33a0d58144b8238ff77afc3220f8d403a96fcc13aa
+  languageName: node
+  linkType: hard
+
+"compressible@npm:~2.0.18":
+  version: 2.0.18
+  resolution: "compressible@npm:2.0.18"
+  dependencies:
+    mime-db: "npm:>= 1.43.0 < 2"
+  checksum: 10/58321a85b375d39230405654721353f709d0c1442129e9a17081771b816302a012471a9b8f4864c7dbe02eef7f2aaac3c614795197092262e94b409c9be108f0
+  languageName: node
+  linkType: hard
+
+"compression@npm:^1.8.1":
+  version: 1.8.1
+  resolution: "compression@npm:1.8.1"
+  dependencies:
+    bytes: "npm:3.1.2"
+    compressible: "npm:~2.0.18"
+    debug: "npm:2.6.9"
+    negotiator: "npm:~0.6.4"
+    on-headers: "npm:~1.1.0"
+    safe-buffer: "npm:5.2.1"
+    vary: "npm:~1.1.2"
+  checksum: 10/e7552bfbd780f2003c6fe8decb44561f5cc6bc82f0c61e81122caff5ec656f37824084f52155b1e8ef31d7656cecbec9a2499b7a68e92e20780ffb39b479abb7
   languageName: node
   linkType: hard
 
@@ -15059,7 +15095,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mime-db@npm:^1.54.0":
+"mime-db@npm:>= 1.43.0 < 2, mime-db@npm:^1.54.0":
   version: 1.54.0
   resolution: "mime-db@npm:1.54.0"
   checksum: 10/9e7834be3d66ae7f10eaa69215732c6d389692b194f876198dca79b2b90cbf96688d9d5d05ef7987b20f749b769b11c01766564264ea5f919c88b32a29011311
@@ -15582,6 +15618,13 @@ __metadata:
   version: 1.0.0
   resolution: "negotiator@npm:1.0.0"
   checksum: 10/b5734e87295324fabf868e36fb97c84b7d7f3156ec5f4ee5bf6e488079c11054f818290fc33804cef7b1ee21f55eeb14caea83e7dafae6492a409b3e573153e5
+  languageName: node
+  linkType: hard
+
+"negotiator@npm:~0.6.4":
+  version: 0.6.4
+  resolution: "negotiator@npm:0.6.4"
+  checksum: 10/d98c04a136583afd055746168f1067d58ce4bfe6e4c73ca1d339567f81ea1f7e665b5bd1e81f4771c67b6c2ea89b21cb2adaea2b16058c7dc31317778f931dab
   languageName: node
   linkType: hard
 
@@ -18577,7 +18620,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safe-buffer@npm:^5.0.1, safe-buffer@npm:~5.2.0":
+"safe-buffer@npm:5.2.1, safe-buffer@npm:^5.0.1, safe-buffer@npm:~5.2.0":
   version: 5.2.1
   resolution: "safe-buffer@npm:5.2.1"
   checksum: 10/32872cd0ff68a3ddade7a7617b8f4c2ae8764d8b7d884c651b74457967a9e0e886267d3ecc781220629c44a865167b61c375d2da6c720c840ecd73f45d5d9451
@@ -19388,6 +19431,7 @@ __metadata:
   dependencies:
     "@iconify-json/lucide": "npm:^1.2.114"
     "@iconify-json/simple-icons": "npm:^1.2.87"
+    "@metal/config": "npm:*"
     "@metal/server": "npm:*"
     "@nuxt/eslint": "npm:^1.16.0"
     "@nuxt/kit": "npm:^4.4.8"
@@ -20806,7 +20850,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vary@npm:^1, vary@npm:^1.1.2":
+"vary@npm:^1, vary@npm:^1.1.2, vary@npm:~1.1.2":
   version: 1.1.2
   resolution: "vary@npm:1.1.2"
   checksum: 10/31389debef15a480849b8331b220782230b9815a8e0dbb7b9a8369559aed2e9a7800cd904d4371ea74f4c3527db456dc8e7ac5befce5f0d289014dbdf47b2242

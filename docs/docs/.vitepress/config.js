@@ -35,18 +35,33 @@ export default withMermaid({
 		},
 		outline: "deep",
 		nav: [
-			{ text: "About Metal", link: "/documentation/about" },
+			{
+				text: "About Metal",
+				items: [
+					{ text: "Introduction", link: "/documentation/about" },
+					{ text: "What's new", link: "/documentation/whats-new" },
+					{ text: "Key Features", link: "/documentation/about#key-features" },
+					{ text: "Understanding Concepts", link: "/documentation/concepts" },
+					{ text: "Get Started", link: "/documentation/get-started" },
+					{ text: "Sample Project", link: "/sample-project" },
+				],
+			},
 			{
 				text: "Server",
 				items: [
 					{ text: "Configuration file", link: "/documentation/config-yml" },
-					{ text: "Environment Variables", link: "/documentation/env" },
 					{ text: "Data Providers Configurations", link: "/documentation/data-providers-config" },
 					{ text: "Container Provider Configurations", link: "/documentation/container-provider-config" },
 					{ text: "AI Engines Configurations", link: "/documentation/ai-engines" },
-					{ text: "Optional Parameters", link: "/documentation/optional-parameters" },
-					{ text: "Dynamic Expression Engine", link: "/documentation/dynamic-expression-engine" },
 					{ text: "Understanding Authentication", link: "/guides/authentication" },
+					{ text: "Error Handling Configuration", link: "/documentation/on-error-yml" },
+					{
+						items: [
+							{ text: "Environment Variables", link: "/documentation/env" },
+							{ text: "Optional Parameters", link: "/documentation/optional-parameters" },
+							{ text: "Dynamic Expression Engine", link: "/documentation/dynamic-expression-engine" },
+						],
+					},
 					{ text: "Metal REST API", link: "/documentation/rest-api" },
 					{ text: "Metal MCP Server", link: "/documentation/mcp-server" },
 				],
@@ -70,12 +85,13 @@ export default withMermaid({
 		sidebar: {
 			"/documentation/": [
 				{
-					text: "ℹ️ Introduction",
+					text: "ℹ️ About Metal",
 					collapsed: false,
 					items: [
-						{ text: "About Metal", link: "/documentation/about" },
+						{ text: "Introduction", link: "/documentation/about" },
 						{ text: "What's new", link: "/documentation/whats-new" },
 						{ text: "Key Features", link: "/documentation/about#key-features" },
+						{ text: "Understanding Concepts", link: "/documentation/concepts" },
 						{ text: "Get Started", link: "/documentation/get-started" },
 						{ text: "Sample Project", link: "/sample-project" },
 					],

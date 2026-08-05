@@ -17,7 +17,7 @@ defineProps({
       <div v-if="image" class="feature-image">
         <img class="technology-logo" :src="image" :alt="title" />
       </div>
-      <h3>{{ title }}</h3>
+      <h4>{{ title }}</h4>
       <Badge v-if="badge_text" :type="badge_style" :text="badge_text" />
       <p v-if="description">{{ description }}</p>
     </a>

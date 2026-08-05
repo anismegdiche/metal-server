@@ -31,5 +31,7 @@ core > studio {f} {cm:2026-08-03} {h}
 (A) refactor: remove normalize/stringify error, use new logger format {f} {start:2026-08-04T11:23:20} {cm:2026-08-04} {duration:03h52m} {h}
 (A) move utils {f} {start:2026-08-04T11:23:16}
 (A) source > pagination {f}
-(A) endpoint > gzip compress {f}
+(A) endpoint > gzip compress {f} {start:2026-08-04T20:02:53}
 (A) source > connections pools checking if a unique pool is open and not many {f} {cm:2026-08-04} {h}
+(A) user > warmup : default admin, env , studio api key to connect {f}
+users > crypt passwords

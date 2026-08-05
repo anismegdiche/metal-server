@@ -181,3 +181,6 @@ body {
   color: inherit!important;
   font-size: 0.7rem!important;
 }
+.vp doc {
+  line-height: 1.5em;
+}

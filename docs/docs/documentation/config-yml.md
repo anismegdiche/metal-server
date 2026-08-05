@@ -28,11 +28,13 @@ schemas:
     source: my-source
 ```
 
-## `version` <Badge type="default" text="v0.1+"/>
+## `version` <Badge type="info" text="v0.5+"/>
 
 Defines the version used for the configuration.
-Accepted values :
-`0.5`
+
+Accepted values :  `0.5`
+
+Default value: `0.5`
 
 **Example:**
 
@@ -46,31 +48,28 @@ Defines the configuration of the Metal server.
 
 The parameters that can be configured inside the `server` section include:
 
-| Parameter        | Type    | Required | Decription                                    | Metal version                         |
-| ---------------- | ------- | -------- | --------------------------------------------- | ------------------------------------- |
-| `authentication` | Object  | Y        | Configure user authentication                 | <Badge type="default" text="v0.3+" /> |
-| `port`           | Integer | N        | Server TCP port (default: `3000`)             | <Badge type="default" text="v0.1+" /> |
-| `timezone`       | String  | N        | Timezone setting (default: `UTC`)             | <Badge type="default" text="v0.1+" /> |
-| `verbosity`      | String  | N        | Logging level (default: `warn`)               | <Badge type="default" text="v0.1+" /> |
-| `cache`          | Object  | N        | Cache configuration(see: [sources](#sources)) | <Badge type="default" text="v0.1+" /> |
-| `request-limit`  | String  | N        | Define request limit (default: `10mb`)        | <Badge type="default" text="v0.1+" /> |
-| `response-limit` | String  | N        | Define response limit (default: `10mb`)       | <Badge type="default" text="v0.3+" /> |
-| `response-rate`  | Object  | N        | Define response rate limit                    | <Badge type="default" text="v0.3+" /> |
-| `endpoints`      | Object  | N        | Server endpoint toggles, including MCP        | <Badge type="info" text="v0.5+" /> |
+| Parameter              | Type    | Required | Decription                                    | Metal version                         |
+| ---------------------- | ------- | -------- | --------------------------------------------- | ------------------------------------- |
+| `authentication`       | Object  | Y        | Configure user authentication                 | <Badge type="default" text="v0.3+" /> |
+| `port`                 | Integer | N        | Server TCP port (default: `3000`)             | <Badge type="default" text="v0.1+" /> |
+| `timezone`             | String  | N        | Timezone setting (default: `UTC`)             | <Badge type="default" text="v0.1+" /> |
+| `verbosity`            | String  | N        | Logging level (default: `info`)               | <Badge type="info" text="v0.5+" />    |
+| `cache`                | Object  | N        | Cache configuration                           | <Badge type="default" text="v0.1+" /> |
+| `request-limit`        | String  | N        | Define request limit (default: `10mb`)        | <Badge type="default" text="v0.1+" /> |
+| `response-limit`       | String  | N        | Define response limit (default: `10mb`)       | <Badge type="default" text="v0.3+" /> |
+| `response-rate`        | Object  | N        | Define response rate limit                    | <Badge type="default" text="v0.3+" /> |
+| `response-compression` | Boolean | N        | Enable response compression (default: `true`) | <Badge type="info" text="v0.5+" />    |
+| `endpoints`            | Object  | N        | Server endpoint toggles, including MCP        | <Badge type="info" text="v0.5+" />    |
 
 **Example:**
 
 ```yaml
 server:
   port: 3000
-  verbosity: debug
-  cache:
-    provider: mongodb
-    uri: mongodb://127.0.0.1:27017/
-    database: metal_cache
-    options:
-      connectTimeoutMS: 5000
-      serverSelectionTimeoutMS: 5000
+  verbosity: info
+  timezone: UTC
+  request-limit: 100mb
+  response-limit: 100mb
 ```
 
 ### `port` <Badge type="default" text="v0.1+" />
@@ -79,7 +78,7 @@ Defines the Metal server's TCP port for API exposure.
 
 Default: `3000`
 
-### `verbosity` <Badge type="default" text="v0.1+" />
+### `verbosity` <Badge type="info" text="v0.5+" />
 
 Sets the console logging verbosity, which can be one of the following values:
 
@@ -89,7 +88,7 @@ Sets the console logging verbosity, which can be one of the following values:
 - `warn`
 - `error`
 
-Default: `warn`
+Default: `info`
 
 ::: warning ⚠️ IMPORTANT
 Using `debug` or `trace` can significantly reduce the performance of Metal server.
@@ -101,7 +100,7 @@ Sets the Database server for storing cache objects. The configuration is the sam
 
 This parameter must be configured if you plan to use the cache feature in Metal server.
 
-::: warning ⚠️ IMPORTANT
+::: tip ℹ️ NOTE
 Only the following cache providers are supported. Choose the one that matches your cache/storage backend:
 
 - `postgres` — PostgreSQL
@@ -110,7 +109,7 @@ Only the following cache providers are supported. Choose the one that matches yo
 - `mongodb` — MongoDB
 - `cosmosdb` — Azure Cosmos DB
 - `metal` — Metal native storage
-- `memory` — In-memory cache (non-persistent; for development/testing only)
+- `memory` — In-memory cache (non-persistent)
 
 Configure provider-specific connection settings in the `sources` section. 
 
@@ -136,7 +135,6 @@ The parameters that can be configured inside the `server` section include:
 | -------------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | `provider`     | Enum(String) | Y        | Authentication Provider, defaults to `local` (see: [Authentication providers](#authentication-providers)) | <Badge type="default" text="v0.3+" /> |
 | `default-role` | String       | N        | Default role assigned to the user when is authenticated, defaults empty. (see: [roles](#roles))           | <Badge type="default" text="v0.3+" /> |
-| `autocreate`   | String       | N        | Populate automatically `users` with the authenticated user if not exist, defaults to `false`              | <Badge type="default" text="v0.3+" /> |
 
 **Authentication providers** :
 
@@ -164,9 +162,9 @@ Configures optional server endpoints.
 
 The parameters that can be configured inside the `endpoints` section include:
 
-| Parameter | Type | Required | Description | Metal version |
-| --------- | ---- | -------- | ----------- | ------------- |
-| `enable-mcp` | Boolean | N | Enables the MCP endpoint for exposing Metal tools to MCP clients | <Badge type="info" text="v0.5+" /> |
+| Parameter    | Type    | Required | Description                                                                        | Metal version                      |
+| ------------ | ------- | -------- | ---------------------------------------------------------------------------------- | ---------------------------------- |
+| `enable-mcp` | Boolean | N        | Enables the MCP endpoint for exposing Metal tools to MCP clients. default: `false` | <Badge type="info" text="v0.5+" /> |
 
 **Example:**
 
@@ -179,39 +177,76 @@ server:
 ### `request-limit` <Badge type="default" text="v0.1+" />
 
 Controls the maximum request body size. If this is a number, then the value specifies the number of bytes; if it is a string, the value is passed to the bytes library for parsing.
-For supported values, see [here](https://www.npmjs.com/package/bytes).
+When exeeded, an error **PAYLOAD TOO LARGE(413)** will occur.
 
-When exeeded, an error PAYLOAD TOO LARGE(413) will occur.
+Supported units and abbreviations are as follows and are case-insensitive:
+
+  * `b` for bytes
+  * `kb` for kilobytes
+  * `mb` for megabytes
+  * `gb` for gigabytes
+  * `tb` for terabytes
+  * `pb` for petabytes
+
+The units are in powers of two, not ten. This means 1kb = 1024b according to this parser.
+
+
 
 Default: `10mb`
 
 ### `response-limit` <Badge type="default" text="v0.3+" />
 
 Controls the maximum response body size. If this is a number, then the value specifies the number of bytes; if it is a string, the value is passed to the bytes library for parsing.
-For supported values, see [here](https://www.npmjs.com/package/bytes).
+When exeeded, an error **PAYLOAD TOO LARGE(413)** will occur.
 
-When exeeded, an error CONTENT TOO LARGE(413) will occur.
+Supported units and abbreviations are as follows and are case-insensitive:
+
+  * `b` for bytes
+  * `kb` for kilobytes
+  * `mb` for megabytes
+  * `gb` for gigabytes
+  * `tb` for terabytes
+  * `pb` for petabytes
+
+The units are in powers of two, not ten. This means 1kb = 1024b according to this parser.
+
+
 
 Default: `10mb`
 
 ### `response-rate` <Badge type="default" text="v0.3+" />
 
-Controls the maximum request per window.
+Controls the maximum request per window. If exeeded, an error TOO MANY REQUEST(429) will occur.
+
 The parameters that can be configured inside the `response-rate` section include:
 
-| Parameter  | Type    | Required | Description                                                                                                                                                                                                      | Metal version                         |
-| ---------- | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `windowMs` | Integer | Y        | The time window for rate limiting, in milliseconds. For example, `60000` milliseconds (60 seconds).                                                                                                              | <Badge type="default" text="v0.3+" /> |
-| `max`      | Integer | Y        | The maximum number of requests allowed within the `windowMs` time window. For example, `600` requests.                                                                                                           | <Badge type="default" text="v0.3+" /> |
-| `message`  | String  | N        | The message to be sent when the rate limit is exceeded. This can be a custom message indicating that the user has made too many requests. For example, "Too many requests from this IP, please try again later." | <Badge type="default" text="v0.3+" /> |
+| Parameter  | Type    | Required | Description                                                                                                                                                                                                 | Metal version                         |
+| ---------- | ------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `windowMs` | Integer | Y        | The time window for rate limiting, in milliseconds. For example, `60000` milliseconds (60 seconds). default: `60000`                                                                                        | <Badge type="default" text="v0.3+" /> |
+| `max`      | Integer | Y        | The maximum number of requests allowed within the `windowMs` time window. For example, `600` requests. default: `600`                                                                                       | <Badge type="default" text="v0.3+" /> |
+| `message`  | String  | N        | The message to be sent when the rate limit is exceeded. This can be a custom message indicating that the user has made too many requests. default: `Too many requests from this IP, please try again later` | <Badge type="default" text="v0.3+" /> |
 
-If exeeded, an error TOO MANY REQUEST(429) will occur.
 
-Default:
+### `response-compression` <Badge type="info" text="v0.5+" />
 
-- windowMs: `60000`
-- max: `600`
-- message: `Too many requests from this IP, please try again later`
+Enables or disables response compression. When enabled, the server compresses outgoing responses using the encoding negotiated with the client's `Accept-Encoding` header:
+
+- `br` (brotli) — used when the client advertises `br`
+- `gzip` — default when the client does not advertise `br`
+- `deflate` — fallback
+
+Responses smaller than 1kb are not compressed. Request body decompression (gzip/br/deflate) is always handled by the server regardless of this parameter.
+
+Set to `false` to disable compression, e.g. when a reverse proxy (nginx, etc.) already handles it.
+
+Default: `true`
+
+**Example:**
+
+```yaml
+server:
+  response-compression: true
+```
 
 ### `ai-engines` <Badge type="info" text="v0.5+" />
 
@@ -232,27 +267,24 @@ server:
 
 The parameters that can be configured inside the `ai-engines` section include:
 
-| Parameter                 | Type    | Default Value                                 | Required | Description                                                                      | Metal Version                      |
-| ------------------------- | ------- | --------------------------------------------- | -------- | -------------------------------------------------------------------------------- | ---------------------------------- |
-| `params`                  | Object  |                                               | N        | Parameters for Container Provider. By default, local Docker daemon will be used. | <Badge type="info" text="v0.5+" /> |
-| `build-batch-size`        | Integer | `5`                                           | N        | AI Engine Build batch size value.                                                | <Badge type="info" text="v0.5+" /> |
-| `engines-url`             | URL     | `http://127.0.0.1:5000`                       | Y        | URL for AI Engine services.                                                      | <Badge type="info" text="v0.5+" /> |
-| `timeout`                 | Integer | `60000`                                       | N        | Timeout for AI Engine requests in milliseconds.                                  | <Badge type="info" text="v0.5+" /> |
-| `min-instance`            | Integer | `1`                                           | N        | Minimum number of AI Engine instances.                                           | <Badge type="info" text="v0.5+" /> |
-| `max-instance`            | Integer | `5`                                           | N        | Maximum number of AI Engine instances.                                           | <Badge type="info" text="v0.5+" /> |
-| `cpu-scale-up`            | Integer | `70`                                          | N        | Percentage of CPU used to trigger a scale up.                                    | <Badge type="info" text="v0.5+" /> |
-| `cpu-scale-down`          | Integer | `30`                                          | N        | Percentage of CPU used to trigger a scale down.                                  | <Badge type="info" text="v0.5+" /> |
-| `scale-interval`          | Integer | `15000`                                       | N        | AI Engine Scale interval value in milliseconds.                                  | <Badge type="info" text="v0.5+" /> |
-| `scale-down-grace-period` | Integer | `300000`                                      | N        | Grace period before scaling down in milliseconds.                                | <Badge type="info" text="v0.5+" /> |
-| `cpu`                     | Integer | `4`                                           | N        | CPU limit per AI Engine instances.                                               | <Badge type="info" text="v0.5+" /> |
-| `memory`                  | Integer | `2`                                           | N        | Memory limit per AI Engine instances.                                            | <Badge type="info" text="v0.5+" /> |
-| `cors`.`allowed-origins`  | String  | `*`                                           | N        | CORS allowed origins for AI Engine services.                                     | <Badge type="info" text="v0.5+" /> |
-| `cors`.`allowed-methods`  | String  | `GET,POST,OPTIONS`                            | N        | CORS Allowed methods for AI Engine services.                                     | <Badge type="info" text="v0.5+" /> |
-| `cors`.`allowed-headers`  | String  | `Content-Type,Authorization,X-Requested-With` | N        | CORS Allowed headers for AI Engine services.                                     | <Badge type="info" text="v0.5+" /> |
+| Parameter                 | Type    | Required | Description                                                                                                           | Metal Version                      |
+| ------------------------- | ------- | -------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `engines-url`             | URL     | Y        | URL for AI Engine services. default `http://127.0.0.1:5000`                                                           | <Badge type="info" text="v0.5+" /> |
+| `params`                  | Object  | N        | Parameters for Container Provider, See: [Container Provider Configurations](./container-provider-config).             | <Badge type="info" text="v0.5+" /> |
+| `build-batch-size`        | Integer | N        | AI Engine Build batch size value. default: `5`                                                                        | <Badge type="info" text="v0.5+" /> |
+| `timeout`                 | Integer | N        | Timeout for AI Engine requests in milliseconds. default: `60000`                                                      | <Badge type="info" text="v0.5+" /> |
+| `min-instance`            | Integer | N        | Minimum number of AI Engine instances. default: `1`                                                                   | <Badge type="info" text="v0.5+" /> |
+| `max-instance`            | Integer | N        | Maximum number of AI Engine instances. default: `5`                                                                   | <Badge type="info" text="v0.5+" /> |
+| `cpu-scale-up`            | Integer | N        | Percentage of CPU used to trigger a scale up. default: `70`                                                           | <Badge type="info" text="v0.5+" /> |
+| `cpu-scale-down`          | Integer | N        | Percentage of CPU used to trigger a scale down. default: `30`                                                         | <Badge type="info" text="v0.5+" /> |
+| `scale-interval`          | Integer | N        | AI Engine Scale interval value in milliseconds. default: `15000`                                                      | <Badge type="info" text="v0.5+" /> |
+| `scale-down-grace-period` | Integer | N        | Grace period before scaling down in milliseconds. default: `300000`                                                   | <Badge type="info" text="v0.5+" /> |
+| `cpu`                     | Integer | N        | CPU limit per AI Engine instances. default: `4`                                                                       | <Badge type="info" text="v0.5+" /> |
+| `memory`                  | Integer | N        | Memory limit per AI Engine instances. default:   `2`                                                                  | <Badge type="info" text="v0.5+" /> |
+| `cors`.`allowed-origins`  | String  | N        | CORS allowed origins for AI Engine services. default: `*`                                                             | <Badge type="info" text="v0.5+" /> |
+| `cors`.`allowed-methods`  | String  | N        | CORS Allowed methods for AI Engine services. default: `GET,POST,OPTIONS`                                              | <Badge type="info" text="v0.5+" /> |
+| `cors`.`allowed-headers`  | String  | N        | CORS Allowed headers for AI Engine services. default: `Origin, X-Requested-With, Content-Type, Accept, Authorization` | <Badge type="info" text="v0.5+" /> |
 
-::: tip ℹ️ NOTE
-For more detailed information about how to configure a Container Provider in `params`, See: [Container Provider Configurations](./container-provider-config)
-:::
 
 ## `mcp` <Badge type="info" text="v0.5+" />
 
@@ -279,32 +311,32 @@ Each entry under `tools` defines an MCP tool name. A tool maps to a schema entit
 
 The parameters that can be configured inside each tool include:
 
-| Parameter     | Type         | Required | Description                                                                 | Metal version                      |
-| ------------- | ------------ | -------- | --------------------------------------------------------------------------- | ---------------------------------- |
-| `description` | String       | Y        | Description shown to the LLM client                                         | <Badge type="info" text="v0.5+" /> |
-| `schema`      | String       | Y        | Name of the schema to use                                                   | <Badge type="info" text="v0.5+" /> |
-| `entity`      | String       | Y        | Name of the entity inside the schema (except for `list` actions)            | <Badge type="info" text="v0.5+" /> |
-| `action`      | Enum(String) | N        | Tool action: `read`, `create`, `update`, `delete`, `list` (default: `read`) | <Badge type="info" text="v0.5+" /> |
-| `roles`       | Array        | N        | Required roles for access to the tool. If omitted, access is derived from the tool's `action` permission (e.g. `read` → `r`)  | <Badge type="info" text="v0.5+" /> |
-| `cache`       | Integer      | N        | Cache duration in seconds for read operations                               | <Badge type="info" text="v0.5+" /> |
-| `limit`       | Integer      | N        | Maximum number of rows to return (default: `10`)                            | <Badge type="info" text="v0.5+" /> |
-| `fields`      | Array        | N        | Restrict the returned fields                                                | <Badge type="info" text="v0.5+" /> |
-| `arguments`   | Object       | N        | Input arguments accepted by the tool                                        | <Badge type="info" text="v0.5+" /> |
+| Parameter     | Type         | Required | Description                                                                                                                  | Metal version                      |
+| ------------- | ------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `description` | String       | Y        | Description shown to the LLM client                                                                                          | <Badge type="info" text="v0.5+" /> |
+| `schema`      | String       | Y        | Name of the schema to use                                                                                                    | <Badge type="info" text="v0.5+" /> |
+| `entity`      | String       | Y        | Name of the entity inside the schema (except for `list` actions)                                                             | <Badge type="info" text="v0.5+" /> |
+| `action`      | Enum(String) | N        | Tool action: `read`, `create`, `update`, `delete`, `list` (default: `read`)                                                  | <Badge type="info" text="v0.5+" /> |
+| `roles`       | Array        | N        | Required roles for access to the tool. If omitted, access is derived from the tool's `action` permission (e.g. `read` → `r`) | <Badge type="info" text="v0.5+" /> |
+| `cache`       | Integer      | N        | Cache duration in seconds for read operations                                                                                | <Badge type="info" text="v0.5+" /> |
+| `limit`       | Integer      | N        | Maximum number of rows to return (default: `10`)                                                                             | <Badge type="info" text="v0.5+" /> |
+| `fields`      | Array        | N        | Restrict the returned fields                                                                                                 | <Badge type="info" text="v0.5+" /> |
+| `arguments`   | Object       | N        | Input arguments accepted by the tool                                                                                         | <Badge type="info" text="v0.5+" /> |
 
 ### `arguments`
 
 The parameters that can be configured inside each argument include:
 
-| Parameter     | Type         | Required | Description                                                                 | Metal version                      |
-| ------------- | ------------ | -------- | --------------------------------------------------------------------------- | ---------------------------------- |
-| `type`        | Enum(String) | Y        | Argument type: `string`, `number`, `boolean`, `array`, `json`, or `structure` | <Badge type="info" text="v0.5+" /> |
-| `description` | String       | Y        | Description shown to the LLM client                                         | <Badge type="info" text="v0.5+" /> |
+| Parameter     | Type         | Required | Description                                                                                    | Metal version                      |
+| ------------- | ------------ | -------- | ---------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `type`        | Enum(String) | Y        | Argument type: `string`, `number`, `boolean`, `array`, `json`, or `structure`                  | <Badge type="info" text="v0.5+" /> |
+| `description` | String       | Y        | Description shown to the LLM client                                                            | <Badge type="info" text="v0.5+" /> |
 | `map-to`      | String       | N        | Target field name in the schema entity for a single-field payload (`json` or scalar arguments) | <Badge type="info" text="v0.5+" /> |
-| `properties`  | Object       | N        | Nested properties for `structure` arguments that should be remapped to many fields | <Badge type="info" text="v0.5+" /> |
-| `items`       | Object       | N        | Item schema for `array` arguments (scalar, `json`, or `structure`)          | <Badge type="info" text="v0.5+" /> |
-| `required`    | Boolean      | N        | Whether the argument is required (default: `false`)                       | <Badge type="info" text="v0.5+" /> |
-| `default`     | Any          | N        | Default value when the argument is omitted                                  | <Badge type="info" text="v0.5+" /> |
-| `enum`        | Array        | N        | Restricts the allowed values                                                | <Badge type="info" text="v0.5+" /> |
+| `properties`  | Object       | N        | Nested properties for `structure` arguments that should be remapped to many fields             | <Badge type="info" text="v0.5+" /> |
+| `items`       | Object       | N        | Item schema for `array` arguments (scalar, `json`, or `structure`)                             | <Badge type="info" text="v0.5+" /> |
+| `required`    | Boolean      | N        | Whether the argument is required (default: `false`)                                            | <Badge type="info" text="v0.5+" /> |
+| `default`     | Any          | N        | Default value when the argument is omitted                                                     | <Badge type="info" text="v0.5+" /> |
+| `enum`        | Array        | N        | Restricts the allowed values                                                                   | <Badge type="info" text="v0.5+" /> |
 
 For `json` and `structure` arguments, use one of these two patterns:
 
@@ -474,7 +506,7 @@ The parameters that can be configured inside a source include:
 | Parameter  | Type         | Required | Decription             | Metal version                         |
 | ---------- | ------------ | -------- | ---------------------- | ------------------------------------- |
 | `provider` | Enum(String) | Y        | Provider type          | <Badge type="default" text="v0.1+" /> |
-| `database` | String       | N        | Provider database      | <Badge type="info" text="v0.5+" />    |
+| `database` | String       | N        | Provider database      | <Badge type="default" text="v0.1+" /> |
 | `host`     | String       | N        | Host server            | <Badge type="default" text="v0.1+" /> |
 | `port`     | Integer      | N        | Host port              | <Badge type="default" text="v0.1+" /> |
 | `user`     | String       | N        | Provider user          | <Badge type="default" text="v0.1+" /> |
@@ -613,7 +645,7 @@ When declaring a schema, the parameters that can be configured inside are: `sour
 :::
 
 ::: warning ⚠️ IMPORTANT
-If there's no `schemas` declaration in `config.yml`, Metal server will not expose any data to the API, implying its use as a scheduled ETL tool (see: Use Case, CRON ETL).
+The `schemas` section is **mandatory**. If no `schemas` declaration is present in `config.yml`, the Metal server will fail operate.
 :::
 
 **Example:**
@@ -714,7 +746,7 @@ schemas:
 ```
 
 ::: warning ⚠️ Warning
-When using `anonymize` in a schema and in a plan, data will be anonymized twice.
+If `anonymize` is used in a schema and in a plan, data will be anonymized twice.
 :::
 
 ## `plans` <Badge type="info" text="v0.5+" />
@@ -730,11 +762,11 @@ Each plan must declare at least one step under the `steps` key.
 
 The parameters that can be configured inside `update` tag are :
 
-| Name               | Type   | Required | Description                                                                | Metal version                      |
-| ------------------ | ------ | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| `steps`            | Object | Y        | Section to declare plan's steps                                            | <Badge type="info" text="v0.5+" /> |
+| Name               | Type   | Required | Description                                                             | Metal version                      |
+| ------------------ | ------ | -------- | ----------------------------------------------------------------------- | ---------------------------------- |
+| `steps`            | Object | Y        | Section to declare plan's steps                                         | <Badge type="info" text="v0.5+" /> |
 | `on-error`         | Object | N        | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
-| `failure-strategy` | String | N        | Plan's output whene failure happen (default: `throw`)                      | <Badge type="info" text="v0.5+" /> |
+| `failure-strategy` | String | N        | Plan's output whene failure happen (default: `throw`)                   | <Badge type="info" text="v0.5+" /> |
 
 **Example**
 
@@ -778,9 +810,10 @@ plans:
 
 ### `on-error` <Badge type="info" text="v0.5+" />
 
-::: note ℹ️ TIP
-For detailed configuration, please see article [on-error](on-error-yml).
+::: tip ℹ️ NOTE
+For detailed configuration, please see article [Error Handling Configuration](on-error-yml).
 :::
+
 
 ### `failure-strategy` <Badge type="info" text="v0.5+" />
 
@@ -818,15 +851,15 @@ Steps that can be configured inside a plan are:
 | `clear`               | Clear plan data, variables and reset execution context                                            | <Badge type="info" text="v0.5+" />    |
 | `remove-empty-fields` | Remove fields with empty values (null, undefined, empty string, etc.)                             | <Badge type="info" text="v0.5+" />    |
 
-#### `list-entities` 📜 <Badge type="default" text="v0.3+" />
+#### `list-entities` <Badge type="default" text="v0.3+" />
 
 To list entities in a schema.
 
 The parameters that can be configured inside `select` tag are :
 
-| Name        | Decription                                                                 | Metal version                      |
-| ----------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| 📜`schema`   | name of schema                                                             | <Badge type="info" text="v0.5+" /> |
+| Name        | Decription                                                              | Metal version                      |
+| ----------- | ----------------------------------------------------------------------- | ---------------------------------- |
+| 📜`schema`   | name of schema                                                          | <Badge type="info" text="v0.5+" /> |
 | 📜`on-error` | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
@@ -847,7 +880,7 @@ The parameters that can be configured inside `select` tag are :
 >           schema: my-schema
 > ```
 
-#### `select` 📜 <Badge type="default" text="v0.1+" />
+#### `select` <Badge type="default" text="v0.1+" />
 
 To select data from an entity.
 If schema and entity are not provided, actual plan's data will be returned.
@@ -863,7 +896,7 @@ The parameters that can be configured inside `select` tag are :
 | 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | <Badge type="info" text="v0.5+" /> |
 | 📜`sort`              | sort data, can be `asc` or `desc`. (see: [Optional Parameters](rest-api#optional-parameters))    | <Badge type="info" text="v0.5+" /> |
 | 📜`cache`             | time in seconds to cache data. (see: [Optional Parameters](rest-api#optional-parameters))        | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                       | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                          | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -886,7 +919,7 @@ The parameters that can be configured inside `select` tag are :
 >           fields: login, partner_id
 > ```
 
-#### `insert` 📜 <Badge type="default" text="v0.1+" />
+#### `insert` <Badge type="default" text="v0.1+" />
 
 To insert data to an entity.
 If schema and entity are not provided, actual plan's data will be modified
@@ -898,7 +931,7 @@ The parameters that can be configured inside `insert` tag are :
 | 📜`schema`   | name of schema                                                                                  | <Badge type="info" text="v0.5+" /> |
 | 📜`entity`   | name of entity in the `schema`                                                                  | <Badge type="info" text="v0.5+" /> |
 | 📜`data`     | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters)) | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Error handling strategy when step fails (see: [on-error](on-error-yml))                      | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Error handling strategy when step fails (see: [on-error](on-error-yml))                         | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -927,7 +960,7 @@ The parameters that can be configured inside `insert` tag are :
 >               url: https://www.bing.com
 > ```
 
-#### `delete` 📜 <Badge type="default" text="v0.1+" />
+#### `delete` <Badge type="default" text="v0.1+" />
 
 To delete data from an entity.
 If schema and entity are not provided, actual plan's data will be modified
@@ -940,7 +973,7 @@ The parameters that can be configured inside `delete` tag are :
 | 📜`entity`            | name of entity in the `schema`                                                                   | <Badge type="info" text="v0.5+" /> |
 | 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | <Badge type="info" text="v0.5+" /> |
 | 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                       | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                          | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -963,7 +996,7 @@ The parameters that can be configured inside `delete` tag are :
 >           filter-expression: "id >= 100"
 > ```
 
-#### `update` 📜 <Badge type="default" text="v0.1+" />
+#### `update` <Badge type="default" text="v0.1+" />
 
 To update data of an entity.
 If schema and entity are not provided, actual plan's data will be modified
@@ -977,7 +1010,7 @@ The parameters that can be configured inside `update` tag are :
 | 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | <Badge type="info" text="v0.5+" /> |
 | 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | <Badge type="info" text="v0.5+" /> |
 | 📜❇️`data`             | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters))  | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                       | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                          | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 >
@@ -1020,7 +1053,7 @@ nothing, `error`
 >       - debug:
 > ```
 
-#### `break` 📜 <Badge type="default" text="v0.1+" />
+#### `break` <Badge type="default" text="v0.1+" />
 
 To stop execution of the plan at this step.
 it accepts empty value or a JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
@@ -1050,19 +1083,19 @@ it accepts empty value or a JavaScript Expression Engine (see: [JavaScript Expre
 >       - break: ${{ $vars.myVar == true }}
 > ```
 
-#### `join` 📜 <Badge type="default" text="v0.1+" />
+#### `join` <Badge type="default" text="v0.1+" />
 
 To perform data joins (Left,Right,Inner,Full outer and Cross)
 
 The parameters that can be configured inside `join` tag are :
 
-| Name           | Description                                                                | Metal version                      |
-| -------------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| 📜`schema`      | Schema name to join with.                                                  | <Badge type="info" text="v0.5+" /> |
-| 📜`entity`      | Entity name to join with                                                   | <Badge type="info" text="v0.5+" /> |
-| 📜`type`        | Join type can be `left`,`right`,`inner`,`full-outer`,`cross`               | <Badge type="info" text="v0.5+" /> |
-| 📜`left-field`  | Left field for equality with `right-field`                                 | <Badge type="info" text="v0.5+" /> |
-| 📜`right-field` | Right field                                                                | <Badge type="info" text="v0.5+" /> |
+| Name           | Description                                                             | Metal version                      |
+| -------------- | ----------------------------------------------------------------------- | ---------------------------------- |
+| 📜`schema`      | Schema name to join with.                                               | <Badge type="info" text="v0.5+" /> |
+| 📜`entity`      | Entity name to join with                                                | <Badge type="info" text="v0.5+" /> |
+| 📜`type`        | Join type can be `left`,`right`,`inner`,`full-outer`,`cross`            | <Badge type="info" text="v0.5+" /> |
+| 📜`left-field`  | Left field for equality with `right-field`                              | <Badge type="info" text="v0.5+" /> |
+| 📜`right-field` | Right field                                                             | <Badge type="info" text="v0.5+" /> |
 | 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
@@ -1102,7 +1135,7 @@ The `type` parameter can be :
 >           right-field: id
 > ```
 
-#### `sort` 📜 <Badge type="info" text="v0.5+" />
+#### `sort` <Badge type="info" text="v0.5+" />
 
 To sort actual plan's data.
 Accept a list of one or many fields and sorting order :
@@ -1115,7 +1148,7 @@ If sorting order is not provided, ascending order will be used.
 | Parameter   | Type   | Required | Description                                                                   | Metal version                      |
 | ----------- | ------ | -------- | ----------------------------------------------------------------------------- | ---------------------------------- |
 | 📜`fields`   | Object | yes      | Mapping of fields to sort by, defined as `field: direction` (`asc` or `desc`) | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Object | no       | Strategy to apply if the step fails (see: [on-error](on-error-yml))        | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Object | no       | Strategy to apply if the step fails (see: [on-error](on-error-yml))           | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1142,13 +1175,13 @@ If sorting order is not provided, ascending order will be used.
 >             name: desc
 > ```
 
-#### `pick` 📜 <Badge type="info" text="v0.5+" />
+#### `pick` <Badge type="info" text="v0.5+" />
 
 Select fields to keep and remove remaining from actual plan's data
 
-| Parameters  | Type          | Required | Description                                                                | Metal version                      |
-| ----------- | ------------- | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| 📜`fields`   | Array(String) | yes      | List of key(s) used for comparison                                         | <Badge type="info" text="v0.5+" /> |
+| Parameters  | Type          | Required | Description                                                             | Metal version                      |
+| ----------- | ------------- | -------- | ----------------------------------------------------------------------- | ---------------------------------- |
+| 📜`fields`   | Array(String) | yes      | List of key(s) used for comparison                                      | <Badge type="info" text="v0.5+" /> |
 | 📜`on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
@@ -1176,13 +1209,13 @@ Select fields to keep and remove remaining from actual plan's data
 >             - display_name
 > ```
 
-#### `omit` 📜 <Badge type="info" text="v0.5+" />
+#### `omit` <Badge type="info" text="v0.5+" />
 
 Select fields to remove from actual plan's data
 
-| Parameters  | Type          | Required | Description                                                                | Metal version                      |
-| ----------- | ------------- | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| 📜`fields`   | Array(String) | yes      | List of key(s) used for comparison                                         | <Badge type="info" text="v0.5+" /> |
+| Parameters  | Type          | Required | Description                                                             | Metal version                      |
+| ----------- | ------------- | -------- | ----------------------------------------------------------------------- | ---------------------------------- |
+| 📜`fields`   | Array(String) | yes      | List of key(s) used for comparison                                      | <Badge type="info" text="v0.5+" /> |
 | 📜`on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
@@ -1209,15 +1242,15 @@ Select fields to remove from actual plan's data
 >             - display_name
 > ```
 
-#### `map` 📜 <Badge type="info" text="v0.5+" />
+#### `map` <Badge type="info" text="v0.5+" />
 
 To transform data using custom JavaScript code. The script is executed for each row in the current data table, where `$row` represents the current row object.
 
 The parameters that can be configured inside `map` tag are :
 
-| Name        | Type   | Description                                                                  | Metal version                      |
-| ----------- | ------ | ---------------------------------------------------------------------------- | ---------------------------------- |
-| 📜`script`   | String | JavaScript code to transform each row                                        | <Badge type="info" text="v0.5+" /> |
+| Name        | Type   | Description                                                               | Metal version                      |
+| ----------- | ------ | ------------------------------------------------------------------------- | ---------------------------------- |
+| 📜`script`   | String | JavaScript code to transform each row                                     | <Badge type="info" text="v0.5+" /> |
 | 📜`on-error` | Object | Error handling strategy when script fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
@@ -1264,7 +1297,7 @@ The script:
 - is executed in a secure sandbox environment.
   :::
 
-#### `set-var` 📜 <Badge type="info" text="v0.5+" />
+#### `set-var` <Badge type="info" text="v0.5+" />
 
 To set persistent variables in the execution context that can be reused in subsequent steps.
 
@@ -1296,19 +1329,19 @@ The parameters that can be configured inside `set-var` tag are key-value pairs w
 >         filter-expression: "value > ${{ $vars.threshold }}"
 > ```
 
-#### `run` 📜 <Badge type="info" text="v0.5+" />
+#### `run` <Badge type="info" text="v0.5+" />
 
 To run an AI Task on actual plan's data.
 
 The parameters that can be configured inside `run` tag are :
 
-| Name        | Type   | Description                                                                | Metal version                      |
-| ----------- | ------ | -------------------------------------------------------------------------- | ---------------------------------- |
-| 📜`ai`       | String | AI Engine name (see: [AI Engines](ai-engines))                             | <Badge type="info" text="v0.5+" /> |
-| 📜`task`     | String | AI Engine task (see: [AI Engines](ai-engines))                             | <Badge type="info" text="v0.5+" /> |
-| 📜`params`   | Object | AI Engine parameters (see: [AI Engines](ai-engines))                       | <Badge type="info" text="v0.5+" /> |
-| 📜`input`    | String | input field to perform the processing                                      | <Badge type="info" text="v0.5+" /> |
-| 📜`output`   | Object | Output result to be stored. (see: output)                                  | <Badge type="info" text="v0.5+" /> |
+| Name        | Type   | Description                                                             | Metal version                      |
+| ----------- | ------ | ----------------------------------------------------------------------- | ---------------------------------- |
+| 📜`ai`       | String | AI Engine name (see: [AI Engines](ai-engines))                          | <Badge type="info" text="v0.5+" /> |
+| 📜`task`     | String | AI Engine task (see: [AI Engines](ai-engines))                          | <Badge type="info" text="v0.5+" /> |
+| 📜`params`   | Object | AI Engine parameters (see: [AI Engines](ai-engines))                    | <Badge type="info" text="v0.5+" /> |
+| 📜`input`    | String | input field to perform the processing                                   | <Badge type="info" text="v0.5+" /> |
+| 📜`output`   | Object | Output result to be stored. (see: output)                               | <Badge type="info" text="v0.5+" /> |
 | 📜`on-error` | Object | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
@@ -1350,7 +1383,7 @@ It can be:
 >           ocr_lang_code: ${{ $result.ocr.lang.split('_')[0] }} # using JavaScript Expression Engine to transform result
 > ```
 
-#### `sync` 📜 <Badge type="info" text="v0.5+" />
+#### `sync` <Badge type="info" text="v0.5+" />
 
 To synchronize data from source to destination. This will performs Update, Insert and Delete operations on the destination entity to be the exact copy of the data source.
 
@@ -1363,7 +1396,7 @@ The parameters that can be configured inside `sync` tag are :
 | 📜`to.schema`   | name of destination schema. If not provided actual plan will be used as a schema                                | <Badge type="info" text="v0.5+" /> |
 | 📜`to.entity`   | name of destination entity in the `to.schema`                                                                   | <Badge type="info" text="v0.5+" /> |
 | 📜`id`          | field that exists in both source and destination entity. It will be used as unique identity for synchronization | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml))                                      | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml))                                         | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1390,13 +1423,13 @@ The parameters that can be configured inside `sync` tag are :
 >           id: user_id
 > ```
 
-#### `anonymize` 📜 <Badge type="info" text="v0.5+" />
+#### `anonymize` <Badge type="info" text="v0.5+" />
 
 To anonymize data of given list of fields.
 
-| Parameters  | Type          | Required | Description                                                                | Metal version                      |
-| ----------- | ------------- | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| 📜`fields`   | Array(String) | yes      | List of key(s) used for comparison                                         | <Badge type="info" text="v0.5+" /> |
+| Parameters  | Type          | Required | Description                                                             | Metal version                      |
+| ----------- | ------------- | -------- | ----------------------------------------------------------------------- | ---------------------------------- |
+| 📜`fields`   | Array(String) | yes      | List of key(s) used for comparison                                      | <Badge type="info" text="v0.5+" /> |
 | 📜`on-error` | Object        | no       | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
@@ -1420,16 +1453,16 @@ To anonymize data of given list of fields.
 >             - company_name
 > ```
 
-#### `remove-duplicates` 📜 <Badge type="info" text="v0.5+" />
+#### `remove-duplicates` <Badge type="info" text="v0.5+" />
 
 The `remove-duplicates` function is designed to remove duplicate rows from a dataset based on specified parameters. Here are the details:
 
-| Parameters   | Type          | Required | Description                                                                | Metal version                      |
-| ------------ | ------------- | -------- | -------------------------------------------------------------------------- | ---------------------------------- |
-| 📜`key`       | Array(String) | No       | List of fields used for comparison (default: empty)                        | <Badge type="info" text="v0.5+" /> |
-| 📜`method`    | String        | No       | Method of comparison (default: `hash`)                                     | <Badge type="info" text="v0.5+" /> |
-| 📜`strategy`  | String        | No       | Strategy to adopt when duplicates are found (default: `first`)             | <Badge type="info" text="v0.5+" /> |
-| 📜`condition` | String        | No       | Condition to apply according to selected strategy (default: empty)         | <Badge type="info" text="v0.5+" /> |
+| Parameters   | Type          | Required | Description                                                             | Metal version                      |
+| ------------ | ------------- | -------- | ----------------------------------------------------------------------- | ---------------------------------- |
+| 📜`key`       | Array(String) | No       | List of fields used for comparison (default: empty)                     | <Badge type="info" text="v0.5+" /> |
+| 📜`method`    | String        | No       | Method of comparison (default: `hash`)                                  | <Badge type="info" text="v0.5+" /> |
+| 📜`strategy`  | String        | No       | Strategy to adopt when duplicates are found (default: `first`)          | <Badge type="info" text="v0.5+" /> |
+| 📜`condition` | String        | No       | Condition to apply according to selected strategy (default: empty)      | <Badge type="info" text="v0.5+" /> |
 | 📜`on-error`  | Object        | No       | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
@@ -1492,7 +1525,7 @@ If we want to check duplicates with hash method for the rows that have the same 
 >           strategy: first # <--  'first' for keeping the first found row
 > ```
 
-#### `remove-empty-fields` 📜 <Badge type="info" text="v0.5+" />
+#### `remove-empty-fields` <Badge type="info" text="v0.5+" />
 
 Remove fields with empty values from data rows using flexible defaults + fields model.
 
@@ -1502,7 +1535,7 @@ This step removes fields that contain empty values according to configurable cri
 | ----------- | ------ | -------- | -------------------------------------------------------------------------------------- | ---------------------------------- |
 | 📜`defaults` | Object | No       | List of criterion used for empty values testing. see Empty value criterion below       | <Badge type="info" text="v0.5+" /> |
 | 📜`fields`   | Object | Yes      | List of field-specific criterion (overrides defaults). see Empty value criterion below | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Object | No       | Error handling strategy when step fails (see: [on-error](on-error-yml))             | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Object | No       | Error handling strategy when step fails (see: [on-error](on-error-yml))                | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
