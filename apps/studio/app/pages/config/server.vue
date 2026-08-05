@@ -10,6 +10,7 @@ const verbosity = ref("warn")
 const requestLimit = ref("10mb")
 const responseLimit = ref("10mb")
 const responseChunk = ref(false)
+const responseCompression = ref(true)
 
 const rateWindowMs = ref(60000)
 const rateMax = ref(600)
@@ -70,6 +71,7 @@ async function loadConfig() {
     requestLimit.value = config["request-limit"] ?? "10mb"
     responseLimit.value = config["response-limit"] ?? "10mb"
     responseChunk.value = config["response-chunk"] ?? false
+    responseCompression.value = config["response-compression"] ?? true
 
     const rate = config["response-rate"]
     rateWindowMs.value = rate?.windowMs ?? 60000
@@ -122,6 +124,7 @@ async function saveConfig() {
       "request-limit": requestLimit.value,
       "response-limit": responseLimit.value,
       "response-chunk": responseChunk.value,
+      "response-compression": responseCompression.value,
       "response-rate": {
         windowMs: rateWindowMs.value,
         max: rateMax.value,
@@ -225,6 +228,11 @@ onMounted(loadConfig)
             <UFormField label="Response Chunk" description="Enable chunked transfer encoding" orientation="horizontal"
               :ui="{ description: 'text-xs' }">
               <USwitch v-model="responseChunk" />
+            </UFormField>
+            <UFormField label="Response Compression"
+              description="Compress responses (gzip/brotli) based on client Accept-Encoding" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <USwitch v-model="responseCompression" />
             </UFormField>
           </div>
         </UCard>
