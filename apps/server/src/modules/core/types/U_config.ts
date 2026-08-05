@@ -17,15 +17,23 @@ import { z_U__version } from "./U__version"
 //
 export const z_U_config = z.strictObject({
 	version: z_U__version,
-	server: z_U__server.optional(),
-	roles: z_U__roles.optional(),
-	users: z_U__users.optional(),
+	server: z_U__server.default(z_U__server.parse({}))
+		.optional(),
+	roles: z_U__roles
+		.optional(),
+	users: z_U__users
+		.optional(),
 	sources: z_U__sources,
-	schemas: z_U__schemas.optional(),
-	"ai-engines": z_T__ai_engines.optional(),
-	plans: z_U__plans.optional(),
-	schedules: z_U__schedules.optional(),
-	mcp: z_U__mcp.optional(),
+	schemas: z_U__schemas
+		.optional(),
+	"ai-engines": z_T__ai_engines
+		.optional(),
+	plans: z_U__plans
+		.optional(),
+	schedules: z_U__schedules
+		.optional(),
+	mcp: z_U__mcp
+		.optional(),
 })
 
 //

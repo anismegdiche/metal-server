@@ -1,8 +1,8 @@
 //
 //
 //
-import * as Fs from "node:fs"
-import { LOGGER_DEFAULT_LEVEL, Logger } from "@metal/logger"
+import * as fs from "node:fs"
+import { Logger } from "@metal/logger"
 import { JsonUtils } from "@metal/utils"
 import * as dotenv from "dotenv"
 import * as Yaml from "js-yaml"
@@ -10,9 +10,7 @@ import { has, merge } from "lodash-es"
 //
 import { Assert } from "../../utils/Assert"
 import { TypeUtils } from "../../utils/TypeUtils"
-import { AUTH_PROVIDER } from "../auth/@consts"
 import { ConfigFileError } from "../errors/HttpErrors"
-import { HTTP_STATUS_MESSAGE } from "./@consts"
 import type { IConfigStore } from "./base/IConfigStore"
 import type { U_config } from "./types/U_config"
 import { z_U_config } from "./types/U_config"
@@ -22,49 +20,14 @@ export class ConfigManager {
 	static ConfigFilePath = "./config/config.yml"
 	static EnvFilePath = "./config/.env"
 	static configStore?: IConfigStore
-	static DEFAULT = <U_config>{
-		server: {
-			port: 3000,
-			timezone: "UTC",
-			verbosity: LOGGER_DEFAULT_LEVEL,
-			authentication: {
-				provider: AUTH_PROVIDER.LOCAL,
-			},
-			"request-limit": "10mb",
-			"response-limit": "10mb",
-			"response-rate": {
-				windowMs: 1 * 60 * 1000,
-				max: 600,
-				message: HTTP_STATUS_MESSAGE.TOO_MANY_REQUESTS,
-			},
-			"response-chunk": false,
-			"ai-engines": {
-				params: undefined, //{ socketPath: '/var/run/docker.sock' }
-				"build-batch-size": 5,
-				"engines-url": "http://127.0.0.1:5000",
-				timeout: 60_000,
-				sleep: 5_000,
-				cors: {
-					"allowed-origins": "*",
-					"allowed-methods": "GET,POST,OPTIONS",
-					"allowed-headers": "Content-Type,Authorization,X-Requested-With",
-				},
-				"min-instance": 1,
-				"max-instance": 5,
-				"cpu-scale-up": 70,
-				"cpu-scale-down": 10,
-				"scale-interval": 20_000,
-				"scale-down-grace-period": 300_000,
-				cpu: 4,
-				memory: 2,
-			},
-		},
-	}
 
 	@Logger.LogFunction()
 	static async Init(configStore: IConfigStore): Promise<void> {
 		const configFileContent = await ConfigManager.Load()
-		const newConfig = await ConfigManager.Validate(merge(ConfigManager.DEFAULT, configFileContent))
+		const newConfig = await ConfigManager.Validate(merge(
+			z_U_config.parse({}),
+			configFileContent
+		))
 		// Config.CheckRessourcesUsage(newConfig)
 		ConfigManager.configStore ??= configStore
 
@@ -74,7 +37,7 @@ export class ConfigManager {
 	@Logger.LogFunction()
 	static async Load(): Promise<U_config> {
 		dotenv.config({ path: ConfigManager.EnvFilePath })
-		const configFileRaw = Fs.readFileSync(ConfigManager.ConfigFilePath, "utf8")
+		const configFileRaw = fs.readFileSync(ConfigManager.ConfigFilePath, "utf8")
 		const configInterpol = configFileRaw.replaceAll(/\$(?:{([^{}]*)})/g, (match, envVarName) => {
 			return process.env[envVarName] ?? match
 		})
@@ -114,7 +77,7 @@ export class ConfigManager {
 	static Save(): void {
 		Assert.Var<IConfigStore>(ConfigManager.configStore, "ConfigStore is not initialized")
 		const configFileRaw = Yaml.dump(ConfigManager.configStore.Configuration)
-		Fs.writeFileSync(ConfigManager.ConfigFilePath, configFileRaw)
+		fs.writeFileSync(ConfigManager.ConfigFilePath, configFileRaw)
 	}
 
 	@Logger.LogFunction()

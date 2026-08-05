@@ -4,7 +4,7 @@
 // lodash
 
 import { Readable } from "node:stream"
-import { Logger, VERBOSITY } from "@metal/logger"
+import { Logger, VERBOSITY_LEVEL } from "@metal/logger"
 import { StringUtils } from "@metal/utils"
 import { merge, omit } from "lodash-es"
 //
@@ -202,7 +202,7 @@ export class StorageFoldersData extends absDataProvider {
 			})
 		}
 
-		if (Logger.Level === VERBOSITY.DEBUG) filteredData.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
+		if (Logger.Level === VERBOSITY_LEVEL.DEBUG) filteredData.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
 
 		if (options?.Cache)
 			await this.CacheSet(

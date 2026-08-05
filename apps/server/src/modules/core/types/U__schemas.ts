@@ -27,7 +27,10 @@ export const z_U__schemas_schema = z
 		}),
 	)
 
-export const z_U__schemas = z.record(z.string(), z_U__schemas_schema)
+export const z_U__schemas = z.record(
+	z.string(),
+	z_U__schemas_schema
+).default({})
 
 //
 export type U__schemas_schema_entities_entity = z.infer<typeof z_U__schemas_schema_entities_entity>

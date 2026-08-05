@@ -10,6 +10,7 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import rateLimit from "express-rate-limit"
 import helmet from "helmet"
 import responseTime from "response-time"
+import { RequestCompression } from "../../utils/RequestCompression"
 import { Swagger } from "../../utils/Swagger"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import { HTTP_STATUS_CODE, ROUTE, SERVER } from "./@consts"
@@ -53,10 +54,16 @@ export class ServerEndpoint {
 
 		ServerEndpoint.Api.use(helmet())
 
+		// Response compression (gzip / brotli / deflate)
+		if (ConfigManager.Get<boolean>("server.response-compression")) {
+			RequestCompression.Use(ServerEndpoint.Api)
+		}
+
 		ServerEndpoint.Api.use(responseTime())
 		ServerEndpoint.Api.set("trust proxy", 1)
 		ServerEndpoint.Api.use(rateLimit(ConfigManager.Get<object>("server.response-rate")))
 
+		// Note: request body decompression (gzip/br/deflate) is handled natively by body-parser
 		ServerEndpoint.Api.use(
 			express.json({
 				limit: ConfigManager.Get<string | number>("server.request-limit"),

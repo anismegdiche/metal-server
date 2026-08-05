@@ -17,8 +17,8 @@ export const z_U__server_authentication = z
 			z_U__server_authentication_local,
 			z_U__server_authentication_demo,
 			z_U__server_authentication_oidc,
-		]),
-	)
+		])
+	).default(z_U__server_authentication_local.parse({}))
 
 //
 export type U__server_authentication = z.infer<typeof z_U__server_authentication>

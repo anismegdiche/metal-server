@@ -7,7 +7,7 @@ import type { TJson } from "@metal/types"
 import { pick } from "lodash-es"
 import { Assert } from "../../utils/Assert"
 import { ConfigManager } from "../core/ConfigManager"
-import type { U__sources_source } from "../core/types/U__sources"
+import type { U__sources, U__sources_source } from "../core/types/U__sources"
 import { MetricsCollector } from "../metrics/MetricsCollector"
 import { DATA_PROVIDER } from "./@consts"
 import type { IDataProvider } from "./base/IDataProvider"
@@ -92,8 +92,14 @@ export class Source {
 
 	@Logger.LogFunction()
 	static async ConnectAll(): Promise<void> {
-		for (const _source in ConfigManager.Get<TJson>("sources")) {
-			if (Object.hasOwn(ConfigManager.Get<TJson>("sources"), _source)) {
+		const sources = ConfigManager.Get<U__sources>("sources") ?? {}
+		if (sources === undefined || Object.keys(sources).length === 0) {
+			Logger.Warn(Logger.Out, 'No sources found in configuration')
+			return
+		}
+
+		for (const _source in sources) {
+			if (Object.hasOwn(sources, _source)) {
 				Logger.Info(`${Logger.Out} found source '${_source}'`)
 				const __sourceConfig = ConfigManager.Get<U__sources_source>(`sources.${_source}`)
 				Source.Connect(_source, __sourceConfig)

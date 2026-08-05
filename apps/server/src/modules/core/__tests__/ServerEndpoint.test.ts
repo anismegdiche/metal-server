@@ -56,6 +56,7 @@ describe("ServerEndpoint", () => {
 			if (key === "server.port") return 3000
 			if (key === "server.response-rate") return {}
 			if (key === "server.request-limit") return "10mb"
+			if (key === "server.response-compression") return true
 			if (key === "server.authentication") return true
 			return undefined
 		})

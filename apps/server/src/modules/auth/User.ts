@@ -4,9 +4,8 @@
 import { randomBytes } from "node:crypto"
 import { Logger } from "@metal/logger"
 import PersistentMap from "@metal/persistent-map"
-import jwt, { type JsonWebTokenError, type Secret } from "jsonwebtoken"
-//
 import type { TJson } from "@metal/types"
+import jwt, { type JsonWebTokenError, type Secret } from "jsonwebtoken"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { HttpErrorUnauthorized } from "../errors/HttpErrors"

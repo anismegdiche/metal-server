@@ -1,7 +1,7 @@
 //
 //
 //
-import { Logger, VERBOSITY } from "@metal/logger"
+import { Logger, VERBOSITY_LEVEL } from "@metal/logger"
 import { Stringify } from "@metal/utils/json-utils/stringify"
 import { HTTP_STATUS_CODE } from "../core/@consts"
 
@@ -40,7 +40,7 @@ export function HttpErrorLog(e: HttpError | Error | unknown): void {
 
 	logger((e as Error).message)
 
-	if (Logger.Level === VERBOSITY.DEBUG) logger((e as Error).stack)
+	if (Logger.Level === VERBOSITY_LEVEL.DEBUG) logger((e as Error).stack)
 }
 
 export function HttpErrorSwitch(status?: number, message?: string): HttpError {

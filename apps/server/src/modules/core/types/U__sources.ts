@@ -31,7 +31,7 @@ export const z_U__sources_source = z.discriminatedUnion("provider", [
 export const z_U__sources = z.record(
 	z.string(),
 	z_U__sources_source
-)
+).default({})
 
 
 //

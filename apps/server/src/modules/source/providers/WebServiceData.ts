@@ -2,7 +2,7 @@
 //
 //
 
-import { Logger, VERBOSITY } from "@metal/logger"
+import { Logger, VERBOSITY_LEVEL } from "@metal/logger"
 import type { TJson } from "@metal/types"
 import { merge } from "lodash-es"
 //
@@ -129,7 +129,7 @@ export class WebServiceData extends absDataProvider {
 
 		Assert.Var<DataTable>(data, "Data is undefined")
 
-		if (Logger.Level === VERBOSITY.DEBUG) data.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config?.options)
+		if (Logger.Level === VERBOSITY_LEVEL.DEBUG) data.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config?.options)
 
 		if (options?.Cache)
 			await this.CacheSet(

@@ -6,6 +6,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { Logger } from "@metal/logger"
 import chalk from "chalk"
+import * as Yaml from "js-yaml"
 import { AiBuilder } from "./modules/ai-engine/AiBuilder"
 import { AiDocker } from "./modules/ai-engine/AiDocker"
 
@@ -17,6 +18,7 @@ import { ServerCore } from "./modules/core/ServerCore"
 import { ServerEndpoint } from "./modules/core/ServerEndpoint"
 import { ServerInitializer } from "./modules/core/ServerInitializer"
 import { ServerShutdown } from "./modules/core/ServerShutdown"
+import { z_U_config } from "./modules/core/types/U_config"
 import { Package } from "./utils/Package"
 
 // Current Path
@@ -31,6 +33,7 @@ process.chdir(path.resolve(__dirname, "..", "..", ".."))
 const args = new Set(process.argv.slice(2))
 const ARG_build_all_images = args.has("--build-all-images") || args.has("-bai")
 const ARG_generate_api_key = args.has("--generate-api-key") || args.has("-gak")
+const ARG_default_config = args.has("--default-config") || args.has("-dc")
 
 // logging
 const serviceName = Package.Json.name as string
@@ -72,6 +75,17 @@ if (ARG_generate_api_key) {
 
 	console.log()
 	console.log(chalk.yellow("⚠️   Save this key now. It will not be shown again."))
+	console.log()
+
+	process.exit(0)
+}
+
+if (ARG_default_config) {
+	console.log()
+	console.log(chalk.green.bold("📄 Default Config"))
+	console.log()
+
+	console.log(Yaml.dump(z_U_config.parse({})))
 	console.log()
 
 	process.exit(0)

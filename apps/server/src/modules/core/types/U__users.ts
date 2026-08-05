@@ -21,7 +21,7 @@ export const z_U__users_user = z
 export const z_U__users = z.record(
 	z.string(),
 	z_U__users_user
-)
+).default({})
 
 //
 export type U__users_user = z.infer<typeof z_U__users_user>

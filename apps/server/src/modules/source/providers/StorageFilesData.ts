@@ -2,7 +2,7 @@
 //
 //
 
-import { Logger, VERBOSITY } from "@metal/logger"
+import { Logger, VERBOSITY_LEVEL } from "@metal/logger"
 import { has, merge } from "lodash-es"
 //
 import type { DataTable, TRowsCopyParams } from "../../../types/DataTable"
@@ -149,7 +149,7 @@ export class StorageFilesData extends absDataProvider {
 
 		if (!data) throw new HttpErrorNotFound(`File not found: ${fileName}`)
 
-		if (Logger.Level === VERBOSITY.DEBUG) data.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
+		if (Logger.Level === VERBOSITY_LEVEL.DEBUG) data.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
 
 		if (options?.Cache)
 			await this.CacheSet(

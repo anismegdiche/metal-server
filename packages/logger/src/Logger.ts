@@ -14,7 +14,7 @@ import morgan from "morgan"
 
 
 //
-export enum VERBOSITY {
+export enum VERBOSITY_LEVEL {
 	TRACE = "trace",
 	DEBUG = "debug",
 	INFO = "info",
@@ -22,7 +22,7 @@ export enum VERBOSITY {
 	ERROR = "error",
 }
 
-const VERBOSITY_RANK = [VERBOSITY.ERROR, VERBOSITY.WARN, VERBOSITY.INFO, VERBOSITY.DEBUG, VERBOSITY.TRACE]
+const VERBOSITY_RANK = [VERBOSITY_LEVEL.ERROR, VERBOSITY_LEVEL.WARN, VERBOSITY_LEVEL.INFO, VERBOSITY_LEVEL.DEBUG, VERBOSITY_LEVEL.TRACE]
 
 //
 export enum LOG_EVENT {
@@ -37,7 +37,7 @@ export enum LOG_EVENT {
 //
 export type LogEntry = {
 	timestamp: Date
-	level: VERBOSITY
+	level: VERBOSITY_LEVEL
 	server?: string
 	user?: string
 	message: string
@@ -105,14 +105,14 @@ function _getParameters(originalMethod: Function, ...args: any[]): TJson {
 //
 
 const _colors: Record<string, (text: string) => string> = {
-	[VERBOSITY.TRACE.toUpperCase()]: (text: string) => magenta(text),
-	[VERBOSITY.DEBUG.toUpperCase()]: (text: string) => green(text),
-	[VERBOSITY.INFO.toUpperCase()]: (text: string) => cyan(text),
-	[VERBOSITY.WARN.toUpperCase()]: (text: string) => yellow(text),
-	[VERBOSITY.ERROR.toUpperCase()]: (text: string) => red(text),
+	[VERBOSITY_LEVEL.TRACE.toUpperCase()]: (text: string) => magenta(text),
+	[VERBOSITY_LEVEL.DEBUG.toUpperCase()]: (text: string) => green(text),
+	[VERBOSITY_LEVEL.INFO.toUpperCase()]: (text: string) => cyan(text),
+	[VERBOSITY_LEVEL.WARN.toUpperCase()]: (text: string) => yellow(text),
+	[VERBOSITY_LEVEL.ERROR.toUpperCase()]: (text: string) => red(text),
 }
 
-export const LOGGER_DEFAULT_LEVEL = VERBOSITY.WARN as LogLevel.LogLevelDesc
+export const LOGGER_DEFAULT_LEVEL = VERBOSITY_LEVEL.WARN as LogLevel.LogLevelDesc
 
 function _formatPrefix(level: string, name: string | undefined, timestamp: Date) {
 	return `${gray(timestamp.toString())} ${_colors[level]?.(level.padEnd(5).slice(-5))} [${Logger.ServiceName}] ${whiteBright(`${name}:`)}`
@@ -171,9 +171,9 @@ export class Logger {
 		)
 	}
 
-	static _saveLogEntry(level: VERBOSITY, message: any[]) {
+	static _saveLogEntry(level: VERBOSITY_LEVEL, message: any[]) {
 		const timestamp = new Date(Date.now())
-		if (VERBOSITY_RANK.indexOf(level) <= VERBOSITY_RANK.indexOf(Logger.Level as VERBOSITY))
+		if (VERBOSITY_RANK.indexOf(level) <= VERBOSITY_RANK.indexOf(Logger.Level as VERBOSITY_LEVEL))
 			Logger.db.set(`${timestamp.toISOString()},${crypto.randomUUID()}`, <LogEntry>{
 				level,
 				message: _cleanMessage(message),
@@ -232,31 +232,31 @@ export class Logger {
 
 	static _handleTrace(event: CustomEvent<{ message: any[] }>): void {
 		const message = event.data?.message ?? []
-		Logger._saveLogEntry(VERBOSITY.TRACE, message)
+		Logger._saveLogEntry(VERBOSITY_LEVEL.TRACE, message)
 		LogLevel.trace(...message)
 	}
 
 	static _handleDebug(event: CustomEvent<{ message: any[] }>): void {
 		const message = event.data?.message ?? []
-		Logger._saveLogEntry(VERBOSITY.DEBUG, message)
+		Logger._saveLogEntry(VERBOSITY_LEVEL.DEBUG, message)
 		LogLevel.debug(...message)
 	}
 
 	static _handleInfo(event: CustomEvent<{ message: any[] }>): void {
 		const message = event.data?.message ?? []
-		Logger._saveLogEntry(VERBOSITY.INFO, message)
+		Logger._saveLogEntry(VERBOSITY_LEVEL.INFO, message)
 		LogLevel.info(...message)
 	}
 
 	static _handleWarn(event: CustomEvent<{ message: any[] }>): void {
 		const message = event.data?.message ?? []
-		Logger._saveLogEntry(VERBOSITY.WARN, message)
+		Logger._saveLogEntry(VERBOSITY_LEVEL.WARN, message)
 		LogLevel.warn(...message)
 	}
 
 	static _handleError(event: CustomEvent<{ message: any[] }>): void {
 		const message = event.data?.message ?? []
-		Logger._saveLogEntry(VERBOSITY.ERROR, message)
+		Logger._saveLogEntry(VERBOSITY_LEVEL.ERROR, message)
 		LogLevel.error(...message)
 	}
 
@@ -314,7 +314,7 @@ export class Logger {
 								message: [
 									Logger.Out,
 									`${ctorName}.${propertyKey} threw an error:`,
-									(Logger.Level === VERBOSITY.DEBUG || Logger.Level === VERBOSITY.TRACE)
+									(Logger.Level === VERBOSITY_LEVEL.DEBUG || Logger.Level === VERBOSITY_LEVEL.TRACE)
 										? e
 										: (e as Error).message
 								]
@@ -345,7 +345,7 @@ export class Logger {
 										message: [
 											Logger.Out,
 											`${ctorName}.${propertyKey} threw an error:`,
-											(Logger.Level === VERBOSITY.DEBUG || Logger.Level === VERBOSITY.TRACE)
+											(Logger.Level === VERBOSITY_LEVEL.DEBUG || Logger.Level === VERBOSITY_LEVEL.TRACE)
 												? e
 												: (e as Error).message
 										]
