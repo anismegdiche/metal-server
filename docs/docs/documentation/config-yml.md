@@ -58,6 +58,7 @@ The parameters that can be configured inside the `server` section include:
 | `request-limit`        | String  | N        | Define request limit (default: `10mb`)        | <Badge type="default" text="v0.1+" /> |
 | `response-limit`       | String  | N        | Define response limit (default: `10mb`)       | <Badge type="default" text="v0.3+" /> |
 | `response-rate`        | Object  | N        | Define response rate limit                    | <Badge type="default" text="v0.3+" /> |
+| `response-chunk`       | Boolean | N        | Stream schema responses in chunks (default: `false`) | <Badge type="default" text="v0.4+" /> |
 | `response-compression` | Boolean | N        | Enable response compression (default: `true`) | <Badge type="info" text="v0.5+" />    |
 | `endpoints`            | Object  | N        | Server endpoint toggles, including MCP        | <Badge type="info" text="v0.5+" />    |
 
@@ -246,6 +247,23 @@ Default: `true`
 ```yaml
 server:
   response-compression: true
+```
+
+### `response-chunk` <Badge type="default" text="v0.4+" />
+
+Streams schema responses using chunked transfer encoding instead of sending the full JSON payload at once. When enabled, rows are sent progressively in batches (1000 rows per batch), which improves responsiveness and memory usage for large result sets.
+
+Only applies to successful schema responses.
+
+Set to `false` (default) to send the whole JSON response at once.
+
+Default: `false`
+
+**Example:**
+
+```yaml
+server:
+  response-chunk: true
 ```
 
 ### `ai-engines` <Badge type="info" text="v0.5+" />
