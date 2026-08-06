@@ -1,30 +1,37 @@
 {
-  "name": "studio",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
-    "lint": "eslint .",
-    "typecheck": "nuxt typecheck"
-  },
-  "dependencies": {
-    "@iconify-json/lucide": "^1.2.114",
-    "@iconify-json/simple-icons": "^1.2.87",
-    "@metal/config": "*",
-    "@metal/server": "*",
-    "@nuxt/kit": "^4.4.8",
-    "@nuxt/ui": "^4.9.0",
-    "nuxt": "^4.4.8",
-    "nuxt-auth-utils": "^0.5.29",
-    "tailwindcss": "^4.3.1"
-  },
-  "devDependencies": {
-    "@nuxt/eslint": "^1.16.0",
-    "eslint": "^10.6.0",
-    "typescript": "^6.0.3",
-    "vue-tsc": "^3.3.5"
-  }
+	"name": "studio",
+	"version": "0.4.0",
+	"license": "GPL-3.0-or-later",
+	"private": true,
+	"type": "module",
+	"engines": {
+		"node": "=24.13.0"
+	},
+	"scripts": {
+		"studio": "yarn studio:build && yarn studio:start",
+		"studio:start": "node start.mjs",
+		"studio:build": "nuxt build",
+		"studio:dev": "nuxt dev",
+		"studio:postinstall": "nuxt prepare",
+		"dev:preview": "nuxt preview",
+		"dev:lint": "eslint .",
+		"dev:typecheck": "nuxt typecheck"
+	},
+	"dependencies": {
+		"@iconify-json/lucide": "^1.2.114",
+		"@iconify-json/simple-icons": "^1.2.87",
+		"@metal/config": "workspace:*",
+		"@metal/server": "workspace:*",
+		"@nuxt/kit": "^4.4.8",
+		"@nuxt/ui": "^4.9.0",
+		"nuxt": "^4.4.8",
+		"nuxt-auth-utils": "^0.5.29",
+		"tailwindcss": "^4.3.1"
+	},
+	"devDependencies": {
+		"@nuxt/eslint": "^1.16.0",
+		"eslint": "^10.6.0",
+		"typescript": "^6.0.3",
+		"vue-tsc": "^3.3.5"
+	}
 }
