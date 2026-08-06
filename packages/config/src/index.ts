@@ -23,8 +23,8 @@ export function LoadEnv(path: string = ENV_PATH): void {
 
         loadEnvFile(path)
         _EnvLoaded = true
-    } catch {
-        //
+    } catch (e: unknown) {
+        console.error(`Failed to load environment variables from ${path}`, e)
     }
 }
 
@@ -66,4 +66,14 @@ export function EnvSessionsDataPath(): string {
 export function EnvGetServerAddress(): string {
     LoadEnv()
     return process.env.SERVER_ADDRESS ?? "http://localhost:3000"
+}
+
+export function EnvGetStudioPort(): string {
+    LoadEnv()
+    return process.env.STUDIO_PORT ?? "5000"
+}
+
+export function EnvGetStudioHost(): string {
+    LoadEnv()
+    return process.env.STUDIO_HOST ?? "0.0.0.0"
 }
