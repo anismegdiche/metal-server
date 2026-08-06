@@ -2,12 +2,11 @@
 //
 //
 import type { NextFunction, Request, Response } from "express"
-//
 import { Convert } from "../../../utils/Convert"
+import { API_KEY_PREFIX } from "../../apikey/@consts"
+import { ApiKey } from "../../apikey/ApiKey"
 import type { TUserCredentials } from "../../auth/@types"
 import { User } from "../../auth/User"
-import { ApiKey } from "../../apikey/ApiKey"
-import { API_KEY_PREFIX } from "../../apikey/@consts"
 import { type HttpError, HttpErrorForbidden, HttpErrorUnauthorized } from "../../errors/HttpErrors"
 import { ResponseHandler } from "../ResponseHandler"
 

@@ -52,7 +52,7 @@ export class Assert {
 		// Case 1: Var(variable, message)
 		if (typeof conditionOrMessageOrGuard === "string") {
 			if (variable === undefined) {
-				_httpError.message = `${Logger.Out} ${conditionOrMessageOrGuard}`
+				_httpError.message = `${conditionOrMessageOrGuard}`
 				throw _httpError
 			}
 			return
@@ -61,7 +61,7 @@ export class Assert {
 		// Case 2: Var(variable, guard, message)
 		if (typeof conditionOrMessageOrGuard === "function") {
 			if (!conditionOrMessageOrGuard(variable)) {
-				_httpError.message = `${Logger.Out} ${messageOrHttpError as string}`
+				_httpError.message = `${messageOrHttpError as string}`
 				throw _httpError
 			}
 			return
@@ -69,7 +69,7 @@ export class Assert {
 
 		// Case 3: Var(variable, condition, message)
 		if (!conditionOrMessageOrGuard) {
-			_httpError.message = `${Logger.Out} ${messageOrHttpError as string}`
+			_httpError.message = `${messageOrHttpError as string}`
 			throw _httpError
 		}
 	}

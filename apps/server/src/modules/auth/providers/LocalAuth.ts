@@ -5,20 +5,14 @@
 import { Logger } from "@metal/logger"
 import bcrypt from "bcryptjs"
 import * as _ from "lodash-es"
-import z from "zod"
 //
 import { Assert } from "../../../utils/Assert"
 import { ConfigManager } from "../../core/ConfigManager"
 import type { U__users, U__users_user } from "../../core/types/U__users"
 import { HttpErrorInternalServerError, HttpErrorUnauthorized } from "../../errors/HttpErrors"
-import { AUTH_PROVIDER } from "../@consts"
 import type { TUserCredentials, TUserTokenInfo } from "../@types"
 import { absAuthProvider } from "../base/absAuthProvider"
 
-import {
-	type U__server_authentication_local,
-	z_U__server_authentication_local,
-} from "../types/U__server_authentication_local"
 
 //
 export class LocalAuth extends absAuthProvider {
@@ -45,6 +39,7 @@ export class LocalAuth extends absAuthProvider {
 		}))
 	}
 
+	@Logger.LogFunction(true)
 	async Authenticate(userCredentials: TUserCredentials): Promise<TUserTokenInfo> {
 		const { username, password } = userCredentials
 

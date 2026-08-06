@@ -22,4 +22,5 @@ export default defineConfig({
 	splitting: true,
 	sourcemap: true,
 	clean: true,
+	noExternal: [/^@metal\//],
 })
