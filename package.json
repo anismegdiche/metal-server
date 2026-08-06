@@ -1,34 +1,28 @@
 {
-	"engines": {
-		"node": "=24.13.0"
-	},
 	"name": "metal",
 	"version": "0.4.0",
 	"description": "Metal Server",
 	"author": "Anis Megdiche",
 	"license": "GPL-3.0-or-later",
+	"private": true,
 	"type": "module",
+	"engines": {
+		"node": "=24.13.0"
+	},
 	"scripts": {
 		"all:build:workspaces": "yarn workspaces foreach -A run build",
 		"all:test": "vitest run",
 		"all:test:watch": "vitest --watch",
+		"server": "yarn workspace @metal/server server",
+		"server:start": "yarn workspace @metal/server server:start",
+		"server:build": "yarn workspace @metal/server server:build",
+		"server:build-all-images": "yarn workspace @metal/server server:build-all-images",
+		"server:generate-api-key": "yarn workspace @metal/server server:generate-api-key",
 		"server:dev": "yarn workspace @metal/server dev",
 		"server:dev:build-all-images": "yarn workspace @metal/server dev:build-all-images",
 		"server:dev:generate-api-key": "yarn workspace @metal/server dev:generate-api-key",
-		"server:build": "yarn workspace @metal/server build",
-		"server:build:watch": "yarn workspace @metal/server build:watch",
-		"server:prod": "yarn workspace @metal/server prod",
-		"server:prod:build-all-images": "yarn workspace @metal/server prod:build-all-images",
-		"server:prod:generate-api-key": "yarn workspace @metal/server prod:generate-api-key",
-		"server:start": "yarn workspace @metal/server start",
-		"server:lint": "yarn workspace @metal/server lint",
-		"server:lint:check": "yarn workspace @metal/server lint:check",
-		"server:format": "yarn workspace @metal/server format",
-		"server:format:check": "yarn workspace @metal/server format:check",
-		"server:check": "yarn workspace @metal/server check",
-		"server:tools:unused-modules": "yarn workspace @metal/server tools:unused-modules",
-		"server:tools:dependency-graph": "yarn workspace @metal/server tools:dependency-graph",
-		"studio:dev": "yarn workspace studio dev",
+		"studio": "yarn workspace studio studio",
+		"studio:dev": "yarn workspace studio studio:dev",
 		"example:ai-chat:dev": "cd examples/ai-chat && yarn dev",
 		"docs:dev": "yarn workspace @metal/docs dev",
 		"docs:build": "yarn workspace @metal/docs build"
@@ -45,12 +39,11 @@
 		"commitAll": false
 	},
 	"devDependencies": {
-		"@types/node": "^26.0.0",
+		"@types/node": "^24",
 		"@vitest/coverage-v8": "^4.1.8",
 		"vitest": "^4.1.9"
 	},
 	"packageManager": "yarn@4.17.1",
-	"private": true,
 	"workspaces": [
 		"apps/*",
 		"packages/*",

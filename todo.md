@@ -34,4 +34,6 @@ core > studio {f} {cm:2026-08-03} {h}
 (A) endpoint > gzip compress {f} {start:2026-08-04T20:02:53}
 (A) source > connections pools checking if a unique pool is open and not many {f} {cm:2026-08-04} {h}
 (A) user > warmup : default admin, env , studio api key to connect {f}
-users > crypt passwords
+users > crypt passwords {f}
+(A) ai engines > multiple rows by request feature {f}
+(A) dashboard > AI engines {f}

@@ -2771,11 +2771,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metal/config@npm:*, @metal/config@workspace:*, @metal/config@workspace:packages/config":
+"@metal/config@workspace:*, @metal/config@workspace:packages/config":
   version: 0.0.0-use.local
   resolution: "@metal/config@workspace:packages/config"
   dependencies:
-    "@types/node": "npm:^25.9.3"
+    "@types/node": "npm:^24"
     typescript: "npm:^6.0.3"
   languageName: unknown
   linkType: soft
@@ -2800,7 +2800,7 @@ __metadata:
     "@metal/utils": "workspace:*"
     "@types/lodash-es": "npm:^4.17.12"
     "@types/morgan": "npm:^1.9.9"
-    "@types/node": "npm:^25.9.3"
+    "@types/node": "npm:^24"
     colorette: "npm:^2.0.20"
     lodash-es: "npm:^4.17.21"
     loglevel: "npm:^1.9.2"
@@ -2837,13 +2837,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metal/persistent-map@workspace:packages/persistent-map"
   dependencies:
-    "@types/node": "npm:^25.9.3"
+    "@types/node": "npm:^24"
     lmdb: "npm:^3.5.5"
     typescript: "npm:^6.0.3"
   languageName: unknown
   linkType: soft
 
-"@metal/server@npm:*, @metal/server@workspace:apps/server":
+"@metal/server@workspace:*, @metal/server@workspace:apps/server":
   version: 0.0.0-use.local
   resolution: "@metal/server@workspace:apps/server"
   dependencies:
@@ -2872,11 +2872,12 @@ __metadata:
     "@types/lodash-es": "npm:^4.17.12"
     "@types/mime-types": "npm:^3.0.1"
     "@types/mssql": "npm:^12.3.0"
-    "@types/node": "npm:^25.9.1"
+    "@types/node": "npm:^24"
     "@types/pg": "npm:^8.20.0"
     "@types/response-time": "npm:^2.3.9"
     "@types/ssh2-sftp-client": "npm:^9.0.6"
     "@types/swagger-ui-express": "npm:^4.1.8"
+    argparse: "npm:^3.0.0"
     axios: "npm:^1.17.0"
     basic-ftp: "npm:^6.0.1"
     bcryptjs: "npm:^3.0.3"
@@ -2928,7 +2929,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@metal/types@workspace:packages/types"
   dependencies:
-    "@types/node": "npm:^25.9.3"
+    "@types/node": "npm:^24"
     typescript: "npm:^6.0.3"
     zod: "npm:^4.3.6"
   languageName: unknown
@@ -2941,7 +2942,7 @@ __metadata:
     "@loxjs/url-join": "npm:^1.0.2"
     "@metal/types": "workspace:*"
     "@types/lodash-es": "npm:^4.17.12"
-    "@types/node": "npm:^25.9.3"
+    "@types/node": "npm:^24"
     "@types/object-path": "npm:^0.11.4"
     chrono-node: "npm:^2.9.1"
     fast-deep-equal: "npm:^3.1.3"
@@ -6841,7 +6842,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=13.7.0, @types/node@npm:>=22, @types/node@npm:^26.0.0":
+"@types/node@npm:*, @types/node@npm:>=13.7.0, @types/node@npm:>=22":
   version: 26.1.1
   resolution: "@types/node@npm:26.1.1"
   dependencies:
@@ -6866,12 +6867,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^25.9.1, @types/node@npm:^25.9.3":
-  version: 25.9.5
-  resolution: "@types/node@npm:25.9.5"
+"@types/node@npm:^24":
+  version: 24.13.3
+  resolution: "@types/node@npm:24.13.3"
   dependencies:
-    undici-types: "npm:>=7.24.0 <7.24.7"
-  checksum: 10/105f00756e152b06da0b0c122ae9a9d60cce9aa0af7b372b925cf53c5e24ba7eb0acdc97334ef6938ae35fb05b5697849fa1c1b81129148d2ac0cda3223ad141
+    undici-types: "npm:~7.18.0"
+  checksum: 10/cfa6ed1e16c4624d1e83b09aeb72a2f50a7e17d837bf5a1259a52e346f33a693afd289402d3b6118ce3abea7aff35f2a4f13a0284b96bc5807a50f0e22e1ec77
   languageName: node
   linkType: hard
 
@@ -8511,6 +8512,13 @@ __metadata:
   version: 2.0.1
   resolution: "argparse@npm:2.0.1"
   checksum: 10/18640244e641a417ec75a9bd38b0b2b6b95af5199aa241b131d4b2fb206f334d7ecc600bd194861610a5579084978bfcbb02baa399dbe442d56d0ae5e60dbaef
+  languageName: node
+  linkType: hard
+
+"argparse@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "argparse@npm:3.0.0"
+  checksum: 10/a0658e98cac7727470b62c7665562f14b7aed16aee429a2805a6c0eaeed1f6c724f7ca7226499dda596f7584c052d6115e45ee8b9ac218151ec5723d567092c2
   languageName: node
   linkType: hard
 
@@ -15030,7 +15038,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "metal@workspace:."
   dependencies:
-    "@types/node": "npm:^26.0.0"
+    "@types/node": "npm:^24"
     "@vitest/coverage-v8": "npm:^4.1.8"
     vitest: "npm:^4.1.9"
   languageName: unknown
@@ -19431,8 +19439,8 @@ __metadata:
   dependencies:
     "@iconify-json/lucide": "npm:^1.2.114"
     "@iconify-json/simple-icons": "npm:^1.2.87"
-    "@metal/config": "npm:*"
-    "@metal/server": "npm:*"
+    "@metal/config": "workspace:*"
+    "@metal/server": "workspace:*"
     "@nuxt/eslint": "npm:^1.16.0"
     "@nuxt/kit": "npm:^4.4.8"
     "@nuxt/ui": "npm:^4.9.0"
@@ -20258,17 +20266,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:>=7.24.0 <7.24.7":
-  version: 7.24.6
-  resolution: "undici-types@npm:7.24.6"
-  checksum: 10/defc9538b952e3c15b8526596c591f7c1f0c7605ad27a2b7feddbea7ef2e3003f3eda2cdb051a3cb1a2185e3893100fd9cb925c799db99d48131ea63b5233d10
-  languageName: node
-  linkType: hard
-
 "undici-types@npm:~5.26.4":
   version: 5.26.5
   resolution: "undici-types@npm:5.26.5"
   checksum: 10/0097779d94bc0fd26f0418b3a05472410408877279141ded2bd449167be1aed7ea5b76f756562cb3586a07f251b90799bab22d9019ceba49c037c76445f7cddd
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~7.18.0":
+  version: 7.18.2
+  resolution: "undici-types@npm:7.18.2"
+  checksum: 10/e61a5918f624d68420c3ca9d301e9f15b61cba6e97be39fe2ce266dd6151e4afe424d679372638826cb506be33952774e0424141200111a9857e464216c009af
   languageName: node
   linkType: hard
 
