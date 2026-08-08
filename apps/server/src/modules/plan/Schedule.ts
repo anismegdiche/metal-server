@@ -28,7 +28,7 @@ export class Schedule {
 
 	@Logger.LogFunction()
 	static async Init() {
-		if (ConfigManager.Has("schedules")) Schedule.CreateAndStartAll()
+		if (ConfigManager.Has("schedules")) await Schedule.CreateAndStartAll()
 	}
 
 	@Logger.LogFunction()

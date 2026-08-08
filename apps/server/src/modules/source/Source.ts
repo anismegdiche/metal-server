@@ -30,7 +30,13 @@ export class Source {
 
 	static DispatchMetrics(): void {
 
-		const _sources = ConfigManager.Get<U__sources>("sources") ?? {}
+		let _sources: U__sources
+		try {
+			_sources = ConfigManager.Get<U__sources>("sources") ?? {}
+		} catch {
+			return
+		}
+
 		const _sourcesNames = Object.keys(_sources)
 
 		const details: Record<
@@ -116,6 +122,6 @@ export class Source {
 
 	@Logger.LogFunction()
 	static async DisconnectAll(): Promise<void> {
-		Source.Sources.forEach(async (_dataProvider, source) => await Source.Disconnect(source))
+		await Promise.all([...Source.Sources.keys()].map((source) => Source.Disconnect(source)))
 	}
 }

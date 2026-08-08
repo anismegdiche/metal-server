@@ -6,6 +6,7 @@ vi.mock("cron", () => {
 	const CronJob = vi.fn(function (this: any) {
 		this.start = vi.fn()
 		this.stop = vi.fn()
+		this.nextDate = vi.fn(() => ({ toISO: () => "2025-01-01T00:00:00.000Z" }))
 	})
 	return { CronJob }
 })

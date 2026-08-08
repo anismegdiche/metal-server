@@ -12,7 +12,7 @@
 	},
 	"scripts": {
 		"build": "tsc",
-		"test": "vitest run --project @metal/utils"
+		"test": "yarn vitest run --project @metal/utils"
 	},
 	"dependencies": {
 		"@loxjs/url-join": "^1.0.2",

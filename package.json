@@ -11,20 +11,13 @@
 	},
 	"scripts": {
 		"all:build:workspaces": "yarn workspaces foreach -A run build",
-		"all:test": "vitest run",
-		"all:test:watch": "vitest --watch",
 		"server": "yarn workspace @metal/server server",
 		"server:start": "yarn workspace @metal/server server:start",
-		"server:build": "yarn workspace @metal/server server:build",
 		"server:build-all-images": "yarn workspace @metal/server server:build-all-images",
 		"server:generate-api-key": "yarn workspace @metal/server server:generate-api-key",
-		"server:dev": "yarn workspace @metal/server dev",
-		"server:dev:build-all-images": "yarn workspace @metal/server dev:build-all-images",
-		"server:dev:generate-api-key": "yarn workspace @metal/server dev:generate-api-key",
+		"server:build": "yarn workspace @metal/server server:build",
 		"studio": "yarn workspace studio studio",
-		"studio:dev": "yarn workspace studio studio:dev",
 		"example:ai-chat:dev": "cd examples/ai-chat && yarn dev",
-		"docs:dev": "yarn workspace @metal/docs dev",
 		"docs:build": "yarn workspace @metal/docs build"
 	},
 	"standard.options": {
@@ -40,8 +33,8 @@
 	},
 	"devDependencies": {
 		"@types/node": "^24",
-		"@vitest/coverage-v8": "^4.1.8",
-		"vitest": "^4.1.9"
+		"@vitest/coverage-v8": "^4.1.10",
+		"vitest": "^4.1.10"
 	},
 	"packageManager": "yarn@4.17.1",
 	"workspaces": [

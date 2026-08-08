@@ -11,8 +11,8 @@
 		"studio": "yarn studio:build && yarn studio:start",
 		"studio:start": "node start.mjs",
 		"studio:build": "nuxt build",
-		"studio:dev": "nuxt dev",
 		"studio:postinstall": "nuxt prepare",
+		"dev": "nuxt dev",
 		"dev:preview": "nuxt preview",
 		"dev:lint": "eslint .",
 		"dev:typecheck": "nuxt typecheck"

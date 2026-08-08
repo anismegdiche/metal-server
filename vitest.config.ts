@@ -1,4 +1,7 @@
+import { fileURLToPath } from "node:url"
 import { defineConfig } from "vitest/config"
+
+const root = fileURLToPath(new URL(".", import.meta.url))
 
 export default defineConfig({
 	test: {
@@ -6,7 +9,7 @@ export default defineConfig({
 			{
 				test: {
 					name: "@metal/server",
-					root: "./apps/server",
+					root: `${root}apps/server`,
 					include: ["**/__tests__/*.test.ts", "**/?(*.)+(spec|test).ts"],
 					exclude: ["node_modules", "build", "dist"],
 					environment: "node",
@@ -19,7 +22,7 @@ export default defineConfig({
 			{
 				test: {
 					name: "@metal/types",
-					root: "./packages/types",
+					root: `${root}packages/types`,
 					include: ["**/__tests__/*.test.ts"],
 					exclude: ["node_modules"],
 					environment: "node",
@@ -29,7 +32,7 @@ export default defineConfig({
 			{
 				test: {
 					name: "@metal/logger",
-					root: "./packages/logger",
+					root: `${root}packages/logger`,
 					include: ["**/__tests__/*.test.ts"],
 					exclude: ["node_modules"],
 					environment: "node",
@@ -40,7 +43,7 @@ export default defineConfig({
 			{
 				test: {
 					name: "@metal/utils",
-					root: "./packages/utils",
+					root: `${root}packages/utils`,
 					include: ["**/__tests__/*.test.ts"],
 					exclude: ["node_modules"],
 					environment: "node",

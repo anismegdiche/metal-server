@@ -17,7 +17,6 @@
 		"dev:build:watch": "tsc --watch",
 		"dev:generate-api-key": "tsx watch --inspect=0.0.0.0:9229 src/index.ts --generate-api-key",
 		"dev:build-all-images": "tsx watch --inspect=0.0.0.0:9229 src/index.ts --build-all-images",
-		"dev:test": "vitest run --project @metal/server",
 		"dev:lint": "biome lint --write src",
 		"dev:lint:check": "biome lint src",
 		"dev:format": "biome format --write src",
@@ -28,7 +27,8 @@
 		"dev:release": "standard-version",
 		"dev:release:dry": "standard-version --dry-run --skip.commit --skip.tag",
 		"dev:release:minor": "standard-version --release-as minor",
-		"dev:release:major": "standard-version --release-as major"
+		"dev:release:major": "standard-version --release-as major",
+		"test": "yarn vitest run --project @metal/server"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "^3.1062.0",
@@ -107,6 +107,7 @@
 		"standard-version": "^9.5.0",
 		"tsup": "^8.5.1",
 		"tsx": "^4.22.4",
-		"typescript": "~6.0.3"
+		"typescript": "~6.0.3",
+		"vitest": "^4.1.10"
 	}
 }

@@ -6,7 +6,6 @@ import { _MTR_ } from "@metal/config"
 import { Logger } from "@metal/logger"
 import { JsonUtils } from "@metal/utils"
 import { merge } from "lodash-es"
-import z from "zod"
 //
 import { Assert } from "../../utils/Assert"
 import { Queue } from "../../utils/Queue"
@@ -148,6 +147,9 @@ export class PlanMetrics {
 		// get old metrics
 		const planMetrics = PlanMetrics.Get(planName)
 
+		// ignore events for plans that were never set up
+		if (!planMetrics.steps) return
+
 		// update metrics
 		planMetrics.steps[stepIndex] = merge(planMetrics.steps[stepIndex], metrics)
 
@@ -165,12 +167,14 @@ export class PlanMetrics {
 		// get old metrics
 		const planMetrics = PlanMetrics.Get(planName)
 
+		// ignore events for plans that were never set up
+		if (!planMetrics.steps) return
+
 		const stepMetrics = planMetrics.steps[stepIndex]
+		const startTime = stepMetrics?.step?.startTime
+		const stepEndTime = metrics.step?.endTime
 
-		if (!stepMetrics) return
-
-		const startTime = Assert.ZodSchema<Date>(stepMetrics.step?.startTime, z.date(), "startTime is undefined")
-		const stepEndTime = Assert.ZodSchema<Date>(metrics.step?.endTime, z.date(), "endTime is undefined")
+		if (!stepMetrics || !startTime || !stepEndTime) return
 
 		const durationMs = stepEndTime.getTime() - startTime.getTime()
 
@@ -192,6 +196,9 @@ export class PlanMetrics {
 
 		// get old metrics
 		const planMetrics = PlanMetrics.Get(planName)
+
+		// ignore events for plans that were never set up
+		if (!planMetrics.steps) return
 
 		const stepMetrics = planMetrics.steps[stepIndex]
 
@@ -243,7 +250,8 @@ export class PlanMetrics {
 		// get old metrics
 		let planMetrics = PlanMetrics.Get(planName)
 
-		const startTime = Assert.ZodSchema<Date>(planMetrics.startTime, z.date(), "startTime is undefined")
+		const startTime = planMetrics.startTime
+		if (!startTime) return
 
 		const durationMs = planEndTime.getTime() - startTime.getTime()
 
