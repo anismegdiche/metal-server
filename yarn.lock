@@ -2801,14 +2801,14 @@ __metadata:
     "@metal/persistent-map": "workspace:*"
     "@metal/utils": "workspace:*"
     "@types/lodash-es": "npm:^4.17.12"
-    "@types/morgan": "npm:^1.9.9"
+    "@types/morgan": "npm:^1.9.10"
     "@types/node": "npm:^24"
     colorette: "npm:^2.0.20"
-    lodash-es: "npm:^4.17.21"
+    lodash-es: "npm:^4.18.1"
     loglevel: "npm:^1.9.2"
     loglevel-plugin-prefix: "npm:^0.8.4"
-    morgan: "npm:^1.10.0"
-    safe-stable-stringify: "npm:^2.4.3"
+    morgan: "npm:^1.11.0"
+    safe-stable-stringify: "npm:^2.5.0"
     typescript: "npm:^6.0.3"
     vitest: "npm:^4.1.10"
   languageName: unknown
@@ -2841,7 +2841,7 @@ __metadata:
   resolution: "@metal/persistent-map@workspace:packages/persistent-map"
   dependencies:
     "@types/node": "npm:^24"
-    lmdb: "npm:^3.5.5"
+    lmdb: "npm:^3.5.6"
     typescript: "npm:^6.0.3"
     vitest: "npm:^4.1.10"
   languageName: unknown
@@ -2937,7 +2937,7 @@ __metadata:
     "@types/node": "npm:^24"
     typescript: "npm:^6.0.3"
     vitest: "npm:^4.1.10"
-    zod: "npm:^4.3.6"
+    zod: "npm:^4.4.3"
   languageName: unknown
   linkType: soft
 
@@ -6813,7 +6813,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/morgan@npm:^1.9.9":
+"@types/morgan@npm:^1.9.10":
   version: 1.9.10
   resolution: "@types/morgan@npm:1.9.10"
   dependencies:
@@ -14421,7 +14421,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lmdb@npm:^3.5.5":
+"lmdb@npm:^3.5.6":
   version: 3.5.6
   resolution: "lmdb@npm:3.5.6"
   dependencies:
@@ -15392,7 +15392,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"morgan@npm:^1.10.0":
+"morgan@npm:^1.11.0":
   version: 1.11.0
   resolution: "morgan@npm:1.11.0"
   dependencies:
@@ -18649,7 +18649,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safe-stable-stringify@npm:^2.4.3, safe-stable-stringify@npm:^2.5.0":
+"safe-stable-stringify@npm:^2.5.0":
   version: 2.5.0
   resolution: "safe-stable-stringify@npm:2.5.0"
   checksum: 10/2697fa186c17c38c3ca5309637b4ac6de2f1c3d282da27cd5e1e3c88eca0fb1f9aea568a6aabdf284111592c8782b94ee07176f17126031be72ab1313ed46c5c
@@ -21918,7 +21918,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.25 || ^4.0, zod@npm:^4.3.6":
+"zod@npm:^3.25 || ^4.0, zod@npm:^4.3.6, zod@npm:^4.4.3":
   version: 4.4.3
   resolution: "zod@npm:4.4.3"
   checksum: 10/804b9a42aa8f35f2b3c5a8dff906291cb749115f83ee2afe3576d70b5b5c53c965365c7f4967690647a9c54af9838ff232a85ff9577a0a36c44b68bc6cdefe36
