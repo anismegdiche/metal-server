@@ -3,11 +3,11 @@
 //
 import * as fs from "node:fs"
 import type { Readable } from "node:stream"
+import { pipeline } from "node:stream/promises"
 import { Logger } from "@metal/logger"
 import { JsonUtils, StringUtils } from "@metal/utils"
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { ReadableUtils } from "../../../utils/ReadableUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
@@ -175,7 +175,7 @@ export class FsStorage extends absStorageProvider {
 			fs.closeSync(_fd)
 		}
 
-		if (await this.FileIsExist(dirName, fileName)) return ReadableUtils.FromReadStream(fs.createReadStream(_fileFullPath))
+		if (await this.FileIsExist(dirName, fileName)) return fs.createReadStream(_fileFullPath)
 
 		throw new HttpErrorNotFound(`File '${fileName}' does not exist`)
 	}
@@ -193,7 +193,10 @@ export class FsStorage extends absStorageProvider {
 			await fs.promises.writeFile(_fileFullPath, "", "utf8")
 			fs.closeSync(_fd)
 		}
-		await fs.promises.writeFile(_fileFullPath, content, "utf8")
+
+		// Stream the content to disk (createWriteStream + pipeline) instead of
+		// buffering the whole Readable in memory via fs.promises.writeFile
+		await pipeline(content, fs.createWriteStream(_fileFullPath))
 	}
 
 	@Logger.LogFunction()

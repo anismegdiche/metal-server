@@ -2,7 +2,8 @@
 //
 //
 
-import { PassThrough, Readable } from "node:stream"
+import type { Readable } from "node:stream"
+import { PassThrough } from "node:stream"
 import { Logger } from "@metal/logger"
 import { JsonUtils, StringUtils } from "@metal/utils"
 import * as Ftp from "basic-ftp"
@@ -192,12 +193,17 @@ export class FtpStorage extends absStorageProvider {
 		if (!(await this.FileIsExist(dirName, fileName)))
 			throw new HttpErrorNotFound(`File '${fileName}' does not exist on the FTP server`)
 
+		// Return the PassThrough immediately and let the download write into it
+		// as data arrives, instead of awaiting the full transfer (which buffers
+		// the entire file in memory before the caller gets a stream)
 		const content = new PassThrough()
 
 		const __targetFile = StringUtils.Path(this.StorageConfig.folder, dirName, fileName)
 
-		await this._ftpClient.downloadTo(content, __targetFile)
-		return Readable.from(content)
+		this._ftpClient.downloadTo(content, __targetFile).catch((error: Error) => {
+			content.destroy(error)
+		})
+		return content
 	}
 
 	@Logger.LogFunction(["content"])

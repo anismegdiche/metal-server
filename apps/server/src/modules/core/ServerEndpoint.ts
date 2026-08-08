@@ -39,7 +39,7 @@ export class ServerEndpoint {
 
 	static RegisterServerMiddleware(): void {
 		ServerEndpoint.RegisterMiddleware(() => {
-			Logger.Info(`Route: Enabling API, URL= ${ROUTE.API_SERVER_PATH}`)
+			Logger.Info(Logger.In, 'Enabling route', ROUTE.API_SERVER_PATH)
 			ServerEndpoint.Api.use(
 				`${ROUTE.API_SERVER_PATH}/`,
 				Logger.RequestMiddleware,
@@ -149,7 +149,7 @@ export class ServerEndpoint {
 		ServerEndpoint.ExecuteMiddlewareHooksQueue()
 
 		// path: /api-docs
-		Logger.Info(`Route: Enabling Swagger UI, URL= ${ROUTE.SWAGGER_UI_PATH}`)
+		Logger.Info(Logger.In, 'Enabling Swagger UI, route', ROUTE.SWAGGER_UI_PATH)
 
 		// error handler
 		ServerEndpoint.Api.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

@@ -35,29 +35,8 @@ import {
 import type { TSchemaResponse } from "./types/TSchemaResponse"
 import { z_TSchemaResponse } from "./types/TSchemaResponse"
 
+
 //
-// export type TSchemaRoute = {
-// 	type: "source" | "nothing"
-// 	routeName: string
-// 	entity?: string
-// }
-
-// export type TSourceTypeExecuteParams = {
-// 	source: string
-// 	entity: string
-// 	schemaRequest: TSchemaRequestSelect | TSchemaRequestUpdate | TSchemaRequestDelete | TSchemaRequestInsert
-
-// 	CrudFunction: Function
-// }
-
-// export type TEntitiesMap = Map<
-// 	string,
-// 	{
-// 		source: string
-// 		database?: string
-// 	}
-// >
-
 type TSchemaEntityRoute = {
 	sourceName: string
 	sourceEntityName?: string
@@ -65,93 +44,35 @@ type TSchemaEntityRoute = {
 
 type TSchemaEntityRoutes = Map<string, TSchemaEntityRoute>
 
+
 //
 export class Schema {
-	static _schemaParams: U__schemas
+	static _schemaParams: NonNullable<U__schemas>
 	static _schemaRoles = new Map<string, string[]>()
 	static _schemaRoutes = new Map<string, TSchemaEntityRoutes>()
 
 	static fnCacheGet?: Function
-
-	// static readonly SourceTypeCaseMap: Record<string, Function> = {
-	// 	nothing: async (sourceTypeExecuteParams: TSourceTypeExecuteParams) =>
-	// 		await Schema.#NothingTodo(sourceTypeExecuteParams),
-	// 	source: async (sourceTypeExecuteParams: TSourceTypeExecuteParams) => await sourceTypeExecuteParams.CrudFunction(),
-	// }
-
-	// static async #NothingTodo(sourceTypeExecuteParams: TSourceTypeExecuteParams): Promise<void> {
-	// 	const { schema, entity } = sourceTypeExecuteParams.schemaRequest
-	// 	Logger.Warn(`${schema}: Entity '${entity}' not found`)
-	// 	throw new HttpErrorNotFound(`${schema}: Entity '${entity}' not found`)
-	// }
-
-	// static async #MergeData(schemaResponse: TSchemaResponse, schemaResponseToMerge?: TSchemaResponse)
-	// 	: Promise<TSchemaResponse> {
-
-	// 	if (!schemaResponseToMerge)
-	// 		return schemaResponse
-
-	// 	const isSchemaResponseWithData = (await schemaResponse?.data?.Count()) > 0
-	// 	const isSchemaResponseToMergeWithData = (await schemaResponseToMerge?.data?.Count()) > 0
-
-	// 	// only schemaResponse got data
-	// 	if (isSchemaResponseWithData && !isSchemaResponseToMergeWithData)
-	// 		return schemaResponse
-
-	// 	// only schemaResponseToMerge got data
-	// 	if (!isSchemaResponseWithData && isSchemaResponseToMergeWithData)
-	// 		return <TSchemaResponse>{
-	// 			...schemaResponseToMerge,
-	// 			schema: schemaResponse.schema,
-	// 			entity: schemaResponse.entity,
-	// 			status: schemaResponseToMerge.status,
-	// 		}
-
-	// 	// both got data
-	// 	if (isSchemaResponseWithData && isSchemaResponseToMergeWithData)
-	// 		return <TSchemaResponse>{
-	// 			...schemaResponse,
-	// 			data: await schemaResponse.data.RowsAdd(await schemaResponseToMerge.data.Rows()),
-	// 		}
-
-	// 	// anything else
-	// 	return schemaResponse
-	// }
-
-	// static IsSchemaRequestSelect(schemaRequest: unknown): schemaRequest is TSchemaRequestSelect {
-	// 	return z_TSchemaRequestSelect.safeParse(schemaRequest).success
-	// }
-
-	// static IsSchemaRequestUpdate(schemaRequest: unknown): schemaRequest is TSchemaRequestUpdate {
-	// 	return z_TSchemaRequestUpdate.safeParse(schemaRequest).success
-	// }
-
-	// static IsSchemaRequestInsert(schemaRequest: unknown): schemaRequest is TSchemaRequestInsert {
-	// 	return z_TSchemaRequestInsert.safeParse(schemaRequest).success
-	// }
-
-	// static IsSchemaRequestDelete(schemaRequest: unknown): schemaRequest is TSchemaRequestDelete {
-	// 	return z_TSchemaRequestDelete.safeParse(schemaRequest).success
-	// }
 
 	@Logger.LogFunction(true)
 	static IsSchemaResponse(schemaResponse: unknown): schemaResponse is TSchemaResponse {
 		return z_TSchemaResponse.safeParse(schemaResponse).success
 	}
 
+	@Logger.LogFunction()
 	static Init(fnCacheGet: Function) {
 		if (!ConfigManager.Has("schemas")) {
 			Logger.Warn(`section 'schemas' not found in configuration`)
 			throw new HttpErrorNotFound(`section 'schemas' not found in configuration`)
 		}
 
-		Schema._schemaParams = ConfigManager.Get<U__schemas>("schemas")
+		Schema._schemaParams = ConfigManager.Get<U__schemas>("schemas") ?? {}
 		Schema._buildSchemaRoutes()
 		Schema._buildSchemaRoles()
 		Schema.fnCacheGet = fnCacheGet
 		Schema.DispatchMetrics()
 	}
 
+	@Logger.LogFunction()
 	static DispatchMetrics(): void {
 		const schemaNames = Object.keys(Schema._schemaParams)
 		const details: Record<
@@ -336,66 +257,6 @@ export class Schema {
 		}
 		return entityRoute
 	}
-
-	@Logger.LogFunction(true)
-	// static async IsExists(schemaRequest: TSchemaRequest): Promise<void> {
-
-	// 	const { schema } = schemaRequest
-
-	// 	if (!Schema._schemaRoutes.has(schema)) {
-	// 		throw new HttpErrorNotFound(`schema '${schema}' not found`)
-	// 	}
-	// }
-
-	// //FIXME rewrite with GetEntitiesSources
-	// @Logger.LogFunction(true)
-	// static GetRoute(schema: string, entity: string, schemaConfig: any): TSchemaRoute {
-	// 	const nothingToDoSchemaRoute: TSchemaRoute = {
-	// 		type: "nothing",
-	// 		routeName: "",
-	// 	}
-
-	// 	// schema.entities.*
-	// 	if (has(schemaConfig, `entities.${entity}`)) {
-	// 		const _schemaEntityConfig: TSchemaRequest = JsonUtils.Get(schemaConfig.entities, entity)
-
-	// 		if (_schemaEntityConfig === undefined) {
-	// 			Logger.Warn(`Entity '${entity}' not found in schema '${schema}'`)
-	// 			return nothingToDoSchemaRoute
-	// 		}
-
-	// 		const { source: _source, entity: _entity } = _schemaEntityConfig as TSchemaRequestBase
-
-	// 		// schema.entities.*.source
-	// 		if (_source) {
-	// 			if (!ConfigManager.Has(`sources.${_source}`)) {
-	// 				Logger.Warn(`Source not found for entity '${entity}'`)
-	// 				return nothingToDoSchemaRoute
-	// 			}
-	// 			return {
-	// 				type: "source",
-	// 				routeName: _source,
-	// 				entity: _entity,
-	// 			}
-	// 		}
-	// 	}
-
-	// 	// schema.source
-	// 	if (schemaConfig?.source) {
-	// 		if (!ConfigManager.Has(`sources.${schemaConfig.source}`)) {
-	// 			Logger.Warn(`Source not found for schema '${schema}'`)
-	// 			return nothingToDoSchemaRoute
-	// 		}
-	// 		return {
-	// 			type: "source",
-	// 			routeName: schemaConfig.source,
-	// 			entity,
-	// 		}
-	// 	}
-
-	// 	Logger.Warn(`Nothing to do in the 'schemas' section`)
-	// 	return nothingToDoSchemaRoute
-	// }
 
 	@Logger.LogFunction(true)
 	static async Select(
@@ -636,34 +497,4 @@ export class Schema {
 
 		return HttpResponse.Ok(schemaResponse)
 	}
-
-	// TODO: refactor
-	// static GetEntitiesSources(schema: string): TEntitiesMap {
-	// 	const entities: TEntitiesMap = new Map()
-	// 	const schemaParams = Schema._schemaParams[schema]
-
-	// 	if (schemaParams?.source)
-	// 		entities.set("*", {
-	// 			source: schemaParams.source,
-	// 			database: ConfigManager.Get<string | undefined>(`sources.${schemaParams.source}.database`),
-	// 		})
-
-	// 	if (schemaParams?.entities)
-	// 		forEach(schemaParams.entities, (entityConfig: U__schemas_schema_entities_entity, entity: string) => {
-	// 			entities.set(entity, {
-	// 				source: entityConfig.source,
-	// 				database: ConfigManager.Get<string | undefined>(`sources.${entityConfig.source}.database`),
-	// 			})
-	// 		})
-
-	// 	return entities
-	// }
-
-	// static GetSchemaConfig(schema: string): U__schemas_schema {
-	// 	const schemaConfig = ConfigManager.Get<U__schemas_schema>(`schemas.${schema}`)
-	// 	if (!Schema._schemaParams?.has(schema))
-	// 		throw new HttpErrorNotFound(`Schema '${schema}' not found`)
-
-	// 	return schemaConfig
-	// }
 }

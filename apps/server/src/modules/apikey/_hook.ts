@@ -9,7 +9,7 @@ import { ApiKeyRouter } from "./routes/ApiKeyRouter"
 //
 export function RegisterMiddleware(): void {
 	ServerEndpoint.RegisterMiddleware(() => {
-		Logger.Info(`Route: Enabling API, URL= ${ROUTE.API_KEYS_PATH}`)
+		Logger.Info(Logger.In, 'Enabling route', ROUTE.API_KEYS_PATH)
 		ServerEndpoint.Api.use(`${ROUTE.API_KEYS_PATH}/`, Logger.RequestMiddleware, ResponseHandler.SetContentJson, ApiKeyRouter)
 	})
 }

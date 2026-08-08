@@ -62,12 +62,15 @@ export class ServerInitializer {
 
 	@Logger.LogFunction()
 	static StartWatcher(): void {
-		ServerInitializer.configWatcher = chokidar.watch(ConfigManager.ConfigFilePath).on("change", () => {
-			Logger.Info("Config file changed. Reloading...")
-			import("./ServerRuntime").then(({ ServerRuntime }) =>
-				ServerRuntime.Reload().catch((err: Error) => Logger.Error(err.message)),
-			)
-		})
+		ServerInitializer.configWatcher = chokidar
+			.watch(ConfigManager.ConfigFilePath)
+			.on("change", () => {
+				Logger.Info(Logger.In, "Config file changed. Reloading...")
+				import("./ServerRuntime").then(({ ServerRuntime }) =>
+					ServerRuntime.Reload()
+						.catch((err: Error) => Logger.Error(err.message)),
+				)
+			})
 
 		ServerShutdown.RegisterConfigWatcher(ServerInitializer.configWatcher)
 	}

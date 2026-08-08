@@ -12,8 +12,8 @@ import { ServerEndpoint } from "../core/ServerEndpoint"
 //
 export function RegisterMiddleware(): void {
 	ServerEndpoint.RegisterMiddleware(() => {
-		if (ConfigManager.Get("server.authentication")) {	
-			Logger.Info(`Route: Enabling API, URL= ${ROUTE.USER_PATH}`)
+		if (ConfigManager.Get("server.authentication")) {
+			Logger.Info(Logger.In, 'Enabling route', ROUTE.USER_PATH)
 			ServerEndpoint.Api.use(`${ROUTE.USER_PATH}/`, Logger.RequestMiddleware, ResponseHandler.SetContentJson, UserRouter)
 		}
 	})

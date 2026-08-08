@@ -22,32 +22,31 @@ export class Source {
 		return SourceRegistry.Sources
 	}
 
+	@Logger.LogFunction()
 	static async Init(): Promise<void> {
 		if (ConfigManager.Has("sources")) await Source.ConnectAll()
 		Source.DispatchMetrics()
 	}
 
 	static DispatchMetrics(): void {
-		const allSourceNames = ConfigManager.Has("sources") ? Object.keys(ConfigManager.Get<TJson>("sources")) : []
 
-		const allSourcesConfig = ConfigManager.Has("sources")
-			? ConfigManager.Get<Record<string, U__sources_source>>("sources")
-			: {}
+		const _sources = ConfigManager.Get<U__sources>("sources") ?? {}
+		const _sourcesNames = Object.keys(_sources)
 
 		const details: Record<
 			string,
 			{ provider: string; host: string; port: number | null; database: string | null; status: string }
 		> = {}
-		for (const name of allSourceNames) {
-			const config = allSourcesConfig[name]
+		for (const name of _sourcesNames) {
+			const config = _sources[name]
 			details[name] = {
 				...pick(config, ["provider", "host", "port", "database"]),
 				status: "unknown",
 			} as { provider: string; host: string; port: number | null; database: string | null; status: string }
 		}
 
-		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES, allSourceNames)
-		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_TOTAL, allSourceNames.length)
+		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES, _sourcesNames)
+		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_TOTAL, _sourcesNames.length)
 		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_ACTIVE, 0)
 		MetricsCollector.DispatchEvent_set(_MTR_.SOURCES_DETAILS, details)
 	}
@@ -94,7 +93,7 @@ export class Source {
 	static async ConnectAll(): Promise<void> {
 		const sources = ConfigManager.Get<U__sources>("sources") ?? {}
 		if (sources === undefined || Object.keys(sources).length === 0) {
-			Logger.Warn(Logger.Out, 'No sources found in configuration')
+			Logger.Warn(Logger.Out, 'sources configuration is not set or empty. No sources will be connected')
 			return
 		}
 

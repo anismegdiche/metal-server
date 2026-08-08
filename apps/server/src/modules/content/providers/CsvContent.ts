@@ -5,14 +5,13 @@ import { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
 import type { TJson } from "@metal/types"
 import { JsonUtils } from "@metal/utils"
-import { parse } from "csv-parse/sync"
-import { stringify } from "csv-stringify/sync"
+import { parse } from "csv-parse"
+import { stringify } from "csv-stringify"
 import { merge } from "lodash-es"
 import type { TRow, TRowsCopyParams } from "../../../types/DataTable"
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { PlaceHolder } from "../../../utils/PlaceHolder"
-import { ReadableUtils } from "../../../utils/ReadableUtils"
 import { VirtualFileSystem } from "../../../utils/VirtualFileSystem"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
@@ -94,23 +93,36 @@ export class CsvContent extends absContentProvider {
 
 		const $__evalParams = PlaceHolder.EvaluateJsCode<CsvParams>(this.Params, new Sandbox($context))
 
-		const parsedCsv = parse<TJson>(await ReadableUtils.ToString(this.Content.ReadFile(this.EntityName)), {
+		// Streaming parse: pipe the file into the parser so the raw CSV is never
+		// buffered as a whole string in memory (unlike csv-parse/sync)
+		const parser = parse({
 			...$__evalParams,
 			columns: true,
 			relax_column_count: true,
 			skip_empty_lines: ($__evalParams?.skip_empty_lines as boolean) ?? true,
 		})
 
-		// Restore escaped newlines in parsed data
-		const restoredData = parsedCsv.map((row: TJson) => {
-			const restoredRow: TJson = {}
-			for (const [key, value] of Object.entries(row)) {
-				restoredRow[key] = UnescapeNewlines(value)
-			}
-			return restoredRow
+		const rows: TJson[] = []
+
+		await new Promise<void>((resolve, reject) => {
+			const source = this.Content.ReadFile(this.EntityName)
+
+			source.on("error", reject)
+			parser.on("data", (row: TJson) => {
+				// Restore escaped newlines in parsed data
+				const restoredRow: TJson = {}
+				for (const [key, value] of Object.entries(row)) {
+					restoredRow[key] = UnescapeNewlines(value)
+				}
+				rows.push(restoredRow)
+			})
+			parser.on("error", reject)
+			parser.on("end", () => resolve())
+
+			source.pipe(parser)
 		})
 
-		using data = new DataTable(this.EntityName, restoredData)
+		using data = new DataTable(this.EntityName, rows)
 		return data.Copy(this.EntityName, rowsParams)
 	}
 
@@ -131,42 +143,47 @@ export class CsvContent extends absContentProvider {
 
 		const _columns = Array.from(allColumns)
 
-		// Flatten nested objects and escape newlines in data.GetRows()
-		const _dataFlatten = rows.map((row: TRow) => {
-			const flattenedRow: TRow = {}
+		// Stream flattened rows through csv-stringify so the CSV output is
+		// generated incrementally instead of building the whole file in memory
+		const rowsSource = Readable.from(
+			(async function* () {
+				for (const row of rows) {
+					const flattenedRow: TRow = {}
 
-			// Ensure all columns are present in each row
-			_columns.forEach((col) => {
-				let value = row[col]
+					// Ensure all columns are present in each row
+					_columns.forEach((col) => {
+						let value = row[col]
 
-				// Handle objects (but not dates)
-				if (typeof value === "object" && value !== null && !Date.parse(value.toString())) {
-					value = JsonUtils.Stringify(value)
+						// Handle objects (but not dates)
+						if (typeof value === "object" && value !== null && !Date.parse(value.toString())) {
+							value = JsonUtils.Stringify(value)
+						}
+
+						// Escape newlines in string values
+						if (typeof value === "string") {
+							value = EscapeNewlines(value)
+						}
+
+						// Handle missing values
+						value ??= ""
+
+						flattenedRow[col] = value
+					})
+
+					yield flattenedRow
 				}
+			})(),
+		)
 
-				// Escape newlines in string values
-				if (typeof value === "string") {
-					value = EscapeNewlines(value)
-				}
-
-				// Handle missing values
-				value ??= ""
-
-				flattenedRow[col] = value
-			})
-
-			return flattenedRow
-		})
-
-		const csvString = stringify(_dataFlatten, {
+		const stringifier = stringify({
 			...$__evalParams,
 			header: true,
 			columns: _columns,
 		})
 
-		const streamOut = Readable.from(csvString)
+		rowsSource.pipe(stringifier)
 
-		this.Content.UploadFile(this.EntityName, streamOut)
-		return this.Content.ReadFile(this.EntityName)
+		this.Content.UploadFile(this.EntityName, stringifier)
+		return stringifier
 	}
 }

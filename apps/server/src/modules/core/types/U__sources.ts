@@ -28,11 +28,10 @@ export const z_U__sources_source = z.discriminatedUnion("provider", [
 	z_U__source_webservice
 ])
 
-export const z_U__sources = z.record(
-	z.string(),
-	z_U__sources_source
-).default({})
-
+export const z_U__sources = z.union([
+	z.record(z.string(), z_U__sources_source),
+	z.literal(null),
+]).default(null)
 
 //
 export type U__sources_source = z.infer<typeof z_U__sources_source>

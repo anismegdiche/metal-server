@@ -10,7 +10,6 @@ import { fileTypeFromBuffer } from "file-type"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
-import { ReadableUtils } from "../../../utils/ReadableUtils"
 import type { TConvertParams } from "../../../utils/TConvertParams"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
 import { DATA_ENTITY_TYPE } from "../../source/@consts"
@@ -290,7 +289,8 @@ export class AmazonS3Storage extends absStorageProvider {
 
 		Assert.Var<NodeJS.ReadableStream>(response.Body, "No body defined")
 
-		return ReadableUtils.FromReadableStream(response.Body as NodeJS.ReadableStream)
+		// Body is already a lazily-downloaded stream; return it directly
+		return response.Body as Readable
 	}
 
 	@Logger.LogFunction(["content"])

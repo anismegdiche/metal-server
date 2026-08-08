@@ -86,36 +86,9 @@ export class ReadableUtils {
 	}
 
 	static FromReadStream(readStream: ReadStream): Readable {
-		const readableStream = new Readable({
-			read() {
-				// No-op, because we're manually pushing data
-			},
-			destroy(error, callback) {
-				// Cleanup listeners when stream is destroyed
-				readStream.removeListener("data", onData)
-				readStream.removeListener("end", onEnd)
-				readStream.removeListener("error", onError)
-				callback(error)
-			},
-		})
-
-		const onData = (chunk: any) => {
-			readableStream.push(chunk)
-		}
-
-		const onEnd = () => {
-			readableStream.push(null)
-		}
-
-		const onError = (err: Error) => {
-			readableStream.emit("error", err)
-		}
-
-		readStream.on("data", onData)
-		readStream.on("end", onEnd)
-		readStream.on("error", onError)
-
-		return readableStream
+		// Readable.from() consumes the source via async iteration, respecting
+		// backpressure (the source is only read when the consumer asks for more).
+		return Readable.from(readStream)
 	}
 
 	static Duplicate(original: Readable): [Readable, Readable] {
@@ -138,33 +111,8 @@ export class ReadableUtils {
 	}
 
 	static FromReadableStream(stream: NodeJS.ReadableStream): Readable {
-		const readable = new Readable({
-			read() {},
-			destroy(error, callback) {
-				// Cleanup listeners when stream is destroyed
-				stream.removeListener("data", onData)
-				stream.removeListener("end", onEnd)
-				stream.removeListener("error", onError)
-				callback(error)
-			},
-		})
-
-		const onData = (chunk: any) => {
-			readable.push(chunk)
-		}
-
-		const onEnd = () => {
-			readable.push(null)
-		}
-
-		const onError = (err: Error) => {
-			readable.emit("error", err)
-		}
-
-		stream.on("data", onData)
-		stream.on("end", onEnd)
-		stream.on("error", onError)
-
-		return readable
+		// Readable.from() respects backpressure via async iteration instead of
+		// attaching a 'data' listener that forces the source into flowing mode.
+		return Readable.from(stream as AsyncIterable<unknown>)
 	}
 }

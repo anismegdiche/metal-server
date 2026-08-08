@@ -18,10 +18,10 @@ export const z_U__users_user = z
 			.optional(),
 	})
 
-export const z_U__users = z.record(
-	z.string(),
-	z_U__users_user
-).default({})
+export const z_U__users = z.union([
+	z.record(z.string(), z_U__users_user),
+	z.literal(null),
+]).default(null)
 
 //
 export type U__users_user = z.infer<typeof z_U__users_user>

@@ -11,7 +11,7 @@ import { MetricsRouter } from "./routes/MetricsRouter"
 //
 export function RegisterMiddleware(): void {
 	ServerEndpoint.RegisterMiddleware(() => {
-		Logger.Info(`Route: Enabling API, URL= ${ROUTE.API_METRICS_PATH}`)
+		Logger.Info(Logger.In, 'Enabling route', ROUTE.API_METRICS_PATH)
 		ServerEndpoint.Api.use(`${ROUTE.API_METRICS_PATH}/`, ResponseHandler.SetContentJson, MetricsRouter)
 	})
 }

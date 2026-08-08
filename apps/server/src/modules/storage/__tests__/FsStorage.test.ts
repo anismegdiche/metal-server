@@ -13,6 +13,7 @@ vi.mock("node:fs", async () => {
 		...actual,
 		existsSync: vi.fn(),
 		createReadStream: vi.fn(),
+		createWriteStream: vi.fn(),
 		promises: {
 			...actual.promises,
 			writeFile: vi.fn(),
@@ -28,6 +29,7 @@ vi.mock("node:fs", async () => {
 type FsMock = typeof Fs & {
 	existsSync: Mock
 	createReadStream: Mock
+	createWriteStream: Mock
 	promises: typeof Fs.promises & {
 		writeFile: Mock
 		readdir: Mock
@@ -55,6 +57,7 @@ describe("FsStorage", () => {
 		vi.clearAllMocks()
 		fsMock.existsSync.mockReset()
 		fsMock.createReadStream.mockReset()
+		fsMock.createWriteStream.mockReset()
 		fsMock.promises.writeFile.mockReset()
 		fsMock.promises.readdir.mockReset()
 		fsMock.promises.mkdir.mockReset()
@@ -200,24 +203,41 @@ describe("FsStorage", () => {
 	})
 
 	describe("FileWrite", () => {
-		it("should write file successfully", async () => {
-			const mockStream = Readable.from(["test data"])
-			fsMock.promises.writeFile = vi.fn().mockResolvedValue(undefined)
+		it("should stream file to disk successfully", async () => {
+			const { Writable } = await import("node:stream")
+			const chunks: Buffer[] = []
+			const mockWriteStream = new Writable({
+				write(chunk, _encoding, callback) {
+					chunks.push(chunk as Buffer)
+					callback()
+				},
+			})
+			fsMock.createWriteStream = vi.fn().mockReturnValue(mockWriteStream)
 			fsStorage.FileIsExist = vi.fn().mockResolvedValue(true)
+			const mockStream = Readable.from(["test data"])
 			await fsStorage.FileWrite("test-folder", "test-file.txt", mockStream)
-			expect(fsMock.promises.writeFile).toHaveBeenCalled()
+			expect(fsMock.createWriteStream).toHaveBeenCalledWith("test-folder/test-file.txt")
+			expect(chunks.join("")).toBe("test data")
 		})
 		it("should autocreate file if autocreate is true and file does not exist", async () => {
+			const { Writable } = await import("node:stream")
+			const mockWriteStream = new Writable({
+				write(_chunk, _encoding, callback) {
+					callback()
+				},
+			})
 			fsStorage.Params = { folder: "./" }
 			fsStorage._flagAutoCreate = true
 			fsStorage.FileIsExist = vi.fn().mockResolvedValue(false)
 			fsMock.openSync = vi.fn().mockReturnValue(1)
+			fsMock.createWriteStream = vi.fn().mockReturnValue(mockWriteStream)
 			fsMock.promises.writeFile = vi.fn().mockResolvedValue(undefined)
 			fsMock.closeSync = vi.fn()
 			const mockStream = Readable.from(["test data"])
 			await fsStorage.FileWrite("test-folder", "auto-file.txt", mockStream)
 			expect(fsMock.openSync).toHaveBeenCalled()
 			expect(fsMock.promises.writeFile).toHaveBeenCalled()
+			expect(fsMock.createWriteStream).toHaveBeenCalledWith("test-folder/auto-file.txt")
 			expect(fsMock.closeSync).toHaveBeenCalled()
 		})
 	})

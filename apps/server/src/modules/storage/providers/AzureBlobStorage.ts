@@ -2,7 +2,7 @@
 //
 //
 
-import { Readable } from "node:stream"
+import type { Readable } from "node:stream"
 import { Logger } from "@metal/logger"
 import { JsonUtils, StringUtils } from "@metal/utils"
 import { DataTable } from "../../../types/DataTable"
@@ -217,7 +217,12 @@ export class AzureBlobStorage extends absStorageProvider {
 		const blobClient = this._containerClient.getBlockBlobClient(StringUtils.Url(dirName, fileName))
 		Assert.Condition(await blobClient.exists(), `File '${fileName}' does not exist`)
 
-		return Readable.from(await blobClient.downloadToBuffer(0))
+		// download() streams the blob body instead of buffering the whole file
+		// with downloadToBuffer()
+		const response = await blobClient.download()
+		Assert.Var<NodeJS.ReadableStream>(response.readableStreamBody, "No body defined")
+
+		return response.readableStreamBody as Readable
 	}
 
 	@Logger.LogFunction(["content"])

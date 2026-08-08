@@ -365,9 +365,13 @@ describe("CsvContent", () => {
 
 			csvContent.InitContent(name, content)
 			const updatedContent = await csvContent.Set(dataTable, {})
-			const expectedContent = Readable.from("id,name\n3,Alice\n4,Bob")
 
-			expect(updatedContent.read().toString().trim()).toBe(expectedContent.read().toString().trim())
+			const chunks: string[] = []
+			for await (const chunk of updatedContent) {
+				chunks.push(chunk.toString())
+			}
+
+			expect(chunks.join("").trim()).toBe("id,name\n3,Alice\n4,Bob")
 		})
 	})
 })

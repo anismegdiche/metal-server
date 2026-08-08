@@ -1,16 +1,17 @@
-
+import { Logger } from "@metal/logger"
+//
+import type { TJson } from "@metal/types"
 //
 //
 //
 import * as _ from "lodash-es"
-//
-import type { TJson } from "@metal/types"
 import { Factory } from "../../utils/Factory"
 import { Semaphore } from "../../utils/Semaphore"
 import { ConfigManager } from "../core/ConfigManager"
 import { HttpErrorInternalServerError, HttpErrorNotFound } from "../errors/HttpErrors"
 import { STEP } from "../plan/@consts"
 import { PlansManager } from "../plan/PlansManager"
+import type { U__plans_plan } from "../plan/types/U__plans"
 import type { U__plans_plan_run_Params } from "../plan/types/U__plans_params"
 import { AI_ENGINE } from "./@consts"
 import { AiDocker } from "./AiDocker"
@@ -20,7 +21,6 @@ import type { T__ai_engines_ai_engine } from "./types/T__ai_engines_ai_engine"
 
 //
 type TPlanStep = { [STEP.RUN]: U__plans_plan_run_Params }
-type TPlanEntity = TPlanStep[]
 type TAiTask = {
 	ai: string
 	task: string
@@ -43,25 +43,23 @@ export class AiEngine {
 	static _aiEnginesConfig: TJson<T__ai_engines_ai_engine> = {}
 	static AiEnginesInstance: Map<string, IAiEngine> = new Map()
 
-	// Build a list of AI engines from the configuration
+	@Logger.LogFunction()
 	static BuildAiEnginesList(): TJson<T__ai_engines_ai_engine> {
 		if (!PlansManager.Config) {
 			return {}
 		}
 
 		const aiTasks = _.chain(PlansManager.Config)
-			.flatMap((plan: TPlanEntity[]) =>
-				_.flatMap(plan, (entity: TPlanEntity) =>
-					entity
-						.map((step: TPlanStep) => step.run)
-						.filter((run): run is NonNullable<typeof run> => Boolean(run))
-						.map(
-							({ ai, task }): TAiTask => ({
-								ai,
-								task,
-							}),
-						),
-				),
+			.flatMap((plan: U__plans_plan) =>
+				plan.steps
+					.filter((step): step is TPlanStep => STEP.RUN in step)
+					.map((step: TPlanStep) => step.run)
+					.map(
+						({ ai, task }): TAiTask => ({
+							ai,
+							task,
+						}),
+					),
 			)
 			.filter(Boolean)
 			.uniqWith(_.isEqual)
@@ -128,6 +126,7 @@ export class AiEngine {
 		return engine.Clone()
 	}
 
+	@Logger.LogFunction()
 	static async Init() {
 		if (!ConfigManager.Has("plans")) return
 

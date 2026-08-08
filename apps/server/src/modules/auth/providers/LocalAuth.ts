@@ -17,7 +17,7 @@ import { absAuthProvider } from "../base/absAuthProvider"
 //
 export class LocalAuth extends absAuthProvider {
 	readonly _SALT_ROUNDS = 10
-	_users: U__users = {}
+	_users: NonNullable<U__users> = {}
 
 	_hashPassword(password: string): string {
 		return bcrypt.hashSync(password, this._SALT_ROUNDS)
@@ -29,11 +29,13 @@ export class LocalAuth extends absAuthProvider {
 
 	@Logger.LogFunction()
 	Init(): void {
-		if (!ConfigManager.Get<U__users | undefined>("users"))
-			throw new HttpErrorInternalServerError("users configuration is not set")
+		if (!ConfigManager.Get<U__users>("users")) {
+			Logger.Warn(Logger.Out, "users configuration is not set or empty. No users will be authenticated")
+			return
+		}
 
 		// convert password to string
-		this._users = _.mapValues(ConfigManager.Get<U__users>("users"), (user) => ({
+		this._users = _.mapValues(ConfigManager.Get<NonNullable<U__users>>("users"), (user) => ({
 			...user,
 			password: String(user.password),
 		}))

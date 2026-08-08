@@ -249,8 +249,8 @@ describe("AzureBlobStorage", () => {
 		})
 
 		it("should read file successfully", async () => {
-			const mockBuffer = Buffer.from("test data")
-			mockBlockBlobClient.downloadToBuffer = vi.fn().mockResolvedValue(mockBuffer)
+			const mockBody = Readable.from(["test data"])
+			mockBlockBlobClient.download = vi.fn().mockResolvedValue({ readableStreamBody: mockBody })
 			mockBlockBlobClient.exists = vi.fn().mockResolvedValue(true)
 			mockContainerClient.getBlockBlobClient = vi.fn().mockReturnValue(mockBlockBlobClient)
 
@@ -258,11 +258,11 @@ describe("AzureBlobStorage", () => {
 
 			expect(result).toBeDefined()
 			expect(mockBlockBlobClient.exists).toHaveBeenCalled()
-			expect(mockBlockBlobClient.downloadToBuffer).toHaveBeenCalled()
+			expect(mockBlockBlobClient.download).toHaveBeenCalled()
 		})
 
 		it("should throw error if file does not exist", async () => {
-			mockBlockBlobClient.downloadToBuffer = vi.fn().mockRejectedValue(new Error("Blob not found"))
+			mockBlockBlobClient.download = vi.fn().mockRejectedValue(new Error("Blob not found"))
 			mockContainerClient.getBlockBlobClient = vi.fn().mockReturnValue(mockBlockBlobClient)
 
 			await expect(storage.FileRead("test-folder", "test-file.txt")).rejects.toThrow()

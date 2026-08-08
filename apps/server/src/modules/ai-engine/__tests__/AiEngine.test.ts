@@ -40,7 +40,7 @@ describe("AiEngine", () => {
 		it("should extract ai-tasks from plans", () => {
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			PlansManager.Config = {
-				p1: [[{ run: { ai: "text", task: "t1" } }]],
+				p1: { steps: [{ run: { ai: "text", task: "t1" } }] },
 			} as any
 
 			const list = AiEngine.BuildAiEnginesList()
@@ -85,7 +85,7 @@ describe("AiEngine", () => {
 		it("should initialize docker and build images before creating providers", async () => {
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			PlansManager.Config = {
-				p1: [[{ run: { ai: AI_ENGINE.TEXT, task: "t1" } }, { run: { ai: AI_ENGINE.IMAGE, task: "t2" } }]],
+				p1: { steps: [{ run: { ai: AI_ENGINE.TEXT, task: "t1" } }, { run: { ai: AI_ENGINE.IMAGE, task: "t2" } }] },
 			} as any
 			const createAllSpy = vi.spyOn(AiEngine, "CreateAll").mockResolvedValue(undefined)
 
@@ -100,7 +100,7 @@ describe("AiEngine", () => {
 	describe("CreateAll", () => {
 		it("should throw with aggregated errors", async () => {
 			const plans = {
-				p1: [[{ run: { ai: AI_ENGINE.TEXT, task: "t1" } }]],
+				p1: { steps: [{ run: { ai: AI_ENGINE.TEXT, task: "t1" } }] },
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockImplementation((path: string) => {
@@ -120,7 +120,7 @@ describe("AiEngine", () => {
 
 		it("should init all providers successfully", async () => {
 			const plans = {
-				p1: [[{ run: { ai: AI_ENGINE.TEXT, task: "t1" } }]],
+				p1: { steps: [{ run: { ai: AI_ENGINE.TEXT, task: "t1" } }] },
 			}
 			vi.mocked(ConfigManager.Has).mockReturnValue(true)
 			vi.mocked(ConfigManager.Get).mockImplementation((path: string) => {

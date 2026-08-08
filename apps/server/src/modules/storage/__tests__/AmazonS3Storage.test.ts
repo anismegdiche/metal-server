@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/complexity/useArrowFunction: vi.fn mocks must be constructible functions for `new S3Client(...)` */
 import { Readable } from "node:stream"
 import { vi } from "vitest"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
@@ -8,12 +9,24 @@ import { STORAGE_TYPE } from "../@consts"
 import { AmazonS3Storage } from "../providers/AmazonS3Storage"
 
 const mockS3Module = {
-	S3Client: vi.fn(() => ({ send: vi.fn() } )),
-	ListObjectsV2Command: vi.fn(() => ({} )),
-	PutObjectCommand: vi.fn(() => ({} )),
-	GetObjectCommand: vi.fn(() => ({} )),
-	CopyObjectCommand: vi.fn(() => ({} )),
-	DeleteObjectCommand: vi.fn(() => ({} )),
+	S3Client: vi.fn(function () {
+		return { send: vi.fn() }
+	}),
+	ListObjectsV2Command: vi.fn(function () {
+		return {}
+	}),
+	PutObjectCommand: vi.fn(function () {
+		return {}
+	}),
+	GetObjectCommand: vi.fn(function () {
+		return {}
+	}),
+	CopyObjectCommand: vi.fn(function () {
+		return {}
+	}),
+	DeleteObjectCommand: vi.fn(function () {
+		return {}
+	}),
 }
 
 const baseParams = {
@@ -53,7 +66,9 @@ describe("AmazonS3Storage", () => {
 			}
 
 			// Set up the S3Client mock
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 
 			await storage.Connect()
 		})
@@ -72,7 +87,9 @@ describe("AmazonS3Storage", () => {
 				}),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			const result = await storage.FileIsExist("test-folder", "test-file.txt")
@@ -81,10 +98,12 @@ describe("AmazonS3Storage", () => {
 
 		it("should return false for non-existing file", async () => {
 			const mockS3Client = {
-				send: vi.fn().mockRejectedValue({ name: "NoSuchKey", code: "NoSuchKey" }),
+				send: vi.fn().mockRejectedValue(Object.assign(new Error("NoSuchKey"), { code: "NoSuchKey" })),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			// The method should catch NoSuchKey errors and return false
@@ -102,7 +121,9 @@ describe("AmazonS3Storage", () => {
 				}),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			const result = await storage.FileRead("test-folder", "test-file.txt")
@@ -114,7 +135,9 @@ describe("AmazonS3Storage", () => {
 				send: vi.fn().mockRejectedValue(new Error("NoSuchKey")),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			await expect(storage.FileRead("test-folder", "non-existent.txt")).rejects.toThrow()
@@ -128,7 +151,9 @@ describe("AmazonS3Storage", () => {
 				send: vi.fn().mockResolvedValue({}),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			await storage.FileWrite("test-folder", "test-file.txt", mockStream)
@@ -142,7 +167,9 @@ describe("AmazonS3Storage", () => {
 				send: vi.fn().mockResolvedValue({}),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			await storage.FileDelete("test-folder", "test-file.txt")
@@ -156,7 +183,9 @@ describe("AmazonS3Storage", () => {
 				send: vi.fn().mockResolvedValue({}),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			await storage.FileRename("test-folder", "old-file.txt", "new-file.txt")
@@ -172,7 +201,9 @@ describe("AmazonS3Storage", () => {
 				}),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			const result = await storage.FolderIsExist("test-folder")
@@ -184,7 +215,9 @@ describe("AmazonS3Storage", () => {
 				send: vi.fn().mockRejectedValue(new Error("NotFound")),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			const result = await storage.FolderIsExist("non-existent-folder")
@@ -198,7 +231,9 @@ describe("AmazonS3Storage", () => {
 				send: vi.fn().mockResolvedValue({}),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			await storage.FolderCreate("test-folder")
@@ -217,7 +252,9 @@ describe("AmazonS3Storage", () => {
 				}),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			const result = await storage.FolderListFiles("test-folder")
@@ -233,7 +270,9 @@ describe("AmazonS3Storage", () => {
 				}),
 			}
 
-			mockS3Module.S3Client.mockImplementation(() => mockS3Client)
+			mockS3Module.S3Client.mockImplementation(function () {
+				return mockS3Client
+			})
 			await storage.Connect()
 
 			const result = await storage.FolderListFolders()

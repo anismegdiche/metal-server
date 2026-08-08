@@ -2,7 +2,8 @@
 //
 //
 
-import { PassThrough, Readable } from "node:stream"
+import type { Readable } from "node:stream"
+import { PassThrough } from "node:stream"
 import { Logger } from "@metal/logger"
 import { JsonUtils, StringUtils } from "@metal/utils"
 import { omit } from "lodash-es"
@@ -73,7 +74,9 @@ export class SftpStorage extends absStorageProvider {
 			const config: SftpClient.ConnectOptions = omit(this.Params, "folder") as SftpClient.ConnectOptions
 			await this._sftpClient.connect(config)
 		} catch (e: unknown) {
-			throw new HttpErrorInternalServerError(`Failed to connect to SFTP server '${this.Params.host}': ${(e as Error).message}`)
+			throw new HttpErrorInternalServerError(
+				`Failed to connect to SFTP server '${this.Params.host}': ${(e as Error).message}`,
+			)
 		}
 	}
 
@@ -187,7 +190,7 @@ export class SftpStorage extends absStorageProvider {
 		const content = new PassThrough()
 		const readStream = this._sftpClient.createReadStream(StringUtils.Path(this.Params.folder, dirName, fileName))
 		readStream.pipe(content)
-		return Readable.from(content)
+		return content
 	}
 
 	@Logger.LogFunction(["content"])

@@ -59,6 +59,7 @@ function _logToolCall(
 	const argsStr = JSON.stringify(args)
 	const errorStr = error instanceof Error ? ` error="${error.message}"` : ""
 	Logger.Info(
+		Logger.Out,
 		`[MCP] tool=${toolName} caller=${caller} args=${argsStr} status=${status} duration=${duration}ms${errorStr}`,
 	)
 }
@@ -193,7 +194,7 @@ export class McpAdapter {
 	static async HandleRequest(req: Request, res: Response): Promise<void> {
 		const userToken = req.__METAL_CURRENT_USER
 
-		Logger.Info(`[MCP] Request received caller=${userToken?.user ?? "unknown"}`)
+		Logger.Info(Logger.Out, `[MCP] Request received caller=${userToken?.user ?? "unknown"}`)
 
 		try {
 			const mcpConfig = ConfigManager.Get<U__mcp>("mcp")
@@ -224,7 +225,7 @@ export class McpAdapter {
 				server.close()
 			})
 		} catch (error) {
-			Logger.Error("[MCP] Error handling MCP request:", error)
+			Logger.Error(Logger.Out, "[MCP] Error handling MCP request:", error)
 			if (!res.headersSent) {
 				res.status(HTTP_STATUS_CODE.INTERNAL_SERVER_ERROR).json({
 					jsonrpc: "2.0",
