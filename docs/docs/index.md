@@ -46,6 +46,17 @@ features:
 import FancySection from '.vitepress/theme/components/FancySection.vue'
 import LogoSection from '.vitepress/theme/components/LogoSection.vue'
 </script>
+<style>
+.heading {
+  font-size: 1.5rem;
+  text-transform: capitalize;
+}
+
+.heading .text {
+  font-size: 3rem;
+  line-height: 3.3rem;  
+}
+</style>
 <h1 class="h-red" >Endless Integration Possibilities</h1>
 <LogoSection />
 <h1 class="h-red" >Boost Your Application with Metal</h1>
