@@ -14,7 +14,7 @@ const form = reactive({
 const CONTENT_TYPES = [
   { label: 'JSON', value: 'json' },
   { label: 'CSV', value: 'csv' },
-  { label: 'XLS', value: 'xls' },
+  { label: 'XLSX', value: 'xlsx' },
   { label: 'XML', value: 'xml' },
   { label: 'Parquet', value: 'parquet' },
 ]
@@ -38,11 +38,11 @@ interface StorageContentEntry {
   csvHeader: boolean
   csvQuote: string
   csvSkipEmptyLines: boolean
-  xlsSheet: string
-  xlsStartingCell: string
-  xlsDefault: string
-  xlsParseDates: boolean
-  xlsDateFormat: string
+  xlsxSheet: string
+  xlsxStartingCell: string
+  xlsxDefault: string
+  xlsxParseDates: boolean
+  xlsxDateFormat: string
   xmlPath: string
   xmlIgnoreAttributes: boolean
   xmlAttributePrefix: string
@@ -117,7 +117,7 @@ function newStorageContentEntry(): StorageContentEntry {
   return {
     pattern: '*', contentType: 'json', jsonPath: '',
     csvDelimiter: ';', csvNewline: '\\r\\n', csvHeader: true, csvQuote: '"', csvSkipEmptyLines: true,
-    xlsSheet: '', xlsStartingCell: 'A1', xlsDefault: '', xlsParseDates: false, xlsDateFormat: 'dd/mm/yyyy',
+    xlsxSheet: '', xlsxStartingCell: 'A1', xlsxDefault: '', xlsxParseDates: false, xlsxDateFormat: 'dd/mm/yyyy',
     xmlPath: '', xmlIgnoreAttributes: true, xmlAttributePrefix: '@', xmlRemoveNsPrefix: true,
     parquetUtf8: true,
   }
@@ -145,12 +145,12 @@ function storageContentToConfig(entries: StorageContentEntry[]): Record<string, 
       if (e.csvQuote !== '"') entry['csv-quote'] = e.csvQuote
       if (!e.csvSkipEmptyLines) entry['csv-skip-empty-lines'] = false
     }
-    if (e.contentType === 'xls') {
-      if (e.xlsSheet) entry['xls-sheet'] = e.xlsSheet
-      if (e.xlsStartingCell !== 'A1') entry['xls-starting-cell'] = e.xlsStartingCell
-      if (e.xlsDefault) entry['xls-default'] = e.xlsDefault
-      if (e.xlsParseDates) entry['xls-parse-dates'] = true
-      if (e.xlsDateFormat !== 'dd/mm/yyyy') entry['xls-date-format'] = e.xlsDateFormat
+    if (e.contentType === 'xlsx') {
+      if (e.xlsxSheet) entry['xlsx-sheet'] = e.xlsxSheet
+      if (e.xlsxStartingCell !== 'A1') entry['xlsx-starting-cell'] = e.xlsxStartingCell
+      if (e.xlsxDefault) entry['xlsx-default'] = e.xlsxDefault
+      if (e.xlsxParseDates) entry['xlsx-parse-dates'] = true
+      if (e.xlsxDateFormat !== 'dd/mm/yyyy') entry['xlsx-date-format'] = e.xlsxDateFormat
     }
     if (e.contentType === 'xml') {
       if (e.xmlPath) entry['xml-path'] = e.xmlPath
@@ -180,11 +180,11 @@ function configToStorageContent(config: Record<string, any>): StorageContentEntr
       csvHeader: v['csv-header'] !== false,
       csvQuote: v['csv-quote'] ?? '"',
       csvSkipEmptyLines: v['csv-skip-empty-lines'] !== false,
-      xlsSheet: v['xls-sheet'] ?? '',
-      xlsStartingCell: v['xls-starting-cell'] ?? 'A1',
-      xlsDefault: v['xls-default'] ?? '',
-      xlsParseDates: v['xls-parse-dates'] === true,
-      xlsDateFormat: v['xls-date-format'] ?? 'dd/mm/yyyy',
+      xlsxSheet: v['xlsx-sheet'] ?? '',
+      xlsxStartingCell: v['xlsx-starting-cell'] ?? 'A1',
+      xlsxDefault: v['xlsx-default'] ?? '',
+      xlsxParseDates: v['xlsx-parse-dates'] === true,
+      xlsxDateFormat: v['xlsx-date-format'] ?? 'dd/mm/yyyy',
       xmlPath: v['xml-path'] ?? '',
       xmlIgnoreAttributes: v['xml-ignore-attributes'] !== false,
       xmlAttributePrefix: v['xml-attribute-prefix'] ?? '@',
@@ -352,31 +352,31 @@ defineExpose({ collectBody })
               </div>
             </UFormField>
           </div>
-          <div v-if="entry.contentType === 'xls'" class="grid grid-cols-1 gap-3">
+          <div v-if="entry.contentType === 'xlsx'" class="grid grid-cols-1 gap-3">
             <UFormField label="Sheet Name" orientation="horizontal" :ui="{ description: 'text-xs' }"
               description="Specify which sheet to use, default first sheet">
-              <UInput v-model="entry.xlsSheet" placeholder="Sheet1" size="sm" class="w-full" />
+              <UInput v-model="entry.xlsxSheet" placeholder="Sheet1" size="sm" class="w-full" />
             </UFormField>
             <UFormField label="Starting Cell" orientation="horizontal" :ui="{ description: 'text-xs' }"
               description='Specify the starting cell (e.g. "B2"), default "A1"'>
-              <UInput v-model="entry.xlsStartingCell" placeholder="A1" size="sm" class="w-full" />
+              <UInput v-model="entry.xlsxStartingCell" placeholder="A1" size="sm" class="w-full" />
             </UFormField>
             <UFormField label="Default Value" orientation="horizontal" :ui="{ description: 'text-xs' }"
               description="Default value for empty cells, default null">
-              <UInput v-model="entry.xlsDefault" placeholder="(none)" size="sm" class="w-full" />
+              <UInput v-model="entry.xlsxDefault" placeholder="(none)" size="sm" class="w-full" />
             </UFormField>
             <UFormField label="Parse Dates" orientation="horizontal" :ui="{ description: 'text-xs' }"
               description="Parse dates from cells, default false">
               <div class="flex items-center gap-2">
-                <USwitch v-model="entry.xlsParseDates" />
-                <span class="text-xs text-muted">{{ entry.xlsParseDates ? 'Yes' : 'No' }}</span>
+                <USwitch v-model="entry.xlsxParseDates" />
+                <span class="text-xs text-muted">{{ entry.xlsxParseDates ? 'Yes' : 'No' }}</span>
               </div>
             </UFormField>
           </div>
-          <div v-if="entry.contentType === 'xls'" class="grid grid-cols-1 gap-3">
+          <div v-if="entry.contentType === 'xlsx'" class="grid grid-cols-1 gap-3">
             <UFormField label="Date Format" orientation="horizontal" :ui="{ description: 'text-xs' }"
               description="Specify the date format for parsing dates, default: dd/mm/yyyy">
-              <UInput v-model="entry.xlsDateFormat" placeholder="dd/mm/yyyy" size="sm" class="w-full" />
+              <UInput v-model="entry.xlsxDateFormat" placeholder="dd/mm/yyyy" size="sm" class="w-full" />
             </UFormField>
           </div>
           <div v-if="entry.contentType === 'xml'" class="grid grid-cols-1 gap-3">

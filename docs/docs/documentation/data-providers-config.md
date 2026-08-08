@@ -272,27 +272,27 @@ sources:
 
 **Optional parameters:**
 
-| Parameter          | Type    | Required | Description                                                                                                              |
-| ------------------ | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `endpoint`         | String  | N        | The CosmosDB endpoint URL (default: `""`)                                                                                |
-| `key`              | String  | N        | The primary or secondary key for your CosmosDB account                                                                   |
-| `partitionKey`     | String  | N        | The partition key path for the container                                                                                 |
-| `consistencyLevel` | String  | N        | Consistency level: `Strong`, `BoundedStaleness`, `Session`, `Eventual`, `ConsistentPrefix` (default: `Session`)          |
-| `retryAfter`       | Integer | N        | Time to wait between retries in milliseconds                                                                             |
-| `autocreate`       | Boolean | N        | If set to `true`, container will be created automatically (default: `true`)                                              |
-| `connectionPolicy` | Object  | N        | Connection policy settings (see: [`connectionPolicy`](#connectionpolicy))                                                 |
+| Parameter          | Type    | Required | Description                                                                                                     |
+| ------------------ | ------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `endpoint`         | String  | N        | The CosmosDB endpoint URL (default: `""`)                                                                       |
+| `key`              | String  | N        | The primary or secondary key for your CosmosDB account                                                          |
+| `partitionKey`     | String  | N        | The partition key path for the container                                                                        |
+| `consistencyLevel` | String  | N        | Consistency level: `Strong`, `BoundedStaleness`, `Session`, `Eventual`, `ConsistentPrefix` (default: `Session`) |
+| `retryAfter`       | Integer | N        | Time to wait between retries in milliseconds                                                                    |
+| `autocreate`       | Boolean | N        | If set to `true`, container will be created automatically (default: `true`)                                     |
+| `connectionPolicy` | Object  | N        | Connection policy settings (see: [`connectionPolicy`](#connectionpolicy))                                       |
 
 #### `connectionPolicy`
 
 Optional nested object for configuring the CosmosDB client connection policy.
 
-| Parameter                            | Type    | Required | Description                                                                   |
-| ------------------------------------ | ------- | -------- | ----------------------------------------------------------------------------- |
-| `requestTimeout`                     | Integer | N        | Request timeout in milliseconds (default: `5000`)                             |
-| `maxRetryAttemptsOnThrottledRequests`| Integer | N        | Maximum number of retries for throttled requests                              |
-| `maxRetryWaitTimeOnThrottledRequests`| Integer | N        | Maximum wait time in milliseconds between retries for throttled requests      |
-| `enableEndpointDiscovery`            | Boolean | N        | Enable endpoint discovery for multi-region accounts                           |
-| `preferredLocations`                 | Array   | N        | List of preferred regions for multi-region CosmosDB accounts                  |
+| Parameter                             | Type    | Required | Description                                                              |
+| ------------------------------------- | ------- | -------- | ------------------------------------------------------------------------ |
+| `requestTimeout`                      | Integer | N        | Request timeout in milliseconds (default: `5000`)                        |
+| `maxRetryAttemptsOnThrottledRequests` | Integer | N        | Maximum number of retries for throttled requests                         |
+| `maxRetryWaitTimeOnThrottledRequests` | Integer | N        | Maximum wait time in milliseconds between retries for throttled requests |
+| `enableEndpointDiscovery`             | Boolean | N        | Enable endpoint discovery for multi-region accounts                      |
+| `preferredLocations`                  | Array   | N        | List of preferred regions for multi-region CosmosDB accounts             |
 
 **Example:**
 
@@ -423,17 +423,17 @@ When you perform Insert and Update, only fields `name` and `content` can be modi
 #### `files`
 
 The `files` mode enables treating files as data. Files content is returned as data.
-Files can be in various formats such as JSON, CSV, XLS, etc.
+Files can be in various formats such as JSON, CSV, XLSX, etc.
 Each file can have its own associated content type with optional parameters for customizing the content type settings.
 
 **Optional parameters:**
 
-| Parameter      | Type    | Required | Description                                                                                                                                                                                    |
-| -------------- | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `storage-mode` | String  | Y        | Set to `files` to work with files as data                                                                                                                                                      |
-| `storage-type` | String  | Y        | The storage where the files are stored, see: [Storage Types](#storage-types)                                                                                                                   |
-| `content`      | Object  | Y        | Contains pattern of files and associated content type, including JSON, CSV, and XLS, with optional parameters for customizing the content type settings., see: [Content Types](#content-types) |
-| `autocreate`   | Boolean | N        | if set to `true`, when interacting with entities that do not exist, files with same entity name will be created automatically (default: `false`)                                               |
+| Parameter      | Type    | Required | Description                                                                                                                                                                                     |
+| -------------- | ------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `storage-mode` | String  | Y        | Set to `files` to work with files as data                                                                                                                                                       |
+| `storage-type` | String  | Y        | The storage where the files are stored, see: [Storage Types](#storage-types)                                                                                                                    |
+| `content`      | Object  | Y        | Contains pattern of files and associated content type, including JSON, CSV, and XLSX, with optional parameters for customizing the content type settings., see: [Content Types](#content-types) |
+| `autocreate`   | Boolean | N        | if set to `true`, when interacting with entities that do not exist, files with same entity name will be created automatically (default: `false`)                                                |
 
 **Example:**
 
@@ -501,11 +501,11 @@ sources:
   my-azure-blob-files:
     provider: storage
     options:
-      storage-mode: files
-      storage-type: azure-blob
-      connection-string: DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=accountKey;EndpointSuffix=core.windows.net
-      container: datacontainer1
-      autocreate: true
+      storage-mode: files  
+      storage-type: azure-blob    # [!code highlight]
+      connection-string: DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=accountKey;EndpointSuffix=core.windows.net    # [!code highlight]
+      container: datacontainer1    # [!code highlight]
+      autocreate: true    # [!code highlight]
       …
 ```
 
@@ -531,11 +531,10 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      storage-type: azure-file
-      connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
-      share-name: myshare
-      folder: /path/to/files
-      …
+      storage-type: azure-file    # [!code highlight]
+      connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"    # [!code highlight]
+      share-name: myshare    # [!code highlight]
+      folder: /path/to/files    # [!code highlight]
 ```
 
 #### `azure-datalake` (Azure Data Lake Storage Gen2) <Badge type="info" text="v0.5+" />
@@ -559,10 +558,10 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      storage-type: azure-datalake
-      connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"
-      container: mycontainer
-      autocreate: true
+      storage-type: azure-datalake    # [!code highlight]
+      connection-string: "DefaultEndpointsProtocol=https;AccountName=mystorageaccount;AccountKey=accountkey;EndpointSuffix=core.windows.net"    # [!code highlight]
+      container: mycontainer    # [!code highlight]
+      autocreate: true    # [!code highlight]
       …
 ```
 
@@ -591,15 +590,14 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      storage-type: aws-s3
-      region: us-east-1
-      bucket: your-bucket-name
-      access-key-id: your-access-key-id  # Optional - can use IAM roles
-      secret-access-key: your-secret-access-key  # Optional - can use IAM roles
-      endpoint: http://127.0.0.1:9000  # Optional for S3-compatible services
-      profile: my-aws-profile  # Optional - use AWS profile
-      autocreate: true
-      …
+      storage-type: aws-s3    # [!code highlight]
+      region: us-east-1    # [!code highlight]
+      bucket: your-bucket-name    # [!code highlight]
+      access-key-id: your-access-key-id      # [!code highlight]
+      secret-access-key: your-secret-access-key      # [!code highlight]
+      endpoint: http://127.0.0.1:9000      # [!code highlight]
+      profile: my-aws-profile      # [!code highlight]
+      autocreate: true    # [!code highlight]
 ```
 
 **Authentication Methods:**
@@ -629,9 +627,8 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      storage-type: fs
-      folder: ./data/
-      …
+      storage-type: fs    # [!code highlight]
+      folder: ./data/    # [!code highlight]
 ```
 
 #### `ftp` (FTP Server) <Badge type="info" text="v0.5+" />
@@ -659,13 +656,12 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      storage-type: ftp
-      host: ftp.server.com
-      port: 21
-      user: ftpuser
-      password: ftppass
-      folder: /
-      …
+      storage-type: ftp    # [!code highlight]
+      host: ftp.server.com    # [!code highlight]
+      port: 21    # [!code highlight]
+      user: ftpuser    # [!code highlight]
+      password: ftppass    # [!code highlight]
+      folder: /    # [!code highlight]
 ```
 
 #### `sftp` (SFTP Server) <Badge type="info" text="v0.5+" />
@@ -699,13 +695,12 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      storage-type: sftp
-      host: sftp.server.com
-      port: 22
-      user: sftpuser
-      password: sftppass
-      folder: /
-      …
+      storage-type: sftp    # [!code highlight]
+      host: sftp.server.com    # [!code highlight]
+      port: 22    # [!code highlight]
+      user: sftpuser    # [!code highlight]
+      password: sftppass    # [!code highlight]
+      folder: /    # [!code highlight]
 ```
 
 **Example with Private Key Authentication:**
@@ -716,22 +711,21 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      storage-type: sftp
-      host: sftp.server.com
-      port: 22
-      user: sftpuser
-      private-key: |
+      storage-type: sftp    # [!code highlight]
+      host: sftp.server.com    # [!code highlight]
+      port: 22    # [!code highlight]
+      user: sftpuser    # [!code highlight]
+      private-key: |    # [!code highlight]
         -----BEGIN RSA PRIVATE KEY-----
         MIIEpAIBAAKCAQEA...
         -----END RSA PRIVATE KEY-----
-      passphrase: my-secret-passphrase
-      folder: /data
-      …
+      passphrase: my-secret-passphrase    # [!code highlight]
+      folder: /data    # [!code highlight]
 ```
 
 ### `content` <Badge type="default" text="v0.3+" />
 
-Content types can be set with the parameter `options.content` where you can associate a content type to a file pattern, as shown in the example below. This feature allows for flexible data processing and supports various file formats, including JSON, CSV, XLS, and Parquet.
+Content types can be set with the parameter `options.content` where you can associate a content type to a file pattern, as shown in the example below. This feature allows for flexible data processing and supports various file formats, including JSON, CSV, XLSX, and Parquet.
 
 It acts also as a filter to determine the list of files to process (see: [REST API Entity Listing](rest-api#get)). By specifying the content type for each file pattern, you can efficiently manage and process your data.
 
@@ -743,18 +737,17 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      content:
-        "*.json":
-          content-type: json
-        "*.csv":
-          content-type: csv
-        "sample_*.xlsx":
-          content-type: xls
-          xls-sheet: Sheet2
-        "my-other-files_*.xlsx":
-          content-type: xls
-          xls-sheet: Sheet1
-      …
+      content:    # [!code highlight]
+        "*.json":    # [!code highlight]
+          content-type: json    # [!code highlight]
+        "*.csv":    # [!code highlight]
+          content-type: csv    # [!code highlight]
+        "sample_*.xlsx":    # [!code highlight]
+          content-type: xlsx    # [!code highlight]
+          xlsx-sheet: Sheet2    # [!code highlight]
+        "my-other-files_*.xlsx":    # [!code highlight]
+          content-type: xlsx    # [!code highlight]
+          xlsx-sheet: Sheet1    # [!code highlight]
 ```
 
 List of managed content types:
@@ -763,7 +756,7 @@ List of managed content types:
 | --------- | ------------------------ | ------------------------------------- |
 | `json`    | JSON files               | <Badge type="default" text="v0.3+" /> |
 | `csv`     | CSV files                | <Badge type="default" text="v0.3+" /> |
-| `xls`     | XLSX files (Excel 2007+) | <Badge type="default" text="v0.3+" /> |
+| `xlsx`    | XLSX files (Excel 2007+) | <Badge type="info" text="v0.5+" />    |
 | `xml`     | XML files                | <Badge type="default" text="v0.4+" /> |
 | `parquet` | Parquet files            | <Badge type="info" text="v0.5+" />    |
 
@@ -783,10 +776,10 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      content:
-        "*.json":
-          content-type: json
-          json-path: rows
+      content:    # [!code highlight]
+        "*.json":    # [!code highlight]
+          content-type: json    # [!code highlight]
+          json-path: rows    # [!code highlight]
       …
 ```
 
@@ -808,44 +801,43 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      content:
-        "*.csv":
-          content-type: csv
-          csv-delimiter: ","
-          csv-newline: "\n"
-          csv-header: true
-          csv-quote: "\""
+      content:    # [!code highlight]
+        "*.csv":    # [!code highlight]
+          content-type: csv    # [!code highlight]
+          csv-delimiter: ","    # [!code highlight]
+          csv-newline: "\n"    # [!code highlight]
+          csv-header: true    # [!code highlight]
+          csv-quote: "\""    # [!code highlight]
       …
 ```
 
-#### `xls` <Badge type="default" text="v0.3+" />
+#### `xlsx` <Badge type="info" text="v0.5+" />
 
 ::: tip ℹ️ NOTE
 Only XLSX files created with Excel 2007 and later are supported.
 :::
 
-| Parameter           | Type    | Description                                                      |
-| ------------------- | ------- | ---------------------------------------------------------------- |
-| `xls-sheet`         | String  | Specify which sheet to use, default first sheet.                 |
-| `xls-starting-cell` | String  | Specify the starting cell (e.g., `"B2"`), default `"A1"`.        |
-| `xls-default`       | Any     | Default value for empty cells, default `null`.                   |
-| `xls-parse-dates`   | Boolean | Parse dates from cells, default `false`.                         |
-| `xls-date-format`   | String  | Specify the date format for parsing dates, default: `dd/mm/yyyy` |
+| Parameter            | Type    | Description                                                      |
+| -------------------- | ------- | ---------------------------------------------------------------- |
+| `xlsx-sheet`         | String  | Specify which sheet to use, default first sheet.                 |
+| `xlsx-starting-cell` | String  | Specify the starting cell (e.g., `"B2"`), default `"A1"`.        |
+| `xlsx-default`       | Any     | Default value for empty cells, default `null`.                   |
+| `xlsx-parse-dates`   | Boolean | Parse dates from cells, default `false`.                         |
+| `xlsx-date-format`   | String  | Specify the date format for parsing dates, default: `dd/mm/yyyy` |
 
 **Example:**
 
 ```yaml
 sources:
-  my-xls-files:
+  my-xlsx-files:
     provider: storage
     options:
       storage-mode: files
-      content:
-        "*.xlsx":
-          content-type: xls
-          xls-sheet: Sheet1
-          xls-starting-cell: E6
-      …
+      content:    # [!code highlight]
+        "*.xlsx":    # [!code highlight]
+          content-type: xlsx    # [!code highlight]
+          xlsx-sheet: Sheet1    # [!code highlight]
+          xlsx-starting-cell: E6    # [!code highlight]
 ```
 
 #### `xml` <Badge type="default" text="v0.4+" />
@@ -865,13 +857,13 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      content:
-        "*.xml":
-          content-type: xml
-          xml-path: data
-          xml-ignore-attributes: false
-          xml-attribute-prefix: "@"
-          xml-remove-ns-prefix: true
+      content:    # [!code highlight]
+        "*.xml":    # [!code highlight]
+          content-type: xml    # [!code highlight]
+          xml-path: data    # [!code highlight]
+          xml-ignore-attributes: false    # [!code highlight]
+          xml-attribute-prefix: "@"    # [!code highlight]
+          xml-remove-ns-prefix: true    # [!code highlight]
 ```
 
 #### `parquet` <Badge type="info" text="v0.5+" />
@@ -890,10 +882,10 @@ sources:
     provider: storage
     options:
       storage-mode: files
-      content:
-        "*.parquet":
-          content-type: parquet
-          parquet-utf8: true
+      content:    # [!code highlight]
+        "*.parquet":    # [!code highlight]
+          content-type: parquet    # [!code highlight]
+          parquet-utf8: true    # [!code highlight]
 ```
 
 ## WebService <Badge type="default" text="v0.4+" />
@@ -999,8 +991,8 @@ rest-dog: # https://dog.ceo/dog-api/documentation/
     type: rest
     endpoints:
       collection-read: # [!code highlight]
-        get: /breeds/list/all# [!code highlight]
-        response: message# [!code highlight]
+        get: /breeds/list/all   # [!code highlight]
+        response: message   # [!code highlight]
 ```
 
 #### `item-create`

@@ -163,9 +163,9 @@ Browse, configure, and virtualize Data Sources.
    />
 
 <FeatureCard 
-  title="XLS" 
+  title="XLSX" 
   image="/logo/xls.svg" 
-  link="/documentation/data-providers-config.html#xls"
+  link="/documentation/data-providers-config.html#xlsx"
    />
 </div>
 

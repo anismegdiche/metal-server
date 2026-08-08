@@ -42,11 +42,11 @@ sources:
           csv-header: true
           csv-quote: '"'
         "ref*.xlsx":
-          content-type: xls
-          xls-sheet: Feuil1
+          content-type: xlsx
+          xlsx-sheet: Feuil1
         "sample*.xlsx":
-          content-type: xls
-          xls-starting-cell: E6
+          content-type: xlsx
+          xlsx-starting-cell: E6
   src-azure-blob:
     provider: storage
     options:

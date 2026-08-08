@@ -18,10 +18,10 @@ import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { Sandbox } from "../../sandbox/Sandbox"
 import type { TContext } from "../../sandbox/types/TContext"
 import { absContentProvider } from "../base/absContentProvider"
-import { type U__source_options_content_xls, z_U__source_options_content_xls } from "../types/U__source_options_content_xls"
+import { type U__source_options_content_xlsx, z_U__source_options_content_xlsx } from "../types/U__source_options_content_xlsx"
 
 //
-export const z_T_XlsContentParams = z.object({
+export const z_T_XlsxContentParams = z.object({
 	sheet: z.string().optional(),
 	startingCell: z.string().optional(),
 	default: z.union([z.number(), z.string(), z.null()]).optional(),
@@ -29,7 +29,7 @@ export const z_T_XlsContentParams = z.object({
 	dateFormat: z.string().optional(),
 })
 
-export type T_XlsContentParams = z.infer<typeof z_T_XlsContentParams>
+export type T_XlsxContentParams = z.infer<typeof z_T_XlsxContentParams>
 
 // Convert column letter (e.g., 'A', 'B', 'AA') to a column number
 export function ColumnLetterToNumber(letter: string): number {
@@ -44,34 +44,34 @@ export function ColumnLetterToNumber(letter: string): number {
 }
 
 //
-export class XlsContent extends absContentProvider {
-	Params: T_XlsContentParams | undefined
+export class XlsxContent extends absContentProvider {
+	Params: T_XlsxContentParams | undefined
 
-	DEFAULT: Partial<U__source_options_content_xls> = {
-		"xls-parse-dates": false,
-		"xls-default": null,
-		"xls-date-format": "dd/mm/yyyy",
-		"xls-starting-cell": "A1",
+	DEFAULT: Partial<U__source_options_content_xlsx> = {
+		"xlsx-parse-dates": false,
+		"xlsx-default": null,
+		"xlsx-date-format": "dd/mm/yyyy",
+		"xlsx-starting-cell": "A1",
 	}
 
-	SetConfig(contentConfig: U__source_options_content_xls): void {
+	SetConfig(contentConfig: U__source_options_content_xlsx): void {
 		super.SetConfig(contentConfig)
-		this.Config = merge(this.DEFAULT, this.Config) as U__source_options_content_xls
+		this.Config = merge(this.DEFAULT, this.Config) as U__source_options_content_xlsx
 		this.Params = {
-			sheet: this.Config["xls-sheet"],
-			parseDates: this.Config["xls-parse-dates"],
-			default: this.Config["xls-default"],
-			dateFormat: this.Config["xls-date-format"],
-			startingCell: this.Config["xls-starting-cell"],
+			sheet: this.Config["xlsx-sheet"],
+			parseDates: this.Config["xlsx-parse-dates"],
+			default: this.Config["xlsx-default"],
+			dateFormat: this.Config["xlsx-date-format"],
+			startingCell: this.Config["xlsx-starting-cell"],
 		}
 	}
 
 	@Logger.LogFunction()
 	InitContent(entity: string, content: Readable): void {
 		this.EntityName = entity
-		Assert.Var<U__source_options_content_xls>(
+		Assert.Var<U__source_options_content_xlsx>(
 			this.Config,
-			z_U__source_options_content_xls.safeParse(this.Config).success,
+			z_U__source_options_content_xlsx.safeParse(this.Config).success,
 			"Config is not defined",
 		)
 
@@ -80,21 +80,21 @@ export class XlsContent extends absContentProvider {
 
 	@Logger.LogFunction(["$context"])
 	async Get(rowsParams: TRowsCopyParams, $context?: Partial<TContext>): Promise<DataTable> {
-		Assert.Var<T_XlsContentParams>(
+		Assert.Var<T_XlsxContentParams>(
 			this.Params,
-			z_T_XlsContentParams.safeParse(this.Params).success,
+			z_T_XlsxContentParams.safeParse(this.Params).success,
 			"Params is not defined",
 		)
 
 		Assert.Var<VirtualFileSystem>(this.Content, VirtualFileSystem.Is(this.Content), "Content is not defined")
 
 		const workbook = new ExcelJS.Workbook()
-		Logger.Debug("XlsContent.Get: reading stream")
+		Logger.Debug("XlsxContent.Get: reading stream")
 		await workbook.xlsx.read(this.Content.ReadFile(this.EntityName))
 
-		const $__evalParams = PlaceHolder.EvaluateJsCode<T_XlsContentParams>(this.Params, new Sandbox($context))
+		const $__evalParams = PlaceHolder.EvaluateJsCode<T_XlsxContentParams>(this.Params, new Sandbox($context))
 
-		Logger.Debug("XlsContent.Get: Converting")
+		Logger.Debug("XlsxContent.Get: Converting")
 
 		Assert.Var<Worksheet>(workbook.worksheets[0], "Sheet is not defined")
 
@@ -139,16 +139,16 @@ export class XlsContent extends absContentProvider {
 				rows.push(row)
 			}
 		})
-		Logger.Debug("XlsContent.Get: Exporting")
+		Logger.Debug("XlsxContent.Get: Exporting")
 		using dataTable = new DataTable(this.EntityName, rows)
 		return dataTable.Copy(this.EntityName, rowsParams)
 	}
 
 	@Logger.LogFunction(true)
 	async Set(data: DataTable, $context?: Partial<TContext>): Promise<Readable> {
-		Assert.Var<T_XlsContentParams>(
+		Assert.Var<T_XlsxContentParams>(
 			this.Params,
-			z_T_XlsContentParams.safeParse(this.Params).success,
+			z_T_XlsxContentParams.safeParse(this.Params).success,
 			"Params is not defined",
 		)
 
@@ -158,10 +158,10 @@ export class XlsContent extends absContentProvider {
 
 		// Try to read the existing file, but create a new workbook if it fails
 		await workbook.xlsx.read(this.Content.ReadFile(this.EntityName)).catch(() => {
-			Logger.Warn("XlsContent.Set: Could not read existing file, creating new workbook")
+			Logger.Warn("XlsxContent.Set: Could not read existing file, creating new workbook")
 		})
 
-		const $__evalParams = PlaceHolder.EvaluateJsCode<T_XlsContentParams>(this.Params, new Sandbox($context))
+		const $__evalParams = PlaceHolder.EvaluateJsCode<T_XlsxContentParams>(this.Params, new Sandbox($context))
 
 		const sheetName = $__evalParams?.sheet ?? workbook.worksheets[0]?.name ?? "Sheet1"
 		let worksheet = workbook.getWorksheet(sheetName)

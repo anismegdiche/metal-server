@@ -17,8 +17,8 @@ export class ContentProvider {
 		[CONTENT.CSV]: {
 			import: () => import("./providers/CsvContent").then((m) => m.CsvContent),
 		},
-		[CONTENT.XLS]: {
-			import: () => import("./providers/XlsContent").then((m) => m.XlsContent),
+		[CONTENT.XLSX]: {
+			import: () => import("./providers/XlsxContent").then((m) => m.XlsxContent),
 		},
 		[CONTENT.XML]: {
 			import: () => import("./providers/XmlContent").then((m) => m.XmlContent),

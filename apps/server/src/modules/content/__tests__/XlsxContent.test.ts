@@ -1,10 +1,10 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: testing */
 import { Readable } from "node:stream"
 import * as ExcelJS from "exceljs"
-import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
+import { HttpErrorInternalServerError } from "../../errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
 import { CONTENT } from "../@consts"
-import { ColumnLetterToNumber, type T_XlsContentParams, XlsContent } from "../providers/XlsContent"
+import { ColumnLetterToNumber, type T_XlsxContentParams, XlsxContent } from "../providers/XlsxContent"
 
 
 const crc32Table = new Uint32Array(256).map((_, i) => {
@@ -55,8 +55,8 @@ async function createMockWorkbook(data: any[][]): Promise<Buffer> {
 	return buffer as unknown as Buffer<ArrayBufferLike>
 }
 
-describe("XlsContent", () => {
-	let xlsContent: XlsContent
+describe("XlsxContent", () => {
+	let xlsxContent: XlsxContent
 	let mockWorkbookBuffer: Buffer
 
 	beforeEach(async () => {
@@ -68,24 +68,24 @@ describe("XlsContent", () => {
 		]
 		mockWorkbookBuffer = await createMockWorkbook(mockData)
 
-		// Setup XlsContent
-		xlsContent = new XlsContent()
-		xlsContent.SetConfig({
-			"content-type": CONTENT.XLS,
+		// Setup XlsxContent
+		xlsxContent = new XlsxContent()
+		xlsxContent.SetConfig({
+			"content-type": CONTENT.XLSX,
 		})
 	}, 300_000)
 
 	describe("Init", () => {
 		it("should initialize with default parameters", async () => {
 			const inputStream = createReadableStream(mockWorkbookBuffer)
-			xlsContent.Config = {
-				"content-type": CONTENT.XLS,
+			xlsxContent.Config = {
+				"content-type": CONTENT.XLSX,
 			}
 
-			xlsContent.InitContent("testEntity", inputStream)
+			xlsxContent.InitContent("testEntity", inputStream)
 
-			expect(xlsContent.EntityName).toBe("testEntity")
-			expect(xlsContent.Params).toEqual({
+			expect(xlsxContent.EntityName).toBe("testEntity")
+			expect(xlsxContent.Params).toEqual({
 				sheet: undefined,
 				parseDates: false,
 				default: null,
@@ -96,18 +96,18 @@ describe("XlsContent", () => {
 
 		it("should initialize with custom parameters", async () => {
 			const inputStream = createReadableStream(mockWorkbookBuffer)
-			xlsContent.SetConfig({
-				"content-type": CONTENT.XLS,
-				"xls-sheet": "Sheet1",
-				"xls-parse-dates": true,
-				"xls-default": 0,
-				"xls-date-format": "yyyy-mm-dd",
-				"xls-starting-cell": "B2",
+			xlsxContent.SetConfig({
+				"content-type": CONTENT.XLSX,
+				"xlsx-sheet": "Sheet1",
+				"xlsx-parse-dates": true,
+				"xlsx-default": 0,
+				"xlsx-date-format": "yyyy-mm-dd",
+				"xlsx-starting-cell": "B2",
 			})
 
-			xlsContent.InitContent("testEntity", inputStream)
+			xlsxContent.InitContent("testEntity", inputStream)
 
-			expect(xlsContent.Params).toEqual({
+			expect(xlsxContent.Params).toEqual({
 				sheet: "Sheet1",
 				parseDates: true,
 				default: 0,
@@ -120,21 +120,21 @@ describe("XlsContent", () => {
 	describe("Get", () => {
 		beforeEach(async () => {
 			const inputStream = createReadableStream(mockWorkbookBuffer)
-			xlsContent.Config = {
-				"content-type": CONTENT.XLS,
-				"xls-sheet": "Sheet1",
-				"xls-starting-cell": "A1",
+			xlsxContent.Config = {
+				"content-type": CONTENT.XLSX,
+				"xlsx-sheet": "Sheet1",
+				"xlsx-starting-cell": "A1",
 			}
-			xlsContent.InitContent("testEntity", inputStream)
+			xlsxContent.InitContent("testEntity", inputStream)
 		})
 
 		it("should throw error if Params is not defined", async () => {
-			xlsContent.Params = undefined as unknown as T_XlsContentParams
-			await expect(xlsContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
+			xlsxContent.Params = undefined as unknown as T_XlsxContentParams
+			await expect(xlsxContent.Get({}, {})).rejects.toThrow(HttpErrorInternalServerError)
 		})
 
 		it("should parse Excel data correctly", async () => {
-			const result = await xlsContent.Get({}, {})
+			const result = await xlsxContent.Get({}, {})
 
 			expect(result).toBeInstanceOf(DataTable)
 
@@ -148,7 +148,7 @@ describe("XlsContent", () => {
 		})
 
 		it("should handle SQL queries", async () => {
-			const result = await xlsContent.Get(
+			const result = await xlsxContent.Get(
 				{
 					filter: "Age > 25",
 				},
@@ -165,12 +165,12 @@ describe("XlsContent", () => {
 
 		beforeEach(async () => {
 			const inputStream = createReadableStream(mockWorkbookBuffer)
-			xlsContent.Config = {
-				"content-type": CONTENT.XLS,
-				"xls-sheet": "Sheet1",
-				"xls-starting-cell": "A1",
+			xlsxContent.Config = {
+				"content-type": CONTENT.XLSX,
+				"xlsx-sheet": "Sheet1",
+				"xlsx-starting-cell": "A1",
 			}
-			xlsContent.InitContent("testEntity", inputStream)
+			xlsxContent.InitContent("testEntity", inputStream)
 
 			mockDataTable = new DataTable("testEntity", [
 				{
@@ -182,8 +182,8 @@ describe("XlsContent", () => {
 		})
 
 		it("should throw error if Params is not defined", async () => {
-			xlsContent.Params = undefined as unknown as T_XlsContentParams
-			await expect(xlsContent.Set(mockDataTable, {})).rejects.toThrow(HttpErrorInternalServerError)
+			xlsxContent.Params = undefined as unknown as T_XlsxContentParams
+			await expect(xlsxContent.Set(mockDataTable, {})).rejects.toThrow(HttpErrorInternalServerError)
 		})
 
 		it("should write data to Excel correctly", async () => {
@@ -313,12 +313,12 @@ describe("XlsContent", () => {
 			})
 
 			// Initialize the content with the mock Excel file
-			xlsContent.Content.UploadFile("testEntity", mockExcelContent)
+			xlsxContent.Content.UploadFile("testEntity", mockExcelContent)
 
-			const result = await xlsContent.Set(mockDataTable, {})
+			const result = await xlsxContent.Set(mockDataTable, {})
 
 			expect(result).toBeInstanceOf(Readable)
-			expect(xlsContent.Content.Files.testEntity).toBeDefined()
+			expect(xlsxContent.Content.Files.testEntity).toBeDefined()
 		})
 	})
 })

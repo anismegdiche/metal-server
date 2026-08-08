@@ -92,24 +92,24 @@ Repeating files across modules (same naming) is normal and intentional.
 
 **Actual modules in `src/modules/`:** `ai-engine`, `api`, `apikey`, `auth`, `cache`, `content`, `core`, `errors`, `mcp`, `metrics`, `plan`, `sandbox`, `schema`, `source`, `storage`, `webservice`.
 
-| Module | base/ | providers/ | routes/ | response/ | __tests__/ |
-|---|---|---|---|---|---|
-| ai-engine | I + abs | `engine/` + `docker-services/` | — | — | yes |
-| api | — | — | yes | yes | — |
-| apikey | — | — | yes | yes | yes |
-| auth | I + abs | yes (demo/local/oidc) | via `_hook.ts` | — | yes |
-| cache | — | — | yes | yes | yes |
-| content | I + abs | yes (csv/json/xls/xml/parquet) | — | — | yes |
-| core | IConfigStore only | — | yes | yes | yes |
-| errors | — | — | — | — | yes |
-| mcp | — | — | yes | — | yes |
-| metrics | — | — | yes | yes | — |
-| plan | — | — | yes | yes | yes |
-| sandbox | — | — | — | — | yes |
-| schema | — | — | yes | yes | yes |
-| source | I + abs | yes | — | — | yes |
-| storage | I + abs | yes | — | — | yes |
-| webservice | I + abs | yes (rest/soap) | — | — | yes |
+| Module     | base/             | providers/                      | routes/        | response/ | __tests__/ |
+| ---------- | ----------------- | ------------------------------- | -------------- | --------- | ---------- |
+| ai-engine  | I + abs           | `engine/` + `docker-services/`  | —              | —         | yes        |
+| api        | —                 | —                               | yes            | yes       | —          |
+| apikey     | —                 | —                               | yes            | yes       | yes        |
+| auth       | I + abs           | yes (demo/local/oidc)           | via `_hook.ts` | —         | yes        |
+| cache      | —                 | —                               | yes            | yes       | yes        |
+| content    | I + abs           | yes (csv/json/xlsx/xml/parquet) | —              | —         | yes        |
+| core       | IConfigStore only | —                               | yes            | yes       | yes        |
+| errors     | —                 | —                               | —              | —         | yes        |
+| mcp        | —                 | —                               | yes            | —         | yes        |
+| metrics    | —                 | —                               | yes            | yes       | —          |
+| plan       | —                 | —                               | yes            | yes       | yes        |
+| sandbox    | —                 | —                               | —              | —         | yes        |
+| schema     | —                 | —                               | yes            | yes       | yes        |
+| source     | I + abs           | yes                             | —              | —         | yes        |
+| storage    | I + abs           | yes                             | —              | —         | yes        |
+| webservice | I + abs           | yes (rest/soap)                 | —              | —         | yes        |
 
 ---
 
@@ -126,19 +126,19 @@ Repeating files across modules (same naming) is normal and intentional.
 
 ## 3. Naming Conventions
 
-| Kind | Convention | Examples |
-|------|-----------|---------|
-| Enums | ALL_CAPS_SNAKE | `DATA_PROVIDER.POSTGRES`, `STEP.SELECT`, `STEP_STATUS.SUCCESS`, `STORAGE_TYPE.AWS_S3`, `AUTH_PROVIDER.OIDC` |
-| Zod schemas (plan/global) | `z_U__<scope>_<name>` | `z_U__plans_plan`, `z_U__plans_plan_insert_Params` |
-| Inferred types | `U__<scope>_<name>` | `U__plans_plan`, `U__plans_plan__step` |
-| Config/engine schemas | `z_T__<name>` / `T__<name>` | `z_T__ai_engines_ai_engine`, `z_T__ai_engines` |
-| Schema request types | `TSchemaRequest<Op>` | `TSchemaRequestSelect`, `TSchemaRequestInsert` |
-| Other types | PascalCase with `T_` prefix | `T_StepResult`, `T_StepErrorDetails`, `TContext`, `TInternalResponse` |
-| Private helpers | underscore prefix | `_schemaOperation()`, `_insertPlan()` |
-| Row-level step fns | `_<stepName>Row` | `_insertRow()`, `_pickRow()`, `_anonymizeRow()`, `_mapRow()` |
-| Constants files | `@consts.ts` | `src/modules/plan/@consts.ts` |
-| Params directories | `U__plans_params/` | Under `src/modules/plan/types/` |
-| Module `_hook.ts` | exports `RegisterMiddleware()` | `src/modules/api/_hook.ts` |
+| Kind                      | Convention                     | Examples                                                                                                    |
+| ------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Enums                     | ALL_CAPS_SNAKE                 | `DATA_PROVIDER.POSTGRES`, `STEP.SELECT`, `STEP_STATUS.SUCCESS`, `STORAGE_TYPE.AWS_S3`, `AUTH_PROVIDER.OIDC` |
+| Zod schemas (plan/global) | `z_U__<scope>_<name>`          | `z_U__plans_plan`, `z_U__plans_plan_insert_Params`                                                          |
+| Inferred types            | `U__<scope>_<name>`            | `U__plans_plan`, `U__plans_plan__step`                                                                      |
+| Config/engine schemas     | `z_T__<name>` / `T__<name>`    | `z_T__ai_engines_ai_engine`, `z_T__ai_engines`                                                              |
+| Schema request types      | `TSchemaRequest<Op>`           | `TSchemaRequestSelect`, `TSchemaRequestInsert`                                                              |
+| Other types               | PascalCase with `T_` prefix    | `T_StepResult`, `T_StepErrorDetails`, `TContext`, `TInternalResponse`                                       |
+| Private helpers           | underscore prefix              | `_schemaOperation()`, `_insertPlan()`                                                                       |
+| Row-level step fns        | `_<stepName>Row`               | `_insertRow()`, `_pickRow()`, `_anonymizeRow()`, `_mapRow()`                                                |
+| Constants files           | `@consts.ts`                   | `src/modules/plan/@consts.ts`                                                                               |
+| Params directories        | `U__plans_params/`             | Under `src/modules/plan/types/`                                                                             |
+| Module `_hook.ts`         | exports `RegisterMiddleware()` | `src/modules/api/_hook.ts`                                                                                  |
 
 ## 4. DataTable Usage
 

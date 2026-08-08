@@ -767,6 +767,54 @@ schemas:
 If `anonymize` is used in a schema and in a plan, data will be anonymized twice.
 :::
 
+## `schedules` <Badge type="info" text="v0.5+" />
+
+This section defines the scheduled execution of plans according to a Cron expression.
+
+The parameters that can be configured inside schedule are :
+
+| Name   | Type   | Required | Description                                       | Metal version                         |
+| ------ | ------ | -------- | ------------------------------------------------- | ------------------------------------- |
+| `plan` | String | Y        | name of the plan                                  | <Badge type="default" text="v0.1+" /> |
+| `cron` | String | Y        | A cron expression string, or predefined schedules | <Badge type="default" text="v0.1+" /> |
+
+**Example**
+
+> ```yaml
+> schedules:
+>   run my-plan every 5 minutes:
+>     plan: my-plan
+>     cron: "*/5 * * * *"
+> ```
+
+The cron expression supports multiple formats:
+
+- **Predefined schedules**: `@annually`, `@yearly`, `@monthly`, `@weekly`, `@daily`, `@hourly`, `@start`
+- **Interval schedules**: `@every` followed by duration (e.g., `@every 1h30m`, `@every 2s`, `@every 500ms`)
+- **Standard cron expressions**: 5-7 field cron format (e.g., `*/5 * * * *`, `0 9 * * 1-5`)
+
+**Examples:**
+
+> ```yaml
+> schedules:
+>   "run at startup":
+>     plan: my-plan
+>     cron: "@start"
+>
+>   "run every hour":
+>     plan: my-plan
+>     cron: "@hourly"
+>
+>   "run every 30 minutes":
+>     plan: my-plan
+>     cron: "@every 30m"
+>
+>   "run weekdays at 9 AM":
+>     plan: my-plan
+>     cron: "0 9 * * 1-5"
+> ```
+
+
 ## `plans` <Badge type="info" text="v0.5+" />
 
 ::: warning ⚠️ Breaking changes!
@@ -1698,51 +1746,4 @@ This step removes all data from the current plan, clears all variables, and rese
 >   my-plan:
 >     steps:
 >       - clear:
-> ```
-
-## `schedules` <Badge type="info" text="v0.5+" />
-
-This section defines the scheduled execution of plans according to a Cron expression.
-
-The parameters that can be configured inside schedule are :
-
-| Name   | Type   | Required | Description                                       | Metal version                         |
-| ------ | ------ | -------- | ------------------------------------------------- | ------------------------------------- |
-| `plan` | String | Y        | name of the plan                                  | <Badge type="default" text="v0.1+" /> |
-| `cron` | String | Y        | A cron expression string, or predefined schedules | <Badge type="default" text="v0.1+" /> |
-
-**Example**
-
-> ```yaml
-> schedules:
->   run my-plan every 5 minutes:
->     plan: my-plan
->     cron: "*/5 * * * *"
-> ```
-
-The cron expression supports multiple formats:
-
-- **Predefined schedules**: `@annually`, `@yearly`, `@monthly`, `@weekly`, `@daily`, `@hourly`, `@start`
-- **Interval schedules**: `@every` followed by duration (e.g., `@every 1h30m`, `@every 2s`, `@every 500ms`)
-- **Standard cron expressions**: 5-7 field cron format (e.g., `*/5 * * * *`, `0 9 * * 1-5`)
-
-**Examples:**
-
-> ```yaml
-> schedules:
->   "run at startup":
->     plan: my-plan
->     cron: "@start"
->
->   "run every hour":
->     plan: my-plan
->     cron: "@hourly"
->
->   "run every 30 minutes":
->     plan: my-plan
->     cron: "@every 30m"
->
->   "run weekdays at 9 AM":
->     plan: my-plan
->     cron: "0 9 * * 1-5"
 > ```

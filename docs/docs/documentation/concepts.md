@@ -19,10 +19,18 @@ In the realm of Metal, several key concepts facilitate effective data management
 Metal's comprehensive feature set empowers developers while simplifying CRUD operations and enabling efficient integration across various database systems. By harnessing the power of artificial intelligence for advanced insights, Metal transforms how organizations approach database management and data transformation.
 
 
-**Source**
+## Source
 
-The source represents the wellspring of data in Metal's ecosystem. It can take the form of a DBMS, be it SQL or NoSQL, a JSON file, or even a flat file. The source serves as the initial gateway through which data enters the Metal framework.
+::: half
+The source represents the wellspring of data in Metal's ecosystem. 
 
+It can take the form of a DBMS, be it SQL or NoSQL, a JSON file, or even a flat file. 
+
+The source serves as the initial gateway through which data enters the Metal framework.
+
+:::
+
+::: half
 ```mermaid
 graph LR
     Source(Source) -- Connect --> DBMS(DBMS)
@@ -31,59 +39,109 @@ graph LR
     Source(Source) -- Execute --> Plans(Plans)
 ```
 
-**Schema**
+:::
 
-The schema, in Metal's context, acts as the facade that encompasses the database structure exposed to users. It provides a standardized and unified representation of the underlying data, simplifying the interaction and understanding of the database's structure.
+## Schema
 
+::: half
+The schema, in Metal's context, acts as the facade that encompasses the database structure exposed to users. 
+
+It provides a standardized and unified representation of the underlying data, simplifying the interaction and understanding of the database's structure.
+
+:::
+
+::: half
 ```mermaid
-graph LR
+graph TD
     Schema(Schema) -- Connect --> Sources(Sources)
     Schema(Schema) -- Expose --> Entities(Entities)
 ```
 
+:::
 
-**Entity**
+## Entity
 
-Entities, akin to tables in traditional database terminology, are the building blocks of data organization within Metal. These entities represent distinct sets of related information and serve as the fundamental units for data management and retrieval.
+::: half
+Entities, akin to tables in traditional database terminology, are the building blocks of data organization within Metal. 
 
+These entities represent distinct sets of related information and serve as the fundamental units for data management and retrieval.
+
+:::
+
+::: half
 ```mermaid
-graph LR
+graph TD
     Schema(Schema) -- Parent --> Entities(Entities)
 ```
 
-**Field**
+:::
 
-Fields, equivalent to columns in conventional databases, are the individual data attributes that make up an entity. They define the characteristics and properties of the data, enabling precise and granular data manipulation within Metal.
+## Field
 
+::: half
+Fields, equivalent to columns in conventional databases, are the individual data attributes that make up an entity. 
+
+They define the characteristics and properties of the data, enabling precise and granular data manipulation within Metal.
+
+:::
+
+::: half
 ```mermaid
-graph LR
+graph TD
     Entity(Entity) -- Parent --> Fields(Fields)
 ```
 
-**Plan**
+:::
 
-Plans within Metal encapsulate a predefined sequence of steps for conducting ETL (Extraction, Transformation, Load) operations. These plans facilitate the transformation and integration of data from diverse sources into a cohesive and structured format, enabling efficient data processing and analysis.
+## Plan
 
+::: half
+Plans within Metal encapsulate a predefined sequence of steps for conducting ETL (Extraction, Transformation, Load) operations. 
+
+These plans facilitate the transformation and integration of data from diverse sources into a cohesive and structured format, enabling efficient data processing and analysis.
+
+:::
+
+::: half
 ```mermaid
-graph LR
+graph TD
     Plan(Plan) -- Parent --> Steps(Steps)
 ```
 
-**AI Engine**
+:::
 
-The AI Engine is a sophisticated component integrated into Metal's architecture. It harnesses the power of artificial intelligence to empower data-driven insights and decision-making. This engine automatically identifies patterns, trends, and anomalies within the data, enhancing the overall intelligence and functionality of the Metal platform. It acts as the catalyst for transforming raw data into strategic assets through intelligent analysis and predictive capabilities.
+## AI Engine
 
+::: half
+The AI Engine is a sophisticated component integrated into Metal's architecture. 
+
+It harnesses the power of artificial intelligence to empower data-driven insights and decision-making. 
+
+This engine automatically identifies patterns, trends, and anomalies within the data, enhancing the overall intelligence and functionality of the Metal platform. It acts as the catalyst for transforming raw data into strategic assets through intelligent analysis and predictive capabilities.
+
+:::
+
+::: half
 ```mermaid
-graph LR
+graph TD
     Step(Step) -- Run --> AI-Engine(AI Engine) -- Transform/Produce --> Data(Data)
 ```
 
-**MCP Tool**
+:::
 
-The MCP Tool exposes Metal schemas and entities to LLM clients through the Model Context Protocol. Each tool maps an LLM-friendly input shape to a schema operation (`read`, `create`, `update`, `delete`, or `list`) and is protected by role-based access control.
+## MCP Tool
 
+::: half
+The MCP Tool exposes Metal schemas and entities to LLM clients through the Model Context Protocol. 
+
+Each tool maps an LLM-friendly input shape to a schema operation (`read`, `create`, `update`, `delete`, or `list`) and is protected by role-based access control.
+
+:::
+
+::: half
 ```mermaid
-graph LR
-    LLM(LLM Client) -- JSON-RPC --> MCP(MCP Endpoint) -- Operate --> Schema(Schema) -- Access --> Data(Data)
+graph TD
+    LLM(LLM Client) -- JSON-RPC --> MCP(MCP Endpoint) -- Operate --> Schema(Schema) -- CRUD --> Data(Data)
 ```
 
+:::

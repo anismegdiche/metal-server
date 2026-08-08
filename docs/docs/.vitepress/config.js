@@ -1,7 +1,27 @@
 // .vitepress/config.js
 import { withMermaid } from "vitepress-plugin-mermaid"
+import MarkdownItContainer from "markdown-it-container"
+
+const AboutMetal = [
+	{ text: "Introduction", link: "/documentation/about" },
+	{ text: "Get Started", link: "/documentation/get-started" },
+	{ text: "What's new", link: "/documentation/whats-new" },
+	{ text: "Key Features", link: "/documentation/about#key-features" },
+	{ text: "Understanding Concepts", link: "/documentation/concepts" },
+	{ text: "Sample Project", link: "/sample-project" },
+]
 
 export default withMermaid({
+	markdown: {
+		config(md) {
+			md.use(MarkdownItContainer, "half", {
+				render(tokens, idx) {
+					if (tokens[idx].nesting === 1) return `<div class="half custom-block">\n`
+					return `</div>\n`
+				},
+			})
+		},
+	},
 	head: [
 		["link", { rel: "icon", href: "/favicon.ico" }],
 		["script", { async: "", src: "https://www.googletagmanager.com/gtag/js?id=G-8TBX91GK8B" }],
@@ -37,14 +57,7 @@ export default withMermaid({
 		nav: [
 			{
 				text: "About Metal",
-				items: [
-					{ text: "Introduction", link: "/documentation/about" },
-					{ text: "What's new", link: "/documentation/whats-new" },
-					{ text: "Key Features", link: "/documentation/about#key-features" },
-					{ text: "Understanding Concepts", link: "/documentation/concepts" },
-					{ text: "Get Started", link: "/documentation/get-started" },
-					{ text: "Sample Project", link: "/sample-project" },
-				],
+				items: AboutMetal,
 			},
 			{
 				text: "Server",
@@ -87,14 +100,7 @@ export default withMermaid({
 				{
 					text: "ℹ️ About Metal",
 					collapsed: false,
-					items: [
-						{ text: "Introduction", link: "/documentation/about" },
-						{ text: "What's new", link: "/documentation/whats-new" },
-						{ text: "Key Features", link: "/documentation/about#key-features" },
-						{ text: "Understanding Concepts", link: "/documentation/concepts" },
-						{ text: "Get Started", link: "/documentation/get-started" },
-						{ text: "Sample Project", link: "/sample-project" },
-					],
+					items: AboutMetal,
 				},
 				{
 					text: "📚 Catalogue",
