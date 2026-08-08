@@ -17,11 +17,11 @@ TODO:: check if fields from schemarequest can works with array, if true then upd
 TODO:: sort add fields to be compatible with on-error {f}
 schedule >  run-as   ,  to fix who is running the plan {f}
 plan > test if user is not allowed to access schema, what is happening {f}
-source > split sql and azure {f}
+(A) source > split sql and azure {f}
 guides, sample project : update
 remove source from schemarequest if possible
 (A) routing bad data to an error sink implicitly removes it from the plan data for downstream steps. The row exists in the error sink, but it's no longer in the main processing stream. {f} {start:2026-03-28T11:10:04} {cm:2026-05-11} {duration:1m-13d_17h11m} {h}
-step: fake data with faker js {f}
+step: fake data with faker js
 core > use threads (piscina)
 (A) core > step metrics {f} {start:2026-05-12T10:04:10} {cm:2026-05-23} {duration:11d_07h05m} {h}
 core > studio {f} {cm:2026-08-03} {h}
@@ -29,9 +29,9 @@ core > studio {f} {cm:2026-08-03} {h}
 (A) make modules api registration dynamic {f} {start:2026-05-24T11:17:43} {cm:2026-05-24} {duration:01h49m} {h}
 (A) move to monorepo {f} {start:2026-06-22T14:14:12} {cm:2026-07-30} {duration:1m-7d_11h43m} {h}
 (A) refactor: remove normalize/stringify error, use new logger format {f} {start:2026-08-04T11:23:20} {cm:2026-08-04} {duration:03h52m} {h}
-(A) move utils {f} {start:2026-08-04T11:23:16}
+(A) move utils {start:2026-08-04T11:23:16}
 (A) source > pagination {f}
-(A) endpoint > gzip compress {f} {start:2026-08-04T20:02:53}
+(A) endpoint > gzip compress {f} {start:2026-08-04T20:02:53} {cm:2026-08-07} {duration:2d_13h16m} {h}
 (A) source > connections pools checking if a unique pool is open and not many {f} {cm:2026-08-04} {h}
 (A) user > warmup : default admin, env , studio api key to connect {f}
 users > crypt passwords {f}

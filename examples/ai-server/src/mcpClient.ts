@@ -47,9 +47,9 @@ export async function createMcpClient(options: {
 		},
 	}))
 
-	Logger.Info(`[MCP] Connected to ${mcpServerUrl} — ${tools.length} tools available`)
+	Logger.Info(Logger.Out, `[MCP] Connected to ${mcpServerUrl} — ${tools.length} tools available`)
 	for (const tool of tools) {
-		Logger.Debug(`[MCP]   - ${tool.function.name}: ${tool.function.description}`)
+		Logger.Debug(Logger.Out, `[MCP]   - ${tool.function.name}: ${tool.function.description}`)
 	}
 
 	return { client, tools }
