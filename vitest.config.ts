@@ -50,6 +50,26 @@ export default defineConfig({
 					globals: true,
 				},
 			},
+			{
+				test: {
+					name: "@metal/config",
+					root: `${root}packages/config`,
+					include: ["**/__tests__/*.test.ts"],
+					exclude: ["node_modules"],
+					environment: "node",
+					globals: true,
+				},
+			},
+			{
+				test: {
+					name: "@metal/persistent-map",
+					root: `${root}packages/persistent-map`,
+					include: ["**/__tests__/*.test.ts"],
+					exclude: ["node_modules"],
+					environment: "node",
+					globals: true,
+				},
+			},
 		],
 	},
 })

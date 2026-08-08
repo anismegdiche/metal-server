@@ -2777,6 +2777,7 @@ __metadata:
   dependencies:
     "@types/node": "npm:^24"
     typescript: "npm:^6.0.3"
+    vitest: "npm:^4.1.10"
   languageName: unknown
   linkType: soft
 
@@ -2809,6 +2810,7 @@ __metadata:
     morgan: "npm:^1.10.0"
     safe-stable-stringify: "npm:^2.4.3"
     typescript: "npm:^6.0.3"
+    vitest: "npm:^4.1.10"
   languageName: unknown
   linkType: soft
 
@@ -2841,6 +2843,7 @@ __metadata:
     "@types/node": "npm:^24"
     lmdb: "npm:^3.5.5"
     typescript: "npm:^6.0.3"
+    vitest: "npm:^4.1.10"
   languageName: unknown
   linkType: soft
 
@@ -2933,6 +2936,7 @@ __metadata:
   dependencies:
     "@types/node": "npm:^24"
     typescript: "npm:^6.0.3"
+    vitest: "npm:^4.1.10"
     zod: "npm:^4.3.6"
   languageName: unknown
   linkType: soft
@@ -2952,6 +2956,7 @@ __metadata:
     object-path: "npm:^0.11.8"
     safe-stable-stringify: "npm:^2.5.0"
     typescript: "npm:^6.0.3"
+    vitest: "npm:^4.1.10"
   languageName: unknown
   linkType: soft
 

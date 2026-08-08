@@ -7,10 +7,12 @@
 		".": "./src/index.ts"
 	},
 	"scripts": {
-		"build": "tsc"
+		"build": "tsc",
+		"test": "yarn vitest run --project @metal/config"
 	},
 	"devDependencies": {
 		"@types/node": "^24",
-		"typescript": "^6.0.3"
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.10"
 	}
 }

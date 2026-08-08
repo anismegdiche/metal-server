@@ -389,16 +389,17 @@ const $__stepParams = PlaceHolder.EvaluateJsCode(stepParams, new Sandbox($contex
 
 ## 10. Testing Patterns (Vitest)
 
-**Root-level config:** Vitest is configured centrally in the root `vitest.config.ts` using the `test.projects` API. Each workspace with tests is a separate project. Current projects: `@metal/server`, `@metal/types`, `@metal/logger`, `@metal/utils` (server + logger use `setupFiles: ["../../vitest.setup.ts"]` and `globals: true`).
+**Root-level config:** Vitest is configured centrally in the root `vitest.config.ts` using the `test.projects` API. Each workspace with tests is a separate project. Current projects: `@metal/server`, `@metal/types`, `@metal/logger`, `@metal/utils`, `@metal/config`, `@metal/persistent-map` (server + logger use `setupFiles: ["../../vitest.setup.ts"]` and `globals: true`).
 
 **Commands:**
 ```sh
-yarn all:test                                  # run all workspace projects (vitest run)
-yarn workspace @metal/server dev:test          # run only @metal/server tests
-yarn workspace @metal/types test               # run only @metal/types tests
-yarn workspace @metal/logger test              # run only @metal/logger tests
-yarn workspace @metal/utils test               # run only @metal/utils tests
-yarn all:test:watch                            # watch mode for all projects
+yarn vitest run                                 # run all workspace projects from the root
+yarn workspace @metal/server test               # run only @metal/server tests
+yarn workspace @metal/types test                # run only @metal/types tests
+yarn workspace @metal/logger test               # run only @metal/logger tests
+yarn workspace @metal/utils test                # run only @metal/utils tests
+yarn workspace @metal/config test               # run only @metal/config tests
+yarn workspace @metal/persistent-map test       # run only @metal/persistent-map tests
 ```
 
 **Adding tests to a new workspace:** Add an inline project entry to `test.projects` in the root `vitest.config.ts` and a `"test": "vitest run --project <name>"` script to the workspace's `package.json`.
