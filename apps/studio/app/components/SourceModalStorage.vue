@@ -11,12 +11,22 @@ const form = reactive({
   allowDelete: false,
 })
 
-const STORAGE_CONTENT_TYPES = [
+const CONTENT_TYPES = [
   { label: 'JSON', value: 'json' },
   { label: 'CSV', value: 'csv' },
-  { label: 'XLS (Excel)', value: 'xls' },
+  { label: 'XLS', value: 'xls' },
   { label: 'XML', value: 'xml' },
   { label: 'Parquet', value: 'parquet' },
+]
+
+const STORAGE_TYPES = [
+  { label: 'Filesystem', value: 'fs' },
+  { label: 'Azure Blob Storage', value: 'azure-blob' },
+  { label: 'Azure File Share', value: 'azure-file' },
+  { label: 'Azure Data Lake Gen2', value: 'azure-datalake' },
+  { label: 'Amazon S3', value: 'aws-s3' },
+  { label: 'FTP Server', value: 'ftp' },
+  { label: 'SFTP Server', value: 'sftp' },
 ]
 
 interface StorageContentEntry {
@@ -96,6 +106,11 @@ function getStorageTypeFieldValue(key: string) {
 
 function setStorageTypeFieldValue(key: string, val: string) {
   storageTypeValues.value[key] = val
+}
+
+function getStorageTypeLabelFromValue(value :string): string | undefined {
+  const found = STORAGE_TYPES.find(item => item.value === value)
+  return found ? found.label : undefined
 }
 
 function newStorageContentEntry(): StorageContentEntry {
@@ -238,15 +253,7 @@ defineExpose({ collectBody })
       </UFormField>
       <UFormField label="Storage Type" orientation="horizontal" :ui="{ description: 'text-xs' }"
         description="Backend storage type">
-        <USelect v-model="form.storageType" :items="[
-          { label: 'Filesystem (fs)', value: 'fs' },
-          { label: 'Azure Blob Storage', value: 'azure-blob' },
-          { label: 'Azure File Share', value: 'azure-file' },
-          { label: 'Azure Data Lake Gen2', value: 'azure-datalake' },
-          { label: 'Amazon S3', value: 'aws-s3' },
-          { label: 'FTP Server', value: 'ftp' },
-          { label: 'SFTP Server', value: 'sftp' },
-        ]" class="w-full" />
+        <USelect v-model="form.storageType" :items="STORAGE_TYPES" class="w-full" />
       </UFormField>
       <UFormField label="Autocreate" orientation="horizontal" :ui="{ description: 'text-xs' }"
         description="Auto-create entities on first interaction (default: false)" class="col-span-2">
@@ -265,7 +272,7 @@ defineExpose({ collectBody })
     </div>
     <div v-if="storageTypeFields.length > 0" class="border-t border-default pt-4">
       <div class="flex items-center gap-2 mb-3">
-        <span class="text-sm font-medium">{{ form.storageType }} Connection</span>
+        <span class="text-sm font-medium">{{ getStorageTypeLabelFromValue(form.storageType) }} Connection</span>
         <span class="text-[10px] text-muted">({{ storageTypeFields.length }} parameters)</span>
       </div>
       <div class="grid grid-cols-2 gap-4">
@@ -278,7 +285,7 @@ defineExpose({ collectBody })
                 <USwitch :model-value="getStorageTypeFieldValue(field.value) === 'true'"
                   @update:model-value="(v: boolean) => setStorageTypeFieldValue(field.value, String(v))" />
                 <span class="text-xs text-muted">{{ getStorageTypeFieldValue(field.value) === 'true' ? 'Yes' : 'No'
-                  }}</span>
+                }}</span>
               </div>
             </template>
             <template v-else>
@@ -303,7 +310,7 @@ defineExpose({ collectBody })
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2 flex-1">
               <UInput v-model="entry.pattern" placeholder="*.csv" size="sm" class="w-32" />
-              <USelect v-model="entry.contentType" :items="STORAGE_CONTENT_TYPES" size="sm" />
+              <USelect v-model="entry.contentType" :items="CONTENT_TYPES" size="sm" />
               <span class="text-[10px] text-muted">{{ entry.pattern }}</span>
             </div>
             <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error"
