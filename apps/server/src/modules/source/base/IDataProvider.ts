@@ -50,6 +50,7 @@ export interface IDataProvider extends clsClonable, clsContext {
 
 	GetSqlQuery(sqlQueryHelper: SqlQueryUtils, options: TOptionalParameter): string | undefined
 	GenerateSqlSelect(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils
+	GenerateSqlCount(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils
 	GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): Promise<SqlQueryUtils>
 	GenerateSqlUpdate(schemaRequest: TSchemaRequest, options: TOptionalParameter): Promise<SqlQueryUtils>
 	GenerateSqlDelete(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils

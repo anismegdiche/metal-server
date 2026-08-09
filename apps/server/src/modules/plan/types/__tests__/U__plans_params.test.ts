@@ -83,6 +83,48 @@ describe("CRUD operation schema validation", () => {
 			const result = z_U__plans_plan_select_Params.parse(config)
 			expect(result).toEqual(config)
 		})
+
+		it("should accept limit and offset", () => {
+			const config = {
+				limit: 10,
+				offset: 5,
+			}
+			const result = z_U__plans_plan_select_Params.parse(config)
+			expect(result).toEqual({
+				...config,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
+		})
+
+		it("should coerce string limit and offset to numbers", () => {
+			const result = z_U__plans_plan_select_Params.parse({
+				limit: "10",
+				offset: "5",
+			})
+			expect(result).toEqual({
+				limit: 10,
+				offset: 5,
+				"on-error": {
+					strategy: STEP_ON_ERROR_STRATEGY.THROW,
+					scope: STEP_ON_ERROR_SCOPE.STEP
+				}
+			})
+		})
+
+		it("should reject negative limit", () => {
+			expect(() => z_U__plans_plan_select_Params.parse({ limit: -1 })).toThrow()
+		})
+
+		it("should reject negative offset", () => {
+			expect(() => z_U__plans_plan_select_Params.parse({ offset: -1 })).toThrow()
+		})
+
+		it("should reject non-integer limit", () => {
+			expect(() => z_U__plans_plan_select_Params.parse({ limit: 1.5 })).toThrow()
+		})
 	})
 
 	describe("z_U__plans_plan_insert_Params", () => {

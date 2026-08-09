@@ -70,7 +70,10 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
 	abstract EscapeField(field: string): string
 
 	GetSqlQuery(sqlQueryHelper: SqlQueryUtils, options: TOptionalParameter): string | undefined {
-		return options.Fields?.join("") !== "*" || options.Filter !== undefined || options.Sort !== undefined
+		return options.Fields?.join("") !== "*" ||
+			options.Filter !== undefined ||
+			options.Sort !== undefined ||
+			options.Limit !== undefined
 			? sqlQueryHelper.Query()
 			: undefined
 	}
@@ -81,6 +84,13 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
 			.From((schemaRequest as TSchemaRequestSelect).entity)
 			.Where(options.Filter)
 			.OrderBy(options.Sort)
+			.LimitOffset(options.Limit, options.Offset)
+	}
+
+	GenerateSqlCount(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+		return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+			.SetQuery(`SELECT COUNT(*) AS count FROM ${this.EscapeEntity((schemaRequest as TSchemaRequestSelect).entity)}`)
+			.Where(options.Filter)
 	}
 
 	async GenerateSqlInsert(schemaRequest: TSchemaRequest, options: TOptionalParameter): Promise<SqlQueryUtils> {
@@ -126,5 +136,12 @@ export abstract class absDataProvider extends Mixin(clsClonable, clsContext) imp
 	async CacheRemove(schemaRequest: TSchemaRequest): Promise<void> {
 		const { Cache } = await import("../../cache/Cache")
 		await Cache.Remove(schemaRequest)
+	}
+
+	async SetPagination(data: DataTable, options: TOptionalParameter, total: number): Promise<DataTable> {
+		if (options.Limit === undefined) return data
+
+		const { DataTableUtils } = await import("../../../utils/DataTableUtils")
+		return DataTableUtils.SetPagination(data, { total, limit: options.Limit, offset: options.Offset ?? 0 })
 	}
 }

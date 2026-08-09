@@ -10,27 +10,29 @@ All parameters are described in the table below:
 | 📜`filter-expression` | complex filter expression            |      🟢       |       -        |       🟢        |        🟢        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
 | 📜`fields`            | select fields to return              |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
 | 📜`sort`              | sort data with a given order         |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
+| 📜`limit`             | limit the number of rows returned    |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.5+" />    |
+| 📜`offset`            | number of rows to skip               |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.5+" />    |
 | `cache`               | cache returned data for a given time |      🟢       |       -        |        -        |        -         | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
 | 📜❇️`data`            | data to send to provider             |       -       |       🟢       |       🟢        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 >
-> ❇️: supports Field Escape Engine (see: [Field Escape Engine](dynamic-expression-engine#field-escape-engine))
+> ❇️: Supports Field Escape Engine (see: [Field Escape Engine](dynamic-expression-engine#field-escape-engine))
 
 ## How Optional Parameters are handled by Data Providers
 
-| Data Provider                           | `data` | `filter` | `filter-expression` | `fields` | `sort` | `cache` |
-| --------------------------------------- | :----: | :------: | :-----------------: | :------: | :----: | :-----: |
-| Azure SQL Database/Microsoft SQL Server |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
-| Storage                                 |   🟢   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
-| Memory                                  |   🟢   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
-| Metal Server                            |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |
-| MongoDB                                 |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
-| MySql                                   |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
-| Plans                                   |   -    |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
-| PostgreSQL                              |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
-| WebService                              |   🟡   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |
-| Cosmos DB                               |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🟢    |
+| Data Provider                           | `data` | `filter` | `filter-expression` | `fields` | `sort` | `limit` | `offset` | `cache` |
+| --------------------------------------- | :----: | :------: | :-----------------: | :------: | :----: | :-----: | :------: | :-----: |
+| Azure SQL Database/<br/>Microsoft SQL Server |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🟢    |
+| Storage                                 |   🟢   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |    🟢    |   🟢    |
+| Memory                                  |   🟢   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |    🟢    |   🟢    |
+| Metal Server                            |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🔵    |
+| MongoDB                                 |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🟢    |
+| MySql                                   |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🟢    |
+| Plans                                   |   -    |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |    🟢    |   🟢    |
+| PostgreSQL                              |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🟢    |
+| WebService                              |   🟡   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |    🟢    |   🟢    |
+| Cosmos DB                               |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🟢    |
 
 > 🔵 Handled natively by the data provider driver
 >
@@ -46,7 +48,7 @@ Simple filtering feature by providing fields and values.
 
 Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
 
-**Example**
+**Example:**
 
 > To filter people with `name = John` and `location = USA`:
 >
@@ -91,7 +93,7 @@ Free expression for more complex data filtering expressed in SQL-like syntax.
 
 Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
 
-**Example**
+**Example:**
 
 > **GET Request**
 >
@@ -125,13 +127,12 @@ Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-exp
 ::: tip ℹ️ NOTE
 When employing the `LIKE` operator with the wildcard `%` in a GET method, remember to escape it using double `%%`.
 
-> **Example:**
->
-> ```
-> filter-expression=name LIKE '%%ing'
-> ```
->
-> :::
+**Example:**
+```
+filter-expression=name LIKE '%%ing'
+```
+
+:::
 
 ### `fields`
 
@@ -139,11 +140,10 @@ Select fields to return.
 
 Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
 
-**Example**
+**Example:**
 
 > ```http
-> GET /schema/my-schema/my-entity
->     ?fields="name, country"
+> GET /schema/my-schema/my-entity?fields="name, country"
 > ```
 
 ### `sort`
@@ -157,7 +157,7 @@ Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-exp
 | `asc`            | Ascending order  | ASC      |
 | `desc`           | Descending order | DESC     |
 
-**Example**
+**Example:**
 
 > To sort data with `name` ascending then `email` descending:
 >
@@ -166,26 +166,61 @@ Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-exp
 >     ?sort={"name": "asc","email": "desc"}
 > ```
 
+### `limit`
+
+Limit the maximum number of rows returned by a select request.
+
+Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
+
+Must be a positive integer.
+
+**Example:**
+
+> To return only the first 10 rows:
+>
+> ```http
+> GET /schema/my-schema/my-entity?limit=10
+> ```
+
+### `offset`
+
+Skip the given number of rows before returning results. Combine it with `limit` to paginate through large datasets.
+
+Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
+
+Must be a non-negative integer.
+
+**Example:**
+
+> To return rows 11 to 20:
+>
+> ```http
+> GET /schema/my-schema/my-entity?limit=10&offset=10
+> ```
+
+::: tip ℹ️ NOTE
+When `limit` is combined with `sort` and/or `filter`, the offset is applied **after** sorting and filtering.
+:::
+
 ### `cache`
 
 Instruct Metal to cache the data returned from the source for a given time in seconds before displaying it to the user end point, meanwhile users that hit again the same query will receive the cached data until it expires.
 
-**Example**
+**Example:**
 
 > To cache returned data for 60 seconds:
 >
 > ```http
-> GET /schema/my-schema/my-entity
->     ?cache=60
+> GET /schema/my-schema/my-entity?cache=60
 > ```
 
 ### `data`
 
-this paramater is used for inserting or updating data.
+This paramater is used for inserting or updating data.
 
 Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine) and Field Escape Engine only for updates (see: [Field Escape Engine](dynamic-expression-engine#field-escape-engine))
 
-#### Inserting data
+* **<u>Inserting data:</u>**
 
 `:data` accept whether a JSON object if it is a single row to insert or a JSON Array if many rows
 
@@ -234,11 +269,11 @@ Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-exp
 > HTTP/1.1 201 Created
 > ```
 
-#### Updating data
+* **<u> Updating data</u>**
 
 `:data` accept a JSON object of `key:value` where `key` is the field to modify and `value` is the new value
 
-**Example**
+**Example:**
 
 > **Request**
 >

@@ -15,6 +15,7 @@ import { merge } from "lodash-es"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
+import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
@@ -148,9 +149,18 @@ export class CosmosDbData extends absDataProvider {
 			const data = new DataTable(entity)
 
 			if (rows.length > 0) {
-				data.RowsSet(rows)
+				await data.RowsSet(rows)
 				if (options?.Cache) await this.CacheSet(schemaRequest, data)
 			}
+
+			let total = 0
+			if (options?.Limit !== undefined) {
+				const countQuery = this.GenerateCosmosCountQuery(schemaRequest, options)
+				const { resources: countRows } = await container.items.query(countQuery).fetchAll()
+				total = Number(countRows[0] ?? 0)
+			}
+
+			await this.SetPagination(data, options, total)
 
 			return HttpResponse.Ok(<TSchemaResponse>{
 				schema,
@@ -408,6 +418,27 @@ export class CosmosDbData extends absDataProvider {
 	@Logger.LogFunction()
 	async AddEntity(_schemaRequest: TSchemaRequest): Promise<TInternalResponse<undefined>> {
 		throw new HttpErrorNotImplemented()
+	}
+
+	override GenerateSqlSelect(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+		const sqlQueryHelper = new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+			.Select(options.Fields)
+			.From((schemaRequest as TSchemaRequestSelect).entity)
+			.Where(options.Filter)
+			.OrderBy(options.Sort)
+
+		// Cosmos requires OFFSET before LIMIT (base emits LIMIT n OFFSET m)
+		if (options.Offset) sqlQueryHelper.SetQuery(`${sqlQueryHelper.Query()} OFFSET ${options.Offset}`)
+		if (options.Limit) sqlQueryHelper.SetQuery(`${sqlQueryHelper.Query()} LIMIT ${options.Limit}`)
+
+		return sqlQueryHelper
+	}
+
+	GenerateCosmosCountQuery(schemaRequest: TSchemaRequest, options: TOptionalParameter): string {
+		// Cosmos doesn't support COUNT(*) — use SELECT VALUE COUNT(1)
+		return this.GenerateSqlCount(schemaRequest, options)
+			.Query()
+			.replace(/^SELECT\s+COUNT\(\*\)\s+AS\s+count\s+FROM/, "SELECT VALUE COUNT(1) FROM")
 	}
 
 	EscapeEntity(entity: string): string {

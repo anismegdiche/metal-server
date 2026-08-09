@@ -46,7 +46,7 @@ The body is a standard MCP JSON-RPC 2.0 message:
 | `params`  | object | N        | Method parameters                                          |
 | `id`      | string | Y        | Request identifier, echoed in the response                 |
 
-**Example**
+**Example:**
 
 > To initialize an MCP session:
 >

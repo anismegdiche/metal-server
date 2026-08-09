@@ -1,6 +1,7 @@
+import { DATATABLE_PAGINATION_META } from "../../../utils/DataTableUtils"
 import type { U__sources_source } from "../../core/types/U__sources"
 import { HttpErrorNotFound } from "../../errors/HttpErrors"
-import type { TSchemaRequestListEntities } from "../../schema/types/TSchemaRequest"
+import type { TSchemaRequestListEntities, TSchemaRequestSelect } from "../../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../@consts"
 import { MongoDbData } from "../providers/MongoDbData"
 
@@ -131,6 +132,61 @@ describe("MongoDbData", () => {
 			})
 
 			await expect(provider.ListEntities(mockListRequest)).rejects.toThrow(HttpErrorNotFound)
+		})
+	})
+
+	describe("Select with pagination", () => {
+		it("should count documents matching the filter when limit is given", async () => {
+			mockCollection.toArray.mockResolvedValue([{ id: 1, name: "test" }])
+			mockCollection.countDocuments.mockResolvedValue(5)
+
+			const response = await provider.Select(<TSchemaRequestSelect>{
+				schema: "test-schema",
+				entity: "users",
+				limit: 1,
+				offset: 0,
+				filter: { status: "active" },
+			})
+
+			expect(mockCollection.countDocuments).toHaveBeenCalledTimes(1)
+			expect(mockCollection.countDocuments).toHaveBeenCalledWith(expect.objectContaining({ status: expect.anything() }))
+			expect(response.Body?.data.MetaData[DATATABLE_PAGINATION_META]).toEqual({
+				total: 5,
+				limit: 1,
+				offset: 0,
+				hasMore: true,
+			})
+		})
+
+		it("should count the whole collection when no filter is given", async () => {
+			mockCollection.toArray.mockResolvedValue([{ id: 1, name: "test" }])
+			mockCollection.countDocuments.mockResolvedValue(1)
+
+			const response = await provider.Select(<TSchemaRequestSelect>{
+				schema: "test-schema",
+				entity: "users",
+				limit: 1,
+			})
+
+			expect(mockCollection.countDocuments).toHaveBeenCalledWith({})
+			expect(response.Body?.data.MetaData[DATATABLE_PAGINATION_META]).toEqual({
+				total: 1,
+				limit: 1,
+				offset: 0,
+				hasMore: false,
+			})
+		})
+
+		it("should not count documents when no limit is given", async () => {
+			mockCollection.toArray.mockResolvedValue([{ id: 1, name: "test" }])
+
+			const response = await provider.Select(<TSchemaRequestSelect>{
+				schema: "test-schema",
+				entity: "users",
+			})
+
+			expect(mockCollection.countDocuments).not.toHaveBeenCalled()
+			expect(response.Body?.data.MetaData[DATATABLE_PAGINATION_META]).toBeUndefined()
 		})
 	})
 })

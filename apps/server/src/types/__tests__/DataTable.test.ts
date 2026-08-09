@@ -284,6 +284,57 @@ describe("DataTable", () => {
 			expect(await count.Count()).toEqual(5)
 		})
 
+		it("should count rows matching a string filter", async () => {
+			const dt = new DataTable("count-string-filter", [
+				{ name: "Alice", age: 25 },
+				{ name: "Bob", age: 30 },
+				{ name: "Charlie", age: 35 },
+			])
+
+			expect(await dt.Count("age > 30")).toBe(1)
+		})
+
+		it("should count rows matching an object filter", async () => {
+			const dt = new DataTable("count-object-filter", [
+				{ name: "Alice", age: 25 },
+				{ name: "Bob", age: 30 },
+				{ name: "Charlie", age: 30 },
+			])
+
+			expect(await dt.Count({ name: "Bob" })).toBe(1)
+		})
+
+		it("should count rows matching multiple object filter keys", async () => {
+			const dt = new DataTable("count-multi-filter", [
+				{ name: "Alice", country: "USA" },
+				{ name: "Bob", country: "France" },
+				{ name: "Bob", country: "Germany" },
+			])
+
+			expect(await dt.Count({ name: "Bob", country: "Germany" })).toBe(1)
+		})
+
+		it("should count the same rows that Rows(filter) returns", async () => {
+			const dt = new DataTable("count-rows-consistency", [
+				{ name: "Alice", age: 25 },
+				{ name: "Bob", age: 30 },
+				{ name: "Bob", age: 35 },
+				{ name: "Charlie", age: 40 },
+			])
+
+			const total = await dt.Count()
+			expect(total).toBe(4)
+			expect(await dt.Rows()).toHaveLength(total)
+
+			const filtered = await dt.Count({ name: "Bob" })
+			expect(filtered).toBe(2)
+			expect(await dt.Rows({ filter: { name: "Bob" } })).toHaveLength(filtered)
+
+			const filteredExpression = await dt.Count("age > 30")
+			expect(filteredExpression).toBe(2)
+			expect(await dt.Rows({ filter: "age > 30" })).toHaveLength(filteredExpression)
+		})
+
 		it("should cache count and return cached value on multiple calls", async () => {
 			const dt = new DataTable("cache-test", [
 				{ id: 1, name: "Alice" },

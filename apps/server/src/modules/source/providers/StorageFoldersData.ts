@@ -187,6 +187,11 @@ export class StorageFoldersData extends absDataProvider {
 
 		const filteredData = await data.FreeSql({ sqlQuery, returnData: true })
 
+		if (options?.Limit !== undefined) {
+			const total = await data.Count(options.Filter)
+			await this.SetPagination(filteredData, options, total)
+		}
+
 		if (options.Fields?.includes(FLD_CONTENT)) {
 			// read files content
 			await filteredData.RowsMap(async (row: TRow) => {

@@ -35,7 +35,7 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { STORAGE_TYPE } from "../../storage/@consts"
 import type { absStorageProvider } from "../../storage/base/absStorageProvider"
 import { StorageProvider } from "../../storage/StorageProvider"
-import { DATA_PROVIDER } from "../@consts"
+import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
 import type { U__source_storage } from "../types/U__source_storage"
@@ -150,6 +150,13 @@ export class StorageFilesData extends absDataProvider {
 		if (!data) throw new HttpErrorNotFound(`File not found: ${fileName}`)
 
 		if (Logger.Level === VERBOSITY_LEVEL.DEBUG) data.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config.options)
+
+		if (options?.Limit !== undefined) {
+			const total = await data.Count()
+			const pageRows = await data.Rows({ skip: options.Offset, limit: options.Limit })
+			await data.RowsSet(pageRows)
+			await this.SetPagination(data, options, total)
+		}
 
 		if (options?.Cache)
 			await this.CacheSet(
@@ -315,7 +322,13 @@ export class StorageFilesData extends absDataProvider {
 		)
 
 		const data = await this.Connection.FolderListFiles()
-		await data.RowsSet((await data.Rows()).filter((row) => rxFilePatterns.test(row.name as string)))
+
+		await data.RowsSet(
+			(await data.Rows({ fields: ["name", "size"] }))
+				.filter((row) => rxFilePatterns.test(row.name as string))
+		)
+
+		await data.FieldAdd("type", DATA_ENTITY_TYPE.FILE, true)
 
 		Assert.Condition((await data.Count()) > 0, `${schema}: No entities found`, new HttpErrorNotFound())
 

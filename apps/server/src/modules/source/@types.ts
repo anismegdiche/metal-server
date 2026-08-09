@@ -18,6 +18,8 @@ export type TOptionalParameter = {
 	Fields?: string[]
 	Filter?: TJson | string
 	Sort?: TOrderBy
+	Limit?: number
+	Offset?: number
 	Data?: DataTable
 	Cache?: number
 }

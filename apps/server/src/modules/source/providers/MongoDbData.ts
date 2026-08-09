@@ -10,6 +10,7 @@ import type { Document as MongoDocument } from "mongodb"
 import { DataTable, type TRow } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
+import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
 import type { TInternalResponse } from "../../core/types/TInternalResponse"
@@ -131,10 +132,14 @@ export class MongoDbData extends absDataProvider {
 
 		const mongoParsedQuery = MongoDbHelper.ParseSqlQuery(sqlQueryHelper.Query())
 
-		const rows = await this.Connection.db(this.Config.database)
-			.collection(entity)
-			.aggregate(mongoParsedQuery.aggregate)
-			.toArray()
+		let aggregate = mongoParsedQuery.aggregate as object[] | undefined
+		if (aggregate === undefined) aggregate = []
+		if (options.Offset) aggregate.push({ $skip: options.Offset })
+		if (options.Limit) aggregate.push({ $limit: options.Limit })
+
+		const collection = this.Connection.db(this.Config.database).collection(entity)
+
+		const rows = await collection.aggregate(aggregate).toArray()
 
 		const data = new DataTable(entity)
 
@@ -142,6 +147,16 @@ export class MongoDbData extends absDataProvider {
 			await data.RowsSet(rows)
 			if (options?.Cache) await this.CacheSet(schemaRequest, data)
 		}
+
+		let total = 0
+		if (options?.Limit !== undefined) {
+			const match = (aggregate[0] as { $match?: object } | undefined)?.$match
+			total = await collection.countDocuments(
+				typeof match === "object" && match !== null ? match : <object>{},
+			)
+		}
+
+		await this.SetPagination(data, options, total)
 
 		return HttpResponse.Ok(<TSchemaResponse>{
 			schema,
@@ -273,6 +288,16 @@ export class MongoDbData extends absDataProvider {
 			...RESPONSE.LIST_ENTITIES.SUCCESS.STATUS,
 			data: new DataTable(schema, rows),
 		})
+	}
+
+	override GenerateSqlSelect(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+		// LIMIT/OFFSET are applied as $skip/$limit aggregation stages instead of SQL,
+		// because the SQL-to-Mongo parser (noql) applies a default limit and may not support OFFSET.
+		return new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+			.Select(options.Fields)
+			.From((schemaRequest as TSchemaRequestSelect).entity)
+			.Where(options.Filter)
+			.OrderBy(options.Sort)
 	}
 
 	EscapeEntity(entity: string): string {

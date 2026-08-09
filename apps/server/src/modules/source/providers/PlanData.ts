@@ -25,7 +25,7 @@ import type {
 	TSchemaRequestUpdate,
 } from "../../schema/types/TSchemaRequest"
 import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
-import { DATA_PROVIDER } from "../@consts"
+import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
 import { Source } from "../Source"
@@ -71,7 +71,9 @@ export class PlanData extends absDataProvider {
 
 		const options: TOptionalParameter = this.Options.Parse(schemaRequest, $context)
 
-		const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
+		// Build the select without LIMIT/OFFSET so the plan returns the full filtered set,
+		// allowing a provider-side total before slicing the requested page
+		const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, { ...options, Limit: undefined, Offset: undefined })
 
 		const sqlQuery = this.GetSqlQuery(sqlQueryHelper, options)
 
@@ -87,6 +89,13 @@ export class PlanData extends absDataProvider {
 
 		const data = await plan.ProcessSchemaRequest(schemaRequest, sqlQuery)
 		if (data) {
+			if (options?.Limit !== undefined) {
+				const total = await data.Count(options.Filter)
+				const pageRows = await data.Rows({ skip: options.Offset, limit: options.Limit })
+				await data.RowsSet(pageRows)
+				await this.SetPagination(data, options, total)
+			}
+
 			if (options?.Cache)
 				await this.CacheSet(
 					{
@@ -134,9 +143,10 @@ export class PlanData extends absDataProvider {
 	async ListEntities(schemaRequest: TSchemaRequestListEntities): Promise<TInternalResponse<TSchemaResponse>> {
 		const { schema } = schemaRequest
 
-		const data = new DataTable("plans")
-		const rows = [...Plans.keys()].map((name) => ({ name }))
-		await data.RowsSet(rows)
+		const data = new DataTable(
+			"plans",
+			[...Plans.keys()].map((name) => ({ name, type: DATA_ENTITY_TYPE.PLAN }))
+		)
 
 		return HttpResponse.Ok(<TSchemaResponse>{
 			schema,

@@ -61,7 +61,7 @@ Users are the entities that interact with the Metal Server. Each user has a uniq
 
 To create new users, you need to add the following code to the `users` section of the `config.yml` file:
 
-**Example**
+**Example:**
 
 ```yaml
 users:

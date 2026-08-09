@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest"
-import type { DataTable } from "../../../../types/DataTable"
+import { DataTable } from "../../../../types/DataTable"
+import { DATATABLE_PAGINATION_META } from "../../../../utils/DataTableUtils"
 import { SqlQueryUtils } from "../../../../utils/SqlQueryUtils"
 import { HTTP_STATUS_CODE } from "../../../core/@consts"
 import type { TInternalResponse } from "../../../core/types/TInternalResponse"
+import type { TSchemaRequest } from "../../../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../../@consts"
 import type { TOptionalParameter } from "../../@types"
 import { absDataProvider } from "../absDataProvider"
@@ -120,5 +122,83 @@ describe("absDataProvider", () => {
 		expect(insertQuery).toContain("INSERT")
 		expect(updateQuery).toContain("UPDATE")
 		expect(deleteQuery).toContain("DELETE")
+	})
+
+	it("should append limit and offset to generated select when options are given", () => {
+		const provider = new TestProvider()
+		const schemaRequest = <TSchemaRequest>{ schema: "s", entity: "e" }
+		const options = <TOptionalParameter>{ Fields: ["*"], Limit: 10, Offset: 5 }
+
+		const query = provider.GenerateSqlSelect(schemaRequest, options).Query()
+
+		expect(query).toBe('SELECT * FROM "e" LIMIT 10 OFFSET 5')
+	})
+
+	it("should not append limit and offset to generated select when options are not given", () => {
+		const provider = new TestProvider()
+		const schemaRequest = <TSchemaRequest>{ schema: "s", entity: "e" }
+		const options = <TOptionalParameter>{ Fields: ["*"] }
+
+		const query = provider.GenerateSqlSelect(schemaRequest, options).Query()
+
+		expect(query).toBe('SELECT * FROM "e"')
+	})
+
+	it("should return sql when limit is present even with wildcard fields", () => {
+		const provider = new TestProvider()
+		const helper = new SqlQueryUtils(undefined, provider.EscapeEntity, provider.EscapeField)
+			.Select(["*"])
+			.From("table")
+			.LimitOffset(10)
+		const options: TOptionalParameter = { Fields: ["*"], Limit: 10 }
+
+		expect(provider.GetSqlQuery(helper, options)).toContain("LIMIT 10")
+	})
+
+	it("should generate count query for entity", () => {
+		const provider = new TestProvider()
+		const schemaRequest = <TSchemaRequest>{ schema: "s", entity: "e" }
+		const options = <TOptionalParameter>{}
+
+		const query = provider.GenerateSqlCount(schemaRequest, options).Query()
+
+		expect(query).toBe('SELECT COUNT(*) AS count FROM "e"')
+	})
+
+	it("should generate count query with filter", () => {
+		const provider = new TestProvider()
+		const schemaRequest = <TSchemaRequest>{ schema: "s", entity: "e" }
+		const options = <TOptionalParameter>{ Filter: { status: "active" } }
+
+		const query = provider.GenerateSqlCount(schemaRequest, options).Query()
+
+		expect(query).toBe('SELECT COUNT(*) AS count FROM "e" WHERE "status" = \'active\'')
+	})
+
+	it("should set pagination meta when limit is given", async () => {
+		const provider = new TestProvider()
+		const data = new DataTable("pagination-test", [{ id: 1 }, { id: 2 }])
+		await data.RowsSet()
+		const options = <TOptionalParameter>{ Fields: ["*"], Limit: 2, Offset: 2 }
+
+		const result = await provider.SetPagination(data, options, 5)
+
+		expect(result.MetaData[DATATABLE_PAGINATION_META]).toEqual({
+			total: 5,
+			limit: 2,
+			offset: 2,
+			hasMore: true,
+		})
+	})
+
+	it("should not set pagination meta when limit is not given", async () => {
+		const provider = new TestProvider()
+		const data = new DataTable("pagination-test-2", [{ id: 1 }])
+		await data.RowsSet()
+		const options = <TOptionalParameter>{ Fields: ["*"] }
+
+		const result = await provider.SetPagination(data, options, 1)
+
+		expect(result.MetaData[DATATABLE_PAGINATION_META]).toBeUndefined()
 	})
 })

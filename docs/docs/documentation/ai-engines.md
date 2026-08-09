@@ -159,7 +159,7 @@ Detect emotions in text.
 | --------- | ------------ | ------------- | -------- | -------------------------------- |
 | `top`     | number (1-7) | `7`           | N        | Number of top emotions to return |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -209,7 +209,7 @@ Detect emotions in text.
 
 Predict words in text using a placeholder `[MASK]`.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -256,7 +256,7 @@ Predict words in text using a placeholder `[MASK]`.
 
 Extract important keywords from text.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -289,7 +289,7 @@ Detect the language of the text.
 
 **Supported Languages**: Arabic (`ar_AR`), Bulgarian (`bg_BG`), Chinese (Simplified) (`zh_CN`), German (`de_DE`), English (`en_XX`), French (`fr_XX`), Italian (`it_IT`), Japanese (`ja_XX`), Portuguese (`pt_XX`), Russian (`ru_RU`), Spanish (`es_XX`), Greek (`el_GR`), Hindi (`hi_IN`), Dutch (`nl_XX`), Polish (`pl_PL`), Swahili (`sw_KE`), Thai (`th_TH`), Turkish (`tr_TR`), Urdu (`ur_PK`), Vietnamese (`vi_VN`)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -332,7 +332,7 @@ Detect if two texts are paraphrases.
 | --------- | ------ | --------------------------- |
 | `target`  | string | The text to compare against |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -379,7 +379,7 @@ Answer questions based on a given context.
 | ---------- | ------ | ---------------------- |
 | `question` | string | The question to answer |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -430,7 +430,7 @@ Compare the similarity between a source sentence and a list of target sentences.
 | `sentences` | string[] | Array of sentences to compare against      |
 | `top`       | number   | (Optional) Number of top results to return |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -482,7 +482,7 @@ The `similarity` output is an array of JSON with the following properties:
 
 Analyze sentiment in text.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -529,7 +529,7 @@ Generate text summaries.
 | `min-length` | number | Minimum length of the summary |
 | `max-length` | number | Maximum length of the summary |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -583,7 +583,7 @@ Generate new text.
 - **Medium temperature (e.g., 0.5–0.9):** good balance between coherence and creativity; usually “best” for general writing and chat.
 - **High temperature (≥1.0-2.0):** much more random and creative, but also more likely to be incoherent, off‑topic, or nonsensical.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -630,7 +630,7 @@ Multilingual Named Entity Recognition (NER) identifies and classifies specific e
 | --------- | ------- | --------------------------------------------------------- |
 | `grouped` | boolean | Whether to group entities that are part of the same token |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -721,7 +721,7 @@ Detect toxic content in text with the following types of toxicity:
 | --------- | ------ | -------------------------------------------- |
 | `top`     | number | Number of top toxicity predictions to return |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -779,7 +779,7 @@ Translate text between languages.
 | `source`  | string | Source language code (e.g., 'en_XX') |
 | `target`  | string | Target language code (e.g., 'fr_XX') |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -829,7 +829,7 @@ Zero-shot text classification.
 | --------- | -------- | --------------------------------------------------- |
 | `labels`  | string[] | Array of possible class labels to classify the text |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -888,7 +888,7 @@ In the plan, `run.input` is expected to be a Base 64 string.
 
 Classify images into various categories.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -930,7 +930,7 @@ Classify images into various categories.
 
 Perform semantic segmentation on images.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -976,7 +976,7 @@ Perform semantic segmentation on images.
 
 Generate text descriptions of images.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1012,7 +1012,7 @@ Generate text descriptions of images.
 
 Detect and locate objects in images.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1073,7 +1073,7 @@ Answer questions about image content.
 | ---------- | ------ | -------- | ---------------------------- |
 | `question` | string | Yes      | The question about the image |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1133,7 +1133,7 @@ In the plan, `run.input` is expected to be a Base 64 string.
 
 Classify audio clips by emotion.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1177,7 +1177,7 @@ Classify audio clips by emotion.
 
 Transcribe speech to text.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:

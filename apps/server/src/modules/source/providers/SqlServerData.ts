@@ -8,6 +8,7 @@ import mssql, { type ConnectionPool } from "mssql"
 //
 import { DataTable } from "../../../types/DataTable"
 import { Assert } from "../../../utils/Assert"
+import { SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 import { SynchronizerManager } from "../../../utils/SynchronizerManager"
 import { RESPONSE } from "../../core/@consts"
 import { HttpResponse } from "../../core/HttpResponse"
@@ -122,6 +123,14 @@ export class SqlServerData extends absDataProvider {
 			if (options?.Cache) await this.CacheSet(schemaRequest, data)
 		}
 
+		let total = 0
+		if (options?.Limit !== undefined) {
+			const countResult = await this.Connection.query(this.GenerateSqlCount(schemaRequest, options).Query())
+			total = Number((countResult.recordset[0] as { count?: number | string } | undefined)?.count ?? 0)
+		}
+
+		await this.SetPagination(data, options, total)
+
 		return HttpResponse.Ok(<TSchemaResponse>{
 			schema,
 			entity,
@@ -234,6 +243,36 @@ export class SqlServerData extends absDataProvider {
 			...RESPONSE.LIST_ENTITIES.SUCCESS.STATUS,
 			data: new DataTable(source, sqlServerResult.recordset),
 		})
+	}
+
+	override GenerateSqlSelect(schemaRequest: TSchemaRequest, options: TOptionalParameter): SqlQueryUtils {
+		const sqlQueryHelper = new SqlQueryUtils(undefined, this.EscapeEntity, this.EscapeField)
+			.Select(options.Fields)
+			.From((schemaRequest as TSchemaRequestSelect).entity)
+			.Where(options.Filter)
+			.OrderBy(options.Sort)
+
+		const offset = options.Offset ?? 0
+		const limit = options.Limit
+
+		if (limit !== undefined && offset === 0) {
+			// SELECT TOP n
+			sqlQueryHelper.SetQuery(sqlQueryHelper.Query().replace(/^SELECT\s/i, `SELECT TOP ${limit} `))
+			return sqlQueryHelper
+		}
+
+		if (offset > 0) {
+			// OFFSET/FETCH requires ORDER BY in SQL Server; fall back to the first column
+			// (ORDINAL position) when no sort was requested
+			if (!options.Sort) sqlQueryHelper.OrderBy({ "1": "asc" })
+			sqlQueryHelper.SetQuery(
+				`${sqlQueryHelper.Query()}${
+					limit !== undefined ? ` OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY` : ` OFFSET ${offset} ROWS`
+				}`,
+			)
+		}
+
+		return sqlQueryHelper
 	}
 
 	EscapeEntity(entity: string): string {

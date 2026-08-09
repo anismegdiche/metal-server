@@ -267,6 +267,43 @@ describe("SqlQueryUtils", () => {
 		expect(queryHelper.QueryParams).toEqual([1, "John"])
 	})
 
+	describe("LIMIT/OFFSET operations", () => {
+		it("should append LIMIT when limit is given", () => {
+			const sql = new SqlQueryUtils().Select(["*"]).From("users").LimitOffset(10)
+
+			expect(sql.Query()).toBe("SELECT * FROM users LIMIT 10")
+		})
+
+		it("should append LIMIT and OFFSET when both are given", () => {
+			const sql = new SqlQueryUtils().Select(["*"]).From("users").LimitOffset(10, 20)
+
+			expect(sql.Query()).toBe("SELECT * FROM users LIMIT 10 OFFSET 20")
+		})
+
+		it("should append OFFSET only when limit is undefined", () => {
+			const sql = new SqlQueryUtils().Select(["*"]).From("users").LimitOffset(undefined, 20)
+
+			expect(sql.Query()).toBe("SELECT * FROM users OFFSET 20")
+		})
+
+		it("should not modify the query when limit and offset are falsy", () => {
+			const sql = new SqlQueryUtils().Select(["*"]).From("users").LimitOffset(0, 0)
+
+			expect(sql.Query()).toBe("SELECT * FROM users")
+		})
+
+		it("should append LIMIT after WHERE and ORDER BY clauses", () => {
+			const sql = new SqlQueryUtils()
+				.Select(["*"])
+				.From("users")
+				.Where({ status: "active" })
+				.OrderBy({ id: "asc" })
+				.LimitOffset(5, 10)
+
+			expect(sql.Query()).toBe("SELECT * FROM users WHERE status = 'active' ORDER BY id ASC LIMIT 5 OFFSET 10")
+		})
+	})
+
 	describe("Tokenize", () => {
 		it("should tokenize SELECT", () => {
 			const queryHelper = new SqlQueryUtils('SELECT * FROM "myTable" WHERE id = 1')

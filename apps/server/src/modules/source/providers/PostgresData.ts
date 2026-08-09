@@ -127,6 +127,14 @@ export class PostgresData extends absDataProvider {
 			if (options?.Cache) await this.CacheSet(schemaRequest, data)
 		}
 
+		let total = 0
+		if (options?.Limit !== undefined) {
+			const countResult = await this.Connection.query(this.GenerateSqlCount(schemaRequest, options).Query())
+			total = Number((countResult.rows[0] as { count?: number | string } | undefined)?.count ?? 0)
+		}
+
+		await this.SetPagination(data, options, total)
+
 		return HttpResponse.Ok(<TSchemaResponse>{
 			schema,
 			entity,

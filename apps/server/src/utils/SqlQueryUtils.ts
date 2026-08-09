@@ -533,6 +533,17 @@ export class SqlQueryUtils {
 		return this
 	}
 
+	@Logger.LogFunction(true)
+	LimitOffset(limit?: number, offset?: number): this {
+		if (limit) {
+			this._query = `${this._query} LIMIT ${limit}`
+		}
+		if (offset) {
+			this._query = `${this._query} OFFSET ${offset}`
+		}
+		return this
+	}
+
 	Tokenize(): TSqlToken[] {
 		const sanitizedTokens = this._sanitizeTokenize()
 

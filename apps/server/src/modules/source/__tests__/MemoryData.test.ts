@@ -97,6 +97,65 @@ describe("MemoryData", () => {
 		expect(resultRows).toEqual(testRows)
 	})
 
+	// Select with limit/offset returns the page plus a provider-side pagination total
+	it("should return pagination meta with total when selecting with limit", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
+		await memoryData.Connect()
+
+		const testEntity = "test-table"
+		const testRows = Array.from({ length: 10 }, (_, i) => ({ id: i + 1, name: `test${i + 1}` }))
+		memoryData.Connection?.AddTable(testEntity, testRows)
+
+		const schemaRequest: TSchemaRequestSelect = {
+			schema: "test-schema",
+			entity: testEntity,
+			limit: 3,
+			offset: 2,
+		}
+
+		const response = await memoryData.Select(schemaRequest)
+
+		const resultRows = await response.Body?.data.Rows()
+		const pagination = response.Body?.data.MetaData.__pagination__
+
+		expect(response.StatusCode).toBe(HTTP_STATUS_CODE.OK)
+		expect(resultRows).toEqual(testRows.slice(2, 5))
+		expect(pagination).toEqual({ total: 10, limit: 3, offset: 2, hasMore: true })
+	})
+
+	// Select with limit beyond the dataset has no more pages
+	it("should mark hasMore false when the page reaches the end", async () => {
+		const memoryData = new MemoryData()
+		await memoryData.Init("test-source", {
+			provider: DATA_PROVIDER.MEMORY,
+			database: "test-db",
+		})
+		await memoryData.Connect()
+
+		const testEntity = "test-table"
+		const testRows = Array.from({ length: 4 }, (_, i) => ({ id: i + 1, name: `test${i + 1}` }))
+		memoryData.Connection?.AddTable(testEntity, testRows)
+
+		const schemaRequest: TSchemaRequestSelect = {
+			schema: "test-schema",
+			entity: testEntity,
+			limit: 3,
+			offset: 2,
+		}
+
+		const response = await memoryData.Select(schemaRequest)
+
+		const resultRows = await response.Body?.data.Rows()
+		const pagination = response.Body?.data.MetaData.__pagination__
+
+		expect(resultRows).toEqual(testRows.slice(2))
+		expect(pagination).toEqual({ total: 4, limit: 3, offset: 2, hasMore: false })
+	})
+
 	// Insert operation adds rows to an existing entity
 	it("should add rows to an existing entity when inserting", async () => {
 		const memoryData = new MemoryData()

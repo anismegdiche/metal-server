@@ -270,7 +270,7 @@ server:
 
 To enable AI capabilities in your Metal server, configure the following in your server configuration file:
 
-**Example**
+**Example:**
 
 ```yaml
 server:
@@ -754,7 +754,7 @@ Use `*` value to anonymize all fields.
 
 Please note that when using this feature all corresponding fields name of any entity from the source are anonymized.
 
-**Example**
+**Example:**
 
 ```yaml
 schemas:
@@ -778,7 +778,7 @@ The parameters that can be configured inside schedule are :
 | `plan` | String | Y        | name of the plan                                  | <Badge type="default" text="v0.1+" /> |
 | `cron` | String | Y        | A cron expression string, or predefined schedules | <Badge type="default" text="v0.1+" /> |
 
-**Example**
+**Example:**
 
 > ```yaml
 > schedules:
@@ -834,7 +834,7 @@ The parameters that can be configured inside `update` tag are :
 | `on-error`         | Object | N        | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
 | `failure-strategy` | String | N        | Plan's output whene failure happen (default: `throw`)                   | <Badge type="info" text="v0.5+" /> |
 
-**Example**
+**Example:**
 
 ```yaml
 plans:
@@ -854,7 +854,7 @@ plans:
 ::: tip ℹ️ TIP
 Steps are executed sequentially in the order they are declared. Each step can access data from previous steps.
 
-**Example**
+**Example:**
 
 ```yaml
 plans:
@@ -936,7 +936,7 @@ The parameters that can be configured inside `select` tag are :
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -973,7 +973,7 @@ The parameters that can be configured inside `select` tag are :
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1008,7 +1008,7 @@ The parameters that can be configured inside `insert` tag are :
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1050,7 +1050,7 @@ The parameters that can be configured inside `delete` tag are :
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1089,7 +1089,7 @@ The parameters that can be configured inside `update` tag are :
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1110,7 +1110,7 @@ Enable plan steps debugging to be visible in the metadata of the JSON return.
 It can be one of the following values :
 nothing, `error`
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1183,7 +1183,7 @@ The `type` parameter can be :
 | `full-outer` | Full Outer Join | <Badge type="default" text="v0.1+" /> |
 | `cross`      | Cross Join      | <Badge type="default" text="v0.1+" /> |
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1225,7 +1225,7 @@ If sorting order is not provided, ascending order will be used.
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1259,7 +1259,7 @@ Select fields to keep and remove remaining from actual plan's data
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1293,7 +1293,7 @@ Select fields to remove from actual plan's data
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1329,7 +1329,7 @@ The parameters that can be configured inside `map` tag are :
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1381,7 +1381,7 @@ The parameters that can be configured inside `set-var` tag are key-value pairs w
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1428,7 +1428,7 @@ It can be:
 - string representing the name of the field where the result will be stored
 - a list of `key:value` where `key` is the mapped name of the field and `value` is the name of result property. In this configuration JavaScript Expression Engine is supported.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1473,7 +1473,7 @@ The parameters that can be configured inside `sync` tag are :
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1507,7 +1507,7 @@ To anonymize data of given list of fields.
 - [`$vars`](dynamic-expression-engine#vars)
 - [`$utils`](dynamic-expression-engine#utils)
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:
@@ -1575,7 +1575,7 @@ The `remove-duplicates` function is designed to remove duplicate rows from a dat
 
 These parameters provide flexible options for removing duplicates based on specific requirements and ensuring the integrity of the dataset.
 
-**Example**
+**Example:**
 
 If we want to check duplicates with hash method for the rows that have the same `id`, `contact_name` adn then we keep the first row:
 
@@ -1637,7 +1637,7 @@ This step removes fields that contain empty values according to configurable cri
 7. **empty config**: No-op
 
 
-**Example**
+**Example:**
 
 The step uses a flexible configuration model with `defaults` and optional `fields`:
 
@@ -1739,7 +1739,7 @@ Clear plan data, variables and reset execution context.
 
 This step removes all data from the current plan, clears all variables, and resets the execution context to its initial state.
 
-**Example**
+**Example:**
 
 > ```yaml
 > plans:

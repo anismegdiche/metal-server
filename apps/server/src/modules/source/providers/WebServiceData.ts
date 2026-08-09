@@ -131,6 +131,13 @@ export class WebServiceData extends absDataProvider {
 
 		if (Logger.Level === VERBOSITY_LEVEL.DEBUG) data.MetaDataSet("__DEBUG_SOURCE_OPTIONS__", this.Config?.options)
 
+		if (options?.Limit !== undefined) {
+			const total = await data.Count()
+			const pageRows = await data.Rows({ skip: options.Offset, limit: options.Limit })
+			await data.RowsSet(pageRows)
+			await this.SetPagination(data, options, total)
+		}
+
 		if (options?.Cache)
 			await this.CacheSet(
 				{

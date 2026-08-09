@@ -136,6 +136,14 @@ export class MySqlData extends absDataProvider {
 			}
 		}
 
+		let total = 0
+		if (options?.Limit !== undefined) {
+			const [countRows] = await connection.query(this.GenerateSqlCount(schemaRequest, options).Query())
+			total = Number((countRows as { count?: number | string }[])[0]?.count ?? 0)
+		}
+
+		await this.SetPagination(data, options, total)
+
 		return HttpResponse.Ok(<TSchemaResponse>{
 			schema: schemaRequest.schema,
 			entity: schemaRequest.entity,

@@ -24,6 +24,16 @@ export interface IDataProviderOptions {
 		schemaRequest: TSchemaRequest,
 		$context?: Partial<TContext>,
 	): Partial<TOptionalParameter>
+	GetLimit(
+		options: TOptionalParameter,
+		schemaRequest: TSchemaRequest,
+		$context?: Partial<TContext>,
+	): Partial<TOptionalParameter>
+	GetOffset(
+		options: TOptionalParameter,
+		schemaRequest: TSchemaRequest,
+		$context?: Partial<TContext>,
+	): Partial<TOptionalParameter>
 	GetData(
 		options: TOptionalParameter,
 		schemaRequest: TSchemaRequest,

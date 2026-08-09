@@ -48,6 +48,18 @@ const z_sort = z_TOrderBy
 const z_cache = z_T_IntPositive
 	.min(1, { message: "cache must be greater than 0" })
 
+// limit
+const z_limit = z.coerce
+	.number({ message: "limit must be a positive integer" })
+	.int({ message: "limit must be an integer" })
+	.positive({ message: "limit must be greater than 0" })
+
+// offset
+const z_offset = z.coerce
+	.number({ message: "offset must be a non-negative integer" })
+	.int({ message: "offset must be an integer" })
+	.nonnegative({ message: "offset must be greater than or equal to 0" })
+
 // data
 const z_data = z.union([
 	z_TJson,
@@ -79,12 +91,16 @@ export const z_TSchemaRequestSelect = z_TSchemaRequestBase
 					.optional(),
 				sort: z_sort
 					.optional(),
+				limit: z_limit
+					.optional(),
+				offset: z_offset
+					.optional(),
 				cache: z_cache
 					.optional(),
 				anonymize: z_anonymize
 					.optional(),
 			},
-			{ message: "options must be one of the following: fields, filter, filter-expression, sort, cache, anonymize" },
+			{ message: "options must be one of the following: fields, filter, filter-expression, sort, limit, offset, cache, anonymize" },
 		).shape,
 	)
 

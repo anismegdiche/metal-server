@@ -52,8 +52,34 @@ export type TSyncReport = {
 	UpdatedRows: TRow[]
 }
 
+export const DATATABLE_PAGINATION_META = "__pagination__"
+
+export type TPaginationInfo = {
+	total: number
+	limit?: number
+	offset: number
+	hasMore: boolean
+}
+
 //
 export class DataTableUtils {
+	static async SetPagination(
+		data: DataTable,
+		{ total, limit, offset = 0 }: { total: number; limit?: number; offset?: number },
+	): Promise<DataTable> {
+		const returned = await data.Count()
+		const hasMore = offset + returned < total
+
+		data.MetaDataSet(DATATABLE_PAGINATION_META, <TPaginationInfo>{
+			total,
+			limit,
+			offset,
+			hasMore,
+		})
+
+		return data
+	}
+
 	@Logger.LogFunction(true)
 	static async PrefixAllFields(dt: DataTable, prefix: string): Promise<DataTable> {
 		// transform every row in DB by prefixing field names (done inside DuckDB)

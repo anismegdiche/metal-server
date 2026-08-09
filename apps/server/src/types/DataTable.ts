@@ -134,10 +134,10 @@ function dataTable_constructSql({
 			typeof filter === "string"
 				? filter
 				: Object.entries(filter)
-						.map(([key, value]) => {
-							return `${key} = '${value}'`
-						})
-						.join(" AND ")
+					.map(([key, value]) => {
+						return `${key} = '${value}'`
+					})
+					.join(" AND ")
 		sqlWhere = `WHERE ${DT_SYS_FIELDS.deleted} = false AND ${dataTable_convertSql(_filter)}`
 	}
 
@@ -804,16 +804,29 @@ export class DataTable extends clsClonable {
 	}
 
 	@Logger.LogFunction()
-	async Count(): Promise<number> {
+	async Count(filter?: string | TJson): Promise<number> {
 		const cnx = await this.DuckConnection()
+
+		let sqlWhere = `WHERE ${DT_SYS_FIELDS.deleted} = false`
+
+		if (filter) {
+			const _filter =
+				typeof filter === "string"
+					? filter
+					: Object.entries(filter)
+						.map(([key, value]) => {
+							return `${key} = '${value}'`
+						})
+						.join(" AND ")
+			sqlWhere = `WHERE ${DT_SYS_FIELDS.deleted} = false AND ${dataTable_convertSql(_filter)}`
+		}
 
 		const sql = `
 			SELECT 
 				COUNT(*) as count 
 			FROM 
 				${this.SafeName}
-			WHERE
-				${DT_SYS_FIELDS.deleted} = false`
+			${sqlWhere}`
 
 		const reader = await cnx.runAndReadAll(sql)
 		const rows = reader.getRowObjects()
@@ -854,6 +867,16 @@ export class DataTable extends clsClonable {
 			this._fields = this._getFieldsFromRows(first)
 		}
 		return this
+	}
+
+	@Logger.LogFunction()
+	async FieldAdd(field: string, defaultValue: unknown = null, force: boolean = false): Promise<this> {
+		return this.RowsMap(async (row: TRow) => {
+			if (!(field in row) || force) {
+				row[field] = defaultValue
+			}
+			return row
+		})
 	}
 
 	async Row(rowIndex: number): Promise<TRow> {
@@ -1156,7 +1179,7 @@ export class DataTable extends clsClonable {
 	 */
 	private _enqueue<T>(fn: () => Promise<T>): Promise<T> {
 		const next = this._queue.then(fn)
-		this._queue = next.catch(() => {}) as Promise<unknown>
+		this._queue = next.catch(() => { }) as Promise<unknown>
 		return next
 	}
 

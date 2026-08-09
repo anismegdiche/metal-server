@@ -101,12 +101,21 @@ export class MemoryData extends absDataProvider {
 			fields: options.Fields,
 			filter: options.Filter,
 			sort: options.Sort,
+			skip: options.Offset,
+			limit: options.Limit,
 		})
 
 		if (memoryRows.length > 0) {
 			await data.RowsSet(memoryRows)
 			if (options?.Cache) await this.CacheSet(schemaRequest, data)
 		}
+
+		let total = 0
+		if (options?.Limit !== undefined) {
+			total = await this.Connection.Tables[entity].Count(options.Filter)
+		}
+
+		await this.SetPagination(data, options, total)
 
 		return HttpResponse.Ok(<TSchemaResponse>{
 			...schemaResponse,

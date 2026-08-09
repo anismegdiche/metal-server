@@ -36,6 +36,21 @@ describe("DataProviderOptions", () => {
 		expect(result.Cache).toBe(300)
 	})
 
+	it("should transfer limit and offset to options when parsing", () => {
+		const providerOptions = new DataProviderOptions()
+		const request: TSchemaRequest = {
+			schema: "test",
+			entity: "entity",
+			limit: 10,
+			offset: 20,
+		}
+
+		const result = providerOptions.Parse(request)
+
+		expect(result.Limit).toBe(10)
+		expect(result.Offset).toBe(20)
+	})
+
 	// GetFilter processes both filter-expression and filter fields from request
 	it("should process return filter-expression if filter-expression and filter are given", () => {
 		const provider = new DataProviderOptions()
@@ -96,6 +111,60 @@ describe("DataProviderOptions", () => {
 		const result = provider.GetSort({}, request)
 
 		expect(result.Sort).toEqual({ name: SORT_ORDER.DESC })
+	})
+
+	// GetLimit copies limit value from request to options when present
+	it("should copy limit value to options when present", () => {
+		const provider = new DataProviderOptions()
+		const request: TSchemaRequest = {
+			schema: "test",
+			entity: "entity",
+			limit: 25,
+		}
+
+		const result = provider.GetLimit({}, request)
+
+		expect(result.Limit).toBe(25)
+	})
+
+	// GetLimit ignores limit when absent from request
+	it("should not set limit when absent from request", () => {
+		const provider = new DataProviderOptions()
+		const request: TSchemaRequest = {
+			schema: "test",
+			entity: "entity",
+		}
+
+		const result = provider.GetLimit({}, request)
+
+		expect(result.Limit).toBeUndefined()
+	})
+
+	// GetOffset copies offset value from request to options when present
+	it("should copy offset value to options when present", () => {
+		const provider = new DataProviderOptions()
+		const request: TSchemaRequest = {
+			schema: "test",
+			entity: "entity",
+			offset: 40,
+		}
+
+		const result = provider.GetOffset({}, request)
+
+		expect(result.Offset).toBe(40)
+	})
+
+	// GetOffset ignores offset when absent from request
+	it("should not set offset when absent from request", () => {
+		const provider = new DataProviderOptions()
+		const request: TSchemaRequest = {
+			schema: "test",
+			entity: "entity",
+		}
+
+		const result = provider.GetOffset({}, request)
+
+		expect(result.Offset).toBeUndefined()
 	})
 
 	// GetCache copies cache value from request to options when present

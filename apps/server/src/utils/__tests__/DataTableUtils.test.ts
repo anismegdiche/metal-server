@@ -1,7 +1,11 @@
 //
 
 import { DataTable } from "../../types/DataTable"
-import { REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../utils/DataTableUtils"
+import {
+	DATATABLE_PAGINATION_META,
+	REMOVE_DUPLICATES_METHOD,
+	REMOVE_DUPLICATES_STRATEGY,
+} from "../../utils/DataTableUtils"
 import { DataTableUtils } from "../DataTableUtils"
 
 describe("DataTableUtils", () => {
@@ -73,6 +77,73 @@ describe("DataTableUtils", () => {
 		await dtEmpty.RowsSet([])
 		await dtA.RowsSet([])
 		await dtB.RowsSet([])
+	})
+
+	describe("SetPagination", () => {
+		it("should set pagination meta for the first page", async () => {
+			const pageData = new DataTable("page-data", [{ id: 1 }, { id: 2 }, { id: 3 }])
+			await pageData.RowsSet()
+
+			const result = await DataTableUtils.SetPagination(pageData, { total: 10, limit: 3, offset: 0 })
+
+			expect(result.MetaData[DATATABLE_PAGINATION_META]).toEqual({
+				total: 10,
+				limit: 3,
+				offset: 0,
+				hasMore: true,
+			})
+		})
+
+		it("should set pagination meta for a later page without more results", async () => {
+			const pageData = new DataTable("page-data-last", [{ id: 1 }, { id: 2 }, { id: 3 }])
+			await pageData.RowsSet()
+
+			const result = await DataTableUtils.SetPagination(pageData, { total: 5, limit: 3, offset: 3 })
+
+			expect(result.MetaData[DATATABLE_PAGINATION_META]).toEqual({
+				total: 5,
+				limit: 3,
+				offset: 3,
+				hasMore: false,
+			})
+		})
+
+		it("should default to the first page when offset is not given", async () => {
+			const pageData = new DataTable("page-data-no-offset", [{ id: 1 }, { id: 2 }])
+			await pageData.RowsSet()
+
+			const result = await DataTableUtils.SetPagination(pageData, { total: 2, limit: 2 })
+
+			expect(result.MetaData[DATATABLE_PAGINATION_META]).toEqual({
+				total: 2,
+				limit: 2,
+				offset: 0,
+				hasMore: false,
+			})
+		})
+
+		it("should set pagination meta with undefined limit when limit is not given", async () => {
+			const pageData = new DataTable("page-data-no-limit", [{ id: 1 }])
+			await pageData.RowsSet()
+
+			const result = await DataTableUtils.SetPagination(pageData, { total: 10 })
+
+			expect(result.MetaData[DATATABLE_PAGINATION_META]).toEqual({
+				total: 10,
+				limit: undefined,
+				offset: 0,
+				hasMore: true,
+			})
+		})
+
+		it("should return the same data table instance", async () => {
+			const pageData = new DataTable("page-data-instance", [{ id: 1 }])
+			await pageData.RowsSet()
+
+			const result = await DataTableUtils.SetPagination(pageData, { total: 10, limit: 1 })
+
+			expect(result).toBe(pageData)
+		})
 	})
 
 	describe("PrefixAllFields", () => {
@@ -221,7 +292,7 @@ describe("DataTableUtils", () => {
 					{ emp_id: 2, name: "Bob", dept_id: 102, dept_name: "IT", location: "SF" },
 					{ emp_id: 3, name: "Charlie", dept_id: 101, dept_name: "HR", location: "NY" },
 				])
-			})  
+			})
 
 			it("should return empty result when no matches found", async () => {
 				const noMatchTable = new DataTable("no_match")

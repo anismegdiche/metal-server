@@ -23,6 +23,8 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 
 			options = this.GetFields(options, schemaRequest, $context)
 			options = this.GetSort(options, schemaRequest, $context)
+			options = this.GetLimit(options, schemaRequest, $context)
+			options = this.GetOffset(options, schemaRequest, $context)
 			options = this.GetData(options, schemaRequest, $context)
 			options = this.GetCache(options, schemaRequest)
 		}
@@ -72,6 +74,32 @@ export abstract class absDataProviderOptions implements IDataProviderOptions {
 		const { sort } = schemaRequest as TSchemaRequestSelect
 		if (sort) {
 			options.Sort = PlaceHolder.EvaluateJsCode<TOrderBy>(sort, new Sandbox($context)) as TOrderBy
+		}
+		return options
+	}
+
+	@Logger.LogFunction(true)
+	GetLimit(
+		options: TOptionalParameter,
+		schemaRequest: TSchemaRequest,
+		$context?: Partial<TContext>,
+	): Partial<TOptionalParameter> {
+		const { limit } = schemaRequest as TSchemaRequestSelect
+		if (limit !== undefined) {
+			options.Limit = PlaceHolder.EvaluateJsCode<number>(limit, new Sandbox($context)) as number
+		}
+		return options
+	}
+
+	@Logger.LogFunction(true)
+	GetOffset(
+		options: TOptionalParameter,
+		schemaRequest: TSchemaRequest,
+		$context?: Partial<TContext>,
+	): Partial<TOptionalParameter> {
+		const { offset } = schemaRequest as TSchemaRequestSelect
+		if (offset !== undefined) {
+			options.Offset = PlaceHolder.EvaluateJsCode<number>(offset, new Sandbox($context)) as number
 		}
 		return options
 	}

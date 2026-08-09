@@ -48,8 +48,8 @@
     --vp-code-line-height: 1.4;
 }
 
-body {
-  font-size: 0.95em;
+body, blockquote {
+  font-size: 0.9em;
   letter-spacing: -0.03em;
 }
 
@@ -184,6 +184,10 @@ main h2, main h3, main h4, main h5, main h6,
 section ,
 nav span {
   text-transform: uppercase;
+}
+
+code {
+  text-transform: none;
 }
 
 .two-cols {

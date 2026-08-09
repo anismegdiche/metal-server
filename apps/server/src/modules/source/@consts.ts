@@ -24,6 +24,6 @@ export enum DATA_ENTITY_TYPE {
 	FILE = "file",
 	CONTAINER = "container",
 	DATATABLE = "datatable",
-	PLAN_ENTITY = "plan entity",
+	PLAN = "plan",
 	FOLDER = "folder",
 }

@@ -112,7 +112,7 @@ Implemented Utils:
 To escape a field value and treat it as an expression, prefix it with `$>`. This is particularly useful when an update relies on existing fields.
 You can also mix JavaScript Expression Engine and field value escape.
 
-**Example**:
+**Example:**:
 
 > ```yaml
 > plans:
