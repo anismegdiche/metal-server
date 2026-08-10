@@ -2,6 +2,7 @@
 //
 //
 import { randomBytes } from "node:crypto"
+import { EnvSessionsDataPath } from "@metal/config"
 import { Logger } from "@metal/logger"
 import PersistentMap from "@metal/persistent-map"
 import type { TJson } from "@metal/types"
@@ -17,7 +18,7 @@ import { Roles } from "./Roles"
 export class User {
 	static readonly #JWT_EXPIRATION_TIME = 60 * 60 // 1 hour
 	static readonly #JWT_SECRET_LENGTH = 64 // Length of the JWT secret
-	static readonly _tokens = new PersistentMap<Secret>("/data/sessions")
+	static readonly _tokens = new PersistentMap<Secret>(EnvSessionsDataPath())
 
 	static _generateJwtSecret(): Secret {
 		const bytes = randomBytes(User.#JWT_SECRET_LENGTH)
