@@ -16,13 +16,18 @@ RUN mkdir -p tmp/data
 RUN mkdir -p tmp/models
 # files
 COPY package.json ./
+COPY yarn.lock ./
+COPY .yarnrc.yml ./
 COPY tsconfig.json ./
 COPY tsup.config.ts ./
 COPY vitest* ./
 COPY *.md ./
 
+# Enable corepack (yarn)
+RUN corepack enable
+
 # Install dependencies
-RUN npm install
+RUN yarn install
 
 # Start your app (you can change this to whatever you use to start the container)
-CMD ["npm", "run", "test"]
+CMD ["yarn", "vitest", "run"]

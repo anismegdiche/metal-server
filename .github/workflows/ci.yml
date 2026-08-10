@@ -57,14 +57,17 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Install dependencies
-        run: npm install
+        run: yarn install
 
       - name: Compile
-        run: npm run build
+        run: yarn all:build:workspaces
 
       - name: run tests
-        run: npm test
+        run: yarn vitest run
 
   docker-image-build-and-test:
     if: github.ref_name == 'dev'
@@ -96,7 +99,7 @@ jobs:
         run: |
           docker run --rm \
             metal-test:latest \
-            npm run test
+            yarn vitest run
 
   sync-docs:
     needs:
