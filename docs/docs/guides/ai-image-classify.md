@@ -53,10 +53,11 @@ Add a users section with the user `myapiuser`:
 
 ```yaml
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
 	  password: myStr@ngpa$$w0rd
+    roles: [crud]
 ```
 
 In the `ai-engines` section, declare an AI engine named `img-class`:
@@ -129,10 +130,11 @@ server:
   request-limit: 100mb
 
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
 	  password: myStr@ngpa$$w0rd
+    roles: [crud]
 
 sources:
   plan-image-classify:

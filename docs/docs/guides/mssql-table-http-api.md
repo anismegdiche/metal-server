@@ -66,10 +66,11 @@ Add a users section with the user `myapiuser`:
 
 ```yaml
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
 	  password: myStr@ngpa$$w0rd
+    roles: [crud]
 ```
 
 Include a sources section with the source `ms-hr` to connect to the database "hr":
@@ -116,10 +117,11 @@ server:
     default-role: all
   request-limit: 100mb
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
 	  password: myStr@ngpa$$w0rd
+    roles: [crud]
 sources:
   ms-hr:
     provider: mssql

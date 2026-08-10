@@ -402,8 +402,8 @@ server:
     default-role: viewer
 
 roles:
-  admin: "crudla"
-  viewer: "rl"
+  admin: crudl
+  viewer: rl
 
 schemas:
   crm:

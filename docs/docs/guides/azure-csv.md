@@ -64,10 +64,11 @@ Add a users section with the user `myapiuser`:
 
 ```yaml
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
 	  password: myStr@ngpa$$w0rd
+    roles: [crud]
 ```
 
 Include a sources section with the source `azure-csv-data` to connect to the Azure Blob Container `datacontainer1`:
@@ -114,10 +115,11 @@ server:
   request-limit: 100mb
 
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
 	  password: myStr@ngpa$$w0rd
+    roles: [crud]
 
 sources:
   azure-csv-data:

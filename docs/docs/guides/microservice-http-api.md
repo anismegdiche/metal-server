@@ -96,10 +96,11 @@ Add a users section with the user `myapiuser`:
 
 ```yaml
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
 	  password: myStr@ngpa$$w0rd
+    roles: [crud]
 ```
 
 Include a sources section with the sources `pg-clubdata-members`, `pg-clubdata-facilities`, and `pg-clubdata-bookings` to connect to their databases `clubdata`:
@@ -159,10 +160,11 @@ server:
     default-role: all
   request-limit: 100mb
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
 	  password: myStr@ngpa$$w0rd
+    roles: [crud]
 sources:
   pg-clubdata-bookings:
     provider: postgres

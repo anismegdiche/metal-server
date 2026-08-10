@@ -30,7 +30,7 @@ core > studio {f} {cm:2026-08-03} {h}
 (A) move to monorepo {f} {start:2026-06-22T14:14:12} {cm:2026-07-30} {duration:1m-7d_11h43m} {h}
 (A) refactor: remove normalize/stringify error, use new logger format {f} {start:2026-08-04T11:23:20} {cm:2026-08-04} {duration:03h52m} {h}
 (A) move utils {start:2026-08-04T11:23:16}
-(A) source > pagination {f}
+(A) source > pagination {f} {cm:2026-08-10}
 (A) endpoint > gzip compress {f} {start:2026-08-04T20:02:53} {cm:2026-08-07} {duration:2d_13h16m} {h}
 (A) source > connections pools checking if a unique pool is open and not many {f} {cm:2026-08-04} {h}
 (A) user > warmup : default admin, env , studio api key to connect {f}

@@ -3,20 +3,18 @@ description: "Metal:Middleware, ETL & AI at the same place. Empower your project
 ---
 # Introduction
 
-Metal (**M**iddleware, **E**xtraction, **T**ransformation, **A**rtificial Intelligence, and **L**oad) is an advanced technology that seamlessly merges artificial intelligence with database middleware and ETL functionalities, propelling enhanced performance and automating decision-making processes. 
+Metal (**M**iddleware, **E**xtraction, **T**ransformation, **A**rtificial Intelligence, and **L**oad) is a single server that sits between your applications and your databases, exposing SQL and NoSQL data through one REST API — and, natively, through MCP for AI agents.
 
 It streamlines and modernizes CRUD operations and data transformation tasks across SQL and NoSQL databases, instigating a paradigm shift in data management and processing. Operating as an advanced middleware layer between the database system and HTTP requests, Metal manages communication with popular DBMS, particularly beneficial for systems like MS SQL Server and PostgreSQL that lack built-in REST APIs.
 
-Going beyond traditional middleware, Metal natively speaks the Model Context Protocol (MCP) — the emerging standard that lets AI agents and LLM applications act directly on your data. With a simple declarative configuration, your schemas and entities become callable tools for the AI era, turning Metal into the bridge between your data infrastructure and the growing ecosystem of intelligent, autonomous applications.
+Going beyond traditional middleware, Metal natively speaks the Model Context Protocol (MCP) — the emerging standard that lets AI agents and LLM applications act directly on your data. With a simple declarative configuration, your schemas and entities become callable tools for the AI era, turning Metal into the bridge between your data and the AI agents that need to use it.
 
 ```mermaid
 flowchart TD
   A((Web Application)) --> M[Metal Server]
   L((AI/LLM Applications)) --> M
 
-  subgraph P[Core Platform]
-    M[Metal Server]
-  end
+    M(<img src="https://metal-docs-sh3b0.kinsta.page/metal-logo-icon.png" /> Metal Server)
 
   subgraph D[Data Stores]
     A1[(Relational DB)]
@@ -35,7 +33,7 @@ flowchart TD
   M --> F1
   M --> W
 
-  classDef core fill:#f8f8f8,stroke:#666,stroke-width:1px,rx:10,ry:10;
+  classDef core fill:transparent,stroke:#666,stroke-width:0px,rx:10,ry:10;
   classDef store fill:#fff,stroke:#666,stroke-width:1px;
   classDef ext fill:#f3f3ff,stroke:#666,stroke-width:1px;
   classDef actor fill:#ffffff,stroke:#666,stroke-width:1px,stroke-dasharray: 4 3;
@@ -45,8 +43,6 @@ flowchart TD
   class W ext;
   class A,L actor;
 ```
-
-As a conduit between applications and the underlying DBMS, Metal accommodates various database operations, presenting a uniform interface for developers to construct and maintain applications that seamlessly interact with data. By abstracting complexities associated with direct DBMS engagement, Metal empowers developers to focus on core functionality, fostering productivity and manageability.
 
 With its built-in MCP server, Metal extends this same abstraction to intelligent agents: AI assistants, chatbots, and automation pipelines can query, create, update, and manage your data through standardized MCP tools — secured by role-based access control, so you get the power of agentic data access without compromising security or control.
 
@@ -79,4 +75,3 @@ By integrating an API with ETL capabilities, Metal provides numerous benefits:
 - **Scalability:** The architecture supports growing data needs efficiently without performance degradation.
 
 - **Simplified Data Management:** A unified interface for diverse data sources simplifies CRUD operations and enhances overall data management practices.
-

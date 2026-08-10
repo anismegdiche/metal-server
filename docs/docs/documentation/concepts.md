@@ -1,3 +1,10 @@
+<style>
+.half .mermaid {
+  display: flex;
+  justify-content: center;
+}
+</style>
+
 # Understanding Metal Concepts
 
 In the realm of Metal, several key concepts facilitate effective data management:
@@ -15,9 +22,6 @@ In the realm of Metal, several key concepts facilitate effective data management
 - **AI Engine:** A sophisticated component that harnesses artificial intelligence to enhance decision-making by identifying patterns and trends in data.
 
 - **MCP Tool:** A declarative mapping between an LLM-friendly input shape and a Metal schema operation, exposed to AI clients through the Model Context Protocol endpoint.
-
-Metal's comprehensive feature set empowers developers while simplifying CRUD operations and enabling efficient integration across various database systems. By harnessing the power of artificial intelligence for advanced insights, Metal transforms how organizations approach database management and data transformation.
-
 
 ## Source
 
@@ -113,11 +117,9 @@ graph TD
 ## AI Engine
 
 ::: half
-The AI Engine is a sophisticated component integrated into Metal's architecture. 
+The AI Engine runs an AI model — for tasks like sentiment analysis, image classification, or OCR — as a step within a Plan. 
 
-It harnesses the power of artificial intelligence to empower data-driven insights and decision-making. 
-
-This engine automatically identifies patterns, trends, and anomalies within the data, enhancing the overall intelligence and functionality of the Metal platform. It acts as the catalyst for transforming raw data into strategic assets through intelligent analysis and predictive capabilities.
+It takes a field's data as input and produces a result, such as a classification, score, or extracted text, which can be stored in the entity.
 
 :::
 

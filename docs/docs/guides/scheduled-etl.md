@@ -68,10 +68,11 @@ Add a users section with the user `myapiuser`:
 
 ```yaml
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
 	  password: myStr@ngpa$$w0rd
+    roles: [crud]
 ```
 
 Include the sources **mdb-mflix** and **pg-clubdata** to connect to their databases **mflix** and **clubdata**:
@@ -190,10 +191,11 @@ server:
   request-limit: 100mb
 
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
 	  password: myStr@ngpa$$w0rd
+    roles: [crud]
 
 sources:
   mdb-mflix:

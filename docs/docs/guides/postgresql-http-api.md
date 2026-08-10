@@ -58,8 +58,8 @@ version: "0.5"
 server:
   port: 3000
   authentication:
-		type: local
-		default-role: all
+	type: local
+	default-role: all
   request-limit: 100mb
 ```
 
@@ -73,10 +73,11 @@ Add a users section with the user `myapiuser`:
 
 ```yaml
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
-	  password: myStr@ngpa$$w0rd
+    password: myStr@ngpa$$w0rd
+    roles: [crud]
 ```
 
 Include a sources section with the source `pg-northwind` to connect to the database "northwind":
@@ -107,14 +108,15 @@ version: "0.5"
 server:
   port: 3000
   authentication:
-		type: local
-		default-role: all
+    type: local
+    default-role: all
   request-limit: 100mb
 roles:
-  all: crudla
+  crud: crud
 users:
   myapiuser:
-	  password: myStr@ngpa$$w0rd
+    password: myStr@ngpa$$w0rd
+    roles: [crud]
 sources:
   pg-northwind:
     provider: postgres
