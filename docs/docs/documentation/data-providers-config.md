@@ -8,7 +8,7 @@ These configurations define the setups required for connecting to various Data p
 
 Each configuration specifies the necessary parameters such as host, port, user credentials, and additional options for optimal performance and security.
 
-## Azure SQL Database/Microsoft SQL Server <Badge type="default" text="v0.1+" />
+## Azure SQL Database <Badge type="info" text="v0.5+" />
 
 **Primary parameters:**
 
@@ -31,7 +31,103 @@ Each configuration specifies the necessary parameters such as host, port, user c
 | `stream`                 | Boolean | Stream recordsets/rows instead of returning them all at once as an argument of callback. |
 | `parseJSON`              | Boolean | Parse JSON recordsets to JS objects.                                                     |
 | `arrayRowMode`           | String  | Return row results as an array instead of a keyed object.                                |
-| `encrypt`                | Boolean | Use `true` for Azure.                                                                    |
+| `trustServerCertificate` | Boolean | Use `true` for local dev / self-signed certs.                                            |
+
+**Example:**
+
+```yaml
+sources:
+  my-az-db:
+    provider: azure-sqldb
+    host: mydbserver
+    user: myuser
+    password: myStr@ngpa$$w0rd
+    database: mydatabase
+```
+
+## Azure Cosmos DB <Badge type="info" text="v0.5+" />
+
+**Primary parameters:**
+
+| Parameter  | Type   | Required | Description                                                                                 |
+| ---------- | ------ | -------- | ------------------------------------------------------------------------------------------- |
+| `provider` | String | Y        | Set to `azure-cosmosdb` for Azure Cosmos DB                                                 |
+| `host`     | String | Y        | The endpoint URL of your Cosmos DB account (e.g., https://your-account.documents.azure.com) |
+| `database` | String | Y        | The name of the database to connect to                                                      |
+
+**Optional parameters:**
+
+| Parameter          | Type    | Required | Description                                                                                                     |
+| ------------------ | ------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `endpoint`         | String  | N        | The Cosmos DB endpoint URL (default: `""`)                                                                      |
+| `key`              | String  | N        | The primary or secondary key for your Cosmos DB account                                                         |
+| `partitionKey`     | String  | N        | The partition key path for the container                                                                        |
+| `consistencyLevel` | String  | N        | Consistency level: `Strong`, `BoundedStaleness`, `Session`, `Eventual`, `ConsistentPrefix` (default: `Session`) |
+| `retryAfter`       | Integer | N        | Time to wait between retries in milliseconds                                                                    |
+| `autocreate`       | Boolean | N        | If set to `true`, container will be created automatically (default: `true`)                                     |
+| `connectionPolicy` | Object  | N        | Connection policy settings, see: `connectionPolicy`                                                             |
+
+<u>**connectionPolicy**</u>
+
+Optional nested object for configuring the Cosmos DB client connection policy.
+
+| Parameter                             | Type    | Required | Description                                                              |
+| ------------------------------------- | ------- | -------- | ------------------------------------------------------------------------ |
+| `requestTimeout`                      | Integer | N        | Request timeout in milliseconds (default: `5000`)                        |
+| `maxRetryAttemptsOnThrottledRequests` | Integer | N        | Maximum number of retries for throttled requests                         |
+| `maxRetryWaitTimeOnThrottledRequests` | Integer | N        | Maximum wait time in milliseconds between retries for throttled requests |
+| `enableEndpointDiscovery`             | Boolean | N        | Enable endpoint discovery for multi-region accounts                      |
+| `preferredLocations`                  | Array   | N        | List of preferred regions for multi-region Cosmos DB accounts            |
+
+**Example:**
+
+```yaml
+sources:
+  my-cosmosdb:
+    provider: cosmosdb
+    host: https://mycosmos.documents.azure.com
+    database: mydatabase
+    options:
+      key: your-primary-key-here
+      partitionKey: /id
+      consistencyLevel: Session
+      retryAfter: 1000
+      autocreate: true
+      connectionPolicy:
+        requestTimeout: 5000
+        connectionMode: Gateway
+        maxRetryAttemptsOnThrottledRequests: 9
+        maxRetryWaitTimeOnThrottledRequests: 30
+        enableEndpointDiscovery: true
+        preferredLocations:
+          - "East US"
+          - "West Europe"
+```
+
+## Microsoft SQL Server <Badge type="default" text="v0.1+" />
+
+**Primary parameters:**
+
+| Parameter  | Type    | Required | Description                                                                          |
+| ---------- | ------- | -------- | ------------------------------------------------------------------------------------ |
+| `provider` | String  | Y        | Set to `mssql` for Azure SQL Database/Microsoft SQL Server                           |
+| `host`     | String  | Y        | Server to connect to.                                                                |
+| `port`     | Integer | N        | Port to connect to (default: 1433). Not to be set when connecting to named instance. |
+| `user`     | String  | Y        | User name for authentication.                                                        |
+| `password` | String  | Y        | Password for authentication.                                                         |
+| `database` | String  | Y        | Database to connect to (default: dependent on server configuration).                 |
+
+**Optional parameters:**
+
+| Parameter                | Type    | Description                                                                              |
+| ------------------------ | ------- | ---------------------------------------------------------------------------------------- |
+| `domain`                 | String  | Domain for domain login to SQL Server.                                                   |
+| `connectionTimeout`      | Integer | Connection timeout in milliseconds (default: 15000).                                     |
+| `requestTimeout`         | Integer | Request timeout in milliseconds (default: 15000).                                        |
+| `stream`                 | Boolean | Stream recordsets/rows instead of returning them all at once as an argument of callback. |
+| `parseJSON`              | Boolean | Parse JSON recordsets to JS objects.                                                     |
+| `arrayRowMode`           | String  | Return row results as an array instead of a keyed object.                                |
+| `encrypt`                | Boolean | Determining whether or not the connection will be encrypted (default: `true`)            |
 | `trustServerCertificate` | Boolean | Use `true` for local dev / self-signed certs.                                            |
 
 **Example:**
@@ -258,65 +354,6 @@ sources:
       queueLimit: 0
       enableKeepAlive: true
       keepAliveInitialDelay: 0
-```
-
-## CosmosDB <Badge type="default" text="v0.4+" />
-
-**Primary parameters:**
-
-| Parameter  | Type   | Required | Description                                                                                |
-| ---------- | ------ | -------- | ------------------------------------------------------------------------------------------ |
-| `provider` | String | Y        | Set to `cosmosdb` for Azure CosmosDB                                                       |
-| `host`     | String | Y        | The endpoint URL of your CosmosDB account (e.g., https://your-account.documents.azure.com) |
-| `database` | String | Y        | The name of the database to connect to                                                     |
-
-**Optional parameters:**
-
-| Parameter          | Type    | Required | Description                                                                                                     |
-| ------------------ | ------- | -------- | --------------------------------------------------------------------------------------------------------------- |
-| `endpoint`         | String  | N        | The CosmosDB endpoint URL (default: `""`)                                                                       |
-| `key`              | String  | N        | The primary or secondary key for your CosmosDB account                                                          |
-| `partitionKey`     | String  | N        | The partition key path for the container                                                                        |
-| `consistencyLevel` | String  | N        | Consistency level: `Strong`, `BoundedStaleness`, `Session`, `Eventual`, `ConsistentPrefix` (default: `Session`) |
-| `retryAfter`       | Integer | N        | Time to wait between retries in milliseconds                                                                    |
-| `autocreate`       | Boolean | N        | If set to `true`, container will be created automatically (default: `true`)                                     |
-| `connectionPolicy` | Object  | N        | Connection policy settings (see: [`connectionPolicy`](#connectionpolicy))                                       |
-
-#### `connectionPolicy`
-
-Optional nested object for configuring the CosmosDB client connection policy.
-
-| Parameter                             | Type    | Required | Description                                                              |
-| ------------------------------------- | ------- | -------- | ------------------------------------------------------------------------ |
-| `requestTimeout`                      | Integer | N        | Request timeout in milliseconds (default: `5000`)                        |
-| `maxRetryAttemptsOnThrottledRequests` | Integer | N        | Maximum number of retries for throttled requests                         |
-| `maxRetryWaitTimeOnThrottledRequests` | Integer | N        | Maximum wait time in milliseconds between retries for throttled requests |
-| `enableEndpointDiscovery`             | Boolean | N        | Enable endpoint discovery for multi-region accounts                      |
-| `preferredLocations`                  | Array   | N        | List of preferred regions for multi-region CosmosDB accounts             |
-
-**Example:**
-
-```yaml
-sources:
-  my-cosmosdb:
-    provider: cosmosdb
-    host: https://mycosmos.documents.azure.com
-    database: mydatabase
-    options:
-      key: your-primary-key-here
-      partitionKey: /id
-      consistencyLevel: Session
-      retryAfter: 1000
-      autocreate: true
-      connectionPolicy:
-        requestTimeout: 5000
-        connectionMode: Gateway
-        maxRetryAttemptsOnThrottledRequests: 9
-        maxRetryWaitTimeOnThrottledRequests: 30
-        enableEndpointDiscovery: true
-        preferredLocations:
-          - "East US"
-          - "West Europe"
 ```
 
 ## Storage <Badge type="info" text="v0.5+" />

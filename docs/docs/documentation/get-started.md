@@ -75,9 +75,10 @@ You should receive a response similar to the following:
 ```json
 {
   "server": "Metal",
-  "version": "0.4"
+  "version": "0.5"
 }
 ```
+Congratulations! You have successfully set up and verified your Metal Server installation.
 
 ### Swagger UI
 
@@ -89,7 +90,6 @@ You may use the [Swagger UI](https://swagger.io/docs/open-source-tools/swagger-u
 
 The Swagger UI is available at `/api-docs`. Simply navigate to this URL in your web browser to access the interface.
 
-Congratulations! You have successfully set up and verified your Metal Server installation.
 
 ## Run Metal Studio
 
@@ -107,4 +107,19 @@ Open `http://localhost:5000` in your browser, then sign in with the users and ro
 If your Metal Server is not running on `http://localhost:3000`, point Studio to it with the `SERVER_ADDRESS` environment variable (see [Environment Variables](env)).
 :::
 
-See [Get Started with Metal Studio](studio/get-started) for more details.
+### Login
+
+Studio authenticates against the Metal Server using the users and roles configured in the server configuration (see [Authentication](../../guides/authentication)).
+
+1. Open Studio and go to the login page.
+2. Enter the username and password of a Metal user.
+3. You are redirected to the Dashboard.
+
+
+### Configuration vs YAML
+
+Everything you configure in Studio (sources, schemas, MCP tools, users, roles, schedules, server settings) is stored in the same server configuration you would edit by hand in YAML. Use whichever workflow you prefer:
+
+- **YAML first** — declare your configuration in the configuration file, then use Studio to monitor and adjust it.
+- **Studio first** — create and edit items visually, and Studio writes them back to the server configuration.
+

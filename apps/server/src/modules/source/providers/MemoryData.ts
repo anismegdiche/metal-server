@@ -28,7 +28,6 @@ import type { TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
 import type { U__source_memory } from "../types/U__source_memory"
 
-
 //
 export class MemoryData extends absDataProvider {
 	SourceName?: string

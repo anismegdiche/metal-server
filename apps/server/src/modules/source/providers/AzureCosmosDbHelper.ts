@@ -8,7 +8,7 @@ import { Assert } from "../../../utils/Assert"
 import { SQL_TYPE, SqlQueryUtils } from "../../../utils/SqlQueryUtils"
 
 //
-export class CosmosDbHelper {
+export class AzureCosmosDbHelper {
 	static EscapeEntity(_entity: string): string {
 		return "c"
 	}
@@ -26,13 +26,13 @@ export class CosmosDbHelper {
 			if (token.type === SQL_TYPE.FIELD && !token.token.startsWith("c.")) {
 				_token = {
 					...token,
-					token: CosmosDbHelper.EscapeField(token.token),
+					token: AzureCosmosDbHelper.EscapeField(token.token),
 				}
 			}
 			if (token.type === SQL_TYPE.VARIABLE && !token.token.startsWith("c.")) {
 				_token = {
 					...token,
-					token: CosmosDbHelper.EscapeField(token.token),
+					token: AzureCosmosDbHelper.EscapeField(token.token),
 				}
 			}
 			return _token

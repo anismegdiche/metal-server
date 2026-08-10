@@ -13,7 +13,7 @@ vi.mock("../../source/providers/MySqlData", () => ({ MySqlData: {} }))
 vi.mock("../../source/providers/PlanData", () => ({ PlanData: {} }))
 vi.mock("../../source/providers/PostgresData", () => ({ PostgresData: {} }))
 vi.mock("../../source/providers/SqlServerData", () => ({ SqlServerData: {} }))
-vi.mock("../../source/providers/CosmosDbData", () => ({ CosmosDbData: {} }))
+vi.mock("../../source/providers/AzureCosmosDbData", () => ({ AzureCosmosDbData: {} }))
 vi.mock("../../source/providers/StorageData", () => ({ StorageData: {} }))
 vi.mock("../../plan/Step", () => ({ Step: {} }))
 

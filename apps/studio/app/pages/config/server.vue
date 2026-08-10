@@ -28,7 +28,7 @@ const cacheProvider = ref("postgres")
 const cacheConfig = ref<Record<string, any> | undefined>(undefined)
 const cacheFieldsRef = ref<{ collectBody?: () => Record<string, any> } | null>(null)
 
-const cacheProviders = ["postgres", "mysql", "mssql", "mongodb", "cosmosdb", "metal", "memory"]
+const cacheProviders = ["postgres", "mysql", "mssql", "mongodb", "azure-cosmosdb", "metal", "memory"]
 
 const aiEnginesUrl = ref("")
 const aiEnginesTimeout = ref(30000)

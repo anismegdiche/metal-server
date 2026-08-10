@@ -34,7 +34,7 @@ onMounted(() => {
 })
 
 function collectBody() {
-  const body: Record<string, any> = { provider: 'cosmosdb' }
+  const body: Record<string, any> = { provider: 'azure-cosmosdb' }
   if (form.host) body.host = form.host
   if (form.database) body.database = form.database
   const options: Record<string, any> = {}

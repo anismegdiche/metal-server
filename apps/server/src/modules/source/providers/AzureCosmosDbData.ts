@@ -40,14 +40,14 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_ENTITY_TYPE, DATA_PROVIDER } from "../@consts"
 import type { TDataListEntity, TOptionalParameter } from "../@types"
 import { absDataProvider } from "../base/absDataProvider"
-import type { U__source_cosmosdb } from "../types/U__source_cosmosdb"
-import { CosmosDbHelper } from "./CosmosDbHelper"
+import type { U__source_azure_cosmosdb } from "../types/U__source_azure_cosmosdb"
+import { AzureCosmosDbHelper } from "./AzureCosmosDbHelper"
 
 //
-export class CosmosDbData extends absDataProvider {
-	ProviderName = DATA_PROVIDER.COSMOSDB
+export class AzureCosmosDbData extends absDataProvider {
+	ProviderName = DATA_PROVIDER.AZURE_COSMOSDB
 	SourceName?: string
-	Config: U__source_cosmosdb = <U__source_cosmosdb>{}
+	Config: U__source_azure_cosmosdb = <U__source_azure_cosmosdb>{}
 	Connection?: Container
 
 	// biome-ignore lint/complexity/noUselessConstructor: compatibility
@@ -55,7 +55,7 @@ export class CosmosDbData extends absDataProvider {
 		super()
 	}
 
-	DEFAULT: Partial<U__source_cosmosdb> = {
+	DEFAULT: Partial<U__source_azure_cosmosdb> = {
 		host: "",
 		options: {
 			key: "",
@@ -80,7 +80,7 @@ export class CosmosDbData extends absDataProvider {
 	@Logger.LogFunction()
 	async Init(source: string, sourceConfig: U__sources_source): Promise<void> {
 		await super.Init(source, sourceConfig)
-		this.Config = merge(this.DEFAULT, sourceConfig) as U__source_cosmosdb
+		this.Config = merge(this.DEFAULT, sourceConfig) as U__source_azure_cosmosdb
 		// Config is initialized in Init(); assert non-null here for TS
 		this.Config!.options!.endpoint = this.Config!.host
 
@@ -143,7 +143,7 @@ export class CosmosDbData extends absDataProvider {
 		try {
 			const container = await this.GetContainer(schemaRequest)
 			const sqlQueryHelper = this.GenerateSqlSelect(schemaRequest, options)
-			const iterator = container.items.query(CosmosDbHelper.ParseSqlQuery(sqlQueryHelper.Query()))
+			const iterator = container.items.query(AzureCosmosDbHelper.ParseSqlQuery(sqlQueryHelper.Query()))
 			const { resources: rows } = await iterator.fetchAll()
 
 			const data = new DataTable(entity)
@@ -155,7 +155,7 @@ export class CosmosDbData extends absDataProvider {
 
 			let total = 0
 			if (options?.Limit !== undefined) {
-				const countQuery = this.GenerateCosmosCountQuery(schemaRequest, options)
+				const countQuery = this.GenerateCountQuery(schemaRequest, options)
 				const { resources: countRows } = await container.items.query(countQuery).fetchAll()
 				total = Number(countRows[0] ?? 0)
 			}
@@ -246,7 +246,7 @@ export class CosmosDbData extends absDataProvider {
 			const containerDef = await container.read()
 			const partitionKeyPath = containerDef.resource?.partitionKey?.paths[0] // e.g., "/userId"
 
-			const query = CosmosDbHelper.ParseSqlQuery(sqlQueryHelper.Query())
+			const query = AzureCosmosDbHelper.ParseSqlQuery(sqlQueryHelper.Query())
 
 			const { resources: itemsToUpdate } = await container.items
 				.query(<SqlQuerySpec>{
@@ -314,7 +314,7 @@ export class CosmosDbData extends absDataProvider {
 			const containerDef = await container.read()
 			const partitionKeyPath = containerDef.resource?.partitionKey?.paths[0] // e.g., "/userId"
 
-			const query = CosmosDbHelper.ParseSqlQuery(sqlQueryHelper.Query())
+			const query = AzureCosmosDbHelper.ParseSqlQuery(sqlQueryHelper.Query())
 
 			const { resources: itemsToDelete } = await container.items
 				.query(<SqlQuerySpec>{
@@ -434,7 +434,7 @@ export class CosmosDbData extends absDataProvider {
 		return sqlQueryHelper
 	}
 
-	GenerateCosmosCountQuery(schemaRequest: TSchemaRequest, options: TOptionalParameter): string {
+	GenerateCountQuery(schemaRequest: TSchemaRequest, options: TOptionalParameter): string {
 		// Cosmos doesn't support COUNT(*) — use SELECT VALUE COUNT(1)
 		return this.GenerateSqlCount(schemaRequest, options)
 			.Query()
@@ -442,11 +442,11 @@ export class CosmosDbData extends absDataProvider {
 	}
 
 	EscapeEntity(entity: string): string {
-		return CosmosDbHelper.EscapeEntity(entity)
+		return AzureCosmosDbHelper.EscapeEntity(entity)
 	}
 
 	EscapeField(field: string): string {
-		return CosmosDbHelper.EscapeField(field)
+		return AzureCosmosDbHelper.EscapeField(field)
 	}
 
 	async GetContainer(schemaRequest: TSchemaRequest): Promise<Container> {

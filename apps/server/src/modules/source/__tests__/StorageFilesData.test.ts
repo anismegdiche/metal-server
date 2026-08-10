@@ -10,8 +10,8 @@ import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotImplemen
 import { STORAGE_TYPE } from "../../storage/@consts"
 import { StorageProvider } from "../../storage/StorageProvider"
 import { DATA_PROVIDER } from "../@consts"
-import { STORAGE_MODE } from "../providers/STORAGE_MODE"
 import { StorageFilesData } from "../providers/StorageFilesData"
+import { STORAGE_MODE } from "../STORAGE_MODE"
 import type { U__source_storage } from "../types/U__source_storage"
 
 vi.mock("../../cache/Cache")
@@ -49,10 +49,10 @@ describe("StorageFilesData", () => {
 			Set: vi.fn(),
 		}
 
-			; (StorageProvider.GetProvider as Mock).mockReturnValue(mockStorageProvider)
-			; (ContentProvider.GetProvider as Mock).mockReturnValue(mockContentProvider)
+		;(StorageProvider.GetProvider as Mock).mockReturnValue(mockStorageProvider)
+		;(ContentProvider.GetProvider as Mock).mockReturnValue(mockContentProvider)
 
-			; (Convert.PatternToRegex as Mock).mockImplementation((pattern: string) => new RegExp(pattern.replaceAll("*", ".*")))
+		;(Convert.PatternToRegex as Mock).mockImplementation((pattern: string) => new RegExp(pattern.replaceAll("*", ".*")))
 
 		// Create instance
 		storageFilesData = new StorageFilesData()
@@ -101,7 +101,7 @@ describe("StorageFilesData", () => {
 		})
 
 		it("should throw error when connection init fails", async () => {
-			; (StorageProvider.GetProvider as Mock).mockReturnValueOnce(null)
+			;(StorageProvider.GetProvider as Mock).mockReturnValueOnce(null)
 			await expect(storageFilesData.Init("testSource", sourceConfig)).rejects.toThrow(TypeError)
 		})
 	})
@@ -203,7 +203,7 @@ describe("StorageFilesData", () => {
 				Parse: vi.fn().mockReturnValue({}),
 			} as any
 
-				; (HttpResponse.Ok as Mock).mockReturnValue({ status: 200 })
+			;(HttpResponse.Ok as Mock).mockReturnValue({ status: 200 })
 		})
 
 		it("should select successfully", async () => {
@@ -264,7 +264,7 @@ describe("StorageFilesData", () => {
 				Parse: vi.fn().mockReturnValue({ Data: new DataTable("test.json", [{ data: "test data" }]) }),
 			} as any
 
-				; (HttpResponse.Created as Mock).mockReturnValue({ status: 201 })
+			;(HttpResponse.Created as Mock).mockReturnValue({ status: 201 })
 		})
 
 		it("should insert successfully", async () => {
@@ -318,7 +318,7 @@ describe("StorageFilesData", () => {
 				Parse: vi.fn().mockReturnValue({ Data: new DataTable("test", [{ data: "test data" }]) }),
 			} as any
 
-				; (HttpResponse.NoContent as Mock).mockReturnValue({ status: 204 })
+			;(HttpResponse.NoContent as Mock).mockReturnValue({ status: 204 })
 		})
 
 		it("should update successfully", async () => {
@@ -366,7 +366,7 @@ describe("StorageFilesData", () => {
 				Parse: vi.fn().mockReturnValue({}),
 			} as any
 
-				; (HttpResponse.NoContent as Mock).mockReturnValue({ status: 204 })
+			;(HttpResponse.NoContent as Mock).mockReturnValue({ status: 204 })
 		})
 
 		it("should delete successfully", async () => {
@@ -408,7 +408,7 @@ describe("StorageFilesData", () => {
 
 			mockStorageProvider.FolderListFiles.mockResolvedValue(mockDataTable)
 
-				; (HttpResponse.Ok as Mock).mockReturnValue({ status: 200 })
+			;(HttpResponse.Ok as Mock).mockReturnValue({ status: 200 })
 		})
 
 		it("should list entities successfully", async () => {

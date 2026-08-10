@@ -4,16 +4,16 @@ These parameters provide a flexible way to modify API requests or plan commands.
 
 All parameters are described in the table below:
 
-| Parameter             | Usage                                | GET<br>select | POST<br>insert | PATCH<br>update | DELETE<br>delete | JS Context                                                                                   | Metal version                         |
-| --------------------- | ------------------------------------ | :-----------: | :------------: | :-------------: | :--------------: | -------------------------------------------------------------------------------------------- | ------------------------------------- |
-| 📜`filter`            | simple filter                        |      🟢       |       -        |       🟢        |        🟢        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
-| 📜`filter-expression` | complex filter expression            |      🟢       |       -        |       🟢        |        🟢        | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
-| 📜`fields`            | select fields to return              |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
-| 📜`sort`              | sort data with a given order         |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
-| 📜`limit`             | limit the number of rows returned    |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.5+" />    |
-| 📜`offset`            | number of rows to skip               |      🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.5+" />    |
-| `cache`               | cache returned data for a given time |      🟢       |       -        |        -        |        -         | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
-| 📜❇️`data`            | data to send to provider             |       -       |       🟢       |       🟢        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
+| Parameter            | Usage                                | GET<br>select | POST<br>insert | PATCH<br>update | DELETE<br>delete | JS Context                                                                                   | Metal version                         |
+| -------------------- | ------------------------------------ | :-----------: | :------------: | :-------------: | :--------------: | -------------------------------------------------------------------------------------------- | ------------------------------------- |
+| 📜`filter`            | simple filter                        |       🟢       |       -        |        🟢        |        🟢         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
+| 📜`filter-expression` | complex filter expression            |       🟢       |       -        |        🟢        |        🟢         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
+| 📜`fields`            | select fields to return              |       🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
+| 📜`sort`              | sort data with a given order         |       🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
+| 📜`limit`             | limit the number of rows returned    |       🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.5+" />    |
+| 📜`offset`            | number of rows to skip               |       🟢       |       -        |        -        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="info" text="v0.5+" />    |
+| `cache`              | cache returned data for a given time |       🟢       |       -        |        -        |        -         | N/A                                                                                          | <Badge type="default" text="v0.1+" /> |
+| 📜❇️`data`             | data to send to provider             |       -       |       🟢        |        🟢        |        -         | [`$schema`](dynamic-expression-engine#schema), [`$entity`](dynamic-expression-engine#entity) | <Badge type="default" text="v0.4+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 >
@@ -21,18 +21,18 @@ All parameters are described in the table below:
 
 ## How Optional Parameters are handled by Data Providers
 
-| Data Provider                           | `data` | `filter` | `filter-expression` | `fields` | `sort` | `limit` | `offset` | `cache` |
-| --------------------------------------- | :----: | :------: | :-----------------: | :------: | :----: | :-----: | :------: | :-----: |
-| Azure SQL Database/<br/>Microsoft SQL Server |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🟢    |
-| Storage                                 |   🟢   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |    🟢    |   🟢    |
-| Memory                                  |   🟢   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |    🟢    |   🟢    |
-| Metal Server                            |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🔵    |
-| MongoDB                                 |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🟢    |
-| MySql                                   |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🟢    |
-| Plans                                   |   -    |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |    🟢    |   🟢    |
-| PostgreSQL                              |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🟢    |
-| WebService                              |   🟡   |    🟢    |         🟢          |    🟢    |   🟢   |   🟢    |    🟢    |   🟢    |
-| Cosmos DB                               |   🔵   |    🔵    |         🔵          |    🔵    |   🔵   |   🔵    |    🔵    |   🟢    |
+| Data Provider                                | `data` | `filter` | `filter-expression` | `fields` | `sort` | `limit` | `offset` | `cache` |
+| -------------------------------------------- | :----: | :------: | :-----------------: | :------: | :----: | :-----: | :------: | :-----: |
+| Azure SQL Database/<br/>Microsoft SQL Server |   🔵    |    🔵     |          🔵          |    🔵     |   🔵    |    🔵    |    🔵     |    🟢    |
+| Storage                                      |   🟢    |    🟢     |          🟢          |    🟢     |   🟢    |    🟢    |    🟢     |    🟢    |
+| Memory                                       |   🟢    |    🟢     |          🟢          |    🟢     |   🟢    |    🟢    |    🟢     |    🟢    |
+| Metal Server                                 |   🔵    |    🔵     |          🔵          |    🔵     |   🔵    |    🔵    |    🔵     |    🔵    |
+| MongoDB                                      |   🔵    |    🔵     |          🔵          |    🔵     |   🔵    |    🔵    |    🔵     |    🟢    |
+| MySql                                        |   🔵    |    🔵     |          🔵          |    🔵     |   🔵    |    🔵    |    🔵     |    🟢    |
+| Plans                                        |   -    |    🟢     |          🟢          |    🟢     |   🟢    |    🟢    |    🟢     |    🟢    |
+| PostgreSQL                                   |   🔵    |    🔵     |          🔵          |    🔵     |   🔵    |    🔵    |    🔵     |    🟢    |
+| WebService                                   |   🟡    |    🟢     |          🟢          |    🟢     |   🟢    |    🟢    |    🟢     |    🟢    |
+| Azure Cosmos DB                              |   🔵    |    🔵     |          🔵          |    🔵     |   🔵    |    🔵    |    🔵     |    🟢    |
 
 > 🔵 Handled natively by the data provider driver
 >

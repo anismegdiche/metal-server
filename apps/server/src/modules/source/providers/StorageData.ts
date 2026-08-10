@@ -19,11 +19,10 @@ import type { TSchemaResponse } from "../../schema/types/TSchemaResponse"
 import { DATA_PROVIDER } from "../@consts"
 import { absDataProvider } from "../base/absDataProvider"
 import type { IDataProvider } from "../base/IDataProvider"
+import { STORAGE_MODE } from "../STORAGE_MODE"
 import type { U__source_storage, U__source_storage_options } from "../types/U__source_storage"
-import { STORAGE_MODE } from "./STORAGE_MODE"
 import { StorageFilesData } from "./StorageFilesData"
 import { StorageFoldersData } from "./StorageFoldersData"
-
 
 //
 export class StorageData extends absDataProvider implements IDataProvider {

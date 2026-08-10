@@ -1,6 +1,6 @@
 import z from "zod"
 import { z_U__storage } from "../../storage/types/U__storage"
-import { STORAGE_MODE } from "../providers/STORAGE_MODE"
+import { STORAGE_MODE } from "../STORAGE_MODE"
 
 
 //

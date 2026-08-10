@@ -108,7 +108,7 @@ Only the following cache providers are supported. Choose the one that matches yo
 - `mysql` — MySQL
 - `mssql` — Microsoft SQL Server
 - `mongodb` — MongoDB
-- `cosmosdb` — Azure Cosmos DB
+- `azure-cosmosdb` — Azure Cosmos DB
 - `metal` — Metal native storage
 - `memory` — In-memory cache (non-persistent)
 

@@ -13,7 +13,8 @@ export enum DATA_PROVIDER {
 	// FILES = "files",
 	MYSQL = "mysql",
 	WEBSERVICE = "webservice",
-	COSMOSDB = "cosmosdb",
+	AZURE_COSMOSDB = "azure-cosmosdb",
+	AZURE_SQLDB = "azure-sqldb",
 	// FOLDERS = "folders",
 	STORAGE = "storage",
 }

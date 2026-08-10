@@ -601,7 +601,7 @@ Content-Type: application/json
 | `mssql`             | `table`      | <pre>sys.partitions</pre>                       |
 | `mysql`             | `table`      | <pre>information_schema.tables.TABLE_ROWS</pre> |
 | `mongodb`           | `collection` | <pre>listCollections</pre>                      |
-| `cosmosdb`          | `container`  | <pre>meta.partitionKey</pre>                    |
+| `azure-cosmosdb`    | `container`  | <pre>meta.partitionKey</pre>                    |
 | `memory`            | `datatable`  | *Rows count*                                    |
 | `storage` (files)   | `file`       | *File size*                                     |
 | `storage` (folders) | `folder`     | *No size returned*                              |

@@ -28,8 +28,9 @@ export class DataProvider {
 		[DATA_PROVIDER.MEMORY]: () => import("./providers/MemoryData").then((m) => m.MemoryData),
 		[DATA_PROVIDER.MYSQL]: () => import("./providers/MySqlData").then((m) => m.MySqlData),
 		[DATA_PROVIDER.WEBSERVICE]: () => import("./providers/WebServiceData").then((m) => m.WebServiceData),
-		[DATA_PROVIDER.COSMOSDB]: () => import("./providers/CosmosDbData").then((m) => m.CosmosDbData),
+		[DATA_PROVIDER.AZURE_COSMOSDB]: () => import("./providers/AzureCosmosDbData").then((m) => m.AzureCosmosDbData),
 		[DATA_PROVIDER.STORAGE]: () => import("./providers/StorageData").then((m) => m.StorageData),
+		[DATA_PROVIDER.AZURE_SQLDB]: () => import("./providers/AzureSqlDbData").then((m) => m.AzureSqlDbData),
 	}
 
 	/**

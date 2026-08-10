@@ -10,7 +10,7 @@ The Data screen lets you manage **sources** and **schemas**, and browse the data
 
 The Sources panel lists every configured source with its provider, host and database.
 
-- **Add Source** — create a new source. Studio provides a dedicated form for each provider (PostgreSQL, MySQL, MS SQL, MongoDB, Cosmos DB, Storage, Plans, Web Service, Metal Server, Memory), with the same options as the YAML configuration.
+- **Add Source** — create a new source. Studio provides a dedicated form for each provider (PostgreSQL, MySQL, MS SQL, Azure SQL DB, MongoDB, Azure Cosmos DB, Storage, Plans, Web Service, Metal Server, Memory), with the same options as the YAML configuration.
 - **Edit** — modify an existing source.
 - **Delete** — remove a source.
 

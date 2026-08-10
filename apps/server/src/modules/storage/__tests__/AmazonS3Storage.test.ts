@@ -4,7 +4,7 @@ import { vi } from "vitest"
 import { HttpErrorInternalServerError } from "../../../modules/errors/HttpErrors"
 import { DataTable } from "../../../types/DataTable"
 import { DATA_PROVIDER } from "../../source/@consts"
-import { STORAGE_MODE } from "../../source/providers/STORAGE_MODE"
+import { STORAGE_MODE } from "../../source/STORAGE_MODE"
 import { STORAGE_TYPE } from "../@consts"
 import { AmazonS3Storage } from "../providers/AmazonS3Storage"
 

@@ -3,6 +3,7 @@ import { getProviderIcon } from '~/utils/constants'
 import SourceModalPostgres from '~/components/SourceModalPostgres.vue'
 import SourceModalMysql from '~/components/SourceModalMysql.vue'
 import SourceModalMssql from '~/components/SourceModalMssql.vue'
+import SourceModalAzureSqldb from '~/components/SourceModalAzureSqldb.vue'
 import SourceModalMongodb from '~/components/SourceModalMongodb.vue'
 import SourceModalCosmosdb from '~/components/SourceModalCosmosdb.vue'
 import SourceModalMetal from '~/components/SourceModalMetal.vue'
@@ -21,9 +22,10 @@ const provider = defineModel<string>('provider', { default: 'postgres' })
 const PROVIDER_OPTIONS = [
   { label: 'PostgreSQL', value: 'postgres', icon: 'i-lucide-database' },
   { label: 'MySQL', value: 'mysql', icon: 'i-lucide-database' },
-  { label: 'MSSQL', value: 'mssql', icon: 'i-lucide-server' },
   { label: 'MongoDB', value: 'mongodb', icon: 'i-lucide-leaf' },
-  { label: 'CosmosDB', value: 'cosmosdb', icon: 'i-lucide-database' },
+  { label: 'MS SQL', value: 'mssql', icon: 'i-lucide-server' },
+  { label: 'Azure SQL DB', value: 'azure-sqldb', icon: 'i-lucide-server' },
+  { label: 'Azure Cosmos DB', value: 'azure-cosmosdb', icon: 'i-lucide-database' },
   { label: 'Web Service', value: 'webservice', icon: 'i-lucide-globe' },
   { label: 'Storage', value: 'storage', icon: 'i-lucide-hard-drive' },
   { label: 'Metal', value: 'metal', icon: 'i-lucide-server' },
@@ -35,8 +37,9 @@ const PROVIDER_COMPONENT_MAP: Record<string, any> = {
   postgres: SourceModalPostgres,
   mysql: SourceModalMysql,
   mssql: SourceModalMssql,
+  'azure-sqldb': SourceModalAzureSqldb,
   mongodb: SourceModalMongodb,
-  cosmosdb: SourceModalCosmosdb,
+  'azure-cosmosdb': SourceModalCosmosdb,
   metal: SourceModalMetal,
   memory: SourceModalMemory,
   plans: SourceModalPlans,

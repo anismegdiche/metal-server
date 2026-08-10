@@ -17,19 +17,19 @@ Browse, configure, and virtualize Data Sources.
   <FeatureCard 
     title="Azure SQL Database" 
     image="/logo/azure-sql-database.png" 
-    link="/documentation/data-providers-config#azure-sql-database-microsoft-sql-server" 
-    />
-
-  <FeatureCard 
-    title="MS SQL Server" 
-    image="/logo/sql-server.svg" 
-    link="/documentation/data-providers-config#azure-sql-database-microsoft-sql-server"
+    link="/documentation/data-providers-config#azure-sql-database" 
     />
 
   <FeatureCard 
     title="Azure Cosmos DB" 
     image="/logo/azure-cosmos-db.png" 
-    link="/documentation/data-providers-config#cosmosdb"
+    link="/documentation/data-providers-config#azure-cosmos-db"
+    />
+
+  <FeatureCard 
+    title="MS SQL Server" 
+    image="/logo/sql-server.svg" 
+    link="/documentation/data-providers-config#microsoft-sql-server"
     />
 
   <FeatureCard 
