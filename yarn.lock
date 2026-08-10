@@ -2930,6 +2930,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@metal/studio@workspace:apps/studio":
+  version: 0.0.0-use.local
+  resolution: "@metal/studio@workspace:apps/studio"
+  dependencies:
+    "@iconify-json/lucide": "npm:^1.2.114"
+    "@iconify-json/simple-icons": "npm:^1.2.87"
+    "@metal/config": "workspace:*"
+    "@metal/server": "workspace:*"
+    "@nuxt/eslint": "npm:^1.16.0"
+    "@nuxt/kit": "npm:^4.4.8"
+    "@nuxt/ui": "npm:^4.9.0"
+    eslint: "npm:^10.6.0"
+    nuxt: "npm:^4.4.8"
+    nuxt-auth-utils: "npm:^0.5.29"
+    tailwindcss: "npm:^4.3.1"
+    typescript: "npm:^6.0.3"
+    vue-tsc: "npm:^3.3.5"
+  languageName: unknown
+  linkType: soft
+
 "@metal/types@workspace:*, @metal/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@metal/types@workspace:packages/types"
@@ -19446,26 +19466,6 @@ __metadata:
   checksum: 10/f7bcd0d86e573ef9dc0a79862f5ac3eb240667d53348a2d582f2dbe2ac25969d69331be3946cdecc5386829317838593d077ac57546be231d2ed85c5f32f0a56
   languageName: node
   linkType: hard
-
-"studio@workspace:apps/studio":
-  version: 0.0.0-use.local
-  resolution: "studio@workspace:apps/studio"
-  dependencies:
-    "@iconify-json/lucide": "npm:^1.2.114"
-    "@iconify-json/simple-icons": "npm:^1.2.87"
-    "@metal/config": "workspace:*"
-    "@metal/server": "workspace:*"
-    "@nuxt/eslint": "npm:^1.16.0"
-    "@nuxt/kit": "npm:^4.4.8"
-    "@nuxt/ui": "npm:^4.9.0"
-    eslint: "npm:^10.6.0"
-    nuxt: "npm:^4.4.8"
-    nuxt-auth-utils: "npm:^0.5.29"
-    tailwindcss: "npm:^4.3.1"
-    typescript: "npm:^6.0.3"
-    vue-tsc: "npm:^3.3.5"
-  languageName: unknown
-  linkType: soft
 
 "stylehacks@npm:^8.0.1":
   version: 8.0.1
