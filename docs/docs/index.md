@@ -79,7 +79,7 @@ import LogoSection from '.vitepress/theme/components/LogoSection.vue'
   color: var(--color-red);
 }
 
-.VPBadge {
+.is-home .VPBadge {
   font-size: 1.2rem;
   padding: 0.5em;
   border-radius:100%;
