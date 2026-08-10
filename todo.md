@@ -17,7 +17,7 @@ TODO:: check if fields from schemarequest can works with array, if true then upd
 TODO:: sort add fields to be compatible with on-error {f}
 schedule >  run-as   ,  to fix who is running the plan {f}
 plan > test if user is not allowed to access schema, what is happening {f}
-(A) source > split sql and azure {f} {cm:2026-08-10}
+(A) source > split sql and azure {f} {cm:2026-08-10} {h}
 guides, sample project : update
 remove source from schemarequest if possible
 (A) routing bad data to an error sink implicitly removes it from the plan data for downstream steps. The row exists in the error sink, but it's no longer in the main processing stream. {f} {start:2026-03-28T11:10:04} {cm:2026-05-11} {duration:1m-13d_17h11m} {h}
@@ -30,10 +30,11 @@ core > studio {f} {cm:2026-08-03} {h}
 (A) move to monorepo {f} {start:2026-06-22T14:14:12} {cm:2026-07-30} {duration:1m-7d_11h43m} {h}
 (A) refactor: remove normalize/stringify error, use new logger format {f} {start:2026-08-04T11:23:20} {cm:2026-08-04} {duration:03h52m} {h}
 (A) move utils {start:2026-08-04T11:23:16}
-(A) source > pagination {f} {cm:2026-08-10}
+(A) source > pagination {f} {cm:2026-08-10} {h}
 (A) endpoint > gzip compress {f} {start:2026-08-04T20:02:53} {cm:2026-08-07} {duration:2d_13h16m} {h}
 (A) source > connections pools checking if a unique pool is open and not many {f} {cm:2026-08-04} {h}
-(A) user > warmup : default admin, env , studio api key to connect {f}
+(A) user > warmup : default admin, env , studio api key to connect {f} {start:2026-08-10T18:24:54}
 users > crypt passwords {f}
 (A) ai engines > multiple rows by request feature {f}
 (A) dashboard > AI engines {f}
+(A) finish studio: plans {f}
