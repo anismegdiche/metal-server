@@ -357,6 +357,7 @@ export class ApiResponse {
 				schema: sourceName,
 				entity,
 				source: sourceName,
+				limit,
 			}
 
 			const intRes = await source.DataProvider.Select(schemaRequest)

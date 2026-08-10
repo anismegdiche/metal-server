@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
+
 interface SchemaConfig {
   source?: string
-  entities?: Record<string, { source: string; entity: string }>
+  entities?: Record<string, { source: string, entity: string }>
   anonymize?: string
   roles?: string[]
 }
 
 const props = defineProps<{
   schemas: Record<string, SchemaConfig>
-  sourceOptions: { label: string; value: string }[]
+  sourceOptions: { label: string, value: string }[]
 }>()
 
 const emit = defineEmits<{
@@ -22,12 +24,69 @@ const mode = ref<'add' | 'edit'>('add')
 const schemaForm = ref({
   name: '',
   source: '',
-  entities: [] as { key: string; source: string; entity: string }[],
+  entities: [] as { key: string, source: string, entity: string }[],
   anonymize: '',
-  roles: [] as string[],
+  roles: [] as string[]
 })
 
 const roleInput = ref('')
+
+const sourceList = ref<string[]>([])
+const sourcesLoading = ref(false)
+const sourceEntities = ref<Record<string, string[]>>({})
+const sourceEntitiesLoading = ref<Record<string, boolean>>({})
+
+async function fetchSources() {
+  if (sourcesLoading.value) return
+  sourcesLoading.value = true
+  try {
+    const res = await $fetch<Record<string, unknown>>('/server-api/api/config/sources')
+    sourceList.value = Object.keys(res ?? {})
+  } catch {
+    sourceList.value = []
+  } finally {
+    sourcesLoading.value = false
+  }
+}
+
+async function fetchSourceEntities(sourceName: string) {
+  if (sourceEntitiesLoading.value[sourceName]) return
+  sourceEntitiesLoading.value[sourceName] = true
+  try {
+    const res = await $fetch<Record<string, unknown>>(`/server-api/api/source/${encodeURIComponent(sourceName)}`)
+    const rows = (res.rows ?? []) as Record<string, unknown>[]
+    sourceEntities.value[sourceName] = rows.map(r => String(r.name ?? '')).filter(Boolean)
+  } catch {
+    sourceEntities.value[sourceName] = []
+  } finally {
+    sourceEntitiesLoading.value[sourceName] = false
+  }
+}
+
+const allSourceOptions = computed<{ label: string, value: string }[]>(() => {
+  if (sourceList.value.length > 0) {
+    return sourceList.value.map(name => ({ label: name, value: name }))
+  }
+  return props.sourceOptions
+})
+
+function entityOptions(source: string): { label: string, value: string }[] {
+  return (sourceEntities.value[source] ?? []).map(name => ({ label: name, value: name }))
+}
+
+watch(
+  () => schemaForm.value.entities.map(e => e.source),
+  (sources) => {
+    for (const src of new Set(sources.filter(Boolean) as string[])) {
+      if (!sourceEntities.value[src]) {
+        fetchSourceEntities(src)
+      }
+    }
+  },
+  { deep: true }
+)
+
+onMounted(fetchSources)
 
 function addRole() {
   const value = roleInput.value.trim()
@@ -58,7 +117,7 @@ function populateForm(name: string) {
       ? Object.entries(config.entities).map(([key, val]) => ({ key, source: val.source, entity: val.entity }))
       : [],
     anonymize: config.anonymize ?? '',
-    roles: config.roles ?? [],
+    roles: config.roles ?? []
   }
 }
 
@@ -85,7 +144,7 @@ function removeEntity(index: number) {
 async function save() {
   const { name, source, entities, anonymize, roles } = schemaForm.value
   if (!name) return
-  const entitiesMap: Record<string, { source: string; entity: string }> = {}
+  const entitiesMap: Record<string, { source: string, entity: string }> = {}
   for (const e of entities) {
     if (e.key) entitiesMap[e.key] = { source: e.source, entity: e.entity }
   }
@@ -96,7 +155,7 @@ async function save() {
   try {
     await $fetch(`/server-api/api/config/schemas/${encodeURIComponent(name)}`, {
       method: 'PUT',
-      body,
+      body
     })
     open.value = false
     emit('saved')
@@ -120,12 +179,33 @@ defineExpose({ openAdd, openEdit })
           <UInput v-model="schemaForm.name" placeholder="my-schema" :disabled="mode === 'edit'" class="w-48" />
         </UFormField>
         <UFormField label="Source" orientation="horizontal"  :ui="{ description: 'text-xs' }">
-          <USelect v-model="schemaForm.source" :items="sourceOptions" placeholder="Select a source" class="w-48" />
+          <USelect v-model="schemaForm.source" :items="allSourceOptions" placeholder="Select a source" class="w-48" :loading="sourcesLoading" />
         </UFormField>
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-medium">Entities</label>
+            <UButton icon="i-lucide-plus" label="Add" size="xs" variant="outline" @click="addEntity" />
+          </div>
+          <div v-if="schemaForm.entities.length === 0" class="text-xs text-muted italic py-2">No entities defined</div>
+          <div v-for="(ent, idx) in schemaForm.entities" :key="idx" class="flex items-center gap-2">
+            <UInput v-model="ent.key" placeholder="name" class="flex-1" size="sm" />
+            <USelect v-model="ent.source" :items="allSourceOptions" placeholder="Source" class="flex-1" size="sm" :loading="sourcesLoading" />
+            <USelect
+              v-model="ent.entity"
+              :items="entityOptions(ent.source)"
+              placeholder="Select entity"
+              class="flex-1"
+              size="sm"
+              :loading="!!ent.source && sourceEntitiesLoading[ent.source]"
+              :disabled="!ent.source"
+            />
+            <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error" @click="removeEntity(idx)" />
+          </div>
+        </div>
         <UFormField label="Anonymize"  orientation="horizontal" description="Comma-separated field names to anonymize in responses"  :ui="{ description: 'text-xs' }">
           <UInput v-model="schemaForm.anonymize" placeholder="email,ssn,phone" class="w-48" />
         </UFormField>
-        <UFormField label="Roles" hint="Roles allowed to access this schema" orientation="horizontal">
+        <UFormField label="Roles" description="Roles allowed to access this schema" :ui="{ description: 'text-xs' }">
           <div class="flex flex-wrap items-center gap-1.5 rounded-lg border border-muted bg-background px-2 py-1.5">
             <UBadge
               v-for="(role, idx) in schemaForm.roles"
@@ -151,19 +231,6 @@ defineExpose({ openAdd, openEdit })
             />
           </div>
         </UFormField>
-        <div class="flex flex-col gap-2">
-          <div class="flex items-center justify-between">
-            <label class="text-sm font-medium">Entities</label>
-            <UButton icon="i-lucide-plus" label="Add" size="xs" variant="outline" @click="addEntity" />
-          </div>
-          <div v-if="schemaForm.entities.length === 0" class="text-xs text-muted italic py-2">No entities defined</div>
-          <div v-for="(ent, idx) in schemaForm.entities" :key="idx" class="flex items-center gap-2">
-            <UInput v-model="ent.key" placeholder="key name" class="flex-1" size="sm" />
-            <UInput v-model="ent.source" placeholder="source" class="flex-1" size="sm" />
-            <UInput v-model="ent.entity" placeholder="entity" class="flex-1" size="sm" />
-            <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error" @click="removeEntity(idx)" />
-          </div>
-        </div>
       </div>
     </template>
     <template #footer>

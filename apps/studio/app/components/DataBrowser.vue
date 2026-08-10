@@ -41,7 +41,10 @@ const treeData = computed(() =>
 const selectedEntity = ref<{ source: string; schema: string; entity: { name: string; source: string; entity: string } } | null>(null)
 const previewRows = ref<Record<string, unknown>[]>([])
 const previewFields = ref<string[]>([])
+const previewTotal = ref<number | null>(null)
 const previewLoading = ref(false)
+
+const PREVIEW_LIMIT = 50
 
 const sourceEntities = ref<Record<string, { name: string; type?: string; size?: number }[]>>({})
 const sourceEntitiesLoading = ref<Record<string, boolean>>({})
@@ -68,8 +71,11 @@ async function fetchEntityRows(sourceName: string, entityName: string) {
   previewLoading.value = true
   previewRows.value = []
   previewFields.value = []
+  previewTotal.value = null
   try {
-    const res = await $fetch<Record<string, unknown>>(`/server-api/api/source/${encodeURIComponent(sourceName)}/${encodeURIComponent(entityName)}`)
+    const res = await $fetch<Record<string, unknown>>(
+      `/server-api/api/source/${encodeURIComponent(sourceName)}/${encodeURIComponent(entityName)}?limit=${PREVIEW_LIMIT}`,
+    )
     const rows = (res.rows ?? []) as Record<string, unknown>[]
     let fieldNames: string[] = []
     const fieldsObj = res.fields
@@ -79,11 +85,14 @@ async function fetchEntityRows(sourceName: string, entityName: string) {
     if (fieldNames.length === 0 && rows.length > 0) {
       fieldNames = Object.keys(rows[0]!)
     }
+    const metadata = res.metadata as { __pagination__?: { total?: number } } | undefined
+    previewTotal.value = metadata?.__pagination__?.total ?? null
     previewFields.value = fieldNames
     previewRows.value = rows
   } catch {
     previewFields.value = []
     previewRows.value = []
+    previewTotal.value = null
   } finally {
     previewLoading.value = false
   }
@@ -142,7 +151,11 @@ function selectEntity(sourceName: string, schemaName: string, entity: { name: st
           <div class="px-3 py-2 border-b border-default flex items-center justify-between">
             <div>
               <h3 class="text-sm font-medium">{{ selectedEntity.source }}.{{ selectedEntity.entity.name }}</h3>
-              <p class="text-[10px] text-muted">{{ previewRows.length }} rows &middot; {{ previewFields.length }} columns</p>
+              <p class="text-[10px] text-muted">
+                <template v-if="previewTotal != null && previewRows.length < previewTotal">Showing first {{ previewRows.length }} of {{ previewTotal.toLocaleString() }} rows</template>
+                <template v-else>{{ previewRows.length }} rows</template>
+                &middot; {{ previewFields.length }} columns
+              </p>
             </div>
             <div class="flex gap-1 flex-wrap">
               <UBadge v-for="col in previewFields" :key="col" variant="subtle" color="neutral" size="sm">

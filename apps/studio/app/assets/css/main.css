@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 @import "@nuxt/ui";
+
 
 @theme static {
   /* --font-sans: "JetBrains Mono", "Fira Mono", Comfortaa, "Open Sans", "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; */
@@ -58,5 +60,15 @@
 @layer components {
   .bg-metal-gradient {
     @apply bg-linear-to-bl from-metal-primary-300/5 to-transparent;
+  }
+
+  .metal-bg-page {
+    background: linear-gradient(
+      42deg,
+      rgb(255 242 247) 0%,
+      rgb(255 255 255) 42%,
+      rgb(255 255 255) 73%,
+      rgb(240 247 255) 100%
+    );
   }
 }

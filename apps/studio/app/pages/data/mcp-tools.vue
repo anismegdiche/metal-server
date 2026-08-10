@@ -64,6 +64,38 @@ watch(() => toolForm.value.action, (action) => {
   }
 })
 
+const entityOptions = ref<{ label: string, value: string }[]>([])
+const entityLoading = ref(false)
+
+async function loadSchemaEntities(schema: string) {
+  if (!schema) {
+    entityOptions.value = []
+    return
+  }
+  entityLoading.value = true
+  try {
+    const res = await $fetch<{ rows?: { name?: unknown }[] }>(`/server-api/schema/${encodeURIComponent(schema)}`)
+    const names = (res.rows ?? []).map(r => String(r.name ?? '')).filter(Boolean)
+    if (toolForm.value.entity && !names.includes(toolForm.value.entity)) {
+      names.unshift(toolForm.value.entity)
+    }
+    entityOptions.value = names.map(name => ({ label: name, value: name }))
+  } catch {
+    entityOptions.value = []
+  } finally {
+    entityLoading.value = false
+  }
+}
+
+watch(() => toolForm.value.schema, (schema) => {
+  loadSchemaEntities(schema ?? '')
+})
+
+function onSchemaChange(schema: string) {
+  toolForm.value.entity = ''
+  loadSchemaEntities(schema)
+}
+
 const toolTableData = computed(() => tools.value.map(tool => ({
   name: tool.name,
   description: tool.description,
@@ -343,7 +375,7 @@ onMounted(loadData)
             <UFormField label="Schema" orientation="horizontal" description="Schema this tool operates on" :ui="{
               description: 'text-xs'
             }">
-              <USelect v-model="toolForm.schema" :items="schemaOptions" placeholder="Select schema" />
+              <USelect v-model="toolForm.schema" :items="schemaOptions" placeholder="Select schema" @update:model-value="onSchemaChange" />
             </UFormField>
             <UFormField label="Action" orientation="horizontal" description="Schema operation type" :ui="{
               description: 'text-xs'
@@ -354,7 +386,7 @@ onMounted(loadData)
               description="Target schema's entity" :ui="{
                 description: 'text-xs'
               }">
-              <UInput v-model="toolForm.entity" placeholder="Entity name (for CRUD actions)" />
+              <USelect v-model="toolForm.entity" :items="entityOptions" placeholder="Select entity" :loading="entityLoading" :disabled="!toolForm.schema" />
             </UFormField>
             <UFormField v-if="toolForm.action === 'read' || toolForm.action === 'list'" label="Limit"
               orientation="horizontal" description="Maximum number of rows to return" :ui="{
@@ -381,7 +413,7 @@ onMounted(loadData)
             </div>
             <div v-for="(arg, index) in toolForm.arguments" :key="index"
               class="border border-metal-200 dark:border-metal-700 rounded-lg p-3 space-y-3">
-              <div class="grid grid-cols-1 md:grid-cols-[1fr_140px_160px_auto_auto] gap-2 items-end">
+              <div class="grid grid-cols-5 md:grid-cols-[1fr_140px_160px_auto_auto] gap-2 items-end">
                 <UInput v-model="arg.name" placeholder="name" />
                 <USelect v-model="arg.type" :items="[
                   { label: 'String', value: 'string' },
@@ -392,11 +424,11 @@ onMounted(loadData)
                   { label: 'Structure', value: 'structure' }
                 ]" />
                 <UInput v-if="arg.type !== 'structure'" v-model="arg.mapTo" placeholder="map-to" />
-                <div class="flex items-center gap-2">
-                  <UCheckbox v-model="arg.required" />
-                  <span class="text-sm">Required</span>
+                <div class="flex items-center">
+                  <UCheckbox v-model="arg.required" description="Required" />
                 </div>
-                <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error" @click="removeArgument(index)" />
+                <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error" @click="removeArgument(index)"
+                  class="ml-auto  w-1/8" />
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <UInput v-model="arg.description" placeholder="Description" />
@@ -418,7 +450,7 @@ onMounted(loadData)
                   <UButton icon="i-lucide-plus" size="xs" variant="ghost" @click="addChildArgument(arg)" />
                 </div>
                 <div v-for="(child, ci) in arg.children" :key="ci"
-                  class="grid grid-cols-1 md:grid-cols-[1fr_120px_120px_auto] gap-2 items-end">
+                  class="grid grid-cols-4 md:grid-cols-[1fr_120px_120px_auto] gap-2 items-end">
                   <UInput v-model="child.name" placeholder="name" />
                   <USelect v-model="child.type" :items="[
                     { label: 'String', value: 'string' },
@@ -429,7 +461,7 @@ onMounted(loadData)
                   ]" />
                   <UInput v-model="child.mapTo" placeholder="map-to" />
                   <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error"
-                    @click="removeChildArgument(arg, ci)" />
+                    @click="removeChildArgument(arg, ci)" class="ml-auto  w-1/8" />
                 </div>
                 <div v-if="!arg.children || arg.children.length === 0" class="text-xs text-muted">
                   No properties defined. Add a property to map fields.

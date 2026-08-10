@@ -28,12 +28,12 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4 bg-metal-gradient">
+  <div class="min-h-screen flex items-center justify-center p-4 metal-bg-page">
     <UCard class="w-full max-w-sm shadow-2xl">
       <template #header>
         <div class="flex flex-col items-center gap-2">
           <img src="https://metal-docs-sh3b0.kinsta.page/metal-logo-icon.png" alt="Metal Logo" class="w-12 h-12" />
-          <h1 class="text-xl font-bold tracking-tight">Metal <span class="font-light">Studio</span></h1>
+          <h1 class="text-xl font-bold tracking-tight">Metal<span class="font-extralight">studio</span></h1>
         </div>
       </template>
 

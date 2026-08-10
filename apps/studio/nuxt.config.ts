@@ -18,9 +18,17 @@ export default defineNuxtConfig({
         'nuxt-auth-utils'
     ],
 
-    colorMode: {
-        preference: 'light',
-        fallback: 'light'
+    runtimeConfig: {
+        metalServerUrl: EnvGetServerAddress(),
+    },
+
+    eslint: {
+        config: {
+            stylistic: {
+                commaDangle: 'never',
+                braceStyle: '1tbs'
+            }
+        }
     },
 
     devtools: {
@@ -33,16 +41,17 @@ export default defineNuxtConfig({
 
     css: ['~/assets/css/main.css'],
 
-    runtimeConfig: {
-        metalServerUrl: EnvGetServerAddress(),
+    colorMode: {
+        preference: 'light',
+        fallback: 'light'
     },
-
-    eslint: {
-        config: {
-            stylistic: {
-                commaDangle: 'never',
-                braceStyle: '1tbs'
+    fonts: {
+        families: [
+            {
+                name: 'JetBrains Mono',
+                provider: 'google', // or 'local' if self-hosted
+                weights: [100, 200, 300, 400, 500, 600, 700, 800],
             }
-        }
+        ]
     }
 })

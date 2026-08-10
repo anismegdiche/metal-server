@@ -30,6 +30,7 @@ docs/docs/.vitepress/cache/
 
 # data
 data/
+!apps/studio/app/pages/data
 
 # Nuxt dev/build outputs
 .output/
