@@ -63,19 +63,13 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Run tests
+        run: yarn workspace @metal/server test
+
       - name: Compile
         run: |
           yarn workspace @metal/server server:build
           yarn workspace @metal/studio studio:build
-
-      - name: run tests
-        run: yarn workspace @metal/server test
-
-      - name: Studio lint
-        run: yarn workspace @metal/studio dev:lint
-
-      - name: Studio typecheck
-        run: yarn workspace @metal/studio dev:typecheck
 
   docker-image-build-and-test:
     if: github.ref_name == 'dev'

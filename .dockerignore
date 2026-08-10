@@ -1,0 +1,32 @@
+# VCS
+.git
+.gitignore
+
+# Dependencies
+**/node_modules
+
+# Build outputs
+**/dist
+**/build
+**/.nuxt
+**/.output
+**/coverage
+
+# Runtime data
+**/data
+**/tmp
+__rest__
+
+# Local tooling / IDE
+.dev
+.vscode
+.idea
+.vagrant
+.trunk
+.qodo
+.dependencygraph
+.hintrc
+
+# OS files
+Thumbs.db
+Desktop.ini

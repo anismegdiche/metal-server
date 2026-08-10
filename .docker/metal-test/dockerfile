@@ -8,26 +8,20 @@ RUN apt-get update && apt-get upgrade -y
 # Create the app directory
 WORKDIR /app
 
-# Copy dependency and config files
-# folders
-COPY src ./src
-COPY config ./config
-RUN mkdir -p tmp/data
-RUN mkdir -p tmp/models
-# files
-COPY package.json ./
-COPY yarn.lock ./
-COPY .yarnrc.yml ./
-COPY tsconfig.json ./
-COPY tsup.config.ts ./
-COPY vitest* ./
-COPY *.md ./
+# Copy dependency manifests (monorepo layout, layer-cached)
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY apps/*/package.json ./apps/
+COPY packages/*/package.json ./packages/
+COPY docs/package.json ./docs/
 
 # Enable corepack (yarn)
 RUN corepack enable
 
 # Install dependencies
 RUN yarn install
+
+# Copy the rest of the monorepo
+COPY . .
 
 # Start your app (you can change this to whatever you use to start the container)
 CMD ["yarn", "vitest", "run"]
