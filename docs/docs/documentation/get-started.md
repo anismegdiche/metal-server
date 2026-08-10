@@ -109,7 +109,7 @@ If your Metal Server is not running on `http://localhost:3000`, point Studio to 
 
 ### Login
 
-Studio authenticates against the Metal Server using the users and roles configured in the server configuration (see [Authentication](../../guides/authentication)).
+Studio authenticates against the Metal Server using the users and roles configured in the server configuration (see [Authentication](../guides/authentication)).
 
 1. Open Studio and go to the login page.
 2. Enter the username and password of a Metal user.

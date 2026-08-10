@@ -28,5 +28,3 @@ You can run Metal Server on its own and configure everything with YAML, or insta
 | Configuration | Edit `config.yml` manually                 | Edit YAML **or** use the Studio UI                          |
 | Monitoring    | REST API / logs                            | Real-time dashboards, metrics and logs viewer               |
 | Suitable for  | Headless, automated, API-first deployments | Visual management, monitoring and day-to-day administration |
-
-See [Get Started](get-started) to run Studio.

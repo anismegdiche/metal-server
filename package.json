@@ -16,7 +16,7 @@
 		"server:build-all-images": "yarn workspace @metal/server server:build-all-images",
 		"server:generate-api-key": "yarn workspace @metal/server server:generate-api-key",
 		"server:build": "yarn workspace @metal/server server:build",
-		"studio": "yarn workspace studio studio",
+		"studio": "yarn workspace @metal/studio studio",
 		"example:ai-chat:dev": "cd examples/ai-chat && yarn dev",
 		"docs:build": "yarn workspace @metal/docs build"
 	},

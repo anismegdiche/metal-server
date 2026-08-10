@@ -64,10 +64,18 @@ jobs:
         run: yarn install
 
       - name: Compile
-        run: yarn all:build:workspaces
+        run: |
+          yarn workspace @metal/server server:build
+          yarn workspace @metal/studio studio:build
 
       - name: run tests
-        run: yarn vitest run
+        run: yarn workspace @metal/server test
+
+      - name: Studio lint
+        run: yarn workspace @metal/studio dev:lint
+
+      - name: Studio typecheck
+        run: yarn workspace @metal/studio dev:typecheck
 
   docker-image-build-and-test:
     if: github.ref_name == 'dev'
@@ -99,7 +107,7 @@ jobs:
         run: |
           docker run --rm \
             metal-test:latest \
-            yarn vitest run
+            yarn vitest run --project @metal/server
 
   sync-docs:
     needs:

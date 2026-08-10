@@ -5,7 +5,7 @@
 ## Project Overview
 
 - **`apps/server/`** — Express-based TypeScript middleware/ETL/AI server using DuckDB (see `src/types/DataTable.ts`). REST API over multiple database/storage/web backends, plan-based ETL pipeline, Docker-based AI task execution. Includes a Model Context Protocol (MCP) server adapter.
-- **`apps/studio/`** — Nuxt 4 / Vue 3 studio frontend (name: `studio`, unscoped). Single `default.vue` layout with sidebar + header tabs, built on `@nuxt/ui` v4. All pages at root level (no `/studio/` prefix).
+- **`apps/studio/`** — Nuxt 4 / Vue 3 studio frontend (name: `@metal/studio`). Single `default.vue` layout with sidebar + header tabs, built on `@nuxt/ui` v4. All pages at root level (no `/studio/` prefix).
 - **`apps/metrics/`** — ZeroMQ pub/sub metrics collection service (`@metal/metrics`).
 - **`packages/config/`** — Shared config / env helpers (`@metal/config`).
 - **`packages/logger/`** — Logging service with `LogFunction` decorator (`@metal/logger`).
@@ -22,7 +22,7 @@
 ## 0. Workspace Conventions
 
 ### Package naming
-- **Apps** use `@metal/<name>` scope (e.g., `@metal/server`, `@metal/metrics`). Exceptions: `studio` and `docs` (unscoped / `@metal/docs`).
+- **Apps** use `@metal/<name>` scope (e.g., `@metal/server`, `@metal/metrics`). Exception: `docs` (unscoped / `@metal/docs`).
 - **Packages** use `@metal/<name>` scope (e.g., `@metal/config`, `@metal/messaging`).
 - Inter-package dependencies use `"workspace:*"` protocol — never pin local versions.
 
@@ -50,7 +50,7 @@
   yarn workspace @metal/server dev:check         # biome check src
   yarn workspace @metal/server dev:format        # biome format --write src
   ```
-- **Studio** uses ESLint (`@nuxt/eslint`): `yarn workspace studio dev:lint` (`eslint .`) and `yarn workspace studio dev:typecheck` (`nuxt typecheck`).
+- **Studio** uses ESLint (`@nuxt/eslint`): `yarn workspace @metal/studio dev:lint` (`eslint .`) and `yarn workspace @metal/studio dev:typecheck` (`nuxt typecheck`).
 - Biome is not a root dependency — run Biome through `yarn workspace @metal/server <script>`.
 
 ### Studio page structure
