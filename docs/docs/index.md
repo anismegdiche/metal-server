@@ -96,7 +96,9 @@ import LogoSection from '.vitepress/theme/components/LogoSection.vue'
 <h1 class="h-red">Query Any Data, Same API</h1>
 
 ::: half
-#### <Badge type="info" text="1" /> Point Metal at a PostgreSQL database
+
+<h4><Badge type="info" text="1" /> Point Metal at a PostgreSQL database</h4>
+
 **`config.yml`**
 ```yaml
 sources:
@@ -115,7 +117,9 @@ schemas:
 :::
 
 ::: half
-#### <Badge type="info" text="2" /> GET customers — no ORM, no driver, just REST
+
+<h4><Badge type="info" text="2" /> GET customers — no ORM, no driver, just REST</h4>
+
 **`Request`**
 ```bash
 curl http://localhost:3000/schema/northwind/customers \
@@ -159,7 +163,9 @@ curl http://localhost:3000/schema/northwind/customers \
 <h1 class="h-red">Same Data, as an AI Tool</h1>
 
 ::: half
-#### <Badge type="info" text="1" /> Expose it as an MCP tool
+
+<h4><Badge type="info" text="1" /> Expose it as an MCP tool</h4>
+
 **`config.yml`**
 ```yaml
 mcp:
@@ -179,7 +185,9 @@ mcp:
 :::
 
 ::: half
-#### <Badge type="info" text="2" /> Call it from any MCP client, no custom tool code
+
+<h4><Badge type="info" text="2" /> Call it from any MCP client, no custom tool code</h4>
+
 **`Request`**
 ```json
 {
@@ -232,7 +240,7 @@ data: {
 
 <h1 class="h-red">Fits the Architecture You Already Have</h1>
 
-#### Metal decouples your business logic from your data infrastructure — add, remove, or swap data sources without rewriting application code.
+<h4>Metal decouples your business logic from your data infrastructure — add, remove, or swap data sources without rewriting application code.</h4>
 
 
 <FancySection image="/archi/hexagonal.png">

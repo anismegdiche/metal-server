@@ -17,7 +17,7 @@ TODO:: check if fields from schemarequest can works with array, if true then upd
 TODO:: sort add fields to be compatible with on-error {f}
 schedule >  run-as   ,  to fix who is running the plan {f}
 plan > test if user is not allowed to access schema, what is happening {f}
-(A) source > split sql and azure {f}
+(A) source > split sql and azure {f} {cm:2026-08-10}
 guides, sample project : update
 remove source from schemarequest if possible
 (A) routing bad data to an error sink implicitly removes it from the plan data for downstream steps. The row exists in the error sink, but it's no longer in the main processing stream. {f} {start:2026-03-28T11:10:04} {cm:2026-05-11} {duration:1m-13d_17h11m} {h}

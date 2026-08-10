@@ -8,8 +8,7 @@ Content-Type: application/json
 }
 ###
 
-#@token={{login.response.body.token}}
-@token=sk_67c6b062ae35c5d1ca7650d72ae0da748fa20161196c5fcd3f5aff3cda47c5df
+@token={{login.response.body.token}}
 
 # ── Initialize ───────────────────────────────────────────
 
