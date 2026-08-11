@@ -23,7 +23,7 @@ You can run Metal Server on its own and configure everything with YAML, or run S
 
 Before diving into Metal, make sure your environment meets the following prerequisites:
 
-- [Node.js](https://nodejs.org/) 24.13.0
+- [Node.js](https://nodejs.org/) 24.16.0
 - [Git](https://git-scm.com/) 2.42 or newer
 - [Yarn](https://yarnpkg.com/) 4 (managed through [Corepack](https://nodejs.org/api/corepack.html), which ships with Node.js)
 

@@ -23,7 +23,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '24.13.0'  # Using LTS version
+          node-version: '24.16.0'  # Using LTS version
           cache: 'npm'
 
       - name: Install dependencies

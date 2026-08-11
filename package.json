@@ -7,7 +7,7 @@
 	"private": true,
 	"type": "module",
 	"engines": {
-		"node": "=24.13.0"
+		"node": "=24.16.0"
 	},
 	"scripts": {
 		"all:build:workspaces": "yarn workspaces foreach -A run build",
