@@ -23,19 +23,16 @@ jobs:
         os:
           - ubuntu-22.04
           - ubuntu-24.04
+          - ubuntu-26.04
 
-          - windows-2019
           - windows-2022
           - windows-2025
 
           - macos-14
           - macos-15
+          - macos-26
 
         node:
-          # - "24.13.0"
-          # - "24.14.1"
-          # - "24.15.0"
-          # - "24.16.0"
           - "24.17.0"
           - "24.18.1"
           - "24.19.0"
@@ -108,7 +105,7 @@ jobs:
       - enable-deploy
       - matrix-test-and-build
       - docker-image-test-and-build
-    if: github.ref_name == 'dev' && needs.docker-image-test-and-build.result == 'success' && needs.matrix-test-and-build.result == 'success'
+    if: github.ref_name == 'dev' && github.actor != 'nektos/act' && needs.docker-image-test-and-build.result == 'success' && needs.matrix-test-and-build.result == 'success'
 
     runs-on: ubuntu-latest
 
@@ -131,7 +128,7 @@ jobs:
       - enable-deploy
       - matrix-test-and-build
       - docker-image-test-and-build
-    if: github.ref_name == 'dev' && needs.docker-image-test-and-build.result == 'success' && needs.matrix-test-and-build.result == 'success'
+    if: github.ref_name == 'dev' && github.actor != 'nektos/act' && needs.docker-image-test-and-build.result == 'success' && needs.matrix-test-and-build.result == 'success'
 
     runs-on: ubuntu-latest
 

@@ -284,8 +284,8 @@ Returns data from the entity of the schema provided in URL parameters. By defaul
 | `:filter`            | JSON object | N        | condition `key:value` to filter data. (see: [Optional Parameters](optional-parameters)) | <Badge type="default" text="v0.1+" /> |
 | `:filter-expression` | string      | N        | free form condition to filter data. (see: [Optional Parameters](optional-parameters))   | <Badge type="default" text="v0.1+" /> |
 | `:sort`              | string      | N        | sort data, can be `asc` or `desc`. (see: [Optional Parameters](optional-parameters))    | <Badge type="default" text="v0.1+" /> |
-| `:limit`             | number      | N        | maximum number of rows to return. (see: [Optional Parameters](optional-parameters))     | <Badge type="info" text="v0.5+" />    |
-| `:offset`            | number      | N        | number of rows to skip. (see: [Optional Parameters](optional-parameters))               | <Badge type="info" text="v0.5+" />    |
+| `:limit`             | number      | N        | maximum number of rows to return (page size). (see: [Pagination](optional-parameters#pagination))            | <Badge type="info" text="v0.5+" />    |
+| `:offset`            | number      | N        | number of rows to skip, zero-based. (see: [Pagination](optional-parameters#pagination))                      | <Badge type="info" text="v0.5+" />    |
 | `:cache`             | number      | N        | time in seconds to cache data. (see: [Optional Parameters](optional-parameters))        | <Badge type="default" text="v0.1+" /> |
 
 
@@ -547,7 +547,7 @@ All schema endpoints share the same response envelope. On success, the response 
 | `schema`   | string | Name of the schema the request was made against                                                                            |
 | `entity`   | string | Name of the entity the request was made against. Only present on entity-level endpoints (`/schema/:schema/:entity`)        |
 | `status`   | number | HTTP status code of the response                                                                                           |
-| `metadata` | object | Free-form key/value metadata attached to the result. Empty `{}` by default                                                 |
+| `metadata` | object | Free-form key/value metadata attached to the result. Empty `{}` by default. When a `limit` is used, contains pagination details under `__pagination__` (`total`, `limit`, `offset`, `hasMore`), see [Pagination](optional-parameters#pagination) |
 | `fields`   | object | Map of field name to field type. Omitted when the result contains no row                                                   |
 | `rows`     | array  | Array of row objects. Omitted when the result contains no row. Streamed row by row when `server.response-chunk` is enabled |
 

@@ -547,6 +547,9 @@ export class DataTable extends clsClonable {
 					// create folder
 					fs.mkdirSync(DATATABLES_PATH, { recursive: true })
 
+					// Writing encrypted databases needs a write-capable crypto module (httpfs on Windows)
+					await this._ensureHttpfsLoaded(cnx)
+
 					// Attach encrypted database
 					await cnx.run(`
                         ATTACH '${this._dbPath}' AS ${this.SafeName}
@@ -611,6 +614,24 @@ export class DataTable extends clsClonable {
 			this._rows = undefined
 		}
 		this._lock.Release()
+	}
+
+	// Ensure a write-capable crypto module is available for encrypted databases.
+	// On Windows the built-in mbedtls crypto module is read-only; the httpfs extension provides the writer.
+	private async _ensureHttpfsLoaded(cnx: DuckDBConnection): Promise<void> {
+		try {
+			await cnx.run("LOAD httpfs;")
+		} catch {
+			try {
+				await cnx.run("INSTALL httpfs;")
+				await cnx.run("LOAD httpfs;")
+			} catch (err) {
+				throw new Error(
+					`DataTable '${this.Name}': Unable to load the 'httpfs' DuckDB extension. Writing encrypted databases requires 'httpfs' ` +
+						`(the built-in crypto module is read-only on Windows). ${(err as Error).message}`,
+				)
+			}
+		}
 	}
 
 	// Persist rows to DB (transactional)
@@ -1520,6 +1541,8 @@ export class DataTable extends clsClonable {
 
 			const tempTableName = `temp_mem_${this.Name}_${Utils.Uuid(true)}`
 			await cnx.run(duckDb_Sql_RenameTable(this.Name, tempTableName))
+
+			await this._ensureHttpfsLoaded(cnx)
 
 			await cnx.run(`
 				ATTACH '${this._dbPath}' AS ${this.SafeName}

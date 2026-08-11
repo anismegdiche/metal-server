@@ -1,3 +1,7 @@
 -P ubuntu-latest=-self-hosted
--P windows-latest=-self-hosted
--P macos-latest=-self-hosted
+-P ubuntu-22.04=catthehacker/ubuntu:act-22.04
+-P ubuntu-24.04=catthehacker/ubuntu:act-24.04
+-p=false
+--action-offline-mode
+--matrix os:ubuntu-22.04
+--matrix node:24.17.0

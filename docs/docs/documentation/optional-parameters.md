@@ -168,7 +168,9 @@ Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-exp
 
 ### `limit`
 
-Limit the maximum number of rows returned by a select request.
+Controls the maximum number of rows that may be returned for a single request. This parameter can be thought of as the **page size**.
+
+If no `limit` is specified, all matching rows are returned.
 
 Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
 
@@ -184,7 +186,9 @@ Must be a positive integer.
 
 ### `offset`
 
-Skip the given number of rows before returning results. Combine it with `limit` to paginate through large datasets.
+Controls the starting point within the collection of results. Combine it with `limit` to paginate through large datasets (see: [Pagination](#pagination)).
+
+Offsets are **zero-based**: the first item in the collection is retrieved by setting `offset=0`.
 
 Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine).
 
@@ -197,10 +201,6 @@ Must be a non-negative integer.
 > ```http
 > GET /schema/my-schema/my-entity?limit=10&offset=10
 > ```
-
-::: tip ℹ️ NOTE
-When `limit` is combined with `sort` and/or `filter`, the offset is applied **after** sorting and filtering.
-:::
 
 ### `cache`
 
@@ -295,3 +295,45 @@ Supports [JavaScript Expression Engine](dynamic-expression-engine#javascript-exp
 > ```http
 > HTTP/1.1 204 No Content
 > ```
+
+
+## Pagination
+
+All endpoints which return collections of results follow the same pattern for paging. When issuing a request, you can include two parameters which determine paging behavior:
+
+- `limit` — The limit parameter controls the maximum number of rows that may be returned for a single request. This parameter can be thought of as the **page size**. If no `limit` is specified, all matching rows are returned.
+- `offset` — The offset parameter controls the starting point within the collection of results. Note that the first item in the collection is retrieved by setting a **zero offset**.
+
+For example, if you have a collection of 15 items to be retrieved from a resource and you specify `limit=5`, you can retrieve the entire set of results in 3 successive requests by varying the offset value:
+
+| Request | `limit` | `offset` | Rows returned  |
+| ------- | :-----: | :------: | -------------- |
+| 1       |    5    |    0     | items 1 to 5   |
+| 2       |    5    |    5     | items 6 to 10  |
+| 3       |    5    |    10    | items 11 to 15 |
+
+::: tip ℹ️ NOTE
+When `limit` is combined with `sort` and/or `filter`, the offset is applied **after** sorting and filtering.
+:::
+
+When `limit` is specified, the response includes pagination details under `metadata.__pagination__`:
+
+```json
+{
+  "metadata": {
+    "__pagination__": {
+      "total": 15,
+      "limit": 5,
+      "offset": 10,
+      "hasMore": false
+    }
+  }
+}
+```
+
+| Field     | Description                                                            |
+| --------- | ---------------------------------------------------------------------- |
+| `total`   | Total number of matching rows in the collection                        |
+| `limit`   | The requested page size (omitted when no `limit` was given)            |
+| `offset`  | The offset used for this request                                       |
+| `hasMore` | Whether more rows exist beyond this page (`offset + returned < total`) |
