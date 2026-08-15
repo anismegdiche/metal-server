@@ -57,7 +57,7 @@ const sourceColumns = [
           </div>
         </template>
         <template #status-cell="{ row }">
-          <StatusBadge :status="row.original.status === 'connected' ? 'connected' : 'error'" size="md" />
+          <StatusBadge :status="row.original.status === 'connected' ? 'connected' : 'disconnected'" size="md" />
         </template>
       </UTable>
     </UCard>

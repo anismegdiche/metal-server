@@ -21,8 +21,26 @@ const schemas = ref<Record<string, SchemaConfig>>({})
 const sourcesLoading = ref(true)
 const schemasLoading = ref(true)
 
+const { data: sourcesMetrics } = useMetricsPolling('/server-api/api/metrics/sources/sources:%7E')
+const { data: schemaMetrics } = useMetricsPolling('/server-api/api/metrics/schemas/schemas:%7E')
+
 const sourceModalRef = ref<InstanceType<any>>(null)
 const schemaModalRef = ref<InstanceType<any>>(null)
+
+const toast = useToast()
+
+const deleteTarget = ref<{ type: 'source' | 'schema', name: string } | null>(null)
+const deleteModalOpen = ref(false)
+const deleteLoading = ref(false)
+
+const deleteTitle = computed(() => deleteTarget.value?.type === 'source' ? 'Delete Source' : 'Delete Schema')
+const deleteMessage = computed(() =>
+  deleteTarget.value
+    ? `Are you sure you want to delete ${deleteTarget.value.type} '${deleteTarget.value.name}'? This action cannot be undone.`
+    : ''
+)
+
+const sourceDetails = computed(() => sourcesMetrics.value?.['sources:details'] ?? {})
 
 const sourceTableData = computed(() =>
   Object.entries(sources.value).map(([name, config]) => ({
@@ -31,27 +49,36 @@ const sourceTableData = computed(() =>
     host: config.host ?? '-',
     port: config.port ?? '',
     database: config.database ?? '-',
+    status: sourceDetails.value[name]?.status ?? 'unknown',
   }))
 )
 
-const schemaTableData = computed(() =>
-  Object.entries(schemas.value).map(([name, config]) => ({
-    name,
-    source: config.source ?? '-',
-    entityCount: config.entities ? Object.keys(config.entities).length : 0,
-  }))
-)
+const schemaTableData = computed(() => {
+  const details = schemaMetrics.value?.['schemas:details'] ?? {}
+  return Object.entries(schemas.value).map(([name, config]) => {
+    const schemaSources = Object.keys(details[name]?.sources ?? {})
+    const anyDisconnected = schemaSources.some((sn: string) => sourceDetails.value[sn]?.status === 'disconnected')
+    const allConnected =
+      schemaSources.length > 0 && schemaSources.every((sn: string) => sourceDetails.value[sn]?.status === 'connected')
+    return {
+      name,
+      source: config.source ?? '-',
+      entityCount: config.entities ? Object.keys(config.entities).length : 0,
+      status: anyDisconnected ? 'degraded' : allConnected ? 'healthy' : 'healthy',
+    }
+  })
+})
 
 const sourceColumns = [
   { accessorKey: 'name', header: 'Name' },
   { accessorKey: 'provider', header: 'Provider' },
-  { accessorKey: 'host', header: 'Host' },
-  { accessorKey: 'database', header: 'Database' },
+  { accessorKey: 'status', header: 'Status' },
   { accessorKey: 'actions', header: '' },
 ]
 
 const schemaColumns = [
   { accessorKey: 'name', header: 'Name' },
+  { accessorKey: 'status', header: 'Status' },
   { accessorKey: 'source', header: 'Source' },
   { accessorKey: 'entityCount', header: 'Entities' },
   { accessorKey: 'actions', header: '' },
@@ -95,12 +122,40 @@ function openEditSource(name: string) {
   sourceModalRef.value?.openEdit(name)
 }
 
-async function deleteSource(name: string) {
+function deleteSource(name: string) {
+  deleteTarget.value = { type: 'source', name }
+  deleteModalOpen.value = true
+}
+
+function deleteSchema(name: string) {
+  deleteTarget.value = { type: 'schema', name }
+  deleteModalOpen.value = true
+}
+
+async function confirmDelete() {
+  const target = deleteTarget.value
+  if (!target) return
+  deleteLoading.value = true
   try {
-    await $fetch(`/server-api/api/config/sources/${encodeURIComponent(name)}`, { method: 'DELETE' })
-    await loadSources()
-  } catch (e) {
-    console.error('Failed to delete source', e)
+    if (target.type === 'source') {
+      await $fetch(`/server-api/api/config/sources/${encodeURIComponent(target.name)}`, { method: 'DELETE' })
+      await loadSources()
+      toast.add({ title: 'Source deleted', description: `'${target.name}' was removed`, color: 'success' })
+    } else {
+      await $fetch(`/server-api/api/config/schemas/${encodeURIComponent(target.name)}`, { method: 'DELETE' })
+      await loadSchemas()
+      toast.add({ title: 'Schema deleted', description: `'${target.name}' was removed`, color: 'success' })
+    }
+    deleteModalOpen.value = false
+    deleteTarget.value = null
+  } catch (e: any) {
+    toast.add({
+      title: 'Delete failed',
+      description: e?.data?.message ?? `Failed to delete ${target.type} '${target.name}'`,
+      color: 'error',
+    })
+  } finally {
+    deleteLoading.value = false
   }
 }
 
@@ -110,15 +165,6 @@ function openAddSchema() {
 
 function openEditSchema(name: string) {
   schemaModalRef.value?.openEdit(name)
-}
-
-async function deleteSchema(name: string) {
-  try {
-    await $fetch(`/server-api/api/config/schemas/${encodeURIComponent(name)}`, { method: 'DELETE' })
-    await loadSchemas()
-  } catch (e) {
-    console.error('Failed to delete schema', e)
-  }
 }
 
 onMounted(loadData)
@@ -152,10 +198,13 @@ onMounted(loadData)
               <span>{{ row.original.provider }}</span>
             </div>
           </template>
+          <template #status-cell="{ row }">
+            <StatusBadge :status="row.original.status === 'connected' ? 'connected' : 'disconnected'" size="md" />
+          </template>
           <template #actions-cell="{ row }">
             <div class="flex gap-1">
               <UButton icon="i-lucide-pencil" size="xs" variant="ghost" @click="openEditSource(row.original.name)" />
-              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteSource(row.original.name)" />
+              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" @click="deleteSource(row.original.name)" />
             </div>
           </template>
         </UTable>
@@ -177,10 +226,13 @@ onMounted(loadData)
           <template #entityCount-cell="{ row }">
             <UBadge variant="subtle" color="neutral" size="sm">{{ row.original.entityCount }}</UBadge>
           </template>
+          <template #status-cell="{ row }">
+            <StatusBadge :status="row.original.status" size="md" />
+          </template>
           <template #actions-cell="{ row }">
             <div class="flex gap-1">
               <UButton icon="i-lucide-pencil" size="xs" variant="ghost" @click="openEditSchema(row.original.name)" />
-              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteSchema(row.original.name)" />
+              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" @click="deleteSchema(row.original.name)" />
             </div>
           </template>
         </UTable>
@@ -194,5 +246,17 @@ onMounted(loadData)
     <SourceModal ref="sourceModalRef" :sources="sources" @saved="loadSources" />
 
     <SchemaModal ref="schemaModalRef" :schemas="schemas" :source-options="sourceOptions" @saved="loadSchemas" />
+
+    <UModal v-model:open="deleteModalOpen" :title="deleteTitle">
+      <template #body>
+        <p class="text-sm">{{ deleteMessage }}</p>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton label="Cancel" variant="outline" size="sm" @click="() => { deleteModalOpen = false }" />
+          <UButton label="Delete" color="error" size="sm" :loading="deleteLoading" @click="confirmDelete" />
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

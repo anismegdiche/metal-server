@@ -29,7 +29,7 @@ export const z_U__mcp_tool_parameter_type = z.enum([MCP_ARGUMENT_TYPE.STRING, MC
 export const z_U__mcp_tool_parameter_scalar = z.strictObject({
 	type: z.enum([MCP_ARGUMENT_TYPE.STRING, MCP_ARGUMENT_TYPE.NUMBER, MCP_ARGUMENT_TYPE.BOOLEAN]),
 	required: z.boolean().default(false).optional(),
-	description: z.string().min(1).optional(),
+	description: z.string().optional(),
 	default: z.unknown().optional(),
 	enum: z.array(z.union([z.string(), z.number(), z.boolean()])).optional(),
 	"map-to": z.string().optional(),
@@ -38,7 +38,7 @@ export const z_U__mcp_tool_parameter_scalar = z.strictObject({
 export const z_U__mcp_tool_parameter_json = z.strictObject({
 	type: z.literal(MCP_ARGUMENT_TYPE.JSON),
 	required: z.boolean().default(false).optional(),
-	description: z.string().min(1).optional(),
+	description: z.string().optional(),
 	default: z.unknown().optional(),
 	"map-to": z.string().optional(),
 })
@@ -47,7 +47,7 @@ export const z_U__mcp_tool_parameter_json = z.strictObject({
 export const z_U__mcp_tool_parameter_structure = z.strictObject({
 	type: z.literal(MCP_ARGUMENT_TYPE.STRUCTURE),
 	required: z.boolean().default(false).optional(),
-	description: z.string().min(1).optional(),
+	description: z.string().optional(),
 	default: z.unknown().optional(),
 	// one level only — scalar and json children, no nested structures
 	properties: z.record(z.string(), z.union([z_U__mcp_tool_parameter_scalar, z_U__mcp_tool_parameter_json])).optional(),
@@ -56,7 +56,7 @@ export const z_U__mcp_tool_parameter_structure = z.strictObject({
 export const z_U__mcp_tool_parameter_array = z.strictObject({
 	type: z.literal(MCP_ARGUMENT_TYPE.ARRAY),
 	required: z.boolean().default(false).optional(),
-	description: z.string().min(1).optional(),
+	description: z.string().optional(),
 	default: z.unknown().optional(),
 	enum: z.array(z.union([z.string(), z.number(), z.boolean()])).optional(),
 	"map-to": z.string().optional(),
@@ -88,7 +88,7 @@ export const z_U__mcp_tool_list = z.strictObject({
 })
 
 export const z_U__mcp_tool = z.object({
-	description: z.string().min(1),
+	description: z.string().optional(),
 	schema: z.string(),
 	roles: z.array(z.string())
 		.optional(),

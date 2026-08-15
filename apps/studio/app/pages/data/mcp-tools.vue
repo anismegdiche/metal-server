@@ -38,6 +38,12 @@ const isLoading = ref(true)
 const selectedTool = ref<McpTool | null>(null)
 const isEditorOpen = ref(false)
 
+const toast = useToast()
+
+const deleteTarget = ref<McpTool | null>(null)
+const deleteModalOpen = ref(false)
+const deleteLoading = ref(false)
+
 const schemaOptions = computed(() => Object.keys(schemas.value).map(name => ({ label: name, value: name })))
 const actionOptions = [
   { label: 'Read', value: 'read' },
@@ -238,21 +244,29 @@ function removeArgument(index: number) {
   toolForm.value.arguments.splice(index, 1)
 }
 
+function cleanDescription(value: unknown): string | undefined {
+  const text = String(value ?? '').trim()
+  return text ? text : undefined
+}
+
 async function saveTool() {
-  if (!toolForm.value.name || !toolForm.value.description || !toolForm.value.schema) return
+  if (!toolForm.value.name || !toolForm.value.schema) return
+
+  const limit = Number(toolForm.value.limit)
+  const safeLimit = Number.isFinite(limit) && limit > 0 ? limit : 10
 
   const payload = {
-    description: toolForm.value.description,
+    ...(cleanDescription(toolForm.value.description) ? { description: cleanDescription(toolForm.value.description) } : {}),
     schema: toolForm.value.schema,
     ...(toolForm.value.action !== 'list' && toolForm.value.entity ? { entity: toolForm.value.entity } : {}),
     action: toolForm.value.action,
     fields: toolForm.value.fieldsInput.split(',').map(field => field.trim()).filter(Boolean),
-    ...(toolForm.value.action === 'read' || toolForm.value.action === 'list' ? { limit: toolForm.value.limit } : {}),
+    ...(toolForm.value.action === 'read' || toolForm.value.action === 'list' ? { limit: safeLimit } : {}),
     arguments: Object.fromEntries(toolForm.value.arguments.map(arg => {
       const argPayload: Record<string, unknown> = {
         type: arg.type,
         required: arg.required,
-        description: arg.description
+        ...(cleanDescription(arg.description) ? { description: cleanDescription(arg.description) } : {})
       }
       // map-to for all types except structure (structure uses properties instead)
       if (arg.type !== 'structure' && arg.mapTo) {
@@ -268,7 +282,7 @@ async function saveTool() {
           const childPayload: Record<string, unknown> = {
             type: child.type,
             required: child.required,
-            description: child.description
+            ...(cleanDescription(child.description) ? { description: cleanDescription(child.description) } : {})
           }
           if (child.type !== 'structure' && child.mapTo) {
             childPayload['map-to'] = child.mapTo
@@ -281,14 +295,20 @@ async function saveTool() {
       }
       // items for array
       if (arg.type === 'array' && arg.itemsType) {
-        const itemsPayload: Record<string, unknown> = { type: arg.itemsType }
-        if (arg.itemsType !== 'structure' && arg.mapTo) {
-          itemsPayload['map-to'] = arg.mapTo
+        const itemsPayload: Record<string, unknown> = {
+          type: arg.itemsType,
+          ...(cleanDescription(arg.description) ? { description: cleanDescription(arg.description) } : {})
         }
         if (arg.itemsType === 'structure' && arg.children && arg.children.length > 0) {
           itemsPayload.properties = Object.fromEntries(arg.children.map(child => {
-            const childPayload: Record<string, unknown> = { type: child.type, required: child.required, description: child.description }
-            if (child.mapTo) childPayload['map-to'] = child.mapTo
+            const childPayload: Record<string, unknown> = {
+              type: child.type,
+              required: child.required,
+              ...(cleanDescription(child.description) ? { description: cleanDescription(child.description) } : {})
+            }
+            if (child.type !== 'structure' && child.mapTo) {
+              childPayload['map-to'] = child.mapTo
+            }
             return [child.name, childPayload]
           }))
         }
@@ -301,27 +321,66 @@ async function saveTool() {
     }))
   }
 
-  const currentConfig = await $fetch('/server-api/api/config/mcp')
-  const merged = {
-    ...currentConfig,
-    tools: {
-      ...(currentConfig?.tools ?? {}),
-      [toolForm.value.name]: payload
+  try {
+    const currentConfig = await $fetch<Record<string, any>>('/server-api/api/config')
+    const merged = {
+      ...currentConfig,
+      mcp: {
+        ...(currentConfig?.mcp ?? {}),
+        tools: {
+          ...(currentConfig?.mcp?.tools ?? {}),
+          [toolForm.value.name]: payload
+        }
+      }
     }
-  }
 
-  await $fetch('/server-api/api/config', { method: 'PUT', body: merged })
-  isEditorOpen.value = false
-  await loadData()
+    await $fetch('/server-api/api/config', { method: 'PUT', body: merged })
+    isEditorOpen.value = false
+    toast.add({ title: 'Tool saved', description: `'${toolForm.value.name}' was saved`, color: 'success' })
+    await loadData()
+  } catch (e: any) {
+    toast.add({
+      title: 'Save failed',
+      description: e?.data?.message ?? 'Failed to save the MCP tool',
+      color: 'error',
+    })
+  }
 }
 
-async function deleteTool(name: string) {
-  const currentConfig = await $fetch('/server-api/api/config/mcp')
-  const toolsConfig = { ...(currentConfig?.tools ?? {}) }
-  const { [name]: _removed, ...remainingTools } = toolsConfig
-  const merged = { ...currentConfig, tools: remainingTools }
-  await $fetch('/server-api/api/config', { method: 'PUT', body: merged })
-  await loadData()
+function confirmDeleteTool(name: string) {
+  deleteTarget.value = tools.value.find(tool => tool.name === name) ?? null
+  deleteModalOpen.value = true
+}
+
+async function deleteTool() {
+  const target = deleteTarget.value
+  if (!target) return
+  deleteLoading.value = true
+  try {
+    const currentConfig = await $fetch<Record<string, any>>('/server-api/api/config')
+    const toolsConfig = { ...(currentConfig?.mcp?.tools ?? {}) }
+    const { [target.name]: _removed, ...remainingTools } = toolsConfig
+    const merged = {
+      ...currentConfig,
+      mcp: {
+        ...(currentConfig?.mcp ?? {}),
+        tools: remainingTools
+      }
+    }
+    await $fetch('/server-api/api/config', { method: 'PUT', body: merged })
+    deleteModalOpen.value = false
+    deleteTarget.value = null
+    toast.add({ title: 'Tool deleted', description: `'${target.name}' was removed`, color: 'success' })
+    await loadData()
+  } catch (e: any) {
+    toast.add({
+      title: 'Delete failed',
+      description: e?.data?.message ?? `Failed to delete tool '${target.name}'`,
+      color: 'error',
+    })
+  } finally {
+    deleteLoading.value = false
+  }
 }
 
 onMounted(loadData)
@@ -348,8 +407,8 @@ onMounted(loadData)
           <template #actions-cell="{ row }">
             <div class="flex gap-1">
               <UButton icon="i-lucide-pencil" size="xs" variant="ghost" @click="openEditTool(row.original.tool)" />
-              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error"
-                @click="deleteTool(row.original.name)" />
+              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost"
+                @click="confirmDeleteTool(row.original.name)" />
             </div>
           </template>
         </UTable>
@@ -365,11 +424,11 @@ onMounted(loadData)
             }">
             <UInput v-model="toolForm.name" placeholder="tool-name" :disabled="!!selectedTool" />
           </UFormField>
-          <UFormField label="Description" orientation="horizontal"
+          <UFormField label="Description (optional)" orientation="horizontal"
             description="Human-readable description of what this tool does" :ui="{
               description: 'text-xs'
             }">
-            <UInput class="w-sm" v-model="toolForm.description" placeholder="Describe the tool" />
+            <UInput class="w-sm" v-model="toolForm.description" placeholder="Describe the tool (optional)" />
           </UFormField>
           <div class="grid grid-cols-2 gap-4">
             <UFormField label="Schema" orientation="horizontal" description="Schema this tool operates on" :ui="{
@@ -456,8 +515,7 @@ onMounted(loadData)
                     { label: 'String', value: 'string' },
                     { label: 'Number', value: 'number' },
                     { label: 'Boolean', value: 'boolean' },
-                    { label: 'JSON', value: 'json' },
-                    { label: 'Array', value: 'array' }
+                    { label: 'JSON', value: 'json' }
                   ]" />
                   <UInput v-model="child.mapTo" placeholder="map-to" />
                   <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error"
@@ -478,8 +536,20 @@ onMounted(loadData)
       </template>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <UButton label="Cancel" variant="outline" @click="isEditorOpen = false" />
+          <UButton label="Cancel" variant="outline" @click="() => { isEditorOpen = false }" />
           <UButton label="Save" @click="saveTool" />
+        </div>
+      </template>
+    </UModal>
+
+    <UModal v-model:open="deleteModalOpen" :title="deleteTarget ? `Delete '${deleteTarget.name}'` : 'Delete Tool'">
+      <template #body>
+        <p class="text-sm">Are you sure you want to delete this MCP tool? This action cannot be undone.</p>
+      </template>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <UButton label="Cancel" variant="outline" size="sm" @click="() => { deleteModalOpen = false }" />
+          <UButton label="Delete" color="error" size="sm" :loading="deleteLoading" @click="deleteTool" />
         </div>
       </template>
     </UModal>

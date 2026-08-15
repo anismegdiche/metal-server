@@ -205,7 +205,7 @@ await fetchData()
           <template #actions-cell="{ row }">
             <div class="flex gap-1">
               <UButton icon="i-lucide-pencil" size="xs" variant="ghost" @click="openEditUser(row.original.username)" />
-              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteUser(row.original.username)" />
+              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" @click="deleteUser(row.original.username)" />
             </div>
           </template>
         </UTable>
@@ -234,7 +234,7 @@ await fetchData()
           <template #actions-cell="{ row }">
             <div class="flex gap-1">
               <UButton icon="i-lucide-pencil" size="xs" variant="ghost" @click="openEditRole(row.original.name)" />
-              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="error" @click="deleteRole(row.original.name)" />
+              <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" @click="deleteRole(row.original.name)" />
             </div>
           </template>
         </UTable>

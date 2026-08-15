@@ -25,18 +25,27 @@ const treeData = computed(() =>
   Object.entries(props.sources).map(([name, config]) => ({
     name,
     provider: config.provider,
-    expanded: false,
     schemas: Object.entries(props.schemas)
       .filter(([, s]) => s.source === name)
       .map(([schemaName, schemaConfig]) => ({
         name: schemaName,
-        expanded: false,
         entities: schemaConfig.entities
           ? Object.entries(schemaConfig.entities).map(([key, val]) => ({ name: key, source: val.source, entity: val.entity }))
           : [],
       })),
   }))
 )
+
+const expandedSources = ref<Record<string, boolean>>({})
+
+function isSourceExpanded(name: string): boolean {
+  return expandedSources.value[name] ?? false
+}
+
+function toggleSource(name: string) {
+  expandedSources.value[name] = !isSourceExpanded(name)
+  if (isSourceExpanded(name) && !sourceEntities.value[name]) fetchSourceEntities(name)
+}
 
 const selectedEntity = ref<{ source: string; schema: string; entity: { name: string; source: string; entity: string } } | null>(null)
 const previewRows = ref<Record<string, unknown>[]>([])
@@ -119,14 +128,14 @@ function selectEntity(sourceName: string, schemaName: string, entity: { name: st
           <div v-for="node in treeData" :key="node.name" class="mb-1">
             <div
               class="flex items-center gap-1.5 px-2 py-1 cursor-pointer hover:bg-elevated/50 rounded text-sm font-medium"
-              @click="node.expanded = !node.expanded; if (node.expanded && !sourceEntities[node.name]) fetchSourceEntities(node.name)"
+              @click="toggleSource(node.name)"
             >
-              <UIcon :name="node.expanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="size-3 text-muted" />
+              <UIcon :name="isSourceExpanded(node.name) ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="size-3 text-muted" />
               <UIcon :name="getProviderIcon(node.provider)" class="size-3.5 text-primary" />
               <span>{{ node.name }}</span>
               <span v-if="sourceEntitiesLoading[node.name]" class="ml-auto text-[10px] text-muted">loading...</span>
             </div>
-            <div v-if="node.expanded" class="ml-4">
+            <div v-if="isSourceExpanded(node.name)" class="ml-5 border-l border-default pl-2">
               <div v-if="sourceEntitiesLoading[node.name]" class="px-2 py-1 text-xs text-muted italic">Loading entities...</div>
               <div v-else-if="(sourceEntities[node.name] ?? []).length === 0" class="px-2 py-1 text-xs text-muted italic">No entities found</div>
               <div

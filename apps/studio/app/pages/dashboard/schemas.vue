@@ -146,10 +146,7 @@ const entityTableColumns = [
           </UBadge>
         </template>
         <template #status-cell="{ row }">
-          <div class="flex items-center gap-1.5">
-            <span class="size-3 rounded-full" :class="STATUS_DOT_MAP[row.original.status]"></span>
-            <span class="text-sm">{{ STATUS_LABEL_MAP[row.original.status] }}</span>
-          </div>
+          <StatusBadge :status="row.original.status" size="md" />
         </template>
         <template #reads-cell="{ row }">
           <span class="font-mono text-info text-sm">{{ formatNumber(row.original.reads) }}</span>
@@ -181,10 +178,7 @@ const entityTableColumns = [
               size="xs">
               {{ SCHEMA_TYPE_BADGE[selectedSchema.type]?.label }}
             </UBadge>
-            <div class="flex items-center gap-1.5 ml-2">
-              <span class="size-2 rounded-full" :class="STATUS_DOT_MAP[selectedSchema.status]" />
-              <span class="text-xs text-muted">{{ STATUS_LABEL_MAP[selectedSchema.status] }}</span>
-            </div>
+            <StatusBadge :status="selectedSchema.status" size="sm" />
           </div>
         </div>
       </template>

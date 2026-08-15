@@ -116,7 +116,7 @@ async function clearLogs() {
       <span class="text-xs text-muted">{{ meta?.total ?? 0 }} entries</span>
       <USwitch v-model="autoRefresh" size="xs" label="Auto-refresh" />
       <UButton icon="i-lucide-refresh-cw" size="xs" variant="outline" @click="fetchLogs" />
-      <UButton icon="i-lucide-trash-2" size="xs" variant="outline" color="error" label="Clear"
+      <UButton icon="i-lucide-trash-2" size="xs" variant="outline" label="Clear"
         @click="showClearModal = true" />
     </div>
 
