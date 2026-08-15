@@ -2,13 +2,13 @@
 //
 //
 
-// Lazy-loaded modules
 import * as Fs from "node:fs"
+// Lazy-loaded modules
 import { Logger } from "@metal/logger"
-import type { Express, NextFunction, Request, Response } from "express"
 //
-import { ROUTE } from "../modules/core/@consts"
 import type { TJson } from "@metal/types"
+import type { Express, NextFunction, Request, Response } from "express"
+import { ROUTE } from "../modules/core/@consts"
 
 //
 export class Swagger {

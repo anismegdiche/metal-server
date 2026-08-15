@@ -2,7 +2,7 @@
 //
 //
 import { createHash, randomBytes } from "node:crypto"
-import { EnvApiKeysDataPath } from "@metal/config"
+import { Env } from "@metal/config"
 import { Logger } from "@metal/logger"
 import PersistentMap from "@metal/persistent-map"
 import type { TUserTokenInfo } from "../auth/@types"
@@ -13,7 +13,16 @@ import { API_KEY_BYTE_LENGTH, API_KEY_PREFIX } from "./@consts"
 import type { TApiKeyCreated, TApiKeyInfo, TApiKeyRecord } from "./@types"
 //
 export class ApiKey {
-	static readonly #store = new PersistentMap<TApiKeyRecord>(EnvApiKeysDataPath())
+
+	static _store: PersistentMap<TApiKeyRecord> | undefined = undefined
+
+	static get #store(): PersistentMap<TApiKeyRecord> {
+		if (!ApiKey._store) {
+			ApiKey._store = new PersistentMap<TApiKeyRecord>(Env.server.apiKeys.path)
+		}
+		return ApiKey._store
+	}
+
 	//
 	static _hashKey(key: string): string {
 		return createHash("sha256").update(key).digest("hex")

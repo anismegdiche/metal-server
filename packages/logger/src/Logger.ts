@@ -146,8 +146,6 @@ Prefix.apply(LogLevel.getLogger("critical"), {
 	},
 })
 
-const LOG_PATH = (await import("@metal/config")).EnvLogsDataPath() ?? "./data/logs"
-
 export class Logger {
 	static db: PersistentMap<LogEntry>
 	static readonly In = magenta("▶ ")
@@ -157,15 +155,15 @@ export class Logger {
 
 	static ServiceName = "NOT_DEFINED"
 
-	static Init(name: string) {
+	static async Init(name: string) {
 		Logger.ServiceName = name
-		Logger.SetDb()
+		await Logger.SetDb()
 	}
 
-	static SetDb() {
+	static async SetDb() {
 		Logger.db = new PersistentMap<LogEntry>(
 			StringUtils.Path(
-				LOG_PATH,
+				(await import("@metal/config")).Env.logger.path ?? "./data/logs",
 				`${_cleanServiceName(Logger.ServiceName)}-log.db`
 			)
 		)

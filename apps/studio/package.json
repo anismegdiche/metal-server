@@ -5,17 +5,16 @@
 	"private": true,
 	"type": "module",
 	"engines": {
-		"node": "=24.16.0"
+		"node": "24.16.0"
 	},
 	"scripts": {
-		"studio": "yarn studio:build && yarn studio:start",
-		"studio:start": "node start.mjs",
-		"studio:build": "nuxt build",
-		"studio:postinstall": "nuxt prepare",
+		"studio": "node start.mjs",
 		"dev": "nuxt dev",
-		"dev:preview": "nuxt preview",
-		"dev:lint": "eslint .",
-		"dev:typecheck": "nuxt typecheck"
+		"build": "nuxt build",
+		"preview": "nuxt preview",
+		"lint": "eslint .",
+		"typecheck": "nuxt typecheck",
+		"postinstall": "nuxt prepare"
 	},
 	"dependencies": {
 		"@iconify-json/lucide": "^1.2.114",

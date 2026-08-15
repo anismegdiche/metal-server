@@ -10,8 +10,7 @@ import { JsonUtils, StringUtils } from "@metal/utils"
 import { omit } from "lodash-es"
 //
 import {
-	DATATABLES_PATH,
-	type DataTable,
+	DataTable,
 	dataTable_convertSql,
 	duckDb_Sql_CreateTable,
 	duckDb_Sql_DropTable,
@@ -768,7 +767,7 @@ export class DataTableUtils {
 		const targetConn = await target.DuckConnection()
 
 		// Use a temp file for transfer to avoid memory pressure
-		const tempFile = StringUtils.FsPath(DATATABLES_PATH, `${randomUUID()}.parquet`)
+		const tempFile = StringUtils.FsPath(DataTable.Path, `${randomUUID()}.parquet`)
 
 		try {
 			// Export source to parquet

@@ -17,8 +17,9 @@ import { ServerInitializer } from "./ServerInitializer"
 
 //
 export class ServerCore {
-	static readonly NodeJsProcessPath = process.cwd()
-	static IndexPath = process.cwd()
+	static IndexPath: string
+	static CwdPath: string
+	static WorkspacePath: string 
 	static readonly Cpus = os.cpus().length ?? 1
 	static readonly Memory = os.freemem()
 	static readonly Platform = process.platform

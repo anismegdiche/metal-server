@@ -4,7 +4,7 @@
 //
 //
 import { CustomEvent, EventBus, on } from "@dimkl/events"
-import { EnvGetMetricsDataPath } from "@metal/config"
+import { Env } from "@metal/config"
 //
 import { Logger } from "@metal/logger"
 import PersistentMap from "@metal/persistent-map"
@@ -17,7 +17,15 @@ import { METRIC_EVENT } from "./@events"
 //
 export class MetricsCollector {
 	static Bus = new EventBus()
-	static Data = new PersistentMap<any>(EnvGetMetricsDataPath())
+
+	static _data: PersistentMap<any> | undefined = undefined
+	static get Data(): PersistentMap<any> {
+		if (!MetricsCollector._data) {
+			MetricsCollector._data = new PersistentMap<any>(Env.server.metrics.path)
+		}
+		return MetricsCollector._data
+	}
+
 	static _queue = new Queue()
 
 	static Get(metricName: string, defaultValue: any = undefined): any {

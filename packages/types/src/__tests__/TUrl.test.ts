@@ -1,4 +1,5 @@
 import { z_TUrl } from "@metal/types"
+import { describe, expect, it } from "vitest"
 
 describe("TUrl Type", () => {
 	describe("Valid URLs", () => {

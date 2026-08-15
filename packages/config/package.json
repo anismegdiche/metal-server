@@ -10,6 +10,10 @@
 		"build": "tsc",
 		"test": "yarn vitest run --project @metal/config"
 	},
+	"dependencies": {
+		"@metal/logger": "workspace:*",
+		"@metal/utils": "workspace:*"
+	},
 	"devDependencies": {
 		"@types/node": "^24",
 		"typescript": "^6.0.3",

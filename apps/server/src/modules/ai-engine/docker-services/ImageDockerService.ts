@@ -2,7 +2,7 @@
 //
 //
 
-import { AI_DOCKER_MODEL_PATH } from "../@consts"
+import { AiEngine } from "../AiEngine"
 import { DOCKER } from "../consts/DOCKER"
 import type { TAiDockerService } from "../types/TAiDockerService"
 
@@ -15,7 +15,9 @@ export const ImageImageClassificationDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/image-image-classification",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/image:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/image:/data`]
+	},
 }
 
 export const ImageImageSegmentationDockerService: TAiDockerService = {
@@ -27,7 +29,9 @@ export const ImageImageSegmentationDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/image-image-segmentation",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/image:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/image:/data`]
+	},
 }
 
 export const ImageImageToTextDockerService: TAiDockerService = {
@@ -39,7 +43,9 @@ export const ImageImageToTextDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/image-image-to-text",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/image:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/image:/data`]
+	},
 }
 
 export const ImageObjectDetectionDockerService: TAiDockerService = {
@@ -51,7 +57,9 @@ export const ImageObjectDetectionDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/image-object-detection",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/image:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/image:/data`]
+	},
 }
 
 export const ImageVisualQuestionAnsweringDockerService: TAiDockerService = {
@@ -63,5 +71,7 @@ export const ImageVisualQuestionAnsweringDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/image-visual-question-answering",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/image:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/image:/data`]
+	},
 }

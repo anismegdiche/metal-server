@@ -12,11 +12,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Bad Request', message: 'Missing username or password' })
   }
 
-  const metalServerUrl = useRuntimeConfig(event).metalServerUrl as string
+  const serverAddress = useRuntimeConfig(event).serverAddress as string
 
   let token: string
   try {
-    const loginRes = await $fetch<{ token: string }>(`${metalServerUrl}/user/login`, {
+    const loginRes = await $fetch<{ token: string }>(`${serverAddress}/user/login`, {
       method: 'POST',
       body: { username: body.username, password: body.password }
     })
@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 
   let userInfo: { user: string, roles?: string[] } | null = null
   try {
-    userInfo = await $fetch<{ user: string, roles?: string[] }>(`${metalServerUrl}/user/info`, {
+    userInfo = await $fetch<{ user: string, roles?: string[] }>(`${serverAddress}/user/info`, {
       headers: { authorization: `Bearer ${token}` }
     })
   } catch {

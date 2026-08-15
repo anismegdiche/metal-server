@@ -12,8 +12,8 @@
 **/.output
 **/coverage
 
-# Runtime data
-**/data
+# Runtime data (root data dir only; keep apps/studio/app/pages/data)
+/data
 **/tmp
 __rest__
 

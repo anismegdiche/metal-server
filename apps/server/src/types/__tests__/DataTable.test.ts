@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { HttpErrorBadRequest, HttpErrorNotFound } from "../../modules/errors/HttpErrors"
 import { Utils } from "../../utils/Utils"
 import type { TRow } from "../DataTable"
-import { DATATABLES_PATH, DataTable, dataTable_convertSql, SORT_ORDER } from "../DataTable"
+import { DataTable, dataTable_convertSql, SORT_ORDER } from "../DataTable"
 import { DT_SYS_FIELDS } from "../DataTableTypes"
 
 describe("DataTable", () => {
@@ -222,7 +222,7 @@ describe("DataTable", () => {
 		it("should share the same duck instance", async () => {
 			const tables: DataTable[] = []
 			const total = 10
-			const db_name = StringUtils.FsPath(DATATABLES_PATH, `share_${Utils.Uuid(true)}.db`)
+			const db_name = StringUtils.FsPath(DataTable.Path, `share_${Utils.Uuid(true)}.db`)
 			const duckInstance = await DuckDBInstance.create(db_name)
 			const cnx = await duckInstance.connect()
 

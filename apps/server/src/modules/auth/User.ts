@@ -2,7 +2,7 @@
 //
 //
 import { randomBytes } from "node:crypto"
-import { EnvSessionsDataPath } from "@metal/config"
+import { Env } from "@metal/config"
 import { Logger } from "@metal/logger"
 import PersistentMap from "@metal/persistent-map"
 import type { TJson } from "@metal/types"
@@ -18,7 +18,15 @@ import { Roles } from "./Roles"
 export class User {
 	static readonly #JWT_EXPIRATION_TIME = 60 * 60 // 1 hour
 	static readonly #JWT_SECRET_LENGTH = 64 // Length of the JWT secret
-	static readonly _tokens = new PersistentMap<Secret>(EnvSessionsDataPath())
+
+	static _store: PersistentMap<Secret> | undefined = undefined
+
+	static get #tokens(): PersistentMap<Secret> {
+		if (!User._store) {
+			User._store = new PersistentMap<Secret>(Env.server.sessions.path)
+		}
+		return User._store
+	}
 
 	static _generateJwtSecret(): Secret {
 		const bytes = randomBytes(User.#JWT_SECRET_LENGTH)
@@ -29,7 +37,7 @@ export class User {
 		if (userToken === undefined) throw new HttpErrorUnauthorized()
 
 		try {
-			const _decoded = jwt.verify(userToken, User._tokens.get(userToken) as Secret)
+			const _decoded = jwt.verify(userToken, User.#tokens.get(userToken) as Secret)
 			return _decoded as TUserTokenInfo
 		} catch (error: unknown) {
 			throw new HttpErrorUnauthorized((<JsonWebTokenError>error).message)
@@ -59,7 +67,7 @@ export class User {
 			expiresIn: User.#JWT_EXPIRATION_TIME,
 		})
 
-		User._tokens.set(userToken, userSecret)
+		User.#tokens.set(userToken, userSecret)
 		return HttpResponse.Ok({ token: userToken })
 	}
 
@@ -67,7 +75,7 @@ export class User {
 	static async LogOut(userToken: TUserToken): Promise<TInternalResponse<undefined>> {
 		const decoded = User._decodeToken(userToken)
 		if (userToken) {
-			User._tokens.delete(userToken)
+			User.#tokens.delete(userToken)
 			await AuthProvider.Provider.LogOut(decoded.user)
 		}
 		return HttpResponse.NoContent()

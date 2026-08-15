@@ -2,7 +2,7 @@
 //
 //
 
-import { AI_DOCKER_MODEL_PATH } from "../@consts"
+import { AiEngine } from "../AiEngine"
 import { DOCKER } from "../consts/DOCKER"
 import type { TAiDockerService } from "../types/TAiDockerService"
 
@@ -16,7 +16,9 @@ export const TextEmotionDetectionDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-emotion-detection",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextFeatureExtractionDockerService: TAiDockerService = {
@@ -28,7 +30,9 @@ export const TextFeatureExtractionDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-feature-extraction",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextFillMaskDockerService: TAiDockerService = {
@@ -40,7 +44,9 @@ export const TextFillMaskDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-fill-mask",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextKeywordExtractionDockerService: TAiDockerService = {
@@ -52,7 +58,9 @@ export const TextKeywordExtractionDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-keyword-extraction",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextLanguageDetectionDockerService: TAiDockerService = {
@@ -64,7 +72,9 @@ export const TextLanguageDetectionDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-language-detection",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextParaphraseDetectionDockerService: TAiDockerService = {
@@ -76,7 +86,9 @@ export const TextParaphraseDetectionDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-paraphrase-detection",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextQuestionAnsweringDockerService: TAiDockerService = {
@@ -88,7 +100,9 @@ export const TextQuestionAnsweringDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-question-answering",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextSentenceSimilarityDockerService: TAiDockerService = {
@@ -100,7 +114,9 @@ export const TextSentenceSimilarityDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-sentence-similarity",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextSentimentAnalysisDockerService: TAiDockerService = {
@@ -112,7 +128,9 @@ export const TextSentimentAnalysisDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-sentiment-analysis",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextSummarizationDockerService: TAiDockerService = {
@@ -124,7 +142,9 @@ export const TextSummarizationDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-summarization",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextTextGenerationDockerService: TAiDockerService = {
@@ -136,7 +156,9 @@ export const TextTextGenerationDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-text-generation",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextTokenClassificationDockerService: TAiDockerService = {
@@ -148,7 +170,9 @@ export const TextTokenClassificationDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-ner",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextToxicityDetectionDockerService: TAiDockerService = {
@@ -160,7 +184,9 @@ export const TextToxicityDetectionDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-toxicity-detection",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextTranslationDockerService: TAiDockerService = {
@@ -172,7 +198,9 @@ export const TextTranslationDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-translation",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }
 
 export const TextZeroShotClassificationDockerService: TAiDockerService = {
@@ -184,5 +212,7 @@ export const TextZeroShotClassificationDockerService: TAiDockerService = {
 		src: [".", "./requirements.txt"],
 	},
 	InternalUrl: "/text-zero-shot-classification",
-	DockerVolume: [`${AI_DOCKER_MODEL_PATH}/text:/data`],
+	get DockerVolume() {
+		return [`${AiEngine.modelsPath}/text:/data`]
+	},
 }

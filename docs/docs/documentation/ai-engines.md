@@ -31,7 +31,7 @@ Upon initialization, Metal validates the availability of AI Engine images and au
 To manually pre-build these images before starting the server, execute the following command; this process will generate the required images and exit upon completion.
 
 ```bash
-npm run prod:build-all-images
+npm run prod:build-ai-images
 ```
 
 ## Engines

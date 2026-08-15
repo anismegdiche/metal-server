@@ -1,10 +1,11 @@
 //
 //
 //
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { _MTR_ } from "../_MTR_"
 import {
     EnvApiKeysDataPath,
     EnvGetAiEnginesModelsPath,
@@ -18,18 +19,17 @@ import {
     EnvSessionsDataPath,
     LoadEnv,
 } from "../index"
-import { _MTR_ } from "../metrics"
 
 //
 const CONFIG_ENV_VARS = [
-    "METRICS_DB_PATH",
-    "METRICS_ADDRESS",
-    "DATATABLES_PATH",
-    "AI_MODELS_PATH",
-    "API_KEYS_PATH",
-    "LOGS_PATH",
-    "SESSIONS_PATH",
-    "SERVER_ADDRESS",
+    "SERVER_METRICS_DB_PATH",
+    "SERVER_METRICS_ADDRESS",
+    "SERVER_DATATABLES_PATH",
+    "SERVER_AI_MODELS_PATH",
+    "SERVER_API_KEYS_PATH",
+    "SERVER_SESSIONS_PATH",
+    "LOGGER_LOGS_PATH",
+    "STUDIO_SERVER_ADDRESS",
     "STUDIO_PORT",
     "STUDIO_HOST",
 ]

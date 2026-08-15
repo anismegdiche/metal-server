@@ -7,18 +7,16 @@
 	"private": true,
 	"type": "module",
 	"engines": {
-		"node": "=24.16.0"
+		"node": "24.16.0"
 	},
 	"scripts": {
-		"all:build:workspaces": "yarn workspaces foreach -A run build",
 		"server": "yarn workspace @metal/server server",
-		"server:start": "yarn workspace @metal/server server:start",
-		"server:build-all-images": "yarn workspace @metal/server server:build-all-images",
+		"server:build-ai-images": "yarn workspace @metal/server server:build-ai-images",
 		"server:generate-api-key": "yarn workspace @metal/server server:generate-api-key",
-		"server:build": "yarn workspace @metal/server server:build",
 		"studio": "yarn workspace @metal/studio studio",
 		"example:ai-chat:dev": "cd examples/ai-chat && yarn dev",
-		"docs:build": "yarn workspace @metal/docs build"
+		"build:server": "yarn workspaces foreach --from @metal/server -Rt run build",
+		"build:all": "yarn workspaces foreach -A run build"
 	},
 	"standard.options": {
 		"ignore": [

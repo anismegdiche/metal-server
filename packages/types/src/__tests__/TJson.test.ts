@@ -1,9 +1,5 @@
-//
-//
-//
-//
-//
 import type { TJson } from "@metal/types"
+import { expect, test } from "vitest"
 
 const dataA: TJson = {
 	name: "Davy Jones",

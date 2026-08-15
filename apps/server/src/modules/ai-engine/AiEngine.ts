@@ -1,3 +1,4 @@
+import { Env } from "@metal/config"
 import { Logger } from "@metal/logger"
 //
 import type { TJson } from "@metal/types"
@@ -42,6 +43,14 @@ export class AiEngine {
 	static readonly _loadingPromises = new Map<string, Promise<IAiEngine>>()
 	static _aiEnginesConfig: TJson<T__ai_engines_ai_engine> = {}
 	static AiEnginesInstance: Map<string, IAiEngine> = new Map()
+	static _modelsPath: string | undefined = undefined
+
+	static get modelsPath(): string {
+		if (!AiEngine._modelsPath) {
+			AiEngine._modelsPath = Env.server.aiModels.path
+		}
+		return AiEngine._modelsPath
+	}
 
 	@Logger.LogFunction()
 	static BuildAiEnginesList(): TJson<T__ai_engines_ai_engine> {

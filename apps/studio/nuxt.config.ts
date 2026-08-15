@@ -6,8 +6,6 @@ import { EnvGetServerAddress, EnvGetStudioHost, EnvGetStudioPort } from '@metal/
 //
 process.env.PORT = EnvGetStudioPort()
 process.env.HOST = EnvGetStudioHost()
-
-
 //
 export default defineNuxtConfig({
     compatibilityDate: '2026-06-30',
@@ -19,7 +17,13 @@ export default defineNuxtConfig({
     ],
 
     runtimeConfig: {
-        metalServerUrl: EnvGetServerAddress(),
+        serverAddress: EnvGetServerAddress(),
+    },
+
+    nitro: {
+        output: {
+            dir: process.env.NODE_ENV === 'development' ? '.output-dev' : '.output',
+        },
     },
 
     eslint: {

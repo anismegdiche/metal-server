@@ -8,7 +8,7 @@ import { StringUtils } from "@metal/utils"
 //
 import { Assert } from "../utils/Assert"
 import { Utils } from "../utils/Utils"
-import { DATATABLES_PATH, DataTable, dataTable_convertSql, type TRow } from "./DataTable"
+import { DataTable, dataTable_convertSql, type TRow } from "./DataTable"
 
 //
 export class DataBase {
@@ -22,7 +22,7 @@ export class DataBase {
 		Assert.Var<string>(name, "undefined DataBase name")
 		this.Name = name
 		this._dbPath =
-			isPersistent === true ? StringUtils.FsPath(DATATABLES_PATH, `${this.Name}_${Utils.Uuid(true)}.db`) : ":memory:"
+			isPersistent === true ? StringUtils.FsPath(DataTable.Path, `${this.Name}_${Utils.Uuid(true)}.db`) : ":memory:"
 
 		// Generate encryption key for persistent databases
 		if (isPersistent === true) {

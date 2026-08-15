@@ -3,8 +3,8 @@ export default defineNitroPlugin(() => {
     const token = session?.secure?.token
     if (!token) return
 
-    const metalServerUrl = useRuntimeConfig().metalServerUrl as string
-    await $fetch(`${metalServerUrl}/user/logout`, {
+    const serverAddress = useRuntimeConfig().serverAddress as string
+    await $fetch(`${serverAddress}/user/logout`, {
       method: 'POST',
       headers: { authorization: `Bearer ${token}` }
     }).catch(() => {

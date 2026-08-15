@@ -1,18 +1,36 @@
 services:
-  metal-test:
+  studio:
+    hostname: studio
     build:
       context: .
-      dockerfile: .docker/metal-test/dockerfile
-    command: npm run test
-    volumes:
-      - ./src:/app/src:ro
-  metal-dev:
+      dockerfile: studio.dockerfile
+    environment:
+      SERVER_ADDRESS: http://server:3000
+    ports:
+      - "5000:5000"
+  server:
+    hostname: server
     build:
       context: .
-      dockerfile: .docker/metal-dev/dockerfile      
-    command: npm run dev-ts
+      dockerfile: server.dockerfile
     ports:
       - "3000:3000"
-      - "9229:9229"
     volumes:
-      - .:/app
+      - ./metal-config:/metal/config
+  # metal-test:
+  #   build:
+  #     context: .
+  #     dockerfile: .docker/metal-test/dockerfile
+  #   command: npm run test
+  #   volumes:
+  #     - ./src:/app/src:ro
+  # metal-dev:
+  #   build:
+  #     context: .
+  #     dockerfile: .docker/metal-dev/dockerfile      
+  #   command: npm run dev-ts
+  #   ports:
+  #     - "3000:3000"
+  #     - "9229:9229"
+  #   volumes:
+  #     - .:/app

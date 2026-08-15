@@ -18,7 +18,7 @@ export default defineConfig({
 	entry,
 	format: ["esm"],
 	target: "node24",
-	outDir: "dist",
+	outDir: ".output",
 	splitting: true,
 	sourcemap: true,
 	clean: true,

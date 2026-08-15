@@ -5,7 +5,7 @@ import fs from "node:fs"
 import { cpus } from "node:os"
 import { type DuckDBConnection, DuckDBInstance, type DuckDBValue } from "@duckdb/node-api"
 //
-import { EnvGetDataTablesDataPath } from "@metal/config"
+import { ENV } from "@metal/config"
 import { Logger } from "@metal/logger"
 //
 import type { TAny, TJson, TUuidv7 } from "@metal/types"
@@ -22,11 +22,11 @@ import { Utils } from "../utils/Utils"
 import type { TFields, TMetaData, TOrderBy, TRow, TSnapshotInfo } from "./DataTableTypes"
 import { DT_SYS_FIELDS, SORT_ORDER, z_SORT_ORDER, z_TOrderBy, z_TRow } from "./DataTableTypes"
 
+
 // constants
 export { SORT_ORDER }
 
 export const DATATABLE_SYS_FIELDS: string[] = Object.values(DT_SYS_FIELDS)
-export const DATATABLES_PATH = EnvGetDataTablesDataPath()
 
 // types
 export type { TFields, TMetaData, TOrderBy, TRow, TSnapshotInfo }
@@ -134,10 +134,10 @@ function dataTable_constructSql({
 			typeof filter === "string"
 				? filter
 				: Object.entries(filter)
-					.map(([key, value]) => {
-						return `${key} = '${value}'`
-					})
-					.join(" AND ")
+						.map(([key, value]) => {
+							return `${key} = '${value}'`
+						})
+						.join(" AND ")
 		sqlWhere = `WHERE ${DT_SYS_FIELDS.deleted} = false AND ${dataTable_convertSql(_filter)}`
 	}
 
@@ -434,6 +434,8 @@ export class DataTable extends clsClonable {
 	private _isDisposed: boolean = false
 
 	// static
+	static Path: string = ENV.SERVER_DATATABLES_PATH
+
 	@Logger.LogFunction(true)
 	static Is(dataTable: unknown): dataTable is DataTable {
 		return dataTable instanceof DataTable
@@ -459,7 +461,7 @@ export class DataTable extends clsClonable {
 			this._duckInstance = opt.duckInstance
 			this._isAttached = true
 		} else {
-			this._dbPath = StringUtils.FsPath(DATATABLES_PATH, `${this.Name}_${Utils.Uuid(true)}.db`)
+			this._dbPath = StringUtils.FsPath(DataTable.Path, `${this.Name}_${Utils.Uuid(true)}.db`)
 			this._persistent = opt.persistent ?? false
 
 			// Generate encryption key for persistent databases
@@ -545,7 +547,7 @@ export class DataTable extends clsClonable {
 				const cnx = await this._duckInstance.connect()
 				try {
 					// create folder
-					fs.mkdirSync(DATATABLES_PATH, { recursive: true })
+					fs.mkdirSync(DataTable.Path, { recursive: true })
 
 					// Writing encrypted databases needs a write-capable crypto module (httpfs on Windows)
 					await this._ensureHttpfsLoaded(cnx)
@@ -576,7 +578,7 @@ export class DataTable extends clsClonable {
 		// tune performance
 		await cnx.run(`
                 SET memory_limit = '8GB';
-                SET temp_directory = '${DATATABLES_PATH}';
+                SET temp_directory = '${DataTable.Path}';
                 SET threads = ${Math.max(1, Math.floor((cpus().length ?? 1) / 2))};
                 SET preserve_insertion_order=false;
             `)
@@ -835,10 +837,10 @@ export class DataTable extends clsClonable {
 				typeof filter === "string"
 					? filter
 					: Object.entries(filter)
-						.map(([key, value]) => {
-							return `${key} = '${value}'`
-						})
-						.join(" AND ")
+							.map(([key, value]) => {
+								return `${key} = '${value}'`
+							})
+							.join(" AND ")
 			sqlWhere = `WHERE ${DT_SYS_FIELDS.deleted} = false AND ${dataTable_convertSql(_filter)}`
 		}
 
@@ -1200,7 +1202,7 @@ export class DataTable extends clsClonable {
 	 */
 	private _enqueue<T>(fn: () => Promise<T>): Promise<T> {
 		const next = this._queue.then(fn)
-		this._queue = next.catch(() => { }) as Promise<unknown>
+		this._queue = next.catch(() => {}) as Promise<unknown>
 		return next
 	}
 

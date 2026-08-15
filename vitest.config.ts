@@ -11,7 +11,7 @@ export default defineConfig({
 					name: "@metal/server",
 					root: `${root}apps/server`,
 					include: ["**/__tests__/*.test.ts", "**/?(*.)+(spec|test).ts"],
-					exclude: ["node_modules", "build", "dist"],
+					exclude: ["node_modules", "build", "dist", ".output"],
 					environment: "node",
 					testTimeout: 120_000,
 					clearMocks: true,

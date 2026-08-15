@@ -1,9 +1,12 @@
 //
 //
 //
+
 import * as fs from "node:fs"
+import path from "node:path"
+import { CONFIG_PATH, ENV_PATH } from "@metal/config"
 import { Logger } from "@metal/logger"
-import { JsonUtils } from "@metal/utils"
+import { JsonUtils, StringUtils } from "@metal/utils"
 import * as dotenv from "dotenv"
 import * as Yaml from "js-yaml"
 import { has, merge } from "lodash-es"
@@ -12,22 +15,27 @@ import { Assert } from "../../utils/Assert"
 import { TypeUtils } from "../../utils/TypeUtils"
 import { ConfigFileError } from "../errors/HttpErrors"
 import type { IConfigStore } from "./base/IConfigStore"
+import { ServerCore } from "./ServerCore"
 import type { U_config } from "./types/U_config"
 import { z_U_config } from "./types/U_config"
 
 //
 export class ConfigManager {
-	static ConfigFilePath = "./config/config.yml"
-	static EnvFilePath = "./config/.env"
+
+	static _configFilePath: string | undefined = undefined
+	static get ConfigFilePath(): string {
+		if (!ConfigManager._configFilePath) {
+			ConfigManager._configFilePath = StringUtils.FsPath(ServerCore.WorkspacePath, CONFIG_PATH)
+		}
+		return ConfigManager._configFilePath
+	}
+
 	static configStore?: IConfigStore
 
 	@Logger.LogFunction()
 	static async Init(configStore: IConfigStore): Promise<void> {
 		const configFileContent = await ConfigManager.Load()
-		const newConfig = await ConfigManager.Validate(merge(
-			z_U_config.parse({}),
-			configFileContent
-		))
+		const newConfig = await ConfigManager.Validate(merge(z_U_config.parse({}), configFileContent))
 		// Config.CheckRessourcesUsage(newConfig)
 		ConfigManager.configStore ??= configStore
 
@@ -36,8 +44,24 @@ export class ConfigManager {
 
 	@Logger.LogFunction()
 	static async Load(): Promise<U_config> {
-		dotenv.config({ path: ConfigManager.EnvFilePath })
-		const configFileRaw = fs.readFileSync(ConfigManager.ConfigFilePath, "utf8")
+		dotenv.config({ path: ENV_PATH })
+		let configFileRaw: string
+		try {
+			configFileRaw = fs.readFileSync(ConfigManager.ConfigFilePath, "utf8")
+		} catch (error) {
+			const err = error as NodeJS.ErrnoException
+			if (err.code !== "ENOENT") {
+				throw error
+			}
+
+			// Create parent directories recursively
+			fs.mkdirSync(path.dirname(ConfigManager.ConfigFilePath), { recursive: true })
+
+			// Create/write file
+			fs.writeFileSync(ConfigManager.ConfigFilePath, "", "utf8")
+			return {} as U_config
+		}
+
 		const configInterpol = configFileRaw.replaceAll(/\$(?:{([^{}]*)})/g, (match, envVarName) => {
 			return process.env[envVarName] ?? match
 		})

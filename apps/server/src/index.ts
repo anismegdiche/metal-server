@@ -2,13 +2,15 @@
 //
 //  Metal Server
 //
+
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { Env, EnvInit } from "@metal/config"
 import { Logger } from "@metal/logger"
+import { StringUtils } from "@metal/utils"
 import { ArgumentParser } from "argparse"
 import chalk from "chalk"
 import * as Yaml from "js-yaml"
-
 import { AiBuilder } from "./modules/ai-engine/AiBuilder"
 import { AiDocker } from "./modules/ai-engine/AiDocker"
 import { ApiKey } from "./modules/apikey/ApiKey"
@@ -19,22 +21,10 @@ import { ServerEndpoint } from "./modules/core/ServerEndpoint"
 import { ServerInitializer } from "./modules/core/ServerInitializer"
 import { ServerShutdown } from "./modules/core/ServerShutdown"
 import { z_U_config } from "./modules/core/types/U_config"
+import { DataTable } from "./types/DataTable"
 import { Package } from "./utils/Package"
 
 //
-// ── Path setup ─────────────────────────────────────────────────────────────
-//
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-ServerCore.IndexPath = __dirname
-
-// Change CWD to repo root so config/data paths resolve correctly
-process.chdir(path.resolve(__dirname, "..", "..", ".."))
-
-//
-// ── CLI ────────────────────────────────────────────────────────────────────
-//
-
 interface TCliArgs {
 	buildAllImages: boolean
 	generateApiKey: boolean
@@ -44,7 +34,9 @@ interface TCliArgs {
 	name: string
 }
 
-function CreateParser(): ArgumentParser {
+//
+
+function _createParser(): ArgumentParser {
 	const parser = new ArgumentParser({
 		prog: "yarn server:start",
 		description: `Metal server v${Package.Json.version}`,
@@ -58,10 +50,10 @@ function CreateParser(): ArgumentParser {
 
 	const modes = parser.add_mutually_exclusive_group()
 
-	modes.add_argument("-bai", "--build-all-images", {
+	modes.add_argument("-bai", "--build-ai-images", {
 		action: "store_true",
 		dest: "buildAllImages",
-		help: "build all AI engine docker images and exit",
+		help: "build AI engine Docker images and exit",
 	})
 
 	modes.add_argument("-gak", "--generate-api-key", {
@@ -94,21 +86,10 @@ function CreateParser(): ArgumentParser {
 
 	return parser
 }
-
-const args = CreateParser().parse_args<TCliArgs>()
-
-//
-// ── Logging ────────────────────────────────────────────────────────────────
-//
-Logger.Init(Package.Json.name as string)
-
-if (!args.buildAllImages) ServerShutdown.SetupSignalHandlers()
-
 //
 // ── One-off commands ───────────────────────────────────────────────────────
 //
-
-async function BuildAllImages(): Promise<void> {
+async function _buildAllImages(): Promise<void> {
 	await ConfigManager.Init(new ConfigStore())
 	ServerInitializer.InitLogging()
 	Logger.Info(`${Logger.In} 🔨 Entering build mode`)
@@ -117,7 +98,7 @@ async function BuildAllImages(): Promise<void> {
 	Logger.Info(`${Logger.Out} 🔨 Exiting build mode`)
 }
 
-function GenerateApiKey(userId: string, keyName: string): void {
+function _generateApiKey(userId: string, keyName: string): void {
 	const result = ApiKey.Create(userId, { name: keyName, scopes: ["*"] })
 
 	console.log()
@@ -137,7 +118,7 @@ function GenerateApiKey(userId: string, keyName: string): void {
 	console.log()
 }
 
-function DefaultConfig(): void {
+function _getDefaultConfig(): void {
 	console.log()
 	console.log(chalk.green.bold("📄 Default Config"))
 	console.log()
@@ -146,7 +127,7 @@ function DefaultConfig(): void {
 	console.log()
 }
 
-async function Config(): Promise<void> {
+async function _getConfig(): Promise<void> {
 	await ConfigManager.Init(new ConfigStore())
 	console.log()
 	console.log(chalk.green.bold("📄 Merged Config"))
@@ -157,32 +138,70 @@ async function Config(): Promise<void> {
 }
 
 //
-// ── Dispatch ───────────────────────────────────────────────────────────────
-//
+async function main() {
+	//
+	// ── Path setup ─────────────────────────────────────────────────────────────
+	//
+	const __filename = fileURLToPath(import.meta.url)
+	const __dirname = path.dirname(__filename)
+	ServerCore.IndexPath = __dirname
+	ServerCore.CwdPath = process.cwd()
+	ServerCore.WorkspacePath = StringUtils.FsPath(ServerCore.CwdPath, "..", "..")
 
-if (args.buildAllImages) {
-	await BuildAllImages()
-	process.exit(0)
+	// Env init
+	EnvInit(ServerCore.WorkspacePath)
+
+	// Datatable init
+	DataTable.Path = Env.server.dataTables.path
+
+	console.log(chalk.yellow.bold(`ℹ️  node execPath path  = ${process.execPath}`))
+	console.log(chalk.yellow.bold(`ℹ️  node workspace path = ${ServerCore.WorkspacePath}`))
+	console.log(chalk.yellow.bold(`ℹ️  node cwd path       = ${ServerCore.CwdPath}`))
+	console.log(chalk.yellow.bold(`ℹ️  index path          = ${ServerCore.IndexPath}`))
+
+	//
+	// ── CLI ────────────────────────────────────────────────────────────────────
+	//
+
+	const args = _createParser().parse_args<TCliArgs>()
+
+	//
+	// ── Logging ────────────────────────────────────────────────────────────────
+	//
+	await Logger.Init(Package.Json.name as string)
+
+	if (!args.buildAllImages) ServerShutdown.SetupSignalHandlers()
+
+	//
+	// ── Dispatch ───────────────────────────────────────────────────────────────
+	//
+
+	if (args.buildAllImages) {
+		await _buildAllImages()
+		process.exit(0)
+	}
+
+	if (args.generateApiKey) {
+		_generateApiKey(args.user, args.name)
+		process.exit(0)
+	}
+
+	if (args.defaultConfig) {
+		_getDefaultConfig()
+		process.exit(0)
+	}
+
+	if (args.config) {
+		await _getConfig()
+		process.exit(0)
+	}
+
+	// Initialize and start server
+	ServerCore.Init()
+		.then(ServerEndpoint.Start)
+		.catch((err) => {
+			console.error(err)
+		})
 }
 
-if (args.generateApiKey) {
-	GenerateApiKey(args.user, args.name)
-	process.exit(0)
-}
-
-if (args.defaultConfig) {
-	DefaultConfig()
-	process.exit(0)
-}
-
-if (args.config) {
-	await Config()
-	process.exit(0)
-}
-
-// Initialize and start server
-ServerCore.Init()
-	.then(ServerEndpoint.Start)
-	.catch((err) => {
-		console.error(err)
-	})
+main()
