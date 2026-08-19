@@ -1,228 +1,184 @@
-version: "0.5"
-
+version: '0.5'
 server:
   port: 3000
   verbosity: info
   timezone: UTC
-  request-limit: 100mb
-  response-limit: 100mb
-  authentication:
-    provider: local
-    default-role: all
   cache:
     provider: memory
-    database: cache
     options:
       autocreate: true
+  authentication:
+    default-role: all
+    provider: local
+  request-limit: 100mb
+  response-limit: 100mb
+  response-rate:
+    windowMs: 60000
+    max: 600
+    message: Too many requests from this IP, please try again later
+  response-chunk: false
+  response-compression: true
+  ai-engines:
+    build-batch-size: 5
+    engines-url: http://127.0.0.1:5000
+    timeout: 60000
+    sleep: 5000
+    cors:
+      allowed-origins: '*'
+      allowed-methods: GET,POST,OPTIONS
+      allowed-headers: Origin, X-Requested-With, Content-Type, Accept, Authorization
+    min-instance: 1
+    max-instance: 5
+    cpu-scale-up: 70
+    cpu-scale-down: 10
+    scale-interval: 20000
+    scale-down-grace-period: 300000
+    cpu: 4
+    memory: 2
   endpoints:
     enable-mcp: true
-
-mcp:
-  hide-sensitive-data:
-    - password
-    - secret
-    - path
-  tools:
-    get_images:
-      description: "Get list of images"
-      schema: fs
-      entity: img
-      action: read
-      limit: 50
-      arguments:
-        filename:
-          description: "Filter by filename (partial match)"
-          type: string
-          map-to: name
-          required: false
-    get_image_content:
-      description: "Get image content"
-      schema: fs
-      entity: img
-      action: read
-      limit: 1
-      fields:
-        - content
-      arguments:
-        filename:
-          description: "Filter by filename"
-          type: string
-          map-to: name
-          required: false
-    get_recovery:
-      description: "Get recovery"
-      schema: fs
-      entity: rec
-      action: read
-      limit: 10
-      arguments:
-        filename:
-          description: "Filter by filename"
-          type: string
-          map-to: name
-          required: false
-
-    list_folders:
-      description: "Get list of folders"
-      schema: fs
-      action: list
-      limit: 5
-
-    create_file:
-      description: "Create a file input"
-      schema: json
-      entity: output.json 
-      action: create
-      arguments:
-        file:
-          description: "File details"
-          type: structure
-          required: true
-          properties:
-            name:
-              type: string
-              map-to: name
-              required: true
-            type:
-              type: string
-              map-to: type
-              required: true
-            size:
-              type: number
-              map-to: size
-              required: true
-
 roles:
   all: lacrud
   reader: r
   writer: cu
   cleaner: d
-
 users:
   myapiuser:
     password: myStr@ngpa$$w0rd
-
 sources:
   src-fs:
     provider: storage
     options:
       storage-mode: folders
+      autocreate: false
+      allow-delete: false
+      folders-pattern: '*.*'
+      files-pattern: '*.*'
       storage-type: fs
-      folder: ../metal-tests/fs-storage
-      
+      folder: ../../../metal-tests/fs-storage
   src-fs-failed:
     provider: storage
     options:
       storage-mode: folders
+      autocreate: false
+      allow-delete: false
+      folders-pattern: '*.*'
+      files-pattern: '*.*'
       storage-type: fs
       folder: ../metal-tests/failed
-
   src-json:
     provider: storage
     options:
       storage-mode: files
-      storage-type: fs
-      folder: ../metal-tests/fs-storage
-      autocreate: true
       content:
-        "*.json":
+        '*.json':
           content-type: json
           json-path: rows
-          
+      autocreate: true
+      storage-type: fs
+      folder: ../metal-tests/fs-storage
   src-csv:
     provider: storage
     options:
       storage-mode: files
-      storage-type: fs
-      folder: ./data/
-      autocreate: true
       content:
-        "*.csv":
+        '*.csv':
           content-type: csv
-          csv-delimiter: ";"
-          csv-newline: "\n"
+          csv-delimiter: ;
+          csv-newline: |+
+
           csv-header: true
           csv-quote: '"'
-
-  rest-fakerestapi:    # https://fakerestapi.azurewebsites.net/index.html
+      autocreate: true
+      storage-type: fs
+      folder: ./data/
+  rest-fakerestapi:
     provider: webservice
     host: https://fakerestapi.azurewebsites.net/api/v1/
     options:
       type: rest
-      content-type: json
       endpoints:
-        collection-read: 
+        collection-read:
           get: /${{ $entity }}
-        # item-read: 
-        #   get: /${{ $entity }}/${{ $row.id }}
-        item-create: 
+        item-create:
           post: /${{ $entity }}
-        item-update: 
+        item-update:
           put: /${{ $entity }}/${{ $row.id }}
-        item-delete: 
+        item-delete:
           delete: /${{ $entity }}/${{ $row.id }}
-          
-
-  soap-movies: # http://127.0.0.1:8080/ws/movies.wsdl
+      content-type: json
+  soap-movies:
     provider: webservice
     host: http://127.0.0.1:8080/ws/movies.wsdl
     options:
       type: soap
-      content-type: xml
       endpoints:
         collection-read:
-          listMovies:
           response: Envelope.Body.listMoviesResponse.${{ $entity }}s
-        # item-read:
-        #   getMovie:
+          listMovies: null
         item-create:
-          addMovie:
           data:
             ${{ $entity }}: ${{ $row }}
+          addMovie: null
         item-update:
-          updateMovie:
           data:
             ${{ $entity }}: ${{ $row }}
+          updateMovie: null
         item-delete:
-          deleteMovie:
           data:
             id: ${{ $row.id }}
-
+          deleteMovie: null
+      content-type: xml
   src-myplan:
     provider: plans
-
+  fake:
+    provider: fake-data
+    options:
+      seed: 42
+      autocreate: true
+      entities:
+        contacts:
+          locale: ar_AR
+          rows: 100
+          fields:
+            id: string.uuid()
+            firstname: person.firstName()
+            lastname: person.lastName()
+            email: internet.email()
+            ExternalRef: 'string.alphanumeric({ length: 10, casing: ''upper'' })'
+            user: internet.username()
+        books:
+          locale: ar_AR
+          rows: 50
+          fields:
+            title: book.title()
+            author: book.author()
+            publishedAt: date.anytime()
 schemas:
   fs:
     source: src-fs
   myplan:
     source: src-myplan
+    entities:
+      contacts:
+        source: fake
+        entity: contacts
   json:
     source: src-json
   failed:
     source: src-fs-failed
-
-schedules:
-  # "ocr":
-  #   plan: myplan
-  #   entity: myentity
-  #   cron: "*/1 * * * *"
-  "sch-myplan":
-    plan: myplan
-    cron: "@start"
-  "sch-failed":
-    plan: plan-failed
-    cron: "@start"
-  "sch-2":
-    plan: plan-2
-    cron: "@start"
-
+  fake:
+    source: fake
 plans:
   plan-failed:
     steps:
       - select:
           schema: fs
           entity: img
-          fields: "*,content"
+          fields: '*,content'
+          on-error:
+            strategy: throw
+            scope: step
       - select:
           schema: fs
           entity: fake-skipped
@@ -232,213 +188,132 @@ plans:
       - select:
           schema: fs
           entity: fake-failed
-
+          on-error:
+            strategy: throw
+            scope: step
+    on-error:
+      strategy: throw
+      scope: step
+    failure-strategy: throw
   plan-2:
     steps:
       - select:
           schema: fs
           entity: img
-          fields: "*,content"
-
+          fields: '*,content'
+          on-error:
+            strategy: throw
+            scope: step
+    on-error:
+      strategy: throw
+      scope: step
+    failure-strategy: throw
   myplan:
     steps:
       - select:
           schema: fs
           entity: img
-          fields: "*,content"
-
-      # - run:
-      #     ai: ocr
-      #     task: image-to-string
-      #     params:
-      #       lang: en_XX
-      #     input: content
-      #     output:
-      #       _ocr_text: ${{ $result.ocr.text }}
-      #       _ocr_lang_code: (${{ $result.ocr.lang.split('_')[0].toUpperCase() }})
-
-      # - run:
-      #     ai: text
-      #     task: emotion-detection
-      #     params:
-      #       top: 7
-      #     input: _ocr_text
-      #     output:
-      #       _emotion_positive: ${{ $result.emotion.joy ?? 0 }}
-      #       _emotion_negative: ${{ $result.emotion.anger ?? 0 }}
-
-      # - run:
-      #     ai: text
-      #     task: fill-mask
-      #     input: "[MASK] ${{ $row._ocr_text }}"
-      #     output:
-      #       _fillmask_text: ${{ $result.fillmask[0].text }}
-      #       _fillmask_word: ${{ $result.fillmask[0].word }}
-
-      # - run:
-      #     ai: text
-      #     task: keyword-extraction
-      #     input: _ocr_text
-      #     output:
-      #       _keyword_extraction: ${{ $result.keywords.join(',') }}
-
-      # - run:
-      #     ai: text
-      #     task: language-detection
-      #     input: _ocr_text
-      #     output:
-      #       _languagedetection_code: ${{ $result.language.code }}
-
-      # - run:
-      #     ai: text
-      #     task: paraphrase-detection
-      #     input: _ocr_text
-      #     params:
-      #       target: A fast brown fox leaps over a sleepy dog
-      #     output:
-      #       _paraphrase_detection_score: ${{ $result.paraphrase.score }}
-
-      # - run:
-      #     ai: text
-      #     task: question-answering
-      #     input: _ocr_text
-      #     params:
-      #       question: What is the subject?
-      #     output:
-      #       _question_answering_answer: ${{ $result.answer.answer }}
-      #       _question_answering_score: ${{ $result.answer.score }}
-
-      # - run:
-      #     ai: text
-      #     task: sentence-similarity
-      #     input: _ocr_text
-      #     params:
-      #       sentences:
-      #         - That is a happy dog
-      #         - That is a very happy person
-      #         - Today is a sunny day
-      #     output:
-      #       _similarity_score1: ${{ $result.similarity[0].score }}
-      #       _similarity_score2: ${{ $result.similarity[1].score }}
-
-      # - run:
-      #     ai: text
-      #     task: sentiment-analysis
-      #     input: _ocr_text
-      #     params:
-      #       top:
-      #     output:
-      #       _sentiment_label: ${{ $result.sentiment.label }}
-      #       _sentiment_score: ${{ $result.sentiment.score }}
-
-      # - run:
-      #     ai: text
-      #     task: summarization
-      #     input: _ocr_text
-      #     params:
-      #       min-length: 5
-      #       max-length: 10
-      #     output:
-      #       _summarization_summary: ${{ $result.summary.text }}
-
-      # - run:
-      #     ai: text
-      #     task: text-generation
-      #     params:
-      #       max-length: 50
-      #       do-sample: true
-      #       temperature: 0.9
-      #     input: _ocr_text
-      #     output:
-      #       _generated_text: text
-
-      # - run:
-      #     ai: text
-      #     task: ner
-      #     params:
-      #       grouped: true
-      #     input: _ocr_text
-      #     output:
-      # #       _token_class: entities
-
-      # - run:
-      #     ai: text
-      #     task: toxicity-detection
-      #     input: _ocr_text
-      #     output:
-      #       _toxicity: toxicity
-
-      # - run:
-      #     ai: text
-      #     task: translation
-      #     params:
-      #       source: en_XX
-      #       target: ar_AR
-      #     input: _ocr_text
-      #     output:
-      #       _translated_text: ${{ $result.translation.text }}
-
-      # - run:
-      #     ai: text
-      #     task: zero-shot-classification
-      #     params:
-      #       labels:
-      #         # # Sentiment
-      #         # - positive
-      #         # - negative
-      #         # - neutral
-
-      #         # Intent / Purpose
-      #         - informative
-      #         - opinion
-      #         - question
-      #         - instruction
-      #         - narrative
-      #         - promotional
-
-      #       # # Topic / Domain
-      #       # - politics
-      #       # - business
-      #       # - science and technology
-      #       # - health and medicine
-      #       # - environment and nature
-      #       # - sports
-      #       # - entertainment and arts
-      #       # - education and research
-      #       # - lifestyle and culture
-      #       # - other
-
-      #       # # Emotional Tone
-      #       # - joyful
-      #       # - angry
-      #       # - sad
-      #       # - fearful
-      #       # - surprised
-      #       # - calm
-
-      #       # # Formality / Register
-      #       # - formal
-      #       # - informal
-      #       # - technical
-      #       # - conversational
-
-      #       # # Stance
-      #       # - supportive
-      #       # - opposed
-      #       # - neutral stance
-
-      #       # # Informativeness
-      #       # - highly informative
-      #       # - partially informative
-      #       # - irrelevant
-      #     input: _ocr_text
-      #     output:
-      #       _zero_shot_class: zeroshot
-
-      - omit: 
+          fields: '*,content'
+          on-error:
+            strategy: throw
+            scope: step
+      - omit:
           fields:
             - content
-
+          on-error:
+            strategy: throw
+            scope: step
       - insert:
           schema: json
           entity: output.json
+          on-error:
+            strategy: throw
+            scope: step
+    on-error:
+      strategy: throw
+      scope: step
+    failure-strategy: throw
+schedules:
+  sch-myplan:
+    plan: myplan
+    cron: '@start'
+  sch-failed:
+    plan: plan-failed
+    cron: '@start'
+  sch-2:
+    plan: plan-2
+    cron: '@start'
+mcp:
+  tools:
+    get_images:
+      description: Get list of images
+      schema: fs
+      limit: 50
+      entity: img
+      action: read
+      arguments:
+        filename:
+          type: string
+          required: false
+          description: Filter by filename (partial match)
+          map-to: name
+    get_image_content:
+      description: Get image content
+      schema: fs
+      limit: 1
+      entity: img
+      action: read
+      fields:
+        - content
+      arguments:
+        filename:
+          type: string
+          required: false
+          description: Filter by filename
+          map-to: name
+    get_recovery:
+      description: Get recovery
+      schema: fs
+      limit: 10
+      entity: rec
+      action: read
+      arguments:
+        filename:
+          type: string
+          required: false
+          description: Filter by filename
+          map-to: name
+    list_folders:
+      description: Get list of folders
+      schema: fs
+      limit: 5
+      action: list
+      arguments: {}
+    create_file:
+      description: Create a file input
+      schema: json
+      limit: 10
+      entity: output.json
+      action: create
+      arguments:
+        file:
+          type: structure
+          required: true
+          description: File details
+          properties:
+            name:
+              type: string
+              required: true
+              map-to: name
+            type:
+              type: string
+              required: true
+              map-to: type
+            size:
+              type: number
+              required: true
+              map-to: size
+  hide-sensitive-data:
+    - password
+    - secret
+    - path

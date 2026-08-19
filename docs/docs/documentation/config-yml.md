@@ -1442,7 +1442,7 @@ It can be:
 >         ai: ocr
 >         task: image-to-string
 >         params:
->           lang: en_XX
+>           lang: en_EN
 >         input: content
 >         output:
 >           ocr_text: { { $result.ocr.text } } # stores the $result.ocr.text in the `ocr_text` field

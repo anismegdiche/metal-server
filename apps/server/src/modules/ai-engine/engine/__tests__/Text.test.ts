@@ -487,7 +487,7 @@ describe("Text", () => {
 			const result = await text.Translation(<TAiArguments>{
 				data: "Hello, how are you?",
 				params: {
-					source: "en_XX",
+					source: "en_EN",
 					target: "ar_AR",
 				},
 			})

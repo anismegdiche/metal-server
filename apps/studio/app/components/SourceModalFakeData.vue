@@ -215,9 +215,9 @@ defineExpose({ collectBody })
         <code>options.entities</code>.
       </div>
 
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-2">
         <div v-for="(entity, ei) in form.entities" :key="ei"
-          class="border border-default rounded-lg p-3 flex flex-col gap-3">
+          class="border border-default rounded-lg p-3 flex flex-col gap-2">
           <div class="flex items-center gap-2">
             <UInput v-model="entity.name" placeholder="Entity name" class="flex-1" :ui="{ base: 'font-medium' }" />
             <USelect v-model="entity.locale" :items="LOCALES" class="w-48" placeholder="Locale" />
@@ -228,22 +228,23 @@ defineExpose({ collectBody })
           <UCollapsible :default-open="true" class="ml-2">
             <template #default>
               <UButton label="Fields" variant="ghost" color="neutral" trailing-icon="i-lucide-chevron-down"
-                class="justify-between w-full text-xs font-medium" />
+                class="justify-between w-full text-xs font-medium mb-2" />
             </template>
 
             <template #content>
-              <div class="flex flex-col gap-2 mt-2">
-                <div v-for="(field, fi) in entity.fields" :key="fi" class="flex items-center gap-2">
-                  <UInput v-model="field.name" placeholder="fieldName" class="w-32" />
+              <div class="flex flex-col gap-1">
+                <div v-for="(field, fi) in entity.fields" :key="fi" class="flex items-center gap-1">
+                  <UInput v-model="field.name" placeholder="fieldName" class="w-32" size="sm" />
                   <template v-if="!field.useCustom">
                     <USelectMenu :model-value="fakerValueItems.find(i => i.value === field.expression) ?? undefined"
                       :items="fakerSelectItems" by="value" placeholder="Search faker methods…" icon="i-lucide-search"
                       :search-input="{ placeholder: 'Search faker methods…', icon: 'i-lucide-search' }" class="flex-1"
-                      @update:model-value="(v: any) => { field.expression = v?.value ?? '' }"
-                      :content="{ side: 'top' }" />
+                      @update:model-value="(v: any) => { field.expression = v?.value ?? '' }" :content="{ side: 'top' }"
+                      size="sm" />
                   </template>
                   <template v-else>
-                    <UInput v-model="field.expression" placeholder="e.g. person.firstName('male')" class="flex-1" />
+                    <UInput v-model="field.expression" placeholder="e.g. person.firstName('male')" class="flex-1"
+                      size="sm" />
                   </template>
                   <UButton :icon="field.useCustom ? 'i-lucide-list' : 'i-lucide-code'" size="xs" variant="ghost"
                     :color="field.useCustom ? 'warning' : 'neutral'"

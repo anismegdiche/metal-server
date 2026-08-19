@@ -75,7 +75,7 @@ plans:
             ai: ocr
             task: image-to-string
             params:
-              lang: en_XX
+              lang: en_EN
             input: content
             output:
               _ocr_text: ${{ $result.ocr.text }}
@@ -196,7 +196,7 @@ plans:
             ai: text
             task: translation
             params:
-              source: en_XX
+              source: en_EN
               target: ar_AR
             input: _ocr_text
             output:

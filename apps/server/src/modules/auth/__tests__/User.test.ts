@@ -27,7 +27,7 @@ describe("User", () => {
 
 	describe("Authenticate", () => {
 		it("should authenticate user and return token", async () => {
-			const credentials = { username: "admin", password: "password" } 
+			const credentials = { username: "admin", password: "password" }
 			vi.mocked(AuthProvider.Provider.Authenticate).mockResolvedValue({ user: "admin", roles: ["admin"] })
 			vi.mocked(jwt.sign).mockReturnValue("mock-token" as any)
 
@@ -81,7 +81,7 @@ describe("User", () => {
 		it("should return true for valid credentials", () => {
 			const valid = {
 				username: "admin",
-				password: "password", 
+				password: "password",
 			}
 			expect(User.IsUserCredentials(valid)).toBe(true)
 		})

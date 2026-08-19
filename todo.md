@@ -21,7 +21,7 @@ plan > test if user is not allowed to access schema, what is happening {f}
 guides, sample project : update
 remove source from schemarequest if possible
 (A) routing bad data to an error sink implicitly removes it from the plan data for downstream steps. The row exists in the error sink, but it's no longer in the main processing stream. {f} {start:2026-03-28T11:10:04} {cm:2026-05-11} {duration:1m-13d_17h11m} {h}
-(A) step: fake data with faker js {f} {start:2026-08-18T21:06:14}
+(A) step: fake data with faker js {f} {start:2026-08-18T21:06:14} {cm:2026-08-19} {duration:22h06m}
 core > use threads (piscina)
 (A) core > step metrics {f} {start:2026-05-12T10:04:10} {cm:2026-05-23} {duration:11d_07h05m} {h}
 core > studio {f} {cm:2026-08-03} {h}

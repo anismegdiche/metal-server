@@ -25,16 +25,16 @@ export enum OCR_LANG {
 export enum OCR_LANG_ISO {
 	ARA = LANG_ISO.ar_AR,
 	CHI_SIM = LANG_ISO.zh_CN,
-	CHI_TRA = "zh_TW",
+	CHI_TRA = LANG_ISO.zh_TW,
 	DEU = LANG_ISO.de_DE,
-	ENG = LANG_ISO.en_XX,
-	FRA = LANG_ISO.fr_XX,
+	ENG = LANG_ISO.en_EN,
+	FRA = LANG_ISO.fr_FR,
 	ITA = LANG_ISO.it_IT,
-	JPN = LANG_ISO.ja_XX,
+	JPN = LANG_ISO.ja_JP,
 	KOR = LANG_ISO.ko_KR,
-	POR = LANG_ISO.pt_XX,
+	POR = LANG_ISO.pt_PT,
 	RUS = LANG_ISO.ru_RU,
-	SPA = LANG_ISO.es_XX,
+	SPA = LANG_ISO.es_ES,
 }
 
 /**

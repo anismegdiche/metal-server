@@ -29,18 +29,18 @@ export enum TEXT_LANGUAGE_DETECTION {
 
 export enum TEXT_LANGUAGE_DETECTION_ISO {
 	AR = LANG_ISO.ar_AR,
-	BG = "bg_BG",
+	BG = LANG_ISO.bg_BG,
 	DE = LANG_ISO.de_DE,
-	EL = "el_GR",
-	EN = LANG_ISO.en_XX,
-	ES = LANG_ISO.es_XX,
-	FR = LANG_ISO.fr_XX,
+	EL = LANG_ISO.el_GR,
+	EN = LANG_ISO.en_EN,
+	ES = LANG_ISO.es_ES,
+	FR = LANG_ISO.fr_FR,
 	HI = LANG_ISO.hi_IN,
 	IT = LANG_ISO.it_IT,
-	JA = LANG_ISO.ja_XX,
-	NL = LANG_ISO.nl_XX,
+	JA = LANG_ISO.ja_JP,
+	NL = LANG_ISO.nl_NL,
 	PL = LANG_ISO.pl_PL,
-	PT = LANG_ISO.pt_XX,
+	PT = LANG_ISO.pt_PT,
 	RU = LANG_ISO.ru_RU,
 	SW = LANG_ISO.sw_KE,
 	TH = LANG_ISO.th_TH,
@@ -48,6 +48,36 @@ export enum TEXT_LANGUAGE_DETECTION_ISO {
 	UR = LANG_ISO.ur_PK,
 	VI = LANG_ISO.vi_VN,
 	ZH = LANG_ISO.zh_CN,
+}
+
+export enum TEXT_TRANSLATION {
+	ar_AR = LANG_ISO.ar_AR,
+	bg_BG = LANG_ISO.bg_BG,
+	zh_CN = LANG_ISO.zh_CN,
+	zh_TW = LANG_ISO.zh_TW,
+	de_DE = LANG_ISO.de_DE,
+	en_XX = LANG_ISO.en_XX,
+	fr_XX = LANG_ISO.fr_XX,
+	ja_XX = LANG_ISO.ja_XX,
+	ko_KR = LANG_ISO.ko_KR,
+	pt_XX = LANG_ISO.pt_XX,
+	ru_RU = LANG_ISO.ru_RU,
+	es_XX = LANG_ISO.es_XX,
+}
+
+export enum TEXT_TRANSLATION_ISO {
+	ar_AR = LANG_ISO.ar_AR,
+	bg_BG = LANG_ISO.bg_BG,
+	zh_CN = LANG_ISO.zh_CN,
+	zh_TW = LANG_ISO.zh_TW,
+	de_DE = LANG_ISO.de_DE,
+	en_XX = LANG_ISO.en_EN,
+	fr_XX = LANG_ISO.fr_FR,
+	ja_XX = LANG_ISO.ja_JP,
+	ko_KR = LANG_ISO.ko_KR,
+	pt_XX = LANG_ISO.pt_PT,
+	ru_RU = LANG_ISO.ru_RU,
+	es_XX = LANG_ISO.es_ES,
 }
 
 /**

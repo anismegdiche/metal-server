@@ -6,14 +6,13 @@ import { DataTable } from "../../../types/DataTable"
 import { Cache } from "../../cache/Cache"
 import { HTTP_STATUS_CODE } from "../../core/@consts"
 import type { U__sources_source } from "../../core/types/U__sources"
-import { HttpErrorBadRequest, HttpErrorInternalServerError, HttpErrorNotFound } from "../../errors/HttpErrors"
-import { HttpErrorNotImplemented } from "../../errors/HttpErrors"
+import {
+	HttpErrorInternalServerError,
+	HttpErrorNotFound,
+	HttpErrorNotImplemented
+} from "../../errors/HttpErrors"
 import type {
-	TSchemaRequestDelete,
-	TSchemaRequestInsert,
-	TSchemaRequestListEntities,
-	TSchemaRequestSelect,
-	TSchemaRequestUpdate,
+	TSchemaRequestSelect
 } from "../../schema/types/TSchemaRequest"
 import { DATA_PROVIDER } from "../@consts"
 import { FakeData } from "../providers/FakeData"
@@ -28,12 +27,12 @@ describe("FakeData", () => {
 					locale: "en",
 					rows: 10,
 					fields: {
-						id: "string.uuid",
-						firstName: "person.firstName",
-						lastName: "person.lastName",
-						email: "internet.email",
+						id: "string.uuid()",
+						firstName: "person.firstName()",
+						lastName: "person.lastName()",
+						email: "internet.email()",
 						age: "number.int({ min: 18, max: 80 })",
-						active: "datatype.boolean",
+						active: "datatype.boolean()",
 					},
 				},
 			},
@@ -54,8 +53,8 @@ describe("FakeData", () => {
 		await fakeData.Connect()
 
 		expect(fakeData.Connection).toBeInstanceOf(DataBase)
-		expect(fakeData.Connection?.Tables["customers"]).toBeDefined()
-		expect(await fakeData.Connection?.Tables["customers"]?.Count()).toBe(10)
+		expect(fakeData.Connection?.Tables.customers).toBeDefined()
+		expect(await fakeData.Connection?.Tables.customers?.Count()).toBe(10)
 	})
 
 	it("should generate correct field values", async () => {
@@ -63,7 +62,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test-source", baseConfig)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["customers"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.customers?.Rows()
 		expect(rows).toBeDefined()
 		expect(rows?.length).toBe(10)
 
@@ -82,12 +81,12 @@ describe("FakeData", () => {
 		const fakeData1 = new FakeData()
 		await fakeData1.Init("test-source", baseConfig)
 		await fakeData1.Connect()
-		const rows1 = await fakeData1.Connection?.Tables["customers"]?.Rows()
+		const rows1 = await fakeData1.Connection?.Tables.customers?.Rows()
 
 		const fakeData2 = new FakeData()
 		await fakeData2.Init("test-source", baseConfig)
 		await fakeData2.Connect()
-		const rows2 = await fakeData2.Connection?.Tables["customers"]?.Rows()
+		const rows2 = await fakeData2.Connection?.Tables.customers?.Rows()
 
 		expect(rows1).toEqual(rows2)
 	})
@@ -95,22 +94,22 @@ describe("FakeData", () => {
 	it("should produce different results with different seeds", async () => {
 		const config1: U__sources_source = {
 			provider: DATA_PROVIDER.FAKE_DATA,
-			options: { seed: 1, entities: { t: { rows: 5, fields: { name: "person.firstName" } } } },
+			options: { seed: 1, entities: { t: { rows: 5, fields: { name: "person.firstName()" } } } },
 		}
 		const config2: U__sources_source = {
 			provider: DATA_PROVIDER.FAKE_DATA,
-			options: { seed: 2, entities: { t: { rows: 5, fields: { name: "person.firstName" } } } },
+			options: { seed: 2, entities: { t: { rows: 5, fields: { name: "person.firstName()" } } } },
 		}
 
 		const fd1 = new FakeData()
 		await fd1.Init("s", config1)
 		await fd1.Connect()
-		const rows1 = await fd1.Connection?.Tables["t"]?.Rows()
+		const rows1 = await fd1.Connection?.Tables.t?.Rows()
 
 		const fd2 = new FakeData()
 		await fd2.Init("s", config2)
 		await fd2.Connect()
-		const rows2 = await fd2.Connection?.Tables["t"]?.Rows()
+		const rows2 = await fd2.Connection?.Tables.t?.Rows()
 
 		expect(rows1).not.toEqual(rows2)
 	})
@@ -134,7 +133,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows?.length).toBe(5)
 		for (const row of rows!) {
 			expect(row.age).toBeGreaterThanOrEqual(10)
@@ -156,7 +155,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		expect(fakeData.Connection?.Tables["empty"]).toBeDefined()
+		expect(fakeData.Connection?.Tables.empty).toBeDefined()
 	})
 
 	it("should return 0 rows when rows is 0", async () => {
@@ -172,7 +171,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		expect(await fakeData.Connection?.Tables["zero"]?.Count()).toBe(0)
+		expect(await fakeData.Connection?.Tables.zero?.Count()).toBe(0)
 	})
 
 	it("should select data through the normal schema API", async () => {
@@ -225,7 +224,9 @@ describe("FakeData", () => {
 		await fakeData.Connect()
 
 		// Insert
-		const dt = new DataTable("customers", [{ id: "new-1", firstName: "Test", lastName: "User", email: "test@test.com", age: 25, active: true }])
+		const dt = new DataTable("customers", [
+			{ id: "new-1", firstName: "Test", lastName: "User", email: "test@test.com", age: 25, active: true },
+		])
 		Cache.Remove = vi.fn(async () => {})
 		const insertResp = await fakeData.Insert({
 			schema: "test-schema",
@@ -233,11 +234,11 @@ describe("FakeData", () => {
 			data: dt,
 		})
 		expect(insertResp.StatusCode).toBe(HTTP_STATUS_CODE.CREATED)
-		expect(await fakeData.Connection?.Tables["customers"]?.Count()).toBe(11)
+		expect(await fakeData.Connection?.Tables.customers?.Count()).toBe(11)
 
 		// Delete
 		vi.spyOn(Cache, "Remove").mockImplementation(async () => {})
-		vi.spyOn(fakeData.Connection?.Tables["customers"]!, "FreeSql").mockResolvedValue(new DataTable("customers"))
+		vi.spyOn(fakeData.Connection?.Tables.customers!, "FreeSql").mockResolvedValue(new DataTable("customers"))
 		const deleteResp = await fakeData.Delete({
 			schema: "test-schema",
 			entity: "customers",
@@ -282,10 +283,12 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		await expect(fakeData.Select({
-			schema: "test-schema",
-			entity: "nonexistent",
-		})).rejects.toThrow(HttpErrorNotFound)
+		await expect(
+			fakeData.Select({
+				schema: "test-schema",
+				entity: "nonexistent",
+			}),
+		).rejects.toThrow(HttpErrorNotFound)
 	})
 
 	it("should throw HttpErrorNotImplemented for AddEntity", async () => {
@@ -293,10 +296,12 @@ describe("FakeData", () => {
 		await fakeData.Init("test-source", baseConfig)
 		await fakeData.Connect()
 
-		await expect(fakeData.AddEntity({
-			schema: "test-schema",
-			entity: "test",
-		})).rejects.toThrow(HttpErrorNotImplemented)
+		await expect(
+			fakeData.AddEntity({
+				schema: "test-schema",
+				entity: "test",
+			}),
+		).rejects.toThrow(HttpErrorNotImplemented)
 	})
 
 	it("should throw HttpErrorInternalServerError when not connected", async () => {
@@ -338,7 +343,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows![0]!.name).toBeUndefined()
 	})
 
@@ -360,7 +365,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows![0]!.name).toBeUndefined()
 	})
 
@@ -382,7 +387,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows![0]!.name).toBeUndefined()
 	})
 
@@ -404,7 +409,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows![0]!.name).toBeUndefined()
 	})
 
@@ -426,7 +431,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows![0]!.name).toBeUndefined()
 	})
 
@@ -448,7 +453,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows![0]!.name).toBeUndefined()
 	})
 
@@ -470,7 +475,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows![0]!.name).toBeUndefined()
 	})
 
@@ -492,7 +497,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows![0]!.name).toBeUndefined()
 	})
 
@@ -514,7 +519,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows![0]!.name).toBeUndefined()
 	})
 
@@ -536,7 +541,7 @@ describe("FakeData", () => {
 		await fakeData.Init("test", config)
 		await fakeData.Connect()
 
-		const rows = await fakeData.Connection?.Tables["t"]?.Rows()
+		const rows = await fakeData.Connection?.Tables.t?.Rows()
 		expect(rows![0]!.name).toBeUndefined()
 	})
 })

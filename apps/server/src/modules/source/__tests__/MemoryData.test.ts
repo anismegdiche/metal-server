@@ -45,7 +45,7 @@ describe("MemoryData", () => {
 
 		expect(memoryData.Connection).toBeInstanceOf(DataBase)
 		expect(memoryData.SourceName).toBe("test-source")
-		expect(memoryData.Connection?.Name).toBe("test-db")
+		expect(memoryData.Connection?.Name).toBe("test-source")
 	})
 
 	// Connecting to memory database creates a new DataBase instance

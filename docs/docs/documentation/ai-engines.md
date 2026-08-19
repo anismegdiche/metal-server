@@ -70,7 +70,7 @@ Each AI Engine comes with a set of tasks that can be configured in `task` within
 OCR (Optical Character Recognition) is an AI Engine that can be used to extract text from images.
 
 **Tasks**:
-| Task Name | Description |
+| Task Name         | Description              |
 | ----------------- | ------------------------ |
 | `image-to-string` | Extract text from images |
 
@@ -78,13 +78,13 @@ OCR (Optical Character Recognition) is an AI Engine that can be used to extract 
 
 Extract text from images with support for multiple languages.
 
-**Supported Languages:** Arabic (`ar_AR`), Chinese (Simplified) (`zh_CN`), Chinese (Traditional) (`zh_TW`), German (`de_DE`), English (`en_XX`), French (`fr_XX`), Italian (`it_IT`), Japanese (`ja_XX`), Korean (`ko_KR`), Portuguese (`pt_XX`), Russian (`ru_RU`), Spanish (`es_XX`)
+**Supported Languages:** Arabic (`ar_AR`), Chinese (Simplified) (`zh_CN`), Chinese (Traditional) (`zh_TW`), German (`de_DE`), English (`en_EN`), French (`fr_FR`), Italian (`it_IT`), Japanese (`ja_JP`), Korean (`ko_KR`), Portuguese (`pt_PT`), Russian (`ru_RU`), Spanish (`es_ES`)
 
 **Parameters**:
 
 | Parameter | Type   | Required | Description                        | Default Value |
 | --------- | ------ | -------- | ---------------------------------- | ------------- |
-| `lang`    | string | Y        | Language to use for OCR processing | `en_XX`       |
+| `lang`    | string | Y        | Language to use for OCR processing | `en_EN`       |
 
 **Example:**
 
@@ -97,7 +97,7 @@ Extract text from images with support for multiple languages.
 >           ai: ocr
 >           task: image-to-string
 >           params:
->             lang: en_XX
+>             lang: en_EN
 >           input: content
 >           output:
 >             text: ${{ $result.ocr.text }}
@@ -109,7 +109,7 @@ Extract text from images with support for multiple languages.
 {
   "ocr": {
     "text": "This is a sample text extracted from the image using OCR technology.",
-    "lang": "en_XX"
+    "lang": "en_EN"
   }
 }
 ```
@@ -287,7 +287,7 @@ Extract important keywords from text.
 
 Detect the language of the text.
 
-**Supported Languages**: Arabic (`ar_AR`), Bulgarian (`bg_BG`), Chinese (Simplified) (`zh_CN`), German (`de_DE`), English (`en_XX`), French (`fr_XX`), Italian (`it_IT`), Japanese (`ja_XX`), Portuguese (`pt_XX`), Russian (`ru_RU`), Spanish (`es_XX`), Greek (`el_GR`), Hindi (`hi_IN`), Dutch (`nl_XX`), Polish (`pl_PL`), Swahili (`sw_KE`), Thai (`th_TH`), Turkish (`tr_TR`), Urdu (`ur_PK`), Vietnamese (`vi_VN`)
+**Supported Languages**: Arabic (`ar_AR`), Bulgarian (`bg_BG`), Chinese (Simplified) (`zh_CN`), German (`de_DE`), English (`en_EN`), French (`fr_FR`), Italian (`it_IT`), Japanese (`ja_JP`), Portuguese (`pt_PT`), Russian (`ru_RU`), Spanish (`es_ES`), Greek (`el_GR`), Hindi (`hi_IN`), Dutch (`nl_NL`), Polish (`pl_PL`), Swahili (`sw_KE`), Thai (`th_TH`), Turkish (`tr_TR`), Urdu (`ur_PK`), Vietnamese (`vi_VN`)
 
 **Example:**
 
@@ -622,7 +622,7 @@ Generate new text.
 
 Multilingual Named Entity Recognition (NER) identifies and classifies specific entities within text.
 
-**Supported languages**: German (`de_XX`), English (`en_XX`), Spanish (`es_XX`), French (`fr_XX`), Italian (`it_XX`), Dutch (`nl_XX`), Polish (`pl_XX`), Portuguese (`pt_XX`), and Russian (`ru_XX`).
+**Supported languages**: German, English, Spanish, French, Italian, Dutch, Polish, Portuguese, Russian.
 
 **Parameters**
 
@@ -770,14 +770,14 @@ Detect toxic content in text with the following types of toxicity:
 
 Translate text between languages.
 
-**Supported Language**: Arabic (`ar_AR`), Bulgarian (`bg_BG`), Chinese (Simplified) (`zh_CN`), Chinese (Traditional) (`zh_TW`), German (`de_DE`), English (`en_XX`), French (`fr_XX`), Japanese (`ja_XX`), Korean (`ko_KR`), Portuguese (`pt_XX`), Russian (`ru_RU`), Spanish (`es_XX`)
+**Supported Languages**: Arabic (`ar_AR`), Bulgarian (`bg_BG`), Chinese (Simplified) (`zh_CN`), Chinese (Traditional) (`zh_TW`), German (`de_DE`), English (`en_EN`), French (`fr_FR`), Japanese (`ja_JP`), Korean (`ko_KR`), Portuguese (`pt_PT`), Russian (`ru_RU`), Spanish (`es_ES`)
 
 **Parameters**
 
 | Parameter | Type   | Description                          |
 | --------- | ------ | ------------------------------------ |
-| `source`  | string | Source language code (e.g., 'en_XX') |
-| `target`  | string | Target language code (e.g., 'fr_XX') |
+| `source`  | string | Source language code (e.g., 'en_EN') |
+| `target`  | string | Target language code (e.g., 'fr_FR') |
 
 **Example:**
 
@@ -790,7 +790,7 @@ Translate text between languages.
 >           ai: text
 >           task: translation
 >           params:
->             source: en_XX
+>             source: en_EN
 >             target: ar_AR
 >           input: content # "Hello, how are you?"
 >           output:
@@ -803,7 +803,7 @@ Translate text between languages.
 {
   "translation": {
     "text": "مرحبا كيف حالك؟",
-    "source": "en_XX",
+    "source": "en_EN",
     "target": "ar_AR"
   }
 }

@@ -1,9 +1,19 @@
 //
+/** biome-ignore-all lint/style/noNonNullAssertion: <!+> */
 //
 //
 import { beforeEach, describe, expect, it, vi } from "vitest"
 //
 import { ApiKey } from "../ApiKey"
+
+vi.mock("@metal/config", () => {
+	const config = { server: {} }
+	return {
+		Config: config,
+		config,
+		default: config,
+	}
+})
 
 //
 const mockPersistentMapStore = vi.hoisted(() => new Map<string, unknown>())
@@ -90,7 +100,7 @@ describe("ApiKey", () => {
 	})
 	//
 	describe("List", () => {
-		it("should list all API keys", () => {
+		it("should list the user's API keys", () => {
 			ApiKey.Create("user-a", { name: "key-1" })
 			ApiKey.Create("user-a", { name: "key-2" })
 			ApiKey.Create("user-b", { name: "key-3" })
@@ -98,8 +108,8 @@ describe("ApiKey", () => {
 			const result = ApiKey.List("user-a")
 			//
 			expect(result.StatusCode).toBe(200)
-			expect(result.Body).toHaveLength(3)
-			expect(result.Body!.some((k) => k.userId === "user-b")).toBe(true)
+			expect(result.Body).toHaveLength(2)
+			expect(result.Body!.every((k) => k.userId === "user-a")).toBe(true)
 		})
 		//
 		it("should not expose hash in listed keys", () => {

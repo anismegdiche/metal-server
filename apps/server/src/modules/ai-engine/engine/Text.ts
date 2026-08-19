@@ -14,7 +14,7 @@ import { AiDocker } from "../AiDocker"
 import { absAiEngine } from "../base/absAiEngine"
 import type { IAiEngine } from "../base/IAiEngine"
 import { LANG_ISO } from "../consts/LANG"
-import { TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO, TEXT_TASK } from "../consts/TEXT"
+import { TEXT_LANGUAGE_DETECTION, TEXT_LANGUAGE_DETECTION_ISO, TEXT_TASK, TEXT_TRANSLATION, TEXT_TRANSLATION_ISO } from "../consts/TEXT"
 import {
 	TextEmotionDetectionDockerService,
 	TextFillMaskDockerService,
@@ -35,6 +35,7 @@ import type { T__ai_engines_ai_engine } from "../types/T__ai_engines_ai_engine"
 import type { TAiDockerService } from "../types/TAiDockerService"
 import type {
 	U__plans_plan_run_ai_text_emotion_detection_Params,
+	U__plans_plan_run_ai_text_ner_Params,
 	U__plans_plan_run_ai_text_Params,
 	U__plans_plan_run_ai_text_paraphrase_detection_Params,
 	U__plans_plan_run_ai_text_question_answering_Params,
@@ -384,7 +385,7 @@ export class Text extends absAiEngine implements IAiEngine {
 	@Logger.LogFunction(true)
 	async Ner(args: TAiArguments): Promise<TAiOutput> {
 		const { data } = args
-		const { params } = args as U__plans_plan_run_ai_text_Params
+		const { params } = args as U__plans_plan_run_ai_text_ner_Params
 
 		const DEFAULT = {
 			grouped: true,
@@ -445,8 +446,8 @@ export class Text extends absAiEngine implements IAiEngine {
 		const { params } = args as U__plans_plan_run_ai_text_translation_Params
 
 		const DEFAULT = {
-			src_lang: LANG_ISO.en_XX,
-			tgt_lang: LANG_ISO.fr_XX,
+			src_lang: TEXT_TRANSLATION.en_XX,
+			tgt_lang: TEXT_TRANSLATION.fr_XX,
 		}
 
 		Assert.Var(data, "data is required")
@@ -455,8 +456,8 @@ export class Text extends absAiEngine implements IAiEngine {
 		Assert.Var(params.target, "target is required")
 
 		const _params = merge(DEFAULT, {
-			src_lang: params.source,
-			tgt_lang: params.target,
+			src_lang: LangUtils.Convert(params.source, TEXT_TRANSLATION_ISO, TEXT_TRANSLATION),
+			tgt_lang: LangUtils.Convert(params.target, TEXT_TRANSLATION_ISO, TEXT_TRANSLATION),
 		})
 
 		return this._postData(data, _params).then((response) => {
@@ -465,7 +466,7 @@ export class Text extends absAiEngine implements IAiEngine {
 			const translation = {
 				text: result.translation_text,
 				source: params.source,
-				target: params.target,
+				target: params.target
 			}
 
 			return {
