@@ -15,6 +15,18 @@ export default defineNuxtConfig({
         '@nuxt/ui',
         'nuxt-auth-utils'
     ],
+    vite: {
+        optimizeDeps: {
+            include: [
+                '@vue-flow/background',
+                '@vue-flow/controls',
+                '@vue-flow/core',
+                '@vue-flow/minimap',
+                '@vue/devtools-core',
+                '@vue/devtools-kit',
+            ]
+        }
+    },
 
     runtimeConfig: {
         serverAddress: EnvGetServerAddress(),

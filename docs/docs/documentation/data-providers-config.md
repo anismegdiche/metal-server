@@ -195,32 +195,6 @@ sources:
       allowExitOnIdle: true
 ```
 
-## Metal Server <Badge type="default" text="v0.2+" />
-
-This is used to connect to another instance of Metal Server via REST
-
-**Primary parameters:**
-
-| Parameter  | Type   | Required | Description                                   |
-| ---------- | ------ | -------- | --------------------------------------------- |
-| `provider` | String | Y        | Set to `metal` for Metal Server               |
-| `host`     | String | Y        | URL of the target server to connect to        |
-| `user`     | String | Y        | User name for authentication.                 |
-| `password` | String | Y        | Password for authentication.                  |
-| `database` | String | Y        | Name of the schema on the remote Metal server |
-
-**Example:**
-
-```yaml
-sources:
-  my-metal-schema:
-    provider: metal
-    host: http://metalserver:3001
-    user: myapiuser
-    password: myStr@ngpa$$w0rd
-    database: myschema
-```
-
 ## MongoDB <Badge type="default" text="v0.1+" />
 
 **Primary parameters:**
@@ -261,51 +235,6 @@ sources:
     options:
       maxIdleTimeMS: 15000
       connectTimeoutMS: 5000
-```
-
-## Plans <Badge type="info" text="v0.5+" />
-
-Used to connect to Metal ETL Plans
-
-**Parameters:**
-
-| Parameter  | Type   | Required | Description             |
-| ---------- | ------ | -------- | ----------------------- |
-| `provider` | String | Y        | Set to `plans` for plan |
-
-**Example:**
-
-```yaml
-sources:
-  my-plan-source:
-    provider: plans
-```
-
-## Memory <Badge type="default" text="v0.2+" />
-
-Non-persistent Memory Database
-
-**Primary parameters:**
-
-| Parameter  | Type   | Required | Description                                                                           |
-| ---------- | ------ | -------- | ------------------------------------------------------------------------------------- |
-| `provider` | String | Y        | Set to `memory` for In memory data provider                                           |
-| `database` | String | N        | Name of the database to connect to. If not set, will use source name as database name |
-
-**Optional parameters:**
-
-| Parameter    | Type    | Required | Description                                                               |
-| ------------ | ------- | -------- | ------------------------------------------------------------------------- |
-| `autocreate` | Boolean | N        | if set to `true`, entity will be created automatically (default: `false`) |
-
-**Example:**
-
-```yaml
-sources:
-  my-memory:
-    provider: memory
-    options:
-      autocreate: true
 ```
 
 ## MySql <Badge type="default" text="v0.4+" />
@@ -354,6 +283,148 @@ sources:
       queueLimit: 0
       enableKeepAlive: true
       keepAliveInitialDelay: 0
+```
+
+## Memory <Badge type="default" text="v0.2+" />
+
+Non-persistent Memory Database
+
+**Primary parameters:**
+
+| Parameter  | Type   | Required | Description                                 |
+| ---------- | ------ | -------- | ------------------------------------------- |
+| `provider` | String | Y        | Set to `memory` for In memory data provider |
+
+**Optional parameters:**
+
+| Parameter    | Type    | Required | Description                                                               |
+| ------------ | ------- | -------- | ------------------------------------------------------------------------- |
+| `autocreate` | Boolean | N        | if set to `true`, entity will be created automatically (default: `false`) |
+
+**Example:**
+
+```yaml
+sources:
+  my-memory:
+    provider: memory
+    options:
+      autocreate: true
+```
+
+## Fake Data <Badge type="info" text="v0.5+" />
+
+The Fake Data provider generates deterministic synthetic records for testing ETL Plans, MCP Tools, and schemas without external databases.
+
+**Primary parameters:**
+
+| Parameter  | Type   | Required | Description                               |
+| ---------- | ------ | -------- | ----------------------------------------- |
+| `provider` | String | Y        | Set to `fake-data` for Fake Data provider |
+
+**Optional parameters:**
+
+| Parameter    | Type    | Required | Description                                                                                                                                                                        |
+| ------------ | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `seed`       | Integer | N        | Set the seed to ensures reproducible generation (default: random integer).<br/><br/>**ℹ️ Please note that generated values are dependent on both the seed and the number of rows.** |
+| `autocreate` | Boolean | N        | If set to `true`, selecting an undefined entity creates an empty table (default: `true`).                                                                                          |
+
+**Entity properties:**
+
+| Parameter | Type    | Required | Description                                                                                                                      |
+| --------- | ------- | -------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `locale`  | String  | N        | Faker locale for this entity (e.g. `en_EN`, `fr_FR`), default: `en_EN`. See Available locales above.                             |
+| `rows`    | Integer | N        | Number of records generated per entity, default: `100`. Must be ≥ 0.                                                             |
+| `fields`  | Object  | N        | Field definitions. Keys are field names, values are faker expression strings. When omitted, entity is an empty dynamic document. |
+
+**Faker expression format:**
+
+Each field value is a faker function. Examples:
+
+- `string.uuid()` → generates UUID string
+- `number.int({ min: 10, max: 100 })` → generates integer from 10 to 100
+- `person.firstName('male')` → generates male's first name
+
+For more details about how to use data types, see [FakerJS API](https://fakerjs.dev/api/)
+
+::: warning ⚠️ IMPORTANT
+If a Faker function is not available for the specified locale, it silently falls back to the English locale, `en_EN`.
+:::
+
+**Example:**
+
+```yaml
+sources:
+  fake-crm:
+    provider: fake-data
+    options:
+      seed: 42
+      entities:
+        customers:
+          locale: en_EN
+          rows: 100
+          fields:
+            id: string.uuid()
+            firstName: person.firstName()
+            lastName: person.lastName()
+            email: internet.email()
+            age: "number.int({ min: 18, max: 80 })"
+            active: datatype.boolean()
+            createdAt: date.anytime()
+        books:
+          locale: fr_FR
+          rows: 45
+          fields:
+            id: string.uuid()
+            title: "person.firstName('male')"
+            author: person.lastName()
+            publishedAt: date.anytime()
+```
+
+**Available locales:** Afrikaans (`af_ZA`), Arabic (`ar_AR`), Azerbaijani (`az_AZ`), Bengali (`bn_BD`), Czech (`cs_CZ`), Welsh (`cy_CY`), Danish (`da_DA`), German (`de_DE`, `de_AT`, `de_CH`), Divehi (`dv_DV`), Greek (`el_EL`), English (`en_EN`, `en_US`, `en_AU`, `en_BORK`, `en_CA`, `en_GB`, `en_GH`, `en_HK`, `en_IE`, `en_IN`, `en_NG`, `en_ZA`), Esperanto (`eo_EO`), Spanish (`es_ES`, `es_MX`), Persian (`fa_FA`), Finnish (`fi_FI`), French (`fr_FR`, `fr_BE`, `fr_CA`, `fr_CH`, `fr_LU`, `fr_SN`), Hebrew (`he_HE`), Croatian (`hr_HR`), Hungarian (`hu_HU`), Armenian (`hy_HY`), Indonesian (`id_ID`), Italian (`it_IT`), Japanese (`ja_JA`), Georgian (`ka_GE`), Korean (`ko_KO`), Latvian (`lv_LV`), Macedonian (`mk_MK`), Norwegian Bokmål (`nb_NO`), Nepali (`ne_NE`), Dutch (`nl_NL`, `nl_BE`), Polish (`pl_PL`), Portuguese (`pt_PT`, `pt_BR`), Romanian (`ro_RO`, `ro_MD`), Russian (`ru_RU`), Slovak (`sk_SK`), Serbian (`sr_RS`), Swedish (`sv_SV`), Tamil (`ta_IN`), Thai (`th_TH`), Turkish (`tr_TR`), Ukrainian (`uk_UK`), Urdu (`ur_UR`), Uzbek (`uz_UZ`), Vietnamese (`vi_VI`), Yoruba (`yo_NG`), Chinese (Simplified) (`zh_CN`), Chinese (Traditional) (`zh_TW`), Zulu (`zu_ZA`).
+
+
+## Plans <Badge type="info" text="v0.5+" />
+
+Used to connect to Metal ETL Plans
+
+**Parameters:**
+
+| Parameter  | Type   | Required | Description             |
+| ---------- | ------ | -------- | ----------------------- |
+| `provider` | String | Y        | Set to `plans` for plan |
+
+**Example:**
+
+```yaml
+sources:
+  my-plan-source:
+    provider: plans
+```
+
+## Remote Metal Server <Badge type="default" text="v0.2+" />
+
+This is used to connect to a remote instance of Metal Server
+
+**Primary parameters:**
+
+| Parameter  | Type   | Required | Description                                   |
+| ---------- | ------ | -------- | --------------------------------------------- |
+| `provider` | String | Y        | Set to `metal` for Metal Server               |
+| `host`     | String | Y        | URL of the target server to connect to        |
+| `user`     | String | Y        | User name for authentication.                 |
+| `password` | String | Y        | Password for authentication.                  |
+| `database` | String | Y        | Name of the schema on the remote Metal server |
+
+**Example:**
+
+```yaml
+sources:
+  my-metal-schema:
+    provider: metal
+    host: http://metalserver:3001
+    user: myapiuser
+    password: myStr@ngpa$$w0rd
+    database: myschema
 ```
 
 ## Storage <Badge type="info" text="v0.5+" />

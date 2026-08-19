@@ -38,6 +38,40 @@ describe("Schedule", () => {
 			expect(Schedule.Jobs.length).toBe(1)
 			expect(Schedule.Jobs[0]?.name).toBe("job1")
 		})
+
+		it("should run ON_START jobs when runOnStart is true", async () => {
+			vi.mocked(ConfigManager.Has).mockReturnValue(true)
+			vi.mocked(ConfigManager.Get).mockImplementation((key: string) => {
+				if (key === "schedules")
+					return {
+						job1: { cron: "@start", plan: "p1" },
+					}
+				if (key === "server.timezone") return "UTC"
+				return undefined
+			})
+			const jobProcessSpy = vi.spyOn(Schedule, "JobProcess").mockResolvedValue()
+
+			await Schedule.Init(true)
+
+			expect(jobProcessSpy).toHaveBeenCalledWith("job1", expect.anything())
+		})
+
+		it("should not run ON_START jobs when runOnStart is false", async () => {
+			vi.mocked(ConfigManager.Has).mockReturnValue(true)
+			vi.mocked(ConfigManager.Get).mockImplementation((key: string) => {
+				if (key === "schedules")
+					return {
+						job1: { cron: "@start", plan: "p1" },
+					}
+				if (key === "server.timezone") return "UTC"
+				return undefined
+			})
+			const jobProcessSpy = vi.spyOn(Schedule, "JobProcess").mockResolvedValue()
+
+			await Schedule.Init(false)
+
+			expect(jobProcessSpy).not.toHaveBeenCalled()
+		})
 	})
 
 	describe("StopAll", () => {

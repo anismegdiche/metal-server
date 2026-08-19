@@ -46,7 +46,7 @@ export class ServerInitializer {
 	}
 
 	@Logger.LogFunction()
-	static async InitAll(): Promise<void> {
+	static async InitAll(runOnStart: boolean = true): Promise<void> {
 		await ConfigManager.Init(new ConfigStore())
 		ServerInitializer.InitLogging()
 		await Source.Init()
@@ -55,7 +55,7 @@ export class ServerInitializer {
 		Schema.Init(Cache.Get)
 		await AiEngine.Init()
 		await PlansManager.Init()
-		await Schedule.Init()
+		await Schedule.Init(runOnStart)
 		await ServerInitializer.InitAuthentication()
 		ServerInitializer.InitResponse()
 	}

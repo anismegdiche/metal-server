@@ -31,6 +31,7 @@ export class DataProvider {
 		[DATA_PROVIDER.AZURE_COSMOSDB]: () => import("./providers/AzureCosmosDbData").then((m) => m.AzureCosmosDbData),
 		[DATA_PROVIDER.STORAGE]: () => import("./providers/StorageData").then((m) => m.StorageData),
 		[DATA_PROVIDER.AZURE_SQLDB]: () => import("./providers/AzureSqlDbData").then((m) => m.AzureSqlDbData),
+		[DATA_PROVIDER.FAKE_DATA]: () => import("./providers/FakeData").then((m) => m.FakeData),
 	}
 
 	/**

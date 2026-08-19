@@ -12,8 +12,6 @@ export const z_U__source_memory_options = z.object({
 
 export const z_U__source_memory = z.object({
 	provider: z.literal(DATA_PROVIDER.MEMORY).default(DATA_PROVIDER.MEMORY),
-	database: z.string()
-		.optional(),
 	options: z_U__source_memory_options
 		.optional(),
 })

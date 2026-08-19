@@ -27,12 +27,6 @@ Browse, configure, and virtualize Data Sources.
     />
 
   <FeatureCard 
-    title="MS SQL Server" 
-    image="/logo/sql-server.svg" 
-    link="/documentation/data-providers-config#microsoft-sql-server"
-    />
-
-  <FeatureCard 
     title="PostgreSQL" 
     image="/logo/postgres.png" 
     link="/documentation/data-providers-config#postgresql"
@@ -51,6 +45,12 @@ Browse, configure, and virtualize Data Sources.
     />
 
   <FeatureCard 
+    title="MS SQL Server" 
+    image="/logo/sql-server.svg" 
+    link="/documentation/data-providers-config#microsoft-sql-server"
+    />
+
+  <FeatureCard 
     title="In-Memory" 
     image="/metal-logo-icon.png" 
     link="/documentation/data-providers-config#memory"
@@ -65,13 +65,13 @@ Browse, configure, and virtualize Data Sources.
   <FeatureCard 
     title="Files to data" 
     image="/metal-logo-icon.png" 
-    link="/documentation/data-providers-config#files"
+    link="/documentation/data-providers-config#storage"
     />
 
   <FeatureCard 
     title="Folder to data" 
     image="/metal-logo-icon.png" 
-    link="/documentation/data-providers-config#folders"
+    link="/documentation/data-providers-config#storage"
     />
 
   <FeatureCard 
@@ -83,7 +83,13 @@ Browse, configure, and virtualize Data Sources.
   <FeatureCard 
     title="Remote Metal Server" 
     image="/metal-logo-icon.png" 
-    link="/documentation/data-providers-config#metal-server"
+    link="/documentation/data-providers-config#remote-metal-server"
+    />
+
+  <FeatureCard 
+    title="Fake Data" 
+    image="/metal-logo-icon.png" 
+    link="/documentation/data-providers-config#fake-data"
     />
 </div>
 

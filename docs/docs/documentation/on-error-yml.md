@@ -84,8 +84,11 @@ Here how strategy can be matched with scopes:
 | `retry`  | ✅<sup>(1)</sup> | ✅<sup>(2)</sup> |
 
 > ✅: Supported
+>
 > ❌: Not supported
+>
 > (1): retry with sink is not supported
+>
 > (2): retry with throw is not supported
 
 ### `throw` <Badge type="info" text="v0.5+" />

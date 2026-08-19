@@ -24,14 +24,12 @@ describe("MemoryData", () => {
 		const source = "test-source"
 		const sourceConfig: U__sources_source = {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 			options: { autocreate: true },
 		}
 
 		await memoryData.Init(source, sourceConfig)
 
 		expect(memoryData.SourceName).toBe(source)
-		expect(memoryData.Config.database).toBe(sourceConfig.database)
 		expect(memoryData.Config.options).toEqual(sourceConfig.options)
 		expect(memoryData.ProviderName).toBe(DATA_PROVIDER.MEMORY)
 	})
@@ -41,7 +39,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 
 		await memoryData.Connect()
@@ -69,7 +66,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 		await memoryData.Connect()
 
@@ -102,7 +98,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 		await memoryData.Connect()
 
@@ -132,7 +127,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 		await memoryData.Connect()
 
@@ -161,7 +155,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 			options: { autocreate: true },
 		})
 		await memoryData.Connect()
@@ -197,7 +190,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 		await memoryData.Connect()
 
@@ -253,7 +245,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 		await memoryData.Connect()
 
@@ -297,7 +288,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 		// Not calling Connect()
 
@@ -320,7 +310,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 		await memoryData.Connect()
 
@@ -337,7 +326,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 			options: { autocreate: true },
 		})
 		await memoryData.Connect()
@@ -360,7 +348,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 		await memoryData.Connect()
 
@@ -383,7 +370,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 		await memoryData.Connect()
 
@@ -415,7 +401,6 @@ describe("MemoryData", () => {
 		const memoryData = new MemoryData()
 		await memoryData.Init("test-source", {
 			provider: DATA_PROVIDER.MEMORY,
-			database: "test-db",
 		})
 		await memoryData.Connect()
 

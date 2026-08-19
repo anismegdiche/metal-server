@@ -1,11 +1,11 @@
 //
 //
 //
-import { z } from "zod"
 //
+import { z_T_IntPositive, z_TJson } from "@metal/types"
+import { z } from "zod"
 import { z_TOrderBy } from "../../../types/DataTable"
-import { z_T_IntPositive } from "@metal/types"
-import { z_TJson } from "@metal/types"
+import { ZodUtils } from "../../../utils/ZodUtils"
 
 
 // SchemaRequestBase
@@ -79,57 +79,60 @@ const z_anonymize = z.union([
 
 // TSchemaRequest
 
-export const z_TSchemaRequestSelect = z_TSchemaRequestBase
-	.extend(
-		z.strictObject(
-			{
-				fields: z_fields
-					.optional(),
-				filter: z_filter
-					.optional(),
-				"filter-expression": z_filter_expression
-					.optional(),
-				sort: z_sort
-					.optional(),
-				limit: z_limit
-					.optional(),
-				offset: z_offset
-					.optional(),
-				cache: z_cache
-					.optional(),
-				anonymize: z_anonymize
-					.optional(),
-			},
-			{ message: "options must be one of the following: fields, filter, filter-expression, sort, limit, offset, cache, anonymize" },
-		).shape,
-	)
+export const z_TSchemaRequestSelectBase = z_TSchemaRequestBase.extend(
+	z.strictObject(
+		{
+			fields: z_fields
+				.optional(),
+			filter: z_filter
+				.optional(),
+			"filter-expression": z_filter_expression
+				.optional(),
+			sort: z_sort
+				.optional(),
+			limit: z_limit
+				.optional(),
+			offset: z_offset
+				.optional(),
+			cache: z_cache
+				.optional(),
+			anonymize: z_anonymize
+				.optional(),
+		},
+		{ message: "options must be one of the following: fields, filter, filter-expression, sort, limit, offset, cache, anonymize" },
+	).shape,
+)
 
-export const z_TSchemaRequestUpdate = z_TSchemaRequestBase
-	.extend(
-		z.strictObject(
-			{
-				filter: z_filter
-					.optional(),
-				"filter-expression": z_filter_expression
-					.optional(),
-				data: z_data,
-			},
-			{ message: "options must be one of the following: filter, filter-expression, data" },
-		).shape,
-	)
+export const z_TSchemaRequestSelect = ZodUtils.WithExclusiveFilter(z_TSchemaRequestSelectBase)
 
-export const z_TSchemaRequestDelete = z_TSchemaRequestBase
-	.extend(
-		z.strictObject(
-			{
-				filter: z_filter
-					.optional(),
-				"filter-expression": z_filter_expression
-					.optional(),
-			},
-			{ message: "options must be one of the following: filter, filter-expression" },
-		).shape,
-	)
+export const z_TSchemaRequestUpdateBase = z_TSchemaRequestBase.extend(
+	z.strictObject(
+		{
+			filter: z_filter
+				.optional(),
+			"filter-expression": z_filter_expression
+				.optional(),
+			data: z_data,
+		},
+		{ message: "options must be one of the following: filter, filter-expression, data" },
+	).shape,
+)
+
+export const z_TSchemaRequestUpdate = ZodUtils.WithExclusiveFilter(z_TSchemaRequestUpdateBase)
+
+export const z_TSchemaRequestDeleteBase = z_TSchemaRequestBase.extend(
+	z.strictObject(
+		{
+			filter: z_filter
+				.optional(),
+			"filter-expression": z_filter_expression
+				.optional(),
+		},
+		{ message: "options must be one of the following: filter, filter-expression" },
+	).shape,
+)
+
+export const z_TSchemaRequestDelete = ZodUtils.WithExclusiveFilter(z_TSchemaRequestDeleteBase)
 
 export const z_TSchemaRequestInsert = z_TSchemaRequestBase
 	.extend(

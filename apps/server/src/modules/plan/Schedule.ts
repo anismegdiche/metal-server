@@ -27,12 +27,12 @@ export class Schedule {
 	static Jobs: TSchedule[] = []
 
 	@Logger.LogFunction()
-	static async Init() {
-		if (ConfigManager.Has("schedules")) await Schedule.CreateAndStartAll()
+	static async Init(runOnStart: boolean = true) {
+		if (ConfigManager.Has("schedules")) await Schedule.CreateAndStartAll(runOnStart)
 	}
 
 	@Logger.LogFunction()
-	static async CreateAndStartAll() {
+	static async CreateAndStartAll(runOnStart: boolean = true) {
 		if (!ConfigManager.Has("schedules")) {
 			return undefined
 		}
@@ -67,9 +67,10 @@ export class Schedule {
 
 			const isOnStart = _scheduleParams.cron === ON_START
 			const hasCronExpression = _scheduleParams.cron && _scheduleParams.cron !== ON_START
+			const shouldRunOnStart = isOnStart && runOnStart
 
-			// 1) If ON_START: run once immediately on server start
-			if (isOnStart) {
+			// 1) If ON_START: run once immediately on server start (skipped on config reloads)
+			if (shouldRunOnStart) {
 				Logger.Info(`${Logger.In} Schedule.CreateAndStartAll: Running ON_START job '${_jobName}'`)
 				try {
 					await Schedule.JobProcess(_jobName, _scheduleParams)
@@ -136,8 +137,8 @@ export class Schedule {
 			details[_jobName] = {
 				plan: _scheduleParams.plan,
 				cron: _scheduleParams.cron,
-				status: isOnStart ? "completed" : "active",
-				lastFire: isOnStart ? new Date().toISOString() : null,
+				status: shouldRunOnStart ? "completed" : "active",
+				lastFire: shouldRunOnStart ? new Date().toISOString() : null,
 				nextFire,
 			}
 		}

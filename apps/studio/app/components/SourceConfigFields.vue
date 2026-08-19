@@ -11,6 +11,7 @@ import SourceModalMemory from '~/components/SourceModalMemory.vue'
 import SourceModalPlans from '~/components/SourceModalPlans.vue'
 import SourceModalWebservice from '~/components/SourceModalWebservice.vue'
 import SourceModalStorage from '~/components/SourceModalStorage.vue'
+import SourceModalFakeData from '~/components/SourceModalFakeData.vue'
 
 const props = defineProps<{
   sourceConfig?: Record<string, any>
@@ -31,6 +32,7 @@ const PROVIDER_OPTIONS = [
   { label: 'Metal', value: 'metal', icon: 'i-lucide-server' },
   { label: 'Plans', value: 'plans', icon: 'i-lucide-workflow' },
   { label: 'Memory', value: 'memory', icon: 'i-lucide-cpu' },
+  { label: 'Fake Data', value: 'fake-data', icon: 'i-lucide-flask-conical' },
 ]
 
 const PROVIDER_COMPONENT_MAP: Record<string, any> = {
@@ -45,6 +47,7 @@ const PROVIDER_COMPONENT_MAP: Record<string, any> = {
   plans: SourceModalPlans,
   webservice: SourceModalWebservice,
   storage: SourceModalStorage,
+  'fake-data': SourceModalFakeData,
 }
 
 const providerChildRef = ref<any>(null)

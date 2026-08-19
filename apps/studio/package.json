@@ -23,6 +23,10 @@
 		"@metal/server": "workspace:*",
 		"@nuxt/kit": "^4.4.8",
 		"@nuxt/ui": "^4.9.0",
+		"@vue-flow/background": "^1.3.2",
+		"@vue-flow/controls": "^1.1.3",
+		"@vue-flow/core": "^1.48.2",
+		"@vue-flow/minimap": "^1.5.4",
 		"nuxt": "^4.4.8",
 		"nuxt-auth-utils": "^0.5.29",
 		"tailwindcss": "^4.3.1"

@@ -73,7 +73,7 @@ describe("ServerRuntime", () => {
 			vi.spyOn(ServerInitializer, "InitAll")
 			await ServerRuntime.Reload(userToken as any)
 
-			expect(ServerInitializer.InitAll).toHaveBeenCalled()
+			expect(ServerInitializer.InitAll).toHaveBeenCalledWith(false)
 			expect(Roles.CheckPermission).toHaveBeenCalled()
 			expect(AiDocker.StopScaler).toHaveBeenCalled()
 			expect(Schedule.StopAll).toHaveBeenCalled()
@@ -87,7 +87,7 @@ describe("ServerRuntime", () => {
 			expect(Cache.Init).toHaveBeenCalled()
 			expect(AiEngine.Init).toHaveBeenCalled()
 			expect(PlansManager.Init).toHaveBeenCalled()
-			expect(Schedule.Init).toHaveBeenCalled()
+			expect(Schedule.Init).toHaveBeenCalledWith(false)
 		})
 	})
 

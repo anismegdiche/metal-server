@@ -7,6 +7,12 @@ hero:
   name: What's new in v0.5
 
 features:
+  - title: New Fake Data Provider
+    details: |
+      Generate deterministic synthetic records with Fake Data Provider for testing ETL Plans, MCP Tools, and schemas without external databases.
+      <br><br><span class="VPBadge danger">Learn more...</span>
+    link: data-providers-config#fake-data
+
   - title: New MCP Server
     details: |
       Expose your schemas and entities as MCP (Model Context Protocol) tools, callable by LLM clients and AI agents. Declarative YAML configuration with role-based access control and sensitive data hiding.

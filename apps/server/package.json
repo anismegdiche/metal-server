@@ -38,6 +38,7 @@
 		"@azure/storage-file-share": "^12.31.0",
 		"@dimkl/events": "^3.0.3",
 		"@duckdb/node-api": "^1.5.3-r.3",
+		"@faker-js/faker": "^9.0.0",
 		"@metal/config": "workspace:*",
 		"@metal/logger": "workspace:*",
 		"@metal/persistent-map": "workspace:*",

@@ -99,9 +99,9 @@ export class PlansManager {
 			}
 		}
 
-		// 6. Refresh schedules
+		// 6. Refresh schedules (do not re-run ON_START plans on reload)
 		Schedule.StopAll()
-		await Schedule.Init()
+		await Schedule.Init(false)
 
 		Logger.Info(`${Logger.Out} Plans and schedules reloaded successfully`)
 	}
@@ -117,7 +117,7 @@ export class PlansManager {
 
 		// Refresh schedules as well (as per user requirement "reload config... reload schedules")
 		Schedule.StopAll()
-		await Schedule.Init()
+		await Schedule.Init(false)
 
 		return HttpResponse.Ok({
 			...result?.Body,

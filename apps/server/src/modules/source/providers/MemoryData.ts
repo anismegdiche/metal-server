@@ -55,7 +55,7 @@ export class MemoryData extends absDataProvider {
 	@Logger.LogFunction()
 	async Connect(): Promise<void> {
 		Assert.Var<string>(this.SourceName, "SourceName is required")
-		this.Connection = new DataBase(this.Config.database ?? this.SourceName)
+		this.Connection = new DataBase(this.SourceName)
 		Logger.Info(`${Logger.Out} Connected to '${this.SourceName}'`)
 	}
 

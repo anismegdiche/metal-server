@@ -74,7 +74,7 @@ describe("ServerCore", () => {
 			expect(Cache.Connect).toHaveBeenCalled()
 			expect(AiEngine.Init).toHaveBeenCalled()
 			expect(PlansManager.Init).toHaveBeenCalled()
-			expect(Schedule.Init).toHaveBeenCalled()
+			expect(Schedule.Init).toHaveBeenCalledWith(true)
 			expect(AuthProvider.SetCurrent).toHaveBeenCalledWith("local")
 			expect(ServerEndpoint.RegisterMiddleware).toHaveBeenCalled()
 			expect(ServerCore.LoadModuleHooks).toHaveBeenCalled()

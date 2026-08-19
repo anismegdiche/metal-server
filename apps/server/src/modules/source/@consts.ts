@@ -17,6 +17,7 @@ export enum DATA_PROVIDER {
 	AZURE_SQLDB = "azure-sqldb",
 	// FOLDERS = "folders",
 	STORAGE = "storage",
+	FAKE_DATA = "fake-data",
 }
 
 export enum DATA_ENTITY_TYPE {

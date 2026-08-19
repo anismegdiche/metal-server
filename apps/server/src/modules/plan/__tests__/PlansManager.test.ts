@@ -68,7 +68,7 @@ describe("PlansManager", () => {
 			expect(Plans.has("newPlan")).toBe(true)
 
 			expect(Schedule.StopAll).toHaveBeenCalled()
-			expect(Schedule.Init).toHaveBeenCalled()
+			expect(Schedule.Init).toHaveBeenCalledWith(false)
 		})
 	})
 
@@ -82,7 +82,7 @@ describe("PlansManager", () => {
 
 			expect(mockPlan.Reload).toHaveBeenCalled()
 			expect(Schedule.StopAll).toHaveBeenCalled()
-			expect(Schedule.Init).toHaveBeenCalled()
+			expect(Schedule.Init).toHaveBeenCalledWith(false)
 			expect(result.Body).toHaveProperty("message", "Plan 'test-plan' and schedules reloaded")
 		})
 

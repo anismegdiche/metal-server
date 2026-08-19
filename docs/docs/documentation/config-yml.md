@@ -48,19 +48,19 @@ Defines the configuration of the Metal server.
 
 The parameters that can be configured inside the `server` section include:
 
-| Parameter              | Type    | Required | Decription                                    | Metal version                         |
-| ---------------------- | ------- | -------- | --------------------------------------------- | ------------------------------------- |
-| `authentication`       | Object  | Y        | Configure user authentication                 | <Badge type="default" text="v0.3+" /> |
-| `port`                 | Integer | N        | Server TCP port (default: `3000`)             | <Badge type="default" text="v0.1+" /> |
-| `timezone`             | String  | N        | Timezone setting (default: `UTC`)             | <Badge type="default" text="v0.1+" /> |
-| `verbosity`            | String  | N        | Logging level (default: `info`)               | <Badge type="info" text="v0.5+" />    |
-| `cache`                | Object  | N        | Cache configuration                           | <Badge type="default" text="v0.1+" /> |
-| `request-limit`        | String  | N        | Define request limit (default: `10mb`)        | <Badge type="default" text="v0.1+" /> |
-| `response-limit`       | String  | N        | Define response limit (default: `10mb`)       | <Badge type="default" text="v0.3+" /> |
-| `response-rate`        | Object  | N        | Define response rate limit                    | <Badge type="default" text="v0.3+" /> |
+| Parameter              | Type    | Required | Decription                                           | Metal version                         |
+| ---------------------- | ------- | -------- | ---------------------------------------------------- | ------------------------------------- |
+| `authentication`       | Object  | Y        | Configure user authentication                        | <Badge type="default" text="v0.3+" /> |
+| `port`                 | Integer | N        | Server TCP port (default: `3000`)                    | <Badge type="default" text="v0.1+" /> |
+| `timezone`             | String  | N        | Timezone setting (default: `UTC`)                    | <Badge type="default" text="v0.1+" /> |
+| `verbosity`            | String  | N        | Logging level (default: `info`)                      | <Badge type="info" text="v0.5+" />    |
+| `cache`                | Object  | N        | Cache configuration                                  | <Badge type="default" text="v0.1+" /> |
+| `request-limit`        | String  | N        | Define request limit (default: `10mb`)               | <Badge type="default" text="v0.1+" /> |
+| `response-limit`       | String  | N        | Define response limit (default: `10mb`)              | <Badge type="default" text="v0.3+" /> |
+| `response-rate`        | Object  | N        | Define response rate limit                           | <Badge type="default" text="v0.3+" /> |
 | `response-chunk`       | Boolean | N        | Stream schema responses in chunks (default: `false`) | <Badge type="default" text="v0.4+" /> |
-| `response-compression` | Boolean | N        | Enable response compression (default: `true`) | <Badge type="info" text="v0.5+" />    |
-| `endpoints`            | Object  | N        | Server endpoint toggles, including MCP        | <Badge type="info" text="v0.5+" />    |
+| `response-compression` | Boolean | N        | Enable response compression (default: `true`)        | <Badge type="info" text="v0.5+" />    |
+| `endpoints`            | Object  | N        | Server endpoint toggles, including MCP               | <Badge type="info" text="v0.5+" />    |
 
 **Example:**
 
@@ -923,10 +923,10 @@ To list entities in a schema.
 
 The parameters that can be configured inside `select` tag are :
 
-| Name        | Decription                                                              | Metal version                      |
-| ----------- | ----------------------------------------------------------------------- | ---------------------------------- |
-| 📜`schema`   | name of schema                                                          | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
+| Name        | Decription                                                                                                             | Metal version                      |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| 📜`schema`   | name of schema                                                                                                         | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Error handling strategy when step fails (see: [on-error](on-error-yml)).<br/><br/>ℹ️ **Only scope `step` is supported** | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -953,16 +953,16 @@ If schema and entity are not provided, actual plan's data will be returned.
 
 The parameters that can be configured inside `select` tag are :
 
-| Name                 | Description                                                                                      | Metal version                      |
-| -------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------- |
-| 📜`schema`            | name of schema                                                                                   | <Badge type="info" text="v0.5+" /> |
-| 📜`entity`            | name of entity in the `schema`                                                                   | <Badge type="info" text="v0.5+" /> |
-| 📜`fields`            | fields to keep, comma seperated. (see: [Optional Parameters](rest-api#optional-parameters))      | <Badge type="info" text="v0.5+" /> |
-| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | <Badge type="info" text="v0.5+" /> |
-| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | <Badge type="info" text="v0.5+" /> |
-| 📜`sort`              | sort data, can be `asc` or `desc`. (see: [Optional Parameters](rest-api#optional-parameters))    | <Badge type="info" text="v0.5+" /> |
-| 📜`cache`             | time in seconds to cache data. (see: [Optional Parameters](rest-api#optional-parameters))        | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                          | <Badge type="info" text="v0.5+" /> |
+| Name                 | Description                                                                                                            | Metal version                      |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| 📜`schema`            | name of schema                                                                                                         | <Badge type="info" text="v0.5+" /> |
+| 📜`entity`            | name of entity in the `schema`                                                                                         | <Badge type="info" text="v0.5+" /> |
+| 📜`fields`            | fields to keep, comma seperated. (see: [Optional Parameters](rest-api#optional-parameters))                            | <Badge type="info" text="v0.5+" /> |
+| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters))                       | <Badge type="info" text="v0.5+" /> |
+| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))                         | <Badge type="info" text="v0.5+" /> |
+| 📜`sort`              | sort data, can be `asc` or `desc`. (see: [Optional Parameters](rest-api#optional-parameters))                          | <Badge type="info" text="v0.5+" /> |
+| 📜`cache`             | time in seconds to cache data. (see: [Optional Parameters](rest-api#optional-parameters))                              | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml)).<br/><br/>ℹ️ **Only scope `step` is supported** | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1033,13 +1033,13 @@ If schema and entity are not provided, actual plan's data will be modified
 
 The parameters that can be configured inside `delete` tag are :
 
-| Name                 | Description                                                                                      | Metal version                      |
-| -------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------- |
-| 📜`schema`            | name of schema                                                                                   | <Badge type="info" text="v0.5+" /> |
-| 📜`entity`            | name of entity in the `schema`                                                                   | <Badge type="info" text="v0.5+" /> |
-| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | <Badge type="info" text="v0.5+" /> |
-| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                          | <Badge type="info" text="v0.5+" /> |
+| Name                 | Description                                                                                                            | Metal version                      |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| 📜`schema`            | name of schema                                                                                                         | <Badge type="info" text="v0.5+" /> |
+| 📜`entity`            | name of entity in the `schema`                                                                                         | <Badge type="info" text="v0.5+" /> |
+| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters))                       | <Badge type="info" text="v0.5+" /> |
+| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))                         | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml)).<br/><br/>ℹ️ **Only scope `step` is supported** | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1069,14 +1069,14 @@ If schema and entity are not provided, actual plan's data will be modified
 
 The parameters that can be configured inside `update` tag are :
 
-| Name                 | Description                                                                                      | Metal version                      |
-| -------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------- |
-| 📜`schema`            | name of schema                                                                                   | <Badge type="info" text="v0.5+" /> |
-| 📜`entity`            | name of entity in the `schema`                                                                   | <Badge type="info" text="v0.5+" /> |
-| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters)) | <Badge type="info" text="v0.5+" /> |
-| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))   | <Badge type="info" text="v0.5+" /> |
-| 📜❇️`data`             | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters))  | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml))                          | <Badge type="info" text="v0.5+" /> |
+| Name                 | Description                                                                                                            | Metal version                      |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| 📜`schema`            | name of schema                                                                                                         | <Badge type="info" text="v0.5+" /> |
+| 📜`entity`            | name of entity in the `schema`                                                                                         | <Badge type="info" text="v0.5+" /> |
+| 📜`filter`            | condition `key:value` to filter data. (see: [Optional Parameters](rest-api#optional-parameters))                       | <Badge type="info" text="v0.5+" /> |
+| 📜`filter-expression` | free form condition to filter data. (see: [Optional Parameters](rest-api#optional-parameters))                         | <Badge type="info" text="v0.5+" /> |
+| 📜❇️`data`             | data to be inserted in the `entity`. (see: [Optional Parameters](rest-api#optional-parameters))                        | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`          | Error handling strategy when step fails (see: [on-error](on-error-yml)).<br/><br/>ℹ️ **Only scope `step` is supported** | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 >
@@ -1155,14 +1155,14 @@ To perform data joins (Left,Right,Inner,Full outer and Cross)
 
 The parameters that can be configured inside `join` tag are :
 
-| Name           | Description                                                             | Metal version                      |
-| -------------- | ----------------------------------------------------------------------- | ---------------------------------- |
-| 📜`schema`      | Schema name to join with.                                               | <Badge type="info" text="v0.5+" /> |
-| 📜`entity`      | Entity name to join with                                                | <Badge type="info" text="v0.5+" /> |
-| 📜`type`        | Join type can be `left`,`right`,`inner`,`full-outer`,`cross`            | <Badge type="info" text="v0.5+" /> |
-| 📜`left-field`  | Left field for equality with `right-field`                              | <Badge type="info" text="v0.5+" /> |
-| 📜`right-field` | Right field                                                             | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
+| Name           | Description                                                                                                            | Metal version                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| 📜`schema`      | Schema name to join with.                                                                                              | <Badge type="info" text="v0.5+" /> |
+| 📜`entity`      | Entity name to join with                                                                                               | <Badge type="info" text="v0.5+" /> |
+| 📜`type`        | Join type can be `left`,`right`,`inner`,`full-outer`,`cross`                                                           | <Badge type="info" text="v0.5+" /> |
+| 📜`left-field`  | Left field for equality with `right-field`                                                                             | <Badge type="info" text="v0.5+" /> |
+| 📜`right-field` | Right field                                                                                                            | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml)).<br/><br/>ℹ️ **Only scope `step` is supported** | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1211,10 +1211,10 @@ Accept a list of one or many fields and sorting order :
 
 If sorting order is not provided, ascending order will be used.
 
-| Parameter   | Type   | Required | Description                                                                   | Metal version                      |
-| ----------- | ------ | -------- | ----------------------------------------------------------------------------- | ---------------------------------- |
-| 📜`fields`   | Object | yes      | Mapping of fields to sort by, defined as `field: direction` (`asc` or `desc`) | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error` | Object | no       | Strategy to apply if the step fails (see: [on-error](on-error-yml))           | <Badge type="info" text="v0.5+" /> |
+| Parameter   | Type   | Required | Description                                                                                                        | Metal version                      |
+| ----------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------- |
+| 📜`fields`   | Object | yes      | Mapping of fields to sort by, defined as `field: direction` (`asc` or `desc`)                                      | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error` | Object | no       | Strategy to apply if the step fails (see: [on-error](on-error-yml)).<br/><br/>ℹ️ **Only scope `step` is supported** | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1455,14 +1455,14 @@ To synchronize data from source to destination. This will performs Update, Inser
 
 The parameters that can be configured inside `sync` tag are :
 
-| Name           | Description                                                                                                     | Metal version                      |
-| -------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| 📜`from.schema` | name of source schema. If not provided actual plan will be used as a schema                                     | <Badge type="info" text="v0.5+" /> |
-| 📜`from.entity` | name of source entity in the `from.schema`                                                                      | <Badge type="info" text="v0.5+" /> |
-| 📜`to.schema`   | name of destination schema. If not provided actual plan will be used as a schema                                | <Badge type="info" text="v0.5+" /> |
-| 📜`to.entity`   | name of destination entity in the `to.schema`                                                                   | <Badge type="info" text="v0.5+" /> |
-| 📜`id`          | field that exists in both source and destination entity. It will be used as unique identity for synchronization | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml))                                         | <Badge type="info" text="v0.5+" /> |
+| Name           | Description                                                                                                            | Metal version                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| 📜`from.schema` | name of source schema. If not provided actual plan will be used as a schema                                            | <Badge type="info" text="v0.5+" /> |
+| 📜`from.entity` | name of source entity in the `from.schema`                                                                             | <Badge type="info" text="v0.5+" /> |
+| 📜`to.schema`   | name of destination schema. If not provided actual plan will be used as a schema                                       | <Badge type="info" text="v0.5+" /> |
+| 📜`to.entity`   | name of destination entity in the `to.schema`                                                                          | <Badge type="info" text="v0.5+" /> |
+| 📜`id`          | field that exists in both source and destination entity. It will be used as unique identity for synchronization        | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`    | Error handling strategy when step fails (see: [on-error](on-error-yml)).<br/><br/>ℹ️ **Only scope `step` is supported** | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 
@@ -1523,13 +1523,13 @@ To anonymize data of given list of fields.
 
 The `remove-duplicates` function is designed to remove duplicate rows from a dataset based on specified parameters. Here are the details:
 
-| Parameters   | Type          | Required | Description                                                             | Metal version                      |
-| ------------ | ------------- | -------- | ----------------------------------------------------------------------- | ---------------------------------- |
-| 📜`key`       | Array(String) | No       | List of fields used for comparison (default: empty)                     | <Badge type="info" text="v0.5+" /> |
-| 📜`method`    | String        | No       | Method of comparison (default: `hash`)                                  | <Badge type="info" text="v0.5+" /> |
-| 📜`strategy`  | String        | No       | Strategy to adopt when duplicates are found (default: `first`)          | <Badge type="info" text="v0.5+" /> |
-| 📜`condition` | String        | No       | Condition to apply according to selected strategy (default: empty)      | <Badge type="info" text="v0.5+" /> |
-| 📜`on-error`  | Object        | No       | Error handling strategy when step fails (see: [on-error](on-error-yml)) | <Badge type="info" text="v0.5+" /> |
+| Parameters   | Type          | Required | Description                                                                                                            | Metal version                      |
+| ------------ | ------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| 📜`key`       | Array(String) | No       | List of fields used for comparison (default: empty)                                                                    | <Badge type="info" text="v0.5+" /> |
+| 📜`method`    | String        | No       | Method of comparison (default: `hash`)                                                                                 | <Badge type="info" text="v0.5+" /> |
+| 📜`strategy`  | String        | No       | Strategy to adopt when duplicates are found (default: `first`)                                                         | <Badge type="info" text="v0.5+" /> |
+| 📜`condition` | String        | No       | Condition to apply according to selected strategy (default: empty)                                                     | <Badge type="info" text="v0.5+" /> |
+| 📜`on-error`  | Object        | No       | Error handling strategy when step fails (see: [on-error](on-error-yml)).<br/><br/>ℹ️ **Only scope `step` is supported** | <Badge type="info" text="v0.5+" /> |
 
 > 📜: Supports JavaScript Expression Engine (see: [JavaScript Expression Engine](dynamic-expression-engine#javascript-expression-engine))
 

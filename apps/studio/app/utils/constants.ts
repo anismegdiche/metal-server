@@ -26,6 +26,8 @@ export const PROVIDER_ICON_MAP: Record<string, string> = {
   MEMORY: 'i-lucide-cpu',
   plans: 'i-lucide-workflow',
   PLANS: 'i-lucide-workflow',
+  'fake-data': 'i-lucide-flask-conical',
+  FAKE_DATA: 'i-lucide-flask-conical',
 }
 
 export function getProviderIcon(provider: string): string {

@@ -10,7 +10,6 @@
 # dev
 .vs
 .qodo
-.dev
 
 # python
 __pycache__

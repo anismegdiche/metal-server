@@ -50,8 +50,8 @@ export class ServerRuntime {
 		AiEngine.Clear()
 		DataProvider.Clear()
 
-		// Re-initialize all modules
-		await ServerInitializer.InitAll()
+		// Re-initialize all modules (do not re-run ON_START plans on reload)
+		await ServerInitializer.InitAll(false)
 
 		Logger.Info(`${Logger.Out} Server configuration reloaded successfully`)
 

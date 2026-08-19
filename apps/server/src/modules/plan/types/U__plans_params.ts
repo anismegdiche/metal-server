@@ -8,8 +8,9 @@ import { z_T_JsPattern } from "@metal/types"
 import { z_TJson } from "@metal/types"
 import { JOIN_TYPE, REMOVE_DUPLICATES_METHOD, REMOVE_DUPLICATES_STRATEGY } from "../../../utils/DataTableUtils"
 import { z_U__plans_plan_run_ai_Params } from "../../ai-engine/types/U__plans_plan_run_ai_Params"
-import { z_entity, z_schema, z_TSchemaRequestDelete, z_TSchemaRequestInsert, z_TSchemaRequestListEntities, z_TSchemaRequestSelect, z_TSchemaRequestUpdate } from "../../schema/types/TSchemaRequest"
+import { z_entity, z_schema, z_TSchemaRequestDeleteBase, z_TSchemaRequestInsert, z_TSchemaRequestListEntities, z_TSchemaRequestSelectBase, z_TSchemaRequestUpdateBase } from "../../schema/types/TSchemaRequest"
 import { z_U__on_error } from "./U__plans_plan_on_error"
+import { ZodUtils } from "../../../utils/ZodUtils"
 
 
 ////// Flow control
@@ -57,13 +58,17 @@ export type U__plans_plan_set_var_Params = z.infer<typeof z_U__plans_plan_set_va
 // Select
 export const z_U__plans_plan_select_Params = z.union(
     [
-        z_TSchemaRequestSelect
-            .partial()
-            .extend(z_U__on_error.shape),
-        z_TSchemaRequestSelect
-            .omit({ schema: true, entity: true })
-            .partial()
-            .extend(z_U__on_error.shape),
+        ZodUtils.WithExclusiveFilter(
+            z_TSchemaRequestSelectBase
+                .partial()
+                .extend(z_U__on_error.shape)
+        ),
+        ZodUtils.WithExclusiveFilter(
+            z_TSchemaRequestSelectBase
+                .omit({ schema: true, entity: true })
+                .partial()
+                .extend(z_U__on_error.shape)
+        ),
         z_U__on_error
             .required(),
         z.null(),
@@ -91,13 +96,17 @@ export type U__plans_plan_insert_Params = z.infer<typeof z_U__plans_plan_insert_
 // Update
 export const z_U__plans_plan_update_Params = z.union(
     [
-        z_TSchemaRequestUpdate
-            .partial()
-            .extend(z_U__on_error.shape),
-        z_TSchemaRequestUpdate
-            .omit({ schema: true, entity: true })
-            .partial()
-            .extend(z_U__on_error.shape),
+        ZodUtils.WithExclusiveFilter(
+            z_TSchemaRequestUpdateBase
+                .partial()
+                .extend(z_U__on_error.shape)
+        ),
+        ZodUtils.WithExclusiveFilter(
+            z_TSchemaRequestUpdateBase
+                .omit({ schema: true, entity: true })
+                .partial()
+                .extend(z_U__on_error.shape)
+        ),
         z_U__on_error
             .required(),
         z.null(),
@@ -108,13 +117,17 @@ export type U__plans_plan_update_Params = z.infer<typeof z_U__plans_plan_update_
 // Delete
 export const z_U__plans_plan_delete_Params = z.union(
     [
-        z_TSchemaRequestDelete
-            .partial()
-            .extend(z_U__on_error.shape),
-        z_TSchemaRequestDelete
-            .omit({ schema: true, entity: true })
-            .partial()
-            .extend(z_U__on_error.shape),
+        ZodUtils.WithExclusiveFilter(
+            z_TSchemaRequestDeleteBase
+                .partial()
+                .extend(z_U__on_error.shape)
+        ),
+        ZodUtils.WithExclusiveFilter(
+            z_TSchemaRequestDeleteBase
+                .omit({ schema: true, entity: true })
+                .partial()
+                .extend(z_U__on_error.shape)
+        ),
         z_U__on_error
             .required(),
         z.null(),

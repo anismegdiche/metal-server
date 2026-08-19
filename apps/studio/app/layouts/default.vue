@@ -73,6 +73,8 @@ const configTabs: NavigationMenuItem[] = [
 const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
 const isConfigRoute = computed(() => route.path.startsWith('/config'))
 
+const isDesignerRoute = computed(() => route.path.startsWith('/designer'))
+
 const headerTabs = computed(() => {
   if (isDashboardRoute.value) return dashboardTabs
   if (isConfigRoute.value) return configTabs
@@ -123,7 +125,7 @@ const headerTabs = computed(() => {
       </template>
 
       <template #body>
-        <div class="overflow-auto h-full p-4">
+        <div class="overflow-auto h-full" :class="isDesignerRoute ? '' : 'p-4'">
           <slot />
           <p class="text-[0.7rem] text-muted text-center p-6">Released under the GNU v3 License. Copyright &copy;
             2026-present Anis Megdiche</p>

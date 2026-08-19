@@ -2284,6 +2284,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@faker-js/faker@npm:^9.0.0":
+  version: 9.9.0
+  resolution: "@faker-js/faker@npm:9.9.0"
+  checksum: 10/b24b1be0fb3090d54abaaa3a814f37d1a7551f1207dcd330a1af2c70f6312a8b95ebb82653577757dd62f4cbbb56caa3c83513053253654dc3e286a05040ecbe
+  languageName: node
+  linkType: hard
+
 "@fast-csv/format@npm:4.3.5":
   version: 4.3.5
   resolution: "@fast-csv/format@npm:4.3.5"
@@ -2861,6 +2868,7 @@ __metadata:
     "@biomejs/biome": "npm:^2.4.16"
     "@dimkl/events": "npm:^3.0.3"
     "@duckdb/node-api": "npm:^1.5.3-r.3"
+    "@faker-js/faker": "npm:^9.0.0"
     "@metal/config": "workspace:*"
     "@metal/logger": "workspace:*"
     "@metal/persistent-map": "workspace:*"
@@ -2944,6 +2952,10 @@ __metadata:
     "@nuxt/eslint": "npm:^1.16.0"
     "@nuxt/kit": "npm:^4.4.8"
     "@nuxt/ui": "npm:^4.9.0"
+    "@vue-flow/background": "npm:^1.3.2"
+    "@vue-flow/controls": "npm:^1.1.3"
+    "@vue-flow/core": "npm:^1.48.2"
+    "@vue-flow/minimap": "npm:^1.5.4"
     eslint: "npm:^10.6.0"
     nuxt: "npm:^4.4.8"
     nuxt-auth-utils: "npm:^0.5.29"
@@ -7616,6 +7628,54 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vue-flow/background@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "@vue-flow/background@npm:1.3.2"
+  peerDependencies:
+    "@vue-flow/core": ^1.23.0
+    vue: ^3.3.0
+  checksum: 10/e5e98177c8871c1b33ac077663d73f0ba002aab40f9aef7c49abe1a05d552ca595ce3fda19b6bb1723af22d84fd419f49d9bfed774d88a925564394e1becdee0
+  languageName: node
+  linkType: hard
+
+"@vue-flow/controls@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@vue-flow/controls@npm:1.1.3"
+  peerDependencies:
+    "@vue-flow/core": ^1.23.0
+    vue: ^3.3.0
+  checksum: 10/cfb36b8cf06a87603a6706e296430d65aabc299a6f4bc460737897ef78032e94cdf13ef7db481a05860998078fd7a57d77ece523857479b0c2489bfb1c9ab56c
+  languageName: node
+  linkType: hard
+
+"@vue-flow/core@npm:^1.48.2":
+  version: 1.48.2
+  resolution: "@vue-flow/core@npm:1.48.2"
+  dependencies:
+    "@vueuse/core": "npm:^10.5.0"
+    d3-drag: "npm:^3.0.0"
+    d3-interpolate: "npm:^3.0.1"
+    d3-selection: "npm:^3.0.0"
+    d3-zoom: "npm:^3.0.0"
+  peerDependencies:
+    vue: ^3.3.0
+  checksum: 10/3876786915308ea3bb7b7a7f70014756f296c6c7329cc2759c0d69d58f23c491e56b8e4b36e06ffa5d460da0c783c91cddbac720e20cc4909076f141f2d9dd1e
+  languageName: node
+  linkType: hard
+
+"@vue-flow/minimap@npm:^1.5.4":
+  version: 1.5.4
+  resolution: "@vue-flow/minimap@npm:1.5.4"
+  dependencies:
+    d3-selection: "npm:^3.0.0"
+    d3-zoom: "npm:^3.0.0"
+  peerDependencies:
+    "@vue-flow/core": ^1.23.0
+    vue: ^3.3.0
+  checksum: 10/638d97e02b6fddecca9f4377bdc48e9be33f8b1407bf874b87458390cd3af252941271a05b97c76b63e3edcf1f218fd6310337a9dbd523e5f39785506fa1c0ec
+  languageName: node
+  linkType: hard
+
 "@vue-macros/common@npm:^3.1.1":
   version: 3.1.2
   resolution: "@vue-macros/common@npm:3.1.2"
@@ -7990,7 +8050,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vueuse/core@npm:^10.8.0":
+"@vueuse/core@npm:^10.5.0, @vueuse/core@npm:^10.8.0":
   version: 10.11.1
   resolution: "@vueuse/core@npm:10.11.1"
   dependencies:
@@ -10356,7 +10416,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"d3-drag@npm:2 - 3, d3-drag@npm:3":
+"d3-drag@npm:2 - 3, d3-drag@npm:3, d3-drag@npm:^3.0.0":
   version: 3.0.0
   resolution: "d3-drag@npm:3.0.0"
   dependencies:
@@ -10437,7 +10497,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"d3-interpolate@npm:1 - 3, d3-interpolate@npm:1.2.0 - 3, d3-interpolate@npm:3":
+"d3-interpolate@npm:1 - 3, d3-interpolate@npm:1.2.0 - 3, d3-interpolate@npm:3, d3-interpolate@npm:^3.0.1":
   version: 3.0.1
   resolution: "d3-interpolate@npm:3.0.1"
   dependencies:
@@ -10579,7 +10639,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"d3-zoom@npm:3":
+"d3-zoom@npm:3, d3-zoom@npm:^3.0.0":
   version: 3.0.0
   resolution: "d3-zoom@npm:3.0.0"
   dependencies:
