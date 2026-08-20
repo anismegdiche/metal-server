@@ -214,6 +214,56 @@ function onJsonBlur() {
       </div>
     </div>
 
+    <div v-else-if="field.type === 'kv'">
+      <div class="space-y-1.5">
+        <div
+          v-for="(row, index) in mapRows"
+          :key="index"
+          class="flex items-center gap-1.5"
+        >
+          <UInput
+            v-model="row.k"
+            placeholder="field"
+            size="sm"
+            class="flex-1"
+            @update:model-value="commitMap"
+          />
+          <USelect
+            v-if="field.mapOptions"
+            v-model="row.v"
+            :items="field.mapOptions"
+            size="sm"
+            class="flex-1"
+            @update:model-value="commitMap"
+          />
+          <UInput
+            v-else
+            v-model="row.v"
+            placeholder="value"
+            size="sm"
+            class="flex-1"
+            @update:model-value="commitMap"
+          />
+          <UButton
+            icon="i-lucide-minus"
+            size="xs"
+            variant="ghost"
+            color="error"
+            aria-label="Remove entry"
+            @click="removeRow(index)"
+          />
+        </div>
+        <UButton
+          icon="i-lucide-plus"
+          label="Add condition"
+          size="xs"
+          variant="soft"
+          color="neutral"
+          @click="addRow"
+        />
+      </div>
+    </div>
+
     <UTextarea
       v-else-if="field.type === 'json'"
       :model-value="jsonText"

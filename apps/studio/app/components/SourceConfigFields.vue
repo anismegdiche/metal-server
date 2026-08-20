@@ -16,6 +16,7 @@ import SourceModalFakeData from '~/components/SourceModalFakeData.vue'
 const props = defineProps<{
   sourceConfig?: Record<string, any>
   providers?: string[]
+  context?: 'data' | 'cache'
 }>()
 
 const provider = defineModel<string>('provider', { default: 'postgres' })
@@ -86,6 +87,7 @@ defineExpose({ collectBody })
       :is="providerComponent"
       ref="providerChildRef"
       :source-config="props.sourceConfig"
+      :context="props.context"
     />
   </div>
 </template>

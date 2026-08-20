@@ -39,7 +39,7 @@ const timelineItems = computed(() => {
   if (!selectedPlanData.value?.steps) return []
   return selectedPlanData.value.steps.map((step: any) => ({
     icon: step.step.status === 'success' ? 'i-lucide-check-circle'
-      : step.step.status === 'failed' ? 'i-lucide-x-circle'
+      : step.step.status === 'failed' ? 'i-lucide-trash-2-circle'
         : step.step.status === 'running' ? 'i-lucide-loader'
           : 'i-lucide-circle',
     date: formatTime(step.step.startTime),
@@ -156,7 +156,7 @@ const planColumns = [
               <UTooltip v-if="item.rows?.failed !== undefined" :text="`${item.rows.failed} rows failed`">
                 <span
                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error/15 text-error cursor-default">
-                  <UIcon name="i-lucide-x" class="size-3" />
+                  <UIcon name="i-lucide-trash-2" class="size-3" />
                   {{ item.rows.failed }}
                 </span>
               </UTooltip>

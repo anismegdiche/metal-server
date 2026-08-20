@@ -18,6 +18,8 @@ const rateMessage = ref("Too many requests from this IP, please try again later"
 
 const authProvider = ref("local")
 const authDefaultRole = ref("")
+const sessionLifetime = ref(14400)
+const sessionTimeout = ref(3600)
 const oidcIssuer = ref("")
 const oidcClientId = ref("")
 const oidcClientSecret = ref("")
@@ -81,6 +83,8 @@ async function loadConfig() {
     const auth = config.authentication ?? {}
     authProvider.value = auth.provider ?? "local"
     authDefaultRole.value = auth["default-role"] ?? ""
+    sessionLifetime.value = auth["session-lifetime"] ?? 14400
+    sessionTimeout.value = auth["session-timeout"] ?? 3600
     oidcIssuer.value = auth.issuer ?? ""
     oidcClientId.value = auth["client-id"] ?? ""
     oidcClientSecret.value = auth["client-secret"] ?? ""
@@ -133,6 +137,8 @@ async function saveConfig() {
       authentication: {
         provider: authProvider.value,
         "default-role": authDefaultRole.value,
+        "session-lifetime": sessionLifetime.value,
+        "session-timeout": sessionTimeout.value,
         ...(authProvider.value === "oidc" ? {
           issuer: oidcIssuer.value,
           "client-id": oidcClientId.value,
@@ -254,6 +260,16 @@ onMounted(loadConfig)
               :ui="{ description: 'text-xs' }">
               <UInput v-model="authDefaultRole" placeholder="e.g. user" class="w-24" />
             </UFormField>
+            <UFormField label="Session Lifetime (s)"
+              description="Absolute max session duration in seconds (JWT expiry)" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <UInput v-model="sessionLifetime" type="number" :min="60" class="w-24" />
+            </UFormField>
+            <UFormField label="Session Timeout (s)"
+              description="Inactivity timeout in seconds (sliding window)" orientation="horizontal"
+              :ui="{ description: 'text-xs' }">
+              <UInput v-model="sessionTimeout" type="number" :min="60" class="w-24" />
+            </UFormField>
             <template v-if="authProvider === 'oidc'">
               <USeparator label="OIDC Settings" />
               <UFormField label="Issuer" description="OpenID Connect issuer URL" orientation="horizontal"
@@ -314,7 +330,7 @@ onMounted(loadConfig)
           </template>
           <div class="flex flex-col gap-4">
             <SourceConfigFields ref="cacheFieldsRef" v-model:provider="cacheProvider" :source-config="cacheConfig"
-              :providers="cacheProviders" />
+              :providers="cacheProviders" context="cache" />
           </div>
         </UCard>
 

@@ -28,7 +28,7 @@ onMounted(() => {
         {{ doc.error }}
       </p>
       <UButton
-        icon="i-lucide-x"
+        icon="i-lucide-trash-2"
         size="xs"
         variant="ghost"
         color="neutral"

@@ -222,7 +222,7 @@ defineExpose({ collectBody })
             <UInput v-model="entity.name" placeholder="Entity name" class="flex-1" :ui="{ base: 'font-medium' }" />
             <USelect v-model="entity.locale" :items="LOCALES" class="w-48" placeholder="Locale" />
             <UInput v-model.number="entity.rows" type="number" :min="0" placeholder="Rows" class="w-20" />
-            <UButton icon="i-lucide-trash-2" size="xs" color="error" variant="ghost" @click="removeEntity(ei)" />
+            <UButton icon="i-lucide-trash-2" size="xs" color="primary" variant="ghost" @click="removeEntity(ei)" />
           </div>
 
           <UCollapsible :default-open="true" class="ml-2">
@@ -244,13 +244,16 @@ defineExpose({ collectBody })
                   </template>
                   <template v-else>
                     <UInput v-model="field.expression" placeholder="e.g. person.firstName('male')" class="flex-1"
-                      size="sm" />
+                      size="sm" :ui="{
+                        base: 'bg-metal-primary-50'
+                      }" />
                   </template>
-                  <UButton :icon="field.useCustom ? 'i-lucide-list' : 'i-lucide-code'" size="xs" variant="ghost"
-                    :color="field.useCustom ? 'warning' : 'neutral'"
+                  <UButton :icon="field.useCustom ? 'i-lucide-list' : 'i-lucide-braces'" size="xs" variant="ghost"
+                    :color="field.useCustom ? 'warning' : 'info'"
                     :title="field.useCustom ? 'Switch to dropdown' : 'Switch to custom expression'"
                     @click="field.useCustom = !field.useCustom; undefined" />
-                  <UButton icon="i-lucide-x" size="xs" color="error" variant="ghost" @click="removeField(entity, fi)" />
+                  <UButton icon="i-lucide-trash-2" size="xs" color="primary" variant="ghost"
+                    @click="removeField(entity, fi)" />
                 </div>
                 <UButton label="Add Field" icon="i-lucide-plus" size="xs" variant="ghost" @click="addField(entity)"
                   class="w-32" />

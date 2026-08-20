@@ -132,10 +132,12 @@ Sets the authentication configuration for the Metal server.
 
 The parameters that can be configured inside the `server` section include:
 
-| Parameter      | Type         | Required | Decription                                                                                                | Metal version                         |
-| -------------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `provider`     | Enum(String) | Y        | Authentication Provider, defaults to `local` (see: [Authentication providers](#authentication-providers)) | <Badge type="default" text="v0.3+" /> |
-| `default-role` | String       | N        | Default role assigned to the user when is authenticated, defaults empty. (see: [roles](#roles))           | <Badge type="default" text="v0.3+" /> |
+| Parameter            | Type         | Required | Description                                                                                       | Metal version                         |
+| -------------------- | ------------ | -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `provider`           | Enum(String) | Y        | Authentication Provider, defaults to `local` (see: [Authentication providers](#authentication-providers)) | <Badge type="default" text="v0.3+" /> |
+| `default-role`       | String       | N        | Default role assigned to the user when is authenticated, defaults empty. (see: [roles](#roles))   | <Badge type="default" text="v0.3+" /> |
+| `session-lifetime`   | Integer      | N        | Absolute maximum session duration in seconds. Default: `14400` (4 hours) | <Badge type="info" text="v0.5+" /> |
+| `session-timeout`    | Integer      | N        | Inactivity timeout in seconds (sliding window, resets on each request). Default: `3600` (1 hour)  | <Badge type="info" text="v0.5+" /> |
 
 **Authentication providers** :
 
@@ -149,7 +151,9 @@ The parameters that can be configured inside the `server` section include:
 ```yaml
 server:
   authentication:
-    type: local
+    provider: local
+    session-lifetime: 14400
+    session-timeout: 3600
 ```
 
 ::: tip ℹ️ TIP

@@ -486,7 +486,7 @@ onMounted(loadData)
                 <div class="flex items-center">
                   <UCheckbox v-model="arg.required" description="Required" />
                 </div>
-                <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error" @click="removeArgument(index)"
+                <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="primary" @click="removeArgument(index)"
                   class="ml-auto  w-1/8" />
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -518,7 +518,7 @@ onMounted(loadData)
                     { label: 'JSON', value: 'json' }
                   ]" />
                   <UInput v-model="child.mapTo" placeholder="map-to" />
-                  <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error"
+                  <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="primary"
                     @click="removeChildArgument(arg, ci)" class="ml-auto  w-1/8" />
                 </div>
                 <div v-if="!arg.children || arg.children.length === 0" class="text-xs text-muted">
@@ -549,7 +549,7 @@ onMounted(loadData)
       <template #footer>
         <div class="flex justify-end gap-2">
           <UButton label="Cancel" variant="outline" size="sm" @click="() => { deleteModalOpen = false }" />
-          <UButton label="Delete" color="error" size="sm" :loading="deleteLoading" @click="deleteTool" />
+          <UButton label="Delete" color="primary" size="sm" :loading="deleteLoading" @click="deleteTool" />
         </div>
       </template>
     </UModal>

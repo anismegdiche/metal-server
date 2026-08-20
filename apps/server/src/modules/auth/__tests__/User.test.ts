@@ -1,3 +1,4 @@
+import MockPersistentMap from "@metal/persistent-map"
 import jwt from "jsonwebtoken"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { HttpErrorUnauthorized } from "../../errors/HttpErrors"
@@ -5,6 +6,45 @@ import { AuthProvider } from "../AuthProvider"
 import { User } from "../User"
 
 vi.mock("jsonwebtoken")
+vi.mock("../../core/ConfigManager", () => ({
+	ConfigManager: {
+		Get: vi.fn().mockImplementation((path: string) => {
+			if (path === "server.authentication.session-lifetime") return 14400
+			if (path === "server.authentication.session-timeout") return 3600
+			return undefined
+		}),
+	},
+}))
+vi.mock("@metal/persistent-map", () => {
+	class MockPersistentMap {
+		private _map = new Map()
+		constructor(_path: string) {}
+		get(key: string) {
+			return this._map.get(key)
+		}
+		set(key: string, value: unknown) {
+			this._map.set(key, value)
+			return this
+		}
+		has(key: string) {
+			return this._map.has(key)
+		}
+		delete(key: string) {
+			this._map.delete(key)
+		}
+		clear() {
+			this._map.clear()
+		}
+	}
+	return { default: MockPersistentMap }
+})
+vi.mock("@metal/config", () => ({
+	Env: {
+		server: {
+			sessions: { path: "test-sessions" },
+		},
+	},
+}))
 vi.mock("../AuthProvider", () => ({
 	AuthProvider: {
 		Provider: {
@@ -19,10 +59,22 @@ vi.mock("../Roles", () => ({
 	},
 }))
 
+function makeSessionRecord(overrides?: { secret?: string; lastUsedAt?: number }) {
+	return {
+		secret: (overrides?.secret ?? "secret") as any,
+		createdAt: overrides?.lastUsedAt ?? Date.now(),
+		lastUsedAt: overrides?.lastUsedAt ?? Date.now(),
+	}
+}
+
+function createStore(): InstanceType<typeof MockPersistentMap> {
+	return new (MockPersistentMap as any)("test-sessions")
+}
+
 describe("User", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
-		;(User as any)._tokens.clear()
+		;(User as any)._store = createStore()
 	})
 
 	describe("Authenticate", () => {
@@ -35,32 +87,52 @@ describe("User", () => {
 
 			expect(res.Body).toEqual({ token: "mock-token" })
 			expect(AuthProvider.Provider.Authenticate).toHaveBeenCalledWith(credentials)
-			expect((User as any)._tokens.has("mock-token")).toBe(true)
+			expect((User as any)._store.has("mock-token")).toBe(true)
 		})
 	})
 
 	describe("_decodeToken", () => {
 		it("should decode valid token", () => {
 			const token = "valid-token"
-			const secret = "secret"
-			;(User as any)._tokens.set(token, secret)
+			const record = makeSessionRecord({ secret: "secret" })
+			const store = (User as any)._store as InstanceType<typeof MockPersistentMap>
+			store.set(token, record)
 			vi.mocked(jwt.verify).mockReturnValue({ user: "admin" } as any)
 
 			const decoded = (User as any)._decodeToken(token)
 			expect(decoded).toEqual({ user: "admin" })
-			expect(jwt.verify).toHaveBeenCalledWith(token, secret)
+			expect(jwt.verify).toHaveBeenCalledWith(token, record.secret)
 		})
 
 		it("should throw HttpErrorUnauthorized for undefined token", () => {
 			expect(() => (User as any)._decodeToken(undefined)).toThrow(HttpErrorUnauthorized)
 		})
 
+		it("should throw HttpErrorUnauthorized for token not in store", () => {
+			expect(() => (User as any)._decodeToken("nonexistent")).toThrow(HttpErrorUnauthorized)
+		})
+
+		it("should throw HttpErrorUnauthorized for expired session (inactivity)", () => {
+			const token = "stale-token"
+			const twoHoursAgo = Date.now() - 2 * 60 * 60 * 1000
+			const record = makeSessionRecord({ secret: "secret", lastUsedAt: twoHoursAgo })
+			const store = (User as any)._store as InstanceType<typeof MockPersistentMap>
+			store.set(token, record)
+
+			expect(() => (User as any)._decodeToken(token)).toThrow(HttpErrorUnauthorized)
+			expect(store.has(token)).toBe(false)
+		})
+
 		it("should throw HttpErrorUnauthorized for invalid token", () => {
-			;(User as any)._tokens.set("bad", "secret")
+			const token = "bad"
+			const record = makeSessionRecord({ secret: "secret" })
+			const store = (User as any)._store as InstanceType<typeof MockPersistentMap>
+			store.set(token, record)
 			vi.mocked(jwt.verify).mockImplementation(() => {
 				throw new Error("invalid")
 			})
-			expect(() => (User as any)._decodeToken("bad")).toThrow(HttpErrorUnauthorized)
+			expect(() => (User as any)._decodeToken(token)).toThrow(HttpErrorUnauthorized)
+			expect(store.has(token)).toBe(false)
 		})
 	})
 
@@ -68,11 +140,13 @@ describe("User", () => {
 		it("should delete token and call provider LogOut", async () => {
 			const token = "token"
 			vi.spyOn(User as any, "_decodeToken").mockReturnValue({ user: "admin" })
-			;(User as any)._tokens.set(token, "secret")
+			const record = makeSessionRecord({ secret: "secret" })
+			const store = (User as any)._store as InstanceType<typeof MockPersistentMap>
+			store.set(token, record)
 
 			await User.LogOut(token)
 
-			expect((User as any)._tokens.has(token)).toBe(false)
+			expect(store.has(token)).toBe(false)
 			expect(AuthProvider.Provider.LogOut).toHaveBeenCalledWith("admin")
 		})
 	})

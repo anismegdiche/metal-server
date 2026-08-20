@@ -45,6 +45,22 @@ function setParam(path: string, value: unknown) {
   doc.updateParams(entry.value.id, next)
 }
 
+const hasFilter = computed(() => meta.value?.formFields.some(f => f.name === 'filter' || f.name === 'filter-expression') ?? false)
+const filterMode = computed({
+  get: () => {
+    const value = getPath(paramsObj.value, '_filter-mode')
+    return value === 'expression' ? 'expression' : 'kv'
+  },
+  set: (value: string) => {
+    if (!entry.value) return
+    const next = clonePlain(paramsObj.value)
+    setPath(next, '_filter-mode', value)
+    if (value === 'kv') setPath(next, 'filter-expression', undefined)
+    if (value === 'expression') setPath(next, 'filter', undefined)
+    doc.updateParams(entry.value.id, next)
+  }
+})
+
 const RETRY_PREFIX = 'retry.'
 const SINK_PREFIX = 'sink.'
 
@@ -142,6 +158,16 @@ function applyJson() {
   }
 }
 
+/** Filter form fields based on _filter-mode: show filter or filter-expression exclusively */
+const visibleFormFields = computed(() => {
+  if (!meta.value) return []
+  return meta.value.formFields.filter((field) => {
+    if (field.name === 'filter' && filterMode.value === 'expression') return false
+    if (field.name === 'filter-expression' && filterMode.value === 'kv') return false
+    return true
+  })
+})
+
 function onDelete() {
   if (entry.value) doc.removeStep(entry.value.id)
 }
@@ -175,7 +201,7 @@ function onDelete() {
             size="sm"
           />
           <UButton
-            icon="i-lucide-x"
+            icon="i-lucide-trash-2"
             size="xs"
             variant="ghost"
             color="error"
@@ -196,14 +222,26 @@ function onDelete() {
       <div class="flex-1 overflow-y-auto p-4">
         <template v-if="tab === 'form'">
           <div class="space-y-4">
-            <PlanFieldInput
-              v-for="field in meta.formFields"
-              :key="field.name || '__params__'"
-              :field="field"
-              :params="paramsObj"
-              :model-value="isWholeParamsField(field) ? params : getPath(paramsObj, field.name)"
-              @update:model-value="isWholeParamsField(field) ? doc.updateParams(entry.id, $event as TStepParams) : setParam(field.name, $event)"
-            />
+            <template v-for="(field, idx) in visibleFormFields" :key="field.name || '__params__'">
+              <div
+                v-if="hasFilter && (field.name === 'filter' || field.name === 'filter-expression') && (idx === 0 || (visibleFormFields[idx - 1]?.name !== 'filter' && visibleFormFields[idx - 1]?.name !== 'filter-expression'))"
+                class="flex items-center gap-2"
+              >
+                <span class="text-xs text-gray-400 dark:text-gray-500">Filter:</span>
+                <UTabs
+                  v-model="filterMode"
+                  :items="[{ value: 'kv', label: 'Key : Value' }, { value: 'expression', label: 'Expression' }]"
+                  size="xs"
+                />
+              </div>
+              <PlanFieldInput
+                v-if="field.name !== '_filter-mode'"
+                :field="field"
+                :params="paramsObj"
+                :model-value="isWholeParamsField(field) ? params : getPath(paramsObj, field.name)"
+                @update:model-value="isWholeParamsField(field) ? doc.updateParams(entry.id, $event as TStepParams) : setParam(field.name, $event)"
+              />
+            </template>
           </div>
 
           <template v-if="meta.supportsOnError">

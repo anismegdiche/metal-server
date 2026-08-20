@@ -7,6 +7,7 @@ import { Logger } from "@metal/logger"
 import PersistentMap from "@metal/persistent-map"
 import type { TJson } from "@metal/types"
 import jwt, { type JsonWebTokenError, type Secret } from "jsonwebtoken"
+import { ConfigManager } from "../core/ConfigManager"
 import { HttpResponse } from "../core/HttpResponse"
 import type { TInternalResponse } from "../core/types/TInternalResponse"
 import { HttpErrorUnauthorized } from "../errors/HttpErrors"
@@ -14,18 +15,34 @@ import { type TUserCredentials, type TUserToken, type TUserTokenInfo, z_TUserCre
 import { AuthProvider } from "./AuthProvider"
 import { Roles } from "./Roles"
 
+type TSessionRecord = {
+	secret: Secret
+	createdAt: number
+	lastUsedAt: number
+}
+
 //
 export class User {
-	static readonly #JWT_EXPIRATION_TIME = 60 * 60 // 1 hour
+	static readonly #DEFAULT_SESSION_LIFETIME = 14400 // 4h in seconds
+	static readonly #DEFAULT_SESSION_TIMEOUT = 3600 // 1h in seconds
 	static readonly #JWT_SECRET_LENGTH = 64 // Length of the JWT secret
+	static readonly #LAST_USED_WRITE_THRESHOLD_MS = 60 * 1000 // only persist lastUsedAt if moved by >60s
 
-	static _store: PersistentMap<Secret> | undefined = undefined
+	static _store: PersistentMap<TSessionRecord> | undefined = undefined
 
-	static get #tokens(): PersistentMap<Secret> {
+	static get #tokens(): PersistentMap<TSessionRecord> {
 		if (!User._store) {
-			User._store = new PersistentMap<Secret>(Env.server.sessions.path)
+			User._store = new PersistentMap<TSessionRecord>(Env.server.sessions.path)
 		}
 		return User._store
+	}
+
+	static get SessionLifetime(): number {
+		return ConfigManager.Get<number>("server.authentication.session-lifetime") ?? User.#DEFAULT_SESSION_LIFETIME
+	}
+
+	static get SessionTimeout(): number {
+		return (ConfigManager.Get<number>("server.authentication.session-timeout") ?? User.#DEFAULT_SESSION_TIMEOUT) * 1000
 	}
 
 	static _generateJwtSecret(): Secret {
@@ -36,10 +53,26 @@ export class User {
 	static _decodeToken(userToken: TUserToken): TUserTokenInfo {
 		if (userToken === undefined) throw new HttpErrorUnauthorized()
 
+		const record = User.#tokens.get(userToken) as TSessionRecord | undefined
+		if (!record) throw new HttpErrorUnauthorized("Session not found")
+
+		const now = Date.now()
+		if (now - record.lastUsedAt > User.SessionTimeout) {
+			User.#tokens.delete(userToken)
+			throw new HttpErrorUnauthorized("Session expired due to inactivity")
+		}
+
 		try {
-			const _decoded = jwt.verify(userToken, User.#tokens.get(userToken) as Secret)
+			const _decoded = jwt.verify(userToken, record.secret as Secret)
+
+			if (now - record.lastUsedAt > User.#LAST_USED_WRITE_THRESHOLD_MS) {
+				record.lastUsedAt = now
+				User.#tokens.set(userToken, record)
+			}
+
 			return _decoded as TUserTokenInfo
 		} catch (error: unknown) {
+			User.#tokens.delete(userToken)
 			throw new HttpErrorUnauthorized((<JsonWebTokenError>error).message)
 		}
 	}
@@ -64,10 +97,11 @@ export class User {
 
 		// Generate a JWT token and return it
 		const userToken = jwt.sign(userTokenInfo, userSecret, {
-			expiresIn: User.#JWT_EXPIRATION_TIME,
+			expiresIn: User.SessionLifetime,
 		})
 
-		User.#tokens.set(userToken, userSecret)
+		const now = Date.now()
+		User.#tokens.set(userToken, { secret: userSecret, createdAt: now, lastUsedAt: now })
 		return HttpResponse.Ok({ token: userToken })
 	}
 

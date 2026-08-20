@@ -313,7 +313,7 @@ defineExpose({ collectBody })
               <USelect v-model="entry.contentType" :items="CONTENT_TYPES" size="sm" />
               <span class="text-[10px] text-muted">{{ entry.pattern }}</span>
             </div>
-            <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error"
+            <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="primary"
               @click="removeStorageContentEntry(idx)" />
           </div>
           <div v-if="entry.contentType === 'json'" class="grid grid-cols-1 gap-3">

@@ -44,7 +44,7 @@ defineExpose({ collectBody })
       <UFormField label="Password" orientation="horizontal" :ui="{ description: 'text-xs' }" description="Password for authentication">
         <UInput v-model="form.password" type="password" placeholder="password" class="w-full" />
       </UFormField>
-      <UFormField label="Database (Schema)" orientation="horizontal" :ui="{ description: 'text-xs' }" description="Name of the schema on the remote Metal server" class="col-span-2">
+      <UFormField label="Schema" orientation="horizontal" :ui="{ description: 'text-xs' }" description="Name of the schema on the remote Metal server" class="col-span-2">
         <UInput v-model="form.database" placeholder="myschema" class="w-full" />
       </UFormField>
     </div>

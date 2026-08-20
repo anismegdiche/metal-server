@@ -207,7 +207,7 @@ await fetchKeys()
       <template #footer>
         <div class="flex justify-end gap-2">
           <UButton label="Cancel" variant="outline" size="sm" @click="revokeModalOpen = false" />
-          <UButton label="Revoke" color="error" size="sm" @click="revokeKey" />
+          <UButton label="Revoke" color="primary" size="sm" @click="revokeKey" />
         </div>
       </template>
     </UModal>

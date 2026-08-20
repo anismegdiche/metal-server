@@ -200,7 +200,7 @@ defineExpose({ collectBody })
                 <div v-for="(hdr, idx) in endpoints.session!.sessionHeaders" :key="idx" class="flex items-center gap-2 mb-1">
                   <UInput v-model="hdr.key" placeholder="Header name" size="sm" class="flex-1" />
                   <UInput v-model="hdr.value" :placeholder="'Header value (supports \${{ }})'" size="sm" class="flex-1" />
-                  <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error" @click="removeSessionHeader(idx)" />
+                  <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="primary" @click="removeSessionHeader(idx)" />
                 </div>
               </div>
             </template>

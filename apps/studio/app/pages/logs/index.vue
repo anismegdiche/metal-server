@@ -161,7 +161,7 @@ async function clearLogs() {
           </div>
           <div class="flex justify-end gap-2">
             <UButton label="Cancel" variant="ghost" @click="showClearModal = false" />
-            <UButton label="Clear Logs" color="error" :loading="clearing" @click="clearLogs" />
+            <UButton label="Clear Logs" color="primary" :loading="clearing" @click="clearLogs" />
           </div>
         </div>
       </template>

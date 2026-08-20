@@ -9,6 +9,8 @@ server:
       autocreate: true
   authentication:
     default-role: all
+    session-lifetime: 14400
+    session-timeout: 3600
     provider: local
   request-limit: 100mb
   response-limit: 100mb
@@ -138,7 +140,7 @@ sources:
       autocreate: true
       entities:
         contacts:
-          locale: ar_AR
+          locale: en_EN
           rows: 100
           fields:
             id: string.uuid()
@@ -148,7 +150,7 @@ sources:
             ExternalRef: 'string.alphanumeric({ length: 10, casing: ''upper'' })'
             user: internet.username()
         books:
-          locale: ar_AR
+          locale: en_EN
           rows: 50
           fields:
             title: book.title()

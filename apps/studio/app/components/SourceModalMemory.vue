@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   sourceConfig?: Record<string, any>
+  context?: 'data' | 'cache'
 }>()
 
 const form = reactive({
@@ -32,8 +33,8 @@ defineExpose({ collectBody })
 <template>
   <div class="flex flex-col gap-4">
     <div class="grid grid-cols-2 gap-4">
-      <UFormField label="Database" orientation="horizontal" :ui="{ description: 'text-xs' }" description="Name of the database. If not set, uses source name as database name" class="col-span-2">
-        <UInput v-model="form.database" placeholder="mydb (defaults to source name)" class="w-full" />
+      <UFormField label="Database" orientation="horizontal" :ui="{ description: 'text-xs' }" :description="props.context === 'cache' ? 'Name of the database' : 'Name of the database. If not set, uses source name as database name'" class="col-span-2">
+        <UInput v-model="form.database" :placeholder="props.context === 'cache' ? 'metal_cache' : 'mydb (defaults to source name)'" class="w-full" />
       </UFormField>
       <UFormField label="Autocreate" orientation="horizontal" :ui="{ description: 'text-xs' }" description="Auto-create entities on first interaction (default: false)" class="col-span-2">
         <div class="flex items-center gap-2">

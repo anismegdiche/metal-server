@@ -8,7 +8,7 @@ Metal reads runtime configuration from environment variables defined in a `.env`
 
 
 ::: tip ℹ️ RELATIVE PATHS
-Path variables are used as-is. Relative paths (e.g. `./data/tables`) are resolved against the **current working directory** of the process, so they are most reliable when Metal is started from the repository root.
+Path variables are used as-is. Relative paths (e.g. `./data/logs`) are resolved against the **current working directory** of the process, so they are most reliable when Metal is started from the repository root.
 :::
 
 

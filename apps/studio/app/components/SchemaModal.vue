@@ -199,7 +199,7 @@ defineExpose({ openAdd, openEdit })
               :loading="!!ent.source && sourceEntitiesLoading[ent.source]"
               :disabled="!ent.source"
             />
-            <UButton icon="i-lucide-x" size="xs" variant="ghost" color="error" @click="removeEntity(idx)" />
+            <UButton icon="i-lucide-trash-2" size="xs" variant="ghost" color="primary" @click="removeEntity(idx)" />
           </div>
         </div>
         <UFormField label="Anonymize"  orientation="horizontal" description="Comma-separated field names to anonymize in responses"  :ui="{ description: 'text-xs' }">
@@ -216,7 +216,7 @@ defineExpose({ openAdd, openEdit })
             >
               {{ role }}
               <button class="ml-1 text-muted hover:text-error" @click="removeRole(idx)">
-                <UIcon name="i-lucide-x" class="size-3" />
+                <UIcon name="i-lucide-trash-2" class="size-3" />
               </button>
             </UBadge>
             <UInput

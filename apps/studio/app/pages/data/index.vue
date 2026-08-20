@@ -254,7 +254,7 @@ onMounted(loadData)
       <template #footer>
         <div class="flex justify-end gap-2">
           <UButton label="Cancel" variant="outline" size="sm" @click="() => { deleteModalOpen = false }" />
-          <UButton label="Delete" color="error" size="sm" :loading="deleteLoading" @click="confirmDelete" />
+          <UButton label="Delete" color="primary" size="sm" :loading="deleteLoading" @click="confirmDelete" />
         </div>
       </template>
     </UModal>

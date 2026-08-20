@@ -15,6 +15,7 @@ export type StepFieldType
   | 'switch'
   | 'textarea'
   | 'map'
+  | 'kv'
   | 'json'
 
 export type StepFieldSource = 'static' | 'schema' | 'entity'
@@ -118,9 +119,9 @@ export const STEP_REGISTRY: StepMeta[] = [
       { name: 'schema', label: 'Schema', type: 'select', source: 'schema', expression: true },
       { name: 'entity', label: 'Entity', type: 'select', source: 'entity', expression: true },
       { name: 'fields', label: 'Fields', type: 'text', placeholder: 'id, name, email', hint: 'Comma separated field names', expression: true },
-      { name: 'filter', label: 'Filter', type: 'json', hint: 'Key:value condition object', expression: true },
-      { name: 'filter-expression', label: 'Filter expression', type: 'textarea', expression: true, hint: 'Free form SQL-like condition' },
-      { name: 'sort', label: 'Sort', type: 'json', hint: '{ "field": "asc" | "desc" }', expression: true },
+      { name: 'filter', label: 'Filter', type: 'kv', placeholder: 'field', hint: 'Add field:value conditions', expression: true },
+      { name: 'filter-expression', label: 'Filter expression', type: 'text', expression: true, hint: 'Free form SQL-like condition' },
+      { name: 'sort', label: 'Sort', type: 'kv', placeholder: 'field', mapOptions: SORT_DIRECTIONS, hint: 'Add field:direction pairs', expression: true },
       { name: 'limit', label: 'Limit', type: 'number', expression: true },
       { name: 'offset', label: 'Offset', type: 'number', expression: true },
       { name: 'cache', label: 'Cache (s)', type: 'number', hint: 'Cache duration in seconds', expression: true }
@@ -152,8 +153,8 @@ export const STEP_REGISTRY: StepMeta[] = [
     formFields: [
       { name: 'schema', label: 'Schema', type: 'select', source: 'schema', expression: true },
       { name: 'entity', label: 'Entity', type: 'select', source: 'entity', expression: true },
-      { name: 'filter', label: 'Filter', type: 'json', hint: 'Key:value condition object' },
-      { name: 'filter-expression', label: 'Filter expression', type: 'textarea', expression: true },
+      { name: 'filter', label: 'Filter', type: 'kv', placeholder: 'field', hint: 'Add field:value conditions', expression: true },
+      { name: 'filter-expression', label: 'Filter expression', type: 'text', expression: true },
       { name: 'data', label: 'Data', type: 'json', hint: 'Field values to update', expression: true }
     ]
   },
@@ -168,8 +169,8 @@ export const STEP_REGISTRY: StepMeta[] = [
     formFields: [
       { name: 'schema', label: 'Schema', type: 'select', source: 'schema', expression: true },
       { name: 'entity', label: 'Entity', type: 'select', source: 'entity', expression: true },
-      { name: 'filter', label: 'Filter', type: 'json', hint: 'Key:value condition object', expression: true },
-      { name: 'filter-expression', label: 'Filter expression', type: 'textarea', expression: true }
+      { name: 'filter', label: 'Filter', type: 'kv', placeholder: 'field', hint: 'Add field:value conditions', expression: true },
+      { name: 'filter-expression', label: 'Filter expression', type: 'text', expression: true }
     ]
   },
   {

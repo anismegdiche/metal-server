@@ -8,7 +8,7 @@ export const PLAN_DOCUMENT_KEY = Symbol('plan-document')
 
 export const NODE_W = 260
 export const NODE_H = 160
-export const GAP = 48
+export const GAP = 24
 export const START_X = 40
 export const START_Y = 40
 
